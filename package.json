@@ -6,14 +6,35 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "npm-run-all --parallel dev:web dev:api",
-    "dev:web": "npm run dev -w @ketris/web",
-    "dev:api": "npm run dev -w @ketris/api",
-    "build": "npm run build -w @ketris/web && npm run build -w @ketris/api",
-    "typecheck": "npm run typecheck -w @ketris/web && npm run typecheck -w @ketris/api"
+    "dev": "npm run dev -w @ketris/web",
+    "build": "npm run build -w @ketris/web",
+    "start": "npm run start -w @ketris/web",
+    "lint": "npm run lint -w @ketris/web",
+    "lint:fix": "npm run lint:fix -w @ketris/web",
+    "format": "npm run format -w @ketris/web",
+    "format:check": "npm run format:check -w @ketris/web",
+    "typecheck": "npm run typecheck -w @ketris/web",
+    "test": "npm run test -w @ketris/web",
+    "test:run": "npm run test:run -w @ketris/web",
+    "test:coverage": "npm run test:coverage -w @ketris/web",
+    "e2e": "npm run e2e -w @ketris/web",
+    "e2e:open": "npm run e2e:open -w @ketris/web",
+    "prepare": "husky"
   },
   "devDependencies": {
-    "npm-run-all": "^4.1.5",
-    "typescript": "^5.1.6"
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "typescript": "^5.6.3"
+  },
+  "lint-staged": {
+    "apps/web/**/*.{js,jsx,ts,tsx}": [
+      "eslint --config apps/web/.eslintrc.json --fix",
+      "prettier --config apps/web/.prettierrc --write"
+    ],
+    "apps/web/**/*.{json,md,css}": [
+      "prettier --config apps/web/.prettierrc --write"
+    ]
   }
 }

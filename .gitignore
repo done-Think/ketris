@@ -1,7 +1,13 @@
 node_modules
 dist
+.next
 .env
 .env.local
 coverage
 *.log
 dev.log
+.DS_Store
+.gitignore.tmp
+cypress/videos
+cypress/screenshots
+.turbo
