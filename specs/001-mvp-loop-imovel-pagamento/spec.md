@@ -153,19 +153,32 @@ ser marcada como paga.
   status no painel financeiro do proprietário/corretor.
 - **FR-014**: O sistema MUST impedir a criação de um contrato que não esteja associado a uma proposta ou
   oportunidade previamente aceita.
+- **FR-015**: O sistema MUST permitir adicionar um fiador como parte opcional adicional do contrato, com
+  seus próprios dados (nome, CPF, e-mail, telefone) e sua própria assinatura pendente/concluída, quando a
+  garantia contratual escolhida exigir fiador.
+- **FR-016**: O sistema MUST atualizar automaticamente o status do imóvel para "Alugado" (locação) ou
+  "Vendido" (venda) quando o contrato correspondente transicionar para "Ativo" (consequência direta de
+  FR-011, confirmada pelas telas de gestão de imóveis do Figma).
 
 ### Key Entities
 
 - **Imóvel**: representa uma propriedade anunciável — dados básicos, endereço, características, mídia,
-  valores e status (rascunho, publicado, despublicado). Pertence a um proprietário/corretor responsável.
+  valores e status (rascunho, publicado, alugado, vendido, despublicado/inativo). Pertence a um
+  proprietário/corretor responsável. Os status "Alugado"/"Vendido" são derivados do contrato associado
+  ficar "Ativo" (FR-016).
 - **Oportunidade/Proposta**: representa o interesse de uma pessoa em um imóvel — dados de contato do
-  interessado, imóvel relacionado, status (nova, em negociação, aceita, recusada).
-- **Contrato**: representa o acordo formal entre as partes sobre um imóvel — partes envolvidas, valor,
-  status (rascunho, aguardando assinatura, ativo), origem (a oportunidade/proposta que o gerou).
-- **Assinatura**: representa o compromisso de uma parte específica com o contrato — quem assina, quando, e
-  se está pendente ou concluída.
-- **Cobrança**: representa um valor a receber previsto pelo contrato — valor, vencimento, status
-  (pendente, paga, atrasada), contrato de origem.
+  interessado, imóvel relacionado, condições propostas (valor, prazo, início pretendido, garantia
+  contratual, observações), status (rascunho, nova/enviada, em negociação, aceita, recusada).
+- **Contrato**: representa o acordo formal entre as partes sobre um imóvel — locador, locatário e
+  opcionalmente um fiador (FR-015), valor, status (rascunho, aguardando assinatura, ativo), origem (a
+  oportunidade/proposta que o gerou).
+- **Assinatura**: representa o compromisso de uma parte específica com o contrato (locador, locatário ou
+  fiador) — quem assina, quando, e se está pendente ou concluída.
+- **Cobrança**: representa um valor a receber (ou, no caso de repasses ao proprietário, a pagar) previsto
+  pelo contrato — valor, vencimento, forma de pagamento, comprovante, status (pendente, paga, atrasada,
+  agendada, cancelada), contrato de origem. Este loop mínimo cobre apenas a criação e confirmação da
+  primeira cobrança a receber (FR-012/FR-013); os demais estados e o fluxo "a pagar" são suportados pelo
+  modelo de dados mas sua operação completa está fora do escopo deste loop (ver Assumptions).
 
 ## Success Criteria *(mandatory)*
 
@@ -200,3 +213,26 @@ ser marcada como paga.
   futuras) estão fora do escopo deste loop mínimo — o foco é validar a primeira cobrança apenas.
 - Distribuição automática de leads e classificação por IA (recursos de fase posterior, ver
   `docs/planejamento-produto.md`) não fazem parte deste loop.
+- Chamados de manutenção (telas confirmadas no Figma — Bloco 14) são um domínio operacional separado, pós-
+  contrato, e não fazem parte deste loop mínimo de valor; ficam registrados como candidato a uma feature
+  spec futura própria (ex.: `002-manutencao`).
+- As telas de CRM em versão mobile (Figma — Bloco 15: pipeline em Kanban e lista de contatos) confirmam a
+  mesma entidade Oportunidade já coberta por este loop, apenas em outro formato de apresentação; a
+  implementação mobile-dedicada (app ou PWA) está fora do escopo deste loop e fica como candidato a uma
+  feature spec futura própria (ex.: `003-app-mobile-crm`). O acesso responsivo básico via navegador mobile
+  já é coberto pelo Princípio IV (Consistência de Design System) da constituição.
+- O fluxo "a pagar" do painel financeiro (repasses a proprietários, confirmado no Figma — Bloco 13) é
+  suportado pelo modelo de dados de Cobrança, mas sua operação completa (geração de repasses, conciliação)
+  está fora do escopo deste loop mínimo, que cobre apenas a primeira cobrança a receber (FR-012/FR-013).
+- Fiador é tratado como uma parte opcional adicional do contrato (mesmo modelo de Assinatura das demais
+  partes) quando a garantia contratual escolhida na proposta o exigir (FR-015); regras específicas de
+  aprovação/validação de fiador (análise de crédito, documentação adicional) estão fora do escopo deste
+  loop.
+
+## Atualizações
+
+- **2026-07-30**: revisão com base em 6 novos links do Figma (Blocos 10–15: Gestão de Imóveis, CRM
+  Propostas, Contratos Geração e Assinatura, Financeiro Cobranças, Manutenção, CRM Mobile). Adicionadas
+  FR-015 (fiador) e FR-016 (status automático do imóvel); Key Entities e Assumptions atualizadas para
+  refletir os campos e estados confirmados nos designs. Manutenção e CRM Mobile confirmados como fora de
+  escopo deste loop.

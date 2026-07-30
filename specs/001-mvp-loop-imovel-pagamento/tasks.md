@@ -172,6 +172,42 @@ de escopo desta feature.
 
 ---
 
+## Phase 8: Ajustes de Escopo — Revisão de Design (Figma Blocos 10–15)
+
+**Purpose**: incorporar detalhes de tela confirmados por 6 novos links do Figma (2026-07-30), cobrindo
+fiador, status derivados do imóvel e estados adicionais de cobrança (ver `spec.md` → FR-015/FR-016 e
+`data-model.md` → Atualizações). Nenhuma destas tarefas amplia o loop para Manutenção ou CRM Mobile — ver
+Phase 9.
+
+- [ ] T055 [P] [US1] Abas de detalhe do imóvel (Dados/Mídia/Valores/Histórico) e timeline de atividades em `src/modules/properties/components/PropertyDetailTabs.tsx`, conforme Figma Bloco 10
+- [ ] T056 [US1] Transição automática do status do imóvel para "Alugado"/"Vendido" quando o contrato associado ficar "Ativo" (FR-016), disparada a partir de `ContractService`/`SignatureService` (integra com T045/T049)
+- [ ] T057 [P] [US2] Cards de indicadores (valor total aceitas, taxa de conversão) e filtro por status incluindo "Rascunho" na lista de propostas, conforme Figma Bloco 11
+- [ ] T058 [US2] Tela de detalhe da proposta com vinculação a lead/imóvel/corretor responsável e histórico de eventos, conforme Figma Bloco 11
+- [ ] T059 [US3] Suporte a fiador opcional no `ContractWizard` — schema Zod, passo "Partes" com seção adicional e validação condicional a `garantiaContratual` (FR-015)
+- [ ] T060 [US3] Tela de acompanhamento de assinatura com barra de progresso, lista de assinantes (incluindo fiador quando presente) e ação de reenviar notificação a pendentes, conforme Figma Bloco 12
+- [ ] T061 [P] [US4] Abas "a receber"/"a pagar" e estados adicionais (agendada/cancelada) na lista de cobranças, conforme Figma Bloco 13
+- [ ] T062 [US4] Upload/visualização de comprovante de pagamento e forma de pagamento na tela de detalhe da cobrança, conforme Figma Bloco 13
+
+**Checkpoint**: telas das 4 user stories alinhadas byte a byte com os designs finais do Figma; nenhuma
+mudança de escopo do loop mínimo
+
+---
+
+## Phase 9: Fora de Escopo — Candidatos a Feature Spec Futura
+
+**Purpose**: registrar, sem criar tarefas acionáveis, capacidades identificadas nos novos links do Figma que
+não pertencem a este loop mínimo de valor (ver Assumptions em `spec.md`)
+
+- Chamados de Manutenção (Figma Bloco 14 — lista e detalhe de chamados, prestadores, SLA, custo estimado):
+  candidato a uma spec própria `002-manutencao`.
+- CRM Mobile dedicado (Figma Bloco 15 — pipeline Kanban e lista de contatos mobile): candidato a uma spec
+  própria `003-app-mobile-crm`; o acesso responsivo básico já é coberto pelo Princípio IV da constituição e
+  pelas telas web já planejadas neste loop.
+- Operação completa do fluxo financeiro "a pagar" (repasses ao proprietário, conciliação): o modelo de
+  dados já suporta (`tipo` em Cobrança), mas a operação end-to-end fica para uma fase posterior.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -182,6 +218,9 @@ de escopo desta feature.
   prioridade (US1 → US2 → US3 → US4, já que cada uma consome o resultado da anterior no loop completo,
   mesmo sendo tecnicamente testável de forma isolada)
 - **Polish (Fase 7)**: depende de todas as user stories desejadas estarem completas
+- **Ajustes de Escopo (Fase 8)**: cada tarefa depende apenas da user story indicada em `[Story]` já estar
+  implementada (T055/T056 após Fase 3, T057/T058 após Fase 4, T059/T060 após Fase 5, T061/T062 após Fase 6)
+  — não bloqueia nem é bloqueada pela Fase 7
 
 ### User Story Dependencies
 

@@ -124,3 +124,19 @@ estabelecida — nenhuma estrutura nova de projeto é criada. Os 4 módulos de d
 ## Complexity Tracking
 
 *Sem violações da constituição — seção não aplicável.*
+
+## Atualizações
+
+**2026-07-30** — 6 novos links do Figma (Blocos 10–15: Gestão de Imóveis, CRM Propostas, Contratos Geração
+e Assinatura, Financeiro Cobranças, Manutenção, CRM Mobile) confirmaram o desenho das telas já previstas
+neste plano e revelaram dois ajustes de escopo já refletidos em `spec.md`/`data-model.md`:
+
+- `ContractWizard` (`src/modules/contracts/components/ContractWizard.tsx`) precisa suportar um fiador
+  opcional como parte adicional do formulário/assinatura (FR-015), com sua própria seção de dados no passo
+  "Partes" e sua própria linha na tela de acompanhamento de assinatura.
+- `PropertyService`/lista de imóveis precisam refletir os status derivados `alugado`/`vendido` (FR-016)
+  além de `rascunho`/`publicado`/`inativo`.
+
+Manutenção (Bloco 14) e CRM Mobile dedicado (Bloco 15) não alteram este plano — são explicitamente fora de
+escopo deste loop (ver Assumptions em `spec.md`) e ficam como candidatos a planos de feature próprios no
+futuro.

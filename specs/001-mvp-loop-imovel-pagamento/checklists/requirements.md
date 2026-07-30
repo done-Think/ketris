@@ -34,3 +34,8 @@
 Nenhuma clarificação pendente — decisões de escopo (perfil único vs. compartilhado, meio de pagamento,
 provedor de assinatura) foram documentadas em Assumptions como decisões deliberadamente adiadas para a
 fase de planejamento/implementação, não como ambiguidades da especificação.
+
+**2026-07-30**: spec revisada com FR-015/FR-016 e Assumptions adicionais a partir de 6 novos links do Figma
+(Blocos 10–15). Checklist reverificado — todos os itens continuam válidos; nenhum [NEEDS CLARIFICATION]
+introduzido (as capacidades fora de escopo — Manutenção, CRM Mobile, fluxo "a pagar" — foram documentadas
+como Assumptions, não como ambiguidades).
