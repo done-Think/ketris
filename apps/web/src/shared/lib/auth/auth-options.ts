@@ -40,8 +40,8 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.accessToken = (user as { accessToken: string }).accessToken
-        token.tenantId = (user as { tenantId: string }).tenantId
+        token.accessToken = (user as unknown as { accessToken: string }).accessToken
+        token.tenantId = (user as unknown as { tenantId: string }).tenantId
       }
       return token
     },
