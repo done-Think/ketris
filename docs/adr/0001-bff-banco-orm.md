@@ -148,6 +148,17 @@ ou dentro de um serviço Nest.
   assinatura eletrônica, geração de PDF, notificações), avaliar extrair essas rotinas para um worker
   separado mesmo mantendo o BFF principal no Next.js.
 
+## Convenção adicional (2026-07-31): banco de dados só em container
+
+Um conflito de porta local (Postgres nativo já instalado no Mac de desenvolvimento, ocupando a 5432)
+motivou explicitar esta regra: **nenhum banco de dados deste projeto roda como instalação nativa no host,
+em nenhuma máquina de desenvolvimento.** Sempre via container (Docker Compose, `docker-compose.yml` na
+raiz). Isso evita conflito de porta/versão com outros projetos na mesma máquina, mantém o ambiente
+descartável (`docker compose down -v` sempre volta a um estado limpo) e reproduzível entre desenvolvedores.
+Se a porta padrão (5432) estiver ocupada por um Postgres nativo remanescente, a convenção é desinstalar o
+Postgres nativo (ver `README.md`) — não é para o container se adaptar permanentemente à porta de um
+processo nativo que não deveria existir na máquina.
+
 ## Action Items
 
 1. [ ] Preencher `TODO(BACKEND_STACK)` na constituição do projeto e registrar esta decisão em
