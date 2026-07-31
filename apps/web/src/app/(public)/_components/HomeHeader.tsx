@@ -86,7 +86,7 @@ export function HomeHeader({ onOpenProfile }: HomeHeaderProps) {
                     bgcolor: item === 'Comprar' ? 'primary.main' : 'transparent',
                   },
                   '&:hover': {
-                    bgcolor: 'rgba(33, 38, 49, 0.06)',
+                    bgcolor: 'transparent',
                     color: '#212631',
                     transform: 'translateY(-1px)',
                   },
@@ -113,12 +113,11 @@ export function HomeHeader({ onOpenProfile }: HomeHeaderProps) {
                 px: 2,
                 fontSize: 14,
                 transition:
-                  'background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 160ms ease',
+                  'background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease',
                 '&:hover': {
-                  bgcolor: 'rgba(243, 2, 116, 0.08)',
-                  borderColor: 'primary.main',
-                  color: 'primary.main',
-                  boxShadow: '0 8px 22px rgba(243, 2, 116, 0.16)',
+                  bgcolor: 'transparent',
+                  borderColor: '#212631',
+                  color: '#212631',
                   transform: 'translateY(-1px)',
                 },
               }}
@@ -135,8 +134,8 @@ export function HomeHeader({ onOpenProfile }: HomeHeaderProps) {
               aria-haspopup="dialog"
               onClick={onOpenProfile}
               sx={{
-                width: 53,
-                height: 53,
+                width: 48,
+                height: 48,
                 p: 0,
                 border: 0,
                 borderRadius: 999,
@@ -148,7 +147,7 @@ export function HomeHeader({ onOpenProfile }: HomeHeaderProps) {
                 zIndex: 1,
                 transition: 'box-shadow 160ms ease, transform 160ms ease',
                 '&:hover': {
-                  boxShadow: '0 0 0 3px rgba(243, 2, 116, 0.14)',
+                  boxShadow: '0 0 0 2px rgba(243, 2, 116, 0.14)',
                   transform: 'translateY(-1px)',
                 },
               }}
@@ -156,7 +155,7 @@ export function HomeHeader({ onOpenProfile }: HomeHeaderProps) {
               <Avatar
                 alt={userProfile.name}
                 src={userProfile.avatar}
-                sx={{ width: 42, height: 42 }}
+                sx={{ width: 48, height: 48 }}
               />
             </Box>
           </Stack>
