@@ -31,7 +31,7 @@ não `.env.local`) e ajuste se necessário.
 
 ```bash
 npm install
-docker compose up -d          # sobe o Postgres local (postgres:16-alpine, porta 5432)
+docker compose up -d          # sobe o Postgres local (postgres:16-alpine, porta 5433 no host)
 npm run db:migrate            # aplica o schema Prisma no banco
 npm run db:seed               # cria um tenant + usuário admin (admin@ketris.dev)
 npm run dev
@@ -39,8 +39,9 @@ npm run dev
 
 Web: http://localhost:3000
 
-Se a porta 5432 já estiver em uso (outro Postgres local, por exemplo), troque o mapeamento de porta em
-`docker-compose.yml` (ex.: `'5433:5432'`) e ajuste `DATABASE_URL` no `.env` de acordo.
+Usamos a porta 5433 no host (em vez da 5432 padrão) justamente para não conflitar com um Postgres nativo
+que você já possa ter instalado. Se 5433 também estiver ocupada, troque o mapeamento em
+`docker-compose.yml` e ajuste `DATABASE_URL` no `.env` de acordo.
 
 Para parar o banco: `docker compose down` (mantém os dados) ou `docker compose down -v` (apaga tudo).
 
