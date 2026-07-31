@@ -15,7 +15,13 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "e2e": "cypress run",
-    "e2e:open": "cypress open"
+    "e2e:open": "cypress open",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:studio": "prisma studio",
+    "db:seed": "tsx prisma/seed.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@emotion/cache": "^11.13.1",
@@ -28,10 +34,12 @@
     "@mui/x-charts": "^7.22.1",
     "@mui/x-data-grid": "^7.22.1",
     "@mui/x-date-pickers": "^7.22.1",
+    "@prisma/client": "^5.22.0",
     "@sentry/nextjs": "^8.38.0",
     "@tanstack/react-query": "^5.59.16",
     "@tanstack/react-query-devtools": "^5.59.16",
     "axios": "^1.7.7",
+    "bcryptjs": "^2.4.3",
     "dayjs": "^1.11.13",
     "maplibre-gl": "^4.7.1",
     "next": "^14.2.16",
@@ -50,6 +58,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.0.1",
     "@testing-library/user-event": "^14.5.2",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.8.6",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
@@ -61,6 +70,8 @@
     "eslint-config-prettier": "^9.1.0",
     "jsdom": "^25.0.1",
     "prettier": "^3.3.3",
+    "prisma": "^5.22.0",
+    "tsx": "^4.23.1",
     "typescript": "^5.6.3",
     "vitest": "^2.1.4"
   }

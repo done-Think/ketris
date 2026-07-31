@@ -1,0 +1,297 @@
+// Schema Prisma da Ketris — fonte de verdade do modelo de dados.
+// Entidades derivadas de specs/001-mvp-loop-imovel-pagamento/data-model.md, com Tenant/User/Endereco/Midia
+// adicionados como suporte necessário (auth, multi-tenancy, mídia de imóvel). Ver ADR-0001
+// (docs/adr/0001-bff-banco-orm.md) para o racional de PostgreSQL + Prisma + multi-tenancy por coluna.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Tenant & Usuário
+// ---------------------------------------------------------------------------
+
+model Tenant {
+  id        String   @id @default(cuid())
+  nome      String
+  slug      String   @unique
+  // White-label: cores do tema sobrescrevem primary/secondary do MUI em runtime (docs/stack.md).
+  corPrimaria   String?
+  corSecundaria String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  usuarios      Usuario[]
+  imoveis       Imovel[]
+  oportunidades Oportunidade[]
+  contratos     Contrato[]
+  cobrancas     Cobranca[]
+
+  @@map("tenants")
+}
+
+enum PapelUsuario {
+  ADMIN
+  PROPRIETARIO
+  CORRETOR
+}
+
+model Usuario {
+  id           String       @id @default(cuid())
+  tenantId     String
+  nome         String
+  email        String
+  senhaHash    String
+  papel        PapelUsuario @default(CORRETOR)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  tenant           Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  imoveisResponsavel Imovel[] @relation("ImovelResponsavel")
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@map("usuarios")
+}
+
+// ---------------------------------------------------------------------------
+// Imóvel (módulo `properties`)
+// ---------------------------------------------------------------------------
+
+enum FinalidadeImovel {
+  ALUGUEL
+  VENDA
+}
+
+enum StatusImovel {
+  RASCUNHO
+  PUBLICADO
+  ALUGADO
+  VENDIDO
+  INATIVO
+}
+
+model Imovel {
+  id            String           @id @default(cuid())
+  tenantId      String
+  responsavelId String
+  titulo        String
+  descricao     String?
+  finalidade    FinalidadeImovel
+  tipo          String
+  quartos       Int?
+  banheiros     Int?
+  vagas         Int?
+  areaM2        Decimal?         @db.Decimal(10, 2)
+  valor         Decimal          @db.Decimal(12, 2)
+  condominio    Decimal?         @db.Decimal(10, 2)
+  iptu          Decimal?         @db.Decimal(10, 2)
+  status        StatusImovel     @default(RASCUNHO)
+  publicadoEm   DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  tenant       Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  responsavel  Usuario        @relation("ImovelResponsavel", fields: [responsavelId], references: [id])
+  endereco     Endereco?
+  midias       Midia[]
+  oportunidades Oportunidade[]
+  contratos    Contrato[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("imoveis")
+}
+
+model Endereco {
+  id          String  @id @default(cuid())
+  imovelId    String  @unique
+  logradouro  String
+  numero      String
+  complemento String?
+  bairro      String
+  cidade      String
+  estado      String
+  cep         String
+  latitude    Decimal? @db.Decimal(9, 6)
+  longitude   Decimal? @db.Decimal(9, 6)
+
+  imovel Imovel @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+
+  @@map("enderecos")
+}
+
+model Midia {
+  id       String   @id @default(cuid())
+  imovelId String
+  url      String
+  tipo     String   @default("foto")
+  ordem    Int      @default(0)
+  createdAt DateTime @default(now())
+
+  imovel Imovel @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+
+  @@index([imovelId])
+  @@map("midias")
+}
+
+// ---------------------------------------------------------------------------
+// Oportunidade / Proposta (módulo `crm`)
+// ---------------------------------------------------------------------------
+
+enum GarantiaContratual {
+  FIADOR
+  CAUCAO
+  SEGURO_FIANCA
+  NENHUMA
+}
+
+enum StatusOportunidade {
+  RASCUNHO
+  ENVIADA
+  EM_NEGOCIACAO
+  ACEITA
+  RECUSADA
+}
+
+model Oportunidade {
+  id                  String             @id @default(cuid())
+  tenantId            String
+  imovelId            String
+  interessadoNome     String
+  interessadoEmail    String
+  interessadoTelefone String?
+  valorProposto       Decimal            @db.Decimal(12, 2)
+  prazoContratoMeses  Int?
+  inicioPretendido    DateTime?
+  garantiaContratual  GarantiaContratual @default(NENHUMA)
+  condicoesEspeciais  String[]           @default([])
+  observacoes         String?
+  status              StatusOportunidade @default(RASCUNHO)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  imovel   Imovel    @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  contrato Contrato?
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([imovelId])
+  @@map("oportunidades")
+}
+
+// ---------------------------------------------------------------------------
+// Contrato / Assinatura (módulo `contracts`)
+// ---------------------------------------------------------------------------
+
+enum StatusContrato {
+  RASCUNHO
+  AGUARDANDO_ASSINATURA
+  ATIVO
+}
+
+model Contrato {
+  id                    String         @id @default(cuid())
+  tenantId              String
+  imovelId              String
+  oportunidadeOrigemId  String         @unique // FR-014: contrato sempre nasce de uma oportunidade aceita
+  valor                 Decimal        @db.Decimal(12, 2)
+  status                StatusContrato @default(RASCUNHO)
+  ativadoEm             DateTime?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  tenant             Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  imovel             Imovel         @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  oportunidadeOrigem Oportunidade   @relation(fields: [oportunidadeOrigemId], references: [id])
+  partes             ParteContrato[]
+  cobrancas          Cobranca[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("contratos")
+}
+
+enum PapelParteContrato {
+  LOCADOR
+  LOCATARIO
+  FIADOR
+}
+
+model ParteContrato {
+  id         String             @id @default(cuid())
+  contratoId String
+  papel      PapelParteContrato
+  nome       String
+  cpf        String
+  email      String
+  telefone   String?
+
+  contrato   Contrato    @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+  assinatura Assinatura?
+
+  @@index([contratoId])
+  @@map("partes_contrato")
+}
+
+enum StatusAssinatura {
+  PENDENTE
+  ASSINADA
+}
+
+model Assinatura {
+  id              String           @id @default(cuid())
+  parteContratoId String           @unique // uma assinatura por parte do contrato
+  status          StatusAssinatura @default(PENDENTE)
+  assinadaEm      DateTime?
+
+  parteContrato ParteContrato @relation(fields: [parteContratoId], references: [id], onDelete: Cascade)
+
+  @@map("assinaturas")
+}
+
+// ---------------------------------------------------------------------------
+// Cobrança (módulo `financial`)
+// ---------------------------------------------------------------------------
+
+enum TipoCobranca {
+  A_RECEBER
+  A_PAGAR
+}
+
+enum StatusCobranca {
+  PENDENTE
+  PAGA
+  ATRASADA
+  AGENDADA
+  CANCELADA
+}
+
+model Cobranca {
+  id             String         @id @default(cuid())
+  tenantId       String
+  contratoId     String
+  tipo           TipoCobranca   @default(A_RECEBER)
+  valor          Decimal        @db.Decimal(12, 2)
+  vencimento     DateTime
+  formaPagamento String?
+  comprovanteUrl String?
+  status         StatusCobranca @default(PENDENTE)
+  pagoEm         DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  contrato Contrato @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([contratoId])
+  @@map("cobrancas")
+}

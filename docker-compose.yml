@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ketris-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ketris
+      POSTGRES_PASSWORD: ketris
+      POSTGRES_DB: ketris
+    ports:
+      - '5432:5432'
+    volumes:
+      - ketris_pgdata:/var/lib/postgresql/data
+
+volumes:
+  ketris_pgdata:

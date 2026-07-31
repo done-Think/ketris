@@ -1,11 +1,13 @@
 <!--
 Sync Impact Report
-- Version change: (template) → 1.0.0
-- List of modified principles: N/A (ratificação inicial)
-- Added sections: Core Principles (I-V), Stack e Padrões Técnicos, Fluxo de Desenvolvimento, Governance
+- Version change: 1.0.0 → 1.1.0
+- List of modified principles: N/A (nenhum princípio redefinido)
+- Modified sections: Stack e Padrões Técnicos — TODO(BACKEND_STACK) resolvido: BFF via Next.js Route
+  Handlers (`apps/web`), PostgreSQL, Prisma ORM (ver ADR-0001, `docs/adr/0001-bff-banco-orm.md`)
+- Added sections: none
 - Removed sections: none
-- Follow-up TODOs: TODO(BACKEND_STACK) — stack de backend ainda não definida (ver docs/stack.md);
-  TODO(RATIFICATION_DATE) — data de ratificação original desconhecida, usando a data desta formalização.
+- Follow-up TODOs: TODO(RATIFICATION_DATE) — data de ratificação original desconhecida, usando a data
+  desta formalização.
 -->
 
 # Ketris Constitution
@@ -56,10 +58,15 @@ IA) sem exigir retrabalho de acesso a dados.
 Frontend: Next.js 14+ (App Router) + TypeScript, Material UI v6, Zustand (estado global), TanStack Query
 (estado de servidor), React Hook Form + Zod (formulários/validação), MapLibre GL (mapas), Day.js (datas),
 react-imask (máscaras BR), MUI X DataGrid/Charts, react-dropzone (upload sempre via backend, nunca direto
-ao S3), Notistack (toasts), NextAuth.js (autenticação client-side). Backend: TODO(BACKEND_STACK) — ainda
-não definido, ver `docs/stack.md`. Estilo de código: 2 espaços, sem ponto e vírgula, aspas simples
-(ESLint + Prettier + Husky/lint-staged + Commitlint, Conventional Commits). Monorepo com npm workspaces
-(`apps/web`); scripts, hooks de git e configuração de lint-staged vivem na raiz do repositório.
+ao S3), Notistack (toasts), NextAuth.js (autenticação client-side). Backend (BFF): Route Handlers do
+próprio Next.js em `apps/web` (`src/app/api/**`), sem serviço separado — lógica de domínio no servidor
+organizada em `src/server/<dominio>/`, espelhando os módulos client-side (ver ADR-0001,
+`docs/adr/0001-bff-banco-orm.md`). Banco de dados: PostgreSQL. ORM: Prisma, com schema único
+(`apps/web/prisma/schema.prisma`) como fonte de verdade do modelo de dados. Multi-tenancy de dados: schema
+compartilhado com coluna `tenantId` em toda tabela de domínio (não schema-per-tenant). Estilo de código: 2
+espaços, sem ponto e vírgula, aspas simples (ESLint + Prettier + Husky/lint-staged + Commitlint,
+Conventional Commits). Monorepo com npm workspaces (`apps/web`); scripts, hooks de git e configuração de
+lint-staged vivem na raiz do repositório.
 
 ## Fluxo de Desenvolvimento
 
@@ -78,4 +85,4 @@ MAJOR para remoção/redefinição incompatível de princípio, MINOR para princ
 PATCH para redação/clarificação. Revisões de código devem verificar aderência aos Core Principles antes de
 aprovar merge; complexidade que viole o Princípio V precisa de justificativa explícita no PR.
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-29 | **Last Amended**: 2026-07-29
+**Version**: 1.1.0 | **Ratified**: 2026-07-29 | **Last Amended**: 2026-07-31
