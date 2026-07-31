@@ -1,7 +1,7 @@
 import { Container, Typography } from '@mui/material'
 
 export const metadata = {
-  title: 'Imóveis | Ketris',
+  title: 'Ketris',
   description: 'Busque imóveis para alugar e comprar.',
 }
 
