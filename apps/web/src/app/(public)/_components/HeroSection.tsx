@@ -65,7 +65,7 @@ export function HeroSection({
         position: 'relative',
         zIndex: 5,
         color: '#FFFFFF',
-        minHeight: { xs: 265, md: 315, xl: 455 },
+        minHeight: { xs: 394, md: 315, xl: 455 },
         display: 'flex',
         alignItems: 'center',
         overflow: 'visible',
@@ -81,10 +81,10 @@ export function HeroSection({
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 560px) minmax(300px, 1fr)' },
+            gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 700px) minmax(300px, 1fr)' },
             alignItems: 'center',
             gap: { xs: 2.4, lg: 4, xl: 7 },
-            py: { xs: 2.4, md: 4.2, xl: 8 },
+            py: { xs: 4.2, md: 4.2, xl: 8 },
             isolation: 'isolate',
             textAlign: { xs: 'center', md: 'left' },
           }}
@@ -93,23 +93,29 @@ export function HeroSection({
             <Typography
               variant="h1"
               sx={{
-                maxWidth: { xs: 420, md: 500, xl: 620 },
+                maxWidth: { xs: 420, md: 700, xl: 760 },
                 color: '#FFFFFF',
-                fontSize: { xs: '1.5rem', md: '2.15rem', xl: '3.2rem' },
+                fontSize: { xs: '1.8rem', md: '2.45rem', xl: '3.35rem' },
                 letterSpacing: 0,
-                mb: { xs: 0.8, md: 1.2, xl: 2 },
+                mb: { xs: 1.2, md: 1.7, xl: 2.5 },
                 mx: { xs: 'auto', md: 0 },
               }}
             >
-              A infraestrutura digital do mercado imobiliário
+              <Box component="span" sx={{ display: 'block' }}>
+                A infraestrutura digital
+              </Box>
+              <Box component="span" sx={{ display: 'block' }}>
+                do mercado imobiliário
+              </Box>
             </Typography>
             <Typography
               sx={{
                 color: 'rgba(255,255,255,0.72)',
-                mb: { xs: 1.5, md: 2.4, xl: 4 },
-                maxWidth: { xs: 360, md: 520, xl: 670 },
-                fontSize: { xs: 12, md: 13.5, xl: 16 },
+                mb: { xs: 2.1, md: 3, xl: 4.8 },
+                maxWidth: { xs: 360, md: 690, xl: 760 },
+                fontSize: { xs: 14.4, md: 13.5, xl: 16 },
                 mx: { xs: 'auto', md: 0 },
+                whiteSpace: { md: 'nowrap' },
               }}
             >
               Aluguel e venda de imóveis com tecnologia de ponta, processos ágeis e total confiança.
@@ -124,7 +130,7 @@ export function HeroSection({
                 borderRadius: '8px',
                 p: { md: 0.8, xl: 1.3 },
                 width: '100%',
-                maxWidth: 660,
+                maxWidth: { md: 820, xl: 900 },
                 boxSizing: 'border-box',
                 boxShadow: {
                   md: '0 16px 42px rgba(0,0,0,0.22)',
@@ -139,7 +145,12 @@ export function HeroSection({
                 <Box
                   key={key}
                   sx={{
-                    flex: '1 1 0',
+                    flex:
+                      key === 'location'
+                        ? { md: '1.35 1 0', xl: '1.35 1 0' }
+                        : key === 'priceRange'
+                          ? { md: '1.45 1 0', xl: '1.45 1 0' }
+                          : '1 1 0',
                     minWidth: 0,
                     position: 'relative',
                     borderRight: index < 2 ? { xs: 0, md: '1px solid' } : 0,
@@ -189,7 +200,7 @@ export function HeroSection({
                       <Typography
                         sx={{
                           color: 'text.primary',
-                          fontSize: { md: 11, xl: 13 },
+                          fontSize: { md: 12, xl: 13.5 },
                           fontWeight: 900,
                           lineHeight: 1.35,
                           overflow: 'hidden',
@@ -533,8 +544,8 @@ export function HeroSection({
                 href={searchHref}
                 variant="contained"
                 sx={{
-                  flex: { md: '0 0 78px', xl: '0 0 96px' },
-                  minWidth: { md: 78, xl: 96 },
+                  flex: { md: '0 0 104px', xl: '0 0 118px' },
+                  minWidth: { md: 104, xl: 118 },
                   minHeight: { md: 38, xl: 47 },
                   px: 0,
                   borderRadius: '8px',
@@ -585,7 +596,7 @@ export function HeroSection({
                 <Typography
                   sx={{
                     color: 'text.secondary',
-                    fontSize: 12,
+                    fontSize: 14.4,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
@@ -634,7 +645,7 @@ export function HeroSection({
                           sx={{
                             color: 'text.primary',
                             justifyContent: 'center',
-                            fontSize: 12,
+                            fontSize: 14.4,
                             fontWeight: selectedSearch.location === value ? 900 : 700,
                             '&.Mui-selected': {
                               bgcolor: 'rgba(243, 2, 116, 0.1)',
@@ -657,7 +668,7 @@ export function HeroSection({
                           color: 'text.secondary',
                           px: 2,
                           py: 1.5,
-                          fontSize: 12,
+                          fontSize: 14.4,
                           fontWeight: 700,
                           textAlign: 'center',
                         }}
@@ -673,7 +684,7 @@ export function HeroSection({
                 href={searchHref}
                 variant="contained"
                 fullWidth
-                sx={{ mt: 1, minHeight: 38, borderRadius: '8px', fontSize: 13 }}
+                sx={{ mt: 1, minHeight: 38, borderRadius: '8px', fontSize: 15.6 }}
               >
                 Buscar
               </Button>
@@ -682,7 +693,15 @@ export function HeroSection({
             <Stack
               direction={{ xs: 'column', sm: 'row' }}
               spacing={{ xs: 1.5, sm: 3, xl: 5 }}
-              sx={{ mt: { sm: 2.4, xl: 4 }, display: { xs: 'none', sm: 'flex' } }}
+              justifyContent={{ sm: 'center', lg: 'flex-start' }}
+              alignItems={{ sm: 'center', lg: 'baseline' }}
+              sx={{
+                mt: { sm: 3.2, xl: 5 },
+                display: { xs: 'none', sm: 'flex' },
+                width: '100%',
+                maxWidth: { sm: 620, xl: 760 },
+                transform: { sm: 'translateY(20px)', lg: 'none' },
+              }}
             >
               {[
                 ['2.500+', 'imóveis ativos'],
@@ -744,8 +763,8 @@ export function HeroSection({
                   height: { lg: 386, xl: 644 },
                   maxWidth: '140vw',
                   transform: {
-                    lg: 'translate(-50%, calc(-43% - 40px))',
-                    xl: 'translate(-50%, calc(-42% - 40px))',
+                    lg: 'translate(-50%, calc(-43% - 70px))',
+                    xl: 'translate(-50%, calc(-42% - 78px))',
                   },
                   WebkitMaskImage:
                     'radial-gradient(ellipse at center, #000 38%, rgba(0,0,0,0.68) 52%, rgba(0,0,0,0.18) 66%, transparent 78%)',
