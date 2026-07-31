@@ -19,7 +19,7 @@
     "test:coverage": "npm run test:coverage -w @ketris/web",
     "e2e": "npm run e2e -w @ketris/web",
     "e2e:open": "npm run e2e:open -w @ketris/web",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.5.0",
