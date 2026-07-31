@@ -10,15 +10,27 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata: Metadata = {
-  title: 'Ketris — Infraestrutura digital do mercado imobiliário',
+  title: 'Ketris',
   description:
     'Plataforma que conecta proprietários, corretores, imobiliárias, construtoras e locatários em uma única infraestrutura tecnológica.',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/ketris-tab-icon.png', type: 'image/png', sizes: '512x512' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/apple-icon.png',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} ${spaceGrotesk.variable}`}>
-      <body>
+    <html
+      lang="pt-BR"
+      className={`${inter.variable} ${spaceGrotesk.variable}`}
+      style={{ width: '100%', overflowX: 'clip' }}
+    >
+      <body style={{ width: '100%', overflowX: 'clip' }}>
         <Providers>{children}</Providers>
       </body>
     </html>
