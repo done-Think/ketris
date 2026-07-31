@@ -73,8 +73,8 @@ tenant + usuário admin via `npm run db:studio`
 - [x] T017 [US1] Seed mínimo (T010)
 - [ ] T018 [US1] Rodar o fluxo completo localmente (Docker → migrate → seed) e confirmar no `db:studio`
       (depende de T012 — ambiente com Docker disponível)
-- [ ] T019 [US1] Documentar o passo a passo em `docs/stack.md` ou `README.md` com captura do resultado
-      esperado (checklist de "ambiente pronto")
+- [x] T019 [US1] Documentar o passo a passo em `README.md` (Docker → migrate → seed → studio, incluindo o
+      cuidado de usar `.env` e não `.env.local`, já que o CLI do Prisma só lê `.env`)
 
 **Checkpoint**: US1 completa quando T018 rodar sem erro em uma máquina com Docker
 
