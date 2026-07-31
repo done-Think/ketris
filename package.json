@@ -24,7 +24,7 @@
     "db:deploy": "npm run db:deploy -w @ketris/web",
     "db:studio": "npm run db:studio -w @ketris/web",
     "db:seed": "npm run db:seed -w @ketris/web",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.5.0",

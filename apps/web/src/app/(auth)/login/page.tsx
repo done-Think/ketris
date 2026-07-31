@@ -1,6 +1,6 @@
 import { Container, Typography } from '@mui/material'
 
-export const metadata = { title: 'Entrar | Ketris' }
+export const metadata = { title: 'Ketris' }
 
 export default function LoginPage() {
   return (
