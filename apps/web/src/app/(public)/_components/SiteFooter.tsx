@@ -151,7 +151,10 @@ export function SiteFooter() {
           sx={{ py: { xs: 2, md: 3 }, textAlign: { xs: 'center', sm: 'left' } }}
         >
           <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }}>
-            © 2026 Ketris Tecnologias Ltda. Todos os direitos reservados.
+            <Box component="strong" sx={{ fontWeight: 700 }}>
+              © 2026 Ketris
+            </Box>{' '}
+            Tecnologias Ltda. Todos os direitos reservados.
           </Typography>
           <Stack direction="row" spacing={3}>
             {['Termos de Uso', 'Política de Privacidade'].map((item) => (
