@@ -771,6 +771,9 @@ export function HeroSection({
                     lg: 'translate(-50%, calc(-43% - 70px))',
                     xl: 'translate(-50%, calc(-42% - 78px))',
                   },
+                  '@media (min-width: 1200px) and (max-height: 950px)': {
+                    transform: 'translate(-50%, calc(-38% - 40px))',
+                  },
                   WebkitMaskImage:
                     'radial-gradient(ellipse at center, #000 38%, rgba(0,0,0,0.68) 52%, rgba(0,0,0,0.18) 66%, transparent 78%)',
                   maskImage:
