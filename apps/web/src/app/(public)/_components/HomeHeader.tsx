@@ -6,9 +6,10 @@ import { userProfile } from './_homeData'
 
 type HomeHeaderProps = {
   onOpenProfile: () => void
+  activeNav?: 'Comprar' | 'Alugar' | 'Comercial' | 'Para Corretores'
 }
 
-export function HomeHeader({ onOpenProfile }: HomeHeaderProps) {
+export function HomeHeader({ onOpenProfile, activeNav = 'Comprar' }: HomeHeaderProps) {
   return (
     <Box
       component="header"
@@ -60,14 +61,14 @@ export function HomeHeader({ onOpenProfile }: HomeHeaderProps) {
             spacing={{ xs: 2, md: 4 }}
             sx={{ display: { xs: 'none', md: 'flex' } }}
           >
-            {['Comprar', 'Alugar', 'Comercial', 'Para Corretores'].map((item) => (
+            {(['Comprar', 'Alugar', 'Comercial', 'Para Corretores'] as const).map((item) => (
               <MuiLink
                 key={item}
                 component={Link}
-                href="/imoveis"
+                href={item === 'Comprar' ? '/' : '/imoveis'}
                 underline="none"
                 sx={{
-                  color: item === 'Comprar' ? 'primary.main' : 'text.secondary',
+                  color: item === activeNav ? 'primary.main' : 'text.secondary',
                   fontSize: 15.3,
                   fontWeight: 700,
                   px: 1.45,
@@ -83,7 +84,7 @@ export function HomeHeader({ onOpenProfile }: HomeHeaderProps) {
                     right: 0,
                     bottom: -2,
                     height: 2,
-                    bgcolor: item === 'Comprar' ? 'primary.main' : 'transparent',
+                    bgcolor: item === activeNav ? 'primary.main' : 'transparent',
                   },
                   '&:hover': {
                     bgcolor: 'rgba(33, 38, 49, 0.06)',

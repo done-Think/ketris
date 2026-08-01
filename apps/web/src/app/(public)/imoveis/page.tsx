@@ -1,19 +1,25 @@
-import { Container, Typography } from '@mui/material'
+import type { Metadata } from 'next'
+import { Suspense } from 'react'
+import { Box, CircularProgress } from '@mui/material'
 
-export const metadata = {
-  title: 'Ketris',
-  description: 'Busque imóveis para alugar e comprar.',
+import { PropertiesSearchPage } from '@modules/marketplace/components/PropertiesSearchPage'
+
+export const metadata: Metadata = {
+  title: 'Imóveis para comprar e alugar | Ketris',
+  description:
+    'Encontre imóveis residenciais e comerciais com filtros por localização, tipo e faixa de preço.',
 }
 
 export default function ImoveisPage() {
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h3" gutterBottom>
-        Imóveis
-      </Typography>
-      <Typography color="text.secondary">
-        Marketplace com busca, filtros e mapa (MapLibre GL) — a implementar.
-      </Typography>
-    </Container>
+    <Suspense
+      fallback={
+        <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
+          <CircularProgress aria-label="Carregando imóveis" />
+        </Box>
+      }
+    >
+      <PropertiesSearchPage />
+    </Suspense>
   )
 }
