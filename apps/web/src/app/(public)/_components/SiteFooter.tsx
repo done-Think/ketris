@@ -23,7 +23,7 @@ export function SiteFooter() {
             display: 'grid',
             gridTemplateColumns: {
               xs: '1fr',
-              md: 'minmax(260px, 1.7fr) repeat(3, minmax(120px, 1fr))',
+              md: 'minmax(260px, 1fr) minmax(520px, 0.95fr)',
             },
             gap: { xs: 1.25, md: 7 },
             py: { xs: 2.4, md: 7 },
@@ -96,37 +96,49 @@ export function SiteFooter() {
             </Stack>
           </Box>
 
-          {footerColumns.map((column) => (
-            <Box key={column.title} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
-              <Typography sx={{ fontSize: 12, fontWeight: 900, mb: { xs: 0.5, md: 2 } }}>
-                {column.title}
-              </Typography>
-              <Stack
-                direction={{ xs: 'row', md: 'column' }}
-                spacing={{ xs: 0.8, md: 1.25 }}
-                useFlexGap
-                flexWrap="wrap"
-                justifyContent={{ xs: 'center', md: 'flex-start' }}
-              >
-                {column.links.map((item) => (
-                  <MuiLink
-                    key={item}
-                    component={Link}
-                    href="/imoveis"
-                    underline="none"
-                    sx={{
-                      color: 'rgba(255,255,255,0.56)',
-                      fontSize: { xs: 11, md: 12 },
-                      whiteSpace: 'nowrap',
-                      '&:hover': { color: '#FFFFFF' },
-                    }}
-                  >
-                    {item}
-                  </MuiLink>
-                ))}
-              </Stack>
-            </Box>
-          ))}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(120px, 1fr))' },
+              gap: { xs: 1.25, md: 6 },
+              justifySelf: { md: 'end' },
+              width: '100%',
+              maxWidth: { md: 620 },
+            }}
+          >
+            {footerColumns.map((column) => (
+              <Box key={column.title} sx={{ textAlign: { xs: 'center', md: 'right' } }}>
+                <Typography sx={{ fontSize: 12, fontWeight: 900, mb: { xs: 0.5, md: 2 } }}>
+                  {column.title}
+                </Typography>
+                <Stack
+                  direction={{ xs: 'row', md: 'column' }}
+                  spacing={{ xs: 0.8, md: 1.25 }}
+                  useFlexGap
+                  flexWrap="wrap"
+                  alignItems={{ md: 'flex-end' }}
+                  justifyContent={{ xs: 'center', md: 'flex-start' }}
+                >
+                  {column.links.map((item) => (
+                    <MuiLink
+                      key={item}
+                      component={Link}
+                      href="/imoveis"
+                      underline="none"
+                      sx={{
+                        color: 'rgba(255,255,255,0.56)',
+                        fontSize: { xs: 11, md: 12 },
+                        whiteSpace: 'nowrap',
+                        '&:hover': { color: '#FFFFFF' },
+                      }}
+                    >
+                      {item}
+                    </MuiLink>
+                  ))}
+                </Stack>
+              </Box>
+            ))}
+          </Box>
         </Box>
 
         <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)' }} />

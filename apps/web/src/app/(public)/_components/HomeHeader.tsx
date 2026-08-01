@@ -66,7 +66,7 @@ export function HomeHeader({ profileButtonRef, onToggleProfile }: HomeHeaderProp
             spacing={{ xs: 2, md: 4 }}
             sx={{ display: { xs: 'none', md: 'flex' }, justifySelf: 'center' }}
           >
-            {['Alugar', 'Comprar', 'Para Corretores', 'Imobiliárias'].map((item) => (
+            {['Alugar', 'Comprar', 'Corretores', 'Imobiliárias'].map((item) => (
               <MuiLink
                 key={item}
                 component={Link}

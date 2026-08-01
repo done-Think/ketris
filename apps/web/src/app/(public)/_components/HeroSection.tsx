@@ -159,8 +159,7 @@ export function HeroSection({
                 >
                   <Button
                     fullWidth
-                    onPointerDown={(event) => {
-                      event.preventDefault()
+                    onClick={(event) => {
                       event.stopPropagation()
                       openSearchMenu(key)
                     }}
@@ -214,6 +213,7 @@ export function HeroSection({
                   </Button>
                   {activeSearchMenu === key && (
                     <Box
+                      onClick={(event) => event.stopPropagation()}
                       sx={{
                         position: 'absolute',
                         top: 'calc(100% + 6px)',
@@ -291,19 +291,21 @@ export function HeroSection({
                               }}
                             />
                           </Stack>
-                          <Slider
-                            getAriaLabel={() => 'Faixa de preço'}
-                            value={priceRange}
-                            onChange={(_, nextValue) =>
-                              updatePriceRange(nextValue as [number, number])
-                            }
-                            valueLabelDisplay="auto"
-                            valueLabelFormat={(value) => formatCurrency(value)}
-                            min={priceLimit.min}
-                            max={priceLimit.max}
-                            step={priceLimit.step}
-                            disableSwap
-                          />
+                          <Box sx={{ px: 1 }}>
+                            <Slider
+                              getAriaLabel={() => 'Faixa de preço'}
+                              value={priceRange}
+                              onChange={(_, nextValue) =>
+                                updatePriceRange(nextValue as [number, number])
+                              }
+                              valueLabelDisplay="auto"
+                              valueLabelFormat={(value) => formatCurrency(value)}
+                              min={priceLimit.min}
+                              max={priceLimit.max}
+                              step={priceLimit.step}
+                              disableSwap
+                            />
+                          </Box>
                           <Stack direction="row" justifyContent="space-between" sx={{ mt: 0.5 }}>
                             <Typography sx={{ color: 'text.secondary', fontSize: 11 }}>
                               {formatCurrency(priceLimit.min)}
@@ -403,6 +405,7 @@ export function HeroSection({
               ))}
               {false && activeSearchMenu && (
                 <Box
+                  onClick={(event) => event.stopPropagation()}
                   sx={{
                     position: 'absolute',
                     top: 'calc(100% + 6px)',
@@ -548,7 +551,8 @@ export function HeroSection({
                 sx={{
                   flex: { md: '0 0 104px', xl: '0 0 118px' },
                   minWidth: { md: 104, xl: 118 },
-                  minHeight: { md: 38, xl: 47 },
+                  minHeight: { md: 40, xl: 55 },
+                  ml: { md: 0.7, xl: 0.9 },
                   px: 0,
                   borderRadius: '8px',
                   fontSize: { md: 12, xl: 14 },
@@ -572,8 +576,7 @@ export function HeroSection({
             >
               <Button
                 fullWidth
-                onPointerDown={(event) => {
-                  event.preventDefault()
+                onClick={(event) => {
                   event.stopPropagation()
                   openSearchMenu('location')
                 }}

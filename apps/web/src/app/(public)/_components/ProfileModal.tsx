@@ -22,11 +22,9 @@ export function ProfileModal({ open, anchorRef, onClose }: ProfileModalProps) {
     if (open) {
       setIsMounted(true)
       setIsVisible(false)
-      const firstFrame = window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => setIsVisible(true))
-      })
+      const timeout = window.setTimeout(() => setIsVisible(true), 20)
 
-      return () => window.cancelAnimationFrame(firstFrame)
+      return () => window.clearTimeout(timeout)
     }
 
     setIsVisible(false)
@@ -73,9 +71,8 @@ export function ProfileModal({ open, anchorRef, onClose }: ProfileModalProps) {
         right: 0,
         bottom: 0,
         left: 0,
-        zIndex: 20,
+        zIndex: 1300,
         bgcolor: 'transparent',
-        pointerEvents: isVisible ? 'auto' : 'none',
       }}
     >
       <Box
