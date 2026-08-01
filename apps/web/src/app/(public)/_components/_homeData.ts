@@ -176,7 +176,7 @@ export const textSearchFilterOrder: TextSearchFilterKey[] = ['location', 'proper
 
 export const priceLimit = {
   min: 0,
-  max: 50000,
+  max: 10000,
   step: 500,
 }
 

@@ -66,14 +66,14 @@ export function HomeHeader({ profileButtonRef, onToggleProfile }: HomeHeaderProp
             spacing={{ xs: 2, md: 4 }}
             sx={{ display: { xs: 'none', md: 'flex' }, justifySelf: 'center' }}
           >
-            {['Comprar', 'Alugar', 'Para Corretores', 'Imobiliárias'].map((item) => (
+            {['Alugar', 'Comprar', 'Para Corretores', 'Imobiliárias'].map((item) => (
               <MuiLink
                 key={item}
                 component={Link}
                 href="/imoveis"
                 underline="none"
                 sx={{
-                  color: item === 'Comprar' ? 'primary.main' : 'text.secondary',
+                  color: item === 'Alugar' ? 'primary.main' : 'text.secondary',
                   fontSize: 15.3,
                   fontWeight: 700,
                   px: 1.45,
@@ -89,7 +89,7 @@ export function HomeHeader({ profileButtonRef, onToggleProfile }: HomeHeaderProp
                     right: 0,
                     bottom: -2,
                     height: 2,
-                    bgcolor: item === 'Comprar' ? 'primary.main' : 'transparent',
+                    bgcolor: item === 'Alugar' ? 'primary.main' : 'transparent',
                   },
                   '&:hover': {
                     bgcolor: 'transparent',

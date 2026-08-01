@@ -24,9 +24,9 @@ export default function HomePageClient() {
   const [selectedSearch, setSelectedSearch] = useState<Record<SearchFilterKey, string>>({
     location: searchOptions.location.values[0],
     propertyType: searchOptions.propertyType.values[0],
-    priceRange: searchOptions.priceRange.values[1],
+    priceRange: searchOptions.priceRange.values[2],
   })
-  const [priceRange, setPriceRange] = useState<[number, number]>([2500, 6000])
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000])
   const [activeSearchMenu, setActiveSearchMenu] = useState<SearchFilterKey | null>(null)
   const [searchDraft, setSearchDraft] = useState<Record<TextSearchFilterKey, string>>({
     location: '',
