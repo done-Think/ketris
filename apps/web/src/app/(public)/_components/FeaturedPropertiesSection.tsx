@@ -23,7 +23,7 @@ export function FeaturedPropertiesSection() {
         position: 'relative',
         zIndex: 2,
         bgcolor: '#F7F8FA',
-        pt: { xs: 2, md: 3 },
+        pt: { xs: 1.25, md: 3 },
         pb: { xs: 5, md: 7 },
       }}
     >
@@ -32,7 +32,7 @@ export function FeaturedPropertiesSection() {
           direction="row"
           alignItems="center"
           justifyContent="space-between"
-          sx={{ mt: '12px', mb: 3 }}
+          sx={{ mt: { xs: 0.5, md: '12px' }, mb: { xs: 2, md: 3 } }}
         >
           <Typography variant="overline" color="text.secondary" sx={{ letterSpacing: 0 }}>
             Imóveis em destaque
@@ -46,8 +46,9 @@ export function FeaturedPropertiesSection() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: 0.5,
-              fontSize: 13,
-              fontWeight: 800,
+              fontSize: 13.5,
+              fontWeight: 700,
+              lineHeight: 1.3,
             }}
           >
             Ver todos os imóveis
@@ -59,7 +60,7 @@ export function FeaturedPropertiesSection() {
           sx={{
             display: 'grid',
             gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-            gap: 3,
+            gap: { xs: 2, md: 3 },
           }}
         >
           {featuredProperties.map((property) => (
@@ -97,10 +98,11 @@ export function FeaturedPropertiesSection() {
                     bgcolor: '#FFFFFF',
                     borderRadius: 999,
                     px: 1.2,
-                    py: 0.35,
+                    py: 0.4,
                     color: 'text.primary',
-                    fontSize: 11,
-                    fontWeight: 800,
+                    fontSize: 11.5,
+                    fontWeight: 700,
+                    lineHeight: 1.2,
                   }}
                 >
                   Novo
@@ -150,7 +152,15 @@ export function FeaturedPropertiesSection() {
                       {property.broker}
                     </Typography>
                   </Stack>
-                  <Typography sx={{ color: 'primary.main', fontSize: 12, fontWeight: 900 }}>
+                  <Typography
+                    sx={{
+                      color: 'primary.main',
+                      fontSize: 13,
+                      fontWeight: 700,
+                      lineHeight: 1.35,
+                      textRendering: 'geometricPrecision',
+                    }}
+                  >
                     Ver detalhes
                   </Typography>
                 </Stack>

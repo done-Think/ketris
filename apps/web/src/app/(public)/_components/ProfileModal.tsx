@@ -1,3 +1,6 @@
+'use client'
+
+import { type RefObject, useEffect, useState } from 'react'
 import { Avatar, Box, Button, IconButton, Stack, Typography } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import Link from 'next/link'
@@ -5,10 +8,59 @@ import Link from 'next/link'
 import { profileActions, userProfile } from './_homeData'
 
 type ProfileModalProps = {
+  open: boolean
+  anchorRef: RefObject<HTMLButtonElement>
   onClose: () => void
 }
 
-export function ProfileModal({ onClose }: ProfileModalProps) {
+export function ProfileModal({ open, anchorRef, onClose }: ProfileModalProps) {
+  const [isMounted, setIsMounted] = useState(open)
+  const [isVisible, setIsVisible] = useState(false)
+  const [panelPosition, setPanelPosition] = useState({ top: 68, right: 16 })
+
+  useEffect(() => {
+    if (open) {
+      setIsMounted(true)
+      setIsVisible(false)
+      const firstFrame = window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => setIsVisible(true))
+      })
+
+      return () => window.cancelAnimationFrame(firstFrame)
+    }
+
+    setIsVisible(false)
+    const timeout = window.setTimeout(() => setIsMounted(false), 180)
+
+    return () => window.clearTimeout(timeout)
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+
+    const updatePosition = () => {
+      const anchor = anchorRef.current?.getBoundingClientRect()
+
+      if (!anchor) return
+
+      setPanelPosition({
+        top: Math.round(anchor.bottom + 12),
+        right: Math.max(12, Math.round(window.innerWidth - anchor.right - 16)),
+      })
+    }
+
+    updatePosition()
+    window.addEventListener('resize', updatePosition)
+    window.addEventListener('scroll', updatePosition, true)
+
+    return () => {
+      window.removeEventListener('resize', updatePosition)
+      window.removeEventListener('scroll', updatePosition, true)
+    }
+  }, [anchorRef, open])
+
+  if (!isMounted) return null
+
   return (
     <Box
       role="dialog"
@@ -17,23 +69,30 @@ export function ProfileModal({ onClose }: ProfileModalProps) {
       onClick={onClose}
       sx={{
         position: 'fixed',
-        inset: 0,
-        zIndex: 2000,
-        display: 'grid',
-        placeItems: { xs: 'end center', sm: 'center' },
-        bgcolor: 'rgba(13, 15, 20, 0.48)',
-        p: { xs: 1.5, sm: 3 },
+        top: 60,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        zIndex: 20,
+        bgcolor: 'transparent',
+        pointerEvents: isVisible ? 'auto' : 'none',
       }}
     >
       <Box
         onClick={(event) => event.stopPropagation()}
         sx={{
+          position: 'fixed',
+          top: panelPosition.top,
+          right: panelPosition.right,
           width: '100%',
-          maxWidth: 390,
+          maxWidth: { xs: 'calc(100vw - 24px)', sm: 390 },
           borderRadius: '8px',
           bgcolor: '#FFFFFF',
           boxShadow: '0 24px 70px rgba(13,15,20,0.32)',
           p: 2.4,
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'translateY(0)' : 'translateY(-14px)',
+          transition: 'opacity 180ms ease, transform 180ms ease',
         }}
       >
         <Stack

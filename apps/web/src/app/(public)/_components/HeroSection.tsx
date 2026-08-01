@@ -65,7 +65,7 @@ export function HeroSection({
         position: 'relative',
         zIndex: 5,
         color: '#FFFFFF',
-        minHeight: { xs: 394, md: 315, xl: 455 },
+        minHeight: { xs: 332, md: 315, xl: 455 },
         display: 'flex',
         alignItems: 'center',
         overflow: 'visible',
@@ -81,10 +81,10 @@ export function HeroSection({
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 700px) minmax(300px, 1fr)' },
+            gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 3fr) minmax(0, 2fr)' },
             alignItems: 'center',
             gap: { xs: 2.4, lg: 4, xl: 7 },
-            py: { xs: 4.2, md: 4.2, xl: 8 },
+            py: { xs: 2.5, md: 4.2, xl: 8 },
             isolation: 'isolate',
             textAlign: { xs: 'center', md: 'left' },
           }}
@@ -95,9 +95,9 @@ export function HeroSection({
               sx={{
                 maxWidth: { xs: 420, md: 700, xl: 760 },
                 color: '#FFFFFF',
-                fontSize: { xs: '1.8rem', md: '2.45rem', xl: '3.35rem' },
+                fontSize: { xs: '1.6rem', md: '2.45rem', xl: '3.35rem' },
                 letterSpacing: 0,
-                mb: { xs: 1.2, md: 1.7, xl: 2.5 },
+                mb: { xs: 0.9, md: 1.7, xl: 2.5 },
                 mx: { xs: 'auto', md: 0 },
               }}
             >
@@ -111,9 +111,9 @@ export function HeroSection({
             <Typography
               sx={{
                 color: 'rgba(255,255,255,0.72)',
-                mb: { xs: 2.1, md: 3, xl: 4.8 },
+                mb: { xs: 1.5, md: 3, xl: 4.8 },
                 maxWidth: { xs: 360, md: 690, xl: 760 },
-                fontSize: { xs: 14.4, md: 13.5, xl: 16 },
+                fontSize: { xs: 13.6, md: 13.5, xl: 16 },
                 mx: { xs: 'auto', md: 0 },
                 whiteSpace: { md: 'nowrap' },
               }}
@@ -130,7 +130,7 @@ export function HeroSection({
                 borderRadius: '8px',
                 p: { md: 0.8, xl: 1.3 },
                 width: '100%',
-                maxWidth: { md: 820, xl: 900 },
+                maxWidth: { md: 820, lg: '100%', xl: '100%' },
                 boxSizing: 'border-box',
                 boxShadow: {
                   md: '0 16px 42px rgba(0,0,0,0.22)',
@@ -219,7 +219,7 @@ export function HeroSection({
                         top: 'calc(100% + 6px)',
                         left: key === 'priceRange' ? 'auto' : 0,
                         right: key === 'priceRange' ? 0 : 'auto',
-                        width: key === 'priceRange' ? 360 : 240,
+                        width: '100%',
                         maxWidth: 'calc(100vw - 32px)',
                         zIndex: 50,
                         display: { xs: 'none', md: 'block' },
@@ -231,7 +231,7 @@ export function HeroSection({
                       }}
                     >
                       {key === 'priceRange' ? (
-                        <Box sx={{ px: 2.2, py: 2 }}>
+                        <Box sx={{ px: 1.3, py: 1.5 }}>
                           <Stack
                             direction="row"
                             alignItems="center"
@@ -251,7 +251,7 @@ export function HeroSection({
                               <CloseIcon fontSize="small" />
                             </IconButton>
                           </Stack>
-                          <Stack direction="row" spacing={1.2} sx={{ mb: 2.2 }}>
+                          <Stack direction="row" spacing={0.8} sx={{ mb: 2 }}>
                             <TextField
                               label="Mínimo"
                               type="number"
@@ -264,6 +264,7 @@ export function HeroSection({
                               }
                               size="small"
                               fullWidth
+                              sx={{ '& .MuiInputBase-input': { px: 1.2 } }}
                               inputProps={{
                                 min: priceLimit.min,
                                 max: priceLimit.max,
@@ -282,6 +283,7 @@ export function HeroSection({
                               }
                               size="small"
                               fullWidth
+                              sx={{ '& .MuiInputBase-input': { px: 1.2 } }}
                               inputProps={{
                                 min: priceLimit.min,
                                 max: priceLimit.max,
@@ -314,7 +316,7 @@ export function HeroSection({
                             variant="contained"
                             fullWidth
                             onClick={closeSearchMenu}
-                            sx={{ mt: 2, minHeight: 38, borderRadius: '8px' }}
+                            sx={{ mt: 1.8, minHeight: 38, borderRadius: '8px' }}
                           >
                             Aplicar
                           </Button>
@@ -562,7 +564,7 @@ export function HeroSection({
                 display: { xs: 'block', md: 'none' },
                 bgcolor: '#FFFFFF',
                 borderRadius: '8px',
-                p: 1.2,
+                p: 1,
                 maxWidth: 360,
                 mx: 'auto',
                 boxShadow: '0 18px 45px rgba(0,0,0,0.24)',
@@ -578,7 +580,7 @@ export function HeroSection({
                 startIcon={<SearchOutlinedIcon sx={{ fontSize: 16 }} />}
                 sx={{
                   justifyContent: 'flex-start',
-                  minHeight: 38,
+                  minHeight: 36,
                   px: 1.4,
                   border: '1px solid',
                   borderColor: 'divider',
@@ -596,7 +598,7 @@ export function HeroSection({
                 <Typography
                   sx={{
                     color: 'text.secondary',
-                    fontSize: 14.4,
+                    fontSize: 13.6,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
@@ -684,7 +686,7 @@ export function HeroSection({
                 href={searchHref}
                 variant="contained"
                 fullWidth
-                sx={{ mt: 1, minHeight: 38, borderRadius: '8px', fontSize: 15.6 }}
+                sx={{ mt: 0.9, minHeight: 36, borderRadius: '8px', fontSize: 14.4 }}
               >
                 Buscar
               </Button>

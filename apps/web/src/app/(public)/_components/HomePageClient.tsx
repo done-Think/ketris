@@ -33,6 +33,7 @@ export default function HomePageClient() {
     propertyType: '',
   })
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const desktopSearchRef = useRef<HTMLDivElement | null>(null)
   const mobileSearchRef = useRef<HTMLDivElement | null>(null)
 
@@ -114,9 +115,16 @@ export default function HomePageClient() {
         bgcolor: '#F7F8FA',
       }}
     >
-      <HomeHeader onOpenProfile={() => setIsProfileOpen(true)} />
+      <HomeHeader
+        profileButtonRef={profileButtonRef}
+        onToggleProfile={() => setIsProfileOpen((current) => !current)}
+      />
 
-      {isProfileOpen && <ProfileModal onClose={() => setIsProfileOpen(false)} />}
+      <ProfileModal
+        open={isProfileOpen}
+        anchorRef={profileButtonRef}
+        onClose={() => setIsProfileOpen(false)}
+      />
 
       <HeroSection
         selectedSearch={selectedSearch}

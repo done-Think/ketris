@@ -1,3 +1,4 @@
+import { type RefObject } from 'react'
 import { Avatar, Box, Button, Container, IconButton, Link as MuiLink, Stack } from '@mui/material'
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
 import Link from 'next/link'
@@ -5,10 +6,11 @@ import Link from 'next/link'
 import { userProfile } from './_homeData'
 
 type HomeHeaderProps = {
-  onOpenProfile: () => void
+  profileButtonRef: RefObject<HTMLButtonElement>
+  onToggleProfile: () => void
 }
 
-export function HomeHeader({ onOpenProfile }: HomeHeaderProps) {
+export function HomeHeader({ profileButtonRef, onToggleProfile }: HomeHeaderProps) {
   return (
     <Box
       component="header"
@@ -23,11 +25,14 @@ export function HomeHeader({ onOpenProfile }: HomeHeaderProps) {
       }}
     >
       <Container maxWidth="xl">
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{ minHeight: 60, gap: 2 }}
+        <Box
+          sx={{
+            minHeight: 60,
+            display: 'grid',
+            gridTemplateColumns: { xs: 'auto 1fr', md: '1fr auto 1fr' },
+            alignItems: 'center',
+            gap: 2,
+          }}
         >
           <Box
             component={Link}
@@ -36,6 +41,7 @@ export function HomeHeader({ onOpenProfile }: HomeHeaderProps) {
             sx={{
               display: 'inline-flex',
               alignItems: 'center',
+              justifySelf: 'start',
               width: { xs: 100, sm: 118 },
               height: 30,
               textDecoration: 'none',
@@ -58,9 +64,9 @@ export function HomeHeader({ onOpenProfile }: HomeHeaderProps) {
             direction="row"
             alignItems="center"
             spacing={{ xs: 2, md: 4 }}
-            sx={{ display: { xs: 'none', md: 'flex' } }}
+            sx={{ display: { xs: 'none', md: 'flex' }, justifySelf: 'center' }}
           >
-            {['Comprar', 'Alugar', 'Comercial', 'Para Corretores'].map((item) => (
+            {['Comprar', 'Alugar', 'Para Corretores', 'Imobiliárias'].map((item) => (
               <MuiLink
                 key={item}
                 component={Link}
@@ -97,7 +103,7 @@ export function HomeHeader({ onOpenProfile }: HomeHeaderProps) {
             ))}
           </Stack>
 
-          <Stack direction="row" alignItems="center" spacing={1}>
+          <Stack direction="row" alignItems="center" spacing={1} sx={{ justifySelf: 'end' }}>
             <Button
               component={Link}
               href="/login"
@@ -132,7 +138,8 @@ export function HomeHeader({ onOpenProfile }: HomeHeaderProps) {
               type="button"
               aria-label="Abrir perfil"
               aria-haspopup="dialog"
-              onClick={onOpenProfile}
+              ref={profileButtonRef}
+              onClick={onToggleProfile}
               sx={{
                 width: 48,
                 height: 48,
@@ -159,7 +166,7 @@ export function HomeHeader({ onOpenProfile }: HomeHeaderProps) {
               />
             </Box>
           </Stack>
-        </Stack>
+        </Box>
       </Container>
     </Box>
   )
