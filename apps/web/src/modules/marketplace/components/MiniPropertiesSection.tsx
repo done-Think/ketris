@@ -1,14 +1,16 @@
 import { Box, Container, Typography } from '@mui/material'
 import Link from 'next/link'
 
-import { miniProperties } from './_homeData'
+import { gradients, radius, surface } from '@shared/theme/tokens'
+
+import { miniProperties } from '../data/mini-properties'
 
 export function MiniPropertiesSection() {
   return (
     <Box
       component="section"
       sx={{
-        bgcolor: '#FFFFFF',
+        bgcolor: surface.paper,
         borderTop: '1px solid',
         borderColor: 'divider',
         py: { xs: 4, md: 5 },
@@ -46,10 +48,10 @@ export function MiniPropertiesSection() {
               key={property.title}
               sx={{
                 overflow: 'hidden',
-                borderRadius: '8px',
+                borderRadius: `${radius.sm}px`,
                 border: '1px solid',
                 borderColor: 'divider',
-                bgcolor: '#F7F8FA',
+                bgcolor: surface.app,
                 color: 'inherit',
                 textDecoration: 'none',
                 transition: 'border-color 180ms ease, transform 180ms ease',
@@ -62,7 +64,7 @@ export function MiniPropertiesSection() {
               <Box
                 sx={{
                   height: { xs: 64, sm: 74 },
-                  backgroundImage: `linear-gradient(180deg, rgba(33,38,49,0.02), rgba(33,38,49,0.18)), url("${property.image}")`,
+                  backgroundImage: gradients.miniPropertyImage(property.image),
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                 }}

@@ -12,11 +12,31 @@ import InstagramIcon from '@mui/icons-material/Instagram'
 import LinkedInIcon from '@mui/icons-material/LinkedIn'
 import Link from 'next/link'
 
-import { footerColumns } from './_homeData'
+import { alpha, surface } from '@shared/theme/tokens'
 
-export function SiteFooter() {
+type SiteFooterProps = {
+  columns: Array<{
+    title: string
+    links: Array<{
+      label: string
+      href: string
+    }>
+  }>
+  legalLinks: ReadonlyArray<{
+    label: string
+    href: string
+  }>
+}
+
+const socialLinks = [
+  { label: 'Instagram', icon: InstagramIcon },
+  { label: 'Facebook', icon: FacebookOutlinedIcon },
+  { label: 'LinkedIn', icon: LinkedInIcon },
+] as const
+
+export function SiteFooter({ columns, legalLinks }: SiteFooterProps) {
   return (
-    <Box component="footer" sx={{ bgcolor: '#212631', color: '#FFFFFF' }}>
+    <Box component="footer" sx={{ bgcolor: surface.dark, color: surface.lightText }}>
       <Container maxWidth="xl">
         <Box
           sx={{
@@ -55,7 +75,7 @@ export function SiteFooter() {
             </Box>
             <Typography
               sx={{
-                color: 'rgba(255,255,255,0.62)',
+                color: alpha.white[62],
                 fontSize: { xs: 12, md: 13 },
                 maxWidth: { xs: 310, md: 360 },
                 mx: { xs: 'auto', md: 0 },
@@ -70,23 +90,19 @@ export function SiteFooter() {
               spacing={1.2}
               sx={{ mt: { xs: 0.8, md: 3 } }}
             >
-              {[
-                ['Instagram', InstagramIcon],
-                ['Facebook', FacebookOutlinedIcon],
-                ['LinkedIn', LinkedInIcon],
-              ].map(([label, Icon]) => (
+              {socialLinks.map(({ label, icon: Icon }) => (
                 <IconButton
-                  key={label as string}
-                  aria-label={label as string}
+                  key={label}
+                  aria-label={label}
                   size="small"
                   sx={{
                     width: 32,
                     height: 32,
-                    bgcolor: 'rgba(255,255,255,0.08)',
-                    color: 'rgba(255,255,255,0.78)',
+                    bgcolor: alpha.white[8],
+                    color: alpha.white[78],
                     '&:hover': {
                       bgcolor: 'primary.main',
-                      color: '#FFFFFF',
+                      color: surface.lightText,
                     },
                   }}
                 >
@@ -106,7 +122,7 @@ export function SiteFooter() {
               maxWidth: { md: 620 },
             }}
           >
-            {footerColumns.map((column) => (
+            {columns.map((column) => (
               <Box key={column.title} sx={{ textAlign: { xs: 'center', md: 'right' } }}>
                 <Typography sx={{ fontSize: 12, fontWeight: 900, mb: { xs: 0.5, md: 2 } }}>
                   {column.title}
@@ -121,18 +137,18 @@ export function SiteFooter() {
                 >
                   {column.links.map((item) => (
                     <MuiLink
-                      key={item}
+                      key={item.label}
                       component={Link}
-                      href="/imoveis"
+                      href={item.href}
                       underline="none"
                       sx={{
-                        color: 'rgba(255,255,255,0.56)',
+                        color: alpha.white[56],
                         fontSize: { xs: 11, md: 12 },
                         whiteSpace: 'nowrap',
-                        '&:hover': { color: '#FFFFFF' },
+                        '&:hover': { color: surface.lightText },
                       }}
                     >
-                      {item}
+                      {item.label}
                     </MuiLink>
                   ))}
                 </Stack>
@@ -141,7 +157,7 @@ export function SiteFooter() {
           </Box>
         </Box>
 
-        <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)' }} />
+        <Divider sx={{ borderColor: alpha.white[8] }} />
 
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
@@ -150,22 +166,23 @@ export function SiteFooter() {
           spacing={{ xs: 1.4, sm: 2 }}
           sx={{ py: { xs: 2, md: 3 }, textAlign: { xs: 'center', sm: 'left' } }}
         >
-          <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }}>
+          <Typography sx={{ color: alpha.white[50], fontSize: 11 }}>
+            © 2026{' '}
             <Box component="strong" sx={{ fontWeight: 700 }}>
-              © 2026 Ketris
+              Ketris
             </Box>{' '}
             Tecnologias Ltda. Todos os direitos reservados.
           </Typography>
           <Stack direction="row" spacing={3}>
-            {['Termos de Uso', 'Política de Privacidade'].map((item) => (
+            {legalLinks.map((item) => (
               <MuiLink
-                key={item}
+                key={item.label}
                 component={Link}
-                href="/"
+                href={item.href}
                 underline="none"
-                sx={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }}
+                sx={{ color: alpha.white[50], fontSize: 11 }}
               >
-                {item}
+                {item.label}
               </MuiLink>
             ))}
           </Stack>

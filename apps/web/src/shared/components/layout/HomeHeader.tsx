@@ -3,19 +3,33 @@ import { Avatar, Box, Button, Container, IconButton, Link as MuiLink, Stack } fr
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
 import Link from 'next/link'
 
-import { userProfile } from './_homeData'
+import { radius, shadows, surface } from '@shared/theme/tokens'
 
 type HomeHeaderProps = {
+  navigationItems: ReadonlyArray<{
+    label: string
+    href: string
+    active?: boolean
+  }>
   profileButtonRef: RefObject<HTMLButtonElement>
+  userProfile: {
+    name: string
+    avatar: string
+  }
   onToggleProfile: () => void
 }
 
-export function HomeHeader({ profileButtonRef, onToggleProfile }: HomeHeaderProps) {
+export function HomeHeader({
+  navigationItems,
+  profileButtonRef,
+  userProfile,
+  onToggleProfile,
+}: HomeHeaderProps) {
   return (
     <Box
       component="header"
       sx={{
-        bgcolor: '#FFFFFF',
+        bgcolor: surface.paper,
         borderBottom: '1px solid',
         borderColor: 'divider',
         position: 'sticky',
@@ -66,20 +80,20 @@ export function HomeHeader({ profileButtonRef, onToggleProfile }: HomeHeaderProp
             spacing={{ xs: 2, md: 4 }}
             sx={{ display: { xs: 'none', md: 'flex' }, justifySelf: 'center' }}
           >
-            {['Alugar', 'Comprar', 'Corretores', 'Imobiliárias'].map((item) => (
+            {navigationItems.map((item) => (
               <MuiLink
-                key={item}
+                key={item.label}
                 component={Link}
-                href="/imoveis"
+                href={item.href}
                 underline="none"
                 sx={{
-                  color: item === 'Alugar' ? 'primary.main' : 'text.secondary',
+                  color: item.active ? 'primary.main' : 'text.secondary',
                   fontSize: 15.3,
                   fontWeight: 700,
                   px: 1.45,
                   py: 0.85,
                   mt: 0.1,
-                  borderRadius: '8px',
+                  borderRadius: `${radius.sm}px`,
                   position: 'relative',
                   transition: 'background-color 160ms ease, color 160ms ease, transform 160ms ease',
                   '&::after': {
@@ -89,16 +103,16 @@ export function HomeHeader({ profileButtonRef, onToggleProfile }: HomeHeaderProp
                     right: 0,
                     bottom: -2,
                     height: 2,
-                    bgcolor: item === 'Alugar' ? 'primary.main' : 'transparent',
+                    bgcolor: item.active ? 'primary.main' : 'transparent',
                   },
                   '&:hover': {
                     bgcolor: 'transparent',
-                    color: '#212631',
+                    color: surface.darkText,
                     transform: 'translateY(-1px)',
                   },
                 }}
               >
-                {item}
+                {item.label}
               </MuiLink>
             ))}
           </Stack>
@@ -113,7 +127,7 @@ export function HomeHeader({ profileButtonRef, onToggleProfile }: HomeHeaderProp
               sx={{
                 borderColor: 'divider',
                 color: 'text.primary',
-                borderRadius: '8px',
+                borderRadius: `${radius.sm}px`,
                 display: { xs: 'none', sm: 'inline-flex' },
                 minHeight: 42,
                 px: 2,
@@ -122,8 +136,8 @@ export function HomeHeader({ profileButtonRef, onToggleProfile }: HomeHeaderProp
                   'background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease',
                 '&:hover': {
                   bgcolor: 'transparent',
-                  borderColor: '#212631',
-                  color: '#212631',
+                  borderColor: surface.darkText,
+                  color: surface.darkText,
                   transform: 'translateY(-1px)',
                 },
               }}
@@ -145,7 +159,7 @@ export function HomeHeader({ profileButtonRef, onToggleProfile }: HomeHeaderProp
                 height: 48,
                 p: 0,
                 border: 0,
-                borderRadius: 999,
+                borderRadius: radius.full,
                 bgcolor: 'transparent',
                 cursor: 'pointer',
                 display: 'grid',
@@ -154,7 +168,7 @@ export function HomeHeader({ profileButtonRef, onToggleProfile }: HomeHeaderProp
                 zIndex: 1,
                 transition: 'box-shadow 160ms ease, transform 160ms ease',
                 '&:hover': {
-                  boxShadow: '0 0 0 2px rgba(243, 2, 116, 0.14)',
+                  boxShadow: shadows.avatarFocus,
                   transform: 'translateY(-1px)',
                 },
               }}

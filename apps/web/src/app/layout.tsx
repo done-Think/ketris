@@ -15,8 +15,8 @@ export const metadata: Metadata = {
     'Plataforma que conecta proprietários, corretores, imobiliárias, construtoras e locatários em uma única infraestrutura tecnológica.',
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: 'any' },
       { url: '/ketris-tab-icon.png', type: 'image/png', sizes: '512x512' },
+      { url: '/favicon.ico', sizes: 'any' },
     ],
     shortcut: '/favicon.ico',
     apple: '/apple-icon.png',

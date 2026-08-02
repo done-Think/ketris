@@ -1,4 +1,4 @@
-import { Container, Typography } from '@mui/material'
+import { PagePlaceholder } from '@shared/components/ui'
 
 export const metadata = {
   title: 'Ketris',
@@ -7,13 +7,9 @@ export const metadata = {
 
 export default function ImoveisPage() {
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h3" gutterBottom>
-        Imóveis
-      </Typography>
-      <Typography color="text.secondary">
-        Marketplace com busca, filtros e mapa (MapLibre GL) — a implementar.
-      </Typography>
-    </Container>
+    <PagePlaceholder
+      title="Imóveis"
+      description="Marketplace com busca, filtros e mapa (MapLibre GL) — a implementar."
+    />
   )
 }

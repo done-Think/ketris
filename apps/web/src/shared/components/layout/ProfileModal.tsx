@@ -1,19 +1,39 @@
 'use client'
 
-import { type RefObject, useEffect, useState } from 'react'
+import { type ComponentType, type RefObject, useEffect, useState } from 'react'
 import { Avatar, Box, Button, IconButton, Stack, Typography } from '@mui/material'
+import type { SvgIconProps } from '@mui/material/SvgIcon'
 import CloseIcon from '@mui/icons-material/Close'
 import Link from 'next/link'
 
-import { profileActions, userProfile } from './_homeData'
+import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
 
 type ProfileModalProps = {
   open: boolean
   anchorRef: RefObject<HTMLButtonElement>
+  userProfile: {
+    name: string
+    role: string
+    company: string
+    email: string
+    avatar: string
+  }
+  actions: Array<{
+    label: string
+    icon: ComponentType<SvgIconProps>
+    href: string
+    tone?: 'danger'
+  }>
   onClose: () => void
 }
 
-export function ProfileModal({ open, anchorRef, onClose }: ProfileModalProps) {
+export function ProfileModal({
+  open,
+  anchorRef,
+  userProfile,
+  actions,
+  onClose,
+}: ProfileModalProps) {
   const [isMounted, setIsMounted] = useState(open)
   const [isVisible, setIsVisible] = useState(false)
   const [panelPosition, setPanelPosition] = useState({ top: 68, right: 16 })
@@ -83,9 +103,9 @@ export function ProfileModal({ open, anchorRef, onClose }: ProfileModalProps) {
           right: panelPosition.right,
           width: '100%',
           maxWidth: { xs: 'calc(100vw - 24px)', sm: 390 },
-          borderRadius: '8px',
-          bgcolor: '#FFFFFF',
-          boxShadow: '0 24px 70px rgba(13,15,20,0.32)',
+          borderRadius: `${radius.sm}px`,
+          bgcolor: surface.paper,
+          boxShadow: shadows.modal,
           p: 2.4,
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? 'translateY(0)' : 'translateY(-14px)',
@@ -120,8 +140,8 @@ export function ProfileModal({ open, anchorRef, onClose }: ProfileModalProps) {
           sx={{
             border: '1px solid',
             borderColor: 'divider',
-            borderRadius: '8px',
-            bgcolor: '#F7F8FA',
+            borderRadius: `${radius.sm}px`,
+            bgcolor: surface.app,
             px: 1.5,
             py: 1.2,
             mb: 2,
@@ -136,7 +156,7 @@ export function ProfileModal({ open, anchorRef, onClose }: ProfileModalProps) {
         </Box>
 
         <Stack spacing={1}>
-          {profileActions.map((action) => {
+          {actions.map((action) => {
             const Icon = action.icon
             const isDanger = action.tone === 'danger'
             return (
@@ -150,13 +170,13 @@ export function ProfileModal({ open, anchorRef, onClose }: ProfileModalProps) {
                 sx={{
                   justifyContent: 'flex-start',
                   minHeight: 42,
-                  borderRadius: '8px',
+                  borderRadius: `${radius.sm}px`,
                   color: isDanger ? 'error.main' : 'text.primary',
-                  bgcolor: isDanger ? 'rgba(229, 72, 77, 0.06)' : 'transparent',
+                  bgcolor: isDanger ? alpha.error[6] : 'transparent',
                   textTransform: 'none',
                   fontWeight: 800,
                   '&:hover': {
-                    bgcolor: isDanger ? 'rgba(229, 72, 77, 0.1)' : 'rgba(243, 2, 116, 0.08)',
+                    bgcolor: isDanger ? alpha.error[10] : alpha.magenta[8],
                     color: isDanger ? 'error.main' : 'primary.main',
                   },
                 }}

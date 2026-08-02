@@ -1,4 +1,4 @@
-import HomePageClient from './_components/HomePageClient'
+import { HomePageClient } from '@modules/marketplace'
 
 export default function HomePage() {
   return <HomePageClient />
