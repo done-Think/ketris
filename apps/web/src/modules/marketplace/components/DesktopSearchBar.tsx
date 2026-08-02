@@ -1,18 +1,18 @@
 import { type Dispatch, type Ref, type SetStateAction } from 'react'
-import { Box, Button, Stack, Typography } from '@mui/material'
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import { Box, Button, Stack } from '@mui/material'
 import Link from 'next/link'
 
-import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
+import { componentText, radius, shadows, surface } from '@shared/theme/tokens'
 
 import {
   searchFilterOrder,
-  searchOptions,
   textSearchFilterOrder,
   type SearchFilterKey,
   type TextSearchFilterKey,
 } from '../config/search-filters'
 import { PriceRangeMenu } from './PriceRangeMenu'
+import { SearchDropdownFrame } from './SearchDropdownFrame'
+import { SearchFilterTrigger } from './SearchFilterTrigger'
 import { TextSearchMenu } from './TextSearchMenu'
 
 type DesktopSearchBarProps = {
@@ -80,80 +80,14 @@ export function DesktopSearchBar({
             borderColor: 'divider',
           }}
         >
-          <Button
-            fullWidth
-            onClick={(event) => {
-              event.stopPropagation()
-              openSearchMenu(key)
-            }}
-            endIcon={<KeyboardArrowDownIcon sx={{ fontSize: 18 }} />}
-            sx={{
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              minWidth: 0,
-              minHeight: { md: 40, xl: 55 },
-              px: { xs: 1, md: 1.25, xl: 2 },
-              py: { md: 0.35, xl: 0.6 },
-              color: 'text.primary',
-              borderRadius: `${radius.sm}px`,
-              textAlign: 'left',
-              textTransform: 'none',
-              '& .MuiButton-endIcon': {
-                color: 'text.disabled',
-                ml: 1,
-              },
-              '&:hover': {
-                bgcolor: alpha.magenta[6],
-              },
-            }}
-          >
-            <Box sx={{ minWidth: 0 }}>
-              <Typography
-                sx={{
-                  color: 'text.disabled',
-                  fontSize: { md: 8.5, xl: 10 },
-                  fontWeight: 800,
-                  lineHeight: 1.2,
-                  textTransform: 'uppercase',
-                }}
-              >
-                {searchOptions[key].label}
-              </Typography>
-              <Typography
-                sx={{
-                  color: 'text.primary',
-                  fontSize: { md: 12, xl: 13.5 },
-                  fontWeight: 900,
-                  lineHeight: 1.35,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {key === 'priceRange' ? priceRangeLabel : selectedSearch[key]}
-              </Typography>
-            </Box>
-          </Button>
+          <SearchFilterTrigger
+            filterKey={key}
+            value={key === 'priceRange' ? priceRangeLabel : selectedSearch[key]}
+            onOpen={openSearchMenu}
+          />
 
           {activeSearchMenu === key && (
-            <Box
-              onClick={(event) => event.stopPropagation()}
-              sx={{
-                position: 'absolute',
-                top: 'calc(100% + 6px)',
-                left: key === 'priceRange' ? 'auto' : 0,
-                right: key === 'priceRange' ? 0 : 'auto',
-                width: '100%',
-                maxWidth: 'calc(100vw - 32px)',
-                zIndex: 50,
-                display: { xs: 'none', md: 'block' },
-                borderRadius: `${radius.sm}px`,
-                bgcolor: surface.paper,
-                color: 'text.primary',
-                boxShadow: shadows.popover,
-                overflow: key === 'priceRange' ? 'visible' : 'hidden',
-              }}
-            >
+            <SearchDropdownFrame filterKey={key}>
               {key === 'priceRange' ? (
                 <PriceRangeMenu
                   priceRange={priceRange}
@@ -170,7 +104,7 @@ export function DesktopSearchBar({
                   setSearchDraft={setSearchDraft}
                 />
               ) : null}
-            </Box>
+            </SearchDropdownFrame>
           )}
         </Box>
       ))}
@@ -186,7 +120,7 @@ export function DesktopSearchBar({
           ml: { md: 0.7, xl: 0.9 },
           px: 0,
           borderRadius: `${radius.sm}px`,
-          fontSize: { md: 12, xl: 14 },
+          ...componentText.desktopSearchButton,
         }}
       >
         Buscar

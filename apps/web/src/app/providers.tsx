@@ -11,6 +11,7 @@ import { SnackbarProvider } from 'notistack'
 import { SessionProvider } from 'next-auth/react'
 import 'dayjs/locale/pt-br'
 
+import { HttpClientSessionBridge } from '@shared/components/providers'
 import { theme } from '@shared/theme/theme'
 import { makeQueryClient } from '@shared/lib/query/query-client'
 
@@ -22,6 +23,7 @@ export function Providers({ children }: { children: ReactNode }) {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <SessionProvider>
+          <HttpClientSessionBridge />
           <QueryClientProvider client={queryClient}>
             <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pt-br">
               <SnackbarProvider

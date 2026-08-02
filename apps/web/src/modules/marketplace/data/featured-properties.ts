@@ -1,4 +1,4 @@
-import type { PropertyCardData } from '@shared/components/ui'
+import type { PropertyCardData } from '@shared/types'
 
 export const featuredProperties: PropertyCardData[] = [
   {

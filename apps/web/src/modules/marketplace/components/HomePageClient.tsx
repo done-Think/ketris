@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Box } from '@mui/material'
 
 import { HomeHeader, ProfileModal, SiteFooter } from '@shared/components/layout'
+import { useClickAway } from '@shared/hooks'
 import { surface } from '@shared/theme/tokens'
 
 import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
@@ -20,21 +21,9 @@ export function HomePageClient() {
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const desktopSearchRef = useRef<HTMLDivElement | null>(null)
   const mobileSearchRef = useRef<HTMLDivElement | null>(null)
+  const searchRefs = useMemo(() => [desktopSearchRef, mobileSearchRef], [])
 
-  useEffect(() => {
-    if (!activeSearchMenu) return
-
-    const closeOnOutsideClick = (event: MouseEvent) => {
-      const target = event.target as Node
-      const clickedDesktopSearch = desktopSearchRef.current?.contains(target)
-      const clickedMobileSearch = mobileSearchRef.current?.contains(target)
-
-      if (!clickedDesktopSearch && !clickedMobileSearch) closeSearchMenu()
-    }
-
-    document.addEventListener('click', closeOnOutsideClick)
-    return () => document.removeEventListener('click', closeOnOutsideClick)
-  }, [activeSearchMenu, closeSearchMenu])
+  useClickAway(searchRefs, closeSearchMenu, { enabled: Boolean(activeSearchMenu) })
 
   return (
     <Box

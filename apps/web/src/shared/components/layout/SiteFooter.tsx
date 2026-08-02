@@ -12,7 +12,8 @@ import InstagramIcon from '@mui/icons-material/Instagram'
 import LinkedInIcon from '@mui/icons-material/LinkedIn'
 import Link from 'next/link'
 
-import { alpha, surface } from '@shared/theme/tokens'
+import { AppLogo } from '@shared/components/ui'
+import { alpha, componentText, iconSize, surface } from '@shared/theme/tokens'
 
 type SiteFooterProps = {
   columns: Array<{
@@ -50,33 +51,15 @@ export function SiteFooter({ columns, legalLinks }: SiteFooterProps) {
           }}
         >
           <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
-            <Box
-              component={Link}
-              href="/"
-              aria-label="Ketris"
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                width: { xs: 92, md: 102 },
-                mb: { xs: 0.6, md: 2 },
-                textDecoration: 'none',
-              }}
-            >
-              <Box
-                component="img"
-                src="/ketris-logo-footer.png"
-                alt="Ketris"
-                sx={{
-                  display: 'block',
-                  width: '100%',
-                  height: 'auto',
-                }}
-              />
-            </Box>
+            <AppLogo
+              src="/ketris-logo-footer.png"
+              width={{ xs: 92, md: 102 }}
+              marginBottom={{ xs: 0.6, md: 2 }}
+            />
             <Typography
               sx={{
                 color: alpha.white[62],
-                fontSize: { xs: 12, md: 13 },
+                ...componentText.footerBody,
                 maxWidth: { xs: 310, md: 360 },
                 mx: { xs: 'auto', md: 0 },
               }}
@@ -106,7 +89,7 @@ export function SiteFooter({ columns, legalLinks }: SiteFooterProps) {
                     },
                   }}
                 >
-                  <Icon sx={{ fontSize: 17 }} />
+                  <Icon sx={{ fontSize: iconSize.md }} />
                 </IconButton>
               ))}
             </Stack>
@@ -124,7 +107,7 @@ export function SiteFooter({ columns, legalLinks }: SiteFooterProps) {
           >
             {columns.map((column) => (
               <Box key={column.title} sx={{ textAlign: { xs: 'center', md: 'right' } }}>
-                <Typography sx={{ fontSize: 12, fontWeight: 900, mb: { xs: 0.5, md: 2 } }}>
+                <Typography sx={{ ...componentText.footerHeading, mb: { xs: 0.5, md: 2 } }}>
                   {column.title}
                 </Typography>
                 <Stack
@@ -143,7 +126,7 @@ export function SiteFooter({ columns, legalLinks }: SiteFooterProps) {
                       underline="none"
                       sx={{
                         color: alpha.white[56],
-                        fontSize: { xs: 11, md: 12 },
+                        ...componentText.footerLink,
                         whiteSpace: 'nowrap',
                         '&:hover': { color: surface.lightText },
                       }}
@@ -166,9 +149,9 @@ export function SiteFooter({ columns, legalLinks }: SiteFooterProps) {
           spacing={{ xs: 1.4, sm: 2 }}
           sx={{ py: { xs: 2, md: 3 }, textAlign: { xs: 'center', sm: 'left' } }}
         >
-          <Typography sx={{ color: alpha.white[50], fontSize: 11 }}>
+          <Typography sx={{ color: alpha.white[50], ...componentText.footerLegal }}>
             © 2026{' '}
-            <Box component="strong" sx={{ fontWeight: 700 }}>
+            <Box component="strong" sx={componentText.footerBrand}>
               Ketris
             </Box>{' '}
             Tecnologias Ltda. Todos os direitos reservados.
@@ -180,7 +163,7 @@ export function SiteFooter({ columns, legalLinks }: SiteFooterProps) {
                 component={Link}
                 href={item.href}
                 underline="none"
-                sx={{ color: alpha.white[50], fontSize: 11 }}
+                sx={{ color: alpha.white[50], ...componentText.footerLegal }}
               >
                 {item.label}
               </MuiLink>

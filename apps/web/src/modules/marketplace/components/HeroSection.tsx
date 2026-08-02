@@ -1,7 +1,7 @@
 import { type Dispatch, type Ref, type SetStateAction } from 'react'
 import { Box, Container, Typography } from '@mui/material'
 
-import { alpha, gradients, surface } from '@shared/theme/tokens'
+import { alpha, componentText, gradients, surface, zIndex } from '@shared/theme/tokens'
 
 import type { SearchFilterKey, TextSearchFilterKey } from '../config/search-filters'
 import { DesktopSearchBar } from './DesktopSearchBar'
@@ -47,7 +47,7 @@ export function HeroSection({
       component="section"
       sx={{
         position: 'relative',
-        zIndex: 5,
+        zIndex: zIndex.hero,
         color: surface.lightText,
         minHeight: { xs: 332, md: 315, xl: 455 },
         display: 'flex',
@@ -74,14 +74,13 @@ export function HeroSection({
             textAlign: { xs: 'center', md: 'left' },
           }}
         >
-          <Box sx={{ position: 'relative', zIndex: 2 }}>
+          <Box sx={{ position: 'relative', zIndex: zIndex.content }}>
             <Typography
               variant="h1"
               sx={{
                 maxWidth: { xs: 420, md: 700, xl: 760 },
                 color: surface.lightText,
-                fontSize: { xs: '1.6rem', md: '2.45rem', xl: '3.35rem' },
-                letterSpacing: 0,
+                ...componentText.heroTitle,
                 mb: { xs: 0.9, md: 1.7, xl: 2.5 },
                 mx: { xs: 'auto', md: 0 },
               }}
@@ -99,7 +98,7 @@ export function HeroSection({
                 color: alpha.white[72],
                 mb: { xs: 1.5, md: 3, xl: 4.8 },
                 maxWidth: { xs: 360, md: 690, xl: 760 },
-                fontSize: { xs: 13.6, md: 13.5, xl: 16 },
+                ...componentText.heroSubtitle,
                 mx: { xs: 'auto', md: 0 },
                 whiteSpace: { md: 'nowrap' },
               }}

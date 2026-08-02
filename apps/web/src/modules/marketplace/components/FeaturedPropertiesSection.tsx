@@ -1,9 +1,8 @@
-import { Box, Container, Link as MuiLink, Stack, Typography } from '@mui/material'
+import { Box, Container } from '@mui/material'
 import NorthEastOutlinedIcon from '@mui/icons-material/NorthEastOutlined'
-import Link from 'next/link'
 
-import { PropertyCard } from '@shared/components/ui'
-import { surface } from '@shared/theme/tokens'
+import { ActionTextLink, PropertyCard, SectionHeader } from '@shared/components/ui'
+import { iconSize, surface, zIndex } from '@shared/theme/tokens'
 
 import { featuredProperties } from '../data/featured-properties'
 
@@ -13,40 +12,22 @@ export function FeaturedPropertiesSection() {
       component="section"
       sx={{
         position: 'relative',
-        zIndex: 2,
+        zIndex: zIndex.content,
         bgcolor: surface.app,
         pt: { xs: 1.25, md: 3 },
         pb: { xs: 5, md: 7 },
       }}
     >
       <Container maxWidth="xl">
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{ mt: { xs: 0.5, md: '12px' }, mb: { xs: 2, md: 3 } }}
-        >
-          <Typography variant="overline" color="text.secondary" sx={{ letterSpacing: 0 }}>
-            Imóveis em destaque
-          </Typography>
-          <MuiLink
-            component={Link}
-            href="/imoveis"
-            underline="none"
-            sx={{
-              color: 'primary.main',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 0.5,
-              fontSize: 13.5,
-              fontWeight: 700,
-              lineHeight: 1.3,
-            }}
-          >
-            Ver todos os imóveis
-            <NorthEastOutlinedIcon sx={{ fontSize: 15 }} />
-          </MuiLink>
-        </Stack>
+        <SectionHeader
+          title="Imóveis em destaque"
+          action={
+            <ActionTextLink href="/imoveis">
+              Ver todos os imóveis
+              <NorthEastOutlinedIcon sx={{ fontSize: iconSize.xs }} />
+            </ActionTextLink>
+          }
+        />
 
         <Box
           sx={{

@@ -3,7 +3,16 @@ import { Avatar, Box, Button, Container, IconButton, Link as MuiLink, Stack } fr
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
 import Link from 'next/link'
 
-import { radius, shadows, surface } from '@shared/theme/tokens'
+import { AppLogo } from '@shared/components/ui'
+import {
+  componentText,
+  iconSize,
+  motion,
+  radius,
+  shadows,
+  surface,
+  zIndex,
+} from '@shared/theme/tokens'
 
 type HomeHeaderProps = {
   navigationItems: ReadonlyArray<{
@@ -34,7 +43,7 @@ export function HomeHeader({
         borderColor: 'divider',
         position: 'sticky',
         top: 0,
-        zIndex: 10,
+        zIndex: zIndex.header,
         width: '100%',
       }}
     >
@@ -48,30 +57,11 @@ export function HomeHeader({
             gap: 2,
           }}
         >
-          <Box
-            component={Link}
-            href="/"
-            aria-label="Ketris"
-            sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifySelf: 'start',
-              width: { xs: 100, sm: 118 },
-              height: 30,
-              textDecoration: 'none',
-            }}
-          >
-            <Box
-              component="img"
-              src="/ketris-logo-transparent.png"
-              alt="Ketris"
-              sx={{
-                display: 'block',
-                width: '100%',
-                height: 'auto',
-              }}
-            />
-          </Box>
+          <AppLogo
+            src="/ketris-logo-transparent.png"
+            width={{ xs: 100, sm: 118 }}
+            sx={{ justifySelf: 'start' }}
+          />
 
           <Stack
             component="nav"
@@ -88,14 +78,13 @@ export function HomeHeader({
                 underline="none"
                 sx={{
                   color: item.active ? 'primary.main' : 'text.secondary',
-                  fontSize: 15.3,
-                  fontWeight: 700,
+                  ...componentText.navLink,
                   px: 1.45,
                   py: 0.85,
                   mt: 0.1,
                   borderRadius: `${radius.sm}px`,
                   position: 'relative',
-                  transition: 'background-color 160ms ease, color 160ms ease, transform 160ms ease',
+                  transition: motion.transition.interactive,
                   '&::after': {
                     content: '""',
                     position: 'absolute',
@@ -131,9 +120,8 @@ export function HomeHeader({
                 display: { xs: 'none', sm: 'inline-flex' },
                 minHeight: 42,
                 px: 2,
-                fontSize: 14,
-                transition:
-                  'background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease',
+                ...componentText.headerCta,
+                transition: motion.transition.bordered,
                 '&:hover': {
                   bgcolor: 'transparent',
                   borderColor: surface.darkText,
@@ -145,7 +133,7 @@ export function HomeHeader({
               Anunciar Imóvel
             </Button>
             <IconButton aria-label="notificações" size="small" sx={{ width: 42, height: 42 }}>
-              <NotificationsNoneOutlinedIcon sx={{ fontSize: 22 }} />
+              <NotificationsNoneOutlinedIcon sx={{ fontSize: iconSize.xl }} />
             </IconButton>
             <Box
               component="button"
@@ -165,8 +153,8 @@ export function HomeHeader({
                 display: 'grid',
                 placeItems: 'center',
                 position: 'relative',
-                zIndex: 1,
-                transition: 'box-shadow 160ms ease, transform 160ms ease',
+                zIndex: zIndex.content - 1,
+                transition: motion.transition.avatar,
                 '&:hover': {
                   boxShadow: shadows.avatarFocus,
                   transform: 'translateY(-1px)',

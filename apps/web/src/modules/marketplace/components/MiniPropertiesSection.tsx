@@ -1,9 +1,9 @@
 import { Box, Container, Typography } from '@mui/material'
-import Link from 'next/link'
 
-import { gradients, radius, surface } from '@shared/theme/tokens'
+import { componentText, surface } from '@shared/theme/tokens'
 
 import { miniProperties } from '../data/mini-properties'
+import { MiniPropertyCard } from './MiniPropertyCard'
 
 export function MiniPropertiesSection() {
   return (
@@ -21,8 +21,7 @@ export function MiniPropertiesSection() {
           align="center"
           sx={{
             color: 'text.secondary',
-            fontSize: 12,
-            fontWeight: 800,
+            ...componentText.miniSectionEyebrow,
             mb: 3,
           }}
         >
@@ -42,62 +41,7 @@ export function MiniPropertiesSection() {
           }}
         >
           {miniProperties.map((property) => (
-            <Box
-              component={Link}
-              href="/imoveis"
-              key={property.title}
-              sx={{
-                overflow: 'hidden',
-                borderRadius: `${radius.sm}px`,
-                border: '1px solid',
-                borderColor: 'divider',
-                bgcolor: surface.app,
-                color: 'inherit',
-                textDecoration: 'none',
-                transition: 'border-color 180ms ease, transform 180ms ease',
-                '&:hover': {
-                  borderColor: 'primary.main',
-                  transform: 'translateY(-2px)',
-                },
-              }}
-            >
-              <Box
-                sx={{
-                  height: { xs: 64, sm: 74 },
-                  backgroundImage: gradients.miniPropertyImage(property.image),
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
-              />
-              <Box sx={{ px: 1.2, py: 1 }}>
-                <Typography
-                  sx={{
-                    color: 'text.primary',
-                    fontSize: 11,
-                    fontWeight: 900,
-                    lineHeight: 1.25,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {property.title}
-                </Typography>
-                <Typography
-                  sx={{
-                    color: 'text.secondary',
-                    fontSize: 10,
-                    fontWeight: 700,
-                    mt: 0.25,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {property.location}
-                </Typography>
-              </Box>
-            </Box>
+            <MiniPropertyCard key={property.title} property={property} />
           ))}
         </Box>
       </Container>

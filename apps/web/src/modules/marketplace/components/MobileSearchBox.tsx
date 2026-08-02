@@ -3,7 +3,7 @@ import { Box, Button, Typography } from '@mui/material'
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined'
 import Link from 'next/link'
 
-import { radius, shadows, surface } from '@shared/theme/tokens'
+import { componentText, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { SearchFilterKey, TextSearchFilterKey } from '../config/search-filters'
 import { TextSearchMenu } from './TextSearchMenu'
@@ -50,7 +50,7 @@ export function MobileSearchBox({
           event.stopPropagation()
           openSearchMenu('location')
         }}
-        startIcon={<SearchOutlinedIcon sx={{ fontSize: 16 }} />}
+        startIcon={<SearchOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
         sx={{
           justifyContent: 'flex-start',
           minHeight: 36,
@@ -61,7 +61,7 @@ export function MobileSearchBox({
           color: 'text.secondary',
           bgcolor: surface.paper,
           textAlign: 'left',
-          textTransform: 'none',
+          ...componentText.resetButtonText,
           '&:hover': { bgcolor: surface.app },
           '& .MuiButton-startIcon': {
             color: 'primary.main',
@@ -71,7 +71,7 @@ export function MobileSearchBox({
         <Typography
           sx={{
             color: 'text.secondary',
-            fontSize: 13.6,
+            ...componentText.mobileSearchText,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
@@ -108,7 +108,12 @@ export function MobileSearchBox({
         href={searchHref}
         variant="contained"
         fullWidth
-        sx={{ mt: 0.9, minHeight: 36, borderRadius: `${radius.sm}px`, fontSize: 14.4 }}
+        sx={{
+          mt: 0.9,
+          minHeight: 36,
+          borderRadius: `${radius.sm}px`,
+          ...componentText.mobileSearchSubmit,
+        }}
       >
         Buscar
       </Button>

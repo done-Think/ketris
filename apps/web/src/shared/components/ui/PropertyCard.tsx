@@ -6,23 +6,9 @@ import LocalParkingOutlinedIcon from '@mui/icons-material/LocalParkingOutlined'
 import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined'
 import Link from 'next/link'
 
-import { radius, shadows, surface } from '@shared/theme/tokens'
-
-export type PropertyFeatureKey = 'bedrooms' | 'bathrooms' | 'parking' | 'area'
-
-export type PropertyCardData = {
-  href: string
-  image: string
-  location: string
-  title: string
-  price: string
-  details: Array<{
-    key: PropertyFeatureKey
-    label: string
-  }>
-  broker: string
-  avatar: string
-}
+import { componentText, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
+import type { PropertyCardData, PropertyFeatureKey } from '@shared/types'
+import { PillBadge } from './PillBadge'
 
 const detailIcons: Record<PropertyFeatureKey, typeof ApartmentOutlinedIcon> = {
   bedrooms: BedOutlinedIcon,
@@ -46,7 +32,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
         color: 'inherit',
         textDecoration: 'none',
         boxShadow: shadows.propertyCard,
-        transition: 'transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease',
+        transition: motion.transition.card,
         '&:hover': {
           boxShadow: shadows.propertyCardHover,
           transform: 'translateY(-4px)',
@@ -67,36 +53,23 @@ export function PropertyCard({ property }: PropertyCardProps) {
             position: 'absolute',
             top: 14,
             left: 14,
-            bgcolor: surface.paper,
-            borderRadius: radius.full,
-            px: 1.2,
-            py: 0.4,
-            color: 'text.primary',
-            fontSize: 11.5,
-            fontWeight: 700,
-            lineHeight: 1.2,
           }}
         >
-          Novo
+          <PillBadge>Novo</PillBadge>
         </Box>
       </Box>
       <CardContent sx={{ p: 2.4 }}>
         <Typography
           sx={{
             color: 'text.secondary',
-            fontSize: 11,
-            fontWeight: 900,
-            letterSpacing: 0,
-            textTransform: 'uppercase',
+            ...componentText.cardEyebrow,
             mb: 0.6,
           }}
         >
           {property.location}
         </Typography>
-        <Typography sx={{ fontSize: 17, fontWeight: 900, lineHeight: 1.25, mb: 1 }}>
-          {property.title}
-        </Typography>
-        <Typography color="primary" sx={{ fontSize: 20, fontWeight: 900, mb: 1.5 }}>
+        <Typography sx={{ ...componentText.cardTitle, mb: 1 }}>{property.title}</Typography>
+        <Typography color="primary" sx={{ ...componentText.cardPrice, mb: 1.5 }}>
           {property.price}
         </Typography>
         <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
@@ -104,8 +77,8 @@ export function PropertyCard({ property }: PropertyCardProps) {
             const Icon = detailIcons[detail.key] ?? ApartmentOutlinedIcon
             return (
               <Stack key={detail.key} direction="row" alignItems="center" spacing={0.4}>
-                <Icon sx={{ color: 'text.secondary', fontSize: 15 }} />
-                <Typography color="text.secondary" sx={{ fontSize: 12 }}>
+                <Icon sx={{ color: 'text.secondary', fontSize: iconSize.xs }} />
+                <Typography color="text.secondary" sx={componentText.cardMeta}>
                   {detail.label}
                 </Typography>
               </Stack>
@@ -116,14 +89,12 @@ export function PropertyCard({ property }: PropertyCardProps) {
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Stack direction="row" alignItems="center" spacing={1}>
             <Avatar src={property.avatar} alt={property.broker} sx={{ width: 30, height: 30 }} />
-            <Typography sx={{ fontSize: 12, fontWeight: 700 }}>{property.broker}</Typography>
+            <Typography sx={componentText.cardBroker}>{property.broker}</Typography>
           </Stack>
           <Typography
             sx={{
               color: 'primary.main',
-              fontSize: 13,
-              fontWeight: 700,
-              lineHeight: 1.35,
+              ...componentText.cardAction,
               textRendering: 'geometricPrecision',
             }}
           >

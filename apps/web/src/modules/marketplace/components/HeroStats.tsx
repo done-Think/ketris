@@ -1,6 +1,6 @@
 import { Stack, Typography } from '@mui/material'
 
-import { alpha } from '@shared/theme/tokens'
+import { alpha, componentText } from '@shared/theme/tokens'
 
 const heroStats = [
   { value: '2.500+', label: 'imóveis ativos' },
@@ -25,10 +25,10 @@ export function HeroStats() {
     >
       {heroStats.map((stat) => (
         <Stack key={stat.label} direction="row" alignItems="baseline" spacing={1}>
-          <Typography sx={{ color: 'primary.main', fontSize: { sm: 20, xl: 28 }, fontWeight: 900 }}>
+          <Typography sx={{ color: 'primary.main', ...componentText.heroStatValue }}>
             {stat.value}
           </Typography>
-          <Typography sx={{ color: alpha.white[78], fontSize: { sm: 11, xl: 13 } }}>
+          <Typography sx={{ color: alpha.white[78], ...componentText.heroStatLabel }}>
             {stat.label}
           </Typography>
         </Stack>

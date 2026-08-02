@@ -6,7 +6,15 @@ import type { SvgIconProps } from '@mui/material/SvgIcon'
 import CloseIcon from '@mui/icons-material/Close'
 import Link from 'next/link'
 
-import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
+import {
+  alpha,
+  componentText,
+  motion,
+  radius,
+  shadows,
+  surface,
+  zIndex,
+} from '@shared/theme/tokens'
 
 type ProfileModalProps = {
   open: boolean
@@ -91,7 +99,7 @@ export function ProfileModal({
         right: 0,
         bottom: 0,
         left: 0,
-        zIndex: 1300,
+        zIndex: zIndex.modal,
         bgcolor: 'transparent',
       }}
     >
@@ -109,7 +117,7 @@ export function ProfileModal({
           p: 2.4,
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? 'translateY(0)' : 'translateY(-14px)',
-          transition: 'opacity 180ms ease, transform 180ms ease',
+          transition: motion.transition.panel,
         }}
       >
         <Stack
@@ -125,8 +133,8 @@ export function ProfileModal({
               sx={{ width: 48, height: 48 }}
             />
             <Box>
-              <Typography sx={{ fontSize: 16, fontWeight: 900 }}>{userProfile.name}</Typography>
-              <Typography sx={{ color: 'text.secondary', fontSize: 12, fontWeight: 700 }}>
+              <Typography sx={componentText.modalTitle}>{userProfile.name}</Typography>
+              <Typography sx={{ color: 'text.secondary', ...componentText.modalSubtitle }}>
                 {userProfile.role}
               </Typography>
             </Box>
@@ -147,10 +155,10 @@ export function ProfileModal({
             mb: 2,
           }}
         >
-          <Typography sx={{ color: 'text.secondary', fontSize: 11, fontWeight: 800 }}>
+          <Typography sx={{ color: 'text.secondary', ...componentText.modalEyebrow }}>
             {userProfile.company}
           </Typography>
-          <Typography sx={{ color: 'text.primary', fontSize: 12, fontWeight: 700 }}>
+          <Typography sx={{ color: 'text.primary', ...componentText.modalSubtitle }}>
             {userProfile.email}
           </Typography>
         </Box>
@@ -173,8 +181,8 @@ export function ProfileModal({
                   borderRadius: `${radius.sm}px`,
                   color: isDanger ? 'error.main' : 'text.primary',
                   bgcolor: isDanger ? alpha.error[6] : 'transparent',
-                  textTransform: 'none',
-                  fontWeight: 800,
+                  ...componentText.resetButtonText,
+                  ...componentText.modalAction,
                   '&:hover': {
                     bgcolor: isDanger ? alpha.error[10] : alpha.magenta[8],
                     color: isDanger ? 'error.main' : 'primary.main',

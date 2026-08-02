@@ -1,7 +1,7 @@
 import { Box, Button, IconButton, Slider, Stack, TextField, Typography } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 
-import { radius } from '@shared/theme/tokens'
+import { componentText, radius } from '@shared/theme/tokens'
 
 import { priceLimit } from '../config/search-filters'
 import { formatSearchCurrency } from '../utils/search'
@@ -20,7 +20,7 @@ export function PriceRangeMenu({
   return (
     <Box sx={{ px: 1.3, py: 1.5 }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
-        <Typography sx={{ color: 'text.primary', fontSize: 14, fontWeight: 900 }}>
+        <Typography sx={{ color: 'text.primary', ...componentText.menuTitle }}>
           Faixa de preço
         </Typography>
         <IconButton aria-label="Fechar faixa de preço" size="small" onClick={closeSearchMenu}>
@@ -78,10 +78,10 @@ export function PriceRangeMenu({
       </Box>
 
       <Stack direction="row" justifyContent="space-between" sx={{ mt: 0.5 }}>
-        <Typography sx={{ color: 'text.secondary', fontSize: 11 }}>
+        <Typography sx={{ color: 'text.secondary', ...componentText.menuCaption }}>
           {formatSearchCurrency(priceLimit.min)}
         </Typography>
-        <Typography sx={{ color: 'text.secondary', fontSize: 11 }}>
+        <Typography sx={{ color: 'text.secondary', ...componentText.menuCaption }}>
           {formatSearchCurrency(priceLimit.max)}
         </Typography>
       </Stack>

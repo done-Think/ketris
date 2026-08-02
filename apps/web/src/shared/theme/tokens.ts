@@ -54,6 +54,188 @@ export const radius = {
   full: 9999,
 } as const
 
+export const zIndex = {
+  base: 0,
+  content: 2,
+  hero: 5,
+  header: 10,
+  dropdown: 50,
+  modal: 1300,
+} as const
+
+export const motion = {
+  transition: {
+    interactive: 'background-color 160ms ease, color 160ms ease, transform 160ms ease',
+    bordered:
+      'background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease',
+    card: 'transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease',
+    panel: 'opacity 180ms ease, transform 180ms ease',
+    tile: 'border-color 180ms ease, transform 180ms ease',
+    avatar: 'box-shadow 160ms ease, transform 160ms ease',
+  },
+} as const
+
+export const componentText = {
+  navLink: {
+    fontSize: 15.3,
+    fontWeight: 700,
+  },
+  resetButtonText: {
+    textTransform: 'none',
+  },
+  headerCta: {
+    fontSize: 14,
+  },
+  badge: {
+    fontSize: 11.5,
+    fontWeight: 700,
+    lineHeight: 1.2,
+  },
+  cardEyebrow: {
+    fontSize: 11,
+    fontWeight: 900,
+    letterSpacing: 0,
+    textTransform: 'uppercase',
+  },
+  cardTitle: {
+    fontSize: 17,
+    fontWeight: 900,
+    lineHeight: 1.25,
+  },
+  cardPrice: {
+    fontSize: 20,
+    fontWeight: 900,
+  },
+  cardMeta: {
+    fontSize: 12,
+  },
+  cardBroker: {
+    fontSize: 12,
+    fontWeight: 700,
+  },
+  cardAction: {
+    fontSize: 13,
+    fontWeight: 700,
+    lineHeight: 1.35,
+  },
+  sectionAction: {
+    fontSize: 13.5,
+    fontWeight: 700,
+    lineHeight: 1.3,
+  },
+  sectionEyebrow: {
+    letterSpacing: 0,
+  },
+  filterLabel: {
+    fontSize: { md: 8.5, xl: 10 },
+    fontWeight: 800,
+    lineHeight: 1.2,
+    textTransform: 'uppercase',
+  },
+  filterValue: {
+    fontSize: { md: 12, xl: 13.5 },
+    fontWeight: 900,
+    lineHeight: 1.35,
+  },
+  desktopSearchButton: {
+    fontSize: { md: 12, xl: 14 },
+  },
+  heroTitle: {
+    fontSize: { xs: '1.6rem', md: '2.45rem', xl: '3.35rem' },
+    letterSpacing: 0,
+  },
+  heroSubtitle: {
+    fontSize: { xs: 13.6, md: 13.5, xl: 16 },
+  },
+  heroStatValue: {
+    fontSize: { sm: 20, xl: 28 },
+    fontWeight: 900,
+  },
+  heroStatLabel: {
+    fontSize: { sm: 11, xl: 13 },
+  },
+  miniSectionEyebrow: {
+    fontSize: 12,
+    fontWeight: 800,
+  },
+  miniCardTitle: {
+    fontSize: 11,
+    fontWeight: 900,
+    lineHeight: 1.25,
+  },
+  miniCardMeta: {
+    fontSize: 10,
+    fontWeight: 700,
+  },
+  menuTitle: {
+    fontSize: 14,
+    fontWeight: 900,
+  },
+  menuCaption: {
+    fontSize: 11,
+  },
+  menuItem: {
+    fontSize: 13,
+    fontWeight: 700,
+  },
+  menuItemCentered: {
+    fontSize: 14.4,
+    fontWeight: 700,
+  },
+  menuItemSelected: {
+    fontWeight: 900,
+  },
+  menuEmpty: {
+    fontSize: 12,
+    fontWeight: 700,
+  },
+  mobileSearchText: {
+    fontSize: 13.6,
+  },
+  mobileSearchSubmit: {
+    fontSize: 14.4,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: 900,
+  },
+  modalSubtitle: {
+    fontSize: 12,
+    fontWeight: 700,
+  },
+  modalEyebrow: {
+    fontSize: 11,
+    fontWeight: 800,
+  },
+  modalAction: {
+    fontWeight: 800,
+  },
+  footerBody: {
+    fontSize: { xs: 12, md: 13 },
+  },
+  footerHeading: {
+    fontSize: 12,
+    fontWeight: 900,
+  },
+  footerLink: {
+    fontSize: { xs: 11, md: 12 },
+  },
+  footerLegal: {
+    fontSize: 11,
+  },
+  footerBrand: {
+    fontWeight: 700,
+  },
+} as const
+
+export const iconSize = {
+  xs: 15,
+  sm: 16,
+  md: 17,
+  lg: 18,
+  xl: 22,
+} as const
+
 export const surface = {
   app: '#F7F8FA',
   paper: '#FFFFFF',

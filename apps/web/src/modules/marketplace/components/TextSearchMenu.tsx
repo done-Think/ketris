@@ -1,7 +1,7 @@
 import { type Dispatch, type SetStateAction } from 'react'
 import { Box, MenuItem, TextField, Typography } from '@mui/material'
 
-import { alpha, surface } from '@shared/theme/tokens'
+import { alpha, componentText, surface } from '@shared/theme/tokens'
 
 import type { SearchFilterKey, TextSearchFilterKey } from '../config/search-filters'
 
@@ -61,8 +61,8 @@ export function TextSearchMenu({
               sx={{
                 color: 'text.primary',
                 justifyContent: centered ? 'center' : 'flex-start',
-                fontSize: centered ? 14.4 : 13,
-                fontWeight: selectedSearch[filterKey] === value ? 900 : 700,
+                ...(centered ? componentText.menuItemCentered : componentText.menuItem),
+                ...(selectedSearch[filterKey] === value ? componentText.menuItemSelected : {}),
                 '&.Mui-selected': {
                   bgcolor: alpha.magenta[10],
                   color: surface.darkText,
@@ -84,8 +84,7 @@ export function TextSearchMenu({
               color: 'text.secondary',
               px: 2,
               py: 1.5,
-              fontSize: centered ? 14.4 : 12,
-              fontWeight: 700,
+              ...(centered ? componentText.menuItemCentered : componentText.menuEmpty),
               textAlign: centered ? 'center' : 'left',
             }}
           >

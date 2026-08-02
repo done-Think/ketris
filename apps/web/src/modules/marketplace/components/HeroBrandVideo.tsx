@@ -1,13 +1,13 @@
 import { Box } from '@mui/material'
 
-import { gradients } from '@shared/theme/tokens'
+import { gradients, zIndex } from '@shared/theme/tokens'
 
 export function HeroBrandVideo() {
   return (
     <Box
       sx={{
         position: 'relative',
-        zIndex: 0,
+        zIndex: zIndex.base,
         display: { xs: 'none', lg: 'flex' },
         justifyContent: 'center',
         alignItems: 'center',
@@ -79,7 +79,7 @@ export function HeroBrandVideo() {
             aria-label="Animação da marca Ketris"
             sx={{
               position: 'relative',
-              zIndex: 1,
+              zIndex: zIndex.content - 1,
               width: '100%',
               height: '100%',
               objectFit: 'contain',
