@@ -33,12 +33,14 @@ src/server/
   Isso é a injeção/inversão de dependência do projeto: manual, via construtor, sem framework de DI.
 - Toda query/mutação que toca uma tabela com `tenantId` **deve** filtrar por tenant explicitamente — ver
   Princípio II da constituição. (Exceção documentada: login por e-mail ainda não filtra tenant — ver nota
-  em ADR-0002 e o `TODO(TENANT_RESOLUTION)` no código.)
+  em ADR-0002.)
 - Todo use-case novo entra com teste unitário (ports mockados, sem banco). Todo endpoint novo entra com
   teste de integração (banco real via Docker Compose) e, quando fizer sentido, um teste E2E em
   `cypress/e2e/`.
 - O schema Prisma (`apps/web/prisma/schema.prisma`) é a fonte de verdade do modelo de dados; os
   `data-model.md` de cada spec descrevem as entidades em nível conceitual e devem ser lidos junto com ele.
+- Sem comentários no código: nomes autoexplicativos + testes; contexto e racional vão em ADRs e no
+  `tasks.md` da spec, não em comentários inline.
 
 Módulos implementados até agora: `auth` (login). Os demais (`properties`, `crm`, `contracts`, `financial`)
 seguem incrementalmente junto das tarefas de `specs/002-fundacao-bff-banco/tasks.md`.

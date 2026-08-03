@@ -1,5 +1,3 @@
-// GET /api/docs — Swagger UI self-hosted (assets servidos por /api/docs/assets/*, spec por
-// /api/docs/openapi.json). Sem dependência de CDN (ver ADR-0002).
 export async function GET() {
   const html = `<!DOCTYPE html>
 <html lang="pt-BR">

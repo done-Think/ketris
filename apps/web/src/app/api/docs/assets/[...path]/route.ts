@@ -7,8 +7,6 @@ import getAbsoluteFSPath from 'swagger-ui-dist/absolute-path'
 import { NotFoundError } from '@server/shared/errors'
 import { withErrorHandling } from '@server/shared/http'
 
-// Serve os assets estáticos do swagger-ui-dist (JS/CSS/ícones) direto de node_modules — self-hosted, sem
-// depender de CDN externo (ver docs/adr/0002-arquitetura-interna-bff.md, seção "Swagger UI self-hosted").
 const SWAGGER_UI_DIR = getAbsoluteFSPath()
 
 const CONTENT_TYPES: Record<string, string> = {
@@ -24,7 +22,6 @@ export const GET = withErrorHandling(
     const { path: segments } = await context.params
     const fileName = segments.join('/')
 
-    // Evita path traversal (ex.: ../../etc/passwd) — só permite arquivos direto na raiz do pacote.
     const safeName = path.basename(fileName)
     const filePath = path.join(SWAGGER_UI_DIR, safeName)
 

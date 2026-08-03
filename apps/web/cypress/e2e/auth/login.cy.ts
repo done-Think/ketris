@@ -1,8 +1,3 @@
-// E2E do fluxo crítico de login (constitution.md III). Testa no nível de API (`cy.request`) contra a
-// rota real /api/auth/login, rodando com o app de pé (`npm run dev`/`build+start`) e Postgres migrado —
-// a UI em /login ainda é um placeholder (ver src/app/(auth)/login/page.tsx), então não há formulário para
-// dirigir via cy.visit()/cy.get() ainda. Quando o formulário for implementado, este spec ganha um
-// complemento que dirige a UI e mantém este bloco como cobertura de contrato da API.
 describe('Login (API)', () => {
   const tenantSlug = `e2e-tenant-${Date.now()}`
   const email = `e2e-login-${Date.now()}@ketris.dev`

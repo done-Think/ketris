@@ -123,12 +123,19 @@ resolução completa de tenant por subdomínio (`specs/002-fundacao-bff-banco/ta
 implementada. Para o login funcionar agora, o `PrismaUserRepository.findByEmail` busca por e-mail
 globalmente (`findFirst`, sem filtro de tenant) — assumindo, por ora, que e-mails são únicos na prática
 entre os poucos tenants de desenvolvimento. Isso é uma simplificação deliberada, não um esquecimento:
-marcada no código com `TODO(TENANT_RESOLUTION)` e deve ser revisitada junto da T022.
+documentada aqui e em `specs/002-fundacao-bff-banco/tasks.md` (T022), sem comentário correspondente no
+código (ver convenção de não comentar código nesta seção, abaixo).
+
+## Convenção: sem comentários no código
+
+Nomes de arquivos, classes, funções e variáveis devem ser autoexplicativos; contexto, racional e trade-offs
+ficam em ADRs (como este) e no `specs/002.../tasks.md`, não em comentários inline. Nenhum arquivo de código
+deste módulo (e dos próximos que seguirem esta convenção) deve ter comentários — nem em português nem em
+inglês.
 
 ## Action Items
 
 1. [x] Implementar o módulo `auth` (login) seguindo esta convenção
 2. [ ] Aplicar a mesma convenção em `properties`, `crm`, `contracts`, `financial` conforme cada um for
    implementado (specs/002 tasks.md)
-3. [ ] Implementar resolução de tenant por subdomínio (T022) e remover a simplificação do
-   `TODO(TENANT_RESOLUTION)`
+3. [ ] Implementar resolução de tenant por subdomínio (T022) — remove a simplificação descrita acima

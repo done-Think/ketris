@@ -6,8 +6,6 @@ import { prisma } from '@server/db/prisma'
 
 import { PrismaUserRepository } from './prisma-user.repository'
 
-// Teste de integração real: bate no Postgres configurado em DATABASE_URL (docker-compose.yml + migrations
-// aplicadas). Não roda no `test:run` padrão — ver vitest.integration.config.mts.
 describe('PrismaUserRepository (integração)', () => {
   const repository = new PrismaUserRepository()
   const tenantSlug = `test-tenant-${randomUUID()}`
@@ -32,7 +30,6 @@ describe('PrismaUserRepository (integração)', () => {
   })
 
   afterAll(async () => {
-    // onDelete: Cascade no schema apaga o usuário junto com o tenant.
     await prisma.tenant.delete({ where: { id: tenantId } })
     await prisma.$disconnect()
   })

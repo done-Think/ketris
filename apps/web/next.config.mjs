@@ -3,6 +3,9 @@ import { withSentryConfig } from '@sentry/nextjs'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    instrumentationHook: true,
+  },
   images: {
     remotePatterns: [
       // Configure aqui os domínios do S3/CDN de imagens dos imóveis

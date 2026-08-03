@@ -16,8 +16,6 @@ const user: User = {
   papel: 'CORRETOR',
 }
 
-// Fakes simples dos ports — sem framework de mock, só objetos que implementam a interface. Mantém o
-// teste desacoplado de bcrypt/jose/Prisma reais (isolamento de unidade).
 function createDeps(overrides?: {
   findByEmail?: UserRepository['findByEmail']
   compare?: PasswordHasher['compare']

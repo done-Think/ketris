@@ -1,10 +1,6 @@
 import path from 'node:path'
 import { defineConfig, loadEnv } from 'vitest/config'
 
-// Config separada dos testes unitários (vitest.config.mts): ambiente 'node' (não jsdom — não há DOM
-// aqui), sem os setup files de Testing Library, e carrega o .env real do projeto (DATABASE_URL,
-// AUTH_TOKEN_SECRET) via loadEnv, já que estes testes batem no Postgres de verdade. Rodar com
-// `npm run test:integration`, com `docker compose up -d` e as migrations aplicadas.
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 

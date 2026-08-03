@@ -9,9 +9,6 @@ export default defineConfig({
     specPattern: 'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',
     video: false,
     setupNodeEvents(on) {
-      // Tasks Prisma p/ seed e cleanup de dados de teste — rodam no processo Node do Cypress, fora do
-      // Next.js, direto contra o mesmo Postgres (DATABASE_URL). Usadas pelos specs que precisam de um
-      // usuário real no banco (ex.: cypress/e2e/auth/login.cy.ts) — ver ADR-0002 / constitution.md III.
       const prisma = new PrismaClient()
 
       on('task', {
@@ -36,7 +33,6 @@ export default defineConfig({
           return tenant.id
         },
         async cleanupAuthUser(tenantId: string) {
-          // onDelete: Cascade no schema apaga o usuário junto — ignora erro se já não existir.
           await prisma.tenant.delete({ where: { id: tenantId } }).catch(() => null)
           return null
         },

@@ -14,9 +14,6 @@ export interface LoginOutput {
   accessToken: string
 }
 
-// SRP: esta classe só sabe autenticar por e-mail/senha. Recebe as dependências no construtor
-// (injeção/inversão de dependência manual) — em produção, quem monta essa instância é o container.ts;
-// em teste, um mock de cada port.
 export class LoginUseCase {
   constructor(
     private readonly userRepository: UserRepository,

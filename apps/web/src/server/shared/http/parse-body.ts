@@ -3,8 +3,6 @@ import type { ZodSchema } from 'zod'
 
 import { AppError } from '@server/shared/errors'
 
-// Erro de validação — carrega os problemas por campo do Zod para o cliente conseguir destacar o input
-// certo, em vez de só mostrar uma mensagem genérica.
 export class RequestValidationError extends AppError {
   readonly issues: { path: string; message: string }[]
 
@@ -14,9 +12,6 @@ export class RequestValidationError extends AppError {
   }
 }
 
-// Parseia e valida o body JSON de uma request contra um schema Zod. Único ponto de entrada de dados
-// externos no BFF — todo Route Handler que recebe body deve passar por aqui, nunca por
-// `await request.json()` cru.
 export async function parseJsonBody<T>(request: NextRequest, schema: ZodSchema<T>): Promise<T> {
   let raw: unknown
 

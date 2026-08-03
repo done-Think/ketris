@@ -7,9 +7,6 @@ import {
   loginResponseSchema,
 } from './schemas/login.schema'
 
-// Registra a documentação OpenAPI do módulo `auth` no registry compartilhado. Chamado uma única vez por
-// `src/server/openapi/registry.ts`. Os schemas de request/response são os MESMOS usados para validação em
-// runtime (ver Route Handler) — a doc nunca pode divergir do que a API de fato aceita/retorna.
 export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
   registry.register('AuthenticatedUser', authenticatedUserSchema)
   registry.register('ErrorResponse', errorResponseSchema)

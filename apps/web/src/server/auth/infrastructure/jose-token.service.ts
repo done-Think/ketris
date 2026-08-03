@@ -5,8 +5,6 @@ import type { AccessTokenPayload, TokenService } from '../application/ports/toke
 
 const ACCESS_TOKEN_TTL = '1h'
 
-// Token de acesso de aplicação (usado pelo HttpClient do frontend como Bearer) — deliberadamente separado
-// da própria sessão JWE do NextAuth (NEXTAUTH_SECRET), para não acoplar os dois mecanismos (ver ADR-0002).
 function getSecretKey(): Uint8Array {
   const secret = process.env.AUTH_TOKEN_SECRET
 

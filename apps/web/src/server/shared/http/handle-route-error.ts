@@ -4,9 +4,6 @@ import { AppError } from '@server/shared/errors'
 
 import { RequestValidationError } from './parse-body'
 
-// Ponto único de tradução de erro -> resposta HTTP. Garante que nenhum Route Handler vaze stack trace ou
-// mensagem interna do Prisma/Node pro cliente — só erros conhecidos (AppError) viram mensagem específica,
-// qualquer coisa não mapeada vira 500 genérico.
 export function handleRouteError(error: unknown): NextResponse {
   if (error instanceof RequestValidationError) {
     return NextResponse.json(
@@ -22,7 +19,6 @@ export function handleRouteError(error: unknown): NextResponse {
     )
   }
 
-  // eslint-disable-next-line no-console
   console.error('[BFF] erro não mapeado:', error)
 
   return NextResponse.json(
@@ -31,8 +27,6 @@ export function handleRouteError(error: unknown): NextResponse {
   )
 }
 
-// Envolve um handler de rota, capturando qualquer erro lançado (Zod, AppError, ou inesperado) e
-// traduzindo via handleRouteError — mantém os route.ts livres de try/catch repetido.
 export function withErrorHandling<Args extends unknown[]>(
   handler: (...args: Args) => Promise<NextResponse>,
 ): (...args: Args) => Promise<NextResponse> {

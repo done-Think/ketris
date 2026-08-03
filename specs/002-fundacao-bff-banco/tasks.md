@@ -116,9 +116,9 @@ tenant + usuário admin via `npm run db:studio`
       — `src/server/auth/schemas/login.schema.ts`, `src/server/openapi/registry.ts`)
 - [ ] T022 [US2] Resolver o tenant ativo a partir do domínio/subdomínio da requisição (conforme já previsto
       em `docs/stack.md` → Theming/white-label) antes de consultar o usuário — **ainda pendente**: o login
-      atual faz `findFirst` global por e-mail (documentado como `TODO(TENANT_RESOLUTION)` em
-      `user-repository.port.ts`, `prisma-user.repository.ts` e no ADR-0002); funciona porque hoje não há
-      dois tenants com o mesmo e-mail em produção, mas precisa ser resolvido antes do multi-tenant real
+      atual faz `findFirst` global por e-mail (simplificação documentada no ADR-0002, seção "Nota:
+      resolução de tenant no login"); funciona porque hoje não há dois tenants com o mesmo e-mail em
+      produção, mas precisa ser resolvido antes do multi-tenant real
 - [x] T023 [US2] Emitir `accessToken` (JWT assinado) com `userId` (`sub`)/`tenantId`/`papel` no payload —
       implementado com a lib `jose` (HS256) em `src/server/auth/infrastructure/jose-token.service.ts`.
       Decisão de arquitetura (ADR-0002): assinado com `AUTH_TOKEN_SECRET`, **não** `NEXTAUTH_SECRET` —

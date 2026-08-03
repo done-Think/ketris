@@ -1,5 +1,3 @@
-// Erro base para toda regra de negócio do BFF. Toda subclasse já carrega o status HTTP e um código
-// estável (útil pro client discriminar sem parsear a mensagem, que é texto livre em pt-BR).
 export class AppError extends Error {
   readonly status: number
   readonly code: string

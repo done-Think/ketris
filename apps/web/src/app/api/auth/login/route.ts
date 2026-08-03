@@ -5,8 +5,6 @@ import { authContainer } from '@server/auth/container'
 import { loginRequestSchema } from '@server/auth/schemas/login.schema'
 import { parseJsonBody, withErrorHandling } from '@server/shared/http'
 
-// POST /api/auth/login — Route Handler fino: valida (Zod) -> chama o use-case -> serializa resposta.
-// Nenhuma regra de negócio aqui; ver `server/auth/application/use-cases/login.use-case.ts`.
 export const POST = withErrorHandling(async (request: NextRequest) => {
   const body = await parseJsonBody(request, loginRequestSchema)
 

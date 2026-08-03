@@ -3,10 +3,6 @@ import { OpenAPIRegistry, OpenApiGeneratorV3 } from '@asteasolutions/zod-to-open
 import { registerAuthOpenApi } from '@server/auth/openapi'
 import './zod-extend'
 
-// Registry único, compartilhado por todos os domínios (auth, imoveis, contratos, ...). Cada domínio
-// expõe uma função `register<Dominio>OpenApi(registry)` em `src/server/<dominio>/openapi.ts` — recebe o
-// registry por parâmetro (em vez de importá-lo como singleton global) para não criar import circular e
-// para deixar explícito, aqui, quais módulos já têm documentação registrada.
 export const registry = new OpenAPIRegistry()
 
 registerAuthOpenApi(registry)

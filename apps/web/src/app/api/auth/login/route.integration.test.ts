@@ -8,10 +8,6 @@ import { prisma } from '@server/db/prisma'
 
 import { POST } from './route'
 
-// Integração ponta a ponta do Route Handler: chama `POST` diretamente (sem subir servidor HTTP), mas
-// passa pelo parse Zod real, LoginUseCase real, PrismaUserRepository real (Postgres), bcrypt e jose reais
-// — só o transporte HTTP em si é substituído. Não roda no `test:run` padrão — ver
-// vitest.integration.config.mts.
 describe('POST /api/auth/login (integração)', () => {
   const tenantSlug = `test-tenant-${randomUUID()}`
   const email = `login-${randomUUID()}@ketris.dev`
