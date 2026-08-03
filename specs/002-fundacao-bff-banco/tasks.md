@@ -51,7 +51,7 @@ aplicar a primeira migration (não disponível neste ambiente de execução — 
       Docker) e commitar a migration inicial gerada em `apps/web/prisma/migrations/`
 - [ ] T013 [P] Helper `withTenant`/`scopedPrisma(tenantId)` em `src/server/db/` que força o filtro de
       tenant em todo `where` — nenhum service deve montar `where: { tenantId }` manualmente e repetido
-- [ ] T014 [P] Augmentar os tipos do NextAuth (`next-auth.d.ts`) para tipar `session.tenantId`/
+- [x] T014 [P] Augmentar os tipos do NextAuth (`next-auth.d.ts`) para tipar `session.tenantId`/
       `session.accessToken`/`session.userId` explicitamente (hoje há `as unknown as` em `auth-options.ts`)
 - [ ] T015 Middleware/guard reutilizável para Route Handlers (`src/server/http/require-session.ts`) que
       extrai a sessão NextAuth, rejeita não-autenticados com 401 e injeta `tenantId` tipado no handler
@@ -88,22 +88,47 @@ tenant + usuário admin via `npm run db:studio`
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T020 [P] [US2] Teste unitário do fluxo de `authorize()` (senha correta/incorreta/e-mail inexistente)
-      em `src/shared/lib/auth/auth-options.test.ts`
+- [x] T020 [P] [US2] Teste unitário do fluxo de `authorize()` (senha correta/incorreta/e-mail inexistente)
+      em `src/shared/lib/auth/auth-options.test.ts` — mocka `authContainer`, cobre mapeamento para o
+      formato de usuário do NextAuth e a conversão de `InvalidCredentialsError` em `null`
+- [x] T020a [P] [US2] Teste unitário do `LoginUseCase` (mocks dos 3 ports) em
+      `src/server/auth/application/use-cases/login.use-case.test.ts` + teste do schema Zod em
+      `src/server/auth/schemas/login.schema.test.ts` — cobre credenciais válidas/inválidas e a garantia de
+      mensagem de erro idêntica (anti-enumeração)
+- [x] T020b [P] [US2] Teste de integração contra Postgres real (repository + Route Handler completo) em
+      `src/server/auth/infrastructure/prisma-user.repository.integration.test.ts` e
+      `src/app/api/auth/login/route.integration.test.ts` — roda via `npm run test:integration`
+      (`vitest.integration.config.mts`), fora do `test:run` padrão (precisa de Docker/Postgres)
+- [x] T020c [US2] E2E (Cypress) do fluxo de login via API em `cypress/e2e/auth/login.cy.ts` — usa
+      `cy.task('seedAuthUser'/'cleanupAuthUser')` (Prisma direto, `cypress.config.ts`) já que a UI de
+      `/login` ainda é um placeholder; cobre 200/401/400 e a publicação do contrato em
+      `/api/docs/openapi.json`
 
 ### Implementation for User Story 2
 
-- [ ] T021 [US2] Reescrever `authorize()` em `src/shared/lib/auth/auth-options.ts` para buscar o
-      `Usuario` via Prisma (por `email`, considerando o tenant resolvido) e comparar a senha com
-      `bcrypt.compare` (FR-003/FR-004)
+- [x] T021 [US2] Reescrever `authorize()` em `src/shared/lib/auth/auth-options.ts` — não busca mais via
+      Prisma/bcrypt diretamente, e sim delega para `authContainer.loginUseCase.execute()` (Clean
+      Architecture: domain/application/infrastructure/schemas em `src/server/auth/`, ver
+      `docs/adr/0002-arquitetura-interna-bff.md`), que internamente faz a busca via
+      `PrismaUserRepository` e a comparação com `bcrypt.compare` (FR-003/FR-004). Também criada a rota
+      pública equivalente `POST /api/auth/login` (`src/app/api/auth/login/route.ts`), documentada via
+      OpenAPI/Swagger self-hosted em `/api/docs` (schemas Zod com `.openapi()` como fonte única de verdade
+      — `src/server/auth/schemas/login.schema.ts`, `src/server/openapi/registry.ts`)
 - [ ] T022 [US2] Resolver o tenant ativo a partir do domínio/subdomínio da requisição (conforme já previsto
-      em `docs/stack.md` → Theming/white-label) antes de consultar o usuário
-- [ ] T023 [US2] Emitir `accessToken` (JWT assinado, `NEXTAUTH_SECRET`) com `userId`/`tenantId`/`papel` no
-      payload, consumido depois pelo guard de sessão (T015)
-- [ ] T024 [US2] Atualizar `NEXT_PUBLIC_API_URL` para vazio/relativo em todos os ambientes (já preparado em
-      `.env.example`, T006) e confirmar que `HttpClient` funciona same-origin
+      em `docs/stack.md` → Theming/white-label) antes de consultar o usuário — **ainda pendente**: o login
+      atual faz `findFirst` global por e-mail (documentado como `TODO(TENANT_RESOLUTION)` em
+      `user-repository.port.ts`, `prisma-user.repository.ts` e no ADR-0002); funciona porque hoje não há
+      dois tenants com o mesmo e-mail em produção, mas precisa ser resolvido antes do multi-tenant real
+- [x] T023 [US2] Emitir `accessToken` (JWT assinado) com `userId` (`sub`)/`tenantId`/`papel` no payload —
+      implementado com a lib `jose` (HS256) em `src/server/auth/infrastructure/jose-token.service.ts`.
+      Decisão de arquitetura (ADR-0002): assinado com `AUTH_TOKEN_SECRET`, **não** `NEXTAUTH_SECRET` —
+      são dois mecanismos deliberadamente desacoplados (JWE de sessão do NextAuth vs. access token de
+      API), evita acoplar o formato de um ao do outro
+- [x] T024 [US2] `NEXT_PUBLIC_API_URL` já vazio/relativo em `.env.example` (T006) e `HttpClient` já usa
+      `baseURL` relativo por padrão — confirmado, nenhuma mudança necessária
 
-**Checkpoint**: login funcional de ponta a ponta contra dados reais
+**Checkpoint**: login funcional de ponta a ponta contra dados reais (falta só T022 — tenant por
+subdomínio — para o caso multi-tenant com e-mails repetidos entre tenants)
 
 ---
 
@@ -168,3 +193,12 @@ Postgres via Route Handlers, no formato que os `Service`s do frontend já espera
 - Commitar após cada tarefa ou grupo lógico de tarefas, seguindo Conventional Commits (Husky/Commitlint já
   configurados na raiz do repo).
 - Parar em qualquer checkpoint para validar a story isoladamente antes de seguir.
+- Módulo `auth` (T020–T024): implementado seguindo Clean Architecture manual + SOLID + injeção de
+  dependência via composition root (`src/server/auth/container.ts`) — ver `docs/adr/0002-arquitetura-
+  interna-bff.md` e `apps/web/src/server/README.md` para a convenção completa (domain/application/
+  infrastructure/schemas), que vale para todos os próximos módulos do BFF (imóveis, oportunidades,
+  contratos, cobranças). `npm run test:integration` (novo script) roda os testes que precisam de Postgres
+  real, à parte de `npm run test`/`test:run`; `npm run e2e`/`e2e:open` cobre o Cypress, incluindo o novo
+  spec de login. Verificado nesta sessão: `tsc --noEmit`, `eslint` (app + `cypress/tsconfig.json`
+  separado) e `vitest run` (21/21) passando; testes de integração e E2E não executados aqui por falta de
+  Postgres/browser no sandbox, mas escritos e prontos para rodar localmente/CI.

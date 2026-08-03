@@ -1,17 +1,12 @@
 import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 
-import { httpClient } from '@shared/lib/api/http-client'
+import { authContainer } from '@server/auth/container'
+import { InvalidCredentialsError } from '@server/auth/domain/errors'
 
-type LoginResponse = {
-  id: string
-  name: string
-  email: string
-  accessToken: string
-  tenantId: string
-}
-
-// Configuração do NextAuth. Autentica contra o backend próprio (JWT).
+// Configuração do NextAuth. Autentica chamando o LoginUseCase diretamente (in-process) — não faz um
+// HTTP self-call para '/api/auth/login', já que ambos rodam no mesmo processo Next.js (ver ADR-0002).
+// A rota /api/auth/login continua existindo separadamente para consumidores externos (mobile, Swagger).
 export const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt' },
   pages: {
@@ -28,12 +23,21 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) return null
 
         try {
-          return await httpClient.post<LoginResponse>('/auth/login', {
+          const { user, accessToken } = await authContainer.loginUseCase.execute({
             email: credentials.email,
             password: credentials.password,
           })
-        } catch {
-          return null
+
+          return {
+            id: user.id,
+            name: user.nome,
+            email: user.email,
+            accessToken,
+            tenantId: user.tenantId,
+          }
+        } catch (error) {
+          if (error instanceof InvalidCredentialsError) return null
+          throw error
         }
       },
     }),
