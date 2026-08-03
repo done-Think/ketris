@@ -18,9 +18,8 @@ const CONTENT_TYPES: Record<string, string> = {
 }
 
 export const GET = withErrorHandling(
-  async (_request: Request, context: { params: Promise<{ path: string[] }> }) => {
-    const { path: segments } = await context.params
-    const fileName = segments.join('/')
+  async (_request: Request, context: { params: { path: string[] } }) => {
+    const fileName = context.params.path.join('/')
 
     const safeName = path.basename(fileName)
     const filePath = path.join(SWAGGER_UI_DIR, safeName)

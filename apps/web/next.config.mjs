@@ -5,6 +5,7 @@ const nextConfig = {
   reactStrictMode: true,
   experimental: {
     instrumentationHook: true,
+    serverComponentsExternalPackages: ['swagger-ui-dist'],
   },
   images: {
     remotePatterns: [
