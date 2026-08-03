@@ -5,12 +5,14 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios'
 
+import { env } from '@config/env'
+
 // Cliente HTTP base, instanciado como classe para ser estendido e reutilizado.
 // Ex.: cada módulo cria um service que recebe esta instância.
 export class HttpClient {
   protected instance: AxiosInstance
 
-  constructor(baseURL: string = process.env.NEXT_PUBLIC_API_URL ?? '') {
+  constructor(baseURL: string = env.apiUrl) {
     this.instance = axios.create({
       baseURL,
       timeout: 30000,

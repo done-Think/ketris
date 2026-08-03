@@ -3,7 +3,7 @@ import { create } from 'zustand'
 interface TenantState {
   tenantId: string | null
   tenantName: string | null
-  setTenant: (id: string, name: string) => void
+  setTenant: (id: string, name?: string | null) => void
   clearTenant: () => void
 }
 
@@ -11,6 +11,6 @@ interface TenantState {
 export const useTenantStore = create<TenantState>((set) => ({
   tenantId: null,
   tenantName: null,
-  setTenant: (tenantId, tenantName) => set({ tenantId, tenantName }),
+  setTenant: (tenantId, tenantName = null) => set({ tenantId, tenantName }),
   clearTenant: () => set({ tenantId: null, tenantName: null }),
 }))

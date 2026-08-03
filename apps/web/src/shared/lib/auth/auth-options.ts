@@ -1,6 +1,15 @@
 import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
+
 import { httpClient } from '@shared/lib/api/http-client'
+
+type LoginResponse = {
+  id: string
+  name: string
+  email: string
+  accessToken: string
+  tenantId: string
+}
 
 // Configuração do NextAuth. Autentica contra o backend próprio (JWT).
 export const authOptions: NextAuthOptions = {
@@ -19,18 +28,10 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) return null
 
         try {
-          const user = await httpClient.post<{
-            id: string
-            name: string
-            email: string
-            accessToken: string
-            tenantId: string
-          }>('/auth/login', {
+          return await httpClient.post<LoginResponse>('/auth/login', {
             email: credentials.email,
             password: credentials.password,
           })
-
-          return user
         } catch {
           return null
         }
@@ -40,14 +41,14 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.accessToken = (user as unknown as { accessToken: string }).accessToken
-        token.tenantId = (user as unknown as { tenantId: string }).tenantId
+        token.accessToken = user.accessToken
+        token.tenantId = user.tenantId
       }
       return token
     },
     async session({ session, token }) {
-      session.accessToken = token.accessToken as string
-      session.tenantId = token.tenantId as string
+      session.accessToken = token.accessToken
+      session.tenantId = token.tenantId
       return session
     },
   },

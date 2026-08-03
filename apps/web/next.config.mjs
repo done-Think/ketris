@@ -15,5 +15,8 @@ const nextConfig = {
 
 export default withSentryConfig(nextConfig, {
   silent: true,
-  // org e project vêm das variáveis de ambiente do Sentry
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: true,
+  },
+  // org e project vem das variaveis de ambiente do Sentry
 })
