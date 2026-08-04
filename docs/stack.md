@@ -42,13 +42,38 @@ Documentos relacionados: `ketris-design-system.md` (identidade visual e tokens),
 - Dark mode: entra no MVP ou fase posterior? (base já preparada no tema)
 - Cores semânticas (success/warning/error): valores atuais são propostos, a validar
 
-## Backend
+## Backend (BFF)
 
-_A definir_
+> **Status:** decidido — ver `docs/adr/0001-bff-banco-orm.md` (ADR-0001).
+
+- **Arquitetura:** BFF (Backend for Frontend) implementado como Route Handlers do próprio Next.js, dentro
+  de `apps/web` (`src/app/api/**/route.ts`) — sem serviço separado por enquanto. Nenhum novo workspace no
+  monorepo é criado para isso.
+- **Organização:** lógica de domínio no servidor vive em `src/server/<dominio>/` (serviços, regras de
+  negócio, acesso a dados), espelhando os módulos client-side em `src/modules/<dominio>/` — mantém o
+  Princípio I (Arquitetura Modular por Domínio) também no servidor.
+- **Autenticação:** NextAuth.js (`CredentialsProvider`) passa a validar credenciais direto contra o banco
+  via Prisma (hash de senha com `bcrypt`), em vez de chamar um serviço externo — isso é trabalho de
+  implementação, rastreado em `specs/002-fundacao-bff-banco/tasks.md`.
+- **Por que não um serviço separado agora:** reaproveita o NextAuth já configurado, evita CORS e
+  propagação de token entre dois serviços, um único deploy. Ver ADR-0001 para as alternativas consideradas
+  (NestJS separado, tRPC) e o critério de quando reavaliar.
 
 ## Banco de Dados
 
-_A definir_
+> **Status:** decidido — ver `docs/adr/0001-bff-banco-orm.md` (ADR-0001).
+
+- **SGBD:** PostgreSQL.
+- **ORM:** Prisma — schema único (`apps/web/prisma/schema.prisma`) como fonte de verdade do modelo de
+  dados; `specs/*/data-model.md` descrevem as entidades em nível conceitual e devem ser lidos junto com o
+  schema Prisma real.
+- **Multi-tenancy:** schema compartilhado com coluna `tenantId` em toda tabela de domínio (não
+  schema-per-tenant nem database-per-tenant) — reforçado por um helper de query que sempre filtra por
+  tenant ativo.
+- **Ambiente local:** Postgres via Docker Compose (a adicionar em `docker-compose.yml` na raiz);
+  `DATABASE_URL` configurado via `.env` (`apps/web/.env`, nunca commitado — ver `.env.example`).
+- **Hospedagem (produção):** a decidir quando houver deploy real (candidatos: Neon, Supabase, RDS) — não
+  bloqueia o desenvolvimento local.
 
 ## Infraestrutura / Deploy
 
