@@ -191,6 +191,40 @@ subdomínio — para o caso multi-tenant com e-mails repetidos entre tenants)
       - **Requer migration**: rodar `npm run db:migrate` localmente pra aplicar o rename do enum e a nova
         coluna `ativo` — não aplicada aqui pelo mesmo motivo de T024b (sandbox sem acesso ao Postgres do
         desenvolvedor)
+- [x] T024d [US2] Telas de sign in/sign up do backoffice administrativo — não estava no plano original
+      desta spec, pedido para dar uma porta de entrada de UI ao fluxo de `POST /api/auth/admins` (T024c),
+      já que essa rota nunca aparece no Swagger nem em nenhuma navegação pública. Rota escolhida:
+      `/backoffice/entrar` (sign in) e `/backoffice/administradores/novo` (sign up — na prática, "convidar
+      novo admin", já que só um ADMIN autenticado pode chamar essa rota; não existe autocadastro público de
+      administrador, por desenho do backend). `/backoffice` foi preferido a `/admin` por ser um termo menos
+      óbvio de adivinhar (a proteção real continua sendo a sessão + papel, não o nome da URL). Mudanças:
+      - `next-auth.d.ts`/`auth-options.ts`: `papel` do usuário passou a ser propagado para
+        `User`/`JWT`/`Session` do NextAuth (antes só existiam `accessToken`/`refreshToken`/`tenantId`) —
+        necessário pra saber, no client e no server, se a sessão é de um `ADMIN`
+      - `shared/lib/auth/require-admin-session.ts`: helper server-side (`getServerSession` +
+        `redirect('/backoffice/entrar')` se não houver sessão ou o papel não for `ADMIN`), usado pelo
+        `layout.tsx` de `app/(admin)/backoffice/administradores/` — protege `.../novo` e qualquer rota
+        futura sob esse prefixo
+      - `SignInForm`: após `signIn('credentials', ...)` bem-sucedido, busca a sessão fresca
+        (`getSession()`) e checa `papel === 'ADMIN'`; se não for, desloga (`signOut`) e mostra "Acesso
+        restrito a administradores." — o login em si é o mesmo `CredentialsProvider` de qualquer usuário
+        (não existe endpoint de autenticação separado para admin), então essa checagem client-side depois
+        do login é o que impede um `OWNER`/`AGENT` de permanecer autenticado nesta área
+      - Módulo `modules/auth` (front) criado do zero (só existiam pastas vazias): `schemas/` (Zod client-side,
+        `sign-in-schema.ts` e `create-admin-schema.ts` com campo `confirmarSenha`), `services/admin-service.ts`
+        (`BaseService`, `POST /auth/admins`), `hooks/use-create-admin.ts` (`useMutation`), `components/`
+        (`AuthScreenLayout` — cartão centralizado com `AppLogo` e tokens do tema, reaproveitado pelas duas
+        telas; `SignInForm`; `CreateAdminForm`, com `notistack` pro feedback de sucesso/erro)
+      - Testes: unitário (`sign-in-schema.test.ts`, `create-admin-schema.test.ts`,
+        `require-admin-session.test.ts`, `auth-options.test.ts` atualizado) e E2E orientado a UI
+        (`cypress/e2e/auth/backoffice.cy.ts`, cobrindo guarda de rota deslogada, bloqueio de não-admin e o
+        fluxo completo de entrar + criar novo admin) — diferente dos specs anteriores de `auth`, que testam
+        as rotas via `cy.request` direto, este dirige a UI de verdade (`cy.visit`, preenche formulário,
+        clica), por ser a primeira tela real do projeto (as anteriores eram `PagePlaceholder`)
+      - **Não verificado end-to-end nesta sessão**: a sandbox não sobe `next dev` (limitação de ambiente já
+        registrada em T014-T024c) — `tsc --noEmit`, lint e os testes unitários passaram, mas o Cypress
+        spec não foi executado aqui; rodar `npm run e2e` localmente antes de considerar esta tela validada
+        de ponta a ponta
 
 ---
 

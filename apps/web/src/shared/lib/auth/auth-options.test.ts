@@ -4,10 +4,6 @@ import { InvalidCredentialsError } from '@server/auth/domain/errors'
 
 const executeMock = vi.fn()
 
-// Mocka só o composition root (authContainer) — testa a função `authorize()` do NextAuth isoladamente,
-// sem exercitar de novo o LoginUseCase (já coberto por login.use-case.test.ts). Foco aqui: o mapeamento
-// LoginOutput -> User do NextAuth, e a conversão de InvalidCredentialsError em `null` (contrato exigido
-// pelo CredentialsProvider).
 vi.mock('@server/auth/container', () => ({
   authContainer: { loginUseCase: { execute: executeMock } },
 }))
@@ -33,6 +29,7 @@ describe('authOptions — CredentialsProvider.authorize', () => {
     executeMock.mockResolvedValueOnce({
       user: { id: 'u1', tenantId: 't1', nome: 'Ana', email: 'ana@ketris.dev', papel: 'AGENT' },
       accessToken: 'jwt-fake',
+      refreshToken: 'refresh-fake',
     })
 
     const authorize = await getAuthorize()
@@ -44,7 +41,9 @@ describe('authOptions — CredentialsProvider.authorize', () => {
       name: 'Ana',
       email: 'ana@ketris.dev',
       accessToken: 'jwt-fake',
+      refreshToken: 'refresh-fake',
       tenantId: 't1',
+      papel: 'AGENT',
     })
   })
 

@@ -32,6 +32,7 @@ export const authOptions: NextAuthOptions = {
             accessToken,
             refreshToken,
             tenantId: user.tenantId,
+            papel: user.papel,
           }
         } catch (error) {
           if (error instanceof InvalidCredentialsError) return null
@@ -46,6 +47,7 @@ export const authOptions: NextAuthOptions = {
         token.accessToken = user.accessToken
         token.refreshToken = user.refreshToken
         token.tenantId = user.tenantId
+        token.papel = user.papel
       }
       return token
     },
@@ -53,6 +55,7 @@ export const authOptions: NextAuthOptions = {
       session.accessToken = token.accessToken
       session.refreshToken = token.refreshToken
       session.tenantId = token.tenantId
+      session.papel = token.papel
       return session
     },
   },
