@@ -35,6 +35,7 @@ type SearchResultsPageProps = {
 
 export function SearchResultsPage({ purpose }: SearchResultsPageProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [selectedPropertyId, setSelectedPropertyId] = useState(searchResults[0]?.id ?? '')
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const navigationItems = homeNavigationItems.map((item) => ({
     ...item,
@@ -78,8 +79,6 @@ export function SearchResultsPage({ purpose }: SearchResultsPageProps) {
           sx={{
             px: { xs: 2, sm: 3, xl: 5 },
             py: { xs: 2, md: 3 },
-            borderRight: { lg: '1px solid' },
-            borderColor: 'divider',
             minWidth: 0,
           }}
         >
@@ -210,7 +209,12 @@ export function SearchResultsPage({ purpose }: SearchResultsPageProps) {
             }}
           >
             {searchResults.map((property) => (
-              <SearchPropertyCard key={property.title} property={property} />
+              <SearchPropertyCard
+                key={property.id}
+                property={property}
+                selected={property.id === selectedPropertyId}
+                onActivate={() => setSelectedPropertyId(property.id)}
+              />
             ))}
           </Box>
 
@@ -257,8 +261,24 @@ export function SearchResultsPage({ purpose }: SearchResultsPageProps) {
           </Stack>
         </Box>
 
-        <Box sx={{ display: { xs: 'none', lg: 'block' }, minWidth: 0 }}>
-          <SearchResultsMap />
+        <Box
+          sx={{
+            display: { xs: 'none', lg: 'block' },
+            alignSelf: 'start',
+            position: { lg: 'sticky' },
+            top: { lg: 68 },
+            height: { lg: 'calc(100vh - 76px)' },
+            minHeight: { lg: 620 },
+            minWidth: 0,
+            p: 1,
+            pl: 0,
+          }}
+        >
+          <SearchResultsMap
+            properties={searchResults}
+            selectedPropertyId={selectedPropertyId}
+            onSelectProperty={setSelectedPropertyId}
+          />
         </Box>
       </Box>
     </Box>

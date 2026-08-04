@@ -31,7 +31,7 @@ export function PropertyDetailMap({ latitude, longitude }: PropertyDetailMapProp
         initialViewState={{ latitude, longitude, zoom: 13.5 }}
         mapStyle={mapStyleUrl}
         style={{ width: '100%', height: '100%' }}
-        attributionControl={false}
+        attributionControl={true}
       >
         <Marker latitude={latitude} longitude={longitude} anchor="center">
           <Box

@@ -1,10 +1,14 @@
-import type { PropertyCardData } from '@shared/types'
+import { type MarketplacePropertyDetail, getPropertyDetailById } from './property-details'
 
-import { propertyDetails } from './property-details'
+const searchResultIds = [
+  'apartamento-jardins',
+  'cobertura-itaim-bibi',
+  'apartamento-garden-remodelado',
+  'loft-industrial-mobiliado',
+] as const
 
-export const searchResults: PropertyCardData[] = [
-  propertyDetails[0],
-  propertyDetails[2],
-  propertyDetails[3],
-  propertyDetails[4],
-]
+export const searchResults: MarketplacePropertyDetail[] = searchResultIds.flatMap((propertyId) => {
+  const property = getPropertyDetailById(propertyId)
+
+  return property ? [property] : []
+})

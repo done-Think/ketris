@@ -8,7 +8,7 @@ import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined'
 import Link from 'next/link'
 
 import { PillBadge } from '@shared/components/ui'
-import { componentText, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
+import { alpha, componentText, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
 import type { PropertyCardData, PropertyFeatureKey } from '@shared/types'
 
 const detailIcons: Record<PropertyFeatureKey, typeof ApartmentOutlinedIcon> = {
@@ -20,23 +20,35 @@ const detailIcons: Record<PropertyFeatureKey, typeof ApartmentOutlinedIcon> = {
 
 type SearchPropertyCardProps = {
   property: PropertyCardData
+  selected?: boolean
+  onActivate?: () => void
 }
 
-export function SearchPropertyCard({ property }: SearchPropertyCardProps) {
+export function SearchPropertyCard({
+  property,
+  selected = false,
+  onActivate,
+}: SearchPropertyCardProps) {
   return (
     <Card
       component={Link}
       href={property.href}
+      onFocus={onActivate}
+      onMouseEnter={onActivate}
       sx={{
         overflow: 'hidden',
+        border: '1px solid',
+        borderColor: selected ? 'primary.main' : 'transparent',
         borderRadius: `${radius.sm}px`,
         color: 'inherit',
         textDecoration: 'none',
-        boxShadow: shadows.propertyCard,
+        boxShadow: selected ? shadows.propertyCardHover : shadows.propertyCard,
         transition: motion.transition.card,
+        transform: selected ? 'translateY(-2px)' : 'none',
         '&:hover': {
           boxShadow: shadows.propertyCardHover,
           transform: 'translateY(-3px)',
+          borderColor: alpha.magenta[14],
         },
       }}
     >
