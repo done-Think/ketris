@@ -78,6 +78,49 @@ model RefreshToken {
 }
 
 // ---------------------------------------------------------------------------
+// Platform Admin — identidade separada de Tenant/Usuario, ver ADR-0003
+// (docs/adr/0003-platform-admin-identidade-separada.md). Deliberadamente sem tenantId em nenhum
+// model desta seção: é o único papel que opera fora do boundary multi-tenant.
+// ---------------------------------------------------------------------------
+
+model PlatformAdmin {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String   @unique
+  senhaHash String
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  refreshTokens PlatformAdminRefreshToken[]
+
+  @@map("platform_admins")
+}
+
+model PlatformAdminRefreshToken {
+  id              String    @id @default(cuid())
+  tokenHash       String    @unique
+  platformAdminId String
+  expiresAt       DateTime
+  revokedAt       DateTime?
+  createdAt       DateTime  @default(now())
+
+  platformAdmin PlatformAdmin @relation(fields: [platformAdminId], references: [id], onDelete: Cascade)
+
+  @@index([platformAdminId])
+  @@map("platform_admin_refresh_tokens")
+}
+
+// Linha singleton (id fixo) usada só para o claim atômico do bootstrap do primeiro platform admin —
+// ver data-model.md da spec 003. bootstrappedAt IS NULL = ninguém foi criado ainda.
+model PlatformSettings {
+  id             String    @id @default("singleton")
+  bootstrappedAt DateTime?
+
+  @@map("platform_settings")
+}
+
+// ---------------------------------------------------------------------------
 // Imóvel (módulo `properties`)
 // ---------------------------------------------------------------------------
 
