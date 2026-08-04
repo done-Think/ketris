@@ -92,13 +92,6 @@ export function SignInForm() {
           </ActionTextLink>
         </Typography>
       </Stack>
-
-      <Stack direction="row" justifyContent="center">
-        <Typography variant="caption" color="text.secondary">
-          Tenant sem nenhum administrador?{' '}
-          <ActionTextLink href="/backoffice/setup">Configurar primeiro acesso</ActionTextLink>
-        </Typography>
-      </Stack>
     </Stack>
   )
 }

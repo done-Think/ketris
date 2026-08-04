@@ -12,7 +12,6 @@ descreve as duas entidades novas (Tenant, Usuário) necessárias para autentica�
 | nome | String | |
 | slug | String | único — usado para resolver o tenant por domínio/subdomínio |
 | corPrimaria / corSecundaria | String? | white-label (docs/stack.md) — sobrescrevem `primary`/`secondary` do tema MUI |
-| adminBootstrappedAt | DateTime? | null = tenant ainda não tem nenhum `ADMIN` e pode ser inicializado via `POST /api/auth/admins/bootstrap` (sem autenticação); preenchido = janela de bootstrap fechada — claim atômico, ver ADR-0002 |
 
 ## Usuário (`usuarios`)
 
@@ -33,12 +32,6 @@ conta `ADMIN` nunca aparece como alvo desses endpoints (tratada como inexistente
 `ADMIN` é uma rota e um use-case totalmente separados (`POST /api/auth/admins`), que nunca é documentado no
 Swagger/OpenAPI público. Racional completo em `docs/adr/0002-arquitetura-interna-bff.md`, seção "Nota: CRUD
 de usuários e separação da criação de ADMIN".
-
-O **primeiro** `ADMIN` de um tenant (quando `adminBootstrappedAt IS NULL`) pode ser criado por
-`POST /api/auth/admins/bootstrap`, o único endpoint do sistema que não exige ator autenticado — deixa de
-depender só de `prisma/seed.ts` para inicializar um tenant novo. Também nunca documentado no Swagger.
-Racional e trade-offs de segurança completos em `docs/adr/0002-arquitetura-interna-bff.md`, seção "Nota:
-bootstrap do primeiro administrador de um tenant".
 
 ## RefreshToken (`refresh_tokens`)
 

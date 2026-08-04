@@ -226,42 +226,6 @@ subdomínio — para o caso multi-tenant com e-mails repetidos entre tenants)
         spec não foi executado aqui; rodar `npm run e2e` localmente antes de considerar esta tela validada
         de ponta a ponta
 
-- [x] T024e [US4] Bootstrap do primeiro admin de um tenant (`POST /api/auth/admins/bootstrap`) — pedido
-      explícito para não deixar a criação do primeiro admin de cada tenant a cargo só de
-      `prisma/seed.ts`; `POST /api/auth/admins` (T024c) exige um ator `ADMIN` já autenticado, o que resolve
-      criar o segundo admin em diante mas não o primeiro. Mudanças:
-      - `prisma/schema.prisma`: `Tenant.adminBootstrappedAt DateTime?` (migration
-        `20260804191544_add_tenant_admin_bootstrapped_at`) — null = tenant sem nenhum admin ainda
-      - `domain/errors.ts`: `TenantNotFoundError` (404) e `AdminAlreadyExistsError` (409)
-      - Novo port `BootstrapAdminRepository` + `PrismaBootstrapAdminRepository`: todo o claim roda dentro de
-        um único `prisma.$transaction` — busca o tenant pelo slug, tenta um `updateMany` condicional
-        (`WHERE id = ? AND adminBootstrappedAt IS NULL`) e só cria o `Usuario` se esse update afetou uma
-        linha; garante atomicidade sob requisições concorrentes (contar admins teria race condition, update
-        condicional não)
-      - `BootstrapAdminUseCase`: sem parâmetro de ator/autenticação (é o único use-case do sistema que cria
-        usuário sem exigir um actor autenticado) — hasheia a senha e delega o claim atômico ao repository
-      - Rota `POST /api/auth/admins/bootstrap`: sem `requireBearerAuth`, deliberadamente; igual às demais
-        rotas de admin, nunca registrada em `src/server/auth/openapi.ts`/`registry.ts`
-      - Frontend: `modules/auth` ganhou `schemas/bootstrap-admin-schema.ts`,
-        `services/admin-service.ts#bootstrap`, `hooks/use-bootstrap-admin.ts`, `components/BootstrapAdminForm.tsx`
-        (campo extra `tenantSlug`, já que não há sessão pra inferir o tenant); página pública
-        `app/(auth)/backoffice/setup/page.tsx`; link discreto ("Tenant sem nenhum administrador?") adicionado
-        em `SignInForm`
-      - Trade-off de segurança documentado em `docs/adr/0002-arquitetura-interna-bff.md`: entre a criação de
-        um tenant (hoje só via seed/acesso direto ao banco, não self-service) e a chamada do bootstrap,
-        quem souber o `slug` pode reivindicar o primeiro admin — aceitável enquanto criação de tenant for uma
-        operação operacional/controlada, precisa ser revisitada se isso virar self-service
-      - Testes: unitário (`bootstrap-admin.use-case.test.ts`, `bootstrap-admin.schema.test.ts`,
-        `bootstrap-admin-schema.test.ts` no front), integração (`admins/bootstrap/route.integration.test.ts`
-        — 201 no primeiro bootstrap, 409 numa segunda tentativa no mesmo tenant, 404 para slug inexistente,
-        400 para corpo inválido, ausência em `/api/docs/openapi.json`) e E2E
-        (`cypress/e2e/auth/backoffice-bootstrap.cy.ts`, com nova task `seedBareTenant` em `cypress.config.ts`
-        pra criar um tenant sem nenhum usuário)
-      - **Não verificado end-to-end nesta sessão**: mesma limitação de sandbox das tarefas anteriores —
-        `tsc --noEmit`, lint e os testes unitários passaram; os testes de integração e o Cypress spec exigem
-        Postgres local e não foram executados aqui. Rodar `npm run db:migrate`, `npm run test:integration` e
-        `npm run e2e` localmente antes de considerar esta rota validada de ponta a ponta
-
 ---
 
 ## Phase 5: User Story 3 - Endpoints REST dos domínios do loop mínimo de valor (Priority: P3)

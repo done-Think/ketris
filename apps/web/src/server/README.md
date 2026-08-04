@@ -79,11 +79,6 @@ usuários e separação da criação de ADMIN". Resumo:
   use-case (`CreateAdminUseCase`) e uma rota totalmente separados de `POST /auth/users`, e **nunca é
   registrada** em `src/server/openapi/registry.ts` — não aparece em `GET /api/docs` nem em
   `GET /api/docs/openapi.json`.
-- `POST /api/auth/admins/bootstrap` cria o **primeiro** admin de um tenant, sem exigir ator autenticado —
-  só funciona enquanto o tenant não tem nenhum `ADMIN` ainda (`Tenant.adminBootstrappedAt IS NULL`, claim
-  atômico via transação em `PrismaBootstrapAdminRepository`). Existe para não deixar a inicialização de um
-  tenant novo dependente só de `prisma/seed.ts`. Também nunca é registrada no OpenAPI. Detalhe e trade-offs
-  de segurança completos em ADR-0002, seção "Nota: bootstrap do primeiro administrador de um tenant".
 
 ## Documentação (Swagger/OpenAPI)
 
