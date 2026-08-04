@@ -52,8 +52,9 @@ src/server/
   (`specs/002-fundacao-bff-banco/tasks.md`), pendente.
 
 Módulos implementados até agora: `auth` (login, refresh token, CRUD de usuários OWNER/AGENT, criação
-separada de ADMIN). Os demais (`properties`, `crm`, `contracts`, `financial`) seguem incrementalmente junto
-das tarefas de `specs/002-fundacao-bff-banco/tasks.md`.
+separada de ADMIN) e `platform` (identidade separada do dono/sócio da Ketris, sem tenant — ver seção
+própria abaixo). Os demais (`properties`, `crm`, `contracts`, `financial`) seguem incrementalmente junto das
+tarefas de `specs/002-fundacao-bff-banco/tasks.md`.
 
 ## Autenticação: access token + refresh token
 
@@ -79,6 +80,33 @@ usuários e separação da criação de ADMIN". Resumo:
   use-case (`CreateAdminUseCase`) e uma rota totalmente separados de `POST /auth/users`, e **nunca é
   registrada** em `src/server/openapi/registry.ts` — não aparece em `GET /api/docs` nem em
   `GET /api/docs/openapi.json`.
+
+## Platform admin: identidade separada do ADMIN de tenant
+
+`src/server/platform/` é um módulo irmão de `auth`, não uma extensão dele: `PlatformAdmin` não tem
+`tenantId` e nunca é confundido com o `ADMIN` de um tenant (`Usuario.papel === 'ADMIN'`, spec 002). Racional
+completo em `docs/adr/0003-platform-admin-identidade-separada.md` e `specs/003-platform-admin/`. Resumo:
+
+- `POST /api/platform/admins/bootstrap`: cria o primeiro platform admin, sem autenticação — mas só funciona
+  uma vez em toda a vida do sistema (claim atômico via `PlatformSettings`, linha singleton, dentro de uma
+  transação Prisma). Qualquer chamada depois do primeiro sucesso responde 409
+  (`PLATFORM_ALREADY_BOOTSTRAPPED`).
+- `POST/GET /api/platform/admins` e `GET/PATCH/DELETE /api/platform/admins/{id}`: CRUD completo, sempre
+  exigindo `requirePlatformBearerAuth` (ator já autenticado como platform admin) — é assim que o dono cria o
+  acesso do sócio, depois do bootstrap.
+- `GET/POST /api/platform/tenants`, `GET /api/platform/tenants/{id}/users` e
+  `POST /api/platform/tenants/{id}/admins`: visão e controle cross-tenant — listar/criar tenants, listar
+  todos os usuários de um tenant (inclusive contas `ADMIN`, que o CRUD de usuário de um tenant nunca revela)
+  e criar o admin de um tenant específico, substituindo qualquer mecanismo anônimo de bootstrap por tenant.
+- Token do platform admin assinado com `PLATFORM_TOKEN_SECRET` (não `AUTH_TOKEN_SECRET`) e payload sem
+  `tenantId`/`papel` (`{ sub, scope: 'platform' }`) — separação estrutural, não só de convenção, entre as
+  duas identidades.
+- As três rotas de criação de admin deste módulo (bootstrap, criar platform admin, criar admin de tenant)
+  nunca são registradas em `src/server/openapi/registry.ts` — mesma regra de `POST /api/auth/admins`.
+- Sessão NextAuth: segundo `CredentialsProvider` (`id: 'platform-credentials'`), mesma estratégia JWT, com
+  `session.scope` (`'tenant' | 'platform'`) como discriminador — `shared/lib/auth/require-platform-session.ts`
+  e `shared/lib/auth/require-admin-session.ts` rejeitam a sessão uma da outra, mesmo com o mesmo mecanismo de
+  sessão por baixo.
 
 ## Documentação (Swagger/OpenAPI)
 
