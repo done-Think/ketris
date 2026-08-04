@@ -55,6 +55,28 @@ export default defineConfig({
 
           return null
         },
+        async seedPlatformAdmin({ email, password }: { email: string; password: string }) {
+          const senhaHash = await bcrypt.hash(password, 10)
+
+          const admin = await prisma.platformAdmin.create({
+            data: { nome: 'Admin Plataforma E2E', email, senhaHash },
+          })
+
+          return admin.id
+        },
+        async cleanupPlatformAdmin(adminId: string) {
+          await prisma.platformAdminRefreshToken.deleteMany({
+            where: { platformAdminId: adminId },
+          })
+          await prisma.platformAdmin.delete({ where: { id: adminId } }).catch(() => null)
+          return null
+        },
+        async resetPlatformBootstrap() {
+          await prisma.platformAdminRefreshToken.deleteMany()
+          await prisma.platformAdmin.deleteMany()
+          await prisma.platformSettings.deleteMany()
+          return null
+        },
       })
 
       on('after:run', async () => {
