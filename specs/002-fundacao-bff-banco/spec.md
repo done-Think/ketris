@@ -96,8 +96,8 @@ infraestrutura tão essencial quanto o login (User Story 2), por isso compartilh
 **Independent Test**: logar como o admin do seed, criar um usuário `OWNER`/`AGENT` via
 `POST /api/auth/users`, confirmar que ele aparece em `GET /api/auth/users`, editá-lo via `PATCH`,
 desativá-lo via `DELETE` e confirmar que o login dele passa a falhar; separadamente, acessar
-`/backoffice/entrar`, autenticar como admin e criar um segundo administrador em
-`/backoffice/administradores/novo`.
+`/backoffice/login`, autenticar como admin e criar um segundo administrador em
+`/backoffice/admins/new`.
 
 **Acceptance Scenarios**:
 
@@ -111,12 +111,12 @@ desativá-lo via `DELETE` e confirmar que o login dele passa a falhar; separadam
 3. **Given** uma conta `ADMIN`, **When** qualquer requisição de consulta/edição/desativação do CRUD geral
    (`GET/PATCH/DELETE /api/auth/users/{id}`) referencia o id dessa conta, **Then** o sistema responde como
    se o id não existisse (404) — contas administrativas nunca são expostas por esse CRUD.
-4. **Given** um administrador autenticado, **When** ele acessa `/backoffice/administradores/novo` e cria um
+4. **Given** um administrador autenticado, **When** ele acessa `/backoffice/admins/new` e cria um
    novo administrador, **Then** a nova conta é criada com papel `ADMIN`; **Given** um usuário `OWNER`/`AGENT`
-   autenticado, **When** ele tenta entrar em `/backoffice/entrar`, **Then** o acesso é negado e a sessão é
+   autenticado, **When** ele tenta entrar em `/backoffice/login`, **Then** o acesso é negado e a sessão é
    encerrada, mesmo com credenciais corretas.
-5. **Given** um visitante sem sessão, **When** ele acessa diretamente `/backoffice/administradores/novo`,
-   **Then** é redirecionado para `/backoffice/entrar`.
+5. **Given** um visitante sem sessão, **When** ele acessa diretamente `/backoffice/admins/new`,
+   **Then** é redirecionado para `/backoffice/login`.
 
 ---
 
@@ -195,8 +195,8 @@ conceitual. Entidades novas introduzidas aqui, necessárias para autenticação 
 - **SC-005**: Nenhuma conta com papel `ADMIN` é retornada, criada ou editada pelo CRUD geral de usuários
   (`/api/auth/users*`), e o endpoint de criação de administrador nunca aparece em
   `GET /api/docs/openapi.json` — ambos verificados por teste automatizado.
-- **SC-006**: Um administrador consegue, sem usar Swagger/Postman/curl, entrar em `/backoffice/entrar` e
-  criar um novo administrador em `/backoffice/administradores/novo` usando só a UI.
+- **SC-006**: Um administrador consegue, sem usar Swagger/Postman/curl, entrar em `/backoffice/login` e
+  criar um novo administrador em `/backoffice/admins/new` usando só a UI.
 
 ## Assumptions
 

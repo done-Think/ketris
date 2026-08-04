@@ -194,7 +194,7 @@ subdomínio — para o caso multi-tenant com e-mails repetidos entre tenants)
 - [x] T024d [US2] Telas de sign in/sign up do backoffice administrativo — não estava no plano original
       desta spec, pedido para dar uma porta de entrada de UI ao fluxo de `POST /api/auth/admins` (T024c),
       já que essa rota nunca aparece no Swagger nem em nenhuma navegação pública. Rota escolhida:
-      `/backoffice/entrar` (sign in) e `/backoffice/administradores/novo` (sign up — na prática, "convidar
+      `/backoffice/login` (sign in) e `/backoffice/admins/new` (sign up — na prática, "convidar
       novo admin", já que só um ADMIN autenticado pode chamar essa rota; não existe autocadastro público de
       administrador, por desenho do backend). `/backoffice` foi preferido a `/admin` por ser um termo menos
       óbvio de adivinhar (a proteção real continua sendo a sessão + papel, não o nome da URL). Mudanças:
@@ -202,9 +202,9 @@ subdomínio — para o caso multi-tenant com e-mails repetidos entre tenants)
         `User`/`JWT`/`Session` do NextAuth (antes só existiam `accessToken`/`refreshToken`/`tenantId`) —
         necessário pra saber, no client e no server, se a sessão é de um `ADMIN`
       - `shared/lib/auth/require-admin-session.ts`: helper server-side (`getServerSession` +
-        `redirect('/backoffice/entrar')` se não houver sessão ou o papel não for `ADMIN`), usado pelo
-        `layout.tsx` de `app/(admin)/backoffice/administradores/` — protege `.../novo` e qualquer rota
-        futura sob esse prefixo
+        `redirect('/backoffice/login')` se não houver sessão ou o papel não for `ADMIN`), usado pelo
+        `layout.tsx` de `app/(admin)/backoffice/admins/` — protege `.../new` e qualquer rota futura sob
+        esse prefixo
       - `SignInForm`: após `signIn('credentials', ...)` bem-sucedido, busca a sessão fresca
         (`getSession()`) e checa `papel === 'ADMIN'`; se não for, desloga (`signOut`) e mostra "Acesso
         restrito a administradores." — o login em si é o mesmo `CredentialsProvider` de qualquer usuário

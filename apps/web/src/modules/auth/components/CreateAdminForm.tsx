@@ -2,11 +2,12 @@
 
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Alert, Button, Stack } from '@mui/material'
+import { Alert, Button, Stack, Typography } from '@mui/material'
 import { useSnackbar } from 'notistack'
 import axios from 'axios'
 
 import { RhfTextField } from '@shared/components/form'
+import { ActionTextLink } from '@shared/components/ui'
 
 import { createAdminSchema, type CreateAdminFormValues } from '../schemas/create-admin-schema'
 import { useCreateAdmin } from '../hooks/use-create-admin'
@@ -84,6 +85,12 @@ export function CreateAdminForm() {
       <Button type="submit" variant="contained" size="large" disabled={isSubmitting} fullWidth>
         Criar administrador
       </Button>
+
+      <Stack direction="row" justifyContent="center">
+        <Typography variant="body2" color="text.secondary">
+          <ActionTextLink href="/backoffice/login">Voltar para o login</ActionTextLink>
+        </Typography>
+      </Stack>
     </Stack>
   )
 }

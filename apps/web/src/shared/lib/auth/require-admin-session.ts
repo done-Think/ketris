@@ -8,7 +8,7 @@ export async function requireAdminSession(): Promise<Session> {
   const session = await getServerSession(authOptions)
 
   if (!session || session.papel !== 'ADMIN') {
-    redirect('/backoffice/entrar')
+    redirect('/backoffice/login')
   }
 
   return session

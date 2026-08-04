@@ -8,6 +8,7 @@ import { getSession, signIn, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
 import { RhfTextField } from '@shared/components/form'
+import { ActionTextLink } from '@shared/components/ui'
 
 import { signInSchema, type SignInFormValues } from '../schemas/sign-in-schema'
 
@@ -49,7 +50,7 @@ export function SignInForm() {
       return
     }
 
-    router.push('/backoffice/administradores/novo')
+    router.push('/backoffice/admins/new')
     router.refresh()
   }
 
@@ -82,6 +83,15 @@ export function SignInForm() {
       <Typography variant="body2" color="text.secondary" textAlign="center">
         Área restrita à administração do Ketris.
       </Typography>
+
+      <Stack direction="row" justifyContent="center">
+        <Typography variant="body2" color="text.secondary">
+          Já é administrador?{' '}
+          <ActionTextLink href="/backoffice/admins/new">
+            Cadastrar novo administrador
+          </ActionTextLink>
+        </Typography>
+      </Stack>
     </Stack>
   )
 }

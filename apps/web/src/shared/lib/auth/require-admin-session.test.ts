@@ -30,21 +30,21 @@ describe('requireAdminSession', () => {
     expect(redirectMock).not.toHaveBeenCalled()
   })
 
-  it('redireciona para /backoffice/entrar quando não há sessão', async () => {
+  it('redireciona para /backoffice/login quando não há sessão', async () => {
     getServerSessionMock.mockResolvedValueOnce(null)
 
     const requireAdminSession = await getRequireAdminSession()
 
     await expect(requireAdminSession()).rejects.toThrow('NEXT_REDIRECT')
-    expect(redirectMock).toHaveBeenCalledWith('/backoffice/entrar')
+    expect(redirectMock).toHaveBeenCalledWith('/backoffice/login')
   })
 
-  it('redireciona para /backoffice/entrar quando a sessão não é de um ADMIN', async () => {
+  it('redireciona para /backoffice/login quando a sessão não é de um ADMIN', async () => {
     getServerSessionMock.mockResolvedValueOnce({ papel: 'AGENT', tenantId: 'tenant-1' })
 
     const requireAdminSession = await getRequireAdminSession()
 
     await expect(requireAdminSession()).rejects.toThrow('NEXT_REDIRECT')
-    expect(redirectMock).toHaveBeenCalledWith('/backoffice/entrar')
+    expect(redirectMock).toHaveBeenCalledWith('/backoffice/login')
   })
 })
