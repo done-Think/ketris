@@ -22,6 +22,12 @@ function toDomainUser(usuario: {
 }
 
 export class PrismaUserRepository implements UserRepository {
+  async findById(id: string): Promise<User | null> {
+    const usuario = await prisma.usuario.findUnique({ where: { id } })
+
+    return usuario ? toDomainUser(usuario) : null
+  }
+
   async findByEmail(email: string): Promise<User | null> {
     const usuario = await prisma.usuario.findFirst({ where: { email } })
 

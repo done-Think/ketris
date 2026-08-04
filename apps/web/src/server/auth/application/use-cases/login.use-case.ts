@@ -1,6 +1,12 @@
 import { InvalidCredentialsError } from '../../domain/errors'
+import {
+  generateRefreshToken,
+  hashRefreshToken,
+  refreshTokenExpiryDate,
+} from '../../domain/refresh-token'
 import { toAuthenticatedUser, type AuthenticatedUser } from '../../domain/user.entity'
 import type { PasswordHasher } from '../ports/password-hasher.port'
+import type { RefreshTokenRepository } from '../ports/refresh-token-repository.port'
 import type { TokenService } from '../ports/token-service.port'
 import type { UserRepository } from '../ports/user-repository.port'
 
@@ -12,6 +18,7 @@ export interface LoginInput {
 export interface LoginOutput {
   user: AuthenticatedUser
   accessToken: string
+  refreshToken: string
 }
 
 export class LoginUseCase {
@@ -19,6 +26,7 @@ export class LoginUseCase {
     private readonly userRepository: UserRepository,
     private readonly passwordHasher: PasswordHasher,
     private readonly tokenService: TokenService,
+    private readonly refreshTokenRepository: RefreshTokenRepository,
   ) {}
 
   async execute(input: LoginInput): Promise<LoginOutput> {
@@ -37,6 +45,15 @@ export class LoginUseCase {
     const authenticatedUser = toAuthenticatedUser(user)
     const accessToken = await this.tokenService.sign(authenticatedUser)
 
-    return { user: authenticatedUser, accessToken }
+    const refreshToken = generateRefreshToken()
+
+    await this.refreshTokenRepository.create({
+      userId: authenticatedUser.id,
+      tenantId: authenticatedUser.tenantId,
+      tokenHash: hashRefreshToken(refreshToken),
+      expiresAt: refreshTokenExpiryDate(),
+    })
+
+    return { user: authenticatedUser, accessToken, refreshToken }
   }
 }

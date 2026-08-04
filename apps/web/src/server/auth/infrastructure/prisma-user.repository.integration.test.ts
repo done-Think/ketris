@@ -34,6 +34,19 @@ describe('PrismaUserRepository (integração)', () => {
     await prisma.$disconnect()
   })
 
+  it('findById encontra um usuário existente por id', async () => {
+    const user = await repository.findByEmail(email)
+    const found = await repository.findById(user!.id)
+
+    expect(found?.email).toBe(email)
+  })
+
+  it('findById retorna null quando o id não existe', async () => {
+    const found = await repository.findById('id-inexistente')
+
+    expect(found).toBeNull()
+  })
+
   it('encontra um usuário existente por e-mail e mapeia para a entidade de domínio', async () => {
     const user = await repository.findByEmail(email)
 

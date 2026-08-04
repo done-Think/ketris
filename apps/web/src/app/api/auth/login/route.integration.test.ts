@@ -42,7 +42,7 @@ describe('POST /api/auth/login (integração)', () => {
     })
   }
 
-  it('retorna 200, o usuário (sem senhaHash) e um access token com credenciais corretas', async () => {
+  it('retorna 200, o usuário (sem senhaHash), access token e refresh token com credenciais corretas', async () => {
     const response = await POST(buildRequest({ email, password }))
     const json = await response.json()
 
@@ -51,6 +51,7 @@ describe('POST /api/auth/login (integração)', () => {
     expect(json.user.tenantId).toBe(tenantId)
     expect(json.user).not.toHaveProperty('senhaHash')
     expect(typeof json.accessToken).toBe('string')
+    expect(typeof json.refreshToken).toBe('string')
   })
 
   it('retorna 401 com senha errada, com mensagem genérica', async () => {

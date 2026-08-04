@@ -11,3 +11,12 @@ export class EmailAlreadyInUseError extends AppError {
     super('Este e-mail já está em uso.', { status: 409, code: 'EMAIL_ALREADY_IN_USE' })
   }
 }
+
+export class InvalidRefreshTokenError extends AppError {
+  constructor() {
+    super('Refresh token inválido, expirado ou revogado.', {
+      status: 401,
+      code: 'INVALID_REFRESH_TOKEN',
+    })
+  }
+}

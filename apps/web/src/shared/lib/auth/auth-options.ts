@@ -20,7 +20,7 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) return null
 
         try {
-          const { user, accessToken } = await authContainer.loginUseCase.execute({
+          const { user, accessToken, refreshToken } = await authContainer.loginUseCase.execute({
             email: credentials.email,
             password: credentials.password,
           })
@@ -30,6 +30,7 @@ export const authOptions: NextAuthOptions = {
             name: user.nome,
             email: user.email,
             accessToken,
+            refreshToken,
             tenantId: user.tenantId,
           }
         } catch (error) {
@@ -43,12 +44,14 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.accessToken = user.accessToken
+        token.refreshToken = user.refreshToken
         token.tenantId = user.tenantId
       }
       return token
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken
+      session.refreshToken = token.refreshToken
       session.tenantId = token.tenantId
       return session
     },

@@ -9,6 +9,7 @@ export interface NewUser {
 }
 
 export interface UserRepository {
+  findById(id: string): Promise<User | null>
   findByEmail(email: string): Promise<User | null>
   findByEmailAndTenant(tenantId: string, email: string): Promise<User | null>
   create(user: NewUser): Promise<User>

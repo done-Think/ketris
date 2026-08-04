@@ -19,5 +19,11 @@ export const loginResponseSchema = z
   .object({
     user: authenticatedUserSchema,
     accessToken: z.string().openapi({ description: 'JWT (HS256), válido por 1 hora.' }),
+    refreshToken: z
+      .string()
+      .openapi({
+        description:
+          'Token opaco de alta entropia, válido por 30 dias. Use em POST /auth/refresh para obter um novo access token.',
+      }),
   })
   .openapi('LoginResponse')

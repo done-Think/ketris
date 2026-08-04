@@ -4,6 +4,10 @@ import { errorResponseSchema } from '@server/shared/schemas/error-response.schem
 
 import { createUserRequestSchema, createUserResponseSchema } from './schemas/create-user.schema'
 import { loginRequestSchema, loginResponseSchema } from './schemas/login.schema'
+import {
+  refreshTokenRequestSchema,
+  refreshTokenResponseSchema,
+} from './schemas/refresh-token.schema'
 import { authenticatedUserSchema } from './schemas/user.schema'
 
 export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
@@ -16,8 +20,8 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Auth'],
     summary: 'Autentica um usuário por e-mail e senha',
     description:
-      'Retorna os dados do usuário e um access token (JWT, 1h). Mensagem de erro deliberadamente ' +
-      'genérica para não permitir enumeração de e-mails cadastrados.',
+      'Retorna os dados do usuário, um access token (JWT, 1h) e um refresh token (opaco, 30 dias). ' +
+      'Mensagem de erro deliberadamente genérica para não permitir enumeração de e-mails cadastrados.',
     request: {
       body: {
         content: { 'application/json': { schema: loginRequestSchema } },
@@ -34,6 +38,35 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
       },
       401: {
         description: 'Credenciais inválidas.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'post',
+    path: '/auth/refresh',
+    tags: ['Auth'],
+    summary: 'Troca um refresh token válido por um novo access token',
+    description:
+      'Rotaciona o refresh token a cada uso: o token enviado é revogado e um novo é retornado ' +
+      'junto com o novo access token. Reuso de um refresh token já revogado retorna 401.',
+    request: {
+      body: {
+        content: { 'application/json': { schema: refreshTokenRequestSchema } },
+      },
+    },
+    responses: {
+      200: {
+        description: 'Novo access token e refresh token emitidos.',
+        content: { 'application/json': { schema: refreshTokenResponseSchema } },
+      },
+      400: {
+        description: 'Corpo da requisição inválido (falha de validação Zod).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Refresh token inválido, expirado, revogado ou de um usuário inexistente.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },

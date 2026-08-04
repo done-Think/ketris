@@ -51,9 +51,17 @@ src/server/
   próprio tenant do ator). Guard de sessão genérico e reutilizável por outros domínios ainda é T015
   (`specs/002-fundacao-bff-banco/tasks.md`), pendente.
 
-Módulos implementados até agora: `auth` (login, criação de usuário). Os demais (`properties`, `crm`,
-`contracts`, `financial`) seguem incrementalmente junto das tarefas de
+Módulos implementados até agora: `auth` (login, refresh token, criação de usuário). Os demais
+(`properties`, `crm`, `contracts`, `financial`) seguem incrementalmente junto das tarefas de
 `specs/002-fundacao-bff-banco/tasks.md`.
+
+## Autenticação: access token + refresh token
+
+`POST /auth/login` retorna um access token (JWT, 1h, `jose`) e um refresh token (opaco, alta entropia,
+30 dias, só o hash SHA-256 fica no banco — model `RefreshToken`). `POST /auth/refresh` troca um refresh
+token válido por um par novo (access + refresh), revogando o antigo (rotação — reuso de um token já
+revogado é tratado como inválido). Detalhe completo e racional das decisões em ADR-0002, seção "Nota:
+refresh token".
 
 ## Documentação (Swagger/OpenAPI)
 

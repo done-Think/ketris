@@ -66,8 +66,9 @@ do mesmo schema que valida em runtime, não escrita à mão em paralelo.
 ### OpenAPI/Swagger sem dependência pesada
 
 `GET /api/docs/openapi.json` serve o spec gerado a partir do registry. `GET /api/docs` serve uma página
-HTML estática que carrega o Swagger UI via CDN (`swagger-ui-dist`) apontando para esse JSON — sem instalar
-`swagger-ui-react` (evita ~2MB de bundle numa rota que só o time usa em dev).
+HTML estática que carrega o Swagger UI self-hosted (assets de `swagger-ui-dist` via
+`/api/docs/assets/[...path]`, sem CDN) apontando para esse JSON — sem instalar `swagger-ui-react` (evita
+~2MB de bundle numa rota que só o time usa em dev).
 
 ### Erros e HTTP
 
@@ -125,6 +126,31 @@ globalmente (`findFirst`, sem filtro de tenant) — assumindo, por ora, que e-ma
 entre os poucos tenants de desenvolvimento. Isso é uma simplificação deliberada, não um esquecimento:
 documentada aqui e em `specs/002-fundacao-bff-banco/tasks.md` (T022), sem comentário correspondente no
 código (ver convenção de não comentar código nesta seção, abaixo).
+
+## Nota: refresh token (opaco + persistido, com rotação)
+
+`POST /auth/login` retorna, além do access token (JWT, 1h), um refresh token (30 dias). Decisões:
+
+- **Opaco, não JWT**: gerado com `crypto.randomBytes(64)` (`domain/refresh-token.ts`), não carrega payload
+  algum. Só o banco sabe a quem pertence — dispensa qualquer lógica de decodificação/verificação de
+  assinatura no cliente, que só precisa guardá-lo e devolvê-lo em `POST /auth/refresh`.
+- **Nunca armazenado em texto puro**: só o hash SHA-256 (`hashRefreshToken`) vai para a tabela
+  `refresh_tokens` (model `RefreshToken`, `prisma/schema.prisma`). Um vazamento do banco não expõe tokens
+  utilizáveis diretamente — SHA-256 é suficiente aqui (diferente de senha) porque o valor original já tem
+  alta entropia (512 bits), então não há necessidade de um hash lento/salgado como bcrypt.
+- **Rotação a cada uso**: `RefreshAccessTokenUseCase` revoga (`revokedAt`) o token recebido e cria um novo
+  antes de retornar. Reuso de um token já revogado é tratado como token inválido (401
+  `INVALID_REFRESH_TOKEN`) — detecta roubo/replay de um token antigo, ainda que sem uma política de
+  "revogar toda a família de tokens" (deixado como próximo passo, não implementado agora).
+- **`UserRepository.findById`** foi adicionado ao port especificamente para este fluxo: o
+  `RefreshAccessTokenUseCase` só tem o `userId` do registro de `RefreshToken`, precisa carregar o usuário
+  completo para assinar um novo access token.
+- **NextAuth**: `refreshToken` também é propagado pelo `authorize()`/`jwt`/`session` callbacks
+  (`auth-options.ts`, `next-auth.d.ts`), disponível em `session.refreshToken`. **Não implementado ainda**:
+  a troca automática do access token perto de expirar (o padrão "silent refresh" do próprio NextAuth,
+  checando `token.accessTokenExpires` no callback `jwt`) — hoje o refresh só acontece se algo chamar
+  `POST /api/auth/refresh` explicitamente. Próximo passo natural quando o frontend precisar de sessões
+  realmente longas sem novo login.
 
 ## Convenção: sem comentários no código
 

@@ -14,12 +14,13 @@ describe('Login (API)', () => {
     cy.task('cleanupAuthUser', tenantId)
   })
 
-  it('autentica com credenciais válidas e retorna usuário + access token', () => {
+  it('autentica com credenciais válidas e retorna usuário + access token + refresh token', () => {
     cy.request('POST', '/api/auth/login', { email, password }).then((response) => {
       expect(response.status).to.eq(200)
       expect(response.body.user.email).to.eq(email)
       expect(response.body.user).to.not.have.property('senhaHash')
       expect(response.body.accessToken).to.be.a('string')
+      expect(response.body.refreshToken).to.be.a('string')
     })
   })
 

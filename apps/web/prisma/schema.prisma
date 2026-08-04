@@ -53,10 +53,27 @@ model Usuario {
 
   tenant           Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   imoveisResponsavel Imovel[] @relation("ImovelResponsavel")
+  refreshTokens    RefreshToken[]
 
   @@unique([tenantId, email])
   @@index([tenantId])
   @@map("usuarios")
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  tenantId  String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  usuario Usuario @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tenantId])
+  @@map("refresh_tokens")
 }
 
 // ---------------------------------------------------------------------------

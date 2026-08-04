@@ -144,6 +144,22 @@ subdomínio — para o caso multi-tenant com e-mails repetidos entre tenants)
       `create-user.schema.test.ts`, `require-bearer-auth.test.ts`), integração
       (`prisma-user.repository.integration.test.ts` estendido, `app/api/auth/users/route.integration.test.ts`)
       e E2E (`cypress/e2e/auth/create-user.cy.ts`, cobrindo 201/401/403/409)
+- [x] T024b [US2] Refresh token no login — `POST /api/auth/login` passou a retornar também um
+      `refreshToken` (opaco, 30 dias, hash SHA-256 persistido em `RefreshToken`/`refresh_tokens` — nova
+      migration, ver `prisma/schema.prisma`), e nova rota `POST /api/auth/refresh` troca um refresh token
+      válido por um novo par access+refresh (rotação: o token usado é revogado). Racional completo em
+      ADR-0002, seção "Nota: refresh token". `UserRepository` ganhou `findById` (necessário pra recarregar
+      o usuário a partir do `userId` salvo no `RefreshToken`). `auth-options.ts`/`next-auth.d.ts`
+      propagam `refreshToken` pra sessão do NextAuth também — **pendente**: silent refresh automático
+      perto da expiração do access token (hoje só acontece se algo chamar `/api/auth/refresh`
+      explicitamente). Testes: unitário (`domain/refresh-token.test.ts`, `login.use-case.test.ts`
+      atualizado, `refresh-access-token.use-case.test.ts`, `refresh-token.schema.test.ts`), integração
+      (`prisma-refresh-token.repository.integration.test.ts`, `app/api/auth/refresh/
+      route.integration.test.ts`, `login/route.integration.test.ts` atualizado) e E2E
+      (`cypress/e2e/auth/refresh-token.cy.ts`, cobrindo troca, rotação/reuso bloqueado e token
+      inexistente). **Requer migration**: rodar `npm run db:migrate` localmente (Docker/Postgres já de
+      pé) pra criar a tabela `refresh_tokens` — não gerada aqui porque este ambiente não alcança o
+      Postgres do desenvolvedor
 
 ---
 
