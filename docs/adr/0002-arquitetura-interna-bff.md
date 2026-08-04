@@ -191,6 +191,41 @@ exclusivamente sobre contas com papel `OWNER` ou `AGENT`. Decisões:
 - **Um ADMIN não pode se autodesativar** por esta rota (`CannotDeactivateSelfError`, 400) — evita o caso de
   um admin acidentalmente se trancar para fora do próprio tenant.
 
+## Nota: bootstrap do primeiro administrador de um tenant
+
+`POST /api/auth/admins` (acima) exige um ator já autenticado com papel `ADMIN` — o que resolve a criação
+do *segundo* admin em diante, mas deixa o *primeiro* admin de um tenant sem nenhum caminho de aplicação: só
+`prisma/seed.ts` conseguia criar essa conta inicial. Isso deixava a inicialização de um tenant novo
+inteiramente dependente de rodar o seed manualmente contra o banco, o que não é uma funcionalidade real do
+produto. `POST /api/auth/admins/bootstrap` fecha essa lacuna sem reabrir o risco de escalonamento de
+privilégio que a separação acima foi desenhada para evitar:
+
+- **Único endpoint do sistema que cria um usuário sem exigir autenticação.** Isso só é seguro porque o
+  efeito é estritamente limitado: cria exatamente um `ADMIN`, e só quando o tenant-alvo (`tenantSlug` no
+  corpo) ainda não tem nenhum admin.
+- **Claim atômico via `Tenant.adminBootstrappedAt` (nullable).** `PrismaBootstrapAdminRepository` roda tudo
+  dentro de um único `prisma.$transaction`: busca o tenant pelo slug, tenta um `updateMany` condicional
+  (`WHERE id = ? AND adminBootstrappedAt IS NULL`) e só cria o `Usuario` se esse update afetou exatamente
+  uma linha. Sob duas requisições concorrentes para o mesmo tenant, o banco garante que só uma delas vence o
+  `updateMany` — a perdedora recebe `admin_already_exists` sem nunca chegar a criar um segundo usuário. Essa
+  é a razão de não ter sido implementado como "contar quantos ADMIN existem": contagem tem race condition,
+  update condicional não.
+- **Janela de bootstrap fecha para sempre por tenant.** Uma vez que `adminBootstrappedAt` é preenchido
+  (bootstrap bem-sucedido), toda tentativa seguinte para aquele tenant retorna 409
+  (`AdminAlreadyExistsError`) — o endpoint não vira uma porta permanente para criar admins sem autenticação,
+  só resolve o problema do "primeiro admin".
+- **Trade-off de segurança aceito conscientemente**: entre o momento em que um tenant é criado (hoje, só via
+  seed ou acesso direto ao banco — não existe self-service de criação de tenant no produto) e o momento em
+  que alguém chama o bootstrap, qualquer pessoa que descubra o `slug` do tenant pode reivindicar o papel de
+  primeiro admin. Isso é aceitável no estado atual porque a criação de tenant já é uma operação
+  controlada/operacional, não pública. Se o produto ganhar self-service de criação de tenant no futuro, essa
+  janela precisa ser revisitada (ex.: token de setup de uso único emitido na criação do tenant).
+- **Fora do OpenAPI**, mesma lógica de `/api/auth/admins` — não aparece em `GET /api/docs` nem em
+  `GET /api/docs/openapi.json` (coberto por teste).
+- **Frontend**: tela pública `/backoffice/setup` (`BootstrapAdminForm`), com link discreto a partir de
+  `/backoffice/login` ("Tenant sem nenhum administrador?"). Ao concluir, redireciona para `/backoffice/login`
+  — o bootstrap não faz login automático, só cria a conta.
+
 ## Convenção: sem comentários no código
 
 Nomes de arquivos, classes, funções e variáveis devem ser autoexplicativos; contexto, racional e trade-offs

@@ -36,6 +36,13 @@ export default defineConfig({
           await prisma.tenant.delete({ where: { id: tenantId } }).catch(() => null)
           return null
         },
+        async seedBareTenant({ tenantSlug }: { tenantSlug: string }) {
+          const tenant = await prisma.tenant.create({
+            data: { nome: 'Tenant E2E Sem Admin', slug: tenantSlug },
+          })
+
+          return tenant.id
+        },
         async seedUserInTenant({
           tenantId,
           email,

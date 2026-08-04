@@ -26,6 +26,10 @@ model Tenant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Claim atômico de "primeiro admin". Null = tenant ainda não tem nenhum ADMIN e pode ser inicializado
+  // via POST /api/auth/admins/bootstrap (sem autenticação); preenchido = janela de bootstrap fechada.
+  adminBootstrappedAt DateTime?
+
   usuarios      Usuario[]
   imoveis       Imovel[]
   oportunidades Oportunidade[]

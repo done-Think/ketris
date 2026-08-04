@@ -1,3 +1,4 @@
+import { BootstrapAdminUseCase } from './application/use-cases/bootstrap-admin.use-case'
 import { CreateAdminUseCase } from './application/use-cases/create-admin.use-case'
 import { CreateUserUseCase } from './application/use-cases/create-user.use-case'
 import { DeactivateUserUseCase } from './application/use-cases/deactivate-user.use-case'
@@ -8,6 +9,7 @@ import { RefreshAccessTokenUseCase } from './application/use-cases/refresh-acces
 import { UpdateUserUseCase } from './application/use-cases/update-user.use-case'
 import { BcryptPasswordHasher } from './infrastructure/bcrypt-password-hasher'
 import { JoseTokenService } from './infrastructure/jose-token.service'
+import { PrismaBootstrapAdminRepository } from './infrastructure/prisma-bootstrap-admin.repository'
 import { PrismaRefreshTokenRepository } from './infrastructure/prisma-refresh-token.repository'
 import { PrismaUserRepository } from './infrastructure/prisma-user.repository'
 
@@ -15,6 +17,7 @@ const userRepository = new PrismaUserRepository()
 const passwordHasher = new BcryptPasswordHasher()
 const tokenService = new JoseTokenService()
 const refreshTokenRepository = new PrismaRefreshTokenRepository()
+const bootstrapAdminRepository = new PrismaBootstrapAdminRepository()
 
 export const authContainer = {
   tokenService,
@@ -26,6 +29,7 @@ export const authContainer = {
   ),
   createUserUseCase: new CreateUserUseCase(userRepository, passwordHasher),
   createAdminUseCase: new CreateAdminUseCase(userRepository, passwordHasher),
+  bootstrapAdminUseCase: new BootstrapAdminUseCase(bootstrapAdminRepository, passwordHasher),
   listUsersUseCase: new ListUsersUseCase(userRepository),
   getUserUseCase: new GetUserUseCase(userRepository),
   updateUserUseCase: new UpdateUserUseCase(userRepository),
