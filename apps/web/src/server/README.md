@@ -14,7 +14,9 @@ src/server/
 │   ├── errors/               # AppError e subclasses genéricas (ValidationError, NotFoundError...)
 │   └── http/                 # parseJsonBody (Zod) + handleRouteError — usados por todo Route Handler
 ├── openapi/
-│   └── registry.ts           # registry único do @asteasolutions/zod-to-openapi
+│   ├── registry.ts           # registry único do @asteasolutions/zod-to-openapi
+│   ├── zod-extend.ts         # habilita .openapi() nos schemas Zod (side-effect, importar 1x)
+│   └── swagger-ui-page.ts    # HTML do Swagger UI (usado por app/api/docs/route.ts)
 └── <dominio>/                 # ex.: auth, properties, crm, contracts, financial
     ├── domain/                # entidades + erros de negócio — zero import de Prisma/Next/Zod
     ├── application/

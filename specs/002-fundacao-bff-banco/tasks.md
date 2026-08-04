@@ -139,26 +139,31 @@ Postgres via Route Handlers, no formato que os `Service`s do frontend já espera
 
 **Independent Test**: `curl`/Postman contra cada endpoint, cobrindo os Acceptance Scenarios da spec 001
 
+**Convenção**: cada domínio abaixo segue a estrutura em camadas do ADR-0002
+(`docs/adr/0002-arquitetura-interna-bff.md`) — `domain/`, `application/{ports,use-cases}/`,
+`infrastructure/`, `schemas/`, `container.ts` — igual ao módulo `auth` já implementado (não mais um único
+arquivo `*.service.ts` flat, como as tarefas abaixo descreviam originalmente).
+
 ### Tests for User Story 3 ⚠️
 
-- [ ] T025 [P] [US3] Teste do service `src/server/properties/property.service.ts` (publicar bloqueia com
-      campos ausentes — espelha FR-002 da spec 001)
-- [ ] T026 [P] [US3] Teste do service `src/server/contracts/contract.service.ts` — transação de ativação
+- [ ] T025 [P] [US3] Testes unitários dos use-cases de `src/server/properties/` (publicar bloqueia com
+      campos ausentes — espelha FR-002 da spec 001), ports mockados
+- [ ] T026 [P] [US3] Testes unitários dos use-cases de `src/server/contracts/` — transação de ativação
       (contrato → ativo, imóvel → alugado/vendido, cobrança criada) descrita em `data-model.md` desta spec
 - [ ] T027 [P] [US3] Teste de integração de `POST /api/contracts/[id]/signatures` contra Postgres real
       (banco de teste via Docker Compose), cobrindo idempotência da cobrança inicial (Edge Case da spec)
 
 ### Implementation for User Story 3
 
-- [ ] T028 [P] [US3] `src/server/properties/property.service.ts` (create/update/publish/unpublish,
-      usando o helper de tenant de T013) + `app/api/properties/route.ts` e `app/api/properties/[id]/route.ts`
-- [ ] T029 [P] [US3] `src/server/crm/opportunity.service.ts` (create — sem exigir sessão, é o formulário
-      público da spec 001 US2 — e updateStatus) + `app/api/crm/opportunities/route.ts` e `[id]/route.ts`
-- [ ] T030 [US3] `src/server/contracts/contract.service.ts` (createFromOpportunity — cria Contrato +
-      ParteContrato + Assinatura em uma transação, T004/data-model.md) + `app/api/contracts/route.ts`
-- [ ] T031 [US3] `src/server/contracts/signature.service.ts` (assinar por parte; dispara a transação de
+- [ ] T028 [P] [US3] `src/server/properties/` (use-cases create/update/publish/unpublish, usando o helper
+      de tenant de T013) + `app/api/properties/route.ts` e `app/api/properties/[id]/route.ts`
+- [ ] T029 [P] [US3] `src/server/crm/` (use-case create — sem exigir sessão, é o formulário público da
+      spec 001 US2 — e updateStatus) + `app/api/crm/opportunities/route.ts` e `[id]/route.ts`
+- [ ] T030 [US3] `src/server/contracts/` (use-case createFromOpportunity — cria Contrato + ParteContrato +
+      Assinatura em uma transação, T004/data-model.md) + `app/api/contracts/route.ts`
+- [ ] T031 [US3] `src/server/contracts/` (use-case de assinatura por parte; dispara a transação de
       ativação quando a última assinatura fecha) + `app/api/contracts/[id]/signatures/route.ts`
-- [ ] T032 [US3] `src/server/financial/financial.service.ts` (confirmPayment) + `app/api/financial/
+- [ ] T032 [US3] `src/server/financial/` (use-case confirmPayment) + `app/api/financial/
       charges/[id]/route.ts`
 - [ ] T033 [US3] Trocar os mocks/stubs dos `Service`s do frontend (`PropertyService`, `OpportunityService`,
       `ContractService`, `FinancialService` em `specs/001-mvp-loop-imovel-pagamento`) para consumir estes
