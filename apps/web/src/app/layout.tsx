@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter, Space_Grotesk } from 'next/font/google'
+import 'maplibre-gl/dist/maplibre-gl.css'
+
 import { Providers } from './providers'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })

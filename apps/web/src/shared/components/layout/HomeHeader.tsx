@@ -70,40 +70,42 @@ export function HomeHeader({
             spacing={{ xs: 2, md: 4 }}
             sx={{ display: { xs: 'none', md: 'flex' }, justifySelf: 'center' }}
           >
-            {navigationItems.map((item) => (
-              <MuiLink
-                key={item.label}
-                component={Link}
-                href={item.href}
-                underline="none"
-                sx={{
-                  color: item.active ? 'primary.main' : 'text.secondary',
-                  ...componentText.navLink,
-                  px: 1.45,
-                  py: 0.85,
-                  mt: 0.1,
-                  borderRadius: `${radius.sm}px`,
-                  position: 'relative',
-                  transition: motion.transition.interactive,
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    left: 0,
-                    right: 0,
-                    bottom: -2,
-                    height: 2,
-                    bgcolor: item.active ? 'primary.main' : 'transparent',
-                  },
-                  '&:hover': {
-                    bgcolor: 'transparent',
-                    color: surface.darkText,
-                    transform: 'translateY(-1px)',
-                  },
-                }}
-              >
-                {item.label}
-              </MuiLink>
-            ))}
+            {navigationItems.map((item) => {
+              return (
+                <MuiLink
+                  key={item.label}
+                  component={Link}
+                  href={item.href}
+                  underline="none"
+                  sx={{
+                    color: item.active ? 'primary.main' : 'text.secondary',
+                    ...componentText.navLink,
+                    px: 1.45,
+                    py: 0.85,
+                    mt: 0.1,
+                    borderRadius: `${radius.sm}px`,
+                    position: 'relative',
+                    transition: motion.transition.interactive,
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      left: 0,
+                      right: 0,
+                      bottom: -2,
+                      height: 2,
+                      bgcolor: item.active ? 'primary.main' : 'transparent',
+                    },
+                    '&:hover': {
+                      bgcolor: 'transparent',
+                      color: surface.darkText,
+                      transform: 'translateY(-1px)',
+                    },
+                  }}
+                >
+                  {item.label}
+                </MuiLink>
+              )
+            })}
           </Stack>
 
           <Stack direction="row" alignItems="center" spacing={1} sx={{ justifySelf: 'end' }}>

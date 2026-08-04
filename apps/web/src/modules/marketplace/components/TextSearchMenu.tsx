@@ -1,5 +1,6 @@
 import { type Dispatch, type SetStateAction } from 'react'
-import { Box, MenuItem, TextField, Typography } from '@mui/material'
+import { Box, IconButton, InputAdornment, MenuItem, TextField, Typography } from '@mui/material'
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 
 import { alpha, componentText, surface } from '@shared/theme/tokens'
 
@@ -25,6 +26,14 @@ export function TextSearchMenu({
   setSearchDraft,
 }: TextSearchMenuProps) {
   const options = filterSearchOptions(filterKey)
+  const draftValue = searchDraft[filterKey]
+
+  const clearDraft = () => {
+    setSearchDraft((current) => ({
+      ...current,
+      [filterKey]: '',
+    }))
+  }
 
   return (
     <Box>
@@ -36,7 +45,7 @@ export function TextSearchMenu({
           placeholder={
             filterKey === 'location' ? 'Digite cidade ou bairro' : 'Digite o tipo de imóvel'
           }
-          value={searchDraft[filterKey]}
+          value={draftValue}
           onChange={(event) =>
             setSearchDraft((current) => ({
               ...current,
@@ -47,6 +56,21 @@ export function TextSearchMenu({
             if (event.key !== 'Enter') return
             const [firstOption] = options
             if (firstOption) selectSearchValue(filterKey, firstOption)
+          }}
+          InputProps={{
+            endAdornment: draftValue ? (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="Limpar busca"
+                  edge="end"
+                  size="small"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={clearDraft}
+                >
+                  <CloseRoundedIcon fontSize="small" />
+                </IconButton>
+              </InputAdornment>
+            ) : null,
           }}
         />
       </Box>
