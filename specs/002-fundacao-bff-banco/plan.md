@@ -38,9 +38,10 @@ inconsistente, não para performance
 **Constraints**: nenhuma senha em texto puro; nenhuma query tenant-scoped sem filtro de tenant explícito;
 nenhuma chamada a um "backend externo" — tudo roda dentro de `apps/web`
 
-**Scale/Scope**: 2 entidades novas (Tenant, Usuário) + 5 entidades já modeladas na spec 001 (Imóvel,
-Oportunidade, Contrato, Assinatura, Cobrança); 1 fluxo de autenticação; 4 grupos de endpoints REST
-(properties, crm, contracts, financial)
+**Scale/Scope**: 3 entidades novas (Tenant, Usuário, RefreshToken) + 5 entidades já modeladas na spec 001
+(Imóvel, Oportunidade, Contrato, Assinatura, Cobrança); 1 fluxo de autenticação (com refresh token); gestão
+de usuários (CRUD `OWNER`/`AGENT` + criação separada de `ADMIN`) e telas de backoffice; 4 grupos de
+endpoints REST (properties, crm, contracts, financial)
 
 ## Constitution Check
 
