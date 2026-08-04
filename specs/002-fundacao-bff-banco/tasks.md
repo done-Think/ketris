@@ -130,6 +130,21 @@ tenant + usuário admin via `npm run db:studio`
 **Checkpoint**: login funcional de ponta a ponta contra dados reais (falta só T022 — tenant por
 subdomínio — para o caso multi-tenant com e-mails repetidos entre tenants)
 
+- [x] T024a [US2] `POST /api/auth/users` (criação de usuário) — não estava no plano original desta spec,
+      adicionado porque login sozinho não permite popular um tenant com novos usuários. Segue a mesma
+      convenção do ADR-0002: `CreateUserUseCase` (`application/use-cases/create-user.use-case.ts`),
+      `UserRepository.findByEmailAndTenant`/`create` novos no port + `PrismaUserRepository`. Regra de
+      negócio: só um ator autenticado com papel `ADMIN` pode criar usuário, e sempre no próprio tenant do
+      ator (`tenantId` nunca vem do corpo da requisição — evita criação cross-tenant). Autenticação via
+      Bearer access token (mesmo token emitido pelo login), verificado em
+      `src/server/auth/require-bearer-auth.ts` — ainda não é o guard genérico de sessão do T015 (que
+      cobriria todos os domínios), é específico do módulo `auth`; T015 continua pendente para quando
+      `properties`/`crm`/`contracts`/`financial` precisarem do mesmo tipo de proteção. Documentado no
+      Swagger com `securitySchemes: bearerAuth`. Testes: unitário (`create-user.use-case.test.ts`,
+      `create-user.schema.test.ts`, `require-bearer-auth.test.ts`), integração
+      (`prisma-user.repository.integration.test.ts` estendido, `app/api/auth/users/route.integration.test.ts`)
+      e E2E (`cypress/e2e/auth/create-user.cy.ts`, cobrindo 201/401/403/409)
+
 ---
 
 ## Phase 5: User Story 3 - Endpoints REST dos domínios do loop mínimo de valor (Priority: P3)

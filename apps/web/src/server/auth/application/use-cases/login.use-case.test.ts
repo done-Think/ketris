@@ -22,6 +22,8 @@ function createDeps(overrides?: {
 }) {
   const userRepository: UserRepository = {
     findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(user),
+    findByEmailAndTenant: vi.fn().mockResolvedValue(user),
+    create: vi.fn().mockResolvedValue(user),
   }
   const passwordHasher: PasswordHasher = {
     compare: overrides?.compare ?? vi.fn().mockResolvedValue(true),

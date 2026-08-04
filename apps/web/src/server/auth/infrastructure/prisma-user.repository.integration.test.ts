@@ -49,4 +49,40 @@ describe('PrismaUserRepository (integração)', () => {
 
     expect(user).toBeNull()
   })
+
+  it('findByEmailAndTenant encontra o usuário só dentro do tenant informado', async () => {
+    const outroTenant = await prisma.tenant.create({
+      data: { nome: 'Outro Tenant', slug: `outro-${randomUUID()}` },
+    })
+
+    try {
+      const encontrado = await repository.findByEmailAndTenant(tenantId, email)
+      const naoEncontrado = await repository.findByEmailAndTenant(outroTenant.id, email)
+
+      expect(encontrado?.email).toBe(email)
+      expect(naoEncontrado).toBeNull()
+    } finally {
+      await prisma.tenant.delete({ where: { id: outroTenant.id } })
+    }
+  })
+
+  it('create insere um usuário novo e retorna a entidade de domínio mapeada', async () => {
+    const novoEmail = `criado-${randomUUID()}@ketris.dev`
+
+    const created = await repository.create({
+      tenantId,
+      nome: 'Usuário Criado',
+      email: novoEmail,
+      senhaHash: 'hash-fake',
+      papel: 'ADMIN',
+    })
+
+    expect(created.id).toEqual(expect.any(String))
+    expect(created.email).toBe(novoEmail)
+    expect(created.tenantId).toBe(tenantId)
+    expect(created.papel).toBe('ADMIN')
+
+    const persisted = await repository.findByEmailAndTenant(tenantId, novoEmail)
+    expect(persisted?.id).toBe(created.id)
+  })
 })

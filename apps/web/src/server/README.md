@@ -11,8 +11,10 @@ novo).
 src/server/
 ├── db/prisma.ts             # client singleton do Prisma
 ├── shared/
-│   ├── errors/               # AppError e subclasses genéricas (ValidationError, NotFoundError...)
-│   └── http/                 # parseJsonBody (Zod) + handleRouteError — usados por todo Route Handler
+│   ├── errors/               # AppError e subclasses genéricas (NotFoundError, ConflictError,
+│   │                          # UnauthorizedError, ForbiddenError...)
+│   ├── http/                 # parseJsonBody (Zod) + handleRouteError — usados por todo Route Handler
+│   └── schemas/               # Zod compartilhado entre domínios (ex.: errorResponseSchema)
 ├── openapi/
 │   ├── registry.ts           # registry único do @asteasolutions/zod-to-openapi
 │   ├── zod-extend.ts         # habilita .openapi() nos schemas Zod (side-effect, importar 1x)
@@ -43,9 +45,15 @@ src/server/
   `data-model.md` de cada spec descrevem as entidades em nível conceitual e devem ser lidos junto com ele.
 - Sem comentários no código: nomes autoexplicativos + testes; contexto e racional vão em ADRs e no
   `tasks.md` da spec, não em comentários inline.
+- Endpoint protegido: extrai e valida o access token (Bearer) com `requireBearerAuth` antes de qualquer
+  outra coisa no handler; regra de autorização (quem pode fazer o quê) mora no use-case, não no Route
+  Handler nem num middleware genérico — ver `CreateUserUseCase` (só `ADMIN` cria usuário, sempre no
+  próprio tenant do ator). Guard de sessão genérico e reutilizável por outros domínios ainda é T015
+  (`specs/002-fundacao-bff-banco/tasks.md`), pendente.
 
-Módulos implementados até agora: `auth` (login). Os demais (`properties`, `crm`, `contracts`, `financial`)
-seguem incrementalmente junto das tarefas de `specs/002-fundacao-bff-banco/tasks.md`.
+Módulos implementados até agora: `auth` (login, criação de usuário). Os demais (`properties`, `crm`,
+`contracts`, `financial`) seguem incrementalmente junto das tarefas de
+`specs/002-fundacao-bff-banco/tasks.md`.
 
 ## Documentação (Swagger/OpenAPI)
 

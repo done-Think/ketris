@@ -5,6 +5,12 @@ import './zod-extend'
 
 export const registry = new OpenAPIRegistry()
 
+registry.registerComponent('securitySchemes', 'bearerAuth', {
+  type: 'http',
+  scheme: 'bearer',
+  bearerFormat: 'JWT',
+})
+
 registerAuthOpenApi(registry)
 
 export function generateOpenApiDocument() {

@@ -36,6 +36,25 @@ export default defineConfig({
           await prisma.tenant.delete({ where: { id: tenantId } }).catch(() => null)
           return null
         },
+        async seedUserInTenant({
+          tenantId,
+          email,
+          password,
+          papel,
+        }: {
+          tenantId: string
+          email: string
+          password: string
+          papel: 'ADMIN' | 'PROPRIETARIO' | 'CORRETOR'
+        }) {
+          const senhaHash = await bcrypt.hash(password, 10)
+
+          await prisma.usuario.create({
+            data: { tenantId, nome: 'Usuário E2E', email, senhaHash, papel },
+          })
+
+          return null
+        },
       })
 
       on('after:run', async () => {

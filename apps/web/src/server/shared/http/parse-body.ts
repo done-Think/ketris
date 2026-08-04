@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server'
-import type { ZodSchema } from 'zod'
+import type { z, ZodTypeAny } from 'zod'
 
 import { AppError } from '@server/shared/errors'
 
@@ -12,7 +12,10 @@ export class RequestValidationError extends AppError {
   }
 }
 
-export async function parseJsonBody<T>(request: NextRequest, schema: ZodSchema<T>): Promise<T> {
+export async function parseJsonBody<T extends ZodTypeAny>(
+  request: NextRequest,
+  schema: T,
+): Promise<z.infer<T>> {
   let raw: unknown
 
   try {
