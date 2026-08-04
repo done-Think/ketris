@@ -35,7 +35,7 @@ export class RefreshAccessTokenUseCase {
 
     const user = await this.userRepository.findById(stored.userId)
 
-    if (!user) {
+    if (!user || !user.ativo) {
       throw new InvalidRefreshTokenError()
     }
 

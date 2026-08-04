@@ -45,7 +45,7 @@ export default defineConfig({
           tenantId: string
           email: string
           password: string
-          papel: 'ADMIN' | 'PROPRIETARIO' | 'CORRETOR'
+          papel: 'ADMIN' | 'OWNER' | 'AGENT'
         }) {
           const senhaHash = await bcrypt.hash(password, 10)
 

@@ -32,7 +32,7 @@ export class LoginUseCase {
   async execute(input: LoginInput): Promise<LoginOutput> {
     const user = await this.userRepository.findByEmail(input.email)
 
-    if (!user) {
+    if (!user || !user.ativo) {
       throw new InvalidCredentialsError()
     }
 

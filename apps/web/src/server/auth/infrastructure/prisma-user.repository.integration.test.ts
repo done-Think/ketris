@@ -24,7 +24,7 @@ describe('PrismaUserRepository (integração)', () => {
         nome: 'Usuário de Teste',
         email,
         senhaHash: 'hash-nao-usado-neste-teste',
-        papel: 'CORRETOR',
+        papel: 'AGENT',
       },
     })
   })
@@ -53,7 +53,8 @@ describe('PrismaUserRepository (integração)', () => {
     expect(user).not.toBeNull()
     expect(user?.email).toBe(email)
     expect(user?.tenantId).toBe(tenantId)
-    expect(user?.papel).toBe('CORRETOR')
+    expect(user?.papel).toBe('AGENT')
+    expect(user?.ativo).toBe(true)
     expect(user).toHaveProperty('senhaHash')
   })
 
@@ -94,8 +95,66 @@ describe('PrismaUserRepository (integração)', () => {
     expect(created.email).toBe(novoEmail)
     expect(created.tenantId).toBe(tenantId)
     expect(created.papel).toBe('ADMIN')
+    expect(created.ativo).toBe(true)
 
     const persisted = await repository.findByEmailAndTenant(tenantId, novoEmail)
     expect(persisted?.id).toBe(created.id)
+  })
+
+  it('findManyByTenant retorna só os usuários do tenant informado', async () => {
+    const outroTenant = await prisma.tenant.create({
+      data: { nome: 'Outro Tenant Listagem', slug: `outro-list-${randomUUID()}` },
+    })
+
+    try {
+      const users = await repository.findManyByTenant(tenantId)
+
+      expect(users.length).toBeGreaterThan(0)
+      expect(users.every((user) => user.tenantId === tenantId)).toBe(true)
+
+      const usersOutroTenant = await repository.findManyByTenant(outroTenant.id)
+      expect(usersOutroTenant).toEqual([])
+    } finally {
+      await prisma.tenant.delete({ where: { id: outroTenant.id } })
+    }
+  })
+
+  it('update altera nome, e-mail e papel e retorna a entidade atualizada', async () => {
+    const created = await repository.create({
+      tenantId,
+      nome: 'Antes',
+      email: `update-${randomUUID()}@ketris.dev`,
+      senhaHash: 'hash-fake',
+      papel: 'AGENT',
+    })
+
+    const novoEmail = `depois-${randomUUID()}@ketris.dev`
+    const updated = await repository.update(created.id, {
+      nome: 'Depois',
+      email: novoEmail,
+      papel: 'OWNER',
+    })
+
+    expect(updated.nome).toBe('Depois')
+    expect(updated.email).toBe(novoEmail)
+    expect(updated.papel).toBe('OWNER')
+  })
+
+  it('deactivate marca ativo como false sem remover o registro', async () => {
+    const created = await repository.create({
+      tenantId,
+      nome: 'Para Desativar',
+      email: `desativar-${randomUUID()}@ketris.dev`,
+      senhaHash: 'hash-fake',
+      papel: 'AGENT',
+    })
+
+    const deactivated = await repository.deactivate(created.id)
+
+    expect(deactivated.ativo).toBe(false)
+
+    const stillThere = await repository.findById(created.id)
+    expect(stillThere).not.toBeNull()
+    expect(stillThere?.ativo).toBe(false)
   })
 })

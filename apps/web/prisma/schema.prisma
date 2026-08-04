@@ -37,8 +37,8 @@ model Tenant {
 
 enum PapelUsuario {
   ADMIN
-  PROPRIETARIO
-  CORRETOR
+  OWNER
+  AGENT
 }
 
 model Usuario {
@@ -47,7 +47,8 @@ model Usuario {
   nome         String
   email        String
   senhaHash    String
-  papel        PapelUsuario @default(CORRETOR)
+  papel        PapelUsuario @default(AGENT)
+  ativo        Boolean      @default(true)
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 

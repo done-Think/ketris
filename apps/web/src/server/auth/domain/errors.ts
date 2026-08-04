@@ -20,3 +20,18 @@ export class InvalidRefreshTokenError extends AppError {
     })
   }
 }
+
+export class UserNotFoundError extends AppError {
+  constructor() {
+    super('Usuário não encontrado.', { status: 404, code: 'USER_NOT_FOUND' })
+  }
+}
+
+export class CannotDeactivateSelfError extends AppError {
+  constructor() {
+    super('Você não pode desativar sua própria conta.', {
+      status: 400,
+      code: 'CANNOT_DEACTIVATE_SELF',
+    })
+  }
+}

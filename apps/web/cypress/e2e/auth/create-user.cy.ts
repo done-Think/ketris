@@ -2,11 +2,11 @@ describe('Criar usuário (API)', () => {
   const tenantSlug = `e2e-tenant-${Date.now()}`
   const adminEmail = `e2e-admin-${Date.now()}@ketris.dev`
   const adminPassword = 'senha-correta-123'
-  const corretorEmail = `e2e-corretor-${Date.now()}@ketris.dev`
-  const corretorPassword = 'senha-correta-123'
+  const agentEmail = `e2e-agent-${Date.now()}@ketris.dev`
+  const agentPassword = 'senha-correta-123'
   let tenantId: string
   let adminToken: string
-  let corretorToken: string
+  let agentToken: string
 
   before(() => {
     cy.task('seedAuthUser', { email: adminEmail, password: adminPassword, tenantSlug })
@@ -14,9 +14,9 @@ describe('Criar usuário (API)', () => {
         tenantId = id as string
         return cy.task('seedUserInTenant', {
           tenantId,
-          email: corretorEmail,
-          password: corretorPassword,
-          papel: 'CORRETOR',
+          email: agentEmail,
+          password: agentPassword,
+          papel: 'AGENT',
         })
       })
       .then(() =>
@@ -25,12 +25,12 @@ describe('Criar usuário (API)', () => {
       .then((response) => {
         adminToken = response.body.accessToken
         return cy.request('POST', '/api/auth/login', {
-          email: corretorEmail,
-          password: corretorPassword,
+          email: agentEmail,
+          password: agentPassword,
         })
       })
       .then((response) => {
-        corretorToken = response.body.accessToken
+        agentToken = response.body.accessToken
       })
   })
 
@@ -38,18 +38,19 @@ describe('Criar usuário (API)', () => {
     cy.task('cleanupAuthUser', tenantId)
   })
 
-  it('cria um usuário quando o ator é ADMIN', () => {
+  it('cria um usuário (papel AGENT por padrão) quando o ator é ADMIN', () => {
     const email = `e2e-novo-${Date.now()}@ketris.dev`
 
     cy.request({
       method: 'POST',
       url: '/api/auth/users',
       headers: { Authorization: `Bearer ${adminToken}` },
-      body: { nome: 'Novo Corretor E2E', email, password: 'senha-longa-123' },
+      body: { nome: 'Novo Agente E2E', email, password: 'senha-longa-123' },
     }).then((response) => {
       expect(response.status).to.eq(201)
       expect(response.body.user.email).to.eq(email)
       expect(response.body.user.tenantId).to.eq(tenantId)
+      expect(response.body.user.papel).to.eq('AGENT')
       expect(response.body.user).to.not.have.property('senhaHash')
     })
   })
@@ -70,7 +71,7 @@ describe('Criar usuário (API)', () => {
     cy.request({
       method: 'POST',
       url: '/api/auth/users',
-      headers: { Authorization: `Bearer ${corretorToken}` },
+      headers: { Authorization: `Bearer ${agentToken}` },
       body: { nome: 'X', email: `x-${Date.now()}@ketris.dev`, password: 'senha-longa-123' },
       failOnStatusCode: false,
     }).then((response) => {
@@ -92,10 +93,29 @@ describe('Criar usuário (API)', () => {
     })
   })
 
-  it('publica o contrato do endpoint em /api/docs/openapi.json', () => {
+  it('retorna 400 ao tentar criar com papel ADMIN — este endpoint nunca cria administradores', () => {
+    cy.request({
+      method: 'POST',
+      url: '/api/auth/users',
+      headers: { Authorization: `Bearer ${adminToken}` },
+      body: {
+        nome: 'Tentativa',
+        email: `tentativa-${Date.now()}@ketris.dev`,
+        password: 'senha-longa-123',
+        papel: 'ADMIN',
+      },
+      failOnStatusCode: false,
+    }).then((response) => {
+      expect(response.status).to.eq(400)
+      expect(response.body.error.code).to.eq('VALIDATION_ERROR')
+    })
+  })
+
+  it('publica o contrato do endpoint em /api/docs/openapi.json, mas nunca /auth/admins', () => {
     cy.request('/api/docs/openapi.json').then((response) => {
       expect(response.status).to.eq(200)
       expect(response.body.paths).to.have.property('/auth/users')
+      expect(response.body.paths).to.not.have.property('/auth/admins')
     })
   })
 })

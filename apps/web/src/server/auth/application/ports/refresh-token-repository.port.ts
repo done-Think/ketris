@@ -15,4 +15,5 @@ export interface RefreshTokenRepository {
   create(input: NewRefreshToken): Promise<void>
   findValidByTokenHash(tokenHash: string): Promise<StoredRefreshToken | null>
   revokeById(id: string): Promise<void>
+  revokeAllForUser(userId: string): Promise<void>
 }

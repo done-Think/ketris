@@ -51,9 +51,9 @@ src/server/
   próprio tenant do ator). Guard de sessão genérico e reutilizável por outros domínios ainda é T015
   (`specs/002-fundacao-bff-banco/tasks.md`), pendente.
 
-Módulos implementados até agora: `auth` (login, refresh token, criação de usuário). Os demais
-(`properties`, `crm`, `contracts`, `financial`) seguem incrementalmente junto das tarefas de
-`specs/002-fundacao-bff-banco/tasks.md`.
+Módulos implementados até agora: `auth` (login, refresh token, CRUD de usuários OWNER/AGENT, criação
+separada de ADMIN). Os demais (`properties`, `crm`, `contracts`, `financial`) seguem incrementalmente junto
+das tarefas de `specs/002-fundacao-bff-banco/tasks.md`.
 
 ## Autenticação: access token + refresh token
 
@@ -62,6 +62,23 @@ Módulos implementados até agora: `auth` (login, refresh token, criação de us
 token válido por um par novo (access + refresh), revogando o antigo (rotação — reuso de um token já
 revogado é tratado como inválido). Detalhe completo e racional das decisões em ADR-0002, seção "Nota:
 refresh token".
+
+## Usuários: CRUD (OWNER/AGENT) e criação de ADMIN (rota separada)
+
+`POST/GET /auth/users` e `GET/PATCH/DELETE /auth/users/{id}` formam o CRUD de usuários — sempre restrito a
+papel `OWNER` ou `AGENT` (nunca `ADMIN`). Detalhe e racional completo em ADR-0002, seção "Nota: CRUD de
+usuários e separação da criação de ADMIN". Resumo:
+
+- Todas as rotas exigem `requireBearerAuth` + ator com papel `ADMIN`.
+- Criar/editar nunca aceita `papel: 'ADMIN'` (schema Zod restringe a `'OWNER' | 'AGENT'`).
+- Uma conta com papel `ADMIN` como alvo (`GET/PATCH/DELETE /auth/users/{id}`) responde 404
+  (`USER_NOT_FOUND`), igual a um id inexistente — não revela a existência de administradores.
+- `DELETE` é soft-delete (`Usuario.ativo = false`, nunca remove a linha) e revoga todos os refresh tokens do
+  usuário. Login e refresh de um usuário desativado falham como se as credenciais fossem inválidas.
+- `POST /api/auth/admins` cria um `ADMIN` — mesma autenticação (`requireBearerAuth`, ator `ADMIN`), mas é um
+  use-case (`CreateAdminUseCase`) e uma rota totalmente separados de `POST /auth/users`, e **nunca é
+  registrada** em `src/server/openapi/registry.ts` — não aparece em `GET /api/docs` nem em
+  `GET /api/docs/openapi.json`.
 
 ## Documentação (Swagger/OpenAPI)
 

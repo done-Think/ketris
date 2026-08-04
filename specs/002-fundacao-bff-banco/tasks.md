@@ -160,6 +160,37 @@ subdomínio — para o caso multi-tenant com e-mails repetidos entre tenants)
       inexistente). **Requer migration**: rodar `npm run db:migrate` localmente (Docker/Postgres já de
       pé) pra criar a tabela `refresh_tokens` — não gerada aqui porque este ambiente não alcança o
       Postgres do desenvolvedor
+- [x] T024c [US2] CRUD completo de usuários (`GET/PATCH/DELETE /api/auth/users/{id}`,
+      `GET /api/auth/users`) e separação da criação de `ADMIN` numa rota própria — não estava no plano
+      original desta spec, pedido explicitamente para fechar o ciclo de vida de usuário (só havia create
+      até aqui) e para eliminar o risco de escalonamento de privilégio de um endpoint de criação que
+      aceitasse qualquer papel, incluindo `ADMIN`. Mudanças:
+      - Enum `PapelUsuario`/`Papel` traduzido para inglês: `PROPRIETARIO`→`OWNER`, `CORRETOR`→`AGENT`
+        (`ADMIN` inalterado) — migration via `ALTER TYPE ... RENAME VALUE` (preserva dados existentes)
+      - `Usuario.ativo` (`Boolean @default(true)`) — base do soft-delete
+      - `NonAdminPapel = 'OWNER' | 'AGENT'` no domínio; `createUserRequestSchema`/`updateUserRequestSchema`
+        usam esse enum restrito — schema Zod rejeita `papel: 'ADMIN'` antes mesmo do use-case
+      - Use-cases novos: `ListUsersUseCase`, `GetUserUseCase`, `UpdateUserUseCase` (todos filtram/rejeitam
+        alvo com papel `ADMIN` como se não existisse — 404 `USER_NOT_FOUND`, mesma resposta de id
+        inexistente, evita enumeração), `DeactivateUserUseCase` (soft-delete + revoga todos os refresh
+        tokens do usuário via `RefreshTokenRepository.revokeAllForUser`, novo; bloqueia autodesativação —
+        `CannotDeactivateSelfError`) e `CreateAdminUseCase` (sempre cria com `papel: 'ADMIN'` fixo, sem
+        receber esse campo como parâmetro)
+      - `LoginUseCase`/`RefreshAccessTokenUseCase` passaram a tratar `ativo: false` como credencial/token
+        inválido (mesma mensagem genérica)
+      - Rota `POST /api/auth/admins`: mesma autenticação (`requireBearerAuth`, ator `ADMIN`) das demais,
+        mas **nunca registrada** em `src/server/openapi/registry.ts` — não aparece em `GET /api/docs` nem
+        em `GET /api/docs/openapi.json` (coberto por teste dedicado)
+      - Racional completo em ADR-0002, seção "Nota: CRUD de usuários e separação da criação de ADMIN"
+      - Testes: unitário (um arquivo por use-case novo + schemas `update-user.schema.test.ts`,
+        `create-admin.schema.test.ts`, `create-user.schema.test.ts` atualizado), integração
+        (`prisma-user.repository.integration.test.ts` estendido, `users/route.integration.test.ts`
+        estendido com GET, `users/[id]/route.integration.test.ts` novo, `admins/route.integration.test.ts`
+        novo — inclui teste de que `/auth/admins` não aparece no `openapi.json`) e E2E
+        (`cypress/e2e/auth/user-crud.cy.ts`, `create-admin.cy.ts`, `create-user.cy.ts` atualizado)
+      - **Requer migration**: rodar `npm run db:migrate` localmente pra aplicar o rename do enum e a nova
+        coluna `ativo` — não aplicada aqui pelo mesmo motivo de T024b (sandbox sem acesso ao Postgres do
+        desenvolvedor)
 
 ---
 

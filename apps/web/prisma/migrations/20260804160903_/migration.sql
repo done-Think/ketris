@@ -1,0 +1,6 @@
+-- RenameEnumValue
+ALTER TYPE "PapelUsuario" RENAME VALUE 'PROPRIETARIO' TO 'OWNER';
+ALTER TYPE "PapelUsuario" RENAME VALUE 'CORRETOR' TO 'AGENT';
+
+-- AlterTable
+ALTER TABLE "usuarios" ADD COLUMN "ativo" BOOLEAN NOT NULL DEFAULT true;

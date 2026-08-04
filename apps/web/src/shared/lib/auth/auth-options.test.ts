@@ -31,7 +31,7 @@ describe('authOptions — CredentialsProvider.authorize', () => {
 
   it('chama o LoginUseCase e mapeia o resultado para o formato de usuário do NextAuth', async () => {
     executeMock.mockResolvedValueOnce({
-      user: { id: 'u1', tenantId: 't1', nome: 'Ana', email: 'ana@ketris.dev', papel: 'CORRETOR' },
+      user: { id: 'u1', tenantId: 't1', nome: 'Ana', email: 'ana@ketris.dev', papel: 'AGENT' },
       accessToken: 'jwt-fake',
     })
 

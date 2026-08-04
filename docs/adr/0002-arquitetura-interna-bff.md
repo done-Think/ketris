@@ -152,6 +152,45 @@ código (ver convenção de não comentar código nesta seção, abaixo).
   `POST /api/auth/refresh` explicitamente. Próximo passo natural quando o frontend precisar de sessões
   realmente longas sem novo login.
 
+## Nota: CRUD de usuários e separação da criação de ADMIN
+
+O CRUD completo de usuários (`POST/GET /auth/users`, `GET/PATCH/DELETE /auth/users/{id}`) opera
+exclusivamente sobre contas com papel `OWNER` ou `AGENT`. Decisões:
+
+- **Enum de papel em inglês**: `PapelUsuario` no Prisma (e o tipo `Papel` em `domain/user.entity.ts`)
+  passou de `ADMIN | PROPRIETARIO | CORRETOR` para `ADMIN | OWNER | AGENT` (migration
+  `prisma/migrations/20260804160903_/migration.sql`, via `ALTER TYPE ... RENAME VALUE` — preserva os dados
+  já persistidos, só relabela). O nome do campo (`papel`) e do tipo (`Papel`) seguem em português, por
+  consistência com o restante do domínio (`Usuario`, `Imovel` etc.) — só os valores do enum foram traduzidos,
+  a pedido explícito do produto.
+- **Criação de usuário não-admin (`NonAdminPapel = 'OWNER' | 'AGENT'`)**: `createUserRequestSchema` usa
+  `nonAdminPapelSchema`, que não inclui `'ADMIN'` como valor válido — a rejeição de um `papel: 'ADMIN'`
+  nesse endpoint acontece na validação Zod (400), antes mesmo de chegar ao use-case. `CreateUserUseCase`
+  também tipa `input.papel: NonAdminPapel`, então nem compila uma chamada que tente passar `'ADMIN'`. Dupla
+  garantia (schema + tipo), não apenas checagem em runtime.
+- **Criação de ADMIN é uma rota e um use-case totalmente separados**: `CreateAdminUseCase` não recebe
+  `papel` como parâmetro — sempre cria com `papel: 'ADMIN'` fixo no código, então não existe um caminho para
+  "esquecer" de restringir o valor. A rota `POST /api/auth/admins` nunca é registrada em
+  `src/server/auth/openapi.ts`/`registry.ts` — não aparece em `GET /api/docs` nem em
+  `GET /api/docs/openapi.json` (coberto por teste, `admins/route.integration.test.ts`). Continua exigindo
+  `requireBearerAuth` + ator com papel `ADMIN`, igual às demais rotas protegidas — a ausência de
+  documentação pública é uma camada a mais (reduz descoberta acidental por usuários não-admin), não
+  substitui a autorização.
+- **Contas ADMIN são invisíveis para o CRUD geral**: `ListUsersUseCase` filtra `papel !== 'ADMIN'` antes de
+  retornar; `GetUserUseCase`/`UpdateUserUseCase`/`DeactivateUserUseCase` tratam um alvo com `papel === 'ADMIN'`
+  exatamente como "não encontrado" (`UserNotFoundError`, 404) — a mesma resposta usada para um id
+  inexistente ou de outro tenant, para não vazar a existência de contas admin por enumeração de ids.
+- **Delete é soft-delete**: `DELETE /auth/users/{id}` não remove a linha — marca `ativo = false`
+  (`Usuario.ativo`, `@default(true)`). Motivo prático: `Imovel.responsavelId` referencia `Usuario` com
+  `onDelete: Restrict` — apagar de verdade um usuário com imóveis quebraria a integridade referencial (e
+  perderia o histórico de quem criou o quê). Efeitos colaterais da desativação: `LoginUseCase` e
+  `RefreshAccessTokenUseCase` passam a tratar `ativo: false` como se o usuário não existisse (mesma
+  mensagem/erro genérico de credenciais inválidas), e `DeactivateUserUseCase` revoga
+  (`refreshTokenRepository.revokeAllForUser`) todos os refresh tokens ativos do usuário na hora — uma sessão
+  já aberta não sobrevive à desativação.
+- **Um ADMIN não pode se autodesativar** por esta rota (`CannotDeactivateSelfError`, 400) — evita o caso de
+  um admin acidentalmente se trancar para fora do próprio tenant.
+
 ## Convenção: sem comentários no código
 
 Nomes de arquivos, classes, funções e variáveis devem ser autoexplicativos; contexto, racional e trade-offs

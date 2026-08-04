@@ -14,10 +14,11 @@ import { RefreshAccessTokenUseCase } from './refresh-access-token.use-case'
 const user: User = {
   id: 'user-1',
   tenantId: 'tenant-1',
-  nome: 'Ana Corretora',
+  nome: 'Ana Agente',
   email: 'ana@ketris.dev',
   senhaHash: 'hash-fake',
-  papel: 'CORRETOR',
+  papel: 'AGENT',
+  ativo: true,
 }
 
 const stored: StoredRefreshToken = { id: 'rt-1', userId: user.id, tenantId: user.tenantId }
@@ -30,7 +31,10 @@ function createDeps(overrides?: {
     findById: overrides?.findById ?? vi.fn().mockResolvedValue(user),
     findByEmail: vi.fn(),
     findByEmailAndTenant: vi.fn(),
+    findManyByTenant: vi.fn(),
     create: vi.fn(),
+    update: vi.fn(),
+    deactivate: vi.fn(),
   }
   const tokenService: TokenService = {
     sign: vi.fn().mockResolvedValue('jwt-novo'),
@@ -40,6 +44,7 @@ function createDeps(overrides?: {
     create: vi.fn().mockResolvedValue(undefined),
     findValidByTokenHash: overrides?.findValidByTokenHash ?? vi.fn().mockResolvedValue(stored),
     revokeById: vi.fn().mockResolvedValue(undefined),
+    revokeAllForUser: vi.fn().mockResolvedValue(undefined),
   }
 
   return { userRepository, tokenService, refreshTokenRepository }
@@ -107,5 +112,20 @@ describe('RefreshAccessTokenUseCase', () => {
       InvalidRefreshTokenError,
     )
     expect(deps.tokenService.sign).not.toHaveBeenCalled()
+  })
+
+  it('lança InvalidRefreshTokenError quando o usuário do token está desativado', async () => {
+    const deps = createDeps({ findById: vi.fn().mockResolvedValue({ ...user, ativo: false }) })
+    const useCase = new RefreshAccessTokenUseCase(
+      deps.userRepository,
+      deps.tokenService,
+      deps.refreshTokenRepository,
+    )
+
+    await expect(useCase.execute({ refreshToken: 'token-original' })).rejects.toThrow(
+      InvalidRefreshTokenError,
+    )
+    expect(deps.tokenService.sign).not.toHaveBeenCalled()
+    expect(deps.refreshTokenRepository.revokeById).not.toHaveBeenCalled()
   })
 })

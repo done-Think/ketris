@@ -11,10 +11,11 @@ import { LoginUseCase } from './login.use-case'
 const user: User = {
   id: 'user-1',
   tenantId: 'tenant-1',
-  nome: 'Ana Corretora',
+  nome: 'Ana Agente',
   email: 'ana@ketris.dev',
   senhaHash: 'hash-fake',
-  papel: 'CORRETOR',
+  papel: 'AGENT',
+  ativo: true,
 }
 
 function createDeps(overrides?: {
@@ -25,7 +26,10 @@ function createDeps(overrides?: {
     findById: vi.fn().mockResolvedValue(user),
     findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(user),
     findByEmailAndTenant: vi.fn().mockResolvedValue(user),
+    findManyByTenant: vi.fn(),
     create: vi.fn().mockResolvedValue(user),
+    update: vi.fn(),
+    deactivate: vi.fn(),
   }
   const passwordHasher: PasswordHasher = {
     compare: overrides?.compare ?? vi.fn().mockResolvedValue(true),
@@ -39,6 +43,7 @@ function createDeps(overrides?: {
     create: vi.fn().mockResolvedValue(undefined),
     findValidByTokenHash: vi.fn(),
     revokeById: vi.fn(),
+    revokeAllForUser: vi.fn(),
   }
 
   return { userRepository, passwordHasher, tokenService, refreshTokenRepository }
@@ -69,6 +74,7 @@ describe('LoginUseCase', () => {
       nome: user.nome,
       email: user.email,
       papel: user.papel,
+      ativo: user.ativo,
     })
     expect(result.user).not.toHaveProperty('senhaHash')
     expect(deps.tokenService.sign).toHaveBeenCalledWith(result.user)
@@ -108,6 +114,19 @@ describe('LoginUseCase', () => {
     )
     expect(deps.tokenService.sign).not.toHaveBeenCalled()
     expect(deps.refreshTokenRepository.create).not.toHaveBeenCalled()
+  })
+
+  it('lança InvalidCredentialsError quando o usuário está desativado (ativo: false)', async () => {
+    const deps = createDeps({
+      findByEmail: vi.fn().mockResolvedValue({ ...user, ativo: false }),
+    })
+    const useCase = buildUseCase(deps)
+
+    await expect(useCase.execute({ email: user.email, password: 'senha-correta' })).rejects.toThrow(
+      InvalidCredentialsError,
+    )
+    expect(deps.passwordHasher.compare).not.toHaveBeenCalled()
+    expect(deps.tokenService.sign).not.toHaveBeenCalled()
   })
 
   it('não vaza qual campo (e-mail ou senha) estava errado — mesma mensagem em ambos os casos', async () => {

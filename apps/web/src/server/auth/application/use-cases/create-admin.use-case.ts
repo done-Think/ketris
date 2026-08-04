@@ -1,35 +1,29 @@
 import { ForbiddenError } from '@server/shared/errors'
 
 import { EmailAlreadyInUseError } from '../../domain/errors'
-import {
-  toAuthenticatedUser,
-  type AuthenticatedUser,
-  type NonAdminPapel,
-  type Papel,
-} from '../../domain/user.entity'
+import { toAuthenticatedUser, type AuthenticatedUser, type Papel } from '../../domain/user.entity'
 import type { PasswordHasher } from '../ports/password-hasher.port'
 import type { UserRepository } from '../ports/user-repository.port'
 
-export interface CreateUserInput {
+export interface CreateAdminInput {
   actorTenantId: string
   actorPapel: Papel
   nome: string
   email: string
   password: string
-  papel: NonAdminPapel
 }
 
-export type CreateUserOutput = AuthenticatedUser
+export type CreateAdminOutput = AuthenticatedUser
 
-export class CreateUserUseCase {
+export class CreateAdminUseCase {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly passwordHasher: PasswordHasher,
   ) {}
 
-  async execute(input: CreateUserInput): Promise<CreateUserOutput> {
+  async execute(input: CreateAdminInput): Promise<CreateAdminOutput> {
     if (input.actorPapel !== 'ADMIN') {
-      throw new ForbiddenError('Apenas administradores podem criar usuários.')
+      throw new ForbiddenError('Apenas administradores podem criar outros administradores.')
     }
 
     const existing = await this.userRepository.findByEmailAndTenant(
@@ -48,7 +42,7 @@ export class CreateUserUseCase {
       nome: input.nome,
       email: input.email,
       senhaHash,
-      papel: input.papel,
+      papel: 'ADMIN',
     })
 
     return toAuthenticatedUser(created)
