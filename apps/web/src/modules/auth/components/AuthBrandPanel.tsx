@@ -36,25 +36,25 @@ export function AuthBrandPanel() {
           inset: 0,
           backgroundImage: `linear-gradient(180deg, ${muiAlpha(
             surface.darkDeep,
-            0.08,
-          )} 0%, ${muiAlpha(surface.darkDeep, 0.64)} 100%), radial-gradient(circle at 62% 12%, ${muiAlpha(
+            0.2,
+          )} 0%, ${muiAlpha(surface.darkDeep, 0.72)} 100%), radial-gradient(circle at 62% 12%, ${muiAlpha(
             brand.magenta[500],
-            0.4,
-          )} 0%, transparent 42%)`,
+            0.28,
+          )} 0%, transparent 38%)`,
         },
       }}
     >
       <Stack
         alignItems="center"
-        spacing={{ xs: 1, md: 1.25 }}
+        spacing={{ xs: 0.75, md: 0.75 }}
         sx={{ position: 'relative', zIndex: 1, textAlign: 'center' }}
       >
-        <AppLogo src="/ketris-logo-footer.png" width={{ xs: 132, md: 142 }} />
+        <AppLogo src="/ketris-logo-footer.png" width={{ xs: 128, md: 136 }} />
 
         <Typography
           sx={{
             maxWidth: 430,
-            color: muiAlpha(surface.lightText, 0.72),
+            color: muiAlpha(surface.lightText, 0.68),
             fontSize: { xs: 14, md: 18 },
           }}
         >
@@ -63,7 +63,7 @@ export function AuthBrandPanel() {
 
         <Typography
           variant="body2"
-          sx={{ color: muiAlpha(surface.lightText, 0.56), letterSpacing: '0.01em' }}
+          sx={{ color: muiAlpha(surface.lightText, 0.48), letterSpacing: '0.01em' }}
         >
           2.500+ imóveis conectados
         </Typography>

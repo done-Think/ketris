@@ -33,7 +33,7 @@ export function AuthShell({ children }: AuthShellProps) {
           alignItems: 'flex-start',
           justifyContent: 'center',
           px: { xs: 2.5, sm: 5, md: 4 },
-          pt: { xs: 5, sm: 8, md: 10 },
+          pt: { xs: 5, sm: 8, md: 11.5 },
           pb: { xs: 5, md: 10 },
           bgcolor: surface.paper,
         }}

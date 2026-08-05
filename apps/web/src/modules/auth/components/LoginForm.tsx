@@ -79,7 +79,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
 
   return (
     <Box>
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 3.25 }}>
         <Typography variant="h3" sx={{ mb: 0.75 }}>
           Entrar na sua conta
         </Typography>
@@ -89,7 +89,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
       </Box>
 
       <Box component="form" noValidate onSubmit={handleSubmit(login)}>
-        <Stack spacing={2.5}>
+        <Stack spacing={1.75}>
           <AuthFormField htmlFor="login-email" label="E-mail">
             <RhfTextField
               id="login-email"
@@ -148,11 +148,13 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
           </Box>
 
           {error && (
-            <Alert severity="error" role="alert">
+            <Alert severity="error" role="alert" sx={{ mt: 0.75 }}>
               {error}
             </Alert>
           )}
+        </Stack>
 
+        <Stack spacing={1.75} sx={{ mt: error ? 2.5 : 3.5 }}>
           <Button
             type="submit"
             variant="contained"
@@ -161,7 +163,6 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
             disabled={isSubmitting}
             sx={{
               height: 50,
-              mt: '12px !important',
               borderRadius: `${radius.sm}px`,
               boxShadow: `0 8px 18px ${muiAlpha(brand.magenta[500], 0.2)}`,
             }}
