@@ -50,7 +50,7 @@ export function SignInForm() {
       return
     }
 
-    router.push('/backoffice/admins/new')
+    router.push('/backoffice')
     router.refresh()
   }
 
