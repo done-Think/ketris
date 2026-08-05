@@ -4,7 +4,9 @@ import { alpha as muiAlpha } from '@mui/material/styles'
 import { AppLogo } from '@shared/components/ui'
 import { brand, surface } from '@shared/theme/tokens'
 
-const AUTH_CITY_IMAGE_URL = '/auth/ketris-city-network.png'
+import authCityImage from '../assets/ketris-city-network.png'
+
+const AUTH_CITY_IMAGE_URL = authCityImage.src
 const DEFAULT_DESCRIPTION = 'A infraestrutura digital do mercado imobiliário'
 
 type AuthBrandPanelProps = {
