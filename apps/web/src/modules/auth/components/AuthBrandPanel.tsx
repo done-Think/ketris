@@ -4,8 +4,7 @@ import { alpha as muiAlpha } from '@mui/material/styles'
 import { AppLogo } from '@shared/components/ui'
 import { brand, surface } from '@shared/theme/tokens'
 
-const AUTH_CITY_IMAGE_URL =
-  'https://images.unsplash.com/photo-1752742111841-f490c48aa668?auto=format&fit=crop&w=1800&q=85'
+const AUTH_CITY_IMAGE_URL = '/auth/ketris-city-network.png'
 
 export function AuthBrandPanel() {
   return (
@@ -29,7 +28,6 @@ export function AuthBrandPanel() {
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           backgroundSize: 'cover',
-          filter: 'grayscale(1) brightness(0.55) contrast(1.1)',
           transform: 'scale(1.01)',
         },
         '&::after': {
