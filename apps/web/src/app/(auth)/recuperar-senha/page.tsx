@@ -1,14 +1,25 @@
-import { AuthShell, AuthStatusCard } from '@modules/auth'
+import Link from 'next/link'
+import { Link as MuiLink } from '@mui/material'
+
+import { AuthStandaloneShell, PasswordRecoveryForm } from '@modules/auth'
 
 export const metadata = { title: 'Recuperar senha | Ketris' }
 
 export default function RecuperarSenhaPage() {
   return (
-    <AuthShell>
-      <AuthStatusCard
-        title="Recuperar senha"
-        description="A recuperação por e-mail será conectada quando o serviço de envio estiver definido."
-      />
-    </AuthShell>
+    <AuthStandaloneShell
+      footer={
+        <MuiLink
+          component={Link}
+          href="/login"
+          underline="hover"
+          sx={{ color: 'primary.main', fontSize: 14, fontWeight: 700 }}
+        >
+          Voltar ao login
+        </MuiLink>
+      }
+    >
+      <PasswordRecoveryForm />
+    </AuthStandaloneShell>
   )
 }
