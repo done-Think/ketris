@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Box, Card, CardContent, Container, Stack, Typography } from '@mui/material'
 
+import ketrisLogoTransparent from '@shared/assets/ketris-logo-transparent.png'
 import { AppLogo } from '@shared/components/ui'
 import { radius, shadows } from '@shared/theme/tokens'
 
@@ -24,7 +25,7 @@ export function AuthScreenLayout({ title, subtitle, children }: AuthScreenLayout
     >
       <Container maxWidth="xs">
         <Stack spacing={4} alignItems="center">
-          <AppLogo src="/ketris-logo-transparent.png" width={140} />
+          <AppLogo src={ketrisLogoTransparent} variant="transparent" width={140} />
 
           <Card sx={{ width: '100%', borderRadius: `${radius.lg}px`, boxShadow: shadows.popover }}>
             <CardContent sx={{ p: 4 }}>

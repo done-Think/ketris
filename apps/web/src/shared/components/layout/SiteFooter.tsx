@@ -12,6 +12,7 @@ import InstagramIcon from '@mui/icons-material/Instagram'
 import LinkedInIcon from '@mui/icons-material/LinkedIn'
 import Link from 'next/link'
 
+import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
 import { alpha, componentText, iconSize, surface } from '@shared/theme/tokens'
 
@@ -52,7 +53,7 @@ export function SiteFooter({ columns, legalLinks }: SiteFooterProps) {
         >
           <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
             <AppLogo
-              src="/ketris-logo-footer.png"
+              src={ketrisLogoFooter}
               width={{ xs: 92, md: 102 }}
               marginBottom={{ xs: 0.6, md: 2 }}
             />
