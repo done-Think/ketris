@@ -93,6 +93,9 @@ export const authOptions: NextAuthOptions = {
       session.scope = token.scope
       session.tenantId = token.tenantId
       session.papel = token.papel
+      if (session.user && token.sub) {
+        session.user.id = token.sub
+      }
       return session
     },
   },

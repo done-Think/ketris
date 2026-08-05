@@ -1,5 +1,7 @@
 import 'next-auth'
 
+import type { DefaultSession } from 'next-auth'
+
 import type { Papel } from '@server/auth/domain/user.entity'
 
 type SessionScope = 'tenant' | 'platform'
@@ -19,6 +21,7 @@ declare module 'next-auth' {
     scope?: SessionScope
     tenantId?: string
     papel?: Papel
+    user: { id: string } & DefaultSession['user']
   }
 }
 
