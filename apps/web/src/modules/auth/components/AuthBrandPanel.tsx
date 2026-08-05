@@ -5,8 +5,13 @@ import { AppLogo } from '@shared/components/ui'
 import { brand, surface } from '@shared/theme/tokens'
 
 const AUTH_CITY_IMAGE_URL = '/auth/ketris-city-network.png'
+const DEFAULT_DESCRIPTION = 'A infraestrutura digital do mercado imobiliário'
 
-export function AuthBrandPanel() {
+type AuthBrandPanelProps = {
+  description?: string
+}
+
+export function AuthBrandPanel({ description = DEFAULT_DESCRIPTION }: AuthBrandPanelProps) {
   return (
     <Box
       component="section"
@@ -58,7 +63,7 @@ export function AuthBrandPanel() {
             fontSize: { xs: 14, md: 18 },
           }}
         >
-          A infraestrutura digital do mercado imobiliário
+          {description}
         </Typography>
 
         <Typography

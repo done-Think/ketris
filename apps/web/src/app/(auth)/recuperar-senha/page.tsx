@@ -1,13 +1,16 @@
 import Link from 'next/link'
 import { Link as MuiLink } from '@mui/material'
 
-import { AuthStandaloneShell, PasswordRecoveryForm } from '@modules/auth'
+import { AuthShell, PasswordRecoveryForm } from '@modules/auth'
 
 export const metadata = { title: 'Recuperar senha | Ketris' }
 
 export default function RecuperarSenhaPage() {
   return (
-    <AuthStandaloneShell
+    <AuthShell
+      brandDescription="Recupere o acesso à sua carteira de imóveis e clientes"
+      contentMaxWidth={354}
+      contentPaddingTop={7.5}
       footer={
         <MuiLink
           component={Link}
@@ -20,6 +23,6 @@ export default function RecuperarSenhaPage() {
       }
     >
       <PasswordRecoveryForm />
-    </AuthStandaloneShell>
+    </AuthShell>
   )
 }

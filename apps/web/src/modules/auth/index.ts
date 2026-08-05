@@ -1,5 +1,4 @@
 export { AuthShell } from './components/AuthShell'
-export { AuthStandaloneShell } from './components/AuthStandaloneShell'
 export { AuthStatusCard } from './components/AuthStatusCard'
 export { LoginForm } from './components/LoginForm'
 export { PasswordRecoveryForm } from './components/PasswordRecoveryForm'
