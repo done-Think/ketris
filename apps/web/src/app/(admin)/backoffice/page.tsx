@@ -16,7 +16,7 @@ export default async function BackofficePage() {
         <Typography color="text.secondary">
           Você está autenticado como administrador deste tenant.
         </Typography>
-        <ActionTextLink href="/backoffice/admins/new">Convidar novo administrador</ActionTextLink>
+        <ActionTextLink href="/backoffice/admins">Ver administradores</ActionTextLink>
       </Stack>
     </Container>
   )

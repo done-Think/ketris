@@ -88,7 +88,7 @@ export function CreateAdminForm() {
 
       <Stack direction="row" justifyContent="center">
         <Typography variant="body2" color="text.secondary">
-          <ActionTextLink href="/backoffice/login">Voltar para o login</ActionTextLink>
+          <ActionTextLink href="/backoffice/admins">Voltar para administradores</ActionTextLink>
         </Typography>
       </Stack>
     </Stack>
