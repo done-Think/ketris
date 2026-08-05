@@ -21,3 +21,14 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
   return NextResponse.json({ user }, { status: 201 })
 })
+
+export const GET = withErrorHandling(async (request: NextRequest) => {
+  const actor = await requireBearerAuth(request, authContainer.tokenService)
+
+  const admins = await authContainer.listAdminsUseCase.execute({
+    actorTenantId: actor.tenantId,
+    actorPapel: actor.papel as Papel,
+  })
+
+  return NextResponse.json({ admins }, { status: 200 })
+})
