@@ -56,7 +56,7 @@ describe('Backoffice — sign in e sign up de administrador (UI)', () => {
     cy.get('button[type="submit"]').click()
 
     cy.location('pathname').should('eq', '/backoffice')
-    cy.contains('Convidar novo administrador').should('be.visible')
+    cy.contains('Ver administradores').should('be.visible')
   })
 
   it('permite que um ADMIN já logado convide um novo administrador', () => {
@@ -65,6 +65,9 @@ describe('Backoffice — sign in e sign up de administrador (UI)', () => {
     cy.get('input[name="password"]').type(adminPassword)
     cy.get('button[type="submit"]').click()
     cy.location('pathname').should('eq', '/backoffice')
+
+    cy.contains('a', 'Ver administradores').click()
+    cy.location('pathname').should('eq', '/backoffice/admins')
 
     cy.contains('a', 'Convidar novo administrador').click()
     cy.location('pathname').should('eq', '/backoffice/admins/new')
