@@ -1,7 +1,8 @@
 import type { FooterColumn } from '../types'
 
 export const homeNavigationItems = [
-  { label: 'Alugar', href: '/imoveis?finalidade=alugar', active: true },
+  { label: 'Home', href: '/' },
+  { label: 'Alugar', href: '/imoveis?finalidade=alugar' },
   { label: 'Comprar', href: '/imoveis?finalidade=comprar' },
   { label: 'Corretores', href: '/corretores' },
   { label: 'Imobiliárias', href: '/imobiliarias' },

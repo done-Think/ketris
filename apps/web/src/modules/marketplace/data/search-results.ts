@@ -1,14 +1,35 @@
 import { type MarketplacePropertyDetail, getPropertyDetailById } from './property-details'
 
-const searchResultIds = [
-  'apartamento-jardins',
-  'cobertura-itaim-bibi',
-  'apartamento-garden-remodelado',
-  'loft-industrial-mobiliado',
-] as const
+export type SearchResultPurpose = 'alugar' | 'comprar'
 
-export const searchResults: MarketplacePropertyDetail[] = searchResultIds.flatMap((propertyId) => {
-  const property = getPropertyDetailById(propertyId)
+export type SearchResultProperty = MarketplacePropertyDetail & {
+  purpose: SearchResultPurpose
+}
 
-  return property ? [property] : []
-})
+const searchResultIdsByPurpose = {
+  alugar: [
+    'apartamento-jardins',
+    'apartamento-garden-remodelado',
+    'loft-industrial-mobiliado',
+    'cobertura-itaim-bibi',
+    'apartamento-moema',
+    'casa-alto-da-boa-vista',
+  ],
+  comprar: [
+    'apartamento-jardins-venda',
+    'apartamento-jardim-paulista-venda',
+    'cobertura-pinheiros-venda',
+    'casa-alto-da-lapa-venda',
+    'loft-vila-madalena-venda',
+  ],
+} as const satisfies Record<SearchResultPurpose, readonly string[]>
+
+export const searchResults: SearchResultProperty[] = Object.entries(
+  searchResultIdsByPurpose,
+).flatMap(([purpose, propertyIds]) =>
+  propertyIds.flatMap((propertyId) => {
+    const property = getPropertyDetailById(propertyId)
+
+    return property ? [{ ...property, purpose: purpose as SearchResultPurpose }] : []
+  }),
+)

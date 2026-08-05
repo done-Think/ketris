@@ -99,8 +99,8 @@ function formatCompactCurrency(value: number) {
 export function SearchResultsPage({ purpose }: SearchResultsPageProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [selectedPropertyId, setSelectedPropertyId] = useState(searchResults[0]?.id ?? '')
-  const [locationQuery, setLocationQuery] = useState('Jardins, São Paulo')
-  const [propertyTypeFilter, setPropertyTypeFilter] = useState('Apartamento')
+  const [locationQuery, setLocationQuery] = useState('')
+  const [propertyTypeFilter, setPropertyTypeFilter] = useState('')
   const [priceFilterIndex, setPriceFilterIndex] = useState(0)
   const [customMaxPrice, setCustomMaxPrice] = useState('')
   const [bedroomFilterIndex, setBedroomFilterIndex] = useState(0)
@@ -129,6 +129,7 @@ export function SearchResultsPage({ purpose }: SearchResultsPageProps) {
   const areaFilterLabel = customMinAreaValue > 0 ? `${customMinAreaValue}m²+` : areaFilter.label
   const filteredResults = useMemo(() => {
     const nextResults = searchResults
+      .filter((property) => property.purpose === purpose)
       .filter((property) => !locationQuery || property.location === locationQuery)
       .filter((property) => !propertyTypeFilter || property.category === propertyTypeFilter)
       .filter((property) => !maxPrice || getCurrencyValue(property.price) <= maxPrice)
@@ -159,6 +160,7 @@ export function SearchResultsPage({ purpose }: SearchResultsPageProps) {
     minArea,
     onlyWithParking,
     propertyTypeFilter,
+    purpose,
     sortOption,
   ])
 

@@ -22,6 +22,10 @@ export function HomePageClient() {
   const desktopSearchRef = useRef<HTMLDivElement | null>(null)
   const mobileSearchRef = useRef<HTMLDivElement | null>(null)
   const searchRefs = useMemo(() => [desktopSearchRef, mobileSearchRef], [])
+  const navigationItems = homeNavigationItems.map((item) => ({
+    ...item,
+    active: item.href === '/',
+  }))
 
   useClickAway(searchRefs, closeSearchMenu, { enabled: Boolean(activeSearchMenu) })
 
@@ -36,7 +40,7 @@ export function HomePageClient() {
       }}
     >
       <HomeHeader
-        navigationItems={homeNavigationItems}
+        navigationItems={navigationItems}
         profileButtonRef={profileButtonRef}
         userProfile={userProfile}
         onToggleProfile={() => setIsProfileOpen((current) => !current)}
