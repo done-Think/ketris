@@ -11,6 +11,17 @@ const nextConfig = {
   },
   // MUI v6 + Emotion: transpila pacotes que enviam ESM
   transpilePackages: ['@mui/x-charts', '@mui/x-data-grid'],
+  webpack(config) {
+    config.module.rules.push({
+      test: /\.(mp4|webm)$/i,
+      type: 'asset/resource',
+      generator: {
+        filename: 'static/media/[name].[hash][ext]',
+      },
+    })
+
+    return config
+  },
 }
 
 export default withSentryConfig(nextConfig, {

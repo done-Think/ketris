@@ -2,6 +2,8 @@ import { Box } from '@mui/material'
 
 import { gradients, zIndex } from '@shared/theme/tokens'
 
+import videoLogoChromaUrl from '../assets/videologo-chroma.webm'
+
 export function HeroBrandVideo() {
   return (
     <Box
@@ -53,7 +55,7 @@ export function HeroBrandVideo() {
         >
           <Box
             component="video"
-            src="/videologo-chroma.webm"
+            src={videoLogoChromaUrl}
             autoPlay
             muted
             playsInline
@@ -72,7 +74,7 @@ export function HeroBrandVideo() {
           />
           <Box
             component="video"
-            src="/videologo-chroma.webm"
+            src={videoLogoChromaUrl}
             autoPlay
             muted
             playsInline
