@@ -80,6 +80,11 @@ usuários e separação da criação de ADMIN". Resumo:
   use-case (`CreateAdminUseCase`) e uma rota totalmente separados de `POST /auth/users`, e **nunca é
   registrada** em `src/server/openapi/registry.ts` — não aparece em `GET /api/docs` nem em
   `GET /api/docs/openapi.json`.
+- `GET /api/auth/admins` e `GET/PATCH/DELETE /api/auth/admins/{id}` espelham o CRUD de usuário, mas
+  restritos a contas `ADMIN` do próprio tenant do ator (o inverso do CRUD de usuário, que nunca revela
+  `ADMIN`). `DELETE` bloqueia autodesativação (`CannotDeactivateSelfError`) e revoga os refresh tokens do
+  alvo, igual ao `DELETE` de usuário. Assim como a criação, essas rotas **nunca são registradas** no
+  OpenAPI.
 
 ## Platform admin: identidade separada do ADMIN de tenant
 
