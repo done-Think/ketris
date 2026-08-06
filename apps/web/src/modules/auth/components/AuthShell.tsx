@@ -6,6 +6,27 @@ import { radius, surface } from '@shared/theme/tokens'
 
 import { AuthBrandPanel } from './AuthBrandPanel'
 
+const mobileCardLayouts = {
+  backdrop: {
+    cardPaddingBottom: 2.5,
+    cardPaddingTop: 2.5,
+    cardPaddingX: 2.5,
+    footerBottom: 1.25,
+    mainPaddingBottom: 6,
+    mainPaddingTop: 9.875,
+    mainPaddingX: 2,
+  },
+  card: {
+    cardPaddingBottom: 3,
+    cardPaddingTop: 3.25,
+    cardPaddingX: 3.125,
+    footerBottom: 5.25,
+    mainPaddingBottom: 12,
+    mainPaddingTop: 4.875,
+    mainPaddingX: 2.25,
+  },
+} as const
+
 type AuthShellProps = {
   brandDescription?: string
   children: ReactNode
@@ -13,6 +34,7 @@ type AuthShellProps = {
   contentPaddingTop?: number
   footer?: ReactNode
   mobileCard?: boolean
+  mobileLogoPlacement?: 'backdrop' | 'card'
 }
 
 export function AuthShell({
@@ -22,7 +44,11 @@ export function AuthShell({
   contentPaddingTop = 11.5,
   footer,
   mobileCard = false,
+  mobileLogoPlacement = 'card',
 }: AuthShellProps) {
+  const hasBackdropLogo = mobileCard && mobileLogoPlacement === 'backdrop'
+  const mobileLayout = mobileCardLayouts[mobileLogoPlacement]
+
   return (
     <Box
       sx={{
@@ -37,6 +63,20 @@ export function AuthShell({
     >
       <AuthBrandPanel description={brandDescription} mobileBackdrop={mobileCard} />
 
+      {hasBackdropLogo && (
+        <Box
+          sx={{
+            position: 'absolute',
+            zIndex: 2,
+            top: 1.25,
+            left: 0.5,
+            display: { xs: 'flex', md: 'none' },
+          }}
+        >
+          <AppLogo src="/ketris-logo-transparent.png" width={76} />
+        </Box>
+      )}
+
       <Box
         component="main"
         sx={{
@@ -50,9 +90,17 @@ export function AuthShell({
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'center',
-          px: { xs: mobileCard ? 2.25 : 2.5, sm: mobileCard ? 3 : 5, md: 4 },
-          pt: { xs: mobileCard ? 4.875 : 5, sm: mobileCard ? 5 : 8, md: contentPaddingTop },
-          pb: { xs: mobileCard ? 12 : 5, md: 10 },
+          px: {
+            xs: mobileCard ? mobileLayout.mainPaddingX : 2.5,
+            sm: mobileCard ? 3 : 5,
+            md: 4,
+          },
+          pt: {
+            xs: mobileCard ? mobileLayout.mainPaddingTop : 5,
+            sm: mobileCard ? mobileLayout.mainPaddingTop : 8,
+            md: contentPaddingTop,
+          },
+          pb: { xs: mobileCard ? mobileLayout.mainPaddingBottom : 5, md: 10 },
           bgcolor: { xs: mobileCard ? 'transparent' : surface.paper, md: surface.paper },
         }}
       >
@@ -60,9 +108,9 @@ export function AuthShell({
           sx={{
             width: '100%',
             maxWidth: contentMaxWidth,
-            px: { xs: mobileCard ? 3.125 : 0, md: 0 },
-            pt: { xs: mobileCard ? 3.25 : 0, md: 0 },
-            pb: { xs: mobileCard ? 3 : 0, md: 0 },
+            px: { xs: mobileCard ? mobileLayout.cardPaddingX : 0, md: 0 },
+            pt: { xs: mobileCard ? mobileLayout.cardPaddingTop : 0, md: 0 },
+            pb: { xs: mobileCard ? mobileLayout.cardPaddingBottom : 0, md: 0 },
             borderRadius: { xs: mobileCard ? `${radius.md}px` : 0, md: 0 },
             bgcolor: { xs: mobileCard ? surface.paper : 'transparent', md: 'transparent' },
             boxShadow: {
@@ -71,7 +119,7 @@ export function AuthShell({
             },
           }}
         >
-          {mobileCard && (
+          {mobileCard && mobileLogoPlacement === 'card' && (
             <Box
               sx={{
                 display: { xs: 'flex', md: 'none' },
@@ -92,7 +140,10 @@ export function AuthShell({
             sx={{
               position: 'absolute',
               right: 0,
-              bottom: { xs: mobileCard ? 5.25 : 3.5, md: 3.5 },
+              bottom: {
+                xs: mobileCard ? mobileLayout.footerBottom : 3.5,
+                md: 3.5,
+              },
               left: 0,
               display: 'flex',
               justifyContent: 'center',

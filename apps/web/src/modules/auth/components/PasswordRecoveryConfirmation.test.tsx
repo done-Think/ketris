@@ -13,6 +13,7 @@ describe('PasswordRecoveryConfirmation', () => {
         'Verifique sua caixa de entrada e siga as instruções para redefinir sua senha.',
       ),
     ).toBeInTheDocument()
+    expect(screen.getByText('Enviamos as instruções para o seu e-mail.')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Voltar ao login' })).toHaveAttribute('href', '/login')
   })
 })

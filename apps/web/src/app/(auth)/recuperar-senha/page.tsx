@@ -11,12 +11,14 @@ export default function RecuperarSenhaPage() {
       brandDescription="Recupere o acesso à sua carteira de imóveis e clientes"
       contentMaxWidth={354}
       contentPaddingTop={7.5}
+      mobileCard
+      mobileLogoPlacement="backdrop"
       footer={
         <MuiLink
           component={Link}
           href="/login"
           underline="hover"
-          sx={{ color: 'primary.main', fontSize: 14, fontWeight: 700 }}
+          sx={{ color: 'primary.main', fontSize: { xs: 10, md: 14 }, fontWeight: 700 }}
         >
           Voltar ao login
         </MuiLink>

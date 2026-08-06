@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import { Box, Button, Typography } from '@mui/material'
 import { useForm } from 'react-hook-form'
 
@@ -38,18 +39,22 @@ export function PasswordRecoveryForm() {
         <Box
           aria-hidden="true"
           sx={{
-            width: 60,
-            height: 60,
+            width: { xs: 36, md: 60 },
+            height: { xs: 36, md: 60 },
             display: 'grid',
             placeItems: 'center',
             borderRadius: `${radius.full}px`,
             bgcolor: brand.magenta[50],
           }}
         >
+          <LockOutlinedIcon
+            sx={{ display: { xs: 'block', md: 'none' }, color: 'primary.main', fontSize: 18 }}
+          />
           <Box
             sx={{
               width: 21,
               height: 21,
+              display: { xs: 'none', md: 'block' },
               borderRadius: `${radius.full}px`,
               bgcolor: brand.magenta[500],
             }}
@@ -57,9 +62,15 @@ export function PasswordRecoveryForm() {
         </Box>
       </Box>
 
-      <Box sx={{ mt: 4, textAlign: 'center' }}>
-        <Typography variant="h3">Recuperar senha</Typography>
-        <Typography color="text.secondary" variant="body2" sx={{ mt: 0.5 }}>
+      <Box sx={{ mt: { xs: 2, md: 4 }, textAlign: 'center' }}>
+        <Typography variant="h3" sx={{ fontSize: { xs: 16, md: '1.625rem' } }}>
+          Recuperar senha
+        </Typography>
+        <Typography
+          color="text.secondary"
+          variant="body2"
+          sx={{ mt: 0.5, fontSize: { xs: 10, md: 14 } }}
+        >
           Digite seu e-mail para redefinir sua senha
         </Typography>
       </Box>
@@ -68,9 +79,13 @@ export function PasswordRecoveryForm() {
         component="form"
         noValidate
         onSubmit={handleSubmit(submitRecoveryRequest)}
-        sx={{ mt: 2.5 }}
+        sx={{ mt: { xs: 1.5, md: 2.5 } }}
       >
-        <AuthFormField htmlFor="password-recovery-email" label="E-mail">
+        <AuthFormField
+          htmlFor="password-recovery-email"
+          label="E-mail"
+          labelSx={{ fontSize: { xs: 10, md: 14 } }}
+        >
           <RhfTextField
             id="password-recovery-email"
             control={control}
@@ -82,7 +97,12 @@ export function PasswordRecoveryForm() {
             sx={[
               authTextFieldSx,
               {
-                '& .MuiOutlinedInput-root': { height: 42 },
+                '& .MuiOutlinedInput-root': { height: { xs: 30, md: 42 } },
+                '& .MuiInputBase-input': {
+                  px: { xs: 1.25, md: 1.75 },
+                  py: { xs: 0.75, md: 1.5 },
+                  fontSize: { xs: 10, md: 14 },
+                },
               },
             ]}
           />
@@ -94,7 +114,14 @@ export function PasswordRecoveryForm() {
           size="large"
           fullWidth
           disabled={isSubmitting}
-          sx={{ ...authPrimaryButtonSx, height: 46, mt: 3.25 }}
+          sx={[
+            authPrimaryButtonSx,
+            {
+              height: { xs: 30, md: 46 },
+              mt: { xs: 2, md: 3.25 },
+              fontSize: { xs: 10, md: 14 },
+            },
+          ]}
         >
           Enviar instruções
         </Button>
