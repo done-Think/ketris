@@ -29,7 +29,10 @@ export function RegistrationProgress({ currentStep, totalSteps }: RegistrationPr
               height: 8,
               borderRadius: `${radius.full}px`,
               bgcolor: isCurrentStep ? brand.magenta[500] : brand.neutral[100],
-              transition: 'width 160ms ease, background-color 160ms ease',
+              transition: 'width 280ms cubic-bezier(0.22, 1, 0.36, 1), background-color 220ms ease',
+              '@media (prefers-reduced-motion: reduce)': {
+                transition: 'none',
+              },
             }}
           />
         )

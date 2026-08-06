@@ -5,6 +5,7 @@ export { PasswordRecoveryConfirmation } from './components/PasswordRecoveryConfi
 export { PasswordRecoveryForm } from './components/PasswordRecoveryForm'
 export { RegistrationDetailsForm } from './components/RegistrationDetailsForm'
 export { RegistrationFormShell } from './components/RegistrationFormShell'
+export { RegistrationProfileScreen } from './components/RegistrationProfileScreen'
 export { RegistrationProfileStep } from './components/RegistrationProfileStep'
 export { RegistrationShell } from './components/RegistrationShell'
 export { isRegistrationProfileId, type RegistrationProfileId } from './config/registration-profiles'

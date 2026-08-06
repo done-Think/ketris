@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { Box, Button, RadioGroup, Typography } from '@mui/material'
 
 import { authPrimaryButtonSx } from './auth-form.styles'
@@ -12,9 +11,13 @@ import {
   REGISTRATION_PROFILES,
   type RegistrationProfileId,
 } from '../config/registration-profiles'
-import { getRegistrationDetailsRoute } from '../config/registration-routes'
 
-export function RegistrationProfileStep() {
+type RegistrationProfileStepProps = {
+  isAdvancing: boolean
+  onContinue: (profile: RegistrationProfileId) => void
+}
+
+export function RegistrationProfileStep({ isAdvancing, onContinue }: RegistrationProfileStepProps) {
   const [selectedProfile, setSelectedProfile] = useState<RegistrationProfileId>(
     DEFAULT_REGISTRATION_PROFILE,
   )
@@ -57,9 +60,11 @@ export function RegistrationProfileStep() {
       </RadioGroup>
 
       <Button
-        component={Link}
-        href={getRegistrationDetailsRoute(selectedProfile)}
+        type="button"
         variant="contained"
+        aria-busy={isAdvancing}
+        disabled={isAdvancing}
+        onClick={() => onContinue(selectedProfile)}
         sx={{
           ...authPrimaryButtonSx,
           width: '100%',

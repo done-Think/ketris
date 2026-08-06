@@ -1,27 +1,34 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { RegistrationProfileStep } from './RegistrationProfileStep'
 
+const continueMock = vi.fn()
+
+function renderProfileStep(isAdvancing = false) {
+  return render(<RegistrationProfileStep isAdvancing={isAdvancing} onContinue={continueMock} />)
+}
+
 describe('RegistrationProfileStep', () => {
+  beforeEach(() => {
+    continueMock.mockClear()
+  })
+
   it('exibe os perfis e inicia com proprietário selecionado', () => {
-    render(<RegistrationProfileStep />)
+    renderProfileStep()
 
     expect(screen.getByRole('heading', { name: 'Qual é o seu perfil?' })).toBeInTheDocument()
     expect(screen.getAllByRole('radio')).toHaveLength(5)
     expect(screen.getByRole('radio', { name: 'Proprietário' })).toBeChecked()
-    expect(screen.getByRole('link', { name: 'Continuar' })).toHaveAttribute(
-      'href',
-      '/cadastro/dados?perfil=proprietario',
-    )
+    expect(screen.getByRole('button', { name: 'Continuar' })).toBeEnabled()
   })
 
   it.each(['Corretor', 'Imobiliária', 'Construtora', 'Locatário'])(
     'permite selecionar o perfil %s pela caixa inteira',
     async (profileName) => {
       const user = userEvent.setup()
-      render(<RegistrationProfileStep />)
+      renderProfileStep()
 
       await user.click(screen.getByRole('radio', { name: profileName }))
 
@@ -32,7 +39,7 @@ describe('RegistrationProfileStep', () => {
 
   it('permite alterar a seleção usando o teclado', async () => {
     const user = userEvent.setup()
-    render(<RegistrationProfileStep />)
+    renderProfileStep()
 
     const ownerOption = screen.getByRole('radio', { name: 'Proprietário' })
     await user.click(ownerOption)
@@ -41,15 +48,19 @@ describe('RegistrationProfileStep', () => {
     expect(screen.getByRole('radio', { name: 'Corretor' })).toBeChecked()
   })
 
-  it('leva o perfil selecionado para a rota da segunda etapa', async () => {
+  it('entrega o perfil selecionado ao avançar', async () => {
     const user = userEvent.setup()
-    render(<RegistrationProfileStep />)
+    renderProfileStep()
 
     await user.click(screen.getByRole('radio', { name: 'Imobiliária' }))
+    await user.click(screen.getByRole('button', { name: 'Continuar' }))
 
-    expect(screen.getByRole('link', { name: 'Continuar' })).toHaveAttribute(
-      'href',
-      '/cadastro/dados?perfil=imobiliaria',
-    )
+    expect(continueMock).toHaveBeenCalledWith('imobiliaria')
+  })
+
+  it('bloqueia cliques repetidos durante a transição', () => {
+    renderProfileStep(true)
+
+    expect(screen.getByRole('button', { name: 'Continuar' })).toBeDisabled()
   })
 })
