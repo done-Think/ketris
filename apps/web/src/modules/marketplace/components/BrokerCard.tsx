@@ -11,11 +11,9 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineRounded'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import StarRoundedIcon from '@mui/icons-material/StarRounded'
-import Link from 'next/link'
 
 import {
   alpha,
@@ -27,9 +25,9 @@ import {
   surface,
 } from '@shared/theme/tokens'
 
-import type { BrokerProfile } from '../types/broker'
+import type { BrokerCardProps } from '../types/broker'
 
-export function BrokerCard(brokerCardProps: BrokerProfile) {
+export function BrokerCard(brokerCardProps: BrokerCardProps) {
   return (
     <Card
       sx={{
@@ -77,15 +75,8 @@ export function BrokerCard(brokerCardProps: BrokerProfile) {
               </Stack>
             </Stack>
 
-            <Typography
-              sx={{
-                color: 'text.secondary',
-                ...componentText.cardMeta,
-                mt: 1.15,
-                lineHeight: 1.5,
-              }}
-            >
-              {brokerCardProps.bio}
+            <Typography sx={{ color: 'text.secondary', ...componentText.cardMeta, mt: 1 }}>
+              {brokerCardProps.region}
             </Typography>
           </Box>
         </Stack>
@@ -145,48 +136,44 @@ export function BrokerCard(brokerCardProps: BrokerProfile) {
 
         <Divider sx={{ my: 1.8 }} />
 
-        <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
-          <Stack direction="row" alignItems="center" spacing={0.6} sx={{ minWidth: 0 }}>
-            <ApartmentOutlinedIcon sx={{ color: 'text.secondary', fontSize: iconSize.sm }} />
-            <Typography noWrap sx={{ color: 'text.secondary', ...componentText.cardMeta }}>
-              {brokerCardProps.dealsClosed} negociações fechadas
-            </Typography>
-          </Stack>
-
-          <Stack direction="row" alignItems="center" spacing={0.8}>
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<ChatBubbleOutlineRoundedIcon sx={{ fontSize: iconSize.sm }} />}
-              sx={{
-                display: { xs: 'none', sm: 'inline-flex' },
-                borderRadius: `${radius.sm}px`,
-                borderColor: 'divider',
-                color: 'text.primary',
-                ...componentText.resetButtonText,
-                fontWeight: 800,
-                '&:hover': {
-                  bgcolor: alpha.magenta[6],
-                  borderColor: 'primary.main',
-                },
-              }}
-            >
-              Contatar
-            </Button>
-            <Button
-              component={Link}
-              href={brokerCardProps.href}
-              size="small"
-              endIcon={<ChevronRightIcon sx={{ fontSize: iconSize.sm }} />}
-              sx={{
-                color: 'primary.main',
-                ...componentText.resetButtonText,
-                fontWeight: 900,
-              }}
-            >
-              Perfil
-            </Button>
-          </Stack>
+        <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={0.8}>
+          <Button
+            type="button"
+            size="small"
+            variant="outlined"
+            startIcon={<ChatBubbleOutlineRoundedIcon sx={{ fontSize: iconSize.sm }} />}
+            sx={{
+              display: { xs: 'none', sm: 'inline-flex' },
+              borderRadius: `${radius.sm}px`,
+              borderColor: 'divider',
+              color: 'text.primary',
+              ...componentText.resetButtonText,
+              fontWeight: 800,
+              '&:hover': {
+                bgcolor: alpha.magenta[6],
+                borderColor: 'primary.main',
+              },
+            }}
+          >
+            Contatar
+          </Button>
+          <Button
+            type="button"
+            size="small"
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              brokerCardProps.onOpenProfile()
+            }}
+            endIcon={<ChevronRightIcon sx={{ fontSize: iconSize.sm }} />}
+            sx={{
+              color: 'primary.main',
+              ...componentText.resetButtonText,
+              fontWeight: 900,
+            }}
+          >
+            Perfil
+          </Button>
         </Stack>
       </CardContent>
     </Card>
