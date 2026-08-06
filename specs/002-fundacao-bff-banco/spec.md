@@ -83,6 +83,47 @@ CRUD básico e as transições de status descritas em `specs/001-mvp-loop-imovel
 
 ---
 
+### User Story 4 - Gestão administrativa de usuários e criação de administradores (Priority: P2)
+
+Um administrador autenticado gerencia as contas `OWNER`/`AGENT` do próprio tenant (criar, listar, consultar,
+editar, desativar) e, por uma via separada e não documentada publicamente, cria outros administradores. Uma
+tela própria de sign in/sign up dá acesso a esse fluxo sem depender do Swagger nem de um cliente HTTP manual.
+
+**Why this priority**: sem isso, o único usuário existente em cada tenant é o admin gerado pelo seed — não
+há como a plataforma operar com múltiplos proprietários/corretores nem crescer o time administrativo. É
+infraestrutura tão essencial quanto o login (User Story 2), por isso compartilha a prioridade P2.
+
+**Independent Test**: logar como o admin do seed, criar um usuário `OWNER`/`AGENT` via
+`POST /api/auth/users`, confirmar que ele aparece em `GET /api/auth/users`, editá-lo via `PATCH`,
+desativá-lo via `DELETE` e confirmar que o login dele passa a falhar; separadamente, acessar
+`/backoffice/login`, autenticar como admin e criar um segundo administrador em
+`/backoffice/admins/new`.
+
+**Acceptance Scenarios**:
+
+1. **Given** um administrador autenticado, **When** ele cria um usuário via `POST /api/auth/users`
+   informando papel `OWNER` ou `AGENT`, **Then** o usuário é criado no tenant do administrador; **When** o
+   corpo da requisição informa papel `ADMIN`, **Then** o sistema rejeita a requisição (400) — este endpoint
+   nunca cria administradores.
+2. **Given** um usuário `OWNER`/`AGENT` existente, **When** um administrador o desativa via
+   `DELETE /api/auth/users/{id}`, **Then** o registro não é removido do banco (`ativo: false`), todos os
+   refresh tokens dele são revogados, e uma nova tentativa de login com essa conta é recusada.
+3. **Given** uma conta `ADMIN`, **When** qualquer requisição de consulta/edição/desativação do CRUD geral
+   (`GET/PATCH/DELETE /api/auth/users/{id}`) referencia o id dessa conta, **Then** o sistema responde como
+   se o id não existisse (404) — contas administrativas nunca são expostas por esse CRUD.
+4. **Given** um administrador autenticado, **When** ele acessa `/backoffice/admins/new` e cria um
+   novo administrador, **Then** a nova conta é criada com papel `ADMIN`; **Given** um usuário `OWNER`/`AGENT`
+   autenticado, **When** ele tenta entrar em `/backoffice/login`, **Then** o acesso é negado e a sessão é
+   encerrada, mesmo com credenciais corretas.
+5. **Given** um visitante sem sessão, **When** ele acessa diretamente `/backoffice/admins/new`,
+   **Then** é redirecionado para `/backoffice/login`.
+6. **Given** um tenant que ainda não tem nenhum administrador, **When** qualquer visitante (sem sessão)
+   acessa `/backoffice/setup` e informa o slug desse tenant, **Then** o primeiro administrador é criado;
+   **When** uma segunda tentativa de bootstrap é feita para o mesmo tenant (já com um admin), **Then** o
+   sistema recusa (409) e não cria uma segunda conta por essa via.
+
+---
+
 ### Edge Cases
 
 - O que acontece se duas requisições tentarem registrar a última assinatura de um contrato ao mesmo tempo
@@ -93,6 +134,9 @@ CRUD básico e as transições de status descritas em `specs/001-mvp-loop-imovel
   não existe um "modo sem tenant" no código de acesso a dados.
 - O que acontece se `DATABASE_URL` não estiver configurado? O app falha rápido e de forma clara na
   inicialização, em vez de falhar silenciosamente em cada request.
+- O que acontece se duas requisições de bootstrap (FR-013) chegarem ao mesmo tempo para o mesmo tenant sem
+  admin? No máximo uma cria o admin; a outra recebe 409 — garantido por um claim atômico no banco
+  (`UPDATE ... WHERE adminBootstrappedAt IS NULL`), não por uma checagem em duas etapas na aplicação.
 
 ## Requirements *(mandatory)*
 
@@ -113,6 +157,28 @@ CRUD básico e as transições de status descritas em `specs/001-mvp-loop-imovel
   transação de banco (`prisma.$transaction`), nunca como passos separados sem atomicidade.
 - **FR-007**: O sistema MUST permitir rodar banco, migrations e seed inteiramente em ambiente local (Docker
   Compose), sem depender de nenhum serviço externo pago para desenvolvimento.
+- **FR-008**: O sistema MUST emitir, junto com o access token do login, um refresh token opaco (não-JWT) de
+  alta entropia, válido por 30 dias, persistindo apenas o hash SHA-256 dele; MUST rotacionar (revogar o
+  antigo, emitir um novo) a cada uso em `POST /auth/refresh`, e MUST tratar o reuso de um refresh token já
+  revogado como inválido.
+- **FR-009**: O sistema MUST permitir que um usuário com papel `ADMIN` crie, liste, consulte, edite e
+  desative usuários `OWNER`/`AGENT` do próprio tenant; o papel atribuído por esses endpoints MUST ser
+  restrito a `OWNER`/`AGENT` — nunca `ADMIN`.
+- **FR-010**: O sistema MUST expor a criação de administradores (`ADMIN`) por um endpoint e um fluxo de
+  autorização totalmente separados da criação de usuários comuns, e esse endpoint MUST NOT ser listado na
+  documentação pública da API (Swagger/OpenAPI).
+- **FR-011**: Desativar um usuário (`DELETE /api/auth/users/{id}`) MUST ser um soft-delete (o registro nunca
+  é removido do banco) e MUST revogar imediatamente todos os refresh tokens ativos desse usuário; um usuário
+  desativado MUST ser tratado como credencial/token inválido em qualquer tentativa de login ou refresh.
+- **FR-012**: O sistema MUST expor uma tela de sign in e uma tela de sign up (criação de administrador) para
+  o fluxo administrativo, ambas inacessíveis a usuários `OWNER`/`AGENT` (a tela de sign up MUST exigir uma
+  sessão `ADMIN` já autenticada; a tela de sign in MUST recusar e encerrar a sessão de quem não for `ADMIN`).
+- **FR-013**: O sistema MUST permitir criar o primeiro administrador de um tenant sem exigir um ator já
+  autenticado, restrito a tenants que ainda não têm nenhum `ADMIN`; uma vez criado o primeiro admin de um
+  tenant, esse caminho MUST deixar de funcionar para aquele tenant (409 em qualquer tentativa seguinte). Essa
+  criação MUST ser atômica sob requisições concorrentes para o mesmo tenant (no máximo um admin criado por
+  essa via, mesmo com duas requisições simultâneas). Esse endpoint MUST NOT ser listado na documentação
+  pública da API, mesma regra do FR-010.
 
 ### Key Entities
 
@@ -121,10 +187,13 @@ modelo de dados, e `specs/001-mvp-loop-imovel-pagamento/data-model.md` continua 
 conceitual. Entidades novas introduzidas aqui, necessárias para autenticação e isolamento multi-tenant:
 
 - **Tenant**: organização cliente da plataforma — nome, slug (usado para resolver o tenant por
-  domínio/subdomínio), cores de white-label.
-- **Usuário**: pessoa autenticada dentro de um tenant (papel: admin, proprietário ou corretor) — nome,
-  e-mail, hash de senha. Interessados que só enviam proposta continuam sem conta, conforme já assumido na
-  spec 001.
+  domínio/subdomínio), cores de white-label, `adminBootstrappedAt` (marca se o primeiro admin já foi
+  criado — controla a janela de bootstrap do FR-013).
+- **Usuário**: pessoa autenticada dentro de um tenant (papel: `ADMIN`, `OWNER` ou `AGENT` — nomes em inglês
+  desde a revisão de 2026-08-04) — nome, e-mail, hash de senha, `ativo` (soft-delete). Interessados que só
+  enviam proposta continuam sem conta, conforme já assumido na spec 001.
+- **RefreshToken**: token opaco de renovação de sessão, vinculado a um usuário e tenant, com expiração e
+  revogação — ver `data-model.md` para o detalhe de campos.
 
 ## Success Criteria *(mandatory)*
 
@@ -137,6 +206,14 @@ conceitual. Entidades novas introduzidas aqui, necessárias para autenticação 
 - **SC-003**: O login via `/login` funciona de ponta a ponta contra dados reais (sem mocks) após o seed.
 - **SC-004**: Os 4 endpoints REST do loop mínimo de valor implementam 100% das transições de status
   descritas nas Acceptance Scenarios da spec 001, verificado por teste automatizado.
+- **SC-005**: Nenhuma conta com papel `ADMIN` é retornada, criada ou editada pelo CRUD geral de usuários
+  (`/api/auth/users*`), e o endpoint de criação de administrador nunca aparece em
+  `GET /api/docs/openapi.json` — ambos verificados por teste automatizado.
+- **SC-006**: Um administrador consegue, sem usar Swagger/Postman/curl, entrar em `/backoffice/login` e
+  criar um novo administrador em `/backoffice/admins/new` usando só a UI.
+- **SC-007**: Um tenant novo (criado sem nenhum usuário) consegue ter seu primeiro administrador criado
+  inteiramente pela aplicação (`/backoffice/setup`), sem exigir acesso direto ao banco ou execução manual de
+  `prisma/seed.ts`; uma segunda tentativa para o mesmo tenant é recusada, verificado por teste automatizado.
 
 ## Assumptions
 
@@ -145,8 +222,11 @@ conceitual. Entidades novas introduzidas aqui, necessárias para autenticação 
 - Upload de mídia (fotos de imóvel) para um storage (S3 ou equivalente) é tratado como decisão futura; esta
   spec cobre apenas o campo `url` em `Midia`, assumindo que o arquivo já foi enviado a algum storage por um
   passo anterior (fora do escopo aqui).
-- Autorização fina por papel (`PapelUsuario`: admin/proprietário/corretor) — regras de "quem pode fazer o
-  quê" além de autenticação básica — fica para uma spec futura; esta spec cobre autenticação (quem é o
-  usuário) e isolamento por tenant, não autorização por papel.
+- Autorização fina por papel (`PapelUsuario`: ADMIN/OWNER/AGENT) para os quatro domínios do loop mínimo de
+  valor (Imóvel, Oportunidade, Contrato, Cobrança) continua fora do escopo desta spec — fica para quando
+  esses endpoints forem implementados (User Story 3). A exceção é a gestão de usuários em si (User Story 4):
+  ali a autorização por papel (só `ADMIN` gerencia usuários, e nunca outro `ADMIN`) já é parte do
+  requisito, não uma decisão de autorização genérica adiada — é inerente a "quem pode criar/editar quem" no
+  próprio recurso de usuário.
 - Esta spec não substitui nem duplica `specs/001-mvp-loop-imovel-pagamento/` — ela é a contraparte de
   banco/BFF que a spec 001 já previa como `[NEEDS CLARIFICATION: stack de backend]` no seu `plan.md`.

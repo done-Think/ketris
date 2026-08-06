@@ -12,6 +12,7 @@ descreve as duas entidades novas (Tenant, Usuário) necessárias para autentica�
 | nome | String | |
 | slug | String | único — usado para resolver o tenant por domínio/subdomínio |
 | corPrimaria / corSecundaria | String? | white-label (docs/stack.md) — sobrescrevem `primary`/`secondary` do tema MUI |
+| adminBootstrappedAt | DateTime? | null = tenant ainda não tem nenhum `ADMIN` e pode ser inicializado via `POST /api/auth/admins/bootstrap` (sem autenticação); preenchido = janela de bootstrap fechada — claim atômico, ver ADR-0002 |
 
 ## Usuário (`usuarios`)
 
@@ -21,10 +22,40 @@ descreve as duas entidades novas (Tenant, Usuário) necessárias para autentica�
 | tenantId | String | FK Tenant |
 | nome, email | String | `@@unique([tenantId, email])` — mesmo e-mail pode existir em tenants diferentes |
 | senhaHash | String | nunca texto puro (FR-003) |
-| papel | enum `PapelUsuario` | ADMIN · PROPRIETARIO · CORRETOR |
+| papel | enum `PapelUsuario` | ADMIN · OWNER · AGENT (nomes em inglês desde a revisão de 2026-08-04; os valores anteriores eram PROPRIETARIO/CORRETOR — migration via `ALTER TYPE ... RENAME VALUE`, dados existentes preservados) |
+| ativo | Boolean (`@default(true)`) | soft-delete — `DELETE /api/auth/users/{id}` só marca `false`, nunca remove a linha (evita quebrar `Imovel.responsavelId`, que referencia `Usuario` com `onDelete: Restrict`); usuário inativo é tratado como credencial/token inválido no login e no refresh |
 
 Interessados que só enviam proposta (User Story 2 da spec 001) **não** têm registro em `Usuario` — seus
 dados ficam apenas nos campos `interessado*` de `Oportunidade`, como já assumido na spec 001.
+
+Só um `ADMIN` cria/edita/lista/desativa outros usuários, e só enxerga/gerencia contas `OWNER`/`AGENT` — uma
+conta `ADMIN` nunca aparece como alvo desses endpoints (tratada como inexistente, 404). Criar um novo
+`ADMIN` é uma rota e um use-case totalmente separados (`POST /api/auth/admins`), que nunca é documentado no
+Swagger/OpenAPI público. Racional completo em `docs/adr/0002-arquitetura-interna-bff.md`, seção "Nota: CRUD
+de usuários e separação da criação de ADMIN".
+
+O **primeiro** `ADMIN` de um tenant (quando `adminBootstrappedAt IS NULL`) pode ser criado por
+`POST /api/auth/admins/bootstrap`, o único endpoint do sistema que não exige ator autenticado — deixa de
+depender só de `prisma/seed.ts` para inicializar um tenant novo. Também nunca documentado no Swagger.
+Racional e trade-offs de segurança completos em `docs/adr/0002-arquitetura-interna-bff.md`, seção "Nota:
+bootstrap do primeiro administrador de um tenant".
+
+## RefreshToken (`refresh_tokens`)
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| id | String (cuid) | |
+| tokenHash | String | único — hash SHA-256 do token opaco; o valor em texto puro nunca é persistido |
+| userId | String | FK Usuario (`onDelete: Cascade`) |
+| tenantId | String | denormalizado do Usuario, evita join extra para checar tenant |
+| expiresAt | DateTime | 30 dias a partir da emissão |
+| revokedAt | DateTime? | preenchido na rotação (uso) ou na desativação do usuário |
+| createdAt | DateTime | |
+
+Emitido junto com o access token em `POST /auth/login`; trocado por um novo par (rotação) em
+`POST /auth/refresh` — o token recebido é revogado e reutilizá-lo depois disso é tratado como inválido.
+`DeactivateUserUseCase` revoga todos os refresh tokens do usuário na desativação. Detalhe completo em
+`docs/adr/0002-arquitetura-interna-bff.md`, seção "Nota: refresh token".
 
 ## Mapeamento das entidades da spec 001 → schema Prisma
 

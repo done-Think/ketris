@@ -26,6 +26,10 @@ model Tenant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Claim atômico de "primeiro admin". Null = tenant ainda não tem nenhum ADMIN e pode ser inicializado
+  // via POST /api/auth/admins/bootstrap (sem autenticação); preenchido = janela de bootstrap fechada.
+  adminBootstrappedAt DateTime?
+
   usuarios      Usuario[]
   imoveis       Imovel[]
   oportunidades Oportunidade[]
@@ -37,8 +41,8 @@ model Tenant {
 
 enum PapelUsuario {
   ADMIN
-  PROPRIETARIO
-  CORRETOR
+  OWNER
+  AGENT
 }
 
 model Usuario {
@@ -47,16 +51,34 @@ model Usuario {
   nome         String
   email        String
   senhaHash    String
-  papel        PapelUsuario @default(CORRETOR)
+  papel        PapelUsuario @default(AGENT)
+  ativo        Boolean      @default(true)
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
   tenant           Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   imoveisResponsavel Imovel[] @relation("ImovelResponsavel")
+  refreshTokens    RefreshToken[]
 
   @@unique([tenantId, email])
   @@index([tenantId])
   @@map("usuarios")
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  tenantId  String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  usuario Usuario @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tenantId])
+  @@map("refresh_tokens")
 }
 
 // ---------------------------------------------------------------------------

@@ -1,17 +1,9 @@
 import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 
-import { httpClient } from '@shared/lib/api/http-client'
+import { authContainer } from '@server/auth/container'
+import { InvalidCredentialsError } from '@server/auth/domain/errors'
 
-type LoginResponse = {
-  id: string
-  name: string
-  email: string
-  accessToken: string
-  tenantId: string
-}
-
-// Configuração do NextAuth. Autentica contra o backend próprio (JWT).
 export const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt' },
   pages: {
@@ -28,12 +20,23 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) return null
 
         try {
-          return await httpClient.post<LoginResponse>('/auth/login', {
+          const { user, accessToken, refreshToken } = await authContainer.loginUseCase.execute({
             email: credentials.email,
             password: credentials.password,
           })
-        } catch {
-          return null
+
+          return {
+            id: user.id,
+            name: user.nome,
+            email: user.email,
+            accessToken,
+            refreshToken,
+            tenantId: user.tenantId,
+            papel: user.papel,
+          }
+        } catch (error) {
+          if (error instanceof InvalidCredentialsError) return null
+          throw error
         }
       },
     }),
@@ -42,13 +45,17 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.accessToken = user.accessToken
+        token.refreshToken = user.refreshToken
         token.tenantId = user.tenantId
+        token.papel = user.papel
       }
       return token
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken
+      session.refreshToken = token.refreshToken
       session.tenantId = token.tenantId
+      session.papel = token.papel
       return session
     },
   },
