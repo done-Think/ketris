@@ -13,10 +13,6 @@ export function useHttpClientSessionSync() {
   const clearTenant = useTenantStore((state) => state.clearTenant)
 
   useEffect(() => {
-    httpClient.setAuthToken(session?.accessToken ?? null)
-  }, [session?.accessToken])
-
-  useEffect(() => {
     const tenantId = session?.tenantId ?? null
     httpClient.setTenant(tenantId)
 
