@@ -11,16 +11,22 @@ const DEFAULT_DESCRIPTION = 'A infraestrutura digital do mercado imobiliário'
 
 type AuthBrandPanelProps = {
   description?: string
+  mobileBackdrop?: boolean
 }
 
-export function AuthBrandPanel({ description = DEFAULT_DESCRIPTION }: AuthBrandPanelProps) {
+export function AuthBrandPanel({
+  description = DEFAULT_DESCRIPTION,
+  mobileBackdrop = false,
+}: AuthBrandPanelProps) {
   return (
     <Box
       component="section"
       aria-label="Ketris, infraestrutura digital do mercado imobiliário"
       sx={{
-        position: 'relative',
-        minHeight: { xs: 220, md: '100dvh' },
+        position: { xs: mobileBackdrop ? 'absolute' : 'relative', md: 'relative' },
+        inset: { xs: mobileBackdrop ? 0 : 'auto', md: 'auto' },
+        width: { xs: mobileBackdrop ? '100%' : 'auto', md: 'auto' },
+        minHeight: { xs: mobileBackdrop ? '100dvh' : 220, md: '100dvh' },
         overflow: 'hidden',
         display: 'grid',
         placeItems: 'center',
@@ -54,7 +60,12 @@ export function AuthBrandPanel({ description = DEFAULT_DESCRIPTION }: AuthBrandP
       <Stack
         alignItems="center"
         spacing={{ xs: 0.75, md: 0.75 }}
-        sx={{ position: 'relative', zIndex: 1, textAlign: 'center' }}
+        sx={{
+          position: 'relative',
+          zIndex: 1,
+          display: { xs: mobileBackdrop ? 'none' : 'flex', md: 'flex' },
+          textAlign: 'center',
+        }}
       >
         <AppLogo src="/ketris-logo-footer.png" width={{ xs: 128, md: 136 }} />
 

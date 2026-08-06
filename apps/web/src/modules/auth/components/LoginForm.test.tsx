@@ -36,12 +36,6 @@ describe('LoginForm', () => {
     expect(screen.getByRole('button', { name: 'Continuar com Google (em breve)' })).toBeDisabled()
   })
 
-  it('direciona a criação de conta para a rota de cadastro', () => {
-    render(<LoginForm callbackUrl="/dashboard" />)
-
-    expect(screen.getByRole('link', { name: 'Criar conta' })).toHaveAttribute('href', '/cadastro')
-  })
-
   it('envia credenciais normalizadas pelo schema', async () => {
     const user = userEvent.setup()
     render(<LoginForm callbackUrl="/dashboard" />)

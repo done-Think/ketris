@@ -11,7 +11,6 @@ import {
   Divider,
   IconButton,
   InputAdornment,
-  Link as MuiLink,
   Stack,
   Typography,
 } from '@mui/material'
@@ -26,6 +25,17 @@ import { AuthFormField } from './AuthFormField'
 import { authPrimaryButtonSx, authTextFieldSx } from './auth-form.styles'
 import { useLogin } from '../hooks/use-login'
 import { loginSchema, type LoginFormValues } from '../schemas/login-schema'
+
+const loginTextFieldSx = {
+  '& .MuiOutlinedInput-root': {
+    height: { xs: 36, md: 46 },
+  },
+  '& .MuiInputBase-input': {
+    px: { xs: 1.5, md: 1.75 },
+    py: { xs: 1, md: 1.5 },
+    fontSize: { xs: 12, md: 14 },
+  },
+} as const
 
 type LoginFormProps = {
   callbackUrl: string
@@ -48,18 +58,22 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
 
   return (
     <Box>
-      <Box sx={{ mb: 3.25 }}>
-        <Typography variant="h3" sx={{ mb: 0.75 }}>
+      <Box sx={{ mb: { xs: 2, md: 3.25 }, textAlign: { xs: 'center', md: 'left' } }}>
+        <Typography variant="h3" sx={{ mb: 0.5, fontSize: { xs: 18, md: '1.625rem' } }}>
           Entrar na sua conta
         </Typography>
-        <Typography color="text.secondary" variant="body2">
+        <Typography color="text.secondary" variant="body2" sx={{ fontSize: { xs: 12, md: 14 } }}>
           Acesse sua conta para gerenciar imóveis
         </Typography>
       </Box>
 
       <Box component="form" noValidate onSubmit={handleSubmit(login)}>
-        <Stack spacing={1.75}>
-          <AuthFormField htmlFor="login-email" label="E-mail">
+        <Stack spacing={{ xs: 1.5, md: 1.75 }}>
+          <AuthFormField
+            htmlFor="login-email"
+            label="E-mail"
+            labelSx={{ fontSize: { xs: 12, md: 14 } }}
+          >
             <RhfTextField
               id="login-email"
               control={control}
@@ -68,12 +82,16 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
               type="email"
               autoComplete="email"
               fullWidth
-              sx={authTextFieldSx}
+              sx={[authTextFieldSx, loginTextFieldSx]}
             />
           </AuthFormField>
 
           <Box>
-            <AuthFormField htmlFor="login-password" label="Senha">
+            <AuthFormField
+              htmlFor="login-password"
+              label="Senha"
+              labelSx={{ fontSize: { xs: 12, md: 14 } }}
+            >
               <RhfTextField
                 id="login-password"
                 control={control}
@@ -81,7 +99,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 fullWidth
-                sx={authTextFieldSx}
+                sx={[authTextFieldSx, loginTextFieldSx]}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -104,15 +122,20 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
               />
             </AuthFormField>
 
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
-              <MuiLink
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: { xs: 0.75, md: 1 } }}>
+              <Typography
                 component={Link}
                 href="/recuperar-senha"
-                underline="hover"
-                sx={{ color: 'primary.main', fontSize: 13, fontWeight: 700 }}
+                sx={{
+                  color: 'primary.main',
+                  fontSize: { xs: 11, md: 13 },
+                  fontWeight: 700,
+                  textDecoration: 'none',
+                  '&:hover': { textDecoration: 'underline' },
+                }}
               >
                 Esqueceu a senha?
-              </MuiLink>
+              </Typography>
             </Box>
           </Box>
 
@@ -123,14 +146,17 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
           )}
         </Stack>
 
-        <Stack spacing={1.75} sx={{ mt: error ? 2.5 : 3.5 }}>
+        <Stack
+          spacing={{ xs: 1.25, md: 1.75 }}
+          sx={{ mt: error ? { xs: 2, md: 2.5 } : { xs: 2, md: 3.5 } }}
+        >
           <Button
             type="submit"
             variant="contained"
             size="large"
             fullWidth
             disabled={isSubmitting}
-            sx={authPrimaryButtonSx}
+            sx={[authPrimaryButtonSx, { height: { xs: 36, md: 50 }, fontSize: { xs: 12, md: 14 } }]}
           >
             {isSubmitting ? <CircularProgress color="inherit" size={21} /> : 'Entrar'}
           </Button>
@@ -173,10 +199,11 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
               </Box>
             }
             sx={{
-              height: 50,
+              height: { xs: 36, md: 50 },
               borderRadius: `${radius.md}px`,
               bgcolor: surface.paper,
               borderColor: brand.neutral[100],
+              fontSize: { xs: 12, md: 14 },
               '&.Mui-disabled': {
                 borderColor: brand.neutral[100],
                 color: 'text.primary',
@@ -187,31 +214,6 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
           </Button>
         </Stack>
       </Box>
-
-      <Stack
-        direction="row"
-        justifyContent="center"
-        spacing={0.5}
-        sx={{
-          mt: { xs: 5, md: 0 },
-          position: { xs: 'static', md: 'absolute' },
-          bottom: { md: 28 },
-          left: { md: 0 },
-          right: { md: 0 },
-          color: 'text.secondary',
-          fontSize: 13,
-        }}
-      >
-        <Typography variant="body2">Não tem conta?</Typography>
-        <MuiLink
-          component={Link}
-          href="/cadastro"
-          underline="hover"
-          sx={{ color: 'primary.main', fontSize: 14, fontWeight: 700 }}
-        >
-          Criar conta
-        </MuiLink>
-      </Stack>
     </Box>
   )
 }

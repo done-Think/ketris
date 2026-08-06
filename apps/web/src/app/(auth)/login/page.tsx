@@ -1,4 +1,4 @@
-import { AuthShell, LoginForm } from '@modules/auth'
+import { AuthShell, LoginAccountPrompt, LoginForm } from '@modules/auth'
 
 export const metadata = { title: 'Entrar | Ketris' }
 
@@ -16,7 +16,7 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
       : '/dashboard'
 
   return (
-    <AuthShell>
+    <AuthShell footer={<LoginAccountPrompt />} mobileCard>
       <LoginForm callbackUrl={callbackUrl} />
     </AuthShell>
   )
