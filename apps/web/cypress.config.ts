@@ -36,13 +36,6 @@ export default defineConfig({
           await prisma.tenant.delete({ where: { id: tenantId } }).catch(() => null)
           return null
         },
-        async seedBareTenant({ tenantSlug }: { tenantSlug: string }) {
-          const tenant = await prisma.tenant.create({
-            data: { nome: 'Tenant E2E Sem Admin', slug: tenantSlug },
-          })
-
-          return tenant.id
-        },
         async seedUserInTenant({
           tenantId,
           email,
@@ -60,6 +53,22 @@ export default defineConfig({
             data: { tenantId, nome: 'Usuário E2E', email, senhaHash, papel },
           })
 
+          return null
+        },
+        async seedPlatformAdmin({ email, password }: { email: string; password: string }) {
+          const senhaHash = await bcrypt.hash(password, 10)
+
+          const admin = await prisma.platformAdmin.create({
+            data: { nome: 'Admin Plataforma E2E', email, senhaHash },
+          })
+
+          return admin.id
+        },
+        async cleanupPlatformAdmin(adminId: string) {
+          await prisma.platformAdminRefreshToken.deleteMany({
+            where: { platformAdminId: adminId },
+          })
+          await prisma.platformAdmin.delete({ where: { id: adminId } }).catch(() => null)
           return null
         },
       })

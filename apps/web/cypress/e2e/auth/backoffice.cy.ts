@@ -25,6 +25,9 @@ describe('Backoffice — sign in e sign up de administrador (UI)', () => {
   })
 
   it('redireciona para /backoffice/login quando um visitante deslogado tenta acessar a área protegida', () => {
+    cy.visit('/backoffice')
+    cy.location('pathname').should('eq', '/backoffice/login')
+
     cy.visit('/backoffice/admins/new')
     cy.location('pathname').should('eq', '/backoffice/login')
   })
@@ -46,12 +49,27 @@ describe('Backoffice — sign in e sign up de administrador (UI)', () => {
     cy.location('pathname').should('eq', '/backoffice/login')
   })
 
-  it('permite que um ADMIN entre e crie um novo administrador', () => {
+  it('leva um ADMIN já cadastrado para a home do backoffice após o login, não direto para o cadastro', () => {
     cy.visit('/backoffice/login')
     cy.get('input[name="email"]').type(adminEmail)
     cy.get('input[name="password"]').type(adminPassword)
     cy.get('button[type="submit"]').click()
 
+    cy.location('pathname').should('eq', '/backoffice')
+    cy.contains('Ver administradores').should('be.visible')
+  })
+
+  it('permite que um ADMIN já logado convide um novo administrador', () => {
+    cy.visit('/backoffice/login')
+    cy.get('input[name="email"]').type(adminEmail)
+    cy.get('input[name="password"]').type(adminPassword)
+    cy.get('button[type="submit"]').click()
+    cy.location('pathname').should('eq', '/backoffice')
+
+    cy.contains('a', 'Ver administradores').click()
+    cy.location('pathname').should('eq', '/backoffice/admins')
+
+    cy.contains('a', 'Convidar novo administrador').click()
     cy.location('pathname').should('eq', '/backoffice/admins/new')
 
     const newAdminEmail = `e2e-novo-admin-${Date.now()}@ketris.dev`

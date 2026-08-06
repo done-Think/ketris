@@ -35,21 +35,3 @@ export class CannotDeactivateSelfError extends AppError {
     })
   }
 }
-
-export class TenantNotFoundError extends AppError {
-  constructor() {
-    super('Tenant não encontrado.', { status: 404, code: 'TENANT_NOT_FOUND' })
-  }
-}
-
-export class AdminAlreadyExistsError extends AppError {
-  constructor() {
-    super(
-      'Este tenant já possui um administrador. Peça a um administrador existente para criar o seu acesso.',
-      {
-        status: 409,
-        code: 'ADMIN_ALREADY_EXISTS',
-      },
-    )
-  }
-}

@@ -8,19 +8,29 @@ interface CreateAdminPayload {
   password: string
 }
 
+interface UpdateAdminPayload {
+  nome?: string
+  email?: string
+}
+
 interface CreateAdminResponse {
   user: AdminUser
 }
 
-interface BootstrapAdminPayload {
-  tenantSlug: string
-  nome: string
-  email: string
-  password: string
+interface ListAdminsResponse {
+  admins: AdminUser[]
 }
 
-interface BootstrapAdminResponse {
-  user: AdminUser
+interface GetAdminResponse {
+  admin: AdminUser
+}
+
+interface UpdateAdminResponse {
+  admin: AdminUser
+}
+
+interface DeactivateAdminResponse {
+  admin: AdminUser
 }
 
 class AdminService extends BaseService {
@@ -30,10 +40,24 @@ class AdminService extends BaseService {
     return this.http.post<CreateAdminResponse>(this.path, payload).then((data) => data.user)
   }
 
-  bootstrap(payload: BootstrapAdminPayload): Promise<AdminUser> {
+  list(): Promise<AdminUser[]> {
+    return this.http.get<ListAdminsResponse>(this.path).then((data) => data.admins)
+  }
+
+  get(id: string): Promise<AdminUser> {
+    return this.http.get<GetAdminResponse>(`${this.path}/${id}`).then((data) => data.admin)
+  }
+
+  update(id: string, payload: UpdateAdminPayload): Promise<AdminUser> {
     return this.http
-      .post<BootstrapAdminResponse>(`${this.path}/bootstrap`, payload)
-      .then((data) => data.user)
+      .patch<UpdateAdminResponse>(`${this.path}/${id}`, payload)
+      .then((data) => data.admin)
+  }
+
+  deactivate(id: string): Promise<AdminUser> {
+    return this.http
+      .delete<DeactivateAdminResponse>(`${this.path}/${id}`)
+      .then((data) => data.admin)
   }
 }
 

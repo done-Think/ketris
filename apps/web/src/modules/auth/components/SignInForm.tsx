@@ -50,7 +50,7 @@ export function SignInForm() {
       return
     }
 
-    router.push('/backoffice/admins/new')
+    router.push('/backoffice')
     router.refresh()
   }
 
@@ -90,13 +90,6 @@ export function SignInForm() {
           <ActionTextLink href="/backoffice/admins/new">
             Cadastrar novo administrador
           </ActionTextLink>
-        </Typography>
-      </Stack>
-
-      <Stack direction="row" justifyContent="center">
-        <Typography variant="caption" color="text.secondary">
-          Tenant sem nenhum administrador?{' '}
-          <ActionTextLink href="/backoffice/setup">Configurar primeiro acesso</ActionTextLink>
         </Typography>
       </Stack>
     </Stack>

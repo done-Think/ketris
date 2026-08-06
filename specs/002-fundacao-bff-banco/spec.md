@@ -117,10 +117,6 @@ desativá-lo via `DELETE` e confirmar que o login dele passa a falhar; separadam
    encerrada, mesmo com credenciais corretas.
 5. **Given** um visitante sem sessão, **When** ele acessa diretamente `/backoffice/admins/new`,
    **Then** é redirecionado para `/backoffice/login`.
-6. **Given** um tenant que ainda não tem nenhum administrador, **When** qualquer visitante (sem sessão)
-   acessa `/backoffice/setup` e informa o slug desse tenant, **Then** o primeiro administrador é criado;
-   **When** uma segunda tentativa de bootstrap é feita para o mesmo tenant (já com um admin), **Then** o
-   sistema recusa (409) e não cria uma segunda conta por essa via.
 
 ---
 
@@ -134,9 +130,6 @@ desativá-lo via `DELETE` e confirmar que o login dele passa a falhar; separadam
   não existe um "modo sem tenant" no código de acesso a dados.
 - O que acontece se `DATABASE_URL` não estiver configurado? O app falha rápido e de forma clara na
   inicialização, em vez de falhar silenciosamente em cada request.
-- O que acontece se duas requisições de bootstrap (FR-013) chegarem ao mesmo tempo para o mesmo tenant sem
-  admin? No máximo uma cria o admin; a outra recebe 409 — garantido por um claim atômico no banco
-  (`UPDATE ... WHERE adminBootstrappedAt IS NULL`), não por uma checagem em duas etapas na aplicação.
 
 ## Requirements *(mandatory)*
 
@@ -173,12 +166,6 @@ desativá-lo via `DELETE` e confirmar que o login dele passa a falhar; separadam
 - **FR-012**: O sistema MUST expor uma tela de sign in e uma tela de sign up (criação de administrador) para
   o fluxo administrativo, ambas inacessíveis a usuários `OWNER`/`AGENT` (a tela de sign up MUST exigir uma
   sessão `ADMIN` já autenticada; a tela de sign in MUST recusar e encerrar a sessão de quem não for `ADMIN`).
-- **FR-013**: O sistema MUST permitir criar o primeiro administrador de um tenant sem exigir um ator já
-  autenticado, restrito a tenants que ainda não têm nenhum `ADMIN`; uma vez criado o primeiro admin de um
-  tenant, esse caminho MUST deixar de funcionar para aquele tenant (409 em qualquer tentativa seguinte). Essa
-  criação MUST ser atômica sob requisições concorrentes para o mesmo tenant (no máximo um admin criado por
-  essa via, mesmo com duas requisições simultâneas). Esse endpoint MUST NOT ser listado na documentação
-  pública da API, mesma regra do FR-010.
 
 ### Key Entities
 
@@ -187,8 +174,7 @@ modelo de dados, e `specs/001-mvp-loop-imovel-pagamento/data-model.md` continua 
 conceitual. Entidades novas introduzidas aqui, necessárias para autenticação e isolamento multi-tenant:
 
 - **Tenant**: organização cliente da plataforma — nome, slug (usado para resolver o tenant por
-  domínio/subdomínio), cores de white-label, `adminBootstrappedAt` (marca se o primeiro admin já foi
-  criado — controla a janela de bootstrap do FR-013).
+  domínio/subdomínio), cores de white-label.
 - **Usuário**: pessoa autenticada dentro de um tenant (papel: `ADMIN`, `OWNER` ou `AGENT` — nomes em inglês
   desde a revisão de 2026-08-04) — nome, e-mail, hash de senha, `ativo` (soft-delete). Interessados que só
   enviam proposta continuam sem conta, conforme já assumido na spec 001.
@@ -211,9 +197,6 @@ conceitual. Entidades novas introduzidas aqui, necessárias para autenticação 
   `GET /api/docs/openapi.json` — ambos verificados por teste automatizado.
 - **SC-006**: Um administrador consegue, sem usar Swagger/Postman/curl, entrar em `/backoffice/login` e
   criar um novo administrador em `/backoffice/admins/new` usando só a UI.
-- **SC-007**: Um tenant novo (criado sem nenhum usuário) consegue ter seu primeiro administrador criado
-  inteiramente pela aplicação (`/backoffice/setup`), sem exigir acesso direto ao banco ou execução manual de
-  `prisma/seed.ts`; uma segunda tentativa para o mesmo tenant é recusada, verificado por teste automatizado.
 
 ## Assumptions
 
