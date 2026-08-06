@@ -23,14 +23,6 @@ CREATE TABLE "platform_admin_refresh_tokens" (
     CONSTRAINT "platform_admin_refresh_tokens_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "platform_settings" (
-    "id" TEXT NOT NULL DEFAULT 'singleton',
-    "bootstrappedAt" TIMESTAMP(3),
-
-    CONSTRAINT "platform_settings_pkey" PRIMARY KEY ("id")
-);
-
 -- CreateIndex
 CREATE UNIQUE INDEX "platform_admins_email_key" ON "platform_admins"("email");
 

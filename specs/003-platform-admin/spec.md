@@ -204,3 +204,13 @@ criado).
   uma spec futura.
 - `POST /api/platform/tenants` não valida se o `slug` corresponde a um domínio/subdomínio real — só garante
   unicidade, mesmo tratamento que `Tenant.slug` já recebe hoje.
+
+## Atualizações
+
+- **2026-08-06**: FR-002 (rota de bootstrap sem autenticação) e SC-001 (verificação de que ela funciona
+  uma única vez) foram supersedidos — o mecanismo foi implementado, testado e depois removido em favor de
+  um seed script (`apps/web/prisma/seed.ts`, ver `docs/adr/0003-platform-admin-identidade-separada.md`,
+  seção Atualização). Racional: o Ketris é uma instância única operada pelo próprio time, não um produto
+  instalado por terceiros — não há necessidade de um endpoint público de "dia zero", e um script rodado
+  uma vez no deploy resolve o mesmo problema com menos superfície de ataque. FR-003 a FR-009 e SC-002 a
+  SC-005 continuam válidos sem alteração; `PlatformSettings` (Key Entities) deixou de existir.

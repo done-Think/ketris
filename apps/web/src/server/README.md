@@ -92,13 +92,12 @@ usuários e separação da criação de ADMIN". Resumo:
 `tenantId` e nunca é confundido com o `ADMIN` de um tenant (`Usuario.papel === 'ADMIN'`, spec 002). Racional
 completo em `docs/adr/0003-platform-admin-identidade-separada.md` e `specs/003-platform-admin/`. Resumo:
 
-- `POST /api/platform/admins/bootstrap`: cria o primeiro platform admin, sem autenticação — mas só funciona
-  uma vez em toda a vida do sistema (claim atômico via `PlatformSettings`, linha singleton, dentro de uma
-  transação Prisma). Qualquer chamada depois do primeiro sucesso responde 409
-  (`PLATFORM_ALREADY_BOOTSTRAPPED`).
+- O primeiro platform admin é criado por `apps/web/prisma/seed.ts` (`npm run db:seed`), não por uma rota
+  HTTP — ver ADR-0003, seção Atualização, para o racional (instância única operada pelo próprio time, sem
+  necessidade de um endpoint público de "dia zero").
 - `POST/GET /api/platform/admins` e `GET/PATCH/DELETE /api/platform/admins/{id}`: CRUD completo, sempre
   exigindo `requirePlatformBearerAuth` (ator já autenticado como platform admin) — é assim que o dono cria o
-  acesso do sócio, depois do bootstrap.
+  acesso do sócio, depois do seed do primeiro.
 - `GET/POST /api/platform/tenants`, `GET /api/platform/tenants/{id}/users` e
   `POST /api/platform/tenants/{id}/admins`: visão e controle cross-tenant — listar/criar tenants, listar
   todos os usuários de um tenant (inclusive contas `ADMIN`, que o CRUD de usuário de um tenant nunca revela)
@@ -106,8 +105,8 @@ completo em `docs/adr/0003-platform-admin-identidade-separada.md` e `specs/003-p
 - Token do platform admin assinado com `PLATFORM_TOKEN_SECRET` (não `AUTH_TOKEN_SECRET`) e payload sem
   `tenantId`/`papel` (`{ sub, scope: 'platform' }`) — separação estrutural, não só de convenção, entre as
   duas identidades.
-- As três rotas de criação de admin deste módulo (bootstrap, criar platform admin, criar admin de tenant)
-  nunca são registradas em `src/server/openapi/registry.ts` — mesma regra de `POST /api/auth/admins`.
+- As rotas de criação de admin deste módulo (criar platform admin, criar admin de tenant) nunca são
+  registradas em `src/server/openapi/registry.ts` — mesma regra de `POST /api/auth/admins`.
 - Sessão NextAuth: segundo `CredentialsProvider` (`id: 'platform-credentials'`), mesma estratégia JWT, com
   `session.scope` (`'tenant' | 'platform'`) como discriminador — `shared/lib/auth/require-platform-session.ts`
   e `shared/lib/auth/require-admin-session.ts` rejeitam a sessão uma da outra, mesmo com o mesmo mecanismo de

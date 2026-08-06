@@ -78,3 +78,28 @@ Decisões específicas:
   precisa de `papel`, tenant admin nunca precisa de visão cross-tenant).
 - **Escopo explicitamente não coberto**: gestão cross-tenant de outros domínios (imóveis, contratos,
   cobranças) não está nesta ADR — só identidade e o mínimo de visão/controle sobre tenants e seus usuários.
+
+## Atualização (2026-08-06): bootstrap HTTP substituído por seed script
+
+O mecanismo de bootstrap descrito acima (`POST /api/platform/admins/bootstrap`, claim atômico em
+`PlatformSettings`, tela `/platform/setup`) foi implementado e depois removido. Racional: esse padrão
+(rota pública, sem autenticação, para o "dia zero" de configuração) existe em produtos como WordPress,
+Ghost, GitLab ou Nextcloud porque eles são instalados por terceiros, em ambientes que o time que os
+desenvolve não controla — faz sentido oferecer um assistente de primeira execução via navegador. O
+Ketris não está nesse caso: é uma instância única, sempre implantada e operada pelo próprio time. Nesse
+cenário, expor uma rota HTTP pública — mesmo com claim atômico e mesmo que só funcione uma vez — é
+superfície de ataque desnecessária para resolver um problema que um script de seed resolve com muito
+menos código e zero rota exposta.
+
+Decisão revisada: o primeiro platform admin é criado por `apps/web/prisma/seed.ts` (`npm run db:seed`),
+lendo `PLATFORM_ADMIN_NAME`/`PLATFORM_ADMIN_EMAIL`/`PLATFORM_ADMIN_PASSWORD` do ambiente, idempotente
+(não faz nada se já existir algum platform admin). Consequências:
+
+- `PlatformSettings` deixou de existir — o claim atômico não é mais necessário porque um script de seed
+  rodado uma vez no deploy não tem concorrência real (diferente de uma rota HTTP pública, que qualquer
+  um poderia chamar simultaneamente).
+- `PlatformAlreadyBootstrappedError`, `BootstrapPlatformAdminUseCase`, `PlatformBootstrapRepository` e
+  toda a cadeia de frontend (`BootstrapPlatformAdminForm`, tela `/platform/setup`, link discreto no
+  login) foram removidos.
+- O restante da ADR permanece válido: platform admin continua sendo uma identidade própria, sem
+  `tenantId`, com token e sessão separados de tenant — só o *mecanismo de criação do primeiro* mudou.

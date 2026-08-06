@@ -195,6 +195,27 @@ bootstrap por tenant (removido na Fase 0)
 
 ---
 
+## Phase 6: Correção de rumo — bootstrap HTTP substituído por seed script
+
+- [x] T031 Remover por completo o mecanismo de bootstrap via HTTP de US1 (T004-T009): rota
+      `POST /api/platform/admins/bootstrap`, `BootstrapPlatformAdminUseCase`,
+      `PlatformBootstrapRepository`/`PrismaPlatformBootstrapRepository`,
+      `bootstrap-platform-admin.schema.ts`, `PlatformAlreadyBootstrappedError`, model `PlatformSettings`
+      (schema + migration), e todo o frontend correspondente (`BootstrapPlatformAdminForm`,
+      `use-bootstrap-platform-admin`, `bootstrap-platform-admin-schema`, tela `/platform/setup`, link
+      discreto em `PlatformSignInForm`) e o E2E `cypress/e2e/platform/bootstrap.cy.ts`. Racional: instância
+      única operada pelo próprio time não precisa de um endpoint público de "dia zero" — ver ADR-0003,
+      seção Atualização.
+- [x] T032 Criar/estender `apps/web/prisma/seed.ts` para criar o primeiro platform admin a partir de
+      `PLATFORM_ADMIN_NAME`/`PLATFORM_ADMIN_EMAIL`/`PLATFORM_ADMIN_PASSWORD` (com fallback de
+      desenvolvimento), idempotente (`prisma.platformAdmin.count()`) — documentado em `.env.example`
+
+**Checkpoint**: FR-002/FR-005 (parte de bootstrap)/SC-001 de `spec.md` e a entidade `PlatformSettings` de
+`data-model.md` ficam supersedidos por esta fase — mantidos no texto original por rastreabilidade, não
+reescritos.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -220,9 +241,9 @@ bootstrap por tenant (removido na Fase 0)
   `npm run test:integration` e `npm run e2e` localmente antes de considerar a spec validada de ponta a
   ponta. Verificado nesta sessão: `tsc --noEmit`, `eslint` e `vitest run` (168/168) passando, incluindo a
   suíte inteira do módulo `platform` (backend e frontend) e o guard `require-platform-session`.
-- `cypress.config.ts` ganhou três tasks novas: `seedPlatformAdmin` (cria direto via Prisma, sem passar pelo
-  bootstrap — usado pelos specs que só precisam de uma sessão válida), `cleanupPlatformAdmin` e
-  `resetPlatformBootstrap` (limpa `platform_admins`/`platform_admin_refresh_tokens`/`platform_settings` por
-  completo — usado só pelo spec de bootstrap, que precisa simular o "dia zero" da plataforma).
+- `cypress.config.ts` tem duas tasks para platform admin: `seedPlatformAdmin` (cria direto via Prisma —
+  usado pelos specs que só precisam de uma sessão válida) e `cleanupPlatformAdmin`. A task
+  `resetPlatformBootstrap` existia só para o spec de bootstrap (Fase 2/T008) e foi removida junto com ele
+  na Fase 6.
 - Migrations desta spec (`20260804213418_add_platform_admin`) não foram aplicadas a nenhum Postgres real
   neste ambiente — rodar `npm run db:migrate` localmente antes de testar a feature de ponta a ponta.

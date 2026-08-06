@@ -71,12 +71,6 @@ export default defineConfig({
           await prisma.platformAdmin.delete({ where: { id: adminId } }).catch(() => null)
           return null
         },
-        async resetPlatformBootstrap() {
-          await prisma.platformAdminRefreshToken.deleteMany()
-          await prisma.platformAdmin.deleteMany()
-          await prisma.platformSettings.deleteMany()
-          return null
-        },
       })
 
       on('after:run', async () => {

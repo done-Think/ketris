@@ -1,8 +1,9 @@
 # Data Model: Administração da Plataforma (Platform Admin)
 
-A fonte de verdade do modelo de dados é `apps/web/prisma/schema.prisma`. Este documento descreve as três
-entidades novas desta spec — todas deliberadamente fora do boundary multi-tenant (nenhuma tem `tenantId`,
-nenhuma referencia `Tenant`).
+A fonte de verdade do modelo de dados é `apps/web/prisma/schema.prisma`. Este documento descreve as duas
+entidades novas desta spec — ambas deliberadamente fora do boundary multi-tenant (nenhuma tem `tenantId`,
+nenhuma referencia `Tenant`). Ver seção Atualizações no fim deste arquivo: uma terceira entidade,
+`PlatformSettings`, existiu e foi removida.
 
 ## PlatformAdmin (`platform_admins`)
 
@@ -29,19 +30,6 @@ Sem `papel` — todo platform admin tem o mesmo nível de acesso (ver Assumption
 
 Não tem `tenantId` (não existe, ao contrário de `RefreshToken`, que denormaliza `tenantId` do `Usuario`).
 
-## PlatformSettings (`platform_settings`)
-
-| Campo | Tipo | Notas |
-|---|---|---|
-| id | String | fixo (`"singleton"`) — sempre existe no máximo uma linha |
-| bootstrappedAt | DateTime? | null = nenhum platform admin foi criado ainda; preenchido = a rota de bootstrap nunca mais funciona, para sempre |
-
-Claim atômico: `BootstrapPlatformAdminUseCase` faz um `updateMany` condicional
-(`WHERE id = 'singleton' AND bootstrappedAt IS NULL`) dentro de uma transação, e só cria o `PlatformAdmin`
-se esse update afetou exatamente uma linha — garante que, sob duas requisições concorrentes, no máximo uma
-cria o primeiro platform admin (mesmo padrão do claim atômico já usado e removido da spec 002, agora
-aplicado a uma única linha global em vez de uma linha por tenant).
-
 ## Relação com entidades já existentes (spec 002)
 
 `PlatformAdmin` não referencia `Tenant` nem `Usuario`, e vice-versa — são identidades paralelas, não
@@ -53,7 +41,13 @@ manipular `Tenant`/`Usuario`, nunca o contrário.
 
 ## Transações que precisam de atomicidade
 
-- **Bootstrap do primeiro platform admin**: claim em `PlatformSettings` + criação do `PlatformAdmin` no
-  mesmo `prisma.$transaction` — se a criação falhar depois do claim (ex.: e-mail duplicado, embora
-  estruturalmente raro no primeiro admin), o claim MUST reverter junto (rollback da transação inteira, não
-  fica um `bootstrappedAt` preenchido sem admin nenhum).
+- ~~Bootstrap do primeiro platform admin: claim em `PlatformSettings` + criação do `PlatformAdmin` no mesmo
+  `prisma.$transaction`~~ — removido, ver seção Atualizações.
+
+## Atualizações
+
+- **2026-08-06**: o model `PlatformSettings` e o claim atômico do bootstrap foram removidos. O primeiro
+  platform admin agora é criado por `apps/web/prisma/seed.ts` (idempotente via
+  `prisma.platformAdmin.count()`), não por uma rota HTTP — sem concorrência real de múltiplas requisições
+  simultâneas, o claim atômico deixou de ser necessário. Ver
+  `docs/adr/0003-platform-admin-identidade-separada.md`, seção Atualização, para o racional completo.

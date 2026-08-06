@@ -39,15 +39,6 @@ export class CannotDeactivateSelfError extends AppError {
   }
 }
 
-export class PlatformAlreadyBootstrappedError extends AppError {
-  constructor() {
-    super('A plataforma já tem um administrador. Esta rota não pode ser usada novamente.', {
-      status: 409,
-      code: 'PLATFORM_ALREADY_BOOTSTRAPPED',
-    })
-  }
-}
-
 export class TenantSlugAlreadyInUseError extends AppError {
   constructor() {
     super('Já existe um tenant com este slug.', {

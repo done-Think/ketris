@@ -8,7 +8,6 @@ import { getSession, signIn, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
 import { RhfTextField } from '@shared/components/form'
-import { ActionTextLink } from '@shared/components/ui'
 
 import {
   platformSignInSchema,
@@ -86,14 +85,6 @@ export function PlatformSignInForm() {
       <Typography variant="body2" color="text.secondary" textAlign="center">
         Acesso restrito à administração geral do Ketris.
       </Typography>
-
-      <Stack direction="row" justifyContent="center">
-        <Typography variant="body2" color="text.secondary">
-          <ActionTextLink href="/platform/setup">
-            Ainda não há administrador da plataforma?
-          </ActionTextLink>
-        </Typography>
-      </Stack>
     </Stack>
   )
 }

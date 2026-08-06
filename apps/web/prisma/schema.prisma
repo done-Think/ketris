@@ -111,15 +111,6 @@ model PlatformAdminRefreshToken {
   @@map("platform_admin_refresh_tokens")
 }
 
-// Linha singleton (id fixo) usada só para o claim atômico do bootstrap do primeiro platform admin —
-// ver data-model.md da spec 003. bootstrappedAt IS NULL = ninguém foi criado ainda.
-model PlatformSettings {
-  id             String    @id @default("singleton")
-  bootstrappedAt DateTime?
-
-  @@map("platform_settings")
-}
-
 // ---------------------------------------------------------------------------
 // Imóvel (módulo `properties`)
 // ---------------------------------------------------------------------------
