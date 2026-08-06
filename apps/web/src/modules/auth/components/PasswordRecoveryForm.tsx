@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Alert, Box, Button, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { useForm } from 'react-hook-form'
 
 import { RhfTextField } from '@shared/components/form'
@@ -15,11 +15,10 @@ import {
   type PasswordRecoveryFormValues,
 } from '../schemas/password-recovery-schema'
 
-const RECOVERY_AVAILABILITY_MESSAGE =
-  'E-mail validado. O envio das instruções será habilitado quando o serviço de recuperação estiver disponível.'
+const PASSWORD_RECOVERY_SENT_ROUTE = '/recuperar-senha/email-enviado'
 
 export function PasswordRecoveryForm() {
-  const [feedback, setFeedback] = useState<string | null>(null)
+  const router = useRouter()
   const {
     control,
     handleSubmit,
@@ -30,7 +29,7 @@ export function PasswordRecoveryForm() {
   })
 
   function submitRecoveryRequest() {
-    setFeedback(RECOVERY_AVAILABILITY_MESSAGE)
+    router.push(PASSWORD_RECOVERY_SENT_ROUTE)
   }
 
   return (
@@ -88,12 +87,6 @@ export function PasswordRecoveryForm() {
             ]}
           />
         </AuthFormField>
-
-        {feedback && (
-          <Alert severity="info" role="status" sx={{ mt: 2 }}>
-            {feedback}
-          </Alert>
-        )}
 
         <Button
           type="submit"

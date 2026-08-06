@@ -1,10 +1,20 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { PasswordRecoveryForm } from './PasswordRecoveryForm'
 
+const { pushMock } = vi.hoisted(() => ({ pushMock: vi.fn() }))
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: pushMock }),
+}))
+
 describe('PasswordRecoveryForm', () => {
+  beforeEach(() => {
+    pushMock.mockClear()
+  })
+
   it('exibe a composição principal da recuperação de senha', () => {
     render(<PasswordRecoveryForm />)
 
@@ -20,18 +30,16 @@ describe('PasswordRecoveryForm', () => {
     await user.click(screen.getByRole('button', { name: 'Enviar instruções' }))
 
     expect(await screen.findByText('Informe seu e-mail')).toBeInTheDocument()
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(pushMock).not.toHaveBeenCalled()
   })
 
-  it('informa que a integração ainda não está disponível após validar o formulário', async () => {
+  it('abre a confirmação após validar o formulário', async () => {
     const user = userEvent.setup()
     render(<PasswordRecoveryForm />)
 
     await user.type(screen.getByLabelText('E-mail'), 'usuario@email.com')
     await user.click(screen.getByRole('button', { name: 'Enviar instruções' }))
 
-    expect(await screen.findByRole('status')).toHaveTextContent(
-      'O envio das instruções será habilitado quando o serviço de recuperação estiver disponível.',
-    )
+    expect(pushMock).toHaveBeenCalledWith('/recuperar-senha/email-enviado')
   })
 })
