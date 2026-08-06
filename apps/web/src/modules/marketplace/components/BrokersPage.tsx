@@ -10,8 +10,9 @@ import { alpha, componentText, iconSize, motion, radius, surface } from '@shared
 import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
 import { brokers } from '../data/brokers'
 import { profileActions, userProfile } from '../data/user-profile'
-import type { BrokerSpecialty } from '../types/broker'
+import type { BrokerProfile, BrokerSpecialty } from '../types/broker'
 import { BrokerCard } from './BrokerCard'
+import { BrokerProfileModal } from './BrokerProfileModal'
 
 const specialtyFilters: Array<BrokerSpecialty | 'Todos'> = [
   'Todos',
@@ -33,6 +34,7 @@ export function BrokersPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedSpecialty, setSelectedSpecialty] =
     useState<(typeof specialtyFilters)[number]>('Todos')
+  const [selectedBroker, setSelectedBroker] = useState<BrokerProfile | null>(null)
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const navigationItems = homeNavigationItems.map((item) => ({
     ...item,
@@ -75,6 +77,12 @@ export function BrokersPage() {
         actions={profileActions}
         userProfile={userProfile}
         onClose={() => setIsProfileOpen(false)}
+      />
+
+      <BrokerProfileModal
+        open={Boolean(selectedBroker)}
+        broker={selectedBroker}
+        onClose={() => setSelectedBroker(null)}
       />
 
       <Box component="main" sx={{ py: { xs: 2.4, md: 4 } }}>
@@ -176,7 +184,11 @@ export function BrokersPage() {
                 }}
               >
                 {filteredBrokers.map((broker) => (
-                  <BrokerCard key={broker.id} {...broker} />
+                  <BrokerCard
+                    key={broker.id}
+                    {...broker}
+                    onOpenProfile={() => setSelectedBroker(broker)}
+                  />
                 ))}
               </Box>
             </Box>
