@@ -1,4 +1,4 @@
-import type { FooterColumn } from '../types'
+import type { FooterColumn } from '../types/footer'
 
 export const homeNavigationItems = [
   { label: 'Home', href: '/' },

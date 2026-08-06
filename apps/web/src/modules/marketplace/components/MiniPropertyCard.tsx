@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 import { componentText, gradients, motion, radius, surface } from '@shared/theme/tokens'
 
-import type { MiniMarketplaceProperty } from '../types'
+import type { MiniMarketplaceProperty } from '../types/mini-property'
 
 type MiniPropertyCardProps = {
   property: MiniMarketplaceProperty

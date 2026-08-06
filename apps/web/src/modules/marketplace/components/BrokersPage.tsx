@@ -8,8 +8,9 @@ import { HomeHeader, ProfileModal, SiteFooter } from '@shared/components/layout'
 import { alpha, componentText, iconSize, motion, radius, surface } from '@shared/theme/tokens'
 
 import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
-import { brokers, type BrokerSpecialty } from '../data/brokers'
+import { brokers } from '../data/brokers'
 import { profileActions, userProfile } from '../data/user-profile'
+import type { BrokerSpecialty } from '../types/broker'
 import { BrokerCard } from './BrokerCard'
 
 const specialtyFilters: Array<BrokerSpecialty | 'Todos'> = [
@@ -175,7 +176,7 @@ export function BrokersPage() {
                 }}
               >
                 {filteredBrokers.map((broker) => (
-                  <BrokerCard key={broker.id} broker={broker} />
+                  <BrokerCard key={broker.id} {...broker} />
                 ))}
               </Box>
             </Box>
