@@ -1,6 +1,7 @@
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi'
 
 import { registerAuthOpenApi } from '@server/auth/openapi'
+import { registerMarketplaceOpenApi } from '@server/marketplace/openapi'
 import { registerPlatformOpenApi } from '@server/platform/openapi'
 import './zod-extend'
 
@@ -14,6 +15,7 @@ registry.registerComponent('securitySchemes', 'bearerAuth', {
 
 registerAuthOpenApi(registry)
 registerPlatformOpenApi(registry)
+registerMarketplaceOpenApi(registry)
 
 export function generateOpenApiDocument() {
   const generator = new OpenApiGeneratorV3(registry.definitions)
