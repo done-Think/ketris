@@ -3,6 +3,7 @@ import { Avatar, Box, Button, Container, IconButton, Link as MuiLink, Stack } fr
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
 import Link from 'next/link'
 
+import ketrisLogoTransparent from '@shared/assets/ketris-logo-transparent.png'
 import { AppLogo } from '@shared/components/ui'
 import {
   componentText,
@@ -58,7 +59,8 @@ export function HomeHeader({
           }}
         >
           <AppLogo
-            src="/ketris-logo-transparent.png"
+            src={ketrisLogoTransparent}
+            variant="transparent"
             width={{ xs: 100, sm: 118 }}
             sx={{ justifySelf: 'start' }}
           />

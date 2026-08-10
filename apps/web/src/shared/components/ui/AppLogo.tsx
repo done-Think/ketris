@@ -1,15 +1,19 @@
 import { Box } from '@mui/material'
 import type { SxProps, Theme } from '@mui/material/styles'
+import type { StaticImageData } from 'next/image'
 import Link from 'next/link'
 
 type AppLogoProps = {
-  src: string
+  src: string | StaticImageData
+  variant?: 'solid' | 'transparent'
   width: { xs?: number; sm?: number; md?: number } | number
   marginBottom?: { xs?: number; md?: number } | number
   sx?: SxProps<Theme>
 }
 
-export function AppLogo({ src, width, marginBottom, sx }: AppLogoProps) {
+export function AppLogo({ src, variant = 'solid', width, marginBottom, sx }: AppLogoProps) {
+  const resolvedSrc = typeof src === 'string' ? src : src.src
+
   return (
     <Box
       component={Link}
@@ -21,7 +25,7 @@ export function AppLogo({ src, width, marginBottom, sx }: AppLogoProps) {
           alignItems: 'center',
           width,
           mb: marginBottom,
-          height: src.includes('transparent') ? 30 : undefined,
+          height: variant === 'transparent' ? 30 : undefined,
           textDecoration: 'none',
         },
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -29,7 +33,7 @@ export function AppLogo({ src, width, marginBottom, sx }: AppLogoProps) {
     >
       <Box
         component="img"
-        src={src}
+        src={resolvedSrc}
         alt="Ketris"
         sx={{
           display: 'block',
