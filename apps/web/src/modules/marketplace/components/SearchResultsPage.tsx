@@ -19,6 +19,7 @@ import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBullete
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 
 import { HomeHeader, ProfileModal } from '@shared/components/layout'
+import { useClickAway } from '@shared/hooks'
 import {
   alpha,
   componentText,
@@ -111,6 +112,7 @@ export function SearchResultsPage({ purpose }: SearchResultsPageProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [activeQuickFilter, setActiveQuickFilter] = useState<QuickFilterKey | null>(null)
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
+  const quickFiltersRef = useRef<HTMLDivElement | null>(null)
   const navigationItems = homeNavigationItems.map((item) => ({
     ...item,
     active: item.href.includes(`finalidade=${purpose}`),
@@ -169,6 +171,10 @@ export function SearchResultsPage({ purpose }: SearchResultsPageProps) {
 
     setSelectedPropertyId(filteredResults[0]?.id ?? '')
   }, [filteredResults, selectedPropertyId])
+
+  useClickAway([quickFiltersRef], () => setActiveQuickFilter(null), {
+    enabled: activeQuickFilter !== null,
+  })
 
   const toggleQuickFilterMenu = (filterKey: QuickFilterKey) => {
     setActiveQuickFilter((current) => (current === filterKey ? null : filterKey))
@@ -393,7 +399,14 @@ export function SearchResultsPage({ purpose }: SearchResultsPageProps) {
             }}
           />
 
-          <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 2 }}>
+          <Stack
+            ref={quickFiltersRef}
+            direction="row"
+            spacing={1}
+            useFlexGap
+            flexWrap="wrap"
+            sx={{ mb: 2 }}
+          >
             {[
               {
                 key: 'type' as const,
