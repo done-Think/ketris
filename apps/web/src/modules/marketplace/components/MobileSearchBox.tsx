@@ -1,24 +1,11 @@
-import { type Dispatch, type Ref, type SetStateAction } from 'react'
 import { Box, Button, Typography } from '@mui/material'
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined'
 import Link from 'next/link'
 
 import { componentText, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
-import type { SearchFilterKey, TextSearchFilterKey } from '../config/search-filters'
+import type { MobileSearchBoxProps } from '../types/search'
 import { TextSearchMenu } from './TextSearchMenu'
-
-type MobileSearchBoxProps = {
-  activeSearchMenu: SearchFilterKey | null
-  mobileSearchRef: Ref<HTMLDivElement>
-  searchDraft: Record<TextSearchFilterKey, string>
-  searchHref: string
-  selectedSearch: Record<SearchFilterKey, string>
-  openSearchMenu: (key: SearchFilterKey) => void
-  selectSearchValue: (key: SearchFilterKey, value: string) => void
-  filterSearchOptions: (key: TextSearchFilterKey) => readonly string[]
-  setSearchDraft: Dispatch<SetStateAction<Record<TextSearchFilterKey, string>>>
-}
 
 export function MobileSearchBox({
   activeSearchMenu,

@@ -7,15 +7,9 @@ import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre'
 import { env } from '@config/env'
 import { componentText, motion, radius, shadows, surface } from '@shared/theme/tokens'
 
-import type { MarketplacePropertyDetail } from '../data/property-details'
+import type { SearchResultsMapProps } from '../types/search'
 
 const defaultMapStyleUrl = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
-
-type SearchResultsMapProps = {
-  properties: MarketplacePropertyDetail[]
-  selectedPropertyId: string
-  onSelectProperty: (propertyId: string) => void
-}
 
 function getMapMarkerLabel(price: string) {
   return price.replace(' / mês', '')

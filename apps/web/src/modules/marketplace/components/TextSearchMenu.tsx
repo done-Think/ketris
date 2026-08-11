@@ -1,20 +1,9 @@
-import { type Dispatch, type SetStateAction } from 'react'
 import { Box, IconButton, InputAdornment, MenuItem, TextField, Typography } from '@mui/material'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 
 import { alpha, componentText, surface } from '@shared/theme/tokens'
 
-import type { SearchFilterKey, TextSearchFilterKey } from '../config/search-filters'
-
-type TextSearchMenuProps = {
-  filterKey: TextSearchFilterKey
-  centered?: boolean
-  selectedSearch: Record<SearchFilterKey, string>
-  searchDraft: Record<TextSearchFilterKey, string>
-  filterSearchOptions: (key: TextSearchFilterKey) => readonly string[]
-  selectSearchValue: (key: SearchFilterKey, value: string) => void
-  setSearchDraft: Dispatch<SetStateAction<Record<TextSearchFilterKey, string>>>
-}
+import type { TextSearchMenuProps } from '../types/search'
 
 export function TextSearchMenu({
   filterKey,

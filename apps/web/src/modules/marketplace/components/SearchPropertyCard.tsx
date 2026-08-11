@@ -9,19 +9,14 @@ import Link from 'next/link'
 
 import { PillBadge } from '@shared/components/ui'
 import { alpha, componentText, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
-import type { PropertyCardData, PropertyFeatureKey } from '@shared/types'
+import type { PropertyFeatureKey } from '@shared/types'
+import type { SearchPropertyCardProps } from '../types/search'
 
 const detailIcons: Record<PropertyFeatureKey, typeof ApartmentOutlinedIcon> = {
   bedrooms: BedOutlinedIcon,
   bathrooms: BathtubOutlinedIcon,
   parking: LocalParkingOutlinedIcon,
   area: SquareFootOutlinedIcon,
-}
-
-type SearchPropertyCardProps = {
-  property: PropertyCardData
-  selected?: boolean
-  onActivate?: () => void
 }
 
 export function SearchPropertyCard({

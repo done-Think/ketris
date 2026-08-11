@@ -1,10 +1,5 @@
-import { type MarketplacePropertyDetail, getPropertyDetailById } from './property-details'
-
-export type SearchResultPurpose = 'alugar' | 'comprar'
-
-export type SearchResultProperty = MarketplacePropertyDetail & {
-  purpose: SearchResultPurpose
-}
+import type { SearchResultProperty, SearchResultPurpose } from '../types/search'
+import { getPropertyDetailById } from './property-details'
 
 const searchResultIdsByPurpose = {
   alugar: [

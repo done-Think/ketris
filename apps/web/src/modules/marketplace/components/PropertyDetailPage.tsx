@@ -29,12 +29,8 @@ import { alpha, componentText, iconSize, radius, shadows, surface } from '@share
 
 import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
 import { profileActions, userProfile } from '../data/user-profile'
-import type { MarketplacePropertyDetail } from '../data/property-details'
+import type { PropertyDetailPageProps } from '../types/property-detail'
 import { PropertyDetailMap } from './PropertyDetailMap'
-
-type PropertyDetailPageProps = {
-  property: MarketplacePropertyDetail
-}
 
 const featureIcons = [
   BedOutlinedIcon,

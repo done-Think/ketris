@@ -39,11 +39,8 @@ export const searchOptions = {
   },
 } as const
 
-export type SearchFilterKey = keyof typeof searchOptions
-export type TextSearchFilterKey = Exclude<SearchFilterKey, 'priceRange'>
-
-export const searchFilterOrder: SearchFilterKey[] = ['location', 'propertyType', 'priceRange']
-export const textSearchFilterOrder: TextSearchFilterKey[] = ['location', 'propertyType']
+export const searchFilterOrder = ['location', 'propertyType', 'priceRange'] as const
+export const textSearchFilterOrder = ['location', 'propertyType'] as const
 
 export const priceLimit = {
   min: 0,

@@ -1,19 +1,4 @@
-import type { PropertyCardData } from '@shared/types'
-
-export type MarketplacePropertyDetail = PropertyCardData & {
-  id: string
-  category: string
-  condominium: string
-  gallery: string[]
-  description: string
-  address: string
-  mapCenter: {
-    latitude: number
-    longitude: number
-  }
-  brokerPhone: string
-  brokerEmail: string
-}
+import type { MarketplacePropertyDetail } from '../types/property-detail'
 
 const apartmentGallery = [
   'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=82',

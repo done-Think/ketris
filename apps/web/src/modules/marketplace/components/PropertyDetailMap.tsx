@@ -6,12 +6,9 @@ import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre'
 import { env } from '@config/env'
 import { radius } from '@shared/theme/tokens'
 
-const defaultMapStyleUrl = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
+import type { PropertyDetailMapProps } from '../types/property-detail'
 
-type PropertyDetailMapProps = {
-  latitude: number
-  longitude: number
-}
+const defaultMapStyleUrl = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
 export function PropertyDetailMap({ latitude, longitude }: PropertyDetailMapProps) {
   const mapStyleUrl =

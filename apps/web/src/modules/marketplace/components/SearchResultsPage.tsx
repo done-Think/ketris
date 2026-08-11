@@ -34,12 +34,9 @@ import {
 import { homeNavigationItems } from '../config/navigation'
 import { profileActions, userProfile } from '../data/user-profile'
 import { searchResults } from '../data/search-results'
+import type { QuickFilterKey, SearchResultsPageProps, SortOption, ViewMode } from '../types/search'
 import { SearchPropertyCard } from './SearchPropertyCard'
 import { SearchResultsMap } from './SearchResultsMap'
-
-type SortOption = 'relevancia' | 'menor-preco' | 'maior-preco'
-type ViewMode = 'grid' | 'list'
-type QuickFilterKey = 'type' | 'price' | 'bedrooms' | 'area' | 'more'
 
 const propertyTypeFilterOptions = [
   'Todos os tipos',
@@ -71,10 +68,6 @@ const moreFilterOptions = [
   { label: 'Todos', onlyWithParking: false },
   { label: 'Com vaga', onlyWithParking: true },
 ] as const
-
-type SearchResultsPageProps = {
-  purpose: 'alugar' | 'comprar'
-}
 
 function getCurrencyValue(price: string) {
   const [value = '0'] = price.match(/[\d.]+/) ?? []

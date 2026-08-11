@@ -3,3 +3,7 @@ export type MiniMarketplaceProperty = {
   location: string
   image: string
 }
+
+export type MiniPropertyCardProps = {
+  property: MiniMarketplaceProperty
+}
