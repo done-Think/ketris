@@ -21,8 +21,9 @@ export function AgencyBrandBanner({ agency, size }: AgencyBrandBannerProps) {
         color: agency.brand.secondaryColor,
         overflow: 'hidden',
         position: 'relative',
-        display: 'grid',
+        display: 'flex',
         alignItems: 'center',
+        gap: compact ? 1.2 : { xs: 1.6, md: 2.8 },
         px: compact ? 1.2 : { xs: 1.8, md: 3 },
         py: compact ? 0.8 : 2,
       }}
@@ -30,28 +31,34 @@ export function AgencyBrandBanner({ agency, size }: AgencyBrandBannerProps) {
       <Box
         aria-hidden="true"
         sx={{
-          position: 'absolute',
-          left: compact ? 12 : { xs: 18, md: 28 },
-          top: compact ? 10 : { xs: 22, md: 30 },
-          width: compact ? 52 : { xs: 88, md: 130 },
-          height: compact ? 36 : { xs: 58, md: 82 },
-          borderLeft: `${compact ? 7 : 12}px solid ${agency.brand.primaryColor}`,
-          borderTop: `${compact ? 7 : 12}px solid ${agency.brand.primaryColor}`,
-          transform: 'skewX(-8deg) rotate(-45deg)',
-          transformOrigin: 'left top',
-        }}
-      />
-      <Box
-        aria-hidden="true"
-        sx={{
-          position: 'absolute',
-          left: compact ? 42 : { xs: 68, md: 104 },
-          top: compact ? 9 : { xs: 20, md: 28 },
-          width: compact ? 54 : { xs: 96, md: 142 },
-          height: compact ? 24 : { xs: 42, md: 58 },
-          bgcolor: agency.brand.primaryColor,
-          transform: 'skewX(35deg)',
-          opacity: 0.95,
+          position: 'relative',
+          width: compact ? 44 : { xs: 66, md: 92 },
+          height: compact ? 46 : { xs: 76, md: 108 },
+          flex: '0 0 auto',
+          ml: compact ? 0.2 : 0,
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            left: compact ? 8 : { xs: 11, md: 15 },
+            top: compact ? 5 : { xs: 8, md: 12 },
+            width: compact ? 29 : { xs: 44, md: 60 },
+            height: compact ? 29 : { xs: 44, md: 60 },
+            borderLeft: `${compact ? 7 : 11}px solid ${agency.brand.primaryColor}`,
+            borderTop: `${compact ? 7 : 11}px solid ${agency.brand.primaryColor}`,
+            transform: 'rotate(-45deg)',
+            transformOrigin: 'center',
+          },
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            right: compact ? 2 : { xs: 0, md: 2 },
+            top: compact ? 13 : { xs: 22, md: 31 },
+            width: compact ? 25 : { xs: 38, md: 50 },
+            height: compact ? 14 : { xs: 22, md: 28 },
+            bgcolor: agency.brand.primaryColor,
+            transform: 'skewX(35deg)',
+            opacity: 0.96,
+          },
         }}
       />
       <Box
@@ -70,9 +77,9 @@ export function AgencyBrandBanner({ agency, size }: AgencyBrandBannerProps) {
         sx={{
           position: 'relative',
           zIndex: 1,
-          pl: compact ? 7.6 : { xs: 10.5, md: 16 },
-          pr: compact ? 0.8 : 1.4,
+          flex: '1 1 auto',
           minWidth: 0,
+          pr: compact ? 0.8 : 1.4,
         }}
       >
         <Typography
@@ -92,7 +99,7 @@ export function AgencyBrandBanner({ agency, size }: AgencyBrandBannerProps) {
           noWrap
           sx={{
             color: agency.brand.primaryColor,
-            fontSize: compact ? 24 : { xs: 44, md: 64 },
+            fontSize: compact ? 20 : { xs: 34, md: 54 },
             fontWeight: 900,
             lineHeight: 0.95,
           }}
