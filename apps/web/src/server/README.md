@@ -52,9 +52,10 @@ src/server/
   (`specs/002-fundacao-bff-banco/tasks.md`), pendente.
 
 Módulos implementados até agora: `auth` (login, refresh token, CRUD de usuários OWNER/AGENT, criação
-separada de ADMIN) e `platform` (identidade separada do dono/sócio da Ketris, sem tenant — ver seção
-própria abaixo). Os demais (`properties`, `crm`, `contracts`, `financial`) seguem incrementalmente junto das
-tarefas de `specs/002-fundacao-bff-banco/tasks.md`.
+separada de ADMIN), `platform` (identidade separada do dono/sócio da Ketris, sem tenant — ver seção
+própria abaixo) e `marketplace` (vitrine pública, sem autenticação — ver seção própria abaixo). Os demais
+(`properties`, `crm`, `contracts`, `financial`) seguem incrementalmente junto das tarefas de
+`specs/001-mvp-loop-imovel-pagamento/tasks.md` e `specs/002-fundacao-bff-banco/tasks.md`.
 
 ## Autenticação: access token + refresh token
 
@@ -111,6 +112,50 @@ completo em `docs/adr/0003-platform-admin-identidade-separada.md` e `specs/003-p
   `session.scope` (`'tenant' | 'platform'`) como discriminador — `shared/lib/auth/require-platform-session.ts`
   e `shared/lib/auth/require-admin-session.ts` rejeitam a sessão uma da outra, mesmo com o mesmo mecanismo de
   sessão por baixo.
+
+## Marketplace: vitrine pública (sem autenticação)
+
+`src/server/marketplace/` expõe a vitrine pública da Ketris — todas as rotas são **públicas, sem
+`requireBearerAuth`**, porque um visitante não precisa (nem deveria precisar) de conta para buscar imóveis
+ou enviar uma proposta de interesse. Cobre a User Story 2 da spec
+`001-mvp-loop-imovel-pagamento`. Resumo:
+
+- `GET /api/marketplace/properties`: busca/listagem — retorna **apenas imóveis com `status = PUBLICADO`**,
+  de **todos os tenants** (é a vitrine pública, não a área de um tenant). Isso é uma **exceção deliberada e
+  documentada** ao isolamento por tenant do Princípio II: a query não filtra por `tenantId` de propósito.
+  Aceita filtros opcionais (`finalidade`, `tipo`, `cidade`, `precoMin`, `precoMax`, `quartosMin`, `q` de
+  busca textual em título/descrição). O `tenantId` do imóvel nunca é exposto no corpo da resposta.
+- `GET /api/marketplace/properties/{id}`: detalhe de um imóvel — 200 só quando `PUBLICADO`; imóvel
+  inexistente ou em rascunho responde 404 (`PROPERTY_NOT_FOUND`), sem revelar a existência de rascunhos.
+- `POST /api/marketplace/properties/{id}/inquiries`: envio de proposta de interesse — **público** — cria uma
+  `Oportunidade` (lead) no CRM **do tenant dono do imóvel** (o `tenantId` vem do imóvel, nunca do corpo),
+  com `status = ENVIADA`, vinculada ao imóvel e aos dados de contato do interessado. Quando `valorProposto`
+  é omitido, assume o valor anunciado do imóvel. Imóvel não publicado responde 404 e nada é criado. Retorna
+  só um resumo (`id`/`imovelId`/`status`/`createdAt`) — nunca expõe os campos internos de CRM ao visitante.
+- Rotas de imóvel/detalhe/criação de proposta são registradas no OpenAPI (leitura pública + criação de lead,
+  não escalonamento de privilégio).
+
+### CRUD de propostas (`Oportunidade`) — autenticado, tenant-scoped
+
+A **criação** de proposta é pública (acima); o resto do ciclo de vida do lead é **protegido por
+`requireBearerAuth`** e sempre restrito ao tenant do ator (uma proposta de outro tenant responde 404 opaco,
+igual a id inexistente). Qualquer usuário autenticado do tenant (ADMIN/OWNER/AGENT) gerencia os leads do
+próprio tenant:
+
+- `GET /api/marketplace/inquiries`: lista as propostas do tenant. Por padrão exclui as arquivadas; filtros
+  opcionais `status` e `includeArchived=true`. 200 / 400 / 401.
+- `GET /api/marketplace/inquiries/{id}`: consulta uma proposta do tenant. 200 / 401 / 404.
+- `PUT /api/marketplace/inquiries/{id}`: substituição completa (campos-núcleo obrigatórios; opcionais
+  omitidos voltam ao padrão). 200 / 400 / 401 / 404.
+- `PATCH /api/marketplace/inquiries/{id}`: atualização parcial (ao menos um campo). 200 / 400 / 401 / 404.
+- `DELETE /api/marketplace/inquiries/{id}`: **soft delete** por padrão (marca `arquivadaEm`, retorna a
+  proposta arquivada, 200) e **exclusão permanente** com `?permanent=true` (remove a linha, 204). 401 / 404
+  nos demais casos.
+
+- O módulo é auto-contido: define ports próprios (`PublicPropertyRepository`, `InquiryRepository`) e lê
+  `Imovel`/cria e gerencia `Oportunidade` via Prisma diretamente, sem depender ainda dos módulos
+  `properties`/`crm` completos (que virão em tarefas próprias). O soft delete usa a coluna
+  `Oportunidade.arquivadaEm` (migration `20260812130000_add_oportunidade_arquivada_em`).
 
 ## Documentação (Swagger/OpenAPI)
 
