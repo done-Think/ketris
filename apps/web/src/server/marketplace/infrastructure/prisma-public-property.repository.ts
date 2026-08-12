@@ -3,15 +3,15 @@ import type { Prisma } from '@prisma/client'
 import { prisma } from '@server/db/prisma'
 
 import type {
+  PropertySearchFilters,
+  PublicPropertyRepository,
+} from '../application/ports/public-property-repository.port'
+import type {
   Finalidade,
   PropertyMedia,
   PublishedPropertyDetail,
   PublishedPropertySummary,
 } from '../domain/property.entity'
-import type {
-  PropertySearchFilters,
-  PublicPropertyRepository,
-} from '../application/ports/public-property-repository.port'
 
 type DecimalLike = { toNumber(): number }
 
