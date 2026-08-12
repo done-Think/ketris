@@ -1,30 +1,12 @@
-import { type Dispatch, type Ref, type SetStateAction } from 'react'
 import { Box, Container, Typography } from '@mui/material'
 
 import { alpha, componentText, gradients, surface, zIndex } from '@shared/theme/tokens'
 
-import type { SearchFilterKey, TextSearchFilterKey } from '../config/search-filters'
+import type { HeroSectionProps } from '../types/search'
 import { DesktopSearchBar } from './DesktopSearchBar'
 import { HeroBrandVideo } from './HeroBrandVideo'
 import { HeroStats } from './HeroStats'
 import { MobileSearchBox } from './MobileSearchBox'
-
-type HeroSectionProps = {
-  selectedSearch: Record<SearchFilterKey, string>
-  priceRange: [number, number]
-  priceRangeLabel: string
-  activeSearchMenu: SearchFilterKey | null
-  searchDraft: Record<TextSearchFilterKey, string>
-  searchHref: string
-  desktopSearchRef: Ref<HTMLDivElement>
-  mobileSearchRef: Ref<HTMLDivElement>
-  openSearchMenu: (key: SearchFilterKey) => void
-  closeSearchMenu: () => void
-  selectSearchValue: (key: SearchFilterKey, value: string) => void
-  updatePriceRange: (nextRange: [number, number]) => void
-  filterSearchOptions: (key: TextSearchFilterKey) => readonly string[]
-  setSearchDraft: Dispatch<SetStateAction<Record<TextSearchFilterKey, string>>>
-}
 
 export function HeroSection({
   selectedSearch,

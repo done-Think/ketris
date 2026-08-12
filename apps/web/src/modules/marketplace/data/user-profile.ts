@@ -3,7 +3,7 @@ import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import SupportAgentOutlinedIcon from '@mui/icons-material/SupportAgentOutlined'
 import SwapHorizOutlinedIcon from '@mui/icons-material/SwapHorizOutlined'
 
-import type { ProfileAction, UserProfile } from '../types'
+import type { ProfileAction, UserProfile } from '../types/user-profile'
 
 export const userProfile: UserProfile = {
   name: 'Rafael Martins',

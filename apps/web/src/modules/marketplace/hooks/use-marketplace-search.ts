@@ -2,23 +2,25 @@
 
 import { useCallback, useMemo, useState } from 'react'
 
-import {
-  priceLimit,
-  searchOptions,
-  type SearchFilterKey,
-  type TextSearchFilterKey,
-} from '../config/search-filters'
+import { priceLimit, searchOptions } from '../config/search-filters'
+import type {
+  PriceRange,
+  SearchDraft,
+  SearchFilterKey,
+  SelectedSearch,
+  TextSearchFilterKey,
+} from '../types/search'
 import { buildSearchHref, formatSearchCurrency, normalizeSearchText } from '../utils/search'
 
 export function useMarketplaceSearch() {
-  const [selectedSearch, setSelectedSearch] = useState<Record<SearchFilterKey, string>>({
+  const [selectedSearch, setSelectedSearch] = useState<SelectedSearch>({
     location: searchOptions.location.values[0],
     propertyType: searchOptions.propertyType.values[0],
     priceRange: searchOptions.priceRange.values[2],
   })
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000])
+  const [priceRange, setPriceRange] = useState<PriceRange>([0, 10000])
   const [activeSearchMenu, setActiveSearchMenu] = useState<SearchFilterKey | null>(null)
-  const [searchDraft, setSearchDraft] = useState<Record<TextSearchFilterKey, string>>({
+  const [searchDraft, setSearchDraft] = useState<SearchDraft>({
     location: '',
     propertyType: '',
   })
@@ -52,11 +54,11 @@ export function useMarketplaceSearch() {
     [searchDraft],
   )
 
-  const updatePriceRange = useCallback((nextRange: [number, number]) => {
+  const updatePriceRange = useCallback((nextRange: PriceRange) => {
     const [minValue, maxValue] = nextRange
     const normalizedMin = Math.max(priceLimit.min, Math.min(minValue, priceLimit.max))
     const normalizedMax = Math.max(priceLimit.min, Math.min(maxValue, priceLimit.max))
-    const orderedRange: [number, number] =
+    const orderedRange: PriceRange =
       normalizedMin <= normalizedMax
         ? [normalizedMin, normalizedMax]
         : [normalizedMax, normalizedMin]
