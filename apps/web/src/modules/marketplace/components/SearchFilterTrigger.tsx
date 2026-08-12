@@ -3,13 +3,8 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 
 import { alpha, componentText, iconSize, radius } from '@shared/theme/tokens'
 
-import { searchOptions, type SearchFilterKey } from '../config/search-filters'
-
-type SearchFilterTriggerProps = {
-  filterKey: SearchFilterKey
-  value: string
-  onOpen: (key: SearchFilterKey) => void
-}
+import { searchOptions } from '../config/search-filters'
+import type { SearchFilterTriggerProps } from '../types/search'
 
 export function SearchFilterTrigger({ filterKey, value, onOpen }: SearchFilterTriggerProps) {
   return (

@@ -1,15 +1,18 @@
-import { PagePlaceholder } from '@shared/components/ui'
+import { SearchResultsPage } from '@modules/marketplace'
 
 export const metadata = {
   title: 'Ketris',
   description: 'Busque imóveis para alugar e comprar.',
 }
 
-export default function ImoveisPage() {
+type ImoveisPageProps = {
+  searchParams?: {
+    finalidade?: string
+  }
+}
+
+export default function ImoveisPage({ searchParams }: ImoveisPageProps) {
   return (
-    <PagePlaceholder
-      title="Imóveis"
-      description="Marketplace com busca, filtros e mapa (MapLibre GL) — a implementar."
-    />
+    <SearchResultsPage purpose={searchParams?.finalidade === 'comprar' ? 'comprar' : 'alugar'} />
   )
 }

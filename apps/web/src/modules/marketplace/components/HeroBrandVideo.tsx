@@ -2,6 +2,8 @@ import { Box } from '@mui/material'
 
 import { gradients, zIndex } from '@shared/theme/tokens'
 
+import videoLogoChromaUrl from '../assets/videologo-chroma.webm'
+
 export function HeroBrandVideo() {
   return (
     <Box
@@ -41,11 +43,11 @@ export function HeroBrandVideo() {
             height: { lg: 386, xl: 644 },
             maxWidth: '140vw',
             transform: {
-              lg: 'translate(-50%, calc(-43% - 70px))',
-              xl: 'translate(-50%, calc(-42% - 78px))',
+              lg: 'translate(-50%, -50%)',
+              xl: 'translate(-50%, -50%)',
             },
             '@media (min-width: 1200px) and (max-height: 950px)': {
-              transform: 'translate(-50%, calc(-38% - 40px))',
+              transform: 'translate(-50%, -50%)',
             },
             WebkitMaskImage: gradients.videoCenterMask,
             maskImage: gradients.videoCenterMask,
@@ -53,7 +55,7 @@ export function HeroBrandVideo() {
         >
           <Box
             component="video"
-            src="/videologo-chroma.webm"
+            src={videoLogoChromaUrl}
             autoPlay
             muted
             playsInline
@@ -72,7 +74,7 @@ export function HeroBrandVideo() {
           />
           <Box
             component="video"
-            src="/videologo-chroma.webm"
+            src={videoLogoChromaUrl}
             autoPlay
             muted
             playsInline

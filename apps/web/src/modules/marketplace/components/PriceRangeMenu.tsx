@@ -4,13 +4,8 @@ import CloseIcon from '@mui/icons-material/Close'
 import { componentText, radius } from '@shared/theme/tokens'
 
 import { priceLimit } from '../config/search-filters'
+import type { PriceRangeMenuProps } from '../types/search'
 import { formatSearchCurrency } from '../utils/search'
-
-type PriceRangeMenuProps = {
-  priceRange: [number, number]
-  updatePriceRange: (nextRange: [number, number]) => void
-  closeSearchMenu: () => void
-}
 
 export function PriceRangeMenu({
   priceRange,
