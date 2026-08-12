@@ -46,6 +46,11 @@ function createDeps(overrides?: {
   }
   const inquiryRepository: InquiryRepository = {
     create: overrides?.create ?? vi.fn().mockResolvedValue(created),
+    findManyByTenant: vi.fn(),
+    findById: vi.fn(),
+    update: vi.fn(),
+    archive: vi.fn(),
+    delete: vi.fn(),
   }
 
   return { propertyRepository, inquiryRepository }

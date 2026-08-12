@@ -127,15 +127,35 @@ ou enviar uma proposta de interesse. Cobre a User Story 2 da spec
   busca textual em título/descrição). O `tenantId` do imóvel nunca é exposto no corpo da resposta.
 - `GET /api/marketplace/properties/{id}`: detalhe de um imóvel — 200 só quando `PUBLICADO`; imóvel
   inexistente ou em rascunho responde 404 (`PROPERTY_NOT_FOUND`), sem revelar a existência de rascunhos.
-- `POST /api/marketplace/properties/{id}/inquiries`: envio de proposta de interesse — cria uma
+- `POST /api/marketplace/properties/{id}/inquiries`: envio de proposta de interesse — **público** — cria uma
   `Oportunidade` (lead) no CRM **do tenant dono do imóvel** (o `tenantId` vem do imóvel, nunca do corpo),
   com `status = ENVIADA`, vinculada ao imóvel e aos dados de contato do interessado. Quando `valorProposto`
-  é omitido, assume o valor anunciado do imóvel. Imóvel não publicado responde 404 e nada é criado.
-- Diferente das rotas de criação de admin, essas rotas **são registradas** no OpenAPI (`marketplace/openapi.ts`)
-  — são leitura pública e criação de lead, não escalonamento de privilégio.
+  é omitido, assume o valor anunciado do imóvel. Imóvel não publicado responde 404 e nada é criado. Retorna
+  só um resumo (`id`/`imovelId`/`status`/`createdAt`) — nunca expõe os campos internos de CRM ao visitante.
+- Rotas de imóvel/detalhe/criação de proposta são registradas no OpenAPI (leitura pública + criação de lead,
+  não escalonamento de privilégio).
+
+### CRUD de propostas (`Oportunidade`) — autenticado, tenant-scoped
+
+A **criação** de proposta é pública (acima); o resto do ciclo de vida do lead é **protegido por
+`requireBearerAuth`** e sempre restrito ao tenant do ator (uma proposta de outro tenant responde 404 opaco,
+igual a id inexistente). Qualquer usuário autenticado do tenant (ADMIN/OWNER/AGENT) gerencia os leads do
+próprio tenant:
+
+- `GET /api/marketplace/inquiries`: lista as propostas do tenant. Por padrão exclui as arquivadas; filtros
+  opcionais `status` e `includeArchived=true`. 200 / 400 / 401.
+- `GET /api/marketplace/inquiries/{id}`: consulta uma proposta do tenant. 200 / 401 / 404.
+- `PUT /api/marketplace/inquiries/{id}`: substituição completa (campos-núcleo obrigatórios; opcionais
+  omitidos voltam ao padrão). 200 / 400 / 401 / 404.
+- `PATCH /api/marketplace/inquiries/{id}`: atualização parcial (ao menos um campo). 200 / 400 / 401 / 404.
+- `DELETE /api/marketplace/inquiries/{id}`: **soft delete** por padrão (marca `arquivadaEm`, retorna a
+  proposta arquivada, 200) e **exclusão permanente** com `?permanent=true` (remove a linha, 204). 401 / 404
+  nos demais casos.
+
 - O módulo é auto-contido: define ports próprios (`PublicPropertyRepository`, `InquiryRepository`) e lê
-  `Imovel`/cria `Oportunidade` via Prisma diretamente, sem depender ainda dos módulos `properties`/`crm`
-  completos (que virão em tarefas próprias).
+  `Imovel`/cria e gerencia `Oportunidade` via Prisma diretamente, sem depender ainda dos módulos
+  `properties`/`crm` completos (que virão em tarefas próprias). O soft delete usa a coluna
+  `Oportunidade.arquivadaEm` (migration `20260812130000_add_oportunidade_arquivada_em`).
 
 ## Documentação (Swagger/OpenAPI)
 

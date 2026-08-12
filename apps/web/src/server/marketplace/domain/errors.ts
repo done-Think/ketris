@@ -8,3 +8,12 @@ export class PropertyNotFoundError extends AppError {
     })
   }
 }
+
+export class InquiryNotFoundError extends AppError {
+  constructor() {
+    super('Proposta não encontrada.', {
+      status: 404,
+      code: 'INQUIRY_NOT_FOUND',
+    })
+  }
+}

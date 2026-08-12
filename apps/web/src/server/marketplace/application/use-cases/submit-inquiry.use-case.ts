@@ -1,5 +1,5 @@
 import { PropertyNotFoundError } from '../../domain/errors'
-import type { CreatedInquiry } from '../../domain/inquiry.entity'
+import { toCreatedInquiry, type CreatedInquiry } from '../../domain/inquiry.entity'
 import type { InquiryRepository } from '../ports/inquiry-repository.port'
 import type { PublicPropertyRepository } from '../ports/public-property-repository.port'
 
@@ -27,7 +27,7 @@ export class SubmitInquiryUseCase {
       throw new PropertyNotFoundError()
     }
 
-    return this.inquiryRepository.create({
+    const inquiry = await this.inquiryRepository.create({
       tenantId: property.tenantId,
       imovelId: property.id,
       interessadoNome: input.interessadoNome,
@@ -36,5 +36,7 @@ export class SubmitInquiryUseCase {
       valorProposto: input.valorProposto ?? property.valor,
       observacoes: input.observacoes ?? null,
     })
+
+    return toCreatedInquiry(inquiry)
   }
 }
