@@ -1,35 +1,14 @@
-import { type Dispatch, type Ref, type SetStateAction } from 'react'
 import { Box, Button, Stack } from '@mui/material'
 import Link from 'next/link'
 
 import { componentText, radius, shadows, surface } from '@shared/theme/tokens'
 
-import {
-  searchFilterOrder,
-  textSearchFilterOrder,
-  type SearchFilterKey,
-  type TextSearchFilterKey,
-} from '../config/search-filters'
+import { searchFilterOrder, textSearchFilterOrder } from '../config/search-filters'
+import type { DesktopSearchBarProps, TextSearchFilterKey } from '../types/search'
 import { PriceRangeMenu } from './PriceRangeMenu'
 import { SearchDropdownFrame } from './SearchDropdownFrame'
 import { SearchFilterTrigger } from './SearchFilterTrigger'
 import { TextSearchMenu } from './TextSearchMenu'
-
-type DesktopSearchBarProps = {
-  selectedSearch: Record<SearchFilterKey, string>
-  priceRange: [number, number]
-  priceRangeLabel: string
-  activeSearchMenu: SearchFilterKey | null
-  searchDraft: Record<TextSearchFilterKey, string>
-  searchHref: string
-  desktopSearchRef: Ref<HTMLDivElement>
-  openSearchMenu: (key: SearchFilterKey) => void
-  closeSearchMenu: () => void
-  selectSearchValue: (key: SearchFilterKey, value: string) => void
-  updatePriceRange: (nextRange: [number, number]) => void
-  filterSearchOptions: (key: TextSearchFilterKey) => readonly string[]
-  setSearchDraft: Dispatch<SetStateAction<Record<TextSearchFilterKey, string>>>
-}
 
 export function DesktopSearchBar({
   selectedSearch,

@@ -1,31 +1,166 @@
 # `src/server`
 
 Lógica de domínio do lado servidor (BFF), consumida pelos Route Handlers em `src/app/api/**/route.ts`. Ver
-ADR-0001 (`docs/adr/0001-bff-banco-orm.md`) para o racional de manter o BFF dentro do próprio Next.js.
+ADR-0001 (`docs/adr/0001-bff-banco-orm.md`, onde o BFF roda) e **ADR-0002**
+(`docs/adr/0002-arquitetura-interna-bff.md`, como o código é organizado — leia antes de criar um domínio
+novo).
 
-## Estrutura
+## Estrutura de cada domínio
 
 ```text
 src/server/
-├── db/
-│   └── prisma.ts         # client singleton do Prisma (ver docs/adr/0001-bff-banco-orm.md)
-└── <dominio>/             # ex.: properties, crm, contracts, financial — espelha src/modules/<dominio>
-    ├── <dominio>.service.ts   # regras de negócio, sempre recebe tenantId explícito
-    └── <dominio>.repository.ts  # (opcional) acesso a dados via Prisma, quando o service crescer muito
+├── db/prisma.ts             # client singleton do Prisma
+├── shared/
+│   ├── errors/               # AppError e subclasses genéricas (NotFoundError, ConflictError,
+│   │                          # UnauthorizedError, ForbiddenError...)
+│   ├── http/                 # parseJsonBody (Zod) + handleRouteError — usados por todo Route Handler
+│   └── schemas/               # Zod compartilhado entre domínios (ex.: errorResponseSchema)
+├── openapi/
+│   ├── registry.ts           # registry único do @asteasolutions/zod-to-openapi
+│   ├── zod-extend.ts         # habilita .openapi() nos schemas Zod (side-effect, importar 1x)
+│   └── swagger-ui-page.ts    # HTML do Swagger UI (usado por app/api/docs/route.ts)
+└── <dominio>/                 # ex.: auth, properties, crm, contracts, financial
+    ├── domain/                # entidades + erros de negócio — zero import de Prisma/Next/Zod
+    ├── application/
+    │   ├── ports/             # interfaces (contratos) — ex.: UserRepository, PasswordHasher
+    │   └── use-cases/         # regra de negócio, depende só de ports/
+    ├── infrastructure/        # implementações concretas dos ports (Prisma, bcrypt, jose...)
+    ├── schemas/                # Zod — valida request E gera a doc OpenAPI (.openapi() + registry)
+    └── container.ts            # composition root — único lugar que instancia infra e monta use-cases
 ```
 
-## Convenções
+## Convenções (resumo — detalhe e racional em ADR-0002)
 
-- Cada domínio de negócio (`properties`, `crm`, `contracts`, `financial`, ...) ganha sua própria pasta
-  aqui, espelhando o módulo client-side equivalente em `src/modules/<dominio>` — mesma fronteira do
-  Princípio I (Arquitetura Modular por Domínio) da constituição, agora do lado servidor.
-- Nenhuma query Prisma é feita direto de dentro de um `route.ts` — sempre passa por um service em
-  `src/server/<dominio>/`. Os Route Handlers ficam finos: parsear request, checar sessão/tenant, chamar o
-  service, devolver resposta.
-- Toda query/mutação que toca uma tabela com `tenantId` **deve** filtrar por tenant explicitamente (nunca
-  confiar em um "tenant global") — ver Princípio II da constituição.
+- Route Handler fino: parseia com Zod (`parseJsonBody`), chama `container.<x>UseCase.execute(...)`, traduz
+  o resultado em `NextResponse`. Nenhuma regra de negócio nem `prisma.*` direto num `route.ts`.
+- `application/` nunca importa `infrastructure/` nem `@prisma/client` — só os `ports/` do próprio domínio.
+  Isso é a injeção/inversão de dependência do projeto: manual, via construtor, sem framework de DI.
+- Toda query/mutação que toca uma tabela com `tenantId` **deve** filtrar por tenant explicitamente — ver
+  Princípio II da constituição. (Exceção documentada: login por e-mail ainda não filtra tenant — ver nota
+  em ADR-0002.)
+- Todo use-case novo entra com teste unitário (ports mockados, sem banco). Todo endpoint novo entra com
+  teste de integração (banco real via Docker Compose) e, quando fizer sentido, um teste E2E em
+  `cypress/e2e/`.
 - O schema Prisma (`apps/web/prisma/schema.prisma`) é a fonte de verdade do modelo de dados; os
   `data-model.md` de cada spec descrevem as entidades em nível conceitual e devem ser lidos junto com ele.
+- Sem comentários no código: nomes autoexplicativos + testes; contexto e racional vão em ADRs e no
+  `tasks.md` da spec, não em comentários inline.
+- Endpoint protegido: extrai e valida o access token (Bearer) com `requireBearerAuth` antes de qualquer
+  outra coisa no handler; regra de autorização (quem pode fazer o quê) mora no use-case, não no Route
+  Handler nem num middleware genérico — ver `CreateUserUseCase` (só `ADMIN` cria usuário, sempre no
+  próprio tenant do ator). Guard de sessão genérico e reutilizável por outros domínios ainda é T015
+  (`specs/002-fundacao-bff-banco/tasks.md`), pendente.
 
-Esta pasta é criada como parte da fundação do BFF (`specs/002-fundacao-bff-banco/`); os services de cada
-domínio são implementados incrementalmente junto com as tarefas de cada spec de feature.
+Módulos implementados até agora: `auth` (login, refresh token, CRUD de usuários OWNER/AGENT, criação
+separada de ADMIN), `platform` (identidade separada do dono/sócio da Ketris, sem tenant — ver seção
+própria abaixo) e `marketplace` (vitrine pública, sem autenticação — ver seção própria abaixo). Os demais
+(`properties`, `crm`, `contracts`, `financial`) seguem incrementalmente junto das tarefas de
+`specs/001-mvp-loop-imovel-pagamento/tasks.md` e `specs/002-fundacao-bff-banco/tasks.md`.
+
+## Autenticação: access token + refresh token
+
+`POST /auth/login` retorna um access token (JWT, 1h, `jose`) e um refresh token (opaco, alta entropia,
+30 dias, só o hash SHA-256 fica no banco — model `RefreshToken`). `POST /auth/refresh` troca um refresh
+token válido por um par novo (access + refresh), revogando o antigo (rotação — reuso de um token já
+revogado é tratado como inválido). Detalhe completo e racional das decisões em ADR-0002, seção "Nota:
+refresh token".
+
+## Usuários: CRUD (OWNER/AGENT) e criação de ADMIN (rota separada)
+
+`POST/GET /auth/users` e `GET/PATCH/DELETE /auth/users/{id}` formam o CRUD de usuários — sempre restrito a
+papel `OWNER` ou `AGENT` (nunca `ADMIN`). Detalhe e racional completo em ADR-0002, seção "Nota: CRUD de
+usuários e separação da criação de ADMIN". Resumo:
+
+- Todas as rotas exigem `requireBearerAuth` + ator com papel `ADMIN`.
+- Criar/editar nunca aceita `papel: 'ADMIN'` (schema Zod restringe a `'OWNER' | 'AGENT'`).
+- Uma conta com papel `ADMIN` como alvo (`GET/PATCH/DELETE /auth/users/{id}`) responde 404
+  (`USER_NOT_FOUND`), igual a um id inexistente — não revela a existência de administradores.
+- `DELETE` é soft-delete (`Usuario.ativo = false`, nunca remove a linha) e revoga todos os refresh tokens do
+  usuário. Login e refresh de um usuário desativado falham como se as credenciais fossem inválidas.
+- `POST /api/auth/admins` cria um `ADMIN` — mesma autenticação (`requireBearerAuth`, ator `ADMIN`), mas é um
+  use-case (`CreateAdminUseCase`) e uma rota totalmente separados de `POST /auth/users`, e **nunca é
+  registrada** em `src/server/openapi/registry.ts` — não aparece em `GET /api/docs` nem em
+  `GET /api/docs/openapi.json`.
+- `GET /api/auth/admins` e `GET/PATCH/DELETE /api/auth/admins/{id}` espelham o CRUD de usuário, mas
+  restritos a contas `ADMIN` do próprio tenant do ator (o inverso do CRUD de usuário, que nunca revela
+  `ADMIN`). `DELETE` bloqueia autodesativação (`CannotDeactivateSelfError`) e revoga os refresh tokens do
+  alvo, igual ao `DELETE` de usuário. Assim como a criação, essas rotas **nunca são registradas** no
+  OpenAPI.
+
+## Platform admin: identidade separada do ADMIN de tenant
+
+`src/server/platform/` é um módulo irmão de `auth`, não uma extensão dele: `PlatformAdmin` não tem
+`tenantId` e nunca é confundido com o `ADMIN` de um tenant (`Usuario.papel === 'ADMIN'`, spec 002). Racional
+completo em `docs/adr/0003-platform-admin-identidade-separada.md` e `specs/003-platform-admin/`. Resumo:
+
+- O primeiro platform admin é criado por `apps/web/prisma/seed.ts` (`npm run db:seed`), não por uma rota
+  HTTP — ver ADR-0003, seção Atualização, para o racional (instância única operada pelo próprio time, sem
+  necessidade de um endpoint público de "dia zero").
+- `POST/GET /api/platform/admins` e `GET/PATCH/DELETE /api/platform/admins/{id}`: CRUD completo, sempre
+  exigindo `requirePlatformBearerAuth` (ator já autenticado como platform admin) — é assim que o dono cria o
+  acesso do sócio, depois do seed do primeiro.
+- `GET/POST /api/platform/tenants`, `GET /api/platform/tenants/{id}/users` e
+  `POST /api/platform/tenants/{id}/admins`: visão e controle cross-tenant — listar/criar tenants, listar
+  todos os usuários de um tenant (inclusive contas `ADMIN`, que o CRUD de usuário de um tenant nunca revela)
+  e criar o admin de um tenant específico, substituindo qualquer mecanismo anônimo de bootstrap por tenant.
+- Token do platform admin assinado com `PLATFORM_TOKEN_SECRET` (não `AUTH_TOKEN_SECRET`) e payload sem
+  `tenantId`/`papel` (`{ sub, scope: 'platform' }`) — separação estrutural, não só de convenção, entre as
+  duas identidades.
+- As rotas de criação de admin deste módulo (criar platform admin, criar admin de tenant) nunca são
+  registradas em `src/server/openapi/registry.ts` — mesma regra de `POST /api/auth/admins`.
+- Sessão NextAuth: segundo `CredentialsProvider` (`id: 'platform-credentials'`), mesma estratégia JWT, com
+  `session.scope` (`'tenant' | 'platform'`) como discriminador — `shared/lib/auth/require-platform-session.ts`
+  e `shared/lib/auth/require-admin-session.ts` rejeitam a sessão uma da outra, mesmo com o mesmo mecanismo de
+  sessão por baixo.
+
+## Marketplace: vitrine pública (sem autenticação)
+
+`src/server/marketplace/` expõe a vitrine pública da Ketris — todas as rotas são **públicas, sem
+`requireBearerAuth`**, porque um visitante não precisa (nem deveria precisar) de conta para buscar imóveis
+ou enviar uma proposta de interesse. Cobre a User Story 2 da spec
+`001-mvp-loop-imovel-pagamento`. Resumo:
+
+- `GET /api/marketplace/properties`: busca/listagem — retorna **apenas imóveis com `status = PUBLICADO`**,
+  de **todos os tenants** (é a vitrine pública, não a área de um tenant). Isso é uma **exceção deliberada e
+  documentada** ao isolamento por tenant do Princípio II: a query não filtra por `tenantId` de propósito.
+  Aceita filtros opcionais (`finalidade`, `tipo`, `cidade`, `precoMin`, `precoMax`, `quartosMin`, `q` de
+  busca textual em título/descrição). O `tenantId` do imóvel nunca é exposto no corpo da resposta.
+- `GET /api/marketplace/properties/{id}`: detalhe de um imóvel — 200 só quando `PUBLICADO`; imóvel
+  inexistente ou em rascunho responde 404 (`PROPERTY_NOT_FOUND`), sem revelar a existência de rascunhos.
+- `POST /api/marketplace/properties/{id}/inquiries`: envio de proposta de interesse — **público** — cria uma
+  `Oportunidade` (lead) no CRM **do tenant dono do imóvel** (o `tenantId` vem do imóvel, nunca do corpo),
+  com `status = ENVIADA`, vinculada ao imóvel e aos dados de contato do interessado. Quando `valorProposto`
+  é omitido, assume o valor anunciado do imóvel. Imóvel não publicado responde 404 e nada é criado. Retorna
+  só um resumo (`id`/`imovelId`/`status`/`createdAt`) — nunca expõe os campos internos de CRM ao visitante.
+- Rotas de imóvel/detalhe/criação de proposta são registradas no OpenAPI (leitura pública + criação de lead,
+  não escalonamento de privilégio).
+
+### CRUD de propostas (`Oportunidade`) — autenticado, tenant-scoped
+
+A **criação** de proposta é pública (acima); o resto do ciclo de vida do lead é **protegido por
+`requireBearerAuth`** e sempre restrito ao tenant do ator (uma proposta de outro tenant responde 404 opaco,
+igual a id inexistente). Qualquer usuário autenticado do tenant (ADMIN/OWNER/AGENT) gerencia os leads do
+próprio tenant:
+
+- `GET /api/marketplace/inquiries`: lista as propostas do tenant. Por padrão exclui as arquivadas; filtros
+  opcionais `status` e `includeArchived=true`. 200 / 400 / 401.
+- `GET /api/marketplace/inquiries/{id}`: consulta uma proposta do tenant. 200 / 401 / 404.
+- `PUT /api/marketplace/inquiries/{id}`: substituição completa (campos-núcleo obrigatórios; opcionais
+  omitidos voltam ao padrão). 200 / 400 / 401 / 404.
+- `PATCH /api/marketplace/inquiries/{id}`: atualização parcial (ao menos um campo). 200 / 400 / 401 / 404.
+- `DELETE /api/marketplace/inquiries/{id}`: **soft delete** por padrão (marca `arquivadaEm`, retorna a
+  proposta arquivada, 200) e **exclusão permanente** com `?permanent=true` (remove a linha, 204). 401 / 404
+  nos demais casos.
+
+- O módulo é auto-contido: define ports próprios (`PublicPropertyRepository`, `InquiryRepository`) e lê
+  `Imovel`/cria e gerencia `Oportunidade` via Prisma diretamente, sem depender ainda dos módulos
+  `properties`/`crm` completos (que virão em tarefas próprias). O soft delete usa a coluna
+  `Oportunidade.arquivadaEm` (migration `20260812130000_add_oportunidade_arquivada_em`).
+
+## Documentação (Swagger/OpenAPI)
+
+`GET /api/docs` serve o Swagger UI (self-hosted, assets de `swagger-ui-dist` via
+`/api/docs/assets/[...path]`, sem CDN). `GET /api/docs/openapi.json` serve o documento gerado a partir do
+`registry` — cada domínio registra seus paths em `src/server/<dominio>/openapi.ts`, chamado explicitamente
+por `src/server/openapi/registry.ts` (recebe o `registry` por parâmetro, não como singleton importado, pra
+evitar import circular).

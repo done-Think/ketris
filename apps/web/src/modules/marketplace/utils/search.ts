@@ -1,15 +1,5 @@
-import {
-  searchFilterOrder,
-  searchOptions,
-  type SearchFilterKey,
-  type TextSearchFilterKey,
-} from '../config/search-filters'
-
-type SearchState = {
-  selectedSearch: Record<SearchFilterKey, string>
-  searchDraft: Record<TextSearchFilterKey, string>
-  priceRange: [number, number]
-}
+import { searchFilterOrder, searchOptions } from '../config/search-filters'
+import type { SearchState } from '../types/search'
 
 export const formatSearchCurrency = (value: number) =>
   new Intl.NumberFormat('pt-BR', {

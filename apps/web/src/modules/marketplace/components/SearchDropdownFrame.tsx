@@ -1,14 +1,8 @@
 import { Box } from '@mui/material'
-import type { ReactNode } from 'react'
 
 import { radius, shadows, surface, zIndex } from '@shared/theme/tokens'
 
-import type { SearchFilterKey } from '../config/search-filters'
-
-type SearchDropdownFrameProps = {
-  filterKey: SearchFilterKey
-  children: ReactNode
-}
+import type { SearchDropdownFrameProps } from '../types/search'
 
 export function SearchDropdownFrame({ filterKey, children }: SearchDropdownFrameProps) {
   const isPriceRange = filterKey === 'priceRange'

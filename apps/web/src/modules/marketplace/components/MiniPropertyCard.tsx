@@ -3,11 +3,7 @@ import Link from 'next/link'
 
 import { componentText, gradients, motion, radius, surface } from '@shared/theme/tokens'
 
-import type { MiniMarketplaceProperty } from '../types'
-
-type MiniPropertyCardProps = {
-  property: MiniMarketplaceProperty
-}
+import type { MiniPropertyCardProps } from '../types/mini-property'
 
 export function MiniPropertyCard({ property }: MiniPropertyCardProps) {
   return (

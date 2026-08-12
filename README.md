@@ -24,6 +24,18 @@ docs/      → documentação do produto (planejamento, requisitos, design syste
 docker-compose.yml → Postgres local
 ```
 
+**Imagens/vídeos usados dentro da UI** (logos, ícones de tela, ilustrações) ficam versionados junto do
+código, não em `public/`:
+
+- Usada por um único módulo → `apps/web/src/modules/<dominio>/assets/`
+- Usada por mais de um módulo (ou por `shared/components/`) → `apps/web/src/shared/assets/`
+- Importe como módulo (`import logo from '@shared/assets/logo.png'`) e passe pro componente — nunca uma
+  string de URL fixa tipo `"/logo.png"`
+
+`public/` fica reservado para o que precisa de uma URL fixa conhecida por fora do bundle (favicon,
+apple-icon, manifest) ou que o Next não suporta importar como módulo hoje (vídeo — `.webm`/`.mp4` não têm
+loader de asset configurado, então continuam em `public/`).
+
 ## Desenvolvimento
 
 Copie `apps/web/.env.example` para `apps/web/.env` (**não** `.env.local` — o CLI do Prisma só lê `.env`,

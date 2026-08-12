@@ -9,7 +9,7 @@ import { authOptions } from '@shared/lib/auth/auth-options'
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const session = await getServerSession(authOptions)
 
-  if (!session) redirect('/login')
+  if (!session || session.scope !== 'tenant') redirect('/login')
 
   return <Box sx={{ minHeight: '100vh' }}>{children}</Box>
 }

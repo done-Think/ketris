@@ -1,29 +1,36 @@
 import 'next-auth'
 
-export type KetrisUserRole = 'ADMIN' | 'PROPRIETARIO' | 'CORRETOR'
+import type { DefaultSession } from 'next-auth'
+
+import type { Papel } from '@server/auth/domain/user.entity'
+
+type SessionScope = 'tenant' | 'platform'
 
 declare module 'next-auth' {
   interface User {
-    tenantId: string
-    role: KetrisUserRole
+    accessToken: string
+    refreshToken: string
+    scope: SessionScope
+    tenantId?: string
+    papel?: Papel
   }
 
   interface Session {
+    accessToken?: string
+    refreshToken?: string
+    scope?: SessionScope
     tenantId?: string
-    user?: {
-      id?: string
-      name?: string | null
-      email?: string | null
-      image?: string | null
-      role?: KetrisUserRole
-    }
+    papel?: Papel
+    user: { id: string } & DefaultSession['user']
   }
 }
 
 declare module 'next-auth/jwt' {
   interface JWT {
-    userId?: string
+    accessToken?: string
+    refreshToken?: string
+    scope?: SessionScope
     tenantId?: string
-    role?: KetrisUserRole
+    papel?: Papel
   }
 }
