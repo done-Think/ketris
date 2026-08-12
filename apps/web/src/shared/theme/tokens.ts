@@ -88,34 +88,35 @@ export const componentText = {
   },
   badge: {
     fontSize: 11.5,
-    fontWeight: 700,
+    fontWeight: 600,
     lineHeight: 1.2,
   },
   cardEyebrow: {
-    fontSize: 11,
-    fontWeight: 900,
+    fontSize: 12,
+    fontWeight: 700,
     letterSpacing: 0,
     textTransform: 'uppercase',
   },
   cardTitle: {
-    fontSize: 17,
-    fontWeight: 900,
+    fontSize: 18,
+    fontWeight: 700,
     lineHeight: 1.25,
   },
   cardPrice: {
     fontSize: 20,
-    fontWeight: 900,
+    fontWeight: 700,
   },
   cardMeta: {
     fontSize: 12,
+    fontWeight: 400,
   },
   cardBroker: {
     fontSize: 12,
-    fontWeight: 700,
+    fontWeight: 600,
   },
   cardAction: {
     fontSize: 13,
-    fontWeight: 700,
+    fontWeight: 600,
     lineHeight: 1.35,
   },
   sectionAction: {
@@ -159,8 +160,8 @@ export const componentText = {
     fontWeight: 800,
   },
   miniCardTitle: {
-    fontSize: 11,
-    fontWeight: 900,
+    fontSize: 12,
+    fontWeight: 700,
     lineHeight: 1.25,
   },
   miniCardMeta: {
@@ -261,12 +262,14 @@ export const alpha = {
     8: 'rgba(243, 2, 116, 0.08)',
     10: 'rgba(243, 2, 116, 0.1)',
     14: 'rgba(243, 2, 116, 0.14)',
+    36: 'rgba(243, 2, 116, 0.36)',
   },
   graphite: {
     6: 'rgba(33, 38, 49, 0.06)',
     8: 'rgba(33,38,49,0.08)',
     16: 'rgba(33,38,49,0.16)',
     18: 'rgba(33,38,49,0.18)',
+    52: 'rgba(13,15,20,0.52)',
   },
   error: {
     6: 'rgba(229, 72, 77, 0.06)',

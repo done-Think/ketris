@@ -23,6 +23,7 @@ export type QuickFilterKey = 'type' | 'price' | 'bedrooms' | 'area' | 'more'
 
 export type SearchResultsPageProps = {
   purpose: SearchResultPurpose
+  initialLocation?: string
 }
 
 export type SearchResultsMapProps = {
