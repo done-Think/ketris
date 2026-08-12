@@ -1,26 +1,26 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
-import { Box, Chip, Container, InputAdornment, Stack, TextField, Typography } from '@mui/material'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  Box,
+  CircularProgress,
+  Container,
+  InputAdornment,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 
-import { HomeHeader, ProfileModal, SiteFooter } from '@shared/components/layout'
-import { alpha, componentText, iconSize, motion, radius, surface } from '@shared/theme/tokens'
+import { HomeHeader, SiteFooter } from '@shared/components/layout'
+import { iconSize, radius, surface } from '@shared/theme/tokens'
 
 import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
 import { agencies } from '../data/agencies'
-import { profileActions, userProfile } from '../data/user-profile'
-import type { AgencyProfile, AgencySegment } from '../types/agency'
-import { AgencyProfileModal } from './AgencyProfileModal'
-import { AgencyRow } from './AgencyRow'
+import { AgencyCard } from './AgencyCard'
 
-const segmentFilters: Array<AgencySegment | 'Todos'> = [
-  'Todos',
-  'Residencial',
-  'Comercial',
-  'Alto padrão',
-  'Administração',
-]
+const initialAgencyCount = 4
+const agencyPageSize = 3
 
 function normalizeText(value: string) {
   return value
@@ -30,12 +30,10 @@ function normalizeText(value: string) {
 }
 
 export function AgenciesPage() {
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(initialAgencyCount)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedSegment, setSelectedSegment] = useState<(typeof segmentFilters)[number]>('Todos')
-  const [selectedAgencyId, setSelectedAgencyId] = useState(agencies[0]?.id ?? '')
-  const [profileAgency, setProfileAgency] = useState<AgencyProfile | null>(null)
-  const profileButtonRef = useRef<HTMLButtonElement | null>(null)
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const navigationItems = homeNavigationItems.map((item) => ({
     ...item,
     active: item.href === '/imobiliarias',
@@ -44,33 +42,46 @@ export function AgenciesPage() {
     const normalizedQuery = normalizeText(searchQuery.trim())
 
     return agencies.filter((agency) => {
-      const matchesSegment =
-        selectedSegment === 'Todos' || agency.segments.includes(selectedSegment)
       const searchableText = normalizeText(
         `${agency.name} ${agency.legalCreci} ${agency.headquarters} ${agency.coverage.join(
           ' ',
         )} ${agency.segments.join(' ')}`,
       )
 
-      return matchesSegment && (!normalizedQuery || searchableText.includes(normalizedQuery))
+      return !normalizedQuery || searchableText.includes(normalizedQuery)
     })
-  }, [searchQuery, selectedSegment])
-  const selectedAgency =
-    filteredAgencies.find((agency) => agency.id === selectedAgencyId) ?? filteredAgencies[0] ?? null
-  const coverageStats = useMemo(() => {
-    const counts = new Map<string, number>()
+  }, [searchQuery])
+  const visibleAgencies = useMemo(
+    () => filteredAgencies.slice(0, visibleCount),
+    [filteredAgencies, visibleCount],
+  )
+  const hasMoreAgencies = visibleCount < filteredAgencies.length
 
-    agencies.forEach((agency) => {
-      agency.coverage.forEach((region) => {
-        counts.set(region, (counts.get(region) ?? 0) + 1)
-      })
-    })
+  useEffect(() => {
+    setVisibleCount(initialAgencyCount)
+  }, [searchQuery])
 
-    return [...counts.entries()]
-      .map(([region, count]) => ({ region, count }))
-      .sort((current, next) => next.count - current.count)
-      .slice(0, 6)
-  }, [])
+  useEffect(() => {
+    const loadMoreElement = loadMoreRef.current
+    if (!loadMoreElement || !hasMoreAgencies || isLoadingMore) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return
+
+        setIsLoadingMore(true)
+        window.setTimeout(() => {
+          setVisibleCount((current) => Math.min(current + agencyPageSize, filteredAgencies.length))
+          setIsLoadingMore(false)
+        }, 420)
+      },
+      { rootMargin: '360px 0px' },
+    )
+
+    observer.observe(loadMoreElement)
+
+    return () => observer.disconnect()
+  }, [filteredAgencies.length, hasMoreAgencies, isLoadingMore, visibleCount])
 
   return (
     <Box
@@ -82,215 +93,100 @@ export function AgenciesPage() {
         bgcolor: surface.app,
       }}
     >
-      <HomeHeader
-        navigationItems={navigationItems}
-        profileButtonRef={profileButtonRef}
-        userProfile={userProfile}
-        onToggleProfile={() => setIsProfileOpen((current) => !current)}
-      />
-
-      <ProfileModal
-        open={isProfileOpen}
-        anchorRef={profileButtonRef}
-        actions={profileActions}
-        userProfile={userProfile}
-        onClose={() => setIsProfileOpen(false)}
-      />
-
-      <AgencyProfileModal
-        open={Boolean(profileAgency)}
-        agency={profileAgency}
-        onClose={() => setProfileAgency(null)}
-      />
+      <HomeHeader navigationItems={navigationItems} />
 
       <Box component="main" sx={{ py: { xs: 2.4, md: 4 } }}>
         <Container maxWidth="xl">
+          <Stack
+            direction={{ xs: 'column', md: 'row' }}
+            alignItems={{ xs: 'stretch', md: 'end' }}
+            justifyContent="space-between"
+            spacing={2}
+            sx={{ mb: 2.4 }}
+          >
+            <Box sx={{ minWidth: 0 }}>
+              <Typography
+                component="h1"
+                sx={{
+                  color: surface.darkText,
+                  fontSize: { xs: 24, md: 32 },
+                  fontWeight: 700,
+                  lineHeight: 1.15,
+                  letterSpacing: 0,
+                  mb: 0.7,
+                }}
+              >
+                Imobiliarias
+              </Typography>
+              <Typography sx={{ color: 'text.secondary', fontSize: 14, fontWeight: 600 }}>
+                {visibleAgencies.length} de {filteredAgencies.length} imobiliarias encontradas
+              </Typography>
+            </Box>
+
+            <TextField
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Nome, CRECI, regiao ou cobertura"
+              size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchRoundedIcon sx={{ color: 'text.primary', fontSize: iconSize.lg }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                width: { xs: '100%', md: 390 },
+                '& .MuiOutlinedInput-root': {
+                  minHeight: 44,
+                  borderRadius: `${radius.sm}px`,
+                  bgcolor: surface.paper,
+                  fontSize: 13,
+                  fontWeight: 600,
+                },
+              }}
+            />
+          </Stack>
+
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 340px' },
-              gap: { xs: 2.4, lg: 3 },
-              alignItems: 'start',
+              gridTemplateColumns: {
+                xs: '1fr',
+                md: 'repeat(2, minmax(0, 1fr))',
+                xl: 'repeat(3, minmax(0, 1fr))',
+              },
+              gap: { xs: 2, xl: 2.5 },
             }}
           >
-            <Box sx={{ minWidth: 0 }}>
-              <Stack
-                direction={{ xs: 'column', md: 'row' }}
-                alignItems={{ xs: 'stretch', md: 'end' }}
-                justifyContent="space-between"
-                spacing={2}
-                sx={{ mb: 2 }}
-              >
-                <Box sx={{ minWidth: 0 }}>
-                  <Typography
-                    component="h1"
-                    sx={{
-                      color: surface.darkText,
-                      fontSize: { xs: 24, md: 32 },
-                      fontWeight: 900,
-                      lineHeight: 1.15,
-                      letterSpacing: 0,
-                      mb: 0.7,
-                    }}
-                  >
-                    Imobiliárias
-                  </Typography>
-                  <Typography sx={{ color: 'text.secondary', fontSize: 14, fontWeight: 700 }}>
-                    {filteredAgencies.length} operações parceiras encontradas
-                  </Typography>
-                </Box>
+            {visibleAgencies.map((agency) => (
+              <AgencyCard key={agency.id} {...agency} />
+            ))}
+          </Box>
 
-                <TextField
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="Nome, CRECI, região ou segmento"
-                  size="small"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchRoundedIcon sx={{ color: 'text.primary', fontSize: iconSize.lg }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    width: { xs: '100%', md: 390 },
-                    '& .MuiOutlinedInput-root': {
-                      minHeight: 48,
-                      borderRadius: `${radius.sm}px`,
-                      bgcolor: surface.paper,
-                      fontSize: 13,
-                      fontWeight: 700,
-                    },
-                  }}
-                />
+          <Box
+            ref={loadMoreRef}
+            sx={{
+              minHeight: 72,
+              display: 'grid',
+              placeItems: 'center',
+              mt: 2,
+            }}
+          >
+            {hasMoreAgencies ? (
+              <Stack direction="row" spacing={1} alignItems="center">
+                <CircularProgress size={18} thickness={4} />
+                <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 600 }}>
+                  Carregando mais imobiliarias
+                </Typography>
               </Stack>
-
-              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 2.2 }}>
-                {segmentFilters.map((segment) => {
-                  const active = segment === selectedSegment
-
-                  return (
-                    <Chip
-                      key={segment}
-                      label={segment}
-                      clickable
-                      onClick={() => setSelectedSegment(segment)}
-                      sx={{
-                        height: 34,
-                        borderRadius: `${radius.sm}px`,
-                        borderColor: active ? 'primary.main' : 'divider',
-                        bgcolor: active ? 'primary.main' : surface.paper,
-                        color: active ? surface.lightText : 'text.primary',
-                        fontWeight: 800,
-                        transition: motion.transition.bordered,
-                        '&:hover': {
-                          bgcolor: active ? 'primary.dark' : alpha.magenta[6],
-                          borderColor: active ? 'primary.dark' : 'primary.main',
-                        },
-                      }}
-                      variant={active ? 'filled' : 'outlined'}
-                    />
-                  )
-                })}
-              </Stack>
-
-              <Box
-                sx={{
-                  display: { xs: 'none', md: 'grid' },
-                  gridTemplateColumns:
-                    'minmax(250px, 1.3fr) minmax(180px, 0.9fr) repeat(3, minmax(92px, 0.42fr)) auto',
-                  gap: 1.8,
-                  px: 1.7,
-                  mb: 0.8,
-                }}
-              >
-                {['Operação', 'Segmentos', 'Imóveis', 'Equipe', 'Nota', ''].map((label) => (
-                  <Typography
-                    key={label || 'actions'}
-                    sx={{ color: 'text.secondary', fontSize: 10, fontWeight: 900 }}
-                  >
-                    {label}
-                  </Typography>
-                ))}
-              </Box>
-
-              <Stack spacing={1.1}>
-                {filteredAgencies.map((agency) => (
-                  <AgencyRow
-                    key={agency.id}
-                    {...agency}
-                    selected={agency.id === selectedAgency?.id}
-                    onSelect={() => setSelectedAgencyId(agency.id)}
-                    onOpenProfile={() => setProfileAgency(agency)}
-                  />
-                ))}
-              </Stack>
-            </Box>
-
-            <Box
-              sx={{
-                display: { xs: 'none', lg: 'block' },
-                position: 'sticky',
-                top: 84,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: `${radius.sm}px`,
-                bgcolor: surface.paper,
-                p: 2,
-              }}
-            >
-              <Typography sx={{ ...componentText.cardTitle, mb: 1.2 }}>
-                Cobertura do marketplace
+            ) : (
+              <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 600 }}>
+                {filteredAgencies.length
+                  ? 'Todas as imobiliarias foram carregadas'
+                  : 'Nenhuma imobiliaria encontrada'}
               </Typography>
-              <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 700, mb: 2 }}>
-                Compare força regional, tamanho de equipe e velocidade de resposta antes de acionar
-                uma operação.
-              </Typography>
-
-              <Stack spacing={1}>
-                {coverageStats.map((item) => (
-                  <Box
-                    key={item.region}
-                    sx={{
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: `${radius.sm}px`,
-                      bgcolor: surface.app,
-                      px: 1.4,
-                      py: 1.1,
-                    }}
-                  >
-                    <Stack direction="row" alignItems="center" justifyContent="space-between">
-                      <Typography sx={{ fontSize: 12, fontWeight: 900 }}>{item.region}</Typography>
-                      <Typography color="primary" sx={{ fontSize: 13, fontWeight: 900 }}>
-                        {item.count}
-                      </Typography>
-                    </Stack>
-                  </Box>
-                ))}
-              </Stack>
-
-              {selectedAgency ? (
-                <Box
-                  sx={{
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: `${radius.sm}px`,
-                    bgcolor: alpha.magenta[6],
-                    mt: 1.4,
-                    p: 1.4,
-                  }}
-                >
-                  <Typography sx={{ ...componentText.cardTitle, mb: 0.8 }}>
-                    {selectedAgency.name}
-                  </Typography>
-                  <Typography sx={{ color: 'text.secondary', fontSize: 12, fontWeight: 800 }}>
-                    {selectedAgency.activeListings} imóveis ativos · {selectedAgency.brokersCount}{' '}
-                    corretores · resposta em {selectedAgency.responseTime}
-                  </Typography>
-                </Box>
-              ) : null}
-            </Box>
+            )}
           </Box>
         </Container>
       </Box>

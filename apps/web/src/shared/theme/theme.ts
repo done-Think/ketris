@@ -46,23 +46,23 @@ export function buildTheme(override: TenantThemeOverride = {}): Theme {
       borderRadius: radius.md,
     },
     typography: {
-      fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+      fontFamily: 'var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
       h1: {
-        fontFamily: 'Space Grotesk, sans-serif',
+        fontFamily: 'var(--font-space-grotesk), var(--font-inter), system-ui, sans-serif',
         fontSize: '2.5rem',
         fontWeight: 700,
         lineHeight: 1.15,
         letterSpacing: '-0.02em',
       },
       h2: {
-        fontFamily: 'Space Grotesk, sans-serif',
+        fontFamily: 'var(--font-space-grotesk), var(--font-inter), system-ui, sans-serif',
         fontSize: '2rem',
         fontWeight: 700,
         lineHeight: 1.2,
         letterSpacing: '-0.02em',
       },
       h3: {
-        fontFamily: 'Space Grotesk, sans-serif',
+        fontFamily: 'var(--font-space-grotesk), var(--font-inter), system-ui, sans-serif',
         fontSize: '1.625rem',
         fontWeight: 600,
         lineHeight: 1.25,
@@ -77,6 +77,33 @@ export function buildTheme(override: TenantThemeOverride = {}): Theme {
       button: { fontWeight: 600, textTransform: 'none' },
     },
     components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          html: {
+            WebkitFontSmoothing: 'antialiased',
+            MozOsxFontSmoothing: 'grayscale',
+            fontOpticalSizing: 'auto',
+            textRendering: 'optimizeLegibility',
+          },
+          body: {
+            WebkitFontSmoothing: 'antialiased',
+            MozOsxFontSmoothing: 'grayscale',
+            fontOpticalSizing: 'auto',
+            textRendering: 'optimizeLegibility',
+          },
+        },
+      },
+      MuiTypography: {
+        styleOverrides: {
+          root: {
+            WebkitFontSmoothing: 'antialiased',
+            MozOsxFontSmoothing: 'grayscale',
+            fontOpticalSizing: 'auto',
+            fontSynthesisWeight: 'none',
+            textRendering: 'optimizeLegibility',
+          },
+        },
+      },
       MuiButton: {
         defaultProps: { disableElevation: true },
       },

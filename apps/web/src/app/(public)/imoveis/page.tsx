@@ -8,11 +8,15 @@ export const metadata = {
 type ImoveisPageProps = {
   searchParams?: {
     finalidade?: string
+    localizacao?: string
   }
 }
 
 export default function ImoveisPage({ searchParams }: ImoveisPageProps) {
   return (
-    <SearchResultsPage purpose={searchParams?.finalidade === 'comprar' ? 'comprar' : 'alugar'} />
+    <SearchResultsPage
+      purpose={searchParams?.finalidade === 'comprar' ? 'comprar' : 'alugar'}
+      initialLocation={searchParams?.localizacao}
+    />
   )
 }
