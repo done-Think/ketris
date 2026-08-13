@@ -4,12 +4,8 @@ import { Box, Chip, Stack, Typography } from '@mui/material'
 
 import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
 
-import type { AgencyProfile } from '../../types/agency'
+import type { AgencyProfileHeroProps } from '../../types/profile'
 import { AgencyBrandBanner } from '../AgencyBrandBanner'
-
-type AgencyProfileHeroProps = {
-  agency: AgencyProfile
-}
 
 export function AgencyProfileHero({ agency }: AgencyProfileHeroProps) {
   return (

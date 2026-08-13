@@ -11,26 +11,7 @@ import {
   priceFilterOptions,
   propertyTypeFilterOptions,
 } from '../../config/search-results-filters'
-import type { QuickFilterKey } from '../../types/search'
-
-type SearchResultsFilterMenuProps = {
-  areaFilterIndex: number
-  bedroomFilterIndex: number
-  customMaxPrice: string
-  customMinArea: string
-  filterKey: QuickFilterKey
-  onlyWithParking: boolean
-  priceFilterIndex: number
-  propertyTypeFilter: string
-  setActiveQuickFilter: (filterKey: QuickFilterKey | null) => void
-  setAreaFilterIndex: (index: number) => void
-  setBedroomFilterIndex: (index: number) => void
-  setCustomMaxPrice: (value: string) => void
-  setCustomMinArea: (value: string) => void
-  setOnlyWithParking: (value: boolean) => void
-  setPriceFilterIndex: (index: number) => void
-  setPropertyTypeFilter: (value: string) => void
-}
+import type { SearchResultsFilterMenuProps } from '../../types/search-results'
 
 export function SearchResultsFilterMenu({
   areaFilterIndex,

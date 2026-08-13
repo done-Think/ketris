@@ -1,6 +1,7 @@
 ﻿'use client'
 
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
+import { useForm } from 'react-hook-form'
 import {
   Avatar,
   Box,
@@ -40,24 +41,33 @@ const featureIcons = [
 ]
 
 export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const [activePhotoIndex, setActivePhotoIndex] = useState(0)
-  const [isGalleryOpen, setIsGalleryOpen] = useState(false)
+  const { getValues, setValue, watch } = useForm({
+    defaultValues: {
+      activePhotoIndex: 0,
+      isGalleryOpen: false,
+      isProfileOpen: false,
+    },
+  })
+  const { activePhotoIndex, isGalleryOpen, isProfileOpen } = watch()
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const [cover, ...thumbs] = property.gallery
   const hiddenPhotosCount = Math.max(property.gallery.length - 4, 0)
   const hiddenPhotosLabel = hiddenPhotosCount === 1 ? '+1 foto' : `+${hiddenPhotosCount} fotos`
   const openGallery = (photoIndex: number) => {
-    setActivePhotoIndex(photoIndex)
-    setIsGalleryOpen(true)
+    setValue('activePhotoIndex', photoIndex)
+    setValue('isGalleryOpen', true)
   }
 
   const showPreviousPhoto = () => {
-    setActivePhotoIndex((current) => (current === 0 ? property.gallery.length - 1 : current - 1))
+    const current = getValues('activePhotoIndex')
+
+    setValue('activePhotoIndex', current === 0 ? property.gallery.length - 1 : current - 1)
   }
 
   const showNextPhoto = () => {
-    setActivePhotoIndex((current) => (current === property.gallery.length - 1 ? 0 : current + 1))
+    const current = getValues('activePhotoIndex')
+
+    setValue('activePhotoIndex', current === property.gallery.length - 1 ? 0 : current + 1)
   }
 
   return (
@@ -66,7 +76,7 @@ export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
         navigationItems={homeNavigationItems}
         profileButtonRef={profileButtonRef}
         userProfile={userProfile}
-        onToggleProfile={() => setIsProfileOpen((current) => !current)}
+        onToggleProfile={() => setValue('isProfileOpen', !getValues('isProfileOpen'))}
       />
 
       <ProfileModal
@@ -74,7 +84,7 @@ export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
         anchorRef={profileButtonRef}
         actions={profileActions}
         userProfile={userProfile}
-        onClose={() => setIsProfileOpen(false)}
+        onClose={() => setValue('isProfileOpen', false)}
       />
 
       <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
@@ -314,7 +324,7 @@ export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
       <Dialog
         fullScreen
         open={isGalleryOpen}
-        onClose={() => setIsGalleryOpen(false)}
+        onClose={() => setValue('isGalleryOpen', false)}
         onKeyDown={(event) => {
           if (event.key === 'ArrowLeft') showPreviousPhoto()
           if (event.key === 'ArrowRight') showNextPhoto()
@@ -342,7 +352,7 @@ export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
             </Typography>
             <IconButton
               aria-label="Fechar galeria"
-              onClick={() => setIsGalleryOpen(false)}
+              onClick={() => setValue('isGalleryOpen', false)}
               sx={{ color: surface.lightText }}
             >
               <CloseRoundedIcon />
@@ -422,7 +432,7 @@ export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
                 type="button"
                 key={image}
                 aria-label={`Ver foto ${index + 1}`}
-                onClick={() => setActivePhotoIndex(index)}
+                onClick={() => setValue('activePhotoIndex', index)}
                 sx={{
                   flex: '0 0 auto',
                   width: { xs: 72, md: 96 },

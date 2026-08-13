@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
+import { useForm } from 'react-hook-form'
 import { Box } from '@mui/material'
 
 import { HomeHeader, ProfileModal, SiteFooter } from '@shared/components/layout'
@@ -17,7 +18,8 @@ import { MiniPropertiesSection } from './MiniPropertiesSection'
 export function HomePageClient() {
   const search = useMarketplaceSearch()
   const { activeSearchMenu, closeSearchMenu } = search
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const { getValues, setValue, watch } = useForm({ defaultValues: { isProfileOpen: false } })
+  const isProfileOpen = watch('isProfileOpen')
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const desktopSearchRef = useRef<HTMLDivElement | null>(null)
   const mobileSearchRef = useRef<HTMLDivElement | null>(null)
@@ -43,7 +45,7 @@ export function HomePageClient() {
         navigationItems={navigationItems}
         profileButtonRef={profileButtonRef}
         userProfile={userProfile}
-        onToggleProfile={() => setIsProfileOpen((current) => !current)}
+        onToggleProfile={() => setValue('isProfileOpen', !getValues('isProfileOpen'))}
       />
 
       <ProfileModal
@@ -51,7 +53,7 @@ export function HomePageClient() {
         anchorRef={profileButtonRef}
         actions={profileActions}
         userProfile={userProfile}
-        onClose={() => setIsProfileOpen(false)}
+        onClose={() => setValue('isProfileOpen', false)}
       />
 
       <HeroSection

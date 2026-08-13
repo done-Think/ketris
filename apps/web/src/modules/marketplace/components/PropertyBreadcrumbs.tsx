@@ -3,10 +3,7 @@
 import { Stack, Typography } from '@mui/material'
 import Link from 'next/link'
 
-type PropertyBreadcrumbsProps = {
-  category: string
-  location: string
-}
+import type { PropertyBreadcrumbsProps } from '../types/breadcrumbs'
 
 function buildLocationHref(location: string) {
   const params = new URLSearchParams({ localizacao: location })

@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
+import { useForm } from 'react-hook-form'
 
 import {
   areaFilterOptions,
@@ -8,7 +9,7 @@ import {
   priceFilterOptions,
 } from '../config/search-results-filters'
 import { searchResults } from '../data/search-results'
-import type { SearchResultsPageProps, SortOption, ViewMode } from '../types/search'
+import type { SearchResultsFormValues, SearchResultsPageProps, SortOption } from '../types/search'
 import {
   formatCompactCurrency,
   getCurrencyValue,
@@ -17,17 +18,34 @@ import {
 } from '../utils/search-results'
 
 export function useSearchResults({ purpose, initialLocation = '' }: SearchResultsPageProps) {
-  const [selectedPropertyId, setSelectedPropertyId] = useState(searchResults[0]?.id ?? '')
-  const [locationQuery, setLocationQuery] = useState(initialLocation)
-  const [propertyTypeFilter, setPropertyTypeFilter] = useState('')
-  const [priceFilterIndex, setPriceFilterIndex] = useState(0)
-  const [customMaxPrice, setCustomMaxPrice] = useState('')
-  const [bedroomFilterIndex, setBedroomFilterIndex] = useState(0)
-  const [areaFilterIndex, setAreaFilterIndex] = useState(0)
-  const [customMinArea, setCustomMinArea] = useState('')
-  const [onlyWithParking, setOnlyWithParking] = useState(false)
-  const [sortOption, setSortOption] = useState<SortOption>('relevancia')
-  const [viewMode, setViewMode] = useState<ViewMode>('grid')
+  const { setValue, watch } = useForm<SearchResultsFormValues>({
+    defaultValues: {
+      selectedPropertyId: searchResults[0]?.id ?? '',
+      locationQuery: initialLocation,
+      propertyTypeFilter: '',
+      priceFilterIndex: 0,
+      customMaxPrice: '',
+      bedroomFilterIndex: 0,
+      areaFilterIndex: 0,
+      customMinArea: '',
+      onlyWithParking: false,
+      sortOption: 'relevancia',
+      viewMode: 'grid',
+    },
+  })
+  const {
+    areaFilterIndex,
+    bedroomFilterIndex,
+    customMaxPrice,
+    customMinArea,
+    locationQuery,
+    onlyWithParking,
+    priceFilterIndex,
+    propertyTypeFilter,
+    selectedPropertyId,
+    sortOption,
+    viewMode,
+  } = watch()
 
   const priceFilter = priceFilterOptions[priceFilterIndex]
   const bedroomFilter = bedroomFilterOptions[bedroomFilterIndex]
@@ -88,17 +106,17 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
   useEffect(() => {
     if (filteredResults.some((property) => property.id === selectedPropertyId)) return
 
-    setSelectedPropertyId(filteredResults[0]?.id ?? '')
-  }, [filteredResults, selectedPropertyId])
+    setValue('selectedPropertyId', filteredResults[0]?.id ?? '')
+  }, [filteredResults, selectedPropertyId, setValue])
 
   const clearPriceFilter = () => {
-    setCustomMaxPrice('')
-    setPriceFilterIndex(0)
+    setValue('customMaxPrice', '')
+    setValue('priceFilterIndex', 0)
   }
 
   const clearAreaFilter = () => {
-    setCustomMinArea('')
-    setAreaFilterIndex(0)
+    setValue('customMinArea', '')
+    setValue('areaFilterIndex', 0)
   }
 
   return {
@@ -120,17 +138,17 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
     priceFilterLabel,
     propertyTypeFilter,
     selectedPropertyId,
-    setAreaFilterIndex,
-    setBedroomFilterIndex,
-    setCustomMaxPrice,
-    setCustomMinArea,
-    setLocationQuery,
-    setOnlyWithParking,
-    setPriceFilterIndex,
-    setPropertyTypeFilter,
-    setSelectedPropertyId,
-    setSortOption,
-    setViewMode,
+    setAreaFilterIndex: (index: number) => setValue('areaFilterIndex', index),
+    setBedroomFilterIndex: (index: number) => setValue('bedroomFilterIndex', index),
+    setCustomMaxPrice: (value: string) => setValue('customMaxPrice', value),
+    setCustomMinArea: (value: string) => setValue('customMinArea', value),
+    setLocationQuery: (value: string) => setValue('locationQuery', value),
+    setOnlyWithParking: (value: boolean) => setValue('onlyWithParking', value),
+    setPriceFilterIndex: (index: number) => setValue('priceFilterIndex', index),
+    setPropertyTypeFilter: (value: string) => setValue('propertyTypeFilter', value),
+    setSelectedPropertyId: (propertyId: string) => setValue('selectedPropertyId', propertyId),
+    setSortOption: (option: SortOption) => setValue('sortOption', option),
+    setViewMode: (mode: SearchResultsFormValues['viewMode']) => setValue('viewMode', mode),
     sortOption,
     viewMode,
   }

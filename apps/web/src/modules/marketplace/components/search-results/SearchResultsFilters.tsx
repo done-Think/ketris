@@ -1,6 +1,7 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
+import { useForm } from 'react-hook-form'
 import { Box, Chip, Stack } from '@mui/material'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 
@@ -8,45 +9,23 @@ import { useClickAway } from '@shared/hooks'
 import { alpha, iconSize, motion, radius, shadows, surface, zIndex } from '@shared/theme/tokens'
 
 import type { QuickFilterKey } from '../../types/search'
+import type { SearchResultsFiltersProps } from '../../types/search-results'
 import { SearchResultsFilterMenu } from './SearchResultsFilterMenu'
 import { SearchResultsLocationField } from './SearchResultsLocationField'
 
-type SearchResultsFiltersProps = {
-  areaFilterIndex: number
-  areaFilterLabel: string
-  bedroomFilterIndex: number
-  bedroomFilterLabel: string
-  clearAreaFilter: () => void
-  clearPriceFilter: () => void
-  customMaxPrice: string
-  customMinArea: string
-  locationQuery: string
-  maxPrice: number | null
-  minArea: number | null
-  onlyWithParking: boolean
-  priceFilterIndex: number
-  priceFilterLabel: string
-  propertyTypeFilter: string
-  setAreaFilterIndex: (index: number) => void
-  setBedroomFilterIndex: (index: number) => void
-  setCustomMaxPrice: (value: string) => void
-  setCustomMinArea: (value: string) => void
-  setLocationQuery: (value: string) => void
-  setOnlyWithParking: (value: boolean) => void
-  setPriceFilterIndex: (index: number) => void
-  setPropertyTypeFilter: (value: string) => void
-}
-
 export function SearchResultsFilters(props: SearchResultsFiltersProps) {
-  const [activeQuickFilter, setActiveQuickFilter] = useState<QuickFilterKey | null>(null)
+  const { getValues, setValue, watch } = useForm<{ activeQuickFilter: QuickFilterKey | null }>({
+    defaultValues: { activeQuickFilter: null },
+  })
+  const activeQuickFilter = watch('activeQuickFilter')
   const quickFiltersRef = useRef<HTMLDivElement | null>(null)
 
-  useClickAway([quickFiltersRef], () => setActiveQuickFilter(null), {
+  useClickAway([quickFiltersRef], () => setValue('activeQuickFilter', null), {
     enabled: activeQuickFilter !== null,
   })
 
   const toggleQuickFilterMenu = (filterKey: QuickFilterKey) => {
-    setActiveQuickFilter((current) => (current === filterKey ? null : filterKey))
+    setValue('activeQuickFilter', getValues('activeQuickFilter') === filterKey ? null : filterKey)
   }
 
   const filters = [
@@ -142,7 +121,7 @@ export function SearchResultsFilters(props: SearchResultsFiltersProps) {
                 <SearchResultsFilterMenu
                   {...props}
                   filterKey={filter.key}
-                  setActiveQuickFilter={setActiveQuickFilter}
+                  setActiveQuickFilter={(filterKey) => setValue('activeQuickFilter', filterKey)}
                 />
               </Box>
             ) : null}
