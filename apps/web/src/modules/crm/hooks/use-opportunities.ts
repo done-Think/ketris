@@ -1,11 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { crmService } from '../services/crm-service'
-import type {
-  OpportunityFilters,
-  SubmitOpportunityPayload,
-  UpdateOpportunityPayload,
-} from '../types/opportunity'
+import type { OpportunityFilters, UpdateOpportunityPayload } from '../types/opportunity'
 import type { PublicPropertySearchFilters } from '../types/property'
 
 function normalizeFilters(filters: OpportunityFilters) {
@@ -101,12 +97,6 @@ export function useArchiveOpportunity(tenantId: string) {
       queryClient.setQueryData(crmQueryKeys.detail(tenantId, opportunity.id), opportunity)
       queryClient.invalidateQueries({ queryKey: crmQueryKeys.lists(tenantId) })
     },
-  })
-}
-
-export function useSubmitOpportunity(propertyId: string) {
-  return useMutation({
-    mutationFn: (payload: SubmitOpportunityPayload) => crmService.submit(propertyId, payload),
   })
 }
 

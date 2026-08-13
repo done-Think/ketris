@@ -3,8 +3,6 @@ import { BaseService } from '@shared/lib/api/base-service'
 import type {
   Opportunity,
   OpportunityFilters,
-  SubmittedOpportunity,
-  SubmitOpportunityPayload,
   UpdateOpportunityPayload,
 } from '../types/opportunity'
 import type {
@@ -19,10 +17,6 @@ interface ListOpportunitiesResponse {
 
 interface OpportunityResponse {
   inquiry: Opportunity
-}
-
-interface SubmitOpportunityResponse {
-  inquiry: SubmittedOpportunity
 }
 
 interface ListPropertiesResponse {
@@ -61,12 +55,6 @@ export class CrmService extends BaseService {
 
   archive(id: string): Promise<Opportunity> {
     return this.http.delete<OpportunityResponse>(`${this.path}/${id}`).then((data) => data.inquiry)
-  }
-
-  submit(propertyId: string, payload: SubmitOpportunityPayload): Promise<SubmittedOpportunity> {
-    return this.http
-      .post<SubmitOpportunityResponse>(`/marketplace/properties/${propertyId}/inquiries`, payload)
-      .then((data) => data.inquiry)
   }
 
   listProperties(filters: PublicPropertySearchFilters = {}): Promise<PublicPropertySummary[]> {

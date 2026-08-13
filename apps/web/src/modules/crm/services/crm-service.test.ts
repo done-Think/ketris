@@ -92,26 +92,6 @@ describe('CrmService', () => {
     expect(http.delete).toHaveBeenCalledWith(`/marketplace/inquiries/${opportunity.id}`)
   })
 
-  it('submits an opportunity through the existing public property endpoint', async () => {
-    const submitted = {
-      id: opportunity.id,
-      imovelId: opportunity.imovelId,
-      status: 'ENVIADA' as const,
-      createdAt: opportunity.createdAt,
-    }
-    const payload = {
-      interessadoNome: opportunity.interessadoNome,
-      interessadoEmail: opportunity.interessadoEmail,
-    }
-    http.post.mockResolvedValueOnce({ inquiry: submitted })
-
-    await expect(service.submit(opportunity.imovelId, payload)).resolves.toEqual(submitted)
-    expect(http.post).toHaveBeenCalledWith(
-      `/marketplace/properties/${opportunity.imovelId}/inquiries`,
-      payload,
-    )
-  })
-
   it('lists public properties through the existing marketplace endpoint', async () => {
     http.get.mockResolvedValueOnce({ properties: [property] })
     const filters = { finalidade: 'ALUGUEL' as const, q: 'Jardins' }

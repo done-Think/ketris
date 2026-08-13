@@ -15,14 +15,6 @@ export const opportunityFiltersSchema = z.object({
   includeArchived: z.boolean().optional(),
 })
 
-export const submitOpportunitySchema = z.object({
-  interessadoNome: z.string().trim().min(1, 'Nome e obrigatorio.'),
-  interessadoEmail: z.string().trim().email('E-mail invalido.'),
-  interessadoTelefone: z.string().trim().min(1, 'Telefone invalido.').optional(),
-  valorProposto: z.number().positive('Valor proposto deve ser positivo.').optional(),
-  observacoes: z.string().trim().min(1, 'Observacoes invalidas.').optional(),
-})
-
 export const updateOpportunitySchema = z
   .object({
     interessadoNome: z.string().trim().min(1, 'Nome e obrigatorio.').optional(),

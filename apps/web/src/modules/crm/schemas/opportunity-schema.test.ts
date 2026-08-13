@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest'
 import {
   opportunityFiltersSchema,
   opportunityStatusSchema,
-  submitOpportunitySchema,
   updateOpportunitySchema,
 } from './opportunity-schema'
 
@@ -23,30 +22,6 @@ describe('opportunity schemas', () => {
     expect(
       opportunityFiltersSchema.parse({ status: 'EM_NEGOCIACAO', includeArchived: true }),
     ).toEqual({ status: 'EM_NEGOCIACAO', includeArchived: true })
-  })
-
-  it('accepts a valid public opportunity submission', () => {
-    expect(
-      submitOpportunitySchema.parse({
-        interessadoNome: 'Maria Silva',
-        interessadoEmail: 'maria@example.com',
-        valorProposto: 4800,
-      }),
-    ).toEqual({
-      interessadoNome: 'Maria Silva',
-      interessadoEmail: 'maria@example.com',
-      valorProposto: 4800,
-    })
-  })
-
-  it('rejects invalid submission data', () => {
-    const result = submitOpportunitySchema.safeParse({
-      interessadoNome: ' ',
-      interessadoEmail: 'invalid-email',
-      valorProposto: 0,
-    })
-
-    expect(result.success).toBe(false)
   })
 
   it('accepts a partial update and rejects an empty update', () => {

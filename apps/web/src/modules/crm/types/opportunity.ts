@@ -4,14 +4,12 @@ import type {
   contractGuaranteeSchema,
   opportunityFiltersSchema,
   opportunityStatusSchema,
-  submitOpportunitySchema,
   updateOpportunitySchema,
 } from '../schemas/opportunity-schema'
 
 export type OpportunityStatus = z.infer<typeof opportunityStatusSchema>
 export type ContractGuarantee = z.infer<typeof contractGuaranteeSchema>
 export type OpportunityFilters = z.infer<typeof opportunityFiltersSchema>
-export type SubmitOpportunityPayload = z.infer<typeof submitOpportunitySchema>
 export type UpdateOpportunityPayload = z.infer<typeof updateOpportunitySchema>
 
 export interface Opportunity {
@@ -31,11 +29,4 @@ export interface Opportunity {
   arquivadaEm: string | null
   createdAt: string
   updatedAt: string
-}
-
-export interface SubmittedOpportunity {
-  id: string
-  imovelId: string
-  status: 'ENVIADA'
-  createdAt: string
 }

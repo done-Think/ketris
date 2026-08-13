@@ -9,7 +9,6 @@ import {
   crmQueryKeys,
   useCrmProperties,
   useOpportunities,
-  useSubmitOpportunity,
   useUpdateOpportunity,
 } from './use-opportunities'
 
@@ -19,7 +18,6 @@ vi.mock('../services/crm-service', () => ({
     getById: vi.fn(),
     update: vi.fn(),
     archive: vi.fn(),
-    submit: vi.fn(),
     listProperties: vi.fn(),
     getProperty: vi.fn(),
   },
@@ -138,29 +136,5 @@ describe('CRM query keys and hooks', () => {
       updated,
     )
     expect(queryClient.getQueryState(listKey)?.isInvalidated).toBe(true)
-  })
-
-  it('submits through the property-scoped endpoint', async () => {
-    const submitted = {
-      id: opportunity.id,
-      imovelId: opportunity.imovelId,
-      status: 'ENVIADA' as const,
-      createdAt: opportunity.createdAt,
-    }
-    vi.mocked(crmService.submit).mockResolvedValueOnce(submitted)
-    const queryClient = createQueryClient()
-    const { result } = renderHook(() => useSubmitOpportunity(opportunity.imovelId), {
-      wrapper: createWrapper(queryClient),
-    })
-    const payload = {
-      interessadoNome: opportunity.interessadoNome,
-      interessadoEmail: opportunity.interessadoEmail,
-    }
-
-    await act(async () => {
-      await result.current.mutateAsync(payload)
-    })
-
-    expect(crmService.submit).toHaveBeenCalledWith(opportunity.imovelId, payload)
   })
 })
