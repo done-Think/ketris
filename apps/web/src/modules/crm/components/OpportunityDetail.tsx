@@ -50,7 +50,12 @@ import {
   useUpdateOpportunity,
 } from '../hooks/use-opportunities'
 import type { Opportunity, OpportunityStatus } from '../types/opportunity'
-import { formatCurrency, formatDate, formatRelativeDate } from '../utils/formatters'
+import {
+  formatCurrency,
+  formatDate,
+  formatMonthlyCurrency,
+  formatRelativeDate,
+} from '../utils/formatters'
 
 type OpportunityDetailProps = {
   opportunityId: string
@@ -337,7 +342,9 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
             />
           </Stack>
           <Typography sx={{ color: 'primary.main', fontSize: { xs: 24, md: 28 }, fontWeight: 900 }}>
-            {formatCurrency(opportunity.valorProposto)}
+            {property?.finalidade === 'ALUGUEL'
+              ? formatMonthlyCurrency(opportunity.valorProposto)
+              : formatCurrency(opportunity.valorProposto)}
           </Typography>
         </Stack>
 

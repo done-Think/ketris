@@ -128,6 +128,7 @@ describe('OpportunityDetail', () => {
     expect(screen.getAllByText('Ricardo Mendes').length).toBeGreaterThan(0)
     expect(screen.getByText('ricardo@example.com')).toBeInTheDocument()
     expect(screen.getByText('Apartamento Jardins')).toBeInTheDocument()
+    expect(screen.getByText(/R\$\s*4\.800\/mês/)).toBeInTheDocument()
     expect(screen.getByText('Oportunidade criada')).toBeInTheDocument()
     expect(screen.getByText('Oportunidade atualizada')).toBeInTheDocument()
     expect(screen.getByText('Nenhuma próxima ação cadastrada')).toBeInTheDocument()
