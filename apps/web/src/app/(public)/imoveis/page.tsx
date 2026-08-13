@@ -1,15 +1,9 @@
 import { SearchResultsPage } from '@modules/marketplace'
+import type { ImoveisPageProps } from '@modules/marketplace/types'
 
 export const metadata = {
   title: 'Ketris',
   description: 'Busque imóveis para alugar e comprar.',
-}
-
-type ImoveisPageProps = {
-  searchParams?: {
-    finalidade?: string
-    localizacao?: string
-  }
 }
 
 export default function ImoveisPage({ searchParams }: ImoveisPageProps) {

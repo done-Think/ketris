@@ -26,7 +26,10 @@ export function SearchResultsList({
         properties.map((property) => (
           <SearchPropertyCard
             key={property.id}
-            property={property}
+            property={{
+              ...property,
+              href: `${property.href}?finalidade=${property.purpose}`,
+            }}
             selected={property.id === selectedPropertyId}
             onActivate={() => setSelectedPropertyId(property.id)}
           />

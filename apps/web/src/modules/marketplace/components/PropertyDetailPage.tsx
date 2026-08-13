@@ -40,7 +40,7 @@ const featureIcons = [
   SquareFootOutlinedIcon,
 ]
 
-export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
+export function PropertyDetailPage({ property, activePurpose }: PropertyDetailPageProps) {
   const { getValues, setValue, watch } = useForm({
     defaultValues: {
       activePhotoIndex: 0,
@@ -53,6 +53,10 @@ export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
   const [cover, ...thumbs] = property.gallery
   const hiddenPhotosCount = Math.max(property.gallery.length - 4, 0)
   const hiddenPhotosLabel = hiddenPhotosCount === 1 ? '+1 foto' : `+${hiddenPhotosCount} fotos`
+  const navigationItems = homeNavigationItems.map((item) => ({
+    ...item,
+    active: activePurpose ? item.href.includes(`finalidade=${activePurpose}`) : false,
+  }))
   const openGallery = (photoIndex: number) => {
     setValue('activePhotoIndex', photoIndex)
     setValue('isGalleryOpen', true)
@@ -73,7 +77,7 @@ export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
   return (
     <Box sx={{ bgcolor: surface.app, minHeight: '100vh', overflowX: 'clip' }}>
       <HomeHeader
-        navigationItems={homeNavigationItems}
+        navigationItems={navigationItems}
         profileButtonRef={profileButtonRef}
         userProfile={userProfile}
         onToggleProfile={() => setValue('isProfileOpen', !getValues('isProfileOpen'))}
