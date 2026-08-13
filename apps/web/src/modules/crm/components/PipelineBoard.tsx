@@ -348,7 +348,11 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
                   ) : null}
                 </Stack>
 
-                <Box sx={{ mt: 'auto', pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                <Box
+                  role="group"
+                  aria-label={`Total projetado de ${stage.label}`}
+                  sx={{ mt: 'auto', pt: 2, borderTop: '1px solid', borderColor: 'divider' }}
+                >
                   <Typography
                     sx={{
                       color: 'text.disabled',

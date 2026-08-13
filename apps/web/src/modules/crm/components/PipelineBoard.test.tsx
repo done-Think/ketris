@@ -105,8 +105,14 @@ function renderPipeline(initialStatus?: OpportunityStatus) {
 function matchesText(expected: string) {
   const normalizedExpected = expected.replace(/\s/g, ' ')
 
-  return (_content: string, element: Element | null) =>
-    element?.textContent?.replace(/\s/g, ' ') === normalizedExpected
+  return (_content: string, element: Element | null) => {
+    const hasExpectedText = element?.textContent?.replace(/\s/g, ' ') === normalizedExpected
+    const childHasExpectedText = Array.from(element?.children ?? []).some(
+      (child) => child.textContent?.replace(/\s/g, ' ') === normalizedExpected,
+    )
+
+    return hasExpectedText && !childHasExpectedText
+  }
 }
 
 describe('PipelineBoard', () => {
@@ -134,9 +140,12 @@ describe('PipelineBoard', () => {
 
     for (const [index, stage] of opportunityStages.entries()) {
       const section = screen.getByRole('region', { name: stage.label })
+      const totals = within(section).getByRole('group', {
+        name: `Total projetado de ${stage.label}`,
+      })
       expect(within(section).getByText('1')).toBeInTheDocument()
       expect(
-        within(section).getByText(matchesText(formatMonthlyCurrency((index + 1) * 1000))),
+        within(totals).getByText(matchesText(formatMonthlyCurrency((index + 1) * 1000))),
       ).toBeInTheDocument()
       expect(
         within(section).getByRole('link', { name: `Abrir oportunidade de Contato ${index + 1}` }),
@@ -158,10 +167,11 @@ describe('PipelineBoard', () => {
     renderPipeline()
 
     const stage = screen.getByRole('region', { name: 'Prospecção' })
-    expect(within(stage).getByText('Aluguel')).toBeInTheDocument()
-    expect(within(stage).getByText('Venda')).toBeInTheDocument()
-    expect(within(stage).getByText(matchesText(formatMonthlyCurrency(3000)))).toBeInTheDocument()
-    expect(within(stage).getByText(matchesText(formatCurrency(500000)))).toBeInTheDocument()
+    const totals = within(stage).getByRole('group', { name: 'Total projetado de Prospecção' })
+    expect(within(totals).getByText('Aluguel')).toBeInTheDocument()
+    expect(within(totals).getByText('Venda')).toBeInTheDocument()
+    expect(within(totals).getByText(matchesText(formatMonthlyCurrency(3000)))).toBeInTheDocument()
+    expect(within(totals).getByText(matchesText(formatCurrency(500000)))).toBeInTheDocument()
   })
 
   it('preserves all five columns while loading and renders their skeletons', () => {
