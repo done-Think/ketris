@@ -21,6 +21,10 @@ describe('CRM formatters', () => {
     expect(formatRelativeDate('2026-08-12T10:00:00.000Z', now)).toContain('2 horas')
   })
 
+  it('keeps calendar dates stable across local time zones', () => {
+    expect(formatDate('2026-09-01T00:00:00.000Z')).toMatch(/^01/)
+  })
+
   it('returns at most two initials', () => {
     expect(getInitials('Ricardo Mendes da Silva')).toBe('RM')
     expect(getInitials('  Ana  ')).toBe('A')
