@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Box } from '@mui/material'
 
+import ketrisLogoTransparent from '@shared/assets/ketris-logo-transparent.png'
 import { AppLogo } from '@shared/components/ui'
 import { surface } from '@shared/theme/tokens'
 
@@ -40,7 +41,7 @@ export function RegistrationShell({ children, currentStep, totalSteps }: Registr
           component="header"
           sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
         >
-          <AppLogo src="/ketris-logo-transparent.png" width={{ xs: 92, sm: 108 }} />
+          <AppLogo src={ketrisLogoTransparent} variant="transparent" width={{ xs: 92, sm: 108 }} />
           <RegistrationProgress currentStep={currentStep} totalSteps={totalSteps} />
         </Box>
 

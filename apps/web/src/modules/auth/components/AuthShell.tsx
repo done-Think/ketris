@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Box } from '@mui/material'
 
+import ketrisLogoTransparent from '@shared/assets/ketris-logo-transparent.png'
 import { AppLogo } from '@shared/components/ui'
 import { radius, surface } from '@shared/theme/tokens'
 
@@ -73,7 +74,7 @@ export function AuthShell({
             display: { xs: 'flex', md: 'none' },
           }}
         >
-          <AppLogo src="/ketris-logo-transparent.png" width={76} />
+          <AppLogo src={ketrisLogoTransparent} variant="transparent" width={76} />
         </Box>
       )}
 
@@ -127,7 +128,7 @@ export function AuthShell({
                 mb: 0.75,
               }}
             >
-              <AppLogo src="/ketris-logo-transparent.png" width={88} />
+              <AppLogo src={ketrisLogoTransparent} variant="transparent" width={88} />
             </Box>
           )}
 

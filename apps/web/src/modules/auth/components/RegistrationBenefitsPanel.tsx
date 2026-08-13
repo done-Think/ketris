@@ -1,5 +1,6 @@
 import { Box, Stack, Typography } from '@mui/material'
 
+import ketrisLogoTransparent from '@shared/assets/ketris-logo-transparent.png'
 import { AppLogo } from '@shared/components/ui'
 import { brand, radius, surface } from '@shared/theme/tokens'
 
@@ -19,7 +20,7 @@ export function RegistrationBenefitsPanel() {
         bgcolor: surface.app,
       }}
     >
-      <AppLogo src="/ketris-logo-transparent.png" width={{ xs: 92, md: 112 }} />
+      <AppLogo src={ketrisLogoTransparent} variant="transparent" width={{ xs: 92, md: 112 }} />
 
       <Box
         sx={{

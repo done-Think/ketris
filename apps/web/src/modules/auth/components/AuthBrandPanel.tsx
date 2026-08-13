@@ -1,6 +1,7 @@
 import { Box, Stack, Typography } from '@mui/material'
 import { alpha as muiAlpha } from '@mui/material/styles'
 
+import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
 import { brand, surface } from '@shared/theme/tokens'
 
@@ -67,7 +68,7 @@ export function AuthBrandPanel({
           textAlign: 'center',
         }}
       >
-        <AppLogo src="/ketris-logo-footer.png" width={{ xs: 128, md: 136 }} />
+        <AppLogo src={ketrisLogoFooter} width={{ xs: 128, md: 136 }} />
 
         <Typography
           sx={{
