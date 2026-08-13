@@ -19,6 +19,7 @@ const mocks = vi.hoisted(() => ({
   refetchOpportunity: vi.fn(),
   refetchProperty: vi.fn(),
   enqueueSnackbar: vi.fn(),
+  replace: vi.fn(),
 }))
 
 vi.mock('next-auth/react', () => ({
@@ -26,6 +27,10 @@ vi.mock('next-auth/react', () => ({
     data: { tenantId: 'tenant-1', scope: 'tenant', user: { id: 'user-1' } },
     status: 'authenticated',
   }),
+}))
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ replace: mocks.replace }),
 }))
 
 vi.mock('notistack', () => ({
@@ -187,6 +192,7 @@ describe('OpportunityDetail', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Arquivar oportunidade' }))
 
     await waitFor(() => expect(mocks.archive).toHaveBeenCalledWith(opportunity.id))
+    expect(mocks.replace).toHaveBeenCalledWith('/crm')
     expect(mocks.enqueueSnackbar).toHaveBeenCalledWith('Oportunidade arquivada.', {
       variant: 'success',
     })

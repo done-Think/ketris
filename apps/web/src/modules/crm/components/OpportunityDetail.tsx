@@ -36,6 +36,7 @@ import {
 } from '@mui/material'
 import axios from 'axios'
 import NextLink from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useSnackbar } from 'notistack'
 
@@ -146,6 +147,7 @@ function DetailLoading() {
 
 export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
   const { data: session } = useSession()
+  const router = useRouter()
   const tenantId = session?.tenantId
   const opportunityQuery = useOpportunity(tenantId, opportunityId)
   const opportunity = opportunityQuery.data
@@ -292,6 +294,7 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
       await archiveOpportunity.mutateAsync(currentOpportunity.id)
       enqueueSnackbar('Oportunidade arquivada.', { variant: 'success' })
       setArchiveOpen(false)
+      router.replace('/crm')
     } catch (error) {
       enqueueSnackbar(errorMessage(error, 'Não foi possível arquivar a oportunidade.'), {
         variant: 'error',
