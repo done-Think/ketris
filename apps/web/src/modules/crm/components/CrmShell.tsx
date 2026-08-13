@@ -9,7 +9,7 @@ import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import ViewKanbanOutlinedIcon from '@mui/icons-material/ViewKanbanOutlined'
 import { Avatar, Box, Drawer, IconButton, Stack, Tooltip, Typography } from '@mui/material'
 import NextLink from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
@@ -25,7 +25,7 @@ const navigationItems = [
   { label: 'Pipeline', href: '/crm', icon: ViewKanbanOutlinedIcon },
   { label: 'Contatos', href: '/crm/contatos', icon: ContactsOutlinedIcon },
   { label: 'Imóveis', href: '/imoveis', icon: HomeWorkOutlinedIcon },
-  { label: 'Propostas', href: '/crm?status=ENVIADA', icon: DescriptionOutlinedIcon },
+  { label: 'Propostas', href: '/crm/propostas', icon: DescriptionOutlinedIcon },
 ] as const
 
 type CrmShellProps = {
@@ -45,7 +45,6 @@ function getInitials(name?: string | null): string {
 
 export function CrmShell({ children }: CrmShellProps) {
   const pathname = usePathname()
-  const searchParams = useSearchParams()
   const { data: session } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
   const userName = session?.user?.name ?? 'Equipe Ketris'
@@ -73,12 +72,9 @@ export function CrmShell({ children }: CrmShellProps) {
       <Stack component="nav" spacing={0.6} aria-label="Navegação do CRM">
         {navigationItems.map(({ label, href, icon: Icon }) => {
           const targetPath = href.split('?')[0]
-          const isProposalFilter = href.includes('status=ENVIADA')
-          const active = isProposalFilter
-            ? pathname === '/crm' && searchParams.get('status') === 'ENVIADA'
-            : targetPath === '/crm'
-              ? (pathname === '/crm' && searchParams.get('status') !== 'ENVIADA') ||
-                pathname.startsWith('/crm/oportunidades')
+          const active =
+            targetPath === '/crm'
+              ? pathname === '/crm' || pathname.startsWith('/crm/oportunidades')
               : pathname === targetPath || pathname.startsWith(`${targetPath}/`)
 
           return (

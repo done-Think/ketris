@@ -2,7 +2,6 @@ import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
-import { useSearchParams } from 'next/navigation'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
@@ -11,19 +10,11 @@ import { opportunityStages } from '../config/opportunity-stages'
 import { useCrmProperties, useOpportunities } from '../hooks/use-opportunities'
 import type { Opportunity, OpportunityStatus } from '../types/opportunity'
 import type { PublicPropertySummary } from '../types/property'
-import { formatCurrency } from '../utils/formatters'
+import { formatCurrency, formatMonthlyCurrency } from '../utils/formatters'
 import { PipelineBoard } from './PipelineBoard'
-
-const mocks = vi.hoisted(() => ({
-  searchStatus: null as string | null,
-}))
 
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
-}))
-
-vi.mock('next/navigation', () => ({
-  useSearchParams: vi.fn(),
 }))
 
 vi.mock('../hooks/use-opportunities', async (importOriginal) => {
@@ -103,10 +94,10 @@ function mockPropertiesQuery(overrides: Record<string, unknown> = {}) {
   } as unknown as ReturnType<typeof useCrmProperties>)
 }
 
-function renderPipeline() {
+function renderPipeline(initialStatus?: OpportunityStatus) {
   return render(
     <ThemeProvider theme={theme}>
-      <PipelineBoard />
+      <PipelineBoard initialStatus={initialStatus} />
     </ThemeProvider>,
   )
 }
@@ -121,15 +112,11 @@ function matchesText(expected: string) {
 describe('PipelineBoard', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.searchStatus = null
     vi.mocked(useSession).mockReturnValue({
       data: { tenantId: 'tenant-1' },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
-    vi.mocked(useSearchParams).mockReturnValue({
-      get: (key: string) => (key === 'status' ? mocks.searchStatus : null),
-    } as unknown as ReturnType<typeof useSearchParams>)
     mockOpportunitiesQuery()
     mockPropertiesQuery()
   })
@@ -149,12 +136,32 @@ describe('PipelineBoard', () => {
       const section = screen.getByRole('region', { name: stage.label })
       expect(within(section).getByText('1')).toBeInTheDocument()
       expect(
-        within(section).getByText(matchesText(formatCurrency((index + 1) * 1000))),
+        within(section).getByText(matchesText(formatMonthlyCurrency((index + 1) * 1000))),
       ).toBeInTheDocument()
       expect(
         within(section).getByRole('link', { name: `Abrir oportunidade de Contato ${index + 1}` }),
       ).toHaveAttribute('href', `/crm/oportunidades/opportunity-${index + 1}`)
     }
+  })
+
+  it('separates rental and sale totals instead of aggregating incompatible values', () => {
+    mockOpportunitiesQuery({
+      data: [
+        makeOpportunity(1, 'RASCUNHO', { valorProposto: 3000 }),
+        makeOpportunity(2, 'RASCUNHO', { valorProposto: 500000 }),
+      ],
+    })
+    mockPropertiesQuery({
+      data: [makeProperty(1, { finalidade: 'ALUGUEL' }), makeProperty(2, { finalidade: 'VENDA' })],
+    })
+
+    renderPipeline()
+
+    const stage = screen.getByRole('region', { name: 'Prospecção' })
+    expect(within(stage).getByText('Aluguel')).toBeInTheDocument()
+    expect(within(stage).getByText('Venda')).toBeInTheDocument()
+    expect(within(stage).getByText(matchesText(formatMonthlyCurrency(3000)))).toBeInTheDocument()
+    expect(within(stage).getByText(matchesText(formatCurrency(500000)))).toBeInTheDocument()
   })
 
   it('preserves all five columns while loading and renders their skeletons', () => {
@@ -224,6 +231,17 @@ describe('PipelineBoard', () => {
     expect(
       screen.getByRole('button', { name: new RegExp(negotiationStage.label, 'i') }),
     ).toBeVisible()
+  })
+
+  it('starts filtered when the route provides a real API status', () => {
+    mockOpportunitiesQuery({
+      data: [makeOpportunity(1, 'RASCUNHO'), makeOpportunity(2, 'ENVIADA')],
+    })
+
+    renderPipeline('ENVIADA')
+
+    expect(screen.getByText('Contato 2')).toBeInTheDocument()
+    expect(screen.queryByText('Contato 1')).not.toBeInTheDocument()
   })
 
   it('keeps creation unavailable until a tenant-scoped endpoint exists', () => {

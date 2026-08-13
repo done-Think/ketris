@@ -18,23 +18,16 @@ import {
   Typography,
 } from '@mui/material'
 import { useSession } from 'next-auth/react'
-import { useSearchParams } from 'next/navigation'
 
 import { brand, radius, surface } from '@shared/theme/tokens'
 
 import { opportunityStages } from '../config/opportunity-stages'
 import { useCrmProperties, useOpportunities } from '../hooks/use-opportunities'
 import type { Opportunity, OpportunityStatus } from '../types/opportunity'
-import { formatCurrency } from '../utils/formatters'
+import { formatCurrency, formatMonthlyCurrency } from '../utils/formatters'
 import { OpportunityCard } from './OpportunityCard'
 
 const validStatuses = new Set<OpportunityStatus>(opportunityStages.map((stage) => stage.status))
-
-function getStatusFromQuery(value: string | null): OpportunityStatus | null {
-  return value && validStatuses.has(value as OpportunityStatus)
-    ? (value as OpportunityStatus)
-    : null
-}
 
 function matchesSearch(opportunity: Opportunity, propertyTitle: string, search: string): boolean {
   if (!search) return true
@@ -47,21 +40,25 @@ function matchesSearch(opportunity: Opportunity, propertyTitle: string, search: 
   ].some((value) => value?.toLocaleLowerCase('pt-BR').includes(search))
 }
 
-export function PipelineBoard() {
+type PipelineBoardProps = {
+  initialStatus?: OpportunityStatus | null
+}
+
+export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
   const { data: session } = useSession()
-  const searchParams = useSearchParams()
   const tenantId = session?.tenantId ?? ''
-  const queryStatus = getStatusFromQuery(searchParams.get('status'))
   const [search, setSearch] = useState('')
-  const [selectedStatus, setSelectedStatus] = useState<OpportunityStatus | null>(queryStatus)
+  const [selectedStatus, setSelectedStatus] = useState<OpportunityStatus | null>(
+    initialStatus && validStatuses.has(initialStatus) ? initialStatus : null,
+  )
   const [filterAnchor, setFilterAnchor] = useState<null | HTMLElement>(null)
 
   const opportunitiesQuery = useOpportunities(tenantId)
   const propertiesQuery = useCrmProperties(tenantId)
 
   useEffect(() => {
-    setSelectedStatus(queryStatus)
-  }, [queryStatus])
+    setSelectedStatus(initialStatus && validStatuses.has(initialStatus) ? initialStatus : null)
+  }, [initialStatus])
 
   const propertiesById = useMemo(
     () => new Map((propertiesQuery.data ?? []).map((property) => [property.id, property])),
@@ -234,10 +231,27 @@ export function PipelineBoard() {
             const opportunities = visibleOpportunities.filter(
               (opportunity) => opportunity.status === stage.status,
             )
-            const total = opportunities.reduce(
-              (sum, opportunity) => sum + opportunity.valorProposto,
-              0,
+            const totals = opportunities.reduce(
+              (result, opportunity) => {
+                const purpose = propertiesById.get(opportunity.imovelId)?.finalidade
+
+                if (purpose === 'ALUGUEL') result.rental += opportunity.valorProposto
+                else if (purpose === 'VENDA') result.sale += opportunity.valorProposto
+                else result.unclassified += opportunity.valorProposto
+
+                return result
+              },
+              { rental: 0, sale: 0, unclassified: 0 },
             )
+            const projectedTotals = [
+              ...(totals.rental
+                ? [{ label: 'Aluguel', value: formatMonthlyCurrency(totals.rental) }]
+                : []),
+              ...(totals.sale ? [{ label: 'Venda', value: formatCurrency(totals.sale) }] : []),
+              ...(totals.unclassified
+                ? [{ label: 'Sem categoria', value: formatCurrency(totals.unclassified) }]
+                : []),
+            ]
 
             return (
               <Stack
@@ -345,9 +359,34 @@ export function PipelineBoard() {
                   >
                     Total projetado
                   </Typography>
-                  <Typography sx={{ mt: 0.25, fontSize: 13, fontWeight: 800 }}>
-                    {opportunitiesQuery.isLoading ? <Skeleton width={92} /> : formatCurrency(total)}
-                  </Typography>
+                  {opportunitiesQuery.isLoading ? (
+                    <Skeleton width={92} />
+                  ) : projectedTotals.length === 0 ? (
+                    <Typography sx={{ mt: 0.25, fontSize: 13, fontWeight: 800 }}>
+                      {formatCurrency(0)}
+                    </Typography>
+                  ) : (
+                    <Stack spacing={0.25} sx={{ mt: 0.25, minHeight: 38 }}>
+                      {projectedTotals.map((total) => (
+                        <Stack
+                          key={total.label}
+                          direction="row"
+                          alignItems="baseline"
+                          justifyContent="space-between"
+                          gap={1}
+                        >
+                          {projectedTotals.length > 1 ? (
+                            <Typography sx={{ color: 'text.secondary', fontSize: 9.5 }}>
+                              {total.label}
+                            </Typography>
+                          ) : null}
+                          <Typography sx={{ fontSize: 13, fontWeight: 800 }}>
+                            {total.value}
+                          </Typography>
+                        </Stack>
+                      ))}
+                    </Stack>
+                  )}
                 </Box>
               </Stack>
             )
