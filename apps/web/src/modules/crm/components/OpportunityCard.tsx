@@ -18,6 +18,11 @@ type OpportunityCardProps = {
   opportunity: Opportunity
   property?: PublicPropertySummary
   density?: 'regular' | 'compact'
+  presentation?: {
+    indicatorColor?: string
+    indicatorLabel?: string
+    relativeDateLabel?: string
+  }
 }
 
 function getPropertyLocation(property?: PublicPropertySummary): string {
@@ -30,9 +35,12 @@ export function OpportunityCard({
   opportunity,
   property,
   density = 'regular',
+  presentation,
 }: OpportunityCardProps) {
   const stage = opportunityStageByStatus[opportunity.status]
   const isCompact = density === 'compact'
+  const indicatorColor = presentation?.indicatorColor ?? stage.color
+  const indicatorLabel = presentation?.indicatorLabel ?? stage.label
   const propertyTitle = property?.titulo ?? `Imóvel ${opportunity.imovelId}`
   const value =
     property?.finalidade === 'ALUGUEL'
@@ -58,12 +66,12 @@ export function OpportunityCard({
         textDecoration: 'none',
         transition: 'transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease',
         '&:hover': {
-          borderColor: stage.color,
+          borderColor: indicatorColor,
           boxShadow: '0 14px 30px rgba(33,38,49,0.1)',
           transform: 'translateY(-1px)',
         },
         '&:focus-visible': {
-          outline: `2px solid ${stage.color}`,
+          outline: `2px solid ${indicatorColor}`,
           outlineOffset: 2,
         },
       }}
@@ -155,18 +163,18 @@ export function OpportunityCard({
               lineHeight: isCompact ? 1.2 : 'normal',
             }}
           >
-            {formatRelativeDate(opportunity.updatedAt)}
+            {presentation?.relativeDateLabel ?? formatRelativeDate(opportunity.updatedAt)}
           </Typography>
         </Stack>
         <Box
-          aria-label={stage.label}
-          title={stage.label}
+          aria-label={indicatorLabel}
+          title={indicatorLabel}
           sx={{
             width: isCompact ? 6 : 8,
             height: isCompact ? 6 : 8,
             ml: 'auto !important',
             borderRadius: '50%',
-            bgcolor: stage.color,
+            bgcolor: indicatorColor,
           }}
         />
       </Stack>

@@ -22,6 +22,11 @@ import { useSession } from 'next-auth/react'
 
 import { brand, radius, surface } from '@shared/theme/tokens'
 
+import {
+  salesPipelineFixtures,
+  salesPipelineOrange,
+  type SalesPipelineStageId,
+} from '../fixtures/sales-pipeline-fixtures'
 import { useCrmProperties, useOpportunities } from '../hooks/use-opportunities'
 import type { Opportunity, OpportunityStatus } from '../types/opportunity'
 import type { PublicPropertySummary } from '../types/property'
@@ -29,7 +34,7 @@ import { formatCurrency, formatMonthlyCurrency } from '../utils/formatters'
 import { OpportunityCard } from './OpportunityCard'
 
 type SalesPipelineStage = {
-  id: 'prospecting' | 'qualification' | 'proposal' | 'negotiation' | 'closed'
+  id: SalesPipelineStageId
   label: string
   statuses: readonly OpportunityStatus[]
   color: string
@@ -64,7 +69,7 @@ const salesPipelineStages: readonly SalesPipelineStage[] = [
     id: 'negotiation',
     label: 'Negociação',
     statuses: ['EM_NEGOCIACAO'],
-    color: '#F97316',
+    color: salesPipelineOrange,
     softColor: '#FFF0E6',
   },
   {
@@ -76,9 +81,35 @@ const salesPipelineStages: readonly SalesPipelineStage[] = [
   },
 ] as const
 
-type SalesPipelineStageId = (typeof salesPipelineStages)[number]['id']
-
 const visibleStatuses = new Set(salesPipelineStages.flatMap((stage) => stage.statuses))
+const pipelineBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
+const pipelineStageLabelSx = {
+  fontFamily: pipelineBodyFontFamily,
+  fontSize: 10.5,
+  fontWeight: 700,
+  lineHeight: '14px',
+  letterSpacing: 0,
+  fontSynthesis: 'none',
+  textTransform: 'uppercase',
+} as const
+
+const fixtureOpportunities = salesPipelineFixtures.map((fixture) => fixture.opportunity)
+const fixtureProperties = salesPipelineFixtures.map((fixture) => fixture.property)
+const fixtureStageByOpportunityId = new Map(
+  salesPipelineFixtures.map((fixture) => [fixture.opportunity.id, fixture.stageId]),
+)
+const fixturePresentationByOpportunityId = new Map(
+  salesPipelineFixtures.map((fixture) => [fixture.opportunity.id, fixture.presentation]),
+)
+
+function getOpportunityStageId(
+  opportunity: Opportunity,
+  fixtureMode: boolean,
+): SalesPipelineStageId | undefined {
+  if (fixtureMode) return fixtureStageByOpportunityId.get(opportunity.id)
+
+  return salesPipelineStages.find((stage) => stage.statuses.includes(opportunity.status))?.id
+}
 
 function matchesSearch(
   opportunity: Opportunity,
@@ -125,9 +156,14 @@ function getProjectedTotals(
   ]
 }
 
-export function SalesPipelineBoard() {
-  const { data: session } = useSession()
-  const tenantId = session?.tenantId ?? ''
+type SalesPipelineBoardProps = {
+  preview?: boolean
+}
+
+export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps) {
+  const { data: session, status: sessionStatus } = useSession()
+  const fixtureMode = preview && process.env.NODE_ENV !== 'production'
+  const tenantId = fixtureMode ? '' : (session?.tenantId ?? '')
   const [search, setSearch] = useState('')
   const [selectedStageId, setSelectedStageId] = useState<SalesPipelineStageId | null>(null)
   const [filterAnchor, setFilterAnchor] = useState<HTMLElement | null>(null)
@@ -136,34 +172,36 @@ export function SalesPipelineBoard() {
   const propertiesQuery = useCrmProperties(tenantId)
 
   const propertiesById = useMemo(
-    () => new Map((propertiesQuery.data ?? []).map((property) => [property.id, property])),
-    [propertiesQuery.data],
+    () =>
+      new Map(
+        (fixtureMode ? fixtureProperties : (propertiesQuery.data ?? [])).map((property) => [
+          property.id,
+          property,
+        ]),
+      ),
+    [fixtureMode, propertiesQuery.data],
   )
 
   const normalizedSearch = search.trim().toLocaleLowerCase('pt-BR')
-  const visibleOpportunities = useMemo(
-    () =>
-      (opportunitiesQuery.data ?? []).filter((opportunity) => {
-        if (!visibleStatuses.has(opportunity.status)) return false
+  const visibleOpportunities = useMemo(() => {
+    const opportunities = fixtureMode ? fixtureOpportunities : (opportunitiesQuery.data ?? [])
 
-        const stage = salesPipelineStages.find((pipelineStage) =>
-          pipelineStage.statuses.includes(opportunity.status),
-        )
-        if (selectedStageId && stage?.id !== selectedStageId) return false
+    return opportunities.filter((opportunity) => {
+      if (!fixtureMode && !visibleStatuses.has(opportunity.status)) return false
 
-        return matchesSearch(
-          opportunity,
-          propertiesById.get(opportunity.imovelId),
-          normalizedSearch,
-        )
-      }),
-    [normalizedSearch, opportunitiesQuery.data, propertiesById, selectedStageId],
-  )
+      const stageId = getOpportunityStageId(opportunity, fixtureMode)
+      if (!stageId || (selectedStageId && stageId !== selectedStageId)) return false
+
+      return matchesSearch(opportunity, propertiesById.get(opportunity.imovelId), normalizedSearch)
+    })
+  }, [fixtureMode, normalizedSearch, opportunitiesQuery.data, propertiesById, selectedStageId])
 
   const selectedStage = selectedStageId
     ? salesPipelineStages.find((stage) => stage.id === selectedStageId)
     : null
-  const hasPipelineError = opportunitiesQuery.isError || propertiesQuery.isError
+  const isPipelineLoading =
+    !fixtureMode && (sessionStatus === 'loading' || opportunitiesQuery.isLoading)
+  const hasPipelineError = !fixtureMode && (opportunitiesQuery.isError || propertiesQuery.isError)
 
   return (
     <Box
@@ -172,9 +210,9 @@ export function SalesPipelineBoard() {
         p: { xs: 2, sm: 3, lg: 3.5 },
         bgcolor: surface.app,
         overflow: 'hidden',
-        fontFamily: 'var(--font-inter), system-ui, -apple-system, sans-serif',
+        fontFamily: pipelineBodyFontFamily,
         '& .MuiTypography-root, & .MuiButton-root, & .MuiInputBase-root': {
-          fontFamily: 'var(--font-inter), system-ui, -apple-system, sans-serif',
+          fontFamily: pipelineBodyFontFamily,
         },
         '& h1.MuiTypography-root': {
           fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
@@ -385,8 +423,8 @@ export function SalesPipelineBoard() {
             }}
           >
             {salesPipelineStages.map((stage) => {
-              const opportunities = visibleOpportunities.filter((opportunity) =>
-                stage.statuses.includes(opportunity.status),
+              const opportunities = visibleOpportunities.filter(
+                (opportunity) => getOpportunityStageId(opportunity, fixtureMode) === stage.id,
               )
               const projectedTotals = getProjectedTotals(
                 opportunities.filter((opportunity) => opportunity.status !== 'RECUSADA'),
@@ -429,12 +467,7 @@ export function SalesPipelineBoard() {
                     <Typography
                       id={`sales-pipeline-stage-${stage.id}`}
                       noWrap
-                      sx={{
-                        fontSize: 10.5,
-                        fontWeight: 700,
-                        lineHeight: 1.2,
-                        textTransform: 'uppercase',
-                      }}
+                      sx={pipelineStageLabelSx}
                     >
                       {stage.label}
                     </Typography>
@@ -454,12 +487,12 @@ export function SalesPipelineBoard() {
                         fontWeight: 700,
                       }}
                     >
-                      {opportunitiesQuery.isLoading ? '-' : opportunities.length}
+                      {isPipelineLoading ? '-' : opportunities.length}
                     </Box>
                   </Stack>
 
                   <Stack spacing={{ xs: 1.5, lg: 1.375 }} sx={{ pt: { xs: 2, lg: 1.75 } }}>
-                    {opportunitiesQuery.isLoading
+                    {isPipelineLoading
                       ? [0, 1].map((index) => (
                           <Skeleton
                             key={index}
@@ -474,12 +507,15 @@ export function SalesPipelineBoard() {
                             opportunity={opportunity}
                             property={propertiesById.get(opportunity.imovelId)}
                             density="compact"
+                            presentation={
+                              fixtureMode
+                                ? fixturePresentationByOpportunityId.get(opportunity.id)
+                                : undefined
+                            }
                           />
                         ))}
 
-                    {!opportunitiesQuery.isLoading &&
-                    !opportunitiesQuery.isError &&
-                    opportunities.length === 0 ? (
+                    {!isPipelineLoading && !hasPipelineError && opportunities.length === 0 ? (
                       <Stack
                         alignItems="center"
                         justifyContent="center"
@@ -522,7 +558,7 @@ export function SalesPipelineBoard() {
                     >
                       Total projetado
                     </Typography>
-                    {opportunitiesQuery.isLoading ? (
+                    {isPipelineLoading ? (
                       <Skeleton width={92} />
                     ) : projectedTotals.length === 0 ? (
                       <Typography sx={{ mt: 0.25, fontSize: 13, fontWeight: 800, lineHeight: 1.3 }}>

@@ -2,15 +2,35 @@ import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
 
+import {
+  salesPipelineFixtures,
+  type SalesPipelineStageId,
+} from '../fixtures/sales-pipeline-fixtures'
 import { useCrmProperties, useOpportunities } from '../hooks/use-opportunities'
 import type { Opportunity, OpportunityStatus } from '../types/opportunity'
 import type { PublicPropertySummary } from '../types/property'
 import { formatCurrency, formatMonthlyCurrency } from '../utils/formatters'
 import { SalesPipelineBoard } from './SalesPipelineBoard'
+
+const stageLabels: Record<SalesPipelineStageId, string> = {
+  prospecting: 'Prospecção',
+  qualification: 'Qualificação',
+  proposal: 'Proposta',
+  negotiation: 'Negociação',
+  closed: 'Fechado',
+}
+
+const fixtureSummary: Record<SalesPipelineStageId, { count: number; total: number }> = {
+  prospecting: { count: 3, total: 21000 },
+  qualification: { count: 2, total: 19300 },
+  proposal: { count: 2, total: 13100 },
+  negotiation: { count: 2, total: 29500 },
+  closed: { count: 2, total: 13000 },
+}
 
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
@@ -96,10 +116,10 @@ function mockPropertiesQuery(overrides: Record<string, unknown> = {}) {
   } as unknown as ReturnType<typeof useCrmProperties>)
 }
 
-function renderPipeline() {
+function renderPipeline({ preview = false }: { preview?: boolean } = {}) {
   return render(
     <ThemeProvider theme={theme}>
-      <SalesPipelineBoard />
+      <SalesPipelineBoard preview={preview} />
     </ThemeProvider>,
   )
 }
@@ -118,6 +138,10 @@ function matchesText(expected: string) {
 }
 
 describe('SalesPipelineBoard', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(useSession).mockReturnValue({
@@ -127,6 +151,224 @@ describe('SalesPipelineBoard', () => {
     } as unknown as ReturnType<typeof useSession>)
     mockOpportunitiesQuery()
     mockPropertiesQuery()
+  })
+
+  it('keeps every stage label on the same explicit typography rule', () => {
+    renderPipeline()
+
+    const typography = Object.values(stageLabels).map((label) => {
+      const region = screen.getByRole('region', { name: label })
+      const element = within(region).getByText(label)
+      const style = window.getComputedStyle(element)
+
+      return {
+        className: element.className,
+        fontFamily: style.fontFamily,
+        fontSize: style.fontSize,
+        fontWeight: style.fontWeight,
+        lineHeight: style.lineHeight,
+        letterSpacing: style.letterSpacing,
+        textTransform: style.textTransform,
+      }
+    })
+
+    for (const stageTypography of typography.slice(1)) {
+      expect(stageTypography).toEqual(typography[0])
+    }
+    expect(typography[0]).toMatchObject({
+      fontSize: '10.5px',
+      fontWeight: '700',
+      lineHeight: '14px',
+      textTransform: 'uppercase',
+    })
+    expect(typography[0]?.fontFamily).toContain('var(--font-inter)')
+  })
+
+  it('renders the structured fixtures only when the non-production preview is explicit', () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: null,
+      status: 'unauthenticated',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
+
+    renderPipeline({ preview: true })
+
+    expect(useOpportunities).toHaveBeenCalledWith('')
+    expect(useCrmProperties).toHaveBeenCalledWith('')
+    expect(salesPipelineFixtures).toHaveLength(11)
+    expect(new Set(salesPipelineFixtures.map(({ opportunity }) => opportunity.id)).size).toBe(11)
+    expect(
+      salesPipelineFixtures.map(({ stageId, opportunity, property, presentation }) => [
+        stageId,
+        opportunity.interessadoNome,
+        property.titulo,
+        opportunity.valorProposto,
+        presentation.relativeDateLabel,
+        presentation.indicatorLabel,
+      ]),
+    ).toEqual([
+      ['prospecting', 'Carlos Eduardo', 'Ap 3 quartos - Moema', 5200, '2 dias', 'Status verde'],
+      [
+        'prospecting',
+        'Letícia Ramos',
+        'Casa comercial - Pinheiros',
+        12000,
+        '5 dias',
+        'Status amarelo',
+      ],
+      ['prospecting', 'Rui Barbosa', 'Studio mobiliado - Itaim', 3800, '1 dia', 'Status verde'],
+      ['qualification', 'Ricardo Mendes', 'Apt 3q Jardins', 4800, '5 dias', 'Status laranja'],
+      ['qualification', 'Clara Antunes', 'Cobertura - Perdizes', 14500, '12 dias', 'Status verde'],
+      ['proposal', 'Bruno Campina', 'Galpão industrial - Lapa', 8900, '3 dias', 'Status verde'],
+      [
+        'proposal',
+        'Daniela Flores',
+        'Ap reformado - Vila Mariana',
+        4200,
+        '8 dias',
+        'Status laranja',
+      ],
+      [
+        'negotiation',
+        'Fernando Costa',
+        'Conjunto Comercial - Paulista',
+        18000,
+        '15 dias',
+        'Status laranja',
+      ],
+      [
+        'negotiation',
+        'Helena Vaz',
+        'Casa em condomínio - Morumbi',
+        11500,
+        '4 dias',
+        'Status verde',
+      ],
+      ['closed', 'Gabriel Henrique', 'Studio - Consolação', 3500, '20 dias', 'Status verde'],
+      ['closed', 'Silvia Souza', 'Ap Duplex - Campo Belo', 9500, '24 dias', 'Status verde'],
+    ])
+
+    for (const fixture of salesPipelineFixtures) {
+      const stage = screen.getByRole('region', { name: stageLabels[fixture.stageId] })
+      const card = within(stage).getByRole('link', {
+        name: `Abrir oportunidade de ${fixture.opportunity.interessadoNome}`,
+      })
+
+      expect(card).toHaveAttribute('href', `/crm/oportunidades/${fixture.opportunity.id}`)
+      expect(within(card).getByText(fixture.property.titulo)).toBeVisible()
+      expect(within(card).getByText(fixture.presentation.relativeDateLabel)).toBeVisible()
+      expect(within(card).getByLabelText(fixture.presentation.indicatorLabel)).toBeVisible()
+    }
+
+    for (const stageId of Object.keys(stageLabels) as SalesPipelineStageId[]) {
+      const fixtures = salesPipelineFixtures.filter((fixture) => fixture.stageId === stageId)
+      const expected = fixtureSummary[stageId]
+      const stage = screen.getByRole('region', { name: stageLabels[stageId] })
+      const totals = within(stage).getByRole('group', {
+        name: `Total projetado de ${stageLabels[stageId]}`,
+      })
+      const fixtureTotal = fixtures.reduce(
+        (sum, fixture) => sum + fixture.opportunity.valorProposto,
+        0,
+      )
+
+      expect(fixtures).toHaveLength(expected.count)
+      expect(fixtureTotal).toBe(expected.total)
+      expect(within(stage).getByText(String(expected.count))).toBeVisible()
+      expect(
+        within(totals).getByText(matchesText(formatMonthlyCurrency(expected.total))),
+      ).toBeVisible()
+    }
+  })
+
+  it('recalculates preview counts and totals after search and stage filtering', async () => {
+    const user = userEvent.setup()
+    vi.mocked(useSession).mockReturnValue({
+      data: null,
+      status: 'unauthenticated',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
+    renderPipeline({ preview: true })
+
+    const searchInput = screen.getByRole('textbox', { name: 'Buscar oportunidade' })
+    await user.type(searchInput, 'pinheiros')
+
+    const prospecting = screen.getByRole('region', { name: 'Prospecção' })
+    const prospectingTotals = within(prospecting).getByRole('group', {
+      name: 'Total projetado de Prospecção',
+    })
+    expect(screen.getByText('Letícia Ramos')).toBeVisible()
+    expect(screen.queryByText('Carlos Eduardo')).not.toBeInTheDocument()
+    expect(within(prospecting).getByText('1')).toBeVisible()
+    expect(
+      within(prospectingTotals).getByText(matchesText(formatMonthlyCurrency(12000))),
+    ).toBeVisible()
+
+    await user.clear(searchInput)
+    await user.click(screen.getByRole('button', { name: /Filtrar por etapa/i }))
+    await user.click(screen.getByRole('menuitem', { name: 'Qualificação' }))
+
+    const qualification = screen.getByRole('region', { name: 'Qualificação' })
+    const qualificationTotals = within(qualification).getByRole('group', {
+      name: 'Total projetado de Qualificação',
+    })
+    expect(within(qualification).getByText('Ricardo Mendes')).toBeVisible()
+    expect(within(qualification).getByText('Clara Antunes')).toBeVisible()
+    expect(within(qualification).getByText('2')).toBeVisible()
+    expect(
+      within(qualificationTotals).getByText(matchesText(formatMonthlyCurrency(19300))),
+    ).toBeVisible()
+    expect(screen.queryByText('Bruno Campina')).not.toBeInTheDocument()
+  })
+
+  it('preserves the real empty state for an authenticated tenant instead of using fixtures', () => {
+    renderPipeline()
+
+    expect(screen.getAllByText('Nenhuma oportunidade nesta etapa.')).toHaveLength(5)
+    for (const fixture of salesPipelineFixtures) {
+      expect(screen.queryByText(fixture.opportunity.interessadoNome)).not.toBeInTheDocument()
+    }
+  })
+
+  it('keeps the public development pipeline empty when preview was not requested', () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: null,
+      status: 'unauthenticated',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
+
+    renderPipeline()
+
+    expect(screen.getAllByText('Nenhuma oportunidade nesta etapa.')).toHaveLength(5)
+    expect(screen.queryByText('Carlos Eduardo')).not.toBeInTheDocument()
+  })
+
+  it('keeps fixtures disabled in production even without an authenticated session', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.mocked(useSession).mockReturnValue({
+      data: null,
+      status: 'unauthenticated',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
+
+    renderPipeline({ preview: true })
+
+    expect(screen.getAllByText('Nenhuma oportunidade nesta etapa.')).toHaveLength(5)
+    expect(screen.queryByText('Carlos Eduardo')).not.toBeInTheDocument()
+  })
+
+  it('does not flash fixtures while the session is loading', () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: null,
+      status: 'loading',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
+
+    const { container } = renderPipeline()
+
+    expect(container.querySelectorAll('.MuiSkeleton-root')).toHaveLength(15)
+    expect(screen.queryByText('Carlos Eduardo')).not.toBeInTheDocument()
+    expect(screen.queryByText('Nenhuma oportunidade nesta etapa.')).not.toBeInTheDocument()
   })
 
   it('renders the requested five-stage sales pipeline with real API statuses', () => {
