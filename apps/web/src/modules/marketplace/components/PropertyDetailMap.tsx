@@ -4,7 +4,7 @@ import { Box } from '@mui/material'
 import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre'
 
 import { env } from '@config/env'
-import { radius } from '@shared/theme/tokens'
+import { alpha, radius } from '@shared/theme/tokens'
 
 import type { PropertyDetailMapProps } from '../types/property-detail'
 
@@ -39,7 +39,7 @@ export function PropertyDetailMap({ latitude, longitude }: PropertyDetailMapProp
               bgcolor: 'primary.main',
               border: '4px solid',
               borderColor: 'common.white',
-              boxShadow: '0 10px 24px rgba(243, 2, 116, 0.36)',
+              boxShadow: `0 10px 24px ${alpha.magenta[36]}`,
             }}
           />
         </Marker>
