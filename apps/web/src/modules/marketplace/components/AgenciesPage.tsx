@@ -119,17 +119,17 @@ export function AgenciesPage() {
                   mb: 0.7,
                 }}
               >
-                Imobiliarias
+                Imobiliárias
               </Typography>
               <Typography sx={{ color: 'text.secondary', fontSize: 14, fontWeight: 600 }}>
-                {visibleAgencies.length} de {filteredAgencies.length} imobiliarias encontradas
+                {visibleAgencies.length} de {filteredAgencies.length} imobiliárias encontradas
               </Typography>
             </Box>
 
             <TextField
               {...register('searchQuery')}
               value={searchQuery}
-              placeholder="Nome, CRECI, regiao ou cobertura"
+              placeholder="Nome, CRECI, região ou cobertura"
               size="small"
               InputProps={{
                 startAdornment: (
@@ -180,14 +180,14 @@ export function AgenciesPage() {
               <Stack direction="row" spacing={1} alignItems="center">
                 <CircularProgress size={18} thickness={4} />
                 <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 600 }}>
-                  Carregando mais imobiliarias
+                  Carregando mais imobiliárias
                 </Typography>
               </Stack>
             ) : (
               <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 600 }}>
                 {filteredAgencies.length
-                  ? 'Todas as imobiliarias foram carregadas'
-                  : 'Nenhuma imobiliaria encontrada'}
+                  ? 'Todas as imobiliárias foram carregadas'
+                  : 'Nenhuma imobiliária encontrada'}
               </Typography>
             )}
           </Box>

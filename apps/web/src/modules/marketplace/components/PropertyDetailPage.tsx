@@ -114,7 +114,7 @@ export function PropertyDetailPage({ property, activePurpose }: PropertyDetailPa
               <Box
                 component="button"
                 type="button"
-                aria-label="Abrir galeria de fotos do imÃ³vel"
+                aria-label="Abrir galeria de fotos do imóvel"
                 onClick={() => openGallery(0)}
                 sx={{
                   minHeight: { xs: 300, md: 470 },
@@ -241,14 +241,14 @@ export function PropertyDetailPage({ property, activePurpose }: PropertyDetailPa
             </Box>
 
             <Typography variant="h5" sx={{ mb: 1.2 }}>
-              Sobre o imÃ³vel
+              Sobre o imóvel
             </Typography>
             <Typography sx={{ color: 'text.secondary', maxWidth: 820, mb: 4 }}>
               {property.description}
             </Typography>
 
             <Typography variant="h5" sx={{ mb: 1.2 }}>
-              LocalizaÃ§Ã£o
+              Localização
             </Typography>
             <Typography sx={{ color: 'text.secondary', mb: 1.4, fontWeight: 700 }}>
               {property.address}
@@ -273,7 +273,7 @@ export function PropertyDetailPage({ property, activePurpose }: PropertyDetailPa
               {property.price}
             </Typography>
             <Typography sx={{ color: 'text.secondary', fontSize: 12, fontWeight: 700, mb: 2 }}>
-              Condominio {property.condominium}
+              Condomínio {property.condominium}
             </Typography>
 
             <Stack spacing={1} sx={{ mb: 2 }}>
@@ -403,7 +403,7 @@ export function PropertyDetailPage({ property, activePurpose }: PropertyDetailPa
             </IconButton>
 
             <IconButton
-              aria-label="PrÃ³xima foto"
+              aria-label="Próxima foto"
               onClick={showNextPhoto}
               sx={{
                 position: 'absolute',

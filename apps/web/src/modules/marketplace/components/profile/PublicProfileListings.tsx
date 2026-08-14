@@ -13,7 +13,7 @@ export function PublicProfileListings({ accentColor, listings }: PublicProfileLi
   return (
     <>
       <Typography variant="h5" sx={{ mb: 1.5 }}>
-        Imoveis representados
+        Imóveis representados
       </Typography>
       <Box
         sx={{
@@ -86,7 +86,7 @@ export function PublicProfileListings({ accentColor, listings }: PublicProfileLi
                   },
                 }}
               >
-                Ver imovel
+                Ver imóvel
               </Button>
             </Box>
           </Box>

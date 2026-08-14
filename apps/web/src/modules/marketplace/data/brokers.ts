@@ -205,7 +205,7 @@ export const brokers: BrokerProfile[] = [
     creci: 'CRECI 302118-F',
     avatar:
       'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=160&q=80',
-    region: 'Brooklin, Sao Paulo',
+    region: 'Brooklin, São Paulo',
     specialties: ['Comercial', 'Compra'],
     neighborhoods: ['Brooklin', 'Berrini', 'Campo Belo'],
     activeListings: 34,
@@ -219,15 +219,15 @@ export const brokers: BrokerProfile[] = [
     href: '/corretores/felipe-andrade',
     highlightedListings: [
       {
-        title: 'Sala comercial pronta para operacao',
+        title: 'Sala comercial pronta para operação',
         location: 'Paulista',
-        price: 'R$ 6.600 / mes',
+        price: 'R$ 6.600 / mês',
         href: '/imoveis/sala-comercial-paulista',
       },
       {
         title: 'Apartamento mobiliado perto do parque',
         location: 'Moema',
-        price: 'R$ 5.400 / mes',
+        price: 'R$ 5.400 / mês',
         href: '/imoveis/apartamento-moema',
       },
     ],
@@ -238,7 +238,7 @@ export const brokers: BrokerProfile[] = [
     creci: 'CRECI 415902-F',
     avatar:
       'https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?auto=format&fit=crop&w=160&q=80',
-    region: 'Pinheiros, Sao Paulo',
+    region: 'Pinheiros, São Paulo',
     specialties: ['Aluguel', 'Compra'],
     neighborhoods: ['Pinheiros', 'Vila Madalena', 'Sumarezinho'],
     activeListings: 29,
@@ -252,7 +252,7 @@ export const brokers: BrokerProfile[] = [
     href: '/corretores/lara-queiroz',
     highlightedListings: [
       {
-        title: 'Loft autoral em predio boutique',
+        title: 'Loft autoral em prédio boutique',
         location: 'Vila Madalena',
         price: 'R$ 890.000',
         href: '/imoveis/loft-vila-madalena-venda',
@@ -260,7 +260,7 @@ export const brokers: BrokerProfile[] = [
       {
         title: 'Studio moderno totalmente reformado',
         location: 'Vila Madalena',
-        price: 'R$ 2.900 / mes',
+        price: 'R$ 2.900 / mês',
         href: '/imoveis/studio-vila-madalena',
       },
     ],
@@ -271,7 +271,7 @@ export const brokers: BrokerProfile[] = [
     creci: 'CRECI 267804-F',
     avatar:
       'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=160&q=80',
-    region: 'Vila Mariana, Sao Paulo',
+    region: 'Vila Mariana, São Paulo',
     specialties: ['Aluguel', 'Alto padrão'],
     neighborhoods: ['Vila Mariana', 'Paraiso', 'Aclimacao'],
     activeListings: 37,
@@ -285,9 +285,9 @@ export const brokers: BrokerProfile[] = [
     href: '/corretores/eduardo-martins',
     highlightedListings: [
       {
-        title: 'Apartamento espacoso com vista para o parque',
+        title: 'Apartamento espaçoso com vista para o parque',
         location: 'Jardins',
-        price: 'R$ 4.800 / mes',
+        price: 'R$ 4.800 / mês',
         href: '/imoveis/apartamento-jardins',
       },
       {

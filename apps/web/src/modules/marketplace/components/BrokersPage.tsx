@@ -129,7 +129,7 @@ export function BrokersPage() {
             <TextField
               {...register('searchQuery')}
               value={searchQuery}
-              placeholder="Nome, CRECI, bairro ou regiao"
+              placeholder="Nome, CRECI, bairro ou região"
               size="small"
               InputProps={{
                 startAdornment: (
