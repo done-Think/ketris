@@ -17,6 +17,7 @@ import {
 type OpportunityCardProps = {
   opportunity: Opportunity
   property?: PublicPropertySummary
+  density?: 'regular' | 'compact'
 }
 
 function getPropertyLocation(property?: PublicPropertySummary): string {
@@ -25,8 +26,13 @@ function getPropertyLocation(property?: PublicPropertySummary): string {
   return [property.bairro, property.cidade].filter(Boolean).join(' - ') || property.tipo
 }
 
-export function OpportunityCard({ opportunity, property }: OpportunityCardProps) {
+export function OpportunityCard({
+  opportunity,
+  property,
+  density = 'regular',
+}: OpportunityCardProps) {
   const stage = opportunityStageByStatus[opportunity.status]
+  const isCompact = density === 'compact'
   const propertyTitle = property?.titulo ?? `Imóvel ${opportunity.imovelId}`
   const value =
     property?.finalidade === 'ALUGUEL'
@@ -41,12 +47,13 @@ export function OpportunityCard({ opportunity, property }: OpportunityCardProps)
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        minHeight: 140,
-        p: 2,
+        height: isCompact ? 124 : undefined,
+        minHeight: isCompact ? 124 : 140,
+        p: isCompact ? 1.75 : 2,
         border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: 1.5,
-        boxShadow: '0 8px 24px rgba(33,38,49,0.06)',
+        borderColor: isCompact ? 'transparent' : 'divider',
+        borderRadius: isCompact ? '12px' : 1.5,
+        boxShadow: isCompact ? '0 5px 16px rgba(33,38,49,0.06)' : '0 8px 24px rgba(33,38,49,0.06)',
         color: 'text.primary',
         textDecoration: 'none',
         transition: 'transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease',
@@ -61,27 +68,50 @@ export function OpportunityCard({ opportunity, property }: OpportunityCardProps)
         },
       }}
     >
-      <Typography noWrap sx={{ fontSize: 14, fontWeight: 700, lineHeight: 1.4 }}>
+      <Typography
+        noWrap
+        sx={{
+          fontSize: isCompact ? 12.5 : 14,
+          fontWeight: 700,
+          lineHeight: isCompact ? 1.3 : 1.4,
+        }}
+      >
         {opportunity.interessadoNome}
       </Typography>
       <Typography
         noWrap
         title={propertyTitle}
-        sx={{ mt: 0.25, color: 'text.secondary', fontSize: 11.5, lineHeight: 1.45 }}
+        sx={{
+          mt: 0.25,
+          color: 'text.secondary',
+          fontSize: isCompact ? 10.5 : 11.5,
+          lineHeight: isCompact ? 1.35 : 1.45,
+        }}
       >
         {propertyTitle}
       </Typography>
       <Typography
         noWrap
         title={getPropertyLocation(property)}
-        sx={{ color: 'text.secondary', fontSize: 11, lineHeight: 1.4 }}
+        sx={{
+          display: isCompact ? 'none' : 'block',
+          color: 'text.secondary',
+          fontSize: 11,
+          lineHeight: 1.4,
+        }}
       >
         {getPropertyLocation(property)}
       </Typography>
 
       <Typography
         noWrap
-        sx={{ mt: 1, color: 'primary.main', fontSize: 14, fontWeight: 800, lineHeight: 1.4 }}
+        sx={{
+          mt: isCompact ? 0.75 : 1,
+          color: 'primary.main',
+          fontSize: isCompact ? 13 : 14,
+          fontWeight: 800,
+          lineHeight: isCompact ? 1.35 : 1.4,
+        }}
       >
         {value}
       </Typography>
@@ -90,17 +120,41 @@ export function OpportunityCard({ opportunity, property }: OpportunityCardProps)
         direction="row"
         alignItems="center"
         spacing={0.8}
-        sx={{ mt: 'auto', pt: 1.1, borderTop: '1px solid', borderColor: 'divider' }}
+        sx={{
+          mt: 'auto',
+          pt: isCompact ? 0.75 : 1.1,
+          borderTop: '1px solid',
+          borderColor: 'divider',
+        }}
       >
         <Avatar
           aria-hidden="true"
-          sx={{ width: 24, height: 24, bgcolor: stage.softColor, color: stage.color, fontSize: 9 }}
+          sx={{
+            width: isCompact ? 20 : 24,
+            height: isCompact ? 20 : 24,
+            bgcolor: stage.softColor,
+            color: stage.color,
+            fontSize: isCompact ? 8 : 9,
+          }}
         >
           {getInitials(opportunity.interessadoNome)}
         </Avatar>
         <Stack direction="row" alignItems="center" spacing={0.4} sx={{ minWidth: 0 }}>
-          <AccessTimeRoundedIcon sx={{ color: 'text.disabled', fontSize: 12 }} />
-          <Typography noWrap sx={{ color: 'text.secondary', fontSize: 10.5 }}>
+          <AccessTimeRoundedIcon
+            sx={{ display: isCompact ? 'none' : 'block', color: 'text.disabled', fontSize: 12 }}
+          />
+          <Typography
+            noWrap
+            sx={{
+              px: isCompact ? 0.625 : 0,
+              py: isCompact ? 0.25 : 0,
+              borderRadius: isCompact ? '4px' : 0,
+              bgcolor: isCompact ? 'grey.100' : 'transparent',
+              color: 'text.secondary',
+              fontSize: isCompact ? 10 : 10.5,
+              lineHeight: isCompact ? 1.2 : 'normal',
+            }}
+          >
             {formatRelativeDate(opportunity.updatedAt)}
           </Typography>
         </Stack>
@@ -108,8 +162,8 @@ export function OpportunityCard({ opportunity, property }: OpportunityCardProps)
           aria-label={stage.label}
           title={stage.label}
           sx={{
-            width: 8,
-            height: 8,
+            width: isCompact ? 6 : 8,
+            height: isCompact ? 6 : 8,
             ml: 'auto !important',
             borderRadius: '50%',
             bgcolor: stage.color,
