@@ -1,8 +1,10 @@
+import { Controller } from 'react-hook-form'
 import {
   Box,
   Button,
   Checkbox,
   FormControl,
+  FormControlLabel,
   MenuItem,
   Select,
   Stack,
@@ -23,6 +25,7 @@ import {
 import type { CreatePropertyStepFieldsProps } from '../types/dashboard-property'
 
 export function CreatePropertyStepFields({
+  control,
   activeStepKey,
   activeStepLabel,
   propertyPurpose,
@@ -48,22 +51,28 @@ export function CreatePropertyStepFields({
               <Typography sx={{ fontSize: 13, fontWeight: 900, mb: 0.8 }}>
                 Tipo de imóvel
               </Typography>
-              <Select
-                defaultValue="Apartamento"
-                IconComponent={KeyboardArrowDownRoundedIcon}
-                sx={{
-                  height: 44,
-                  borderRadius: `${radius.sm}px`,
-                  bgcolor: surface.paper,
-                  fontSize: 14,
-                }}
-              >
-                {createPropertyTypeOptions.map((type) => (
-                  <MenuItem key={type} value={type}>
-                    {type}
-                  </MenuItem>
-                ))}
-              </Select>
+              <Controller
+                control={control}
+                name="type"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    IconComponent={KeyboardArrowDownRoundedIcon}
+                    sx={{
+                      height: 44,
+                      borderRadius: `${radius.sm}px`,
+                      bgcolor: surface.paper,
+                      fontSize: 14,
+                    }}
+                  >
+                    {createPropertyTypeOptions.map((type) => (
+                      <MenuItem key={type} value={type}>
+                        {type}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                )}
+              />
             </FormControl>
 
             <Box>
@@ -109,27 +118,35 @@ export function CreatePropertyStepFields({
           </Box>
 
           <Stack spacing={2.2}>
-            <Box>
-              <Typography sx={{ fontSize: 13, fontWeight: 900, mb: 0.8 }}>
-                Título do anúncio
-              </Typography>
-              <TextField
-                fullWidth
-                defaultValue="Apartamento moderno com vista incrível nos Jardins"
-                inputProps={{ 'aria-label': 'Título do anúncio' }}
-              />
-            </Box>
+            <Controller
+              control={control}
+              name="title"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="Título do anúncio"
+                  error={Boolean(fieldState.error)}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
 
-            <Box>
-              <Typography sx={{ fontSize: 13, fontWeight: 900, mb: 0.8 }}>Descrição</Typography>
-              <TextField
-                fullWidth
-                multiline
-                minRows={4}
-                defaultValue="Excelente apartamento mobiliado, com 3 quartos, varanda gourmet espaçosa e 2 vagas de garagem demarcadas. Localização nobre, próximo a comércio especializado, restaurantes premiados e estação de metrô."
-                inputProps={{ 'aria-label': 'Descrição' }}
-              />
-            </Box>
+            <Controller
+              control={control}
+              name="description"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  multiline
+                  minRows={4}
+                  label="Descrição"
+                  error={Boolean(fieldState.error)}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
           </Stack>
         </>
       ) : null}
@@ -142,12 +159,28 @@ export function CreatePropertyStepFields({
             gap: 2,
           }}
         >
-          <TextField label="Endereço" defaultValue="Alameda Lorena" />
-          <TextField label="Número" defaultValue="1420" />
-          <TextField label="Bairro" defaultValue="Jardins" />
-          <TextField label="Cidade" defaultValue="São Paulo" />
-          <TextField label="Estado" defaultValue="SP" />
-          <TextField label="CEP" defaultValue="01424-001" />
+          {[
+            ['street', 'Endereço'],
+            ['number', 'Número'],
+            ['neighborhood', 'Bairro'],
+            ['city', 'Cidade'],
+            ['state', 'Estado'],
+            ['zipCode', 'CEP'],
+          ].map(([name, label]) => (
+            <Controller
+              key={name}
+              control={control}
+              name={name as 'street' | 'number' | 'neighborhood' | 'city' | 'state' | 'zipCode'}
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  label={label}
+                  error={Boolean(fieldState.error)}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+          ))}
         </Box>
       ) : null}
 
@@ -159,27 +192,65 @@ export function CreatePropertyStepFields({
             gap: 2,
           }}
         >
-          <TextField label="Quartos" type="number" defaultValue={3} />
-          <TextField label="Banheiros" type="number" defaultValue={2} />
-          <TextField label="Vagas" type="number" defaultValue={2} />
-          <TextField label="Área útil" defaultValue="95m²" />
+          {[
+            ['bedrooms', 'Quartos', 'number'],
+            ['bathrooms', 'Banheiros', 'number'],
+            ['parkingSpaces', 'Vagas', 'number'],
+            ['area', 'Área útil', 'text'],
+          ].map(([name, label, type]) => (
+            <Controller
+              key={name}
+              control={control}
+              name={name as 'bedrooms' | 'bathrooms' | 'parkingSpaces' | 'area'}
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  label={label}
+                  type={type}
+                  error={Boolean(fieldState.error)}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+          ))}
+
           {createPropertyFeatureOptions.map((feature) => (
-            <Stack
+            <Controller
               key={feature}
-              direction="row"
-              alignItems="center"
-              spacing={0.8}
-              sx={{
-                minHeight: 44,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: `${radius.sm}px`,
-                px: 1,
+              control={control}
+              name="features"
+              render={({ field }) => {
+                const checked = field.value.includes(feature)
+
+                return (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={checked}
+                        size="small"
+                        onChange={(event) => {
+                          field.onChange(
+                            event.target.checked
+                              ? [...field.value, feature]
+                              : field.value.filter((item) => item !== feature),
+                          )
+                        }}
+                      />
+                    }
+                    label={feature}
+                    sx={{
+                      minHeight: 44,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: `${radius.sm}px`,
+                      mx: 0,
+                      px: 1,
+                      '& .MuiFormControlLabel-label': { fontSize: 14, fontWeight: 800 },
+                    }}
+                  />
+                )
               }}
-            >
-              <Checkbox defaultChecked size="small" />
-              <Typography sx={{ fontSize: 14, fontWeight: 800 }}>{feature}</Typography>
-            </Stack>
+            />
           ))}
         </Box>
       ) : null}
@@ -193,22 +264,43 @@ export function CreatePropertyStepFields({
           }}
         >
           {createPropertyMediaSlots.map((label) => (
-            <Box
+            <Controller
               key={label}
-              sx={{
-                minHeight: 150,
-                border: '1px dashed',
-                borderColor: 'divider',
-                borderRadius: `${radius.sm}px`,
-                bgcolor: alpha.graphite[6],
-                display: 'grid',
-                placeItems: 'center',
-                px: 2,
-                textAlign: 'center',
+              control={control}
+              name="mediaSlots"
+              render={({ field }) => {
+                const active = field.value.includes(label)
+
+                return (
+                  <Box
+                    component="button"
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => {
+                      field.onChange(
+                        active
+                          ? field.value.filter((item) => item !== label)
+                          : [...field.value, label],
+                      )
+                    }}
+                    sx={{
+                      minHeight: 150,
+                      border: '1px dashed',
+                      borderColor: active ? 'primary.main' : 'divider',
+                      borderRadius: `${radius.sm}px`,
+                      bgcolor: active ? alpha.magenta[6] : alpha.graphite[6],
+                      display: 'grid',
+                      placeItems: 'center',
+                      px: 2,
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <Typography sx={{ fontWeight: 900 }}>{label}</Typography>
+                  </Box>
+                )
               }}
-            >
-              <Typography sx={{ fontWeight: 900 }}>{label}</Typography>
-            </Box>
+            />
           ))}
         </Box>
       ) : null}
@@ -221,38 +313,68 @@ export function CreatePropertyStepFields({
             gap: 2,
           }}
         >
-          <TextField
-            label={propertyPurpose === 'Aluguel' ? 'Valor do aluguel' : 'Valor de venda'}
-            defaultValue={propertyPurpose === 'Aluguel' ? 'R$ 6.500' : 'R$ 1.420.000'}
-          />
-          <TextField label="Condomínio" defaultValue="R$ 1.200" />
-          <TextField label="IPTU mensal" defaultValue="R$ 380" />
-          <TextField
-            label={propertyPurpose === 'Aluguel' ? 'Garantia' : 'Comissão'}
-            defaultValue={propertyPurpose === 'Aluguel' ? '3 aluguéis' : '2% na venda'}
-          />
+          {[
+            ['mainValue', propertyPurpose === 'Aluguel' ? 'Valor do aluguel' : 'Valor de venda'],
+            ['condominium', 'Condomínio'],
+            ['iptu', 'IPTU mensal'],
+            ['negotiationTerm', propertyPurpose === 'Aluguel' ? 'Garantia' : 'Comissão'],
+          ].map(([name, label]) => (
+            <Controller
+              key={name}
+              control={control}
+              name={name as 'mainValue' | 'condominium' | 'iptu' | 'negotiationTerm'}
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  label={label}
+                  error={Boolean(fieldState.error)}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+          ))}
         </Box>
       ) : null}
 
       {activeStepKey === 'publishing' ? (
         <Stack spacing={1.6}>
-          {createPropertyPublishingOptions.map((option, index) => (
-            <Stack
+          {createPropertyPublishingOptions.map((option) => (
+            <Controller
               key={option}
-              direction="row"
-              alignItems="center"
-              spacing={0.8}
-              sx={{
-                minHeight: 44,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: `${radius.sm}px`,
-                px: 1,
+              control={control}
+              name="publishingOptions"
+              render={({ field }) => {
+                const checked = field.value.includes(option)
+
+                return (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={checked}
+                        size="small"
+                        onChange={(event) => {
+                          field.onChange(
+                            event.target.checked
+                              ? [...field.value, option]
+                              : field.value.filter((item) => item !== option),
+                          )
+                        }}
+                      />
+                    }
+                    label={option}
+                    sx={{
+                      minHeight: 44,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: `${radius.sm}px`,
+                      mx: 0,
+                      px: 1,
+                      '& .MuiFormControlLabel-label': { fontSize: 14, fontWeight: 800 },
+                    }}
+                  />
+                )
               }}
-            >
-              <Checkbox defaultChecked={index < 2} size="small" />
-              <Typography sx={{ fontSize: 14, fontWeight: 800 }}>{option}</Typography>
-            </Stack>
+            />
           ))}
         </Stack>
       ) : null}

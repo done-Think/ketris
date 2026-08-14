@@ -1,251 +1,193 @@
+'use client'
+
 import { Box, Chip, IconButton, Stack, Typography } from '@mui/material'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
-import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
+import type { GridColDef, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid'
+import { DataGrid } from '@mui/x-data-grid'
 
-import { alpha, brand, iconSize, motion, radius, shadows, surface } from '@shared/theme/tokens'
+import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
-import {
-  dashboardPropertyColumns,
-  dashboardPropertyStatusStyles,
-  dashboardPropertyTableGridColumns,
-} from '../config/dashboard-property-ui'
-import type { PropertiesTableProps } from '../types/dashboard-property'
+import { dashboardPropertyStatusStyles } from '../config/dashboard-property-ui'
+import type { DashboardProperty, PropertiesTableProps } from '../types/dashboard-property'
+
+function PropertyIdentityCell({ row }: GridRenderCellParams<DashboardProperty>) {
+  return (
+    <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0 }}>
+      <Box
+        component="img"
+        src={row.imageUrl}
+        alt=""
+        sx={{
+          width: 56,
+          height: 56,
+          borderRadius: `${radius.sm}px`,
+          objectFit: 'cover',
+          flexShrink: 0,
+        }}
+      />
+      <Box sx={{ minWidth: 0 }}>
+        <Typography noWrap sx={{ fontSize: 15, fontWeight: 900 }}>
+          {row.title}
+        </Typography>
+        <Typography noWrap sx={{ color: 'text.secondary', fontSize: 13 }}>
+          {row.address}
+        </Typography>
+      </Box>
+    </Stack>
+  )
+}
+
+function PropertyStatusCell({ row }: GridRenderCellParams<DashboardProperty>) {
+  const status = dashboardPropertyStatusStyles[row.status]
+
+  return (
+    <Chip
+      label={row.status}
+      size="small"
+      sx={{
+        height: 30,
+        borderRadius: `${radius.full}px`,
+        bgcolor: status.bgcolor,
+        color: status.color,
+        fontSize: 13,
+        fontWeight: 900,
+      }}
+    />
+  )
+}
 
 export function PropertiesTable({
   properties,
   totalCount,
   onPropertySelect,
 }: PropertiesTableProps) {
+  const columns: GridColDef<DashboardProperty>[] = [
+    {
+      field: 'title',
+      headerName: 'Imóvel',
+      flex: 2.2,
+      minWidth: 360,
+      sortable: true,
+      renderCell: (params) => <PropertyIdentityCell {...params} />,
+    },
+    { field: 'type', headerName: 'Tipo', flex: 0.9, minWidth: 130 },
+    { field: 'price', headerName: 'Preço', flex: 1, minWidth: 150 },
+    {
+      field: 'status',
+      headerName: 'Status',
+      flex: 0.8,
+      minWidth: 130,
+      renderCell: (params) => <PropertyStatusCell {...params} />,
+    },
+    { field: 'broker', headerName: 'Corretor', flex: 1, minWidth: 160 },
+    { field: 'updatedAt', headerName: 'Atualizado', flex: 0.9, minWidth: 140 },
+    {
+      field: 'actions',
+      headerName: 'Ações',
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      width: 112,
+      align: 'right',
+      headerAlign: 'right',
+      renderCell: ({ row }) => (
+        <Stack direction="row" spacing={0.8} justifyContent="flex-end" sx={{ width: '100%' }}>
+          <IconButton
+            aria-label={`Editar ${row.title}`}
+            onClick={(event) => event.stopPropagation()}
+            sx={{
+              width: 36,
+              height: 36,
+              border: '1px solid',
+              borderColor: 'divider',
+              color: 'text.secondary',
+              '&:hover': {
+                borderColor: 'primary.main',
+                color: 'primary.main',
+                bgcolor: alpha.magenta[6],
+              },
+            }}
+          >
+            <EditOutlinedIcon sx={{ fontSize: iconSize.md }} />
+          </IconButton>
+          <IconButton
+            aria-label={`Visualizar ${row.title}`}
+            onClick={(event) => {
+              event.stopPropagation()
+              onPropertySelect(row.id)
+            }}
+            sx={{
+              width: 36,
+              height: 36,
+              border: '1px solid',
+              borderColor: 'divider',
+              color: 'text.secondary',
+              '&:hover': {
+                borderColor: 'primary.main',
+                color: 'primary.main',
+                bgcolor: alpha.magenta[6],
+              },
+            }}
+          >
+            <VisibilityOutlinedIcon sx={{ fontSize: iconSize.md }} />
+          </IconButton>
+        </Stack>
+      ),
+    },
+  ]
+
   return (
     <Box
       sx={{
         bgcolor: surface.paper,
         borderRadius: `${radius.sm}px`,
         boxShadow: shadows.propertyCard,
-        overflow: 'hidden',
         border: '1px solid',
         borderColor: alpha.graphite[6],
         width: '100%',
+        minWidth: 0,
       }}
     >
-      <Box
-        sx={{
-          display: { xs: 'none', md: 'grid' },
-          gridTemplateColumns: dashboardPropertyTableGridColumns,
-          px: 3.5,
-          py: 1.85,
-          bgcolor: brand.neutral[50],
-          borderBottom: '1px solid',
-          borderColor: 'divider',
+      <DataGrid
+        rows={properties}
+        columns={columns}
+        autoHeight
+        rowHeight={82}
+        disableRowSelectionOnClick
+        pageSizeOptions={[5, 10, 25]}
+        initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+        localeText={{
+          noRowsLabel: 'Nenhum imóvel encontrado',
+          footerTotalRows: 'Total de linhas:',
+          MuiTablePagination: {
+            labelRowsPerPage: 'Linhas por página',
+            labelDisplayedRows: ({ from, to }) => `${from}-${to} de ${totalCount}`,
+          },
         }}
-      >
-        {dashboardPropertyColumns.map((column) => (
-          <Typography
-            key={column}
-            sx={{ color: brand.neutral[500], fontSize: 12.5, fontWeight: 900, letterSpacing: 0 }}
-          >
-            {column}
-          </Typography>
-        ))}
-      </Box>
-
-      {properties.map((property) => {
-        const status = dashboardPropertyStatusStyles[property.status]
-
-        return (
-          <Box
-            key={property.id}
-            role="button"
-            tabIndex={0}
-            onClick={() => onPropertySelect(property.id)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault()
-                onPropertySelect(property.id)
-              }
-            }}
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '54px 1fr auto', md: dashboardPropertyTableGridColumns },
-              alignItems: 'center',
-              gap: { xs: 1.2, md: 0 },
-              px: { xs: 1.5, md: 3.5 },
-              py: { xs: 1.6, md: 2.25 },
-              borderBottom: '1px solid',
-              borderColor: 'divider',
-              cursor: 'pointer',
-              transition: motion.transition.interactive,
-              '&:hover': { bgcolor: brand.neutral[50] },
-            }}
-          >
-            <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0 }}>
-              <Box
-                component="img"
-                src={property.imageUrl}
-                alt=""
-                sx={{
-                  width: { xs: 56, md: 76 },
-                  height: { xs: 56, md: 76 },
-                  borderRadius: `${radius.sm}px`,
-                  objectFit: 'cover',
-                  flexShrink: 0,
-                }}
-              />
-              <Box sx={{ minWidth: 0 }}>
-                <Typography noWrap sx={{ fontSize: { xs: 15, md: 18 }, fontWeight: 900 }}>
-                  {property.title}
-                </Typography>
-                <Typography noWrap sx={{ color: 'text.secondary', fontSize: { xs: 13, md: 15 } }}>
-                  {property.address}
-                </Typography>
-              </Box>
-            </Stack>
-
-            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: 16 }}>
-              {property.type}
-            </Typography>
-            <Typography sx={{ fontSize: { xs: 15, md: 17 }, fontWeight: 900 }}>
-              {property.price}
-            </Typography>
-            <Chip
-              label={property.status}
-              size="small"
-              sx={{
-                justifySelf: { xs: 'end', md: 'start' },
-                height: 30,
-                borderRadius: `${radius.full}px`,
-                bgcolor: status.bgcolor,
-                color: status.color,
-                fontSize: 13.5,
-                fontWeight: 900,
-              }}
-            />
-            <Typography
-              sx={{ display: { xs: 'none', md: 'block' }, color: 'text.secondary', fontSize: 16 }}
-            >
-              {property.broker}
-            </Typography>
-            <Typography
-              sx={{ display: { xs: 'none', md: 'block' }, color: 'text.secondary', fontSize: 16 }}
-            >
-              {property.updatedAt}
-            </Typography>
-            <Stack
-              direction="row"
-              spacing={0.8}
-              sx={{ display: { xs: 'none', md: 'flex' }, justifySelf: 'end' }}
-            >
-              <IconButton
-                aria-label={`Editar ${property.title}`}
-                onClick={(event) => {
-                  event.stopPropagation()
-                }}
-                sx={{
-                  width: 40,
-                  height: 40,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  color: 'text.secondary',
-                  '&:hover': {
-                    borderColor: 'primary.main',
-                    color: 'primary.main',
-                    bgcolor: alpha.magenta[6],
-                  },
-                }}
-              >
-                <EditOutlinedIcon sx={{ fontSize: iconSize.lg }} />
-              </IconButton>
-              <IconButton
-                aria-label={`Visualizar ${property.title}`}
-                onClick={(event) => {
-                  event.stopPropagation()
-                  onPropertySelect(property.id)
-                }}
-                sx={{
-                  width: 40,
-                  height: 40,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  color: 'text.secondary',
-                  '&:hover': {
-                    borderColor: 'primary.main',
-                    color: 'primary.main',
-                    bgcolor: alpha.magenta[6],
-                  },
-                }}
-              >
-                <VisibilityOutlinedIcon sx={{ fontSize: iconSize.lg }} />
-              </IconButton>
-            </Stack>
-          </Box>
-        )
-      })}
-
-      {!properties.length ? (
-        <Box sx={{ px: 3.5, py: 5, textAlign: 'center' }}>
-          <Typography sx={{ fontSize: 18, fontWeight: 900, mb: 0.6 }}>
-            Nenhum imóvel encontrado
-          </Typography>
-          <Typography sx={{ color: 'text.secondary', fontSize: 15 }}>
-            Ajuste a busca ou selecione outro filtro.
-          </Typography>
-        </Box>
-      ) : null}
-
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        alignItems={{ xs: 'stretch', sm: 'center' }}
-        justifyContent="space-between"
-        spacing={1.5}
-        sx={{ px: 3.5, py: 2.6 }}
-      >
-        <Typography sx={{ color: 'text.secondary', fontSize: 16 }}>
-          Mostrando {properties.length} de {totalCount} imóveis
-        </Typography>
-        <Stack direction="row" spacing={0.7} justifyContent="flex-end">
-          {[1, 2, 3].map((page) => (
-            <IconButton
-              key={page}
-              aria-label={`Página ${page}`}
-              sx={{
-                width: 38,
-                height: 38,
-                bgcolor: page === 1 ? 'primary.main' : surface.paper,
-                border: '1px solid',
-                borderColor: page === 1 ? 'primary.main' : 'divider',
-                color: page === 1 ? surface.lightText : 'text.secondary',
-                fontSize: 14.5,
-                fontWeight: 900,
-                '&:hover': {
-                  bgcolor: page === 1 ? 'primary.dark' : alpha.graphite[6],
-                },
-              }}
-            >
-              {page}
-            </IconButton>
-          ))}
-          <IconButton
-            aria-label="Mais páginas"
-            sx={{ width: 38, height: 38, border: '1px solid', borderColor: 'divider' }}
-          >
-            <MoreHorizRoundedIcon sx={{ fontSize: iconSize.sm }} />
-          </IconButton>
-          <IconButton
-            aria-label="Página 8"
-            sx={{
-              width: 38,
-              height: 38,
-              border: '1px solid',
-              borderColor: 'divider',
-              fontSize: 14.5,
-              fontWeight: 900,
-            }}
-          >
-            8
-          </IconButton>
-        </Stack>
-      </Stack>
+        onRowClick={(params: GridRowParams<DashboardProperty>) => onPropertySelect(params.row.id)}
+        sx={{
+          border: 0,
+          minHeight: 400,
+          '& .MuiDataGrid-columnHeaders': {
+            bgcolor: brand.neutral[50],
+            color: brand.neutral[500],
+            fontSize: 12,
+            fontWeight: 900,
+            textTransform: 'uppercase',
+          },
+          '& .MuiDataGrid-cell': {
+            borderColor: 'divider',
+            outline: 'none',
+          },
+          '& .MuiDataGrid-row': {
+            cursor: 'pointer',
+          },
+          '& .MuiDataGrid-row:hover': {
+            bgcolor: brand.neutral[50],
+          },
+        }}
+      />
     </Box>
   )
 }

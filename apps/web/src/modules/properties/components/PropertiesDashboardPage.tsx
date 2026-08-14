@@ -1,11 +1,16 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
+import { useForm } from 'react-hook-form'
 import { useRouter } from 'next/navigation'
 import { Box } from '@mui/material'
 
 import { dashboardProperties, propertyStatusFilters } from '../data/dashboard-properties'
-import type { DashboardProperty, DashboardPropertyFilterKey } from '../types/dashboard-property'
+import type {
+  DashboardProperty,
+  DashboardPropertyFilterKey,
+  PropertiesDashboardFiltersFormValues,
+} from '../types/dashboard-property'
 import { PropertiesDashboardHeader } from './PropertiesDashboardHeader'
 import { PropertiesTable } from './PropertiesTable'
 import { PropertyStatusFilters } from './PropertyStatusFilters'
@@ -28,8 +33,13 @@ function matchesSearchQuery(property: DashboardProperty, query: string) {
 
 export function PropertiesDashboardPage() {
   const router = useRouter()
-  const [activeStatusFilter, setActiveStatusFilter] = useState<DashboardPropertyFilterKey>('Todos')
-  const [searchQuery, setSearchQuery] = useState('')
+  const { setValue, watch } = useForm<PropertiesDashboardFiltersFormValues>({
+    defaultValues: {
+      activeStatusFilter: 'Todos',
+      searchQuery: '',
+    },
+  })
+  const { activeStatusFilter, searchQuery } = watch()
   const filteredProperties = useMemo(
     () =>
       dashboardProperties.filter(
@@ -65,13 +75,13 @@ export function PropertiesDashboardPage() {
       >
         <PropertiesDashboardHeader
           searchQuery={searchQuery}
-          onSearchQueryChange={setSearchQuery}
+          onSearchQueryChange={(value) => setValue('searchQuery', value)}
           onCreateProperty={() => router.push('/dashboard/imoveis/novo')}
         />
         <PropertyStatusFilters
           activeStatusFilter={activeStatusFilter}
           statusFilterCounts={statusFilterCounts}
-          onStatusFilterChange={setActiveStatusFilter}
+          onStatusFilterChange={(filter) => setValue('activeStatusFilter', filter)}
         />
         <PropertiesTable
           properties={filteredProperties}

@@ -1,4 +1,8 @@
 import type { ReactNode } from 'react'
+import type { Control } from 'react-hook-form'
+import type { z } from 'zod'
+
+import type { createDashboardPropertySchema } from '../schemas/create-dashboard-property-schema'
 
 export type DashboardPropertyStatus =
   'Disponível' | 'Alugado' | 'Ativo' | 'Em análise' | 'Vencendo' | 'Inativo'
@@ -14,6 +18,17 @@ export type CreatePropertyStepKey =
 export type CreatePropertyPurpose = 'Aluguel' | 'Venda'
 
 export type DashboardActivityTone = 'success' | 'accent' | 'info' | 'warning' | 'neutral' | 'error'
+
+export type CreateDashboardPropertyFormValues = z.infer<typeof createDashboardPropertySchema>
+
+export type PropertiesDashboardFiltersFormValues = {
+  activeStatusFilter: DashboardPropertyFilterKey
+  searchQuery: string
+}
+
+export type PropertyDetailDashboardFormValues = {
+  activeTab: DashboardPropertyDetailTab
+}
 
 export type DashboardProperty = {
   id: string
@@ -97,6 +112,7 @@ export type CreatePropertyStepsNavProps = {
 }
 
 export type CreatePropertyStepFieldsProps = {
+  control: Control<CreateDashboardPropertyFormValues>
   activeStepKey: CreatePropertyStepKey
   activeStepLabel: string
   propertyPurpose: CreatePropertyPurpose

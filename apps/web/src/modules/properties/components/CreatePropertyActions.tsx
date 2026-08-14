@@ -31,7 +31,7 @@ export function CreatePropertyActions({
         Voltar
       </Button>
       <Button
-        type="button"
+        type={lastStep ? 'submit' : 'button'}
         variant="contained"
         endIcon={!lastStep ? <ChevronRightRoundedIcon sx={{ fontSize: iconSize.sm }} /> : null}
         onClick={lastStep ? undefined : onNextStep}

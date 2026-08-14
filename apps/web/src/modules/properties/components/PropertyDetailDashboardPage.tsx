@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
 import { notFound } from 'next/navigation'
 import { Box, Stack } from '@mui/material'
+import { useForm } from 'react-hook-form'
 
 import { getDashboardPropertyById } from '../data/dashboard-properties'
 import type {
-  DashboardPropertyDetailTab,
+  PropertyDetailDashboardFormValues,
   PropertyDetailDashboardPageProps,
 } from '../types/dashboard-property'
 import { PropertyDetailHeader } from './PropertyDetailHeader'
@@ -15,7 +15,12 @@ import { PropertyDetailSidebar } from './PropertyDetailSidebar'
 import { PropertyDetailTabs } from './PropertyDetailTabs'
 
 export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashboardPageProps) {
-  const [activeTab, setActiveTab] = useState<DashboardPropertyDetailTab>('Dados')
+  const { setValue, watch } = useForm<PropertyDetailDashboardFormValues>({
+    defaultValues: {
+      activeTab: 'Dados',
+    },
+  })
+  const activeTab = watch('activeTab')
   const property = getDashboardPropertyById(propertyId)
 
   if (!property) notFound()
@@ -29,7 +34,10 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
       >
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <PropertyDetailHeader property={property} />
-          <PropertyDetailTabs activeTab={activeTab} onTabChange={setActiveTab} />
+          <PropertyDetailTabs
+            activeTab={activeTab}
+            onTabChange={(tab) => setValue('activeTab', tab)}
+          />
           <PropertyDetailMainPanel property={property} activeTab={activeTab} />
         </Box>
 
