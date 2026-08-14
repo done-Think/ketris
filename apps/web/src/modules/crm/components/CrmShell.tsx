@@ -1,11 +1,11 @@
 'use client'
 
 import { useMemo, useState, type ReactNode } from 'react'
-import ContactsOutlinedIcon from '@mui/icons-material/ContactsOutlined'
-import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined'
-import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
-import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
+import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined'
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined'
+import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
+import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline'
 import ViewKanbanOutlinedIcon from '@mui/icons-material/ViewKanbanOutlined'
 import { Avatar, Box, Drawer, IconButton, Stack, Tooltip, Typography } from '@mui/material'
 import NextLink from 'next/link'
@@ -18,14 +18,14 @@ import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
 import { CrmAccessBoundary } from './CrmAccessBoundary'
 
-const sidebarWidth = 240
+const sidebarWidth = 200
 
 const navigationItems = [
-  { label: 'Dashboard', href: '/dashboard', icon: DashboardOutlinedIcon },
+  { label: 'Dashboard', href: '/dashboard', icon: BarChartOutlinedIcon },
   { label: 'Pipeline', href: '/crm', icon: ViewKanbanOutlinedIcon },
-  { label: 'Contatos', href: '/crm/contatos', icon: ContactsOutlinedIcon },
-  { label: 'Imóveis', href: '/imoveis', icon: HomeWorkOutlinedIcon },
-  { label: 'Propostas', href: '/crm/propostas', icon: DescriptionOutlinedIcon },
+  { label: 'Contatos', href: '/crm/contatos', icon: PeopleOutlineIcon },
+  { label: 'Imóveis', href: '/imoveis', icon: HomeOutlinedIcon },
+  { label: 'Propostas', href: '/crm/propostas', icon: InsertDriveFileOutlinedIcon },
 ] as const
 
 type CrmShellProps = {
@@ -58,7 +58,7 @@ export function CrmShell({ children }: CrmShellProps) {
       sx={{
         width: sidebarWidth,
         height: '100%',
-        bgcolor: brand.graphite[500],
+        bgcolor: brand.graphite[600],
         color: surface.lightText,
         px: 2,
         py: 2.5,
@@ -70,7 +70,12 @@ export function CrmShell({ children }: CrmShellProps) {
         sx={{ alignSelf: 'flex-start', mb: 3.5, ml: 0.5 }}
       />
 
-      <Stack component="nav" spacing={0.6} aria-label="Navegação do CRM">
+      <Stack
+        component="nav"
+        spacing={0.375}
+        aria-label="Navegação do CRM"
+        sx={{ ml: -1.5, mr: -0.5 }}
+      >
         {navigationItems.map(({ label, href, icon: Icon }) => {
           const targetPath = href.split('?')[0]
           const active =
@@ -88,12 +93,12 @@ export function CrmShell({ children }: CrmShellProps) {
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1.5,
-                minHeight: 42,
-                px: 1.4,
+                gap: 1.125,
+                minHeight: 36,
+                px: 1.125,
                 borderLeft: '3px solid',
                 borderColor: active ? 'primary.main' : 'transparent',
-                borderRadius: `0 ${radius.sm}px ${radius.sm}px 0`,
+                borderRadius: `${radius.sm}px`,
                 bgcolor: active ? alpha.white[8] : 'transparent',
                 color: active ? surface.lightText : alpha.white[62],
                 textDecoration: 'none',
@@ -104,8 +109,18 @@ export function CrmShell({ children }: CrmShellProps) {
                 },
               }}
             >
-              <Icon sx={{ fontSize: iconSize.lg, color: active ? 'primary.main' : 'inherit' }} />
-              <Typography sx={{ fontSize: 14, fontWeight: active ? 800 : 600 }}>{label}</Typography>
+              <Icon sx={{ fontSize: iconSize.sm, color: active ? 'primary.main' : 'inherit' }} />
+              <Typography
+                sx={{
+                  fontFamily: 'var(--font-inter), system-ui, -apple-system, sans-serif',
+                  fontSize: 13,
+                  fontWeight: active ? 600 : 500,
+                  lineHeight: '18px',
+                  letterSpacing: 0,
+                }}
+              >
+                {label}
+              </Typography>
             </Box>
           )
         })}
@@ -162,7 +177,7 @@ export function CrmShell({ children }: CrmShellProps) {
           zIndex: 20,
           height: 64,
           px: 2,
-          bgcolor: brand.graphite[500],
+          bgcolor: brand.graphite[600],
           color: surface.lightText,
           boxShadow: '0 5px 22px rgba(13,15,20,0.18)',
         }}
