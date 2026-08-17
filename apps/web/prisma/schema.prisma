@@ -225,6 +225,7 @@ model Oportunidade {
   condicoesEspeciais  String[]           @default([])
   observacoes         String?
   status              StatusOportunidade @default(RASCUNHO)
+  arquivadaEm         DateTime?
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
 
@@ -234,6 +235,7 @@ model Oportunidade {
 
   @@index([tenantId])
   @@index([tenantId, status])
+  @@index([tenantId, arquivadaEm])
   @@index([imovelId])
   @@map("oportunidades")
 }
