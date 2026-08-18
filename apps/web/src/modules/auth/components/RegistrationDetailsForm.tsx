@@ -17,30 +17,22 @@ import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import { Controller, useForm } from 'react-hook-form'
 
-import { RhfTextField } from '@shared/components/form'
+import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
 import { brand } from '@shared/theme/tokens'
 
 import { AuthFormField } from './AuthFormField'
 import { authPrimaryButtonSx, authTextFieldSx } from './auth-form.styles'
-import { registrationFontFamily } from './registration.styles'
-import type { RegistrationProfileId } from '../config/registration-profiles'
-import {
-  registrationDetailsSchema,
-  type RegistrationDetailsFormValues,
-} from '../schemas/registration-details-schema'
+import { registrationDetailsSchema } from '../schemas/registration-details-schema'
+import type {
+  RegistrationDetailsFormProps,
+  RegistrationDetailsFormValues,
+  RegistrationPasswordField,
+  RegistrationPasswordFieldName,
+} from '../types/registration'
 
-type PasswordFieldName = 'password' | 'passwordConfirmation'
+const PHONE_MASK = [{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }]
 
-type RegistrationDetailsFormProps = {
-  profile: RegistrationProfileId
-  onSubmit?: (values: RegistrationDetailsFormValues) => void
-}
-
-const passwordFields: ReadonlyArray<{
-  name: PasswordFieldName
-  label: string
-  placeholder: string
-}> = [
+const passwordFields: ReadonlyArray<RegistrationPasswordField> = [
   { name: 'password', label: 'Senha', placeholder: 'Crie uma senha' },
   {
     name: 'passwordConfirmation',
@@ -49,17 +41,9 @@ const passwordFields: ReadonlyArray<{
   },
 ]
 
-const registrationTextFieldSx = [
-  authTextFieldSx,
-  {
-    '& .MuiInputBase-input, & .MuiFormHelperText-root': {
-      fontFamily: registrationFontFamily.body,
-    },
-  },
-] as const
-
 export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetailsFormProps) {
-  const [visiblePasswordField, setVisiblePasswordField] = useState<PasswordFieldName | null>(null)
+  const [visiblePasswordField, setVisiblePasswordField] =
+    useState<RegistrationPasswordFieldName | null>(null)
   const {
     control,
     handleSubmit,
@@ -82,19 +66,14 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
     onSubmit?.(values)
   }
 
-  function togglePasswordVisibility(fieldName: PasswordFieldName) {
+  function togglePasswordVisibility(fieldName: RegistrationPasswordFieldName) {
     setVisiblePasswordField((current) => (current === fieldName ? null : fieldName))
   }
 
   return (
     <Box component="form" noValidate onSubmit={handleSubmit(submitDetails)} sx={{ mt: 4 }}>
       <Box sx={{ display: 'grid', gap: 2.25 }}>
-        <AuthFormField
-          htmlFor="registration-full-name"
-          label="Nome completo"
-          labelSx={{ fontFamily: registrationFontFamily.body }}
-          required
-        >
+        <AuthFormField htmlFor="registration-full-name" label="Nome completo" required>
           <RhfTextField
             id="registration-full-name"
             control={control}
@@ -102,7 +81,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
             placeholder="Digite seu nome completo"
             autoComplete="name"
             fullWidth
-            sx={registrationTextFieldSx}
+            sx={authTextFieldSx}
           />
         </AuthFormField>
 
@@ -113,12 +92,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
             gap: 2,
           }}
         >
-          <AuthFormField
-            htmlFor="registration-email"
-            label="E-mail"
-            labelSx={{ fontFamily: registrationFontFamily.body }}
-            required
-          >
+          <AuthFormField htmlFor="registration-email" label="E-mail" required>
             <RhfTextField
               id="registration-email"
               control={control}
@@ -127,25 +101,21 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
               type="email"
               autoComplete="email"
               fullWidth
-              sx={registrationTextFieldSx}
+              sx={authTextFieldSx}
             />
           </AuthFormField>
 
-          <AuthFormField
-            htmlFor="registration-phone"
-            label="Telefone"
-            labelSx={{ fontFamily: registrationFontFamily.body }}
-            required
-          >
-            <RhfTextField
+          <AuthFormField htmlFor="registration-phone" label="Telefone" required>
+            <RhfMaskedTextField
               id="registration-phone"
               control={control}
               name="phone"
+              mask={PHONE_MASK}
               placeholder="(11) 99999-9999"
               type="tel"
               autoComplete="tel"
               fullWidth
-              sx={registrationTextFieldSx}
+              sx={authTextFieldSx}
             />
           </AuthFormField>
         </Box>
@@ -165,7 +135,6 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
                 key={field.name}
                 htmlFor={`registration-${field.name}`}
                 label={field.label}
-                labelSx={{ fontFamily: registrationFontFamily.body }}
                 required
               >
                 <RhfTextField
@@ -176,7 +145,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
                   type={isVisible ? 'text' : 'password'}
                   autoComplete="new-password"
                   fullWidth
-                  sx={registrationTextFieldSx}
+                  sx={authTextFieldSx}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -204,12 +173,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
           })}
         </Box>
 
-        <AuthFormField
-          htmlFor="registration-creci"
-          label="CRECI"
-          labelSx={{ fontFamily: registrationFontFamily.body }}
-          required={profile === 'corretor'}
-        >
+        <AuthFormField htmlFor="registration-creci" label="CRECI" required={profile === 'corretor'}>
           <RhfTextField
             id="registration-creci"
             control={control}
@@ -221,7 +185,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
                 : 'Campo opcional para este perfil'
             }
             fullWidth
-            sx={registrationTextFieldSx}
+            sx={authTextFieldSx}
           />
         </AuthFormField>
       </Box>
@@ -244,11 +208,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
                 />
               }
               label={
-                <Typography
-                  color="text.secondary"
-                  variant="body2"
-                  sx={{ fontFamily: registrationFontFamily.body }}
-                >
+                <Typography color="text.secondary" variant="body2">
                   Li e aceito os{' '}
                   <Box component="span" sx={{ color: 'primary.main' }}>
                     Termos de Uso
@@ -262,9 +222,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
               sx={{ m: 0, alignItems: 'center' }}
             />
             {fieldState.error && (
-              <FormHelperText sx={{ ml: 0, fontFamily: registrationFontFamily.body }}>
-                {fieldState.error.message}
-              </FormHelperText>
+              <FormHelperText sx={{ ml: 0 }}>{fieldState.error.message}</FormHelperText>
             )}
           </FormControl>
         )}
@@ -279,7 +237,6 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
           width: '100%',
           maxWidth: 286,
           mt: 3.25,
-          fontFamily: registrationFontFamily.body,
         }}
       >
         Criar conta

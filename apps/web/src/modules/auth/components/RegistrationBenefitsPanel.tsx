@@ -1,10 +1,10 @@
+import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
 import { Box, Stack, Typography } from '@mui/material'
 
 import ketrisLogoTransparent from '@shared/assets/ketris-logo-transparent.png'
 import { AppLogo } from '@shared/components/ui'
-import { brand, radius, surface } from '@shared/theme/tokens'
+import { brand, gradients, iconSize, radius, surface } from '@shared/theme/tokens'
 
-import { registrationFontFamily } from './registration.styles'
 import { REGISTRATION_BENEFITS } from '../config/registration-benefits'
 
 export function RegistrationBenefitsPanel() {
@@ -36,7 +36,7 @@ export function RegistrationBenefitsPanel() {
             width: 280,
             height: 180,
             borderRadius: `${radius.xl}px`,
-            background: `linear-gradient(105deg, ${brand.magenta[500]} 0%, ${brand.magenta[700]} 42%, ${brand.graphite[700]} 100%)`,
+            background: gradients.registrationHighlight,
           }}
         />
 
@@ -49,13 +49,15 @@ export function RegistrationBenefitsPanel() {
                   width: 24,
                   height: 24,
                   flexShrink: 0,
+                  display: 'grid',
+                  placeItems: 'center',
                   borderRadius: `${radius.full}px`,
                   bgcolor: brand.magenta[50],
                 }}
-              />
-              <Typography sx={{ fontFamily: registrationFontFamily.body, fontSize: 15 }}>
-                {benefit}
-              </Typography>
+              >
+                <CheckRoundedIcon sx={{ color: brand.magenta[500], fontSize: iconSize.sm }} />
+              </Box>
+              <Typography sx={{ fontSize: 15 }}>{benefit}</Typography>
             </Stack>
           ))}
         </Stack>
@@ -64,7 +66,7 @@ export function RegistrationBenefitsPanel() {
       <Typography
         color="text.secondary"
         variant="caption"
-        sx={{ display: { xs: 'none', md: 'block' }, fontFamily: registrationFontFamily.body }}
+        sx={{ display: { xs: 'none', md: 'block' } }}
       >
         © 2026 Ketris. Todos os direitos reservados.
       </Typography>

@@ -1,14 +1,29 @@
 import { Box } from '@mui/material'
+import type { SvgIconComponent } from '@mui/icons-material'
+import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
+import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
+import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined'
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined'
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined'
 
-import { brand, radius } from '@shared/theme/tokens'
+import { brand, iconSize, radius } from '@shared/theme/tokens'
 
-import type { RegistrationProfile } from '../config/registration-profiles'
+import type {
+  RegistrationProfileIcon as RegistrationProfileIconVariant,
+  RegistrationProfileIconProps,
+} from '../types/registration'
 
-type RegistrationProfileIconProps = {
-  variant: RegistrationProfile['icon']
+const profileIcons: Record<RegistrationProfileIconVariant, SvgIconComponent> = {
+  owner: HomeOutlinedIcon,
+  broker: BadgeOutlinedIcon,
+  agency: BusinessOutlinedIcon,
+  developer: ApartmentOutlinedIcon,
+  tenant: SearchOutlinedIcon,
 }
 
 export function RegistrationProfileIcon({ variant }: RegistrationProfileIconProps) {
+  const Icon = profileIcons[variant]
+
   return (
     <Box
       aria-hidden="true"
@@ -21,30 +36,7 @@ export function RegistrationProfileIcon({ variant }: RegistrationProfileIconProp
         bgcolor: brand.magenta[50],
       }}
     >
-      <Box
-        sx={{
-          position: 'relative',
-          width: variant === 'briefcase' ? 20 : 18,
-          height: variant === 'briefcase' ? 16 : 18,
-          borderRadius:
-            variant === 'circle' ? `${radius.full}px` : variant === 'square' ? '3px' : '2px',
-          bgcolor: brand.magenta[500],
-          ...(variant === 'briefcase' && {
-            mt: 0.5,
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: -5,
-              left: 6,
-              width: 8,
-              height: 6,
-              border: `3px solid ${brand.magenta[500]}`,
-              borderBottom: 0,
-              borderRadius: '3px 3px 0 0',
-            },
-          }),
-        }}
-      />
+      <Icon sx={{ color: brand.magenta[500], fontSize: iconSize.xl }} />
     </Box>
   )
 }

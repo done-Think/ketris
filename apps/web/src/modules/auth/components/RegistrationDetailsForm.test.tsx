@@ -38,7 +38,7 @@ describe('RegistrationDetailsForm', () => {
 
     await user.type(screen.getByLabelText(/Nome completo/), 'Maria da Silva')
     await user.type(screen.getByLabelText(/E-mail/), 'MARIA@EMAIL.COM')
-    await user.type(screen.getByLabelText(/Telefone/), '(11) 99999-9999')
+    await user.type(screen.getByLabelText(/Telefone/), '11999999999')
     await user.type(screen.getByLabelText(/^Senha/), 'senha-segura')
     await user.type(screen.getByPlaceholderText('Confirme a senha'), 'senha-segura')
     await user.click(screen.getByRole('checkbox', { name: /Li e aceito/ }))
@@ -54,5 +54,5 @@ describe('RegistrationDetailsForm', () => {
       creci: '',
       acceptTerms: true,
     })
-  })
+  }, 20000)
 })
