@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react'
 import { Box } from '@mui/material'
 
 import ketrisLogoTransparent from '@shared/assets/ketris-logo-transparent.png'
@@ -6,13 +5,8 @@ import { AppLogo } from '@shared/components/ui'
 import { surface } from '@shared/theme/tokens'
 
 import { RegistrationProgress } from './RegistrationProgress'
-import { registrationFontFamily } from './registration.styles'
 
-type RegistrationShellProps = {
-  children: ReactNode
-  currentStep: number
-  totalSteps: number
-}
+import type { RegistrationShellProps } from '../types/registration'
 
 export function RegistrationShell({ children, currentStep, totalSteps }: RegistrationShellProps) {
   return (
@@ -21,7 +15,6 @@ export function RegistrationShell({ children, currentStep, totalSteps }: Registr
       sx={{
         minHeight: '100dvh',
         bgcolor: surface.app,
-        fontFamily: registrationFontFamily.body,
       }}
     >
       <Box

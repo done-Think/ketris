@@ -2,7 +2,9 @@ import Link from 'next/link'
 import { Link as MuiLink, Stack, Typography } from '@mui/material'
 import { alpha as muiAlpha } from '@mui/material/styles'
 
-import { surface } from '@shared/theme/tokens'
+import { componentText, surface } from '@shared/theme/tokens'
+
+import { authRoutes } from '../config/auth-routes'
 
 export function LoginAccountPrompt() {
   return (
@@ -11,16 +13,16 @@ export function LoginAccountPrompt() {
         variant="body2"
         sx={{
           color: { xs: muiAlpha(surface.lightText, 0.72), md: 'text.secondary' },
-          fontSize: { xs: 11, md: 14 },
+          ...componentText.authPrompt,
         }}
       >
         Não tem conta?
       </Typography>
       <MuiLink
         component={Link}
-        href="/cadastro"
+        href={authRoutes.register}
         underline="hover"
-        sx={{ color: 'primary.main', fontSize: { xs: 11, md: 14 }, fontWeight: 700 }}
+        sx={{ color: 'primary.main', ...componentText.authPrompt, fontWeight: 700 }}
       >
         Criar conta
       </MuiLink>

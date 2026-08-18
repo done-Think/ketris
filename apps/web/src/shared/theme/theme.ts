@@ -46,23 +46,23 @@ export function buildTheme(override: TenantThemeOverride = {}): Theme {
       borderRadius: radius.md,
     },
     typography: {
-      fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+      fontFamily: 'var(--font-inter), Inter, system-ui, -apple-system, sans-serif',
       h1: {
-        fontFamily: 'Space Grotesk, sans-serif',
+        fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif',
         fontSize: '2.5rem',
         fontWeight: 700,
         lineHeight: 1.15,
         letterSpacing: '-0.02em',
       },
       h2: {
-        fontFamily: 'Space Grotesk, sans-serif',
+        fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif',
         fontSize: '2rem',
         fontWeight: 700,
         lineHeight: 1.2,
         letterSpacing: '-0.02em',
       },
       h3: {
-        fontFamily: 'Space Grotesk, sans-serif',
+        fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif',
         fontSize: '1.625rem',
         fontWeight: 600,
         lineHeight: 1.25,

@@ -19,9 +19,10 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import { useForm } from 'react-hook-form'
 
 import { RhfTextField } from '@shared/components/form'
-import { brand, radius, surface } from '@shared/theme/tokens'
+import { brand, componentText, externalBrand, radius, surface } from '@shared/theme/tokens'
 
 import { AuthFormField } from './AuthFormField'
+import { authRoutes } from '../config/auth-routes'
 import { authPrimaryButtonSx, authTextFieldSx } from './auth-form.styles'
 import { useLogin } from '../hooks/use-login'
 import { loginSchema, type LoginFormValues } from '../schemas/login-schema'
@@ -33,13 +34,11 @@ const loginTextFieldSx = {
   '& .MuiInputBase-input': {
     px: { xs: 1.5, md: 1.75 },
     py: { xs: 1, md: 1.5 },
-    fontSize: { xs: 12, md: 14 },
+    ...componentText.authBody,
   },
 } as const
 
-type LoginFormProps = {
-  callbackUrl: string
-}
+import type { LoginFormProps } from '../types/login'
 
 export function LoginForm({ callbackUrl }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false)
@@ -59,21 +58,17 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
   return (
     <Box>
       <Box sx={{ mb: { xs: 2, md: 3.25 }, textAlign: { xs: 'center', md: 'left' } }}>
-        <Typography variant="h3" sx={{ mb: 0.5, fontSize: { xs: 18, md: '1.625rem' } }}>
+        <Typography variant="h3" sx={{ mb: 0.5, ...componentText.authTitle }}>
           Entrar na sua conta
         </Typography>
-        <Typography color="text.secondary" variant="body2" sx={{ fontSize: { xs: 12, md: 14 } }}>
+        <Typography color="text.secondary" variant="body2" sx={componentText.authBody}>
           Acesse sua conta para gerenciar imóveis
         </Typography>
       </Box>
 
       <Box component="form" noValidate onSubmit={handleSubmit(login)}>
         <Stack spacing={{ xs: 1.5, md: 1.75 }}>
-          <AuthFormField
-            htmlFor="login-email"
-            label="E-mail"
-            labelSx={{ fontSize: { xs: 12, md: 14 } }}
-          >
+          <AuthFormField htmlFor="login-email" label="E-mail" labelSx={componentText.authBody}>
             <RhfTextField
               id="login-email"
               control={control}
@@ -87,11 +82,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
           </AuthFormField>
 
           <Box>
-            <AuthFormField
-              htmlFor="login-password"
-              label="Senha"
-              labelSx={{ fontSize: { xs: 12, md: 14 } }}
-            >
+            <AuthFormField htmlFor="login-password" label="Senha" labelSx={componentText.authBody}>
               <RhfTextField
                 id="login-password"
                 control={control}
@@ -125,10 +116,10 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: { xs: 0.75, md: 1 } }}>
               <Typography
                 component={Link}
-                href="/recuperar-senha"
+                href={authRoutes.forgotPassword}
                 sx={{
                   color: 'primary.main',
-                  fontSize: { xs: 11, md: 13 },
+                  ...componentText.authInlineLink,
                   fontWeight: 700,
                   textDecoration: 'none',
                   '&:hover': { textDecoration: 'underline' },
@@ -156,7 +147,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
             size="large"
             fullWidth
             disabled={isSubmitting}
-            sx={[authPrimaryButtonSx, { height: { xs: 36, md: 50 }, fontSize: { xs: 12, md: 14 } }]}
+            sx={[authPrimaryButtonSx, { height: { xs: 36, md: 50 }, ...componentText.authBody }]}
           >
             {isSubmitting ? <CircularProgress color="inherit" size={21} /> : 'Entrar'}
           </Button>
@@ -186,7 +177,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
                   width: 20,
                   height: 20,
                   borderRadius: '50%',
-                  bgcolor: '#EA4335',
+                  bgcolor: externalBrand.google,
                   color: 'common.white',
                   display: 'grid',
                   placeItems: 'center',
@@ -203,7 +194,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
               borderRadius: `${radius.md}px`,
               bgcolor: surface.paper,
               borderColor: brand.neutral[100],
-              fontSize: { xs: 12, md: 14 },
+              ...componentText.authBody,
               '&.Mui-disabled': {
                 borderColor: brand.neutral[100],
                 color: 'text.primary',

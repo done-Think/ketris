@@ -3,13 +3,7 @@ import { FormControlLabel, Radio, Stack, Typography } from '@mui/material'
 import { alpha, brand, motion, radius, surface } from '@shared/theme/tokens'
 
 import { RegistrationProfileIcon } from './RegistrationProfileIcon'
-import { registrationFontFamily } from './registration.styles'
-import type { RegistrationProfile } from '../config/registration-profiles'
-
-type RegistrationProfileCardProps = {
-  profile: RegistrationProfile
-  selected: boolean
-}
+import type { RegistrationProfileCardProps } from '../types/registration'
 
 export function RegistrationProfileCard({ profile, selected }: RegistrationProfileCardProps) {
   return (
@@ -27,17 +21,10 @@ export function RegistrationProfileCard({ profile, selected }: RegistrationProfi
         <Stack alignItems="flex-start">
           <RegistrationProfileIcon variant={profile.icon} />
 
-          <Typography
-            variant="h6"
-            sx={{ mt: 2, fontFamily: registrationFontFamily.body, fontWeight: 700 }}
-          >
+          <Typography variant="h6" sx={{ mt: 2, fontWeight: 700 }}>
             {profile.title}
           </Typography>
-          <Typography
-            color="text.secondary"
-            variant="body2"
-            sx={{ mt: 0.5, fontFamily: registrationFontFamily.body }}
-          >
+          <Typography color="text.secondary" variant="body2" sx={{ mt: 0.5 }}>
             {profile.description}
           </Typography>
         </Stack>

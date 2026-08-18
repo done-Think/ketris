@@ -3,17 +3,14 @@ import { alpha as muiAlpha } from '@mui/material/styles'
 
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
-import { brand, surface } from '@shared/theme/tokens'
+import { componentText, gradients, surface } from '@shared/theme/tokens'
 
-import authCityImage from '../assets/ketris-city-network.png'
+import authCityImage from '../assets/ketris-city-network.jpg'
 
 const AUTH_CITY_IMAGE_URL = authCityImage.src
 const DEFAULT_DESCRIPTION = 'A infraestrutura digital do mercado imobiliário'
 
-type AuthBrandPanelProps = {
-  description?: string
-  mobileBackdrop?: boolean
-}
+import type { AuthBrandPanelProps } from '../types/auth-shell'
 
 export function AuthBrandPanel({
   description = DEFAULT_DESCRIPTION,
@@ -48,13 +45,7 @@ export function AuthBrandPanel({
           content: '""',
           position: 'absolute',
           inset: 0,
-          backgroundImage: `linear-gradient(180deg, ${muiAlpha(
-            surface.darkDeep,
-            0.2,
-          )} 0%, ${muiAlpha(surface.darkDeep, 0.72)} 100%), radial-gradient(circle at 62% 12%, ${muiAlpha(
-            brand.magenta[500],
-            0.28,
-          )} 0%, transparent 38%)`,
+          backgroundImage: gradients.authBrandOverlay,
         },
       }}
     >
@@ -74,7 +65,7 @@ export function AuthBrandPanel({
           sx={{
             maxWidth: 430,
             color: muiAlpha(surface.lightText, 0.68),
-            fontSize: { xs: 14, md: 18 },
+            ...componentText.authBrandTagline,
           }}
         >
           {description}

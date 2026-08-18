@@ -1,41 +1,70 @@
-import type { ReactNode } from 'react'
 import { Box } from '@mui/material'
 
 import ketrisLogoTransparent from '@shared/assets/ketris-logo-transparent.png'
 import { AppLogo } from '@shared/components/ui'
-import { radius, surface } from '@shared/theme/tokens'
+import { radius, shadows, surface } from '@shared/theme/tokens'
 
 import { AuthBrandPanel } from './AuthBrandPanel'
+import type { AuthMobileLayout, AuthMobileVariant, AuthShellProps } from '../types/auth-shell'
 
-const mobileCardLayouts = {
-  backdrop: {
-    cardPaddingBottom: 2.5,
-    cardPaddingTop: 2.5,
-    cardPaddingX: 2.5,
-    footerBottom: 1.25,
-    mainPaddingBottom: 6,
-    mainPaddingTop: 9.875,
-    mainPaddingX: 2,
+const mobileLayouts: Record<AuthMobileVariant, AuthMobileLayout> = {
+  plain: {
+    pageBackground: surface.paper,
+    pageRows: 'auto 1fr',
+    mainZIndex: 'auto',
+    mainMinHeight: 'calc(100dvh - 220px)',
+    mainPaddingX: 2.5,
+    mainPaddingXSm: 5,
+    mainPaddingTop: 5,
+    mainPaddingTopSm: 8,
+    mainPaddingBottom: 5,
+    mainBackground: surface.paper,
+    cardPaddingX: 0,
+    cardPaddingTop: 0,
+    cardPaddingBottom: 0,
+    cardRadius: 0,
+    cardBackground: 'transparent',
+    cardShadow: 'none',
+    footerBottom: 3.5,
   },
   card: {
-    cardPaddingBottom: 3,
-    cardPaddingTop: 3.25,
-    cardPaddingX: 3.125,
-    footerBottom: 5.25,
-    mainPaddingBottom: 12,
-    mainPaddingTop: 4.875,
+    pageBackground: surface.darkDeep,
+    pageRows: '1fr',
+    mainZIndex: 1,
+    mainMinHeight: '100dvh',
     mainPaddingX: 2.25,
+    mainPaddingXSm: 3,
+    mainPaddingTop: 4.875,
+    mainPaddingTopSm: 4.875,
+    mainPaddingBottom: 12,
+    mainBackground: 'transparent',
+    cardPaddingX: 3.125,
+    cardPaddingTop: 3.25,
+    cardPaddingBottom: 3,
+    cardRadius: `${radius.md}px`,
+    cardBackground: surface.paper,
+    cardShadow: shadows.popover,
+    footerBottom: 5.25,
   },
-} as const
-
-type AuthShellProps = {
-  brandDescription?: string
-  children: ReactNode
-  contentMaxWidth?: number
-  contentPaddingTop?: number
-  footer?: ReactNode
-  mobileCard?: boolean
-  mobileLogoPlacement?: 'backdrop' | 'card'
+  backdrop: {
+    pageBackground: surface.darkDeep,
+    pageRows: '1fr',
+    mainZIndex: 1,
+    mainMinHeight: '100dvh',
+    mainPaddingX: 2,
+    mainPaddingXSm: 3,
+    mainPaddingTop: 9.875,
+    mainPaddingTopSm: 9.875,
+    mainPaddingBottom: 6,
+    mainBackground: 'transparent',
+    cardPaddingX: 2.5,
+    cardPaddingTop: 2.5,
+    cardPaddingBottom: 2.5,
+    cardRadius: `${radius.md}px`,
+    cardBackground: surface.paper,
+    cardShadow: shadows.popover,
+    footerBottom: 1.25,
+  },
 }
 
 export function AuthShell({
@@ -44,11 +73,9 @@ export function AuthShell({
   contentMaxWidth = 390,
   contentPaddingTop = 11.5,
   footer,
-  mobileCard = false,
-  mobileLogoPlacement = 'card',
+  mobileVariant = 'plain',
 }: AuthShellProps) {
-  const hasBackdropLogo = mobileCard && mobileLogoPlacement === 'backdrop'
-  const mobileLayout = mobileCardLayouts[mobileLogoPlacement]
+  const layout = mobileLayouts[mobileVariant]
 
   return (
     <Box
@@ -58,13 +85,13 @@ export function AuthShell({
         position: 'relative',
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 55.2%) minmax(440px, 44.8%)' },
-        gridTemplateRows: { xs: mobileCard ? '1fr' : 'auto 1fr', md: '1fr' },
-        bgcolor: { xs: mobileCard ? surface.darkDeep : surface.paper, md: surface.paper },
+        gridTemplateRows: { xs: layout.pageRows, md: '1fr' },
+        bgcolor: { xs: layout.pageBackground, md: surface.paper },
       }}
     >
-      <AuthBrandPanel description={brandDescription} mobileBackdrop={mobileCard} />
+      <AuthBrandPanel description={brandDescription} mobileBackdrop={mobileVariant !== 'plain'} />
 
-      {hasBackdropLogo && (
+      {mobileVariant === 'backdrop' && (
         <Box
           sx={{
             position: 'absolute',
@@ -82,45 +109,31 @@ export function AuthShell({
         component="main"
         sx={{
           position: 'relative',
-          zIndex: { xs: mobileCard ? 1 : 'auto', md: 'auto' },
-          minHeight: {
-            xs: mobileCard ? '100dvh' : 'calc(100dvh - 220px)',
-            md: '100dvh',
-          },
+          zIndex: { xs: layout.mainZIndex, md: 'auto' },
+          minHeight: { xs: layout.mainMinHeight, md: '100dvh' },
           overflowY: 'auto',
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'center',
-          px: {
-            xs: mobileCard ? mobileLayout.mainPaddingX : 2.5,
-            sm: mobileCard ? 3 : 5,
-            md: 4,
-          },
-          pt: {
-            xs: mobileCard ? mobileLayout.mainPaddingTop : 5,
-            sm: mobileCard ? mobileLayout.mainPaddingTop : 8,
-            md: contentPaddingTop,
-          },
-          pb: { xs: mobileCard ? mobileLayout.mainPaddingBottom : 5, md: 10 },
-          bgcolor: { xs: mobileCard ? 'transparent' : surface.paper, md: surface.paper },
+          px: { xs: layout.mainPaddingX, sm: layout.mainPaddingXSm, md: 4 },
+          pt: { xs: layout.mainPaddingTop, sm: layout.mainPaddingTopSm, md: contentPaddingTop },
+          pb: { xs: layout.mainPaddingBottom, md: 10 },
+          bgcolor: { xs: layout.mainBackground, md: surface.paper },
         }}
       >
         <Box
           sx={{
             width: '100%',
             maxWidth: contentMaxWidth,
-            px: { xs: mobileCard ? mobileLayout.cardPaddingX : 0, md: 0 },
-            pt: { xs: mobileCard ? mobileLayout.cardPaddingTop : 0, md: 0 },
-            pb: { xs: mobileCard ? mobileLayout.cardPaddingBottom : 0, md: 0 },
-            borderRadius: { xs: mobileCard ? `${radius.md}px` : 0, md: 0 },
-            bgcolor: { xs: mobileCard ? surface.paper : 'transparent', md: 'transparent' },
-            boxShadow: {
-              xs: mobileCard ? '0 18px 48px rgba(13, 15, 20, 0.2)' : 'none',
-              md: 'none',
-            },
+            px: { xs: layout.cardPaddingX, md: 0 },
+            pt: { xs: layout.cardPaddingTop, md: 0 },
+            pb: { xs: layout.cardPaddingBottom, md: 0 },
+            borderRadius: { xs: layout.cardRadius, md: 0 },
+            bgcolor: { xs: layout.cardBackground, md: 'transparent' },
+            boxShadow: { xs: layout.cardShadow, md: 'none' },
           }}
         >
-          {mobileCard && mobileLogoPlacement === 'card' && (
+          {mobileVariant === 'card' && (
             <Box
               sx={{
                 display: { xs: 'flex', md: 'none' },
@@ -141,10 +154,7 @@ export function AuthShell({
             sx={{
               position: 'absolute',
               right: 0,
-              bottom: {
-                xs: mobileCard ? mobileLayout.footerBottom : 3.5,
-                md: 3.5,
-              },
+              bottom: { xs: layout.footerBottom, md: 3.5 },
               left: 0,
               display: 'flex',
               justifyContent: 'center',

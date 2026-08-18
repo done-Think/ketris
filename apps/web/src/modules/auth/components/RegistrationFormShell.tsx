@@ -1,18 +1,11 @@
-import type { ReactNode } from 'react'
 import { Box, Typography } from '@mui/material'
 
 import { surface } from '@shared/theme/tokens'
 
 import { RegistrationBenefitsPanel } from './RegistrationBenefitsPanel'
 import { RegistrationProgress } from './RegistrationProgress'
-import { registrationFontFamily } from './registration.styles'
 
-type RegistrationFormShellProps = {
-  children: ReactNode
-  currentStep: number
-  title: string
-  totalSteps: number
-}
+import type { RegistrationFormShellProps } from '../types/registration'
 
 export function RegistrationFormShell({
   children,
@@ -45,20 +38,13 @@ export function RegistrationFormShell({
       >
         <Box sx={{ width: '100%', maxWidth: 550 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography
-              variant="overline"
-              sx={{ color: 'primary.main', fontFamily: registrationFontFamily.body }}
-            >
+            <Typography variant="overline" sx={{ color: 'primary.main' }}>
               Passo {currentStep} de {totalSteps}
             </Typography>
             <RegistrationProgress currentStep={currentStep} totalSteps={totalSteps} />
           </Box>
 
-          <Typography
-            component="h1"
-            variant="h2"
-            sx={{ mt: 0.75, fontFamily: registrationFontFamily.heading }}
-          >
+          <Typography component="h1" variant="h2" sx={{ mt: 0.75 }}>
             {title}
           </Typography>
 

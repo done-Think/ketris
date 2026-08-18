@@ -1,14 +1,6 @@
-import type { ReactNode } from 'react'
 import { Box, Typography } from '@mui/material'
-import type { SxProps, Theme } from '@mui/material/styles'
 
-type AuthFormFieldProps = {
-  children: ReactNode
-  htmlFor: string
-  label: string
-  labelSx?: SxProps<Theme>
-  required?: boolean
-}
+import type { AuthFormFieldProps } from '../types/auth-shell'
 
 export function AuthFormField({
   children,
