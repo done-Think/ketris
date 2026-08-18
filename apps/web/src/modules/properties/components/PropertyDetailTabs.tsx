@@ -1,6 +1,6 @@
 import { Stack, Typography } from '@mui/material'
 
-import { motion } from '@shared/theme/tokens'
+import { componentText, motion } from '@shared/theme/tokens'
 
 import { dashboardPropertyTabs } from '../config/dashboard-property-ui'
 import type { PropertyDetailTabsProps } from '../types/dashboard-property'
@@ -30,7 +30,7 @@ export function PropertyDetailTabs({ activeTab, onTabChange }: PropertyDetailTab
               bgcolor: 'transparent',
               cursor: 'pointer',
               font: 'inherit',
-              fontSize: 16,
+              ...componentText.dashboardCell,
               fontWeight: active ? 900 : 700,
               transition: motion.transition.bordered,
               '&:hover': { color: 'primary.main' },

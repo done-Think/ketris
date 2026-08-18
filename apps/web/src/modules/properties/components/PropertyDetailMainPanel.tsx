@@ -1,6 +1,6 @@
 import { Box, Chip, Stack, Typography } from '@mui/material'
 
-import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
+import { alpha, brand, componentText, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { dashboardPropertyActivityToneStyles } from '../config/dashboard-property-ui'
 import type { PropertyDetailMainPanelProps } from '../types/dashboard-property'
@@ -55,7 +55,9 @@ export function PropertyDetailMainPanel({ property, activeTab }: PropertyDetailM
             py: { xs: 2.4, md: 3.2 },
           }}
         >
-          <Typography sx={{ fontSize: 24, fontWeight: 900, mb: 3 }}>Resumo do Imóvel</Typography>
+          <Typography sx={{ ...componentText.dashboardPanelHeading, mb: 3 }}>
+            Resumo do Imóvel
+          </Typography>
           <Box
             sx={{
               display: 'grid',
@@ -66,10 +68,12 @@ export function PropertyDetailMainPanel({ property, activeTab }: PropertyDetailM
           >
             {summaryItems.map((item) => (
               <Box key={item.label}>
-                <Typography sx={{ color: brand.neutral[400], fontSize: 13, fontWeight: 900 }}>
+                <Typography
+                  sx={{ color: brand.neutral[400], ...componentText.dashboardFieldLabel }}
+                >
                   {item.label}
                 </Typography>
-                <Typography sx={{ color: 'text.primary', fontSize: 18, fontWeight: 900 }}>
+                <Typography sx={{ color: 'text.primary', ...componentText.dashboardGroupTitle }}>
                   {item.value}
                 </Typography>
               </Box>
@@ -106,7 +110,7 @@ export function PropertyDetailMainPanel({ property, activeTab }: PropertyDetailM
                 }}
               />
               <Stack direction="row" alignItems="center" justifyContent="space-between">
-                <Typography sx={{ fontSize: 15, fontWeight: 900 }}>{media.label}</Typography>
+                <Typography sx={{ ...componentText.dashboardItemLabel }}>{media.label}</Typography>
                 <Chip
                   label={media.kind}
                   size="small"
@@ -114,8 +118,7 @@ export function PropertyDetailMainPanel({ property, activeTab }: PropertyDetailM
                     height: 22,
                     borderRadius: `${radius.sm}px`,
                     bgcolor: alpha.graphite[6],
-                    fontSize: 11,
-                    fontWeight: 800,
+                    ...componentText.dashboardTag,
                   }}
                 />
               </Stack>
@@ -147,10 +150,10 @@ export function PropertyDetailMainPanel({ property, activeTab }: PropertyDetailM
                 py: 1.5,
               }}
             >
-              <Typography sx={{ color: brand.neutral[400], fontSize: 12, fontWeight: 900 }}>
+              <Typography sx={{ color: brand.neutral[400], ...componentText.dashboardFieldLabel }}>
                 {item.label}
               </Typography>
-              <Typography sx={{ fontSize: 17, fontWeight: 900 }}>{item.value}</Typography>
+              <Typography sx={{ ...componentText.dashboardMetricValue }}>{item.value}</Typography>
             </Box>
           ))}
         </Box>
@@ -174,8 +177,8 @@ export function PropertyDetailMainPanel({ property, activeTab }: PropertyDetailM
               }}
             />
             <Box>
-              <Typography sx={{ fontSize: 16, fontWeight: 900 }}>{activity.label}</Typography>
-              <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
+              <Typography sx={{ ...componentText.dashboardItemTitle }}>{activity.label}</Typography>
+              <Typography sx={{ color: 'text.secondary', ...componentText.dashboardCaption }}>
                 {activity.date}
               </Typography>
             </Box>

@@ -227,6 +227,100 @@ export const componentText = {
   footerBrand: {
     fontWeight: 700,
   },
+  dashboardPageTitle: {
+    fontSize: { xs: 28, md: 40 },
+    fontWeight: 900,
+  },
+  dashboardPageSubtitle: {
+    fontSize: { xs: 15, md: 17 },
+  },
+  dashboardFormTitle: {
+    fontSize: { xs: 28, md: 36 },
+    fontWeight: 900,
+  },
+  dashboardHeroTitle: {
+    fontSize: { xs: 30, md: 42 },
+    fontWeight: 900,
+  },
+  dashboardHeroSubtitle: {
+    fontSize: { xs: 15, md: 18 },
+    fontWeight: 900,
+  },
+  dashboardHeroMeta: {
+    fontSize: { xs: 13, md: 15 },
+  },
+  dashboardPanelHeading: {
+    fontSize: 24,
+    fontWeight: 900,
+  },
+  dashboardPanelTitle: {
+    fontSize: 22,
+    fontWeight: 900,
+  },
+  dashboardGroupTitle: {
+    fontSize: 18,
+    fontWeight: 900,
+  },
+  dashboardMetricValue: {
+    fontSize: 17,
+    fontWeight: 900,
+  },
+  dashboardItemTitle: {
+    fontSize: 16,
+    fontWeight: 900,
+  },
+  dashboardItemLabel: {
+    fontSize: 15,
+    fontWeight: 900,
+  },
+  dashboardItemBody: {
+    fontSize: 14,
+    fontWeight: 800,
+  },
+  dashboardFieldLabel: {
+    fontSize: 13,
+    fontWeight: 900,
+  },
+  dashboardTableHeader: {
+    fontSize: 12.5,
+    fontWeight: 900,
+    letterSpacing: 0,
+  },
+  dashboardCaption: {
+    fontSize: 13,
+  },
+  dashboardInput: {
+    fontSize: 16,
+  },
+  dashboardActionLabel: {
+    fontWeight: 900,
+  },
+  dashboardChipLabel: {
+    fontSize: 14.5,
+    fontWeight: 900,
+  },
+  dashboardBadge: {
+    fontSize: 13.5,
+    fontWeight: 900,
+  },
+  dashboardStepIndex: {
+    fontSize: 12,
+    fontWeight: 900,
+  },
+  dashboardTag: {
+    fontSize: 11,
+    fontWeight: 800,
+  },
+  dashboardActivityLabel: {
+    fontSize: 15.5,
+    fontWeight: 700,
+  },
+  dashboardCell: {
+    fontSize: 16,
+  },
+  dashboardBodyText: {
+    fontSize: 15,
+  },
 } as const
 
 export const iconSize = {

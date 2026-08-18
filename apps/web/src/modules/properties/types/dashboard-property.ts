@@ -1,4 +1,7 @@
 import type { ReactNode } from 'react'
+import type { Control } from 'react-hook-form'
+
+import type { CreatePropertyFormValues } from '../schemas/create-property-schema'
 
 export type DashboardPropertyStatus =
   'Disponível' | 'Alugado' | 'Ativo' | 'Em análise' | 'Vencendo' | 'Inativo'
@@ -71,6 +74,8 @@ export type DashboardPropertyDetailRouteProps = {
   params: { id: string }
 }
 
+export type PropertyRoute = '/dashboard/properties' | '/dashboard/properties/new'
+
 export type PropertyNavigationHandler = (propertyId: string) => void
 
 export type PropertiesDashboardHeaderProps = {
@@ -99,13 +104,14 @@ export type CreatePropertyStepsNavProps = {
 export type CreatePropertyStepFieldsProps = {
   activeStepKey: CreatePropertyStepKey
   activeStepLabel: string
+  control: Control<CreatePropertyFormValues>
   propertyPurpose: CreatePropertyPurpose
-  onPropertyPurposeChange: (purpose: CreatePropertyPurpose) => void
 }
 
 export type CreatePropertyActionsProps = {
   firstStep: boolean
   lastStep: boolean
+  isSubmitting: boolean
   onPreviousStep: () => void
   onNextStep: () => void
 }

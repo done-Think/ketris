@@ -1,27 +1,23 @@
+import type { Control, UseFormSetValue } from 'react-hook-form'
+
+import type { SearchFiltersFormValues } from '../schemas/search-filters-schema'
 import type { QuickFilterKey, SearchResultProperty, SortOption, ViewMode } from './search'
 
 export type SearchResultsFilterMenuProps = {
   areaFilterIndex: number
   bedroomFilterIndex: number
-  customMaxPrice: string
-  customMinArea: string
+  control: Control<SearchFiltersFormValues>
   filterKey: QuickFilterKey
   onlyWithParking: boolean
   priceFilterIndex: number
   propertyTypeFilter: string
   setActiveQuickFilter: (filterKey: QuickFilterKey | null) => void
-  setAreaFilterIndex: (index: number) => void
-  setBedroomFilterIndex: (index: number) => void
-  setCustomMaxPrice: (value: string) => void
-  setCustomMinArea: (value: string) => void
-  setOnlyWithParking: (value: boolean) => void
-  setPriceFilterIndex: (index: number) => void
-  setPropertyTypeFilter: (value: string) => void
+  setFilterValue: UseFormSetValue<SearchFiltersFormValues>
 }
 
 export type SearchResultsLocationFieldProps = {
   locationQuery: string
-  setLocationQuery: (value: string) => void
+  setFilterValue: UseFormSetValue<SearchFiltersFormValues>
 }
 
 export type SearchResultsListProps = {
@@ -38,8 +34,7 @@ export type SearchResultsFiltersProps = {
   bedroomFilterLabel: string
   clearAreaFilter: () => void
   clearPriceFilter: () => void
-  customMaxPrice: string
-  customMinArea: string
+  control: Control<SearchFiltersFormValues>
   locationQuery: string
   maxPrice: number | null
   minArea: number | null
@@ -47,14 +42,7 @@ export type SearchResultsFiltersProps = {
   priceFilterIndex: number
   priceFilterLabel: string
   propertyTypeFilter: string
-  setAreaFilterIndex: (index: number) => void
-  setBedroomFilterIndex: (index: number) => void
-  setCustomMaxPrice: (value: string) => void
-  setCustomMinArea: (value: string) => void
-  setLocationQuery: (value: string) => void
-  setOnlyWithParking: (value: boolean) => void
-  setPriceFilterIndex: (index: number) => void
-  setPropertyTypeFilter: (value: string) => void
+  setFilterValue: UseFormSetValue<SearchFiltersFormValues>
 }
 
 export type SearchResultsMapPanelProps = {
@@ -65,7 +53,7 @@ export type SearchResultsMapPanelProps = {
 
 export type SearchResultsToolbarProps = {
   resultCount: number
-  setSortOption: (option: SortOption) => void
+  setFilterValue: UseFormSetValue<SearchFiltersFormValues>
   setViewMode: (mode: ViewMode) => void
   sortOption: SortOption
   viewMode: ViewMode

@@ -1,6 +1,6 @@
 import { Avatar, Box, Chip, Stack, Typography } from '@mui/material'
 
-import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
+import { alpha, brand, componentText, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { dashboardPropertyActivityToneStyles } from '../config/dashboard-property-ui'
 import type { PropertyDetailSidebarProps } from '../types/dashboard-property'
@@ -19,7 +19,9 @@ export function PropertyDetailSidebar({ property }: PropertyDetailSidebarProps) 
           py: 2.8,
         }}
       >
-        <Typography sx={{ fontSize: 22, fontWeight: 900, mb: 2.4 }}>Participantes</Typography>
+        <Typography sx={{ ...componentText.dashboardPanelTitle, mb: 2.4 }}>
+          Participantes
+        </Typography>
         <Stack spacing={2}>
           {property.participants.map((participant) => (
             <Stack key={participant.name} direction="row" alignItems="center" spacing={1.5}>
@@ -29,14 +31,15 @@ export function PropertyDetailSidebar({ property }: PropertyDetailSidebarProps) 
                   width: 46,
                   height: 46,
                   bgcolor: brand.neutral[700],
-                  fontSize: 13,
-                  fontWeight: 900,
+                  ...componentText.dashboardFieldLabel,
                 }}
               >
                 {participant.initials}
               </Avatar>
               <Box>
-                <Typography sx={{ fontSize: 16, fontWeight: 900 }}>{participant.name}</Typography>
+                <Typography sx={{ ...componentText.dashboardItemTitle }}>
+                  {participant.name}
+                </Typography>
                 <Chip
                   label={participant.role}
                   size="small"
@@ -44,8 +47,7 @@ export function PropertyDetailSidebar({ property }: PropertyDetailSidebarProps) 
                     height: 20,
                     borderRadius: `${radius.sm}px`,
                     bgcolor: alpha.graphite[6],
-                    fontSize: 11,
-                    fontWeight: 800,
+                    ...componentText.dashboardTag,
                   }}
                 />
               </Box>
@@ -65,7 +67,7 @@ export function PropertyDetailSidebar({ property }: PropertyDetailSidebarProps) 
           py: 2.8,
         }}
       >
-        <Typography sx={{ fontSize: 22, fontWeight: 900, mb: 2.5 }}>
+        <Typography sx={{ ...componentText.dashboardPanelTitle, mb: 2.5 }}>
           Histórico de Atividade
         </Typography>
         <Stack spacing={2.4}>
@@ -83,7 +85,7 @@ export function PropertyDetailSidebar({ property }: PropertyDetailSidebarProps) 
               />
               <Box>
                 <Typography sx={{ fontSize: 15.5, fontWeight: 700 }}>{activity.label}</Typography>
-                <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
+                <Typography sx={{ color: 'text.secondary', ...componentText.dashboardCaption }}>
                   {activity.date}
                 </Typography>
               </Box>

@@ -2,13 +2,14 @@ import { Button, Stack } from '@mui/material'
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded'
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
 
-import { iconSize, radius } from '@shared/theme/tokens'
+import { componentText, iconSize, radius } from '@shared/theme/tokens'
 
 import type { CreatePropertyActionsProps } from '../types/dashboard-property'
 
 export function CreatePropertyActions({
   firstStep,
   lastStep,
+  isSubmitting,
   onPreviousStep,
   onNextStep,
 }: CreatePropertyActionsProps) {
@@ -25,21 +26,22 @@ export function CreatePropertyActions({
           minHeight: 40,
           px: 2.4,
           borderRadius: `${radius.sm}px`,
-          fontWeight: 900,
+          ...componentText.dashboardActionLabel,
         }}
       >
         Voltar
       </Button>
       <Button
-        type="button"
+        type={lastStep ? 'submit' : 'button'}
         variant="contained"
+        disabled={isSubmitting}
         endIcon={!lastStep ? <ChevronRightRoundedIcon sx={{ fontSize: iconSize.sm }} /> : null}
         onClick={lastStep ? undefined : onNextStep}
         sx={{
           minHeight: 40,
           px: 2.4,
           borderRadius: `${radius.sm}px`,
-          fontWeight: 900,
+          ...componentText.dashboardActionLabel,
         }}
       >
         {lastStep ? 'Publicar' : 'Próximo'}

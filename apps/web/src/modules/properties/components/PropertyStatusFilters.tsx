@@ -1,6 +1,6 @@
 import { Chip, Stack } from '@mui/material'
 
-import { alpha, motion, radius, surface } from '@shared/theme/tokens'
+import { alpha, componentText, motion, radius, surface } from '@shared/theme/tokens'
 
 import { propertyStatusFilters } from '../data/dashboard-properties'
 import type { PropertyStatusFiltersProps } from '../types/dashboard-property'
@@ -28,8 +28,7 @@ export function PropertyStatusFilters({
               border: '1px solid',
               borderColor: active ? 'primary.main' : 'divider',
               color: active ? surface.lightText : 'text.primary',
-              fontSize: 14.5,
-              fontWeight: 900,
+              ...componentText.dashboardChipLabel,
               transition: motion.transition.bordered,
               '&:hover': {
                 bgcolor: active ? 'primary.dark' : alpha.magenta[6],

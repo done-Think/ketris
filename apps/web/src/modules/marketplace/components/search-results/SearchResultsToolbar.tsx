@@ -11,7 +11,7 @@ import type { SearchResultsToolbarProps } from '../../types/search-results'
 
 export function SearchResultsToolbar({
   resultCount,
-  setSortOption,
+  setFilterValue,
   setViewMode,
   sortOption,
   viewMode,
@@ -33,7 +33,7 @@ export function SearchResultsToolbar({
           select
           size="small"
           value={sortOption}
-          onChange={(event) => setSortOption(event.target.value as SortOption)}
+          onChange={(event) => setFilterValue('sortOption', event.target.value as SortOption)}
           sx={{
             minWidth: 190,
             '& .MuiOutlinedInput-root': {

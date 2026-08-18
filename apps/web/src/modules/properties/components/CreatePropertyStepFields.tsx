@@ -1,17 +1,9 @@
-import {
-  Box,
-  Button,
-  Checkbox,
-  FormControl,
-  MenuItem,
-  Select,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { Box, Checkbox, FormControlLabel, MenuItem, Stack, Typography } from '@mui/material'
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
+import { Controller } from 'react-hook-form'
 
-import { alpha, motion, radius, surface } from '@shared/theme/tokens'
+import { RhfTextField } from '@shared/components/form'
+import { alpha, componentText, motion, radius, surface } from '@shared/theme/tokens'
 
 import {
   createPropertyFeatureOptions,
@@ -25,12 +17,12 @@ import type { CreatePropertyStepFieldsProps } from '../types/dashboard-property'
 export function CreatePropertyStepFields({
   activeStepKey,
   activeStepLabel,
+  control,
   propertyPurpose,
-  onPropertyPurposeChange,
 }: CreatePropertyStepFieldsProps) {
   return (
     <>
-      <Typography sx={{ color: 'primary.main', fontSize: 13, fontWeight: 900, mb: 2.2 }}>
+      <Typography sx={{ color: 'primary.main', ...componentText.dashboardFieldLabel, mb: 2.2 }}>
         {activeStepLabel}
       </Typography>
 
@@ -44,18 +36,18 @@ export function CreatePropertyStepFields({
               mb: 2.4,
             }}
           >
-            <FormControl fullWidth>
-              <Typography sx={{ fontSize: 13, fontWeight: 900, mb: 0.8 }}>
+            <Box>
+              <Typography sx={{ ...componentText.dashboardFieldLabel, mb: 0.8 }}>
                 Tipo de imóvel
               </Typography>
-              <Select
-                defaultValue="Apartamento"
-                IconComponent={KeyboardArrowDownRoundedIcon}
-                sx={{
-                  height: 44,
-                  borderRadius: `${radius.sm}px`,
-                  bgcolor: surface.paper,
-                  fontSize: 14,
+              <RhfTextField
+                control={control}
+                name="type"
+                select
+                fullWidth
+                slotProps={{
+                  select: { IconComponent: KeyboardArrowDownRoundedIcon },
+                  htmlInput: { 'aria-label': 'Tipo de imóvel' },
                 }}
               >
                 {createPropertyTypeOptions.map((type) => (
@@ -63,71 +55,90 @@ export function CreatePropertyStepFields({
                     {type}
                   </MenuItem>
                 ))}
-              </Select>
-            </FormControl>
+              </RhfTextField>
+            </Box>
 
             <Box>
-              <Typography sx={{ fontSize: 13, fontWeight: 900, mb: 0.8 }}>Finalidade</Typography>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  minHeight: 44,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: `${radius.sm}px`,
-                  overflow: 'hidden',
-                  bgcolor: surface.paper,
-                }}
-              >
-                {createPropertyPurposeOptions.map((purpose) => {
-                  const active = purpose === propertyPurpose
+              <Typography sx={{ ...componentText.dashboardFieldLabel, mb: 0.8 }}>
+                Finalidade
+              </Typography>
+              <Controller
+                control={control}
+                name="purpose"
+                render={({ field }) => (
+                  <Box
+                    role="group"
+                    aria-label="Finalidade"
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      minHeight: 44,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: `${radius.sm}px`,
+                      overflow: 'hidden',
+                      bgcolor: surface.paper,
+                    }}
+                  >
+                    {createPropertyPurposeOptions.map((purpose) => {
+                      const active = purpose === field.value
 
-                  return (
-                    <Button
-                      key={purpose}
-                      type="button"
-                      aria-pressed={active}
-                      onClick={() => onPropertyPurposeChange(purpose)}
-                      sx={{
-                        borderRadius: 0,
-                        color: active ? surface.lightText : 'text.secondary',
-                        bgcolor: active ? 'primary.main' : surface.paper,
-                        fontWeight: 900,
-                        transition: motion.transition.interactive,
-                        '&:hover': {
-                          bgcolor: active ? 'primary.dark' : alpha.graphite[6],
-                        },
-                      }}
-                    >
-                      {purpose}
-                    </Button>
-                  )
-                })}
-              </Box>
+                      return (
+                        <Box
+                          key={purpose}
+                          component="button"
+                          type="button"
+                          aria-pressed={active}
+                          onClick={() => field.onChange(purpose)}
+                          sx={{
+                            border: 0,
+                            cursor: 'pointer',
+                            font: 'inherit',
+                            color: active ? surface.lightText : 'text.secondary',
+                            bgcolor: active ? 'primary.main' : surface.paper,
+                            ...componentText.dashboardActionLabel,
+                            transition: motion.transition.interactive,
+                            '&:hover': {
+                              bgcolor: active ? 'primary.dark' : alpha.graphite[6],
+                            },
+                          }}
+                        >
+                          {purpose}
+                        </Box>
+                      )
+                    })}
+                  </Box>
+                )}
+              />
             </Box>
           </Box>
 
           <Stack spacing={2.2}>
             <Box>
-              <Typography sx={{ fontSize: 13, fontWeight: 900, mb: 0.8 }}>
+              <Typography sx={{ ...componentText.dashboardFieldLabel, mb: 0.8 }}>
                 Título do anúncio
               </Typography>
-              <TextField
+              <RhfTextField
+                control={control}
+                name="title"
                 fullWidth
-                defaultValue="Apartamento moderno com vista incrível nos Jardins"
-                inputProps={{ 'aria-label': 'Título do anúncio' }}
+                placeholder="Ex.: Apartamento com 3 quartos nos Jardins"
+                slotProps={{ htmlInput: { 'aria-label': 'Título do anúncio' } }}
               />
             </Box>
 
             <Box>
-              <Typography sx={{ fontSize: 13, fontWeight: 900, mb: 0.8 }}>Descrição</Typography>
-              <TextField
+              <Typography sx={{ ...componentText.dashboardFieldLabel, mb: 0.8 }}>
+                Descrição
+              </Typography>
+              <RhfTextField
+                control={control}
+                name="description"
                 fullWidth
                 multiline
                 minRows={4}
-                defaultValue="Excelente apartamento mobiliado, com 3 quartos, varanda gourmet espaçosa e 2 vagas de garagem demarcadas. Localização nobre, próximo a comércio especializado, restaurantes premiados e estação de metrô."
-                inputProps={{ 'aria-label': 'Descrição' }}
+                placeholder="Descreva os diferenciais do imóvel, a localização e o entorno"
+                slotProps={{ htmlInput: { 'aria-label': 'Descrição' } }}
               />
             </Box>
           </Stack>
@@ -142,12 +153,12 @@ export function CreatePropertyStepFields({
             gap: 2,
           }}
         >
-          <TextField label="Endereço" defaultValue="Alameda Lorena" />
-          <TextField label="Número" defaultValue="1420" />
-          <TextField label="Bairro" defaultValue="Jardins" />
-          <TextField label="Cidade" defaultValue="São Paulo" />
-          <TextField label="Estado" defaultValue="SP" />
-          <TextField label="CEP" defaultValue="01424-001" />
+          <RhfTextField control={control} name="street" label="Endereço" />
+          <RhfTextField control={control} name="number" label="Número" />
+          <RhfTextField control={control} name="neighborhood" label="Bairro" />
+          <RhfTextField control={control} name="city" label="Cidade" />
+          <RhfTextField control={control} name="state" label="Estado" />
+          <RhfTextField control={control} name="zipCode" label="CEP" />
         </Box>
       ) : null}
 
@@ -159,28 +170,46 @@ export function CreatePropertyStepFields({
             gap: 2,
           }}
         >
-          <TextField label="Quartos" type="number" defaultValue={3} />
-          <TextField label="Banheiros" type="number" defaultValue={2} />
-          <TextField label="Vagas" type="number" defaultValue={2} />
-          <TextField label="Área útil" defaultValue="95m²" />
-          {createPropertyFeatureOptions.map((feature) => (
-            <Stack
-              key={feature}
-              direction="row"
-              alignItems="center"
-              spacing={0.8}
-              sx={{
-                minHeight: 44,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: `${radius.sm}px`,
-                px: 1,
-              }}
-            >
-              <Checkbox defaultChecked size="small" />
-              <Typography sx={{ fontSize: 14, fontWeight: 800 }}>{feature}</Typography>
-            </Stack>
-          ))}
+          <RhfTextField control={control} name="bedrooms" label="Quartos" type="number" />
+          <RhfTextField control={control} name="bathrooms" label="Banheiros" type="number" />
+          <RhfTextField control={control} name="parkingSpaces" label="Vagas" type="number" />
+          <RhfTextField control={control} name="area" label="Área útil (m²)" type="number" />
+
+          <Controller
+            control={control}
+            name="features"
+            render={({ field }) => (
+              <>
+                {createPropertyFeatureOptions.map((feature) => (
+                  <FormControlLabel
+                    key={feature}
+                    control={
+                      <Checkbox
+                        size="small"
+                        checked={field.value.includes(feature)}
+                        onChange={(_, checked) =>
+                          field.onChange(
+                            checked
+                              ? [...field.value, feature]
+                              : field.value.filter((current) => current !== feature),
+                          )
+                        }
+                      />
+                    }
+                    label={<Typography sx={componentText.dashboardItemBody}>{feature}</Typography>}
+                    sx={{
+                      m: 0,
+                      minHeight: 44,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: `${radius.sm}px`,
+                      px: 1,
+                    }}
+                  />
+                ))}
+              </>
+            )}
+          />
         </Box>
       ) : null}
 
@@ -207,7 +236,7 @@ export function CreatePropertyStepFields({
                 textAlign: 'center',
               }}
             >
-              <Typography sx={{ fontWeight: 900 }}>{label}</Typography>
+              <Typography sx={componentText.dashboardActionLabel}>{label}</Typography>
             </Box>
           ))}
         </Box>
@@ -221,40 +250,62 @@ export function CreatePropertyStepFields({
             gap: 2,
           }}
         >
-          <TextField
-            label={propertyPurpose === 'Aluguel' ? 'Valor do aluguel' : 'Valor de venda'}
-            defaultValue={propertyPurpose === 'Aluguel' ? 'R$ 6.500' : 'R$ 1.420.000'}
-          />
-          <TextField label="Condomínio" defaultValue="R$ 1.200" />
-          <TextField label="IPTU mensal" defaultValue="R$ 380" />
-          <TextField
+          {propertyPurpose === 'Aluguel' ? (
+            <RhfTextField
+              control={control}
+              name="rentPrice"
+              label="Valor do aluguel"
+              type="number"
+            />
+          ) : (
+            <RhfTextField control={control} name="salePrice" label="Valor de venda" type="number" />
+          )}
+          <RhfTextField control={control} name="condominium" label="Condomínio" type="number" />
+          <RhfTextField control={control} name="iptu" label="IPTU mensal" type="number" />
+          <RhfTextField
+            control={control}
+            name="warranty"
             label={propertyPurpose === 'Aluguel' ? 'Garantia' : 'Comissão'}
-            defaultValue={propertyPurpose === 'Aluguel' ? '3 aluguéis' : '2% na venda'}
           />
         </Box>
       ) : null}
 
       {activeStepKey === 'publishing' ? (
-        <Stack spacing={1.6}>
-          {createPropertyPublishingOptions.map((option, index) => (
-            <Stack
-              key={option}
-              direction="row"
-              alignItems="center"
-              spacing={0.8}
-              sx={{
-                minHeight: 44,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: `${radius.sm}px`,
-                px: 1,
-              }}
-            >
-              <Checkbox defaultChecked={index < 2} size="small" />
-              <Typography sx={{ fontSize: 14, fontWeight: 800 }}>{option}</Typography>
+        <Controller
+          control={control}
+          name="publishing"
+          render={({ field }) => (
+            <Stack spacing={1.6}>
+              {createPropertyPublishingOptions.map((option) => (
+                <FormControlLabel
+                  key={option}
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={field.value.includes(option)}
+                      onChange={(_, checked) =>
+                        field.onChange(
+                          checked
+                            ? [...field.value, option]
+                            : field.value.filter((current) => current !== option),
+                        )
+                      }
+                    />
+                  }
+                  label={<Typography sx={componentText.dashboardItemBody}>{option}</Typography>}
+                  sx={{
+                    m: 0,
+                    minHeight: 44,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: `${radius.sm}px`,
+                    px: 1,
+                  }}
+                />
+              ))}
             </Stack>
-          ))}
-        </Stack>
+          )}
+        />
       ) : null}
     </>
   )

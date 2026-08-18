@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef } from 'react'
-import { useForm } from 'react-hook-form'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Box,
   CircularProgress,
@@ -25,14 +24,9 @@ const initialBrokerCount = 4
 const brokerPageSize = 3
 
 export function BrokersPage() {
-  const { getValues, register, setValue, watch } = useForm({
-    defaultValues: {
-      isLoadingMore: false,
-      searchQuery: '',
-      visibleCount: initialBrokerCount,
-    },
-  })
-  const { isLoadingMore, searchQuery, visibleCount } = watch()
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [visibleCount, setVisibleCount] = useState(initialBrokerCount)
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const navigationItems = homeNavigationItems.map((item) => ({
     ...item,
@@ -58,8 +52,8 @@ export function BrokersPage() {
   const hasMoreBrokers = visibleCount < filteredBrokers.length
 
   useEffect(() => {
-    setValue('visibleCount', initialBrokerCount)
-  }, [searchQuery, setValue])
+    setVisibleCount(initialBrokerCount)
+  }, [searchQuery])
 
   useEffect(() => {
     const loadMoreElement = loadMoreRef.current
@@ -69,13 +63,10 @@ export function BrokersPage() {
       ([entry]) => {
         if (!entry?.isIntersecting) return
 
-        setValue('isLoadingMore', true)
+        setIsLoadingMore(true)
         window.setTimeout(() => {
-          setValue(
-            'visibleCount',
-            Math.min(getValues('visibleCount') + brokerPageSize, filteredBrokers.length),
-          )
-          setValue('isLoadingMore', false)
+          setVisibleCount((current) => Math.min(current + brokerPageSize, filteredBrokers.length))
+          setIsLoadingMore(false)
         }, 420)
       },
       { rootMargin: '360px 0px' },
@@ -84,7 +75,7 @@ export function BrokersPage() {
     observer.observe(loadMoreElement)
 
     return () => observer.disconnect()
-  }, [filteredBrokers.length, getValues, hasMoreBrokers, isLoadingMore, setValue, visibleCount])
+  }, [filteredBrokers.length, hasMoreBrokers, isLoadingMore, visibleCount])
 
   return (
     <Box
@@ -127,16 +118,18 @@ export function BrokersPage() {
             </Box>
 
             <TextField
-              {...register('searchQuery')}
               value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Nome, CRECI, bairro ou regiao"
               size="small"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchRoundedIcon sx={{ color: 'text.primary', fontSize: iconSize.lg }} />
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchRoundedIcon sx={{ color: 'text.primary', fontSize: iconSize.lg }} />
+                    </InputAdornment>
+                  ),
+                },
               }}
               sx={{
                 width: { xs: '100%', md: 390 },

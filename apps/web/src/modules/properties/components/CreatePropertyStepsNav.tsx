@@ -1,7 +1,7 @@
 import { Box, Stack, Typography } from '@mui/material'
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
 
-import { brand, iconSize, motion, radius, surface } from '@shared/theme/tokens'
+import { brand, componentText, iconSize, motion, radius, surface } from '@shared/theme/tokens'
 
 import { createPropertySteps } from '../config/dashboard-property-ui'
 import type { CreatePropertyStepsNavProps } from '../types/dashboard-property'
@@ -73,13 +73,15 @@ export function CreatePropertyStepsNav({
                 display: 'grid',
                 placeItems: 'center',
                 flexShrink: 0,
-                fontSize: 12,
-                fontWeight: 900,
+                ...componentText.dashboardStepIndex,
               }}
             >
               {completed ? <CheckRoundedIcon sx={{ fontSize: iconSize.xs }} /> : index + 1}
             </Box>
-            <Typography noWrap sx={{ fontSize: 13, fontWeight: active ? 900 : 700 }}>
+            <Typography
+              noWrap
+              sx={{ ...componentText.dashboardCaption, fontWeight: active ? 900 : 700 }}
+            >
               {step.label}
             </Typography>
           </Stack>

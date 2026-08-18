@@ -1,4 +1,4 @@
-export type ImoveisPageProps = {
+export type PublicPropertiesPageProps = {
   searchParams?: {
     finalidade?: string
     localizacao?: string

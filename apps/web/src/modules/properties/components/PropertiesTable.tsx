@@ -3,7 +3,16 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 
-import { alpha, brand, iconSize, motion, radius, shadows, surface } from '@shared/theme/tokens'
+import {
+  alpha,
+  brand,
+  componentText,
+  iconSize,
+  motion,
+  radius,
+  shadows,
+  surface,
+} from '@shared/theme/tokens'
 
 import {
   dashboardPropertyColumns,
@@ -43,7 +52,7 @@ export function PropertiesTable({
         {dashboardPropertyColumns.map((column) => (
           <Typography
             key={column}
-            sx={{ color: brand.neutral[500], fontSize: 12.5, fontWeight: 900, letterSpacing: 0 }}
+            sx={{ color: brand.neutral[500], ...componentText.dashboardTableHeader }}
           >
             {column}
           </Typography>
@@ -93,19 +102,24 @@ export function PropertiesTable({
                 }}
               />
               <Box sx={{ minWidth: 0 }}>
-                <Typography noWrap sx={{ fontSize: { xs: 15, md: 18 }, fontWeight: 900 }}>
+                <Typography noWrap sx={{ ...componentText.dashboardHeroSubtitle }}>
                   {property.title}
                 </Typography>
-                <Typography noWrap sx={{ color: 'text.secondary', fontSize: { xs: 13, md: 15 } }}>
+                <Typography
+                  noWrap
+                  sx={{ color: 'text.secondary', ...componentText.dashboardHeroMeta }}
+                >
                   {property.address}
                 </Typography>
               </Box>
             </Stack>
 
-            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: 16 }}>
+            <Typography
+              sx={{ display: { xs: 'none', md: 'block' }, ...componentText.dashboardCell }}
+            >
               {property.type}
             </Typography>
-            <Typography sx={{ fontSize: { xs: 15, md: 17 }, fontWeight: 900 }}>
+            <Typography sx={{ ...componentText.dashboardHeroSubtitle }}>
               {property.price}
             </Typography>
             <Chip
@@ -117,17 +131,24 @@ export function PropertiesTable({
                 borderRadius: `${radius.full}px`,
                 bgcolor: status.bgcolor,
                 color: status.color,
-                fontSize: 13.5,
-                fontWeight: 900,
+                ...componentText.dashboardBadge,
               }}
             />
             <Typography
-              sx={{ display: { xs: 'none', md: 'block' }, color: 'text.secondary', fontSize: 16 }}
+              sx={{
+                display: { xs: 'none', md: 'block' },
+                color: 'text.secondary',
+                ...componentText.dashboardCell,
+              }}
             >
               {property.broker}
             </Typography>
             <Typography
-              sx={{ display: { xs: 'none', md: 'block' }, color: 'text.secondary', fontSize: 16 }}
+              sx={{
+                display: { xs: 'none', md: 'block' },
+                color: 'text.secondary',
+                ...componentText.dashboardCell,
+              }}
             >
               {property.updatedAt}
             </Typography>
@@ -184,10 +205,10 @@ export function PropertiesTable({
 
       {!properties.length ? (
         <Box sx={{ px: 3.5, py: 5, textAlign: 'center' }}>
-          <Typography sx={{ fontSize: 18, fontWeight: 900, mb: 0.6 }}>
+          <Typography sx={{ ...componentText.dashboardGroupTitle, mb: 0.6 }}>
             Nenhum imóvel encontrado
           </Typography>
-          <Typography sx={{ color: 'text.secondary', fontSize: 15 }}>
+          <Typography sx={{ color: 'text.secondary', ...componentText.dashboardBodyText }}>
             Ajuste a busca ou selecione outro filtro.
           </Typography>
         </Box>
@@ -200,7 +221,7 @@ export function PropertiesTable({
         spacing={1.5}
         sx={{ px: 3.5, py: 2.6 }}
       >
-        <Typography sx={{ color: 'text.secondary', fontSize: 16 }}>
+        <Typography sx={{ color: 'text.secondary', ...componentText.dashboardCell }}>
           Mostrando {properties.length} de {totalCount} imóveis
         </Typography>
         <Stack direction="row" spacing={0.7} justifyContent="flex-end">
@@ -215,8 +236,7 @@ export function PropertiesTable({
                 border: '1px solid',
                 borderColor: page === 1 ? 'primary.main' : 'divider',
                 color: page === 1 ? surface.lightText : 'text.secondary',
-                fontSize: 14.5,
-                fontWeight: 900,
+                ...componentText.dashboardChipLabel,
                 '&:hover': {
                   bgcolor: page === 1 ? 'primary.dark' : alpha.graphite[6],
                 },
@@ -238,8 +258,7 @@ export function PropertiesTable({
               height: 38,
               border: '1px solid',
               borderColor: 'divider',
-              fontSize: 14.5,
-              fontWeight: 900,
+              ...componentText.dashboardChipLabel,
             }}
           >
             8

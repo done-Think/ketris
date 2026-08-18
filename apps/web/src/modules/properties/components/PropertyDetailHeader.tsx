@@ -2,7 +2,7 @@ import { Box, Button, Chip, Stack, Typography } from '@mui/material'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
 
-import { radius, surface } from '@shared/theme/tokens'
+import { componentText, radius, surface } from '@shared/theme/tokens'
 
 import { dashboardPropertyStatusStyles } from '../config/dashboard-property-ui'
 import type { PropertyDetailHeaderProps } from '../types/dashboard-property'
@@ -20,7 +20,7 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
     >
       <Box sx={{ minWidth: 0 }}>
         <Stack direction="row" alignItems="center" spacing={1.6} sx={{ mb: 0.7 }}>
-          <Typography variant="h2" sx={{ fontSize: { xs: 30, md: 42 }, fontWeight: 900 }}>
+          <Typography variant="h2" sx={{ ...componentText.dashboardHeroTitle }}>
             {property.title}
           </Typography>
           <Chip
@@ -30,12 +30,11 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
               borderRadius: `${radius.full}px`,
               bgcolor: status.bgcolor,
               color: status.color,
-              fontSize: 13.5,
-              fontWeight: 900,
+              ...componentText.dashboardBadge,
             }}
           />
         </Stack>
-        <Typography sx={{ color: 'text.secondary', fontSize: { xs: 15, md: 17 } }}>
+        <Typography sx={{ color: 'text.secondary', ...componentText.dashboardPageSubtitle }}>
           {property.address} - {property.location}
         </Typography>
       </Box>
@@ -50,8 +49,7 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
             px: 2.2,
             borderRadius: `${radius.sm}px`,
             bgcolor: surface.paper,
-            fontSize: 15,
-            fontWeight: 900,
+            ...componentText.dashboardItemLabel,
           }}
         >
           Editar
@@ -63,8 +61,7 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
             height: 46,
             px: 2.4,
             borderRadius: `${radius.sm}px`,
-            fontSize: 15,
-            fontWeight: 900,
+            ...componentText.dashboardItemLabel,
           }}
         >
           Despublicar

@@ -15,7 +15,7 @@ export function DesktopSearchBar({
   priceRange,
   priceRangeLabel,
   activeSearchMenu,
-  searchDraft,
+  searchDraftControl,
   searchHref,
   desktopSearchRef,
   openSearchMenu,
@@ -23,7 +23,6 @@ export function DesktopSearchBar({
   selectSearchValue,
   updatePriceRange,
   filterSearchOptions,
-  setSearchDraft,
 }: DesktopSearchBarProps) {
   return (
     <Stack
@@ -77,10 +76,9 @@ export function DesktopSearchBar({
                 <TextSearchMenu
                   filterKey={key as TextSearchFilterKey}
                   selectedSearch={selectedSearch}
-                  searchDraft={searchDraft}
+                  searchDraftControl={searchDraftControl}
                   filterSearchOptions={filterSearchOptions}
                   selectSearchValue={selectSearchValue}
-                  setSearchDraft={setSearchDraft}
                 />
               ) : null}
             </SearchDropdownFrame>

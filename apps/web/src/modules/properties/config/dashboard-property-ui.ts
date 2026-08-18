@@ -57,7 +57,13 @@ export const createPropertySteps: Array<{ key: CreatePropertyStepKey; label: str
   { key: 'publishing', label: 'Publicação' },
 ]
 
-export const createPropertyTypeOptions = ['Apartamento', 'Casa', 'Studio', 'Cobertura', 'Comercial']
+export const createPropertyTypeOptions = [
+  'Apartamento',
+  'Casa',
+  'Studio',
+  'Cobertura',
+  'Comercial',
+] as const
 
 export const createPropertyPurposeOptions = ['Aluguel', 'Venda'] as const
 
@@ -66,12 +72,12 @@ export const createPropertyFeatureOptions = [
   'Varanda gourmet',
   'Aceita pets',
   'Portaria 24h',
-]
+] as const
 
-export const createPropertyMediaSlots = ['Foto principal', 'Galeria', 'Planta baixa']
+export const createPropertyMediaSlots = ['Foto principal', 'Galeria', 'Planta baixa'] as const
 
 export const createPropertyPublishingOptions = [
   'Publicar no marketplace após revisão',
   'Permitir contato por WhatsApp',
   'Destacar imóvel na listagem inicial',
-]
+] as const
