@@ -1,13 +1,16 @@
 import Link from 'next/link'
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, Stack, Typography } from '@mui/material'
 import { alpha as muiAlpha } from '@mui/material/styles'
 
-import { brand, radius } from '@shared/theme/tokens'
+import { brand, componentText, radius } from '@shared/theme/tokens'
 
 import { authPrimaryButtonSx } from './auth-form.styles'
+import { ResendCountdownButton } from './ResendCountdownButton'
+import { authRoutes } from '../config/auth-routes'
+import type { PasswordRecoveryConfirmationProps } from '../types/password-recovery'
 
-export function PasswordRecoveryConfirmation() {
+export function PasswordRecoveryConfirmation({ onResend }: PasswordRecoveryConfirmationProps) {
   return (
     <Box sx={{ textAlign: 'center' }}>
       <Box
@@ -22,13 +25,11 @@ export function PasswordRecoveryConfirmation() {
           bgcolor: muiAlpha(brand.semantic.success, 0.08),
         }}
       >
-        <CheckRoundedIcon
-          sx={{ display: { xs: 'block', md: 'none' }, color: brand.semantic.success, fontSize: 18 }}
-        />
+        <CheckRoundedIcon sx={{ color: brand.semantic.success, fontSize: { xs: 18, md: 28 } }} />
       </Box>
 
       <Box sx={{ mt: { xs: 2, md: 4 } }}>
-        <Typography variant="h3" sx={{ fontSize: { xs: 16, md: '1.625rem' } }}>
+        <Typography variant="h3" sx={componentText.authCompactTitle}>
           E-mail enviado!
         </Typography>
         <Typography
@@ -47,23 +48,26 @@ export function PasswordRecoveryConfirmation() {
         </Typography>
       </Box>
 
-      <Button
-        component={Link}
-        href="/login"
-        variant="contained"
-        size="large"
-        fullWidth
-        sx={[
-          authPrimaryButtonSx,
-          {
-            height: { xs: 30, md: 46 },
-            mt: { xs: 2, md: 3.25 },
-            fontSize: { xs: 10, md: 14 },
-          },
-        ]}
-      >
-        Voltar ao login
-      </Button>
+      <Stack direction="row" spacing={1.5} sx={{ mt: { xs: 2, md: 3.25 } }}>
+        <ResendCountdownButton onResend={onResend} />
+
+        <Button
+          component={Link}
+          href={authRoutes.login}
+          variant="contained"
+          size="large"
+          fullWidth
+          sx={[
+            authPrimaryButtonSx,
+            {
+              height: { xs: 30, md: 46 },
+              ...componentText.authCompactBody,
+            },
+          ]}
+        >
+          Voltar ao login
+        </Button>
+      </Stack>
     </Box>
   )
 }

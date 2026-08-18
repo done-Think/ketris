@@ -16,7 +16,7 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
       : '/dashboard'
 
   return (
-    <AuthShell footer={<LoginAccountPrompt />} mobileCard>
+    <AuthShell footer={<LoginAccountPrompt />} mobileVariant="card">
       <LoginForm callbackUrl={callbackUrl} />
     </AuthShell>
   )

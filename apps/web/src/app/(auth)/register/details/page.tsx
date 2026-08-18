@@ -1,25 +1,25 @@
 import { redirect } from 'next/navigation'
 
 import {
+  authRoutes,
   isRegistrationProfileId,
   RegistrationDetailsForm,
   RegistrationFormShell,
-  registrationRoutes,
 } from '@modules/auth'
 
 export const metadata = { title: 'Criar sua conta | Ketris' }
 
-type CadastroDadosPageProps = {
-  searchParams: { perfil?: string | string[] }
+type RegisterDetailsPageProps = {
+  searchParams: { profile?: string | string[] }
 }
 
-export default function CadastroDadosPage({ searchParams }: CadastroDadosPageProps) {
-  const requestedProfile = Array.isArray(searchParams.perfil)
-    ? searchParams.perfil[0]
-    : searchParams.perfil
+export default function RegisterDetailsPage({ searchParams }: RegisterDetailsPageProps) {
+  const requestedProfile = Array.isArray(searchParams.profile)
+    ? searchParams.profile[0]
+    : searchParams.profile
 
   if (!isRegistrationProfileId(requestedProfile)) {
-    redirect(registrationRoutes.profile)
+    redirect(authRoutes.register)
   }
 
   return (

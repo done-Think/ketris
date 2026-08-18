@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation'
 
 import { RegistrationProfileStep } from './RegistrationProfileStep'
 import { RegistrationShell } from './RegistrationShell'
-import type { RegistrationProfileId } from '../config/registration-profiles'
-import { getRegistrationDetailsRoute } from '../config/registration-routes'
+import type { RegistrationProfileId } from '../types/registration'
+import { getRegisterDetailsRoute } from '../config/auth-routes'
 
 const STEP_TRANSITION_DURATION_MS = 320
 
@@ -28,7 +28,7 @@ export function RegistrationProfileScreen() {
 
     setIsAdvancing(true)
     navigationTimer.current = setTimeout(() => {
-      router.push(getRegistrationDetailsRoute(profile))
+      router.push(getRegisterDetailsRoute(profile))
     }, STEP_TRANSITION_DURATION_MS)
   }
 

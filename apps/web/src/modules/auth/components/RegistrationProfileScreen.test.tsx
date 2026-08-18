@@ -32,6 +32,6 @@ describe('RegistrationProfileScreen', () => {
       vi.advanceTimersByTime(320)
     })
 
-    expect(pushMock).toHaveBeenCalledWith('/cadastro/dados?perfil=corretor')
+    expect(pushMock).toHaveBeenCalledWith('/register/details?profile=corretor')
   })
 })
