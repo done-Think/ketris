@@ -1,176 +1,184 @@
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, screen, within } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { useSession } from 'next-auth/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
 
-import { useOpportunities } from '../hooks/use-opportunities'
-import type { Opportunity } from '../types/opportunity'
-import { ContactsList } from './ContactsList'
+import { ContactsList, type ContactsListProps } from './ContactsList'
 
-vi.mock('next-auth/react', () => ({
-  useSession: vi.fn(),
-}))
-
-vi.mock('../hooks/use-opportunities', () => ({
-  useOpportunities: vi.fn(),
-}))
-
-function makeOpportunity(index: number, overrides: Partial<Opportunity> = {}): Opportunity {
-  return {
-    id: `opportunity-${index}`,
-    tenantId: 'tenant-1',
-    imovelId: `property-${index}`,
-    interessadoNome: `Contato ${index}`,
-    interessadoEmail: `contact${index}@example.com`,
-    interessadoTelefone: `(11) 90000-000${index}`,
-    valorProposto: 4000 + index,
-    prazoContratoMeses: null,
-    inicioPretendido: null,
-    garantiaContratual: 'NENHUMA',
-    condicoesEspeciais: [],
-    observacoes: null,
-    status: 'ENVIADA',
-    arquivadaEm: null,
-    createdAt: `2026-08-${String(index).padStart(2, '0')}T10:00:00.000Z`,
-    updatedAt: `2026-08-${String(index).padStart(2, '0')}T10:00:00.000Z`,
-    ...overrides,
-  }
-}
-
-function mockQuery(overrides: Record<string, unknown> = {}) {
-  vi.mocked(useOpportunities).mockReturnValue({
-    data: [],
-    isLoading: false,
-    isError: false,
-    refetch: vi.fn(),
-    ...overrides,
-  } as unknown as ReturnType<typeof useOpportunities>)
-}
-
-function renderContactsList() {
+function renderContactsList(props: ContactsListProps = {}) {
   return render(
     <ThemeProvider theme={theme}>
-      <ContactsList />
+      <ContactsList {...props} />
     </ThemeProvider>,
   )
 }
 
 describe('ContactsList', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1' },
-      status: 'authenticated',
-      update: vi.fn(),
-    } as unknown as ReturnType<typeof useSession>)
-  })
-
-  it('renders one contact per normalized e-mail and links to its latest opportunity', () => {
-    mockQuery({
-      data: [
-        makeOpportunity(1, {
-          id: 'older-opportunity',
-          imovelId: 'property-1',
-          interessadoNome: 'Maria Silva',
-          interessadoEmail: 'MARIA@example.com',
-        }),
-        makeOpportunity(2, {
-          id: 'latest-opportunity',
-          imovelId: 'property-2',
-          interessadoNome: 'Maria Silva',
-          interessadoEmail: ' maria@example.com ',
-        }),
-      ],
-    })
-
+  it('renders the official six-contact fixture and table structure', () => {
     renderContactsList()
 
     const table = screen.getByRole('table', { name: 'Contatos do CRM' })
-    const row = within(table).getByText('maria@example.com').closest('tr')
 
-    expect(row).not.toBeNull()
-    expect(within(row!).getByText('2')).toBeInTheDocument()
-    expect(within(table).getAllByText('Maria Silva')).toHaveLength(1)
-    expect(
-      within(row!).getByRole('link', { name: 'Abrir oportunidade de Maria Silva' }),
-    ).toHaveAttribute('href', '/crm/oportunidades/latest-opportunity')
-  })
+    expect(within(table).getAllByRole('row')).toHaveLength(7)
+    expect(screen.getByRole('heading', { name: 'Contatos' })).toBeVisible()
+    expect(screen.getByPlaceholderText('Buscar contato por nome, email, fone...')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Novo Contato' })).toBeVisible()
+    expect(screen.getByText('Mostrando 1–6 de 234')).toBeVisible()
 
-  it('filters contacts by name, e-mail, or phone', async () => {
-    const user = userEvent.setup()
-    mockQuery({ data: [makeOpportunity(1), makeOpportunity(2)] })
-    renderContactsList()
-    const table = screen.getByRole('table', { name: 'Contatos do CRM' })
-
-    await user.type(screen.getByRole('textbox', { name: 'Buscar contatos' }), 'contact2@')
-
-    expect(within(table).getByText('Contato 2')).toBeInTheDocument()
-    expect(within(table).queryByText('Contato 1')).not.toBeInTheDocument()
-  })
-
-  it('requests the selected status through the tenant-scoped hook', async () => {
-    const user = userEvent.setup()
-    mockQuery({ data: [makeOpportunity(1)] })
-    renderContactsList()
-
-    await user.click(screen.getByRole('combobox', { name: 'Etapa' }))
-    await user.click(screen.getByRole('option', { name: 'Negociação' }))
-
-    expect(useOpportunities).toHaveBeenLastCalledWith('tenant-1', {
-      status: 'EM_NEGOCIACAO',
-    })
-  })
-
-  it('paginates contacts in groups of six', async () => {
-    const user = userEvent.setup()
-    mockQuery({ data: Array.from({ length: 7 }, (_, index) => makeOpportunity(index + 1)) })
-    renderContactsList()
-    const table = screen.getByRole('table', { name: 'Contatos do CRM' })
-
-    expect(screen.getByText('Mostrando 1-6 de 7')).toBeInTheDocument()
-    expect(within(table).getByText('Contato 7')).toBeInTheDocument()
-    expect(within(table).queryByText('Contato 1')).not.toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: 'Próxima página' }))
-
-    expect(screen.getByText('Mostrando 7-7 de 7')).toBeInTheDocument()
-    expect(within(table).getByText('Contato 1')).toBeInTheDocument()
-    expect(within(table).queryByText('Contato 7')).not.toBeInTheDocument()
-  })
-
-  it('renders loading and empty states', () => {
-    mockQuery({ isLoading: true })
-    const { rerender } = renderContactsList()
-
-    expect(screen.getByRole('progressbar', { name: 'Carregando contatos' })).toBeInTheDocument()
-
-    mockQuery()
-    rerender(
-      <ThemeProvider theme={theme}>
-        <ContactsList />
-      </ThemeProvider>,
+    ;['Nome', 'Tipo', 'Telefone', 'Email', 'Imóveis', 'Última interação', 'Ações'].forEach(
+      (heading) => expect(within(table).getByText(heading)).toBeInTheDocument(),
     )
 
-    expect(screen.getByText('Nenhum contato encontrado')).toBeInTheDocument()
+    const ricardoRow = within(table).getByText('Ricardo Mendes').closest('tr')
+    expect(ricardoRow).not.toBeNull()
+    expect(within(ricardoRow!).getByText('Locatário')).toBeInTheDocument()
+    expect(within(ricardoRow!).getByText('(11) 98722-1200')).toBeInTheDocument()
+    expect(within(ricardoRow!).getByText('ricardo.mendes@email.com')).toBeInTheDocument()
+    expect(within(ricardoRow!).getByText('2')).toBeInTheDocument()
+    expect(within(ricardoRow!).getByText('Há 2 horas')).toBeInTheDocument()
+
+    const heitorRow = within(table).getByText('Heitor Prado').closest('tr')
+    expect(heitorRow).not.toBeNull()
+    expect(within(heitorRow!).getByText('heitor.prado@ketrisrealty.com')).toBeInTheDocument()
   })
 
-  it('renders an error state and retries the query', () => {
-    const refetch = vi.fn()
-    mockQuery({ isError: true, refetch })
+  it('shows the requested contact-type distribution', () => {
     renderContactsList()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
+    const table = screen.getByRole('table', { name: 'Contatos do CRM' })
 
-    expect(refetch).toHaveBeenCalledOnce()
+    expect(within(table).getAllByText('Locatário')).toHaveLength(3)
+    expect(within(table).getAllByText('Proprietário')).toHaveLength(2)
+    expect(within(table).getAllByText('Corretor')).toHaveLength(1)
   })
 
-  it('keeps contact creation unavailable without a contact endpoint', () => {
-    mockQuery()
+  it('filters contacts by normalized name, email, and phone', () => {
     renderContactsList()
 
-    expect(screen.getByRole('button', { name: 'Novo contato' })).toBeDisabled()
+    const search = screen.getByRole('textbox', { name: 'Buscar contatos' })
+    const table = screen.getByRole('table', { name: 'Contatos do CRM' })
+
+    fireEvent.change(search, { target: { value: 'leticia' } })
+    expect(within(table).getByText('Letícia Ramos')).toBeInTheDocument()
+    expect(within(table).queryByText('Ricardo Mendes')).not.toBeInTheDocument()
+
+    fireEvent.change(search, { target: { value: 'grupojardins' } })
+    expect(within(table).getByText('Ana Beatriz Ramos')).toBeInTheDocument()
+
+    fireEvent.change(search, { target: { value: '98112' } })
+    expect(within(table).getByText('Heitor Prado')).toBeInTheDocument()
+  })
+
+  it('filters by the four reference pills and exposes the active state', () => {
+    renderContactsList()
+
+    const allFilter = screen.getByRole('button', { name: 'Todos' })
+    const ownersFilter = screen.getByRole('button', { name: 'Proprietários' })
+    const table = screen.getByRole('table', { name: 'Contatos do CRM' })
+
+    expect(allFilter).toHaveAttribute('aria-pressed', 'true')
+
+    fireEvent.click(ownersFilter)
+
+    expect(ownersFilter).toHaveAttribute('aria-pressed', 'true')
+    expect(allFilter).toHaveAttribute('aria-pressed', 'false')
+    expect(within(table).getByText('Sandra Vasconcellos')).toBeInTheDocument()
+    expect(within(table).getByText('Ana Beatriz Ramos')).toBeInTheDocument()
+    expect(within(table).queryByText('Ricardo Mendes')).not.toBeInTheDocument()
+    expect(screen.getByText('Mostrando 1–2 de 2')).toBeVisible()
+  })
+
+  it('selects individual contacts and all visible contacts', () => {
+    renderContactsList()
+
+    const table = screen.getByRole('table', { name: 'Contatos do CRM' })
+    const selectAll = within(table).getByRole('checkbox', {
+      name: 'Selecionar todos os contatos visíveis',
+    })
+    const ricardo = within(table).getByRole('checkbox', { name: 'Selecionar Ricardo Mendes' })
+
+    fireEvent.click(ricardo)
+
+    expect(ricardo).toBeChecked()
+    expect(selectAll).toHaveAttribute('data-indeterminate', 'true')
+
+    fireEvent.click(selectAll)
+
+    ;[
+      'Ricardo Mendes',
+      'Sandra Vasconcellos',
+      'Heitor Prado',
+      'Letícia Ramos',
+      'Carlos Eduardo',
+      'Ana Beatriz Ramos',
+    ].forEach((name) => {
+      expect(within(table).getByRole('checkbox', { name: `Selecionar ${name}` })).toBeChecked()
+    })
+
+    fireEvent.click(selectAll)
+    expect(ricardo).not.toBeChecked()
+  })
+
+  it('renders exactly the three requested actions for each contact', () => {
+    renderContactsList()
+
+    const table = screen.getByRole('table', { name: 'Contatos do CRM' })
+    const ricardoRow = within(table).getByText('Ricardo Mendes').closest('tr')
+
+    expect(ricardoRow).not.toBeNull()
+    expect(
+      within(ricardoRow!).getByRole('button', { name: 'Editar Ricardo Mendes' }),
+    ).toBeDisabled()
+    expect(
+      within(ricardoRow!).getByRole('button', { name: 'Ver interações de Ricardo Mendes' }),
+    ).toBeDisabled()
+    expect(
+      within(ricardoRow!).getByRole('button', { name: 'Mais opções para Ricardo Mendes' }),
+    ).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Novo Contato' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Anterior' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Próximo' })).toBeDisabled()
+  })
+
+  it('delegates creation, actions, and pagination when integrations are provided', () => {
+    const onNewContact = vi.fn()
+    const onEditContact = vi.fn()
+    const onOpenInteractions = vi.fn()
+    const onOpenMoreOptions = vi.fn()
+    const onPageChange = vi.fn()
+
+    renderContactsList({
+      onNewContact,
+      onEditContact,
+      onOpenInteractions,
+      onOpenMoreOptions,
+      onPageChange,
+    })
+
+    const table = screen.getByRole('table', { name: 'Contatos do CRM' })
+    const ricardoRow = within(table).getByText('Ricardo Mendes').closest('tr')
+    expect(ricardoRow).not.toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Novo Contato' }))
+    fireEvent.click(within(ricardoRow!).getByRole('button', { name: 'Editar Ricardo Mendes' }))
+    fireEvent.click(
+      within(ricardoRow!).getByRole('button', { name: 'Ver interações de Ricardo Mendes' }),
+    )
+    fireEvent.click(
+      within(ricardoRow!).getByRole('button', { name: 'Mais opções para Ricardo Mendes' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Próximo' }))
+
+    expect(onNewContact).toHaveBeenCalledOnce()
+    expect(onEditContact).toHaveBeenCalledWith(expect.objectContaining({ name: 'Ricardo Mendes' }))
+    expect(onOpenInteractions).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Ricardo Mendes' }),
+    )
+    expect(onOpenMoreOptions).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Ricardo Mendes' }),
+    )
+    expect(onPageChange).toHaveBeenCalledWith(2)
+    expect(screen.getByRole('button', { name: 'Anterior' })).toBeDisabled()
   })
 })

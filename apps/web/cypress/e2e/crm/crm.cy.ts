@@ -149,15 +149,33 @@ describe('CRM', () => {
   })
 
   it('renders contacts and the opportunity detail', () => {
-    cy.viewport(1440, 900)
+    cy.viewport(1200, 748)
     cy.visit('/crm/contatos')
-    cy.wait(['@session', '@opportunities'])
+    cy.wait('@session')
     waitForUi()
 
     cy.get('h1').contains('Contatos').should('be.visible')
+    cy.get('a[href="/crm/contatos"]').should('have.attr', 'aria-current', 'page')
     cy.get('table[aria-label="Contatos do CRM"]').should('be.visible')
-    cy.screenshot('crm-contacts-desktop', { capture: 'viewport' })
+    cy.get('table[aria-label="Contatos do CRM"] tbody tr').should('have.length', 6)
+    cy.contains('Mostrando 1–6 de 234').should('be.visible')
+    cy.get('button[aria-pressed="true"]').contains('Todos').should('be.visible')
+    cy.get('table[aria-label="Contatos do CRM"]')
+      .find('button[aria-label="Editar Ricardo Mendes"]')
+      .should('be.visible')
+    cy.get('table[aria-label="Contatos do CRM"]')
+      .find('button[aria-label="Ver interações de Ricardo Mendes"]')
+      .should('be.visible')
+    cy.get('table[aria-label="Contatos do CRM"]')
+      .find('button[aria-label="Mais opções para Ricardo Mendes"]')
+      .should('be.visible')
+    cy.document().then((document) => {
+      expect(document.documentElement.scrollWidth).to.eq(document.documentElement.clientWidth)
+      expect(document.documentElement.scrollHeight).to.eq(document.documentElement.clientHeight)
+    })
+    cy.screenshot('crm-contacts-desktop', { capture: 'fullPage' })
 
+    cy.viewport(1440, 900)
     cy.visit('/crm/oportunidades/opportunity-1')
     cy.wait(['@session', '@opportunity', '@property'])
     waitForUi()
@@ -182,13 +200,15 @@ describe('CRM', () => {
   it('adapts contacts and opportunity detail to mobile', () => {
     cy.viewport(390, 844)
     cy.visit('/crm/contatos')
-    cy.wait(['@session', '@opportunities'])
+    cy.wait('@session')
     waitForUi()
 
     cy.get('h1').contains('Contatos').should('be.visible')
     cy.get('table[aria-label="Contatos do CRM"]').should('not.be.visible')
-    cy.contains('Ricardo Mendes').should('be.visible')
-    cy.document().its('documentElement.scrollWidth').should('eq', 390)
+    cy.get('[aria-label="Lista móvel de contatos"]').contains('Ricardo Mendes').should('be.visible')
+    cy.document().then((document) => {
+      expect(document.documentElement.scrollWidth).to.eq(document.documentElement.clientWidth)
+    })
     cy.screenshot('crm-contacts-mobile', { capture: 'viewport' })
 
     cy.visit('/crm/oportunidades/opportunity-1')
