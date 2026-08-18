@@ -1,0 +1,130 @@
+'use client'
+
+import { Box, Button, Divider, Stack, Typography } from '@mui/material'
+import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined'
+import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined'
+import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined'
+import Link from 'next/link'
+
+import { componentText, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+
+import { getPublicProfileLink } from '../../utils/profile-listings'
+
+type PublicProfileSidebarProps = {
+  accentColor: string
+  hoverColor: string
+  href: string
+  linkDescription: string
+  phone: string
+  email: string
+  facts: Array<{
+    label: string
+    value: string
+  }>
+}
+
+export function PublicProfileSidebar({
+  accentColor,
+  hoverColor,
+  href,
+  linkDescription,
+  phone,
+  email,
+  facts,
+}: PublicProfileSidebarProps) {
+  return (
+    <Box
+      sx={{
+        position: { lg: 'sticky' },
+        top: { lg: 84 },
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: `${radius.sm}px`,
+        bgcolor: surface.paper,
+        boxShadow: shadows.propertyCard,
+        p: 2,
+      }}
+    >
+      <Typography sx={{ ...componentText.cardTitle, mb: 0.8 }}>Link publico</Typography>
+      <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 600, mb: 1.5 }}>
+        {linkDescription}
+      </Typography>
+      <Box
+        sx={{
+          border: '1px solid',
+          borderColor: 'divider',
+          borderRadius: `${radius.sm}px`,
+          bgcolor: surface.app,
+          px: 1.2,
+          py: 1,
+          mb: 1.5,
+        }}
+      >
+        <Typography sx={{ fontSize: 12, fontWeight: 600, wordBreak: 'break-word' }}>
+          {getPublicProfileLink(href)}
+        </Typography>
+      </Box>
+      <Button
+        component={Link}
+        href={href}
+        variant="outlined"
+        color="secondary"
+        fullWidth
+        startIcon={<LinkOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+        sx={{
+          mb: 2,
+          borderColor: accentColor,
+          color: accentColor,
+          '&:hover': {
+            borderColor: accentColor,
+            bgcolor: hoverColor,
+          },
+        }}
+      >
+        Abrir link proprio
+      </Button>
+
+      <Divider sx={{ mb: 2 }} />
+
+      <Stack spacing={1}>
+        <Button
+          component="a"
+          href={`tel:${phone.replace(/\D/g, '')}`}
+          variant="contained"
+          startIcon={<PhoneOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+          sx={{
+            bgcolor: accentColor,
+            '&:hover': {
+              bgcolor: accentColor,
+              filter: 'brightness(0.92)',
+            },
+          }}
+        >
+          Ligar
+        </Button>
+        <Button
+          component="a"
+          href={`mailto:${email}`}
+          variant="outlined"
+          color="secondary"
+          startIcon={<EmailOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+        >
+          E-mail
+        </Button>
+      </Stack>
+
+      <Divider sx={{ my: 2 }} />
+
+      <Stack spacing={1}>
+        {facts.map((fact) => (
+          <Box key={fact.label}>
+            <Typography sx={{ color: 'text.secondary', fontSize: 11, fontWeight: 600 }}>
+              {fact.label}
+            </Typography>
+            <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{fact.value}</Typography>
+          </Box>
+        ))}
+      </Stack>
+    </Box>
+  )
+}
