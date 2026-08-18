@@ -47,7 +47,7 @@ export function CrmShell({ children }: CrmShellProps) {
   const pathname = usePathname()
   const { data: session } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const isPublicPipeline = pathname === '/crm'
+  const isPublicCrmRoute = pathname === '/crm' || pathname === '/crm/contatos'
   const userName = session?.user?.name ?? 'Equipe Ketris'
   const userContext = session?.user?.email ?? 'CRM imobiliário'
   const userInitials = useMemo(() => getInitials(userName), [userName])
@@ -219,7 +219,7 @@ export function CrmShell({ children }: CrmShellProps) {
           pt: { xs: '64px', md: 0 },
         }}
       >
-        {isPublicPipeline ? children : <CrmAccessBoundary>{children}</CrmAccessBoundary>}
+        {isPublicCrmRoute ? children : <CrmAccessBoundary>{children}</CrmAccessBoundary>}
       </Box>
     </Box>
   )
