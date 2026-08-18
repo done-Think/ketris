@@ -27,6 +27,7 @@ export const agencies: AgencyProfile[] = [
     address: 'Alameda Santos, 1320 - Jardins',
     summary:
       'Operação focada em imóveis residenciais de alto padrão, com esteira própria para administração de locações e carteira forte nos Jardins.',
+    href: '/imobiliarias/alameda-prime',
     teamHighlights: ['Marina Costa', 'Juliana Mendes', 'Bianca Azevedo'],
     featuredListings: [
       {
@@ -69,6 +70,7 @@ export const agencies: AgencyProfile[] = [
     address: 'Rua Harmonia, 540 - Vila Madalena',
     summary:
       'Imobiliária boutique com foco em studios, lofts e apartamentos compactos na zona oeste, combinando atendimento consultivo e alta rotatividade.',
+    href: '/imobiliarias/hub-vila',
     teamHighlights: ['Thiago Santos', 'Bianca Azevedo', 'Laura Martins'],
     featuredListings: [
       {
@@ -111,6 +113,7 @@ export const agencies: AgencyProfile[] = [
     address: 'Av. Paulista, 1009 - Bela Vista',
     summary:
       'Especialista em salas comerciais e conjuntos corporativos, com carteira ativa em endereços próximos a metrô e polos empresariais.',
+    href: '/imobiliarias/corporate-paulista',
     teamHighlights: ['Camila Rocha', 'Fernando Barros', 'Roberto Lima'],
     featuredListings: [
       {
@@ -153,6 +156,7 @@ export const agencies: AgencyProfile[] = [
     address: 'Rua São Benedito, 812 - Alto da Boa Vista',
     summary:
       'Operação residencial voltada a casas, condomínios e imóveis familiares, com forte presença em bairros arborizados da zona sul.',
+    href: '/imobiliarias/boa-vista-family',
     teamHighlights: ['Renato Alves', 'Patrícia Nogueira', 'Ana Silva'],
     featuredListings: [
       {
@@ -195,6 +199,7 @@ export const agencies: AgencyProfile[] = [
     address: 'Av. Ibirapuera, 2233 - Moema',
     summary:
       'Carteira premium em apartamentos próximos ao Parque Ibirapuera, com atuação forte em compra e locação de unidades mobiliadas.',
+    href: '/imobiliarias/moema-select',
     teamHighlights: ['Bianca Azevedo', 'Marina Costa', 'Roberto Lima'],
     featuredListings: [
       {
@@ -212,3 +217,7 @@ export const agencies: AgencyProfile[] = [
     ],
   },
 ]
+
+export function getAgencyById(id: string) {
+  return agencies.find((agency) => agency.id === id)
+}

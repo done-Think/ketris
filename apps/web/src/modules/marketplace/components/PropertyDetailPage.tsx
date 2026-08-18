@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useRef, useState } from 'react'
 import {
@@ -23,13 +23,13 @@ import LocalParkingOutlinedIcon from '@mui/icons-material/LocalParkingOutlined'
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined'
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined'
-
 import { HomeHeader, ProfileModal, SiteFooter } from '@shared/components/layout'
 import { alpha, componentText, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
 import { profileActions, userProfile } from '../data/user-profile'
 import type { PropertyDetailPageProps } from '../types/property-detail'
+import { PropertyBreadcrumbs } from './PropertyBreadcrumbs'
 import { PropertyDetailMap } from './PropertyDetailMap'
 
 const featureIcons = [
@@ -47,7 +47,6 @@ export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
   const [cover, ...thumbs] = property.gallery
   const hiddenPhotosCount = Math.max(property.gallery.length - 4, 0)
   const hiddenPhotosLabel = hiddenPhotosCount === 1 ? '+1 foto' : `+${hiddenPhotosCount} fotos`
-
   const openGallery = (photoIndex: number) => {
     setActivePhotoIndex(photoIndex)
     setIsGalleryOpen(true)
@@ -79,20 +78,7 @@ export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
       />
 
       <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
-        <Stack direction="row" spacing={0.8} sx={{ mb: 2 }}>
-          {['Home', 'São Paulo', 'Jardins', property.category].map((item, index) => (
-            <Typography
-              key={item}
-              sx={{
-                color: index === 3 ? 'primary.main' : 'text.secondary',
-                fontSize: 12,
-                fontWeight: 700,
-              }}
-            >
-              {index > 0 ? `/ ${item}` : item}
-            </Typography>
-          ))}
-        </Stack>
+        <PropertyBreadcrumbs category={property.category} location={property.location} />
 
         <Box
           sx={{
@@ -114,7 +100,7 @@ export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
               <Box
                 component="button"
                 type="button"
-                aria-label="Abrir galeria de fotos do imóvel"
+                aria-label="Abrir galeria de fotos do imÃ³vel"
                 onClick={() => openGallery(0)}
                 sx={{
                   minHeight: { xs: 300, md: 470 },
@@ -162,7 +148,7 @@ export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
                           inset: 0,
                           display: 'grid',
                           placeItems: 'center',
-                          bgcolor: 'rgba(13,15,20,0.52)',
+                          bgcolor: alpha.graphite[52],
                           color: surface.lightText,
                           fontWeight: 900,
                         }}
@@ -241,14 +227,14 @@ export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
             </Box>
 
             <Typography variant="h5" sx={{ mb: 1.2 }}>
-              Sobre o imóvel
+              Sobre o imÃ³vel
             </Typography>
             <Typography sx={{ color: 'text.secondary', maxWidth: 820, mb: 4 }}>
               {property.description}
             </Typography>
 
             <Typography variant="h5" sx={{ mb: 1.2 }}>
-              Localização
+              LocalizaÃ§Ã£o
             </Typography>
             <Typography sx={{ color: 'text.secondary', mb: 1.4, fontWeight: 700 }}>
               {property.address}
@@ -403,7 +389,7 @@ export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
             </IconButton>
 
             <IconButton
-              aria-label="Próxima foto"
+              aria-label="PrÃ³xima foto"
               onClick={showNextPhoto}
               sx={{
                 position: 'absolute',

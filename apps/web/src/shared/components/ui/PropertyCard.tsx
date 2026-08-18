@@ -95,7 +95,6 @@ export function PropertyCard({ property }: PropertyCardProps) {
             sx={{
               color: 'primary.main',
               ...componentText.cardAction,
-              textRendering: 'geometricPrecision',
             }}
           >
             Ver detalhes
