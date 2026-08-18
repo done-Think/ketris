@@ -10,6 +10,7 @@ import type { SortOption } from '../../types/search'
 import type { SearchResultsToolbarProps } from '../../types/search-results'
 
 export function SearchResultsToolbar({
+  filtersControl,
   resultCount,
   setSortOption,
   setViewMode,
@@ -28,7 +29,16 @@ export function SearchResultsToolbar({
         {resultCount} imóveis encontrados
       </Typography>
 
-      <Stack direction="row" alignItems="center" spacing={1}>
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent={{ xs: 'space-between', sm: 'flex-end' }}
+        spacing={1}
+        useFlexGap
+        flexWrap="wrap"
+      >
+        {filtersControl}
+
         <TextField
           select
           size="small"

@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 import type { QuickFilterKey, SearchResultProperty, SortOption, ViewMode } from './search'
 
 export type SearchResultsFilterMenuProps = {
@@ -64,6 +66,7 @@ export type SearchResultsMapPanelProps = {
 }
 
 export type SearchResultsToolbarProps = {
+  filtersControl?: ReactNode
   resultCount: number
   setSortOption: (option: SortOption) => void
   setViewMode: (mode: ViewMode) => void

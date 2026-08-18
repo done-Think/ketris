@@ -11,7 +11,10 @@ import { homeNavigationItems } from '../config/navigation'
 import { profileActions, userProfile } from '../data/user-profile'
 import { useSearchResults } from '../hooks/use-search-results'
 import type { SearchResultsPageProps } from '../types/search'
-import { SearchResultsFilters } from './search-results/SearchResultsFilters'
+import {
+  SearchResultsFilterButton,
+  SearchResultsFilters,
+} from './search-results/SearchResultsFilters'
 import { SearchResultsList } from './search-results/SearchResultsList'
 import { SearchResultsMapPanel } from './search-results/SearchResultsMapPanel'
 import { SearchResultsPagination } from './search-results/SearchResultsPagination'
@@ -93,6 +96,33 @@ export function SearchResultsPage({ purpose, initialLocation = '' }: SearchResul
             setPropertyTypeFilter={results.setPropertyTypeFilter}
           />
           <SearchResultsToolbar
+            filtersControl={
+              <SearchResultsFilterButton
+                areaFilterIndex={results.areaFilterIndex}
+                areaFilterLabel={results.areaFilterLabel}
+                bedroomFilterIndex={results.bedroomFilterIndex}
+                bedroomFilterLabel={results.bedroomFilter.label}
+                clearAreaFilter={results.clearAreaFilter}
+                clearPriceFilter={results.clearPriceFilter}
+                customMaxPrice={results.customMaxPrice}
+                customMinArea={results.customMinArea}
+                locationQuery={results.locationQuery}
+                maxPrice={results.maxPrice}
+                minArea={results.minArea}
+                onlyWithParking={results.onlyWithParking}
+                priceFilterIndex={results.priceFilterIndex}
+                priceFilterLabel={results.priceFilterLabel}
+                propertyTypeFilter={results.propertyTypeFilter}
+                setAreaFilterIndex={results.setAreaFilterIndex}
+                setBedroomFilterIndex={results.setBedroomFilterIndex}
+                setCustomMaxPrice={results.setCustomMaxPrice}
+                setCustomMinArea={results.setCustomMinArea}
+                setLocationQuery={results.setLocationQuery}
+                setOnlyWithParking={results.setOnlyWithParking}
+                setPriceFilterIndex={results.setPriceFilterIndex}
+                setPropertyTypeFilter={results.setPropertyTypeFilter}
+              />
+            }
             resultCount={results.filteredResults.length}
             setSortOption={results.setSortOption}
             setViewMode={results.setViewMode}
