@@ -1,11 +1,14 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm, useWatch } from 'react-hook-form'
 
 import { priceLimit, searchOptions } from '../config/search-filters'
+import { searchDraftSchema, type SearchDraftFormValues } from '../schemas/marketplace-search-schema'
 import type {
+  ActiveSearchMenu,
   PriceRange,
-  SearchDraft,
   SearchFilterKey,
   SelectedSearch,
   TextSearchFilterKey,
@@ -13,17 +16,18 @@ import type {
 import { buildSearchHref, formatSearchCurrency, normalizeSearchText } from '../utils/search'
 
 export function useMarketplaceSearch() {
+  const [activeSearchMenu, setActiveSearchMenu] = useState<ActiveSearchMenu>(null)
   const [selectedSearch, setSelectedSearch] = useState<SelectedSearch>({
     location: searchOptions.location.values[0],
     propertyType: searchOptions.propertyType.values[0],
     priceRange: searchOptions.priceRange.values[2],
   })
   const [priceRange, setPriceRange] = useState<PriceRange>([0, 10000])
-  const [activeSearchMenu, setActiveSearchMenu] = useState<SearchFilterKey | null>(null)
-  const [searchDraft, setSearchDraft] = useState<SearchDraft>({
-    location: '',
-    propertyType: '',
+  const { control, setValue: setSearchDraftValue } = useForm<SearchDraftFormValues>({
+    resolver: zodResolver(searchDraftSchema),
+    defaultValues: { location: '', propertyType: '' },
   })
+  const searchDraft = useWatch({ control }) as SearchDraftFormValues
 
   const openSearchMenu = useCallback((key: SearchFilterKey) => {
     setActiveSearchMenu((current) => (current === key ? null : key))
@@ -37,11 +41,11 @@ export function useMarketplaceSearch() {
     (key: SearchFilterKey, value: string) => {
       setSelectedSearch((current) => ({ ...current, [key]: value }))
       if (key !== 'priceRange') {
-        setSearchDraft((current) => ({ ...current, [key]: value }))
+        setSearchDraftValue(key, value)
       }
       closeSearchMenu()
     },
-    [closeSearchMenu],
+    [closeSearchMenu, setSearchDraftValue],
   )
 
   const filterSearchOptions = useCallback(
@@ -86,11 +90,11 @@ export function useMarketplaceSearch() {
     openSearchMenu,
     priceRange,
     priceRangeLabel,
+    searchDraftControl: control,
     searchDraft,
     searchHref,
     selectedSearch,
     selectSearchValue,
-    setSearchDraft,
     updatePriceRange,
   }
 }

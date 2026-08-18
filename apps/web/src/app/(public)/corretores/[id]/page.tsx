@@ -2,12 +2,7 @@ import { notFound } from 'next/navigation'
 
 import { BrokerPublicProfilePage } from '@modules/marketplace'
 import { brokers, getBrokerById } from '@modules/marketplace/data/brokers'
-
-type BrokerPageProps = {
-  params: {
-    id: string
-  }
-}
+import type { BrokerPageProps } from '@modules/marketplace/types'
 
 export function generateStaticParams() {
   return brokers.map((broker) => ({ id: broker.id }))

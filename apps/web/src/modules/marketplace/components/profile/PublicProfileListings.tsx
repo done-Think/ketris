@@ -7,14 +7,7 @@ import Link from 'next/link'
 
 import { alpha, componentText, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
-type PublicProfileListing = ReturnType<
-  typeof import('../../utils/profile-listings').buildProfileListings
->[number]
-
-type PublicProfileListingsProps = {
-  accentColor: string
-  listings: PublicProfileListing[]
-}
+import type { PublicProfileListingsProps } from '../../types/profile'
 
 export function PublicProfileListings({ accentColor, listings }: PublicProfileListingsProps) {
   return (

@@ -59,7 +59,7 @@ export function HomePageClient() {
         priceRange={search.priceRange}
         priceRangeLabel={search.priceRangeLabel}
         activeSearchMenu={search.activeSearchMenu}
-        searchDraft={search.searchDraft}
+        searchDraftControl={search.searchDraftControl}
         searchHref={search.searchHref}
         desktopSearchRef={desktopSearchRef}
         mobileSearchRef={mobileSearchRef}
@@ -68,7 +68,6 @@ export function HomePageClient() {
         selectSearchValue={search.selectSearchValue}
         updatePriceRange={search.updatePriceRange}
         filterSearchOptions={search.filterSearchOptions}
-        setSearchDraft={search.setSearchDraft}
       />
 
       <FeaturedPropertiesSection />
