@@ -325,29 +325,30 @@ export const componentText = {
   },
   dashboardBodyText: {
     fontSize: 15,
-  authTitle: {
-    fontSize: { xs: 18, md: '1.625rem' },
-  },
-  authCompactTitle: {
-    fontSize: { xs: 16, md: '1.625rem' },
-  },
-  authBody: {
-    fontSize: { xs: 12, md: 14 },
-  },
-  authCompactBody: {
-    fontSize: { xs: 10, md: 14 },
-  },
-  authPrompt: {
-    fontSize: { xs: 11, md: 14 },
-  },
-  authInlineLink: {
-    fontSize: { xs: 11, md: 13 },
-  },
-  authMutedLink: {
-    fontSize: { xs: 10, md: 13 },
-  },
-  authBrandTagline: {
-    fontSize: { xs: 14, md: 18 },
+    authTitle: {
+      fontSize: { xs: 18, md: '1.625rem' },
+    },
+    authCompactTitle: {
+      fontSize: { xs: 16, md: '1.625rem' },
+    },
+    authBody: {
+      fontSize: { xs: 12, md: 14 },
+    },
+    authCompactBody: {
+      fontSize: { xs: 10, md: 14 },
+    },
+    authPrompt: {
+      fontSize: { xs: 11, md: 14 },
+    },
+    authInlineLink: {
+      fontSize: { xs: 11, md: 13 },
+    },
+    authMutedLink: {
+      fontSize: { xs: 10, md: 13 },
+    },
+    authBrandTagline: {
+      fontSize: { xs: 14, md: 18 },
+    },
   },
 } as const
 
