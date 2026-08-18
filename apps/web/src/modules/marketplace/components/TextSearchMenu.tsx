@@ -1,8 +1,6 @@
-import { Box, IconButton, InputAdornment, MenuItem, Typography } from '@mui/material'
+import { Box, IconButton, InputAdornment, MenuItem, TextField, Typography } from '@mui/material'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
-import { useController } from 'react-hook-form'
 
-import { RhfTextField } from '@shared/components/form'
 import { alpha, componentText, surface } from '@shared/theme/tokens'
 
 import type { TextSearchMenuProps } from '../types/search'
@@ -11,51 +9,57 @@ export function TextSearchMenu({
   filterKey,
   centered = false,
   selectedSearch,
-  searchDraftControl,
+  searchDraft,
   filterSearchOptions,
   selectSearchValue,
+  setSearchDraft,
 }: TextSearchMenuProps) {
   const options = filterSearchOptions(filterKey)
-  const { field } = useController({ control: searchDraftControl, name: filterKey })
-  const draftValue = field.value
+  const draftValue = searchDraft[filterKey]
 
   const clearDraft = () => {
-    field.onChange('')
+    setSearchDraft((current) => ({
+      ...current,
+      [filterKey]: '',
+    }))
   }
 
   return (
     <Box>
       <Box sx={{ p: 1 }}>
-        <RhfTextField
+        <TextField
           autoFocus
           fullWidth
           size="small"
-          control={searchDraftControl}
-          name={filterKey}
           placeholder={
             filterKey === 'location' ? 'Digite cidade ou bairro' : 'Digite o tipo de imóvel'
+          }
+          value={draftValue}
+          onChange={(event) =>
+            setSearchDraft((current) => ({
+              ...current,
+              [filterKey]: event.target.value,
+            }))
           }
           onKeyDown={(event) => {
             if (event.key !== 'Enter') return
             const [firstOption] = options
             if (firstOption) selectSearchValue(filterKey, firstOption)
           }}
-          slotProps={{
-            input: {
-              endAdornment: draftValue ? (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="Limpar busca"
-                    edge="end"
-                    size="small"
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={clearDraft}
-                  >
-                    <CloseRoundedIcon fontSize="small" />
-                  </IconButton>
-                </InputAdornment>
-              ) : null,
-            },
+          InputProps={{
+            endAdornment: draftValue ? (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="Limpar busca"
+                  edge="end"
+                  size="small"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={clearDraft}
+                >
+                  <CloseRoundedIcon fontSize="small" />
+                </IconButton>
+              </InputAdornment>
+            ) : null,
           }}
         />
       </Box>

@@ -10,12 +10,13 @@ import { TextSearchMenu } from './TextSearchMenu'
 export function MobileSearchBox({
   activeSearchMenu,
   mobileSearchRef,
-  searchDraftControl,
+  searchDraft,
   searchHref,
   selectedSearch,
   openSearchMenu,
   selectSearchValue,
   filterSearchOptions,
+  setSearchDraft,
 }: MobileSearchBoxProps) {
   return (
     <Box
@@ -81,9 +82,10 @@ export function MobileSearchBox({
             filterKey="location"
             centered
             selectedSearch={selectedSearch}
-            searchDraftControl={searchDraftControl}
+            searchDraft={searchDraft}
             filterSearchOptions={filterSearchOptions}
             selectSearchValue={selectSearchValue}
+            setSearchDraft={setSearchDraft}
           />
         </Box>
       )}

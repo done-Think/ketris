@@ -232,123 +232,29 @@ export const componentText = {
   footerBrand: {
     fontWeight: 700,
   },
-  dashboardPageTitle: {
-    fontSize: { xs: 28, md: 40 },
-    fontWeight: 900,
+  authTitle: {
+    fontSize: { xs: 18, md: '1.625rem' },
   },
-  dashboardPageSubtitle: {
-    fontSize: { xs: 15, md: 17 },
+  authCompactTitle: {
+    fontSize: { xs: 16, md: '1.625rem' },
   },
-  dashboardFormTitle: {
-    fontSize: { xs: 28, md: 36 },
-    fontWeight: 900,
+  authBody: {
+    fontSize: { xs: 12, md: 14 },
   },
-  dashboardHeroTitle: {
-    fontSize: { xs: 30, md: 42 },
-    fontWeight: 900,
+  authCompactBody: {
+    fontSize: { xs: 10, md: 14 },
   },
-  dashboardHeroSubtitle: {
-    fontSize: { xs: 15, md: 18 },
-    fontWeight: 900,
+  authPrompt: {
+    fontSize: { xs: 11, md: 14 },
   },
-  dashboardHeroMeta: {
-    fontSize: { xs: 13, md: 15 },
+  authInlineLink: {
+    fontSize: { xs: 11, md: 13 },
   },
-  dashboardPanelHeading: {
-    fontSize: 24,
-    fontWeight: 900,
+  authMutedLink: {
+    fontSize: { xs: 10, md: 13 },
   },
-  dashboardPanelTitle: {
-    fontSize: 22,
-    fontWeight: 900,
-  },
-  dashboardGroupTitle: {
-    fontSize: 18,
-    fontWeight: 900,
-  },
-  dashboardMetricValue: {
-    fontSize: 17,
-    fontWeight: 900,
-  },
-  dashboardItemTitle: {
-    fontSize: 16,
-    fontWeight: 900,
-  },
-  dashboardItemLabel: {
-    fontSize: 15,
-    fontWeight: 900,
-  },
-  dashboardItemBody: {
-    fontSize: 14,
-    fontWeight: 800,
-  },
-  dashboardFieldLabel: {
-    fontSize: 13,
-    fontWeight: 900,
-  },
-  dashboardTableHeader: {
-    fontSize: 12.5,
-    fontWeight: 900,
-    letterSpacing: 0,
-  },
-  dashboardCaption: {
-    fontSize: 13,
-  },
-  dashboardInput: {
-    fontSize: 16,
-  },
-  dashboardActionLabel: {
-    fontWeight: 900,
-  },
-  dashboardChipLabel: {
-    fontSize: 14.5,
-    fontWeight: 900,
-  },
-  dashboardBadge: {
-    fontSize: 13.5,
-    fontWeight: 900,
-  },
-  dashboardStepIndex: {
-    fontSize: 12,
-    fontWeight: 900,
-  },
-  dashboardTag: {
-    fontSize: 11,
-    fontWeight: 800,
-  },
-  dashboardActivityLabel: {
-    fontSize: 15.5,
-    fontWeight: 700,
-  },
-  dashboardCell: {
-    fontSize: 16,
-  },
-  dashboardBodyText: {
-    fontSize: 15,
-    authTitle: {
-      fontSize: { xs: 18, md: '1.625rem' },
-    },
-    authCompactTitle: {
-      fontSize: { xs: 16, md: '1.625rem' },
-    },
-    authBody: {
-      fontSize: { xs: 12, md: 14 },
-    },
-    authCompactBody: {
-      fontSize: { xs: 10, md: 14 },
-    },
-    authPrompt: {
-      fontSize: { xs: 11, md: 14 },
-    },
-    authInlineLink: {
-      fontSize: { xs: 11, md: 13 },
-    },
-    authMutedLink: {
-      fontSize: { xs: 10, md: 13 },
-    },
-    authBrandTagline: {
-      fontSize: { xs: 14, md: 18 },
-    },
+  authBrandTagline: {
+    fontSize: { xs: 14, md: 18 },
   },
 } as const
 

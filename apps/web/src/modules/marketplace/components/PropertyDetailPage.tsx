@@ -39,18 +39,14 @@ const featureIcons = [
   SquareFootOutlinedIcon,
 ]
 
-export function PropertyDetailPage({ property, activePurpose }: PropertyDetailPageProps) {
+export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [activePhotoIndex, setActivePhotoIndex] = useState(0)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const [cover, ...thumbs] = property.gallery
   const hiddenPhotosCount = Math.max(property.gallery.length - 4, 0)
   const hiddenPhotosLabel = hiddenPhotosCount === 1 ? '+1 foto' : `+${hiddenPhotosCount} fotos`
-  const navigationItems = homeNavigationItems.map((item) => ({
-    ...item,
-    active: activePurpose ? item.href.includes(`finalidade=${activePurpose}`) : false,
-  }))
   const openGallery = (photoIndex: number) => {
     setActivePhotoIndex(photoIndex)
     setIsGalleryOpen(true)
@@ -67,7 +63,7 @@ export function PropertyDetailPage({ property, activePurpose }: PropertyDetailPa
   return (
     <Box sx={{ bgcolor: surface.app, minHeight: '100vh', overflowX: 'clip' }}>
       <HomeHeader
-        navigationItems={navigationItems}
+        navigationItems={homeNavigationItems}
         profileButtonRef={profileButtonRef}
         userProfile={userProfile}
         onToggleProfile={() => setIsProfileOpen((current) => !current)}

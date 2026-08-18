@@ -2,7 +2,12 @@ import { notFound } from 'next/navigation'
 
 import { AgencyPublicProfilePage } from '@modules/marketplace'
 import { agencies, getAgencyById } from '@modules/marketplace/data/agencies'
-import type { AgencyPageProps } from '@modules/marketplace/types'
+
+type AgencyPageProps = {
+  params: {
+    id: string
+  }
+}
 
 export function generateStaticParams() {
   return agencies.map((agency) => ({ id: agency.id }))

@@ -1,10 +1,20 @@
 'use client'
 
 import { Box, Typography } from '@mui/material'
+import type { SvgIconComponent } from '@mui/icons-material'
 
 import { iconSize, radius, surface } from '@shared/theme/tokens'
 
-import type { PublicProfileMetricsProps } from '../../types/profile'
+type PublicProfileMetric = {
+  label: string
+  value: string | number
+  icon?: SvgIconComponent
+}
+
+type PublicProfileMetricsProps = {
+  accentColor: string
+  metrics: PublicProfileMetric[]
+}
 
 export function PublicProfileMetrics({ accentColor, metrics }: PublicProfileMetricsProps) {
   return (
