@@ -1,9 +1,7 @@
 'use client'
 
-import { Box, MenuItem } from '@mui/material'
-import { useWatch } from 'react-hook-form'
+import { Box, MenuItem, TextField } from '@mui/material'
 
-import { RhfTextField } from '@shared/components/form'
 import { alpha, componentText } from '@shared/theme/tokens'
 
 import {
@@ -13,21 +11,45 @@ import {
   priceFilterOptions,
   propertyTypeFilterOptions,
 } from '../../config/search-results-filters'
-import type { SearchResultsFilterMenuProps } from '../../types/search-results'
+import type { QuickFilterKey } from '../../types/search'
+
+type SearchResultsFilterMenuProps = {
+  areaFilterIndex: number
+  bedroomFilterIndex: number
+  customMaxPrice: string
+  customMinArea: string
+  filterKey: QuickFilterKey
+  onlyWithParking: boolean
+  priceFilterIndex: number
+  propertyTypeFilter: string
+  setActiveQuickFilter: (filterKey: QuickFilterKey | null) => void
+  setAreaFilterIndex: (index: number) => void
+  setBedroomFilterIndex: (index: number) => void
+  setCustomMaxPrice: (value: string) => void
+  setCustomMinArea: (value: string) => void
+  setOnlyWithParking: (value: boolean) => void
+  setPriceFilterIndex: (index: number) => void
+  setPropertyTypeFilter: (value: string) => void
+}
 
 export function SearchResultsFilterMenu({
   areaFilterIndex,
   bedroomFilterIndex,
-  control,
+  customMaxPrice,
+  customMinArea,
   filterKey,
   onlyWithParking,
   priceFilterIndex,
   propertyTypeFilter,
   setActiveQuickFilter,
-  setFilterValue,
+  setAreaFilterIndex,
+  setBedroomFilterIndex,
+  setCustomMaxPrice,
+  setCustomMinArea,
+  setOnlyWithParking,
+  setPriceFilterIndex,
+  setPropertyTypeFilter,
 }: SearchResultsFilterMenuProps) {
-  const customMaxPrice = useWatch({ control, name: 'customMaxPrice' })
-  const customMinArea = useWatch({ control, name: 'customMinArea' })
   const quickFilterMenuItemSx = {
     ...componentText.menuItem,
     '&.Mui-selected': {
@@ -41,7 +63,7 @@ export function SearchResultsFilterMenu({
         key={option}
         selected={option === 'Todos os tipos' ? !propertyTypeFilter : propertyTypeFilter === option}
         onClick={() => {
-          setFilterValue('propertyTypeFilter', option === 'Todos os tipos' ? '' : option)
+          setPropertyTypeFilter(option === 'Todos os tipos' ? '' : option)
           setActiveQuickFilter(null)
         }}
         sx={quickFilterMenuItemSx}
@@ -59,8 +81,8 @@ export function SearchResultsFilterMenu({
             key={option.label}
             selected={!customMaxPrice && priceFilterIndex === optionIndex}
             onClick={() => {
-              setFilterValue('customMaxPrice', '')
-              setFilterValue('priceFilterIndex', optionIndex)
+              setCustomMaxPrice('')
+              setPriceFilterIndex(optionIndex)
               setActiveQuickFilter(null)
             }}
             sx={quickFilterMenuItemSx}
@@ -69,18 +91,21 @@ export function SearchResultsFilterMenu({
           </MenuItem>
         ))}
         <Box sx={{ px: 1.2, py: 1 }}>
-          <RhfTextField
+          <TextField
             autoFocus
             fullWidth
-            control={control}
-            name="customMaxPrice"
             label="Preço máximo"
             type="number"
             size="small"
+            value={customMaxPrice}
+            onChange={(event) => {
+              setCustomMaxPrice(event.target.value)
+              setPriceFilterIndex(0)
+            }}
             onKeyDown={(event) => {
               if (event.key === 'Enter') setActiveQuickFilter(null)
             }}
-            slotProps={{ htmlInput: { min: 0, step: 500 } }}
+            inputProps={{ min: 0, step: 500 }}
           />
         </Box>
       </>
@@ -93,7 +118,7 @@ export function SearchResultsFilterMenu({
         key={option.label}
         selected={bedroomFilterIndex === optionIndex}
         onClick={() => {
-          setFilterValue('bedroomFilterIndex', optionIndex)
+          setBedroomFilterIndex(optionIndex)
           setActiveQuickFilter(null)
         }}
         sx={quickFilterMenuItemSx}
@@ -111,8 +136,8 @@ export function SearchResultsFilterMenu({
             key={option.label}
             selected={!customMinArea && areaFilterIndex === optionIndex}
             onClick={() => {
-              setFilterValue('customMinArea', '')
-              setFilterValue('areaFilterIndex', optionIndex)
+              setCustomMinArea('')
+              setAreaFilterIndex(optionIndex)
               setActiveQuickFilter(null)
             }}
             sx={quickFilterMenuItemSx}
@@ -121,18 +146,21 @@ export function SearchResultsFilterMenu({
           </MenuItem>
         ))}
         <Box sx={{ px: 1.2, py: 1 }}>
-          <RhfTextField
+          <TextField
             autoFocus
             fullWidth
-            control={control}
-            name="customMinArea"
             label="Área mínima"
             type="number"
             size="small"
+            value={customMinArea}
+            onChange={(event) => {
+              setCustomMinArea(event.target.value)
+              setAreaFilterIndex(0)
+            }}
             onKeyDown={(event) => {
               if (event.key === 'Enter') setActiveQuickFilter(null)
             }}
-            slotProps={{ htmlInput: { min: 0, step: 10 } }}
+            inputProps={{ min: 0, step: 10 }}
           />
         </Box>
       </>
@@ -144,7 +172,7 @@ export function SearchResultsFilterMenu({
       key={option.label}
       selected={onlyWithParking === option.onlyWithParking}
       onClick={() => {
-        setFilterValue('onlyWithParking', option.onlyWithParking)
+        setOnlyWithParking(option.onlyWithParking)
         setActiveQuickFilter(null)
       }}
       sx={quickFilterMenuItemSx}

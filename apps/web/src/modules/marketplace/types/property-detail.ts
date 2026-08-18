@@ -1,5 +1,4 @@
 import type { PropertyCardData } from '@shared/types'
-import type { SearchResultPurpose } from './search'
 
 export type MarketplacePropertyDetail = PropertyCardData & {
   id: string
@@ -18,16 +17,6 @@ export type MarketplacePropertyDetail = PropertyCardData & {
 
 export type PropertyDetailPageProps = {
   property: MarketplacePropertyDetail
-  activePurpose?: SearchResultPurpose
-}
-
-export type PropertyPageProps = {
-  params: {
-    id: string
-  }
-  searchParams?: {
-    finalidade?: string
-  }
 }
 
 export type PropertyDetailMapProps = {

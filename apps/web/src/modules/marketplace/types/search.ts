@@ -1,7 +1,4 @@
-import type { ReactNode, Ref } from 'react'
-import type { Control } from 'react-hook-form'
-
-import type { SearchDraftFormValues } from '../schemas/marketplace-search-schema'
+import type { Dispatch, ReactNode, Ref, SetStateAction } from 'react'
 
 import type { PropertyCardData } from '@shared/types'
 
@@ -47,33 +44,18 @@ export type SearchDraft = Record<TextSearchFilterKey, string>
 
 export type SelectedSearch = Record<SearchFilterKey, string>
 
-export type ActiveSearchMenu = SearchFilterKey | null
-
 export type SearchState = {
   selectedSearch: SelectedSearch
   searchDraft: SearchDraft
   priceRange: PriceRange
 }
 
-export type SearchResultsState = {
-  selectedPropertyId: string
-  locationQuery: string
-  propertyTypeFilter: string
-  priceFilterIndex: number
-  customMaxPrice: string
-  bedroomFilterIndex: number
-  areaFilterIndex: number
-  customMinArea: string
-  onlyWithParking: boolean
-  sortOption: SortOption
-  viewMode: ViewMode
-}
-
 export type SearchMenuProps = {
   selectedSearch: SelectedSearch
+  searchDraft: SearchDraft
   filterSearchOptions: (key: TextSearchFilterKey) => readonly string[]
   selectSearchValue: (key: SearchFilterKey, value: string) => void
-  searchDraftControl: Control<SearchDraftFormValues>
+  setSearchDraft: Dispatch<SetStateAction<SearchDraft>>
 }
 
 export type TextSearchMenuProps = SearchMenuProps & {

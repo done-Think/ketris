@@ -34,12 +34,10 @@ export function PriceRangeMenu({
           size="small"
           fullWidth
           sx={{ '& .MuiInputBase-input': { px: 1.2 } }}
-          slotProps={{
-            htmlInput: {
-              min: priceLimit.min,
-              max: priceLimit.max,
-              step: priceLimit.step,
-            },
+          inputProps={{
+            min: priceLimit.min,
+            max: priceLimit.max,
+            step: priceLimit.step,
           }}
         />
         <TextField
@@ -52,12 +50,10 @@ export function PriceRangeMenu({
           size="small"
           fullWidth
           sx={{ '& .MuiInputBase-input': { px: 1.2 } }}
-          slotProps={{
-            htmlInput: {
-              min: priceLimit.min,
-              max: priceLimit.max,
-              step: priceLimit.step,
-            },
+          inputProps={{
+            min: priceLimit.min,
+            max: priceLimit.max,
+            step: priceLimit.step,
           }}
         />
       </Stack>

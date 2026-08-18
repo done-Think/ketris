@@ -13,7 +13,7 @@ export function HeroSection({
   priceRange,
   priceRangeLabel,
   activeSearchMenu,
-  searchDraftControl,
+  searchDraft,
   searchHref,
   desktopSearchRef,
   mobileSearchRef,
@@ -22,6 +22,7 @@ export function HeroSection({
   selectSearchValue,
   updatePriceRange,
   filterSearchOptions,
+  setSearchDraft,
 }: HeroSectionProps) {
   return (
     <Box
@@ -92,7 +93,7 @@ export function HeroSection({
               priceRange={priceRange}
               priceRangeLabel={priceRangeLabel}
               activeSearchMenu={activeSearchMenu}
-              searchDraftControl={searchDraftControl}
+              searchDraft={searchDraft}
               searchHref={searchHref}
               desktopSearchRef={desktopSearchRef}
               openSearchMenu={openSearchMenu}
@@ -100,17 +101,19 @@ export function HeroSection({
               selectSearchValue={selectSearchValue}
               updatePriceRange={updatePriceRange}
               filterSearchOptions={filterSearchOptions}
+              setSearchDraft={setSearchDraft}
             />
 
             <MobileSearchBox
               activeSearchMenu={activeSearchMenu}
               mobileSearchRef={mobileSearchRef}
-              searchDraftControl={searchDraftControl}
+              searchDraft={searchDraft}
               searchHref={searchHref}
               selectedSearch={selectedSearch}
               openSearchMenu={openSearchMenu}
               selectSearchValue={selectSearchValue}
               filterSearchOptions={filterSearchOptions}
+              setSearchDraft={setSearchDraft}
             />
 
             <HeroStats />

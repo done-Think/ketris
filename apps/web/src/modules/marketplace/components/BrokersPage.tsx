@@ -17,26 +17,32 @@ import { iconSize, radius, surface } from '@shared/theme/tokens'
 
 import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
 import { brokers } from '../data/brokers'
-import { normalizeSearchText } from '../utils/search'
 import { BrokerCard } from './BrokerCard'
 
 const initialBrokerCount = 4
 const brokerPageSize = 3
 
+function normalizeText(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+}
+
 export function BrokersPage() {
+  const [visibleCount, setVisibleCount] = useState(initialBrokerCount)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [visibleCount, setVisibleCount] = useState(initialBrokerCount)
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const navigationItems = homeNavigationItems.map((item) => ({
     ...item,
     active: item.href === '/corretores',
   }))
   const filteredBrokers = useMemo(() => {
-    const normalizedQuery = normalizeSearchText(searchQuery.trim())
+    const normalizedQuery = normalizeText(searchQuery.trim())
 
     return brokers.filter((broker) => {
-      const searchableText = normalizeSearchText(
+      const searchableText = normalizeText(
         `${broker.name} ${broker.creci} ${broker.region} ${broker.neighborhoods.join(
           ' ',
         )} ${broker.specialties.join(' ')}`,
@@ -122,14 +128,12 @@ export function BrokersPage() {
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Nome, CRECI, bairro ou regiao"
               size="small"
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchRoundedIcon sx={{ color: 'text.primary', fontSize: iconSize.lg }} />
-                    </InputAdornment>
-                  ),
-                },
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchRoundedIcon sx={{ color: 'text.primary', fontSize: iconSize.lg }} />
+                  </InputAdornment>
+                ),
               }}
               sx={{
                 width: { xs: '100%', md: 390 },
