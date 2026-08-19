@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
 import bcrypt from 'bcryptjs'
 import { defineConfig } from 'cypress'
 
@@ -9,7 +10,9 @@ export default defineConfig({
     specPattern: 'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',
     video: false,
     setupNodeEvents(on) {
-      const prisma = new PrismaClient()
+      const prisma = new PrismaClient({
+        adapter: new PrismaPg({ connectionString: getDatabaseUrl() }),
+      })
 
       on('task', {
         async seedAuthUser({
@@ -79,3 +82,13 @@ export default defineConfig({
     },
   },
 })
+
+function getDatabaseUrl() {
+  const databaseUrl = process.env.DATABASE_URL
+
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL não configurado.')
+  }
+
+  return databaseUrl
+}

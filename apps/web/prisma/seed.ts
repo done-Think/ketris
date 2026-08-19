@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
 import bcrypt from 'bcryptjs'
 
 // Seed mínimo para desenvolvimento local: um tenant + um usuário admin, mais o platform admin.
@@ -13,7 +14,9 @@ import bcrypt from 'bcryptjs'
 
 const SALT_ROUNDS = 10
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({ connectionString: getDatabaseUrl() }),
+})
 
 async function main() {
   const tenant = await prisma.tenant.upsert({
@@ -71,3 +74,13 @@ main()
   .finally(async () => {
     await prisma.$disconnect()
   })
+
+function getDatabaseUrl() {
+  const databaseUrl = process.env.DATABASE_URL
+
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL não configurado.')
+  }
+
+  return databaseUrl
+}
