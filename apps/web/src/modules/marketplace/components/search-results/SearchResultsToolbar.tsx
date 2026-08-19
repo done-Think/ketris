@@ -1,13 +1,22 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { IconButton, MenuItem, Stack, TextField, Typography } from '@mui/material'
 import AppsRoundedIcon from '@mui/icons-material/AppsRounded'
 import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBulletedRounded'
 
 import { alpha, iconSize, radius, surface } from '@shared/theme/tokens'
 
-import type { SortOption } from '../../types/search'
-import type { SearchResultsToolbarProps } from '../../types/search-results'
+import type { SortOption, ViewMode } from '../../types/search'
+
+type SearchResultsToolbarProps = {
+  filtersControl?: ReactNode
+  resultCount: number
+  setSortOption: (option: SortOption) => void
+  setViewMode: (mode: ViewMode) => void
+  sortOption: SortOption
+  viewMode: ViewMode
+}
 
 export function SearchResultsToolbar({
   filtersControl,

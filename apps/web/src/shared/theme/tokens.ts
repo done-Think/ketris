@@ -46,6 +46,10 @@ export const brand = {
   },
 } as const
 
+export const externalBrand = {
+  google: '#EA4335',
+} as const
+
 export const radius = {
   sm: 8,
   md: 12,
@@ -72,6 +76,7 @@ export const motion = {
     panel: 'opacity 180ms ease, transform 180ms ease',
     tile: 'border-color 180ms ease, transform 180ms ease',
     avatar: 'box-shadow 160ms ease, transform 160ms ease',
+    progressStep: 'width 280ms cubic-bezier(0.22, 1, 0.36, 1), background-color 220ms ease',
   },
 } as const
 
@@ -227,6 +232,30 @@ export const componentText = {
   footerBrand: {
     fontWeight: 700,
   },
+  authTitle: {
+    fontSize: { xs: 18, md: '1.625rem' },
+  },
+  authCompactTitle: {
+    fontSize: { xs: 16, md: '1.625rem' },
+  },
+  authBody: {
+    fontSize: { xs: 12, md: 14 },
+  },
+  authCompactBody: {
+    fontSize: { xs: 10, md: 14 },
+  },
+  authPrompt: {
+    fontSize: { xs: 11, md: 14 },
+  },
+  authInlineLink: {
+    fontSize: { xs: 11, md: 13 },
+  },
+  authMutedLink: {
+    fontSize: { xs: 10, md: 13 },
+  },
+  authBrandTagline: {
+    fontSize: { xs: 14, md: 18 },
+  },
 } as const
 
 export const iconSize = {
@@ -295,6 +324,9 @@ export const gradients = {
     `linear-gradient(100deg, rgba(13, 15, 20, 0.98) 0%, rgba(13, 15, 20, 0.9) 48%, rgba(83, 9, 50, 0.72) 100%), url("${imageUrl}")`,
   miniPropertyImage: (imageUrl: string) =>
     `linear-gradient(180deg, rgba(33,38,49,0.02), ${alpha.graphite[18]}), url("${imageUrl}")`,
+  authBrandOverlay:
+    'linear-gradient(180deg, rgba(13, 15, 20, 0.2) 0%, rgba(13, 15, 20, 0.72) 100%), radial-gradient(circle at 62% 12%, rgba(243, 2, 116, 0.28) 0%, transparent 38%)',
+  registrationHighlight: 'linear-gradient(105deg, #F30274 0%, #A5014F 42%, #161A21 100%)',
   videoEdgeMask:
     'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.06) 10%, rgba(0,0,0,0.42) 24%, #000 34%, #000 66%, rgba(0,0,0,0.42) 76%, rgba(0,0,0,0.06) 90%, transparent 100%), linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.55) 7%, #000 18%, #000 82%, rgba(0,0,0,0.55) 93%, transparent 100%)',
   videoCenterMask:

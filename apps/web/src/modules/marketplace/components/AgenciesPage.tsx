@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef } from 'react'
-import { useForm } from 'react-hook-form'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Box,
   CircularProgress,
@@ -18,31 +17,32 @@ import { iconSize, radius, surface } from '@shared/theme/tokens'
 
 import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
 import { agencies } from '../data/agencies'
-import { normalizeSearchText } from '../utils/search'
 import { AgencyCard } from './AgencyCard'
 
 const initialAgencyCount = 4
 const agencyPageSize = 3
 
+function normalizeText(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+}
+
 export function AgenciesPage() {
-  const { getValues, register, setValue, watch } = useForm({
-    defaultValues: {
-      isLoadingMore: false,
-      searchQuery: '',
-      visibleCount: initialAgencyCount,
-    },
-  })
-  const { isLoadingMore, searchQuery, visibleCount } = watch()
+  const [visibleCount, setVisibleCount] = useState(initialAgencyCount)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const navigationItems = homeNavigationItems.map((item) => ({
     ...item,
     active: item.href === '/imobiliarias',
   }))
   const filteredAgencies = useMemo(() => {
-    const normalizedQuery = normalizeSearchText(searchQuery.trim())
+    const normalizedQuery = normalizeText(searchQuery.trim())
 
     return agencies.filter((agency) => {
-      const searchableText = normalizeSearchText(
+      const searchableText = normalizeText(
         `${agency.name} ${agency.legalCreci} ${agency.headquarters} ${agency.coverage.join(
           ' ',
         )} ${agency.segments.join(' ')}`,
@@ -58,8 +58,8 @@ export function AgenciesPage() {
   const hasMoreAgencies = visibleCount < filteredAgencies.length
 
   useEffect(() => {
-    setValue('visibleCount', initialAgencyCount)
-  }, [searchQuery, setValue])
+    setVisibleCount(initialAgencyCount)
+  }, [searchQuery])
 
   useEffect(() => {
     const loadMoreElement = loadMoreRef.current
@@ -69,13 +69,10 @@ export function AgenciesPage() {
       ([entry]) => {
         if (!entry?.isIntersecting) return
 
-        setValue('isLoadingMore', true)
+        setIsLoadingMore(true)
         window.setTimeout(() => {
-          setValue(
-            'visibleCount',
-            Math.min(getValues('visibleCount') + agencyPageSize, filteredAgencies.length),
-          )
-          setValue('isLoadingMore', false)
+          setVisibleCount((current) => Math.min(current + agencyPageSize, filteredAgencies.length))
+          setIsLoadingMore(false)
         }, 420)
       },
       { rootMargin: '360px 0px' },
@@ -84,7 +81,7 @@ export function AgenciesPage() {
     observer.observe(loadMoreElement)
 
     return () => observer.disconnect()
-  }, [filteredAgencies.length, getValues, hasMoreAgencies, isLoadingMore, setValue, visibleCount])
+  }, [filteredAgencies.length, hasMoreAgencies, isLoadingMore, visibleCount])
 
   return (
     <Box
@@ -127,8 +124,8 @@ export function AgenciesPage() {
             </Box>
 
             <TextField
-              {...register('searchQuery')}
               value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Nome, CRECI, regiao ou cobertura"
               size="small"
               InputProps={{

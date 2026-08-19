@@ -6,7 +6,10 @@ import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 
 import { iconSize, radius, surface } from '@shared/theme/tokens'
 
-import type { SearchResultsLocationFieldProps } from '../../types/search-results'
+type SearchResultsLocationFieldProps = {
+  locationQuery: string
+  setLocationQuery: (value: string) => void
+}
 
 export function SearchResultsLocationField({
   locationQuery,

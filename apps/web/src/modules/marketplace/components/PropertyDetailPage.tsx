@@ -1,7 +1,6 @@
 ﻿'use client'
 
-import { useRef } from 'react'
-import { useForm } from 'react-hook-form'
+import { useRef, useState } from 'react'
 import {
   Avatar,
   Box,
@@ -40,47 +39,34 @@ const featureIcons = [
   SquareFootOutlinedIcon,
 ]
 
-export function PropertyDetailPage({ property, activePurpose }: PropertyDetailPageProps) {
-  const { getValues, setValue, watch } = useForm({
-    defaultValues: {
-      activePhotoIndex: 0,
-      isGalleryOpen: false,
-      isProfileOpen: false,
-    },
-  })
-  const { activePhotoIndex, isGalleryOpen, isProfileOpen } = watch()
+export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0)
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false)
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const [cover, ...thumbs] = property.gallery
   const hiddenPhotosCount = Math.max(property.gallery.length - 4, 0)
   const hiddenPhotosLabel = hiddenPhotosCount === 1 ? '+1 foto' : `+${hiddenPhotosCount} fotos`
-  const navigationItems = homeNavigationItems.map((item) => ({
-    ...item,
-    active: activePurpose ? item.href.includes(`finalidade=${activePurpose}`) : false,
-  }))
   const openGallery = (photoIndex: number) => {
-    setValue('activePhotoIndex', photoIndex)
-    setValue('isGalleryOpen', true)
+    setActivePhotoIndex(photoIndex)
+    setIsGalleryOpen(true)
   }
 
   const showPreviousPhoto = () => {
-    const current = getValues('activePhotoIndex')
-
-    setValue('activePhotoIndex', current === 0 ? property.gallery.length - 1 : current - 1)
+    setActivePhotoIndex((current) => (current === 0 ? property.gallery.length - 1 : current - 1))
   }
 
   const showNextPhoto = () => {
-    const current = getValues('activePhotoIndex')
-
-    setValue('activePhotoIndex', current === property.gallery.length - 1 ? 0 : current + 1)
+    setActivePhotoIndex((current) => (current === property.gallery.length - 1 ? 0 : current + 1))
   }
 
   return (
     <Box sx={{ bgcolor: surface.app, minHeight: '100vh', overflowX: 'clip' }}>
       <HomeHeader
-        navigationItems={navigationItems}
+        navigationItems={homeNavigationItems}
         profileButtonRef={profileButtonRef}
         userProfile={userProfile}
-        onToggleProfile={() => setValue('isProfileOpen', !getValues('isProfileOpen'))}
+        onToggleProfile={() => setIsProfileOpen((current) => !current)}
       />
 
       <ProfileModal
@@ -88,7 +74,7 @@ export function PropertyDetailPage({ property, activePurpose }: PropertyDetailPa
         anchorRef={profileButtonRef}
         actions={profileActions}
         userProfile={userProfile}
-        onClose={() => setValue('isProfileOpen', false)}
+        onClose={() => setIsProfileOpen(false)}
       />
 
       <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
@@ -328,7 +314,7 @@ export function PropertyDetailPage({ property, activePurpose }: PropertyDetailPa
       <Dialog
         fullScreen
         open={isGalleryOpen}
-        onClose={() => setValue('isGalleryOpen', false)}
+        onClose={() => setIsGalleryOpen(false)}
         onKeyDown={(event) => {
           if (event.key === 'ArrowLeft') showPreviousPhoto()
           if (event.key === 'ArrowRight') showNextPhoto()
@@ -356,7 +342,7 @@ export function PropertyDetailPage({ property, activePurpose }: PropertyDetailPa
             </Typography>
             <IconButton
               aria-label="Fechar galeria"
-              onClick={() => setValue('isGalleryOpen', false)}
+              onClick={() => setIsGalleryOpen(false)}
               sx={{ color: surface.lightText }}
             >
               <CloseRoundedIcon />
@@ -436,7 +422,7 @@ export function PropertyDetailPage({ property, activePurpose }: PropertyDetailPa
                 type="button"
                 key={image}
                 aria-label={`Ver foto ${index + 1}`}
-                onClick={() => setValue('activePhotoIndex', index)}
+                onClick={() => setActivePhotoIndex(index)}
                 sx={{
                   flex: '0 0 auto',
                   width: { xs: 72, md: 96 },

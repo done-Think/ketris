@@ -21,7 +21,6 @@ import TuneRoundedIcon from '@mui/icons-material/TuneRounded'
 
 import { alpha, componentText, iconSize, motion, radius, surface } from '@shared/theme/tokens'
 
-import type { SearchResultsFiltersProps } from '../../types/search-results'
 import {
   areaFilterOptions,
   bedroomFilterOptions,
@@ -29,6 +28,32 @@ import {
   propertyTypeFilterOptions,
 } from '../../config/search-results-filters'
 import { SearchResultsLocationField } from './SearchResultsLocationField'
+
+type SearchResultsFiltersProps = {
+  areaFilterIndex: number
+  areaFilterLabel: string
+  bedroomFilterIndex: number
+  bedroomFilterLabel: string
+  clearAreaFilter: () => void
+  clearPriceFilter: () => void
+  customMaxPrice: string
+  customMinArea: string
+  locationQuery: string
+  maxPrice: number | null
+  minArea: number | null
+  onlyWithParking: boolean
+  priceFilterIndex: number
+  priceFilterLabel: string
+  propertyTypeFilter: string
+  setAreaFilterIndex: (index: number) => void
+  setBedroomFilterIndex: (index: number) => void
+  setCustomMaxPrice: (value: string) => void
+  setCustomMinArea: (value: string) => void
+  setLocationQuery: (value: string) => void
+  setOnlyWithParking: (value: boolean) => void
+  setPriceFilterIndex: (index: number) => void
+  setPropertyTypeFilter: (value: string) => void
+}
 
 type FiltersDialogForm = {
   isFiltersOpen: boolean

@@ -1,7 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
-import { useForm } from 'react-hook-form'
+import { useRef, useState } from 'react'
 import { Box } from '@mui/material'
 
 import { HomeHeader, ProfileModal } from '@shared/components/layout'
@@ -21,8 +20,7 @@ import { SearchResultsPagination } from './search-results/SearchResultsPaginatio
 import { SearchResultsToolbar } from './search-results/SearchResultsToolbar'
 
 export function SearchResultsPage({ purpose, initialLocation = '' }: SearchResultsPageProps) {
-  const { getValues, setValue, watch } = useForm({ defaultValues: { isProfileOpen: false } })
-  const isProfileOpen = watch('isProfileOpen')
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const results = useSearchResults({ purpose, initialLocation })
   const navigationItems = homeNavigationItems.map((item) => ({
@@ -44,7 +42,7 @@ export function SearchResultsPage({ purpose, initialLocation = '' }: SearchResul
         navigationItems={navigationItems}
         profileButtonRef={profileButtonRef}
         userProfile={userProfile}
-        onToggleProfile={() => setValue('isProfileOpen', !getValues('isProfileOpen'))}
+        onToggleProfile={() => setIsProfileOpen((current) => !current)}
       />
 
       <ProfileModal
@@ -52,7 +50,7 @@ export function SearchResultsPage({ purpose, initialLocation = '' }: SearchResul
         anchorRef={profileButtonRef}
         actions={profileActions}
         userProfile={userProfile}
-        onClose={() => setValue('isProfileOpen', false)}
+        onClose={() => setIsProfileOpen(false)}
       />
 
       <Box

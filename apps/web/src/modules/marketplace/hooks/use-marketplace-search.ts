@@ -1,69 +1,47 @@
 'use client'
 
-import { useCallback, useMemo, type SetStateAction } from 'react'
-import { useForm } from 'react-hook-form'
+import { useCallback, useMemo, useState } from 'react'
 
 import { priceLimit, searchOptions } from '../config/search-filters'
 import type {
-  MarketplaceSearchFormValues,
   PriceRange,
   SearchDraft,
   SearchFilterKey,
+  SelectedSearch,
   TextSearchFilterKey,
 } from '../types/search'
 import { buildSearchHref, formatSearchCurrency, normalizeSearchText } from '../utils/search'
 
 export function useMarketplaceSearch() {
-  const { getValues, setValue, watch } = useForm<MarketplaceSearchFormValues>({
-    defaultValues: {
-      activeSearchMenu: null,
-      selectedSearch: {
-        location: searchOptions.location.values[0],
-        propertyType: searchOptions.propertyType.values[0],
-        priceRange: searchOptions.priceRange.values[2],
-      },
-      priceRange: [0, 10000],
-      searchDraft: {
-        location: '',
-        propertyType: '',
-      },
-    },
+  const [selectedSearch, setSelectedSearch] = useState<SelectedSearch>({
+    location: searchOptions.location.values[0],
+    propertyType: searchOptions.propertyType.values[0],
+    priceRange: searchOptions.priceRange.values[2],
   })
-  const { activeSearchMenu, priceRange, searchDraft, selectedSearch } = watch()
+  const [priceRange, setPriceRange] = useState<PriceRange>([0, 10000])
+  const [activeSearchMenu, setActiveSearchMenu] = useState<SearchFilterKey | null>(null)
+  const [searchDraft, setSearchDraft] = useState<SearchDraft>({
+    location: '',
+    propertyType: '',
+  })
 
-  const openSearchMenu = useCallback(
-    (key: SearchFilterKey) => {
-      setValue('activeSearchMenu', getValues('activeSearchMenu') === key ? null : key)
-    },
-    [getValues, setValue],
-  )
+  const openSearchMenu = useCallback((key: SearchFilterKey) => {
+    setActiveSearchMenu((current) => (current === key ? null : key))
+  }, [])
 
   const closeSearchMenu = useCallback(() => {
-    setValue('activeSearchMenu', null)
-  }, [setValue])
+    setActiveSearchMenu(null)
+  }, [])
 
   const selectSearchValue = useCallback(
     (key: SearchFilterKey, value: string) => {
-      setValue('selectedSearch', { ...getValues('selectedSearch'), [key]: value })
+      setSelectedSearch((current) => ({ ...current, [key]: value }))
       if (key !== 'priceRange') {
-        setValue('searchDraft', { ...getValues('searchDraft'), [key]: value })
+        setSearchDraft((current) => ({ ...current, [key]: value }))
       }
       closeSearchMenu()
     },
-    [closeSearchMenu, getValues, setValue],
-  )
-
-  const setSearchDraft = useCallback(
-    (nextSearchDraft: SetStateAction<SearchDraft>) => {
-      const currentSearchDraft = getValues('searchDraft')
-      const value =
-        typeof nextSearchDraft === 'function'
-          ? nextSearchDraft(currentSearchDraft)
-          : nextSearchDraft
-
-      setValue('searchDraft', value)
-    },
-    [getValues, setValue],
+    [closeSearchMenu],
   )
 
   const filterSearchOptions = useCallback(
@@ -76,24 +54,21 @@ export function useMarketplaceSearch() {
     [searchDraft],
   )
 
-  const updatePriceRange = useCallback(
-    (nextRange: PriceRange) => {
-      const [minValue, maxValue] = nextRange
-      const normalizedMin = Math.max(priceLimit.min, Math.min(minValue, priceLimit.max))
-      const normalizedMax = Math.max(priceLimit.min, Math.min(maxValue, priceLimit.max))
-      const orderedRange: PriceRange =
-        normalizedMin <= normalizedMax
-          ? [normalizedMin, normalizedMax]
-          : [normalizedMax, normalizedMin]
+  const updatePriceRange = useCallback((nextRange: PriceRange) => {
+    const [minValue, maxValue] = nextRange
+    const normalizedMin = Math.max(priceLimit.min, Math.min(minValue, priceLimit.max))
+    const normalizedMax = Math.max(priceLimit.min, Math.min(maxValue, priceLimit.max))
+    const orderedRange: PriceRange =
+      normalizedMin <= normalizedMax
+        ? [normalizedMin, normalizedMax]
+        : [normalizedMax, normalizedMin]
 
-      setValue('priceRange', orderedRange)
-      setValue('selectedSearch', {
-        ...getValues('selectedSearch'),
-        priceRange: `${orderedRange[0]}-${orderedRange[1]}`,
-      })
-    },
-    [getValues, setValue],
-  )
+    setPriceRange(orderedRange)
+    setSelectedSearch((current) => ({
+      ...current,
+      priceRange: `${orderedRange[0]}-${orderedRange[1]}`,
+    }))
+  }, [])
 
   const priceRangeLabel = `${formatSearchCurrency(priceRange[0])} - ${formatSearchCurrency(
     priceRange[1],

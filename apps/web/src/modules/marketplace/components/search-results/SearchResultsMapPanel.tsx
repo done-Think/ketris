@@ -2,8 +2,14 @@
 
 import { Box } from '@mui/material'
 
-import type { SearchResultsMapPanelProps } from '../../types/search-results'
+import type { SearchResultProperty } from '../../types/search'
 import { SearchResultsMap } from '../SearchResultsMap'
+
+type SearchResultsMapPanelProps = {
+  properties: SearchResultProperty[]
+  selectedPropertyId: string
+  setSelectedPropertyId: (propertyId: string) => void
+}
 
 export function SearchResultsMapPanel({
   properties,

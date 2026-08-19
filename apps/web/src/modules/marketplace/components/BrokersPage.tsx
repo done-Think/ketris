@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef } from 'react'
-import { useForm } from 'react-hook-form'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Box,
   CircularProgress,
@@ -18,31 +17,32 @@ import { iconSize, radius, surface } from '@shared/theme/tokens'
 
 import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
 import { brokers } from '../data/brokers'
-import { normalizeSearchText } from '../utils/search'
 import { BrokerCard } from './BrokerCard'
 
 const initialBrokerCount = 4
 const brokerPageSize = 3
 
+function normalizeText(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+}
+
 export function BrokersPage() {
-  const { getValues, register, setValue, watch } = useForm({
-    defaultValues: {
-      isLoadingMore: false,
-      searchQuery: '',
-      visibleCount: initialBrokerCount,
-    },
-  })
-  const { isLoadingMore, searchQuery, visibleCount } = watch()
+  const [visibleCount, setVisibleCount] = useState(initialBrokerCount)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const navigationItems = homeNavigationItems.map((item) => ({
     ...item,
     active: item.href === '/corretores',
   }))
   const filteredBrokers = useMemo(() => {
-    const normalizedQuery = normalizeSearchText(searchQuery.trim())
+    const normalizedQuery = normalizeText(searchQuery.trim())
 
     return brokers.filter((broker) => {
-      const searchableText = normalizeSearchText(
+      const searchableText = normalizeText(
         `${broker.name} ${broker.creci} ${broker.region} ${broker.neighborhoods.join(
           ' ',
         )} ${broker.specialties.join(' ')}`,
@@ -58,8 +58,8 @@ export function BrokersPage() {
   const hasMoreBrokers = visibleCount < filteredBrokers.length
 
   useEffect(() => {
-    setValue('visibleCount', initialBrokerCount)
-  }, [searchQuery, setValue])
+    setVisibleCount(initialBrokerCount)
+  }, [searchQuery])
 
   useEffect(() => {
     const loadMoreElement = loadMoreRef.current
@@ -69,13 +69,10 @@ export function BrokersPage() {
       ([entry]) => {
         if (!entry?.isIntersecting) return
 
-        setValue('isLoadingMore', true)
+        setIsLoadingMore(true)
         window.setTimeout(() => {
-          setValue(
-            'visibleCount',
-            Math.min(getValues('visibleCount') + brokerPageSize, filteredBrokers.length),
-          )
-          setValue('isLoadingMore', false)
+          setVisibleCount((current) => Math.min(current + brokerPageSize, filteredBrokers.length))
+          setIsLoadingMore(false)
         }, 420)
       },
       { rootMargin: '360px 0px' },
@@ -84,7 +81,7 @@ export function BrokersPage() {
     observer.observe(loadMoreElement)
 
     return () => observer.disconnect()
-  }, [filteredBrokers.length, getValues, hasMoreBrokers, isLoadingMore, setValue, visibleCount])
+  }, [filteredBrokers.length, hasMoreBrokers, isLoadingMore, visibleCount])
 
   return (
     <Box
@@ -127,8 +124,8 @@ export function BrokersPage() {
             </Box>
 
             <TextField
-              {...register('searchQuery')}
               value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Nome, CRECI, bairro ou regiao"
               size="small"
               InputProps={{

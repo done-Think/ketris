@@ -50,27 +50,6 @@ export type SearchState = {
   priceRange: PriceRange
 }
 
-export type MarketplaceSearchFormValues = {
-  activeSearchMenu: SearchFilterKey | null
-  selectedSearch: SelectedSearch
-  priceRange: PriceRange
-  searchDraft: SearchDraft
-}
-
-export type SearchResultsFormValues = {
-  selectedPropertyId: string
-  locationQuery: string
-  propertyTypeFilter: string
-  priceFilterIndex: number
-  customMaxPrice: string
-  bedroomFilterIndex: number
-  areaFilterIndex: number
-  customMinArea: string
-  onlyWithParking: boolean
-  sortOption: SortOption
-  viewMode: ViewMode
-}
-
 export type SearchMenuProps = {
   selectedSearch: SelectedSearch
   searchDraft: SearchDraft
