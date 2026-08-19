@@ -1,6 +1,16 @@
 'use client'
 
-import { Avatar, Box, Card, CardContent, Chip, Divider, Stack, Typography } from '@mui/material'
+import {
+  Avatar,
+  Box,
+  Card,
+  CardContent,
+  Chip,
+  Divider,
+  Stack,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import StarRoundedIcon from '@mui/icons-material/StarRounded'
 import Link from 'next/link'
@@ -96,7 +106,7 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+            gridTemplateColumns: { xs: '1fr', sm: '2fr 0.85fr 0.85fr' },
             gap: 1,
             mt: 2,
           }}
@@ -105,27 +115,46 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
             { label: 'Região', value: brokerCardProps.region },
             { label: 'Imóveis', value: `${brokerCardProps.activeListings} ativos` },
             { label: 'Resposta', value: brokerCardProps.responseTime },
-          ].map((item) => (
-            <Box
-              key={item.label}
-              sx={{
-                minWidth: 0,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: `${radius.sm}px`,
-                px: 1,
-                py: 1,
-                bgcolor: surface.app,
-              }}
-            >
-              <Typography sx={{ color: 'text.secondary', fontSize: 10, fontWeight: 800 }}>
-                {item.label}
-              </Typography>
-              <Typography noWrap sx={{ fontSize: 12, fontWeight: 900, mt: 0.25 }}>
-                {item.value}
-              </Typography>
-            </Box>
-          ))}
+          ].map((item) => {
+            const isRegion = item.value === brokerCardProps.region
+
+            return (
+              <Tooltip
+                key={item.label}
+                title={isRegion ? item.value : ''}
+                placement="bottom-start"
+                disableHoverListener={!isRegion}
+              >
+                <Box
+                  sx={{
+                    minWidth: 0,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: `${radius.sm}px`,
+                    px: 1,
+                    py: 1,
+                    bgcolor: surface.app,
+                  }}
+                >
+                  <Typography sx={{ color: 'text.secondary', fontSize: 10, fontWeight: 800 }}>
+                    {item.label}
+                  </Typography>
+                  <Typography
+                    noWrap={!isRegion}
+                    sx={{
+                      fontSize: 12,
+                      fontWeight: 900,
+                      lineHeight: 1.25,
+                      mt: 0.25,
+                      wordBreak: isRegion ? 'break-word' : undefined,
+                    }}
+                  >
+                    {item.value}
+                  </Typography>
+                </Box>
+              </Tooltip>
+            )
+          })}
         </Box>
 
         <Divider sx={{ my: 1.8 }} />
