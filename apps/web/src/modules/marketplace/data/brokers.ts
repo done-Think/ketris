@@ -214,7 +214,7 @@ export const brokers: BrokerProfile[] = [
     dealsClosed: 119,
     phone: '(11) 99288-1045',
     email: 'felipe@ketris.com.br',
-    availability: 'Segunda a sexta, 8h as 18h',
+    availability: 'Segunda a sexta, 8h às 18h',
     bio: 'Atendimento focado em unidades comerciais, salas prontas e apartamentos para compra no eixo Brooklin-Berrini.',
     href: '/corretores/felipe-andrade',
     highlightedListings: [
@@ -247,8 +247,8 @@ export const brokers: BrokerProfile[] = [
     dealsClosed: 101,
     phone: '(11) 99518-7710',
     email: 'lara@ketris.com.br',
-    availability: 'Segunda a sabado, 9h as 19h',
-    bio: 'Curadoria para aluguel e compra em Pinheiros, com foco em ruas caminhaveis, mobilidade e vida de bairro.',
+    availability: 'Segunda a sábado, 9h às 19h',
+    bio: 'Curadoria para aluguel e compra em Pinheiros, com foco em ruas caminháveis, mobilidade e vida de bairro.',
     href: '/corretores/lara-queiroz',
     highlightedListings: [
       {
@@ -273,15 +273,15 @@ export const brokers: BrokerProfile[] = [
       'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=160&q=80',
     region: 'Vila Mariana, São Paulo',
     specialties: ['Aluguel', 'Alto padrão'],
-    neighborhoods: ['Vila Mariana', 'Paraiso', 'Aclimacao'],
+    neighborhoods: ['Vila Mariana', 'Paraíso', 'Aclimação'],
     activeListings: 37,
     responseTime: '17 min',
     rating: 4.7,
     dealsClosed: 108,
     phone: '(11) 99772-6034',
     email: 'eduardo@ketris.com.br',
-    availability: 'Segunda a sexta, 9h as 18h',
-    bio: 'Atendimento para apartamentos familiares e unidades de alto padrao na Vila Mariana e entorno.',
+    availability: 'Segunda a sexta, 9h às 18h',
+    bio: 'Atendimento para apartamentos familiares e unidades de alto padrão na Vila Mariana e entorno.',
     href: '/corretores/eduardo-martins',
     highlightedListings: [
       {

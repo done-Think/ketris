@@ -1,6 +1,3 @@
-// Design tokens da Ketris — fonte única de verdade para cores da marca.
-// Identidade oficial: Magenta/Fúcsia #F30274 + Grafite #212631.
-
 export const brand = {
   magenta: {
     50: '#FEEBF4',
@@ -88,12 +85,12 @@ export const componentText = {
   },
   badge: {
     fontSize: 11.5,
-    fontWeight: 600,
+    fontWeight: 500,
     lineHeight: 1.2,
   },
   cardEyebrow: {
     fontSize: 12,
-    fontWeight: 600,
+    fontWeight: 500,
     letterSpacing: 0,
     textTransform: 'uppercase',
   },
@@ -104,7 +101,7 @@ export const componentText = {
   },
   cardPrice: {
     fontSize: 20,
-    fontWeight: 600,
+    fontWeight: 500,
   },
   cardMeta: {
     fontSize: 12,
@@ -129,13 +126,13 @@ export const componentText = {
   },
   filterLabel: {
     fontSize: { md: 9, xl: 10 },
-    fontWeight: 600,
+    fontWeight: 500,
     lineHeight: 1.2,
     textTransform: 'uppercase',
   },
   filterValue: {
     fontSize: { md: 12, xl: 14 },
-    fontWeight: 600,
+    fontWeight: 500,
     lineHeight: 1.35,
   },
   desktopSearchButton: {
@@ -157,7 +154,7 @@ export const componentText = {
   },
   miniSectionEyebrow: {
     fontSize: 12,
-    fontWeight: 600,
+    fontWeight: 500,
   },
   miniCardTitle: {
     fontSize: 12,
@@ -206,10 +203,10 @@ export const componentText = {
   },
   modalEyebrow: {
     fontSize: 11,
-    fontWeight: 600,
+    fontWeight: 500,
   },
   modalAction: {
-    fontWeight: 600,
+    fontWeight: 500,
   },
   footerBody: {
     fontSize: { xs: 12, md: 13 },
@@ -225,7 +222,7 @@ export const componentText = {
     fontSize: 11,
   },
   footerBrand: {
-    fontWeight: 600,
+    fontWeight: 500,
   },
 } as const
 
@@ -246,6 +243,33 @@ export const surface = {
   darkText: brand.graphite[500],
   darkModeText: '#F2F3F5',
   darkDivider: '#1E242E',
+} as const
+
+export const profileThemeColors = {
+  familyHomes: {
+    accent: '#3F6D46',
+    tone: '#F2F6EF',
+  },
+  commercialBlue: {
+    accent: '#255C7A',
+    tone: '#EFF4F8',
+  },
+  warmConsulting: {
+    accent: '#8A5A3B',
+    tone: '#F6F1EC',
+  },
+  corporateBlue: {
+    accent: '#1F5A73',
+    tone: '#EEF3F7',
+  },
+  neighborhoodGreen: {
+    accent: '#2C6B57',
+    tone: '#F1F6F4',
+  },
+  urbanFamily: {
+    accent: '#765232',
+    tone: '#F6F3EF',
+  },
 } as const
 
 export const alpha = {

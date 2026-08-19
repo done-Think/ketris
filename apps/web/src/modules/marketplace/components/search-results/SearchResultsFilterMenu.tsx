@@ -86,7 +86,7 @@ export function SearchResultsFilterMenu({
             onKeyDown={(event) => {
               if (event.key === 'Enter') setActiveQuickFilter(null)
             }}
-            inputProps={{ min: 0, step: 500 }}
+            slotProps={{ htmlInput: { min: 0, step: 500 } }}
           />
         </Box>
       </>
@@ -141,7 +141,7 @@ export function SearchResultsFilterMenu({
             onKeyDown={(event) => {
               if (event.key === 'Enter') setActiveQuickFilter(null)
             }}
-            inputProps={{ min: 0, step: 10 }}
+            slotProps={{ htmlInput: { min: 0, step: 10 } }}
           />
         </Box>
       </>

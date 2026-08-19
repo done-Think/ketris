@@ -116,7 +116,7 @@ export function CreatePropertyStepFields({
               <TextField
                 fullWidth
                 defaultValue="Apartamento moderno com vista incrível nos Jardins"
-                inputProps={{ 'aria-label': 'Título do anúncio' }}
+                slotProps={{ htmlInput: { 'aria-label': 'Título do anúncio' } }}
               />
             </Box>
 
@@ -127,7 +127,7 @@ export function CreatePropertyStepFields({
                 multiline
                 minRows={4}
                 defaultValue="Excelente apartamento mobiliado, com 3 quartos, varanda gourmet espaçosa e 2 vagas de garagem demarcadas. Localização nobre, próximo a comércio especializado, restaurantes premiados e estação de metrô."
-                inputProps={{ 'aria-label': 'Descrição' }}
+                slotProps={{ htmlInput: { 'aria-label': 'Descrição' } }}
               />
             </Box>
           </Stack>

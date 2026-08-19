@@ -101,7 +101,7 @@ export function BrokerProfileHero({ broker, theme }: BrokerProfileHeroProps) {
           >
             {broker.name}
           </Typography>
-          <Typography sx={{ color: 'text.secondary', fontSize: 14, fontWeight: 600 }}>
+          <Typography sx={{ color: 'text.secondary', fontSize: 14, fontWeight: 500 }}>
             {broker.creci} / {broker.region}
           </Typography>
         </Box>
@@ -120,7 +120,7 @@ export function BrokerProfileHero({ broker, theme }: BrokerProfileHeroProps) {
             <Typography sx={{ color: 'text.secondary', maxWidth: 760, mb: 2 }}>
               {broker.bio}
             </Typography>
-            <Typography sx={{ color: 'text.secondary', maxWidth: 760, fontWeight: 600 }}>
+            <Typography sx={{ color: 'text.secondary', maxWidth: 760, fontWeight: 500 }}>
               {theme.summary}
             </Typography>
           </Box>

@@ -46,20 +46,22 @@ export function TextSearchMenu({
             const [firstOption] = options
             if (firstOption) selectSearchValue(filterKey, firstOption)
           }}
-          InputProps={{
-            endAdornment: draftValue ? (
-              <InputAdornment position="end">
-                <IconButton
-                  aria-label="Limpar busca"
-                  edge="end"
-                  size="small"
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={clearDraft}
-                >
-                  <CloseRoundedIcon fontSize="small" />
-                </IconButton>
-              </InputAdornment>
-            ) : null,
+          slotProps={{
+            input: {
+              endAdornment: draftValue ? (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="Limpar busca"
+                    edge="end"
+                    size="small"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={clearDraft}
+                  >
+                    <CloseRoundedIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ) : null,
+            },
           }}
         />
       </Box>

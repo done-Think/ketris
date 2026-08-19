@@ -31,7 +31,7 @@ export function PublicProfileMetrics({ accentColor, metrics }: PublicProfileMetr
           {MetricIcon ? (
             <MetricIcon sx={{ color: accentColor, fontSize: iconSize.md, mb: 0.4 }} />
           ) : null}
-          <Typography sx={{ color: 'text.secondary', fontSize: 11, fontWeight: 600 }}>
+          <Typography sx={{ color: 'text.secondary', fontSize: 11, fontWeight: 500 }}>
             {label}
           </Typography>
           <Typography sx={{ color: accentColor, fontSize: 20, fontWeight: 700 }}>
