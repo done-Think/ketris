@@ -149,7 +149,7 @@ describe('PipelineBoard', () => {
       ).toBeInTheDocument()
       expect(
         within(section).getByRole('link', { name: `Abrir oportunidade de Contato ${index + 1}` }),
-      ).toHaveAttribute('href', `/crm/oportunidades/opportunity-${index + 1}`)
+      ).toHaveAttribute('href', `/crm/opportunities/opportunity-${index + 1}`)
     }
   })
 

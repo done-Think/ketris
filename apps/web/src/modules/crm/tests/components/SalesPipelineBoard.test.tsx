@@ -252,7 +252,7 @@ describe('SalesPipelineBoard', () => {
         name: `Abrir oportunidade de ${fixture.opportunity.interessadoNome}`,
       })
 
-      expect(card).toHaveAttribute('href', `/crm/oportunidades/${fixture.opportunity.id}`)
+      expect(card).toHaveAttribute('href', `/crm/opportunities/${fixture.opportunity.id}`)
       expect(within(card).getByText(fixture.property.titulo)).toBeVisible()
       expect(within(card).getByText(fixture.presentation.relativeDateLabel)).toBeVisible()
       expect(within(card).getByLabelText(fixture.presentation.indicatorLabel)).toBeVisible()

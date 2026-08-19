@@ -24,9 +24,9 @@ const sidebarWidth = 200
 const navigationItems = [
   { label: 'Dashboard', href: '/dashboard', icon: BarChartOutlinedIcon },
   { label: 'Pipeline', href: '/crm', icon: ViewKanbanOutlinedIcon },
-  { label: 'Contatos', href: '/crm/contatos', icon: PeopleOutlineIcon },
+  { label: 'Contatos', href: '/crm/contacts', icon: PeopleOutlineIcon },
   { label: 'Imóveis', href: '/imoveis', icon: HomeOutlinedIcon },
-  { label: 'Propostas', href: '/crm/propostas', icon: InsertDriveFileOutlinedIcon },
+  { label: 'Propostas', href: '/crm/proposals', icon: InsertDriveFileOutlinedIcon },
 ] as const
 
 function getInitials(name?: string | null): string {
@@ -44,7 +44,7 @@ export function CrmShell({ children }: CrmShellProps) {
   const pathname = usePathname()
   const { data: session } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const isPublicCrmRoute = pathname === '/crm' || pathname === '/crm/contatos'
+  const isPublicCrmRoute = pathname === '/crm' || pathname === '/crm/contacts'
   const userName = session?.user?.name ?? 'Equipe Ketris'
   const userContext = session?.user?.email ?? 'CRM imobiliário'
   const userInitials = useMemo(() => getInitials(userName), [userName])
@@ -77,7 +77,7 @@ export function CrmShell({ children }: CrmShellProps) {
           const targetPath = href.split('?')[0]
           const active =
             targetPath === '/crm'
-              ? pathname === '/crm' || pathname.startsWith('/crm/oportunidades')
+              ? pathname === '/crm' || pathname.startsWith('/crm/opportunities')
               : pathname === targetPath || pathname.startsWith(`${targetPath}/`)
 
           return (
