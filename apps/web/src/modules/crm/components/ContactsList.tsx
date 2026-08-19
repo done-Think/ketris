@@ -38,7 +38,7 @@ import { getInitials } from '../utils/formatters'
 
 const contactsBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
 
-type ContactFilter = 'Todos' | 'Proprietários' | 'Locatários' | 'Corretores'
+type ContactFilterId = 'all' | ContactType
 
 export type ContactsListProps = {
   contacts?: readonly ContactListItem[]
@@ -51,23 +51,33 @@ export type ContactsListProps = {
   onOpenMoreOptions?: (contact: ContactListItem) => void
 }
 
-const contactFilters: readonly { label: ContactFilter; type: ContactType | null }[] = [
-  { label: 'Todos', type: null },
-  { label: 'Proprietários', type: 'Proprietário' },
-  { label: 'Locatários', type: 'Locatário' },
-  { label: 'Corretores', type: 'Corretor' },
+const contactFilters: readonly {
+  id: ContactFilterId
+  label: string
+  type: ContactType | null
+}[] = [
+  { id: 'all', label: 'Todos', type: null },
+  { id: 'owner', label: 'Proprietários', type: 'owner' },
+  { id: 'renter', label: 'Locatários', type: 'renter' },
+  { id: 'broker', label: 'Corretores', type: 'broker' },
 ]
 
-const typePresentation: Record<ContactType, { color: string; backgroundColor: string }> = {
-  Locatário: {
+const contactTypePresentation: Record<
+  ContactType,
+  { label: string; color: string; backgroundColor: string }
+> = {
+  renter: {
+    label: 'Locatário',
     color: brand.semantic.success,
     backgroundColor: muiAlpha(brand.semantic.success, 0.1),
   },
-  Proprietário: {
+  owner: {
+    label: 'Proprietário',
     color: brand.semantic.info,
     backgroundColor: muiAlpha(brand.semantic.info, 0.1),
   },
-  Corretor: {
+  broker: {
+    label: 'Corretor',
     color: brand.magenta[500],
     backgroundColor: brand.magenta[50],
   },
@@ -94,11 +104,11 @@ function ContactAvatar({ contact }: { contact: ContactListItem }) {
 }
 
 function ContactTypeChip({ type }: { type: ContactType }) {
-  const presentation = typePresentation[type]
+  const presentation = contactTypePresentation[type]
 
   return (
     <Chip
-      label={type}
+      label={presentation.label}
       size="small"
       sx={{
         height: 20,
@@ -397,14 +407,13 @@ export function ContactsList({
   onOpenMoreOptions,
 }: ContactsListProps = {}) {
   const [search, setSearch] = useState('')
-  const [activeFilter, setActiveFilter] = useState<ContactFilter>('Todos')
+  const [activeFilterId, setActiveFilterId] = useState<ContactFilterId>('all')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
 
   const filteredContacts = useMemo(() => {
-    const selectedType =
-      contactFilters.find((filter) => filter.label === activeFilter)?.type ?? null
+    const selectedType = contactFilters.find((filter) => filter.id === activeFilterId)?.type ?? null
     return filterContacts(contacts, search, selectedType)
-  }, [activeFilter, contacts, search])
+  }, [activeFilterId, contacts, search])
 
   const toggleContact = (contactId: string) => {
     setSelectedIds((current) => {
@@ -429,7 +438,7 @@ export function ContactsList({
     })
   }
 
-  const isDefaultView = activeFilter === 'Todos' && search.trim() === ''
+  const isDefaultView = activeFilterId === 'all' && search.trim() === ''
   const resultTotal = isDefaultView ? totalCount : filteredContacts.length
   const firstVisible =
     filteredContacts.length > 0 ? (isDefaultView ? (page - 1) * contacts.length + 1 : 1) : 0
@@ -532,8 +541,8 @@ export function ContactsList({
             spacing={0.75}
             sx={{ overflowX: { xs: 'auto', sm: 'visible' }, pb: { xs: 0.25, sm: 0 } }}
           >
-            {contactFilters.map(({ label }) => {
-              const active = label === activeFilter
+            {contactFilters.map(({ id, label }) => {
+              const active = id === activeFilterId
 
               return (
                 <Button
@@ -541,7 +550,7 @@ export function ContactsList({
                   type="button"
                   variant={active ? 'contained' : 'outlined'}
                   aria-pressed={active}
-                  onClick={() => setActiveFilter(label)}
+                  onClick={() => setActiveFilterId(id)}
                   sx={{
                     minWidth: 0,
                     height: 28,

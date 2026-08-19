@@ -15,16 +15,16 @@ describe('filterContacts', () => {
   })
 
   it('filters contacts by type', () => {
-    expect(
-      filterContacts(contactListFixtures, '', 'Proprietário').map((contact) => contact.name),
-    ).toEqual(['Sandra Vasconcellos', 'Ana Beatriz Ramos'])
+    expect(filterContacts(contactListFixtures, '', 'owner').map((contact) => contact.name)).toEqual(
+      ['Sandra Vasconcellos', 'Ana Beatriz Ramos'],
+    )
   })
 
   it('combines text and type filters', () => {
-    expect(filterContacts(contactListFixtures, 'ramos', 'Locatário')).toEqual([
+    expect(filterContacts(contactListFixtures, 'ramos', 'renter')).toEqual([
       expect.objectContaining({ name: 'Letícia Ramos' }),
     ])
-    expect(filterContacts(contactListFixtures, 'ramos', 'Corretor')).toEqual([])
+    expect(filterContacts(contactListFixtures, 'ramos', 'broker')).toEqual([])
   })
 
   it('returns every contact for an empty query and type', () => {

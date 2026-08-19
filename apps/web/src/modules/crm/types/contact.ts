@@ -1,4 +1,4 @@
-export type ContactType = 'Proprietário' | 'Locatário' | 'Corretor'
+export type ContactType = 'owner' | 'renter' | 'broker'
 
 export type ContactListItem = {
   id: string

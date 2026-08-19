@@ -6,7 +6,7 @@ export const contactListFixtures: readonly ContactListItem[] = [
   {
     id: 'ricardo-mendes',
     name: 'Ricardo Mendes',
-    type: 'Locatário',
+    type: 'renter',
     phone: '(11) 98722-1200',
     email: 'ricardo.mendes@email.com',
     propertyCount: 2,
@@ -17,7 +17,7 @@ export const contactListFixtures: readonly ContactListItem[] = [
   {
     id: 'sandra-vasconcellos',
     name: 'Sandra Vasconcellos',
-    type: 'Proprietário',
+    type: 'owner',
     phone: '(11) 99100-4491',
     email: 'sandra.vasc@corpprop.br',
     propertyCount: 4,
@@ -28,7 +28,7 @@ export const contactListFixtures: readonly ContactListItem[] = [
   {
     id: 'heitor-prado',
     name: 'Heitor Prado',
-    type: 'Corretor',
+    type: 'broker',
     phone: '(11) 98112-9900',
     email: 'heitor.prado@ketrisrealty.com',
     propertyCount: 12,
@@ -39,7 +39,7 @@ export const contactListFixtures: readonly ContactListItem[] = [
   {
     id: 'leticia-ramos',
     name: 'Letícia Ramos',
-    type: 'Locatário',
+    type: 'renter',
     phone: '(11) 97711-2004',
     email: 'leticia_ramos@outlook.com',
     propertyCount: 1,
@@ -50,7 +50,7 @@ export const contactListFixtures: readonly ContactListItem[] = [
   {
     id: 'carlos-eduardo',
     name: 'Carlos Eduardo',
-    type: 'Locatário',
+    type: 'renter',
     phone: '(11) 98221-1250',
     email: 'carlos.edu@tecblue.com',
     propertyCount: 2,
@@ -61,7 +61,7 @@ export const contactListFixtures: readonly ContactListItem[] = [
   {
     id: 'ana-beatriz-ramos',
     name: 'Ana Beatriz Ramos',
-    type: 'Proprietário',
+    type: 'owner',
     phone: '(11) 99882-1011',
     email: 'anabeatriz@grupojardins.com',
     propertyCount: 8,
