@@ -1,8 +1,13 @@
 import type { Dispatch, ReactNode, Ref, SetStateAction } from 'react'
+import type { z } from 'zod'
 
 import type { PropertyCardData } from '@shared/types'
 
 import type { searchOptions } from '../config/search-filters'
+import type {
+  marketplaceSearchFormSchema,
+  searchResultsFormSchema,
+} from '../schemas/marketplace-search-schema'
 import type { MarketplacePropertyDetail } from './property-detail'
 
 export type SearchFilterKey = keyof typeof searchOptions
@@ -14,6 +19,10 @@ export type SearchResultPurpose = 'alugar' | 'comprar'
 export type SearchResultProperty = MarketplacePropertyDetail & {
   purpose: SearchResultPurpose
 }
+
+export type MarketplaceSearchFormValues = z.infer<typeof marketplaceSearchFormSchema>
+
+export type SearchResultsFormValues = z.infer<typeof searchResultsFormSchema>
 
 export type SortOption = 'relevancia' | 'menor-preco' | 'maior-preco'
 

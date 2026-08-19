@@ -34,7 +34,7 @@ export function SearchResultsToolbar({
       spacing={1.5}
       sx={{ mb: 2 }}
     >
-      <Typography sx={{ color: 'text.secondary', fontWeight: 800, fontSize: 14 }}>
+      <Typography sx={{ color: 'text.secondary', fontWeight: 700, fontSize: 14 }}>
         {resultCount} imóveis encontrados
       </Typography>
 
