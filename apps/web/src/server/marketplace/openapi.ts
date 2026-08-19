@@ -42,7 +42,7 @@ export function registerMarketplaceOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Marketplace'],
     summary: 'Busca imóveis publicados no marketplace público',
     description:
-      'Rota pública, sem autenticação. Retorna apenas imóveis com status PUBLICADO, de todos os ' +
+      'Rota pública, sem autenticação. Retorna apenas imóveis com status PUBLISHED, de todos os ' +
       'tenants (é o marketplace público da Ketris — exceção documentada ao isolamento por tenant do ' +
       'Princípio II). Aceita filtros opcionais por finalidade, tipo, cidade, faixa de preço, número ' +
       'mínimo de quartos e busca textual.',
@@ -68,7 +68,7 @@ export function registerMarketplaceOpenApi(registry: OpenAPIRegistry): void {
     summary: 'Consulta o detalhe de um imóvel publicado',
     description:
       'Rota pública, sem autenticação. Retorna o detalhe completo (endereço, mídias, valores) de um ' +
-      'imóvel apenas quando ele está PUBLICADO. Imóvel inexistente ou não publicado responde 404.',
+      'imóvel apenas quando ele está PUBLISHED. Imóvel inexistente ou não publicado responde 404.',
     request: { params: propertyIdParamsSchema },
     responses: {
       200: {
