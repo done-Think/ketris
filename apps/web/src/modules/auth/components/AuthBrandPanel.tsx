@@ -65,7 +65,7 @@ export function AuthBrandPanel({
           sx={{
             maxWidth: 430,
             color: muiAlpha(surface.lightText, 0.68),
-            ...componentText.dashboardBodyText.authBrandTagline,
+            ...componentText.authBrandTagline,
           }}
         >
           {description}
