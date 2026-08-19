@@ -53,9 +53,24 @@ src/server/
 
 Módulos implementados até agora: `auth` (login, refresh token, CRUD de usuários OWNER/AGENT, criação
 separada de ADMIN), `platform` (identidade separada do dono/sócio da Ketris, sem tenant — ver seção
-própria abaixo) e `marketplace` (vitrine pública, sem autenticação — ver seção própria abaixo). Os demais
-(`properties`, `crm`, `contracts`, `financial`) seguem incrementalmente junto das tarefas de
+própria abaixo), `marketplace` (vitrine pública, sem autenticação — ver seção própria abaixo) e
+`properties` (CRUD de imóveis do tenant, publicação/despublicação e transição de status por contrato ativo).
+Os demais (`crm`, `contracts`, `financial`) seguem incrementalmente junto das tarefas de
 `specs/001-mvp-loop-imovel-pagamento/tasks.md` e `specs/002-fundacao-bff-banco/tasks.md`.
+
+## Rate limit
+
+`src/middleware.ts` aplica rate limit em todas as rotas `/api/**` antes dos Route Handlers. Endpoints de
+autenticação (`/api/auth/login`, `/api/auth/refresh`, `/api/platform/login`, `/api/platform/refresh`) usam
+uma política mais restrita que a API geral. Defaults:
+
+- `API_RATE_LIMIT_MAX=300` em `API_RATE_LIMIT_WINDOW_MS=60000`.
+- `AUTH_RATE_LIMIT_MAX=10` em `AUTH_RATE_LIMIT_WINDOW_MS=900000`.
+
+Respostas bloqueadas retornam 429 (`RATE_LIMIT_EXCEEDED`) com headers `RateLimit-Limit`,
+`RateLimit-Remaining`, `RateLimit-Reset` e `Retry-After`. O storage atual é em memória, suficiente para
+desenvolvimento/local e instância única. Em produção horizontal, trocar por storage distribuído
+(Redis/Upstash) mantendo o mesmo contrato de `RateLimitStore`.
 
 ## Autenticação: access token + refresh token
 
@@ -120,12 +135,12 @@ completo em `docs/adr/0003-platform-admin-identidade-separada.md` e `specs/003-p
 ou enviar uma proposta de interesse. Cobre a User Story 2 da spec
 `001-mvp-loop-imovel-pagamento`. Resumo:
 
-- `GET /api/marketplace/properties`: busca/listagem — retorna **apenas imóveis com `status = PUBLICADO`**,
+- `GET /api/marketplace/properties`: busca/listagem — retorna **apenas imóveis com `status = PUBLISHED`**,
   de **todos os tenants** (é a vitrine pública, não a área de um tenant). Isso é uma **exceção deliberada e
   documentada** ao isolamento por tenant do Princípio II: a query não filtra por `tenantId` de propósito.
   Aceita filtros opcionais (`finalidade`, `tipo`, `cidade`, `precoMin`, `precoMax`, `quartosMin`, `q` de
   busca textual em título/descrição). O `tenantId` do imóvel nunca é exposto no corpo da resposta.
-- `GET /api/marketplace/properties/{id}`: detalhe de um imóvel — 200 só quando `PUBLICADO`; imóvel
+- `GET /api/marketplace/properties/{id}`: detalhe de um imóvel — 200 só quando `PUBLISHED`; imóvel
   inexistente ou em rascunho responde 404 (`PROPERTY_NOT_FOUND`), sem revelar a existência de rascunhos.
 - `POST /api/marketplace/properties/{id}/inquiries`: envio de proposta de interesse — **público** — cria uma
   `Oportunidade` (lead) no CRM **do tenant dono do imóvel** (o `tenantId` vem do imóvel, nunca do corpo),
