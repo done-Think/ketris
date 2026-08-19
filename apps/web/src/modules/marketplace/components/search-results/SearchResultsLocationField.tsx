@@ -6,7 +6,10 @@ import { IconButton, InputAdornment, TextField } from '@mui/material'
 
 import { iconSize, radius, surface } from '@shared/theme/tokens'
 
-import type { SearchResultsLocationFieldProps } from '../../types/search-results'
+type SearchResultsLocationFieldProps = {
+  locationQuery: string
+  setLocationQuery: (value: string) => void
+}
 
 export function SearchResultsLocationField({
   locationQuery,

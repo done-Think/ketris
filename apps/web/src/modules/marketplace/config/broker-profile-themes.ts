@@ -1,6 +1,14 @@
 import { brand, profileThemeColors, surface } from '@shared/theme/tokens'
 
-import type { BrokerProfileTheme } from '../types/broker-profile-theme'
+export type BrokerProfileTheme = {
+  label: string
+  tone: string
+  accent: string
+  cover: string
+  signature: string
+  summary: string
+  method: string[]
+}
 
 const defaultBrokerProfileTheme: BrokerProfileTheme = {
   label: 'Atendimento regional',

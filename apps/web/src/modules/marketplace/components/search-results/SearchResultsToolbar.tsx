@@ -6,8 +6,15 @@ import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBullete
 
 import { alpha, iconSize, radius, surface } from '@shared/theme/tokens'
 
-import type { SortOption } from '../../types/search'
-import type { SearchResultsToolbarProps } from '../../types/search-results'
+import type { SortOption, ViewMode } from '../../types/search'
+
+type SearchResultsToolbarProps = {
+  resultCount: number
+  setSortOption: (option: SortOption) => void
+  setViewMode: (mode: ViewMode) => void
+  sortOption: SortOption
+  viewMode: ViewMode
+}
 
 export function SearchResultsToolbar({
   resultCount,

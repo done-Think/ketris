@@ -1,7 +1,6 @@
 'use client'
 
-import { type ComponentType, type RefObject, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { type ComponentType, type RefObject, useEffect, useState } from 'react'
 import { Avatar, Box, Button, IconButton, Stack, Typography } from '@mui/material'
 import type { SvgIconProps } from '@mui/material/SvgIcon'
 import CloseIcon from '@mui/icons-material/Close'
@@ -36,15 +35,6 @@ type ProfileModalProps = {
   onClose: () => void
 }
 
-type ProfileModalState = {
-  isMounted: boolean
-  isVisible: boolean
-  panelPosition: {
-    top: number
-    right: number
-  }
-}
-
 export function ProfileModal({
   open,
   anchorRef,
@@ -52,29 +42,24 @@ export function ProfileModal({
   actions,
   onClose,
 }: ProfileModalProps) {
-  const { setValue, watch } = useForm<ProfileModalState>({
-    defaultValues: {
-      isMounted: open,
-      isVisible: false,
-      panelPosition: { top: 68, right: 16 },
-    },
-  })
-  const { isMounted, isVisible, panelPosition } = watch()
+  const [isMounted, setIsMounted] = useState(open)
+  const [isVisible, setIsVisible] = useState(false)
+  const [panelPosition, setPanelPosition] = useState({ top: 68, right: 16 })
 
   useEffect(() => {
     if (open) {
-      setValue('isMounted', true)
-      setValue('isVisible', false)
-      const timeout = window.setTimeout(() => setValue('isVisible', true), 20)
+      setIsMounted(true)
+      setIsVisible(false)
+      const timeout = window.setTimeout(() => setIsVisible(true), 20)
 
       return () => window.clearTimeout(timeout)
     }
 
-    setValue('isVisible', false)
-    const timeout = window.setTimeout(() => setValue('isMounted', false), 180)
+    setIsVisible(false)
+    const timeout = window.setTimeout(() => setIsMounted(false), 180)
 
     return () => window.clearTimeout(timeout)
-  }, [open, setValue])
+  }, [open])
 
   useEffect(() => {
     if (!open) return
@@ -84,7 +69,7 @@ export function ProfileModal({
 
       if (!anchor) return
 
-      setValue('panelPosition', {
+      setPanelPosition({
         top: Math.round(anchor.bottom + 12),
         right: Math.max(12, Math.round(window.innerWidth - anchor.right - 16)),
       })
@@ -98,7 +83,7 @@ export function ProfileModal({
       window.removeEventListener('resize', updatePosition)
       window.removeEventListener('scroll', updatePosition, true)
     }
-  }, [anchorRef, open, setValue])
+  }, [anchorRef, open])
 
   if (!isMounted) return null
 
