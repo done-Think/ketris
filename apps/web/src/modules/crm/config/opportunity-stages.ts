@@ -1,3 +1,5 @@
+import { brand, supportColor } from '@shared/theme/tokens'
+
 import type { OpportunityStatus } from '../types/opportunity'
 
 export type OpportunityStage = {
@@ -11,32 +13,32 @@ export const opportunityStages: readonly OpportunityStage[] = [
   {
     status: 'RASCUNHO',
     label: 'Prospecção',
-    color: '#F30274',
-    softColor: '#FEEBF4',
+    color: brand.magenta[500],
+    softColor: brand.magenta[50],
   },
   {
     status: 'ENVIADA',
     label: 'Proposta enviada',
-    color: '#3B82F6',
-    softColor: '#EAF2FF',
+    color: brand.semantic.info,
+    softColor: supportColor.infoSoft,
   },
   {
     status: 'EM_NEGOCIACAO',
     label: 'Negociação',
-    color: '#E0A11B',
-    softColor: '#FFF7DD',
+    color: brand.semantic.warning,
+    softColor: supportColor.warningSoft,
   },
   {
     status: 'ACEITA',
     label: 'Fechado',
-    color: '#12A150',
-    softColor: '#E7F7EE',
+    color: brand.semantic.success,
+    softColor: supportColor.successSoft,
   },
   {
     status: 'RECUSADA',
     label: 'Perdido',
-    color: '#E5484D',
-    softColor: '#FDEBEC',
+    color: brand.semantic.error,
+    softColor: supportColor.errorSoft,
   },
 ] as const
 

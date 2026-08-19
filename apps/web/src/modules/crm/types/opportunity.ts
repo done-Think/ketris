@@ -2,6 +2,7 @@ import type { z } from 'zod'
 
 import type {
   contractGuaranteeSchema,
+  editOpportunityFormSchema,
   opportunityFiltersSchema,
   opportunityStatusSchema,
   updateOpportunitySchema,
@@ -11,6 +12,7 @@ export type OpportunityStatus = z.infer<typeof opportunityStatusSchema>
 export type ContractGuarantee = z.infer<typeof contractGuaranteeSchema>
 export type OpportunityFilters = z.infer<typeof opportunityFiltersSchema>
 export type UpdateOpportunityPayload = z.infer<typeof updateOpportunitySchema>
+export type OpportunityEditFormValues = z.infer<typeof editOpportunityFormSchema>
 
 export interface Opportunity {
   id: string

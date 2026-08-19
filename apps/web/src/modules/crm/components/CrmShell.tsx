@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState } from 'react'
 import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined'
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined'
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined'
@@ -14,8 +14,9 @@ import { useSession } from 'next-auth/react'
 
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
-import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
+import type { CrmShellProps } from '../types/layout'
 import { CrmAccessBoundary } from './CrmAccessBoundary'
 
 const sidebarWidth = 200
@@ -27,10 +28,6 @@ const navigationItems = [
   { label: 'Imóveis', href: '/imoveis', icon: HomeOutlinedIcon },
   { label: 'Propostas', href: '/crm/propostas', icon: InsertDriveFileOutlinedIcon },
 ] as const
-
-type CrmShellProps = {
-  children: ReactNode
-}
 
 function getInitials(name?: string | null): string {
   if (!name) return 'K'
@@ -179,7 +176,7 @@ export function CrmShell({ children }: CrmShellProps) {
           px: 2,
           bgcolor: brand.graphite[600],
           color: surface.lightText,
-          boxShadow: '0 5px 22px rgba(13,15,20,0.18)',
+          boxShadow: shadows.crmMobileHeader,
         }}
       >
         <Tooltip title="Abrir navegação">

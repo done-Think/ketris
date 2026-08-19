@@ -24,6 +24,7 @@ import { brand, radius, surface } from '@shared/theme/tokens'
 import { opportunityStages } from '../config/opportunity-stages'
 import { useCrmProperties, useOpportunities } from '../hooks/use-opportunities'
 import type { Opportunity, OpportunityStatus } from '../types/opportunity'
+import type { PipelineBoardProps } from '../types/pipeline-board'
 import { formatCurrency, formatMonthlyCurrency } from '../utils/formatters'
 import { OpportunityCard } from './OpportunityCard'
 
@@ -38,10 +39,6 @@ function matchesSearch(opportunity: Opportunity, propertyTitle: string, search: 
     opportunity.interessadoTelefone,
     propertyTitle,
   ].some((value) => value?.toLocaleLowerCase('pt-BR').includes(search))
-}
-
-type PipelineBoardProps = {
-  initialStatus?: OpportunityStatus | null
 }
 
 export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
@@ -172,7 +169,13 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
               >
                 <Box
                   aria-hidden="true"
-                  sx={{ width: 8, height: 8, mr: 1.2, borderRadius: '50%', bgcolor: stage.color }}
+                  sx={{
+                    width: 8,
+                    height: 8,
+                    mr: 1.2,
+                    borderRadius: `${radius.full}px`,
+                    bgcolor: stage.color,
+                  }}
                 />
                 {stage.label}
               </MenuItem>
@@ -276,7 +279,7 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
                       height: 8,
                       mr: 1,
                       flexShrink: 0,
-                      borderRadius: '50%',
+                      borderRadius: `${radius.full}px`,
                       bgcolor: stage.color,
                     }}
                   />

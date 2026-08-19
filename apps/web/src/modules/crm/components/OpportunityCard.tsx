@@ -4,8 +4,10 @@ import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
 import { Avatar, Box, Card, Stack, Typography } from '@mui/material'
 import NextLink from 'next/link'
 
+import { motion, radius, shadows } from '@shared/theme/tokens'
+
 import { opportunityStageByStatus } from '../config/opportunity-stages'
-import type { Opportunity } from '../types/opportunity'
+import type { OpportunityCardProps } from '../types/opportunity-card'
 import type { PublicPropertySummary } from '../types/property'
 import {
   formatCurrency,
@@ -13,17 +15,6 @@ import {
   formatRelativeDate,
   getInitials,
 } from '../utils/formatters'
-
-type OpportunityCardProps = {
-  opportunity: Opportunity
-  property?: PublicPropertySummary
-  density?: 'regular' | 'compact'
-  presentation?: {
-    indicatorColor?: string
-    indicatorLabel?: string
-    relativeDateLabel?: string
-  }
-}
 
 function getPropertyLocation(property?: PublicPropertySummary): string {
   if (!property) return 'Imóvel indisponível no catálogo'
@@ -60,14 +51,14 @@ export function OpportunityCard({
         p: isCompact ? 1.75 : 2,
         border: '1px solid',
         borderColor: isCompact ? 'transparent' : 'divider',
-        borderRadius: isCompact ? '12px' : 1.5,
-        boxShadow: isCompact ? '0 5px 16px rgba(33,38,49,0.06)' : '0 8px 24px rgba(33,38,49,0.06)',
+        borderRadius: isCompact ? `${radius.md}px` : 1.5,
+        boxShadow: isCompact ? shadows.crmCardCompact : shadows.crmCard,
         color: 'text.primary',
         textDecoration: 'none',
-        transition: 'transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease',
+        transition: motion.transition.card,
         '&:hover': {
           borderColor: indicatorColor,
-          boxShadow: '0 14px 30px rgba(33,38,49,0.1)',
+          boxShadow: shadows.crmCardHover,
           transform: 'translateY(-1px)',
         },
         '&:focus-visible': {
@@ -173,7 +164,7 @@ export function OpportunityCard({
             width: isCompact ? 6 : 8,
             height: isCompact ? 6 : 8,
             ml: 'auto !important',
-            borderRadius: '50%',
+            borderRadius: `${radius.full}px`,
             bgcolor: indicatorColor,
           }}
         />
