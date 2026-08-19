@@ -24,6 +24,7 @@ export type QuickFilterKey = 'type' | 'price' | 'bedrooms' | 'area' | 'more'
 export type SearchResultsPageProps = {
   purpose: SearchResultPurpose
   initialLocation?: string
+  initialViewMode?: ViewMode
 }
 
 export type SearchResultsMapProps = {
@@ -32,10 +33,20 @@ export type SearchResultsMapProps = {
   onSelectProperty: (propertyId: string) => void
 }
 
+export type SearchResultsToolbarProps = {
+  filtersControl?: ReactNode
+  resultCount: number
+  setSortOption: (option: SortOption) => void
+  setViewMode: (mode: ViewMode) => void
+  sortOption: SortOption
+  viewMode: ViewMode
+}
+
 export type SearchPropertyCardProps = {
   property: PropertyCardData
   selected?: boolean
   onActivate?: () => void
+  viewMode?: ViewMode
 }
 
 export type PriceRange = [number, number]

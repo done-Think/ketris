@@ -227,14 +227,14 @@ export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
             </Box>
 
             <Typography variant="h5" sx={{ mb: 1.2 }}>
-              Sobre o imÃ³vel
+              Sobre o imóvel
             </Typography>
             <Typography sx={{ color: 'text.secondary', maxWidth: 820, mb: 4 }}>
               {property.description}
             </Typography>
 
             <Typography variant="h5" sx={{ mb: 1.2 }}>
-              LocalizaÃ§Ã£o
+              Localização
             </Typography>
             <Typography sx={{ color: 'text.secondary', mb: 1.4, fontWeight: 700 }}>
               {property.address}

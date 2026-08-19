@@ -7,6 +7,7 @@ import {
   bedroomFilterOptions,
   priceFilterOptions,
 } from '../config/search-results-filters'
+import { searchResultsViewModeCookieKey } from '../config/search-results-view-mode'
 import { searchResults } from '../data/search-results'
 import type { SearchResultsPageProps, SortOption, ViewMode } from '../types/search'
 import {
@@ -16,7 +17,20 @@ import {
   normalizeLocationFilter,
 } from '../utils/search-results'
 
-export function useSearchResults({ purpose, initialLocation = '' }: SearchResultsPageProps) {
+const saveViewModePreference = (mode: ViewMode) => {
+  document.cookie = [
+    `${searchResultsViewModeCookieKey}=${encodeURIComponent(mode)}`,
+    'path=/',
+    'max-age=31536000',
+    'samesite=lax',
+  ].join('; ')
+}
+
+export function useSearchResults({
+  initialLocation = '',
+  initialViewMode = 'grid',
+  purpose,
+}: SearchResultsPageProps) {
   const [selectedPropertyId, setSelectedPropertyId] = useState(searchResults[0]?.id ?? '')
   const [locationQuery, setLocationQuery] = useState(initialLocation)
   const [propertyTypeFilter, setPropertyTypeFilter] = useState('')
@@ -27,7 +41,7 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
   const [customMinArea, setCustomMinArea] = useState('')
   const [onlyWithParking, setOnlyWithParking] = useState(false)
   const [sortOption, setSortOption] = useState<SortOption>('relevancia')
-  const [viewMode, setViewMode] = useState<ViewMode>('grid')
+  const [viewMode, setViewModeState] = useState<ViewMode>(initialViewMode)
 
   const priceFilter = priceFilterOptions[priceFilterIndex]
   const bedroomFilter = bedroomFilterOptions[bedroomFilterIndex]
@@ -99,6 +113,11 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
   const clearAreaFilter = () => {
     setCustomMinArea('')
     setAreaFilterIndex(0)
+  }
+
+  const setViewMode = (mode: ViewMode) => {
+    setViewModeState(mode)
+    saveViewModePreference(mode)
   }
 
   return {

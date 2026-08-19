@@ -19,10 +19,14 @@ import { SearchResultsMapPanel } from './search-results/SearchResultsMapPanel'
 import { SearchResultsPagination } from './search-results/SearchResultsPagination'
 import { SearchResultsToolbar } from './search-results/SearchResultsToolbar'
 
-export function SearchResultsPage({ purpose, initialLocation = '' }: SearchResultsPageProps) {
+export function SearchResultsPage({
+  initialLocation = '',
+  initialViewMode,
+  purpose,
+}: SearchResultsPageProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
-  const results = useSearchResults({ purpose, initialLocation })
+  const results = useSearchResults({ purpose, initialLocation, initialViewMode })
   const navigationItems = homeNavigationItems.map((item) => ({
     ...item,
     active: item.href.includes(`finalidade=${purpose}`),
