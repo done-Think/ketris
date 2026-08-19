@@ -3,6 +3,8 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import bcrypt from 'bcryptjs'
 import { defineConfig } from 'cypress'
 
+import { getDatabaseUrl } from './src/server/db/database-url'
+
 export default defineConfig({
   e2e: {
     baseUrl: 'http://localhost:3000',
@@ -82,13 +84,3 @@ export default defineConfig({
     },
   },
 })
-
-function getDatabaseUrl() {
-  const databaseUrl = process.env.DATABASE_URL
-
-  if (!databaseUrl) {
-    throw new Error('DATABASE_URL não configurado.')
-  }
-
-  return databaseUrl
-}

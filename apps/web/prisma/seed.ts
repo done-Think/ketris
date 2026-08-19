@@ -2,6 +2,8 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import bcrypt from 'bcryptjs'
 
+import { getDatabaseUrl } from '../src/server/db/database-url'
+
 // Seed mínimo para desenvolvimento local: um tenant + um usuário admin, mais o platform admin.
 // Rodar com `npm run db:seed -w @ketris/web` (ou `npm run db:seed` dentro de apps/web).
 //
@@ -74,13 +76,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect()
   })
-
-function getDatabaseUrl() {
-  const databaseUrl = process.env.DATABASE_URL
-
-  if (!databaseUrl) {
-    throw new Error('DATABASE_URL não configurado.')
-  }
-
-  return databaseUrl
-}
