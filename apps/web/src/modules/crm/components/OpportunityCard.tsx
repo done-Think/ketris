@@ -41,7 +41,7 @@ export function OpportunityCard({
   return (
     <Card
       component={NextLink}
-      href={`/crm/oportunidades/${opportunity.id}`}
+      href={`/crm/opportunities/${opportunity.id}`}
       aria-label={`Abrir oportunidade de ${opportunity.interessadoNome}`}
       sx={{
         display: 'flex',

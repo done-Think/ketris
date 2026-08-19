@@ -40,7 +40,7 @@ describe('CrmShell access rules', () => {
     mockUnauthenticatedSession()
   })
 
-  it.each(['/crm', '/crm/contatos'])('renders %s without requiring a session', (pathname) => {
+  it.each(['/crm', '/crm/contacts'])('renders %s without requiring a session', (pathname) => {
     vi.mocked(usePathname).mockReturnValue(pathname)
 
     renderShell()
@@ -49,7 +49,7 @@ describe('CrmShell access rules', () => {
     expect(screen.queryByText('Acesso restrito ao CRM')).not.toBeInTheDocument()
   })
 
-  it.each(['/crm/propostas', '/crm/oportunidades/opportunity-1'])(
+  it.each(['/crm/proposals', '/crm/opportunities/opportunity-1'])(
     'keeps %s protected without a session',
     (pathname) => {
       vi.mocked(usePathname).mockReturnValue(pathname)
