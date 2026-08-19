@@ -45,3 +45,7 @@ export type AgencyBrandBannerProps = {
   agency: AgencyProfile
   size: 'compact' | 'hero'
 }
+
+export type AgenciesSearchForm = {
+  searchQuery: string
+}

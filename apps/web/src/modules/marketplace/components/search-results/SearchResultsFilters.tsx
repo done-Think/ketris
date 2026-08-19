@@ -1,6 +1,7 @@
 'use client'
 
 import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Box,
   Button,
@@ -27,6 +28,10 @@ import {
   priceFilterOptions,
   propertyTypeFilterOptions,
 } from '../../config/search-results-filters'
+import {
+  searchResultsFiltersSchema,
+  type SearchResultsFiltersFormValues,
+} from '../../schemas/search-results-filters-schema'
 import { SearchResultsLocationField } from './SearchResultsLocationField'
 
 type SearchResultsFiltersProps = {
@@ -55,17 +60,6 @@ type SearchResultsFiltersProps = {
   setPropertyTypeFilter: (value: string) => void
 }
 
-type FiltersDialogForm = {
-  isFiltersOpen: boolean
-  propertyTypeFilter: string
-  priceFilterIndex: number
-  customMaxPrice: string
-  bedroomFilterIndex: number
-  areaFilterIndex: number
-  customMinArea: string
-  onlyWithParking: boolean
-}
-
 export function SearchResultsFilters(props: SearchResultsFiltersProps) {
   return (
     <SearchResultsLocationField
@@ -76,7 +70,8 @@ export function SearchResultsFilters(props: SearchResultsFiltersProps) {
 }
 
 export function SearchResultsFilterButton(props: SearchResultsFiltersProps) {
-  const { getValues, setValue, watch } = useForm<FiltersDialogForm>({
+  const { getValues, setValue, watch } = useForm<SearchResultsFiltersFormValues>({
+    resolver: zodResolver(searchResultsFiltersSchema),
     defaultValues: {
       isFiltersOpen: false,
       propertyTypeFilter: props.propertyTypeFilter,

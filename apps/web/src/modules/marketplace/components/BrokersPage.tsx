@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import {
   Box,
   CircularProgress,
@@ -18,6 +19,7 @@ import { iconSize, radius, surface } from '@shared/theme/tokens'
 import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
 import { brokers } from '../data/brokers'
 import { profileActions, userProfile } from '../data/user-profile'
+import type { BrokersSearchForm } from '../types/broker'
 import { BrokerCard } from './BrokerCard'
 
 const initialBrokerCount = 4
@@ -34,7 +36,10 @@ export function BrokersPage() {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [visibleCount, setVisibleCount] = useState(initialBrokerCount)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
+  const { register, watch } = useForm<BrokersSearchForm>({
+    defaultValues: { searchQuery: '' },
+  })
+  const searchQuery = watch('searchQuery')
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const navigationItems = homeNavigationItems.map((item) => ({
@@ -140,10 +145,9 @@ export function BrokersPage() {
             </Box>
 
             <TextField
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Nome, CRECI, bairro ou regiao"
               size="small"
+              {...register('searchQuery')}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
