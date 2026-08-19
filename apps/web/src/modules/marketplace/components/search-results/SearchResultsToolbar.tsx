@@ -6,17 +6,10 @@ import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBullete
 
 import { alpha, iconSize, radius, surface } from '@shared/theme/tokens'
 
-import type { SortOption, ViewMode } from '../../types/search'
-
-type SearchResultsToolbarProps = {
-  resultCount: number
-  setSortOption: (option: SortOption) => void
-  setViewMode: (mode: ViewMode) => void
-  sortOption: SortOption
-  viewMode: ViewMode
-}
+import type { SearchResultsToolbarProps, SortOption } from '../../types/search'
 
 export function SearchResultsToolbar({
+  filtersControl,
   resultCount,
   setSortOption,
   setViewMode,
@@ -35,7 +28,16 @@ export function SearchResultsToolbar({
         {resultCount} imóveis encontrados
       </Typography>
 
-      <Stack direction="row" alignItems="center" spacing={1}>
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent={{ xs: 'space-between', sm: 'flex-end' }}
+        spacing={1}
+        useFlexGap
+        flexWrap="wrap"
+      >
+        {filtersControl}
+
         <TextField
           select
           size="small"

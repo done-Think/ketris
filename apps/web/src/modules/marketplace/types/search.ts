@@ -1,4 +1,4 @@
-import type { Dispatch, ReactNode, Ref, SetStateAction } from 'react'
+import type { Dispatch, FormEventHandler, ReactNode, Ref, SetStateAction } from 'react'
 import type { z } from 'zod'
 
 import type { PropertyCardData } from '@shared/types'
@@ -6,6 +6,7 @@ import type { PropertyCardData } from '@shared/types'
 import type { searchOptions } from '../config/search-filters'
 import type {
   marketplaceSearchFormSchema,
+  searchResultsFiltersDialogFormSchema,
   searchResultsFormSchema,
 } from '../schemas/marketplace-search-schema'
 import type { MarketplacePropertyDetail } from './property-detail'
@@ -24,6 +25,10 @@ export type MarketplaceSearchFormValues = z.infer<typeof marketplaceSearchFormSc
 
 export type SearchResultsFormValues = z.infer<typeof searchResultsFormSchema>
 
+export type SearchResultsFiltersDialogFormValues = z.infer<
+  typeof searchResultsFiltersDialogFormSchema
+>
+
 export type SortOption = 'relevancia' | 'menor-preco' | 'maior-preco'
 
 export type ViewMode = 'grid' | 'list'
@@ -33,6 +38,52 @@ export type QuickFilterKey = 'type' | 'price' | 'bedrooms' | 'area' | 'more'
 export type SearchResultsPageProps = {
   purpose: SearchResultPurpose
   initialLocation?: string
+}
+
+export type SearchResultsFiltersProps = {
+  locationQuery: string
+  setLocationQuery: (value: string) => void
+}
+
+export type SearchResultsFilterButtonProps = {
+  areaFilterIndex: number
+  bedroomFilterIndex: number
+  customMaxPrice: string
+  customMinArea: string
+  maxPrice: number | null
+  minArea: number | null
+  onlyWithParking: boolean
+  priceFilterIndex: number
+  propertyTypeFilter: string
+  setAreaFilterIndex: (index: number) => void
+  setBedroomFilterIndex: (index: number) => void
+  setCustomMaxPrice: (value: string) => void
+  setCustomMinArea: (value: string) => void
+  setOnlyWithParking: (value: boolean) => void
+  setPriceFilterIndex: (index: number) => void
+  setPropertyTypeFilter: (value: string) => void
+}
+
+export type SearchResultsFilterDialogProps = SearchResultsFiltersDialogFormValues & {
+  clearDraftFilters: () => void
+  closeFiltersDialog: () => void
+  onSubmitFilters: FormEventHandler<HTMLFormElement>
+  setAreaFilterIndex: (index: number) => void
+  setBedroomFilterIndex: (index: number) => void
+  setCustomMaxPrice: (value: string) => void
+  setCustomMinArea: (value: string) => void
+  setOnlyWithParking: (value: boolean) => void
+  setPriceFilterIndex: (index: number) => void
+  setPropertyTypeFilter: (value: string) => void
+}
+
+export type SearchResultsToolbarProps = {
+  filtersControl?: ReactNode
+  resultCount: number
+  setSortOption: (option: SortOption) => void
+  setViewMode: (mode: ViewMode) => void
+  sortOption: SortOption
+  viewMode: ViewMode
 }
 
 export type SearchResultsMapProps = {

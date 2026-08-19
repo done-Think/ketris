@@ -1,154 +1,152 @@
 'use client'
 
-import { useRef, useState } from 'react'
-import { Box, Chip, Stack } from '@mui/material'
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Button, Stack } from '@mui/material'
+import TuneRoundedIcon from '@mui/icons-material/TuneRounded'
+import { useForm } from 'react-hook-form'
 
-import { useClickAway } from '@shared/hooks'
-import { alpha, iconSize, motion, radius, shadows, surface, zIndex } from '@shared/theme/tokens'
+import { alpha, iconSize, motion, radius, surface } from '@shared/theme/tokens'
 
-import type { QuickFilterKey } from '../../types/search'
-import { SearchResultsFilterMenu } from './SearchResultsFilterMenu'
+import { searchResultsFiltersDialogFormSchema } from '../../schemas/marketplace-search-schema'
+import type {
+  SearchResultsFilterButtonProps,
+  SearchResultsFiltersDialogFormValues,
+  SearchResultsFiltersProps,
+} from '../../types/search'
+import { SearchResultsFilterDialog } from './SearchResultsFilterDialog'
 import { SearchResultsLocationField } from './SearchResultsLocationField'
 
-type SearchResultsFiltersProps = {
-  areaFilterIndex: number
-  areaFilterLabel: string
-  bedroomFilterIndex: number
-  bedroomFilterLabel: string
-  clearAreaFilter: () => void
-  clearPriceFilter: () => void
-  customMaxPrice: string
-  customMinArea: string
-  locationQuery: string
-  maxPrice: number | null
-  minArea: number | null
-  onlyWithParking: boolean
-  priceFilterIndex: number
-  priceFilterLabel: string
-  propertyTypeFilter: string
-  setAreaFilterIndex: (index: number) => void
-  setBedroomFilterIndex: (index: number) => void
-  setCustomMaxPrice: (value: string) => void
-  setCustomMinArea: (value: string) => void
-  setLocationQuery: (value: string) => void
-  setOnlyWithParking: (value: boolean) => void
-  setPriceFilterIndex: (index: number) => void
-  setPropertyTypeFilter: (value: string) => void
+export function SearchResultsFilters({
+  locationQuery,
+  setLocationQuery,
+}: SearchResultsFiltersProps) {
+  return (
+    <SearchResultsLocationField locationQuery={locationQuery} setLocationQuery={setLocationQuery} />
+  )
 }
 
-export function SearchResultsFilters(props: SearchResultsFiltersProps) {
-  const [activeQuickFilter, setActiveQuickFilter] = useState<QuickFilterKey | null>(null)
-  const quickFiltersRef = useRef<HTMLDivElement | null>(null)
+export function SearchResultsFilterButton(props: SearchResultsFilterButtonProps) {
+  const { getValues, handleSubmit, setValue, watch } =
+    useForm<SearchResultsFiltersDialogFormValues>({
+      defaultValues: {
+        isFiltersOpen: false,
+        propertyTypeFilter: props.propertyTypeFilter,
+        priceFilterIndex: props.priceFilterIndex,
+        customMaxPrice: props.customMaxPrice,
+        bedroomFilterIndex: props.bedroomFilterIndex,
+        areaFilterIndex: props.areaFilterIndex,
+        customMinArea: props.customMinArea,
+        onlyWithParking: props.onlyWithParking,
+      },
+      resolver: zodResolver(searchResultsFiltersDialogFormSchema),
+    })
+  const formValues = watch()
 
-  useClickAway([quickFiltersRef], () => setActiveQuickFilter(null), {
-    enabled: activeQuickFilter !== null,
-  })
-
-  const toggleQuickFilterMenu = (filterKey: QuickFilterKey) => {
-    setActiveQuickFilter((current) => (current === filterKey ? null : filterKey))
+  const syncDraftWithAppliedFilters = () => {
+    setValue('propertyTypeFilter', props.propertyTypeFilter)
+    setValue('priceFilterIndex', props.priceFilterIndex)
+    setValue('customMaxPrice', props.customMaxPrice)
+    setValue('bedroomFilterIndex', props.bedroomFilterIndex)
+    setValue('areaFilterIndex', props.areaFilterIndex)
+    setValue('customMinArea', props.customMinArea)
+    setValue('onlyWithParking', props.onlyWithParking)
   }
 
-  const filters = [
-    {
-      key: 'type' as const,
-      label: props.propertyTypeFilter ? `Tipo: ${props.propertyTypeFilter}` : 'Tipo',
-      active: Boolean(props.propertyTypeFilter),
-      onDelete: props.propertyTypeFilter ? () => props.setPropertyTypeFilter('') : undefined,
-    },
-    {
-      key: 'price' as const,
-      label: props.priceFilterLabel,
-      active: Boolean(props.maxPrice),
-      onDelete: props.maxPrice ? props.clearPriceFilter : undefined,
-    },
-    {
-      key: 'bedrooms' as const,
-      label: props.bedroomFilterLabel,
-      active: props.bedroomFilterIndex > 0,
-    },
-    {
-      key: 'area' as const,
-      label: props.areaFilterLabel,
-      active: Boolean(props.minArea),
-      onDelete: props.minArea ? props.clearAreaFilter : undefined,
-    },
-    {
-      key: 'more' as const,
-      label: props.onlyWithParking ? 'Com vaga' : 'Mais filtros',
-      active: props.onlyWithParking,
-      onDelete: props.onlyWithParking ? () => props.setOnlyWithParking(false) : undefined,
-    },
-  ]
+  const activeFiltersCount = [
+    props.propertyTypeFilter,
+    props.maxPrice,
+    props.bedroomFilterIndex > 0,
+    props.minArea,
+    props.onlyWithParking,
+  ].filter(Boolean).length
+
+  const closeFiltersDialog = () => {
+    setValue('isFiltersOpen', false)
+  }
+
+  const openFiltersDialog = () => {
+    syncDraftWithAppliedFilters()
+    setValue('isFiltersOpen', true)
+  }
+
+  const clearDraftFilters = () => {
+    setValue('propertyTypeFilter', '')
+    setValue('priceFilterIndex', 0)
+    setValue('customMaxPrice', '')
+    setValue('bedroomFilterIndex', 0)
+    setValue('areaFilterIndex', 0)
+    setValue('customMinArea', '')
+    setValue('onlyWithParking', false)
+  }
+
+  const applyDraftFilters = () => {
+    props.setPropertyTypeFilter(getValues('propertyTypeFilter'))
+    props.setPriceFilterIndex(getValues('priceFilterIndex'))
+    props.setCustomMaxPrice(getValues('customMaxPrice'))
+    props.setBedroomFilterIndex(getValues('bedroomFilterIndex'))
+    props.setAreaFilterIndex(getValues('areaFilterIndex'))
+    props.setCustomMinArea(getValues('customMinArea'))
+    props.setOnlyWithParking(getValues('onlyWithParking'))
+    closeFiltersDialog()
+  }
 
   return (
     <>
-      <SearchResultsLocationField
-        locationQuery={props.locationQuery}
-        setLocationQuery={props.setLocationQuery}
-      />
-
-      <Stack
-        ref={quickFiltersRef}
-        direction="row"
-        spacing={1}
-        useFlexGap
-        flexWrap="wrap"
-        sx={{ mb: 2 }}
-      >
-        {filters.map((filter) => (
-          <Box key={filter.key} sx={{ position: 'relative' }}>
-            <Chip
-              label={filter.label}
-              clickable
-              onClick={() => toggleQuickFilterMenu(filter.key)}
-              onDelete={filter.onDelete}
-              deleteIcon={<CloseRoundedIcon />}
-              sx={{
-                height: 34,
-                borderRadius: `${radius.sm}px`,
-                borderColor: filter.active ? 'primary.main' : 'divider',
-                bgcolor: filter.active ? 'primary.main' : surface.paper,
-                color: filter.active ? surface.lightText : 'text.primary',
-                fontWeight: 700,
-                transition: motion.transition.bordered,
-                '& .MuiChip-deleteIcon': {
-                  color: 'inherit',
-                  mr: 1,
-                  fontSize: iconSize.xs,
-                },
-                '&:hover': {
-                  bgcolor: filter.active ? 'primary.dark' : alpha.magenta[6],
-                  borderColor: filter.active ? 'primary.dark' : 'primary.main',
-                },
-              }}
-              variant={filter.active ? 'filled' : 'outlined'}
-            />
-
-            {activeQuickFilter === filter.key ? (
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 'calc(100% + 6px)',
-                  left: 0,
-                  zIndex: zIndex.dropdown,
-                  minWidth: 172,
-                  overflow: 'hidden',
-                  borderRadius: `${radius.sm}px`,
-                  bgcolor: surface.paper,
-                  boxShadow: shadows.popover,
-                }}
-              >
-                <SearchResultsFilterMenu
-                  {...props}
-                  filterKey={filter.key}
-                  setActiveQuickFilter={setActiveQuickFilter}
-                />
-              </Box>
-            ) : null}
-          </Box>
-        ))}
+      <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+        <Button
+          variant={activeFiltersCount > 0 ? 'contained' : 'outlined'}
+          startIcon={<TuneRoundedIcon />}
+          onClick={openFiltersDialog}
+          sx={{
+            minHeight: 34,
+            borderRadius: `${radius.sm}px`,
+            bgcolor: activeFiltersCount > 0 ? 'primary.main' : surface.paper,
+            color: activeFiltersCount > 0 ? surface.lightText : 'text.primary',
+            borderColor: activeFiltersCount > 0 ? 'primary.main' : 'divider',
+            px: 1.5,
+            fontWeight: 700,
+            textTransform: 'none',
+            transition: motion.transition.bordered,
+            '& .MuiButton-startIcon svg': {
+              fontSize: iconSize.xs,
+            },
+            '&:hover': {
+              bgcolor: activeFiltersCount > 0 ? 'primary.dark' : alpha.magenta[6],
+              borderColor: activeFiltersCount > 0 ? 'primary.dark' : 'primary.main',
+            },
+          }}
+        >
+          {activeFiltersCount > 0 ? `Filtros (${activeFiltersCount})` : 'Filtros'}
+        </Button>
       </Stack>
+
+      <SearchResultsFilterDialog
+        {...formValues}
+        clearDraftFilters={clearDraftFilters}
+        closeFiltersDialog={closeFiltersDialog}
+        onSubmitFilters={handleSubmit(applyDraftFilters)}
+        setAreaFilterIndex={(value) =>
+          setValue('areaFilterIndex', value, { shouldDirty: true, shouldValidate: true })
+        }
+        setBedroomFilterIndex={(value) =>
+          setValue('bedroomFilterIndex', value, { shouldDirty: true, shouldValidate: true })
+        }
+        setCustomMaxPrice={(value) =>
+          setValue('customMaxPrice', value, { shouldDirty: true, shouldValidate: true })
+        }
+        setCustomMinArea={(value) =>
+          setValue('customMinArea', value, { shouldDirty: true, shouldValidate: true })
+        }
+        setOnlyWithParking={(value) =>
+          setValue('onlyWithParking', value, { shouldDirty: true, shouldValidate: true })
+        }
+        setPriceFilterIndex={(value) =>
+          setValue('priceFilterIndex', value, { shouldDirty: true, shouldValidate: true })
+        }
+        setPropertyTypeFilter={(value) =>
+          setValue('propertyTypeFilter', value, { shouldDirty: true, shouldValidate: true })
+        }
+      />
     </>
   )
 }
