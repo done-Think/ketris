@@ -46,7 +46,11 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
                 { label: 'Fechados', value: broker.dealsClosed },
               ]}
             />
-            <PublicProfileListings accentColor={theme.accent} listings={representedListings} />
+            <PublicProfileListings
+              accentColor={theme.accent}
+              listings={representedListings}
+              source={{ href: broker.href, name: broker.name, type: 'broker' }}
+            />
           </Box>
 
           <PublicProfileSidebar

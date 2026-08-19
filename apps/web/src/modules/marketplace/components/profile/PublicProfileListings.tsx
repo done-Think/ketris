@@ -14,9 +14,30 @@ type PublicProfileListing = ReturnType<
 type PublicProfileListingsProps = {
   accentColor: string
   listings: PublicProfileListing[]
+  source?: {
+    href: string
+    name: string
+    type: 'agency' | 'broker'
+  }
 }
 
-export function PublicProfileListings({ accentColor, listings }: PublicProfileListingsProps) {
+function buildListingHref(href: string, source: PublicProfileListingsProps['source']) {
+  if (!source) return href
+
+  const params = new URLSearchParams({
+    origem: source.type,
+    origemHref: source.href,
+    origemNome: source.name,
+  })
+
+  return `${href}?${params.toString()}`
+}
+
+export function PublicProfileListings({
+  accentColor,
+  listings,
+  source,
+}: PublicProfileListingsProps) {
   return (
     <>
       <Typography variant="h5" sx={{ mb: 1.5 }}>
@@ -81,7 +102,7 @@ export function PublicProfileListings({ accentColor, listings }: PublicProfileLi
               </Stack>
               <Button
                 component={Link}
-                href={listing.href}
+                href={buildListingHref(listing.href, source)}
                 variant="contained"
                 fullWidth
                 startIcon={<HomeWorkOutlinedIcon sx={{ fontSize: iconSize.sm }} />}

@@ -1,7 +1,5 @@
 import type { Dispatch, ReactNode, Ref, SetStateAction } from 'react'
 
-import type { PropertyCardData } from '@shared/types'
-
 import type { searchOptions } from '../config/search-filters'
 import type { MarketplacePropertyDetail } from './property-detail'
 
@@ -43,7 +41,7 @@ export type SearchResultsToolbarProps = {
 }
 
 export type SearchPropertyCardProps = {
-  property: PropertyCardData
+  property: SearchResultProperty
   selected?: boolean
   onActivate?: () => void
   viewMode?: ViewMode

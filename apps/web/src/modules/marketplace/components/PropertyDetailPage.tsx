@@ -39,7 +39,7 @@ const featureIcons = [
   SquareFootOutlinedIcon,
 ]
 
-export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
+export function PropertyDetailPage({ breadcrumbContext, property }: PropertyDetailPageProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [activePhotoIndex, setActivePhotoIndex] = useState(0)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
@@ -78,7 +78,12 @@ export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
       />
 
       <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
-        <PropertyBreadcrumbs category={property.category} location={property.location} />
+        <PropertyBreadcrumbs
+          category={property.category}
+          context={breadcrumbContext}
+          location={property.location}
+          propertyTitle={property.title}
+        />
 
         <Box
           sx={{
@@ -100,7 +105,7 @@ export function PropertyDetailPage({ property }: PropertyDetailPageProps) {
               <Box
                 component="button"
                 type="button"
-                aria-label="Abrir galeria de fotos do imÃ³vel"
+                aria-label="Abrir galeria de fotos do imóvel"
                 onClick={() => openGallery(0)}
                 sx={{
                   minHeight: { xs: 300, md: 470 },

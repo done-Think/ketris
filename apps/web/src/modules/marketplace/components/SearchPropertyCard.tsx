@@ -26,11 +26,12 @@ export function SearchPropertyCard({
   viewMode = 'grid',
 }: SearchPropertyCardProps) {
   const isListView = viewMode === 'list'
+  const detailsHref = `${property.href}?finalidade=${property.purpose}`
 
   return (
     <Card
       component={Link}
-      href={property.href}
+      href={detailsHref}
       onFocus={onActivate}
       onMouseEnter={onActivate}
       sx={{

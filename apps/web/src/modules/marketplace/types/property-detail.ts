@@ -17,6 +17,12 @@ export type MarketplacePropertyDetail = PropertyCardData & {
 
 export type PropertyDetailPageProps = {
   property: MarketplacePropertyDetail
+  breadcrumbContext?: {
+    originHref?: string
+    originName?: string
+    originType?: string
+    purpose?: string
+  }
 }
 
 export type PropertyDetailMapProps = {

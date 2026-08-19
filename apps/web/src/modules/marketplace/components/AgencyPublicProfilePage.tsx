@@ -79,6 +79,7 @@ export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps
             <PublicProfileListings
               accentColor={agency.brand.primaryColor}
               listings={representedListings}
+              source={{ href: agency.href, name: agency.name, type: 'agency' }}
             />
           </Box>
 
