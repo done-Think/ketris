@@ -44,6 +44,20 @@ export function PropertyDetailPage({ breadcrumbContext, property }: PropertyDeta
   const [activePhotoIndex, setActivePhotoIndex] = useState(0)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
+  const activeNavigationHref =
+    breadcrumbContext?.originType === 'broker'
+      ? '/corretores'
+      : breadcrumbContext?.originType === 'agency'
+        ? '/imobiliarias'
+        : breadcrumbContext?.purpose === 'comprar'
+          ? '/imoveis?finalidade=comprar'
+          : breadcrumbContext?.purpose === 'alugar'
+            ? '/imoveis?finalidade=alugar'
+            : undefined
+  const navigationItems = homeNavigationItems.map((item) => ({
+    ...item,
+    active: item.href === activeNavigationHref,
+  }))
   const [cover, ...thumbs] = property.gallery
   const hiddenPhotosCount = Math.max(property.gallery.length - 4, 0)
   const hiddenPhotosLabel = hiddenPhotosCount === 1 ? '+1 foto' : `+${hiddenPhotosCount} fotos`
@@ -63,7 +77,7 @@ export function PropertyDetailPage({ breadcrumbContext, property }: PropertyDeta
   return (
     <Box sx={{ bgcolor: surface.app, minHeight: '100vh', overflowX: 'clip' }}>
       <HomeHeader
-        navigationItems={homeNavigationItems}
+        navigationItems={navigationItems}
         profileButtonRef={profileButtonRef}
         userProfile={userProfile}
         onToggleProfile={() => setIsProfileOpen((current) => !current)}

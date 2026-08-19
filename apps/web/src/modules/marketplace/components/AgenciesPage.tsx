@@ -12,11 +12,12 @@ import {
 } from '@mui/material'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 
-import { HomeHeader, SiteFooter } from '@shared/components/layout'
+import { HomeHeader, ProfileModal, SiteFooter } from '@shared/components/layout'
 import { iconSize, radius, surface } from '@shared/theme/tokens'
 
 import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
 import { agencies } from '../data/agencies'
+import { profileActions, userProfile } from '../data/user-profile'
 import { AgencyCard } from './AgencyCard'
 
 const initialAgencyCount = 4
@@ -30,9 +31,11 @@ function normalizeText(value: string) {
 }
 
 export function AgenciesPage() {
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [visibleCount, setVisibleCount] = useState(initialAgencyCount)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const navigationItems = homeNavigationItems.map((item) => ({
     ...item,
@@ -93,7 +96,20 @@ export function AgenciesPage() {
         bgcolor: surface.app,
       }}
     >
-      <HomeHeader navigationItems={navigationItems} />
+      <HomeHeader
+        navigationItems={navigationItems}
+        profileButtonRef={profileButtonRef}
+        userProfile={userProfile}
+        onToggleProfile={() => setIsProfileOpen((current) => !current)}
+      />
+
+      <ProfileModal
+        open={isProfileOpen}
+        anchorRef={profileButtonRef}
+        actions={profileActions}
+        userProfile={userProfile}
+        onClose={() => setIsProfileOpen(false)}
+      />
 
       <Box component="main" sx={{ py: { xs: 2.4, md: 4 } }}>
         <Container maxWidth="xl">
