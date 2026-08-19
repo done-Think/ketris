@@ -69,53 +69,25 @@ export function SearchResultsPage({ purpose, initialLocation = '' }: SearchResul
           }}
         >
           <SearchResultsFilters
-            areaFilterIndex={results.areaFilterIndex}
-            areaFilterLabel={results.areaFilterLabel}
-            bedroomFilterIndex={results.bedroomFilterIndex}
-            bedroomFilterLabel={results.bedroomFilter.label}
-            clearAreaFilter={results.clearAreaFilter}
-            clearPriceFilter={results.clearPriceFilter}
-            customMaxPrice={results.customMaxPrice}
-            customMinArea={results.customMinArea}
             locationQuery={results.locationQuery}
-            maxPrice={results.maxPrice}
-            minArea={results.minArea}
-            onlyWithParking={results.onlyWithParking}
-            priceFilterIndex={results.priceFilterIndex}
-            priceFilterLabel={results.priceFilterLabel}
-            propertyTypeFilter={results.propertyTypeFilter}
-            setAreaFilterIndex={results.setAreaFilterIndex}
-            setBedroomFilterIndex={results.setBedroomFilterIndex}
-            setCustomMaxPrice={results.setCustomMaxPrice}
-            setCustomMinArea={results.setCustomMinArea}
             setLocationQuery={results.setLocationQuery}
-            setOnlyWithParking={results.setOnlyWithParking}
-            setPriceFilterIndex={results.setPriceFilterIndex}
-            setPropertyTypeFilter={results.setPropertyTypeFilter}
           />
           <SearchResultsToolbar
             filtersControl={
               <SearchResultsFilterButton
                 areaFilterIndex={results.areaFilterIndex}
-                areaFilterLabel={results.areaFilterLabel}
                 bedroomFilterIndex={results.bedroomFilterIndex}
-                bedroomFilterLabel={results.bedroomFilter.label}
-                clearAreaFilter={results.clearAreaFilter}
-                clearPriceFilter={results.clearPriceFilter}
                 customMaxPrice={results.customMaxPrice}
                 customMinArea={results.customMinArea}
-                locationQuery={results.locationQuery}
                 maxPrice={results.maxPrice}
                 minArea={results.minArea}
                 onlyWithParking={results.onlyWithParking}
                 priceFilterIndex={results.priceFilterIndex}
-                priceFilterLabel={results.priceFilterLabel}
                 propertyTypeFilter={results.propertyTypeFilter}
                 setAreaFilterIndex={results.setAreaFilterIndex}
                 setBedroomFilterIndex={results.setBedroomFilterIndex}
                 setCustomMaxPrice={results.setCustomMaxPrice}
                 setCustomMinArea={results.setCustomMinArea}
-                setLocationQuery={results.setLocationQuery}
                 setOnlyWithParking={results.setOnlyWithParking}
                 setPriceFilterIndex={results.setPriceFilterIndex}
                 setPropertyTypeFilter={results.setPropertyTypeFilter}
