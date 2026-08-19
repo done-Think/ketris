@@ -1,9 +1,11 @@
 'use client'
 
 import { useCallback, useMemo, type SetStateAction } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
 import { priceLimit, searchOptions } from '../config/search-filters'
+import { marketplaceSearchFormSchema } from '../schemas/marketplace-search-schema'
 import type {
   MarketplaceSearchFormValues,
   PriceRange,
@@ -28,6 +30,7 @@ export function useMarketplaceSearch() {
         propertyType: '',
       },
     },
+    resolver: zodResolver(marketplaceSearchFormSchema),
   })
   const { activeSearchMenu, priceRange, searchDraft, selectedSearch } = watch()
 

@@ -1,6 +1,3 @@
-// Design tokens da Ketris — fonte única de verdade para cores da marca.
-// Identidade oficial: Magenta/Fúcsia #F30274 + Grafite #212631.
-
 export const brand = {
   magenta: {
     50: '#FEEBF4',
@@ -46,6 +43,19 @@ export const brand = {
   },
 } as const
 
+export const externalBrand = {
+  google: '#EA4335',
+} as const
+
+export const supportColor = {
+  infoSoft: '#EAF2FF',
+  warningSoft: '#FFF7DD',
+  successSoft: '#E7F7EE',
+  errorSoft: '#FDEBEC',
+  orange: '#F97316',
+  orangeSoft: '#FFF0E6',
+} as const
+
 export const radius = {
   sm: 8,
   md: 12,
@@ -72,6 +82,7 @@ export const motion = {
     panel: 'opacity 180ms ease, transform 180ms ease',
     tile: 'border-color 180ms ease, transform 180ms ease',
     avatar: 'box-shadow 160ms ease, transform 160ms ease',
+    progressStep: 'width 280ms cubic-bezier(0.22, 1, 0.36, 1), background-color 220ms ease',
   },
 } as const
 
@@ -88,12 +99,12 @@ export const componentText = {
   },
   badge: {
     fontSize: 11.5,
-    fontWeight: 600,
+    fontWeight: 500,
     lineHeight: 1.2,
   },
   cardEyebrow: {
     fontSize: 12,
-    fontWeight: 600,
+    fontWeight: 500,
     letterSpacing: 0,
     textTransform: 'uppercase',
   },
@@ -104,7 +115,7 @@ export const componentText = {
   },
   cardPrice: {
     fontSize: 20,
-    fontWeight: 600,
+    fontWeight: 500,
   },
   cardMeta: {
     fontSize: 12,
@@ -129,13 +140,13 @@ export const componentText = {
   },
   filterLabel: {
     fontSize: { md: 9, xl: 10 },
-    fontWeight: 600,
+    fontWeight: 500,
     lineHeight: 1.2,
     textTransform: 'uppercase',
   },
   filterValue: {
     fontSize: { md: 12, xl: 14 },
-    fontWeight: 600,
+    fontWeight: 500,
     lineHeight: 1.35,
   },
   desktopSearchButton: {
@@ -157,7 +168,7 @@ export const componentText = {
   },
   miniSectionEyebrow: {
     fontSize: 12,
-    fontWeight: 600,
+    fontWeight: 500,
   },
   miniCardTitle: {
     fontSize: 12,
@@ -206,10 +217,10 @@ export const componentText = {
   },
   modalEyebrow: {
     fontSize: 11,
-    fontWeight: 600,
+    fontWeight: 500,
   },
   modalAction: {
-    fontWeight: 600,
+    fontWeight: 500,
   },
   footerBody: {
     fontSize: { xs: 12, md: 13 },
@@ -225,7 +236,31 @@ export const componentText = {
     fontSize: 11,
   },
   footerBrand: {
-    fontWeight: 600,
+    fontWeight: 500,
+  },
+  authTitle: {
+    fontSize: { xs: 18, md: '1.625rem' },
+  },
+  authCompactTitle: {
+    fontSize: { xs: 16, md: '1.625rem' },
+  },
+  authBody: {
+    fontSize: { xs: 12, md: 14 },
+  },
+  authCompactBody: {
+    fontSize: { xs: 10, md: 14 },
+  },
+  authPrompt: {
+    fontSize: { xs: 11, md: 14 },
+  },
+  authInlineLink: {
+    fontSize: { xs: 11, md: 13 },
+  },
+  authMutedLink: {
+    fontSize: { xs: 10, md: 13 },
+  },
+  authBrandTagline: {
+    fontSize: { xs: 14, md: 18 },
   },
 } as const
 
@@ -248,6 +283,33 @@ export const surface = {
   darkDivider: '#1E242E',
 } as const
 
+export const profileThemeColors = {
+  familyHomes: {
+    accent: '#3F6D46',
+    tone: '#F2F6EF',
+  },
+  commercialBlue: {
+    accent: '#255C7A',
+    tone: '#EFF4F8',
+  },
+  warmConsulting: {
+    accent: '#8A5A3B',
+    tone: '#F6F1EC',
+  },
+  corporateBlue: {
+    accent: '#1F5A73',
+    tone: '#EEF3F7',
+  },
+  neighborhoodGreen: {
+    accent: '#2C6B57',
+    tone: '#F1F6F4',
+  },
+  urbanFamily: {
+    accent: '#765232',
+    tone: '#F6F3EF',
+  },
+} as const
+
 export const alpha = {
   white: {
     8: 'rgba(255,255,255,0.08)',
@@ -267,6 +329,7 @@ export const alpha = {
   graphite: {
     6: 'rgba(33, 38, 49, 0.06)',
     8: 'rgba(33,38,49,0.08)',
+    10: 'rgba(33,38,49,0.1)',
     16: 'rgba(33,38,49,0.16)',
     18: 'rgba(33,38,49,0.18)',
     52: 'rgba(13,15,20,0.52)',
@@ -280,6 +343,12 @@ export const alpha = {
 export const shadows = {
   propertyCard: `0 16px 44px ${alpha.graphite[8]}`,
   propertyCardHover: `0 24px 58px ${alpha.graphite[16]}`,
+  crmCard: `0 8px 24px ${alpha.graphite[6]}`,
+  crmCardCompact: `0 5px 16px ${alpha.graphite[6]}`,
+  crmCardHover: `0 14px 30px ${alpha.graphite[10]}`,
+  crmListPanel: `0 2px 8px ${alpha.graphite[6]}`,
+  crmDetailPanel: `0 10px 30px ${alpha.graphite[6]}`,
+  crmMobileHeader: `0 5px 22px ${alpha.graphite[18]}`,
   avatarFocus: `0 0 0 2px ${alpha.magenta[14]}`,
   popover: '0 18px 48px rgba(13,15,20,0.18)',
   modal: '0 24px 70px rgba(13,15,20,0.32)',
@@ -295,6 +364,9 @@ export const gradients = {
     `linear-gradient(100deg, rgba(13, 15, 20, 0.98) 0%, rgba(13, 15, 20, 0.9) 48%, rgba(83, 9, 50, 0.72) 100%), url("${imageUrl}")`,
   miniPropertyImage: (imageUrl: string) =>
     `linear-gradient(180deg, rgba(33,38,49,0.02), ${alpha.graphite[18]}), url("${imageUrl}")`,
+  authBrandOverlay:
+    'linear-gradient(180deg, rgba(13, 15, 20, 0.2) 0%, rgba(13, 15, 20, 0.72) 100%), radial-gradient(circle at 62% 12%, rgba(243, 2, 116, 0.28) 0%, transparent 38%)',
+  registrationHighlight: 'linear-gradient(105deg, #F30274 0%, #A5014F 42%, #161A21 100%)',
   videoEdgeMask:
     'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.06) 10%, rgba(0,0,0,0.42) 24%, #000 34%, #000 66%, rgba(0,0,0,0.42) 76%, rgba(0,0,0,0.06) 90%, transparent 100%), linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.55) 7%, #000 18%, #000 82%, rgba(0,0,0,0.55) 93%, transparent 100%)',
   videoCenterMask:

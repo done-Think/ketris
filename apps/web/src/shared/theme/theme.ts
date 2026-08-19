@@ -7,7 +7,6 @@ export interface TenantThemeOverride {
   mode?: 'light' | 'dark'
 }
 
-// Cria o tema base. Recebe overrides do tenant vindos do backend (white-label).
 export function buildTheme(override: TenantThemeOverride = {}): Theme {
   const mode = override.mode ?? 'light'
   const isDark = mode === 'dark'
@@ -68,12 +67,12 @@ export function buildTheme(override: TenantThemeOverride = {}): Theme {
         lineHeight: 1.25,
         letterSpacing: 0,
       },
-      h4: { fontWeight: 600, fontSize: '1.3125rem', lineHeight: 1.3 },
-      h5: { fontWeight: 600, fontSize: '1.125rem', lineHeight: 1.4 },
-      h6: { fontWeight: 600, fontSize: '1rem', lineHeight: 1.4 },
+      h4: { fontWeight: 500, fontSize: '1.3125rem', lineHeight: 1.3 },
+      h5: { fontWeight: 500, fontSize: '1.125rem', lineHeight: 1.4 },
+      h6: { fontWeight: 500, fontSize: '1rem', lineHeight: 1.4 },
       body1: { fontSize: '1rem', lineHeight: 1.6 },
       body2: { fontSize: '0.875rem', lineHeight: 1.55 },
-      overline: { fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.06em' },
+      overline: { fontSize: '0.75rem', fontWeight: 500, letterSpacing: '0.06em' },
       button: { fontWeight: 500, textTransform: 'none' },
     },
     components: {
@@ -84,14 +83,18 @@ export function buildTheme(override: TenantThemeOverride = {}): Theme {
             MozOsxFontSmoothing: 'grayscale',
             fontOpticalSizing: 'auto',
             fontSynthesis: 'none',
+            overflowX: 'clip',
             textRendering: 'optimizeLegibility',
+            width: '100%',
           },
           body: {
             WebkitFontSmoothing: 'antialiased',
             MozOsxFontSmoothing: 'grayscale',
             fontOpticalSizing: 'auto',
             fontSynthesis: 'none',
+            overflowX: 'clip',
             textRendering: 'optimizeLegibility',
+            width: '100%',
           },
           '*, *::before, *::after': {
             WebkitFontSmoothing: 'antialiased',

@@ -4,8 +4,12 @@ import { Box, Chip, Stack, Typography } from '@mui/material'
 
 import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
 
-import type { AgencyProfileHeroProps } from '../../types/profile'
+import type { AgencyProfile } from '../../types/agency'
 import { AgencyBrandBanner } from '../AgencyBrandBanner'
+
+type AgencyProfileHeroProps = {
+  agency: AgencyProfile
+}
 
 export function AgencyProfileHero({ agency }: AgencyProfileHeroProps) {
   return (
@@ -53,7 +57,7 @@ export function AgencyProfileHero({ agency }: AgencyProfileHeroProps) {
         >
           {agency.name}
         </Typography>
-        <Typography sx={{ color: 'text.secondary', fontSize: 14, fontWeight: 600, mb: 2 }}>
+        <Typography sx={{ color: 'text.secondary', fontSize: 14, fontWeight: 500, mb: 2 }}>
           {agency.legalCreci} / {agency.headquarters}
         </Typography>
         <Typography sx={{ color: 'text.secondary', maxWidth: 860 }}>{agency.summary}</Typography>

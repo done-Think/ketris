@@ -87,7 +87,7 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
                 bgcolor: alpha.magenta[6],
                 color: 'primary.main',
                 fontSize: 11,
-                fontWeight: 800,
+                fontWeight: 700,
               }}
             />
           ))}
@@ -118,7 +118,7 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
                 bgcolor: surface.app,
               }}
             >
-              <Typography sx={{ color: 'text.secondary', fontSize: 10, fontWeight: 800 }}>
+              <Typography sx={{ color: 'text.secondary', fontSize: 10, fontWeight: 700 }}>
                 {item.label}
               </Typography>
               <Typography noWrap sx={{ fontSize: 12, fontWeight: 900, mt: 0.25 }}>

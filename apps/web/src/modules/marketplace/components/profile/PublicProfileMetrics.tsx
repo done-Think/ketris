@@ -1,10 +1,20 @@
 'use client'
 
 import { Box, Typography } from '@mui/material'
+import type { SvgIconComponent } from '@mui/icons-material'
 
 import { iconSize, radius, surface } from '@shared/theme/tokens'
 
-import type { PublicProfileMetricsProps } from '../../types/profile'
+type PublicProfileMetric = {
+  label: string
+  value: string | number
+  icon?: SvgIconComponent
+}
+
+type PublicProfileMetricsProps = {
+  accentColor: string
+  metrics: PublicProfileMetric[]
+}
 
 export function PublicProfileMetrics({ accentColor, metrics }: PublicProfileMetricsProps) {
   return (
@@ -31,7 +41,7 @@ export function PublicProfileMetrics({ accentColor, metrics }: PublicProfileMetr
           {MetricIcon ? (
             <MetricIcon sx={{ color: accentColor, fontSize: iconSize.md, mb: 0.4 }} />
           ) : null}
-          <Typography sx={{ color: 'text.secondary', fontSize: 11, fontWeight: 600 }}>
+          <Typography sx={{ color: 'text.secondary', fontSize: 11, fontWeight: 500 }}>
             {label}
           </Typography>
           <Typography sx={{ color: accentColor, fontSize: 20, fontWeight: 700 }}>

@@ -1,5 +1,4 @@
 import type { PropertyCardData } from '@shared/types'
-import type { SearchResultPurpose } from './search'
 
 export type MarketplacePropertyDetail = PropertyCardData & {
   id: string
@@ -18,19 +17,33 @@ export type MarketplacePropertyDetail = PropertyCardData & {
 
 export type PropertyDetailPageProps = {
   property: MarketplacePropertyDetail
-  activePurpose?: SearchResultPurpose
-}
-
-export type PropertyPageProps = {
-  params: {
-    id: string
-  }
-  searchParams?: {
-    finalidade?: string
-  }
+  activePurpose?: string
 }
 
 export type PropertyDetailMapProps = {
   latitude: number
   longitude: number
+}
+
+export type PropertyGalleryProps = {
+  property: MarketplacePropertyDetail
+  onOpenPhoto: (photoIndex: number) => void
+}
+
+export type PropertyOverviewProps = {
+  property: MarketplacePropertyDetail
+}
+
+export type PropertyContactCardProps = {
+  property: MarketplacePropertyDetail
+}
+
+export type PropertyPhotoDialogProps = {
+  activePhotoIndex: number
+  onClose: () => void
+  onNextPhoto: () => void
+  onPreviousPhoto: () => void
+  onSelectPhoto: (photoIndex: number) => void
+  open: boolean
+  property: MarketplacePropertyDetail
 }

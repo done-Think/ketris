@@ -1,26 +1,14 @@
+import type { ReactNode } from 'react'
 import { Box } from '@mui/material'
+import { getServerSession } from 'next-auth'
+import { redirect } from 'next/navigation'
 
-import type { DashboardLayoutProps } from '@modules/dashboard'
-import { DashboardSidebar } from '@shared/components/layout/DashboardSidebar'
-import { surface } from '@shared/theme/tokens'
+import { authOptions } from '@shared/lib/auth/auth-options'
 
-// Layout das areas autenticadas (proprietario, corretor, imobiliaria).
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  return (
-    <Box sx={{ minHeight: '100vh', bgcolor: surface.app }}>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: '220px 1fr' },
-          minHeight: '100vh',
-        }}
-      >
-        <DashboardSidebar />
+export default async function DashboardLayout({ children }: { children: ReactNode }) {
+  const session = await getServerSession(authOptions)
 
-        <Box component="main" sx={{ minWidth: 0 }}>
-          {children}
-        </Box>
-      </Box>
-    </Box>
-  )
+  if (!session || session.scope !== 'tenant') redirect('/login')
+
+  return <Box sx={{ minHeight: '100vh' }}>{children}</Box>
 }

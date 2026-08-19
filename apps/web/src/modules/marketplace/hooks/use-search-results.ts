@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
 import {
@@ -9,6 +10,7 @@ import {
   priceFilterOptions,
 } from '../config/search-results-filters'
 import { searchResults } from '../data/search-results'
+import { searchResultsFormSchema } from '../schemas/marketplace-search-schema'
 import type { SearchResultsFormValues, SearchResultsPageProps, SortOption } from '../types/search'
 import {
   formatCompactCurrency,
@@ -32,6 +34,7 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
       sortOption: 'relevancia',
       viewMode: 'grid',
     },
+    resolver: zodResolver(searchResultsFormSchema),
   })
   const {
     areaFilterIndex,

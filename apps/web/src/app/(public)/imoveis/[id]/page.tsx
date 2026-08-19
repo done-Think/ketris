@@ -2,13 +2,11 @@ import { notFound } from 'next/navigation'
 
 import { PropertyDetailPage } from '@modules/marketplace/components/PropertyDetailPage'
 import { getPropertyDetailById } from '@modules/marketplace/data/property-details'
-import type { PropertyPageProps } from '@modules/marketplace/types/property-detail'
-import type { SearchResultPurpose } from '@modules/marketplace/types/search'
 
-function parsePurpose(value?: string): SearchResultPurpose | undefined {
-  if (value === 'alugar' || value === 'comprar') return value
-
-  return undefined
+type PropertyPageProps = {
+  params: {
+    id: string
+  }
 }
 
 export function generateMetadata({ params }: PropertyPageProps) {
@@ -22,15 +20,10 @@ export function generateMetadata({ params }: PropertyPageProps) {
   }
 }
 
-export default function PropertyPage({ params, searchParams }: PropertyPageProps) {
+export default function PropertyPage({ params }: PropertyPageProps) {
   const property = getPropertyDetailById(params.id)
 
   if (!property) notFound()
 
-  return (
-    <PropertyDetailPage
-      property={property}
-      activePurpose={parsePurpose(searchParams?.finalidade)}
-    />
-  )
+  return <PropertyDetailPage property={property} />
 }

@@ -4,8 +4,15 @@ import { Box, Typography } from '@mui/material'
 
 import { radius, surface } from '@shared/theme/tokens'
 
-import type { SearchResultsListProps } from '../../types/search-results'
+import type { SearchResultProperty, ViewMode } from '../../types/search'
 import { SearchPropertyCard } from '../SearchPropertyCard'
+
+type SearchResultsListProps = {
+  properties: SearchResultProperty[]
+  selectedPropertyId: string
+  setSelectedPropertyId: (propertyId: string) => void
+  viewMode: ViewMode
+}
 
 export function SearchResultsList({
   properties,
@@ -26,10 +33,7 @@ export function SearchResultsList({
         properties.map((property) => (
           <SearchPropertyCard
             key={property.id}
-            property={{
-              ...property,
-              href: `${property.href}?finalidade=${property.purpose}`,
-            }}
+            property={property}
             selected={property.id === selectedPropertyId}
             onActivate={() => setSelectedPropertyId(property.id)}
           />

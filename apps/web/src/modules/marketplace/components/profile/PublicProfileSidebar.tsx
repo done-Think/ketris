@@ -8,8 +8,20 @@ import Link from 'next/link'
 
 import { componentText, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
-import type { PublicProfileSidebarProps } from '../../types/profile'
 import { getPublicProfileLink } from '../../utils/profile-listings'
+
+type PublicProfileSidebarProps = {
+  accentColor: string
+  hoverColor: string
+  href: string
+  linkDescription: string
+  phone: string
+  email: string
+  facts: Array<{
+    label: string
+    value: string
+  }>
+}
 
 export function PublicProfileSidebar({
   accentColor,
@@ -33,8 +45,8 @@ export function PublicProfileSidebar({
         p: 2,
       }}
     >
-      <Typography sx={{ ...componentText.cardTitle, mb: 0.8 }}>Link publico</Typography>
-      <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 600, mb: 1.5 }}>
+      <Typography sx={{ ...componentText.cardTitle, mb: 0.8 }}>Link público</Typography>
+      <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 500, mb: 1.5 }}>
         {linkDescription}
       </Typography>
       <Box
@@ -48,7 +60,7 @@ export function PublicProfileSidebar({
           mb: 1.5,
         }}
       >
-        <Typography sx={{ fontSize: 12, fontWeight: 600, wordBreak: 'break-word' }}>
+        <Typography sx={{ fontSize: 12, fontWeight: 500, wordBreak: 'break-word' }}>
           {getPublicProfileLink(href)}
         </Typography>
       </Box>
@@ -69,7 +81,7 @@ export function PublicProfileSidebar({
           },
         }}
       >
-        Abrir link proprio
+        Abrir link próprio
       </Button>
 
       <Divider sx={{ mb: 2 }} />
@@ -106,7 +118,7 @@ export function PublicProfileSidebar({
       <Stack spacing={1}>
         {facts.map((fact) => (
           <Box key={fact.label}>
-            <Typography sx={{ color: 'text.secondary', fontSize: 11, fontWeight: 600 }}>
+            <Typography sx={{ color: 'text.secondary', fontSize: 11, fontWeight: 500 }}>
               {fact.label}
             </Typography>
             <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{fact.value}</Typography>

@@ -1,6 +1,14 @@
-import { brand, surface } from '@shared/theme/tokens'
+import { brand, profileThemeColors, surface } from '@shared/theme/tokens'
 
-import type { BrokerProfileTheme } from '../types/broker-profile-theme'
+export type BrokerProfileTheme = {
+  label: string
+  tone: string
+  accent: string
+  cover: string
+  signature: string
+  summary: string
+  method: string[]
+}
 
 const defaultBrokerProfileTheme: BrokerProfileTheme = {
   label: 'Atendimento regional',
@@ -46,8 +54,8 @@ export const brokerProfileThemes: Record<string, BrokerProfileTheme> = {
   },
   'renato-alves': {
     label: 'Casas familiares',
-    tone: '#F2F6EF',
-    accent: '#3F6D46',
+    tone: profileThemeColors.familyHomes.tone,
+    accent: profileThemeColors.familyHomes.accent,
     cover:
       'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1400&q=82',
     signature: 'Casas com área externa, privacidade e rotina familiar.',
@@ -56,8 +64,8 @@ export const brokerProfileThemes: Record<string, BrokerProfileTheme> = {
   },
   'camila-rocha': {
     label: 'Comercial enxuto',
-    tone: '#EFF4F8',
-    accent: '#255C7A',
+    tone: profileThemeColors.commercialBlue.tone,
+    accent: profileThemeColors.commercialBlue.accent,
     cover:
       'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1400&q=82',
     signature: 'Salas prontas para equipes pequenas e operações flexíveis.',
@@ -66,8 +74,8 @@ export const brokerProfileThemes: Record<string, BrokerProfileTheme> = {
   },
   'bianca-azevedo': {
     label: 'Compra consultiva',
-    tone: '#F6F1EC',
-    accent: '#8A5A3B',
+    tone: profileThemeColors.warmConsulting.tone,
+    accent: profileThemeColors.warmConsulting.accent,
     cover:
       'https://images.unsplash.com/photo-1615874959474-d609969a20ed?auto=format&fit=crop&w=1400&q=82',
     signature: 'Moema e entorno com olhar de compra patrimonial.',
@@ -76,8 +84,8 @@ export const brokerProfileThemes: Record<string, BrokerProfileTheme> = {
   },
   'felipe-andrade': {
     label: 'Eixo corporativo',
-    tone: '#EEF3F7',
-    accent: '#1F5A73',
+    tone: profileThemeColors.corporateBlue.tone,
+    accent: profileThemeColors.corporateBlue.accent,
     cover:
       'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1400&q=82',
     signature: 'Brooklin e Berrini com leitura comercial e residencial.',
@@ -86,8 +94,8 @@ export const brokerProfileThemes: Record<string, BrokerProfileTheme> = {
   },
   'lara-queiroz': {
     label: 'Vida de bairro',
-    tone: '#F1F6F4',
-    accent: '#2C6B57',
+    tone: profileThemeColors.neighborhoodGreen.tone,
+    accent: profileThemeColors.neighborhoodGreen.accent,
     cover:
       'https://images.unsplash.com/photo-1600607688960-e095ff83135c?auto=format&fit=crop&w=1400&q=82',
     signature: 'Pinheiros com foco em ruas caminháveis e rotina prática.',
@@ -96,8 +104,8 @@ export const brokerProfileThemes: Record<string, BrokerProfileTheme> = {
   },
   'eduardo-martins': {
     label: 'Famílias urbanas',
-    tone: '#F6F3EF',
-    accent: '#765232',
+    tone: profileThemeColors.urbanFamily.tone,
+    accent: profileThemeColors.urbanFamily.accent,
     cover:
       'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1400&q=82',
     signature: 'Vila Mariana para famílias que querem espaço sem sair da cidade.',
