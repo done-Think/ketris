@@ -9,6 +9,7 @@ import { alpha, radius } from '@shared/theme/tokens'
 import type { PropertyDetailMapProps } from '../types/property-detail'
 
 const defaultMapStyleUrl = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
+const mapContainerStyle = { width: '100%', height: '100%' } as const
 
 export function PropertyDetailMap({ latitude, longitude }: PropertyDetailMapProps) {
   const mapStyleUrl =
@@ -27,7 +28,7 @@ export function PropertyDetailMap({ latitude, longitude }: PropertyDetailMapProp
       <Map
         initialViewState={{ latitude, longitude, zoom: 13.5 }}
         mapStyle={mapStyleUrl}
-        style={{ width: '100%', height: '100%' }}
+        style={mapContainerStyle}
         attributionControl={true}
       >
         <Marker latitude={latitude} longitude={longitude} anchor="center">

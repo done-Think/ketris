@@ -10,6 +10,7 @@ import { componentText, motion, radius, shadows, surface } from '@shared/theme/t
 import type { SearchResultsMapProps } from '../types/search'
 
 const defaultMapStyleUrl = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
+const mapContainerStyle = { width: '100%', height: '100%' } as const
 
 function getMapMarkerLabel(price: string) {
   return price.replace(' / mês', '')
@@ -41,7 +42,7 @@ export function SearchResultsMap({
           zoom: 12,
         }}
         mapStyle={mapStyleUrl}
-        style={{ width: '100%', height: '100%' }}
+        style={mapContainerStyle}
         attributionControl={true}
       >
         {properties.map((property) => {

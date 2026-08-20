@@ -1,6 +1,3 @@
-// Design tokens da Ketris — fonte única de verdade para cores da marca.
-// Identidade oficial: Magenta/Fúcsia #F30274 + Grafite #212631.
-
 export const brand = {
   magenta: {
     50: '#FEEBF4',
@@ -50,6 +47,15 @@ export const externalBrand = {
   google: '#EA4335',
 } as const
 
+export const supportColor = {
+  infoSoft: '#EAF2FF',
+  warningSoft: '#FFF7DD',
+  successSoft: '#E7F7EE',
+  errorSoft: '#FDEBEC',
+  orange: '#F97316',
+  orangeSoft: '#FFF0E6',
+} as const
+
 export const radius = {
   sm: 8,
   md: 12,
@@ -82,8 +88,8 @@ export const motion = {
 
 export const componentText = {
   navLink: {
-    fontSize: 15.3,
-    fontWeight: 700,
+    fontSize: 15,
+    fontWeight: 500,
   },
   resetButtonText: {
     textTransform: 'none',
@@ -93,23 +99,23 @@ export const componentText = {
   },
   badge: {
     fontSize: 11.5,
-    fontWeight: 600,
+    fontWeight: 500,
     lineHeight: 1.2,
   },
   cardEyebrow: {
     fontSize: 12,
-    fontWeight: 700,
+    fontWeight: 500,
     letterSpacing: 0,
     textTransform: 'uppercase',
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: 700,
-    lineHeight: 1.25,
+    fontWeight: 500,
+    lineHeight: 1.3,
   },
   cardPrice: {
     fontSize: 20,
-    fontWeight: 700,
+    fontWeight: 500,
   },
   cardMeta: {
     fontSize: 12,
@@ -117,30 +123,30 @@ export const componentText = {
   },
   cardBroker: {
     fontSize: 12,
-    fontWeight: 600,
+    fontWeight: 500,
   },
   cardAction: {
     fontSize: 13,
-    fontWeight: 600,
+    fontWeight: 500,
     lineHeight: 1.35,
   },
   sectionAction: {
-    fontSize: 13.5,
-    fontWeight: 700,
+    fontSize: 14,
+    fontWeight: 500,
     lineHeight: 1.3,
   },
   sectionEyebrow: {
     letterSpacing: 0,
   },
   filterLabel: {
-    fontSize: { md: 8.5, xl: 10 },
-    fontWeight: 800,
+    fontSize: { md: 9, xl: 10 },
+    fontWeight: 500,
     lineHeight: 1.2,
     textTransform: 'uppercase',
   },
   filterValue: {
-    fontSize: { md: 12, xl: 13.5 },
-    fontWeight: 900,
+    fontSize: { md: 12, xl: 14 },
+    fontWeight: 500,
     lineHeight: 1.35,
   },
   desktopSearchButton: {
@@ -151,77 +157,77 @@ export const componentText = {
     letterSpacing: 0,
   },
   heroSubtitle: {
-    fontSize: { xs: 13.6, md: 13.5, xl: 16 },
+    fontSize: { xs: 14, md: 14, xl: 16 },
   },
   heroStatValue: {
     fontSize: { sm: 20, xl: 28 },
-    fontWeight: 900,
+    fontWeight: 700,
   },
   heroStatLabel: {
     fontSize: { sm: 11, xl: 13 },
   },
   miniSectionEyebrow: {
     fontSize: 12,
-    fontWeight: 800,
+    fontWeight: 500,
   },
   miniCardTitle: {
     fontSize: 12,
-    fontWeight: 700,
+    fontWeight: 500,
     lineHeight: 1.25,
   },
   miniCardMeta: {
     fontSize: 10,
-    fontWeight: 700,
+    fontWeight: 500,
   },
   menuTitle: {
     fontSize: 14,
-    fontWeight: 900,
+    fontWeight: 700,
   },
   menuCaption: {
     fontSize: 11,
   },
   menuItem: {
     fontSize: 13,
-    fontWeight: 700,
+    fontWeight: 500,
   },
   menuItemCentered: {
-    fontSize: 14.4,
-    fontWeight: 700,
+    fontSize: 14,
+    fontWeight: 500,
   },
   menuItemSelected: {
-    fontWeight: 900,
+    fontWeight: 700,
   },
   menuEmpty: {
     fontSize: 12,
-    fontWeight: 700,
+    fontWeight: 500,
   },
   mobileSearchText: {
-    fontSize: 13.6,
+    fontSize: 14,
   },
   mobileSearchSubmit: {
-    fontSize: 14.4,
+    fontSize: 14,
   },
   modalTitle: {
     fontSize: 16,
-    fontWeight: 900,
+    fontWeight: 700,
   },
   modalSubtitle: {
     fontSize: 12,
-    fontWeight: 700,
+    fontWeight: 500,
   },
   modalEyebrow: {
     fontSize: 11,
-    fontWeight: 800,
+    fontWeight: 500,
   },
   modalAction: {
-    fontWeight: 800,
+    fontWeight: 500,
   },
   footerBody: {
     fontSize: { xs: 12, md: 13 },
   },
   footerHeading: {
     fontSize: 12,
-    fontWeight: 900,
+    fontWeight: 700,
   },
   footerLink: {
     fontSize: { xs: 11, md: 12 },
@@ -230,7 +236,7 @@ export const componentText = {
     fontSize: 11,
   },
   footerBrand: {
-    fontWeight: 700,
+    fontWeight: 500,
   },
   authTitle: {
     fontSize: { xs: 18, md: '1.625rem' },
@@ -277,6 +283,33 @@ export const surface = {
   darkDivider: '#1E242E',
 } as const
 
+export const profileThemeColors = {
+  familyHomes: {
+    accent: '#3F6D46',
+    tone: '#F2F6EF',
+  },
+  commercialBlue: {
+    accent: '#255C7A',
+    tone: '#EFF4F8',
+  },
+  warmConsulting: {
+    accent: '#8A5A3B',
+    tone: '#F6F1EC',
+  },
+  corporateBlue: {
+    accent: '#1F5A73',
+    tone: '#EEF3F7',
+  },
+  neighborhoodGreen: {
+    accent: '#2C6B57',
+    tone: '#F1F6F4',
+  },
+  urbanFamily: {
+    accent: '#765232',
+    tone: '#F6F3EF',
+  },
+} as const
+
 export const alpha = {
   white: {
     8: 'rgba(255,255,255,0.08)',
@@ -296,6 +329,7 @@ export const alpha = {
   graphite: {
     6: 'rgba(33, 38, 49, 0.06)',
     8: 'rgba(33,38,49,0.08)',
+    10: 'rgba(33,38,49,0.1)',
     16: 'rgba(33,38,49,0.16)',
     18: 'rgba(33,38,49,0.18)',
     52: 'rgba(13,15,20,0.52)',
@@ -309,6 +343,12 @@ export const alpha = {
 export const shadows = {
   propertyCard: `0 16px 44px ${alpha.graphite[8]}`,
   propertyCardHover: `0 24px 58px ${alpha.graphite[16]}`,
+  crmCard: `0 8px 24px ${alpha.graphite[6]}`,
+  crmCardCompact: `0 5px 16px ${alpha.graphite[6]}`,
+  crmCardHover: `0 14px 30px ${alpha.graphite[10]}`,
+  crmListPanel: `0 2px 8px ${alpha.graphite[6]}`,
+  crmDetailPanel: `0 10px 30px ${alpha.graphite[6]}`,
+  crmMobileHeader: `0 5px 22px ${alpha.graphite[18]}`,
   avatarFocus: `0 0 0 2px ${alpha.magenta[14]}`,
   popover: '0 18px 48px rgba(13,15,20,0.18)',
   modal: '0 24px 70px rgba(13,15,20,0.32)',
