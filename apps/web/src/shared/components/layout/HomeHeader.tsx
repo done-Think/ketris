@@ -1,5 +1,16 @@
-import { type RefObject } from 'react'
-import { Avatar, Box, Button, Container, IconButton, Link as MuiLink, Stack } from '@mui/material'
+import { type MouseEvent, type RefObject, useState } from 'react'
+import {
+  Avatar,
+  Box,
+  Button,
+  Container,
+  IconButton,
+  Link as MuiLink,
+  Menu,
+  MenuItem,
+  Stack,
+} from '@mui/material'
+import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
 import Link from 'next/link'
 
@@ -35,6 +46,17 @@ export function HomeHeader({
   userProfile,
   onToggleProfile,
 }: HomeHeaderProps) {
+  const [mobileMenuAnchor, setMobileMenuAnchor] = useState<HTMLElement | null>(null)
+  const isMobileMenuOpen = Boolean(mobileMenuAnchor)
+
+  function handleOpenMobileMenu(event: MouseEvent<HTMLButtonElement>) {
+    setMobileMenuAnchor(event.currentTarget)
+  }
+
+  function handleCloseMobileMenu() {
+    setMobileMenuAnchor(null)
+  }
+
   return (
     <Box
       component="header"
@@ -139,6 +161,24 @@ export function HomeHeader({
             <IconButton aria-label="notificações" size="small" sx={{ width: 42, height: 42 }}>
               <NotificationsNoneOutlinedIcon sx={{ fontSize: iconSize.xl }} />
             </IconButton>
+            <IconButton
+              aria-label="Abrir menu de navegação"
+              aria-controls={isMobileMenuOpen ? 'home-mobile-navigation' : undefined}
+              aria-expanded={isMobileMenuOpen ? 'true' : undefined}
+              aria-haspopup="menu"
+              onClick={handleOpenMobileMenu}
+              size="small"
+              sx={{
+                display: { xs: 'inline-flex', md: 'none' },
+                width: 42,
+                height: 42,
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: `${radius.sm}px`,
+              }}
+            >
+              <MenuRoundedIcon sx={{ fontSize: iconSize.lg }} />
+            </IconButton>
             {userProfile && profileButtonRef && onToggleProfile ? (
               <Box
                 component="button"
@@ -173,6 +213,50 @@ export function HomeHeader({
                 />
               </Box>
             ) : null}
+            <Menu
+              id="home-mobile-navigation"
+              anchorEl={mobileMenuAnchor}
+              open={isMobileMenuOpen}
+              onClose={handleCloseMobileMenu}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              slotProps={{
+                paper: {
+                  sx: {
+                    display: { xs: 'block', md: 'none' },
+                    minWidth: 220,
+                    mt: 1,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: `${radius.sm}px`,
+                    boxShadow: shadows.popover,
+                  },
+                },
+              }}
+            >
+              {navigationItems.map((item) => (
+                <MenuItem
+                  key={item.label}
+                  component={Link}
+                  href={item.href}
+                  selected={item.active}
+                  onClick={handleCloseMobileMenu}
+                  sx={{
+                    color: item.active ? 'primary.main' : 'text.secondary',
+                    ...componentText.navLink,
+                    minHeight: 42,
+                    '&.Mui-selected': {
+                      bgcolor: 'transparent',
+                    },
+                    '&.Mui-selected:hover': {
+                      bgcolor: 'action.hover',
+                    },
+                  }}
+                >
+                  {item.label}
+                </MenuItem>
+              ))}
+            </Menu>
           </Stack>
         </Box>
       </Container>

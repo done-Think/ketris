@@ -62,6 +62,7 @@ export function SearchResultsToolbar({
           aria-label="Visualização em grade"
           onClick={() => setViewMode('grid')}
           sx={{
+            display: { xs: 'none', md: 'inline-flex' },
             width: 36,
             height: 36,
             borderRadius: `${radius.sm}px`,
@@ -75,6 +76,7 @@ export function SearchResultsToolbar({
           aria-label="Visualização em lista"
           onClick={() => setViewMode('list')}
           sx={{
+            display: { xs: 'none', md: 'inline-flex' },
             width: 36,
             height: 36,
             borderRadius: `${radius.sm}px`,
