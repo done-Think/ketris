@@ -78,15 +78,6 @@ export type SearchResultsFilterDialogProps = SearchResultsFiltersDialogFormValue
   setPropertyTypeFilter: (value: string) => void
 }
 
-export type SearchResultsToolbarProps = {
-  filtersControl?: ReactNode
-  resultCount: number
-  setSortOption: (option: SortOption) => void
-  setViewMode: (mode: ViewMode) => void
-  sortOption: SortOption
-  viewMode: ViewMode
-}
-
 export type SearchResultsMapProps = {
   properties: MarketplacePropertyDetail[]
   selectedPropertyId: string
