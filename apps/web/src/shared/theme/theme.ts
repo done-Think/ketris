@@ -7,7 +7,6 @@ export interface TenantThemeOverride {
   mode?: 'light' | 'dark'
 }
 
-// Cria o tema base. Recebe overrides do tenant vindos do backend (white-label).
 export function buildTheme(override: TenantThemeOverride = {}): Theme {
   const mode = override.mode ?? 'light'
   const isDark = mode === 'dark'
@@ -46,35 +45,35 @@ export function buildTheme(override: TenantThemeOverride = {}): Theme {
       borderRadius: radius.md,
     },
     typography: {
-      fontFamily: 'var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+      fontFamily: 'var(--font-primary), system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
       h1: {
-        fontFamily: 'var(--font-space-grotesk), var(--font-inter), system-ui, sans-serif',
+        fontFamily: 'var(--font-primary), system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
         fontSize: '2.5rem',
-        fontWeight: 700,
+        fontWeight: 500,
         lineHeight: 1.15,
-        letterSpacing: '-0.02em',
+        letterSpacing: 0,
       },
       h2: {
-        fontFamily: 'var(--font-space-grotesk), var(--font-inter), system-ui, sans-serif',
+        fontFamily: 'var(--font-primary), system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
         fontSize: '2rem',
-        fontWeight: 700,
+        fontWeight: 500,
         lineHeight: 1.2,
-        letterSpacing: '-0.02em',
+        letterSpacing: 0,
       },
       h3: {
-        fontFamily: 'var(--font-space-grotesk), var(--font-inter), system-ui, sans-serif',
+        fontFamily: 'var(--font-primary), system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
         fontSize: '1.625rem',
-        fontWeight: 600,
+        fontWeight: 500,
         lineHeight: 1.25,
-        letterSpacing: '-0.01em',
+        letterSpacing: 0,
       },
-      h4: { fontWeight: 600, fontSize: '1.3125rem', lineHeight: 1.3 },
-      h5: { fontWeight: 600, fontSize: '1.125rem', lineHeight: 1.4 },
-      h6: { fontWeight: 600, fontSize: '1rem', lineHeight: 1.4 },
+      h4: { fontWeight: 500, fontSize: '1.3125rem', lineHeight: 1.3 },
+      h5: { fontWeight: 500, fontSize: '1.125rem', lineHeight: 1.4 },
+      h6: { fontWeight: 500, fontSize: '1rem', lineHeight: 1.4 },
       body1: { fontSize: '1rem', lineHeight: 1.6 },
       body2: { fontSize: '0.875rem', lineHeight: 1.55 },
-      overline: { fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.06em' },
-      button: { fontWeight: 600, textTransform: 'none' },
+      overline: { fontSize: '0.75rem', fontWeight: 500, letterSpacing: '0.06em' },
+      button: { fontWeight: 500, textTransform: 'none' },
     },
     components: {
       MuiCssBaseline: {
@@ -83,13 +82,26 @@ export function buildTheme(override: TenantThemeOverride = {}): Theme {
             WebkitFontSmoothing: 'antialiased',
             MozOsxFontSmoothing: 'grayscale',
             fontOpticalSizing: 'auto',
+            fontSynthesis: 'none',
+            overflowX: 'clip',
             textRendering: 'optimizeLegibility',
+            width: '100%',
           },
           body: {
             WebkitFontSmoothing: 'antialiased',
             MozOsxFontSmoothing: 'grayscale',
             fontOpticalSizing: 'auto',
+            fontSynthesis: 'none',
+            overflowX: 'clip',
             textRendering: 'optimizeLegibility',
+            width: '100%',
+          },
+          '*, *::before, *::after': {
+            WebkitFontSmoothing: 'antialiased',
+            MozOsxFontSmoothing: 'grayscale',
+            fontOpticalSizing: 'auto',
+            fontSynthesis: 'none',
+            textRendering: 'geometricPrecision',
           },
         },
       },
@@ -99,13 +111,31 @@ export function buildTheme(override: TenantThemeOverride = {}): Theme {
             WebkitFontSmoothing: 'antialiased',
             MozOsxFontSmoothing: 'grayscale',
             fontOpticalSizing: 'auto',
-            fontSynthesisWeight: 'none',
+            fontSynthesis: 'none',
             textRendering: 'optimizeLegibility',
           },
         },
       },
       MuiButton: {
         defaultProps: { disableElevation: true },
+        styleOverrides: {
+          root: {
+            WebkitFontSmoothing: 'antialiased',
+            MozOsxFontSmoothing: 'grayscale',
+            fontSynthesis: 'none',
+            textRendering: 'geometricPrecision',
+          },
+        },
+      },
+      MuiLink: {
+        styleOverrides: {
+          root: {
+            WebkitFontSmoothing: 'antialiased',
+            MozOsxFontSmoothing: 'grayscale',
+            fontSynthesis: 'none',
+            textRendering: 'geometricPrecision',
+          },
+        },
       },
     },
   })

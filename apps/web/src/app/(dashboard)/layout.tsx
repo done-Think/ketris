@@ -5,7 +5,6 @@ import { redirect } from 'next/navigation'
 
 import { authOptions } from '@shared/lib/auth/auth-options'
 
-// Layout das áreas autenticadas (proprietário, corretor, imobiliária).
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const session = await getServerSession(authOptions)
 

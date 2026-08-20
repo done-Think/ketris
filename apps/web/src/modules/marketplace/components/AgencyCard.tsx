@@ -78,7 +78,7 @@ export function AgencyCard(agency: AgencyCardProps) {
           }}
         >
           {[
-            { label: 'Imoveis', value: agency.activeListings, icon: ApartmentOutlinedIcon },
+            { label: 'Imóveis', value: agency.activeListings, icon: ApartmentOutlinedIcon },
             { label: 'Equipe', value: agency.brokersCount, icon: GroupsOutlinedIcon },
             { label: 'Nota', value: agency.rating, icon: StarRoundedIcon },
           ].map(({ label, value, icon: Icon }) => (
@@ -111,7 +111,7 @@ export function AgencyCard(agency: AgencyCardProps) {
 
         <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={0.35}>
           <Typography sx={{ color: 'primary.main', ...componentText.cardAction }}>
-            Ver pagina publica
+            Ver página pública
           </Typography>
           <ChevronRightIcon sx={{ color: 'primary.main', fontSize: iconSize.sm }} />
         </Stack>

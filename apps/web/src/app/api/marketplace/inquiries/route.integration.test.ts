@@ -64,7 +64,7 @@ describe('GET /api/marketplace/inquiries (integração)', () => {
         finalidade: 'ALUGUEL',
         tipo: 'apartamento',
         valor: 2000,
-        status: 'PUBLICADO',
+        status: 'PUBLISHED',
         publicadoEm: new Date(),
       },
     })
@@ -111,7 +111,7 @@ describe('GET /api/marketplace/inquiries (integração)', () => {
         finalidade: 'ALUGUEL',
         tipo: 'apartamento',
         valor: 1500,
-        status: 'PUBLICADO',
+        status: 'PUBLISHED',
         publicadoEm: new Date(),
       },
     })
