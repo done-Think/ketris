@@ -106,7 +106,7 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: '2fr 0.85fr 0.85fr' },
+            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
             gap: 1,
             mt: 2,
           }}
@@ -161,7 +161,7 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
 
         <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={0.35}>
           <Typography sx={{ color: 'primary.main', ...componentText.cardAction }}>
-            Ver pagina publica
+            Ver página pública
           </Typography>
           <ChevronRightIcon sx={{ color: 'primary.main', fontSize: iconSize.sm }} />
         </Stack>

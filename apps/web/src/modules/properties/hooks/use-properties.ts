@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import type { PropertyFormValues } from '../schemas/property-schema'
 import { propertiesService } from '../services/properties-service'
+import type { PropertyFormValues } from '../types/property'
 
 export const propertyQueryKeys = {
   all: ['properties'] as const,

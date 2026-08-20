@@ -62,7 +62,7 @@ describe('/api/marketplace/inquiries/[id] (integração)', () => {
         finalidade: 'ALUGUEL',
         tipo: 'apartamento',
         valor: 2000,
-        status: 'PUBLICADO',
+        status: 'PUBLISHED',
         publicadoEm: new Date(),
       },
     })
@@ -85,7 +85,7 @@ describe('/api/marketplace/inquiries/[id] (integração)', () => {
         finalidade: 'ALUGUEL',
         tipo: 'apartamento',
         valor: 1500,
-        status: 'PUBLICADO',
+        status: 'PUBLISHED',
         publicadoEm: new Date(),
       },
     })

@@ -32,7 +32,3 @@ export type BrokerCardProps = BrokerProfile & {
 export type BrokerPublicProfilePageProps = {
   broker: BrokerProfile
 }
-
-export type BrokersSearchForm = {
-  searchQuery: string
-}

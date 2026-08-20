@@ -38,10 +38,13 @@ loader de asset configurado, então continuam em `public/`).
 
 ## Desenvolvimento
 
+Use Node.js 24 (`.nvmrc`/`.node-version` apontam para `24.18.0`).
+
 Copie `apps/web/.env.example` para `apps/web/.env` (**não** `.env.local` — o CLI do Prisma só lê `.env`,
 não `.env.local`) e ajuste se necessário.
 
 ```bash
+nvm use
 npm install
 docker compose up -d          # sobe o Postgres local (postgres:16-alpine, porta 55432 no host)
 npm run db:migrate            # aplica o schema Prisma no banco

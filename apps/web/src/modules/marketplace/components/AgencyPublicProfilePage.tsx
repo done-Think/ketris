@@ -42,7 +42,7 @@ export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps
             <PublicProfileMetrics
               accentColor={agency.brand.primaryColor}
               metrics={[
-                { label: 'Imoveis', value: agency.activeListings, icon: ApartmentOutlinedIcon },
+                { label: 'Imóveis', value: agency.activeListings, icon: ApartmentOutlinedIcon },
                 { label: 'Equipe', value: agency.brokersCount, icon: GroupsOutlinedIcon },
                 { label: 'Anos', value: agency.yearsInMarket, icon: HomeWorkOutlinedIcon },
                 { label: 'Nota', value: agency.rating, icon: StarRoundedIcon },
@@ -87,14 +87,14 @@ export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps
             accentColor={agency.brand.primaryColor}
             hoverColor={agency.brand.backgroundColor}
             href={agency.href}
-            linkDescription="Use este endereco como pagina propria da imobiliaria."
+            linkDescription="Use este endereço como página própria da imobiliária."
             phone={agency.phone}
             email={agency.email}
             facts={[
-              { label: 'Endereco', value: agency.address },
+              { label: 'Endereço', value: agency.address },
               { label: 'Cobertura', value: agency.coverage.join(', ') },
               { label: 'Resposta', value: agency.responseTime },
-              { label: 'Negociacoes', value: `${agency.dealsClosed}` },
+              { label: 'Negociações', value: `${agency.dealsClosed}` },
             ]}
           />
         </Box>

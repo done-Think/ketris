@@ -1,95 +1,49 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import {
-  Box,
-  CircularProgress,
-  Container,
-  InputAdornment,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material'
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
+import { useRef, useState } from 'react'
+import { Box, Container } from '@mui/material'
 
 import { HomeHeader, ProfileModal, SiteFooter } from '@shared/components/layout'
-import { iconSize, radius, surface } from '@shared/theme/tokens'
+import { surface } from '@shared/theme/tokens'
 
 import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
 import { agencies } from '../data/agencies'
 import { profileActions, userProfile } from '../data/user-profile'
-import type { AgenciesSearchForm } from '../types/agency'
+import { useDirectoryList } from '../hooks/use-directory-list'
+import type { AgencyProfile } from '../types/agency'
 import { AgencyCard } from './AgencyCard'
+import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
+import { DirectoryPageHeader } from './directory/DirectoryPageHeader'
 
 const initialAgencyCount = 4
 const agencyPageSize = 3
 
-function normalizeText(value: string) {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
+function getAgencySearchableText(agency: AgencyProfile) {
+  return `${agency.name} ${agency.legalCreci} ${agency.headquarters} ${agency.coverage.join(
+    ' ',
+  )} ${agency.segments.join(' ')}`
 }
 
 export function AgenciesPage() {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const [visibleCount, setVisibleCount] = useState(initialAgencyCount)
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
-  const { register, watch } = useForm<AgenciesSearchForm>({
-    defaultValues: { searchQuery: '' },
-  })
-  const searchQuery = watch('searchQuery')
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
-  const loadMoreRef = useRef<HTMLDivElement | null>(null)
+  const {
+    filteredItems: filteredAgencies,
+    hasMoreItems: hasMoreAgencies,
+    isLoadingMore,
+    loadMoreRef,
+    register,
+    visibleItems: visibleAgencies,
+  } = useDirectoryList({
+    getSearchableText: getAgencySearchableText,
+    initialCount: initialAgencyCount,
+    items: agencies,
+    pageSize: agencyPageSize,
+  })
   const navigationItems = homeNavigationItems.map((item) => ({
     ...item,
     active: item.href === '/imobiliarias',
   }))
-  const filteredAgencies = useMemo(() => {
-    const normalizedQuery = normalizeText(searchQuery.trim())
-
-    return agencies.filter((agency) => {
-      const searchableText = normalizeText(
-        `${agency.name} ${agency.legalCreci} ${agency.headquarters} ${agency.coverage.join(
-          ' ',
-        )} ${agency.segments.join(' ')}`,
-      )
-
-      return !normalizedQuery || searchableText.includes(normalizedQuery)
-    })
-  }, [searchQuery])
-  const visibleAgencies = useMemo(
-    () => filteredAgencies.slice(0, visibleCount),
-    [filteredAgencies, visibleCount],
-  )
-  const hasMoreAgencies = visibleCount < filteredAgencies.length
-
-  useEffect(() => {
-    setVisibleCount(initialAgencyCount)
-  }, [searchQuery])
-
-  useEffect(() => {
-    const loadMoreElement = loadMoreRef.current
-    if (!loadMoreElement || !hasMoreAgencies || isLoadingMore) return
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry?.isIntersecting) return
-
-        setIsLoadingMore(true)
-        window.setTimeout(() => {
-          setVisibleCount((current) => Math.min(current + agencyPageSize, filteredAgencies.length))
-          setIsLoadingMore(false)
-        }, 420)
-      },
-      { rootMargin: '360px 0px' },
-    )
-
-    observer.observe(loadMoreElement)
-
-    return () => observer.disconnect()
-  }, [filteredAgencies.length, hasMoreAgencies, isLoadingMore, visibleCount])
 
   return (
     <Box
@@ -118,55 +72,12 @@ export function AgenciesPage() {
 
       <Box component="main" sx={{ py: { xs: 2.4, md: 4 } }}>
         <Container maxWidth="xl">
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            alignItems={{ xs: 'stretch', md: 'end' }}
-            justifyContent="space-between"
-            spacing={2}
-            sx={{ mb: 2.4 }}
-          >
-            <Box sx={{ minWidth: 0 }}>
-              <Typography
-                component="h1"
-                sx={{
-                  color: surface.darkText,
-                  fontSize: { xs: 24, md: 32 },
-                  fontWeight: 700,
-                  lineHeight: 1.15,
-                  letterSpacing: 0,
-                  mb: 0.7,
-                }}
-              >
-                Imobiliarias
-              </Typography>
-              <Typography sx={{ color: 'text.secondary', fontSize: 14, fontWeight: 600 }}>
-                {visibleAgencies.length} de {filteredAgencies.length} imobiliarias encontradas
-              </Typography>
-            </Box>
-
-            <TextField
-              placeholder="Nome, CRECI, regiao ou cobertura"
-              size="small"
-              {...register('searchQuery')}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchRoundedIcon sx={{ color: 'text.primary', fontSize: iconSize.lg }} />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                width: { xs: '100%', md: 390 },
-                '& .MuiOutlinedInput-root': {
-                  minHeight: 44,
-                  borderRadius: `${radius.sm}px`,
-                  bgcolor: surface.paper,
-                  fontSize: 13,
-                  fontWeight: 600,
-                },
-              }}
-            />
-          </Stack>
+          <DirectoryPageHeader
+            placeholder="Nome, CRECI, região ou cobertura"
+            resultCountLabel={`${visibleAgencies.length} de ${filteredAgencies.length} imobiliárias encontradas`}
+            searchInputProps={register('searchQuery')}
+            title="Imobiliárias"
+          />
 
           <Box
             sx={{
@@ -184,30 +95,15 @@ export function AgenciesPage() {
             ))}
           </Box>
 
-          <Box
-            ref={loadMoreRef}
-            sx={{
-              minHeight: 72,
-              display: 'grid',
-              placeItems: 'center',
-              mt: 2,
-            }}
-          >
-            {hasMoreAgencies ? (
-              <Stack direction="row" spacing={1} alignItems="center">
-                <CircularProgress size={18} thickness={4} />
-                <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 600 }}>
-                  Carregando mais imobiliarias
-                </Typography>
-              </Stack>
-            ) : (
-              <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 600 }}>
-                {filteredAgencies.length
-                  ? 'Todas as imobiliarias foram carregadas'
-                  : 'Nenhuma imobiliaria encontrada'}
-              </Typography>
-            )}
-          </Box>
+          <DirectoryLoadMoreStatus
+            emptyLabel="Nenhuma imobiliária encontrada"
+            hasItems={Boolean(filteredAgencies.length)}
+            hasMoreItems={hasMoreAgencies}
+            isLoadingMore={isLoadingMore}
+            loadedLabel="Todas as imobiliárias foram carregadas"
+            loadingLabel="Carregando mais imobiliárias"
+            loadMoreRef={loadMoreRef}
+          />
         </Container>
       </Box>
 
