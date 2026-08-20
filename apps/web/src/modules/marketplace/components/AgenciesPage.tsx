@@ -11,9 +11,11 @@ import { agencies } from '../data/agencies'
 import { profileActions, userProfile } from '../data/user-profile'
 import { useDirectoryList } from '../hooks/use-directory-list'
 import type { AgencyProfile } from '../types/agency'
+import type { ViewMode } from '../types/search'
 import { AgencyCard } from './AgencyCard'
 import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
 import { DirectoryPageHeader } from './directory/DirectoryPageHeader'
+import { DirectoryViewModeToggle } from './directory/DirectoryViewModeToggle'
 
 const initialAgencyCount = 4
 const agencyPageSize = 3
@@ -26,6 +28,7 @@ function getAgencySearchableText(agency: AgencyProfile) {
 
 export function AgenciesPage() {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const {
     filteredItems: filteredAgencies,
@@ -73,6 +76,7 @@ export function AgenciesPage() {
       <Box component="main" sx={{ py: { xs: 2.4, md: 4 } }}>
         <Container maxWidth="xl">
           <DirectoryPageHeader
+            actions={<DirectoryViewModeToggle value={viewMode} onChange={setViewMode} />}
             placeholder="Nome, CRECI, região ou cobertura"
             resultCountLabel={`${visibleAgencies.length} de ${filteredAgencies.length} imobiliárias encontradas`}
             searchInputProps={register('searchQuery')}
@@ -84,14 +88,14 @@ export function AgenciesPage() {
               display: 'grid',
               gridTemplateColumns: {
                 xs: '1fr',
-                md: 'repeat(2, minmax(0, 1fr))',
-                xl: 'repeat(3, minmax(0, 1fr))',
+                md: viewMode === 'list' ? '1fr' : 'repeat(2, minmax(0, 1fr))',
+                xl: viewMode === 'list' ? '1fr' : 'repeat(3, minmax(0, 1fr))',
               },
               gap: { xs: 2, xl: 2.5 },
             }}
           >
             {visibleAgencies.map((agency) => (
-              <AgencyCard key={agency.id} {...agency} />
+              <AgencyCard key={agency.id} {...agency} viewMode={viewMode} />
             ))}
           </Box>
 

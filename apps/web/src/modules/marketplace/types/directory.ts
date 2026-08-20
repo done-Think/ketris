@@ -1,4 +1,4 @@
-import type { RefObject } from 'react'
+import type { ReactNode, RefObject } from 'react'
 import type { UseFormRegister } from 'react-hook-form'
 
 export type DirectorySearchFormValues = {
@@ -24,6 +24,7 @@ export type UseDirectoryListResult<TItem> = {
 }
 
 export type DirectoryPageHeaderProps = {
+  actions?: ReactNode
   placeholder: string
   resultCountLabel: string
   searchInputProps: ReturnType<UseFormRegister<DirectorySearchFormValues>>

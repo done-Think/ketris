@@ -11,9 +11,11 @@ import { brokers } from '../data/brokers'
 import { profileActions, userProfile } from '../data/user-profile'
 import { useDirectoryList } from '../hooks/use-directory-list'
 import type { BrokerProfile } from '../types/broker'
+import type { ViewMode } from '../types/search'
 import { BrokerCard } from './BrokerCard'
 import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
 import { DirectoryPageHeader } from './directory/DirectoryPageHeader'
+import { DirectoryViewModeToggle } from './directory/DirectoryViewModeToggle'
 
 const initialBrokerCount = 4
 const brokerPageSize = 3
@@ -26,6 +28,7 @@ function getBrokerSearchableText(broker: BrokerProfile) {
 
 export function BrokersPage() {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const {
     filteredItems: filteredBrokers,
@@ -73,6 +76,7 @@ export function BrokersPage() {
       <Box component="main" sx={{ py: { xs: 2.4, md: 4 } }}>
         <Container maxWidth="xl">
           <DirectoryPageHeader
+            actions={<DirectoryViewModeToggle value={viewMode} onChange={setViewMode} />}
             placeholder="Nome, CRECI, bairro ou região"
             resultCountLabel={`${visibleBrokers.length} de ${filteredBrokers.length} corretores encontrados`}
             searchInputProps={register('searchQuery')}
@@ -84,14 +88,14 @@ export function BrokersPage() {
               display: 'grid',
               gridTemplateColumns: {
                 xs: '1fr',
-                md: 'repeat(2, minmax(0, 1fr))',
-                xl: 'repeat(3, minmax(0, 1fr))',
+                md: viewMode === 'list' ? '1fr' : 'repeat(2, minmax(0, 1fr))',
+                xl: viewMode === 'list' ? '1fr' : 'repeat(3, minmax(0, 1fr))',
               },
               gap: { xs: 2, xl: 2.5 },
             }}
           >
             {visibleBrokers.map((broker) => (
-              <BrokerCard key={broker.id} {...broker} />
+              <BrokerCard key={broker.id} {...broker} viewMode={viewMode} />
             ))}
           </Box>
 
