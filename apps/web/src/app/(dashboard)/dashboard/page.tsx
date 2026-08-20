@@ -1,12 +1,7 @@
-import { PagePlaceholder } from '@shared/components/ui'
+import { DashboardOverviewPage } from '@modules/dashboard'
 
-export const metadata = { title: 'Ketris' }
+export const metadata = { title: 'Dashboard | Ketris' }
 
 export default function DashboardPage() {
-  return (
-    <PagePlaceholder
-      title="Painel"
-      description="Dashboards (MUI X Charts), CRM, financeiro e contratos — a implementar."
-    />
-  )
+  return <DashboardOverviewPage />
 }

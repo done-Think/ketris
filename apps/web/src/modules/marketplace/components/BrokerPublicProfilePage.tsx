@@ -41,7 +41,7 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
               accentColor={theme.accent}
               metrics={[
                 { label: 'Nota', value: broker.rating },
-                { label: 'Tempo medio', value: broker.responseTime },
+                { label: 'Tempo médio', value: broker.responseTime },
                 { label: 'Ativos', value: broker.activeListings },
                 { label: 'Fechados', value: broker.dealsClosed },
               ]}
@@ -57,14 +57,14 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
             accentColor={theme.accent}
             hoverColor={theme.tone}
             href={broker.href}
-            linkDescription="Use este endereco como pagina propria do corretor."
+            linkDescription="Use este endereço como página própria do corretor."
             phone={broker.phone}
             email={broker.email}
             facts={[
               { label: 'Atendimento', value: broker.availability },
               { label: 'Bairros', value: broker.neighborhoods.join(', ') },
-              { label: 'Imoveis ativos', value: `${broker.activeListings}` },
-              { label: 'Negociacoes', value: `${broker.dealsClosed}` },
+              { label: 'Imóveis ativos', value: `${broker.activeListings}` },
+              { label: 'Negociações', value: `${broker.dealsClosed}` },
             ]}
           />
         </Box>

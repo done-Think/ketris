@@ -38,7 +38,7 @@ describe('GET /api/marketplace/properties/[id] (integração)', () => {
         tipo: 'casa',
         quartos: 3,
         valor: 550000,
-        status: 'PUBLICADO',
+        status: 'PUBLISHED',
         publicadoEm: new Date(),
         endereco: {
           create: {
@@ -68,7 +68,7 @@ describe('GET /api/marketplace/properties/[id] (integração)', () => {
         finalidade: 'VENDA',
         tipo: 'casa',
         valor: 600000,
-        status: 'RASCUNHO',
+        status: 'DRAFT',
       },
     })
     draftId = draft.id
