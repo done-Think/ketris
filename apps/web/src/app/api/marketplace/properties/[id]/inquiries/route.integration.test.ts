@@ -36,7 +36,7 @@ describe('POST /api/marketplace/properties/[id]/inquiries (integração)', () =>
         finalidade: 'ALUGUEL',
         tipo: 'sala',
         valor: 1800,
-        status: 'PUBLICADO',
+        status: 'PUBLISHED',
         publicadoEm: new Date(),
       },
     })
@@ -50,7 +50,7 @@ describe('POST /api/marketplace/properties/[id]/inquiries (integração)', () =>
         finalidade: 'ALUGUEL',
         tipo: 'sala',
         valor: 2000,
-        status: 'RASCUNHO',
+        status: 'DRAFT',
       },
     })
     draftId = draft.id

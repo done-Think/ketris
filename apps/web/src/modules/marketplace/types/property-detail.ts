@@ -17,6 +17,7 @@ export type MarketplacePropertyDetail = PropertyCardData & {
 
 export type PropertyDetailPageProps = {
   property: MarketplacePropertyDetail
+  activePurpose?: string
   breadcrumbContext?: {
     originHref?: string
     originName?: string
@@ -28,4 +29,27 @@ export type PropertyDetailPageProps = {
 export type PropertyDetailMapProps = {
   latitude: number
   longitude: number
+}
+
+export type PropertyGalleryProps = {
+  property: MarketplacePropertyDetail
+  onOpenPhoto: (photoIndex: number) => void
+}
+
+export type PropertyOverviewProps = {
+  property: MarketplacePropertyDetail
+}
+
+export type PropertyContactCardProps = {
+  property: MarketplacePropertyDetail
+}
+
+export type PropertyPhotoDialogProps = {
+  activePhotoIndex: number
+  onClose: () => void
+  onNextPhoto: () => void
+  onPreviousPhoto: () => void
+  onSelectPhoto: (photoIndex: number) => void
+  open: boolean
+  property: MarketplacePropertyDetail
 }

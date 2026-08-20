@@ -111,7 +111,7 @@ export function AgencyBrandBanner({ agency, size }: AgencyBrandBannerProps) {
           sx={{
             color: agency.brand.secondaryColor,
             fontSize: compact ? 8.5 : { xs: 10, md: 12 },
-            fontWeight: 800,
+            fontWeight: 700,
             textAlign: 'right',
             mt: compact ? 0.2 : 0.5,
           }}

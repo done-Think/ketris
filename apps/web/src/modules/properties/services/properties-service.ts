@@ -1,7 +1,6 @@
 import { BaseService } from '@shared/lib/api/base-service'
 
-import type { PropertyFormValues } from '../schemas/property-schema'
-import type { Property } from '../types/property'
+import type { Property, PropertyFormValues } from '../types/property'
 
 class PropertiesService extends BaseService {
   private readonly path = '/properties'

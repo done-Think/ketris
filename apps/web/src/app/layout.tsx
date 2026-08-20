@@ -1,13 +1,13 @@
-import type { Metadata } from 'next'
-import { Inter, Space_Grotesk } from 'next/font/google'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import type { Metadata } from 'next'
+import { Roboto } from 'next/font/google'
 
 import { Providers } from './providers'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
-const spaceGrotesk = Space_Grotesk({
+const roboto = Roboto({
   subsets: ['latin'],
-  variable: '--font-space-grotesk',
+  weight: ['400', '500', '700', '900'],
+  variable: '--font-primary',
   display: 'swap',
 })
 
@@ -27,12 +27,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="pt-BR"
-      className={`${inter.variable} ${spaceGrotesk.variable}`}
-      style={{ width: '100%', overflowX: 'clip' }}
-    >
-      <body style={{ width: '100%', overflowX: 'clip' }}>
+    <html lang="pt-BR" className={roboto.variable}>
+      <body>
         <Providers>{children}</Providers>
       </body>
     </html>
