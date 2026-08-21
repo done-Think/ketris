@@ -20,14 +20,17 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const theme = getBrokerProfileTheme(broker.id)
-  const representedListings = buildProfileListings(broker.highlightedListings)
+  const representedListings = buildProfileListings(broker.highlightedListings, {
+    brokerName: broker.name,
+    coverage: broker.neighborhoods,
+  })
   const navigationItems = homeNavigationItems.map((item) => ({
     ...item,
     active: item.href === '/corretores',
   }))
 
   return (
-    <Box sx={{ bgcolor: surface.app, minHeight: '100vh', overflowX: 'clip' }}>
+    <Box sx={{ bgcolor: surface.app, minHeight: '100vh' }}>
       <HomeHeader
         navigationItems={navigationItems}
         profileButtonRef={profileButtonRef}
@@ -63,11 +66,6 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
                 { label: 'Fechados', value: broker.dealsClosed },
               ]}
             />
-            <PublicProfileListings
-              accentColor={theme.accent}
-              listings={representedListings}
-              source={{ href: broker.href, name: broker.name, type: 'broker' }}
-            />
           </Box>
 
           <PublicProfileSidebar
@@ -84,6 +82,14 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
               { label: 'Negociações', value: `${broker.dealsClosed}` },
             ]}
           />
+
+          <Box sx={{ gridColumn: { lg: '1 / -1' } }}>
+            <PublicProfileListings
+              accentColor={theme.accent}
+              listings={representedListings}
+              source={{ href: broker.href, name: broker.name, type: 'broker' }}
+            />
+          </Box>
         </Box>
       </Container>
 

@@ -22,14 +22,16 @@ import { PublicProfileSidebar } from './profile/PublicProfileSidebar'
 export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
-  const representedListings = buildProfileListings(agency.featuredListings)
+  const representedListings = buildProfileListings(agency.featuredListings, {
+    coverage: agency.coverage,
+  })
   const navigationItems = homeNavigationItems.map((item) => ({
     ...item,
     active: item.href === '/imobiliarias',
   }))
 
   return (
-    <Box sx={{ bgcolor: surface.app, minHeight: '100vh', overflowX: 'clip' }}>
+    <Box sx={{ bgcolor: surface.app, minHeight: '100vh' }}>
       <HomeHeader
         navigationItems={navigationItems}
         profileButtonRef={profileButtonRef}
@@ -93,11 +95,6 @@ export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps
                 ))}
               </Stack>
             </Box>
-            <PublicProfileListings
-              accentColor={agency.brand.primaryColor}
-              listings={representedListings}
-              source={{ href: agency.href, name: agency.name, type: 'agency' }}
-            />
           </Box>
 
           <PublicProfileSidebar
@@ -114,6 +111,14 @@ export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps
               { label: 'Negociações', value: `${agency.dealsClosed}` },
             ]}
           />
+
+          <Box sx={{ gridColumn: { lg: '1 / -1' } }}>
+            <PublicProfileListings
+              accentColor={agency.brand.primaryColor}
+              listings={representedListings}
+              source={{ href: agency.href, name: agency.name, type: 'agency' }}
+            />
+          </Box>
         </Box>
       </Container>
 
