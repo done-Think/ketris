@@ -1,19 +1,11 @@
 import { propertyDetails } from '../data/property-details'
+import type {
+  ProfileListingOptions,
+  ProfileListingSource,
+  PublicProfileListing,
+} from '../types/profile-listing'
 
-type ProfileListingSource = {
-  title: string
-  location: string
-  price: string
-  href: string
-}
-
-type ProfileListingOptions = {
-  brokerName?: string
-  coverage?: string[]
-  limit?: number
-}
-
-function buildProfileListing(listing: ProfileListingSource) {
+function buildProfileListing(listing: ProfileListingSource): PublicProfileListing {
   const listingId = listing.href.split('/').filter(Boolean).at(-1)
   const detail = listingId ? propertyDetails.find((property) => property.id === listingId) : null
 
@@ -48,7 +40,7 @@ function propertyMatchesProfile(
 export function buildProfileListings(
   listings: ProfileListingSource[],
   options: ProfileListingOptions = {},
-) {
+): PublicProfileListing[] {
   const limit = options.limit ?? 6
   const listingHrefs = new Set(listings.map((listing) => listing.href))
   const matchedListings = propertyDetails
