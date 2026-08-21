@@ -98,9 +98,10 @@ export const componentText = {
     fontSize: 14,
   },
   badge: {
-    fontSize: 11.5,
+    fontSize: 13,
     fontWeight: 500,
-    lineHeight: 1.2,
+    letterSpacing: 0,
+    lineHeight: 1.3,
   },
   cardEyebrow: {
     fontSize: 12,

@@ -1,7 +1,7 @@
 import { BrokersPage } from '@modules/marketplace'
 
 export const metadata = {
-  title: 'Corretores | Ketris',
+  title: 'Ketris | Corretores',
   description: 'Encontre corretores especialistas por região e finalidade.',
 }
 

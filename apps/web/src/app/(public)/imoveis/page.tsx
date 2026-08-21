@@ -1,14 +1,18 @@
 import { SearchResultsPage } from '@modules/marketplace'
 
-export const metadata = {
-  title: 'Ketris',
-  description: 'Busque imóveis para alugar e comprar.',
-}
-
 type ImoveisPageProps = {
   searchParams?: {
     finalidade?: string
     localizacao?: string
+  }
+}
+
+export function generateMetadata({ searchParams }: ImoveisPageProps) {
+  const purpose = searchParams?.finalidade === 'comprar' ? 'Comprar' : 'Alugar'
+
+  return {
+    title: `Ketris | ${purpose}`,
+    description: 'Busque imóveis para alugar e comprar.',
   }
 }
 
