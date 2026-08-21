@@ -18,12 +18,12 @@ export function generateMetadata({ params }: AgencyPageProps) {
 
   if (!agency) {
     return {
-      title: 'Imobiliaria nao encontrada | Ketris',
+      title: 'Ketris | Imobiliária não encontrada',
     }
   }
 
   return {
-    title: `${agency.name} | Ketris`,
+    title: `Ketris | ${agency.name}`,
     description: `${agency.name}, ${agency.legalCreci}, atua em ${agency.headquarters}.`,
   }
 }

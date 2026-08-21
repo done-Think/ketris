@@ -1,41 +1,45 @@
+import { publicMarketplaceText } from '@shared/i18n/pt-br'
+
 import type { FooterColumn } from '../types/footer'
 
+const { footer, navigation } = publicMarketplaceText
+
 export const homeNavigationItems = [
-  { label: 'Home', href: '/' },
-  { label: 'Alugar', href: '/imoveis?finalidade=alugar' },
-  { label: 'Comprar', href: '/imoveis?finalidade=comprar' },
-  { label: 'Corretores', href: '/corretores' },
-  { label: 'Imobiliárias', href: '/imobiliarias' },
+  { label: navigation.home, href: '/' },
+  { label: navigation.rent, href: '/imoveis?finalidade=alugar' },
+  { label: navigation.buy, href: '/imoveis?finalidade=comprar' },
+  { label: navigation.brokers, href: '/corretores' },
+  { label: navigation.agencies, href: '/imobiliarias' },
 ] as const
 
 export const footerColumns: FooterColumn[] = [
   {
-    title: 'Para você',
+    title: footer.columns.forYou,
     links: [
-      { label: 'Buscar imóveis', href: '/imoveis' },
-      { label: 'Favoritos', href: '/imoveis' },
-      { label: 'Simulador financeiro', href: '/imoveis' },
+      { label: footer.links.searchProperties, href: '/imoveis' },
+      { label: footer.links.favorites, href: '/imoveis' },
+      { label: footer.links.financialSimulator, href: '/imoveis' },
     ],
   },
   {
-    title: 'Corretores',
+    title: footer.columns.brokers,
     links: [
-      { label: 'Quero anunciar', href: '/login' },
-      { label: 'Portal parceiro', href: '/login' },
-      { label: 'Soluções corporativas', href: '/imoveis' },
+      { label: footer.links.listProperty, href: '/login' },
+      { label: footer.links.partnerPortal, href: '/login' },
+      { label: footer.links.corporateSolutions, href: '/imoveis' },
     ],
   },
   {
-    title: 'Empresa',
+    title: footer.columns.company,
     links: [
-      { label: 'Sobre nós', href: '/' },
-      { label: 'Contato', href: '/' },
-      { label: 'Trabalhe conosco', href: '/' },
+      { label: footer.links.aboutUs, href: '/' },
+      { label: footer.links.contact, href: '/' },
+      { label: footer.links.workWithUs, href: '/' },
     ],
   },
 ]
 
 export const legalLinks = [
-  { label: 'Termos de Uso', href: '/' },
-  { label: 'Política de Privacidade', href: '/' },
+  { label: footer.links.termsOfUse, href: '/' },
+  { label: footer.links.privacyPolicy, href: '/' },
 ] as const
