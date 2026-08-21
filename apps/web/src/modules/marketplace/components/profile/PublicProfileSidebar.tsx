@@ -35,8 +35,7 @@ export function PublicProfileSidebar({
   return (
     <Box
       sx={{
-        position: { lg: 'sticky' },
-        top: { lg: 84 },
+        alignSelf: 'start',
         border: '1px solid',
         borderColor: 'divider',
         borderRadius: `${radius.sm}px`,
