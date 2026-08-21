@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState } from 'react'
 import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined'
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined'
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined'
@@ -14,8 +14,9 @@ import { useSession } from 'next-auth/react'
 
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
-import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
+import type { CrmShellProps } from '../types/layout'
 import { CrmAccessBoundary } from './CrmAccessBoundary'
 
 const sidebarWidth = 200
@@ -23,14 +24,10 @@ const sidebarWidth = 200
 const navigationItems = [
   { label: 'Dashboard', href: '/dashboard', icon: BarChartOutlinedIcon },
   { label: 'Pipeline', href: '/crm', icon: ViewKanbanOutlinedIcon },
-  { label: 'Contatos', href: '/crm/contatos', icon: PeopleOutlineIcon },
+  { label: 'Contatos', href: '/crm/contacts', icon: PeopleOutlineIcon },
   { label: 'Imóveis', href: '/imoveis', icon: HomeOutlinedIcon },
-  { label: 'Propostas', href: '/crm/propostas', icon: InsertDriveFileOutlinedIcon },
+  { label: 'Propostas', href: '/crm/proposals', icon: InsertDriveFileOutlinedIcon },
 ] as const
-
-type CrmShellProps = {
-  children: ReactNode
-}
 
 function getInitials(name?: string | null): string {
   if (!name) return 'K'
@@ -47,7 +44,7 @@ export function CrmShell({ children }: CrmShellProps) {
   const pathname = usePathname()
   const { data: session } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const isPublicCrmRoute = pathname === '/crm' || pathname === '/crm/contatos'
+  const isPublicCrmRoute = pathname === '/crm' || pathname === '/crm/contacts'
   const userName = session?.user?.name ?? 'Equipe Ketris'
   const userContext = session?.user?.email ?? 'CRM imobiliário'
   const userInitials = useMemo(() => getInitials(userName), [userName])
@@ -80,7 +77,7 @@ export function CrmShell({ children }: CrmShellProps) {
           const targetPath = href.split('?')[0]
           const active =
             targetPath === '/crm'
-              ? pathname === '/crm' || pathname.startsWith('/crm/oportunidades')
+              ? pathname === '/crm' || pathname.startsWith('/crm/opportunities')
               : pathname === targetPath || pathname.startsWith(`${targetPath}/`)
 
           return (
@@ -179,7 +176,7 @@ export function CrmShell({ children }: CrmShellProps) {
           px: 2,
           bgcolor: brand.graphite[600],
           color: surface.lightText,
-          boxShadow: '0 5px 22px rgba(13,15,20,0.18)',
+          boxShadow: shadows.crmMobileHeader,
         }}
       >
         <Tooltip title="Abrir navegação">

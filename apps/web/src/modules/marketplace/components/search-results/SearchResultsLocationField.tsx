@@ -1,0 +1,56 @@
+'use client'
+
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
+import { IconButton, InputAdornment, TextField } from '@mui/material'
+
+import { iconSize, radius, surface } from '@shared/theme/tokens'
+
+type SearchResultsLocationFieldProps = {
+  locationQuery: string
+  setLocationQuery: (value: string) => void
+}
+
+export function SearchResultsLocationField({
+  locationQuery,
+  setLocationQuery,
+}: SearchResultsLocationFieldProps) {
+  return (
+    <TextField
+      fullWidth
+      value={locationQuery}
+      placeholder="Todas as regiões"
+      onChange={(event) => setLocationQuery(event.target.value)}
+      size="small"
+      slotProps={{
+        input: {
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchRoundedIcon sx={{ color: 'text.primary', fontSize: iconSize.lg }} />
+            </InputAdornment>
+          ),
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton
+                aria-label="Limpar busca"
+                size="small"
+                onClick={() => setLocationQuery('')}
+              >
+                <CloseRoundedIcon sx={{ fontSize: iconSize.sm }} />
+              </IconButton>
+            </InputAdornment>
+          ),
+        },
+      }}
+      sx={{
+        mb: 2,
+        '& .MuiOutlinedInput-root': {
+          minHeight: 48,
+          borderRadius: `${radius.sm}px`,
+          bgcolor: surface.paper,
+          fontWeight: 700,
+        },
+      }}
+    />
+  )
+}

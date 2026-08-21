@@ -26,11 +26,9 @@ export type BrokerProfile = {
 }
 
 export type BrokerCardProps = BrokerProfile & {
-  onOpenProfile: () => void
+  href: string
 }
 
-export type BrokerProfileModalProps = {
-  open: boolean
-  broker: BrokerProfile | null
-  onClose: () => void
+export type BrokerPublicProfilePageProps = {
+  broker: BrokerProfile
 }

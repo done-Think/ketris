@@ -25,6 +25,7 @@ export type AgencyProfile = {
   email: string
   address: string
   summary: string
+  href: string
   teamHighlights: string[]
   featuredListings: Array<{
     title: string
@@ -34,19 +35,13 @@ export type AgencyProfile = {
   }>
 }
 
-export type AgencyRowProps = AgencyProfile & {
-  selected: boolean
-  onSelect: () => void
-  onOpenProfile: () => void
+export type AgencyCardProps = AgencyProfile
+
+export type AgencyPublicProfilePageProps = {
+  agency: AgencyProfile
 }
 
 export type AgencyBrandBannerProps = {
   agency: AgencyProfile
   size: 'compact' | 'hero'
-}
-
-export type AgencyProfileModalProps = {
-  open: boolean
-  agency: AgencyProfile | null
-  onClose: () => void
 }

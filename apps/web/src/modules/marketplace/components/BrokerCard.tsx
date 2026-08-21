@@ -1,19 +1,9 @@
 'use client'
 
-import {
-  Avatar,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  Divider,
-  Stack,
-  Typography,
-} from '@mui/material'
-import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineRounded'
+import { Avatar, Box, Card, CardContent, Chip, Divider, Stack, Typography } from '@mui/material'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import StarRoundedIcon from '@mui/icons-material/StarRounded'
+import Link from 'next/link'
 
 import {
   alpha,
@@ -30,12 +20,16 @@ import type { BrokerCardProps } from '../types/broker'
 export function BrokerCard(brokerCardProps: BrokerCardProps) {
   return (
     <Card
+      component={Link}
+      href={brokerCardProps.href}
       sx={{
         border: '1px solid',
         borderColor: 'transparent',
         borderRadius: `${radius.sm}px`,
+        color: 'inherit',
         boxShadow: shadows.propertyCard,
         overflow: 'hidden',
+        textDecoration: 'none',
         transition: motion.transition.card,
         '&:hover': {
           borderColor: alpha.magenta[14],
@@ -93,7 +87,7 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
                 bgcolor: alpha.magenta[6],
                 color: 'primary.main',
                 fontSize: 11,
-                fontWeight: 800,
+                fontWeight: 700,
               }}
             />
           ))}
@@ -124,7 +118,7 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
                 bgcolor: surface.app,
               }}
             >
-              <Typography sx={{ color: 'text.secondary', fontSize: 10, fontWeight: 800 }}>
+              <Typography sx={{ color: 'text.secondary', fontSize: 10, fontWeight: 700 }}>
                 {item.label}
               </Typography>
               <Typography noWrap sx={{ fontSize: 12, fontWeight: 900, mt: 0.25 }}>
@@ -136,44 +130,11 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
 
         <Divider sx={{ my: 1.8 }} />
 
-        <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={0.8}>
-          <Button
-            type="button"
-            size="small"
-            variant="outlined"
-            startIcon={<ChatBubbleOutlineRoundedIcon sx={{ fontSize: iconSize.sm }} />}
-            sx={{
-              display: { xs: 'none', sm: 'inline-flex' },
-              borderRadius: `${radius.sm}px`,
-              borderColor: 'divider',
-              color: 'text.primary',
-              ...componentText.resetButtonText,
-              fontWeight: 800,
-              '&:hover': {
-                bgcolor: alpha.magenta[6],
-                borderColor: 'primary.main',
-              },
-            }}
-          >
-            Contatar
-          </Button>
-          <Button
-            type="button"
-            size="small"
-            onClick={(event) => {
-              event.preventDefault()
-              event.stopPropagation()
-              brokerCardProps.onOpenProfile()
-            }}
-            endIcon={<ChevronRightIcon sx={{ fontSize: iconSize.sm }} />}
-            sx={{
-              color: 'primary.main',
-              ...componentText.resetButtonText,
-              fontWeight: 900,
-            }}
-          >
-            Perfil
-          </Button>
+        <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={0.35}>
+          <Typography sx={{ color: 'primary.main', ...componentText.cardAction }}>
+            Ver página pública
+          </Typography>
+          <ChevronRightIcon sx={{ color: 'primary.main', fontSize: iconSize.sm }} />
         </Stack>
       </CardContent>
     </Card>

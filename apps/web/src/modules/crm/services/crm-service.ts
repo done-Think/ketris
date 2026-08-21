@@ -10,22 +10,12 @@ import type {
   PublicPropertySearchFilters,
   PublicPropertySummary,
 } from '../types/property'
-
-interface ListOpportunitiesResponse {
-  inquiries: Opportunity[]
-}
-
-interface OpportunityResponse {
-  inquiry: Opportunity
-}
-
-interface ListPropertiesResponse {
-  properties: PublicPropertySummary[]
-}
-
-interface PropertyResponse {
-  property: PublicPropertyDetail
-}
+import type {
+  ListOpportunitiesResponse,
+  ListPropertiesResponse,
+  OpportunityResponse,
+  PropertyResponse,
+} from '../types/service'
 
 export class CrmService extends BaseService {
   private readonly path = '/marketplace/inquiries'

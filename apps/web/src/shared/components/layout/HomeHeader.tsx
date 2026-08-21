@@ -21,12 +21,12 @@ type HomeHeaderProps = {
     href: string
     active?: boolean
   }>
-  profileButtonRef: RefObject<HTMLButtonElement>
-  userProfile: {
+  profileButtonRef?: RefObject<HTMLButtonElement>
+  userProfile?: {
     name: string
     avatar: string
   }
-  onToggleProfile: () => void
+  onToggleProfile?: () => void
 }
 
 export function HomeHeader({
@@ -139,38 +139,40 @@ export function HomeHeader({
             <IconButton aria-label="notificações" size="small" sx={{ width: 42, height: 42 }}>
               <NotificationsNoneOutlinedIcon sx={{ fontSize: iconSize.xl }} />
             </IconButton>
-            <Box
-              component="button"
-              type="button"
-              aria-label="Abrir perfil"
-              aria-haspopup="dialog"
-              ref={profileButtonRef}
-              onClick={onToggleProfile}
-              sx={{
-                width: 48,
-                height: 48,
-                p: 0,
-                border: 0,
-                borderRadius: radius.full,
-                bgcolor: 'transparent',
-                cursor: 'pointer',
-                display: 'grid',
-                placeItems: 'center',
-                position: 'relative',
-                zIndex: zIndex.content - 1,
-                transition: motion.transition.avatar,
-                '&:hover': {
-                  boxShadow: shadows.avatarFocus,
-                  transform: 'translateY(-1px)',
-                },
-              }}
-            >
-              <Avatar
-                alt={userProfile.name}
-                src={userProfile.avatar}
-                sx={{ width: 48, height: 48 }}
-              />
-            </Box>
+            {userProfile && profileButtonRef && onToggleProfile ? (
+              <Box
+                component="button"
+                type="button"
+                aria-label="Abrir perfil"
+                aria-haspopup="dialog"
+                ref={profileButtonRef}
+                onClick={onToggleProfile}
+                sx={{
+                  width: 48,
+                  height: 48,
+                  p: 0,
+                  border: 0,
+                  borderRadius: radius.full,
+                  bgcolor: 'transparent',
+                  cursor: 'pointer',
+                  display: 'grid',
+                  placeItems: 'center',
+                  position: 'relative',
+                  zIndex: zIndex.content - 1,
+                  transition: motion.transition.avatar,
+                  '&:hover': {
+                    boxShadow: shadows.avatarFocus,
+                    transform: 'translateY(-1px)',
+                  },
+                }}
+              >
+                <Avatar
+                  alt={userProfile.name}
+                  src={userProfile.avatar}
+                  sx={{ width: 48, height: 48 }}
+                />
+              </Box>
+            ) : null}
           </Stack>
         </Box>
       </Container>

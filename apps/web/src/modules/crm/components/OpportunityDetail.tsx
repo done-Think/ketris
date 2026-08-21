@@ -1,48 +1,41 @@
 'use client'
 
-import { useState, type MouseEvent } from 'react'
+import { useMemo, useState } from 'react'
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
-import {
-  Alert,
-  Box,
-  Button,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Menu,
-  MenuItem,
-  Skeleton,
-  Stack,
-  Typography,
-} from '@mui/material'
+import { Alert, Box, Button, Stack } from '@mui/material'
 import axios from 'axios'
 import NextLink from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useSnackbar } from 'notistack'
 
-import { opportunityStageByStatus, opportunityStages } from '../config/opportunity-stages'
-import { getOpportunityDetailFixture } from '../fixtures/opportunity-detail-fixtures'
-import { useCrmProperty, useOpportunity, useUpdateOpportunity } from '../hooks/use-opportunities'
-import type {
-  OpportunityActivityPresentation,
-  OpportunityDetailPresentation,
-  SuggestedPropertyPresentation,
-} from '../types/opportunity-detail'
-import type { Opportunity, OpportunityStatus } from '../types/opportunity'
-import type { PublicPropertyDetail } from '../types/property'
+import { opportunityStageByStatus } from '../config/opportunity-stages'
 import {
-  formatCurrency,
-  formatDate,
-  formatMonthlyCurrency,
-  formatRelativeDate,
-} from '../utils/formatters'
-import { OpportunityDetailContent } from './OpportunityDetailContent'
-
-type OpportunityDetailProps = {
-  opportunityId: string
-}
+  useArchiveOpportunity,
+  useCrmProperty,
+  useOpportunity,
+  useUpdateOpportunity,
+} from '../hooks/use-opportunities'
+import type {
+  Opportunity,
+  OpportunityEditFormValues,
+  OpportunityStatus,
+} from '../types/opportunity'
+import type {
+  OpportunityActivitiesPanelProps,
+  OpportunityDetailProps,
+} from '../types/opportunity-detail'
+import { ArchiveOpportunityDialog } from './opportunity-detail/ArchiveOpportunityDialog'
+import { DetailLoading } from './opportunity-detail/DetailLoading'
+import { EditOpportunityDialog } from './opportunity-detail/EditOpportunityDialog'
+import { OpportunityActionsFooter } from './opportunity-detail/OpportunityActionsFooter'
+import { OpportunityActivitiesPanel } from './opportunity-detail/OpportunityActivitiesPanel'
+import { OpportunityContactPanel } from './opportunity-detail/OpportunityContactPanel'
+import { OpportunityDetailHeader } from './opportunity-detail/OpportunityDetailHeader'
+import { OpportunityNextActionsPanel } from './opportunity-detail/OpportunityNextActionsPanel'
+import { OpportunityPropertyPanel } from './opportunity-detail/OpportunityPropertyPanel'
+import { OpportunityStageMenu } from './opportunity-detail/OpportunityStageMenu'
+import { StatusChangeDialog } from './opportunity-detail/StatusChangeDialog'
 
 function errorMessage(error: unknown, fallback: string): string {
   if (axios.isAxiosError(error)) {
@@ -53,134 +46,68 @@ function errorMessage(error: unknown, fallback: string): string {
   return fallback
 }
 
-function DetailLoading() {
-  return (
-    <Box sx={{ p: { xs: 2, sm: 2.5, lg: 3.5 } }} aria-label="Carregando oportunidade">
-      <Skeleton width={210} height={18} />
-      <Stack direction="row" justifyContent="space-between" sx={{ mt: 1, mb: 2 }}>
-        <Skeleton width="34%" height={42} />
-        <Skeleton width={160} height={42} />
-      </Stack>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 58fr) minmax(320px, 42fr)' },
-          gap: 2.25,
-        }}
-      >
-        <Stack spacing={2.25}>
-          <Skeleton variant="rounded" height={206} />
-          <Skeleton variant="rounded" height={282} />
-        </Stack>
-        <Stack spacing={2.25}>
-          <Skeleton variant="rounded" height={336} />
-          <Skeleton variant="rounded" height={166} />
-        </Stack>
-      </Box>
-    </Box>
-  )
+function toDateInput(value: string | null): string {
+  return value ? value.slice(0, 10) : ''
 }
 
-function buildPropertyMeta(property: PublicPropertyDetail): string {
-  const location = [property.bairro, property.cidade].filter(Boolean).join(' · ')
-
-  return [property.tipo, property.areaM2 ? `${property.areaM2}m²` : null, location || null]
-    .filter(Boolean)
-    .join(' · ')
-}
-
-function buildSuggestedProperties(
-  property: PublicPropertyDetail | undefined,
-): readonly SuggestedPropertyPresentation[] {
-  if (!property) return []
-
-  return [
-    {
-      id: property.id,
-      title: property.titulo,
-      imageUrl: property.capaUrl ?? undefined,
-      meta: buildPropertyMeta(property),
-      priceLabel:
-        property.finalidade === 'ALUGUEL'
-          ? formatMonthlyCurrency(property.valor)
-          : formatCurrency(property.valor),
-    },
-  ]
-}
-
-function buildActivities(opportunity: Opportunity): readonly OpportunityActivityPresentation[] {
-  const activities: OpportunityActivityPresentation[] = [
-    {
-      id: 'opportunity-created',
-      kind: 'opportunity',
-      title: 'Oportunidade criada',
-      dateLabel: formatRelativeDate(opportunity.createdAt),
-      description: 'Registro incluído no pipeline.',
-    },
-  ]
-
-  if (new Date(opportunity.updatedAt).getTime() > new Date(opportunity.createdAt).getTime()) {
-    activities.unshift({
-      id: 'opportunity-updated',
-      kind: 'opportunity',
-      title: 'Oportunidade atualizada',
-      dateLabel: formatRelativeDate(opportunity.updatedAt),
-      description: `Etapa atual: ${opportunityStageByStatus[opportunity.status].label}.`,
-    })
-  }
-
-  return activities
-}
-
-function buildDeadlineLabel(opportunity: Opportunity): string {
-  const details = [
-    opportunity.inicioPretendido ? `Início em ${formatDate(opportunity.inicioPretendido)}` : null,
-    opportunity.prazoContratoMeses ? `${opportunity.prazoContratoMeses} meses` : null,
-  ].filter(Boolean)
-
-  return details.join(' · ') || 'Não informado'
-}
-
-function buildOpportunityPresentation(
-  opportunity: Opportunity,
-  property: PublicPropertyDetail | undefined,
-): OpportunityDetailPresentation {
-  const location = property ? [property.bairro, property.cidade].filter(Boolean).join(' / ') : ''
-  const interest = property
-    ? `${property.titulo}${location ? ` (${location})` : ''}`
-    : opportunity.observacoes || 'Não informado'
-  const budget =
-    property?.finalidade === 'ALUGUEL'
-      ? formatMonthlyCurrency(opportunity.valorProposto)
-      : formatCurrency(opportunity.valorProposto)
-
+function buildEditValues(opportunity: Opportunity): OpportunityEditFormValues {
   return {
-    interestDetails: {
-      interest,
-      budget,
-      deadline: buildDeadlineLabel(opportunity),
-    },
-    suggestedProperties: buildSuggestedProperties(property),
-    activities: buildActivities(opportunity),
-    nextActions: [],
+    interessadoNome: opportunity.interessadoNome,
+    interessadoEmail: opportunity.interessadoEmail,
+    interessadoTelefone: opportunity.interessadoTelefone ?? '',
+    valorProposto: String(opportunity.valorProposto),
+    prazoContratoMeses: opportunity.prazoContratoMeses
+      ? String(opportunity.prazoContratoMeses)
+      : '',
+    inicioPretendido: toDateInput(opportunity.inicioPretendido),
+    garantiaContratual: opportunity.garantiaContratual,
+    condicoesEspeciais: opportunity.condicoesEspeciais.join(', '),
+    observacoes: opportunity.observacoes ?? '',
   }
 }
 
 export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
-  const fixture = getOpportunityDetailFixture(opportunityId)
   const { data: session } = useSession()
+  const router = useRouter()
   const tenantId = session?.tenantId
-  const opportunityQuery = useOpportunity(tenantId, fixture ? null : opportunityId)
-  const opportunity = fixture?.opportunity ?? opportunityQuery.data
-  const propertyQuery = useCrmProperty(tenantId, fixture ? null : opportunity?.imovelId)
+  const opportunityQuery = useOpportunity(tenantId, opportunityId)
+  const opportunity = opportunityQuery.data
+  const propertyQuery = useCrmProperty(tenantId, opportunity?.imovelId)
   const updateOpportunity = useUpdateOpportunity(tenantId ?? '')
+  const archiveOpportunity = useArchiveOpportunity(tenantId ?? '')
   const { enqueueSnackbar } = useSnackbar()
   const [stageMenuAnchor, setStageMenuAnchor] = useState<HTMLElement | null>(null)
   const [nextStatus, setNextStatus] = useState<OpportunityStatus | null>(null)
+  const [editOpen, setEditOpen] = useState(false)
+  const [archiveOpen, setArchiveOpen] = useState(false)
 
-  if (!fixture && opportunityQuery.isLoading) return <DetailLoading />
+  const activities = useMemo<OpportunityActivitiesPanelProps['activities']>(() => {
+    if (!opportunity) return []
 
-  if ((!fixture && opportunityQuery.isError) || !opportunity) {
+    const items = [
+      {
+        key: 'created',
+        title: 'Oportunidade criada',
+        detail: 'Registro incluído no pipeline.',
+        occurredAt: opportunity.createdAt,
+      },
+    ]
+
+    if (new Date(opportunity.updatedAt).getTime() > new Date(opportunity.createdAt).getTime()) {
+      items.unshift({
+        key: 'updated',
+        title: 'Oportunidade atualizada',
+        detail: `Etapa atual: ${opportunityStageByStatus[opportunity.status].label}.`,
+        occurredAt: opportunity.updatedAt,
+      })
+    }
+
+    return items
+  }, [opportunity])
+
+  if (opportunityQuery.isLoading) return <DetailLoading />
+
+  if (opportunityQuery.isError || !opportunity) {
     return (
       <Stack
         alignItems="center"
@@ -202,16 +129,12 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
   }
 
   const currentOpportunity = opportunity
-  const property = fixture ? undefined : propertyQuery.data
-  const stage = fixture?.stage ?? opportunityStageByStatus[currentOpportunity.status]
-  const presentation =
-    fixture?.presentation ?? buildOpportunityPresentation(currentOpportunity, property)
-  const isMutating = updateOpportunity.isPending
-  const actionsDisabled = Boolean(fixture) || !tenantId
-  const valueLabel =
-    fixture || property?.finalidade === 'ALUGUEL'
-      ? formatMonthlyCurrency(currentOpportunity.valorProposto)
-      : formatCurrency(currentOpportunity.valorProposto)
+  const stage = opportunityStageByStatus[currentOpportunity.status]
+  const isMutating = updateOpportunity.isPending || archiveOpportunity.isPending
+  const property = propertyQuery.data
+  const propertyLocation = property
+    ? [property.bairro, property.cidade].filter(Boolean).join(' · ') || 'Localização não informada'
+    : ''
 
   function requestStatusChange(status: OpportunityStatus) {
     setStageMenuAnchor(null)
@@ -237,80 +160,128 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
     }
   }
 
-  function openStageMenu(event: MouseEvent<HTMLButtonElement>) {
-    if (!actionsDisabled) setStageMenuAnchor(event.currentTarget)
+  function openEditDialog() {
+    setEditOpen(true)
   }
 
-  function discardOpportunity() {
-    if (!actionsDisabled) setNextStatus('RECUSADA')
+  async function saveOpportunity(values: OpportunityEditFormValues) {
+    const proposedValue = Number(values.valorProposto)
+    const contractMonths = values.prazoContratoMeses ? Number(values.prazoContratoMeses) : null
+
+    try {
+      await updateOpportunity.mutateAsync({
+        id: currentOpportunity.id,
+        changes: {
+          interessadoNome: values.interessadoNome.trim(),
+          interessadoEmail: values.interessadoEmail.trim(),
+          interessadoTelefone: values.interessadoTelefone.trim() || null,
+          valorProposto: proposedValue,
+          prazoContratoMeses: contractMonths,
+          inicioPretendido: values.inicioPretendido || null,
+          garantiaContratual: values.garantiaContratual,
+          condicoesEspeciais: values.condicoesEspeciais
+            .split(',')
+            .map((condition) => condition.trim())
+            .filter(Boolean),
+          observacoes: values.observacoes.trim() || null,
+        },
+      })
+      enqueueSnackbar('Oportunidade atualizada.', { variant: 'success' })
+      setEditOpen(false)
+    } catch (error) {
+      enqueueSnackbar(errorMessage(error, 'Não foi possível atualizar a oportunidade.'), {
+        variant: 'error',
+      })
+    }
   }
 
-  function addQuickNote() {
-    if (actionsDisabled) return
-
-    enqueueSnackbar('Notas rápidas estarão disponíveis em breve.', { variant: 'info' })
+  async function confirmArchive() {
+    try {
+      await archiveOpportunity.mutateAsync(currentOpportunity.id)
+      enqueueSnackbar('Oportunidade arquivada.', { variant: 'success' })
+      setArchiveOpen(false)
+      router.replace('/crm')
+    } catch (error) {
+      enqueueSnackbar(errorMessage(error, 'Não foi possível arquivar a oportunidade.'), {
+        variant: 'error',
+      })
+    }
   }
 
   return (
-    <>
-      <OpportunityDetailContent
-        opportunity={currentOpportunity}
-        stage={stage}
-        presentation={presentation}
-        valueLabel={valueLabel}
-        suggestionsLoading={!fixture && propertyQuery.isLoading}
-        suggestionsError={!fixture && propertyQuery.isError}
+    <Box sx={{ minHeight: '100vh', pb: 2, '& h1, & h2': { letterSpacing: '0 !important' } }}>
+      <Box sx={{ p: { xs: 2, sm: 2.5, lg: 3.5 }, pb: { xs: 2, lg: 3 } }}>
+        <OpportunityDetailHeader opportunity={opportunity} stage={stage} property={property} />
+
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: 'minmax(0, 1fr)',
+              lg: 'minmax(0, 58fr) minmax(320px, 42fr)',
+            },
+            gap: 2,
+            alignItems: 'start',
+          }}
+        >
+          <Stack spacing={2} minWidth={0}>
+            <OpportunityContactPanel opportunity={opportunity} />
+            <OpportunityPropertyPanel
+              opportunity={opportunity}
+              property={property}
+              propertyLocation={propertyLocation}
+              isLoading={propertyQuery.isLoading}
+              isError={propertyQuery.isError}
+              onRetry={() => propertyQuery.refetch()}
+            />
+          </Stack>
+
+          <Stack spacing={2} minWidth={0}>
+            <OpportunityActivitiesPanel activities={activities} />
+            <OpportunityNextActionsPanel />
+          </Stack>
+        </Box>
+      </Box>
+
+      <OpportunityActionsFooter
+        opportunity={opportunity}
         isMutating={isMutating}
-        actionsDisabled={actionsDisabled}
-        primaryActionLabel={fixture ? 'Mover para Proposta' : 'Mover de etapa'}
-        onPrimaryAction={openStageMenu}
-        onDiscardOpportunity={discardOpportunity}
-        onAddQuickNote={addQuickNote}
-        onRetrySuggestions={fixture ? undefined : () => propertyQuery.refetch()}
+        onStageMenuOpen={(event) => setStageMenuAnchor(event.currentTarget)}
+        onDiscardLead={() => setNextStatus('RECUSADA')}
+        onEdit={openEditDialog}
+        onArchive={() => setArchiveOpen(true)}
       />
 
-      <Menu
+      <OpportunityStageMenu
         anchorEl={stageMenuAnchor}
-        open={Boolean(stageMenuAnchor)}
+        opportunity={opportunity}
         onClose={() => setStageMenuAnchor(null)}
-      >
-        {opportunityStages
-          .filter(({ status }) => status !== currentOpportunity.status)
-          .map((option) => (
-            <MenuItem key={option.status} onClick={() => requestStatusChange(option.status)}>
-              <Box
-                sx={{ width: 8, height: 8, mr: 1.2, borderRadius: '50%', bgcolor: option.color }}
-              />
-              {option.label}
-            </MenuItem>
-          ))}
-      </Menu>
+        onRequestStatusChange={requestStatusChange}
+      />
 
-      <Dialog
-        open={Boolean(nextStatus)}
-        onClose={() => !updateOpportunity.isPending && setNextStatus(null)}
-      >
-        <DialogTitle sx={{ letterSpacing: 0 }}>Confirmar mudança de etapa</DialogTitle>
-        <DialogContent>
-          <Typography color="text.secondary">
-            {nextStatus
-              ? `Mover ${currentOpportunity.interessadoNome} de ${stage.label} para ${opportunityStageByStatus[nextStatus].label}?`
-              : ''}
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button disabled={updateOpportunity.isPending} onClick={() => setNextStatus(null)}>
-            Cancelar
-          </Button>
-          <Button
-            variant="contained"
-            disabled={updateOpportunity.isPending}
-            onClick={confirmStatusChange}
-          >
-            {updateOpportunity.isPending ? <CircularProgress size={20} /> : 'Confirmar mudança'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
+      <StatusChangeDialog
+        nextStatus={nextStatus}
+        opportunity={opportunity}
+        stage={stage}
+        isPending={updateOpportunity.isPending}
+        onClose={() => setNextStatus(null)}
+        onConfirm={confirmStatusChange}
+      />
+
+      <EditOpportunityDialog
+        open={editOpen}
+        initialValues={editOpen ? buildEditValues(currentOpportunity) : null}
+        isPending={updateOpportunity.isPending}
+        onClose={() => setEditOpen(false)}
+        onSave={saveOpportunity}
+      />
+
+      <ArchiveOpportunityDialog
+        open={archiveOpen}
+        isPending={archiveOpportunity.isPending}
+        onClose={() => setArchiveOpen(false)}
+        onConfirm={confirmArchive}
+      />
+    </Box>
   )
 }

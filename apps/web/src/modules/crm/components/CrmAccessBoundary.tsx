@@ -1,6 +1,5 @@
 'use client'
 
-import type { ReactNode } from 'react'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material'
 import NextLink from 'next/link'
@@ -8,9 +7,7 @@ import { useSession } from 'next-auth/react'
 
 import { alpha, radius, surface } from '@shared/theme/tokens'
 
-type CrmAccessBoundaryProps = {
-  children: ReactNode
-}
+import type { CrmAccessBoundaryProps } from '../types/layout'
 
 export function CrmAccessBoundary({ children }: CrmAccessBoundaryProps) {
   const { data: session, status } = useSession()

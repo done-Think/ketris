@@ -18,7 +18,7 @@ export const brokers: BrokerProfile[] = [
     email: 'marina@ketris.com.br',
     availability: 'Segunda a sexta, 9h às 18h',
     bio: 'Atuação focada em apartamentos prontos para morar nos Jardins, Itaim Bibi e região da Paulista.',
-    href: '/corretores?corretor=marina-costa',
+    href: '/corretores/marina-costa',
     highlightedListings: [
       {
         title: 'Apartamento espaçoso com vista para o parque',
@@ -51,7 +51,7 @@ export const brokers: BrokerProfile[] = [
     email: 'thiago@ketris.com.br',
     availability: 'Segunda a sábado, 10h às 19h',
     bio: 'Especialista em studios, lofts e apartamentos compactos na zona oeste de São Paulo.',
-    href: '/corretores?corretor=thiago-santos',
+    href: '/corretores/thiago-santos',
     highlightedListings: [
       {
         title: 'Studio moderno totalmente reformado',
@@ -84,7 +84,7 @@ export const brokers: BrokerProfile[] = [
     email: 'juliana@ketris.com.br',
     availability: 'Segunda a sexta, 8h às 19h',
     bio: 'Curadoria de coberturas, apartamentos amplos e imóveis de alto padrão no eixo Faria Lima.',
-    href: '/corretores?corretor=juliana-mendes',
+    href: '/corretores/juliana-mendes',
     highlightedListings: [
       {
         title: 'Cobertura tríplex com piscina privativa',
@@ -117,7 +117,7 @@ export const brokers: BrokerProfile[] = [
     email: 'renato@ketris.com.br',
     availability: 'Terça a sábado, 9h às 18h',
     bio: 'Atendimento para casas, imóveis familiares e negociações com perfil residencial de longo prazo.',
-    href: '/corretores?corretor=renato-alves',
+    href: '/corretores/renato-alves',
     highlightedListings: [
       {
         title: 'Casa térrea com jardim privativo',
@@ -150,7 +150,7 @@ export const brokers: BrokerProfile[] = [
     email: 'camila@ketris.com.br',
     availability: 'Segunda a sexta, 9h às 17h',
     bio: 'Especialista em salas comerciais, escritórios prontos e operações corporativas enxutas.',
-    href: '/corretores?corretor=camila-rocha',
+    href: '/corretores/camila-rocha',
     highlightedListings: [
       {
         title: 'Sala comercial pronta para operação',
@@ -183,7 +183,7 @@ export const brokers: BrokerProfile[] = [
     email: 'bianca@ketris.com.br',
     availability: 'Segunda a sábado, 9h às 18h',
     bio: 'Consultoria para compra de apartamentos em Moema, Vila Nova Conceição e Campo Belo.',
-    href: '/corretores?corretor=bianca-azevedo',
+    href: '/corretores/bianca-azevedo',
     highlightedListings: [
       {
         title: 'Apartamento mobiliado perto do parque',
@@ -199,4 +199,107 @@ export const brokers: BrokerProfile[] = [
       },
     ],
   },
+  {
+    id: 'felipe-andrade',
+    name: 'Felipe Andrade',
+    creci: 'CRECI 302118-F',
+    avatar:
+      'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=160&q=80',
+    region: 'Brooklin, São Paulo',
+    specialties: ['Comercial', 'Compra'],
+    neighborhoods: ['Brooklin', 'Berrini', 'Campo Belo'],
+    activeListings: 34,
+    responseTime: '16 min',
+    rating: 4.8,
+    dealsClosed: 119,
+    phone: '(11) 99288-1045',
+    email: 'felipe@ketris.com.br',
+    availability: 'Segunda a sexta, 8h às 18h',
+    bio: 'Atendimento focado em unidades comerciais, salas prontas e apartamentos para compra no eixo Brooklin-Berrini.',
+    href: '/corretores/felipe-andrade',
+    highlightedListings: [
+      {
+        title: 'Sala comercial pronta para operação',
+        location: 'Paulista',
+        price: 'R$ 6.600 / mês',
+        href: '/imoveis/sala-comercial-paulista',
+      },
+      {
+        title: 'Apartamento mobiliado perto do parque',
+        location: 'Moema',
+        price: 'R$ 5.400 / mês',
+        href: '/imoveis/apartamento-moema',
+      },
+    ],
+  },
+  {
+    id: 'lara-queiroz',
+    name: 'Lara Queiroz',
+    creci: 'CRECI 415902-F',
+    avatar:
+      'https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?auto=format&fit=crop&w=160&q=80',
+    region: 'Pinheiros, São Paulo',
+    specialties: ['Aluguel', 'Compra'],
+    neighborhoods: ['Pinheiros', 'Vila Madalena', 'Sumarezinho'],
+    activeListings: 29,
+    responseTime: '14 min',
+    rating: 4.9,
+    dealsClosed: 101,
+    phone: '(11) 99518-7710',
+    email: 'lara@ketris.com.br',
+    availability: 'Segunda a sábado, 9h às 19h',
+    bio: 'Curadoria para aluguel e compra em Pinheiros, com foco em ruas caminháveis, mobilidade e vida de bairro.',
+    href: '/corretores/lara-queiroz',
+    highlightedListings: [
+      {
+        title: 'Loft autoral em prédio boutique',
+        location: 'Vila Madalena',
+        price: 'R$ 890.000',
+        href: '/imoveis/loft-vila-madalena-venda',
+      },
+      {
+        title: 'Studio moderno totalmente reformado',
+        location: 'Vila Madalena',
+        price: 'R$ 2.900 / mês',
+        href: '/imoveis/studio-vila-madalena',
+      },
+    ],
+  },
+  {
+    id: 'eduardo-martins',
+    name: 'Eduardo Martins',
+    creci: 'CRECI 267804-F',
+    avatar:
+      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=160&q=80',
+    region: 'Vila Mariana, São Paulo',
+    specialties: ['Aluguel', 'Alto padrão'],
+    neighborhoods: ['Vila Mariana', 'Paraíso', 'Aclimação'],
+    activeListings: 37,
+    responseTime: '17 min',
+    rating: 4.7,
+    dealsClosed: 108,
+    phone: '(11) 99772-6034',
+    email: 'eduardo@ketris.com.br',
+    availability: 'Segunda a sexta, 9h às 18h',
+    bio: 'Atendimento para apartamentos familiares e unidades de alto padrão na Vila Mariana e entorno.',
+    href: '/corretores/eduardo-martins',
+    highlightedListings: [
+      {
+        title: 'Apartamento espaçoso com vista para o parque',
+        location: 'Jardins',
+        price: 'R$ 4.800 / mês',
+        href: '/imoveis/apartamento-jardins',
+      },
+      {
+        title: 'Apartamento pronto para morar perto da Oscar Freire',
+        location: 'Jardins',
+        price: 'R$ 1.420.000',
+        href: '/imoveis/apartamento-jardins-venda',
+      },
+    ],
+  },
 ]
+
+export function getBrokerById(id: string) {
+  return brokers.find((broker) => broker.id === id)
+}

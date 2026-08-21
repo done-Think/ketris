@@ -105,7 +105,7 @@ function toDetail(row: ImovelDetailRow): PublishedPropertyDetail {
 
 export class PrismaPublicPropertyRepository implements PublicPropertyRepository {
   async search(filters: PropertySearchFilters): Promise<PublishedPropertySummary[]> {
-    const where: Prisma.ImovelWhereInput = { status: 'PUBLICADO' }
+    const where: Prisma.ImovelWhereInput = { status: 'PUBLISHED' }
 
     if (filters.finalidade) where.finalidade = filters.finalidade
     if (filters.tipo) where.tipo = { equals: filters.tipo, mode: 'insensitive' }
@@ -155,7 +155,7 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
 
   async findPublishedById(id: string): Promise<PublishedPropertyDetail | null> {
     const imovel = await prisma.imovel.findFirst({
-      where: { id, status: 'PUBLICADO' },
+      where: { id, status: 'PUBLISHED' },
       include: {
         endereco: true,
         midias: { orderBy: { ordem: 'asc' } },

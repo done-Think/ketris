@@ -1,44 +1,18 @@
-import { brand } from '@shared/theme/tokens'
+import { brand, supportColor } from '@shared/theme/tokens'
 
-import type { Opportunity, OpportunityStatus } from '../types/opportunity'
-import type { PublicPropertySummary } from '../types/property'
-
-export type SalesPipelineStageId =
-  'prospecting' | 'qualification' | 'proposal' | 'negotiation' | 'closed'
-
-type PreviewIndicator = {
-  color: string
-  label: string
-}
-
-export type SalesPipelineFixture = {
-  stageId: SalesPipelineStageId
-  opportunity: Opportunity
-  property: PublicPropertySummary
-  presentation: {
-    indicatorColor: string
-    indicatorLabel: string
-    relativeDateLabel: string
-  }
-}
-
-type FixtureInput = {
-  slug: string
-  stageId: SalesPipelineStageId
-  name: string
-  propertyTitle: string
-  value: number
-  daysAgo: number
-  indicator: PreviewIndicator
-}
-
-export const salesPipelineOrange = '#F97316'
+import type { OpportunityStatus } from '../types/opportunity'
+import type {
+  SalesPipelineFixture,
+  SalesPipelineFixtureInput,
+  SalesPipelinePreviewIndicator,
+  SalesPipelineStageId,
+} from '../types/sales-pipeline'
 
 const previewIndicators = {
   green: { color: brand.semantic.success, label: 'Status verde' },
   yellow: { color: brand.semantic.warning, label: 'Status amarelo' },
-  orange: { color: salesPipelineOrange, label: 'Status laranja' },
-} as const satisfies Record<string, PreviewIndicator>
+  orange: { color: supportColor.orange, label: 'Status laranja' },
+} as const satisfies Record<string, SalesPipelinePreviewIndicator>
 
 const statusByStage: Record<SalesPipelineStageId, OpportunityStatus> = {
   prospecting: 'RASCUNHO',
@@ -60,7 +34,7 @@ function createFixture({
   value,
   daysAgo,
   indicator,
-}: FixtureInput): SalesPipelineFixture {
+}: SalesPipelineFixtureInput): SalesPipelineFixture {
   const opportunityId = `pipeline-fixture-${slug}`
   const propertyId = `pipeline-fixture-property-${slug}`
   const relativeDate = getRelativeDate(daysAgo)
