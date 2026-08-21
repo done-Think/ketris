@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
 
+import { ricardoMendesOpportunityId } from '../fixtures/opportunity-detail-fixtures'
 import type { Opportunity } from '../types/opportunity'
 import type { PublicPropertyDetail } from '../types/property'
 import { OpportunityDetail } from './OpportunityDetail'
@@ -13,13 +14,10 @@ const mocks = vi.hoisted(() => ({
   useOpportunity: vi.fn(),
   useCrmProperty: vi.fn(),
   useUpdateOpportunity: vi.fn(),
-  useArchiveOpportunity: vi.fn(),
   update: vi.fn(),
-  archive: vi.fn(),
   refetchOpportunity: vi.fn(),
   refetchProperty: vi.fn(),
   enqueueSnackbar: vi.fn(),
-  replace: vi.fn(),
 }))
 
 vi.mock('next-auth/react', () => ({
@@ -27,10 +25,6 @@ vi.mock('next-auth/react', () => ({
     data: { tenantId: 'tenant-1', scope: 'tenant', user: { id: 'user-1' } },
     status: 'authenticated',
   }),
-}))
-
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ replace: mocks.replace }),
 }))
 
 vi.mock('notistack', () => ({
@@ -41,7 +35,6 @@ vi.mock('../hooks/use-opportunities', () => ({
   useOpportunity: mocks.useOpportunity,
   useCrmProperty: mocks.useCrmProperty,
   useUpdateOpportunity: mocks.useUpdateOpportunity,
-  useArchiveOpportunity: mocks.useArchiveOpportunity,
 }))
 
 const opportunity: Opportunity = {
@@ -67,7 +60,7 @@ const property: PublicPropertyDetail = {
   id: 'property-1',
   titulo: 'Apartamento Jardins',
   finalidade: 'ALUGUEL',
-  tipo: 'apartamento',
+  tipo: 'Apartamento',
   valor: 4500,
   condominio: 800,
   iptu: null,
@@ -84,10 +77,10 @@ const property: PublicPropertyDetail = {
   midias: [],
 }
 
-function renderDetail() {
+function renderDetail(opportunityId = opportunity.id) {
   return render(
     <ThemeProvider theme={theme}>
-      <OpportunityDetail opportunityId={opportunity.id} />
+      <OpportunityDetail opportunityId={opportunityId} />
     </ThemeProvider>,
   )
 }
@@ -111,35 +104,58 @@ describe('OpportunityDetail', () => {
       mutateAsync: mocks.update,
       isPending: false,
     })
-    mocks.useArchiveOpportunity.mockReturnValue({
-      mutateAsync: mocks.archive,
-      isPending: false,
-    })
     mocks.update.mockResolvedValue(opportunity)
-    mocks.archive.mockResolvedValue({
-      ...opportunity,
-      arquivadaEm: '2026-08-12T12:00:00.000Z',
-    })
   })
 
-  it('renders only real opportunity and associated property data', () => {
+  it('renders the complete reference fixture on the official opportunity route', () => {
+    renderDetail(ricardoMendesOpportunityId)
+
+    expect(screen.getByRole('heading', { name: 'Ricardo Mendes' })).toBeVisible()
+    expect(screen.getAllByText('Qualificação')).toHaveLength(2)
+    expect(screen.getByText(/R\$\s*4\.800\/mês/)).toBeVisible()
+    expect(screen.getByText('ricardo.mendes@email.com')).toBeVisible()
+    expect(screen.getByText('Apt 3q Jardins (Moema / Pinheiros)')).toBeVisible()
+    expect(screen.getByText('R$ 4.500 a R$ 5.500/mês')).toBeVisible()
+    expect(screen.getByText('Imediato (Mudança em 30 dias)')).toBeVisible()
+
+    ;['Apto Jardins Premium', 'Vila Mariana Unique', 'Pinheiros Office Spot'].forEach((title) =>
+      expect(screen.getByText(title)).toBeVisible(),
+    )
+    ;['84% Match', '88% Match', '75% Match'].forEach((match) =>
+      expect(screen.getByText(match)).toBeVisible(),
+    )
+    ;['Chamada telefônica', 'E-mail enviado', 'Oportunidade criada'].forEach((activity) =>
+      expect(screen.getByText(activity)).toBeVisible(),
+    )
+    ;['Hoje, 11:15', 'Ontem, 16:30', '24 Set, 09:10'].forEach((date) =>
+      expect(screen.getByText(date)).toBeVisible(),
+    )
+    expect(screen.getByText('Visita no Apto Jardins Premium')).toBeVisible()
+    expect(screen.getByText('Follow-up da proposta e documentação')).toBeVisible()
+
+    expect(screen.getByRole('button', { name: 'Mover para Proposta' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Descartar Lead' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Adicionar Nota Rápida' })).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Mais ações do lead' })).not.toBeInTheDocument()
+  })
+
+  it('builds the presentation from live opportunity and property data', () => {
     renderDetail()
 
-    expect(screen.getAllByText('Ricardo Mendes').length).toBeGreaterThan(0)
-    expect(screen.getByText('ricardo@example.com')).toBeInTheDocument()
-    expect(screen.getByText('Apartamento Jardins')).toBeInTheDocument()
-    expect(screen.getByText(/R\$\s*4\.800\/mês/)).toBeInTheDocument()
-    expect(screen.getByText('Oportunidade criada')).toBeInTheDocument()
-    expect(screen.getByText('Oportunidade atualizada')).toBeInTheDocument()
-    expect(screen.getByText('Nenhuma próxima ação cadastrada')).toBeInTheDocument()
-    expect(screen.queryByText(/imóveis sugeridos/i)).not.toBeInTheDocument()
+    expect(screen.getByText('ricardo@example.com')).toBeVisible()
+    expect(screen.getAllByText(/Apartamento Jardins/).length).toBeGreaterThan(0)
+    expect(screen.getByText('Apartamento · 84m² · Jardins · São Paulo')).toBeVisible()
+    expect(screen.getByText('Oportunidade criada')).toBeVisible()
+    expect(screen.getByText('Oportunidade atualizada')).toBeVisible()
+    expect(screen.getByText('Nenhuma próxima ação cadastrada')).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Imóveis Sugeridos' })).toBeVisible()
   })
 
-  it('confirms and persists a status change through PATCH', async () => {
+  it('confirms and persists a status change through the existing mutation', async () => {
     const user = userEvent.setup()
     renderDetail()
 
-    await user.click(screen.getByRole('button', { name: /mover de etapa/i }))
+    await user.click(screen.getByRole('button', { name: 'Mover de etapa' }))
     await user.click(screen.getByRole('menuitem', { name: 'Negociação' }))
 
     const dialog = screen.getByRole('dialog', { name: 'Confirmar mudança de etapa' })
@@ -157,46 +173,35 @@ describe('OpportunityDetail', () => {
     })
   })
 
-  it('edits API-compatible fields and observations', async () => {
+  it('requires confirmation before discarding a live lead', async () => {
     const user = userEvent.setup()
     renderDetail()
 
-    await user.click(screen.getByRole('button', { name: 'Editar dados' }))
-    const dialog = screen.getByRole('dialog', { name: 'Editar oportunidade' })
-    const observations = within(dialog).getByLabelText('Observações')
-    fireEvent.change(observations, { target: { value: 'Agendar retorno na sexta-feira.' } })
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar alterações' }))
+    await user.click(screen.getByRole('button', { name: 'Descartar Lead' }))
+    expect(mocks.update).not.toHaveBeenCalled()
 
-    await waitFor(() => expect(mocks.update).toHaveBeenCalledTimes(1))
-    expect(mocks.update).toHaveBeenCalledWith({
-      id: opportunity.id,
-      changes: expect.objectContaining({
-        interessadoNome: opportunity.interessadoNome,
-        interessadoEmail: opportunity.interessadoEmail,
-        valorProposto: opportunity.valorProposto,
-        observacoes: 'Agendar retorno na sexta-feira.',
+    const dialog = screen.getByRole('dialog', { name: 'Confirmar mudança de etapa' })
+    expect(within(dialog).getByText(/Proposta enviada para Perdido/)).toBeInTheDocument()
+    await user.click(within(dialog).getByRole('button', { name: 'Confirmar mudança' }))
+
+    await waitFor(() =>
+      expect(mocks.update).toHaveBeenCalledWith({
+        id: opportunity.id,
+        changes: { status: 'RECUSADA' },
       }),
-    })
-    expect(mocks.enqueueSnackbar).toHaveBeenCalledWith('Oportunidade atualizada.', {
-      variant: 'success',
-    })
+    )
   })
 
-  it('requires confirmation before soft-archiving', async () => {
+  it('acknowledges the quick-note action without inventing persistence', async () => {
     const user = userEvent.setup()
     renderDetail()
 
-    await user.click(screen.getByRole('button', { name: 'Arquivar' }))
-    expect(mocks.archive).not.toHaveBeenCalled()
+    await user.click(screen.getByRole('button', { name: 'Adicionar Nota Rápida' }))
 
-    const dialog = screen.getByRole('dialog', { name: 'Arquivar oportunidade?' })
-    await user.click(within(dialog).getByRole('button', { name: 'Arquivar oportunidade' }))
-
-    await waitFor(() => expect(mocks.archive).toHaveBeenCalledWith(opportunity.id))
-    expect(mocks.replace).toHaveBeenCalledWith('/crm')
-    expect(mocks.enqueueSnackbar).toHaveBeenCalledWith('Oportunidade arquivada.', {
-      variant: 'success',
-    })
+    expect(mocks.enqueueSnackbar).toHaveBeenCalledWith(
+      'Notas rápidas estarão disponíveis em breve.',
+      { variant: 'info' },
+    )
   })
 
   it('shows loading and request error states', () => {

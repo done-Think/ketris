@@ -13,6 +13,8 @@ const session = {
   papel: 'AGENT',
 }
 
+const opportunityDetailFixtureId = 'pipeline-fixture-ricardo-mendes'
+
 const properties = [
   {
     id: 'property-1',
@@ -175,13 +177,27 @@ describe('CRM', () => {
     })
     cy.screenshot('crm-contacts-desktop', { capture: 'fullPage' })
 
-    cy.viewport(1440, 900)
-    cy.visit('/crm/oportunidades/opportunity-1')
-    cy.wait(['@session', '@opportunity', '@property'])
+    cy.viewport(1200, 748)
+    cy.visit(`/crm/oportunidades/${opportunityDetailFixtureId}`)
+    cy.wait('@session')
     waitForUi()
 
     cy.get('h1').contains('Ricardo Mendes').should('be.visible')
-    cy.contains('Apartamento Jardins Premium').should('be.visible')
+    cy.contains('Qualificação').should('be.visible')
+    cy.contains('R$ 4.800/mês').should('be.visible')
+    cy.contains('Apto Jardins Premium').should('be.visible')
+    cy.contains('Vila Mariana Unique').should('be.visible')
+    cy.contains('Pinheiros Office Spot').should('be.visible')
+    cy.contains('84% Match').should('be.visible')
+    cy.contains('Chamada telefônica').should('be.visible')
+    cy.contains('Follow-up da proposta e documentação').should('be.visible')
+    cy.contains('button', 'Mover para Proposta').should('be.visible')
+    cy.contains('button', 'Descartar Lead').should('be.visible')
+    cy.contains('button', 'Adicionar Nota Rápida').should('be.visible')
+    cy.get('a[href="/crm"]').should('have.attr', 'aria-current', 'page')
+    cy.document().then((document) => {
+      expect(document.documentElement.scrollWidth).to.eq(document.documentElement.clientWidth)
+    })
     cy.screenshot('crm-opportunity-desktop', { capture: 'viewport' })
   })
 
@@ -211,13 +227,15 @@ describe('CRM', () => {
     })
     cy.screenshot('crm-contacts-mobile', { capture: 'viewport' })
 
-    cy.visit('/crm/oportunidades/opportunity-1')
-    cy.wait(['@session', '@opportunity', '@property'])
+    cy.visit(`/crm/oportunidades/${opportunityDetailFixtureId}`)
+    cy.wait('@session')
     waitForUi()
 
     cy.get('h1').contains('Ricardo Mendes').should('be.visible')
-    cy.contains('Informações de contato e interesse').should('be.visible')
-    cy.document().its('documentElement.scrollWidth').should('eq', 390)
+    cy.contains('Informações de Contato & Interesse').should('be.visible')
+    cy.document().then((document) => {
+      expect(document.documentElement.scrollWidth).to.eq(document.documentElement.clientWidth)
+    })
     cy.screenshot('crm-opportunity-mobile', { capture: 'viewport' })
   })
 })
