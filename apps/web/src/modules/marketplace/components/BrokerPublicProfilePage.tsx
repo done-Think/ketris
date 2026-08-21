@@ -1,12 +1,14 @@
 'use client'
 
+import { useRef, useState } from 'react'
 import { Box, Container } from '@mui/material'
 
-import { HomeHeader, SiteFooter } from '@shared/components/layout'
+import { HomeHeader, ProfileModal, SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
 import { getBrokerProfileTheme } from '../config/broker-profile-themes'
 import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
+import { profileActions, userProfile } from '../data/user-profile'
 import type { BrokerPublicProfilePageProps } from '../types/broker'
 import { buildProfileListings } from '../utils/profile-listings'
 import { BrokerProfileHero } from './profile/BrokerProfileHero'
@@ -15,6 +17,8 @@ import { PublicProfileMetrics } from './profile/PublicProfileMetrics'
 import { PublicProfileSidebar } from './profile/PublicProfileSidebar'
 
 export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps) {
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const theme = getBrokerProfileTheme(broker.id)
   const representedListings = buildProfileListings(broker.highlightedListings)
   const navigationItems = homeNavigationItems.map((item) => ({
@@ -24,7 +28,20 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
 
   return (
     <Box sx={{ bgcolor: surface.app, minHeight: '100vh', overflowX: 'clip' }}>
-      <HomeHeader navigationItems={navigationItems} />
+      <HomeHeader
+        navigationItems={navigationItems}
+        profileButtonRef={profileButtonRef}
+        userProfile={userProfile}
+        onToggleProfile={() => setIsProfileOpen((current) => !current)}
+      />
+
+      <ProfileModal
+        open={isProfileOpen}
+        anchorRef={profileButtonRef}
+        actions={profileActions}
+        userProfile={userProfile}
+        onClose={() => setIsProfileOpen(false)}
+      />
 
       <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
         <Box
