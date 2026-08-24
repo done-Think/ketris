@@ -2,16 +2,17 @@
 
 import { Box, Container } from '@mui/material'
 
-import { HomeHeader, SiteFooter } from '@shared/components/layout'
+import { SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
-import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
+import { footerColumns, legalLinks } from '../config/navigation'
 import { brokers } from '../data/brokers'
 import { useDirectoryList } from '../hooks/use-directory-list'
 import type { BrokerProfile } from '../types/broker'
 import { BrokerCard } from './BrokerCard'
 import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
 import { DirectoryPageHeader } from './directory/DirectoryPageHeader'
+import { MarketplaceHeader } from './MarketplaceHeader'
 import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 
 const initialBrokerCount = 4
@@ -37,10 +38,6 @@ export function BrokersPage() {
     items: brokers,
     pageSize: brokerPageSize,
   })
-  const navigationItems = homeNavigationItems.map((item) => ({
-    ...item,
-    active: item.href === '/corretores',
-  }))
 
   return (
     <Box
@@ -52,7 +49,7 @@ export function BrokersPage() {
         bgcolor: surface.app,
       }}
     >
-      <HomeHeader navigationItems={navigationItems} />
+      <MarketplaceHeader activeItemId="brokers" />
 
       <Box component="main" sx={{ py: { xs: 2.4, md: 4 } }}>
         <Container maxWidth="xl">

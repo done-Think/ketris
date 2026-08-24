@@ -2,16 +2,17 @@
 
 import { Box, Container } from '@mui/material'
 
-import { HomeHeader, SiteFooter } from '@shared/components/layout'
+import { SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
-import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
+import { footerColumns, legalLinks } from '../config/navigation'
 import { agencies } from '../data/agencies'
 import { useDirectoryList } from '../hooks/use-directory-list'
 import type { AgencyProfile } from '../types/agency'
 import { AgencyCard } from './AgencyCard'
 import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
 import { DirectoryPageHeader } from './directory/DirectoryPageHeader'
+import { MarketplaceHeader } from './MarketplaceHeader'
 import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 
 const initialAgencyCount = 4
@@ -37,10 +38,6 @@ export function AgenciesPage() {
     items: agencies,
     pageSize: agencyPageSize,
   })
-  const navigationItems = homeNavigationItems.map((item) => ({
-    ...item,
-    active: item.href === '/imobiliarias',
-  }))
 
   return (
     <Box
@@ -52,7 +49,7 @@ export function AgenciesPage() {
         bgcolor: surface.app,
       }}
     >
-      <HomeHeader navigationItems={navigationItems} />
+      <MarketplaceHeader activeItemId="agencies" />
 
       <Box component="main" sx={{ py: { xs: 2.4, md: 4 } }}>
         <Container maxWidth="xl">
