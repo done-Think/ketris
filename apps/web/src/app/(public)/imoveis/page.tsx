@@ -1,20 +1,16 @@
-import { cookies } from 'next/headers'
-
 import { SearchResultsPage } from '@modules/marketplace'
-import {
-  isSearchResultsViewMode,
-  searchResultsViewModeCookieKey,
-} from '@modules/marketplace/config/search-results-view-mode'
+import type { SearchResultsRoutePageProps } from '@modules/marketplace/types/search'
 
-type ImoveisPageProps = {
-  searchParams?: {
-    finalidade?: string
-    localizacao?: string
-  }
+function getSelectedPurpose(searchParams: SearchResultsRoutePageProps['searchParams']) {
+  return searchParams?.purpose ?? searchParams?.finalidade
 }
 
-export function generateMetadata({ searchParams }: ImoveisPageProps) {
-  const purpose = searchParams?.finalidade === 'comprar' ? 'Comprar' : 'Alugar'
+function getSelectedLocation(searchParams: SearchResultsRoutePageProps['searchParams']) {
+  return searchParams?.location ?? searchParams?.localizacao
+}
+
+export function generateMetadata({ searchParams }: SearchResultsRoutePageProps) {
+  const purpose = getSelectedPurpose(searchParams) === 'comprar' ? 'Comprar' : 'Alugar'
 
   return {
     title: `Ketris | ${purpose}`,
@@ -22,14 +18,14 @@ export function generateMetadata({ searchParams }: ImoveisPageProps) {
   }
 }
 
-export default function ImoveisPage({ searchParams }: ImoveisPageProps) {
-  const storedViewMode = cookies().get(searchResultsViewModeCookieKey)?.value
+export default function ImoveisPage({ searchParams }: SearchResultsRoutePageProps) {
+  const selectedPurpose = getSelectedPurpose(searchParams)
+  const selectedLocation = getSelectedLocation(searchParams)
 
   return (
     <SearchResultsPage
-      purpose={searchParams?.finalidade === 'comprar' ? 'comprar' : 'alugar'}
-      initialLocation={searchParams?.localizacao}
-      initialViewMode={isSearchResultsViewMode(storedViewMode) ? storedViewMode : 'grid'}
+      purpose={selectedPurpose === 'comprar' ? 'comprar' : 'alugar'}
+      initialLocation={selectedLocation}
     />
   )
 }

@@ -71,7 +71,6 @@ export function PropertyDetailPage({
 
       <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
         <PropertyBreadcrumbs
-          category={property.category}
           context={breadcrumbContext}
           location={property.location}
           propertyTitle={property.title}

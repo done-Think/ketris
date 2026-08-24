@@ -16,6 +16,7 @@ import { AgencyCard } from './AgencyCard'
 import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
 import { DirectoryPageHeader } from './directory/DirectoryPageHeader'
 import { DirectoryViewModeToggle } from './directory/DirectoryViewModeToggle'
+import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 
 const initialAgencyCount = 4
 const agencyPageSize = 3
@@ -75,6 +76,9 @@ export function AgenciesPage() {
 
       <Box component="main" sx={{ py: { xs: 2.4, md: 4 } }}>
         <Container maxWidth="xl">
+          <MarketplaceBreadcrumbs
+            items={[{ label: 'Home', href: '/' }, { label: 'Imobiliárias' }]}
+          />
           <DirectoryPageHeader
             actions={<DirectoryViewModeToggle value={viewMode} onChange={setViewMode} />}
             placeholder="Nome, CRECI, região ou cobertura"

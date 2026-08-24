@@ -10,6 +10,7 @@ import { homeNavigationItems } from '../config/navigation'
 import { profileActions, userProfile } from '../data/user-profile'
 import { useSearchResults } from '../hooks/use-search-results'
 import type { SearchResultsPageProps } from '../types/search'
+import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 import {
   SearchResultsFilterButton,
   SearchResultsFilters,
@@ -19,18 +20,15 @@ import { SearchResultsMapPanel } from './search-results/SearchResultsMapPanel'
 import { SearchResultsPagination } from './search-results/SearchResultsPagination'
 import { SearchResultsToolbar } from './search-results/SearchResultsToolbar'
 
-export function SearchResultsPage({
-  initialLocation = '',
-  initialViewMode,
-  purpose,
-}: SearchResultsPageProps) {
+export function SearchResultsPage({ initialLocation = '', purpose }: SearchResultsPageProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
-  const results = useSearchResults({ purpose, initialLocation, initialViewMode })
+  const results = useSearchResults({ purpose, initialLocation })
   const navigationItems = homeNavigationItems.map((item) => ({
     ...item,
     active: item.href.includes(`finalidade=${purpose}`),
   }))
+  const purposeLabel = purpose === 'comprar' ? 'Comprar' : 'Alugar'
 
   return (
     <Box
@@ -72,6 +70,7 @@ export function SearchResultsPage({
             minWidth: 0,
           }}
         >
+          <MarketplaceBreadcrumbs items={[{ label: 'Home', href: '/' }, { label: purposeLabel }]} />
           <SearchResultsFilters
             locationQuery={results.locationQuery}
             setLocationQuery={results.setLocationQuery}

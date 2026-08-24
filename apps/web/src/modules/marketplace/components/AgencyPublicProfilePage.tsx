@@ -16,6 +16,7 @@ import type { AgencyPublicProfilePageProps } from '../types/agency'
 import { brokers } from '../data/brokers'
 import { profileActions, userProfile } from '../data/user-profile'
 import { buildProfileListings } from '../utils/profile-listings'
+import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 import { AgencyProfileHero } from './profile/AgencyProfileHero'
 import { PublicProfileListings } from './profile/PublicProfileListings'
 import { PublicProfileMetrics } from './profile/PublicProfileMetrics'
@@ -55,6 +56,13 @@ export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps
       />
 
       <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
+        <MarketplaceBreadcrumbs
+          items={[
+            { label: 'Home', href: '/' },
+            { label: 'Imobiliárias', href: '/imobiliarias' },
+            { label: agency.name },
+          ]}
+        />
         <Box
           sx={{
             display: 'grid',
