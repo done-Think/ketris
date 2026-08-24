@@ -10,6 +10,7 @@ import { getBrokerProfileTheme } from '../config/broker-profile-themes'
 import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
 import { profileActions, userProfile } from '../data/user-profile'
 import type { BrokerPublicProfilePageProps } from '../types/broker'
+import { formatRating } from '../utils/format-rating'
 import { buildProfileListings } from '../utils/profile-listings'
 import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 import { BrokerProfileHero } from './profile/BrokerProfileHero'
@@ -68,7 +69,7 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
             <PublicProfileMetrics
               accentColor={theme.accent}
               metrics={[
-                { label: 'Nota', value: broker.rating },
+                { label: 'Nota', value: formatRating(broker.rating) },
                 { label: 'Tempo médio', value: broker.responseTime },
                 { label: 'Ativos', value: broker.activeListings },
                 { label: 'Fechados', value: broker.dealsClosed },

@@ -7,6 +7,7 @@ import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/
 
 import type { BrokerProfileTheme } from '../../config/broker-profile-themes'
 import type { BrokerProfile } from '../../types/broker'
+import { formatRating } from '../../utils/format-rating'
 
 type BrokerProfileHeroProps = {
   broker: BrokerProfile
@@ -85,7 +86,7 @@ export function BrokerProfileHero({ broker, theme }: BrokerProfileHeroProps) {
             />
             <Chip
               icon={<StarRoundedIcon sx={{ fontSize: iconSize.xs }} />}
-              label={broker.rating}
+              label={formatRating(broker.rating)}
               size="small"
               sx={{
                 borderRadius: `${radius.sm}px`,

@@ -15,6 +15,7 @@ import { footerColumns, homeNavigationItems, legalLinks } from '../config/naviga
 import type { AgencyPublicProfilePageProps } from '../types/agency'
 import { brokers } from '../data/brokers'
 import { profileActions, userProfile } from '../data/user-profile'
+import { formatRating } from '../utils/format-rating'
 import { buildProfileListings } from '../utils/profile-listings'
 import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 import { AgencyProfileHero } from './profile/AgencyProfileHero'
@@ -79,7 +80,7 @@ export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps
                 { label: 'Imóveis', value: agency.activeListings, icon: ApartmentOutlinedIcon },
                 { label: 'Equipe', value: agency.brokersCount, icon: GroupsOutlinedIcon },
                 { label: 'Anos', value: agency.yearsInMarket, icon: HomeWorkOutlinedIcon },
-                { label: 'Nota', value: agency.rating, icon: StarRoundedIcon },
+                { label: 'Nota', value: formatRating(agency.rating), icon: StarRoundedIcon },
               ]}
             />
             <Box

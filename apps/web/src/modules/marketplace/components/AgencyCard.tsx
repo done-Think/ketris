@@ -20,6 +20,7 @@ import {
 } from '@shared/theme/tokens'
 
 import type { AgencyCardProps } from '../types/agency'
+import { formatRating } from '../utils/format-rating'
 import { buildProfileListings } from '../utils/profile-listings'
 import { AgencyBrandBanner } from './AgencyBrandBanner'
 
@@ -106,7 +107,7 @@ export function AgencyCard(agency: AgencyCardProps) {
             {[
               { label: 'Imóveis', value: agency.activeListings, icon: ApartmentOutlinedIcon },
               { label: 'Equipe', value: agency.brokersCount, icon: GroupsOutlinedIcon },
-              { label: 'Nota', value: agency.rating, icon: StarRoundedIcon },
+              { label: 'Nota', value: formatRating(agency.rating), icon: StarRoundedIcon },
             ].map(({ label, value, icon: Icon }) => (
               <Box
                 key={label}
