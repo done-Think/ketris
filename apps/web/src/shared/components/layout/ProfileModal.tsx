@@ -1,11 +1,11 @@
 'use client'
 
-import { type ComponentType, type RefObject, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Avatar, Box, Button, IconButton, Stack, Typography } from '@mui/material'
-import type { SvgIconProps } from '@mui/material/SvgIcon'
 import CloseIcon from '@mui/icons-material/Close'
 import Link from 'next/link'
 
+import type { ProfileModalProps } from '@shared/types'
 import {
   alpha,
   componentText,
@@ -15,25 +15,6 @@ import {
   surface,
   zIndex,
 } from '@shared/theme/tokens'
-
-type ProfileModalProps = {
-  open: boolean
-  anchorRef: RefObject<HTMLButtonElement>
-  userProfile: {
-    name: string
-    role: string
-    company: string
-    email: string
-    avatar: string
-  }
-  actions: Array<{
-    label: string
-    icon: ComponentType<SvgIconProps>
-    href: string
-    tone?: 'danger'
-  }>
-  onClose: () => void
-}
 
 export function ProfileModal({
   open,

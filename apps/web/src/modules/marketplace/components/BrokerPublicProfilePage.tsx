@@ -2,13 +2,14 @@
 
 import { Box, Container } from '@mui/material'
 
-import { HomeHeader, SiteFooter } from '@shared/components/layout'
+import { SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
 import { getBrokerProfileTheme } from '../config/broker-profile-themes'
-import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
+import { footerColumns, legalLinks } from '../config/navigation'
 import type { BrokerPublicProfilePageProps } from '../types/broker'
 import { buildProfileListings } from '../utils/profile-listings'
+import { MarketplaceHeader } from './MarketplaceHeader'
 import { BrokerProfileHero } from './profile/BrokerProfileHero'
 import { PublicProfileListings } from './profile/PublicProfileListings'
 import { PublicProfileMetrics } from './profile/PublicProfileMetrics'
@@ -17,14 +18,10 @@ import { PublicProfileSidebar } from './profile/PublicProfileSidebar'
 export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps) {
   const theme = getBrokerProfileTheme(broker.id)
   const representedListings = buildProfileListings(broker.highlightedListings)
-  const navigationItems = homeNavigationItems.map((item) => ({
-    ...item,
-    active: item.href === '/corretores',
-  }))
 
   return (
     <Box sx={{ bgcolor: surface.app, minHeight: '100vh', overflowX: 'clip' }}>
-      <HomeHeader navigationItems={navigationItems} />
+      <MarketplaceHeader activeItemId="brokers" />
 
       <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
         <Box

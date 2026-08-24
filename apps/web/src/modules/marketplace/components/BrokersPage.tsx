@@ -1,19 +1,18 @@
 'use client'
 
-import { useRef, useState } from 'react'
 import { Box, Container } from '@mui/material'
 
-import { HomeHeader, ProfileModal, SiteFooter } from '@shared/components/layout'
+import { SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
-import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
+import { footerColumns, legalLinks } from '../config/navigation'
 import { brokers } from '../data/brokers'
-import { profileActions, userProfile } from '../data/user-profile'
 import { useDirectoryList } from '../hooks/use-directory-list'
 import type { BrokerProfile } from '../types/broker'
 import { BrokerCard } from './BrokerCard'
 import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
 import { DirectoryPageHeader } from './directory/DirectoryPageHeader'
+import { MarketplaceHeader } from './MarketplaceHeader'
 
 const initialBrokerCount = 4
 const brokerPageSize = 3
@@ -25,8 +24,6 @@ function getBrokerSearchableText(broker: BrokerProfile) {
 }
 
 export function BrokersPage() {
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const {
     filteredItems: filteredBrokers,
     hasMoreItems: hasMoreBrokers,
@@ -40,10 +37,6 @@ export function BrokersPage() {
     items: brokers,
     pageSize: brokerPageSize,
   })
-  const navigationItems = homeNavigationItems.map((item) => ({
-    ...item,
-    active: item.href === '/corretores',
-  }))
 
   return (
     <Box
@@ -55,20 +48,7 @@ export function BrokersPage() {
         bgcolor: surface.app,
       }}
     >
-      <HomeHeader
-        navigationItems={navigationItems}
-        profileButtonRef={profileButtonRef}
-        userProfile={userProfile}
-        onToggleProfile={() => setIsProfileOpen((current) => !current)}
-      />
-
-      <ProfileModal
-        open={isProfileOpen}
-        anchorRef={profileButtonRef}
-        actions={profileActions}
-        userProfile={userProfile}
-        onClose={() => setIsProfileOpen(false)}
-      />
+      <MarketplaceHeader activeItemId="brokers" />
 
       <Box component="main" sx={{ py: { xs: 2.4, md: 4 } }}>
         <Container maxWidth="xl">

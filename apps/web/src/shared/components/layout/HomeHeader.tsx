@@ -1,10 +1,10 @@
-import { type RefObject } from 'react'
 import { Avatar, Box, Button, Container, IconButton, Link as MuiLink, Stack } from '@mui/material'
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
 import Link from 'next/link'
 
 import ketrisLogoTransparent from '@shared/assets/ketris-logo-transparent.png'
 import { AppLogo } from '@shared/components/ui'
+import type { HomeHeaderProps } from '@shared/types'
 import {
   componentText,
   iconSize,
@@ -14,20 +14,6 @@ import {
   surface,
   zIndex,
 } from '@shared/theme/tokens'
-
-type HomeHeaderProps = {
-  navigationItems: ReadonlyArray<{
-    label: string
-    href: string
-    active?: boolean
-  }>
-  profileButtonRef?: RefObject<HTMLButtonElement>
-  userProfile?: {
-    name: string
-    avatar: string
-  }
-  onToggleProfile?: () => void
-}
 
 export function HomeHeader({
   navigationItems,
