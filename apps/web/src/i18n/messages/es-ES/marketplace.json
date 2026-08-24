@@ -1,0 +1,54 @@
+{
+  "header": {
+    "announceProperty": "Publicar inmueble",
+    "closeMenu": "Cerrar menú",
+    "mainMenu": "Menú principal",
+    "notifications": "notificaciones",
+    "openMenu": "Abrir menú",
+    "openProfile": "Abrir perfil"
+  },
+  "profile": {
+    "dialogLabel": "Perfil del usuario",
+    "closeProfile": "Cerrar perfil",
+    "language": "Idioma",
+    "languages": {
+      "en": "Inglés",
+      "es": "Español",
+      "ptBR": "Portugués"
+    },
+    "role": "Corredor asociado",
+    "actions": {
+      "settings": "Configuración",
+      "signOut": "Salir",
+      "support": "Soporte",
+      "switchMode": "Cambiar modalidad"
+    }
+  },
+  "navigation": {
+    "agencies": "Inmobiliarias",
+    "brokers": "Corredores",
+    "buy": "Comprar",
+    "home": "Inicio",
+    "rent": "Alquilar"
+  },
+  "footer": {
+    "columns": {
+      "company": "Empresa",
+      "forYou": "Para ti",
+      "brokers": "Corredores"
+    },
+    "links": {
+      "contact": "Contacto",
+      "favorites": "Favoritos",
+      "financialSimulator": "Simulador financiero",
+      "listProperty": "Quiero anunciar",
+      "partnerPortal": "Portal de socios",
+      "privacyPolicy": "Política de privacidad",
+      "searchProperties": "Buscar inmuebles",
+      "termsOfUse": "Términos de uso",
+      "workWithUs": "Trabaja con nosotros",
+      "aboutUs": "Sobre nosotros",
+      "corporateSolutions": "Soluciones corporativas"
+    }
+  }
+}

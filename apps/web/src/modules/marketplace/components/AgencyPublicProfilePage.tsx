@@ -9,7 +9,7 @@ import StarRoundedIcon from '@mui/icons-material/StarRounded'
 import { HomeHeader, SiteFooter } from '@shared/components/layout'
 import { radius, surface } from '@shared/theme/tokens'
 
-import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
+import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { AgencyPublicProfilePageProps } from '../types/agency'
 import { buildProfileListings } from '../utils/profile-listings'
 import { AgencyProfileHero } from './profile/AgencyProfileHero'
@@ -18,10 +18,11 @@ import { PublicProfileMetrics } from './profile/PublicProfileMetrics'
 import { PublicProfileSidebar } from './profile/PublicProfileSidebar'
 
 export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps) {
+  const { footerColumns, homeNavigationItems, legalLinks } = useMarketplaceNavigation()
   const representedListings = buildProfileListings(agency.featuredListings)
   const navigationItems = homeNavigationItems.map((item) => ({
     ...item,
-    active: item.href === '/imobiliarias',
+    active: item.key === 'agencies',
   }))
 
   return (

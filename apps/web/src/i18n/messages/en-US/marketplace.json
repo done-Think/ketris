@@ -1,0 +1,54 @@
+{
+  "header": {
+    "announceProperty": "List Property",
+    "closeMenu": "Close menu",
+    "mainMenu": "Main menu",
+    "notifications": "notifications",
+    "openMenu": "Open menu",
+    "openProfile": "Open profile"
+  },
+  "profile": {
+    "dialogLabel": "User profile",
+    "closeProfile": "Close profile",
+    "language": "Language",
+    "languages": {
+      "en": "English",
+      "es": "Spanish",
+      "ptBR": "Portuguese"
+    },
+    "role": "Partner broker",
+    "actions": {
+      "settings": "Settings",
+      "signOut": "Sign out",
+      "support": "Support",
+      "switchMode": "Switch mode"
+    }
+  },
+  "navigation": {
+    "agencies": "Agencies",
+    "brokers": "Brokers",
+    "buy": "Buy",
+    "home": "Home",
+    "rent": "Rent"
+  },
+  "footer": {
+    "columns": {
+      "company": "Company",
+      "forYou": "For you",
+      "brokers": "Brokers"
+    },
+    "links": {
+      "contact": "Contact",
+      "favorites": "Favorites",
+      "financialSimulator": "Financial simulator",
+      "listProperty": "List property",
+      "partnerPortal": "Partner portal",
+      "privacyPolicy": "Privacy Policy",
+      "searchProperties": "Search properties",
+      "termsOfUse": "Terms of Use",
+      "workWithUs": "Work with us",
+      "aboutUs": "About us",
+      "corporateSolutions": "Corporate solutions"
+    }
+  }
+}

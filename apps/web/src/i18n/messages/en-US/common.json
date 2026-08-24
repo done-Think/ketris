@@ -1,0 +1,13 @@
+{
+  "app": {
+    "name": "Ketris"
+  },
+  "actions": {
+    "backHome": "Back to home"
+  },
+  "errors": {
+    "notFound": "Page not found.",
+    "unexpectedTitle": "Something went wrong.",
+    "unexpectedDescription": "Our team has been notified. Please try again shortly."
+  }
+}

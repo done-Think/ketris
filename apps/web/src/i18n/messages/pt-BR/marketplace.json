@@ -1,0 +1,54 @@
+{
+  "header": {
+    "announceProperty": "Anunciar Imóvel",
+    "closeMenu": "Fechar menu",
+    "mainMenu": "Menu principal",
+    "notifications": "notificações",
+    "openMenu": "Abrir menu",
+    "openProfile": "Abrir perfil"
+  },
+  "profile": {
+    "dialogLabel": "Perfil do usuário",
+    "closeProfile": "Fechar perfil",
+    "language": "Idioma",
+    "languages": {
+      "en": "Inglês",
+      "es": "Espanhol",
+      "ptBR": "Português"
+    },
+    "role": "Corretor parceiro",
+    "actions": {
+      "settings": "Configurações",
+      "signOut": "Sair",
+      "support": "Suporte",
+      "switchMode": "Trocar modalidade"
+    }
+  },
+  "navigation": {
+    "agencies": "Imobiliárias",
+    "brokers": "Corretores",
+    "buy": "Comprar",
+    "home": "Início",
+    "rent": "Alugar"
+  },
+  "footer": {
+    "columns": {
+      "company": "Empresa",
+      "forYou": "Para você",
+      "brokers": "Corretores"
+    },
+    "links": {
+      "contact": "Contato",
+      "favorites": "Favoritos",
+      "financialSimulator": "Simulador financeiro",
+      "listProperty": "Quero anunciar",
+      "partnerPortal": "Portal parceiro",
+      "privacyPolicy": "Política de Privacidade",
+      "searchProperties": "Buscar imóveis",
+      "termsOfUse": "Termos de Uso",
+      "workWithUs": "Trabalhe conosco",
+      "aboutUs": "Sobre nós",
+      "corporateSolutions": "Soluções corporativas"
+    }
+  }
+}

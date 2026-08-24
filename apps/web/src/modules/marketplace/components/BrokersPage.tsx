@@ -5,9 +5,9 @@ import { Box, Container } from '@mui/material'
 import { HomeHeader, SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
-import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
 import { brokers } from '../data/brokers'
 import { useDirectoryList } from '../hooks/use-directory-list'
+import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { BrokerProfile } from '../types/broker'
 import { BrokerCard } from './BrokerCard'
 import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
@@ -23,6 +23,7 @@ function getBrokerSearchableText(broker: BrokerProfile) {
 }
 
 export function BrokersPage() {
+  const { footerColumns, homeNavigationItems, legalLinks } = useMarketplaceNavigation()
   const {
     filteredItems: filteredBrokers,
     hasMoreItems: hasMoreBrokers,
@@ -38,7 +39,7 @@ export function BrokersPage() {
   })
   const navigationItems = homeNavigationItems.map((item) => ({
     ...item,
-    active: item.href === '/corretores',
+    active: item.key === 'brokers',
   }))
 
   return (

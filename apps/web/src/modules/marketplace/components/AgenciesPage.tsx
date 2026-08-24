@@ -5,9 +5,9 @@ import { Box, Container } from '@mui/material'
 import { HomeHeader, SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
-import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
 import { agencies } from '../data/agencies'
 import { useDirectoryList } from '../hooks/use-directory-list'
+import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { AgencyProfile } from '../types/agency'
 import { AgencyCard } from './AgencyCard'
 import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
@@ -23,6 +23,7 @@ function getAgencySearchableText(agency: AgencyProfile) {
 }
 
 export function AgenciesPage() {
+  const { footerColumns, homeNavigationItems, legalLinks } = useMarketplaceNavigation()
   const {
     filteredItems: filteredAgencies,
     hasMoreItems: hasMoreAgencies,
@@ -38,7 +39,7 @@ export function AgenciesPage() {
   })
   const navigationItems = homeNavigationItems.map((item) => ({
     ...item,
-    active: item.href === '/imobiliarias',
+    active: item.key === 'agencies',
   }))
 
   return (

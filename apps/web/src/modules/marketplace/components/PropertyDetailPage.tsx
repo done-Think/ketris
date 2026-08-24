@@ -6,8 +6,8 @@ import { Box, Container } from '@mui/material'
 import { HomeHeader, ProfileModal, SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
-import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
 import { profileActions, userProfile } from '../data/user-profile'
+import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { PropertyDetailPageProps } from '../types/property-detail'
 import { PropertyBreadcrumbs } from './PropertyBreadcrumbs'
 import { PropertyContactCard } from './property-detail/PropertyContactCard'
@@ -16,13 +16,14 @@ import { PropertyOverview } from './property-detail/PropertyOverview'
 import { PropertyPhotoDialog } from './property-detail/PropertyPhotoDialog'
 
 export function PropertyDetailPage({ property, activePurpose }: PropertyDetailPageProps) {
+  const { footerColumns, homeNavigationItems, legalLinks } = useMarketplaceNavigation()
   const [activePhotoIndex, setActivePhotoIndex] = useState(0)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const navigationItems = homeNavigationItems.map((item) => ({
     ...item,
-    active: activePurpose ? item.href.includes(`finalidade=${activePurpose}`) : false,
+    active: activePurpose ? item.key === (activePurpose === 'comprar' ? 'buy' : 'rent') : false,
   }))
 
   const openGallery = (photoIndex: number) => {

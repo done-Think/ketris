@@ -1,8 +1,11 @@
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { Metadata } from 'next'
 import { Roboto } from 'next/font/google'
+import { getLocale, getMessages } from 'next-intl/server'
 
 import { Providers } from './providers'
+import { defaultTimeZone } from '@/i18n/formats'
+import { defaultLocale, isAppLocale } from '@/i18n/routing'
 
 const roboto = Roboto({
   subsets: ['latin'],
@@ -25,11 +28,15 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const currentLocale = await getLocale()
+  const locale = isAppLocale(currentLocale) ? currentLocale : defaultLocale
+  const messages = await getMessages({ locale })
+
   return (
-    <html lang="pt-BR" className={roboto.variable}>
+    <html lang={locale} className={roboto.variable}>
       <body>
-        <Providers>{children}</Providers>
+        <Providers i18n={{ locale, messages, timeZone: defaultTimeZone }}>{children}</Providers>
       </body>
     </html>
   )

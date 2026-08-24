@@ -1,10 +1,13 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
+import createMiddleware from 'next-intl/middleware'
 
+import { routing } from './i18n/routing'
 import { createRateLimitPolicy, InMemoryRateLimitStore } from '@server/security/rate-limit'
 import type { RateLimitPolicy, RateLimitResult } from '@server/security/types/rate-limit.types'
 
 const store = new InMemoryRateLimitStore()
+const handleI18nRouting = createMiddleware(routing)
 
 const apiPolicy = createRateLimitPolicy(
   'api',
@@ -26,6 +29,10 @@ const authPaths = new Set([
 ])
 
 export function middleware(request: NextRequest) {
+  if (!request.nextUrl.pathname.startsWith('/api')) {
+    return handleI18nRouting(request)
+  }
+
   const policy = selectPolicy(request.nextUrl.pathname)
   const result = store.consume({
     key: getClientKey(request),
@@ -51,7 +58,18 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/api/:path*'],
+  matcher: [
+    '/api/:path*',
+    '/',
+    '/login',
+    '/register',
+    '/forgot-password',
+    '/imoveis/:path*',
+    '/corretores/:path*',
+    '/imobiliarias/:path*',
+    '/en/:path*',
+    '/es/:path*',
+  ],
 }
 
 function selectPolicy(pathname: string): RateLimitPolicy {

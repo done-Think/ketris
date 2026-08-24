@@ -6,8 +6,8 @@ import { Box } from '@mui/material'
 import { HomeHeader, ProfileModal } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
-import { homeNavigationItems } from '../config/navigation'
 import { profileActions, userProfile } from '../data/user-profile'
+import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import { useSearchResults } from '../hooks/use-search-results'
 import type { SearchResultsPageProps } from '../types/search'
 import {
@@ -20,12 +20,13 @@ import { SearchResultsPagination } from './search-results/SearchResultsPaginatio
 import { SearchResultsToolbar } from './search-results/SearchResultsToolbar'
 
 export function SearchResultsPage({ purpose, initialLocation = '' }: SearchResultsPageProps) {
+  const { homeNavigationItems } = useMarketplaceNavigation()
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const results = useSearchResults({ purpose, initialLocation })
   const navigationItems = homeNavigationItems.map((item) => ({
     ...item,
-    active: item.href.includes(`finalidade=${purpose}`),
+    active: item.key === (purpose === 'comprar' ? 'buy' : 'rent'),
   }))
 
   return (
