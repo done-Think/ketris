@@ -14,7 +14,7 @@ export function generateMetadata({ params }: PropertyPageProps) {
   if (!property) return { title: 'Ketris' }
 
   return {
-    title: `${property.title} | Ketris`,
+    title: `Ketris | ${property.title}`,
     description: property.description,
   }
 }

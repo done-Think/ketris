@@ -37,6 +37,10 @@
     "lint-staged": "^15.2.10",
     "typescript": "^5.6.3"
   },
+  "overrides": {
+    "std-env": "3.9.0",
+    "valibot": "1.2.0"
+  },
   "lint-staged": {
     "apps/web/**/*.{js,jsx,ts,tsx}": [
       "eslint --config apps/web/.eslintrc.json --fix",
