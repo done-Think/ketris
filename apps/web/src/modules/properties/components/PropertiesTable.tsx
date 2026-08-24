@@ -13,24 +13,24 @@ import type { DashboardProperty, PropertiesTableProps } from '../types/dashboard
 
 function PropertyIdentityCell({ row }: GridRenderCellParams<DashboardProperty>) {
   return (
-    <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0 }}>
+    <Stack direction="row" alignItems="center" spacing={2.2} sx={{ minWidth: 0, width: '100%' }}>
       <Box
         component="img"
         src={row.imageUrl}
         alt=""
         sx={{
-          width: 56,
-          height: 56,
+          width: 103,
+          height: 103,
           borderRadius: `${radius.sm}px`,
           objectFit: 'cover',
           flexShrink: 0,
         }}
       />
       <Box sx={{ minWidth: 0 }}>
-        <Typography noWrap sx={{ fontSize: 15, fontWeight: 900 }}>
+        <Typography noWrap sx={{ fontSize: 17, fontWeight: 900 }}>
           {row.title}
         </Typography>
-        <Typography noWrap sx={{ color: 'text.secondary', fontSize: 13 }}>
+        <Typography noWrap sx={{ color: 'text.secondary', fontSize: 14, mt: 0.4 }}>
           {row.address}
         </Typography>
       </Box>
@@ -153,7 +153,7 @@ export function PropertiesTable({
         rows={properties}
         columns={columns}
         autoHeight
-        rowHeight={82}
+        rowHeight={138}
         disableRowSelectionOnClick
         pageSizeOptions={[5, 10, 25]}
         initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
@@ -177,7 +177,12 @@ export function PropertiesTable({
             textTransform: 'uppercase',
           },
           '& .MuiDataGrid-cell': {
+            alignItems: 'center',
             borderColor: 'divider',
+            display: 'flex',
+            outline: 'none',
+          },
+          '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': {
             outline: 'none',
           },
           '& .MuiDataGrid-row': {
@@ -185,6 +190,10 @@ export function PropertiesTable({
           },
           '& .MuiDataGrid-row:hover': {
             bgcolor: brand.neutral[50],
+          },
+          '& .MuiDataGrid-footerContainer': {
+            borderTop: '1px solid',
+            borderColor: 'divider',
           },
         }}
       />

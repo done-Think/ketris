@@ -1,7 +1,7 @@
 'use client'
 
 import { type PointerEvent, useCallback, useEffect, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useDropzone } from 'react-dropzone'
 import { Box, Stack, Typography } from '@mui/material'
@@ -14,6 +14,7 @@ import {
   PublicProfileEditorActions,
   PublicProfileImageFields,
   PublicProfileMainFields,
+  PublicProfileTeamFields,
 } from './public-profile-editor/PublicProfileEditorFormSections'
 import { PublicProfileDemonstrative } from './public-profile-editor/PublicProfileDemonstrative'
 import { PublicProfileOrderPanel } from './public-profile-editor/PublicProfileOrderPanel'
@@ -44,6 +45,14 @@ export function PublicProfileEditorPage() {
   } = useForm<PublicProfileEditorFormValues>({
     defaultValues: publicProfileEditorDefaultValues,
     resolver: zodResolver(publicProfileEditorSchema),
+  })
+  const {
+    append: appendTeamMember,
+    fields: teamFields,
+    remove: removeTeamMember,
+  } = useFieldArray({
+    control,
+    name: 'teamMembers',
   })
   const profileDraft = watch()
   const visibleSectionOrder = profileDraft.sectionOrder.filter(isPublicProfileSectionKey)
@@ -239,15 +248,15 @@ export function PublicProfileEditorPage() {
 
   return (
     <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
-      <Box sx={{ width: '100%', maxWidth: 1180, mx: 'auto' }}>
+      <Box sx={{ width: '100%' }}>
         <Stack
-          direction="column"
-          justifyContent="center"
-          alignItems="center"
+          direction={{ xs: 'column', md: 'row' }}
+          justifyContent="space-between"
+          alignItems={{ xs: 'stretch', md: 'flex-end' }}
           spacing={2}
-          sx={{ mb: 2.6, textAlign: 'center' }}
+          sx={{ mb: 2.6 }}
         >
-          <Box sx={{ width: '100%' }}>
+          <Box>
             <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 38 }, fontWeight: 900 }}>
               Editar Perfil
             </Typography>
@@ -273,36 +282,53 @@ export function PublicProfileEditorPage() {
           onSubmit={handleSubmit(handleStaticSubmit)}
           sx={{ display: 'flex', flexDirection: 'column', gap: 2.2 }}
         >
-          <Stack spacing={2} sx={{ width: '100%', maxWidth: 920, mx: 'auto' }}>
-            <PublicProfileMainFields control={control} />
-            <PublicProfileAppearanceFields control={control} />
-            <PublicProfileImageFields
-              control={control}
-              imageFields={[
-                {
-                  fieldName: 'avatarUrl',
-                  label: 'URL da foto',
-                  uploadLabel: 'Enviar foto de perfil',
-                  dropzone: avatarDropzone,
-                  previewVariant: 'avatar',
-                },
-                {
-                  fieldName: 'bannerUrl',
-                  label: 'URL do banner',
-                  uploadLabel: 'Enviar banner',
-                  dropzone: bannerDropzone,
-                  previewVariant: 'banner',
-                },
-              ]}
-              profileDraft={profileDraft}
-            />
-            <PublicProfileEditorActions onPreview={() => setIsPreviewOpen(true)} />
-          </Stack>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', xl: 'minmax(0, 1.35fr) minmax(360px, 0.65fr)' },
+              gap: 2,
+              alignItems: 'start',
+            }}
+          >
+            <Stack spacing={2}>
+              <PublicProfileMainFields control={control} />
+              <PublicProfileTeamFields
+                appendTeamMember={appendTeamMember}
+                control={control}
+                removeTeamMember={removeTeamMember}
+                teamFields={teamFields}
+              />
+            </Stack>
+            <Stack spacing={2}>
+              <PublicProfileAppearanceFields control={control} />
+              <PublicProfileImageFields
+                control={control}
+                imageFields={[
+                  {
+                    fieldName: 'avatarUrl',
+                    label: 'URL da foto',
+                    uploadLabel: 'Enviar foto de perfil',
+                    dropzone: avatarDropzone,
+                    previewVariant: 'avatar',
+                  },
+                  {
+                    fieldName: 'bannerUrl',
+                    label: 'URL do banner',
+                    uploadLabel: 'Enviar banner',
+                    dropzone: bannerDropzone,
+                    previewVariant: 'banner',
+                  },
+                ]}
+                profileDraft={profileDraft}
+              />
+              <PublicProfileEditorActions onPreview={() => setIsPreviewOpen(true)} />
+            </Stack>
+          </Box>
 
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 390px' },
+              gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 410px' },
               gap: 2,
               alignItems: 'start',
             }}

@@ -10,6 +10,7 @@ import {
   Typography,
 } from '@mui/material'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import Link from 'next/link'
 
 import { alpha, iconSize, radius, surface } from '@shared/theme/tokens'
 
@@ -27,7 +28,6 @@ const previewMetrics = [
   { label: 'Fechados', value: '128' },
 ] as const
 
-const previewTeam = ['Marina Costa', 'Juliana Mendes', 'Bianca Azevedo'] as const
 const previewListings = ['Apartamento Jardins', 'Garden Remodelado', 'Cobertura Duplex'] as const
 
 function PublicProfileDialogSection({ profileDraft, sectionKey }: PublicProfileMiniSectionProps) {
@@ -133,38 +133,58 @@ function PublicProfileDialogSection({ profileDraft, sectionKey }: PublicProfileM
         <Typography variant="h5" sx={{ mb: 1.5 }}>
           {option?.label}
         </Typography>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-            gap: 1,
-          }}
-        >
-          {previewTeam.map((name, index) => (
-            <Stack
-              key={name}
-              direction="row"
-              spacing={1}
-              alignItems="center"
-              sx={{
-                border: '1px solid',
-                borderColor: alpha.graphite[8],
-                borderRadius: `${radius.sm}px`,
-                p: 1.2,
-              }}
-            >
-              <Avatar src={profileDraft.avatarUrl} alt={name} sx={{ width: 40, height: 40 }} />
-              <Box sx={{ minWidth: 0 }}>
-                <Typography noWrap sx={{ fontSize: 13, fontWeight: 900 }}>
-                  {name}
-                </Typography>
-                <Typography noWrap sx={{ color: 'text.secondary', fontSize: 11 }}>
-                  Destaque {index + 1}
-                </Typography>
-              </Box>
-            </Stack>
-          ))}
-        </Box>
+        {profileDraft.teamMembers.length > 0 ? (
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+              gap: 1,
+            }}
+          >
+            {profileDraft.teamMembers.map((member) => (
+              <Stack
+                key={`${member.profileUrl}-${member.name}`}
+                component={Link}
+                href={member.profileUrl}
+                direction="row"
+                spacing={1}
+                alignItems="center"
+                sx={{
+                  border: '1px solid',
+                  borderColor: alpha.graphite[8],
+                  borderRadius: `${radius.sm}px`,
+                  color: 'inherit',
+                  p: 1.2,
+                  textDecoration: 'none',
+                }}
+              >
+                <Avatar src={member.avatarUrl} alt={member.name} sx={{ width: 40, height: 40 }} />
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography noWrap sx={{ fontSize: 13, fontWeight: 900 }}>
+                    {member.name}
+                  </Typography>
+                  <Typography noWrap sx={{ color: 'text.secondary', fontSize: 11 }}>
+                    {member.role}
+                  </Typography>
+                </Box>
+              </Stack>
+            ))}
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              border: '1px dashed',
+              borderColor: alpha.graphite[18],
+              borderRadius: `${radius.sm}px`,
+              p: 2,
+              textAlign: 'center',
+            }}
+          >
+            <Typography sx={{ color: 'text.secondary', fontWeight: 800 }}>
+              Nenhum membro adicionado.
+            </Typography>
+          </Box>
+        )}
       </Box>
     )
   }

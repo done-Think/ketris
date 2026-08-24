@@ -23,6 +23,13 @@ const hexColorSchema = z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Informe uma cor he
 
 const urlSchema = z.string().url('Informe uma URL válida')
 
+const teamMemberSchema = z.object({
+  name: z.string().min(2, 'Informe o nome do membro'),
+  role: z.string().min(2, 'Informe a função do membro'),
+  avatarUrl: urlSchema,
+  profileUrl: z.string().min(1, 'Informe o link do perfil'),
+})
+
 export const publicProfileEditorSchema = z.object({
   displayName: z.string().min(2, 'Informe o nome exibido no perfil'),
   headline: z.string().min(8, 'Informe uma chamada para o banner'),
@@ -32,6 +39,7 @@ export const publicProfileEditorSchema = z.object({
   backgroundColor: hexColorSchema,
   avatarUrl: urlSchema,
   bannerUrl: urlSchema,
+  teamMembers: z.array(teamMemberSchema).max(6, 'Adicione no máximo 6 membros'),
   sectionOrder: z
     .array(z.enum(publicProfileSectionSlotKeys))
     .length(publicProfileSectionKeys.length)

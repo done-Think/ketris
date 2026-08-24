@@ -1,4 +1,5 @@
 import { Avatar, Box, Button, Stack, Typography } from '@mui/material'
+import Link from 'next/link'
 
 import { alpha, componentText, radius, surface } from '@shared/theme/tokens'
 
@@ -11,7 +12,6 @@ const previewMetrics = [
   { label: 'Fechados', value: '128' },
 ] as const
 
-const previewTeam = ['Marina Costa', 'Juliana Mendes', 'Bianca Azevedo'] as const
 const previewListings = ['Apartamento Jardins', 'Garden Remodelado', 'Cobertura Duplex'] as const
 
 export function PublicProfileMiniSection({
@@ -30,7 +30,7 @@ export function PublicProfileMiniSection({
       >
         <Box
           sx={{
-            minHeight: { xs: 168, md: 190 },
+            minHeight: { xs: 190, md: 260 },
             backgroundImage: `linear-gradient(90deg, ${alpha.graphite[52]}, ${alpha.graphite[18]}), url("${profileDraft.bannerUrl}")`,
             backgroundPosition: 'center',
             backgroundSize: 'cover',
@@ -42,7 +42,7 @@ export function PublicProfileMiniSection({
           <Typography
             sx={{
               color: surface.lightText,
-              fontSize: { xs: 20, md: 26 },
+              fontSize: { xs: 22, md: 32 },
               fontWeight: 900,
               lineHeight: 1.12,
             }}
@@ -55,13 +55,13 @@ export function PublicProfileMiniSection({
             src={profileDraft.avatarUrl}
             alt={profileDraft.displayName}
             sx={{
-              width: 62,
-              height: 62,
+              width: 76,
+              height: 76,
               boxShadow: `0 0 0 4px ${profileDraft.primaryColor}`,
             }}
           />
           <Box sx={{ minWidth: 0 }}>
-            <Typography sx={{ color: surface.darkText, fontSize: 22, fontWeight: 900 }}>
+            <Typography sx={{ color: surface.darkText, fontSize: 26, fontWeight: 900 }}>
               {profileDraft.displayName}
             </Typography>
             <Typography sx={{ color: 'text.secondary', ...componentText.cardMeta }}>
@@ -106,6 +106,25 @@ export function PublicProfileMiniSection({
   }
 
   if (sectionKey === 'team') {
+    if (profileDraft.teamMembers.length === 0) {
+      return (
+        <Box
+          sx={{
+            border: '1px dashed',
+            borderColor: alpha.graphite[18],
+            borderRadius: `${radius.sm}px`,
+            bgcolor: surface.paper,
+            p: 1.5,
+            textAlign: 'center',
+          }}
+        >
+          <Typography sx={{ color: 'text.secondary', fontSize: 12, fontWeight: 800 }}>
+            Nenhum membro adicionado.
+          </Typography>
+        </Box>
+      )
+    }
+
     return (
       <Box
         sx={{
@@ -114,9 +133,11 @@ export function PublicProfileMiniSection({
           gap: 0.8,
         }}
       >
-        {previewTeam.map((name) => (
+        {profileDraft.teamMembers.map((member) => (
           <Stack
-            key={name}
+            key={`${member.profileUrl}-${member.name}`}
+            component={Link}
+            href={member.profileUrl}
             direction="row"
             spacing={0.8}
             alignItems="center"
@@ -125,13 +146,20 @@ export function PublicProfileMiniSection({
               borderColor: alpha.graphite[8],
               borderRadius: `${radius.sm}px`,
               bgcolor: surface.paper,
+              color: 'inherit',
               p: 1,
+              textDecoration: 'none',
             }}
           >
-            <Avatar src={profileDraft.avatarUrl} alt={name} sx={{ width: 34, height: 34 }} />
-            <Typography noWrap sx={{ fontSize: 12, fontWeight: 900 }}>
-              {name}
-            </Typography>
+            <Avatar src={member.avatarUrl} alt={member.name} sx={{ width: 34, height: 34 }} />
+            <Box sx={{ minWidth: 0 }}>
+              <Typography noWrap sx={{ fontSize: 12, fontWeight: 900 }}>
+                {member.name}
+              </Typography>
+              <Typography noWrap sx={{ color: 'text.secondary', fontSize: 10 }}>
+                {member.role}
+              </Typography>
+            </Box>
           </Stack>
         ))}
       </Box>
@@ -160,7 +188,7 @@ export function PublicProfileMiniSection({
           >
             <Box
               sx={{
-                height: 74,
+                height: 104,
                 backgroundImage: `url("${profileDraft.bannerUrl}")`,
                 backgroundPosition: 'center',
                 backgroundSize: 'cover',
