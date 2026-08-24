@@ -13,6 +13,7 @@ import { BrokerCard } from './BrokerCard'
 import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
 import { DirectoryPageHeader } from './directory/DirectoryPageHeader'
 import { MarketplaceHeader } from './MarketplaceHeader'
+import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 
 const initialBrokerCount = 4
 const brokerPageSize = 3
@@ -52,6 +53,7 @@ export function BrokersPage() {
 
       <Box component="main" sx={{ py: { xs: 2.4, md: 4 } }}>
         <Container maxWidth="xl">
+          <MarketplaceBreadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Corretores' }]} />
           <DirectoryPageHeader
             placeholder="Nome, CRECI, bairro ou região"
             resultCountLabel={`${visibleBrokers.length} de ${filteredBrokers.length} corretores encontrados`}

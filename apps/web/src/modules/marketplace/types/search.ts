@@ -36,7 +36,15 @@ export type QuickFilterKey = 'type' | 'price' | 'bedrooms' | 'area' | 'more'
 export type SearchResultsPageProps = {
   purpose: SearchResultPurpose
   initialLocation?: string
-  initialViewMode?: ViewMode
+}
+
+export type SearchResultsRoutePageProps = {
+  searchParams?: {
+    finalidade?: string
+    location?: string
+    localizacao?: string
+    purpose?: string
+  }
 }
 
 export type SearchResultsFiltersProps = {

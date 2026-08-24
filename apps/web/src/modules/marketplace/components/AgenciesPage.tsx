@@ -13,6 +13,7 @@ import { AgencyCard } from './AgencyCard'
 import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
 import { DirectoryPageHeader } from './directory/DirectoryPageHeader'
 import { MarketplaceHeader } from './MarketplaceHeader'
+import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 
 const initialAgencyCount = 4
 const agencyPageSize = 3
@@ -52,6 +53,9 @@ export function AgenciesPage() {
 
       <Box component="main" sx={{ py: { xs: 2.4, md: 4 } }}>
         <Container maxWidth="xl">
+          <MarketplaceBreadcrumbs
+            items={[{ label: 'Home', href: '/' }, { label: 'Imobiliárias' }]}
+          />
           <DirectoryPageHeader
             placeholder="Nome, CRECI, região ou cobertura"
             resultCountLabel={`${visibleAgencies.length} de ${filteredAgencies.length} imobiliárias encontradas`}

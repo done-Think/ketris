@@ -6,28 +6,15 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
 import Link from 'next/link'
 
 import { alpha, componentText, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
-
-type PublicProfileListing = ReturnType<
-  typeof import('../../utils/profile-listings').buildProfileListings
->[number]
-
-type PublicProfileListingsProps = {
-  accentColor: string
-  listings: PublicProfileListing[]
-  source?: {
-    href: string
-    name: string
-    type: 'agency' | 'broker'
-  }
-}
+import type { PublicProfileListingsProps } from '../../types/profile-listings'
 
 function buildListingHref(href: string, source: PublicProfileListingsProps['source']) {
   if (!source) return href
 
   const params = new URLSearchParams({
-    origem: source.type,
-    origemHref: source.href,
-    origemNome: source.name,
+    source: source.type,
+    sourceHref: source.href,
+    sourceName: source.name,
   })
 
   return `${href}?${params.toString()}`

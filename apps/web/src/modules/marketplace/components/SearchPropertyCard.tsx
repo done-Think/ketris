@@ -26,7 +26,7 @@ export function SearchPropertyCard({
   viewMode = 'grid',
 }: SearchPropertyCardProps) {
   const isListView = viewMode === 'list'
-  const detailsHref = `${property.href}?finalidade=${property.purpose}`
+  const detailsHref = `${property.href}?purpose=${property.purpose}`
 
   return (
     <Card

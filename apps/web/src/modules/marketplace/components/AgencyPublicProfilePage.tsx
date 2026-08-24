@@ -13,6 +13,7 @@ import { footerColumns, legalLinks } from '../config/navigation'
 import type { AgencyPublicProfilePageProps } from '../types/agency'
 import { buildProfileListings } from '../utils/profile-listings'
 import { MarketplaceHeader } from './MarketplaceHeader'
+import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 import { AgencyProfileHero } from './profile/AgencyProfileHero'
 import { PublicProfileListings } from './profile/PublicProfileListings'
 import { PublicProfileMetrics } from './profile/PublicProfileMetrics'
@@ -26,6 +27,13 @@ export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps
       <MarketplaceHeader activeItemId="agencies" />
 
       <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
+        <MarketplaceBreadcrumbs
+          items={[
+            { label: 'Home', href: '/' },
+            { label: 'Imobiliárias', href: '/imobiliarias' },
+            { label: agency.name },
+          ]}
+        />
         <Box
           sx={{
             display: 'grid',

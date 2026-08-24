@@ -1,11 +1,28 @@
-import { Avatar, Box, Button, Container, IconButton, Link as MuiLink, Stack } from '@mui/material'
+'use client'
+
+import { useState } from 'react'
+import {
+  Avatar,
+  Box,
+  Button,
+  Container,
+  Divider,
+  Drawer,
+  IconButton,
+  Link as MuiLink,
+  Stack,
+} from '@mui/material'
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
 import Link from 'next/link'
 
 import ketrisLogoTransparent from '@shared/assets/ketris-logo-transparent.png'
 import { AppLogo } from '@shared/components/ui'
 import type { HomeHeaderProps } from '@shared/types'
+import { publicMarketplaceText } from '@shared/i18n/pt-br'
 import {
+  alpha,
   componentText,
   iconSize,
   motion,
@@ -21,6 +38,10 @@ export function HomeHeader({
   userProfile,
   onToggleProfile,
 }: HomeHeaderProps) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const closeMobileMenu = () => setIsMobileMenuOpen(false)
+  const headerText = publicMarketplaceText.header
+
   return (
     <Box
       component="header"
@@ -58,42 +79,40 @@ export function HomeHeader({
             spacing={{ xs: 2, md: 4 }}
             sx={{ display: { xs: 'none', md: 'flex' }, justifySelf: 'center' }}
           >
-            {navigationItems.map((item) => {
-              return (
-                <MuiLink
-                  key={item.label}
-                  component={Link}
-                  href={item.href}
-                  underline="none"
-                  sx={{
-                    color: item.active ? 'primary.main' : 'text.secondary',
-                    ...componentText.navLink,
-                    px: 1.45,
-                    py: 0.85,
-                    mt: 0.1,
-                    borderRadius: `${radius.sm}px`,
-                    position: 'relative',
-                    transition: motion.transition.interactive,
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      left: 0,
-                      right: 0,
-                      bottom: -2,
-                      height: 2,
-                      bgcolor: item.active ? 'primary.main' : 'transparent',
-                    },
-                    '&:hover': {
-                      bgcolor: 'transparent',
-                      color: surface.darkText,
-                      transform: 'translateY(-1px)',
-                    },
-                  }}
-                >
-                  {item.label}
-                </MuiLink>
-              )
-            })}
+            {navigationItems.map((item) => (
+              <MuiLink
+                key={item.label}
+                component={Link}
+                href={item.href}
+                underline="none"
+                sx={{
+                  color: item.active ? 'primary.main' : 'text.secondary',
+                  ...componentText.navLink,
+                  px: 1.45,
+                  py: 0.85,
+                  mt: 0.1,
+                  borderRadius: `${radius.sm}px`,
+                  position: 'relative',
+                  transition: motion.transition.interactive,
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    bottom: -2,
+                    height: 2,
+                    bgcolor: item.active ? 'primary.main' : 'transparent',
+                  },
+                  '&:hover': {
+                    bgcolor: 'transparent',
+                    color: surface.darkText,
+                    transform: 'translateY(-1px)',
+                  },
+                }}
+              >
+                {item.label}
+              </MuiLink>
+            ))}
           </Stack>
 
           <Stack direction="row" alignItems="center" spacing={1} sx={{ justifySelf: 'end' }}>
@@ -107,7 +126,7 @@ export function HomeHeader({
                 borderColor: 'divider',
                 color: 'text.primary',
                 borderRadius: `${radius.sm}px`,
-                display: { xs: 'none', sm: 'inline-flex' },
+                display: { xs: 'none', md: 'inline-flex' },
                 minHeight: 42,
                 px: 2,
                 ...componentText.headerCta,
@@ -120,16 +139,20 @@ export function HomeHeader({
                 },
               }}
             >
-              Anunciar Imóvel
+              {headerText.announceProperty}
             </Button>
-            <IconButton aria-label="notificações" size="small" sx={{ width: 42, height: 42 }}>
+            <IconButton
+              aria-label={headerText.notifications}
+              size="small"
+              sx={{ width: 42, height: 42 }}
+            >
               <NotificationsNoneOutlinedIcon sx={{ fontSize: iconSize.xl }} />
             </IconButton>
             {userProfile && profileButtonRef && onToggleProfile ? (
               <Box
                 component="button"
                 type="button"
-                aria-label="Abrir perfil"
+                aria-label={headerText.openProfile}
                 aria-haspopup="dialog"
                 ref={profileButtonRef}
                 onClick={onToggleProfile}
@@ -159,9 +182,100 @@ export function HomeHeader({
                 />
               </Box>
             ) : null}
+            <IconButton
+              aria-label={headerText.openMenu}
+              aria-controls="home-mobile-menu"
+              aria-expanded={isMobileMenuOpen ? 'true' : undefined}
+              onClick={() => setIsMobileMenuOpen(true)}
+              size="small"
+              sx={{
+                display: { xs: 'inline-flex', md: 'none' },
+                width: 42,
+                height: 42,
+                color: surface.darkText,
+              }}
+            >
+              <MenuRoundedIcon sx={{ fontSize: iconSize.xl }} />
+            </IconButton>
           </Stack>
         </Box>
       </Container>
+
+      <Drawer
+        anchor="right"
+        id="home-mobile-menu"
+        open={isMobileMenuOpen}
+        onClose={closeMobileMenu}
+        PaperProps={{
+          sx: {
+            width: 'min(82vw, 320px)',
+            bgcolor: surface.paper,
+          },
+        }}
+      >
+        <Stack sx={{ minHeight: '100%', p: 2.5 }} spacing={2}>
+          <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <AppLogo
+              src={ketrisLogoTransparent}
+              variant="transparent"
+              width={104}
+              sx={{ flexShrink: 0 }}
+            />
+            <IconButton aria-label={headerText.closeMenu} onClick={closeMobileMenu} size="small">
+              <CloseRoundedIcon sx={{ fontSize: iconSize.xl }} />
+            </IconButton>
+          </Stack>
+
+          <Divider />
+
+          <Stack component="nav" spacing={0.5} aria-label={headerText.mainMenu}>
+            {navigationItems.map((item) => (
+              <MuiLink
+                key={item.label}
+                component={Link}
+                href={item.href}
+                underline="none"
+                onClick={closeMobileMenu}
+                sx={{
+                  color: item.active ? 'primary.main' : 'text.primary',
+                  ...componentText.navLink,
+                  minHeight: 46,
+                  display: 'flex',
+                  alignItems: 'center',
+                  px: 1.5,
+                  borderRadius: `${radius.sm}px`,
+                  bgcolor: item.active ? alpha.magenta[8] : 'transparent',
+                  transition: motion.transition.interactive,
+                  '&:hover': {
+                    bgcolor: 'action.hover',
+                    color: surface.darkText,
+                  },
+                }}
+              >
+                {item.label}
+              </MuiLink>
+            ))}
+          </Stack>
+
+          <Divider />
+
+          <Button
+            component={Link}
+            href="/login"
+            variant="contained"
+            color="primary"
+            onClick={closeMobileMenu}
+            fullWidth
+            sx={{
+              minHeight: 44,
+              borderRadius: `${radius.sm}px`,
+              ...componentText.headerCta,
+            }}
+          >
+            {headerText.announceProperty}
+          </Button>
+        </Stack>
+      </Drawer>
     </Box>
   )
 }

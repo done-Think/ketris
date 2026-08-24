@@ -32,6 +32,8 @@ export type ProfileModalAction = {
   tone?: 'danger'
 }
 
+export type ProfileLanguageCode = 'pt-BR' | 'en' | 'es'
+
 export type ProfileModalProps = {
   open: boolean
   anchorRef: RefObject<HTMLButtonElement | null>
