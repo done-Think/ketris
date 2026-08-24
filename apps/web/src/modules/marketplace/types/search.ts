@@ -77,6 +77,12 @@ export type SearchResultsFilterDialogProps = SearchResultsFiltersDialogFormValue
   setPropertyTypeFilter: (value: string) => void
 }
 
+export type SearchResultsMapProps = {
+  properties: MarketplacePropertyDetail[]
+  selectedPropertyId: string
+  onSelectProperty: (propertyId: string) => void
+}
+
 export type SearchResultsToolbarProps = {
   filtersControl?: ReactNode
   resultCount: number
@@ -86,16 +92,11 @@ export type SearchResultsToolbarProps = {
   viewMode: ViewMode
 }
 
-export type SearchResultsMapProps = {
-  properties: MarketplacePropertyDetail[]
-  selectedPropertyId: string
-  onSelectProperty: (propertyId: string) => void
-}
-
 export type SearchPropertyCardProps = {
   property: PropertyCardData
   selected?: boolean
   onActivate?: () => void
+  viewMode?: ViewMode
 }
 
 export type PriceRange = [number, number]
