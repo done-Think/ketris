@@ -39,6 +39,15 @@ export type SearchResultsPageProps = {
   initialViewMode?: ViewMode
 }
 
+export type SearchResultsRoutePageProps = {
+  searchParams?: {
+    finalidade?: string
+    location?: string
+    localizacao?: string
+    purpose?: string
+  }
+}
+
 export type SearchResultsFiltersProps = {
   locationQuery: string
   setLocationQuery: (value: string) => void

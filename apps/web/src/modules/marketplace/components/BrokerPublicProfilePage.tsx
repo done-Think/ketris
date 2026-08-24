@@ -9,6 +9,7 @@ import { getBrokerProfileTheme } from '../config/broker-profile-themes'
 import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
 import type { BrokerPublicProfilePageProps } from '../types/broker'
 import { buildProfileListings } from '../utils/profile-listings'
+import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 import { BrokerProfileHero } from './profile/BrokerProfileHero'
 import { PublicProfileListings } from './profile/PublicProfileListings'
 import { PublicProfileMetrics } from './profile/PublicProfileMetrics'
@@ -27,6 +28,13 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
       <HomeHeader navigationItems={navigationItems} />
 
       <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
+        <MarketplaceBreadcrumbs
+          items={[
+            { label: 'Home', href: '/' },
+            { label: 'Corretores', href: '/corretores' },
+            { label: broker.name },
+          ]}
+        />
         <Box
           sx={{
             display: 'grid',

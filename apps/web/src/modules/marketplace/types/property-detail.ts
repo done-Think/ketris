@@ -15,15 +15,41 @@ export type MarketplacePropertyDetail = PropertyCardData & {
   brokerEmail: string
 }
 
+export type PropertyBreadcrumbPurpose = 'alugar' | 'comprar'
+
+export type PropertyBreadcrumbOriginType = 'agency' | 'broker'
+
+export type PropertyBreadcrumbContext = {
+  originHref?: string
+  originName?: string
+  originType?: PropertyBreadcrumbOriginType
+  purpose?: PropertyBreadcrumbPurpose
+}
+
+export type PropertyBreadcrumbsProps = {
+  context?: PropertyBreadcrumbContext
+  location: string
+  propertyTitle: string
+}
+
 export type PropertyDetailPageProps = {
   property: MarketplacePropertyDetail
-  activePurpose?: string
-  breadcrumbContext?: {
-    originHref?: string
-    originName?: string
-    originType?: string
-    purpose?: string
+  activePurpose?: PropertyBreadcrumbPurpose
+  breadcrumbContext?: PropertyBreadcrumbContext
+}
+
+export type PropertyPageSearchParams = {
+  purpose?: string
+  source?: string
+  sourceHref?: string
+  sourceName?: string
+}
+
+export type PropertyPageProps = {
+  params: {
+    id: string
   }
+  searchParams?: PropertyPageSearchParams
 }
 
 export type PropertyDetailMapProps = {
