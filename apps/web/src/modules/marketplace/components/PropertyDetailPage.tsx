@@ -15,7 +15,11 @@ import { PropertyGallery } from './property-detail/PropertyGallery'
 import { PropertyOverview } from './property-detail/PropertyOverview'
 import { PropertyPhotoDialog } from './property-detail/PropertyPhotoDialog'
 
-export function PropertyDetailPage({ property, activePurpose }: PropertyDetailPageProps) {
+export function PropertyDetailPage({
+  activePurpose,
+  breadcrumbContext,
+  property,
+}: PropertyDetailPageProps) {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
@@ -56,7 +60,11 @@ export function PropertyDetailPage({ property, activePurpose }: PropertyDetailPa
       />
 
       <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
-        <PropertyBreadcrumbs category={property.category} location={property.location} />
+        <PropertyBreadcrumbs
+          context={breadcrumbContext}
+          location={property.location}
+          propertyTitle={property.title}
+        />
 
         <Box
           sx={{

@@ -12,6 +12,7 @@ import { radius, surface } from '@shared/theme/tokens'
 import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
 import type { AgencyPublicProfilePageProps } from '../types/agency'
 import { buildProfileListings } from '../utils/profile-listings'
+import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 import { AgencyProfileHero } from './profile/AgencyProfileHero'
 import { PublicProfileListings } from './profile/PublicProfileListings'
 import { PublicProfileMetrics } from './profile/PublicProfileMetrics'
@@ -29,6 +30,13 @@ export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps
       <HomeHeader navigationItems={navigationItems} />
 
       <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
+        <MarketplaceBreadcrumbs
+          items={[
+            { label: 'Home', href: '/' },
+            { label: 'Imobiliárias', href: '/imobiliarias' },
+            { label: agency.name },
+          ]}
+        />
         <Box
           sx={{
             display: 'grid',
@@ -79,6 +87,7 @@ export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps
             <PublicProfileListings
               accentColor={agency.brand.primaryColor}
               listings={representedListings}
+              source={{ href: agency.href, name: agency.name, type: 'agency' }}
             />
           </Box>
 

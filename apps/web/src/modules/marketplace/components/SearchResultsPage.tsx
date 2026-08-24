@@ -10,6 +10,7 @@ import { homeNavigationItems } from '../config/navigation'
 import { profileActions, userProfile } from '../data/user-profile'
 import { useSearchResults } from '../hooks/use-search-results'
 import type { SearchResultsPageProps } from '../types/search'
+import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 import {
   SearchResultsFilterButton,
   SearchResultsFilters,
@@ -27,6 +28,7 @@ export function SearchResultsPage({ initialLocation = '', purpose }: SearchResul
     ...item,
     active: item.href.includes(`finalidade=${purpose}`),
   }))
+  const purposeLabel = purpose === 'comprar' ? 'Comprar' : 'Alugar'
 
   return (
     <Box
@@ -68,6 +70,7 @@ export function SearchResultsPage({ initialLocation = '', purpose }: SearchResul
             minWidth: 0,
           }}
         >
+          <MarketplaceBreadcrumbs items={[{ label: 'Home', href: '/' }, { label: purposeLabel }]} />
           <SearchResultsFilters
             locationQuery={results.locationQuery}
             setLocationQuery={results.setLocationQuery}

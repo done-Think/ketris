@@ -1,8 +1,6 @@
 import type { Dispatch, FormEventHandler, ReactNode, Ref, SetStateAction } from 'react'
 import type { z } from 'zod'
 
-import type { PropertyCardData } from '@shared/types'
-
 import type { searchOptions } from '../config/search-filters'
 import type {
   marketplaceSearchFormSchema,
@@ -38,6 +36,15 @@ export type QuickFilterKey = 'type' | 'price' | 'bedrooms' | 'area' | 'more'
 export type SearchResultsPageProps = {
   purpose: SearchResultPurpose
   initialLocation?: string
+}
+
+export type SearchResultsRoutePageProps = {
+  searchParams?: {
+    finalidade?: string
+    location?: string
+    localizacao?: string
+    purpose?: string
+  }
 }
 
 export type SearchResultsFiltersProps = {
@@ -93,7 +100,7 @@ export type SearchResultsToolbarProps = {
 }
 
 export type SearchPropertyCardProps = {
-  property: PropertyCardData
+  property: SearchResultProperty
   selected?: boolean
   onActivate?: () => void
   viewMode?: ViewMode
