@@ -12,8 +12,8 @@ const { footer, navigation } = publicMarketplaceText
 
 export const marketplaceNavigationHrefById = {
   home: '/',
-  rent: '/imoveis?finalidade=alugar',
-  buy: '/imoveis?finalidade=comprar',
+  rent: '/imoveis?purpose=alugar',
+  buy: '/imoveis?purpose=comprar',
   brokers: '/corretores',
   agencies: '/imobiliarias',
 } as const satisfies Record<MarketplaceNavigationItemId, string>

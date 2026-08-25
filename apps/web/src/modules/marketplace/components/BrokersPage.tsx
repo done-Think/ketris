@@ -15,8 +15,8 @@ import { BrokerCard } from './BrokerCard'
 import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
 import { DirectoryPageHeader } from './directory/DirectoryPageHeader'
 import { DirectoryViewModeToggle } from './directory/DirectoryViewModeToggle'
-import { MarketplaceHeader } from './MarketplaceHeader'
 import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
+import { MarketplaceHeader } from './MarketplaceHeader'
 
 const initialBrokerCount = 4
 const brokerPageSize = 3

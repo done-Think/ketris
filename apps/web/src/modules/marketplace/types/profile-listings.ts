@@ -43,3 +43,11 @@ export type PublicProfileSidebarProps = {
     value: string
   }>
 }
+
+export type ProfileListingPreviewSectionProps = {
+  accentColor: string
+  backgroundColor: string
+  hoverBorderColor: string
+  listings: PublicProfileListing[]
+  sideBorderBreakpoint?: 'lg' | 'md'
+}
