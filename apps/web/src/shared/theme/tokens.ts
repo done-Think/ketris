@@ -126,6 +126,14 @@ export const componentText = {
     fontSize: 12,
     fontWeight: 500,
   },
+  profileTeamName: {
+    fontSize: 13,
+    fontWeight: 800,
+  },
+  profileTeamRegion: {
+    fontSize: 11,
+    fontWeight: 600,
+  },
   cardAction: {
     fontSize: 13,
     fontWeight: 500,

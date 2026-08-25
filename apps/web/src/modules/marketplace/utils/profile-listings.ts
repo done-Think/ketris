@@ -3,7 +3,7 @@ import type {
   ProfileListingOptions,
   ProfileListingSource,
   PublicProfileListing,
-} from '../types/profile-listing'
+} from '../types/profile-listings'
 
 function buildProfileListing(listing: ProfileListingSource): PublicProfileListing {
   const listingId = listing.href.split('/').filter(Boolean).at(-1)
