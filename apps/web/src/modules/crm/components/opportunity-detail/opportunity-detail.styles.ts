@@ -1,4 +1,4 @@
-import { radius, shadows, surface } from '@shared/theme/tokens'
+import { componentText, radius, shadows, surface } from '@shared/theme/tokens'
 
 export const panelSx = {
   border: '1px solid',
@@ -9,8 +9,9 @@ export const panelSx = {
 } as const
 
 export const labelSx = {
+  ...componentText.miniCardMeta,
   color: 'text.disabled',
-  fontSize: 10,
   fontWeight: 800,
+  lineHeight: 1.25,
   textTransform: 'uppercase',
 } as const

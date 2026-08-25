@@ -32,7 +32,7 @@ export function ContactActions({
   ] as const
 
   return (
-    <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={0.125}>
+    <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={0.25}>
       {actions.map(({ label, icon: Icon, onClick }) => (
         <Tooltip key={label} title={label}>
           <Box component="span" sx={{ display: 'inline-flex' }}>
@@ -43,14 +43,14 @@ export function ContactActions({
               disabled={!onClick}
               onClick={onClick}
               sx={{
-                width: 24,
-                height: 24,
-                color: brand.neutral[400],
-                '&:hover': { bgcolor: alpha.graphite[6], color: brand.neutral[600] },
-                '&.Mui-disabled': { color: brand.neutral[400] },
+                width: 28,
+                height: 28,
+                color: brand.neutral[500],
+                '&:hover': { bgcolor: alpha.graphite[6], color: brand.neutral[700] },
+                '&.Mui-disabled': { color: brand.neutral[500] },
               }}
             >
-              <Icon sx={{ fontSize: iconSize.sm }} />
+              <Icon sx={{ fontSize: iconSize.lg }} />
             </IconButton>
           </Box>
         </Tooltip>

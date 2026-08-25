@@ -22,7 +22,7 @@ export function ContactsHeader({
       justifyContent="space-between"
       gap={1.5}
       sx={{
-        pb: 1.75,
+        pb: 2,
         borderBottom: '1px solid',
         borderColor: 'divider',
       }}
@@ -31,8 +31,7 @@ export function ContactsHeader({
         component="h1"
         sx={{
           flexShrink: 0,
-          fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
-          fontSize: { xs: 26, sm: 30 },
+          fontSize: { xs: 28, sm: 32 },
           fontWeight: 700,
           lineHeight: 1.15,
           letterSpacing: '-0.02em',
@@ -57,15 +56,15 @@ export function ContactsHeader({
           sx={{
             width: { xs: '100%', sm: 268 },
             '& .MuiOutlinedInput-root': {
-              height: 32,
+              height: { xs: 40, sm: 36 },
               borderRadius: `${radius.sm}px`,
               bgcolor: surface.paper,
-              fontSize: 11.5,
+              fontSize: 13,
               '& fieldset': { borderColor: brand.neutral[100] },
               '&:hover fieldset': { borderColor: brand.neutral[200] },
             },
             '& .MuiInputBase-input::placeholder': {
-              color: brand.neutral[400],
+              color: brand.neutral[500],
               opacity: 1,
             },
           }}
@@ -73,7 +72,7 @@ export function ContactsHeader({
             input: {
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchRoundedIcon sx={{ color: brand.neutral[400], fontSize: iconSize.sm }} />
+                  <SearchRoundedIcon sx={{ color: brand.neutral[500], fontSize: iconSize.lg }} />
                 </InputAdornment>
               ),
             },
@@ -100,14 +99,14 @@ export function ContactsHeader({
                 onClick={() => onFilterChange(id)}
                 sx={{
                   minWidth: 0,
-                  height: 28,
-                  px: 1.4,
+                  height: 30,
+                  px: 1.5,
                   flexShrink: 0,
                   borderColor: active ? brand.magenta[500] : brand.neutral[100],
                   borderRadius: `${radius.full}px`,
                   bgcolor: active ? brand.magenta[500] : surface.paper,
                   color: active ? surface.lightText : brand.graphite[500],
-                  fontSize: 10.5,
+                  fontSize: 11.5,
                   fontWeight: active ? 700 : 500,
                   whiteSpace: 'nowrap',
                   '&:hover': {
@@ -130,17 +129,17 @@ export function ContactsHeader({
             disabled={!onNewContact}
             onClick={onNewContact}
             sx={{
-              width: { sm: 126 },
-              minWidth: { sm: 126 },
-              height: 32,
+              width: { sm: 132 },
+              minWidth: { sm: 132 },
+              height: { xs: 40, sm: 36 },
               px: 1.5,
               flexShrink: 0,
               borderRadius: `${radius.sm}px`,
-              fontSize: 11.5,
+              fontSize: 13,
               fontWeight: 700,
               whiteSpace: 'nowrap',
               '& .MuiButton-startIcon': { ml: 0, mr: 0.625 },
-              '& .MuiSvgIcon-root': { fontSize: iconSize.sm },
+              '& .MuiSvgIcon-root': { fontSize: iconSize.lg },
               '&.Mui-disabled': {
                 bgcolor: brand.magenta[500],
                 color: surface.lightText,

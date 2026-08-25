@@ -14,8 +14,6 @@ import { ContactsHeader } from './contacts-list/ContactsHeader'
 import { ContactsPaginationFooter } from './contacts-list/ContactsPaginationFooter'
 import { ContactsTable } from './contacts-list/ContactsTable'
 
-const contactsBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
-
 export function ContactsList({
   contacts = contactListFixtures,
   totalCount = contactsFixtureTotal,
@@ -77,15 +75,13 @@ export function ContactsList({
   return (
     <Box
       sx={{
+        display: 'flex',
         minHeight: '100vh',
+        flexDirection: 'column',
         px: { xs: 2, sm: 3, lg: 3.5 },
         pt: { xs: 2, sm: 3, lg: 3.5 },
         pb: { xs: 2, sm: 2.5, lg: 2.5 },
         bgcolor: surface.app,
-        fontFamily: contactsBodyFontFamily,
-        '& .MuiTypography-root, & .MuiButton-root, & .MuiInputBase-root, & .MuiTableCell-root': {
-          fontFamily: contactsBodyFontFamily,
-        },
       }}
     >
       <GlobalStyles styles={{ '.tsqd-parent-container': { display: 'none' } }} />
@@ -102,9 +98,10 @@ export function ContactsList({
         variant="outlined"
         sx={{
           display: 'flex',
-          minHeight: { xs: 520, md: 'calc(100vh - 118px)' },
+          minHeight: { xs: 520, md: 0 },
           mt: 2.25,
           overflow: 'hidden',
+          flex: 1,
           flexDirection: 'column',
           borderColor: brand.neutral[100],
           borderRadius: `${radius.lg}px`,
@@ -134,7 +131,7 @@ export function ContactsList({
           </>
         ) : (
           <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 240, px: 2 }}>
-            <Typography sx={{ color: 'text.secondary', fontSize: 12.5 }}>
+            <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
               Nenhum contato encontrado.
             </Typography>
           </Stack>

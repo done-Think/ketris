@@ -1,4 +1,5 @@
 import {
+  Box,
   Checkbox,
   Stack,
   Table,
@@ -16,6 +17,8 @@ import type { ContactsTableProps } from '../../types/contact'
 import { ContactActions } from './ContactActions'
 import { ContactAvatar } from './ContactAvatar'
 import { ContactTypeChip } from './ContactTypeChip'
+
+const contactTableColumnWidths = ['4%', '19%', '12%', '13%', '21%', '7%', '14%', '10%'] as const
 
 export function ContactsTable({
   contacts,
@@ -43,9 +46,9 @@ export function ContactsTable({
             px: 1,
             py: 0,
             color: brand.neutral[500],
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 700,
-            lineHeight: 1.2,
+            lineHeight: 1.3,
             letterSpacing: '0.01em',
             textTransform: 'uppercase',
             whiteSpace: 'nowrap',
@@ -54,24 +57,23 @@ export function ContactsTable({
             px: 1,
             py: 0,
             color: brand.graphite[500],
-            fontSize: 11.5,
-            lineHeight: 1.3,
+            fontSize: 12.5,
+            lineHeight: 1.4,
             whiteSpace: 'nowrap',
           },
+          '& .MuiTableHead-root .MuiTableCell-root:last-of-type, & .MuiTableBody-root .MuiTableCell-root:last-of-type':
+            {
+              px: 0.125,
+            },
         }}
       >
         <colgroup>
-          <col style={{ width: '4%' }} />
-          <col style={{ width: '21%' }} />
-          <col style={{ width: '12%' }} />
-          <col style={{ width: '13%' }} />
-          <col style={{ width: '21%' }} />
-          <col style={{ width: '7%' }} />
-          <col style={{ width: '15%' }} />
-          <col style={{ width: '7%' }} />
+          {contactTableColumnWidths.map((width, index) => (
+            <Box component="col" key={`${width}-${index}`} sx={{ width }} />
+          ))}
         </colgroup>
         <TableHead>
-          <TableRow sx={{ height: 36, bgcolor: surface.app }}>
+          <TableRow sx={{ height: 40, bgcolor: surface.app }}>
             <TableCell padding="checkbox" align="center">
               <Checkbox
                 size="small"
@@ -84,18 +86,13 @@ export function ContactsTable({
                   height: 24,
                   p: 0.5,
                   color: brand.neutral[300],
-                  '& .MuiSvgIcon-root': { fontSize: iconSize.sm },
+                  '& .MuiSvgIcon-root': { fontSize: iconSize.lg },
                 }}
               />
             </TableCell>
             {['Nome', 'Tipo', 'Telefone', 'Email', 'Imóveis', 'Última interação', 'Ações'].map(
               (label) => (
-                <TableCell
-                  key={label}
-                  scope="col"
-                  align={label === 'Ações' ? 'right' : 'left'}
-                  sx={label === 'Ações' ? { px: '2px !important' } : undefined}
-                >
+                <TableCell key={label} scope="col" align={label === 'Ações' ? 'right' : 'left'}>
                   {label}
                 </TableCell>
               ),
@@ -111,7 +108,7 @@ export function ContactsTable({
                 key={contact.id}
                 selected={selected}
                 sx={{
-                  height: 50,
+                  height: 54,
                   bgcolor: index % 2 === 1 ? surface.app : surface.paper,
                   '&.Mui-selected, &.Mui-selected:hover': { bgcolor: alpha.magenta[6] },
                   '&:hover': { bgcolor: alpha.graphite[6] },
@@ -128,14 +125,14 @@ export function ContactsTable({
                       height: 24,
                       p: 0.5,
                       color: brand.neutral[300],
-                      '& .MuiSvgIcon-root': { fontSize: iconSize.sm },
+                      '& .MuiSvgIcon-root': { fontSize: iconSize.lg },
                     }}
                   />
                 </TableCell>
                 <TableCell>
                   <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
                     <ContactAvatar contact={contact} />
-                    <Typography noWrap sx={{ fontSize: 12, fontWeight: 650 }}>
+                    <Typography noWrap sx={{ fontSize: 13, fontWeight: 700 }}>
                       {contact.name}
                     </Typography>
                   </Stack>
@@ -147,7 +144,7 @@ export function ContactsTable({
                 <TableCell>{contact.email}</TableCell>
                 <TableCell align="center">{contact.propertyCount}</TableCell>
                 <TableCell sx={{ color: 'text.secondary' }}>{contact.lastInteraction}</TableCell>
-                <TableCell align="right" sx={{ px: '2px !important' }}>
+                <TableCell align="right">
                   <ContactActions
                     contact={contact}
                     onEditContact={onEditContact}

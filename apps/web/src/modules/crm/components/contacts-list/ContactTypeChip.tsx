@@ -34,13 +34,13 @@ export function ContactTypeChip({ type }: ContactTypeChipProps) {
       label={presentation.label}
       size="small"
       sx={{
-        height: 20,
+        height: 22,
         borderRadius: `${radius.full}px`,
         bgcolor: presentation.backgroundColor,
         color: presentation.color,
-        fontSize: 10,
+        fontSize: 11,
         fontWeight: 600,
-        '& .MuiChip-label': { px: 1 },
+        '& .MuiChip-label': { px: 1.25 },
       }}
     />
   )

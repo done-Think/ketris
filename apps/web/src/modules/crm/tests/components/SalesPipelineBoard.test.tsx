@@ -174,12 +174,12 @@ describe('SalesPipelineBoard', () => {
       expect(stageTypography).toEqual(typography[0])
     }
     expect(typography[0]).toMatchObject({
-      fontSize: '10.5px',
+      fontSize: '12px',
       fontWeight: '700',
-      lineHeight: '14px',
+      lineHeight: '16px',
       textTransform: 'uppercase',
     })
-    expect(typography[0]?.fontFamily).toContain('var(--font-inter)')
+    expect(typography[0]?.fontFamily).toContain('var(--font-primary)')
   })
 
   it('renders the structured fixtures only when the non-production preview is explicit', () => {

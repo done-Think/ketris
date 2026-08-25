@@ -25,7 +25,17 @@ import {
 } from '@mui/material'
 import NextLink from 'next/link'
 
-import { alpha, brand, radius, surface } from '@shared/theme/tokens'
+import {
+  alpha,
+  brand,
+  componentText,
+  iconSize,
+  motion,
+  radius,
+  shadows,
+  surface,
+  zIndex,
+} from '@shared/theme/tokens'
 
 import type {
   OpportunityActivityKind,
@@ -54,38 +64,38 @@ export type OpportunityDetailContentProps = {
 
 const panelSx = {
   border: '1px solid',
-  borderColor: alpha.graphite[6],
+  borderColor: 'divider',
   borderRadius: `${radius.md}px`,
   bgcolor: surface.paper,
-  boxShadow: `0 6px 20px ${alpha.graphite[6]}`,
+  boxShadow: shadows.crmDetailPanel,
 } as const
 
 const sectionTitleSx = {
-  fontSize: 12,
+  ...componentText.sectionAction,
   fontWeight: 800,
   lineHeight: 1.25,
   letterSpacing: 0,
 } as const
 
 const detailLabelSx = {
+  ...componentText.miniCardMeta,
   color: brand.neutral[400],
-  fontSize: 8,
   fontWeight: 800,
   lineHeight: 1.25,
   textTransform: 'uppercase',
 } as const
 
 const detailValueSx = {
+  ...componentText.cardMeta,
   minWidth: 0,
   color: 'text.primary',
-  fontSize: 10.5,
   fontWeight: 500,
-  lineHeight: 1.4,
+  lineHeight: 1.45,
   overflowWrap: 'anywhere',
 } as const
 
 function ActivityIcon({ kind }: { kind: OpportunityActivityKind }) {
-  const iconSx = { fontSize: 13 }
+  const iconSx = { fontSize: iconSize.sm }
 
   if (kind === 'phone') return <PhoneInTalkOutlinedIcon sx={iconSx} />
   if (kind === 'email') return <EmailOutlinedIcon sx={iconSx} />
@@ -95,9 +105,9 @@ function ActivityIcon({ kind }: { kind: OpportunityActivityKind }) {
 
 function NextActionIcon({ kind }: { kind: OpportunityNextActionKind }) {
   return kind === 'visit' ? (
-    <CalendarMonthOutlinedIcon sx={{ fontSize: 14 }} />
+    <CalendarMonthOutlinedIcon sx={{ fontSize: iconSize.sm }} />
   ) : (
-    <AddTaskOutlinedIcon sx={{ fontSize: 14 }} />
+    <AddTaskOutlinedIcon sx={{ fontSize: iconSize.sm }} />
   )
 }
 
@@ -109,15 +119,15 @@ function PropertyArtwork({ property }: { property: SuggestedPropertyPresentation
         sx={{
           display: 'grid',
           placeItems: 'center',
-          width: 52,
-          height: 52,
+          width: { xs: 52, sm: 60 },
+          height: { xs: 52, sm: 60 },
           flexShrink: 0,
           borderRadius: `${radius.sm}px`,
           bgcolor: brand.neutral[100],
           color: brand.neutral[400],
         }}
       >
-        <HomeWorkOutlinedIcon sx={{ fontSize: 18 }} />
+        <HomeWorkOutlinedIcon sx={{ fontSize: iconSize.xl }} />
       </Box>
     )
   }
@@ -129,8 +139,8 @@ function PropertyArtwork({ property }: { property: SuggestedPropertyPresentation
       alt=""
       aria-hidden="true"
       sx={{
-        width: 52,
-        height: 52,
+        width: { xs: 52, sm: 60 },
+        height: { xs: 52, sm: 60 },
         flexShrink: 0,
         borderRadius: `${radius.sm}px`,
         objectFit: 'cover',
@@ -146,14 +156,14 @@ function SuggestedPropertyRow({ property }: { property: SuggestedPropertyPresent
       alignItems="center"
       spacing={1.1}
       sx={{
-        height: 68,
-        p: 0.9,
+        minHeight: { xs: 72, sm: 80 },
+        p: { xs: 1, sm: 1.25 },
         border: '1px solid',
         borderColor: brand.neutral[100],
         borderRadius: `${radius.sm}px`,
         bgcolor: surface.app,
         color: 'text.primary',
-        transition: 'border-color 160ms ease, background-color 160ms ease',
+        transition: motion.transition.bordered,
         '&:hover': property.href
           ? { borderColor: alpha.magenta[14], bgcolor: alpha.magenta[6] }
           : undefined,
@@ -161,17 +171,17 @@ function SuggestedPropertyRow({ property }: { property: SuggestedPropertyPresent
     >
       <PropertyArtwork property={property} />
       <Stack minWidth={0} flex={1} justifyContent="center">
-        <Typography noWrap sx={{ fontSize: 10.5, fontWeight: 800, lineHeight: 1.3 }}>
+        <Typography noWrap sx={{ ...componentText.miniCardTitle, fontWeight: 800 }}>
           {property.title}
         </Typography>
         <Typography
           noWrap
           title={property.meta}
-          sx={{ mt: 0.15, color: 'text.secondary', fontSize: 8.5, lineHeight: 1.3 }}
+          sx={{ ...componentText.miniCardMeta, mt: 0.25, color: 'text.secondary', lineHeight: 1.3 }}
         >
           {property.meta}
         </Typography>
-        <Typography sx={{ mt: 0.2, fontSize: 9.5, fontWeight: 800, lineHeight: 1.3 }}>
+        <Typography sx={{ ...componentText.cardMeta, mt: 0.25, fontWeight: 800, lineHeight: 1.3 }}>
           {property.priceLabel}
         </Typography>
       </Stack>
@@ -180,14 +190,14 @@ function SuggestedPropertyRow({ property }: { property: SuggestedPropertyPresent
           label={`${property.matchPercentage}% Match`}
           size="small"
           sx={{
-            height: 20,
+            height: 22,
             flexShrink: 0,
-            borderRadius: '5px',
+            borderRadius: `${radius.sm}px`,
             bgcolor: brand.magenta[50],
             color: 'primary.main',
-            fontSize: 8.5,
+            fontSize: componentText.miniCardMeta.fontSize,
             fontWeight: 800,
-            '& .MuiChip-label': { px: 0.75 },
+            '& .MuiChip-label': { px: 1 },
           }}
         />
       )}
@@ -231,10 +241,9 @@ function ContactInterestCard({ opportunity, interestDetails }: ContactInterestCa
       sx={{
         ...panelSx,
         display: 'flex',
-        height: { lg: 206 },
-        minHeight: 206,
+        minHeight: { xs: 224, sm: 236 },
         flexDirection: 'column',
-        p: 2.25,
+        p: { xs: 2, sm: 2.5 },
       }}
     >
       <Typography id="contact-interest-title" component="h2" sx={sectionTitleSx}>
@@ -243,10 +252,11 @@ function ContactInterestCard({ opportunity, interestDetails }: ContactInterestCa
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '76px minmax(0, 1fr)', sm: '98px minmax(0, 1fr)' },
+          gridTemplateColumns: { xs: '88px minmax(0, 1fr)', sm: '112px minmax(0, 1fr)' },
           alignContent: 'space-between',
+          rowGap: 1,
           flex: 1,
-          mt: 1.5,
+          mt: 2,
         }}
       >
         {contactDetails.map((detail) => (
@@ -278,15 +288,19 @@ function SuggestedPropertiesCard({
       component="section"
       aria-labelledby="suggested-properties-title"
       elevation={0}
-      sx={{ ...panelSx, height: { lg: 282 }, minHeight: 282, p: 2.25 }}
+      sx={{
+        ...panelSx,
+        minHeight: { xs: 300, sm: 326 },
+        p: { xs: 2, sm: 2.5 },
+      }}
     >
       <Typography id="suggested-properties-title" component="h2" sx={sectionTitleSx}>
         Imóveis Sugeridos
       </Typography>
-      <Stack spacing={1} sx={{ mt: 1.5 }}>
+      <Stack spacing={1.25} sx={{ mt: 2 }}>
         {isLoading
           ? Array.from({ length: 3 }, (_, index) => (
-              <Skeleton key={index} variant="rounded" height={68} />
+              <Skeleton key={index} variant="rounded" sx={{ height: { xs: 72, sm: 80 } }} />
             ))
           : null}
         {!isLoading && isError ? (
@@ -299,7 +313,7 @@ function SuggestedPropertiesCard({
                 </Button>
               ) : undefined
             }
-            sx={{ fontSize: 10.5 }}
+            sx={componentText.cardMeta}
           >
             Não foi possível carregar os imóveis relacionados.
           </Alert>
@@ -314,10 +328,10 @@ function SuggestedPropertiesCard({
             alignItems="center"
             justifyContent="center"
             spacing={0.8}
-            sx={{ height: 204, color: 'text.disabled' }}
+            sx={{ minHeight: 252, color: 'text.disabled' }}
           >
-            <HomeWorkOutlinedIcon sx={{ fontSize: 20 }} />
-            <Typography sx={{ fontSize: 10.5, fontWeight: 700 }}>
+            <HomeWorkOutlinedIcon sx={{ fontSize: iconSize.xl }} />
+            <Typography sx={{ ...componentText.cardMeta, fontWeight: 700 }}>
               Nenhum imóvel relacionado disponível
             </Typography>
           </Stack>
@@ -340,24 +354,23 @@ function RecentActivitiesCard({ activities }: RecentActivitiesCardProps) {
       sx={{
         ...panelSx,
         display: 'flex',
-        height: { lg: 336 },
-        minHeight: 336,
+        minHeight: { xs: 360, sm: 376 },
         flexDirection: 'column',
-        p: 2.25,
+        p: { xs: 2, sm: 2.5 },
       }}
     >
       <Typography id="recent-activities-title" component="h2" sx={sectionTitleSx}>
         Atividades Recentes
       </Typography>
-      <Stack justifyContent="space-between" sx={{ flex: 1, mt: 1.5 }}>
+      <Stack justifyContent="space-between" sx={{ flex: 1, mt: 2 }}>
         {activities.map((activity, index) => (
           <Stack key={activity.id} direction="row" spacing={1.25} sx={{ flex: 1 }}>
             <Stack alignItems="center">
               <Avatar
                 aria-hidden="true"
                 sx={{
-                  width: 24,
-                  height: 24,
+                  width: 30,
+                  height: 30,
                   bgcolor: surface.app,
                   color: brand.neutral[500],
                 }}
@@ -365,28 +378,36 @@ function RecentActivitiesCard({ activities }: RecentActivitiesCardProps) {
                 <ActivityIcon kind={activity.kind} />
               </Avatar>
               {index < activities.length - 1 && (
-                <Box sx={{ width: '1px', minHeight: 36, flex: 1, bgcolor: 'divider' }} />
+                <Box sx={{ width: '1px', minHeight: 44, flex: 1, bgcolor: 'divider' }} />
               )}
             </Stack>
             <Box
               sx={{
                 minWidth: 0,
                 flex: 1,
-                pb: index < activities.length - 1 ? 1.5 : 0,
+                pb: index < activities.length - 1 ? 2 : 0,
               }}
             >
-              <Stack direction="row" alignItems="baseline" justifyContent="space-between" gap={1}>
-                <Typography sx={{ fontSize: 10, fontWeight: 800, lineHeight: 1.35 }}>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                alignItems={{ xs: 'flex-start', sm: 'baseline' }}
+                justifyContent="space-between"
+                gap={{ xs: 0.25, sm: 1 }}
+              >
+                <Typography sx={{ ...componentText.miniCardTitle, fontWeight: 800 }}>
                   {activity.title}
                 </Typography>
                 <Typography
                   color="text.disabled"
-                  sx={{ flexShrink: 0, fontSize: 8, lineHeight: 1.35 }}
+                  sx={{ ...componentText.miniCardMeta, flexShrink: 0, lineHeight: 1.35 }}
                 >
                   {activity.dateLabel}
                 </Typography>
               </Stack>
-              <Typography color="text.secondary" sx={{ mt: 0.3, fontSize: 8.75, lineHeight: 1.4 }}>
+              <Typography
+                color="text.secondary"
+                sx={{ ...componentText.cardMeta, mt: 0.5, lineHeight: 1.4 }}
+              >
                 {activity.description}
               </Typography>
             </Box>
@@ -394,7 +415,10 @@ function RecentActivitiesCard({ activities }: RecentActivitiesCardProps) {
         ))}
         {activities.length === 0 && (
           <Stack alignItems="center" justifyContent="center" sx={{ flex: 1 }}>
-            <Typography color="text.disabled" sx={{ fontSize: 10.5, fontWeight: 700 }}>
+            <Typography
+              color="text.disabled"
+              sx={{ ...componentText.miniCardTitle, fontWeight: 700 }}
+            >
               Nenhuma atividade registrada
             </Typography>
           </Stack>
@@ -414,12 +438,16 @@ function NextActionsCard({ actions }: NextActionsCardProps) {
       component="section"
       aria-labelledby="next-actions-title"
       elevation={0}
-      sx={{ ...panelSx, height: { lg: 166 }, minHeight: 166, p: 2.25 }}
+      sx={{
+        ...panelSx,
+        minHeight: { xs: 190, sm: 204 },
+        p: { xs: 2, sm: 2.5 },
+      }}
     >
       <Typography id="next-actions-title" component="h2" sx={sectionTitleSx}>
         Próximas Ações
       </Typography>
-      <Stack spacing={1} sx={{ mt: 1.5 }}>
+      <Stack spacing={1.25} sx={{ mt: 2 }}>
         {actions.map((action) => (
           <Stack
             key={action.id}
@@ -427,8 +455,8 @@ function NextActionsCard({ actions }: NextActionsCardProps) {
             alignItems="center"
             spacing={1}
             sx={{
-              height: 48,
-              px: 1.2,
+              minHeight: { xs: 56, sm: 60 },
+              px: 1.5,
               border: '1px solid',
               borderColor: brand.neutral[100],
               borderRadius: `${radius.sm}px`,
@@ -438,15 +466,15 @@ function NextActionsCard({ actions }: NextActionsCardProps) {
             <Box sx={{ display: 'grid', placeItems: 'center', color: 'primary.main' }}>
               <NextActionIcon kind={action.kind} />
             </Box>
-            <Box minWidth={0}>
-              <Typography noWrap sx={{ fontSize: 9.75, fontWeight: 800, lineHeight: 1.3 }}>
+            <Box minWidth={0} flex={1}>
+              <Typography noWrap sx={{ ...componentText.miniCardTitle, fontWeight: 800 }}>
                 {action.title}
               </Typography>
               <Typography
                 noWrap
                 title={action.scheduleLabel}
                 color="text.secondary"
-                sx={{ mt: 0.15, fontSize: 8.25, lineHeight: 1.3 }}
+                sx={{ ...componentText.miniCardMeta, mt: 0.25, lineHeight: 1.3 }}
               >
                 {action.scheduleLabel}
               </Typography>
@@ -457,9 +485,9 @@ function NextActionsCard({ actions }: NextActionsCardProps) {
           <Stack
             alignItems="center"
             justifyContent="center"
-            sx={{ height: 104, color: 'text.disabled' }}
+            sx={{ minHeight: 120, color: 'text.disabled' }}
           >
-            <Typography sx={{ fontSize: 10.5, fontWeight: 700 }}>
+            <Typography sx={{ ...componentText.cardMeta, fontWeight: 700 }}>
               Nenhuma próxima ação cadastrada
             </Typography>
           </Stack>
@@ -498,18 +526,18 @@ function OpportunityActionBar({
       sx={{
         position: { md: 'sticky' },
         bottom: { md: 8 },
-        zIndex: 5,
-        minHeight: 58,
-        mx: { xs: 1, sm: 2.5, lg: 3.5 },
+        zIndex: zIndex.content,
+        minHeight: 64,
+        mx: { xs: 2, sm: 2.5, lg: 3.5 },
         mt: 'auto',
         mb: 0.5,
-        px: { xs: 1.25, sm: 2 },
-        py: 1,
+        px: { xs: 2, sm: 2.25 },
+        py: 1.25,
         border: '1px solid',
         borderColor: alpha.graphite[6],
         borderRadius: `${radius.md}px`,
         bgcolor: surface.paper,
-        boxShadow: `0 6px 22px ${alpha.graphite[8]}`,
+        boxShadow: shadows.crmCard,
       }}
     >
       <Stack
@@ -517,20 +545,21 @@ function OpportunityActionBar({
         alignItems={{ sm: 'center' }}
         justifyContent="space-between"
         gap={1}
-        sx={{ minHeight: 40 }}
+        sx={{ minHeight: 44 }}
       >
         <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
           <Button
             variant="contained"
-            startIcon={<DoneAllRoundedIcon sx={{ fontSize: '14px !important' }} />}
+            startIcon={<DoneAllRoundedIcon />}
             disabled={controlsDisabled}
             onClick={onPrimaryAction}
             sx={{
-              minHeight: 34,
+              ...componentText.cardAction,
+              minHeight: { xs: 44, sm: 40 },
               px: 1.75,
-              borderRadius: '7px',
-              fontSize: 10.5,
+              borderRadius: `${radius.sm}px`,
               fontWeight: 800,
+              '& .MuiButton-startIcon > :nth-of-type(1)': { fontSize: iconSize.sm },
               ...(preservePreviewAppearance
                 ? {
                     '&.Mui-disabled': {
@@ -550,10 +579,10 @@ function OpportunityActionBar({
             disabled={controlsDisabled || opportunityStatus === 'RECUSADA'}
             onClick={onDiscardOpportunity}
             sx={{
-              minHeight: 34,
+              ...componentText.cardAction,
+              minHeight: { xs: 44, sm: 40 },
               px: 1.5,
-              borderRadius: '7px',
-              fontSize: 10.5,
+              borderRadius: `${radius.sm}px`,
               fontWeight: 700,
               ...(preservePreviewAppearance
                 ? {
@@ -571,15 +600,16 @@ function OpportunityActionBar({
         </Stack>
         <Button
           color="inherit"
-          startIcon={<NoteAddOutlinedIcon sx={{ fontSize: '14px !important' }} />}
+          startIcon={<NoteAddOutlinedIcon />}
           disabled={controlsDisabled}
           onClick={onAddQuickNote}
           sx={{
-            minHeight: 34,
+            ...componentText.cardAction,
+            minHeight: { xs: 44, sm: 40 },
             px: 1,
             color: 'text.secondary',
-            fontSize: 9.75,
             fontWeight: 600,
+            '& .MuiButton-startIcon > :nth-of-type(1)': { fontSize: iconSize.sm },
             ...(preservePreviewAppearance
               ? {
                   '&.Mui-disabled': {
@@ -628,13 +658,19 @@ export function OpportunityDetailContent({
         }}
       />
 
-      <Box sx={{ px: { xs: 2, sm: 2.5, lg: 3.5 }, pt: { xs: 2, sm: 2.5, lg: 2 }, pb: 2 }}>
+      <Box
+        sx={{
+          px: { xs: 2, sm: 2.5, lg: 3.5 },
+          pt: { xs: 2, sm: 2.5, lg: 3 },
+          pb: { xs: 2.5, lg: 3 },
+        }}
+      >
         <Breadcrumbs
           aria-label="Navegação estrutural"
           separator="›"
           sx={{
-            mb: 0.75,
-            fontSize: 9.5,
+            mb: 1,
+            fontSize: { xs: 10.5, sm: 11.5 },
             lineHeight: 1.4,
             '& .MuiBreadcrumbs-separator': { mx: 0.7, color: 'text.disabled' },
           }}
@@ -661,16 +697,15 @@ export function OpportunityDetailContent({
           alignItems={{ xs: 'flex-start', sm: 'center' }}
           justifyContent="space-between"
           gap={1}
-          sx={{ mb: 2 }}
+          sx={{ mb: { xs: 2, md: 2.5 } }}
         >
           <Stack direction="row" alignItems="center" spacing={1.1} flexWrap="wrap" useFlexGap>
             <Typography
               component="h1"
               sx={{
-                fontFamily: 'var(--font-space-grotesk), var(--font-inter), sans-serif',
-                fontSize: { xs: 24, md: 26 },
+                fontSize: { xs: 24, sm: 28, lg: 32 },
                 fontWeight: 800,
-                lineHeight: 1.25,
+                lineHeight: 1.2,
               }}
             >
               {opportunity.interessadoNome}
@@ -679,17 +714,24 @@ export function OpportunityDetailContent({
               size="small"
               label={stage.label}
               sx={{
-                height: 18,
-                borderRadius: '5px',
+                height: 22,
+                borderRadius: `${radius.sm}px`,
                 bgcolor: stage.softColor,
                 color: stage.color,
-                fontSize: 8.5,
+                fontSize: componentText.miniCardMeta.fontSize,
                 fontWeight: 800,
-                '& .MuiChip-label': { px: 0.8 },
+                '& .MuiChip-label': { px: 1 },
               }}
             />
           </Stack>
-          <Typography sx={{ color: 'primary.main', fontSize: { xs: 22, md: 24 }, fontWeight: 900 }}>
+          <Typography
+            sx={{
+              color: 'primary.main',
+              fontSize: { xs: 22, sm: 26, lg: 28 },
+              fontWeight: 900,
+              lineHeight: 1.2,
+            }}
+          >
             {valueLabel}
           </Typography>
         </Stack>
@@ -701,11 +743,11 @@ export function OpportunityDetailContent({
               xs: 'minmax(0, 1fr)',
               lg: 'minmax(0, 58fr) minmax(320px, 42fr)',
             },
-            gap: 2.25,
+            gap: { xs: 2, md: 2.5, lg: 3 },
             alignItems: 'start',
           }}
         >
-          <Stack spacing={2.25} minWidth={0}>
+          <Stack spacing={{ xs: 2, md: 2.5, lg: 3 }} minWidth={0}>
             <ContactInterestCard
               opportunity={opportunity}
               interestDetails={presentation.interestDetails}
@@ -718,7 +760,7 @@ export function OpportunityDetailContent({
             />
           </Stack>
 
-          <Stack spacing={2.25} minWidth={0}>
+          <Stack spacing={{ xs: 2, md: 2.5, lg: 3 }} minWidth={0}>
             <RecentActivitiesCard activities={presentation.activities} />
             <NextActionsCard actions={presentation.nextActions} />
           </Stack>

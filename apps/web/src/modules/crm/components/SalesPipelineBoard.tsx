@@ -18,7 +18,6 @@ import {
 import { PipelineStageColumn } from './sales-pipeline-board/PipelineStageColumn'
 import { SalesPipelineToolbar } from './sales-pipeline-board/SalesPipelineToolbar'
 
-const pipelineBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
 const fixtureOpportunities = salesPipelineFixtures.map((fixture) => fixture.opportunity)
 const fixtureProperties = salesPipelineFixtures.map((fixture) => fixture.property)
 const fixtureStageByOpportunityId = new Map(
@@ -82,13 +81,6 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
         p: { xs: 2, sm: 3, lg: 3.5 },
         bgcolor: surface.app,
         overflow: 'hidden',
-        fontFamily: pipelineBodyFontFamily,
-        '& .MuiTypography-root, & .MuiButton-root, & .MuiInputBase-root': {
-          fontFamily: pipelineBodyFontFamily,
-        },
-        '& h1.MuiTypography-root': {
-          fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
-        },
       }}
     >
       <SalesPipelineToolbar
@@ -128,13 +120,13 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
         <Box
           aria-label="Pipeline de oportunidades"
           sx={{
-            mt: { xs: 2.25, lg: 1.5 },
+            mt: 2,
             mx: { xs: -2, sm: -3, lg: -3.5 },
             pl: { xs: 2, sm: 3, lg: 3.5 },
-            pr: { xs: 2, sm: 3, lg: 1.75 },
+            pr: { xs: 2, sm: 3, lg: 3.5 },
             pb: 1,
             overflowX: 'auto',
-            scrollSnapType: { xs: 'x proximity', lg: 'none' },
+            scrollSnapType: { xs: 'x proximity', xl: 'none' },
             scrollbarWidth: 'thin',
           }}
         >
@@ -142,12 +134,11 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
             sx={{
               display: 'grid',
               gridTemplateColumns: {
-                xs: 'repeat(5, 264px)',
-                sm: 'repeat(5, 280px)',
-                lg: 'repeat(5, minmax(0, 1fr))',
+                xs: 'repeat(5, 280px)',
+                lg: 'repeat(5, minmax(216px, 1fr))',
               },
-              gap: { xs: 2, lg: 1.75 },
-              minWidth: { xs: 'max-content', lg: 0 },
+              gap: 2,
+              minWidth: { xs: 'max-content', lg: 1144 },
             }}
           >
             {salesPipelineStages.map((stage) => {

@@ -4,7 +4,7 @@ import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
 import { Avatar, Box, Card, Stack, Typography } from '@mui/material'
 import NextLink from 'next/link'
 
-import { motion, radius, shadows } from '@shared/theme/tokens'
+import { brand, componentText, motion, radius, shadows } from '@shared/theme/tokens'
 
 import { opportunityStageByStatus } from '../config/opportunity-stages'
 import type { OpportunityCardProps } from '../types/opportunity-card'
@@ -46,9 +46,8 @@ export function OpportunityCard({
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        height: isCompact ? 124 : undefined,
-        minHeight: isCompact ? 124 : 140,
-        p: isCompact ? 1.75 : 2,
+        minHeight: isCompact ? 148 : 140,
+        p: 2,
         border: '1px solid',
         borderColor: isCompact ? 'transparent' : 'divider',
         borderRadius: isCompact ? `${radius.md}px` : 1.5,
@@ -70,7 +69,7 @@ export function OpportunityCard({
       <Typography
         noWrap
         sx={{
-          fontSize: isCompact ? 12.5 : 14,
+          fontSize: 14,
           fontWeight: 700,
           lineHeight: isCompact ? 1.3 : 1.4,
         }}
@@ -83,7 +82,7 @@ export function OpportunityCard({
         sx={{
           mt: 0.25,
           color: 'text.secondary',
-          fontSize: isCompact ? 10.5 : 11.5,
+          fontSize: isCompact ? componentText.cardMeta.fontSize : 11.5,
           lineHeight: isCompact ? 1.35 : 1.45,
         }}
       >
@@ -107,8 +106,8 @@ export function OpportunityCard({
         sx={{
           mt: isCompact ? 0.75 : 1,
           color: 'primary.main',
-          fontSize: isCompact ? 13 : 14,
-          fontWeight: 800,
+          fontSize: isCompact ? 16 : 14,
+          fontWeight: isCompact ? 900 : 800,
           lineHeight: isCompact ? 1.35 : 1.4,
         }}
       >
@@ -118,10 +117,10 @@ export function OpportunityCard({
       <Stack
         direction="row"
         alignItems="center"
-        spacing={0.8}
         sx={{
+          gap: isCompact ? 1 : 0.8,
           mt: 'auto',
-          pt: isCompact ? 0.75 : 1.1,
+          pt: isCompact ? 1 : 1.1,
           borderTop: '1px solid',
           borderColor: 'divider',
         }}
@@ -129,11 +128,12 @@ export function OpportunityCard({
         <Avatar
           aria-hidden="true"
           sx={{
-            width: isCompact ? 20 : 24,
-            height: isCompact ? 20 : 24,
+            width: isCompact ? 28 : 24,
+            height: isCompact ? 28 : 24,
             bgcolor: stage.softColor,
             color: stage.color,
-            fontSize: isCompact ? 8 : 9,
+            fontSize: isCompact ? 10 : 9,
+            fontWeight: isCompact ? 700 : undefined,
           }}
         >
           {getInitials(opportunity.interessadoNome)}
@@ -145,12 +145,12 @@ export function OpportunityCard({
           <Typography
             noWrap
             sx={{
-              px: isCompact ? 0.625 : 0,
-              py: isCompact ? 0.25 : 0,
-              borderRadius: isCompact ? '4px' : 0,
-              bgcolor: isCompact ? 'grey.100' : 'transparent',
+              px: isCompact ? 1 : 0,
+              py: isCompact ? 0.375 : 0,
+              borderRadius: isCompact ? `${radius.full}px` : 0,
+              bgcolor: isCompact ? brand.neutral[50] : 'transparent',
               color: 'text.secondary',
-              fontSize: isCompact ? 10 : 10.5,
+              fontSize: isCompact ? componentText.cardMeta.fontSize : 10.5,
               lineHeight: isCompact ? 1.2 : 'normal',
             }}
           >
@@ -161,9 +161,9 @@ export function OpportunityCard({
           aria-label={indicatorLabel}
           title={indicatorLabel}
           sx={{
-            width: isCompact ? 6 : 8,
-            height: isCompact ? 6 : 8,
-            ml: 'auto !important',
+            width: 8,
+            height: 8,
+            ml: 'auto',
             borderRadius: `${radius.full}px`,
             bgcolor: indicatorColor,
           }}
