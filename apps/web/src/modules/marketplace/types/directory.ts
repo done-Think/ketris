@@ -1,6 +1,8 @@
 import type { ReactNode, RefObject } from 'react'
 import type { UseFormRegister } from 'react-hook-form'
 
+import type { ViewMode } from './search'
+
 export type DirectorySearchFormValues = {
   isLoadingMore: boolean
   searchQuery: string
@@ -39,4 +41,9 @@ export type DirectoryLoadMoreStatusProps = {
   loadedLabel: string
   loadingLabel: string
   loadMoreRef: RefObject<HTMLDivElement>
+}
+
+export type DirectoryViewModeToggleProps = {
+  value: ViewMode
+  onChange: (viewMode: ViewMode) => void
 }

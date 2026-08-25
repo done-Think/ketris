@@ -6,12 +6,7 @@ import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBullete
 
 import { alpha, iconSize, radius, surface } from '@shared/theme/tokens'
 
-import type { ViewMode } from '../../types/search'
-
-type DirectoryViewModeToggleProps = {
-  value: ViewMode
-  onChange: (viewMode: ViewMode) => void
-}
+import type { DirectoryViewModeToggleProps } from '../../types/directory'
 
 export function DirectoryViewModeToggle({ value, onChange }: DirectoryViewModeToggleProps) {
   return (
