@@ -6,17 +6,25 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
 import Link from 'next/link'
 
 import { alpha, componentText, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import type { PublicProfileListingsProps } from '../../types/profile-listings'
 
-type PublicProfileListing = ReturnType<
-  typeof import('../../utils/profile-listings').buildProfileListings
->[number]
+function buildListingHref(href: string, source: PublicProfileListingsProps['source']) {
+  if (!source) return href
 
-type PublicProfileListingsProps = {
-  accentColor: string
-  listings: PublicProfileListing[]
+  const params = new URLSearchParams({
+    source: source.type,
+    sourceHref: source.href,
+    sourceName: source.name,
+  })
+
+  return `${href}?${params.toString()}`
 }
 
-export function PublicProfileListings({ accentColor, listings }: PublicProfileListingsProps) {
+export function PublicProfileListings({
+  accentColor,
+  listings,
+  source,
+}: PublicProfileListingsProps) {
   return (
     <>
       <Typography variant="h5" sx={{ mb: 1.5 }}>
@@ -81,7 +89,7 @@ export function PublicProfileListings({ accentColor, listings }: PublicProfileLi
               </Stack>
               <Button
                 component={Link}
-                href={listing.href}
+                href={buildListingHref(listing.href, source)}
                 variant="contained"
                 fullWidth
                 startIcon={<HomeWorkOutlinedIcon sx={{ fontSize: iconSize.sm }} />}

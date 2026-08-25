@@ -1,6 +1,16 @@
 'use client'
 
-import { Avatar, Box, Card, CardContent, Chip, Divider, Stack, Typography } from '@mui/material'
+import {
+  Avatar,
+  Box,
+  Card,
+  CardContent,
+  Chip,
+  Divider,
+  Stack,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import StarRoundedIcon from '@mui/icons-material/StarRounded'
 import Link from 'next/link'
@@ -102,30 +112,46 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
           }}
         >
           {[
-            { label: 'Região', value: brokerCardProps.region },
+            { label: 'Região', value: brokerCardProps.region, showTooltip: true },
             { label: 'Imóveis', value: `${brokerCardProps.activeListings} ativos` },
             { label: 'Resposta', value: brokerCardProps.responseTime },
-          ].map((item) => (
-            <Box
-              key={item.label}
-              sx={{
-                minWidth: 0,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: `${radius.sm}px`,
-                px: 1,
-                py: 1,
-                bgcolor: surface.app,
-              }}
-            >
-              <Typography sx={{ color: 'text.secondary', fontSize: 10, fontWeight: 700 }}>
-                {item.label}
-              </Typography>
-              <Typography noWrap sx={{ fontSize: 12, fontWeight: 900, mt: 0.25 }}>
-                {item.value}
-              </Typography>
-            </Box>
-          ))}
+          ].map((item) => {
+            return (
+              <Tooltip
+                key={item.label}
+                title={item.showTooltip ? item.value : ''}
+                placement="bottom-start"
+                disableHoverListener={!item.showTooltip}
+              >
+                <Box
+                  sx={{
+                    minWidth: 0,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: `${radius.sm}px`,
+                    px: 1,
+                    py: 1,
+                    bgcolor: surface.app,
+                  }}
+                >
+                  <Typography sx={{ color: 'text.secondary', fontSize: 10, fontWeight: 700 }}>
+                    {item.label}
+                  </Typography>
+                  <Typography
+                    noWrap
+                    sx={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      lineHeight: 1.25,
+                      mt: 0.25,
+                    }}
+                  >
+                    {item.value}
+                  </Typography>
+                </Box>
+              </Tooltip>
+            )
+          })}
         </Box>
 
         <Divider sx={{ my: 1.8 }} />

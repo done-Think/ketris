@@ -1,29 +1,32 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { Box, Container } from '@mui/material'
 
-import { HomeHeader, ProfileModal, SiteFooter } from '@shared/components/layout'
+import { SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
-import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
-import { profileActions, userProfile } from '../data/user-profile'
+import { footerColumns, getPropertyDetailNavigationItemId, legalLinks } from '../config/navigation'
 import type { PropertyDetailPageProps } from '../types/property-detail'
+import { MarketplaceHeader } from './MarketplaceHeader'
 import { PropertyBreadcrumbs } from './PropertyBreadcrumbs'
 import { PropertyContactCard } from './property-detail/PropertyContactCard'
 import { PropertyGallery } from './property-detail/PropertyGallery'
 import { PropertyOverview } from './property-detail/PropertyOverview'
 import { PropertyPhotoDialog } from './property-detail/PropertyPhotoDialog'
 
-export function PropertyDetailPage({ property, activePurpose }: PropertyDetailPageProps) {
+export function PropertyDetailPage({
+  activePurpose,
+  breadcrumbContext,
+  property,
+}: PropertyDetailPageProps) {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const profileButtonRef = useRef<HTMLButtonElement | null>(null)
-  const navigationItems = homeNavigationItems.map((item) => ({
-    ...item,
-    active: activePurpose ? item.href.includes(`finalidade=${activePurpose}`) : false,
-  }))
+  const activeItemId = getPropertyDetailNavigationItemId({
+    activePurpose,
+    originType: breadcrumbContext?.originType,
+    purpose: breadcrumbContext?.purpose,
+  })
 
   const openGallery = (photoIndex: number) => {
     setActivePhotoIndex(photoIndex)
@@ -40,23 +43,14 @@ export function PropertyDetailPage({ property, activePurpose }: PropertyDetailPa
 
   return (
     <Box sx={{ bgcolor: surface.app, minHeight: '100vh', overflowX: 'clip' }}>
-      <HomeHeader
-        navigationItems={navigationItems}
-        profileButtonRef={profileButtonRef}
-        userProfile={userProfile}
-        onToggleProfile={() => setIsProfileOpen((current) => !current)}
-      />
-
-      <ProfileModal
-        open={isProfileOpen}
-        anchorRef={profileButtonRef}
-        actions={profileActions}
-        userProfile={userProfile}
-        onClose={() => setIsProfileOpen(false)}
-      />
+      <MarketplaceHeader activeItemId={activeItemId} />
 
       <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
-        <PropertyBreadcrumbs category={property.category} location={property.location} />
+        <PropertyBreadcrumbs
+          context={breadcrumbContext}
+          location={property.location}
+          propertyTitle={property.title}
+        />
 
         <Box
           sx={{

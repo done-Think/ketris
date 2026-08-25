@@ -18,13 +18,13 @@ export function generateMetadata({ params }: BrokerPageProps) {
 
   if (!broker) {
     return {
-      title: 'Corretor nao encontrado | Ketris',
+      title: 'Ketris | Corretor não encontrado',
     }
   }
 
   return {
-    title: `${broker.name} | Ketris`,
-    description: `${broker.name}, ${broker.creci}, representa imoveis em ${broker.region}.`,
+    title: `Ketris | ${broker.name}`,
+    description: `${broker.name}, ${broker.creci}, representa imóveis em ${broker.region}.`,
   }
 }
 

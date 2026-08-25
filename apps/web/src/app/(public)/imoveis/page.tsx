@@ -1,22 +1,31 @@
 import { SearchResultsPage } from '@modules/marketplace'
+import type { SearchResultsRoutePageProps } from '@modules/marketplace/types/search'
 
-export const metadata = {
-  title: 'Ketris',
-  description: 'Busque imóveis para alugar e comprar.',
+function getSelectedPurpose(searchParams: SearchResultsRoutePageProps['searchParams']) {
+  return searchParams?.purpose ?? searchParams?.finalidade
 }
 
-type ImoveisPageProps = {
-  searchParams?: {
-    finalidade?: string
-    localizacao?: string
+function getSelectedLocation(searchParams: SearchResultsRoutePageProps['searchParams']) {
+  return searchParams?.location ?? searchParams?.localizacao
+}
+
+export function generateMetadata({ searchParams }: SearchResultsRoutePageProps) {
+  const purpose = getSelectedPurpose(searchParams) === 'comprar' ? 'Comprar' : 'Alugar'
+
+  return {
+    title: `Ketris | ${purpose}`,
+    description: 'Busque imóveis para alugar e comprar.',
   }
 }
 
-export default function ImoveisPage({ searchParams }: ImoveisPageProps) {
+export default function ImoveisPage({ searchParams }: SearchResultsRoutePageProps) {
+  const selectedPurpose = getSelectedPurpose(searchParams)
+  const selectedLocation = getSelectedLocation(searchParams)
+
   return (
     <SearchResultsPage
-      purpose={searchParams?.finalidade === 'comprar' ? 'comprar' : 'alugar'}
-      initialLocation={searchParams?.localizacao}
+      purpose={selectedPurpose === 'comprar' ? 'comprar' : 'alugar'}
+      initialLocation={selectedLocation}
     />
   )
 }

@@ -51,8 +51,8 @@ export function PropertyCard({ property }: PropertyCardProps) {
         <Box
           sx={{
             position: 'absolute',
-            top: 14,
-            left: 14,
+            top: 12,
+            left: 12,
           }}
         >
           <PillBadge>Novo</PillBadge>

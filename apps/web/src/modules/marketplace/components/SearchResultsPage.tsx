@@ -1,15 +1,14 @@
 'use client'
 
-import { useRef, useState } from 'react'
 import { Box } from '@mui/material'
 
-import { HomeHeader, ProfileModal } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
-import { homeNavigationItems } from '../config/navigation'
-import { profileActions, userProfile } from '../data/user-profile'
+import { getMarketplaceNavigationItemIdByPurpose } from '../config/navigation'
 import { useSearchResults } from '../hooks/use-search-results'
 import type { SearchResultsPageProps } from '../types/search'
+import { MarketplaceHeader } from './MarketplaceHeader'
+import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 import {
   SearchResultsFilterButton,
   SearchResultsFilters,
@@ -19,14 +18,10 @@ import { SearchResultsMapPanel } from './search-results/SearchResultsMapPanel'
 import { SearchResultsPagination } from './search-results/SearchResultsPagination'
 import { SearchResultsToolbar } from './search-results/SearchResultsToolbar'
 
-export function SearchResultsPage({ purpose, initialLocation = '' }: SearchResultsPageProps) {
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const profileButtonRef = useRef<HTMLButtonElement | null>(null)
+export function SearchResultsPage({ initialLocation = '', purpose }: SearchResultsPageProps) {
   const results = useSearchResults({ purpose, initialLocation })
-  const navigationItems = homeNavigationItems.map((item) => ({
-    ...item,
-    active: item.href.includes(`finalidade=${purpose}`),
-  }))
+  const activeItemId = getMarketplaceNavigationItemIdByPurpose(purpose)
+  const purposeLabel = purpose === 'comprar' ? 'Comprar' : 'Alugar'
 
   return (
     <Box
@@ -38,20 +33,7 @@ export function SearchResultsPage({ purpose, initialLocation = '' }: SearchResul
         bgcolor: surface.app,
       }}
     >
-      <HomeHeader
-        navigationItems={navigationItems}
-        profileButtonRef={profileButtonRef}
-        userProfile={userProfile}
-        onToggleProfile={() => setIsProfileOpen((current) => !current)}
-      />
-
-      <ProfileModal
-        open={isProfileOpen}
-        anchorRef={profileButtonRef}
-        actions={profileActions}
-        userProfile={userProfile}
-        onClose={() => setIsProfileOpen(false)}
-      />
+      <MarketplaceHeader activeItemId={activeItemId} />
 
       <Box
         component="main"
@@ -68,6 +50,7 @@ export function SearchResultsPage({ purpose, initialLocation = '' }: SearchResul
             minWidth: 0,
           }}
         >
+          <MarketplaceBreadcrumbs items={[{ label: 'Home', href: '/' }, { label: purposeLabel }]} />
           <SearchResultsFilters
             locationQuery={results.locationQuery}
             setLocationQuery={results.setLocationQuery}
