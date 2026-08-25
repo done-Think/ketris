@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Box, Container } from '@mui/material'
 
 import { SiteFooter } from '@shared/components/layout'
@@ -9,11 +10,13 @@ import { footerColumns, legalLinks } from '../config/navigation'
 import { brokers } from '../data/brokers'
 import { useDirectoryList } from '../hooks/use-directory-list'
 import type { BrokerProfile } from '../types/broker'
+import type { ViewMode } from '../types/search'
 import { BrokerCard } from './BrokerCard'
 import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
 import { DirectoryPageHeader } from './directory/DirectoryPageHeader'
-import { MarketplaceHeader } from './MarketplaceHeader'
+import { DirectoryViewModeToggle } from './directory/DirectoryViewModeToggle'
 import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
+import { MarketplaceHeader } from './MarketplaceHeader'
 
 const initialBrokerCount = 4
 const brokerPageSize = 3
@@ -25,6 +28,7 @@ function getBrokerSearchableText(broker: BrokerProfile) {
 }
 
 export function BrokersPage() {
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const {
     filteredItems: filteredBrokers,
     hasMoreItems: hasMoreBrokers,
@@ -55,6 +59,7 @@ export function BrokersPage() {
         <Container maxWidth="xl">
           <MarketplaceBreadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Corretores' }]} />
           <DirectoryPageHeader
+            actions={<DirectoryViewModeToggle value={viewMode} onChange={setViewMode} />}
             placeholder="Nome, CRECI, bairro ou região"
             resultCountLabel={`${visibleBrokers.length} de ${filteredBrokers.length} corretores encontrados`}
             searchInputProps={register('searchQuery')}
@@ -66,14 +71,14 @@ export function BrokersPage() {
               display: 'grid',
               gridTemplateColumns: {
                 xs: '1fr',
-                md: 'repeat(2, minmax(0, 1fr))',
-                xl: 'repeat(3, minmax(0, 1fr))',
+                md: viewMode === 'list' ? '1fr' : 'repeat(2, minmax(0, 1fr))',
+                xl: viewMode === 'list' ? '1fr' : 'repeat(3, minmax(0, 1fr))',
               },
               gap: { xs: 2, xl: 2.5 },
             }}
           >
             {visibleBrokers.map((broker) => (
-              <BrokerCard key={broker.id} {...broker} />
+              <BrokerCard key={broker.id} {...broker} viewMode={viewMode} />
             ))}
           </Box>
 

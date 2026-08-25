@@ -24,3 +24,11 @@ export type PublicProfileListingsProps = {
   listings: PublicProfileListing[]
   source?: PublicProfileSource
 }
+
+export type ProfileListingPreviewSectionProps = {
+  accentColor: string
+  backgroundColor: string
+  hoverBorderColor: string
+  listings: PublicProfileListing[]
+  sideBorderBreakpoint?: 'lg' | 'md'
+}
