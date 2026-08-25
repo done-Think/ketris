@@ -1,6 +1,6 @@
 'use client'
 
-import { type ComponentType, type RefObject, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Avatar,
   Box,
@@ -12,13 +12,13 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import type { SvgIconProps } from '@mui/material/SvgIcon'
 import CloseIcon from '@mui/icons-material/Close'
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
 import TranslateOutlinedIcon from '@mui/icons-material/TranslateOutlined'
 import Link from 'next/link'
 
 import { publicMarketplaceText } from '@shared/i18n/pt-br'
+import type { ProfileLanguageCode, ProfileModalProps } from '@shared/types'
 import {
   alpha,
   componentText,
@@ -28,27 +28,6 @@ import {
   surface,
   zIndex,
 } from '@shared/theme/tokens'
-
-type ProfileModalProps = {
-  open: boolean
-  anchorRef: RefObject<HTMLButtonElement>
-  userProfile: {
-    name: string
-    role: string
-    company: string
-    email: string
-    avatar: string
-  }
-  actions: Array<{
-    label: string
-    icon: ComponentType<SvgIconProps>
-    href: string
-    tone?: 'danger'
-  }>
-  onClose: () => void
-}
-
-const languageCodes = ['pt-BR', 'en', 'es'] as const
 
 export function ProfileModal({
   open,
@@ -60,7 +39,7 @@ export function ProfileModal({
   const [isMounted, setIsMounted] = useState(open)
   const [isVisible, setIsVisible] = useState(false)
   const [panelPosition, setPanelPosition] = useState({ top: 68, right: 16 })
-  const [selectedLanguage, setSelectedLanguage] = useState<(typeof languageCodes)[number]>('pt-BR')
+  const [selectedLanguage, setSelectedLanguage] = useState<ProfileLanguageCode>('pt-BR')
   const [languageAnchor, setLanguageAnchor] = useState<HTMLElement | null>(null)
   const profileText = publicMarketplaceText.profile
   const languageOptions = [

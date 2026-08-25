@@ -1,51 +1,39 @@
 'use client'
 
-import { useRef, useState } from 'react'
 import { Box, Chip, Container, Stack, Typography } from '@mui/material'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import StarRoundedIcon from '@mui/icons-material/StarRounded'
 
-import { HomeHeader, ProfileModal, SiteFooter } from '@shared/components/layout'
+import { SiteFooter } from '@shared/components/layout'
 import { radius, surface } from '@shared/theme/tokens'
 
-import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
+import { footerColumns, legalLinks } from '../config/navigation'
 import type { AgencyPublicProfilePageProps } from '../types/agency'
-import { profileActions, userProfile } from '../data/user-profile'
 import { buildProfileListings } from '../utils/profile-listings'
+import { MarketplaceHeader } from './MarketplaceHeader'
+import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 import { AgencyProfileHero } from './profile/AgencyProfileHero'
 import { PublicProfileListings } from './profile/PublicProfileListings'
 import { PublicProfileMetrics } from './profile/PublicProfileMetrics'
 import { PublicProfileSidebar } from './profile/PublicProfileSidebar'
 
 export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps) {
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const representedListings = buildProfileListings(agency.featuredListings)
-  const navigationItems = homeNavigationItems.map((item) => ({
-    ...item,
-    active: item.href === '/imobiliarias',
-  }))
 
   return (
     <Box sx={{ bgcolor: surface.app, minHeight: '100vh', overflowX: 'clip' }}>
-      <HomeHeader
-        navigationItems={navigationItems}
-        profileButtonRef={profileButtonRef}
-        userProfile={userProfile}
-        onToggleProfile={() => setIsProfileOpen((current) => !current)}
-      />
-
-      <ProfileModal
-        open={isProfileOpen}
-        anchorRef={profileButtonRef}
-        actions={profileActions}
-        userProfile={userProfile}
-        onClose={() => setIsProfileOpen(false)}
-      />
+      <MarketplaceHeader activeItemId="agencies" />
 
       <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
+        <MarketplaceBreadcrumbs
+          items={[
+            { label: 'Home', href: '/' },
+            { label: 'Imobiliárias', href: '/imobiliarias' },
+            { label: agency.name },
+          ]}
+        />
         <Box
           sx={{
             display: 'grid',
