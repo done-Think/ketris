@@ -1,11 +1,19 @@
 'use client'
 
-import { Box, Button, Chip, Stack, Typography } from '@mui/material'
+import { Box, Chip, Stack, Typography } from '@mui/material'
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
 import Link from 'next/link'
 
-import { alpha, componentText, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import {
+  alpha,
+  componentText,
+  iconSize,
+  motion,
+  radius,
+  shadows,
+  surface,
+} from '@shared/theme/tokens'
 import type { PublicProfileListingsProps } from '../../types/profile-listings'
 
 function buildListingHref(href: string, source: PublicProfileListingsProps['source']) {
@@ -40,6 +48,9 @@ export function PublicProfileListings({
         {listings.map((listing) => (
           <Box
             key={listing.href}
+            component={Link}
+            href={buildListingHref(listing.href, source)}
+            aria-label={`Ver imóvel ${listing.title}`}
             sx={{
               border: '1px solid',
               borderColor: 'divider',
@@ -47,6 +58,18 @@ export function PublicProfileListings({
               bgcolor: surface.paper,
               boxShadow: shadows.propertyCard,
               overflow: 'hidden',
+              color: 'inherit',
+              display: 'block',
+              textDecoration: 'none',
+              transition: motion.transition.card,
+              '&:hover': {
+                boxShadow: shadows.propertyCardHover,
+                transform: 'translateY(-2px)',
+              },
+              '&:focus-visible': {
+                outline: `2px solid ${accentColor}`,
+                outlineOffset: 3,
+              },
             }}
           >
             <Box
@@ -87,22 +110,26 @@ export function PublicProfileListings({
                   />
                 ))}
               </Stack>
-              <Button
-                component={Link}
-                href={buildListingHref(listing.href, source)}
-                variant="contained"
-                fullWidth
-                startIcon={<HomeWorkOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+              <Box
+                component="span"
                 sx={{
                   bgcolor: accentColor,
-                  '&:hover': {
-                    bgcolor: accentColor,
-                    filter: 'brightness(0.92)',
-                  },
+                  borderRadius: `${radius.sm}px`,
+                  color: surface.paper,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 0.8,
+                  minHeight: 36,
+                  px: 2,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  lineHeight: 1.25,
                 }}
               >
+                <HomeWorkOutlinedIcon sx={{ fontSize: iconSize.sm }} />
                 Ver imóvel
-              </Button>
+              </Box>
             </Box>
           </Box>
         ))}
