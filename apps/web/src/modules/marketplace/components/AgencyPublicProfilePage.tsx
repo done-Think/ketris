@@ -20,7 +20,9 @@ import { PublicProfileMetrics } from './profile/PublicProfileMetrics'
 import { PublicProfileSidebar } from './profile/PublicProfileSidebar'
 
 export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps) {
-  const representedListings = buildProfileListings(agency.featuredListings)
+  const representedListings = buildProfileListings(agency.featuredListings, {
+    coverage: agency.coverage,
+  })
 
   return (
     <Box sx={{ bgcolor: surface.app, minHeight: '100vh', overflowX: 'clip' }}>
@@ -81,11 +83,6 @@ export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps
                 ))}
               </Stack>
             </Box>
-            <PublicProfileListings
-              accentColor={agency.brand.primaryColor}
-              listings={representedListings}
-              source={{ href: agency.href, name: agency.name, type: 'agency' }}
-            />
           </Box>
 
           <PublicProfileSidebar
@@ -102,6 +99,14 @@ export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps
               { label: 'Negociações', value: `${agency.dealsClosed}` },
             ]}
           />
+
+          <Box sx={{ gridColumn: { lg: '1 / -1' } }}>
+            <PublicProfileListings
+              accentColor={agency.brand.primaryColor}
+              listings={representedListings}
+              source={{ href: agency.href, name: agency.name, type: 'agency' }}
+            />
+          </Box>
         </Box>
       </Container>
 

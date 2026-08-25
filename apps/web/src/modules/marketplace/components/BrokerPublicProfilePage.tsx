@@ -18,7 +18,10 @@ import { PublicProfileSidebar } from './profile/PublicProfileSidebar'
 
 export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps) {
   const theme = getBrokerProfileTheme(broker.id)
-  const representedListings = buildProfileListings(broker.highlightedListings)
+  const representedListings = buildProfileListings(broker.highlightedListings, {
+    brokerName: broker.name,
+    coverage: broker.neighborhoods,
+  })
 
   return (
     <Box sx={{ bgcolor: surface.app, minHeight: '100vh', overflowX: 'clip' }}>
@@ -51,11 +54,6 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
                 { label: 'Fechados', value: broker.dealsClosed },
               ]}
             />
-            <PublicProfileListings
-              accentColor={theme.accent}
-              listings={representedListings}
-              source={{ href: broker.href, name: broker.name, type: 'broker' }}
-            />
           </Box>
 
           <PublicProfileSidebar
@@ -72,6 +70,14 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
               { label: 'Negociações', value: `${broker.dealsClosed}` },
             ]}
           />
+
+          <Box sx={{ gridColumn: { lg: '1 / -1' } }}>
+            <PublicProfileListings
+              accentColor={theme.accent}
+              listings={representedListings}
+              source={{ href: broker.href, name: broker.name, type: 'broker' }}
+            />
+          </Box>
         </Box>
       </Container>
 
