@@ -25,6 +25,8 @@ describe('marketplace search utils', () => {
       priceRange: [0, 10000],
     })
 
-    expect(href).toBe('/imoveis?localizacao=Jardins%2C+S%C3%A3o+Paulo&tipo=Studio&preco=0-10000')
+    expect(href).toBe(
+      '/imoveis?location=Jardins%2C+S%C3%A3o+Paulo&propertyType=Studio&priceRange=0-10000',
+    )
   })
 })

@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { searchResultsViewModes } from '../config/search-results-view-mode'
+
 const searchFilterKeySchema = z.enum(['location', 'propertyType', 'priceRange'])
 const textSearchDraftSchema = z.object({
   location: z.string().trim().max(80),
@@ -30,7 +32,7 @@ export const searchResultsFormSchema = z.object({
   customMinArea: numericTextSchema(8),
   onlyWithParking: z.boolean(),
   sortOption: z.enum(['relevancia', 'menor-preco', 'maior-preco']),
-  viewMode: z.enum(['grid', 'list']),
+  viewMode: z.enum(searchResultsViewModes),
 })
 
 export const searchResultsFiltersDialogFormSchema = z.object({
