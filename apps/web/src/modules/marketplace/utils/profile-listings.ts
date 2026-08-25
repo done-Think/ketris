@@ -40,7 +40,7 @@ function propertyMatchesProfile(
 export function buildProfileListings(
   listings: ProfileListingSource[],
   options: ProfileListingOptions = {},
-) {
+): PublicProfileListing[] {
   const limit = options.limit ?? 6
   const listingHrefs = new Set(listings.map((listing) => listing.href))
   const matchedListings = propertyDetails
