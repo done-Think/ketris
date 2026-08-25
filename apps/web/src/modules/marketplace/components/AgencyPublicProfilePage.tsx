@@ -1,25 +1,28 @@
 'use client'
 
-import { Box, Chip, Container, Stack, Typography } from '@mui/material'
+import { Box, Container } from '@mui/material'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import StarRoundedIcon from '@mui/icons-material/StarRounded'
 
 import { SiteFooter } from '@shared/components/layout'
-import { radius, surface } from '@shared/theme/tokens'
+import { surface } from '@shared/theme/tokens'
 
 import { footerColumns, legalLinks } from '../config/navigation'
 import type { AgencyPublicProfilePageProps } from '../types/agency'
+import { getBrokersByNames } from '../data/brokers'
 import { buildProfileListings } from '../utils/profile-listings'
 import { MarketplaceHeader } from './MarketplaceHeader'
 import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
+import { AgencyHighlightedTeam } from './profile/AgencyHighlightedTeam'
 import { AgencyProfileHero } from './profile/AgencyProfileHero'
 import { PublicProfileListings } from './profile/PublicProfileListings'
 import { PublicProfileMetrics } from './profile/PublicProfileMetrics'
 import { PublicProfileSidebar } from './profile/PublicProfileSidebar'
 
 export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps) {
+  const highlightedTeam = getBrokersByNames(agency.teamHighlights)
   const representedListings = buildProfileListings(agency.featuredListings, {
     coverage: agency.coverage,
   })
@@ -55,34 +58,7 @@ export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps
                 { label: 'Nota', value: agency.rating, icon: StarRoundedIcon },
               ]}
             />
-            <Box
-              sx={{
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: `${radius.sm}px`,
-                bgcolor: surface.paper,
-                p: { xs: 2, md: 2.4 },
-                mb: 2.5,
-              }}
-            >
-              <Typography variant="h5" sx={{ mb: 1.4 }}>
-                Equipe em destaque
-              </Typography>
-              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-                {agency.teamHighlights.map((person) => (
-                  <Chip
-                    key={person}
-                    label={person}
-                    sx={{
-                      borderRadius: `${radius.sm}px`,
-                      bgcolor: agency.brand.backgroundColor,
-                      color: agency.brand.secondaryColor,
-                      fontWeight: 700,
-                    }}
-                  />
-                ))}
-              </Stack>
-            </Box>
+            <AgencyHighlightedTeam brand={agency.brand} brokers={highlightedTeam} />
           </Box>
 
           <PublicProfileSidebar
