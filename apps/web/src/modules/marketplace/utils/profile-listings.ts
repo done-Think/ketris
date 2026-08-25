@@ -1,19 +1,11 @@
 import { propertyDetails } from '../data/property-details'
+import type {
+  ProfileListingOptions,
+  ProfileListingSource,
+  PublicProfileListing,
+} from '../types/profile-listings'
 
-type ProfileListingSource = {
-  title: string
-  location: string
-  price: string
-  href: string
-}
-
-type ProfileListingOptions = {
-  brokerName?: string
-  coverage?: string[]
-  limit?: number
-}
-
-function buildProfileListing(listing: ProfileListingSource) {
+function buildProfileListing(listing: ProfileListingSource): PublicProfileListing {
   const listingId = listing.href.split('/').filter(Boolean).at(-1)
   const detail = listingId ? propertyDetails.find((property) => property.id === listingId) : null
 

@@ -5,29 +5,24 @@ import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
 import Link from 'next/link'
 
-import { alpha, componentText, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
-
-type PublicProfileListing = ReturnType<
-  typeof import('../../utils/profile-listings').buildProfileListings
->[number]
-
-type PublicProfileListingsProps = {
-  accentColor: string
-  listings: PublicProfileListing[]
-  source?: {
-    href: string
-    name: string
-    type: 'agency' | 'broker'
-  }
-}
+import {
+  alpha,
+  componentText,
+  iconSize,
+  motion,
+  radius,
+  shadows,
+  surface,
+} from '@shared/theme/tokens'
+import type { PublicProfileListingsProps } from '../../types/profile-listings'
 
 function buildListingHref(href: string, source: PublicProfileListingsProps['source']) {
   if (!source) return href
 
   const params = new URLSearchParams({
-    origem: source.type,
-    origemHref: source.href,
-    origemNome: source.name,
+    source: source.type,
+    sourceHref: source.href,
+    sourceName: source.name,
   })
 
   return `${href}?${params.toString()}`
@@ -59,6 +54,7 @@ export function PublicProfileListings({
             key={listing.href}
             component={Link}
             href={buildListingHref(listing.href, source)}
+            aria-label={`Ver imóvel ${listing.title}`}
             sx={{
               border: '1px solid',
               borderColor: 'divider',
@@ -69,7 +65,7 @@ export function PublicProfileListings({
               color: 'inherit',
               display: 'block',
               textDecoration: 'none',
-              transition: 'transform 180ms ease, box-shadow 180ms ease',
+              transition: motion.transition.card,
               '&:hover': {
                 boxShadow: shadows.propertyCardHover,
                 transform: 'translateY(-2px)',

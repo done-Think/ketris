@@ -8,20 +8,8 @@ import Link from 'next/link'
 
 import { componentText, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
+import type { PublicProfileSidebarProps } from '../../types/profile-sidebar'
 import { getPublicProfileLink } from '../../utils/profile-listings'
-
-type PublicProfileSidebarProps = {
-  accentColor: string
-  hoverColor: string
-  href: string
-  linkDescription: string
-  phone: string
-  email: string
-  facts: Array<{
-    label: string
-    value: string
-  }>
-}
 
 export function PublicProfileSidebar({
   accentColor,

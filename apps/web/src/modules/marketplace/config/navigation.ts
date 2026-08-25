@@ -1,16 +1,73 @@
 import { publicMarketplaceText } from '@shared/i18n/pt-br'
 
 import type { FooterColumn } from '../types/footer'
+import type {
+  MarketplaceNavigationItem,
+  MarketplaceNavigationItemId,
+  PropertyDetailNavigationParams,
+} from '../types/navigation'
+import type { SearchResultPurpose } from '../types/search'
 
 const { footer, navigation } = publicMarketplaceText
 
-export const homeNavigationItems = [
-  { label: navigation.home, href: '/' },
-  { label: navigation.rent, href: '/imoveis?finalidade=alugar' },
-  { label: navigation.buy, href: '/imoveis?finalidade=comprar' },
-  { label: navigation.brokers, href: '/corretores' },
-  { label: navigation.agencies, href: '/imobiliarias' },
-] as const
+export const marketplaceNavigationHrefById = {
+  home: '/',
+  rent: '/imoveis?purpose=alugar',
+  buy: '/imoveis?purpose=comprar',
+  brokers: '/corretores',
+  agencies: '/imobiliarias',
+} as const satisfies Record<MarketplaceNavigationItemId, string>
+
+export const marketplaceNavigationIdByPurpose = {
+  alugar: 'rent',
+  comprar: 'buy',
+} as const satisfies Record<SearchResultPurpose, MarketplaceNavigationItemId>
+
+export const marketplaceNavigationIdByOriginType = {
+  broker: 'brokers',
+  agency: 'agencies',
+} as const satisfies Record<string, MarketplaceNavigationItemId>
+
+function isMarketplaceNavigationOriginType(
+  originType?: string,
+): originType is keyof typeof marketplaceNavigationIdByOriginType {
+  return originType === 'broker' || originType === 'agency'
+}
+
+export const homeNavigationItems: MarketplaceNavigationItem[] = [
+  { id: 'home', label: navigation.home, href: marketplaceNavigationHrefById.home },
+  { id: 'rent', label: navigation.rent, href: marketplaceNavigationHrefById.rent },
+  { id: 'buy', label: navigation.buy, href: marketplaceNavigationHrefById.buy },
+  { id: 'brokers', label: navigation.brokers, href: marketplaceNavigationHrefById.brokers },
+  { id: 'agencies', label: navigation.agencies, href: marketplaceNavigationHrefById.agencies },
+]
+
+export function getMarketplaceNavigationItems(activeItemId?: MarketplaceNavigationItemId) {
+  return homeNavigationItems.map((item) => ({
+    ...item,
+    active: item.id === activeItemId,
+  }))
+}
+
+export function getMarketplaceNavigationItemIdByPurpose(purpose?: string) {
+  if (purpose === 'alugar' || purpose === 'comprar') {
+    return marketplaceNavigationIdByPurpose[purpose]
+  }
+
+  return undefined
+}
+
+export function getPropertyDetailNavigationItemId({
+  activePurpose,
+  originType,
+  purpose,
+}: PropertyDetailNavigationParams) {
+  if (isMarketplaceNavigationOriginType(originType)) {
+    return marketplaceNavigationIdByOriginType[originType]
+  }
+
+  return getMarketplaceNavigationItemIdByPurpose(purpose ?? activePurpose)
+}
 
 export const footerColumns: FooterColumn[] = [
   {
