@@ -1,6 +1,6 @@
 'use client'
 
-import { type RefObject, useState } from 'react'
+import { useState } from 'react'
 import {
   Avatar,
   Box,
@@ -19,6 +19,7 @@ import Link from 'next/link'
 
 import ketrisLogoTransparent from '@shared/assets/ketris-logo-transparent.png'
 import { AppLogo } from '@shared/components/ui'
+import type { HomeHeaderProps } from '@shared/types'
 import { publicMarketplaceText } from '@shared/i18n/pt-br'
 import {
   alpha,
@@ -30,20 +31,6 @@ import {
   surface,
   zIndex,
 } from '@shared/theme/tokens'
-
-type HomeHeaderProps = {
-  navigationItems: ReadonlyArray<{
-    label: string
-    href: string
-    active?: boolean
-  }>
-  profileButtonRef?: RefObject<HTMLButtonElement>
-  userProfile?: {
-    name: string
-    avatar: string
-  }
-  onToggleProfile?: () => void
-}
 
 export function HomeHeader({
   navigationItems,
