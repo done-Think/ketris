@@ -97,7 +97,7 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
                 bgcolor: alpha.magenta[6],
                 color: 'primary.main',
                 fontSize: 11,
-                fontWeight: 800,
+                fontWeight: 700,
               }}
             />
           ))}
@@ -112,18 +112,16 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
           }}
         >
           {[
-            { label: 'Região', value: brokerCardProps.region },
+            { label: 'Região', value: brokerCardProps.region, showTooltip: true },
             { label: 'Imóveis', value: `${brokerCardProps.activeListings} ativos` },
             { label: 'Resposta', value: brokerCardProps.responseTime },
           ].map((item) => {
-            const isRegion = item.value === brokerCardProps.region
-
             return (
               <Tooltip
                 key={item.label}
-                title={isRegion ? item.value : ''}
+                title={item.showTooltip ? item.value : ''}
                 placement="bottom-start"
-                disableHoverListener={!isRegion}
+                disableHoverListener={!item.showTooltip}
               >
                 <Box
                   sx={{
@@ -136,17 +134,16 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
                     bgcolor: surface.app,
                   }}
                 >
-                  <Typography sx={{ color: 'text.secondary', fontSize: 10, fontWeight: 800 }}>
+                  <Typography sx={{ color: 'text.secondary', fontSize: 10, fontWeight: 700 }}>
                     {item.label}
                   </Typography>
                   <Typography
-                    noWrap={!isRegion}
+                    noWrap
                     sx={{
                       fontSize: 12,
-                      fontWeight: 900,
+                      fontWeight: 700,
                       lineHeight: 1.25,
                       mt: 0.25,
-                      wordBreak: isRegion ? 'break-word' : undefined,
                     }}
                   >
                     {item.value}
