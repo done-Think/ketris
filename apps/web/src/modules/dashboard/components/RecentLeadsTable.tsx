@@ -22,10 +22,18 @@ import type {
 import { DashboardPanel } from './DashboardPanel'
 
 const statusStyles: Record<DashboardRecentLeadStatus, DashboardStatusStyle> = {
-  Novo: { bgcolor: brand.magenta[50], color: brand.magenta[600] },
-  'Em Andamento': { bgcolor: supportColor.infoSoft, color: brand.semantic.info },
-  Qualificado: { bgcolor: supportColor.warningSoft, color: brand.semantic.warning },
-  Pendente: { bgcolor: brand.magenta[50], color: brand.magenta[600] },
+  new: { label: 'Novo', bgcolor: brand.magenta[50], color: brand.magenta[600] },
+  inProgress: {
+    label: 'Em Andamento',
+    bgcolor: supportColor.infoSoft,
+    color: brand.semantic.info,
+  },
+  qualified: {
+    label: 'Qualificado',
+    bgcolor: supportColor.warningSoft,
+    color: brand.semantic.warning,
+  },
+  pending: { label: 'Pendente', bgcolor: brand.magenta[50], color: brand.magenta[600] },
 }
 
 export function RecentLeadsTable({ leads, onLeadSelect }: RecentLeadsTableProps) {
@@ -65,7 +73,7 @@ export function RecentLeadsTable({ leads, onLeadSelect }: RecentLeadsTableProps)
             </TableHead>
             <TableBody>
               {leads.map((lead) => (
-                <TableRow key={lead.name}>
+                <TableRow key={lead.id}>
                   <TableCell sx={{ borderBottom: 'none', py: 1.1 }}>
                     <Typography sx={{ color: brand.graphite[500], fontSize: 13, fontWeight: 900 }}>
                       {lead.name}
@@ -78,7 +86,7 @@ export function RecentLeadsTable({ leads, onLeadSelect }: RecentLeadsTableProps)
                   </TableCell>
                   <TableCell sx={{ borderBottom: 'none', py: 1.1 }}>
                     <Chip
-                      label={lead.status}
+                      label={statusStyles[lead.status].label}
                       size="small"
                       sx={{
                         height: 22,

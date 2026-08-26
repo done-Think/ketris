@@ -34,10 +34,10 @@ export function DashboardOverviewPage() {
   const [selectedActivity, setSelectedActivity] = useState<DashboardUpcomingActivity | null>(null)
   const [selectedLead, setSelectedLead] = useState<DashboardRecentLead | null>(null)
 
-  function handleLeadUpdate(leadName: string, values: DashboardLeadDetailsFormValues) {
-    updateLeadDetails(leadName, values)
+  function handleLeadUpdate(leadId: string, values: DashboardLeadDetailsFormValues) {
+    updateLeadDetails(leadId, values)
     setSelectedLead((currentLead) =>
-      currentLead?.name === leadName ? { ...currentLead, ...values } : currentLead,
+      currentLead?.id === leadId ? { ...currentLead, ...values } : currentLead,
     )
   }
 

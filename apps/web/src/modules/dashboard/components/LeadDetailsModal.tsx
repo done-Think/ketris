@@ -9,13 +9,13 @@ import {
   DialogTitle,
   IconButton,
   Stack,
-  TextField,
   Typography,
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Controller, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 
+import { RhfTextField } from '@shared/components/form'
 import { alpha, brand, radius } from '@shared/theme/tokens'
 
 import { dashboardLeadDetailsSchema } from '../schemas/dashboard-lead-details-schema'
@@ -77,7 +77,7 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
   function onSubmit(values: DashboardLeadDetailsFormValues) {
     if (!lead) return
 
-    onLeadUpdate(lead.name, values)
+    onLeadUpdate(lead.id, values)
     onClose()
   }
 
@@ -87,10 +87,12 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
       onClose={onClose}
       fullWidth
       maxWidth="md"
-      PaperProps={{
-        sx: {
-          borderRadius: `${radius.sm}px`,
-          overflow: 'hidden',
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: `${radius.sm}px`,
+            overflow: 'hidden',
+          },
         },
       }}
     >
@@ -144,91 +146,49 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
                 mt: 1,
               }}
             >
-              <Controller
+              <RhfTextField
                 control={control}
                 name="reportedNeed"
-                render={({ field, fieldState }) => (
-                  <TextField
-                    {...field}
-                    label="O que relatou"
-                    error={Boolean(fieldState.error)}
-                    helperText={fieldState.error?.message}
-                    multiline
-                    minRows={3}
-                    fullWidth
-                  />
-                )}
+                label="O que relatou"
+                multiline
+                minRows={3}
+                fullWidth
               />
-              <Controller
+              <RhfTextField
                 control={control}
                 name="lookingFor"
-                render={({ field, fieldState }) => (
-                  <TextField
-                    {...field}
-                    label="O que procura"
-                    error={Boolean(fieldState.error)}
-                    helperText={fieldState.error?.message}
-                    multiline
-                    minRows={3}
-                    fullWidth
-                  />
-                )}
+                label="O que procura"
+                multiline
+                minRows={3}
+                fullWidth
               />
-              <Controller
+              <RhfTextField
                 control={control}
                 name="budgetRange"
-                render={({ field, fieldState }) => (
-                  <TextField
-                    {...field}
-                    label="Base de valores"
-                    error={Boolean(fieldState.error)}
-                    helperText={fieldState.error?.message}
-                    fullWidth
-                  />
-                )}
+                label="Base de valores"
+                fullWidth
               />
-              <Controller
+              <RhfTextField
                 control={control}
                 name="downPayment"
-                render={({ field, fieldState }) => (
-                  <TextField
-                    {...field}
-                    label="Valor de entrada"
-                    error={Boolean(fieldState.error)}
-                    helperText={fieldState.error?.message}
-                    fullWidth
-                  />
-                )}
+                label="Valor de entrada"
+                fullWidth
               />
-              <Controller
+              <RhfTextField
                 control={control}
                 name="financingStatus"
-                render={({ field, fieldState }) => (
-                  <TextField
-                    {...field}
-                    label="Financiamento"
-                    error={Boolean(fieldState.error)}
-                    helperText={fieldState.error?.message}
-                    multiline
-                    minRows={2}
-                    fullWidth
-                  />
-                )}
+                label="Financiamento"
+                multiline
+                minRows={2}
+                fullWidth
               />
-              <Controller
+              <RhfTextField
                 control={control}
                 name="timeline"
-                render={({ field, fieldState }) => (
-                  <TextField
-                    {...field}
-                    label="Prazo de decisão"
-                    error={Boolean(fieldState.error)}
-                    helperText={fieldState.error?.message}
-                    multiline
-                    minRows={2}
-                    fullWidth
-                  />
-                )}
+                label="Prazo de decisão"
+                multiline
+                minRows={2}
+                fullWidth
               />
             </Box>
 
@@ -261,21 +221,14 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
               </Stack>
             </Box>
 
-            <Controller
+            <RhfTextField
               control={control}
               name="notes"
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  label="Observações para atendimento"
-                  error={Boolean(fieldState.error)}
-                  helperText={fieldState.error?.message}
-                  multiline
-                  minRows={3}
-                  fullWidth
-                  sx={{ mt: 1 }}
-                />
-              )}
+              label="Observações para atendimento"
+              multiline
+              minRows={3}
+              fullWidth
+              sx={{ mt: 1 }}
             />
           </DialogContent>
 

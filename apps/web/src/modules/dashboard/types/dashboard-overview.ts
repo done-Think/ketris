@@ -49,14 +49,16 @@ export type DashboardPerformancePoint = {
   value: number
 }
 
-export type DashboardRecentLeadStatus = 'Novo' | 'Em Andamento' | 'Qualificado' | 'Pendente'
+export type DashboardRecentLeadStatus = 'new' | 'inProgress' | 'qualified' | 'pending'
 
 export type DashboardStatusStyle = {
+  label: string
   bgcolor: string
   color: string
 }
 
 export type DashboardRecentLead = {
+  id: string
   name: string
   phone: string
   interest: string
@@ -90,7 +92,7 @@ export type ActivityDetailModalProps = {
 export type LeadDetailsModalProps = {
   lead: DashboardRecentLead | null
   onClose: () => void
-  onLeadUpdate: (leadName: string, values: DashboardLeadDetailsFormValues) => void
+  onLeadUpdate: (leadId: string, values: DashboardLeadDetailsFormValues) => void
 }
 
 export type LeadBriefingItemProps = {
@@ -120,5 +122,5 @@ export type DashboardLeadDetailsFormValues = Pick<
 
 export type DashboardStoreState = {
   leads: DashboardRecentLead[]
-  updateLeadDetails: (leadName: string, values: DashboardLeadDetailsFormValues) => void
+  updateLeadDetails: (leadId: string, values: DashboardLeadDetailsFormValues) => void
 }

@@ -110,10 +110,11 @@ export const dashboardUpcomingActivities: DashboardUpcomingActivity[] = [
 
 export const dashboardRecentLeads: DashboardRecentLead[] = [
   {
+    id: 'lead-guilherme-santos',
     name: 'Guilherme Santos',
     phone: '(11) 98124-7720',
     interest: 'Cobertura Jardins',
-    status: 'Novo',
+    status: 'new',
     origin: 'Anúncio Instagram',
     reportedNeed:
       'Relatou que precisa de uma cobertura pronta para morar, com area gourmet e privacidade para receber a familia aos fins de semana.',
@@ -127,10 +128,11 @@ export const dashboardRecentLeads: DashboardRecentLead[] = [
     notes: 'Priorizar unidades silenciosas, andar alto e documentacao sem pendencias.',
   },
   {
+    id: 'lead-ana-clara-mendes',
     name: 'Ana Clara Mendes',
     phone: '(11) 99718-4308',
     interest: 'Casa Condomínio',
-    status: 'Em Andamento',
+    status: 'inProgress',
     origin: 'Indicação',
     reportedNeed:
       'Busca mais seguranca e area externa para os filhos, sem abrir mao de acesso rapido a escolas bilingues.',
@@ -143,10 +145,11 @@ export const dashboardRecentLeads: DashboardRecentLead[] = [
     notes: 'Enviar opcoes com baixa taxa condominial e boa insolacao no periodo da tarde.',
   },
   {
+    id: 'lead-juliana-rocha',
     name: 'Juliana Rocha',
     phone: '(11) 94362-1189',
     interest: 'Apto Vila Madalena',
-    status: 'Qualificado',
+    status: 'qualified',
     origin: 'Portal Imobiliário',
     reportedNeed:
       'Quer sair do aluguel e morar perto do trabalho, com boa mobilidade e comercio caminhavel.',
@@ -159,10 +162,11 @@ export const dashboardRecentLeads: DashboardRecentLead[] = [
     notes: 'Evitar ruas muito movimentadas; aceita andar baixo se houver boa planta.',
   },
   {
+    id: 'lead-carlos-eduardo',
     name: 'Carlos Eduardo',
     phone: '(11) 95640-8821',
     interest: 'Studio Pinheiros',
-    status: 'Pendente',
+    status: 'pending',
     origin: 'Site Ketris',
     reportedNeed: 'Procura studio para investimento, com liquidez para locacao de media temporada.',
     lookingFor:

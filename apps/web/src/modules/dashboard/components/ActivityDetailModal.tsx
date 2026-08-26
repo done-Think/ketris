@@ -38,10 +38,12 @@ export function ActivityDetailModal({ activity, onClose }: ActivityDetailModalPr
       onClose={onClose}
       fullWidth
       maxWidth="md"
-      PaperProps={{
-        sx: {
-          borderRadius: `${radius.sm}px`,
-          overflow: 'hidden',
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: `${radius.sm}px`,
+            overflow: 'hidden',
+          },
         },
       }}
     >

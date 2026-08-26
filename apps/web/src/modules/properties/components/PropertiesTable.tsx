@@ -1,8 +1,8 @@
 'use client'
 
-import { Box, Chip, IconButton, Stack, Typography } from '@mui/material'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
+import { Box, Chip, IconButton, Stack, Typography } from '@mui/material'
 import type { GridColDef, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid'
 import { DataGrid } from '@mui/x-data-grid'
 
@@ -13,7 +13,7 @@ import type { DashboardProperty, PropertiesTableProps } from '../types/dashboard
 
 function PropertyIdentityCell({ row }: GridRenderCellParams<DashboardProperty>) {
   return (
-    <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0 }}>
+    <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0, height: '100%' }}>
       <Box
         component="img"
         src={row.imageUrl}
@@ -92,7 +92,16 @@ export function PropertiesTable({
       align: 'right',
       headerAlign: 'right',
       renderCell: ({ row }) => (
-        <Stack direction="row" spacing={0.8} justifyContent="flex-end" sx={{ width: '100%' }}>
+        <Stack
+          direction="row"
+          spacing={0.8}
+          sx={{
+            width: '100%',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            height: '100%',
+          }}
+        >
           <IconButton
             aria-label={`Editar ${row.title}`}
             onClick={(event) => event.stopPropagation()}
@@ -152,7 +161,6 @@ export function PropertiesTable({
       <DataGrid
         rows={properties}
         columns={columns}
-        autoHeight
         rowHeight={82}
         disableRowSelectionOnClick
         pageSizeOptions={[5, 10, 25]}
