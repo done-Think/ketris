@@ -1,117 +1,135 @@
-import { Box, Stack, Typography } from '@mui/material'
+'use client'
 
-import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
+import { useState } from 'react'
+import { Box, IconButton, Stack, Typography } from '@mui/material'
+import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
 
-import {
-  dashboardActivities,
-  dashboardMetrics,
-  dashboardPipeline,
-} from '../data/dashboard-overview'
+import { formatDate } from '@shared/lib/utils/format'
+import { alpha, brand, shadows, surface } from '@shared/theme/tokens'
+
+import type {
+  DashboardLeadDetailsFormValues,
+  DashboardRecentLead,
+  DashboardUpcomingActivity,
+} from '../types/dashboard-overview'
+import { useDashboardStore } from '../stores/dashboard-store'
+import { ActivityDetailModal } from './ActivityDetailModal'
+import { DashboardMetricGrid } from './DashboardMetricGrid'
+import { DashboardPanel } from './DashboardPanel'
+import { DashboardPerformanceChart } from './DashboardPerformanceChart'
+import { LeadDetailsModal } from './LeadDetailsModal'
+import { RecentLeadsTable } from './RecentLeadsTable'
+import { UpcomingActivitiesPanel } from './UpcomingActivitiesPanel'
+
+function formatDashboardDate(date = new Date()) {
+  const formattedDate = formatDate(date, 'dddd, D [de] MMMM YYYY').replace('-feira', '')
+
+  return formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
+}
 
 export function DashboardOverviewPage() {
+  const currentDate = formatDashboardDate()
+  const leads = useDashboardStore((state) => state.leads)
+  const updateLeadDetails = useDashboardStore((state) => state.updateLeadDetails)
+  const [selectedActivity, setSelectedActivity] = useState<DashboardUpcomingActivity | null>(null)
+  const [selectedLead, setSelectedLead] = useState<DashboardRecentLead | null>(null)
+
+  function handleLeadUpdate(leadId: string, values: DashboardLeadDetailsFormValues) {
+    updateLeadDetails(leadId, values)
+    setSelectedLead((currentLead) =>
+      currentLead?.id === leadId ? { ...currentLead, ...values } : currentLead,
+    )
+  }
+
   return (
-    <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
+    <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 3.4 } }}>
       <Stack spacing={2.4}>
-        <Box>
-          <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 40 }, fontWeight: 900 }}>
-            Dashboard
-          </Typography>
-          <Typography sx={{ color: 'text.secondary', fontSize: { xs: 15, md: 17 } }}>
-            Visão geral da operação comercial.
-          </Typography>
-        </Box>
+        <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
+          <Box>
+            <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 34 }, fontWeight: 900 }}>
+              Dashboard
+            </Typography>
+            <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 600, mt: 0.3 }}>
+              {currentDate}
+            </Typography>
+          </Box>
+
+          <IconButton
+            aria-label="Notificações"
+            sx={{
+              width: 38,
+              height: 38,
+              bgcolor: surface.paper,
+              border: '1px solid',
+              borderColor: alpha.graphite[6],
+              boxShadow: shadows.crmCardCompact,
+              '&:hover': { bgcolor: surface.paper },
+            }}
+          >
+            <NotificationsNoneOutlinedIcon sx={{ color: brand.graphite[500], fontSize: 19 }} />
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 10,
+                right: 10,
+                width: 7,
+                height: 7,
+                borderRadius: '50%',
+                bgcolor: brand.magenta[500],
+              }}
+            />
+          </IconButton>
+        </Stack>
+
+        <DashboardMetricGrid />
 
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', xl: 'repeat(4, 1fr)' },
+            gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.7fr) minmax(280px, 1fr)' },
             gap: 1.6,
           }}
         >
-          {dashboardMetrics.map((metric) => (
+          <DashboardPanel>
             <Box
-              key={metric.label}
               sx={{
-                bgcolor: surface.paper,
-                border: '1px solid',
-                borderColor: alpha.graphite[6],
-                borderRadius: `${radius.sm}px`,
-                boxShadow: shadows.propertyCard,
-                p: 2.2,
+                display: 'flex',
+                minHeight: { xs: 330, md: 360 },
+                flexDirection: 'column',
+                p: { xs: 2, md: 2.4 },
               }}
             >
-              <Typography sx={{ color: 'text.secondary', fontSize: 12, fontWeight: 800 }}>
-                {metric.label}
-              </Typography>
-              <Typography sx={{ mt: 0.6, fontSize: 32, fontWeight: 900 }}>
-                {metric.value}
-              </Typography>
-              <Typography sx={{ color: brand.magenta[600], fontSize: 13, fontWeight: 800 }}>
-                {metric.caption}
-              </Typography>
-            </Box>
-          ))}
-        </Box>
-
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', lg: '1.05fr 1fr' },
-            gap: 1.6,
-          }}
-        >
-          <Box
-            sx={{
-              bgcolor: surface.paper,
-              border: '1px solid',
-              borderColor: alpha.graphite[6],
-              borderRadius: `${radius.sm}px`,
-              boxShadow: shadows.propertyCard,
-              p: 2.4,
-            }}
-          >
-            <Typography variant="h5">Pipeline</Typography>
-            <Stack spacing={1.2} sx={{ mt: 2 }}>
-              {dashboardPipeline.map((item) => (
-                <Stack
-                  key={item.label}
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  sx={{ borderBottom: '1px solid', borderColor: 'divider', py: 1 }}
+              <Stack direction="row" justifyContent="space-between" spacing={2}>
+                <Typography
+                  sx={{
+                    color: brand.neutral[500],
+                    fontSize: 11,
+                    fontWeight: 900,
+                    textTransform: 'uppercase',
+                  }}
                 >
-                  <Typography sx={{ fontWeight: 800 }}>{item.label}</Typography>
-                  <Typography sx={{ fontWeight: 900 }}>{item.value}</Typography>
-                </Stack>
-              ))}
-            </Stack>
-          </Box>
+                  Desempenho 6 meses
+                </Typography>
+                <Typography sx={{ color: brand.magenta[600], fontSize: 11, fontWeight: 900 }}>
+                  Meta: 85%
+                </Typography>
+              </Stack>
+              <DashboardPerformanceChart />
+            </Box>
+          </DashboardPanel>
 
-          <Box
-            sx={{
-              bgcolor: surface.paper,
-              border: '1px solid',
-              borderColor: alpha.graphite[6],
-              borderRadius: `${radius.sm}px`,
-              boxShadow: shadows.propertyCard,
-              p: 2.4,
-            }}
-          >
-            <Typography variant="h5">Atividades recentes</Typography>
-            <Stack spacing={1.6} sx={{ mt: 2 }}>
-              {dashboardActivities.map((activity) => (
-                <Box key={activity.title}>
-                  <Typography sx={{ fontWeight: 900 }}>{activity.title}</Typography>
-                  <Typography sx={{ color: 'text.secondary' }}>{activity.description}</Typography>
-                  <Typography sx={{ color: brand.magenta[600], fontSize: 12, fontWeight: 800 }}>
-                    {activity.timestamp}
-                  </Typography>
-                </Box>
-              ))}
-            </Stack>
-          </Box>
+          <UpcomingActivitiesPanel onActivitySelect={setSelectedActivity} />
         </Box>
+
+        <RecentLeadsTable leads={leads} onLeadSelect={setSelectedLead} />
       </Stack>
+
+      <ActivityDetailModal activity={selectedActivity} onClose={() => setSelectedActivity(null)} />
+      <LeadDetailsModal
+        lead={selectedLead}
+        onClose={() => setSelectedLead(null)}
+        onLeadUpdate={handleLeadUpdate}
+      />
     </Box>
   )
 }
