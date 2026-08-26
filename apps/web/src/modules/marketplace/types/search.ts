@@ -1,8 +1,7 @@
 import type { Dispatch, FormEventHandler, ReactNode, Ref, SetStateAction } from 'react'
 import type { z } from 'zod'
 
-import type { PropertyCardData } from '@shared/types'
-
+import type { LocalizedHref } from '@shared/types/localized-href'
 import type { searchOptions } from '../config/search-filters'
 import type {
   marketplaceSearchFormSchema,
@@ -16,6 +15,8 @@ export type SearchFilterKey = keyof typeof searchOptions
 export type TextSearchFilterKey = Exclude<SearchFilterKey, 'priceRange'>
 
 export type SearchResultPurpose = 'alugar' | 'comprar'
+
+export type SearchResultPurposeParam = 'rent' | 'buy'
 
 export type SearchResultProperty = MarketplacePropertyDetail & {
   purpose: SearchResultPurpose
@@ -38,6 +39,13 @@ export type QuickFilterKey = 'type' | 'price' | 'bedrooms' | 'area' | 'more'
 export type SearchResultsPageProps = {
   purpose: SearchResultPurpose
   initialLocation?: string
+}
+
+export type SearchResultsRoutePageProps = {
+  searchParams?: {
+    location?: string
+    purpose?: string
+  }
 }
 
 export type SearchResultsFiltersProps = {
@@ -77,6 +85,18 @@ export type SearchResultsFilterDialogProps = SearchResultsFiltersDialogFormValue
   setPropertyTypeFilter: (value: string) => void
 }
 
+export type SearchResultsMapProps = {
+  properties: SearchResultProperty[]
+  selectedPropertyId: string
+  onSelectProperty: (propertyId: string) => void
+}
+
+export type SearchResultsMapPanelProps = {
+  properties: SearchResultProperty[]
+  selectedPropertyId: string
+  setSelectedPropertyId: (propertyId: string) => void
+}
+
 export type SearchResultsToolbarProps = {
   filtersControl?: ReactNode
   resultCount: number
@@ -86,16 +106,11 @@ export type SearchResultsToolbarProps = {
   viewMode: ViewMode
 }
 
-export type SearchResultsMapProps = {
-  properties: MarketplacePropertyDetail[]
-  selectedPropertyId: string
-  onSelectProperty: (propertyId: string) => void
-}
-
 export type SearchPropertyCardProps = {
-  property: PropertyCardData
+  property: SearchResultProperty
   selected?: boolean
   onActivate?: () => void
+  viewMode?: ViewMode
 }
 
 export type PriceRange = [number, number]
@@ -144,7 +159,7 @@ export type DesktopSearchBarProps = SearchMenuProps &
   PriceRangeMenuProps & {
     priceRangeLabel: string
     activeSearchMenu: SearchFilterKey | null
-    searchHref: string
+    searchHref: LocalizedHref
     desktopSearchRef: Ref<HTMLDivElement>
     openSearchMenu: (key: SearchFilterKey) => void
   }
@@ -152,7 +167,7 @@ export type DesktopSearchBarProps = SearchMenuProps &
 export type MobileSearchBoxProps = SearchMenuProps & {
   activeSearchMenu: SearchFilterKey | null
   mobileSearchRef: Ref<HTMLDivElement>
-  searchHref: string
+  searchHref: LocalizedHref
   openSearchMenu: (key: SearchFilterKey) => void
 }
 

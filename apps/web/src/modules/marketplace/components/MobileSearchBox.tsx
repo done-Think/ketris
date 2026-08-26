@@ -1,7 +1,7 @@
 import { Box, Button, Typography } from '@mui/material'
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined'
-import Link from 'next/link'
 
+import { Link } from '@/i18n/navigation'
 import { componentText, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { MobileSearchBoxProps } from '../types/search'
@@ -90,20 +90,28 @@ export function MobileSearchBox({
         </Box>
       )}
 
-      <Button
+      <Box
         component={Link}
         href={searchHref}
-        variant="contained"
-        fullWidth
         sx={{
+          display: 'block',
           mt: 0.9,
-          minHeight: 36,
-          borderRadius: `${radius.sm}px`,
-          ...componentText.mobileSearchSubmit,
+          textDecoration: 'none',
         }}
       >
-        Buscar
-      </Button>
+        <Button
+          component="span"
+          variant="contained"
+          fullWidth
+          sx={{
+            minHeight: 36,
+            borderRadius: `${radius.sm}px`,
+            ...componentText.mobileSearchSubmit,
+          }}
+        >
+          Buscar
+        </Button>
+      </Box>
     </Box>
   )
 }

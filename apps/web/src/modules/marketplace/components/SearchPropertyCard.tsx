@@ -5,12 +5,13 @@ import BedOutlinedIcon from '@mui/icons-material/BedOutlined'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import LocalParkingOutlinedIcon from '@mui/icons-material/LocalParkingOutlined'
 import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined'
-import Link from 'next/link'
 
+import { Link } from '@/i18n/navigation'
 import { PillBadge } from '@shared/components/ui'
 import { alpha, componentText, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
 import type { PropertyFeatureKey } from '@shared/types'
 import type { SearchPropertyCardProps } from '../types/search'
+import { buildPropertyDetailHref } from '../utils/property-links'
 
 const detailIcons: Record<PropertyFeatureKey, typeof ApartmentOutlinedIcon> = {
   bedrooms: BedOutlinedIcon,
@@ -23,14 +24,19 @@ export function SearchPropertyCard({
   property,
   selected = false,
   onActivate,
+  viewMode = 'grid',
 }: SearchPropertyCardProps) {
+  const isListView = viewMode === 'list'
+  const detailsHref = buildPropertyDetailHref(property.href, property.purpose)
+
   return (
     <Card
       component={Link}
-      href={property.href}
+      href={detailsHref}
       onFocus={onActivate}
       onMouseEnter={onActivate}
       sx={{
+        display: { xs: 'block', md: isListView ? 'flex' : 'block' },
         overflow: 'hidden',
         border: '1px solid',
         borderColor: selected ? 'primary.main' : 'transparent',
@@ -50,7 +56,10 @@ export function SearchPropertyCard({
       <Box
         sx={{
           position: 'relative',
-          height: { xs: 180, md: 150, xl: 175 },
+          flex: { md: isListView ? '0 0 50%' : undefined },
+          width: { md: isListView ? '50%' : '100%' },
+          minHeight: { md: isListView ? 260 : undefined },
+          height: isListView ? { xs: 180, md: 'auto' } : { xs: 180, md: 150, xl: 175 },
           backgroundImage: `url("${property.image}")`,
           backgroundPosition: 'center',
           backgroundSize: 'cover',
@@ -61,7 +70,16 @@ export function SearchPropertyCard({
         </Box>
       </Box>
 
-      <CardContent sx={{ p: { xs: 2, xl: 2.25 } }}>
+      <CardContent
+        sx={{
+          display: 'flex',
+          flex: { md: isListView ? '0 0 50%' : undefined },
+          width: { md: isListView ? '50%' : 'auto' },
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          p: { xs: 2, xl: 2.25 },
+        }}
+      >
         <Typography sx={{ color: 'text.secondary', ...componentText.cardEyebrow, mb: 0.55 }}>
           {property.location}
         </Typography>

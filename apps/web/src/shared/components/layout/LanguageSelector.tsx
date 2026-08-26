@@ -112,8 +112,10 @@ export function LanguageSelector({ variant = 'profile' }: LanguageSelectorProps)
         disableScrollLock
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        MenuListProps={{ 'aria-label': t('language') }}
         slotProps={{
+          list: {
+            'aria-label': t('language'),
+          },
           paper: {
             sx: {
               mt: 0.75,

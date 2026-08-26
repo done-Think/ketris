@@ -36,6 +36,7 @@ export function SearchResultsList({
             property={property}
             selected={property.id === selectedPropertyId}
             onActivate={() => setSelectedPropertyId(property.id)}
+            viewMode={viewMode}
           />
         ))
       ) : (

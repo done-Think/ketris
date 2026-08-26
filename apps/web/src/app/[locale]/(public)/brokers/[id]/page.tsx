@@ -1,1 +1,5 @@
-export { default, generateMetadata } from '../../../../(public)/corretores/[id]/page'
+export {
+  default,
+  generateMetadata,
+  generateStaticParams,
+} from '../../../../(public)/corretores/[id]/page'

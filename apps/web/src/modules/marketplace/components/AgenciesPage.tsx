@@ -1,17 +1,22 @@
 'use client'
 
+import { useState } from 'react'
 import { Box, Container } from '@mui/material'
 
-import { HomeHeader, SiteFooter } from '@shared/components/layout'
+import { SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
 import { agencies } from '../data/agencies'
 import { useDirectoryList } from '../hooks/use-directory-list'
 import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { AgencyProfile } from '../types/agency'
+import type { ViewMode } from '../types/search'
 import { AgencyCard } from './AgencyCard'
 import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
 import { DirectoryPageHeader } from './directory/DirectoryPageHeader'
+import { DirectoryViewModeToggle } from './directory/DirectoryViewModeToggle'
+import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
+import { MarketplaceHeader } from './MarketplaceHeader'
 
 const initialAgencyCount = 4
 const agencyPageSize = 3
@@ -23,7 +28,8 @@ function getAgencySearchableText(agency: AgencyProfile) {
 }
 
 export function AgenciesPage() {
-  const { footerColumns, homeNavigationItems, legalLinks } = useMarketplaceNavigation()
+  const { footerColumns, legalLinks } = useMarketplaceNavigation()
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const {
     filteredItems: filteredAgencies,
     hasMoreItems: hasMoreAgencies,
@@ -37,10 +43,6 @@ export function AgenciesPage() {
     items: agencies,
     pageSize: agencyPageSize,
   })
-  const navigationItems = homeNavigationItems.map((item) => ({
-    ...item,
-    active: item.key === 'agencies',
-  }))
 
   return (
     <Box
@@ -52,11 +54,15 @@ export function AgenciesPage() {
         bgcolor: surface.app,
       }}
     >
-      <HomeHeader navigationItems={navigationItems} />
+      <MarketplaceHeader activeItemId="agencies" />
 
       <Box component="main" sx={{ py: { xs: 2.4, md: 4 } }}>
         <Container maxWidth="xl">
+          <MarketplaceBreadcrumbs
+            items={[{ label: 'Home', href: '/' }, { label: 'Imobiliárias' }]}
+          />
           <DirectoryPageHeader
+            actions={<DirectoryViewModeToggle value={viewMode} onChange={setViewMode} />}
             placeholder="Nome, CRECI, região ou cobertura"
             resultCountLabel={`${visibleAgencies.length} de ${filteredAgencies.length} imobiliárias encontradas`}
             searchInputProps={register('searchQuery')}
@@ -68,14 +74,14 @@ export function AgenciesPage() {
               display: 'grid',
               gridTemplateColumns: {
                 xs: '1fr',
-                md: 'repeat(2, minmax(0, 1fr))',
-                xl: 'repeat(3, minmax(0, 1fr))',
+                md: viewMode === 'list' ? '1fr' : 'repeat(2, minmax(0, 1fr))',
+                xl: viewMode === 'list' ? '1fr' : 'repeat(3, minmax(0, 1fr))',
               },
               gap: { xs: 2, xl: 2.5 },
             }}
           >
             {visibleAgencies.map((agency) => (
-              <AgencyCard key={agency.id} {...agency} />
+              <AgencyCard key={agency.id} {...agency} viewMode={viewMode} />
             ))}
           </Box>
 

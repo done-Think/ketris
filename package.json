@@ -45,5 +45,16 @@
     "apps/web/**/*.{json,md,css}": [
       "prettier --config apps/web/.prettierrc --write"
     ]
+  },
+  "allowScripts": {
+    "@prisma/engines@7.9.1": true,
+    "@sentry/cli@2.39.1": true,
+    "cypress@13.17.0": true,
+    "esbuild@0.21.5": true,
+    "esbuild@0.28.1": true,
+    "fsevents@2.3.3": true,
+    "prisma@7.9.1": true,
+    "unrs-resolver@1.12.2": true,
+    "@scarf/scarf": false
   }
 }

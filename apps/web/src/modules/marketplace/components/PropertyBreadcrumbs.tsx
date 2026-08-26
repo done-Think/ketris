@@ -1,67 +1,76 @@
-'use client'
+import { useTranslations } from 'next-intl'
 
-import { Stack, Typography } from '@mui/material'
-import Link from 'next/link'
-
-type PropertyBreadcrumbsProps = {
-  category: string
-  location: string
-}
+import type { MarketplaceBreadcrumbItem } from '../types/breadcrumb'
+import type { PropertyBreadcrumbPurpose, PropertyBreadcrumbsProps } from '../types/property-detail'
+import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 
 function buildLocationHref(location: string) {
-  const params = new URLSearchParams({ localizacao: location })
-
-  return `/imoveis?${params.toString()}`
+  return { pathname: '/properties', query: { location } } as const
 }
 
-function buildBreadcrumbItems(location: string) {
+function buildPurposeHref(purpose: PropertyBreadcrumbPurpose) {
+  return {
+    pathname: '/properties',
+    query: { purpose: purpose === 'comprar' ? 'buy' : 'rent' },
+  } as const
+}
+
+export function PropertyBreadcrumbs({
+  context,
+  location,
+  propertyTitle,
+}: PropertyBreadcrumbsProps) {
+  const t = useTranslations('marketplace')
   const [neighborhood = location, city = 'São Paulo'] = location
     .split(',')
     .map((item) => item.trim())
 
-  return [
-    { label: 'Home', href: '/' },
+  const locationBreadcrumbs: MarketplaceBreadcrumbItem[] = [
+    { label: t('navigation.home'), href: '/' },
     { label: city, href: buildLocationHref(city) },
     { label: neighborhood, href: buildLocationHref(neighborhood) },
   ]
-}
 
-export function PropertyBreadcrumbs({ category, location }: PropertyBreadcrumbsProps) {
-  const breadcrumbs = buildBreadcrumbItems(location)
+  if (context?.originType === 'broker' && context.originName && context.originHref) {
+    return (
+      <MarketplaceBreadcrumbs
+        items={[
+          { label: t('navigation.home'), href: '/' },
+          { label: t('navigation.brokers'), href: '/brokers' },
+          { label: context.originName, href: context.originHref },
+          { label: propertyTitle },
+        ]}
+      />
+    )
+  }
 
-  return (
-    <Stack direction="row" spacing={0.8} useFlexGap flexWrap="wrap" sx={{ mb: 2 }}>
-      {breadcrumbs.map((item, index) => (
-        <Stack key={item.label} direction="row" spacing={0.8}>
-          {index > 0 ? (
-            <Typography sx={{ color: 'text.secondary', fontSize: 12, fontWeight: 700 }}>
-              /
-            </Typography>
-          ) : null}
-          <Typography
-            component={Link}
-            href={item.href}
-            sx={{
-              color: 'text.secondary',
-              fontSize: 12,
-              fontWeight: 700,
-              textDecoration: 'none',
-              '&:hover': {
-                color: 'primary.main',
-                textDecoration: 'underline',
-              },
-            }}
-          >
-            {item.label}
-          </Typography>
-        </Stack>
-      ))}
-      <Stack direction="row" spacing={0.8}>
-        <Typography sx={{ color: 'text.secondary', fontSize: 12, fontWeight: 700 }}>/</Typography>
-        <Typography sx={{ color: 'primary.main', fontSize: 12, fontWeight: 700 }}>
-          {category}
-        </Typography>
-      </Stack>
-    </Stack>
-  )
+  if (context?.originType === 'agency' && context.originName && context.originHref) {
+    return (
+      <MarketplaceBreadcrumbs
+        items={[
+          { label: t('navigation.home'), href: '/' },
+          { label: t('navigation.agencies'), href: '/agencies' },
+          { label: context.originName, href: context.originHref },
+          { label: propertyTitle },
+        ]}
+      />
+    )
+  }
+
+  if (context?.purpose === 'alugar' || context?.purpose === 'comprar') {
+    return (
+      <MarketplaceBreadcrumbs
+        items={[
+          { label: t('navigation.home'), href: '/' },
+          {
+            label: context.purpose === 'comprar' ? t('navigation.buy') : t('navigation.rent'),
+            href: buildPurposeHref(context.purpose),
+          },
+          { label: propertyTitle },
+        ]}
+      />
+    )
+  }
+
+  return <MarketplaceBreadcrumbs items={[...locationBreadcrumbs, { label: propertyTitle }]} />
 }

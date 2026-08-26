@@ -27,10 +27,12 @@ export function PropertyPhotoDialog({
         if (event.key === 'ArrowLeft') onPreviousPhoto()
         if (event.key === 'ArrowRight') onNextPhoto()
       }}
-      PaperProps={{
-        sx: {
-          bgcolor: surface.darkDeep,
-          color: surface.lightText,
+      slotProps={{
+        paper: {
+          sx: {
+            bgcolor: surface.darkDeep,
+            color: surface.lightText,
+          },
         },
       }}
     >

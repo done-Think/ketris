@@ -1,11 +1,14 @@
-import type { HomeHeaderNavigationItem } from '@shared/types/home-header'
-
 import type { FooterColumn } from './footer'
+import type { SearchResultPurpose } from './search'
+import type { LocalizedHref } from '@shared/types/localized-href'
 
-export type MarketplaceNavigationKey = 'home' | 'rent' | 'buy' | 'brokers' | 'agencies'
+export type MarketplaceNavigationItemId = 'home' | 'rent' | 'buy' | 'brokers' | 'agencies'
 
-export type MarketplaceNavigationItem = HomeHeaderNavigationItem & {
-  key: MarketplaceNavigationKey
+export type MarketplaceNavigationItem = {
+  id: MarketplaceNavigationItemId
+  label: string
+  href: LocalizedHref
+  active?: boolean
 }
 
 export type MarketplaceNavigation = {
@@ -13,6 +16,19 @@ export type MarketplaceNavigation = {
   footerColumns: FooterColumn[]
   legalLinks: Array<{
     label: string
-    href: string
+    href: LocalizedHref
   }>
 }
+
+export type PropertyDetailNavigationParams = {
+  activePurpose?: string
+  originType?: string
+  purpose?: string
+}
+
+export type MarketplaceNavigationHrefKey = MarketplaceNavigationItemId | 'properties' | 'login'
+
+export type MarketplaceNavigationPurposeMap = Record<
+  SearchResultPurpose,
+  MarketplaceNavigationItemId
+>

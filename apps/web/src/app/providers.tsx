@@ -10,6 +10,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { SnackbarProvider } from 'notistack'
 import { SessionProvider } from 'next-auth/react'
 import { NextIntlClientProvider } from 'next-intl'
+import 'dayjs/locale/es'
 import 'dayjs/locale/pt-br'
 
 import type { I18nProviderConfig } from '@/i18n/types/provider.types'
@@ -24,6 +25,7 @@ type ProvidersProps = {
 
 export function Providers({ children, i18n }: ProvidersProps) {
   const [queryClient] = useState(() => makeQueryClient())
+  const dayjsAdapterLocale = getDayjsAdapterLocale(i18n.locale)
 
   return (
     <NextIntlClientProvider locale={i18n.locale} messages={i18n.messages} timeZone={i18n.timeZone}>
@@ -33,7 +35,7 @@ export function Providers({ children, i18n }: ProvidersProps) {
           <SessionProvider>
             <HttpClientSessionBridge />
             <QueryClientProvider client={queryClient}>
-              <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pt-br">
+              <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={dayjsAdapterLocale}>
                 <SnackbarProvider
                   maxSnack={3}
                   anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
@@ -48,4 +50,11 @@ export function Providers({ children, i18n }: ProvidersProps) {
       </AppRouterCacheProvider>
     </NextIntlClientProvider>
   )
+}
+
+function getDayjsAdapterLocale(locale: string) {
+  if (locale === 'pt-BR') return 'pt-br'
+  if (locale === 'es-ES') return 'es'
+
+  return 'en'
 }

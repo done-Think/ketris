@@ -1,17 +1,22 @@
 'use client'
 
+import { useState } from 'react'
 import { Box, Container } from '@mui/material'
 
-import { HomeHeader, SiteFooter } from '@shared/components/layout'
+import { SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
 import { brokers } from '../data/brokers'
 import { useDirectoryList } from '../hooks/use-directory-list'
 import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { BrokerProfile } from '../types/broker'
+import type { ViewMode } from '../types/search'
 import { BrokerCard } from './BrokerCard'
 import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
 import { DirectoryPageHeader } from './directory/DirectoryPageHeader'
+import { DirectoryViewModeToggle } from './directory/DirectoryViewModeToggle'
+import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
+import { MarketplaceHeader } from './MarketplaceHeader'
 
 const initialBrokerCount = 4
 const brokerPageSize = 3
@@ -23,7 +28,8 @@ function getBrokerSearchableText(broker: BrokerProfile) {
 }
 
 export function BrokersPage() {
-  const { footerColumns, homeNavigationItems, legalLinks } = useMarketplaceNavigation()
+  const { footerColumns, legalLinks } = useMarketplaceNavigation()
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const {
     filteredItems: filteredBrokers,
     hasMoreItems: hasMoreBrokers,
@@ -37,10 +43,6 @@ export function BrokersPage() {
     items: brokers,
     pageSize: brokerPageSize,
   })
-  const navigationItems = homeNavigationItems.map((item) => ({
-    ...item,
-    active: item.key === 'brokers',
-  }))
 
   return (
     <Box
@@ -52,11 +54,13 @@ export function BrokersPage() {
         bgcolor: surface.app,
       }}
     >
-      <HomeHeader navigationItems={navigationItems} />
+      <MarketplaceHeader activeItemId="brokers" />
 
       <Box component="main" sx={{ py: { xs: 2.4, md: 4 } }}>
         <Container maxWidth="xl">
+          <MarketplaceBreadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Corretores' }]} />
           <DirectoryPageHeader
+            actions={<DirectoryViewModeToggle value={viewMode} onChange={setViewMode} />}
             placeholder="Nome, CRECI, bairro ou região"
             resultCountLabel={`${visibleBrokers.length} de ${filteredBrokers.length} corretores encontrados`}
             searchInputProps={register('searchQuery')}
@@ -68,14 +72,14 @@ export function BrokersPage() {
               display: 'grid',
               gridTemplateColumns: {
                 xs: '1fr',
-                md: 'repeat(2, minmax(0, 1fr))',
-                xl: 'repeat(3, minmax(0, 1fr))',
+                md: viewMode === 'list' ? '1fr' : 'repeat(2, minmax(0, 1fr))',
+                xl: viewMode === 'list' ? '1fr' : 'repeat(3, minmax(0, 1fr))',
               },
               gap: { xs: 2, xl: 2.5 },
             }}
           >
             {visibleBrokers.map((broker) => (
-              <BrokerCard key={broker.id} {...broker} />
+              <BrokerCard key={broker.id} {...broker} viewMode={viewMode} />
             ))}
           </Box>
 

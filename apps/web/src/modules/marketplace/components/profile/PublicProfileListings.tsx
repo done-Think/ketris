@@ -1,37 +1,52 @@
 'use client'
 
-import { Box, Button, Chip, Stack, Typography } from '@mui/material'
+import { Box, Chip, Stack, Typography } from '@mui/material'
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
-import { alpha, componentText, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import { Link } from '@/i18n/navigation'
+import {
+  alpha,
+  componentText,
+  iconSize,
+  motion,
+  radius,
+  shadows,
+  surface,
+} from '@shared/theme/tokens'
+import type { PublicProfileListingsProps } from '../../types/profile-listings'
+import { buildProfileListingHref } from '../../utils/property-links'
 
-type PublicProfileListing = ReturnType<
-  typeof import('../../utils/profile-listings').buildProfileListings
->[number]
+export function PublicProfileListings({
+  accentColor,
+  listings,
+  source,
+}: PublicProfileListingsProps) {
+  const t = useTranslations('marketplace.publicProfile.listings')
 
-type PublicProfileListingsProps = {
-  accentColor: string
-  listings: PublicProfileListing[]
-}
-
-export function PublicProfileListings({ accentColor, listings }: PublicProfileListingsProps) {
   return (
     <>
       <Typography variant="h5" sx={{ mb: 1.5 }}>
-        Imóveis representados
+        {t('title')}
       </Typography>
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+          gridTemplateColumns: {
+            xs: '1fr',
+            md: 'repeat(2, minmax(0, 1fr))',
+            lg: 'repeat(3, minmax(0, 1fr))',
+          },
           gap: { xs: 2, xl: 2.5 },
         }}
       >
         {listings.map((listing) => (
           <Box
             key={listing.href}
+            component={Link}
+            href={buildProfileListingHref(listing.href, source)}
+            aria-label={t('viewAriaLabel', { title: listing.title })}
             sx={{
               border: '1px solid',
               borderColor: 'divider',
@@ -39,6 +54,18 @@ export function PublicProfileListings({ accentColor, listings }: PublicProfileLi
               bgcolor: surface.paper,
               boxShadow: shadows.propertyCard,
               overflow: 'hidden',
+              color: 'inherit',
+              display: 'block',
+              textDecoration: 'none',
+              transition: motion.transition.card,
+              '&:hover': {
+                boxShadow: shadows.propertyCardHover,
+                transform: 'translateY(-2px)',
+              },
+              '&:focus-visible': {
+                outline: `2px solid ${accentColor}`,
+                outlineOffset: 3,
+              },
             }}
           >
             <Box
@@ -79,22 +106,26 @@ export function PublicProfileListings({ accentColor, listings }: PublicProfileLi
                   />
                 ))}
               </Stack>
-              <Button
-                component={Link}
-                href={listing.href}
-                variant="contained"
-                fullWidth
-                startIcon={<HomeWorkOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+              <Box
+                component="span"
                 sx={{
                   bgcolor: accentColor,
-                  '&:hover': {
-                    bgcolor: accentColor,
-                    filter: 'brightness(0.92)',
-                  },
+                  borderRadius: `${radius.sm}px`,
+                  color: surface.paper,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 0.8,
+                  minHeight: 36,
+                  px: 2,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  lineHeight: 1.25,
                 }}
               >
-                Ver imóvel
-              </Button>
+                <HomeWorkOutlinedIcon sx={{ fontSize: iconSize.sm }} />
+                {t('viewProperty')}
+              </Box>
             </Box>
           </Box>
         ))}

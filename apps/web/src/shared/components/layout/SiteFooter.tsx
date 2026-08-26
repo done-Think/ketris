@@ -10,25 +10,12 @@ import {
 import FacebookOutlinedIcon from '@mui/icons-material/FacebookOutlined'
 import InstagramIcon from '@mui/icons-material/Instagram'
 import LinkedInIcon from '@mui/icons-material/LinkedIn'
-import Link from 'next/link'
 
+import { Link } from '@/i18n/navigation'
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
 import { alpha, componentText, iconSize, surface } from '@shared/theme/tokens'
-
-type SiteFooterProps = {
-  columns: Array<{
-    title: string
-    links: Array<{
-      label: string
-      href: string
-    }>
-  }>
-  legalLinks: ReadonlyArray<{
-    label: string
-    href: string
-  }>
-}
+import type { SiteFooterProps } from '@shared/types/site-footer'
 
 const socialLinks = [
   { label: 'Instagram', icon: InstagramIcon },

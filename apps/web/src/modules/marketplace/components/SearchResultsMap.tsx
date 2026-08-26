@@ -1,13 +1,14 @@
 'use client'
 
 import { Box } from '@mui/material'
-import Link from 'next/link'
 import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre'
 
+import { Link } from '@/i18n/navigation'
 import { env } from '@config/env'
 import { componentText, motion, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { SearchResultsMapProps } from '../types/search'
+import { buildPropertyDetailHref } from '../utils/property-links'
 
 const defaultMapStyleUrl = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 const mapContainerStyle = { width: '100%', height: '100%' } as const
@@ -57,7 +58,7 @@ export function SearchResultsMap({
             >
               <Box
                 component={Link}
-                href={property.href}
+                href={buildPropertyDetailHref(property.href, property.purpose)}
                 aria-label={`Abrir ${property.title}`}
                 onClick={() => onSelectProperty(property.id)}
                 onFocus={() => onSelectProperty(property.id)}

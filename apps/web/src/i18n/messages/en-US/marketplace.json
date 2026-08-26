@@ -50,5 +50,37 @@
       "aboutUs": "About us",
       "corporateSolutions": "Corporate solutions"
     }
+  },
+  "publicProfile": {
+    "metrics": {
+      "active": "Active",
+      "closed": "Closed",
+      "properties": "Listings",
+      "rating": "Rating",
+      "responseTime": "Avg. response",
+      "team": "Team",
+      "years": "Years"
+    },
+    "facts": {
+      "activeListings": "Active listings",
+      "address": "Address",
+      "availability": "Availability",
+      "coverage": "Coverage",
+      "deals": "Deals",
+      "neighborhoods": "Neighborhoods",
+      "response": "Response"
+    },
+    "sidebar": {
+      "agencyLinkDescription": "Use this address as the agency public page.",
+      "brokerLinkDescription": "Use this address as the broker public page.",
+      "call": "Call",
+      "openOwnLink": "Open public link",
+      "publicLink": "Public link"
+    },
+    "listings": {
+      "title": "Represented listings",
+      "viewAriaLabel": "View property {title}",
+      "viewProperty": "View property"
+    }
   }
 }

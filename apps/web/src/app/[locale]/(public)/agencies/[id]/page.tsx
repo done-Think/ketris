@@ -1,1 +1,5 @@
-export { default, generateMetadata } from '../../../../(public)/imobiliarias/[id]/page'
+export {
+  default,
+  generateMetadata,
+  generateStaticParams,
+} from '../../../../(public)/imobiliarias/[id]/page'

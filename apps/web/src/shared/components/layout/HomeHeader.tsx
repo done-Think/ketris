@@ -16,8 +16,8 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 
+import { Link } from '@/i18n/navigation'
 import ketrisLogoTransparent from '@shared/assets/ketris-logo-transparent.png'
 import { AppLogo } from '@shared/components/ui'
 import {
@@ -205,10 +205,12 @@ export function HomeHeader({
         id="home-mobile-menu"
         open={isMobileMenuOpen}
         onClose={closeMobileMenu}
-        PaperProps={{
-          sx: {
-            width: 'min(82vw, 320px)',
-            bgcolor: surface.paper,
+        slotProps={{
+          paper: {
+            sx: {
+              width: 'min(82vw, 320px)',
+              bgcolor: surface.paper,
+            },
           },
         }}
       >

@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react'
 import { Avatar, Box, Button, Divider, IconButton, Stack, Typography } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 
-import { LanguageSelector } from './LanguageSelector'
+import { Link } from '@/i18n/navigation'
 import {
   alpha,
   componentText,
@@ -17,6 +16,7 @@ import {
   zIndex,
 } from '@shared/theme/tokens'
 import type { ProfileModalProps } from '@shared/types/profile-modal'
+import { LanguageSelector } from './LanguageSelector'
 
 export function ProfileModal({
   open,
@@ -124,7 +124,7 @@ export function ProfileModal({
                 {userProfile.name}
               </Typography>
               <Typography noWrap sx={{ color: 'text.secondary', ...componentText.modalSubtitle }}>
-                {userProfile.role}
+                {t('role')}
               </Typography>
             </Box>
           </Stack>

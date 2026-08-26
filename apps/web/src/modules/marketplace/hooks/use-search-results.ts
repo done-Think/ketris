@@ -9,15 +9,39 @@ import {
   bedroomFilterOptions,
   priceFilterOptions,
 } from '../config/search-results-filters'
+import {
+  defaultSearchResultsViewMode,
+  getSearchResultsViewModeCookie,
+  isSearchResultsViewMode,
+  searchResultsViewModeCookieKey,
+} from '../config/search-results-view-mode'
 import { searchResults } from '../data/search-results'
 import { searchResultsFormSchema } from '../schemas/marketplace-search-schema'
-import type { SearchResultsFormValues, SearchResultsPageProps, SortOption } from '../types/search'
+import type {
+  SearchResultsFormValues,
+  SearchResultsPageProps,
+  SortOption,
+  ViewMode,
+} from '../types/search'
 import {
   formatCompactCurrency,
   getCurrencyValue,
   getFeatureNumber,
   normalizeLocationFilter,
 } from '../utils/search-results'
+
+const saveViewModePreference = (mode: ViewMode) => {
+  document.cookie = getSearchResultsViewModeCookie(mode)
+}
+
+const getStoredViewModePreference = () => {
+  const cookieValue = document.cookie
+    .split('; ')
+    .find((cookie) => cookie.startsWith(`${searchResultsViewModeCookieKey}=`))
+    ?.slice(searchResultsViewModeCookieKey.length + 1)
+
+  return isSearchResultsViewMode(cookieValue) ? cookieValue : undefined
+}
 
 export function useSearchResults({ purpose, initialLocation = '' }: SearchResultsPageProps) {
   const { setValue, watch } = useForm<SearchResultsFormValues>({
@@ -32,7 +56,7 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
       customMinArea: '',
       onlyWithParking: false,
       sortOption: 'relevancia',
-      viewMode: 'grid',
+      viewMode: defaultSearchResultsViewMode,
     },
     resolver: zodResolver(searchResultsFormSchema),
   })
@@ -112,6 +136,14 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
     setValue('selectedPropertyId', filteredResults[0]?.id ?? '')
   }, [filteredResults, selectedPropertyId, setValue])
 
+  useEffect(() => {
+    const storedViewMode = getStoredViewModePreference()
+
+    if (!storedViewMode || storedViewMode === viewMode) return
+
+    setValue('viewMode', storedViewMode)
+  }, [setValue, viewMode])
+
   const clearPriceFilter = () => {
     setValue('customMaxPrice', '')
     setValue('priceFilterIndex', 0)
@@ -151,7 +183,10 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
     setPropertyTypeFilter: (value: string) => setValue('propertyTypeFilter', value),
     setSelectedPropertyId: (propertyId: string) => setValue('selectedPropertyId', propertyId),
     setSortOption: (option: SortOption) => setValue('sortOption', option),
-    setViewMode: (mode: SearchResultsFormValues['viewMode']) => setValue('viewMode', mode),
+    setViewMode: (mode: ViewMode) => {
+      saveViewModePreference(mode)
+      setValue('viewMode', mode)
+    },
     sortOption,
     viewMode,
   }

@@ -50,5 +50,37 @@
       "aboutUs": "Sobre nosotros",
       "corporateSolutions": "Soluciones corporativas"
     }
+  },
+  "publicProfile": {
+    "metrics": {
+      "active": "Activos",
+      "closed": "Cerrados",
+      "properties": "Inmuebles",
+      "rating": "Nota",
+      "responseTime": "Tiempo medio",
+      "team": "Equipo",
+      "years": "Años"
+    },
+    "facts": {
+      "activeListings": "Inmuebles activos",
+      "address": "Dirección",
+      "availability": "Atención",
+      "coverage": "Cobertura",
+      "deals": "Negociaciones",
+      "neighborhoods": "Barrios",
+      "response": "Respuesta"
+    },
+    "sidebar": {
+      "agencyLinkDescription": "Usa esta dirección como página pública de la inmobiliaria.",
+      "brokerLinkDescription": "Usa esta dirección como página pública del corredor.",
+      "call": "Llamar",
+      "openOwnLink": "Abrir enlace público",
+      "publicLink": "Enlace público"
+    },
+    "listings": {
+      "title": "Inmuebles representados",
+      "viewAriaLabel": "Ver inmueble {title}",
+      "viewProperty": "Ver inmueble"
+    }
   }
 }
