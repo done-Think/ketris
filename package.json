@@ -55,6 +55,8 @@
     "fsevents@2.3.3": true,
     "prisma@7.9.1": true,
     "unrs-resolver@1.12.2": true,
-    "@scarf/scarf": false
+    "@scarf/scarf": false,
+    "@parcel/watcher@2.6.0": true,
+    "@swc/core@1.15.47": true
   }
 }
