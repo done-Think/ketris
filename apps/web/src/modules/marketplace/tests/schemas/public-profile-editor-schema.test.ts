@@ -17,4 +17,30 @@ describe('publicProfileEditorSchema', () => {
 
     expect(result.success).toBe(false)
   })
+
+  it('rejects incomplete or excessive team members', () => {
+    const incompleteResult = publicProfileEditorSchema.safeParse({
+      ...publicProfileEditorDefaultValues,
+      teamMembers: [
+        {
+          name: '',
+          role: '',
+          avatarUrl: 'not-a-url',
+          profileUrl: '',
+        },
+      ],
+    })
+    const excessiveResult = publicProfileEditorSchema.safeParse({
+      ...publicProfileEditorDefaultValues,
+      teamMembers: Array.from({ length: 7 }, (_, index) => ({
+        name: `Membro ${index + 1}`,
+        role: 'Corretor',
+        avatarUrl: 'https://example.com/avatar.jpg',
+        profileUrl: `/corretores/membro-${index + 1}`,
+      })),
+    })
+
+    expect(incompleteResult.success).toBe(false)
+    expect(excessiveResult.success).toBe(false)
+  })
 })

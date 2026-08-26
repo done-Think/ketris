@@ -52,5 +52,11 @@ export const publicProfileEditorDefaultValues: PublicProfileEditorFormValues = {
   backgroundColor: surface.paper,
   avatarUrl: editableBroker.avatar,
   bannerUrl: editableBrokerTheme.cover,
+  teamMembers: brokers.slice(0, 3).map((broker) => ({
+    name: broker.name,
+    role: broker.specialties[0],
+    avatarUrl: broker.avatar,
+    profileUrl: broker.href,
+  })),
   sectionOrder: ['hero', 'metrics', 'contact', 'team', 'listings'],
 }

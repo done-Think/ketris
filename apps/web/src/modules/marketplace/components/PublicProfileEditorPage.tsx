@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useDropzone } from 'react-dropzone'
 import { Box, Stack, Typography } from '@mui/material'
@@ -14,6 +14,7 @@ import {
   PublicProfileEditorActions,
   PublicProfileImageFields,
   PublicProfileMainFields,
+  PublicProfileTeamFields,
 } from './public-profile-editor/PublicProfileEditorFormSections'
 import { PublicProfileDemonstrative } from './public-profile-editor/PublicProfileDemonstrative'
 import { PublicProfileOrderPanel } from './public-profile-editor/PublicProfileOrderPanel'
@@ -39,6 +40,14 @@ export function PublicProfileEditorPage() {
   } = useForm<PublicProfileEditorFormValues>({
     defaultValues: publicProfileEditorDefaultValues,
     resolver: zodResolver(publicProfileEditorSchema),
+  })
+  const {
+    append: appendTeamMember,
+    fields: teamFields,
+    remove: removeTeamMember,
+  } = useFieldArray({
+    control,
+    name: 'teamMembers',
   })
   const profileDraft = watch()
   const visibleSectionOrder = profileDraft.sectionOrder.filter(isPublicProfileSectionKey)
@@ -124,6 +133,12 @@ export function PublicProfileEditorPage() {
         >
           <Stack spacing={2} sx={{ width: '100%', maxWidth: 920, mx: 'auto' }}>
             <PublicProfileMainFields control={control} />
+            <PublicProfileTeamFields
+              appendTeamMember={appendTeamMember}
+              control={control}
+              removeTeamMember={removeTeamMember}
+              teamFields={teamFields}
+            />
             <PublicProfileAppearanceFields control={control} />
             <PublicProfileImageFields
               control={control}

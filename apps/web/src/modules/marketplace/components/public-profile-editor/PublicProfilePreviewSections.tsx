@@ -1,4 +1,5 @@
 import { Avatar, Box, Button, Stack, Typography } from '@mui/material'
+import Link from 'next/link'
 
 import { alpha, componentText, radius, surface } from '@shared/theme/tokens'
 
@@ -11,7 +12,6 @@ const previewMetrics = [
   { label: 'Fechados', value: '128' },
 ] as const
 
-const previewTeam = ['Marina Costa', 'Juliana Mendes', 'Bianca Azevedo'] as const
 const previewListings = ['Apartamento Jardins', 'Garden Remodelado', 'Cobertura Duplex'] as const
 
 export function PublicProfileMiniSection({
@@ -106,6 +106,25 @@ export function PublicProfileMiniSection({
   }
 
   if (sectionKey === 'team') {
+    if (profileDraft.teamMembers.length === 0) {
+      return (
+        <Box
+          sx={{
+            border: '1px dashed',
+            borderColor: alpha.graphite[18],
+            borderRadius: `${radius.sm}px`,
+            bgcolor: surface.paper,
+            p: 1.5,
+            textAlign: 'center',
+          }}
+        >
+          <Typography sx={{ color: 'text.secondary', fontSize: 12, fontWeight: 800 }}>
+            Nenhum membro adicionado.
+          </Typography>
+        </Box>
+      )
+    }
+
     return (
       <Box
         sx={{
@@ -114,25 +133,34 @@ export function PublicProfileMiniSection({
           gap: 0.8,
         }}
       >
-        {previewTeam.map((name) => (
-          <Stack
-            key={name}
-            direction="row"
-            spacing={0.8}
-            alignItems="center"
+        {profileDraft.teamMembers.map((member) => (
+          <Box
+            key={`${member.profileUrl}-${member.name}`}
+            component={member.profileUrl ? Link : 'div'}
+            href={member.profileUrl || undefined}
             sx={{
+              alignItems: 'center',
               border: '1px solid',
               borderColor: alpha.graphite[8],
               borderRadius: `${radius.sm}px`,
               bgcolor: surface.paper,
+              color: 'inherit',
+              display: 'flex',
+              gap: 0.8,
               p: 1,
+              textDecoration: 'none',
             }}
           >
-            <Avatar src={profileDraft.avatarUrl} alt={name} sx={{ width: 34, height: 34 }} />
-            <Typography noWrap sx={{ fontSize: 12, fontWeight: 900 }}>
-              {name}
-            </Typography>
-          </Stack>
+            <Avatar src={member.avatarUrl} alt={member.name} sx={{ width: 34, height: 34 }} />
+            <Box sx={{ minWidth: 0 }}>
+              <Typography noWrap sx={{ fontSize: 12, fontWeight: 900 }}>
+                {member.name || 'Novo membro'}
+              </Typography>
+              <Typography noWrap sx={{ color: 'text.secondary', fontSize: 10 }}>
+                {member.role || 'Função'}
+              </Typography>
+            </Box>
+          </Box>
         ))}
       </Box>
     )

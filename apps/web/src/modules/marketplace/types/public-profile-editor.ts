@@ -1,10 +1,22 @@
 import type { PointerEventHandler } from 'react'
-import type { Control } from 'react-hook-form'
+import type {
+  Control,
+  FieldArrayWithId,
+  UseFieldArrayAppend,
+  UseFieldArrayRemove,
+} from 'react-hook-form'
 import type { DropzoneState } from 'react-dropzone'
 
 export type PublicProfileSectionKey = 'hero' | 'metrics' | 'team' | 'listings' | 'contact'
 export type PublicProfileSectionSlotKey = PublicProfileSectionKey | 'none'
 export type PublicProfileImageFieldName = 'avatarUrl' | 'bannerUrl'
+
+export type PublicProfileTeamMember = {
+  name: string
+  role: string
+  avatarUrl: string
+  profileUrl: string
+}
 
 export type PublicProfileEditorFormValues = {
   displayName: string
@@ -15,6 +27,7 @@ export type PublicProfileEditorFormValues = {
   backgroundColor: string
   avatarUrl: string
   bannerUrl: string
+  teamMembers: PublicProfileTeamMember[]
   sectionOrder: PublicProfileSectionSlotKey[]
 }
 
@@ -40,6 +53,13 @@ export type PublicProfileImageFieldsProps = {
 
 export type PublicProfileMainFieldsProps = {
   control: Control<PublicProfileEditorFormValues>
+}
+
+export type PublicProfileTeamFieldsProps = {
+  appendTeamMember: UseFieldArrayAppend<PublicProfileEditorFormValues, 'teamMembers'>
+  control: Control<PublicProfileEditorFormValues>
+  removeTeamMember: UseFieldArrayRemove
+  teamFields: FieldArrayWithId<PublicProfileEditorFormValues, 'teamMembers'>[]
 }
 
 export type PublicProfileEditorActionsProps = {
