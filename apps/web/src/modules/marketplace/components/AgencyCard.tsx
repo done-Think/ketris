@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { alpha, componentText, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
 
 import type { AgencyCardProps } from '../types/agency'
+import { formatRating } from '../utils/format-rating'
 import { buildProfileListings } from '../utils/profile-listings'
 import { AgencyBrandBanner } from './AgencyBrandBanner'
 import { DirectoryCardMetrics } from './directory/DirectoryCardMetrics'
@@ -130,7 +131,7 @@ export function AgencyCard(agency: AgencyCardProps) {
             metrics={[
               { label: 'Imóveis', value: agency.activeListings, icon: ApartmentOutlinedIcon },
               { label: 'Equipe', value: agency.brokersCount, icon: GroupsOutlinedIcon },
-              { label: 'Nota', value: agency.rating, icon: StarRoundedIcon },
+              { label: 'Nota', value: formatRating(agency.rating), icon: StarRoundedIcon },
             ]}
             valueFontWeight={700}
           />

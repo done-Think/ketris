@@ -19,7 +19,7 @@ const broker: BrokerCardProps = {
   neighborhoods: ['Jardins', 'Itaim Bibi'],
   activeListings: 42,
   responseTime: '15 min',
-  rating: 4.9,
+  rating: 5,
   dealsClosed: 128,
   phone: '(11) 99822-1104',
   email: 'marina@ketris.com.br',
@@ -52,6 +52,12 @@ function renderBrokerCard() {
 }
 
 describe('BrokerCard', () => {
+  it('formats whole ratings with one decimal place', () => {
+    renderBrokerCard()
+
+    expect(screen.getByText('5.0')).toBeInTheDocument()
+  })
+
   it('keeps the whole broker card linked while preserving featured listing links', () => {
     renderBrokerCard()
 

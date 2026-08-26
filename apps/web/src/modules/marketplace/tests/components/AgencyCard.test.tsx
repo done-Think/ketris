@@ -27,7 +27,7 @@ const agency: AgencyCardProps = {
   responseTime: '11 min',
   yearsInMarket: 14,
   dealsClosed: 420,
-  rating: 4.9,
+  rating: 5,
   phone: '(11) 3042-9000',
   email: 'parcerias@alamedaprime.com.br',
   address: 'Alameda Santos, 1320 - Jardins',
@@ -60,6 +60,12 @@ function renderAgencyCard() {
 }
 
 describe('AgencyCard', () => {
+  it('formats whole ratings with one decimal place', () => {
+    renderAgencyCard()
+
+    expect(screen.getByText('5.0')).toBeInTheDocument()
+  })
+
   it('keeps the whole agency card linked while preserving featured listing links', () => {
     renderAgencyCard()
 

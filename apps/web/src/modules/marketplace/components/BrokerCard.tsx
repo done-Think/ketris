@@ -17,6 +17,7 @@ import {
 } from '@shared/theme/tokens'
 
 import type { BrokerCardProps } from '../types/broker'
+import { formatRating } from '../utils/format-rating'
 import { buildProfileListings } from '../utils/profile-listings'
 import { DirectoryCardMetrics } from './directory/DirectoryCardMetrics'
 import { ProfileListingPreviewSection } from './profile/ProfileListingPreviewSection'
@@ -118,7 +119,7 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
                 <Stack direction="row" alignItems="center" spacing={0.35}>
                   <StarRoundedIcon sx={{ color: 'primary.main', fontSize: iconSize.sm }} />
                   <Typography sx={{ fontSize: 13, fontWeight: 900 }}>
-                    {brokerCardProps.rating}
+                    {formatRating(brokerCardProps.rating)}
                   </Typography>
                 </Stack>
               </Stack>

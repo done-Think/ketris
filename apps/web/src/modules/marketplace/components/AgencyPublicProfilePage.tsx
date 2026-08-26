@@ -12,6 +12,7 @@ import { surface } from '@shared/theme/tokens'
 import { footerColumns, legalLinks } from '../config/navigation'
 import type { AgencyPublicProfilePageProps } from '../types/agency'
 import { getBrokersByNames } from '../data/brokers'
+import { formatRating } from '../utils/format-rating'
 import { buildProfileListings } from '../utils/profile-listings'
 import { MarketplaceHeader } from './MarketplaceHeader'
 import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
@@ -55,7 +56,7 @@ export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps
                 { label: 'Imóveis', value: agency.activeListings, icon: ApartmentOutlinedIcon },
                 { label: 'Equipe', value: agency.brokersCount, icon: GroupsOutlinedIcon },
                 { label: 'Anos', value: agency.yearsInMarket, icon: HomeWorkOutlinedIcon },
-                { label: 'Nota', value: agency.rating, icon: StarRoundedIcon },
+                { label: 'Nota', value: formatRating(agency.rating), icon: StarRoundedIcon },
               ]}
             />
             <AgencyHighlightedTeam brand={agency.brand} brokers={highlightedTeam} />

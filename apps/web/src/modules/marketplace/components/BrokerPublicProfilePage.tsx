@@ -8,6 +8,7 @@ import { surface } from '@shared/theme/tokens'
 import { getBrokerProfileTheme } from '../config/broker-profile-themes'
 import { footerColumns, legalLinks } from '../config/navigation'
 import type { BrokerPublicProfilePageProps } from '../types/broker'
+import { formatRating } from '../utils/format-rating'
 import { buildProfileListings } from '../utils/profile-listings'
 import { MarketplaceHeader } from './MarketplaceHeader'
 import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
@@ -48,7 +49,7 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
             <PublicProfileMetrics
               accentColor={theme.accent}
               metrics={[
-                { label: 'Nota', value: broker.rating },
+                { label: 'Nota', value: formatRating(broker.rating) },
                 { label: 'Tempo médio', value: broker.responseTime },
                 { label: 'Ativos', value: broker.activeListings },
                 { label: 'Fechados', value: broker.dealsClosed },
