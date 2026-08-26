@@ -4,7 +4,7 @@ import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 
 import { RhfTextField } from '@shared/components/form'
-import { alpha, iconSize, radius, surface } from '@shared/theme/tokens'
+import { alpha, iconSize, motion, radius, surface } from '@shared/theme/tokens'
 
 import type {
   PublicProfileEditorActionsProps,
@@ -106,7 +106,7 @@ function PublicProfileImageField({
           bgcolor: dropzone.isDragActive ? alpha.magenta[8] : surface.app,
           cursor: 'pointer',
           p: 1.4,
-          transition: 'border-color 160ms ease, background-color 160ms ease',
+          transition: motion.transition.bordered,
         }}
       >
         <input {...dropzone.getInputProps()} aria-label={uploadLabel} />

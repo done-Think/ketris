@@ -27,7 +27,7 @@ import { alpha, brand, componentText, iconSize, radius, surface } from '@shared/
 const navigationItems = [
   { label: 'Dashboard', href: '/dashboard', icon: DashboardOutlinedIcon },
   { label: 'Meus Imóveis', href: '/dashboard/imoveis', icon: HomeWorkOutlinedIcon },
-  { label: 'Perfil Público', href: '/dashboard/perfil-publico', icon: PaletteOutlinedIcon },
+  { label: 'Perfil Público', href: '/dashboard/public-profile', icon: PaletteOutlinedIcon },
   { label: 'Leads', href: '/dashboard/leads', icon: PeopleAltOutlinedIcon },
   { label: 'Agenda', href: '/dashboard/agenda', icon: CalendarTodayOutlinedIcon },
   { label: 'Propostas', href: '/dashboard/propostas', icon: LocalOfferOutlinedIcon },

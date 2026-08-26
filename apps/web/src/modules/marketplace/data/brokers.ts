@@ -468,3 +468,13 @@ export const brokers: BrokerProfile[] = [
 export function getBrokerById(id: string) {
   return brokers.find((broker) => broker.id === id)
 }
+
+export function getBrokersByNames(names: readonly string[]) {
+  const brokersByName = new Map(brokers.map((broker) => [broker.name, broker]))
+
+  return names.flatMap((name) => {
+    const broker = brokersByName.get(name)
+
+    return broker ? [broker] : []
+  })
+}
