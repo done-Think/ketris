@@ -40,9 +40,7 @@ export type SearchResultsPageProps = {
 
 export type SearchResultsRoutePageProps = {
   searchParams?: {
-    finalidade?: string
     location?: string
-    localizacao?: string
     purpose?: string
   }
 }

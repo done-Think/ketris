@@ -1,6 +1,6 @@
 'use client'
 
-import { type PointerEvent, useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useDropzone } from 'react-dropzone'
@@ -20,6 +20,8 @@ import { PublicProfileOrderPanel } from './public-profile-editor/PublicProfileOr
 import { PublicProfileSectionPreviewDialog } from './public-profile-editor/PublicProfilePreviewDialog'
 import { isPublicProfileSectionKey } from './public-profile-editor/public-profile-editor-shared'
 import { publicProfileEditorDefaultValues } from '../data/public-profile-editor'
+import { useProfileEditorImageUpload } from '../hooks/use-profile-editor-image-upload'
+import { useProfileEditorSectionOrder } from '../hooks/use-profile-editor-section-order'
 import { publicProfileEditorSchema } from '../schemas/public-profile-editor-schema'
 import type {
   PublicProfileEditorFormValues,
@@ -27,14 +29,7 @@ import type {
 } from '../types/public-profile-editor'
 
 export function PublicProfileEditorPage() {
-  const [draggedPosition, setDraggedPosition] = useState<number | null>(null)
-  const [pressedPosition, setPressedPosition] = useState<number | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
-  const [isTouchLikeDevice, setIsTouchLikeDevice] = useState(false)
-  const draggedPositionRef = useRef<number | null>(null)
-  const uploadedImageUrlsRef = useRef<Partial<Record<PublicProfileImageFieldName, string>>>({})
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const longPressStartRef = useRef<{ x: number; y: number } | null>(null)
   const {
     control,
     formState: { isSubmitSuccessful },
@@ -47,63 +42,34 @@ export function PublicProfileEditorPage() {
   })
   const profileDraft = watch()
   const visibleSectionOrder = profileDraft.sectionOrder.filter(isPublicProfileSectionKey)
-
-  useEffect(() => {
-    const coarsePointerQuery = window.matchMedia('(pointer: coarse)')
-    const updateTouchLikeDevice = () => {
-      setIsTouchLikeDevice(coarsePointerQuery.matches || navigator.maxTouchPoints > 0)
-    }
-
-    updateTouchLikeDevice()
-    coarsePointerQuery.addEventListener('change', updateTouchLikeDevice)
-
-    return () => coarsePointerQuery.removeEventListener('change', updateTouchLikeDevice)
-  }, [])
-
-  useEffect(() => {
-    draggedPositionRef.current = draggedPosition
-  }, [draggedPosition])
-
-  useEffect(() => {
-    if (!isTouchLikeDevice || draggedPosition === null) return undefined
-
-    const previousBodyOverflow = document.body.style.overflow
-
-    document.body.style.overflow = 'hidden'
-
-    return () => {
-      document.body.style.overflow = previousBodyOverflow
-    }
-  }, [draggedPosition, isTouchLikeDevice])
-
-  const updateImageFromFile = useCallback(
-    (fieldName: PublicProfileImageFieldName, acceptedFiles: File[]) => {
-      const selectedFile = acceptedFiles[0]
-
-      if (!selectedFile) return
-
-      const previousPreviewUrl = uploadedImageUrlsRef.current[fieldName]
-
-      if (previousPreviewUrl) {
-        URL.revokeObjectURL(previousPreviewUrl)
-      }
-
-      const previewUrl = URL.createObjectURL(selectedFile)
-
-      uploadedImageUrlsRef.current[fieldName] = previewUrl
+  const setSectionOrder = useCallback(
+    (sectionOrder: PublicProfileEditorFormValues['sectionOrder']) => {
+      setValue('sectionOrder', sectionOrder, { shouldDirty: true, shouldValidate: true })
+    },
+    [setValue],
+  )
+  const {
+    draggedPosition,
+    finishLongPress,
+    isTouchLikeDevice,
+    moveLongPress,
+    pressedPosition,
+    resetLongPress,
+    setDraggedPosition,
+    startLongPress,
+    swapSectionPositions,
+    updateSectionOrder,
+  } = useProfileEditorSectionOrder({
+    sectionOrder: profileDraft.sectionOrder,
+    setSectionOrder,
+  })
+  const setImageValue = useCallback(
+    (fieldName: PublicProfileImageFieldName, previewUrl: string) => {
       setValue(fieldName, previewUrl, { shouldDirty: true, shouldValidate: true })
     },
     [setValue],
   )
-
-  useEffect(
-    () => () => {
-      Object.values(uploadedImageUrlsRef.current).forEach((previewUrl) => {
-        if (previewUrl) URL.revokeObjectURL(previewUrl)
-      })
-    },
-    [],
-  )
+  const { updateImageFromFile } = useProfileEditorImageUpload({ setImageValue })
 
   const avatarDropzone = useDropzone({
     accept: { 'image/*': ['.jpg', '.jpeg', '.png', '.webp'] },
@@ -117,123 +83,6 @@ export function PublicProfileEditorPage() {
     multiple: false,
     onDrop: (acceptedFiles) => updateImageFromFile('bannerUrl', acceptedFiles),
   })
-
-  const updateSectionOrder = (
-    position: number,
-    nextSection: PublicProfileEditorFormValues['sectionOrder'][number],
-  ) => {
-    const currentOrder = [...profileDraft.sectionOrder]
-    const previousSection = currentOrder[position]
-    const nextSectionPosition = currentOrder.indexOf(nextSection)
-
-    currentOrder[position] = nextSection
-    if (nextSection !== 'none' && nextSectionPosition >= 0) {
-      currentOrder[nextSectionPosition] = previousSection
-    }
-
-    setValue('sectionOrder', currentOrder, { shouldDirty: true, shouldValidate: true })
-  }
-
-  const swapSectionPositions = (fromPosition: number, toPosition: number) => {
-    if (fromPosition === toPosition) return
-
-    const currentOrder = [...profileDraft.sectionOrder]
-    const movedSection = currentOrder[fromPosition]
-
-    currentOrder[fromPosition] = currentOrder[toPosition]
-    currentOrder[toPosition] = movedSection
-
-    setValue('sectionOrder', currentOrder, { shouldDirty: true, shouldValidate: true })
-  }
-
-  const clearLongPressTimer = useCallback(() => {
-    if (!longPressTimerRef.current) return
-
-    clearTimeout(longPressTimerRef.current)
-    longPressTimerRef.current = null
-  }, [])
-
-  const resetLongPress = useCallback(() => {
-    clearLongPressTimer()
-    longPressStartRef.current = null
-    draggedPositionRef.current = null
-    setPressedPosition(null)
-    setDraggedPosition(null)
-  }, [clearLongPressTimer])
-
-  useEffect(() => {
-    window.addEventListener('blur', resetLongPress)
-    window.addEventListener('pointercancel', resetLongPress)
-
-    return () => {
-      resetLongPress()
-      window.removeEventListener('blur', resetLongPress)
-      window.removeEventListener('pointercancel', resetLongPress)
-    }
-  }, [resetLongPress])
-
-  const startLongPress = (sectionPosition: number) => (event: PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType === 'mouse') return
-
-    clearLongPressTimer()
-    longPressStartRef.current = { x: event.clientX, y: event.clientY }
-    setPressedPosition(sectionPosition)
-    event.currentTarget.setPointerCapture(event.pointerId)
-    longPressTimerRef.current = setTimeout(() => {
-      draggedPositionRef.current = sectionPosition
-      setPressedPosition(null)
-      setDraggedPosition(sectionPosition)
-    }, 2000)
-  }
-
-  const moveLongPress = (event: PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType === 'mouse') return
-
-    const startPoint = longPressStartRef.current
-
-    if (draggedPositionRef.current === null && startPoint) {
-      const movedDistance = Math.hypot(event.clientX - startPoint.x, event.clientY - startPoint.y)
-
-      if (movedDistance > 10) {
-        clearLongPressTimer()
-        setPressedPosition(null)
-      }
-
-      return
-    }
-
-    if (draggedPositionRef.current === null) return
-
-    event.preventDefault()
-  }
-
-  const finishLongPress = (event: PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType === 'mouse') return
-
-    clearLongPressTimer()
-    longPressStartRef.current = null
-    setPressedPosition(null)
-
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId)
-    }
-
-    const activeDraggedPosition = draggedPositionRef.current
-
-    if (activeDraggedPosition === null) return
-
-    const targetElement = document
-      .elementFromPoint(event.clientX, event.clientY)
-      ?.closest<HTMLElement>('[data-profile-preview-position]')
-    const targetPosition = Number(targetElement?.dataset.profilePreviewPosition)
-
-    if (Number.isInteger(targetPosition)) {
-      swapSectionPositions(activeDraggedPosition, targetPosition)
-    }
-
-    draggedPositionRef.current = null
-    setDraggedPosition(null)
-  }
 
   const handleStaticSubmit = () => undefined
 

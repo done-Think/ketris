@@ -2,11 +2,11 @@ import { SearchResultsPage } from '@modules/marketplace'
 import type { SearchResultsRoutePageProps } from '@modules/marketplace/types/search'
 
 function getSelectedPurpose(searchParams: SearchResultsRoutePageProps['searchParams']) {
-  return searchParams?.purpose ?? searchParams?.finalidade
+  return searchParams?.purpose
 }
 
 function getSelectedLocation(searchParams: SearchResultsRoutePageProps['searchParams']) {
-  return searchParams?.location ?? searchParams?.localizacao
+  return searchParams?.location
 }
 
 export function generateMetadata({ searchParams }: SearchResultsRoutePageProps) {
