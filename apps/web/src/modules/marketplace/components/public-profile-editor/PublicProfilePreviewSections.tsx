@@ -30,7 +30,7 @@ export function PublicProfileMiniSection({
       >
         <Box
           sx={{
-            minHeight: { xs: 190, md: 260 },
+            minHeight: { xs: 168, md: 190 },
             backgroundImage: `linear-gradient(90deg, ${alpha.graphite[52]}, ${alpha.graphite[18]}), url("${profileDraft.bannerUrl}")`,
             backgroundPosition: 'center',
             backgroundSize: 'cover',
@@ -42,7 +42,7 @@ export function PublicProfileMiniSection({
           <Typography
             sx={{
               color: surface.lightText,
-              fontSize: { xs: 22, md: 32 },
+              fontSize: { xs: 20, md: 26 },
               fontWeight: 900,
               lineHeight: 1.12,
             }}
@@ -55,13 +55,13 @@ export function PublicProfileMiniSection({
             src={profileDraft.avatarUrl}
             alt={profileDraft.displayName}
             sx={{
-              width: 76,
-              height: 76,
+              width: 62,
+              height: 62,
               boxShadow: `0 0 0 4px ${profileDraft.primaryColor}`,
             }}
           />
           <Box sx={{ minWidth: 0 }}>
-            <Typography sx={{ color: surface.darkText, fontSize: 26, fontWeight: 900 }}>
+            <Typography sx={{ color: surface.darkText, fontSize: 22, fontWeight: 900 }}>
               {profileDraft.displayName}
             </Typography>
             <Typography sx={{ color: 'text.secondary', ...componentText.cardMeta }}>
@@ -134,19 +134,19 @@ export function PublicProfileMiniSection({
         }}
       >
         {profileDraft.teamMembers.map((member) => (
-          <Stack
+          <Box
             key={`${member.profileUrl}-${member.name}`}
-            component={Link}
-            href={member.profileUrl}
-            direction="row"
-            spacing={0.8}
-            alignItems="center"
+            component={member.profileUrl ? Link : 'div'}
+            href={member.profileUrl || undefined}
             sx={{
+              alignItems: 'center',
               border: '1px solid',
               borderColor: alpha.graphite[8],
               borderRadius: `${radius.sm}px`,
               bgcolor: surface.paper,
               color: 'inherit',
+              display: 'flex',
+              gap: 0.8,
               p: 1,
               textDecoration: 'none',
             }}
@@ -154,13 +154,13 @@ export function PublicProfileMiniSection({
             <Avatar src={member.avatarUrl} alt={member.name} sx={{ width: 34, height: 34 }} />
             <Box sx={{ minWidth: 0 }}>
               <Typography noWrap sx={{ fontSize: 12, fontWeight: 900 }}>
-                {member.name}
+                {member.name || 'Novo membro'}
               </Typography>
               <Typography noWrap sx={{ color: 'text.secondary', fontSize: 10 }}>
-                {member.role}
+                {member.role || 'Função'}
               </Typography>
             </Box>
-          </Stack>
+          </Box>
         ))}
       </Box>
     )
@@ -188,7 +188,7 @@ export function PublicProfileMiniSection({
           >
             <Box
               sx={{
-                height: 104,
+                height: 74,
                 backgroundImage: `url("${profileDraft.bannerUrl}")`,
                 backgroundPosition: 'center',
                 backgroundSize: 'cover',

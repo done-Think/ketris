@@ -82,6 +82,7 @@ export const motion = {
     panel: 'opacity 180ms ease, transform 180ms ease',
     tile: 'border-color 180ms ease, transform 180ms ease',
     avatar: 'box-shadow 160ms ease, transform 160ms ease',
+    sortableItem: 'box-shadow 160ms ease, opacity 160ms ease, transform 160ms ease',
     progressStep: 'width 280ms cubic-bezier(0.22, 1, 0.36, 1), background-color 220ms ease',
   },
 } as const
@@ -125,6 +126,14 @@ export const componentText = {
   cardBroker: {
     fontSize: 12,
     fontWeight: 500,
+  },
+  profileTeamName: {
+    fontSize: 13,
+    fontWeight: 800,
+  },
+  profileTeamRegion: {
+    fontSize: 11,
+    fontWeight: 600,
   },
   cardAction: {
     fontSize: 13,

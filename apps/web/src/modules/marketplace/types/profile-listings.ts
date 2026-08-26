@@ -19,7 +19,7 @@ export type PublicProfileListing = ProfileListingSource & {
   category?: string
 }
 
-export type PublicProfileListingSource = {
+export type PublicProfileSource = {
   href: string
   name: string
   type: 'agency' | 'broker'
@@ -28,20 +28,7 @@ export type PublicProfileListingSource = {
 export type PublicProfileListingsProps = {
   accentColor: string
   listings: PublicProfileListing[]
-  source?: PublicProfileListingSource
-}
-
-export type PublicProfileSidebarProps = {
-  accentColor: string
-  hoverColor: string
-  href: string
-  linkDescription: string
-  phone: string
-  email: string
-  facts: Array<{
-    label: string
-    value: string
-  }>
+  source?: PublicProfileSource
 }
 
 export type ProfileListingPreviewSectionProps = {

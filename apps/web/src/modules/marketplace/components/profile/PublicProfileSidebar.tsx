@@ -8,7 +8,7 @@ import Link from 'next/link'
 
 import { componentText, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
-import type { PublicProfileSidebarProps } from '../../types/profile-listings'
+import type { PublicProfileSidebarProps } from '../../types/profile-sidebar'
 import { getPublicProfileLink } from '../../utils/profile-listings'
 
 export function PublicProfileSidebar({

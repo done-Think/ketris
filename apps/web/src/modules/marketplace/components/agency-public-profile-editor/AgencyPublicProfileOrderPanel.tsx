@@ -11,7 +11,7 @@ import {
 } from '@mui/material'
 import DragIndicatorRoundedIcon from '@mui/icons-material/DragIndicatorRounded'
 
-import { alpha, iconSize, radius, shadows } from '@shared/theme/tokens'
+import { alpha, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
 
 import { agencyPublicProfileSectionOptions } from '../../data/agency-public-profile-editor'
 import type {
@@ -70,7 +70,7 @@ export function AgencyPublicProfileOrderPanel({
                   opacity: selected ? 0.62 : 1,
                   overflow: 'visible',
                   position: 'relative',
-                  transition: 'box-shadow 160ms ease, opacity 160ms ease, transform 160ms ease',
+                  transition: motion.transition.sortableItem,
                   transform: pressed ? 'scale(0.992)' : 'none',
                   '@keyframes agencyOrderLongPressProgress': {
                     from: { transform: 'scaleX(0)' },

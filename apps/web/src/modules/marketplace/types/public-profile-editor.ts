@@ -1,5 +1,10 @@
 import type { PointerEventHandler } from 'react'
-import type { Control, UseFieldArrayAppend, UseFieldArrayRemove } from 'react-hook-form'
+import type {
+  Control,
+  FieldArrayWithId,
+  UseFieldArrayAppend,
+  UseFieldArrayRemove,
+} from 'react-hook-form'
 import type { DropzoneState } from 'react-dropzone'
 
 export type PublicProfileSectionKey = 'hero' | 'metrics' | 'team' | 'listings' | 'contact'
@@ -54,7 +59,7 @@ export type PublicProfileTeamFieldsProps = {
   appendTeamMember: UseFieldArrayAppend<PublicProfileEditorFormValues, 'teamMembers'>
   control: Control<PublicProfileEditorFormValues>
   removeTeamMember: UseFieldArrayRemove
-  teamFields: Array<{ id: string }>
+  teamFields: FieldArrayWithId<PublicProfileEditorFormValues, 'teamMembers'>[]
 }
 
 export type PublicProfileEditorActionsProps = {

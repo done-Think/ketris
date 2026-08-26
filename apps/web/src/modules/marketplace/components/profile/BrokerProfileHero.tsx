@@ -5,14 +5,8 @@ import StarRoundedIcon from '@mui/icons-material/StarRounded'
 
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
-import type { BrokerProfileTheme } from '../../config/broker-profile-themes'
-import type { BrokerProfile } from '../../types/broker'
+import type { BrokerProfileHeroProps } from '../../types/broker'
 import { formatRating } from '../../utils/format-rating'
-
-type BrokerProfileHeroProps = {
-  broker: BrokerProfile
-  theme: BrokerProfileTheme
-}
 
 export function BrokerProfileHero({ broker, theme }: BrokerProfileHeroProps) {
   return (

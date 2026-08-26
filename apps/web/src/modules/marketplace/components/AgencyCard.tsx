@@ -1,5 +1,6 @@
 'use client'
 
+import { type MouseEvent, useRef } from 'react'
 import { Box, Card, CardContent, Chip, Divider, Stack, Typography } from '@mui/material'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
@@ -17,18 +18,28 @@ import { DirectoryCardMetrics } from './directory/DirectoryCardMetrics'
 import { ProfileListingPreviewSection } from './profile/ProfileListingPreviewSection'
 
 export function AgencyCard(agency: AgencyCardProps) {
+  const profileLinkRef = useRef<HTMLAnchorElement | null>(null)
   const isListView = agency.viewMode === 'list'
   const featuredListings = buildProfileListings(agency.featuredListings).slice(0, 2)
 
+  function handleCardClick(event: MouseEvent<HTMLElement>) {
+    if (event.target instanceof Element && event.target.closest('a')) return
+
+    profileLinkRef.current?.click()
+  }
+
   return (
     <Card
+      onClick={handleCardClick}
       sx={{
         border: '1px solid',
         borderColor: 'transparent',
         borderRadius: `${radius.sm}px`,
         color: 'inherit',
         boxShadow: shadows.propertyCard,
+        cursor: 'pointer',
         overflow: 'hidden',
+        position: 'relative',
         transition: motion.transition.card,
         '&:hover': {
           borderColor: alpha.magenta[14],
@@ -37,6 +48,26 @@ export function AgencyCard(agency: AgencyCardProps) {
         },
       }}
     >
+      <Box
+        component={Link}
+        href={agency.href}
+        aria-label={`Ver página pública de ${agency.name}`}
+        ref={profileLinkRef}
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 3,
+          borderRadius: `${radius.sm}px`,
+          pointerEvents: 'none',
+          textDecoration: 'none',
+          '&:focus-visible': {
+            outline: '2px solid',
+            outlineColor: 'primary.main',
+            outlineOffset: 3,
+          },
+        }}
+      />
+
       <CardContent
         sx={{
           display: isListView ? 'grid' : 'block',
@@ -45,6 +76,12 @@ export function AgencyCard(agency: AgencyCardProps) {
           },
           gap: { xs: 2, lg: 2.4 },
           p: { xs: 2, md: isListView ? 2.6 : 2.2 },
+          position: 'relative',
+          zIndex: 2,
+          '& a': {
+            position: 'relative',
+            zIndex: 4,
+          },
         }}
       >
         <Box sx={{ minWidth: 0 }}>
@@ -114,8 +151,7 @@ export function AgencyCard(agency: AgencyCardProps) {
           <Divider sx={{ my: isListView ? 1.6 : 1.8 }} />
 
           <Stack
-            component={Link}
-            href={agency.href}
+            component="span"
             direction="row"
             alignItems="center"
             justifyContent="flex-end"
