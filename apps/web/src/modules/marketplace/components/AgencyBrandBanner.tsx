@@ -21,9 +21,7 @@ export function AgencyBrandBanner({ agency, size }: AgencyBrandBannerProps) {
         color: agency.brand.secondaryColor,
         overflow: 'hidden',
         position: 'relative',
-        display: 'flex',
-        alignItems: 'center',
-        gap: compact ? 1.2 : { xs: 1.6, md: 2.8 },
+        display: 'block',
         px: compact ? 1.2 : { xs: 1.8, md: 3 },
         py: compact ? 0.8 : 2,
       }}
@@ -31,11 +29,12 @@ export function AgencyBrandBanner({ agency, size }: AgencyBrandBannerProps) {
       <Box
         aria-hidden="true"
         sx={{
-          position: 'relative',
+          position: 'absolute',
           width: compact ? 44 : { xs: 66, md: 92 },
           height: compact ? 46 : { xs: 76, md: 108 },
-          flex: '0 0 auto',
-          ml: compact ? 0.2 : 0,
+          left: compact ? 12 : { xs: 18, md: 28 },
+          top: '50%',
+          transform: 'translateY(-50%)',
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -77,9 +76,13 @@ export function AgencyBrandBanner({ agency, size }: AgencyBrandBannerProps) {
         sx={{
           position: 'relative',
           zIndex: 1,
-          flex: '1 1 auto',
+          ml: compact ? '54px' : { xs: '82px', md: '120px' },
+          width: compact
+            ? 'calc(100% - 54px)'
+            : { xs: 'calc(100% - 82px)', md: 'calc(100% - 120px)' },
           minWidth: 0,
           pr: compact ? 0.8 : 1.4,
+          pt: compact ? 0.1 : { xs: 0.4, md: 0.8 },
         }}
       >
         <Typography

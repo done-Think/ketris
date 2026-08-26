@@ -85,7 +85,7 @@ export function AgencyCard(agency: AgencyCardProps) {
         }}
       >
         <Box sx={{ minWidth: 0 }}>
-          <Box sx={{ mb: isListView ? 1.6 : 0, p: isListView ? 0 : 1.3, pb: isListView ? 0 : 0 }}>
+          <Box sx={{ mb: isListView ? 1.6 : 1 }}>
             <AgencyBrandBanner agency={agency} size={isListView ? 'hero' : 'compact'} />
           </Box>
 
