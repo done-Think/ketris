@@ -1,7 +1,7 @@
 import { AuthScreenLayout } from '@modules/auth'
 import { PlatformSignInForm } from '@modules/platform'
 
-export const metadata = { title: 'Entrar — Ketris Plataforma' }
+export const metadata = { title: 'Ketris | Entrar Plataforma' }
 
 export default function PlatformLoginPage() {
   return (

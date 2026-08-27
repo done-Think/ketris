@@ -4,7 +4,7 @@ import { Container, Stack, Typography } from '@mui/material'
 import { authOptions } from '@shared/lib/auth/auth-options'
 import { ActionTextLink } from '@shared/components/ui'
 
-export const metadata = { title: 'Backoffice — Ketris' }
+export const metadata = { title: 'Ketris | Backoffice' }
 
 export default async function BackofficePage() {
   const session = await getServerSession(authOptions)

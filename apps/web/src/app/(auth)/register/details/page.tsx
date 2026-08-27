@@ -7,7 +7,7 @@ import {
   RegistrationFormShell,
 } from '@modules/auth'
 
-export const metadata = { title: 'Criar sua conta | Ketris' }
+export const metadata = { title: 'Ketris | Criar sua conta' }
 
 type RegisterDetailsPageProps = {
   searchParams: { profile?: string | string[] }

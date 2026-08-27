@@ -2,7 +2,7 @@ import { Container, Stack, Typography } from '@mui/material'
 
 import { EditAdminForm } from '@modules/auth'
 
-export const metadata = { title: 'Editar administrador — Ketris Backoffice' }
+export const metadata = { title: 'Ketris | Editar administrador Backoffice' }
 
 interface BackofficeEditAdminPageProps {
   params: { id: string }

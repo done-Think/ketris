@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { Box, Container } from '@mui/material'
 
 import { SiteFooter } from '@shared/components/layout'
@@ -10,7 +9,7 @@ import { footerColumns, legalLinks } from '../config/navigation'
 import { brokers } from '../data/brokers'
 import { useDirectoryList } from '../hooks/use-directory-list'
 import type { BrokerProfile } from '../types/broker'
-import type { ViewMode } from '../types/search'
+import { useViewModePreference } from '../hooks/use-view-mode-preference'
 import { BrokerCard } from './BrokerCard'
 import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
 import { DirectoryPageHeader } from './directory/DirectoryPageHeader'
@@ -28,7 +27,7 @@ function getBrokerSearchableText(broker: BrokerProfile) {
 }
 
 export function BrokersPage() {
-  const [viewMode, setViewMode] = useState<ViewMode>('grid')
+  const { setViewMode, viewMode } = useViewModePreference('corretores')
   const {
     filteredItems: filteredBrokers,
     hasMoreItems: hasMoreBrokers,

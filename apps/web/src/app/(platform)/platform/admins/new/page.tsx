@@ -1,6 +1,6 @@
 import { CreatePlatformAdminForm, PlatformPageLayout } from '@modules/platform'
 
-export const metadata = { title: 'Administradores da plataforma — Ketris' }
+export const metadata = { title: 'Ketris | Administradores da plataforma' }
 
 export default function PlatformNewAdminPage() {
   return (

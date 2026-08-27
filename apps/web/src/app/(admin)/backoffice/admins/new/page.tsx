@@ -1,6 +1,6 @@
 import { AuthScreenLayout, CreateAdminForm } from '@modules/auth'
 
-export const metadata = { title: 'Novo administrador — Ketris Backoffice' }
+export const metadata = { title: 'Ketris | Novo administrador Backoffice' }
 
 export default function BackofficeNovoAdministradorPage() {
   return (

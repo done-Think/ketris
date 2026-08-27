@@ -22,6 +22,7 @@ import { RhfTextField } from '@shared/components/form'
 import { brand, componentText, externalBrand, radius, surface } from '@shared/theme/tokens'
 
 import { AuthFormField } from './AuthFormField'
+import { LoginAccountPrompt } from './LoginAccountPrompt'
 import { authRoutes } from '../config/auth-routes'
 import { authPrimaryButtonSx, authTextFieldSx } from './auth-form.styles'
 import { useLogin } from '../hooks/use-login'
@@ -204,6 +205,10 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
             Continuar com Google
           </Button>
         </Stack>
+      </Box>
+
+      <Box sx={{ mt: { xs: 2.5, md: 3 }, display: 'flex', justifyContent: 'center' }}>
+        <LoginAccountPrompt />
       </Box>
     </Box>
   )
