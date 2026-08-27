@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { Box, Container } from '@mui/material'
 
 import { SiteFooter } from '@shared/components/layout'
@@ -10,7 +9,7 @@ import { agencies } from '../data/agencies'
 import { useDirectoryList } from '../hooks/use-directory-list'
 import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { AgencyProfile } from '../types/agency'
-import type { ViewMode } from '../types/search'
+import { useViewModePreference } from '../hooks/use-view-mode-preference'
 import { AgencyCard } from './AgencyCard'
 import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
 import { DirectoryPageHeader } from './directory/DirectoryPageHeader'
@@ -29,7 +28,7 @@ function getAgencySearchableText(agency: AgencyProfile) {
 
 export function AgenciesPage() {
   const { footerColumns, legalLinks } = useMarketplaceNavigation()
-  const [viewMode, setViewMode] = useState<ViewMode>('grid')
+  const { setViewMode, viewMode } = useViewModePreference('agencies')
   const {
     filteredItems: filteredAgencies,
     hasMoreItems: hasMoreAgencies,

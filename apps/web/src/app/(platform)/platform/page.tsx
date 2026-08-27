@@ -3,7 +3,7 @@ import { Stack } from '@mui/material'
 import { ActionTextLink } from '@shared/components/ui'
 import { PlatformPageLayout, TenantsList } from '@modules/platform'
 
-export const metadata = { title: 'Imobiliárias — Ketris Plataforma' }
+export const metadata = { title: 'Ketris | Imobiliárias Plataforma' }
 
 export default function PlatformDashboardPage() {
   return (

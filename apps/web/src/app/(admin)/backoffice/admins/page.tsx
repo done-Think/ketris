@@ -3,7 +3,7 @@ import { Container, Stack } from '@mui/material'
 import { ActionTextLink } from '@shared/components/ui'
 import { AdminsList } from '@modules/auth'
 
-export const metadata = { title: 'Administradores — Ketris Backoffice' }
+export const metadata = { title: 'Ketris | Administradores Backoffice' }
 
 export default function BackofficeAdminsPage() {
   return (

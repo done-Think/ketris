@@ -33,7 +33,7 @@ export function PasswordRecoveryScreen() {
           ? 'Enviamos um link de recuperação para seu e-mail cadastrado'
           : 'Recupere o acesso à sua carteira de imóveis e clientes'
       }
-      contentMaxWidth={354}
+      contentMaxWidth={560}
       contentPaddingTop={isSubmitSuccessful ? 6.5 : 7.5}
       mobileVariant="backdrop"
       footer={

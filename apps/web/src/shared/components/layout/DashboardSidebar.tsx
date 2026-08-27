@@ -62,6 +62,7 @@ export function DashboardSidebar() {
           display: 'block',
           width: 124,
           height: 'auto',
+          mx: 'auto',
           mb: 3.3,
         }}
       />

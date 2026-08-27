@@ -2,7 +2,7 @@ import { Divider, Stack, Typography } from '@mui/material'
 
 import { CreateTenantAdminForm, PlatformPageLayout, TenantUsersList } from '@modules/platform'
 
-export const metadata = { title: 'Imobiliária — Ketris Plataforma' }
+export const metadata = { title: 'Ketris | Imobiliária Plataforma' }
 
 interface PlatformTenantPageProps {
   params: { id: string }

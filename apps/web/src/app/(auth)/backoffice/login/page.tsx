@@ -1,6 +1,6 @@
 import { AuthScreenLayout, SignInForm } from '@modules/auth'
 
-export const metadata = { title: 'Entrar — Ketris Backoffice' }
+export const metadata = { title: 'Ketris | Entrar Backoffice' }
 
 export default function BackofficeSignInPage() {
   return (

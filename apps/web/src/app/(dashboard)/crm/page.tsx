@@ -1,6 +1,6 @@
 import { SalesPipelineBoard } from '@modules/crm/components/SalesPipelineBoard'
 
-export const metadata = { title: 'Pipeline de Vendas | Ketris' }
+export const metadata = { title: 'Ketris | Pipeline de Vendas' }
 
 type CrmPipelinePageProps = {
   searchParams?: { preview?: string | string[] }

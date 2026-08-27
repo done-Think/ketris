@@ -1,6 +1,6 @@
 import { CreateTenantForm, PlatformPageLayout } from '@modules/platform'
 
-export const metadata = { title: 'Nova imobiliária — Ketris Plataforma' }
+export const metadata = { title: 'Ketris | Nova imobiliária Plataforma' }
 
 export default function PlatformNewTenantPage() {
   return (

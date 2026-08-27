@@ -70,7 +70,7 @@ const mobileLayouts: Record<AuthMobileVariant, AuthMobileLayout> = {
 export function AuthShell({
   brandDescription,
   children,
-  contentMaxWidth = 390,
+  contentMaxWidth = 560,
   contentPaddingTop = 11.5,
   footer,
   mobileVariant = 'plain',
@@ -83,10 +83,9 @@ export function AuthShell({
         width: '100%',
         minHeight: '100dvh',
         position: 'relative',
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 55.2%) minmax(440px, 44.8%)' },
+        display: { xs: 'grid', md: 'block' },
         gridTemplateRows: { xs: layout.pageRows, md: '1fr' },
-        bgcolor: { xs: layout.pageBackground, md: surface.paper },
+        bgcolor: layout.pageBackground,
       }}
     >
       <AuthBrandPanel description={brandDescription} mobileBackdrop={mobileVariant !== 'plain'} />
@@ -110,27 +109,29 @@ export function AuthShell({
         sx={{
           position: 'relative',
           zIndex: { xs: layout.mainZIndex, md: 'auto' },
+          width: { xs: 'auto', md: '50%' },
+          ml: { xs: 0, md: '50%' },
           minHeight: { xs: layout.mainMinHeight, md: '100dvh' },
           overflowY: 'auto',
           display: 'flex',
-          alignItems: 'flex-start',
+          alignItems: { xs: 'flex-start', md: 'center' },
           justifyContent: 'center',
           px: { xs: layout.mainPaddingX, sm: layout.mainPaddingXSm, md: 4 },
-          pt: { xs: layout.mainPaddingTop, sm: layout.mainPaddingTopSm, md: contentPaddingTop },
-          pb: { xs: layout.mainPaddingBottom, md: 10 },
-          bgcolor: { xs: layout.mainBackground, md: surface.paper },
+          pt: { xs: layout.mainPaddingTop, sm: layout.mainPaddingTopSm, md: 0 },
+          pb: { xs: layout.mainPaddingBottom, md: 0 },
+          bgcolor: { xs: layout.mainBackground, md: 'transparent' },
         }}
       >
         <Box
           sx={{
             width: '100%',
             maxWidth: contentMaxWidth,
-            px: { xs: layout.cardPaddingX, md: 0 },
-            pt: { xs: layout.cardPaddingTop, md: 0 },
-            pb: { xs: layout.cardPaddingBottom, md: 0 },
-            borderRadius: { xs: layout.cardRadius, md: 0 },
-            bgcolor: { xs: layout.cardBackground, md: 'transparent' },
-            boxShadow: { xs: layout.cardShadow, md: 'none' },
+            px: { xs: layout.cardPaddingX, md: 4 },
+            pt: { xs: layout.cardPaddingTop, md: 5 },
+            pb: { xs: layout.cardPaddingBottom, md: 5 },
+            borderRadius: { xs: layout.cardRadius, md: `${radius.lg}px` },
+            bgcolor: { xs: layout.cardBackground, md: surface.paper },
+            boxShadow: { xs: layout.cardShadow, md: shadows.popover },
           }}
         >
           {mobileVariant === 'card' && (
@@ -146,23 +147,13 @@ export function AuthShell({
           )}
 
           {children}
-        </Box>
 
-        {footer && (
-          <Box
-            component="footer"
-            sx={{
-              position: 'absolute',
-              right: 0,
-              bottom: { xs: layout.footerBottom, md: 3.5 },
-              left: 0,
-              display: 'flex',
-              justifyContent: 'center',
-            }}
-          >
-            {footer}
-          </Box>
-        )}
+          {footer && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: { xs: 3, md: 4 } }}>
+              {footer}
+            </Box>
+          )}
+        </Box>
       </Box>
     </Box>
   )
