@@ -12,8 +12,6 @@ const inicioPretendido = z.coerce.date().nullable()
 const condicoesEspeciais = z.array(z.string().min(1))
 const observacoes = z.string().min(1).nullable()
 
-// PUT — substituição completa: os campos-núcleo são obrigatórios; os opcionais omitidos são
-// redefinidos para o valor padrão (null / lista vazia / NENHUMA), semântica de representação total.
 export const putInquiryRequestSchema = z
   .object({
     interessadoNome,
@@ -31,7 +29,6 @@ export const putInquiryRequestSchema = z
 
 export type PutInquiryRequestDTO = z.infer<typeof putInquiryRequestSchema>
 
-// PATCH — atualização parcial: todos os campos opcionais, ao menos um deve ser informado.
 export const patchInquiryRequestSchema = z
   .object({
     interessadoNome: interessadoNome.optional(),

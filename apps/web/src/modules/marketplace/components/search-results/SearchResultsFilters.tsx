@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, Stack } from '@mui/material'
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded'
+import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 
 import { alpha, iconSize, motion, radius, surface } from '@shared/theme/tokens'
@@ -26,6 +27,7 @@ export function SearchResultsFilters({
 }
 
 export function SearchResultsFilterButton(props: SearchResultsFilterButtonProps) {
+  const t = useTranslations('marketplace.searchResults.filters')
   const { getValues, handleSubmit, setValue, watch } =
     useForm<SearchResultsFiltersDialogFormValues>({
       defaultValues: {
@@ -116,7 +118,9 @@ export function SearchResultsFilterButton(props: SearchResultsFilterButtonProps)
             },
           }}
         >
-          {activeFiltersCount > 0 ? `Filtros (${activeFiltersCount})` : 'Filtros'}
+          {activeFiltersCount > 0
+            ? t('buttonWithCount', { count: activeFiltersCount })
+            : t('button')}
         </Button>
       </Stack>
 

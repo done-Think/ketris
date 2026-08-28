@@ -3,6 +3,7 @@
 import { useCallback, useMemo, type SetStateAction } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
+import { useTranslations } from 'next-intl'
 
 import { priceLimit, searchOptions } from '../config/search-filters'
 import { marketplaceSearchFormSchema } from '../schemas/marketplace-search-schema'
@@ -16,6 +17,7 @@ import type {
 import { buildSearchHref, formatSearchCurrency, normalizeSearchText } from '../utils/search'
 
 export function useMarketplaceSearch() {
+  const tPropertyTypes = useTranslations('marketplace.home.search.propertyTypes')
   const { getValues, setValue, watch } = useForm<MarketplaceSearchFormValues>({
     defaultValues: {
       activeSearchMenu: null,
@@ -69,14 +71,25 @@ export function useMarketplaceSearch() {
     [getValues, setValue],
   )
 
+  const getSearchOptionLabel = useCallback(
+    (key: TextSearchFilterKey, value: string) => {
+      if (key === 'propertyType') return tPropertyTypes(value)
+
+      return value
+    },
+    [tPropertyTypes],
+  )
+
   const filterSearchOptions = useCallback(
     (key: TextSearchFilterKey) => {
       const query = normalizeSearchText(searchDraft[key])
       if (!query) return searchOptions[key].values
 
-      return searchOptions[key].values.filter((value) => normalizeSearchText(value).includes(query))
+      return searchOptions[key].values.filter((value) =>
+        normalizeSearchText(getSearchOptionLabel(key, value)).includes(query),
+      )
     },
-    [searchDraft],
+    [getSearchOptionLabel, searchDraft],
   )
 
   const updatePriceRange = useCallback(
@@ -111,6 +124,7 @@ export function useMarketplaceSearch() {
     activeSearchMenu,
     closeSearchMenu,
     filterSearchOptions,
+    getSearchOptionLabel,
     openSearchMenu,
     priceRange,
     priceRangeLabel,

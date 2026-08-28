@@ -1,23 +1,50 @@
-import { Avatar, Box, Button, Stack, Typography } from '@mui/material'
-import Link from 'next/link'
+'use client'
 
+import { Avatar, Box, Button, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
+
+import { Link } from '@/i18n/navigation'
 import { alpha, componentText, radius, surface } from '@shared/theme/tokens'
+import type { LocalizedHref } from '@shared/types/localized-href'
 
 import type { PublicProfileMiniSectionProps } from '../../types/public-profile-editor'
 
 const previewMetrics = [
-  { label: 'Nota', value: '4.9' },
-  { label: 'Tempo médio', value: '15 min' },
-  { label: 'Imóveis', value: '42' },
-  { label: 'Fechados', value: '128' },
+  { labelKey: 'rating', value: '4.9' },
+  { labelKey: 'responseTime', value: '15 min' },
+  { labelKey: 'properties', value: '42' },
+  { labelKey: 'closed', value: '128' },
 ] as const
 
 const previewListings = ['Apartamento Jardins', 'Garden Remodelado', 'Cobertura Duplex'] as const
+
+function getProfileUrlHref(profileUrl: string): LocalizedHref {
+  const id = profileUrl.split('?')[0].split('/').filter(Boolean).at(-1)
+
+  if (id && profileUrl.startsWith('/brokers/')) {
+    return {
+      pathname: '/brokers/[id]',
+      params: { id },
+    }
+  }
+
+  if (id && profileUrl.startsWith('/agencies/')) {
+    return {
+      pathname: '/agencies/[id]',
+      params: { id },
+    }
+  }
+
+  return profileUrl as LocalizedHref
+}
 
 export function PublicProfileMiniSection({
   profileDraft,
   sectionKey,
 }: PublicProfileMiniSectionProps) {
+  const t = useTranslations('marketplace.profileEditor')
+  const metricsT = useTranslations('marketplace.publicProfile.metrics')
+
   if (sectionKey === 'hero') {
     return (
       <Box
@@ -65,7 +92,7 @@ export function PublicProfileMiniSection({
               {profileDraft.displayName}
             </Typography>
             <Typography sx={{ color: 'text.secondary', ...componentText.cardMeta }}>
-              Perfil público configurável
+              {t('configurableProfile')}
             </Typography>
           </Box>
         </Stack>
@@ -84,7 +111,7 @@ export function PublicProfileMiniSection({
       >
         {previewMetrics.map((metric) => (
           <Box
-            key={metric.label}
+            key={metric.labelKey}
             sx={{
               border: '1px solid',
               borderColor: alpha.graphite[8],
@@ -94,7 +121,7 @@ export function PublicProfileMiniSection({
             }}
           >
             <Typography sx={{ color: 'text.secondary', fontSize: 10, fontWeight: 800 }}>
-              {metric.label}
+              {metricsT(metric.labelKey)}
             </Typography>
             <Typography sx={{ color: profileDraft.primaryColor, fontSize: 18, fontWeight: 900 }}>
               {metric.value}
@@ -119,7 +146,7 @@ export function PublicProfileMiniSection({
           }}
         >
           <Typography sx={{ color: 'text.secondary', fontSize: 12, fontWeight: 800 }}>
-            Nenhum membro adicionado.
+            {t('emptyMembers')}
           </Typography>
         </Box>
       )
@@ -133,35 +160,52 @@ export function PublicProfileMiniSection({
           gap: 0.8,
         }}
       >
-        {profileDraft.teamMembers.map((member) => (
-          <Box
-            key={`${member.profileUrl}-${member.name}`}
-            component={member.profileUrl ? Link : 'div'}
-            href={member.profileUrl || undefined}
-            sx={{
-              alignItems: 'center',
-              border: '1px solid',
-              borderColor: alpha.graphite[8],
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.paper,
-              color: 'inherit',
-              display: 'flex',
-              gap: 0.8,
-              p: 1,
-              textDecoration: 'none',
-            }}
-          >
-            <Avatar src={member.avatarUrl} alt={member.name} sx={{ width: 34, height: 34 }} />
-            <Box sx={{ minWidth: 0 }}>
-              <Typography noWrap sx={{ fontSize: 12, fontWeight: 900 }}>
-                {member.name || 'Novo membro'}
-              </Typography>
-              <Typography noWrap sx={{ color: 'text.secondary', fontSize: 10 }}>
-                {member.role || 'Função'}
-              </Typography>
+        {profileDraft.teamMembers.map((member) => {
+          const content = (
+            <>
+              <Avatar src={member.avatarUrl} alt={member.name} sx={{ width: 34, height: 34 }} />
+              <Box sx={{ minWidth: 0 }}>
+                <Typography noWrap sx={{ fontSize: 12, fontWeight: 900 }}>
+                  {member.name || t('newMember')}
+                </Typography>
+                <Typography noWrap sx={{ color: 'text.secondary', fontSize: 10 }}>
+                  {member.role || t('fields.role')}
+                </Typography>
+              </Box>
+            </>
+          )
+          const sx = {
+            alignItems: 'center',
+            border: '1px solid',
+            borderColor: alpha.graphite[8],
+            borderRadius: `${radius.sm}px`,
+            bgcolor: surface.paper,
+            color: 'inherit',
+            display: 'flex',
+            gap: 0.8,
+            p: 1,
+            textDecoration: 'none',
+          } as const
+
+          if (member.profileUrl) {
+            return (
+              <Box
+                key={`${member.profileUrl}-${member.name}`}
+                component={Link}
+                href={getProfileUrlHref(member.profileUrl)}
+                sx={sx}
+              >
+                {content}
+              </Box>
+            )
+          }
+
+          return (
+            <Box key={`${member.profileUrl}-${member.name}`} sx={sx}>
+              {content}
             </Box>
-          </Box>
-        ))}
+          )
+        })}
       </Box>
     )
   }
@@ -220,7 +264,11 @@ export function PublicProfileMiniSection({
         p: 1,
       }}
     >
-      {['Ligar', 'E-mail', 'Abrir link público'].map((action, index) => (
+      {[
+        t('contactActions.call'),
+        t('contactActions.email'),
+        t('contactActions.openPublicLink'),
+      ].map((action, index) => (
         <Button
           key={action}
           variant={index === 0 ? 'contained' : 'outlined'}

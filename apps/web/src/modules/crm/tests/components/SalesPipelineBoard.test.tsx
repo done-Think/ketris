@@ -279,8 +279,7 @@ describe('SalesPipelineBoard', () => {
     }
   })
 
-  it('recalculates preview counts and totals after search and stage filtering', async () => {
-    const user = userEvent.setup()
+  it('recalculates preview counts and totals after search and stage filtering', () => {
     vi.mocked(useSession).mockReturnValue({
       data: null,
       status: 'unauthenticated',
@@ -289,7 +288,7 @@ describe('SalesPipelineBoard', () => {
     renderPipeline({ preview: true })
 
     const searchInput = screen.getByRole('textbox', { name: 'Buscar oportunidade' })
-    await user.type(searchInput, 'pinheiros')
+    fireEvent.change(searchInput, { target: { value: 'pinheiros' } })
 
     const prospecting = screen.getByRole('region', { name: 'Prospecção' })
     const prospectingTotals = within(prospecting).getByRole('group', {
@@ -302,9 +301,9 @@ describe('SalesPipelineBoard', () => {
       within(prospectingTotals).getByText(matchesText(formatMonthlyCurrency(12000))),
     ).toBeVisible()
 
-    await user.clear(searchInput)
-    await user.click(screen.getByRole('button', { name: /Filtrar por etapa/i }))
-    await user.click(screen.getByRole('menuitem', { name: 'Qualificação' }))
+    fireEvent.change(searchInput, { target: { value: '' } })
+    fireEvent.click(screen.getByRole('button', { name: /Filtrar por etapa/i }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Qualificação' }))
 
     const qualification = screen.getByRole('region', { name: 'Qualificação' })
     const qualificationTotals = within(qualification).getByRole('group', {

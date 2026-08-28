@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useDropzone } from 'react-dropzone'
 import { Box, Stack, Typography } from '@mui/material'
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded'
+import { useTranslations } from 'next-intl'
 
 import { brand, iconSize } from '@shared/theme/tokens'
 
@@ -29,6 +30,7 @@ import type {
 } from '../types/agency-public-profile-editor'
 
 export function AgencyPublicProfileEditorPage() {
+  const t = useTranslations('marketplace.agencyProfileEditor')
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const {
     control,
@@ -92,10 +94,10 @@ export function AgencyPublicProfileEditorPage() {
         <Stack alignItems="center" spacing={2} sx={{ mb: 2.6, textAlign: 'center' }}>
           <Box sx={{ width: '100%' }}>
             <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 38 }, fontWeight: 900 }}>
-              Editar Perfil da Imobiliária
+              {t('title')}
             </Typography>
             <Typography sx={{ color: 'text.secondary', fontSize: { xs: 14, md: 16 }, mt: 0.5 }}>
-              Ajuste marca, imagens e ordem das seções exibidas para visitantes.
+              {t('subtitle')}
             </Typography>
           </Box>
           {isSubmitSuccessful ? (
@@ -106,7 +108,7 @@ export function AgencyPublicProfileEditorPage() {
               sx={{ color: brand.semantic.success }}
             >
               <CheckCircleOutlineRoundedIcon sx={{ fontSize: iconSize.md }} />
-              <Typography sx={{ fontSize: 13, fontWeight: 800 }}>Rascunho validado</Typography>
+              <Typography sx={{ fontSize: 13, fontWeight: 800 }}>{t('validatedDraft')}</Typography>
             </Stack>
           ) : null}
         </Stack>
@@ -124,15 +126,15 @@ export function AgencyPublicProfileEditorPage() {
               imageFields={[
                 {
                   fieldName: 'logoUrl',
-                  label: 'URL do logo',
-                  uploadLabel: 'Enviar logo',
+                  label: t('fields.logoUrl'),
+                  uploadLabel: t('fields.uploadLogo'),
                   dropzone: logoDropzone,
                   previewVariant: 'logo',
                 },
                 {
                   fieldName: 'bannerUrl',
-                  label: 'URL do banner',
-                  uploadLabel: 'Enviar banner',
+                  label: t('fields.bannerUrl'),
+                  uploadLabel: t('fields.uploadBanner'),
                   dropzone: bannerDropzone,
                   previewVariant: 'banner',
                 },

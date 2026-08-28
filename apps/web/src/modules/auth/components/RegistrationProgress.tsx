@@ -1,13 +1,16 @@
 import { Box, Stack } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { brand, motion, radius } from '@shared/theme/tokens'
 
 import type { RegistrationProgressProps } from '../types/registration'
 
 export function RegistrationProgress({ currentStep, totalSteps }: RegistrationProgressProps) {
+  const t = useTranslations('auth.register.progress')
+
   return (
     <Stack
-      aria-label={`Etapa ${currentStep} de ${totalSteps}`}
+      aria-label={t('label', { currentStep, totalSteps })}
       aria-valuemax={totalSteps}
       aria-valuemin={1}
       aria-valuenow={currentStep}

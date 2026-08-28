@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { Alert, Box, Button } from '@mui/material'
 import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 
 import { surface } from '@shared/theme/tokens'
 
@@ -29,6 +30,7 @@ const fixturePresentationByOpportunityId = new Map(
 )
 
 export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps) {
+  const t = useTranslations('crm.pipeline')
   const { data: session, status: sessionStatus } = useSession()
   const fixtureMode = preview && process.env.NODE_ENV !== 'production'
   const tenantId = fixtureMode ? '' : (session?.tenantId ?? '')
@@ -118,15 +120,15 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
                 if (propertiesQuery.isError) void propertiesQuery.refetch()
               }}
             >
-              Tentar novamente
+              {t('retry')}
             </Button>
           }
         >
-          Não foi possível carregar os dados do pipeline.
+          {t('dataLoadError')}
         </Alert>
       ) : (
         <Box
-          aria-label="Pipeline de oportunidades"
+          aria-label={t('boardAriaLabel')}
           sx={{
             mt: { xs: 2.25, lg: 1.5 },
             mx: { xs: -2, sm: -3, lg: -3.5 },

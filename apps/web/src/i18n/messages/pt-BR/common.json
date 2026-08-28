@@ -1,4 +1,8 @@
 {
+  "metadata": {
+    "title": "Ketris",
+    "description": "Plataforma que conecta proprietários, corretores, imobiliárias, construtoras e locatários em uma única infraestrutura tecnológica."
+  },
   "app": {
     "name": "Ketris"
   },
@@ -6,6 +10,7 @@
     "backHome": "Voltar ao início"
   },
   "errors": {
+    "backHome": "Voltar ao início",
     "notFound": "Página não encontrada.",
     "unexpectedTitle": "Algo deu errado.",
     "unexpectedDescription": "Nossa equipe foi notificada. Tente novamente em instantes."

@@ -16,6 +16,7 @@ import {
   TextField,
 } from '@mui/material'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslations } from 'next-intl'
 
 import { editOpportunityFormSchema } from '../../schemas/opportunity-schema'
 import type { Opportunity, OpportunityEditFormValues } from '../../types/opportunity'
@@ -40,6 +41,7 @@ export function EditOpportunityDialog({
   onClose,
   onSave,
 }: EditOpportunityDialogProps) {
+  const t = useTranslations('crm.opportunityDetail')
   const {
     control,
     handleSubmit,
@@ -58,7 +60,7 @@ export function EditOpportunityDialog({
   return (
     <Dialog open={open} onClose={() => !isPending && onClose()} fullWidth maxWidth="sm">
       <Box component="form" noValidate onSubmit={handleSubmit(onSave)}>
-        <DialogTitle sx={{ letterSpacing: 0 }}>Editar oportunidade</DialogTitle>
+        <DialogTitle sx={{ letterSpacing: 0 }}>{t('editTitle')}</DialogTitle>
         <DialogContent>
           {initialValues && (
             <Box
@@ -70,14 +72,14 @@ export function EditOpportunityDialog({
               }}
             >
               <TextField
-                label="Nome"
+                label={t('fields.name')}
                 required
                 error={Boolean(errors.interessadoNome)}
                 helperText={errors.interessadoNome?.message}
                 {...register('interessadoNome')}
               />
               <TextField
-                label="E-mail"
+                label={t('fields.email')}
                 type="email"
                 required
                 error={Boolean(errors.interessadoEmail)}
@@ -85,32 +87,32 @@ export function EditOpportunityDialog({
                 {...register('interessadoEmail')}
               />
               <TextField
-                label="Telefone"
+                label={t('fields.phone')}
                 error={Boolean(errors.interessadoTelefone)}
                 helperText={errors.interessadoTelefone?.message}
                 {...register('interessadoTelefone')}
               />
               <TextField
-                label="Valor proposto"
+                label={t('fields.proposedValue')}
                 type="number"
                 required
-                inputProps={{ min: 0, step: 100 }}
+                slotProps={{ htmlInput: { min: 0, step: 100 } }}
                 error={Boolean(errors.valorProposto)}
                 helperText={errors.valorProposto?.message}
                 {...register('valorProposto')}
               />
               <TextField
-                label="Prazo do contrato (meses)"
+                label={t('fields.contractTerm')}
                 type="number"
-                inputProps={{ min: 1, step: 1 }}
+                slotProps={{ htmlInput: { min: 1, step: 1 } }}
                 error={Boolean(errors.prazoContratoMeses)}
                 helperText={errors.prazoContratoMeses?.message}
                 {...register('prazoContratoMeses')}
               />
               <TextField
-                label="Início pretendido"
+                label={t('fields.intendedStart')}
                 type="date"
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
                 error={Boolean(errors.inicioPretendido)}
                 helperText={errors.inicioPretendido?.message}
                 {...register('inicioPretendido')}
@@ -120,10 +122,10 @@ export function EditOpportunityDialog({
                 name="garantiaContratual"
                 render={({ field }) => (
                   <FormControl error={Boolean(errors.garantiaContratual)}>
-                    <InputLabel id="guarantee-label">Garantia</InputLabel>
+                    <InputLabel id="guarantee-label">{t('fields.guarantee')}</InputLabel>
                     <Select
                       labelId="guarantee-label"
-                      label="Garantia"
+                      label={t('fields.guarantee')}
                       value={field.value}
                       onChange={(event) =>
                         field.onChange(event.target.value as Opportunity['garantiaContratual'])
@@ -131,10 +133,10 @@ export function EditOpportunityDialog({
                       onBlur={field.onBlur}
                       inputRef={field.ref}
                     >
-                      <MenuItem value="NENHUMA">Não informada</MenuItem>
-                      <MenuItem value="FIADOR">Fiador</MenuItem>
-                      <MenuItem value="CAUCAO">Caução</MenuItem>
-                      <MenuItem value="SEGURO_FIANCA">Seguro-fiança</MenuItem>
+                      <MenuItem value="NENHUMA">{t('guarantees.NENHUMA')}</MenuItem>
+                      <MenuItem value="FIADOR">{t('guarantees.FIADOR')}</MenuItem>
+                      <MenuItem value="CAUCAO">{t('guarantees.CAUCAO')}</MenuItem>
+                      <MenuItem value="SEGURO_FIANCA">{t('guarantees.SEGURO_FIANCA')}</MenuItem>
                     </Select>
                     {errors.garantiaContratual?.message && (
                       <FormHelperText>{errors.garantiaContratual.message}</FormHelperText>
@@ -143,15 +145,15 @@ export function EditOpportunityDialog({
                 )}
               />
               <TextField
-                label="Condições especiais"
+                label={t('fields.specialConditions')}
                 helperText={
-                  errors.condicoesEspeciais?.message ?? 'Separe as condições por vírgulas.'
+                  errors.condicoesEspeciais?.message ?? t('fields.specialConditionsHelper')
                 }
                 error={Boolean(errors.condicoesEspeciais)}
                 {...register('condicoesEspeciais')}
               />
               <TextField
-                label="Observações"
+                label={t('fields.notes')}
                 multiline
                 minRows={3}
                 error={Boolean(errors.observacoes)}
@@ -164,10 +166,10 @@ export function EditOpportunityDialog({
         </DialogContent>
         <DialogActions>
           <Button disabled={isPending} onClick={onClose}>
-            Cancelar
+            {t('actions.cancel')}
           </Button>
           <Button type="submit" variant="contained" disabled={isPending || !initialValues}>
-            {isPending ? <CircularProgress size={20} /> : 'Salvar alterações'}
+            {isPending ? <CircularProgress size={20} /> : t('actions.saveChanges')}
           </Button>
         </DialogActions>
       </Box>

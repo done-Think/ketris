@@ -1,5 +1,8 @@
+'use client'
+
 import { Box, Button, Typography } from '@mui/material'
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined'
+import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
 import { componentText, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
@@ -16,8 +19,11 @@ export function MobileSearchBox({
   openSearchMenu,
   selectSearchValue,
   filterSearchOptions,
+  getSearchOptionLabel,
   setSearchDraft,
 }: MobileSearchBoxProps) {
+  const t = useTranslations('marketplace.home.search')
+
   return (
     <Box
       ref={mobileSearchRef}
@@ -64,7 +70,7 @@ export function MobileSearchBox({
             whiteSpace: 'nowrap',
           }}
         >
-          Buscar por bairro, cidade...
+          {t('mobilePlaceholder')}
         </Typography>
       </Button>
 
@@ -84,6 +90,7 @@ export function MobileSearchBox({
             selectedSearch={selectedSearch}
             searchDraft={searchDraft}
             filterSearchOptions={filterSearchOptions}
+            getSearchOptionLabel={getSearchOptionLabel}
             selectSearchValue={selectSearchValue}
             setSearchDraft={setSearchDraft}
           />
@@ -109,7 +116,7 @@ export function MobileSearchBox({
             ...componentText.mobileSearchSubmit,
           }}
         >
-          Buscar
+          {t('submit')}
         </Button>
       </Box>
     </Box>

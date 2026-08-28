@@ -1,1 +1,131 @@
-{}
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "properties": "My Properties",
+    "publicProfile": "Public Profile",
+    "leads": "Leads",
+    "agenda": "Schedule",
+    "proposals": "Proposals",
+    "finance": "Finance",
+    "backToMarketplace": "Back to marketplace",
+    "back": "Back",
+    "userRole": "Operations Manager"
+  },
+  "metadata": {
+    "overview": {
+      "metadataTitle": "Ketris | Dashboard"
+    },
+    "agenda": {
+      "metadataTitle": "Ketris | Schedule"
+    },
+    "finance": {
+      "metadataTitle": "Ketris | Finance"
+    },
+    "leads": {
+      "metadataTitle": "Ketris | Leads"
+    },
+    "proposals": {
+      "metadataTitle": "Ketris | Proposals"
+    }
+  },
+  "agenda": {
+    "title": "Schedule",
+    "subtitle": "Commercial appointments, visits, and follow-ups.",
+    "statuses": {
+      "Confirmada": "Confirmed",
+      "Pendente": "Pending",
+      "Reagendar": "Reschedule"
+    }
+  },
+  "overview": {
+    "title": "Dashboard",
+    "notifications": "Notifications",
+    "performanceTitle": "6-month performance",
+    "performanceTarget": "Target: {value}%",
+    "activityDetail": {
+      "close": "Close",
+      "openGps": "Open in GPS",
+      "openGpsAriaLabel": "Open {address} in GPS",
+      "meetingTime": "Meeting time",
+      "location": "Location",
+      "client": "Client",
+      "owner": "Owner",
+      "notes": "Notes",
+      "visitProperty": "Visit property"
+    },
+    "leadDetails": {
+      "title": "Lead details",
+      "close": "Close",
+      "client": "Client",
+      "interest": "Interest",
+      "origin": "Source",
+      "desiredRegions": "Search regions",
+      "cancel": "Cancel",
+      "save": "Save",
+      "fields": {
+        "reportedNeed": "Reported need",
+        "lookingFor": "Looking for",
+        "budgetRange": "Budget range",
+        "downPayment": "Down payment",
+        "financingStatus": "Financing",
+        "timeline": "Decision timeline",
+        "notes": "Service notes"
+      }
+    },
+    "recentLeads": {
+      "title": "Recent leads",
+      "columns": {
+        "name": "Name",
+        "interest": "Interest",
+        "status": "Status",
+        "origin": "Source",
+        "actions": "Actions"
+      },
+      "call": "Call",
+      "details": "Details",
+      "statuses": {
+        "new": "New",
+        "inProgress": "In progress",
+        "qualified": "Qualified",
+        "pending": "Pending"
+      }
+    }
+  },
+  "finance": {
+    "title": "Finance",
+    "subtitle": "Monthly financial movement and sales/commission records.",
+    "movementTitle": "Monthly movement",
+    "movementSubtitle": "Sales and commission inflows by month.",
+    "sales": "Sales",
+    "commissions": "Commissions",
+    "table": {
+      "type": "Type",
+      "description": "Entry",
+      "property": "Property",
+      "dueDate": "Due date",
+      "amount": "Amount",
+      "status": "Status",
+      "noRows": "No entries found",
+      "totalRows": "Total rows:",
+      "rowsPerPage": "Rows per page"
+    },
+    "types": {
+      "Venda": "Sale",
+      "Comissão": "Commission"
+    },
+    "statuses": {
+      "Recebido": "Received",
+      "Previsto": "Expected",
+      "Atrasado": "Overdue"
+    }
+  },
+  "proposals": {
+    "title": "Proposals",
+    "subtitle": "Ongoing negotiations and reference values.",
+    "statuses": {
+      "underReview": "Under review",
+      "counteroffer": "Counteroffer",
+      "approved": "Approved"
+    }
+  }
+}

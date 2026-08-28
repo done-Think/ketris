@@ -18,6 +18,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 
 import { brand, radius, surface } from '@shared/theme/tokens'
 
@@ -42,6 +43,7 @@ function matchesSearch(opportunity: Opportunity, propertyTitle: string, search: 
 }
 
 export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
+  const t = useTranslations('crm.pipeline')
   const { data: session } = useSession()
   const tenantId = session?.tenantId ?? ''
   const [search, setSearch] = useState('')
@@ -76,8 +78,12 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
   )
 
   const filterLabel = selectedStatus
-    ? opportunityStages.find((stage) => stage.status === selectedStatus)?.label
-    : 'Filtrar por etapa'
+    ? t(
+        `stages.${
+          opportunityStages.find((stage) => stage.status === selectedStatus)?.labelKey ?? 'draft'
+        }`,
+      )
+    : t('filterByStage')
 
   return (
     <Box
@@ -106,22 +112,24 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
             letterSpacing: 0,
           }}
         >
-          Pipeline de Vendas
+          {t('title')}
         </Typography>
 
         <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.5} sx={{ minWidth: 0 }}>
           <TextField
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Buscar oportunidade..."
+            placeholder={t('searchPlaceholder')}
             size="small"
-            inputProps={{ 'aria-label': 'Buscar oportunidade' }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchRoundedIcon sx={{ color: 'text.disabled', fontSize: 19 }} />
-                </InputAdornment>
-              ),
+            slotProps={{
+              htmlInput: { 'aria-label': t('searchAriaLabel') },
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchRoundedIcon sx={{ color: 'text.disabled', fontSize: 19 }} />
+                  </InputAdornment>
+                ),
+              },
             }}
             sx={{ width: { xs: '100%', sm: 240 }, bgcolor: 'background.paper' }}
           />
@@ -156,7 +164,7 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
                 setFilterAnchor(null)
               }}
             >
-              Todas as etapas
+              {t('allStages')}
             </MenuItem>
             {opportunityStages.map((stage) => (
               <MenuItem
@@ -177,7 +185,7 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
                     bgcolor: stage.color,
                   }}
                 />
-                {stage.label}
+                {t(`stages.${stage.labelKey}`)}
               </MenuItem>
             ))}
           </Menu>
@@ -187,7 +195,7 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
             disabled
             sx={{ minWidth: { sm: 188 }, height: 40, whiteSpace: 'nowrap' }}
           >
-            Nova Oportunidade
+            {t('newOpportunity')}
           </Button>
         </Stack>
       </Stack>
@@ -198,16 +206,16 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
           sx={{ mt: 3 }}
           action={
             <Button color="inherit" size="small" onClick={() => opportunitiesQuery.refetch()}>
-              Tentar novamente
+              {t('retry')}
             </Button>
           }
         >
-          Não foi possível carregar as oportunidades.
+          {t('loadError')}
         </Alert>
       ) : null}
 
       <Box
-        aria-label="Pipeline de oportunidades"
+        aria-label={t('boardAriaLabel')}
         sx={{
           mt: 2,
           mx: { xs: -2, sm: -3, lg: -4 },
@@ -248,13 +256,21 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
             )
             const projectedTotals = [
               ...(totals.rental
-                ? [{ label: 'Aluguel', value: formatMonthlyCurrency(totals.rental) }]
+                ? [{ label: t('totalLabels.rent'), value: formatMonthlyCurrency(totals.rental) }]
                 : []),
-              ...(totals.sale ? [{ label: 'Venda', value: formatCurrency(totals.sale) }] : []),
+              ...(totals.sale
+                ? [{ label: t('totalLabels.sale'), value: formatCurrency(totals.sale) }]
+                : []),
               ...(totals.unclassified
-                ? [{ label: 'Sem categoria', value: formatCurrency(totals.unclassified) }]
+                ? [
+                    {
+                      label: t('totalLabels.uncategorized'),
+                      value: formatCurrency(totals.unclassified),
+                    },
+                  ]
                 : []),
             ]
+            const stageLabel = t(`stages.${stage.labelKey}`)
 
             return (
               <Stack
@@ -288,7 +304,7 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
                     noWrap
                     sx={{ fontSize: 11.5, fontWeight: 800, textTransform: 'uppercase' }}
                   >
-                    {stage.label}
+                    {stageLabel}
                   </Typography>
                   <Box
                     component="span"
@@ -345,7 +361,7 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
                       }}
                     >
                       <Typography color="text.secondary" sx={{ fontSize: 12 }}>
-                        Nenhuma oportunidade nesta etapa.
+                        {t('emptyStage')}
                       </Typography>
                     </Stack>
                   ) : null}
@@ -353,7 +369,7 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
 
                 <Box
                   role="group"
-                  aria-label={`Total projetado de ${stage.label}`}
+                  aria-label={t('projectedTotalAriaLabel', { stage: stageLabel })}
                   sx={{ mt: 'auto', pt: 2, borderTop: '1px solid', borderColor: 'divider' }}
                 >
                   <Typography
@@ -364,7 +380,7 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
                       textTransform: 'uppercase',
                     }}
                   >
-                    Total projetado
+                    {t('projectedTotal')}
                   </Typography>
                   {opportunitiesQuery.isLoading ? (
                     <Skeleton width={92} />

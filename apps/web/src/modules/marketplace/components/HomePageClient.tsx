@@ -50,6 +50,7 @@ export function HomePageClient() {
         selectSearchValue={search.selectSearchValue}
         updatePriceRange={search.updatePriceRange}
         filterSearchOptions={search.filterSearchOptions}
+        getSearchOptionLabel={search.getSearchOptionLabel}
         setSearchDraft={search.setSearchDraft}
       />
 

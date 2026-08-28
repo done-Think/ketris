@@ -17,6 +17,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined'
 import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre'
+import { useTranslations } from 'next-intl'
 
 import { env } from '@config/env'
 import { alpha, brand, motion, radius, surface } from '@shared/theme/tokens'
@@ -28,6 +29,7 @@ const defaultMapStyleUrl = 'https://basemaps.cartocdn.com/gl/positron-gl-style/s
 const mapContainerStyle = { width: '100%', height: '100%' } as const
 
 export function ActivityDetailModal({ activity, onClose }: ActivityDetailModalProps) {
+  const t = useTranslations('dashboard.overview.activityDetail')
   const property = activity?.property
   const mapStyleUrl =
     env.mapStyleUrl && !env.mapStyleUrl.includes('demotiles') ? env.mapStyleUrl : defaultMapStyleUrl
@@ -67,7 +69,7 @@ export function ActivityDetailModal({ activity, onClose }: ActivityDetailModalPr
                   {activity.title}
                 </Typography>
               </Box>
-              <IconButton aria-label="Fechar" onClick={onClose} size="small">
+              <IconButton aria-label={t('close')} onClick={onClose} size="small">
                 <CloseIcon fontSize="small" />
               </IconButton>
             </Stack>
@@ -86,7 +88,7 @@ export function ActivityDetailModal({ activity, onClose }: ActivityDetailModalPr
                 target="_blank"
                 rel="noreferrer"
                 underline="none"
-                aria-label={`Abrir ${activity.location.address} no GPS`}
+                aria-label={t('openGpsAriaLabel', { address: activity.location.address })}
                 sx={{
                   position: 'relative',
                   display: 'block',
@@ -149,7 +151,7 @@ export function ActivityDetailModal({ activity, onClose }: ActivityDetailModalPr
                     transition: motion.transition.interactive,
                   }}
                 >
-                  Abrir no GPS
+                  {t('openGps')}
                 </Box>
               </MuiLink>
 
@@ -169,7 +171,7 @@ export function ActivityDetailModal({ activity, onClose }: ActivityDetailModalPr
                         <Typography
                           sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 900 }}
                         >
-                          Horário de encontro
+                          {t('meetingTime')}
                         </Typography>
                         <Typography
                           sx={{ color: brand.graphite[500], fontSize: 16, fontWeight: 900 }}
@@ -187,7 +189,7 @@ export function ActivityDetailModal({ activity, onClose }: ActivityDetailModalPr
                         <Typography
                           sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 900 }}
                         >
-                          Local
+                          {t('location')}
                         </Typography>
                         <Typography
                           sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 900 }}
@@ -212,13 +214,13 @@ export function ActivityDetailModal({ activity, onClose }: ActivityDetailModalPr
                   }}
                 >
                   <ContactInfoCard
-                    label="Cliente"
+                    label={t('client')}
                     name={activity.client.name}
                     phone={activity.client.phone}
                   />
                   {property ? (
                     <ContactInfoCard
-                      label="Proprietário"
+                      label={t('owner')}
                       name={property.owner.name}
                       phone={property.owner.phone}
                     />
@@ -234,7 +236,7 @@ export function ActivityDetailModal({ activity, onClose }: ActivityDetailModalPr
                   }}
                 >
                   <Typography sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 900 }}>
-                    Observações
+                    {t('notes')}
                   </Typography>
                   <Typography
                     sx={{ color: brand.graphite[500], fontSize: 13, fontWeight: 700, mt: 0.6 }}
@@ -273,7 +275,7 @@ export function ActivityDetailModal({ activity, onClose }: ActivityDetailModalPr
                   <Stack direction="row" alignItems="center" spacing={0.8}>
                     <HomeWorkOutlinedIcon sx={{ color: brand.magenta[500], fontSize: 18 }} />
                     <Typography sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 900 }}>
-                      Imóvel da visita
+                      {t('visitProperty')}
                     </Typography>
                   </Stack>
                   <Typography

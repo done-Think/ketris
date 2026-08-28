@@ -1,1 +1,165 @@
-{}
+{
+  "metadata": {
+    "pipeline": {
+      "metadataTitle": "Ketris | Sales Pipeline"
+    },
+    "contacts": {
+      "metadataTitle": "Ketris | Contacts"
+    },
+    "proposals": {
+      "metadataTitle": "Ketris | Proposals"
+    }
+  },
+  "navigation": {
+    "ariaLabel": "CRM navigation",
+    "dashboard": "Dashboard",
+    "pipeline": "Pipeline",
+    "contacts": "Contacts",
+    "properties": "Properties",
+    "proposals": "Proposals",
+    "defaultUserName": "Ketris Team",
+    "defaultUserContext": "Real estate CRM",
+    "openNavigation": "Open navigation"
+  },
+  "access": {
+    "loadingSession": "Loading session",
+    "restrictedTitle": "Restricted CRM access",
+    "restrictedDescription": "Sign in with an account linked to a tenant to view opportunities.",
+    "signIn": "Sign in to Ketris"
+  },
+  "pipeline": {
+    "title": "Sales Pipeline",
+    "searchPlaceholder": "Search opportunity...",
+    "searchAriaLabel": "Search opportunity",
+    "filterByStage": "Filter by stage",
+    "allStages": "All stages",
+    "newOpportunity": "New Opportunity",
+    "newOpportunityTooltip": "Creation flow in progress",
+    "newOpportunityDisabledAriaLabel": "New Opportunity: creation flow in progress",
+    "openOpportunityAriaLabel": "Open opportunity for {name}",
+    "propertyUnavailable": "Property unavailable in the catalog",
+    "boardAriaLabel": "Opportunities pipeline",
+    "loadError": "Could not load opportunities.",
+    "dataLoadError": "Could not load pipeline data.",
+    "retry": "Try again",
+    "emptyStage": "No opportunities in this stage.",
+    "projectedTotal": "Projected total",
+    "projectedTotalAriaLabel": "Projected total for {stage}",
+    "totalLabels": {
+      "rent": "Rent",
+      "sale": "Sale",
+      "uncategorized": "Uncategorized"
+    },
+    "stages": {
+      "prospecting": "Prospecting",
+      "qualification": "Qualification",
+      "proposal": "Proposal",
+      "negotiation": "Negotiation",
+      "closed": "Closed",
+      "draft": "Prospecting",
+      "sent": "Proposal sent",
+      "accepted": "Closed",
+      "rejected": "Lost"
+    }
+  },
+  "contacts": {
+    "title": "Contacts",
+    "searchPlaceholder": "Search contact by name, email, phone...",
+    "searchAriaLabel": "Search contacts",
+    "filterAriaLabel": "Filter contacts by type",
+    "mobileListAriaLabel": "Mobile contact list",
+    "tableAriaLabel": "CRM contacts",
+    "newContact": "New Contact",
+    "empty": "No contacts found.",
+    "resultsRange": "Showing {first}–{last} of {total}",
+    "selectContact": "Select {name}",
+    "selectAllVisible": "Select all visible contacts",
+    "propertyCount": "{count, plural, one {# property} other {# properties}}",
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "actions": {
+      "editContact": "Edit {name}",
+      "viewInteractions": "View interactions for {name}",
+      "moreOptions": "More options for {name}"
+    },
+    "types": {
+      "tenant": "Tenant",
+      "owner": "Owner",
+      "broker": "Broker"
+    },
+    "tableColumns": {
+      "name": "Name",
+      "type": "Type",
+      "phone": "Phone",
+      "email": "Email",
+      "properties": "Properties",
+      "lastInteraction": "Last interaction",
+      "actions": "Actions"
+    },
+    "filters": {
+      "all": "All",
+      "owners": "Owners",
+      "tenants": "Tenants",
+      "brokers": "Brokers"
+    }
+  },
+  "opportunityDetail": {
+    "editTitle": "Edit opportunity",
+    "breadcrumbAriaLabel": "Breadcrumb",
+    "pipelineLink": "Pipeline",
+    "contactInterestTitle": "Contact and interest information",
+    "archive": "Archive opportunity",
+    "archiveTitle": "Archive opportunity?",
+    "archiveDescription": "The opportunity will no longer appear in the active pipeline, but will remain stored in the CRM.",
+    "loadingAriaLabel": "Loading opportunity",
+    "createdActivityTitle": "Opportunity created",
+    "createdActivityDetail": "Record added to the pipeline.",
+    "updatedActivityTitle": "Opportunity updated",
+    "updatedActivityDetail": "Current stage: {stage}.",
+    "loadError": "Could not load this opportunity.",
+    "backToPipeline": "Back to pipeline",
+    "movedSuccess": "Opportunity moved to {stage}.",
+    "updateStageError": "Could not update the stage.",
+    "updateSuccess": "Opportunity updated.",
+    "updateError": "Could not update the opportunity.",
+    "archiveSuccess": "Opportunity archived.",
+    "archiveError": "Could not archive the opportunity.",
+    "unknownLocation": "Location not informed",
+    "confirmStageTitle": "Confirm stage change",
+    "confirmStageDescription": "Move {name} from {from} to {to}?",
+    "propertyPanel": {
+      "title": "Associated property",
+      "retry": "Try again",
+      "loadError": "Could not load the associated property. Reference: {id}",
+      "monthlySuffix": "/month"
+    },
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "proposedValue": "Proposed value",
+      "contractTerm": "Contract term (months)",
+      "contractTermLabel": "Contract term",
+      "intendedStart": "Intended start",
+      "guarantee": "Guarantee",
+      "specialConditions": "Special conditions",
+      "specialConditionsHelper": "Separate conditions with commas.",
+      "notes": "Notes",
+      "notInformed": "Not informed",
+      "months": "{count, plural, one {# month} other {# months}}"
+    },
+    "guarantees": {
+      "NENHUMA": "Not informed",
+      "FIADOR": "Guarantor",
+      "CAUCAO": "Security deposit",
+      "SEGURO_FIANCA": "Rental bond insurance"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "saveChanges": "Save changes",
+      "confirmStageChange": "Confirm change"
+    }
+  }
+}

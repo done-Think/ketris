@@ -8,6 +8,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { usePathname, useSearchParams } from 'next/navigation'
 
 import { localeCookieMaxAge, localeCookieName, localeCookiePath } from '@/i18n/locale-cookie'
+import { getLocaleFromPathname, getLocalizedPathnameForLocale } from '@/i18n/locale-prefix'
 import type { AppLocale } from '@/i18n/types/locale.types'
 import type { LanguageOption, LanguageSelectorProps } from '@shared/types/language-selector'
 import { alpha, componentText, radius, shadows } from '@shared/theme/tokens'
@@ -44,7 +45,7 @@ export function LanguageSelector({ variant = 'profile' }: LanguageSelectorProps)
     languageOptions.find((language) => language.locale === currentLocale) ?? languageOptions[0]
 
   const handleLanguageSelect = (nextLocale: AppLocale) => {
-    const nextPathname = getLocalizedPathname(window.location.pathname, nextLocale)
+    const nextPathname = getLocalizedPathnameForLocale(window.location.pathname, nextLocale)
     const queryString = searchParams.toString()
     const nextHref = queryString ? `${nextPathname}?${queryString}` : nextPathname
 
@@ -151,104 +152,4 @@ export function LanguageSelector({ variant = 'profile' }: LanguageSelectorProps)
       </Menu>
     </>
   )
-}
-
-function getLocaleFromPathname(pathname: string): AppLocale | undefined {
-  if (pathname === '/en' || pathname.startsWith('/en/')) {
-    return 'en-US'
-  }
-
-  if (pathname === '/es' || pathname.startsWith('/es/')) {
-    return 'es-ES'
-  }
-
-  return 'pt-BR'
-}
-
-function getLocalizedPathname(pathname: string, locale: AppLocale) {
-  const normalizedPathname = pathname.replace(/^\/(en|es|pt-BR|en-US|es-ES)(?=\/|$)/, '') || '/'
-
-  if (normalizedPathname === '/') {
-    return getLocalizedPathnameWithPrefix('', locale)
-  }
-
-  if (normalizedPathname === '/login') {
-    return getLocalizedPathnameWithPrefix('/login', locale)
-  }
-
-  if (normalizedPathname === '/register') {
-    return getLocalizedPathnameWithPrefix('/register', locale)
-  }
-
-  if (normalizedPathname === '/forgot-password') {
-    return getLocalizedPathnameWithPrefix('/forgot-password', locale)
-  }
-
-  return getLocalizedPublicPathname(normalizedPathname, locale)
-}
-
-function getLocalizedPublicPathname(pathname: string, locale: AppLocale) {
-  const publicPathnames = [
-    { ptBR: '/imoveis', enUS: '/properties', esES: '/inmuebles' },
-    { ptBR: '/corretores', enUS: '/brokers', esES: '/corredores' },
-    { ptBR: '/imobiliarias', enUS: '/agencies', esES: '/inmobiliarias' },
-  ]
-
-  for (const publicPathname of publicPathnames) {
-    if (pathname === publicPathname.ptBR || pathname.startsWith(`${publicPathname.ptBR}/`)) {
-      const suffix = pathname.slice(publicPathname.ptBR.length)
-      return getLocalizedPathnameWithPrefix(
-        getLocalizedPublicBasePathname(publicPathname, locale),
-        locale,
-        suffix,
-      )
-    }
-
-    if (pathname === publicPathname.enUS || pathname.startsWith(`${publicPathname.enUS}/`)) {
-      const suffix = pathname.slice(publicPathname.enUS.length)
-      return getLocalizedPathnameWithPrefix(
-        getLocalizedPublicBasePathname(publicPathname, locale),
-        locale,
-        suffix,
-      )
-    }
-
-    if (pathname === publicPathname.esES || pathname.startsWith(`${publicPathname.esES}/`)) {
-      const suffix = pathname.slice(publicPathname.esES.length)
-      return getLocalizedPathnameWithPrefix(
-        getLocalizedPublicBasePathname(publicPathname, locale),
-        locale,
-        suffix,
-      )
-    }
-  }
-
-  return getLocalizedPathnameWithPrefix(pathname, locale)
-}
-
-function getLocalizedPathnameWithPrefix(pathname: string, locale: AppLocale, suffix = '') {
-  if (locale === 'en-US') {
-    return `/en${pathname}${suffix}`
-  }
-
-  if (locale === 'es-ES') {
-    return `/es${pathname}${suffix}`
-  }
-
-  return `${pathname || '/'}${suffix}`
-}
-
-function getLocalizedPublicBasePathname(
-  pathname: { ptBR: string; enUS: string; esES: string },
-  locale: AppLocale,
-) {
-  if (locale === 'en-US') {
-    return pathname.enUS
-  }
-
-  if (locale === 'es-ES') {
-    return pathname.esES
-  }
-
-  return pathname.ptBR
 }

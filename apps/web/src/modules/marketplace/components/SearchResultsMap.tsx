@@ -1,6 +1,7 @@
 'use client'
 
 import { Box } from '@mui/material'
+import { useTranslations } from 'next-intl'
 import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre'
 
 import { Link } from '@/i18n/navigation'
@@ -22,6 +23,7 @@ export function SearchResultsMap({
   selectedPropertyId,
   onSelectProperty,
 }: SearchResultsMapProps) {
+  const t = useTranslations('marketplace.searchResults.map')
   const mapStyleUrl =
     env.mapStyleUrl && !env.mapStyleUrl.includes('demotiles') ? env.mapStyleUrl : defaultMapStyleUrl
 
@@ -59,7 +61,7 @@ export function SearchResultsMap({
               <Box
                 component={Link}
                 href={buildPropertyDetailHref(property.href, property.purpose)}
-                aria-label={`Abrir ${property.title}`}
+                aria-label={t('openProperty', { title: property.title })}
                 onClick={() => onSelectProperty(property.id)}
                 onFocus={() => onSelectProperty(property.id)}
                 onMouseEnter={() => onSelectProperty(property.id)}

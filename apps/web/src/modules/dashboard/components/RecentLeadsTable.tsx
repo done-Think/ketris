@@ -11,6 +11,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { brand, supportColor } from '@shared/theme/tokens'
 
@@ -22,21 +23,21 @@ import type {
 import { DashboardPanel } from './DashboardPanel'
 
 const statusStyles: Record<DashboardRecentLeadStatus, DashboardStatusStyle> = {
-  new: { label: 'Novo', bgcolor: brand.magenta[50], color: brand.magenta[600] },
+  new: { bgcolor: brand.magenta[50], color: brand.magenta[600] },
   inProgress: {
-    label: 'Em Andamento',
     bgcolor: supportColor.infoSoft,
     color: brand.semantic.info,
   },
   qualified: {
-    label: 'Qualificado',
     bgcolor: supportColor.warningSoft,
     color: brand.semantic.warning,
   },
-  pending: { label: 'Pendente', bgcolor: brand.magenta[50], color: brand.magenta[600] },
+  pending: { bgcolor: brand.magenta[50], color: brand.magenta[600] },
 }
 
 export function RecentLeadsTable({ leads, onLeadSelect }: RecentLeadsTableProps) {
+  const t = useTranslations('dashboard.overview.recentLeads')
+
   return (
     <DashboardPanel>
       <Box sx={{ p: { xs: 2, md: 2.4 } }}>
@@ -48,14 +49,20 @@ export function RecentLeadsTable({ leads, onLeadSelect }: RecentLeadsTableProps)
             textTransform: 'uppercase',
           }}
         >
-          Leads recentes
+          {t('title')}
         </Typography>
 
         <TableContainer sx={{ mt: 1.4 }}>
           <Table size="small" sx={{ minWidth: 720 }}>
             <TableHead>
               <TableRow>
-                {['Nome', 'Interesse', 'Status', 'Origem', 'Ações'].map((heading) => (
+                {[
+                  t('columns.name'),
+                  t('columns.interest'),
+                  t('columns.status'),
+                  t('columns.origin'),
+                  t('columns.actions'),
+                ].map((heading) => (
                   <TableCell
                     key={heading}
                     sx={{
@@ -86,7 +93,7 @@ export function RecentLeadsTable({ leads, onLeadSelect }: RecentLeadsTableProps)
                   </TableCell>
                   <TableCell sx={{ borderBottom: 'none', py: 1.1 }}>
                     <Chip
-                      label={statusStyles[lead.status].label}
+                      label={t(`statuses.${lead.status}`)}
                       size="small"
                       sx={{
                         height: 22,
@@ -109,7 +116,7 @@ export function RecentLeadsTable({ leads, onLeadSelect }: RecentLeadsTableProps)
                         underline="none"
                         sx={{ color: brand.magenta[600], fontSize: 12, fontWeight: 900 }}
                       >
-                        Ligar
+                        {t('call')}
                       </MuiLink>
                       <MuiLink
                         component="button"
@@ -117,7 +124,7 @@ export function RecentLeadsTable({ leads, onLeadSelect }: RecentLeadsTableProps)
                         onClick={() => onLeadSelect(lead)}
                         sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 700 }}
                       >
-                        Detalhes
+                        {t('details')}
                       </MuiLink>
                     </Stack>
                   </TableCell>

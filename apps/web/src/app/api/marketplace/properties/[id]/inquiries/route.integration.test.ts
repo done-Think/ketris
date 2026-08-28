@@ -92,7 +92,6 @@ describe('POST /api/marketplace/properties/[id]/inquiries (integração)', () =>
     expect(oportunidade?.tenantId).toBe(tenantId)
     expect(oportunidade?.status).toBe('ENVIADA')
     expect(oportunidade?.interessadoEmail).toBe('maria@exemplo.com')
-    // valorProposto assume o valor anunciado (1800) quando não informado
     expect(oportunidade?.valorProposto.toString()).toBe('1800')
   })
 

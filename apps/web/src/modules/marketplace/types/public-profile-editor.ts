@@ -33,8 +33,6 @@ export type PublicProfileEditorFormValues = {
 
 export type PublicProfileSectionOption = {
   key: PublicProfileSectionSlotKey
-  label: string
-  description: string
 }
 
 export type PublicProfileImageFieldConfig = {

@@ -1,1 +1,142 @@
-{}
+{
+  "metadata": {
+    "dashboard": {
+      "metadataTitle": "Ketris | Meus Imóveis"
+    },
+    "detail": {
+      "metadataTitle": "Ketris | Detalhe do Imóvel"
+    },
+    "create": {
+      "metadataTitle": "Ketris | Cadastrar Imóvel"
+    }
+  },
+  "dashboard": {
+    "title": "Meus Imóveis",
+    "subtitle": "Gerencie seu portfólio de imóveis",
+    "searchPlaceholder": "Buscar imóveis...",
+    "searchAriaLabel": "Buscar imóveis",
+    "create": "Novo Imóvel",
+    "table": {
+      "property": "Imóvel",
+      "type": "Tipo",
+      "price": "Preço",
+      "status": "Status",
+      "broker": "Corretor",
+      "updated": "Atualizado",
+      "actions": "Ações",
+      "editAriaLabel": "Editar {title}",
+      "viewAriaLabel": "Visualizar {title}",
+      "noRows": "Nenhum imóvel encontrado",
+      "totalRows": "Total de linhas:",
+      "rowsPerPage": "Linhas por página",
+      "displayedRows": "{from}-{to} de {count}"
+    },
+    "filters": {
+      "Todos": "Todos",
+      "Disponível": "Disponível",
+      "Alugado": "Alugado",
+      "Vendido": "Vendido",
+      "Em análise": "Em análise",
+      "Inativo": "Inativo"
+    }
+  },
+  "detail": {
+    "edit": "Editar",
+    "unpublish": "Despublicar",
+    "summaryTitle": "Resumo do Imóvel",
+    "mediaTitle": "Mídia",
+    "valuesTitle": "Valores",
+    "historyTitle": "Histórico completo",
+    "participantsTitle": "Participantes",
+    "activityTitle": "Histórico de Atividade",
+    "summary": {
+      "type": "TIPO",
+      "purpose": "FINALIDADE",
+      "bedrooms": "QUARTOS",
+      "bathrooms": "BANHEIROS",
+      "parkingSpaces": "VAGAS",
+      "area": "ÁREA",
+      "condominium": "CONDOMÍNIO",
+      "iptu": "IPTU"
+    },
+    "pricing": {
+      "rent": "ALUGUEL",
+      "sale": "VENDA",
+      "condominium": "CONDOMÍNIO",
+      "iptu": "IPTU",
+      "administrationFee": "TAXA DE ADMINISTRAÇÃO",
+      "securityDeposit": "GARANTIA",
+      "lastAdjustment": "ÚLTIMO AJUSTE"
+    },
+    "tabs": {
+      "data": "Dados",
+      "media": "Mídia",
+      "values": "Valores",
+      "history": "Histórico"
+    }
+  },
+  "create": {
+    "title": "Cadastrar imóvel",
+    "back": "Voltar",
+    "next": "Próximo",
+    "publish": "Publicar",
+    "fields": {
+      "propertyType": "Tipo de imóvel",
+      "purpose": "Finalidade",
+      "title": "Título do anúncio",
+      "description": "Descrição",
+      "street": "Endereço",
+      "number": "Número",
+      "neighborhood": "Bairro",
+      "city": "Cidade",
+      "state": "Estado",
+      "zipCode": "CEP",
+      "bedrooms": "Quartos",
+      "bathrooms": "Banheiros",
+      "parkingSpaces": "Vagas",
+      "area": "Área útil",
+      "rentValue": "Valor do aluguel",
+      "saleValue": "Valor de venda",
+      "condominium": "Condomínio",
+      "iptu": "IPTU mensal",
+      "securityDeposit": "Garantia",
+      "commission": "Comissão"
+    },
+    "steps": {
+      "ariaLabel": "Etapas do cadastro",
+      "basic": "Dados Básicos",
+      "address": "Endereço",
+      "features": "Características",
+      "media": "Mídia",
+      "values": "Valores",
+      "publishing": "Publicação"
+    },
+    "purposes": {
+      "Aluguel": "Aluguel",
+      "Venda": "Venda"
+    },
+    "propertyTypes": {
+      "Apartamento": "Apartamento",
+      "Casa": "Casa",
+      "Studio": "Studio",
+      "Cobertura": "Cobertura",
+      "Comercial": "Comercial"
+    },
+    "features": {
+      "Mobiliado": "Mobiliado",
+      "Varanda gourmet": "Varanda gourmet",
+      "Aceita pets": "Aceita pets",
+      "Portaria 24h": "Portaria 24h"
+    },
+    "mediaSlots": {
+      "Foto principal": "Foto principal",
+      "Galeria": "Galeria",
+      "Planta baixa": "Planta baixa"
+    },
+    "publishingOptions": {
+      "Publicar no marketplace após revisão": "Publicar no marketplace após revisão",
+      "Permitir contato por WhatsApp": "Permitir contato por WhatsApp",
+      "Destacar imóvel na listagem inicial": "Destacar imóvel na listagem inicial"
+    }
+  }
+}

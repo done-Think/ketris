@@ -1,4 +1,7 @@
+'use client'
+
 import { Box, Button, Stack } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
 import { componentText, radius, shadows, surface } from '@shared/theme/tokens'
@@ -23,8 +26,11 @@ export function DesktopSearchBar({
   selectSearchValue,
   updatePriceRange,
   filterSearchOptions,
+  getSearchOptionLabel,
   setSearchDraft,
 }: DesktopSearchBarProps) {
+  const t = useTranslations('marketplace.home.search')
+
   return (
     <Stack
       ref={desktopSearchRef}
@@ -61,7 +67,13 @@ export function DesktopSearchBar({
         >
           <SearchFilterTrigger
             filterKey={key}
-            value={key === 'priceRange' ? priceRangeLabel : selectedSearch[key]}
+            value={
+              key === 'priceRange'
+                ? priceRangeLabel
+                : key === 'propertyType'
+                  ? getSearchOptionLabel(key, selectedSearch[key])
+                  : selectedSearch[key]
+            }
             onOpen={openSearchMenu}
           />
 
@@ -79,6 +91,7 @@ export function DesktopSearchBar({
                   selectedSearch={selectedSearch}
                   searchDraft={searchDraft}
                   filterSearchOptions={filterSearchOptions}
+                  getSearchOptionLabel={getSearchOptionLabel}
                   selectSearchValue={selectSearchValue}
                   setSearchDraft={setSearchDraft}
                 />
@@ -109,7 +122,7 @@ export function DesktopSearchBar({
             ...componentText.desktopSearchButton,
           }}
         >
-          Buscar
+          {t('submit')}
         </Button>
       </Box>
     </Stack>

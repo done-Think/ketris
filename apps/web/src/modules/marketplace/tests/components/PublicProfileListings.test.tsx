@@ -12,7 +12,7 @@ const listings: PublicProfileListing[] = [
     title: 'Apartamento garden remodelado',
     location: 'Jardins',
     price: 'R$ 8.500/mês',
-    href: '/imoveis/apartamento-garden-remodelado',
+    href: '/properties/apartamento-garden-remodelado',
     details: [],
     category: 'Apartamento',
   },
@@ -25,7 +25,7 @@ function renderPublicProfileListings() {
         accentColor="#7C3AED"
         listings={listings}
         source={{
-          href: '/corretores/marina-costa',
+          href: '/brokers/marina-costa',
           name: 'Marina Costa',
           type: 'broker',
         }}

@@ -13,6 +13,10 @@ vi.mock('next/navigation', () => ({
   redirect: redirectMock,
 }))
 
+vi.mock('next-intl/server', () => ({
+  getLocale: vi.fn(() => Promise.resolve('pt-BR')),
+}))
+
 async function getRequirePlatformSession() {
   const { requirePlatformSession } = await import('./require-platform-session')
   return requirePlatformSession
@@ -36,7 +40,7 @@ describe('requirePlatformSession', () => {
     const requirePlatformSession = await getRequirePlatformSession()
 
     await expect(requirePlatformSession()).rejects.toThrow('NEXT_REDIRECT')
-    expect(redirectMock).toHaveBeenCalledWith('/platform/login')
+    expect(redirectMock).toHaveBeenCalledWith('/pt/platform/login')
   })
 
   it('redireciona para /platform/login quando a sessão é de um tenant (não é platform)', async () => {
@@ -45,6 +49,6 @@ describe('requirePlatformSession', () => {
     const requirePlatformSession = await getRequirePlatformSession()
 
     await expect(requirePlatformSession()).rejects.toThrow('NEXT_REDIRECT')
-    expect(redirectMock).toHaveBeenCalledWith('/platform/login')
+    expect(redirectMock).toHaveBeenCalledWith('/pt/platform/login')
   })
 })

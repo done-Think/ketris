@@ -3,6 +3,7 @@
 import { IconButton, MenuItem, Stack, TextField, Typography } from '@mui/material'
 import AppsRoundedIcon from '@mui/icons-material/AppsRounded'
 import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBulletedRounded'
+import { useTranslations } from 'next-intl'
 
 import { alpha, iconSize, radius, surface } from '@shared/theme/tokens'
 
@@ -16,6 +17,8 @@ export function SearchResultsToolbar({
   sortOption,
   viewMode,
 }: SearchResultsToolbarProps) {
+  const t = useTranslations('marketplace.searchResults.toolbar')
+
   return (
     <Stack
       direction={{ xs: 'column', sm: 'row' }}
@@ -25,7 +28,7 @@ export function SearchResultsToolbar({
       sx={{ mb: 2 }}
     >
       <Typography sx={{ color: 'text.secondary', fontWeight: 700, fontSize: 14 }}>
-        {resultCount} imóveis encontrados
+        {t('resultCount', { count: resultCount })}
       </Typography>
 
       <Stack
@@ -53,13 +56,13 @@ export function SearchResultsToolbar({
             },
           }}
         >
-          <MenuItem value="relevancia">Ordenar por: Relevância</MenuItem>
-          <MenuItem value="menor-preco">Menor preço</MenuItem>
-          <MenuItem value="maior-preco">Maior preço</MenuItem>
+          <MenuItem value="relevancia">{t('sortRelevance')}</MenuItem>
+          <MenuItem value="menor-preco">{t('sortLowerPrice')}</MenuItem>
+          <MenuItem value="maior-preco">{t('sortHigherPrice')}</MenuItem>
         </TextField>
 
         <IconButton
-          aria-label="Visualização em grade"
+          aria-label={t('gridView')}
           onClick={() => setViewMode('grid')}
           sx={{
             display: { xs: 'none', md: 'inline-flex' },
@@ -73,7 +76,7 @@ export function SearchResultsToolbar({
           <AppsRoundedIcon sx={{ fontSize: iconSize.md }} />
         </IconButton>
         <IconButton
-          aria-label="Visualização em lista"
+          aria-label={t('listView')}
           onClick={() => setViewMode('list')}
           sx={{
             display: { xs: 'none', md: 'inline-flex' },

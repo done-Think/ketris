@@ -21,21 +21,21 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
+import { Link, usePathname } from '@/i18n/navigation'
 import ketrisLogo from '@shared/assets/ketris-logo-footer.png'
 import { alpha, brand, componentText, iconSize, radius, surface } from '@shared/theme/tokens'
 
 const navigationItems = [
-  { label: 'Dashboard', href: '/dashboard', icon: DashboardOutlinedIcon },
-  { label: 'Meus Imóveis', href: '/dashboard/imoveis', icon: HomeWorkOutlinedIcon },
-  { label: 'Perfil Público', href: '/dashboard/public-profile', icon: PaletteOutlinedIcon },
-  { label: 'Leads', href: '/dashboard/leads', icon: PeopleAltOutlinedIcon },
-  { label: 'Agenda', href: '/dashboard/agenda', icon: CalendarTodayOutlinedIcon },
-  { label: 'Propostas', href: '/dashboard/propostas', icon: LocalOfferOutlinedIcon },
-  { label: 'Financeiro', href: '/dashboard/financeiro', icon: InsertChartOutlinedRoundedIcon },
-]
+  { labelKey: 'dashboard', href: '/dashboard', icon: DashboardOutlinedIcon },
+  { labelKey: 'properties', href: '/dashboard/properties', icon: HomeWorkOutlinedIcon },
+  { labelKey: 'publicProfile', href: '/dashboard/public-profile', icon: PaletteOutlinedIcon },
+  { labelKey: 'leads', href: '/dashboard/leads', icon: PeopleAltOutlinedIcon },
+  { labelKey: 'agenda', href: '/dashboard/agenda', icon: CalendarTodayOutlinedIcon },
+  { labelKey: 'proposals', href: '/dashboard/proposals', icon: LocalOfferOutlinedIcon },
+  { labelKey: 'finance', href: '/dashboard/finance', icon: InsertChartOutlinedRoundedIcon },
+] as const
 
 function isActiveNavigationItem(pathname: string, href: string) {
   if (href === '/dashboard') return pathname === href
@@ -44,6 +44,7 @@ function isActiveNavigationItem(pathname: string, href: string) {
 
 export function DashboardSidebar() {
   const pathname = usePathname()
+  const t = useTranslations('dashboard.sidebar')
 
   return (
     <Box
@@ -60,7 +61,7 @@ export function DashboardSidebar() {
       <Box
         component={Link}
         href="/"
-        aria-label="Voltar para o marketplace"
+        aria-label={t('backToMarketplace')}
         sx={{
           display: 'block',
           width: 124,
@@ -111,7 +112,7 @@ export function DashboardSidebar() {
                 <Icon sx={{ fontSize: iconSize.md }} />
               </ListItemIcon>
               <ListItemText
-                primary={item.label}
+                primary={t(item.labelKey)}
                 primaryTypographyProps={{
                   sx: { fontSize: 12, fontWeight: active ? 900 : 700 },
                 }}
@@ -140,15 +141,15 @@ export function DashboardSidebar() {
             Guilherme Silva
           </Typography>
           <Typography noWrap sx={{ ...componentText.footerLegal, color: alpha.white[50] }}>
-            Gestor de Operações
+            {t('userRole')}
           </Typography>
         </Box>
         <Box sx={{ flex: 1 }} />
-        <Tooltip title="Voltar">
+        <Tooltip title={t('back')}>
           <IconButton
             component={Link}
             href="/"
-            aria-label="Voltar para o marketplace"
+            aria-label={t('backToMarketplace')}
             sx={{
               width: 32,
               height: 32,

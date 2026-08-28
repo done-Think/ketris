@@ -1,1 +1,5 @@
-export { default } from '../(public)/page'
+import { HomePageClient } from '@modules/marketplace'
+
+export default function HomePage() {
+  return <HomePageClient />
+}

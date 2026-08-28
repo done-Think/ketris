@@ -58,18 +58,7 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/api/:path*',
-    '/',
-    '/login',
-    '/register',
-    '/forgot-password',
-    '/imoveis/:path*',
-    '/corretores/:path*',
-    '/imobiliarias/:path*',
-    '/en/:path*',
-    '/es/:path*',
-  ],
+  matcher: ['/api/:path*', '/((?!api|_next|_vercel|.*\\..*).*)'],
 }
 
 function selectPolicy(pathname: string): RateLimitPolicy {

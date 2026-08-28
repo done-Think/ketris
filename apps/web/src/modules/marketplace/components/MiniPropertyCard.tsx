@@ -1,3 +1,5 @@
+'use client'
+
 import { Box, Typography } from '@mui/material'
 
 import { Link } from '@/i18n/navigation'

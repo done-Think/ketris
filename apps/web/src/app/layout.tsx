@@ -1,7 +1,7 @@
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { Metadata } from 'next'
 import { Roboto } from 'next/font/google'
-import { getLocale, getMessages } from 'next-intl/server'
+import { getLocale, getMessages, getTranslations } from 'next-intl/server'
 
 import { Providers } from './providers'
 import { defaultTimeZone } from '@/i18n/formats'
@@ -14,18 +14,21 @@ const roboto = Roboto({
   display: 'swap',
 })
 
-export const metadata: Metadata = {
-  title: 'Ketris',
-  description:
-    'Plataforma que conecta proprietários, corretores, imobiliárias, construtoras e locatários em uma única infraestrutura tecnológica.',
-  icons: {
-    icon: [
-      { url: '/ketris-tab-icon.png', type: 'image/png', sizes: '512x512' },
-      { url: '/favicon.ico', sizes: 'any' },
-    ],
-    shortcut: '/favicon.ico',
-    apple: '/apple-icon.png',
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('common.metadata')
+
+  return {
+    title: t('title'),
+    description: t('description'),
+    icons: {
+      icon: [
+        { url: '/ketris-tab-icon.png', type: 'image/png', sizes: '512x512' },
+        { url: '/favicon.ico', sizes: 'any' },
+      ],
+      shortcut: '/favicon.ico',
+      apple: '/apple-icon.png',
+    },
+  }
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

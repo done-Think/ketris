@@ -51,10 +51,26 @@ export function getProjectedTotals(
   )
 
   return [
-    ...(totals.rental ? [{ label: 'Aluguel', value: formatMonthlyCurrency(totals.rental) }] : []),
-    ...(totals.sale ? [{ label: 'Venda', value: formatCurrency(totals.sale) }] : []),
+    ...(totals.rental
+      ? [
+          {
+            label: 'Aluguel',
+            labelKey: 'rent' as const,
+            value: formatMonthlyCurrency(totals.rental),
+          },
+        ]
+      : []),
+    ...(totals.sale
+      ? [{ label: 'Venda', labelKey: 'sale' as const, value: formatCurrency(totals.sale) }]
+      : []),
     ...(totals.unclassified
-      ? [{ label: 'Sem categoria', value: formatCurrency(totals.unclassified) }]
+      ? [
+          {
+            label: 'Sem categoria',
+            labelKey: 'uncategorized' as const,
+            value: formatCurrency(totals.unclassified),
+          },
+        ]
       : []),
   ]
 }

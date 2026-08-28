@@ -1,4 +1,5 @@
 import { Box, Chip, Stack, Typography } from '@mui/material'
+import { getTranslations } from 'next-intl/server'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
@@ -11,16 +12,18 @@ const eventStatusStyles: Record<AgendaEventStatus, { bgcolor: string; color: str
   Reagendar: { bgcolor: alpha.error[10], color: brand.semantic.error },
 }
 
-export function AgendaDashboardPage() {
+export async function AgendaDashboardPage() {
+  const t = await getTranslations('dashboard.agenda')
+
   return (
     <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
       <Stack spacing={2.4}>
         <Box>
           <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 40 }, fontWeight: 900 }}>
-            Agenda
+            {t('title')}
           </Typography>
           <Typography sx={{ color: 'text.secondary', fontSize: { xs: 15, md: 17 } }}>
-            Compromissos comerciais, visitas e retornos.
+            {t('subtitle')}
           </Typography>
         </Box>
 
@@ -56,7 +59,7 @@ export function AgendaDashboardPage() {
                     {event.time}
                   </Typography>
                   <Chip
-                    label={event.status}
+                    label={t(`statuses.${event.status}`)}
                     size="small"
                     sx={{
                       bgcolor: status.bgcolor,

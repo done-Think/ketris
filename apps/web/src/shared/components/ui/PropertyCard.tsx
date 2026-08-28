@@ -1,13 +1,17 @@
+'use client'
+
 import { Avatar, Box, Card, CardContent, Divider, Stack, Typography } from '@mui/material'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import BathtubOutlinedIcon from '@mui/icons-material/BathtubOutlined'
 import BedOutlinedIcon from '@mui/icons-material/BedOutlined'
 import LocalParkingOutlinedIcon from '@mui/icons-material/LocalParkingOutlined'
 import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
+import { Link } from '@/i18n/navigation'
 import { componentText, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
 import type { PropertyCardData, PropertyFeatureKey } from '@shared/types'
+import type { LocalizedHref } from '@shared/types/localized-href'
 import { PillBadge } from './PillBadge'
 
 const detailIcons: Record<PropertyFeatureKey, typeof ApartmentOutlinedIcon> = {
@@ -21,11 +25,27 @@ type PropertyCardProps = {
   property: PropertyCardData
 }
 
+function getPropertyCardHref(href: string): LocalizedHref {
+  const id = href.split('?')[0].split('/').filter(Boolean).at(-1)
+
+  if (href === '/properties') return '/properties'
+  if (id && href.startsWith('/properties/')) {
+    return {
+      pathname: '/properties/[id]',
+      params: { id },
+    }
+  }
+
+  return href as LocalizedHref
+}
+
 export function PropertyCard({ property }: PropertyCardProps) {
+  const t = useTranslations('marketplace.publicProfile.propertyCard')
+
   return (
     <Card
       component={Link}
-      href={property.href}
+      href={getPropertyCardHref(property.href)}
       sx={{
         overflow: 'hidden',
         borderRadius: `${radius.sm}px`,
@@ -55,7 +75,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
             left: 12,
           }}
         >
-          <PillBadge>Novo</PillBadge>
+          <PillBadge>{t('new')}</PillBadge>
         </Box>
       </Box>
       <CardContent sx={{ p: 2.4 }}>
@@ -97,7 +117,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
               ...componentText.cardAction,
             }}
           >
-            Ver detalhes
+            {t('viewDetails')}
           </Typography>
         </Stack>
       </CardContent>

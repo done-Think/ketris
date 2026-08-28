@@ -129,6 +129,7 @@ export type SearchMenuProps = {
   selectedSearch: SelectedSearch
   searchDraft: SearchDraft
   filterSearchOptions: (key: TextSearchFilterKey) => readonly string[]
+  getSearchOptionLabel: (key: TextSearchFilterKey, value: string) => string
   selectSearchValue: (key: SearchFilterKey, value: string) => void
   setSearchDraft: Dispatch<SetStateAction<SearchDraft>>
 }
@@ -161,6 +162,7 @@ export type DesktopSearchBarProps = SearchMenuProps &
     activeSearchMenu: SearchFilterKey | null
     searchHref: LocalizedHref
     desktopSearchRef: Ref<HTMLDivElement>
+    getSearchOptionLabel: (key: TextSearchFilterKey, value: string) => string
     openSearchMenu: (key: SearchFilterKey) => void
   }
 

@@ -211,7 +211,6 @@ describe('/api/marketplace/inquiries/[id] (integração)', () => {
 
     expect(response.status).toBe(200)
     expect(json.inquiry.status).toBe('ACEITA')
-    // campos não enviados permanecem
     expect(json.inquiry.interessadoTelefone).toBe('(41) 90000-0000')
   })
 

@@ -2,6 +2,7 @@ import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineR
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded'
 import { Box, IconButton, Stack, Tooltip } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { alpha, brand, iconSize } from '@shared/theme/tokens'
 
@@ -13,19 +14,20 @@ export function ContactActions({
   onOpenInteractions,
   onOpenMoreOptions,
 }: ContactActionsProps) {
+  const t = useTranslations('crm.contacts.actions')
   const actions = [
     {
-      label: `Editar ${contact.name}`,
+      label: t('editContact', { name: contact.name }),
       icon: EditOutlinedIcon,
       onClick: onEditContact ? () => onEditContact(contact) : undefined,
     },
     {
-      label: `Ver interações de ${contact.name}`,
+      label: t('viewInteractions', { name: contact.name }),
       icon: ChatBubbleOutlineRoundedIcon,
       onClick: onOpenInteractions ? () => onOpenInteractions(contact) : undefined,
     },
     {
-      label: `Mais opções para ${contact.name}`,
+      label: t('moreOptions', { name: contact.name }),
       icon: MoreHorizRoundedIcon,
       onClick: onOpenMoreOptions ? () => onOpenMoreOptions(contact) : undefined,
     },

@@ -4,6 +4,7 @@ import { type MouseEvent, useRef } from 'react'
 import { Avatar, Box, Card, CardContent, Chip, Divider, Stack, Typography } from '@mui/material'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import StarRoundedIcon from '@mui/icons-material/StarRounded'
+import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
 import {
@@ -24,6 +25,7 @@ import { DirectoryCardMetrics } from './directory/DirectoryCardMetrics'
 import { ProfileListingPreviewSection } from './profile/ProfileListingPreviewSection'
 
 export function BrokerCard(brokerCardProps: BrokerCardProps) {
+  const t = useTranslations('marketplace.directory.cards')
   const profileLinkRef = useRef<HTMLAnchorElement | null>(null)
   const isListView = brokerCardProps.viewMode === 'list'
   const highlightedListings = buildProfileListings(brokerCardProps.highlightedListings).slice(0, 2)
@@ -57,7 +59,7 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
       <Box
         component={Link}
         href={buildPublicProfileHref(brokerCardProps.href, 'broker')}
-        aria-label={`Ver página pública de ${brokerCardProps.name}`}
+        aria-label={t('viewPublicPageAriaLabel', { name: brokerCardProps.name })}
         ref={profileLinkRef}
         sx={{
           position: 'absolute',
@@ -166,9 +168,12 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
             gridTemplateColumns={{ xs: '1fr', sm: '2fr 0.85fr 0.85fr' }}
             labelFontWeight={800}
             metrics={[
-              { label: 'Região', value: brokerCardProps.region, showTooltip: true },
-              { label: 'Imóveis', value: `${brokerCardProps.activeListings} ativos` },
-              { label: 'Resposta', value: brokerCardProps.responseTime },
+              { label: t('region'), value: brokerCardProps.region, showTooltip: true },
+              {
+                label: t('properties'),
+                value: t('activeProperties', { count: brokerCardProps.activeListings }),
+              },
+              { label: t('response'), value: brokerCardProps.responseTime },
             ]}
             valueFontWeight={900}
           />
@@ -195,7 +200,7 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
             sx={{ textDecoration: 'none' }}
           >
             <Typography sx={{ color: 'primary.main', ...componentText.cardAction }}>
-              Ver página pública
+              {t('viewPublicPage')}
             </Typography>
             <ChevronRightIcon sx={{ color: 'primary.main', fontSize: iconSize.sm }} />
           </Stack>

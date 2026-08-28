@@ -4,6 +4,7 @@ import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded'
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined'
 import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
+import { useTranslations } from 'next-intl'
 
 import { RhfTextField } from '@shared/components/form'
 import { alpha, iconSize, motion, radius, surface } from '@shared/theme/tokens'
@@ -18,10 +19,12 @@ import type {
 import { editorPanelSx } from './public-profile-editor-shared'
 
 export function PublicProfileMainFields({ control }: PublicProfileMainFieldsProps) {
+  const t = useTranslations('marketplace.profileEditor')
+
   return (
     <Box sx={editorPanelSx}>
       <Typography variant="h5" sx={{ mb: 2 }}>
-        Conteúdo principal
+        {t('mainContent')}
       </Typography>
       <Box
         sx={{
@@ -30,12 +33,17 @@ export function PublicProfileMainFields({ control }: PublicProfileMainFieldsProp
           gap: 1.6,
         }}
       >
-        <RhfTextField control={control} name="displayName" label="Nome exibido" fullWidth />
-        <RhfTextField control={control} name="headline" label="Chamada do banner" fullWidth />
+        <RhfTextField
+          control={control}
+          name="displayName"
+          label={t('fields.displayName')}
+          fullWidth
+        />
+        <RhfTextField control={control} name="headline" label={t('fields.headline')} fullWidth />
         <RhfTextField
           control={control}
           name="summary"
-          label="Resumo"
+          label={t('fields.summary')}
           multiline
           minRows={4}
           fullWidth
@@ -47,10 +55,12 @@ export function PublicProfileMainFields({ control }: PublicProfileMainFieldsProp
 }
 
 export function PublicProfileAppearanceFields({ control }: PublicProfileMainFieldsProps) {
+  const t = useTranslations('marketplace.profileEditor')
+
   return (
     <Box sx={editorPanelSx}>
       <Typography variant="h5" sx={{ mb: 2 }}>
-        Aparência
+        {t('appearance')}
       </Typography>
       <Box
         sx={{
@@ -62,21 +72,21 @@ export function PublicProfileAppearanceFields({ control }: PublicProfileMainFiel
         <RhfTextField
           control={control}
           name="primaryColor"
-          label="Cor principal"
+          label={t('fields.primaryColor')}
           type="color"
           fullWidth
         />
         <RhfTextField
           control={control}
           name="accentColor"
-          label="Cor de destaque"
+          label={t('fields.accentColor')}
           type="color"
           fullWidth
         />
         <RhfTextField
           control={control}
           name="backgroundColor"
-          label="Fundo do perfil"
+          label={t('fields.backgroundColor')}
           type="color"
           fullWidth
         />
@@ -95,6 +105,7 @@ function PublicProfileImageField({
   control,
 }: PublicProfileImageFieldConfig &
   Pick<PublicProfileImageFieldsProps, 'control' | 'profileDraft'>) {
+  const t = useTranslations('marketplace.profileEditor')
   const imageUrl = profileDraft[fieldName]
 
   return (
@@ -117,7 +128,7 @@ function PublicProfileImageField({
           {previewVariant === 'avatar' ? (
             <Avatar
               src={imageUrl}
-              alt="Prévia da foto"
+              alt={t('photoPreview')}
               sx={{
                 width: 58,
                 height: 58,
@@ -126,7 +137,7 @@ function PublicProfileImageField({
             />
           ) : (
             <Box
-              aria-label="Prévia do banner"
+              aria-label={t('bannerPreview')}
               sx={{
                 width: 104,
                 height: 58,
@@ -143,11 +154,11 @@ function PublicProfileImageField({
             <Stack direction="row" spacing={0.8} alignItems="center">
               <UploadFileOutlinedIcon sx={{ color: profileDraft.primaryColor, fontSize: 20 }} />
               <Typography sx={{ color: surface.darkText, fontSize: 13, fontWeight: 900 }}>
-                {dropzone.isDragActive ? 'Solte a imagem aqui' : uploadLabel}
+                {dropzone.isDragActive ? t('dropImage') : uploadLabel}
               </Typography>
             </Stack>
             <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>
-              JPG, PNG ou WEBP. Você também pode manter apenas o link acima.
+              {t('uploadHelper')}
             </Typography>
           </Box>
         </Stack>
@@ -161,10 +172,12 @@ export function PublicProfileImageFields({
   imageFields,
   profileDraft,
 }: PublicProfileImageFieldsProps) {
+  const t = useTranslations('marketplace.profileEditor')
+
   return (
     <Box sx={editorPanelSx}>
       <Typography variant="h5" sx={{ mb: 2 }}>
-        Imagens
+        {t('images')}
       </Typography>
       <Box
         sx={{
@@ -192,6 +205,8 @@ export function PublicProfileTeamFields({
   removeTeamMember,
   teamFields,
 }: PublicProfileTeamFieldsProps) {
+  const t = useTranslations('marketplace.profileEditor')
+
   return (
     <Box sx={editorPanelSx}>
       <Stack
@@ -202,9 +217,9 @@ export function PublicProfileTeamFields({
         sx={{ mb: 2 }}
       >
         <Box>
-          <Typography variant="h5">Equipe</Typography>
+          <Typography variant="h5">{t('team')}</Typography>
           <Typography sx={{ color: 'text.secondary', fontSize: 13, mt: 0.4 }}>
-            Adicione membros destacados e o link para cada perfil público.
+            {t('teamDescription')}
           </Typography>
         </Box>
         <Button
@@ -222,7 +237,7 @@ export function PublicProfileTeamFields({
           }
           sx={{ borderRadius: `${radius.sm}px`, whiteSpace: 'nowrap' }}
         >
-          Adicionar membro
+          {t('addMember')}
         </Button>
       </Stack>
 
@@ -245,7 +260,9 @@ export function PublicProfileTeamFields({
               spacing={1}
               sx={{ mb: 1.4 }}
             >
-              <Typography sx={{ fontSize: 13, fontWeight: 900 }}>Membro {index + 1}</Typography>
+              <Typography sx={{ fontSize: 13, fontWeight: 900 }}>
+                {t('memberTitle', { index: index + 1 })}
+              </Typography>
               <Button
                 type="button"
                 variant="text"
@@ -254,7 +271,7 @@ export function PublicProfileTeamFields({
                 onClick={() => removeTeamMember(index)}
                 sx={{ alignSelf: { xs: 'flex-start', sm: 'center' } }}
               >
-                Remover
+                {t('removeMember')}
               </Button>
             </Stack>
             <Box
@@ -267,25 +284,25 @@ export function PublicProfileTeamFields({
               <RhfTextField
                 control={control}
                 name={`teamMembers.${index}.name`}
-                label="Nome"
+                label={t('fields.name')}
                 fullWidth
               />
               <RhfTextField
                 control={control}
                 name={`teamMembers.${index}.role`}
-                label="Função"
+                label={t('fields.role')}
                 fullWidth
               />
               <RhfTextField
                 control={control}
                 name={`teamMembers.${index}.profileUrl`}
-                label="Link do perfil"
+                label={t('fields.profileUrl')}
                 fullWidth
               />
               <RhfTextField
                 control={control}
                 name={`teamMembers.${index}.avatarUrl`}
-                label="URL da foto"
+                label={t('fields.photoUrl')}
                 fullWidth
               />
             </Box>
@@ -303,7 +320,7 @@ export function PublicProfileTeamFields({
             }}
           >
             <Typography sx={{ color: 'text.secondary', fontWeight: 800 }}>
-              Nenhum membro adicionado.
+              {t('emptyMembers')}
             </Typography>
           </Box>
         ) : null}
@@ -313,6 +330,8 @@ export function PublicProfileTeamFields({
 }
 
 export function PublicProfileEditorActions({ onPreview }: PublicProfileEditorActionsProps) {
+  const t = useTranslations('marketplace.profileEditor')
+
   return (
     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
       <Button
@@ -321,7 +340,7 @@ export function PublicProfileEditorActions({ onPreview }: PublicProfileEditorAct
         startIcon={<SaveOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
         sx={{ minHeight: 44, borderRadius: `${radius.sm}px`, flex: 1 }}
       >
-        Salvar rascunho
+        {t('saveDraft')}
       </Button>
       <Button
         type="button"
@@ -331,7 +350,7 @@ export function PublicProfileEditorActions({ onPreview }: PublicProfileEditorAct
         onClick={onPreview}
         sx={{ minHeight: 44, borderRadius: `${radius.sm}px`, flex: 1 }}
       >
-        Visualizar
+        {t('preview')}
       </Button>
     </Stack>
   )

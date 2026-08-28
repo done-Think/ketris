@@ -31,7 +31,85 @@
     "home": "Inicio",
     "rent": "Alquilar"
   },
+  "metadata": {
+    "agencies": {
+      "metadataTitle": "Ketris | Inmobiliarias",
+      "metadataDescription": "Compara inmobiliarias asociadas por cobertura, equipo y operación."
+    },
+    "brokers": {
+      "metadataTitle": "Ketris | Corredores",
+      "metadataDescription": "Encuentra corredores especialistas por región y finalidad."
+    },
+    "agencyNotFound": {
+      "metadataTitle": "Ketris | Inmobiliaria no encontrada"
+    },
+    "brokerNotFound": {
+      "metadataTitle": "Ketris | Corredor no encontrado"
+    },
+    "searchRent": {
+      "metadataTitle": "Ketris | Alquilar",
+      "metadataDescription": "Busca inmuebles para alquilar y comprar."
+    },
+    "searchBuy": {
+      "metadataTitle": "Ketris | Comprar",
+      "metadataDescription": "Busca inmuebles para alquilar y comprar."
+    },
+    "details": {
+      "notFoundTitle": "Ketris",
+      "agencyDescription": "{name}, {creci}, opera en {headquarters}.",
+      "brokerDescription": "{name}, {creci}, representa inmuebles en {region}."
+    }
+  },
+  "home": {
+    "hero": {
+      "titleLine1": "La infraestructura digital",
+      "titleLine2": "del mercado inmobiliario",
+      "subtitle": "Alquiler y venta de inmuebles con tecnología avanzada, procesos ágiles y total confianza.",
+      "stats": {
+        "activeProperties": "inmuebles activos",
+        "partnerBrokers": "corredores asociados",
+        "servedCities": "ciudades atendidas"
+      },
+      "brandAnimation": "Animación de la marca Ketris"
+    },
+    "search": {
+      "submit": "Buscar",
+      "mobilePlaceholder": "Buscar por barrio o ciudad...",
+      "locationPlaceholder": "Ingresa ciudad o barrio",
+      "propertyTypePlaceholder": "Ingresa el tipo de inmueble",
+      "clearSearch": "Limpiar búsqueda",
+      "noResults": "Sin resultados",
+      "priceRange": "Rango de precio",
+      "closePriceRange": "Cerrar rango de precio",
+      "minPrice": "Mínimo",
+      "maxPrice": "Máximo",
+      "apply": "Aplicar",
+      "filters": {
+        "location": "Ubicación",
+        "propertyType": "Tipo de inmueble",
+        "priceRange": "Rango de precio"
+      },
+      "propertyTypes": {
+        "apartment": "Apartamento",
+        "residentialHouses": "Casas residenciales",
+        "commercialRooms": "Locales comerciales",
+        "landLots": "Terrenos y lotes",
+        "penthouses": "Áticos",
+        "farms": "Fincas y casas de campo",
+        "studios": "Studios"
+      }
+    },
+    "featured": {
+      "title": "Inmuebles destacados",
+      "viewAll": "Ver todos los inmuebles"
+    },
+    "miniProperties": {
+      "eyebrow": "+2.500 inmuebles calificados y verificados digitalmente"
+    }
+  },
   "footer": {
+    "description": "Tecnología y simplificación de punta a punta para el mercado inmobiliario corporativo y residencial.",
+    "rights": "Tecnologias Ltda. Todos los derechos reservados.",
     "columns": {
       "company": "Empresa",
       "forYou": "Para ti",
@@ -52,6 +130,10 @@
     }
   },
   "publicProfile": {
+    "propertyCard": {
+      "new": "Nuevo",
+      "viewDetails": "Ver detalles"
+    },
     "metrics": {
       "active": "Activos",
       "closed": "Cerrados",
@@ -78,9 +160,272 @@
       "publicLink": "Enlace público"
     },
     "listings": {
+      "featured": "DESTACADO",
+      "featuredTitle": "Inmuebles destacados",
       "title": "Inmuebles representados",
       "viewAriaLabel": "Ver inmueble {title}",
       "viewProperty": "Ver inmueble"
+    }
+  },
+  "propertyDetail": {
+    "condominium": "Condominio {value}",
+    "scheduleVisit": "Agendar visita",
+    "sendProposal": "Enviar propuesta",
+    "brokerRole": "Corredor Ketris",
+    "gallery": {
+      "openGallery": "Abrir galería de fotos del inmueble",
+      "openPhoto": "Abrir foto {index} de {total}",
+      "hiddenPhotos": "+{count, plural, one {# foto} other {# fotos}}",
+      "viewPhotos": "Ver fotos",
+      "photoCounter": "{current} de {total}",
+      "closeGallery": "Cerrar galería",
+      "photoAlt": "{title} - foto {index}",
+      "previousPhoto": "Foto anterior",
+      "nextPhoto": "Siguiente foto",
+      "selectPhoto": "Ver foto {index}"
+    },
+    "contactActions": {
+      "call": "Llamar",
+      "whatsapp": "WhatsApp",
+      "email": "Email"
+    }
+  },
+  "profileEditor": {
+    "title": "Editar perfil",
+    "subtitle": "Ajusta apariencia, imágenes y orden de secciones mostradas a visitantes.",
+    "validatedDraft": "Borrador validado",
+    "mainContent": "Contenido principal",
+    "appearance": "Apariencia",
+    "images": "Imágenes",
+    "team": "Equipo",
+    "teamDescription": "Agrega miembros destacados y el enlace a cada perfil público.",
+    "addMember": "Agregar miembro",
+    "removeMember": "Eliminar",
+    "memberTitle": "Miembro {index}",
+    "emptyMembers": "No hay miembros agregados.",
+    "dropImage": "Suelta la imagen aquí",
+    "uploadHelper": "JPG, PNG o WEBP. También puedes mantener solo el enlace de arriba.",
+    "photoPreview": "Vista previa de la foto",
+    "bannerPreview": "Vista previa del banner",
+    "saveDraft": "Guardar borrador",
+    "preview": "Vista previa",
+    "configurableProfile": "Perfil público configurable",
+    "newMember": "Nuevo miembro",
+    "dropToMove": "Suelta para mover",
+    "preparing": "Preparando...",
+    "positionLabel": "Posición {position}: {label}",
+    "position": "Posición {position}",
+    "profileOrder": "Orden del perfil",
+    "previewDialog": {
+      "title": "Vista previa del perfil",
+      "close": "Cerrar vista previa"
+    },
+    "sections": {
+      "none": {
+        "label": "Ninguna",
+        "description": "No mostrar sección en esta posición."
+      },
+      "hero": {
+        "label": "Presentación",
+        "description": "Banner, foto, nombre y llamada principal."
+      },
+      "metrics": {
+        "label": "Indicadores",
+        "description": "Nota, tiempo medio, activos y negociaciones."
+      },
+      "team": {
+        "label": "Equipo",
+        "description": "Corredores o personas destacadas en el perfil."
+      },
+      "listings": {
+        "label": "Inmuebles",
+        "description": "Cards de inmuebles representados."
+      },
+      "contact": {
+        "label": "Contacto",
+        "description": "Enlace público, teléfono, email y datos rápidos."
+      }
+    },
+    "contactActions": {
+      "call": "Llamar",
+      "email": "Email",
+      "openPublicLink": "Abrir enlace público"
+    },
+    "fields": {
+      "displayName": "Nombre mostrado",
+      "headline": "Llamada del banner",
+      "summary": "Resumen",
+      "primaryColor": "Color principal",
+      "accentColor": "Color destacado",
+      "backgroundColor": "Fondo del perfil",
+      "photoUrl": "URL de la foto",
+      "bannerUrl": "URL del banner",
+      "uploadPhoto": "Subir foto de perfil",
+      "uploadBanner": "Subir banner",
+      "name": "Nombre",
+      "role": "Función",
+      "profileUrl": "Enlace del perfil"
+    }
+  },
+  "agencyProfileEditor": {
+    "title": "Editar perfil de la inmobiliaria",
+    "subtitle": "Ajusta marca, imágenes y orden de secciones mostradas a visitantes.",
+    "validatedDraft": "Borrador validado",
+    "mainContent": "Contenido principal",
+    "appearance": "Apariencia",
+    "brandImages": "Imágenes de la marca",
+    "dropImage": "Suelta la imagen aquí",
+    "uploadHelper": "JPG, PNG o WEBP. También puedes mantener solo el enlace de arriba.",
+    "logoPreview": "Vista previa del logo",
+    "bannerPreview": "Vista previa del banner",
+    "saveDraft": "Guardar borrador",
+    "preview": "Vista previa",
+    "dropToMove": "Suelta para mover",
+    "preparing": "Preparando...",
+    "positionLabel": "Posición {position}: {label}",
+    "position": "Posición {position}",
+    "profileOrder": "Orden del perfil",
+    "previewDialog": {
+      "title": "Vista previa del perfil de la inmobiliaria",
+      "close": "Cerrar vista previa"
+    },
+    "sections": {
+      "none": {
+        "label": "Ninguna",
+        "description": "No mostrar sección en esta posición."
+      },
+      "brand": {
+        "label": "Marca",
+        "description": "Logo, banner, nombre y llamada institucional."
+      },
+      "metrics": {
+        "label": "Indicadores",
+        "description": "Inmuebles, equipo, años de mercado y nota."
+      },
+      "contact": {
+        "label": "Contacto",
+        "description": "Enlace público, teléfono, email y datos rápidos."
+      },
+      "team": {
+        "label": "Equipo",
+        "description": "Corredores destacados en la inmobiliaria."
+      },
+      "listings": {
+        "label": "Inmuebles",
+        "description": "Cards de inmuebles representados."
+      }
+    },
+    "metrics": {
+      "properties": "Inmuebles",
+      "team": "Equipo",
+      "years": "Años",
+      "rating": "Nota"
+    },
+    "contactActions": {
+      "call": "Llamar",
+      "email": "Email",
+      "openPublicLink": "Abrir enlace público"
+    },
+    "fields": {
+      "displayName": "Nombre de la inmobiliaria",
+      "headline": "Llamada institucional",
+      "legalCreci": "CRECI",
+      "headquarters": "Sede",
+      "address": "Dirección",
+      "coverage": "Cobertura",
+      "segments": "Segmentos",
+      "summary": "Resumen",
+      "primaryColor": "Color principal",
+      "accentColor": "Color destacado",
+      "backgroundColor": "Fondo de la marca",
+      "logoUrl": "URL del logo",
+      "bannerUrl": "URL del banner",
+      "uploadLogo": "Subir logo",
+      "uploadBanner": "Subir banner"
+    }
+  },
+  "searchResults": {
+    "toolbar": {
+      "resultCount": "{count} inmuebles encontrados",
+      "sortRelevance": "Ordenar por: Relevancia",
+      "sortLowerPrice": "Menor precio",
+      "sortHigherPrice": "Mayor precio",
+      "gridView": "Vista en cuadrícula",
+      "listView": "Vista en lista"
+    },
+    "empty": {
+      "title": "No se encontraron inmuebles",
+      "description": "Ajusta los filtros para ver más opciones."
+    },
+    "map": {
+      "openProperty": "Abrir {title}"
+    },
+    "filters": {
+      "allRegions": "Todas las regiones",
+      "clearSearch": "Limpiar búsqueda",
+      "button": "Filtros",
+      "buttonWithCount": "Filtros ({count})",
+      "title": "Filtros",
+      "close": "Cerrar filtros",
+      "clear": "Limpiar",
+      "done": "Concluir",
+      "type": "Tipo",
+      "price": "Precio",
+      "maxPrice": "Precio máximo",
+      "bedrooms": "Dormitorios",
+      "area": "Área",
+      "minArea": "Área mínima",
+      "onlyWithParking": "Solo inmuebles con plaza",
+      "options": {
+        "Todos os tipos": "Todos los tipos",
+        "Apartamento": "Apartamento",
+        "Cobertura": "Ático",
+        "Loft": "Loft",
+        "Casa": "Casa",
+        "Preço": "Precio",
+        "Até R$ 6.000": "Hasta R$ 6.000",
+        "Até R$ 10.000": "Hasta R$ 10.000",
+        "Quartos": "Dormitorios",
+        "2+ quartos": "2+ dormitorios",
+        "3+ quartos": "3+ dormitorios",
+        "Área": "Área",
+        "90m²+": "90m²+",
+        "100m²+": "100m²+",
+        "Todos": "Todos",
+        "Com vaga": "Con plaza"
+      }
+    }
+  },
+  "directory": {
+    "viewMode": {
+      "grid": "Vista en cuadrícula",
+      "list": "Vista en lista"
+    },
+    "agencies": {
+      "title": "Inmobiliarias",
+      "placeholder": "Nombre, CRECI, región o cobertura",
+      "resultCount": "{visible} de {total} inmobiliarias encontradas",
+      "empty": "No se encontraron inmobiliarias",
+      "loaded": "Todas las inmobiliarias fueron cargadas",
+      "loading": "Cargando más inmobiliarias"
+    },
+    "brokers": {
+      "title": "Corredores",
+      "placeholder": "Nombre, CRECI, barrio o región",
+      "resultCount": "{visible} de {total} corredores encontrados",
+      "empty": "No se encontraron corredores",
+      "loaded": "Todos los corredores fueron cargados",
+      "loading": "Cargando más corredores"
+    },
+    "cards": {
+      "viewPublicPage": "Ver página pública",
+      "viewPublicPageAriaLabel": "Ver página pública de {name}",
+      "region": "Región",
+      "properties": "Inmuebles",
+      "activeProperties": "{count} activos",
+      "response": "Respuesta",
+      "team": "Equipo",
+      "rating": "Nota"
     }
   }
 }

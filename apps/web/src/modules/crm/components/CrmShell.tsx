@@ -8,10 +8,10 @@ import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline'
 import ViewKanbanOutlinedIcon from '@mui/icons-material/ViewKanbanOutlined'
 import { Avatar, Box, Drawer, IconButton, Stack, Tooltip, Typography } from '@mui/material'
-import NextLink from 'next/link'
-import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 
+import { Link, usePathname } from '@/i18n/navigation'
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
@@ -22,11 +22,11 @@ import { CrmAccessBoundary } from './CrmAccessBoundary'
 const sidebarWidth = 200
 
 const navigationItems = [
-  { label: 'Dashboard', href: '/dashboard', icon: BarChartOutlinedIcon },
-  { label: 'Pipeline', href: '/crm', icon: ViewKanbanOutlinedIcon },
-  { label: 'Contatos', href: '/crm/contacts', icon: PeopleOutlineIcon },
-  { label: 'Imóveis', href: '/imoveis', icon: HomeOutlinedIcon },
-  { label: 'Propostas', href: '/crm/proposals', icon: InsertDriveFileOutlinedIcon },
+  { labelKey: 'dashboard', href: '/dashboard', icon: BarChartOutlinedIcon },
+  { labelKey: 'pipeline', href: '/crm', icon: ViewKanbanOutlinedIcon },
+  { labelKey: 'contacts', href: '/crm/contacts', icon: PeopleOutlineIcon },
+  { labelKey: 'properties', href: '/properties', icon: HomeOutlinedIcon },
+  { labelKey: 'proposals', href: '/crm/proposals', icon: InsertDriveFileOutlinedIcon },
 ] as const
 
 function getInitials(name?: string | null): string {
@@ -41,12 +41,13 @@ function getInitials(name?: string | null): string {
 }
 
 export function CrmShell({ children }: CrmShellProps) {
+  const t = useTranslations('crm.navigation')
   const pathname = usePathname()
   const { data: session } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
   const isPublicCrmRoute = pathname === '/crm' || pathname === '/crm/contacts'
-  const userName = session?.user?.name ?? 'Equipe Ketris'
-  const userContext = session?.user?.email ?? 'CRM imobiliário'
+  const userName = session?.user?.name ?? t('defaultUserName')
+  const userContext = session?.user?.email ?? t('defaultUserContext')
   const userInitials = useMemo(() => getInitials(userName), [userName])
 
   const sidebar = (
@@ -70,10 +71,10 @@ export function CrmShell({ children }: CrmShellProps) {
       <Stack
         component="nav"
         spacing={0.375}
-        aria-label="Navegação do CRM"
+        aria-label={t('ariaLabel')}
         sx={{ ml: -1.5, mr: -0.5 }}
       >
-        {navigationItems.map(({ label, href, icon: Icon }) => {
+        {navigationItems.map(({ labelKey, href, icon: Icon }) => {
           const targetPath = href.split('?')[0]
           const active =
             targetPath === '/crm'
@@ -82,8 +83,8 @@ export function CrmShell({ children }: CrmShellProps) {
 
           return (
             <Box
-              key={label}
-              component={NextLink}
+              key={labelKey}
+              component={Link}
               href={href}
               onClick={() => setMobileOpen(false)}
               aria-current={active ? 'page' : undefined}
@@ -116,7 +117,7 @@ export function CrmShell({ children }: CrmShellProps) {
                   letterSpacing: 0,
                 }}
               >
-                {label}
+                {t(labelKey)}
               </Typography>
             </Box>
           )
@@ -179,9 +180,9 @@ export function CrmShell({ children }: CrmShellProps) {
           boxShadow: shadows.crmMobileHeader,
         }}
       >
-        <Tooltip title="Abrir navegação">
+        <Tooltip title={t('openNavigation')}>
           <IconButton
-            aria-label="Abrir navegação"
+            aria-label={t('openNavigation')}
             onClick={() => setMobileOpen(true)}
             sx={{ color: 'inherit' }}
           >

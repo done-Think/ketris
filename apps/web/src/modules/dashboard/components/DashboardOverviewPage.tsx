@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { Box, IconButton, Stack, Typography } from '@mui/material'
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
+import { useLocale, useTranslations } from 'next-intl'
 
-import { formatDate } from '@shared/lib/utils/format'
 import { alpha, brand, shadows, surface } from '@shared/theme/tokens'
 
 import type {
@@ -21,14 +21,21 @@ import { LeadDetailsModal } from './LeadDetailsModal'
 import { RecentLeadsTable } from './RecentLeadsTable'
 import { UpcomingActivitiesPanel } from './UpcomingActivitiesPanel'
 
-function formatDashboardDate(date = new Date()) {
-  const formattedDate = formatDate(date, 'dddd, D [de] MMMM YYYY').replace('-feira', '')
+function formatDashboardDate(locale: string, date = new Date()) {
+  const formattedDate = new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'long',
+    weekday: 'long',
+    year: 'numeric',
+  }).format(date)
 
   return formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
 }
 
 export function DashboardOverviewPage() {
-  const currentDate = formatDashboardDate()
+  const locale = useLocale()
+  const t = useTranslations('dashboard.overview')
+  const currentDate = formatDashboardDate(locale)
   const leads = useDashboardStore((state) => state.leads)
   const updateLeadDetails = useDashboardStore((state) => state.updateLeadDetails)
   const [selectedActivity, setSelectedActivity] = useState<DashboardUpcomingActivity | null>(null)
@@ -47,7 +54,7 @@ export function DashboardOverviewPage() {
         <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
           <Box>
             <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 34 }, fontWeight: 900 }}>
-              Dashboard
+              {t('title')}
             </Typography>
             <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 600, mt: 0.3 }}>
               {currentDate}
@@ -55,7 +62,7 @@ export function DashboardOverviewPage() {
           </Box>
 
           <IconButton
-            aria-label="Notificações"
+            aria-label={t('notifications')}
             sx={{
               width: 38,
               height: 38,
@@ -108,10 +115,10 @@ export function DashboardOverviewPage() {
                     textTransform: 'uppercase',
                   }}
                 >
-                  Desempenho 6 meses
+                  {t('performanceTitle')}
                 </Typography>
                 <Typography sx={{ color: brand.magenta[600], fontSize: 11, fontWeight: 900 }}>
-                  Meta: 85%
+                  {t('performanceTarget', { value: 85 })}
                 </Typography>
               </Stack>
               <DashboardPerformanceChart />

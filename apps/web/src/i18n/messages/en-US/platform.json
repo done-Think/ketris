@@ -1,1 +1,65 @@
-{}
+{
+  "metadata": {
+    "login": {
+      "metadataTitle": "Ketris | Platform Sign in"
+    },
+    "dashboard": {
+      "metadataTitle": "Ketris | Platform Agencies"
+    },
+    "tenant": {
+      "metadataTitle": "Ketris | Platform Agency"
+    },
+    "newTenant": {
+      "metadataTitle": "Ketris | New Platform Agency"
+    },
+    "newAdmin": {
+      "metadataTitle": "Ketris | Platform Admins"
+    }
+  },
+  "login": {
+    "title": "Platform administration",
+    "subtitle": "Sign in with your Ketris platform administrator account.",
+    "genericError": "Could not sign in. Check the email and password.",
+    "forbiddenError": "Access restricted to platform administrators.",
+    "submit": "Sign in",
+    "restrictedAccess": "Access restricted to Ketris global administration."
+  },
+  "dashboard": {
+    "title": "Agencies",
+    "platformAdmins": "Platform admins",
+    "newTenant": "New agency",
+    "loadError": "Could not load agencies.",
+    "empty": "No agencies registered yet.",
+    "createdAt": "Created at"
+  },
+  "tenant": {
+    "usersTitle": "Agency users",
+    "newAdmin": "New administrator",
+    "usersLoadError": "Could not load users.",
+    "emptyUsers": "No users registered yet."
+  },
+  "newAdmin": {
+    "title": "New platform administrator"
+  },
+  "forms": {
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "passwordConfirmation": "Confirm password",
+    "slug": "Slug",
+    "slugHelper": "Unique identifier, e.g. example-agency",
+    "role": "Role",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "createTenantSubmit": "Create agency",
+    "createTenantError": "Could not create the agency. Try again.",
+    "createTenantSuccess": "Agency {name} created successfully.",
+    "createPlatformAdminSubmit": "Create platform administrator",
+    "createPlatformAdminError": "Could not create the platform administrator. Try again.",
+    "createPlatformAdminSuccess": "Platform administrator {email} created successfully.",
+    "createTenantAdminSubmit": "Create agency administrator",
+    "createTenantAdminError": "Could not create the agency administrator. Try again.",
+    "createTenantAdminSuccess": "Administrator {email} created successfully."
+  }
+}

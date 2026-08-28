@@ -1,6 +1,7 @@
 import type { MouseEvent } from 'react'
 
 import type { Opportunity, OpportunityEditFormValues, OpportunityStatus } from './opportunity'
+import type { OpportunityStage } from './opportunity-stage'
 import type { PublicPropertyDetail } from './property'
 
 export type OpportunityDetailProps = {
@@ -19,12 +20,7 @@ export type DetailItemProps = {
   value: string
 }
 
-export type OpportunityStagePresentation = {
-  status: OpportunityStatus
-  label: string
-  color: string
-  softColor: string
-}
+export type OpportunityStagePresentation = OpportunityStage
 
 export type OpportunityDetailHeaderProps = {
   opportunity: Opportunity

@@ -17,7 +17,6 @@ Adicionar suporte a internacionalizacao no `apps/web` usando Next.js App Router 
 - Nao fazer alteracoes direto na `dev`.
 - Nao trocar mecanicamente todos os imports de `next/link` e `next/navigation`.
 - Nao passar `Link`/wrappers de navegacao como `component={...}` em componentes MUI sem validar build.
-- Nao localizar rotas de API.
 - Ao adicionar i18n no `middleware.ts`, preservar qualquer logica existente.
 - Nao criar comentarios no codigo.
 - Nao introduzir strings hardcoded novas em telas.
@@ -29,25 +28,25 @@ Adicionar suporte a internacionalizacao no `apps/web` usando Next.js App Router 
 
 Usar `next-intl`.
 
-| Opcao | Decisao | Motivo |
-| --- | --- | --- |
-| Next.js puro com dicionarios manuais | Nao usar | Exige mais codigo proprio para middleware, mensagens, navegacao e formatos |
-| `react-i18next` | Nao usar agora | Menos natural para Server Components e App Router |
-| `next-intl` | Usar | Suporta App Router, mensagens, formatacao, Server Components, Client Components e URLs localizadas via `pathnames` |
+| Opcao                                | Decisao        | Motivo                                                                                                             |
+| ------------------------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Next.js puro com dicionarios manuais | Nao usar       | Exige mais codigo proprio para middleware, mensagens, navegacao e formatos                                         |
+| `react-i18next`                      | Nao usar agora | Menos natural para Server Components e App Router                                                                  |
+| `next-intl`                          | Usar           | Suporta App Router, mensagens, formatacao, Server Components, Client Components e URLs localizadas via `pathnames` |
 
 ## Configuracao alvo
 
-| Tema | Decisao |
-| --- | --- |
-| Locale padrao | `pt-BR` |
-| Locale secundario inicial | `en-US` |
-| Prefixo do locale padrao | Sem prefixo quando possivel |
-| Prefixo de ingles | `/en` |
-| Estrategia | Pastas em ingles, URLs publicas localizadas por `pathnames`, textos por locale |
-| APIs | Sem mudanca de rota por causa de i18n |
-| Middleware | i18n deve ser adicionado sem sobrescrever logicas existentes |
-| Rotas internas novas | Ingles |
-| Rotas publicas legadas | Preservar no inicio; migrar em task controlada se necessario |
+| Tema                      | Decisao                                                                        |
+| ------------------------- | ------------------------------------------------------------------------------ |
+| Locale padrao             | `pt-BR`                                                                        |
+| Locale secundario inicial | `en-US`                                                                        |
+| Prefixo do locale padrao  | `/pt`                                                                          |
+| Prefixo de ingles         | `/en`                                                                          |
+| Prefixo de espanhol       | `/es`                                                                          |
+| Estrategia                | Pastas em ingles, URLs publicas localizadas por `pathnames`, textos por locale |
+| Middleware                | i18n deve ser adicionado sem sobrescrever logicas existentes                   |
+| Rotas internas novas      | Ingles                                                                         |
+| Rotas publicas legadas    | Redirecionar para a versao com prefixo de locale                               |
 
 ## Estrutura final desejada
 
@@ -84,8 +83,6 @@ Estrutura de rotas desejada:
 
 ```txt
 apps/web/src/app
-├── api
-│   └── ...
 ├── layout.tsx
 ├── global-error.tsx
 ├── not-found.tsx
@@ -104,7 +101,7 @@ apps/web/src/app
     └── (admin)
 ```
 
-Observacao importante: `apps/web/src/app/api` nao deve ser movido. A pasta `[locale]` e tecnica; as pastas de dominio abaixo dela continuam em ingles.
+Observacao importante: a pasta `[locale]` e tecnica; as pastas de dominio abaixo dela continuam em ingles.
 
 ## Checklist mestre
 
@@ -117,12 +114,13 @@ Observacao importante: `apps/web/src/app/api` nao deve ser movido. A pasta `[loc
 - [x] Estrategia de rotas localizadas configurada.
 - [x] Primeiro fluxo piloto conectado ao provider de i18n.
 - [x] Provider de i18n validado no fluxo piloto.
-- [ ] Troca de idioma validada no fluxo piloto.
+- [x] Troca de idioma preparada no fluxo piloto.
 - [x] Mensagens de `pt-BR` da rota piloto migradas.
 - [x] Mensagens de `en-US` da rota piloto migradas.
+- [x] Mensagens de `es-ES` da rota piloto migradas.
 - [ ] MUI Date Pickers/Data Grid planejados por locale.
-- [ ] Formularios piloto mantidos com RHF + Zod.
-- [ ] Build validado apos cada bloco relevante.
+- [x] Formularios piloto mantidos com RHF + Zod.
+- [x] Build validado apos cada bloco relevante.
 - [ ] Rotas restantes migradas por modulo.
 - [ ] Checklist de code review executado.
 
@@ -238,9 +236,10 @@ Arquivos permitidos:
 
 Checklist:
 
-- [x] Usar `localePrefix: 'as-needed'`.
-- [x] Manter `pt-BR` sem prefixo quando possivel.
+- [x] Usar `localePrefix: 'always'`.
+- [x] Usar `/pt` para `pt-BR`.
 - [x] Usar `/en` para `en-US`.
+- [x] Usar `/es` para `es-ES`.
 - [x] Configurar `pathnames` para rotas publicas localizadas.
 - [x] Manter pathnames canonicos e pastas em ingles.
 - [x] Usar `pt-BR` como fallback.
@@ -251,7 +250,7 @@ Checklist:
 Fluxo esperado:
 
 ```txt
-1. Request chega em /imoveis ou /en/properties
+1. Request chega em /pt/imoveis ou /en/properties
 2. Middleware identifica o locale pela URL
 3. next-intl resolve a rota canonica interna /properties
 4. Server carrega mensagens do locale correto
@@ -273,9 +272,7 @@ Parar e mostrar:
 
 Nao fazer nesta etapa:
 
-- [ ] Nao mover `app/api`.
 - [ ] Nao mover paginas.
-- [ ] Nao alterar contratos de API.
 
 ## Etapa 4 - Provider e fluxo piloto minimo
 
@@ -285,15 +282,17 @@ Rota piloto recomendada: auth pública.
 
 Rotas candidatas:
 
-- `/login`
-- `/register`
-- `/forgot-password`
+- `/pt/login`
+- `/pt/register`
+- `/pt/forgot-password`
+- `/en/login`
+- `/es/login`
 
 Arquivos permitidos:
 
 - `apps/web/src/app/layout.tsx`
 - `apps/web/src/app/providers.tsx`
-- `apps/web/src/app/(auth)/**`
+- `apps/web/src/app/[locale]/(auth)/**`
 - componentes de auth diretamente usados pela rota piloto
 - mensagens `auth.json`, `common.json`, `validation.json`
 
@@ -304,16 +303,16 @@ Checklist:
 - [ ] Definir `html lang` com o locale resolvido, se tecnicamente viavel nesta etapa.
 - [ ] Adicionar `NextIntlClientProvider`.
 - [ ] Manter demais rotas no lugar.
-- [ ] Garantir que `/api` nao mudou.
 
 Validacao manual:
 
-- [ ] `/login` abre em `pt-BR`.
+- [ ] `/pt/login` abre em `pt-BR`.
 - [ ] `/en/login` abre em `en-US`.
-- [ ] `/register` abre em `pt-BR`.
+- [ ] `/pt/register` abre em `pt-BR`.
 - [ ] `/en/register` abre em `en-US`.
-- [ ] `/forgot-password` abre em `pt-BR`.
+- [ ] `/pt/forgot-password` abre em `pt-BR`.
 - [ ] `/en/forgot-password` abre em `en-US`.
+- [ ] `/es/forgot-password` abre em `es-ES`.
 
 Validacao tecnica:
 
@@ -373,20 +372,23 @@ Arquivos permitidos:
 
 - `apps/web/src/i18n/messages/pt-BR/auth.json`
 - `apps/web/src/i18n/messages/en-US/auth.json`
+- `apps/web/src/i18n/messages/es-ES/auth.json`
 - `apps/web/src/i18n/messages/pt-BR/common.json`
 - `apps/web/src/i18n/messages/en-US/common.json`
+- `apps/web/src/i18n/messages/es-ES/common.json`
 - componentes de auth usados nas rotas piloto
 
 Checklist:
 
-- [ ] Criar chaves por contexto.
-- [ ] Evitar chaves genericas como `title`, `text1`, `button`.
-- [ ] Migrar labels.
-- [ ] Migrar placeholders.
-- [ ] Migrar botoes.
+- [x] Criar chaves por contexto.
+- [x] Evitar chaves genericas como `title`, `text1`, `button`.
+- [x] Migrar labels.
+- [x] Migrar placeholders.
+- [x] Migrar botoes.
 - [ ] Migrar mensagens de erro visiveis.
-- [ ] Manter `pt-BR` igual ao texto atual.
-- [ ] Criar `en-US` funcional.
+- [x] Manter `pt-BR` igual ao texto atual.
+- [x] Criar `en-US` funcional.
+- [x] Criar `es-ES` funcional.
 
 Padrao recomendado:
 
@@ -438,8 +440,8 @@ Exemplo de direcao:
 ```ts
 export function createLoginSchema(t: (key: string) => string) {
   return z.object({
-    email: z.string().email(t('validation.email.invalid')),
-  })
+    email: z.string().email(t("validation.email.invalid")),
+  });
 }
 ```
 
@@ -530,16 +532,17 @@ Checklist:
 - [ ] Criar redirects se alguma URL publica legada mudar.
 - [ ] Validar SEO antes de trocar marketplace publico.
 
-Rotas existentes que exigem decisao:
+Rotas convertidas para estrutura interna em ingles:
 
-| Rota atual | Possivel rota interna em ingles | Observacao |
-| --- | --- | --- |
-| `/imoveis` | `/properties` | Publica e sensivel a SEO |
-| `/corretores` | `/brokers` | Publica |
-| `/imobiliarias` | `/agencies` | Publica |
-| `/dashboard/imoveis` | `/dashboard/properties` | Interna |
-| `/dashboard/propostas` | `/dashboard/proposals` | Interna |
-| `/dashboard/financeiro` | `/dashboard/financial` | Interna |
+| Rota interna canonica       | Exemplo de URL em pt-BR        | Observacao                           |
+| --------------------------- | ------------------------------ | ------------------------------------ |
+| `/properties`               | `/pt/imoveis`                  | Publica e sensivel a SEO             |
+| `/brokers`                  | `/pt/corretores`               | Publica                              |
+| `/agencies`                 | `/pt/imobiliarias`             | Publica                              |
+| `/dashboard/properties`     | `/pt/dashboard/properties`     | Interna, apenas prefixada por locale |
+| `/dashboard/proposals`      | `/pt/dashboard/proposals`      | Interna, apenas prefixada por locale |
+| `/dashboard/finance`        | `/pt/dashboard/finance`        | Interna, apenas prefixada por locale |
+| `/dashboard/properties/new` | `/pt/dashboard/properties/new` | Interna, apenas prefixada por locale |
 
 Recomendacao: pathnames canonicos e pastas em ingles; URLs publicas localizadas para cada idioma.
 
@@ -576,15 +579,14 @@ npm run build
 
 Checklist manual:
 
-- [ ] `/login` funciona.
+- [ ] `/pt/login` funciona.
 - [ ] `/en/login` funciona.
-- [ ] `/register` funciona.
+- [ ] `/pt/register` funciona.
 - [ ] `/en/register` funciona.
-- [ ] `/imoveis` funciona em `pt-BR`.
+- [ ] `/pt/imoveis` funciona em `pt-BR`.
 - [ ] O codigo usa `/properties` como pathname canonico interno.
 - [ ] `/en/properties` funciona em `en-US`.
-- [ ] `/dashboard` redireciona corretamente se sem sessao.
-- [ ] Rotas de API continuam sem locale.
+- [ ] `/pt/dashboard` redireciona corretamente se sem sessao.
 - [ ] Links internos usam pathnames canonicos em ingles no codigo.
 - [ ] Textos maiores em ingles nao quebram layout.
 - [ ] Form validation troca idioma.
@@ -592,20 +594,19 @@ Checklist manual:
 
 ## Checklist de code review
 
-| Area | Checklist |
-| --- | --- |
+| Area        | Checklist                                                                         |
+| ----------- | --------------------------------------------------------------------------------- |
 | Arquitetura | Pastas e pathnames canonicos em ingles; URLs publicas localizadas via `pathnames` |
-| API | Rotas de API sem mudanca por causa de i18n |
-| Middleware | Logicas existentes preservadas |
-| Next config | Sentry preservado |
-| Mensagens | Sem hardcoded string nova em telas tocadas |
-| Tipos | Tipos de dominio nas pastas `types` dos modulos |
-| Forms | RHF + Zod + validators mantidos |
-| Componentes | Sem tipos de dominio dentro do componente |
-| MUI | Sem `component={Link}` inseguro sem build validado |
-| Estilo | Sem inline style novo |
-| Comentarios | Sem comentarios em codigo |
-| Testes | Typecheck, lint, tests e build executados |
+| Middleware  | Logicas existentes preservadas                                                    |
+| Next config | Sentry preservado                                                                 |
+| Mensagens   | Sem hardcoded string nova em telas tocadas                                        |
+| Tipos       | Tipos de dominio nas pastas `types` dos modulos                                   |
+| Forms       | RHF + Zod + validators mantidos                                                   |
+| Componentes | Sem tipos de dominio dentro do componente                                         |
+| MUI         | Sem `component={Link}` inseguro sem build validado                                |
+| Estilo      | Sem inline style novo                                                             |
+| Comentarios | Sem comentarios em codigo                                                         |
+| Testes      | Typecheck, lint, tests e build executados                                         |
 
 ## Comandos uteis
 
