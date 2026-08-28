@@ -1,25 +1,28 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import {
-  Avatar,
-  Box,
-  Divider,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Stack,
-  Typography,
-} from '@mui/material'
 import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined'
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined'
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import InsertChartOutlinedRoundedIcon from '@mui/icons-material/InsertChartOutlinedRounded'
 import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined'
-import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
+import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
+import {
+  Avatar,
+  Box,
+  Divider,
+  IconButton,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Stack,
+  Tooltip,
+  Typography,
+} from '@mui/material'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 import ketrisLogo from '@shared/assets/ketris-logo-footer.png'
 import { alpha, brand, componentText, iconSize, radius, surface } from '@shared/theme/tokens'
@@ -55,17 +58,27 @@ export function DashboardSidebar() {
       }}
     >
       <Box
-        component="img"
-        src={ketrisLogo.src}
-        alt="Ketris"
+        component={Link}
+        href="/"
+        aria-label="Voltar para o marketplace"
         sx={{
           display: 'block',
           width: 124,
-          height: 'auto',
           mx: 'auto',
           mb: 3.3,
         }}
-      />
+      >
+        <Box
+          component="img"
+          src={ketrisLogo.src}
+          alt="Ketris"
+          sx={{
+            display: 'block',
+            width: '100%',
+            height: 'auto',
+          }}
+        />
+      </Box>
 
       <List disablePadding sx={{ display: 'grid', gap: 0.7 }}>
         {navigationItems.map((item) => {
@@ -85,7 +98,7 @@ export function DashboardSidebar() {
                 color: active ? surface.lightText : alpha.white[62],
                 transition: 'background-color 160ms ease, color 160ms ease',
                 '&.Mui-selected, &.Mui-selected:hover': {
-                  bgcolor: 'primary.main',
+                  bgcolor: brand.magenta[500],
                   color: surface.lightText,
                 },
                 '&:hover': {
@@ -130,6 +143,25 @@ export function DashboardSidebar() {
             Gestor de Operações
           </Typography>
         </Box>
+        <Box sx={{ flex: 1 }} />
+        <Tooltip title="Voltar">
+          <IconButton
+            component={Link}
+            href="/"
+            aria-label="Voltar para o marketplace"
+            sx={{
+              width: 32,
+              height: 32,
+              color: alpha.white[62],
+              '&:hover': {
+                bgcolor: alpha.white[8],
+                color: surface.lightText,
+              },
+            }}
+          >
+            <LogoutOutlinedIcon sx={{ fontSize: iconSize.md }} />
+          </IconButton>
+        </Tooltip>
       </Stack>
     </Box>
   )
