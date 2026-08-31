@@ -1,6 +1,8 @@
 import { Box, Button, Chip, Stack, Typography } from '@mui/material'
+import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
+import NextLink from 'next/link'
 
 import { radius, surface } from '@shared/theme/tokens'
 
@@ -9,6 +11,7 @@ import type { PropertyDetailHeaderProps } from '../types/dashboard-property'
 
 export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
   const status = dashboardPropertyStatusStyles[property.status]
+  const showActiveContractLink = Boolean(property.activeContractId && property.status === 'Alugado')
 
   return (
     <Stack
@@ -40,7 +43,7 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
         </Typography>
       </Box>
 
-      <Stack direction="row" spacing={1.2}>
+      <Stack direction="row" alignItems="flex-start" spacing={1.2}>
         <Button
           variant="outlined"
           color="secondary"
@@ -56,19 +59,40 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
         >
           Editar
         </Button>
-        <Button
-          variant="contained"
-          startIcon={<VisibilityOffOutlinedIcon />}
-          sx={{
-            height: 46,
-            px: 2.4,
-            borderRadius: `${radius.sm}px`,
-            fontSize: 15,
-            fontWeight: 900,
-          }}
-        >
-          Despublicar
-        </Button>
+        <Stack spacing={1.1}>
+          <Button
+            variant="contained"
+            startIcon={<VisibilityOffOutlinedIcon />}
+            sx={{
+              height: 46,
+              px: 2.4,
+              borderRadius: `${radius.sm}px`,
+              fontSize: 15,
+              fontWeight: 900,
+            }}
+          >
+            Despublicar
+          </Button>
+          {showActiveContractLink ? (
+            <Button
+              component={NextLink}
+              href={`/dashboard/contracts/${property.activeContractId}`}
+              variant="outlined"
+              color="secondary"
+              startIcon={<ArticleOutlinedIcon />}
+              sx={{
+                height: 46,
+                px: 2.4,
+                borderRadius: `${radius.sm}px`,
+                bgcolor: surface.paper,
+                fontSize: 15,
+                fontWeight: 900,
+              }}
+            >
+              Contrato
+            </Button>
+          ) : null}
+        </Stack>
       </Stack>
     </Stack>
   )

@@ -17,6 +17,24 @@ export const dashboardContracts: ContractListItem[] = [
     startDate: '01/09/2026',
     endDate: '30/08/2027',
     amount: 'R$ 6.500',
+    adjustment: 'IGPM anual',
+    paymentDay: '5 de cada mes',
+    guarantee: 'Fiador',
+    notes:
+      'O locatario compromete-se a entregar o imovel nas mesmas condicoes de conservacao em que o recebeu. Eventuais reformas estruturais dependem de aprovacao previa expressa por escrito do locador.',
+    paymentHistory: [
+      { period: 'Junho 2026', amount: 'R$ 6.500', status: 'Pago', date: '05/06' },
+      { period: 'Maio 2026', amount: 'R$ 6.500', status: 'Pago', date: '05/05' },
+      { period: 'Abril 2026', amount: 'R$ 6.500', status: 'Pago', date: '05/04' },
+      { period: 'Marco 2026', amount: 'R$ 6.500', status: 'Pago', date: '05/03' },
+      { period: 'Fevereiro 2026', amount: 'R$ 6.500', status: 'Pago', date: '05/02' },
+      { period: 'Janeiro 2026', amount: 'R$ 6.500', status: 'Pendente', date: '--' },
+    ],
+    documents: [
+      { name: 'Contrato_Assinado_Jardins.pdf', sentAt: 'Enviado em 01/09/2026' },
+      { name: 'Laudo_Vistoria_Entrada.pdf', sentAt: 'Enviado em 28/08/2026' },
+      { name: 'Documentos_Locatario_Bruno.pdf', sentAt: 'Enviado em 20/08/2026' },
+    ],
     updatedAt: 'Hoje',
   },
   {
@@ -35,6 +53,21 @@ export const dashboardContracts: ContractListItem[] = [
     startDate: '10/11/2023',
     endDate: '10/11/2026',
     amount: 'R$ 3.200',
+    adjustment: 'IPCA anual',
+    paymentDay: '10 de cada mes',
+    guarantee: 'Seguro fianca',
+    notes:
+      'Contrato residencial com vistoria inicial anexada e acompanhamento mensal dos repasses ao proprietario.',
+    paymentHistory: [
+      { period: 'Agosto 2026', amount: 'R$ 3.200', status: 'Pago', date: '10/08' },
+      { period: 'Julho 2026', amount: 'R$ 3.200', status: 'Pago', date: '10/07' },
+      { period: 'Junho 2026', amount: 'R$ 3.200', status: 'Pago', date: '10/06' },
+      { period: 'Maio 2026', amount: 'R$ 3.200', status: 'Pago', date: '10/05' },
+    ],
+    documents: [
+      { name: 'Contrato_Studio_Pinheiros.pdf', sentAt: 'Enviado em 10/11/2023' },
+      { name: 'Seguro_Fianca_Mariana.pdf', sentAt: 'Enviado em 08/11/2023' },
+    ],
     updatedAt: 'Ontem',
   },
   {
@@ -53,6 +86,15 @@ export const dashboardContracts: ContractListItem[] = [
     startDate: '15/03/2024',
     endDate: '15/03/2027',
     amount: 'R$ 4.500.000',
+    adjustment: 'Sem reajuste',
+    paymentDay: 'A combinar',
+    guarantee: 'Sinal contratual',
+    notes: 'Minuta em revisao para formalizacao de venda com validacao documental pendente.',
+    paymentHistory: [{ period: 'Sinal', amount: 'R$ 450.000', status: 'Pendente', date: '--' }],
+    documents: [
+      { name: 'Minuta_Cobertura_Itaim.pdf', sentAt: 'Enviado em 24/08/2026' },
+      { name: 'Matricula_Atualizada.pdf', sentAt: 'Enviado em 22/08/2026' },
+    ],
     updatedAt: '2 dias',
   },
   {
@@ -71,6 +113,15 @@ export const dashboardContracts: ContractListItem[] = [
     startDate: '05/05/2022',
     endDate: '05/05/2027',
     amount: 'R$ 3.800.000',
+    adjustment: 'Sem reajuste',
+    paymentDay: 'A combinar',
+    guarantee: 'Sinal contratual',
+    notes: 'Contrato aguardando assinatura das partes e validacao final do financeiro.',
+    paymentHistory: [
+      { period: 'Sinal', amount: 'R$ 380.000', status: 'Pago', date: '05/05' },
+      { period: 'Saldo', amount: 'R$ 3.420.000', status: 'Pendente', date: '--' },
+    ],
+    documents: [{ name: 'Contrato_Casa_Alto_Pinheiros.pdf', sentAt: 'Enviado em 05/05/2026' }],
     updatedAt: '5 dias',
   },
   {
@@ -89,6 +140,17 @@ export const dashboardContracts: ContractListItem[] = [
     startDate: '01/01/2025',
     endDate: '01/01/2026',
     amount: 'R$ 2.400',
+    adjustment: 'IGPM anual',
+    paymentDay: '1 de cada mes',
+    guarantee: 'Caucao',
+    notes: 'Contrato encerrado com vistoria de saida concluida e sem pendencias financeiras.',
+    paymentHistory: [
+      { period: 'Janeiro 2026', amount: 'R$ 2.400', status: 'Pago', date: '01/01' },
+      { period: 'Dezembro 2025', amount: 'R$ 2.400', status: 'Pago', date: '01/12' },
+    ],
+    documents: [
+      { name: 'Termo_Encerramento_Studio_Bela_Vista.pdf', sentAt: 'Enviado em 02/01/2026' },
+    ],
     updatedAt: '1 semana',
   },
   {
@@ -107,6 +169,28 @@ export const dashboardContracts: ContractListItem[] = [
     startDate: '01/02/2024',
     endDate: '01/02/2027',
     amount: 'R$ 4.800',
+    adjustment: 'IPCA anual',
+    paymentDay: '5 de cada mes',
+    guarantee: 'Fiador',
+    notes:
+      'Locacao ativa com pagamento recorrente e garantia por fiador. Reajuste anual previsto no aniversario do contrato.',
+    paymentHistory: [
+      { period: 'Junho 2026', amount: 'R$ 4.800', status: 'Pago', date: '05/06' },
+      { period: 'Maio 2026', amount: 'R$ 4.800', status: 'Pago', date: '05/05' },
+      { period: 'Abril 2026', amount: 'R$ 4.800', status: 'Pago', date: '05/04' },
+      { period: 'Marco 2026', amount: 'R$ 4.800', status: 'Pago', date: '05/03' },
+      { period: 'Fevereiro 2026', amount: 'R$ 4.800', status: 'Pago', date: '05/02' },
+      { period: 'Janeiro 2026', amount: 'R$ 4.800', status: 'Pendente', date: '--' },
+    ],
+    documents: [
+      { name: 'Contrato_Assinado_Moema.pdf', sentAt: 'Enviado em 01/02/2024' },
+      { name: 'Laudo_Vistoria_Entrada.pdf', sentAt: 'Enviado em 28/01/2024' },
+      { name: 'Documentos_Locatario_Ana.pdf', sentAt: 'Enviado em 22/01/2024' },
+    ],
     updatedAt: '2 semanas',
   },
 ]
+
+export function getDashboardContractById(contractId: string) {
+  return dashboardContracts.find((contract) => contract.id === contractId) ?? null
+}

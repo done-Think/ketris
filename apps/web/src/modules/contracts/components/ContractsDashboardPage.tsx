@@ -98,10 +98,15 @@ export function ContractsDashboardPage() {
   )
   const createContract = () => router.push('/dashboard/contracts/new')
   const handleContractAction = (contract: ContractListItem, action: ContractTableAction) => {
+    if (action === 'view-summary') {
+      router.push(`/dashboard/contracts/${contract.id}`)
+      return
+    }
+
     setActionDialog({ contract, action })
   }
   const openContractProperty = (contract: ContractListItem) => {
-    router.push(`/dashboard/imoveis/${contract.propertyId}`)
+    router.push(`/dashboard/contracts/${contract.id}`)
   }
   const closeContractActionDialog = () => {
     setActionDialog({ contract: null, action: null })

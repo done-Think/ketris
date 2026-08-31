@@ -42,6 +42,19 @@ function createContractListItem(
     startDate: values.startDate,
     endDate: values.endDate,
     amount: values.monthlyRent,
+    adjustment: values.adjustmentIndex,
+    paymentDay: `${Number(values.dueDay)} de cada mes`,
+    guarantee: values.guaranteeType,
+    notes: values.notes,
+    paymentHistory: [
+      {
+        period: dayjs().format('MMMM YYYY'),
+        amount: values.monthlyRent,
+        status: 'Pendente',
+        date: '--',
+      },
+    ],
+    documents: [{ name: `Minuta_${nextContractNumber}.pdf`, sentAt: 'Gerado agora' }],
     updatedAt: 'Agora',
   }
 }
