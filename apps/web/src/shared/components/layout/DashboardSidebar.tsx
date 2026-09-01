@@ -7,12 +7,14 @@ import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import InsertChartOutlinedRoundedIcon from '@mui/icons-material/InsertChartOutlinedRounded'
 import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
+import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import {
   Avatar,
   Box,
   Divider,
+  Drawer,
   IconButton,
   List,
   ListItemButton,
@@ -24,9 +26,20 @@ import {
 } from '@mui/material'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useState } from 'react'
 
 import ketrisLogo from '@shared/assets/ketris-logo-footer.png'
-import { alpha, brand, componentText, iconSize, radius, surface } from '@shared/theme/tokens'
+import {
+  alpha,
+  brand,
+  componentText,
+  iconSize,
+  radius,
+  shadows,
+  surface,
+  zIndex,
+} from '@shared/theme/tokens'
+import type { DashboardNavigationContentProps } from '@shared/types/dashboard-navigation'
 
 const navigationItems = [
   { label: 'Dashboard', href: '/dashboard', icon: DashboardOutlinedIcon },
@@ -46,23 +59,117 @@ function isActiveNavigationItem(pathname: string, href: string) {
 
 export function DashboardSidebar() {
   const pathname = usePathname()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const closeMobileMenu = () => setIsMobileMenuOpen(false)
 
   return (
-    <Box
-      component="aside"
-      sx={{
-        display: { xs: 'none', md: 'flex' },
-        flexDirection: 'column',
-        bgcolor: brand.graphite[500],
-        color: surface.lightText,
-        px: 2,
-        py: 2.2,
-      }}
-    >
+    <>
+      <Box
+        component="header"
+        sx={{
+          position: 'sticky',
+          top: 0,
+          zIndex: zIndex.header,
+          display: { xs: 'flex', md: 'none' },
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          minHeight: 64,
+          bgcolor: surface.paper,
+          borderBottom: '1px solid',
+          borderColor: alpha.graphite[8],
+          boxShadow: shadows.crmMobileHeader,
+          px: 2,
+        }}
+      >
+        <Box
+          component={Link}
+          href="/"
+          aria-label="Voltar para o marketplace"
+          sx={{
+            display: 'inline-flex',
+            width: 42,
+            height: 42,
+            overflow: 'hidden',
+          }}
+        >
+          <Box
+            component="img"
+            src={ketrisLogo.src}
+            alt="Ketris"
+            sx={{
+              display: 'block',
+              width: 112,
+              maxWidth: 'none',
+              height: 'auto',
+            }}
+          />
+        </Box>
+
+        <IconButton
+          aria-label="Abrir menu do dashboard"
+          aria-expanded={isMobileMenuOpen ? 'true' : undefined}
+          onClick={() => setIsMobileMenuOpen(true)}
+          sx={{
+            width: 42,
+            height: 42,
+            border: '1px solid',
+            borderColor: alpha.graphite[8],
+            borderRadius: `${radius.sm}px`,
+            bgcolor: surface.paper,
+            color: brand.graphite[500],
+          }}
+        >
+          <MenuRoundedIcon sx={{ fontSize: iconSize.xl }} />
+        </IconButton>
+      </Box>
+
+      <Drawer
+        anchor="right"
+        open={isMobileMenuOpen}
+        onClose={closeMobileMenu}
+        slotProps={{
+          paper: {
+            sx: {
+              display: 'flex',
+              flexDirection: 'column',
+              width: 280,
+              maxWidth: '86vw',
+              bgcolor: brand.graphite[500],
+              color: surface.lightText,
+              px: 2,
+              py: 2.2,
+            },
+          },
+        }}
+      >
+        <DashboardNavigationContent pathname={pathname} onNavigate={closeMobileMenu} />
+      </Drawer>
+
+      <Box
+        component="aside"
+        sx={{
+          display: { xs: 'none', md: 'flex' },
+          flexDirection: 'column',
+          bgcolor: brand.graphite[500],
+          color: surface.lightText,
+          px: 2,
+          py: 2.2,
+        }}
+      >
+        <DashboardNavigationContent pathname={pathname} />
+      </Box>
+    </>
+  )
+}
+
+function DashboardNavigationContent({ onNavigate, pathname }: DashboardNavigationContentProps) {
+  return (
+    <>
       <Box
         component={Link}
         href="/"
         aria-label="Voltar para o marketplace"
+        onClick={onNavigate}
         sx={{
           display: 'block',
           width: 124,
@@ -92,6 +199,7 @@ export function DashboardSidebar() {
               key={item.href}
               component={Link}
               href={item.href}
+              onClick={onNavigate}
               selected={active}
               sx={{
                 minHeight: 36,
@@ -109,7 +217,9 @@ export function DashboardSidebar() {
                 },
               }}
             >
-              <ListItemIcon sx={{ color: 'inherit', minWidth: 28 }}>
+              <ListItemIcon
+                sx={{ color: active ? surface.lightText : alpha.white[62], minWidth: 28 }}
+              >
                 <Icon sx={{ fontSize: iconSize.md }} />
               </ListItemIcon>
               <ListItemText
@@ -151,6 +261,7 @@ export function DashboardSidebar() {
             component={Link}
             href="/"
             aria-label="Voltar para o marketplace"
+            onClick={onNavigate}
             sx={{
               width: 32,
               height: 32,
@@ -165,6 +276,6 @@ export function DashboardSidebar() {
           </IconButton>
         </Tooltip>
       </Stack>
-    </Box>
+    </>
   )
 }

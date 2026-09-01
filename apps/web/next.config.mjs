@@ -28,10 +28,19 @@ const nextConfig = {
   },
 }
 
+const enableSentryReleaseUpload = process.env.SENTRY_ENABLE_RELEASE_UPLOAD === 'true'
+
 export default withSentryConfig(nextConfig, {
   silent: true,
-  sourcemaps: {
-    deleteSourcemapsAfterUpload: true,
+  release: {
+    create: enableSentryReleaseUpload,
+    finalize: enableSentryReleaseUpload,
+    setCommits: false,
   },
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: enableSentryReleaseUpload,
+    disable: !enableSentryReleaseUpload,
+  },
+  telemetry: false,
   // org e project vem das variaveis de ambiente do Sentry
 })
