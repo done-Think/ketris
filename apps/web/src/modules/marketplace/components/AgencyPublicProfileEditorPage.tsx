@@ -15,13 +15,10 @@ import {
   AgencyPublicProfileImageFields,
   AgencyPublicProfileMainFields,
 } from './agency-public-profile-editor/AgencyPublicProfileEditorFormSections'
-import { AgencyPublicProfileDemonstrative } from './agency-public-profile-editor/AgencyPublicProfileDemonstrative'
-import { AgencyPublicProfileOrderPanel } from './agency-public-profile-editor/AgencyPublicProfileOrderPanel'
 import { AgencyPublicProfilePreviewDialog } from './agency-public-profile-editor/AgencyPublicProfilePreviewDialog'
 import { isAgencyPublicProfileSectionKey } from './agency-public-profile-editor/agency-public-profile-editor-shared'
 import { agencyPublicProfileEditorDefaultValues } from '../data/agency-public-profile-editor'
 import { useProfileEditorImageUpload } from '../hooks/use-profile-editor-image-upload'
-import { useProfileEditorSectionOrder } from '../hooks/use-profile-editor-section-order'
 import { agencyPublicProfileEditorSchema } from '../schemas/agency-public-profile-editor-schema'
 import type {
   AgencyPublicProfileEditorFormValues,
@@ -42,27 +39,6 @@ export function AgencyPublicProfileEditorPage() {
   })
   const profileDraft = watch()
   const visibleSectionOrder = profileDraft.sectionOrder.filter(isAgencyPublicProfileSectionKey)
-  const setSectionOrder = useCallback(
-    (sectionOrder: AgencyPublicProfileEditorFormValues['sectionOrder']) => {
-      setValue('sectionOrder', sectionOrder, { shouldDirty: true, shouldValidate: true })
-    },
-    [setValue],
-  )
-  const {
-    draggedPosition,
-    finishLongPress,
-    isTouchLikeDevice,
-    moveLongPress,
-    pressedPosition,
-    resetLongPress,
-    setDraggedPosition,
-    startLongPress,
-    swapSectionPositions,
-    updateSectionOrder,
-  } = useProfileEditorSectionOrder({
-    sectionOrder: profileDraft.sectionOrder,
-    setSectionOrder,
-  })
   const setImageValue = useCallback(
     (fieldName: AgencyPublicProfileImageFieldName, previewUrl: string) => {
       setValue(fieldName, previewUrl, { shouldDirty: true, shouldValidate: true })
@@ -95,7 +71,7 @@ export function AgencyPublicProfileEditorPage() {
               Editar Perfil da Imobiliária
             </Typography>
             <Typography sx={{ color: 'text.secondary', fontSize: { xs: 14, md: 16 }, mt: 0.5 }}>
-              Ajuste marca, imagens e ordem das seções exibidas para visitantes.
+              Ajuste marca, conteúdo e imagens exibidas para visitantes.
             </Typography>
           </Box>
           {isSubmitSuccessful ? (
@@ -106,7 +82,7 @@ export function AgencyPublicProfileEditorPage() {
               sx={{ color: brand.semantic.success }}
             >
               <CheckCircleOutlineRoundedIcon sx={{ fontSize: iconSize.md }} />
-              <Typography sx={{ fontSize: 13, fontWeight: 800 }}>Rascunho validado</Typography>
+              <Typography sx={{ fontSize: 13, fontWeight: 800 }}>Perfil salvo</Typography>
             </Stack>
           ) : null}
         </Stack>
@@ -141,44 +117,6 @@ export function AgencyPublicProfileEditorPage() {
             />
             <AgencyPublicProfileEditorActions onPreview={() => setIsPreviewOpen(true)} />
           </Stack>
-
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 390px' },
-              gap: 2,
-              alignItems: 'start',
-            }}
-          >
-            <AgencyPublicProfileDemonstrative
-              draggedPosition={draggedPosition}
-              finishLongPress={finishLongPress}
-              isTouchLikeDevice={isTouchLikeDevice}
-              moveLongPress={moveLongPress}
-              pressedPosition={pressedPosition}
-              profileDraft={profileDraft}
-              resetLongPress={resetLongPress}
-              setDraggedPosition={setDraggedPosition}
-              startLongPress={startLongPress}
-              swapSectionPositions={swapSectionPositions}
-              visibleSectionOrder={visibleSectionOrder}
-            />
-            <AgencyPublicProfileOrderPanel
-              control={control}
-              draggedPosition={draggedPosition}
-              finishLongPress={finishLongPress}
-              isTouchLikeDevice={isTouchLikeDevice}
-              moveLongPress={moveLongPress}
-              pressedPosition={pressedPosition}
-              profileDraft={profileDraft}
-              resetLongPress={resetLongPress}
-              setDraggedPosition={setDraggedPosition}
-              startLongPress={startLongPress}
-              swapSectionPositions={swapSectionPositions}
-              updateSectionOrder={updateSectionOrder}
-              visibleSectionOrder={visibleSectionOrder}
-            />
-          </Box>
         </Box>
       </Box>
 

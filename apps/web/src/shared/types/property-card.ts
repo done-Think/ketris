@@ -13,3 +13,8 @@ export type PropertyCardData = {
   broker: string
   avatar: string
 }
+
+export type PropertyCardProps = {
+  href?: string
+  property: PropertyCardData
+}

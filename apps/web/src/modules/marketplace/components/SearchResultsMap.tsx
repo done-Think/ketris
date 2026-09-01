@@ -8,6 +8,7 @@ import { env } from '@config/env'
 import { componentText, motion, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { SearchResultsMapProps } from '../types/search'
+import { buildPropertyDetailsHref } from '../utils/property-details-link'
 
 const defaultMapStyleUrl = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 const mapContainerStyle = { width: '100%', height: '100%' } as const
@@ -47,6 +48,10 @@ export function SearchResultsMap({
       >
         {properties.map((property) => {
           const selected = property.id === selectedPropertyId
+          const detailsHref = buildPropertyDetailsHref({
+            href: property.href,
+            purpose: property.purpose,
+          })
 
           return (
             <Marker
@@ -57,7 +62,7 @@ export function SearchResultsMap({
             >
               <Box
                 component={Link}
-                href={property.href}
+                href={detailsHref}
                 aria-label={`Abrir ${property.title}`}
                 onClick={() => onSelectProperty(property.id)}
                 onFocus={() => onSelectProperty(property.id)}

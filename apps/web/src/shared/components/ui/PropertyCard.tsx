@@ -7,7 +7,7 @@ import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined'
 import Link from 'next/link'
 
 import { componentText, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
-import type { PropertyCardData, PropertyFeatureKey } from '@shared/types'
+import type { PropertyCardProps, PropertyFeatureKey } from '@shared/types'
 import { PillBadge } from './PillBadge'
 
 const detailIcons: Record<PropertyFeatureKey, typeof ApartmentOutlinedIcon> = {
@@ -17,15 +17,11 @@ const detailIcons: Record<PropertyFeatureKey, typeof ApartmentOutlinedIcon> = {
   area: SquareFootOutlinedIcon,
 }
 
-type PropertyCardProps = {
-  property: PropertyCardData
-}
-
-export function PropertyCard({ property }: PropertyCardProps) {
+export function PropertyCard({ href, property }: PropertyCardProps) {
   return (
     <Card
       component={Link}
-      href={property.href}
+      href={href ?? property.href}
       sx={{
         overflow: 'hidden',
         borderRadius: `${radius.sm}px`,

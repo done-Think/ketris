@@ -11,6 +11,7 @@ import { PillBadge } from '@shared/components/ui'
 import { alpha, componentText, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
 import type { PropertyFeatureKey } from '@shared/types'
 import type { SearchPropertyCardProps } from '../types/search'
+import { buildPropertyDetailsHref } from '../utils/property-details-link'
 
 const detailIcons: Record<PropertyFeatureKey, typeof ApartmentOutlinedIcon> = {
   bedrooms: BedOutlinedIcon,
@@ -26,7 +27,10 @@ export function SearchPropertyCard({
   viewMode = 'grid',
 }: SearchPropertyCardProps) {
   const isListView = viewMode === 'list'
-  const detailsHref = `${property.href}?purpose=${property.purpose}`
+  const detailsHref = buildPropertyDetailsHref({
+    href: property.href,
+    purpose: property.purpose,
+  })
 
   return (
     <Card

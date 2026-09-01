@@ -316,14 +316,6 @@ export function PublicProfileEditorActions({ onPreview }: PublicProfileEditorAct
   return (
     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
       <Button
-        type="submit"
-        variant="contained"
-        startIcon={<SaveOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-        sx={{ minHeight: 44, borderRadius: `${radius.sm}px`, flex: 1 }}
-      >
-        Salvar rascunho
-      </Button>
-      <Button
         type="button"
         variant="outlined"
         color="secondary"
@@ -332,6 +324,14 @@ export function PublicProfileEditorActions({ onPreview }: PublicProfileEditorAct
         sx={{ minHeight: 44, borderRadius: `${radius.sm}px`, flex: 1 }}
       >
         Visualizar
+      </Button>
+      <Button
+        type="submit"
+        variant="contained"
+        startIcon={<SaveOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+        sx={{ minHeight: 44, borderRadius: `${radius.sm}px`, flex: 1 }}
+      >
+        Salvar
       </Button>
     </Stack>
   )

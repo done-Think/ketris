@@ -5,6 +5,7 @@ import { ActionTextLink, PropertyCard, SectionHeader } from '@shared/components/
 import { iconSize, surface, zIndex } from '@shared/theme/tokens'
 
 import { featuredProperties } from '../data/featured-properties'
+import { buildPropertyDetailsHrefFromSource } from '../utils/property-details-link'
 
 export function FeaturedPropertiesSection() {
   return (
@@ -36,9 +37,11 @@ export function FeaturedPropertiesSection() {
             gap: { xs: 2, md: 3 },
           }}
         >
-          {featuredProperties.map((property) => (
-            <PropertyCard key={property.title} property={property} />
-          ))}
+          {featuredProperties.map((property) => {
+            const detailsHref = buildPropertyDetailsHrefFromSource(property)
+
+            return <PropertyCard key={property.title} href={detailsHref} property={property} />
+          })}
         </Box>
       </Container>
     </Box>

@@ -83,7 +83,7 @@ export type SearchResultsFilterDialogProps = SearchResultsFiltersDialogFormValue
 }
 
 export type SearchResultsMapProps = {
-  properties: MarketplacePropertyDetail[]
+  properties: SearchResultProperty[]
   selectedPropertyId: string
   onSelectProperty: (propertyId: string) => void
 }
