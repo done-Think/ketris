@@ -321,7 +321,7 @@ describe('SalesPipelineBoard', () => {
   it('preserves the real empty state for an authenticated tenant instead of using fixtures', () => {
     renderPipeline()
 
-    expect(screen.getAllByText('Nenhuma oportunidade nesta etapa.')).toHaveLength(5)
+    expect(screen.getAllByText('Sem oportunidades nesta etapa.')).toHaveLength(5)
     for (const fixture of salesPipelineFixtures) {
       expect(screen.queryByText(fixture.opportunity.interessadoNome)).not.toBeInTheDocument()
     }
@@ -336,7 +336,7 @@ describe('SalesPipelineBoard', () => {
 
     renderPipeline()
 
-    expect(screen.getAllByText('Nenhuma oportunidade nesta etapa.')).toHaveLength(5)
+    expect(screen.getAllByText('Sem oportunidades nesta etapa.')).toHaveLength(5)
     expect(screen.queryByText('Carlos Eduardo')).not.toBeInTheDocument()
   })
 
@@ -350,7 +350,7 @@ describe('SalesPipelineBoard', () => {
 
     renderPipeline({ preview: true })
 
-    expect(screen.getAllByText('Nenhuma oportunidade nesta etapa.')).toHaveLength(5)
+    expect(screen.getAllByText('Sem oportunidades nesta etapa.')).toHaveLength(5)
     expect(screen.queryByText('Carlos Eduardo')).not.toBeInTheDocument()
   })
 
@@ -365,7 +365,7 @@ describe('SalesPipelineBoard', () => {
 
     expect(container.querySelectorAll('.MuiSkeleton-root')).toHaveLength(15)
     expect(screen.queryByText('Carlos Eduardo')).not.toBeInTheDocument()
-    expect(screen.queryByText('Nenhuma oportunidade nesta etapa.')).not.toBeInTheDocument()
+    expect(screen.queryByText('Sem oportunidades nesta etapa.')).not.toBeInTheDocument()
   })
 
   it('renders the requested five-stage sales pipeline with real API statuses', () => {

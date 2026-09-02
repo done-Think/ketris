@@ -51,7 +51,11 @@ export function useMarketplaceSearch() {
     (key: SearchFilterKey, value: string) => {
       setValue('selectedSearch', { ...getValues('selectedSearch'), [key]: value })
       if (key !== 'priceRange') {
-        setValue('searchDraft', { ...getValues('searchDraft'), [key]: value })
+        // `searchDraft` é o texto digitado para filtrar as opções, não o valor escolhido.
+        // Gravar `value` aqui exibia a chave de tradução crua (ex.: "apartment") no campo
+        // e fazia o filtro comparar chaves contra rótulos traduzidos, zerando o resultado.
+        // A escolha já vive em `selectedSearch`, que é de onde o chip e a URL a leem.
+        setValue('searchDraft', { ...getValues('searchDraft'), [key]: '' })
       }
       closeSearchMenu()
     },

@@ -25,6 +25,8 @@ type PropertyCardProps = {
   property: PropertyCardData
 }
 
+// Mantido local de propósito: `shared/` não importa de `modules/`, e o equivalente
+// em modules/marketplace/utils/property-links.ts serve a outra camada.
 function getPropertyCardHref(href: string): LocalizedHref {
   const id = href.split('?')[0].split('/').filter(Boolean).at(-1)
 

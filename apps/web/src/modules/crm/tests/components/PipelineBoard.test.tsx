@@ -187,7 +187,7 @@ describe('PipelineBoard', () => {
   it('renders an empty state in every stage', () => {
     renderPipeline()
 
-    expect(screen.getAllByText('Nenhuma oportunidade nesta etapa.')).toHaveLength(5)
+    expect(screen.getAllByText('Sem oportunidades nesta etapa.')).toHaveLength(5)
     expect(screen.getAllByText(matchesText(formatCurrency(0)))).toHaveLength(5)
   })
 

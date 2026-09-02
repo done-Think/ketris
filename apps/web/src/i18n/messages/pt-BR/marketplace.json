@@ -382,17 +382,17 @@
         "Cobertura": "Cobertura",
         "Loft": "Loft",
         "Casa": "Casa",
-        "Preço": "Preço",
-        "Até R$ 6.000": "Até R$ 6.000",
-        "Até R$ 10.000": "Até R$ 10.000",
-        "Quartos": "Quartos",
-        "2+ quartos": "2+ quartos",
-        "3+ quartos": "3+ quartos",
-        "Área": "Área",
-        "90m²+": "90m²+",
-        "100m²+": "100m²+",
-        "Todos": "Todos",
-        "Com vaga": "Com vaga"
+        "price": "Preço",
+        "upTo6000": "Até R$ 6.000",
+        "upTo10000": "Até R$ 10.000",
+        "bedrooms": "Quartos",
+        "bedrooms2Plus": "2+ quartos",
+        "bedrooms3Plus": "3+ quartos",
+        "area": "Área",
+        "area90Plus": "90m²+",
+        "area100Plus": "100m²+",
+        "all": "Todos",
+        "withParking": "Com vaga"
       }
     }
   },

@@ -19,15 +19,33 @@ export function getSearchPurposeParam(purpose: SearchResultPurpose) {
   return purpose === 'comprar' ? 'buy' : 'rent'
 }
 
+const propertyListingPathname = '/properties'
+
 function getHrefLastSegment(href: string) {
   return href.split('?')[0].split('/').filter(Boolean).at(-1) ?? ''
 }
 
+/**
+ * Um href só vira rota de detalhe quando aponta para `/properties/<id>`. Parte dos
+ * dados de destaque traz `/properties` puro, e tratar isso como id produziria
+ * `/imoveis/properties` — uma 404. Nesses casos o destino correto é a listagem.
+ */
+export function getPropertyDetailId(href: string): string | null {
+  if (!href.startsWith(`${propertyListingPathname}/`)) return null
+
+  return getHrefLastSegment(href) || null
+}
+
 export function buildPropertyDetailHref(href: string, purpose: SearchResultPurpose): LocalizedHref {
+  const id = getPropertyDetailId(href)
+  const query = { purpose: getSearchPurposeParam(purpose) }
+
+  if (!id) return { pathname: propertyListingPathname, query }
+
   return {
     pathname: '/properties/[id]',
-    params: { id: getHrefLastSegment(href) },
-    query: { purpose: getSearchPurposeParam(purpose) },
+    params: { id },
+    query,
   }
 }
 
@@ -47,9 +65,13 @@ export function buildProfileListingHref(
       }
     : undefined
 
+  const id = getPropertyDetailId(href)
+
+  if (!id) return query ? { pathname: propertyListingPathname, query } : propertyListingPathname
+
   return {
     pathname: '/properties/[id]',
-    params: { id: getHrefLastSegment(href) },
+    params: { id },
     query,
   }
 }
