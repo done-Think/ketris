@@ -279,8 +279,7 @@ describe('SalesPipelineBoard', () => {
     }
   })
 
-  it('recalculates preview counts and totals after search and stage filtering', async () => {
-    const user = userEvent.setup()
+  it('recalculates preview counts and totals after search and stage filtering', () => {
     vi.mocked(useSession).mockReturnValue({
       data: null,
       status: 'unauthenticated',
@@ -289,7 +288,7 @@ describe('SalesPipelineBoard', () => {
     renderPipeline({ preview: true })
 
     const searchInput = screen.getByRole('textbox', { name: 'Buscar oportunidade' })
-    await user.type(searchInput, 'pinheiros')
+    fireEvent.change(searchInput, { target: { value: 'pinheiros' } })
 
     const prospecting = screen.getByRole('region', { name: 'Prospecção' })
     const prospectingTotals = within(prospecting).getByRole('group', {
@@ -302,9 +301,9 @@ describe('SalesPipelineBoard', () => {
       within(prospectingTotals).getByText(matchesText(formatMonthlyCurrency(12000))),
     ).toBeVisible()
 
-    await user.clear(searchInput)
-    await user.click(screen.getByRole('button', { name: /Filtrar por etapa/i }))
-    await user.click(screen.getByRole('menuitem', { name: 'Qualificação' }))
+    fireEvent.change(searchInput, { target: { value: '' } })
+    fireEvent.click(screen.getByRole('button', { name: /Filtrar por etapa/i }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Qualificação' }))
 
     const qualification = screen.getByRole('region', { name: 'Qualificação' })
     const qualificationTotals = within(qualification).getByRole('group', {
@@ -322,7 +321,7 @@ describe('SalesPipelineBoard', () => {
   it('preserves the real empty state for an authenticated tenant instead of using fixtures', () => {
     renderPipeline()
 
-    expect(screen.getAllByText('Nenhuma oportunidade nesta etapa.')).toHaveLength(5)
+    expect(screen.getAllByText('Sem oportunidades nesta etapa.')).toHaveLength(5)
     for (const fixture of salesPipelineFixtures) {
       expect(screen.queryByText(fixture.opportunity.interessadoNome)).not.toBeInTheDocument()
     }
@@ -337,7 +336,7 @@ describe('SalesPipelineBoard', () => {
 
     renderPipeline()
 
-    expect(screen.getAllByText('Nenhuma oportunidade nesta etapa.')).toHaveLength(5)
+    expect(screen.getAllByText('Sem oportunidades nesta etapa.')).toHaveLength(5)
     expect(screen.queryByText('Carlos Eduardo')).not.toBeInTheDocument()
   })
 
@@ -351,7 +350,7 @@ describe('SalesPipelineBoard', () => {
 
     renderPipeline({ preview: true })
 
-    expect(screen.getAllByText('Nenhuma oportunidade nesta etapa.')).toHaveLength(5)
+    expect(screen.getAllByText('Sem oportunidades nesta etapa.')).toHaveLength(5)
     expect(screen.queryByText('Carlos Eduardo')).not.toBeInTheDocument()
   })
 
@@ -366,7 +365,7 @@ describe('SalesPipelineBoard', () => {
 
     expect(container.querySelectorAll('.MuiSkeleton-root')).toHaveLength(15)
     expect(screen.queryByText('Carlos Eduardo')).not.toBeInTheDocument()
-    expect(screen.queryByText('Nenhuma oportunidade nesta etapa.')).not.toBeInTheDocument()
+    expect(screen.queryByText('Sem oportunidades nesta etapa.')).not.toBeInTheDocument()
   })
 
   it('renders the requested five-stage sales pipeline with real API statuses', () => {

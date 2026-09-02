@@ -9,6 +9,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { alpha, brand, iconSize, surface } from '@shared/theme/tokens'
 
@@ -26,6 +27,7 @@ export function ContactsTable({
   onOpenInteractions,
   onOpenMoreOptions,
 }: ContactsTableProps) {
+  const t = useTranslations('crm.contacts')
   const allSelected =
     contacts.length > 0 && contacts.every((contact) => selectedIds.has(contact.id))
   const someSelected = contacts.some((contact) => selectedIds.has(contact.id)) && !allSelected
@@ -34,7 +36,7 @@ export function ContactsTable({
     <TableContainer sx={{ display: { xs: 'none', md: 'block' }, overflowX: 'auto' }}>
       <Table
         size="small"
-        aria-label="Contatos do CRM"
+        aria-label={t('tableAriaLabel')}
         sx={{
           minWidth: 900,
           tableLayout: 'fixed',
@@ -78,7 +80,7 @@ export function ContactsTable({
                 checked={allSelected}
                 indeterminate={someSelected}
                 onChange={onToggleAll}
-                slotProps={{ input: { 'aria-label': 'Selecionar todos os contatos visíveis' } }}
+                slotProps={{ input: { 'aria-label': t('selectAllVisible') } }}
                 sx={{
                   width: 24,
                   height: 24,
@@ -88,18 +90,24 @@ export function ContactsTable({
                 }}
               />
             </TableCell>
-            {['Nome', 'Tipo', 'Telefone', 'Email', 'Imóveis', 'Última interação', 'Ações'].map(
-              (label) => (
-                <TableCell
-                  key={label}
-                  scope="col"
-                  align={label === 'Ações' ? 'right' : 'left'}
-                  sx={label === 'Ações' ? { px: '2px !important' } : undefined}
-                >
-                  {label}
-                </TableCell>
-              ),
-            )}
+            {[
+              { key: 'name', label: t('tableColumns.name') },
+              { key: 'type', label: t('tableColumns.type') },
+              { key: 'phone', label: t('tableColumns.phone') },
+              { key: 'email', label: t('tableColumns.email') },
+              { key: 'properties', label: t('tableColumns.properties') },
+              { key: 'lastInteraction', label: t('tableColumns.lastInteraction') },
+              { key: 'actions', label: t('tableColumns.actions') },
+            ].map(({ key, label }) => (
+              <TableCell
+                key={key}
+                scope="col"
+                align={key === 'actions' ? 'right' : 'left'}
+                sx={key === 'actions' ? { px: '2px !important' } : undefined}
+              >
+                {label}
+              </TableCell>
+            ))}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -122,7 +130,9 @@ export function ContactsTable({
                     size="small"
                     checked={selected}
                     onChange={() => onToggleContact(contact.id)}
-                    slotProps={{ input: { 'aria-label': `Selecionar ${contact.name}` } }}
+                    slotProps={{
+                      input: { 'aria-label': t('selectContact', { name: contact.name }) },
+                    }}
                     sx={{
                       width: 24,
                       height: 24,

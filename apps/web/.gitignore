@@ -37,3 +37,7 @@ yarn-error.log*
 
 # sentry
 .sentryclirc
+
+# gerados pelo Next 16 a cada `next dev` (desative com `agentRules: false` no next.config)
+AGENTS.md
+CLAUDE.md

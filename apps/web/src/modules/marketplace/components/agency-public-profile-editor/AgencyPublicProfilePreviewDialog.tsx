@@ -1,5 +1,6 @@
 import { Dialog, DialogContent, DialogTitle, IconButton, Stack } from '@mui/material'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import { useTranslations } from 'next-intl'
 
 import { iconSize, surface } from '@shared/theme/tokens'
 
@@ -12,12 +13,14 @@ export function AgencyPublicProfilePreviewDialog({
   profileDraft,
   visibleSectionOrder,
 }: AgencyPublicProfilePreviewDialogProps) {
+  const t = useTranslations('marketplace.agencyProfileEditor.previewDialog')
+
   return (
     <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="lg">
       <DialogTitle sx={{ pr: 6 }}>
-        Visualização do perfil da imobiliária
+        {t('title')}
         <IconButton
-          aria-label="Fechar visualização"
+          aria-label={t('close')}
           onClick={onClose}
           sx={{ position: 'absolute', right: 12, top: 10 }}
         >

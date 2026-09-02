@@ -1,6 +1,7 @@
 'use client'
 
 import { Box, Button, RadioGroup, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 
 import { authPrimaryButtonSx } from './auth-form.styles'
@@ -16,6 +17,8 @@ import type {
 } from '../types/registration'
 
 export function RegistrationProfileStep({ isAdvancing, onContinue }: RegistrationProfileStepProps) {
+  const t = useTranslations('auth.register.profileStep')
+  const profilesT = useTranslations('auth.register.profiles')
   const { control } = useForm<RegistrationProfileFormValues>({
     defaultValues: { profile: DEFAULT_REGISTRATION_PROFILE },
   })
@@ -25,10 +28,10 @@ export function RegistrationProfileStep({ isAdvancing, onContinue }: Registratio
     <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ mt: { xs: 4, sm: 5 }, textAlign: 'center' }}>
         <Typography component="h1" variant="h2">
-          Qual é o seu perfil?
+          {t('title')}
         </Typography>
         <Typography color="text.secondary" sx={{ mt: 0.75 }}>
-          Escolha como você vai usar o Ketris
+          {t('subtitle')}
         </Typography>
       </Box>
 
@@ -37,7 +40,7 @@ export function RegistrationProfileStep({ isAdvancing, onContinue }: Registratio
         name="profile"
         render={({ field }) => (
           <RadioGroup
-            aria-label="Perfil"
+            aria-label={t('ariaLabel')}
             name={field.name}
             value={field.value}
             onBlur={field.onBlur}
@@ -54,8 +57,10 @@ export function RegistrationProfileStep({ isAdvancing, onContinue }: Registratio
             {REGISTRATION_PROFILES.map((profile) => (
               <RegistrationProfileCard
                 key={profile.id}
+                description={profilesT(`${profile.id}.description`)}
                 profile={profile}
                 selected={field.value === profile.id}
+                title={profilesT(`${profile.id}.title`)}
               />
             ))}
           </RadioGroup>
@@ -76,7 +81,7 @@ export function RegistrationProfileStep({ isAdvancing, onContinue }: Registratio
           mx: 'auto',
         }}
       >
-        Continuar
+        {t('continue')}
       </Button>
     </Box>
   )

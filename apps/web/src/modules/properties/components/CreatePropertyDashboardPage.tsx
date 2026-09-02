@@ -3,6 +3,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Box, Divider, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
 
@@ -17,6 +18,7 @@ import { CreatePropertyStepFields } from './CreatePropertyStepFields'
 import { CreatePropertyStepsNav } from './CreatePropertyStepsNav'
 
 export function CreatePropertyDashboardPage() {
+  const t = useTranslations('properties.create')
   const { control, handleSubmit, setValue, watch } = useForm<CreateDashboardPropertyFormValues>({
     defaultValues: createDashboardPropertyDefaultValues,
     resolver: zodResolver(createDashboardPropertySchema),
@@ -41,7 +43,7 @@ export function CreatePropertyDashboardPage() {
     <Box sx={{ width: '100%', px: { xs: 2, md: 4.8 }, py: { xs: 2.8, md: 4.2 } }}>
       <Box sx={{ width: '100%', maxWidth: 1180 }}>
         <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 36 }, fontWeight: 900, mb: 3 }}>
-          Cadastrar imóvel
+          {t('title')}
         </Typography>
 
         <CreatePropertyStepsNav
@@ -65,7 +67,7 @@ export function CreatePropertyDashboardPage() {
           <CreatePropertyStepFields
             control={control}
             activeStepKey={activeStep.key}
-            activeStepLabel={activeStep.label}
+            activeStepLabel={t(`steps.${activeStep.key}`)}
             propertyPurpose={propertyPurpose}
             onPropertyPurposeChange={(purpose) => setValue('purpose', purpose)}
           />

@@ -18,36 +18,12 @@ const encodedLogo = encodeURIComponent(`
 `)
 
 export const agencyPublicProfileSectionOptions: AgencyPublicProfileSectionOption[] = [
-  {
-    key: 'none',
-    label: 'Nenhum',
-    description: 'Não exibir seção nesta posição.',
-  },
-  {
-    key: 'brand',
-    label: 'Marca',
-    description: 'Logo, banner, nome e chamada institucional.',
-  },
-  {
-    key: 'metrics',
-    label: 'Indicadores',
-    description: 'Imóveis, equipe, anos de mercado e nota.',
-  },
-  {
-    key: 'contact',
-    label: 'Contato',
-    description: 'Link público, telefone, e-mail e dados rápidos.',
-  },
-  {
-    key: 'team',
-    label: 'Equipe',
-    description: 'Corretores em destaque na imobiliária.',
-  },
-  {
-    key: 'listings',
-    label: 'Imóveis',
-    description: 'Cards de imóveis representados.',
-  },
+  { key: 'none' },
+  { key: 'brand' },
+  { key: 'metrics' },
+  { key: 'contact' },
+  { key: 'team' },
+  { key: 'listings' },
 ]
 
 export const agencyPublicProfileEditorDefaultValues: AgencyPublicProfileEditorFormValues = {

@@ -1,24 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import {
-  Avatar,
-  Box,
-  Button,
-  Divider,
-  IconButton,
-  Menu,
-  MenuItem,
-  Stack,
-  Typography,
-} from '@mui/material'
+import { Avatar, Box, Button, Divider, IconButton, Stack, Typography } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
-import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
-import TranslateOutlinedIcon from '@mui/icons-material/TranslateOutlined'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
-import { publicMarketplaceText } from '@shared/i18n/pt-br'
-import type { ProfileLanguageCode, ProfileModalProps } from '@shared/types'
+import { Link } from '@/i18n/navigation'
 import {
   alpha,
   componentText,
@@ -28,6 +15,8 @@ import {
   surface,
   zIndex,
 } from '@shared/theme/tokens'
+import type { ProfileModalProps } from '@shared/types/profile-modal'
+import { LanguageSelector } from './LanguageSelector'
 
 export function ProfileModal({
   open,
@@ -39,31 +28,7 @@ export function ProfileModal({
   const [isMounted, setIsMounted] = useState(open)
   const [isVisible, setIsVisible] = useState(false)
   const [panelPosition, setPanelPosition] = useState({ top: 68, right: 16 })
-  const [selectedLanguage, setSelectedLanguage] = useState<ProfileLanguageCode>('pt-BR')
-  const [languageAnchor, setLanguageAnchor] = useState<HTMLElement | null>(null)
-  const profileText = publicMarketplaceText.profile
-  const languageOptions = [
-    {
-      code: 'pt-BR',
-      label: profileText.languages.ptBR,
-      shortLabel: 'BR',
-      flagSrc: 'https://flagcdn.com/w40/br.png',
-    },
-    {
-      code: 'en',
-      label: profileText.languages.en,
-      shortLabel: 'US',
-      flagSrc: 'https://flagcdn.com/w40/us.png',
-    },
-    {
-      code: 'es',
-      label: profileText.languages.es,
-      shortLabel: 'ES',
-      flagSrc: 'https://flagcdn.com/w40/es.png',
-    },
-  ] as const
-  const selectedLanguageOption =
-    languageOptions.find((language) => language.code === selectedLanguage) ?? languageOptions[0]
+  const t = useTranslations('marketplace.profile')
 
   useEffect(() => {
     if (open) {
@@ -75,7 +40,6 @@ export function ProfileModal({
     }
 
     setIsVisible(false)
-    setLanguageAnchor(null)
     const timeout = window.setTimeout(() => setIsMounted(false), 180)
 
     return () => window.clearTimeout(timeout)
@@ -111,7 +75,7 @@ export function ProfileModal({
     <Box
       role="dialog"
       aria-modal="true"
-      aria-label={profileText.dialogLabel}
+      aria-label={t('dialogLabel')}
       onClick={onClose}
       sx={{
         position: 'fixed',
@@ -160,11 +124,11 @@ export function ProfileModal({
                 {userProfile.name}
               </Typography>
               <Typography noWrap sx={{ color: 'text.secondary', ...componentText.modalSubtitle }}>
-                {userProfile.role}
+                {t('role')}
               </Typography>
             </Box>
           </Stack>
-          <IconButton aria-label={profileText.closeProfile} size="small" onClick={onClose}>
+          <IconButton aria-label={t('closeProfile')} size="small" onClick={onClose}>
             <CloseIcon fontSize="small" />
           </IconButton>
         </Stack>
@@ -191,53 +155,7 @@ export function ProfileModal({
         <Divider sx={{ mb: 1 }} />
 
         <Stack spacing={1}>
-          <Button
-            type="button"
-            onClick={(event) => setLanguageAnchor(event.currentTarget)}
-            startIcon={<TranslateOutlinedIcon fontSize="small" />}
-            endIcon={<KeyboardArrowDownRoundedIcon fontSize="small" />}
-            fullWidth
-            sx={{
-              justifyContent: 'flex-start',
-              minHeight: 42,
-              borderRadius: `${radius.sm}px`,
-              color: 'text.primary',
-              ...componentText.resetButtonText,
-              ...componentText.modalAction,
-              '& .MuiButton-endIcon': {
-                ml: 'auto',
-              },
-              '&:hover': {
-                bgcolor: alpha.magenta[8],
-                color: 'primary.main',
-              },
-            }}
-          >
-            <Stack
-              component="span"
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              sx={{ width: '100%', minWidth: 0 }}
-            >
-              <Box component="span">{profileText.language}</Box>
-              <Stack component="span" direction="row" alignItems="center" spacing={0.75}>
-                <Box
-                  component="img"
-                  src={selectedLanguageOption.flagSrc}
-                  alt=""
-                  sx={{
-                    width: 22,
-                    height: 22,
-                    borderRadius: radius.full,
-                    objectFit: 'cover',
-                    boxShadow: `0 0 0 1px ${alpha.graphite[10]}`,
-                  }}
-                />
-                <Box component="span">{selectedLanguageOption.shortLabel}</Box>
-              </Stack>
-            </Stack>
-          </Button>
+          <LanguageSelector />
 
           {actions.map((action) => {
             const Icon = action.icon
@@ -269,52 +187,6 @@ export function ProfileModal({
             )
           })}
         </Stack>
-
-        <Menu
-          anchorEl={languageAnchor}
-          open={Boolean(languageAnchor)}
-          onClose={() => setLanguageAnchor(null)}
-          disableScrollLock
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-          MenuListProps={{ 'aria-label': profileText.language }}
-          slotProps={{
-            paper: {
-              sx: {
-                mt: 0.75,
-                borderRadius: `${radius.sm}px`,
-                boxShadow: shadows.popover,
-                minWidth: 176,
-              },
-            },
-          }}
-        >
-          {languageOptions.map((language) => (
-            <MenuItem
-              key={language.code}
-              selected={selectedLanguage === language.code}
-              onClick={() => {
-                setSelectedLanguage(language.code)
-                setLanguageAnchor(null)
-              }}
-              sx={{ minHeight: 40, gap: 1.2 }}
-            >
-              <Box
-                component="img"
-                src={language.flagSrc}
-                alt=""
-                sx={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: radius.full,
-                  objectFit: 'cover',
-                  boxShadow: `0 0 0 1px ${alpha.graphite[10]}`,
-                }}
-              />
-              <Typography sx={componentText.modalSubtitle}>{language.label}</Typography>
-            </MenuItem>
-          ))}
-        </Menu>
       </Box>
     </Box>
   )

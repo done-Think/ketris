@@ -6,14 +6,14 @@ import { requirePlatformBearerAuth } from '@server/platform/require-platform-bea
 import { withErrorHandling } from '@server/shared/http'
 
 interface RouteContext {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export const GET = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
   await requirePlatformBearerAuth(request, platformContainer.tokenService)
 
   const users = await platformContainer.listTenantUsersUseCase.execute({
-    tenantId: context.params.id,
+    tenantId: (await context.params).id,
   })
 
   return NextResponse.json({ users }, { status: 200 })

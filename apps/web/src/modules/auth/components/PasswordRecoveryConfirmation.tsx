@@ -1,8 +1,11 @@
-import Link from 'next/link'
+'use client'
+
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
 import { Box, Button, Stack, Typography } from '@mui/material'
 import { alpha as muiAlpha } from '@mui/material/styles'
+import { useTranslations } from 'next-intl'
 
+import { Link } from '@/i18n/navigation'
 import { brand, componentText, radius } from '@shared/theme/tokens'
 
 import { authPrimaryButtonSx } from './auth-form.styles'
@@ -11,6 +14,8 @@ import { authRoutes } from '../config/auth-routes'
 import type { PasswordRecoveryConfirmationProps } from '../types/password-recovery'
 
 export function PasswordRecoveryConfirmation({ onResend }: PasswordRecoveryConfirmationProps) {
+  const t = useTranslations('auth.passwordRecovery')
+
   return (
     <Box sx={{ textAlign: 'center' }}>
       <Box
@@ -30,21 +35,21 @@ export function PasswordRecoveryConfirmation({ onResend }: PasswordRecoveryConfi
 
       <Box sx={{ mt: { xs: 2, md: 4 } }}>
         <Typography variant="h3" sx={componentText.authCompactTitle}>
-          E-mail enviado!
+          {t('confirmation.title')}
         </Typography>
         <Typography
           color="text.secondary"
           variant="body2"
           sx={{ display: { xs: 'none', md: 'block' }, mt: 0.5 }}
         >
-          Verifique sua caixa de entrada e siga as instruções para redefinir sua senha.
+          {t('confirmation.description')}
         </Typography>
         <Typography
           color="text.secondary"
           variant="body2"
           sx={{ display: { xs: 'block', md: 'none' }, mt: 0.5, fontSize: 10 }}
         >
-          Enviamos as instruções para o seu e-mail.
+          {t('confirmation.mobileDescription')}
         </Typography>
       </Box>
 
@@ -65,7 +70,7 @@ export function PasswordRecoveryConfirmation({ onResend }: PasswordRecoveryConfi
             },
           ]}
         >
-          Voltar ao login
+          {t('backToLogin')}
         </Button>
       </Stack>
     </Box>

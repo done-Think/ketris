@@ -1,4 +1,5 @@
 import { Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { motion } from '@shared/theme/tokens'
 
@@ -6,6 +7,8 @@ import { dashboardPropertyTabs } from '../config/dashboard-property-ui'
 import type { PropertyDetailTabsProps } from '../types/dashboard-property'
 
 export function PropertyDetailTabs({ activeTab, onTabChange }: PropertyDetailTabsProps) {
+  const t = useTranslations('properties.detail.tabs')
+
   return (
     <Stack
       direction="row"
@@ -36,7 +39,7 @@ export function PropertyDetailTabs({ activeTab, onTabChange }: PropertyDetailTab
               '&:hover': { color: 'primary.main' },
             }}
           >
-            {tab}
+            {t(tab)}
           </Typography>
         )
       })}

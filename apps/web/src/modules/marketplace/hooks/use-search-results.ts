@@ -18,6 +18,7 @@ import type {
   SortOption,
   ViewMode,
 } from '../types/search'
+import type { SearchResultsViewModeScope } from '../config/search-results-view-mode'
 import {
   formatCompactCurrency,
   getCurrencyValue,
@@ -25,6 +26,14 @@ import {
   normalizeLocationFilter,
 } from '../utils/search-results'
 import { useViewModePreference } from './use-view-mode-preference'
+
+const viewModeScopeByPurpose: Record<
+  SearchResultsPageProps['purpose'],
+  SearchResultsViewModeScope
+> = {
+  alugar: 'rent',
+  comprar: 'buy',
+}
 
 export function useSearchResults({ purpose, initialLocation = '' }: SearchResultsPageProps) {
   const { setValue, watch } = useForm<SearchResultsFormValues>({
@@ -43,7 +52,7 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
     },
     resolver: zodResolver(searchResultsFormSchema),
   })
-  const persistedViewMode = useViewModePreference(purpose)
+  const persistedViewMode = useViewModePreference(viewModeScopeByPurpose[purpose])
   const {
     areaFilterIndex,
     bedroomFilterIndex,

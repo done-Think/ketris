@@ -1,4 +1,5 @@
 import { Box, Divider, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
 
@@ -19,6 +20,8 @@ export function PublicProfileDemonstrative({
   swapSectionPositions,
   visibleSectionOrder,
 }: PublicProfileDemonstrativeProps) {
+  const t = useTranslations('marketplace.profileEditor')
+
   return (
     <Box>
       <Typography variant="h5" sx={{ mb: 1.4 }}>
@@ -153,10 +156,13 @@ export function PublicProfileDemonstrative({
                       </Box>
                       <Typography sx={{ fontSize: 12, fontWeight: 900 }}>
                         {selected
-                          ? 'Solte para mover'
+                          ? t('dropToMove')
                           : pressed
-                            ? 'Preparando...'
-                            : `Posição ${sectionPosition + 1}: ${option?.label}`}
+                            ? t('preparing')
+                            : t('positionLabel', {
+                                position: sectionPosition + 1,
+                                label: option ? t(`sections.${option.key}.label`) : '',
+                              })}
                       </Typography>
                     </Stack>
                     <Divider sx={{ flex: 1, borderColor: alpha.graphite[10] }} />

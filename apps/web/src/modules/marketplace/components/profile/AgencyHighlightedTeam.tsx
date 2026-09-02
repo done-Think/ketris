@@ -1,11 +1,12 @@
 'use client'
 
 import { Avatar, Box, Typography } from '@mui/material'
-import Link from 'next/link'
 
+import { Link } from '@/i18n/navigation'
 import { componentText, motion, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { AgencyHighlightedTeamProps } from '../../types/agency-highlighted-team'
+import { buildPublicProfileHref } from '../../utils/property-links'
 
 export function AgencyHighlightedTeam({ brand, brokers }: AgencyHighlightedTeamProps) {
   return (
@@ -33,7 +34,7 @@ export function AgencyHighlightedTeam({ brand, brokers }: AgencyHighlightedTeamP
           <Box
             key={broker.href}
             component={Link}
-            href={broker.href}
+            href={buildPublicProfileHref(broker.href, 'broker')}
             aria-label={`Ver perfil de ${broker.name}`}
             sx={{
               alignItems: 'center',

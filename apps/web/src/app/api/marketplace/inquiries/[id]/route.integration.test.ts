@@ -136,7 +136,7 @@ describe('/api/marketplace/inquiries/[id] (integração)', () => {
   }
 
   function ctx(id: string) {
-    return { params: { id } }
+    return { params: Promise.resolve({ id }) }
   }
 
   it('GET retorna 200 para uma proposta do tenant do ator', async () => {
@@ -211,7 +211,6 @@ describe('/api/marketplace/inquiries/[id] (integração)', () => {
 
     expect(response.status).toBe(200)
     expect(json.inquiry.status).toBe('ACEITA')
-    // campos não enviados permanecem
     expect(json.inquiry.interessadoTelefone).toBe('(41) 90000-0000')
   })
 

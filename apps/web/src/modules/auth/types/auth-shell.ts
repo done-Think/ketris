@@ -27,7 +27,6 @@ export type AuthShellProps = {
   brandDescription?: string
   children: ReactNode
   contentMaxWidth?: number
-  contentPaddingTop?: number
   footer?: ReactNode
   mobileVariant?: AuthMobileVariant
 }

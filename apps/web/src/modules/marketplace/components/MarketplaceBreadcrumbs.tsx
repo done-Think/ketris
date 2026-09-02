@@ -1,8 +1,8 @@
 'use client'
 
 import { Stack, Typography } from '@mui/material'
-import Link from 'next/link'
 
+import { Link } from '@/i18n/navigation'
 import type { MarketplaceBreadcrumbsProps } from '../types/breadcrumb'
 
 export function MarketplaceBreadcrumbs({ items }: MarketplaceBreadcrumbsProps) {

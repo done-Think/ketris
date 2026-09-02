@@ -1,0 +1,18 @@
+{
+  "metadata": {
+    "title": "Ketris",
+    "description": "A platform that connects owners, brokers, agencies, builders, and tenants in one technology infrastructure."
+  },
+  "app": {
+    "name": "Ketris"
+  },
+  "actions": {
+    "backHome": "Back to home"
+  },
+  "errors": {
+    "backHome": "Back home",
+    "notFound": "Page not found.",
+    "unexpectedTitle": "Something went wrong.",
+    "unexpectedDescription": "Our team has been notified. Please try again shortly."
+  }
+}

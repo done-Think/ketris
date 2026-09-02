@@ -84,7 +84,9 @@ describe('GET /api/marketplace/properties/[id] (integração)', () => {
   }
 
   it('retorna 200 com o detalhe do imóvel publicado, endereço e mídias ordenadas', async () => {
-    const response = await GET(buildRequest(publishedId), { params: { id: publishedId } })
+    const response = await GET(buildRequest(publishedId), {
+      params: Promise.resolve({ id: publishedId }),
+    })
     const json = await response.json()
 
     expect(response.status).toBe(200)
@@ -96,7 +98,7 @@ describe('GET /api/marketplace/properties/[id] (integração)', () => {
   })
 
   it('retorna 404 para um imóvel em rascunho (não publicado)', async () => {
-    const response = await GET(buildRequest(draftId), { params: { id: draftId } })
+    const response = await GET(buildRequest(draftId), { params: Promise.resolve({ id: draftId }) })
     const json = await response.json()
 
     expect(response.status).toBe(404)
@@ -104,7 +106,9 @@ describe('GET /api/marketplace/properties/[id] (integração)', () => {
   })
 
   it('retorna 404 para um id inexistente', async () => {
-    const response = await GET(buildRequest('inexistente'), { params: { id: 'inexistente' } })
+    const response = await GET(buildRequest('inexistente'), {
+      params: Promise.resolve({ id: 'inexistente' }),
+    })
 
     expect(response.status).toBe(404)
   })

@@ -1,5 +1,6 @@
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import { Alert, Box, Button, Paper, Skeleton, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { brand, radius, surface } from '@shared/theme/tokens'
 
@@ -15,10 +16,12 @@ export function OpportunityPropertyPanel({
   isError,
   onRetry,
 }: OpportunityPropertyPanelProps) {
+  const t = useTranslations('crm.opportunityDetail.propertyPanel')
+
   return (
     <Paper component="section" elevation={0} sx={{ ...panelSx, p: { xs: 2, md: 2.5 } }}>
       <Typography component="h2" sx={{ mb: 1.8, fontSize: 16, fontWeight: 800 }}>
-        Imóvel associado
+        {t('title')}
       </Typography>
       {isLoading ? (
         <Stack direction="row" spacing={2}>
@@ -30,8 +33,8 @@ export function OpportunityPropertyPanel({
           </Box>
         </Stack>
       ) : isError || !property ? (
-        <Alert severity="warning" action={<Button onClick={onRetry}>Tentar novamente</Button>}>
-          Não foi possível carregar o imóvel associado. Referência: {opportunity.imovelId}
+        <Alert severity="warning" action={<Button onClick={onRetry}>{t('retry')}</Button>}>
+          {t('loadError', { id: opportunity.imovelId })}
         </Alert>
       ) : (
         <Stack
@@ -76,7 +79,7 @@ export function OpportunityPropertyPanel({
             </Typography>
             <Typography sx={{ mt: 0.5, fontSize: 13, fontWeight: 800 }}>
               {formatCurrency(property.valor)}
-              {property.finalidade === 'ALUGUEL' ? '/mês' : ''}
+              {property.finalidade === 'ALUGUEL' ? t('monthlySuffix') : ''}
             </Typography>
           </Stack>
         </Stack>

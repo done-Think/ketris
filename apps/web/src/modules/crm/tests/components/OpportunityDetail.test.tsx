@@ -29,9 +29,18 @@ vi.mock('next-auth/react', () => ({
   }),
 }))
 
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ replace: mocks.replace }),
-}))
+vi.mock('@/i18n/navigation', async () => {
+  const React = await import('react')
+
+  return {
+    useRouter: () => ({ replace: mocks.replace }),
+    Link: React.forwardRef<HTMLAnchorElement, React.AnchorHTMLAttributes<HTMLAnchorElement>>(
+      function MockLocalizedLink({ href = '', ...props }, ref) {
+        return React.createElement('a', { ...props, href, ref })
+      },
+    ),
+  }
+})
 
 vi.mock('notistack', () => ({
   useSnackbar: () => ({ enqueueSnackbar: mocks.enqueueSnackbar }),

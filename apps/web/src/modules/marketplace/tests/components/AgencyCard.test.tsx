@@ -32,20 +32,20 @@ const agency: AgencyCardProps = {
   email: 'parcerias@alamedaprime.com.br',
   address: 'Alameda Santos, 1320 - Jardins',
   summary: 'Operação focada em imóveis residenciais de alto padrão nos Jardins.',
-  href: '/imobiliarias/alameda-prime',
+  href: '/agencies/alameda-prime',
   teamHighlights: ['Marina Costa', 'Juliana Mendes'],
   featuredListings: [
     {
       title: 'Apartamento pronto para morar perto da Oscar Freire',
       location: 'Jardins',
       price: 'R$ 1.420.000',
-      href: '/imoveis/apartamento-jardins-venda',
+      href: '/properties/apartamento-jardins-venda',
     },
     {
       title: 'Cobertura tríplex com piscina privativa',
       location: 'Itaim Bibi',
       price: 'R$ 12.500 / mês',
-      href: '/imoveis/cobertura-itaim-bibi',
+      href: '/properties/cobertura-itaim-bibi',
     },
   ],
   viewMode: 'list',

@@ -11,8 +11,6 @@ export type RegistrationProfileIcon = 'owner' | 'broker' | 'agency' | 'developer
 
 export type RegistrationProfile = {
   id: RegistrationProfileId
-  title: string
-  description: string
   icon: RegistrationProfileIcon
 }
 
@@ -26,8 +24,7 @@ export type RegistrationPasswordFieldName = 'password' | 'passwordConfirmation'
 
 export type RegistrationPasswordField = {
   name: RegistrationPasswordFieldName
-  label: string
-  placeholder: string
+  translationKey: RegistrationPasswordFieldName
 }
 
 export type RegistrationProgressProps = {
@@ -51,6 +48,8 @@ export type RegistrationProfileIconProps = {
 export type RegistrationProfileCardProps = {
   profile: RegistrationProfile
   selected: boolean
+  title: string
+  description: string
 }
 
 export type RegistrationProfileStepProps = {

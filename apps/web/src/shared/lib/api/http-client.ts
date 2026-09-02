@@ -7,8 +7,6 @@ import axios, {
 
 import { env } from '@config/env'
 
-// Cliente HTTP base, instanciado como classe para ser estendido e reutilizado.
-// Ex.: cada módulo cria um service que recebe esta instância.
 export class HttpClient {
   protected instance: AxiosInstance
 
@@ -25,7 +23,6 @@ export class HttpClient {
   private setupInterceptors(): void {
     this.instance.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        // Token e tenant são injetados aqui (integra com NextAuth no client).
         return config
       },
       (error) => Promise.reject(error),
@@ -34,13 +31,11 @@ export class HttpClient {
     this.instance.interceptors.response.use(
       (response: AxiosResponse) => response,
       (error) => {
-        // Ponto central para tratar 401 (refresh), 403, 5xx etc.
         return Promise.reject(error)
       },
     )
   }
 
-  // Permite setar o token de autenticação em runtime.
   setAuthToken(token: string | null): void {
     if (token) {
       this.instance.defaults.headers.common.Authorization = `Bearer ${token}`
@@ -49,7 +44,6 @@ export class HttpClient {
     }
   }
 
-  // Permite setar o tenant ativo (multi-tenant).
   setTenant(tenantId: string | null): void {
     if (tenantId) {
       this.instance.defaults.headers.common['X-Tenant-Id'] = tenantId
@@ -84,5 +78,4 @@ export class HttpClient {
   }
 }
 
-// Instância única compartilhada.
 export const httpClient = new HttpClient()

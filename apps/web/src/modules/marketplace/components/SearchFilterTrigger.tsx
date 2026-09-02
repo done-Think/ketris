@@ -1,5 +1,6 @@
 import { Box, Button, Typography } from '@mui/material'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import { useTranslations } from 'next-intl'
 
 import { alpha, componentText, iconSize, radius } from '@shared/theme/tokens'
 
@@ -7,6 +8,8 @@ import { searchOptions } from '../config/search-filters'
 import type { SearchFilterTriggerProps } from '../types/search'
 
 export function SearchFilterTrigger({ filterKey, value, onOpen }: SearchFilterTriggerProps) {
+  const t = useTranslations('marketplace.home.search.filters')
+
   return (
     <Button
       fullWidth
@@ -42,7 +45,7 @@ export function SearchFilterTrigger({ filterKey, value, onOpen }: SearchFilterTr
             ...componentText.filterLabel,
           }}
         >
-          {searchOptions[filterKey].label}
+          {t(searchOptions[filterKey].labelKey)}
         </Typography>
         <Typography
           sx={{

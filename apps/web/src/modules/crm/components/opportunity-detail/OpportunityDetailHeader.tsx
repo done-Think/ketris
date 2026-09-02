@@ -1,6 +1,9 @@
-import { Breadcrumbs, Chip, Link, Stack, Typography } from '@mui/material'
-import NextLink from 'next/link'
+'use client'
 
+import { Breadcrumbs, Chip, Link, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
+
+import { Link as LocalizedLink } from '@/i18n/navigation'
 import type { OpportunityDetailHeaderProps } from '../../types/opportunity-detail'
 import { formatCurrency, formatMonthlyCurrency } from '../../utils/formatters'
 
@@ -9,17 +12,21 @@ export function OpportunityDetailHeader({
   stage,
   property,
 }: OpportunityDetailHeaderProps) {
+  const t = useTranslations('crm.opportunityDetail')
+  const pipelineT = useTranslations('crm.pipeline')
+  const stageLabel = pipelineT(`stages.${stage.labelKey}`)
+
   return (
     <>
       <Breadcrumbs
-        aria-label="Navegação estrutural"
+        aria-label={t('breadcrumbAriaLabel')}
         separator="›"
         sx={{ mb: 1.2, '& .MuiBreadcrumbs-separator': { color: 'text.disabled' } }}
       >
-        <Link component={NextLink} href="/crm" underline="hover" color="text.secondary">
-          Pipeline
+        <Link component={LocalizedLink} href="/crm" underline="hover" color="text.secondary">
+          {t('pipelineLink')}
         </Link>
-        <Typography color="text.secondary">{stage.label}</Typography>
+        <Typography color="text.secondary">{stageLabel}</Typography>
         <Typography color="text.primary" fontWeight={700}>
           {opportunity.interessadoNome}
         </Typography>
@@ -38,7 +45,7 @@ export function OpportunityDetailHeader({
           </Typography>
           <Chip
             size="small"
-            label={stage.label}
+            label={stageLabel}
             sx={{ bgcolor: stage.softColor, color: stage.color, fontWeight: 800 }}
           />
         </Stack>

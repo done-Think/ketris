@@ -1,14 +1,15 @@
 import { Avatar, Box, Button, Chip, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { alpha, radius, surface } from '@shared/theme/tokens'
 
 import type { AgencyPublicProfileMiniSectionProps } from '../../types/agency-public-profile-editor'
 
 const metrics = [
-  { label: 'Imóveis', value: '128' },
-  { label: 'Equipe', value: '18' },
-  { label: 'Anos', value: '14' },
-  { label: 'Nota', value: '4.9' },
+  { labelKey: 'properties', value: '128' },
+  { labelKey: 'team', value: '18' },
+  { labelKey: 'years', value: '14' },
+  { labelKey: 'rating', value: '4.9' },
 ] as const
 
 const team = ['Marina Costa', 'Juliana Mendes', 'Bianca Azevedo'] as const
@@ -18,6 +19,8 @@ export function AgencyPublicProfileMiniSection({
   profileDraft,
   sectionKey,
 }: AgencyPublicProfileMiniSectionProps) {
+  const t = useTranslations('marketplace.agencyProfileEditor')
+
   if (sectionKey === 'brand') {
     return (
       <Box
@@ -92,7 +95,7 @@ export function AgencyPublicProfileMiniSection({
       >
         {metrics.map((metric) => (
           <Box
-            key={metric.label}
+            key={metric.labelKey}
             sx={{
               border: '1px solid',
               borderColor: alpha.graphite[8],
@@ -102,7 +105,7 @@ export function AgencyPublicProfileMiniSection({
             }}
           >
             <Typography sx={{ color: 'text.secondary', fontSize: 10, fontWeight: 800 }}>
-              {metric.label}
+              {t(`metrics.${metric.labelKey}`)}
             </Typography>
             <Typography sx={{ color: profileDraft.primaryColor, fontSize: 18, fontWeight: 900 }}>
               {metric.value}
@@ -202,7 +205,11 @@ export function AgencyPublicProfileMiniSection({
         p: 1,
       }}
     >
-      {['Ligar', 'E-mail', 'Abrir link público'].map((action, index) => (
+      {[
+        t('contactActions.call'),
+        t('contactActions.email'),
+        t('contactActions.openPublicLink'),
+      ].map((action, index) => (
         <Button
           key={action}
           variant={index === 0 ? 'contained' : 'outlined'}
