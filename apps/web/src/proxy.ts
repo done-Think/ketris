@@ -28,7 +28,7 @@ const authPaths = new Set([
   '/api/platform/refresh',
 ])
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   if (!request.nextUrl.pathname.startsWith('/api')) {
     return handleI18nRouting(request)
   }

@@ -31,7 +31,7 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
 
   return (
     <html lang={message.lang}>
-      <body>
+      <body suppressHydrationWarning>
         <h2>{message.title}</h2>
         <p>{message.description}</p>
       </body>

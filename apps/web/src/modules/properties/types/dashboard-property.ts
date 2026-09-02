@@ -82,10 +82,6 @@ export type PropertyDetailDashboardPageProps = {
   propertyId: string
 }
 
-export type DashboardPropertyDetailRouteProps = {
-  params: { id: string }
-}
-
 export type PropertyNavigationHandler = (propertyId: string) => void
 
 export type PropertiesDashboardHeaderProps = {

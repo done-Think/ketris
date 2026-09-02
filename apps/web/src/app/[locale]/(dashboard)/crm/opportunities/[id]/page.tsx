@@ -1,9 +1,8 @@
+import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
 import { OpportunityDetail } from '@modules/crm/components/OpportunityDetail'
 
-type CrmOpportunityPageProps = {
-  params: { id: string }
-}
+export default async function CrmOpportunityPage({ params }: LocaleRoutePageProps<{ id: string }>) {
+  const { id } = await params
 
-export default function CrmOpportunityPage({ params }: CrmOpportunityPageProps) {
-  return <OpportunityDetail opportunityId={params.id} />
+  return <OpportunityDetail opportunityId={id} />
 }

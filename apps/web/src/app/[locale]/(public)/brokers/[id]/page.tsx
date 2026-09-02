@@ -1,22 +1,19 @@
 import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 
+import { locales } from '@/i18n/routing'
+import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
 import { BrokerPublicProfilePage } from '@modules/marketplace'
 import { brokers, getBrokerById } from '@modules/marketplace/data/brokers'
 
-type BrokerPageProps = {
-  params: {
-    id: string
-  }
-}
-
 export function generateStaticParams() {
-  return brokers.map((broker) => ({ id: broker.id }))
+  return locales.flatMap((locale) => brokers.map((broker) => ({ locale, id: broker.id })))
 }
 
-export async function generateMetadata({ params }: BrokerPageProps) {
-  const t = await getTranslations('marketplace.metadata')
-  const broker = getBrokerById(params.id)
+export async function generateMetadata({ params }: LocaleRoutePageProps<{ id: string }>) {
+  const { id, locale } = await params
+  const t = await getTranslations({ locale, namespace: 'marketplace.metadata' })
+  const broker = getBrokerById(id)
 
   if (!broker) {
     return {
@@ -34,8 +31,9 @@ export async function generateMetadata({ params }: BrokerPageProps) {
   }
 }
 
-export default function BrokerPage({ params }: BrokerPageProps) {
-  const broker = getBrokerById(params.id)
+export default async function BrokerPage({ params }: LocaleRoutePageProps<{ id: string }>) {
+  const { id } = await params
+  const broker = getBrokerById(id)
 
   if (!broker) notFound()
 

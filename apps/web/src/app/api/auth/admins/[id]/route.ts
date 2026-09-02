@@ -8,7 +8,7 @@ import { updateAdminRequestSchema } from '@server/auth/schemas/update-admin.sche
 import { parseJsonBody, withErrorHandling } from '@server/shared/http'
 
 interface RouteContext {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export const GET = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
@@ -17,7 +17,7 @@ export const GET = withErrorHandling(async (request: NextRequest, context: Route
   const admin = await authContainer.getAdminUseCase.execute({
     actorTenantId: actor.tenantId,
     actorPapel: actor.papel as Papel,
-    adminId: context.params.id,
+    adminId: (await context.params).id,
   })
 
   return NextResponse.json({ admin }, { status: 200 })
@@ -30,7 +30,7 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Rou
   const admin = await authContainer.updateAdminUseCase.execute({
     actorTenantId: actor.tenantId,
     actorPapel: actor.papel as Papel,
-    adminId: context.params.id,
+    adminId: (await context.params).id,
     nome: body.nome,
     email: body.email,
   })
@@ -45,7 +45,7 @@ export const DELETE = withErrorHandling(async (request: NextRequest, context: Ro
     actorId: actor.sub,
     actorTenantId: actor.tenantId,
     actorPapel: actor.papel as Papel,
-    adminId: context.params.id,
+    adminId: (await context.params).id,
   })
 
   return NextResponse.json({ admin }, { status: 200 })

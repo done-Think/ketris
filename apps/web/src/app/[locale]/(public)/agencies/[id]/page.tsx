@@ -1,22 +1,19 @@
 import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 
+import { locales } from '@/i18n/routing'
+import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
 import { AgencyPublicProfilePage } from '@modules/marketplace'
 import { agencies, getAgencyById } from '@modules/marketplace/data/agencies'
 
-type AgencyPageProps = {
-  params: {
-    id: string
-  }
-}
-
 export function generateStaticParams() {
-  return agencies.map((agency) => ({ id: agency.id }))
+  return locales.flatMap((locale) => agencies.map((agency) => ({ locale, id: agency.id })))
 }
 
-export async function generateMetadata({ params }: AgencyPageProps) {
-  const t = await getTranslations('marketplace.metadata')
-  const agency = getAgencyById(params.id)
+export async function generateMetadata({ params }: LocaleRoutePageProps<{ id: string }>) {
+  const { id, locale } = await params
+  const t = await getTranslations({ locale, namespace: 'marketplace.metadata' })
+  const agency = getAgencyById(id)
 
   if (!agency) {
     return {
@@ -34,8 +31,9 @@ export async function generateMetadata({ params }: AgencyPageProps) {
   }
 }
 
-export default function AgencyPage({ params }: AgencyPageProps) {
-  const agency = getAgencyById(params.id)
+export default async function AgencyPage({ params }: LocaleRoutePageProps<{ id: string }>) {
+  const { id } = await params
+  const agency = getAgencyById(id)
 
   if (!agency) notFound()
 

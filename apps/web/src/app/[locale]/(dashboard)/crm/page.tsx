@@ -1,12 +1,17 @@
 import { createLocalizedMetadata } from '@/i18n/metadata'
+import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
 import { SalesPipelineBoard } from '@modules/crm/components/SalesPipelineBoard'
 
-export const generateMetadata = () => createLocalizedMetadata('crm.metadata.pipeline')
+export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
+  const { locale } = await params
 
-type CrmPipelinePageProps = {
-  searchParams?: { preview?: string | string[] }
+  return createLocalizedMetadata('crm.metadata.pipeline', locale)
 }
 
-export default function CrmPipelinePage({ searchParams }: CrmPipelinePageProps) {
-  return <SalesPipelineBoard preview={searchParams?.preview === '1'} />
+export default async function CrmPipelinePage({
+  searchParams,
+}: LocaleRoutePageProps<Record<never, never>, { preview?: string | string[] }>) {
+  const resolvedSearchParams = await searchParams
+
+  return <SalesPipelineBoard preview={resolvedSearchParams?.preview === '1'} />
 }

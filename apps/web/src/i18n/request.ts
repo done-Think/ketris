@@ -1,13 +1,12 @@
+import { locale as getRootLocale } from 'next/root-params'
 import { getRequestConfig } from 'next-intl/server'
-import { headers } from 'next/headers'
 
 import { defaultTimeZone, formats } from './formats'
-import { localeHeaderName } from './locale-header'
 import { defaultLocale, isAppLocale } from './routing'
 import type { AppLocale } from './types/locale.types'
 
 export default getRequestConfig(async ({ locale }) => {
-  const candidateLocale = locale ?? (await getRequestHeaderLocale()) ?? defaultLocale
+  const candidateLocale = locale ?? (await getRootLocale()) ?? defaultLocale
   const currentLocale = isAppLocale(candidateLocale) ? candidateLocale : defaultLocale
 
   return {
@@ -17,12 +16,6 @@ export default getRequestConfig(async ({ locale }) => {
     messages: await loadMessages(currentLocale),
   }
 })
-
-async function getRequestHeaderLocale() {
-  const requestHeaders = await headers()
-
-  return requestHeaders.get(localeHeaderName) ?? undefined
-}
 
 async function loadMessages(locale: AppLocale) {
   const [common, auth, crm, dashboard, marketplace, platform, properties, validation] =

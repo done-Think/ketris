@@ -13,10 +13,6 @@ vi.mock('next/navigation', () => ({
   redirect: redirectMock,
 }))
 
-vi.mock('next-intl/server', () => ({
-  getLocale: vi.fn(() => Promise.resolve('pt-BR')),
-}))
-
 async function getRequireAdminSession() {
   const { requireAdminSession } = await import('./require-admin-session')
   return requireAdminSession
@@ -28,7 +24,7 @@ describe('requireAdminSession', () => {
     getServerSessionMock.mockResolvedValueOnce(session)
 
     const requireAdminSession = await getRequireAdminSession()
-    const result = await requireAdminSession()
+    const result = await requireAdminSession('pt-BR')
 
     expect(result).toBe(session)
     expect(redirectMock).not.toHaveBeenCalled()
@@ -39,7 +35,7 @@ describe('requireAdminSession', () => {
 
     const requireAdminSession = await getRequireAdminSession()
 
-    await expect(requireAdminSession()).rejects.toThrow('NEXT_REDIRECT')
+    await expect(requireAdminSession('pt-BR')).rejects.toThrow('NEXT_REDIRECT')
     expect(redirectMock).toHaveBeenCalledWith('/pt/backoffice/login')
   })
 
@@ -48,7 +44,7 @@ describe('requireAdminSession', () => {
 
     const requireAdminSession = await getRequireAdminSession()
 
-    await expect(requireAdminSession()).rejects.toThrow('NEXT_REDIRECT')
+    await expect(requireAdminSession('pt-BR')).rejects.toThrow('NEXT_REDIRECT')
     expect(redirectMock).toHaveBeenCalledWith('/pt/backoffice/login')
   })
 })

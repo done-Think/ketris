@@ -136,7 +136,7 @@ describe('/api/marketplace/inquiries/[id] (integração)', () => {
   }
 
   function ctx(id: string) {
-    return { params: { id } }
+    return { params: Promise.resolve({ id }) }
   }
 
   it('GET retorna 200 para uma proposta do tenant do ator', async () => {

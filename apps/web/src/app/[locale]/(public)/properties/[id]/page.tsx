@@ -1,12 +1,13 @@
 import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 
+import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
 import { PropertyDetailPage } from '@modules/marketplace/components/PropertyDetailPage'
 import { getPropertyDetailById } from '@modules/marketplace/data/property-details'
 import type {
   PropertyBreadcrumbOriginType,
   PropertyBreadcrumbPurpose,
-  PropertyPageProps,
+  PropertyPageSearchParams,
 } from '@modules/marketplace/types/property-detail'
 import {
   buildPublicProfileHref,
@@ -14,9 +15,15 @@ import {
   isSafeMarketplaceOriginHref,
 } from '@modules/marketplace/utils/property-links'
 
-export async function generateMetadata({ params }: PropertyPageProps) {
-  const t = await getTranslations('marketplace.metadata.details')
-  const property = getPropertyDetailById(params.id)
+export async function generateMetadata({
+  params,
+}: LocaleRoutePageProps<{ id: string }, PropertyPageSearchParams>) {
+  const { id, locale } = await params
+  const t = await getTranslations({
+    locale,
+    namespace: 'marketplace.metadata.details',
+  })
+  const property = getPropertyDetailById(id)
 
   if (!property) return { title: t('notFoundTitle') }
 
@@ -51,15 +58,20 @@ function getValidPurpose(purpose: string | undefined): PropertyBreadcrumbPurpose
   return undefined
 }
 
-export default function PropertyPage({ params, searchParams }: PropertyPageProps) {
-  const property = getPropertyDetailById(params.id)
+export default async function PropertyPage({
+  params,
+  searchParams,
+}: LocaleRoutePageProps<{ id: string }, PropertyPageSearchParams>) {
+  const { id } = await params
+  const resolvedSearchParams = await searchParams
+  const property = getPropertyDetailById(id)
 
   if (!property) notFound()
 
-  const activePurpose = getValidPurpose(searchParams?.purpose)
-  const originType = getValidOriginType(searchParams?.source)
-  const originHref = getSafeOriginHref(searchParams?.sourceHref, originType)
-  const originName = originHref ? searchParams?.sourceName : undefined
+  const activePurpose = getValidPurpose(resolvedSearchParams?.purpose)
+  const originType = getValidOriginType(resolvedSearchParams?.source)
+  const originHref = getSafeOriginHref(resolvedSearchParams?.sourceHref, originType)
+  const originName = originHref ? resolvedSearchParams?.sourceName : undefined
 
   return (
     <PropertyDetailPage

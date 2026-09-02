@@ -77,7 +77,7 @@ describe('POST /api/marketplace/properties/[id]/inquiries (integração)', () =>
         interessadoTelefone: '(41) 99999-9999',
         observacoes: 'Gostaria de agendar uma visita.',
       }),
-      { params: { id: publishedId } },
+      { params: Promise.resolve({ id: publishedId }) },
     )
     const json = await response.json()
 
@@ -101,7 +101,7 @@ describe('POST /api/marketplace/properties/[id]/inquiries (integração)', () =>
         interessadoNome: 'João',
         interessadoEmail: 'joao@exemplo.com',
       }),
-      { params: { id: draftId } },
+      { params: Promise.resolve({ id: draftId }) },
     )
     const json = await response.json()
 
@@ -114,7 +114,7 @@ describe('POST /api/marketplace/properties/[id]/inquiries (integração)', () =>
 
   it('retorna 400 quando o corpo é inválido (e-mail ausente)', async () => {
     const response = await POST(buildRequest(publishedId, { interessadoNome: 'Sem Email' }), {
-      params: { id: publishedId },
+      params: Promise.resolve({ id: publishedId }),
     })
 
     expect(response.status).toBe(400)

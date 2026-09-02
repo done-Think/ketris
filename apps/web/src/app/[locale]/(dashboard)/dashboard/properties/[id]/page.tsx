@@ -1,11 +1,17 @@
 import { createLocalizedMetadata } from '@/i18n/metadata'
+import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
 import { PropertyDetailDashboardPage } from '@modules/properties'
-import type { DashboardPropertyDetailRouteProps } from '@modules/properties'
 
-export const generateMetadata = () => createLocalizedMetadata('properties.metadata.detail')
+export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
+  const { locale } = await params
 
-export default function DashboardPropertyDetailRoute({
+  return createLocalizedMetadata('properties.metadata.detail', locale)
+}
+
+export default async function DashboardPropertyDetailRoute({
   params,
-}: DashboardPropertyDetailRouteProps) {
-  return <PropertyDetailDashboardPage propertyId={params.id} />
+}: LocaleRoutePageProps<{ id: string }>) {
+  const { id } = await params
+
+  return <PropertyDetailDashboardPage propertyId={id} />
 }

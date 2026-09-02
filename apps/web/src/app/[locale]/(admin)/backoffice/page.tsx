@@ -3,14 +3,20 @@ import { getTranslations } from 'next-intl/server'
 import { Container, Stack, Typography } from '@mui/material'
 
 import { createLocalizedMetadata } from '@/i18n/metadata'
+import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
 import { authOptions } from '@shared/lib/auth/auth-options'
 import { ActionTextLink } from '@shared/components/ui'
 
-export const generateMetadata = () => createLocalizedMetadata('auth.backoffice')
+export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
+  const { locale } = await params
 
-export default async function BackofficePage() {
+  return createLocalizedMetadata('auth.backoffice', locale)
+}
+
+export default async function BackofficePage({ params }: LocaleRoutePageProps) {
+  const { locale } = await params
   const session = await getServerSession(authOptions)
-  const t = await getTranslations('auth.backoffice')
+  const t = await getTranslations({ locale, namespace: 'auth.backoffice' })
 
   return (
     <Container maxWidth="sm" sx={{ py: 8 }}>

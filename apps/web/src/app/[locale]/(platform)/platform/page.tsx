@@ -2,13 +2,19 @@ import { getTranslations } from 'next-intl/server'
 import { Stack } from '@mui/material'
 
 import { createLocalizedMetadata } from '@/i18n/metadata'
+import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
 import { ActionTextLink } from '@shared/components/ui'
 import { PlatformPageLayout, TenantsList } from '@modules/platform'
 
-export const generateMetadata = () => createLocalizedMetadata('platform.metadata.dashboard')
+export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
+  const { locale } = await params
 
-export default async function PlatformDashboardPage() {
-  const t = await getTranslations('platform.dashboard')
+  return createLocalizedMetadata('platform.metadata.dashboard', locale)
+}
+
+export default async function PlatformDashboardPage({ params }: LocaleRoutePageProps) {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'platform.dashboard' })
 
   return (
     <PlatformPageLayout
