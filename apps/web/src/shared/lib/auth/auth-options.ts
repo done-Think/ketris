@@ -6,6 +6,8 @@ import { InvalidCredentialsError } from '@server/auth/domain/errors'
 import { platformContainer } from '@server/platform/container'
 import { InvalidPlatformCredentialsError } from '@server/platform/domain/errors'
 
+import { buildMockTenantUser, isAuthMockEnabled, matchesMockCredentials } from './auth-mock'
+
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: 'jwt' },
@@ -22,6 +24,13 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
+
+        if (
+          isAuthMockEnabled() &&
+          matchesMockCredentials(credentials.email, credentials.password)
+        ) {
+          return buildMockTenantUser()
+        }
 
         try {
           const { user, accessToken, refreshToken } = await authContainer.loginUseCase.execute({
