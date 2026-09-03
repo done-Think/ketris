@@ -10,28 +10,28 @@ import { SubmitInquiryUseCase } from './submit-inquiry.use-case'
 const detail: PublishedPropertyDetail = {
   id: 'imovel-1',
   tenantId: 'tenant-1',
-  titulo: 'Apartamento no centro',
-  finalidade: 'ALUGUEL',
-  tipo: 'apartamento',
-  valor: 2500,
-  condominio: null,
-  iptu: null,
-  quartos: 2,
-  banheiros: 1,
-  vagas: 1,
-  areaM2: 60,
-  cidade: 'Curitiba',
-  bairro: 'Centro',
-  capaUrl: null,
-  publicadoEm: new Date('2026-08-01T00:00:00.000Z'),
-  descricao: null,
-  endereco: null,
-  midias: [],
+  title: 'Apartamento no centro',
+  purpose: 'ALUGUEL',
+  propertyType: 'apartamento',
+  price: 2500,
+  condoFee: null,
+  propertyTax: null,
+  bedrooms: 2,
+  bathrooms: 1,
+  parkingSpots: 1,
+  area: 60,
+  city: 'Curitiba',
+  neighborhood: 'Centro',
+  coverUrl: null,
+  publishedAt: new Date('2026-08-01T00:00:00.000Z'),
+  description: null,
+  address: null,
+  media: [],
 }
 
 const created: CreatedInquiry = {
   id: 'oportunidade-1',
-  imovelId: 'imovel-1',
+  propertyId: 'imovel-1',
   status: 'ENVIADA',
   createdAt: new Date('2026-08-10T00:00:00.000Z'),
 }
@@ -46,11 +46,6 @@ function createDeps(overrides?: {
   }
   const inquiryRepository: InquiryRepository = {
     create: overrides?.create ?? vi.fn().mockResolvedValue(created),
-    findManyByTenant: vi.fn(),
-    findById: vi.fn(),
-    update: vi.fn(),
-    archive: vi.fn(),
-    delete: vi.fn(),
   }
 
   return { propertyRepository, inquiryRepository }
@@ -64,20 +59,20 @@ describe('SubmitInquiryUseCase', () => {
 
     const result = await useCase.execute({
       propertyId: 'imovel-1',
-      interessadoNome: 'Maria',
-      interessadoEmail: 'maria@exemplo.com',
-      interessadoTelefone: '41999999999',
-      observacoes: 'Tenho interesse em visitar',
+      leadName: 'Maria',
+      leadEmail: 'maria@exemplo.com',
+      leadPhone: '41999999999',
+      notes: 'Tenho interesse em visitar',
     })
 
     expect(create).toHaveBeenCalledWith({
       tenantId: 'tenant-1',
-      imovelId: 'imovel-1',
-      interessadoNome: 'Maria',
-      interessadoEmail: 'maria@exemplo.com',
-      interessadoTelefone: '41999999999',
-      valorProposto: 2500,
-      observacoes: 'Tenho interesse em visitar',
+      propertyId: 'imovel-1',
+      leadName: 'Maria',
+      leadEmail: 'maria@exemplo.com',
+      leadPhone: '41999999999',
+      proposedValue: 2500,
+      notes: 'Tenho interesse em visitar',
     })
     expect(result).toEqual(created)
   })
@@ -89,15 +84,15 @@ describe('SubmitInquiryUseCase', () => {
 
     await useCase.execute({
       propertyId: 'imovel-1',
-      interessadoNome: 'Maria',
-      interessadoEmail: 'maria@exemplo.com',
+      leadName: 'Maria',
+      leadEmail: 'maria@exemplo.com',
     })
 
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
-        valorProposto: 2500,
-        interessadoTelefone: null,
-        observacoes: null,
+        proposedValue: 2500,
+        leadPhone: null,
+        notes: null,
       }),
     )
   })
@@ -109,12 +104,12 @@ describe('SubmitInquiryUseCase', () => {
 
     await useCase.execute({
       propertyId: 'imovel-1',
-      interessadoNome: 'Maria',
-      interessadoEmail: 'maria@exemplo.com',
-      valorProposto: 2300,
+      leadName: 'Maria',
+      leadEmail: 'maria@exemplo.com',
+      proposedValue: 2300,
     })
 
-    expect(create).toHaveBeenCalledWith(expect.objectContaining({ valorProposto: 2300 }))
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ proposedValue: 2300 }))
   })
 
   it('lança PropertyNotFoundError e não cria oportunidade quando o imóvel não está publicado', async () => {
@@ -125,8 +120,8 @@ describe('SubmitInquiryUseCase', () => {
     await expect(
       useCase.execute({
         propertyId: 'inexistente',
-        interessadoNome: 'Maria',
-        interessadoEmail: 'maria@exemplo.com',
+        leadName: 'Maria',
+        leadEmail: 'maria@exemplo.com',
       }),
     ).rejects.toThrow(PropertyNotFoundError)
     expect(create).not.toHaveBeenCalled()

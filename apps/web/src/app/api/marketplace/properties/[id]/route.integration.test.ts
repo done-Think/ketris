@@ -92,9 +92,9 @@ describe('GET /api/marketplace/properties/[id] (integração)', () => {
     expect(response.status).toBe(200)
     expect(json.property.id).toBe(publishedId)
     expect(json.property).not.toHaveProperty('tenantId')
-    expect(json.property.endereco.cidade).toBe('Curitiba')
-    expect(json.property.midias.map((m: { ordem: number }) => m.ordem)).toEqual([0, 1])
-    expect(json.property.capaUrl).toBe('https://cdn.ketris.dev/1.jpg')
+    expect(json.property.address.city).toBe('Curitiba')
+    expect(json.property.media.map((m: { order: number }) => m.order)).toEqual([0, 1])
+    expect(json.property.coverUrl).toBe('https://cdn.ketris.dev/1.jpg')
   })
 
   it('retorna 404 para um imóvel em rascunho (não publicado)', async () => {

@@ -1,16 +1,25 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
-import { finalidadeSchema, publicPropertySummarySchema } from './property.schema'
+import { propertyPurposeSchema, publicPropertySummarySchema } from './property.schema'
+
+export const propertySortSchema = z.enum(['recent', 'priceAsc', 'priceDesc'])
 
 export const searchPropertiesQuerySchema = z
   .object({
-    finalidade: finalidadeSchema.optional(),
-    tipo: z.string().min(1).optional(),
-    cidade: z.string().min(1).optional(),
-    precoMin: z.coerce.number().nonnegative().optional(),
-    precoMax: z.coerce.number().nonnegative().optional(),
-    quartosMin: z.coerce.number().int().nonnegative().optional(),
+    purpose: propertyPurposeSchema.optional(),
+    propertyType: z.string().min(1).optional(),
+    city: z.string().min(1).optional(),
+    location: z.string().min(1).optional(),
+    minPrice: z.coerce.number().nonnegative().optional(),
+    maxPrice: z.coerce.number().nonnegative().optional(),
+    minBedrooms: z.coerce.number().int().nonnegative().optional(),
+    minArea: z.coerce.number().nonnegative().optional(),
+    hasParking: z
+      .enum(['true', 'false'])
+      .transform((value) => value === 'true')
+      .optional(),
+    sortBy: propertySortSchema.optional(),
     q: z.string().min(1).optional(),
   })
   .openapi('SearchPropertiesQuery')
