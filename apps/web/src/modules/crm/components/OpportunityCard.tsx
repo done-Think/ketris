@@ -2,8 +2,9 @@
 
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
 import { Avatar, Box, Card, Stack, Typography } from '@mui/material'
-import NextLink from 'next/link'
+import { useTranslations } from 'next-intl'
 
+import { Link } from '@/i18n/navigation'
 import { motion, radius, shadows } from '@shared/theme/tokens'
 
 import { opportunityStageByStatus } from '../config/opportunity-stages'
@@ -16,8 +17,11 @@ import {
   getInitials,
 } from '../utils/formatters'
 
-function getPropertyLocation(property?: PublicPropertySummary): string {
-  if (!property) return 'Imóvel indisponível no catálogo'
+function getPropertyLocation(
+  property: PublicPropertySummary | undefined,
+  unavailableLabel: string,
+): string {
+  if (!property) return unavailableLabel
 
   return [property.bairro, property.cidade].filter(Boolean).join(' - ') || property.tipo
 }
@@ -28,11 +32,13 @@ export function OpportunityCard({
   density = 'regular',
   presentation,
 }: OpportunityCardProps) {
+  const t = useTranslations('crm.pipeline')
   const stage = opportunityStageByStatus[opportunity.status]
   const isCompact = density === 'compact'
   const indicatorColor = presentation?.indicatorColor ?? stage.color
-  const indicatorLabel = presentation?.indicatorLabel ?? stage.label
+  const indicatorLabel = presentation?.indicatorLabel ?? t(`stages.${stage.labelKey}`)
   const propertyTitle = property?.titulo ?? `Imóvel ${opportunity.imovelId}`
+  const propertyLocation = getPropertyLocation(property, t('propertyUnavailable'))
   const value =
     property?.finalidade === 'ALUGUEL'
       ? formatMonthlyCurrency(opportunity.valorProposto)
@@ -40,9 +46,9 @@ export function OpportunityCard({
 
   return (
     <Card
-      component={NextLink}
-      href={`/crm/opportunities/${opportunity.id}`}
-      aria-label={`Abrir oportunidade de ${opportunity.interessadoNome}`}
+      component={Link}
+      href={{ pathname: '/crm/opportunities/[id]', params: { id: opportunity.id } }}
+      aria-label={t('openOpportunityAriaLabel', { name: opportunity.interessadoNome })}
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -91,7 +97,7 @@ export function OpportunityCard({
       </Typography>
       <Typography
         noWrap
-        title={getPropertyLocation(property)}
+        title={propertyLocation}
         sx={{
           display: isCompact ? 'none' : 'block',
           color: 'text.secondary',
@@ -99,7 +105,7 @@ export function OpportunityCard({
           lineHeight: 1.4,
         }}
       >
-        {getPropertyLocation(property)}
+        {propertyLocation}
       </Typography>
 
       <Typography

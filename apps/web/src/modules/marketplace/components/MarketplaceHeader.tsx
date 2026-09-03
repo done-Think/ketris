@@ -1,17 +1,31 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 import { HomeHeader, ProfileModal } from '@shared/components/layout'
 
-import { getMarketplaceNavigationItems } from '../config/navigation'
 import { profileActions, userProfile } from '../data/user-profile'
+import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { MarketplaceHeaderProps } from '../types/marketplace-header'
 
 export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
-  const navigationItems = getMarketplaceNavigationItems(activeItemId)
+  const tProfileActions = useTranslations('marketplace.profile.actions')
+  const { homeNavigationItems } = useMarketplaceNavigation()
+  const navigationItems = homeNavigationItems.map((item) => ({
+    ...item,
+    active: item.id === activeItemId,
+  }))
+  const translatedProfileActions = useMemo(
+    () =>
+      profileActions.map((action) => ({
+        ...action,
+        label: tProfileActions(action.labelKey),
+      })),
+    [tProfileActions],
+  )
 
   return (
     <>
@@ -25,7 +39,7 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
       <ProfileModal
         open={isProfileOpen}
         anchorRef={profileButtonRef}
-        actions={profileActions}
+        actions={translatedProfileActions}
         userProfile={userProfile}
         onClose={() => setIsProfileOpen(false)}
       />

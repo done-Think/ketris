@@ -7,7 +7,7 @@ import { propertiesContainer } from '@server/properties/container'
 import { withErrorHandling } from '@server/shared/http'
 
 interface RouteContext {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export const POST = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
@@ -15,7 +15,7 @@ export const POST = withErrorHandling(async (request: NextRequest, context: Rout
 
   const property = await propertiesContainer.publishPropertyUseCase.execute({
     actorTenantId: actor.tenantId,
-    id: context.params.id,
+    id: (await context.params).id,
   })
 
   return NextResponse.json({ property }, { status: 200 })

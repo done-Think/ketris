@@ -1,13 +1,14 @@
 'use client'
 
 import { Box, Container } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
-import { footerColumns, legalLinks } from '../config/navigation'
 import { brokers } from '../data/brokers'
 import { useDirectoryList } from '../hooks/use-directory-list'
+import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { BrokerProfile } from '../types/broker'
 import { useViewModePreference } from '../hooks/use-view-mode-preference'
 import { BrokerCard } from './BrokerCard'
@@ -27,7 +28,10 @@ function getBrokerSearchableText(broker: BrokerProfile) {
 }
 
 export function BrokersPage() {
-  const { setViewMode, viewMode } = useViewModePreference('corretores')
+  const t = useTranslations('marketplace')
+  const directoryT = useTranslations('marketplace.directory.brokers')
+  const { footerColumns, legalLinks } = useMarketplaceNavigation()
+  const { setViewMode, viewMode } = useViewModePreference('brokers')
   const {
     filteredItems: filteredBrokers,
     hasMoreItems: hasMoreBrokers,
@@ -56,13 +60,18 @@ export function BrokersPage() {
 
       <Box component="main" sx={{ py: { xs: 2.4, md: 4 } }}>
         <Container maxWidth="xl">
-          <MarketplaceBreadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Corretores' }]} />
+          <MarketplaceBreadcrumbs
+            items={[{ label: t('navigation.home'), href: '/' }, { label: t('navigation.brokers') }]}
+          />
           <DirectoryPageHeader
             actions={<DirectoryViewModeToggle value={viewMode} onChange={setViewMode} />}
-            placeholder="Nome, CRECI, bairro ou região"
-            resultCountLabel={`${visibleBrokers.length} de ${filteredBrokers.length} corretores encontrados`}
+            placeholder={directoryT('placeholder')}
+            resultCountLabel={directoryT('resultCount', {
+              visible: visibleBrokers.length,
+              total: filteredBrokers.length,
+            })}
             searchInputProps={register('searchQuery')}
-            title="Corretores"
+            title={directoryT('title')}
           />
 
           <Box
@@ -82,12 +91,12 @@ export function BrokersPage() {
           </Box>
 
           <DirectoryLoadMoreStatus
-            emptyLabel="Nenhum corretor encontrado"
+            emptyLabel={directoryT('empty')}
             hasItems={Boolean(filteredBrokers.length)}
             hasMoreItems={hasMoreBrokers}
             isLoadingMore={isLoadingMore}
-            loadedLabel="Todos os corretores foram carregados"
-            loadingLabel="Carregando mais corretores"
+            loadedLabel={directoryT('loaded')}
+            loadingLabel={directoryT('loading')}
             loadMoreRef={loadMoreRef}
           />
         </Container>

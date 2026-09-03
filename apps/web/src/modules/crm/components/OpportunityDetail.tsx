@@ -4,11 +4,11 @@ import { useMemo, useState } from 'react'
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
 import { Alert, Box, Button, Stack } from '@mui/material'
 import axios from 'axios'
-import NextLink from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 
+import { Link, useRouter } from '@/i18n/navigation'
 import { opportunityStageByStatus } from '../config/opportunity-stages'
 import {
   useArchiveOpportunity,
@@ -67,6 +67,8 @@ function buildEditValues(opportunity: Opportunity): OpportunityEditFormValues {
 }
 
 export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
+  const t = useTranslations('crm.opportunityDetail')
+  const pipelineT = useTranslations('crm.pipeline')
   const { data: session } = useSession()
   const router = useRouter()
   const tenantId = session?.tenantId
@@ -87,8 +89,8 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
     const items = [
       {
         key: 'created',
-        title: 'Oportunidade criada',
-        detail: 'Registro incluído no pipeline.',
+        title: t('createdActivityTitle'),
+        detail: t('createdActivityDetail'),
         occurredAt: opportunity.createdAt,
       },
     ]
@@ -96,14 +98,16 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
     if (new Date(opportunity.updatedAt).getTime() > new Date(opportunity.createdAt).getTime()) {
       items.unshift({
         key: 'updated',
-        title: 'Oportunidade atualizada',
-        detail: `Etapa atual: ${opportunityStageByStatus[opportunity.status].label}.`,
+        title: t('updatedActivityTitle'),
+        detail: t('updatedActivityDetail', {
+          stage: pipelineT(`stages.${opportunityStageByStatus[opportunity.status].labelKey}`),
+        }),
         occurredAt: opportunity.updatedAt,
       })
     }
 
     return items
-  }, [opportunity])
+  }, [opportunity, pipelineT, t])
 
   if (opportunityQuery.isLoading) return <DetailLoading />
 
@@ -116,13 +120,13 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
         sx={{ minHeight: '65vh', p: 3 }}
       >
         <Alert severity="error" sx={{ maxWidth: 520 }}>
-          Não foi possível carregar esta oportunidade.
+          {t('loadError')}
         </Alert>
         <Button variant="outlined" onClick={() => opportunityQuery.refetch()}>
-          Tentar novamente
+          {pipelineT('retry')}
         </Button>
-        <Button component={NextLink} href="/crm" startIcon={<ArrowBackRoundedIcon />}>
-          Voltar ao pipeline
+        <Button component={Link} href="/crm" startIcon={<ArrowBackRoundedIcon />}>
+          {t('backToPipeline')}
         </Button>
       </Stack>
     )
@@ -133,7 +137,7 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
   const isMutating = updateOpportunity.isPending || archiveOpportunity.isPending
   const property = propertyQuery.data
   const propertyLocation = property
-    ? [property.bairro, property.cidade].filter(Boolean).join(' · ') || 'Localização não informada'
+    ? [property.bairro, property.cidade].filter(Boolean).join(' · ') || t('unknownLocation')
     : ''
 
   function requestStatusChange(status: OpportunityStatus) {
@@ -149,12 +153,15 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
         id: currentOpportunity.id,
         changes: { status: nextStatus },
       })
-      enqueueSnackbar(`Oportunidade movida para ${opportunityStageByStatus[nextStatus].label}.`, {
-        variant: 'success',
-      })
+      enqueueSnackbar(
+        t('movedSuccess', {
+          stage: pipelineT(`stages.${opportunityStageByStatus[nextStatus].labelKey}`),
+        }),
+        { variant: 'success' },
+      )
       setNextStatus(null)
     } catch (error) {
-      enqueueSnackbar(errorMessage(error, 'Não foi possível atualizar a etapa.'), {
+      enqueueSnackbar(errorMessage(error, t('updateStageError')), {
         variant: 'error',
       })
     }
@@ -186,10 +193,10 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
           observacoes: values.observacoes.trim() || null,
         },
       })
-      enqueueSnackbar('Oportunidade atualizada.', { variant: 'success' })
+      enqueueSnackbar(t('updateSuccess'), { variant: 'success' })
       setEditOpen(false)
     } catch (error) {
-      enqueueSnackbar(errorMessage(error, 'Não foi possível atualizar a oportunidade.'), {
+      enqueueSnackbar(errorMessage(error, t('updateError')), {
         variant: 'error',
       })
     }
@@ -198,11 +205,11 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
   async function confirmArchive() {
     try {
       await archiveOpportunity.mutateAsync(currentOpportunity.id)
-      enqueueSnackbar('Oportunidade arquivada.', { variant: 'success' })
+      enqueueSnackbar(t('archiveSuccess'), { variant: 'success' })
       setArchiveOpen(false)
       router.replace('/crm')
     } catch (error) {
-      enqueueSnackbar(errorMessage(error, 'Não foi possível arquivar a oportunidade.'), {
+      enqueueSnackbar(errorMessage(error, t('archiveError')), {
         variant: 'error',
       })
     }

@@ -7,6 +7,8 @@ import { marketplaceContainer } from '@server/marketplace/container'
 import { listInquiriesQuerySchema } from '@server/marketplace/schemas/list-inquiries.schema'
 import { RequestValidationError, withErrorHandling } from '@server/shared/http'
 
+export const dynamic = 'force-dynamic'
+
 export const GET = withErrorHandling(async (request: NextRequest) => {
   const actor = await requireBearerAuth(request, authContainer.tokenService)
 

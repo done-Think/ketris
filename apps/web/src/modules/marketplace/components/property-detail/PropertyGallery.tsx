@@ -1,15 +1,17 @@
 'use client'
 
 import { Box } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { alpha, radius, surface } from '@shared/theme/tokens'
 
 import type { PropertyGalleryProps } from '../../types/property-detail'
 
 export function PropertyGallery({ onOpenPhoto, property }: PropertyGalleryProps) {
+  const t = useTranslations('marketplace.propertyDetail.gallery')
   const [cover, ...thumbs] = property.gallery
   const hiddenPhotosCount = Math.max(property.gallery.length - 4, 0)
-  const hiddenPhotosLabel = hiddenPhotosCount === 1 ? '+1 foto' : `+${hiddenPhotosCount} fotos`
+  const hiddenPhotosLabel = t('hiddenPhotos', { count: hiddenPhotosCount })
 
   return (
     <Box
@@ -23,7 +25,7 @@ export function PropertyGallery({ onOpenPhoto, property }: PropertyGalleryProps)
       <Box
         component="button"
         type="button"
-        aria-label="Abrir galeria de fotos do imóvel"
+        aria-label={t('openGallery')}
         onClick={() => onOpenPhoto(0)}
         sx={{
           minHeight: { xs: 300, md: 470 },
@@ -50,7 +52,7 @@ export function PropertyGallery({ onOpenPhoto, property }: PropertyGalleryProps)
             component="button"
             type="button"
             key={image}
-            aria-label={`Abrir foto ${index + 2} de ${property.gallery.length}`}
+            aria-label={t('openPhoto', { index: index + 2, total: property.gallery.length })}
             onClick={() => onOpenPhoto(index + 1)}
             sx={{
               position: 'relative',
@@ -76,7 +78,7 @@ export function PropertyGallery({ onOpenPhoto, property }: PropertyGalleryProps)
                   fontWeight: 900,
                 }}
               >
-                {hiddenPhotosCount ? hiddenPhotosLabel : 'Ver fotos'}
+                {hiddenPhotosCount ? hiddenPhotosLabel : t('viewPhotos')}
               </Box>
             ) : null}
           </Box>

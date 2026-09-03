@@ -1,13 +1,17 @@
 import { Box, Container } from '@mui/material'
 import NorthEastOutlinedIcon from '@mui/icons-material/NorthEastOutlined'
+import { useTranslations } from 'next-intl'
 
 import { ActionTextLink, PropertyCard, SectionHeader } from '@shared/components/ui'
 import { iconSize, surface, zIndex } from '@shared/theme/tokens'
 
 import { featuredProperties } from '../data/featured-properties'
-import { buildPropertyDetailsHrefFromSource } from '../utils/property-details-link'
+import { buildPropertyDetailHref } from '../utils/property-links'
+import { getPropertyPurposeFromPrice } from '../utils/property-details-link'
 
 export function FeaturedPropertiesSection() {
+  const t = useTranslations('marketplace.home.featured')
+
   return (
     <Box
       component="section"
@@ -21,10 +25,10 @@ export function FeaturedPropertiesSection() {
     >
       <Container maxWidth="xl">
         <SectionHeader
-          title="Imóveis em destaque"
+          title={t('title')}
           action={
-            <ActionTextLink href="/imoveis">
-              Ver todos os imóveis
+            <ActionTextLink href="/properties">
+              {t('viewAll')}
               <NorthEastOutlinedIcon sx={{ fontSize: iconSize.xs }} />
             </ActionTextLink>
           }
@@ -38,7 +42,10 @@ export function FeaturedPropertiesSection() {
           }}
         >
           {featuredProperties.map((property) => {
-            const detailsHref = buildPropertyDetailsHrefFromSource(property)
+            const detailsHref = buildPropertyDetailHref(
+              property.href,
+              getPropertyPurposeFromPrice(property.price),
+            )
 
             return <PropertyCard key={property.title} href={detailsHref} property={property} />
           })}

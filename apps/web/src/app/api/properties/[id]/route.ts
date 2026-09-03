@@ -8,7 +8,7 @@ import { updatePropertyRequestSchema } from '@server/properties/schemas/property
 import { parseJsonBody, withErrorHandling } from '@server/shared/http'
 
 interface RouteContext {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export const GET = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
@@ -16,7 +16,7 @@ export const GET = withErrorHandling(async (request: NextRequest, context: Route
 
   const property = await propertiesContainer.getPropertyUseCase.execute({
     actorTenantId: actor.tenantId,
-    id: context.params.id,
+    id: (await context.params).id,
   })
 
   return NextResponse.json({ property }, { status: 200 })
@@ -28,7 +28,7 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Rou
 
   const property = await propertiesContainer.updatePropertyUseCase.execute({
     actorTenantId: actor.tenantId,
-    id: context.params.id,
+    id: (await context.params).id,
     ...body,
     endereco: body.endereco
       ? {
@@ -53,7 +53,7 @@ export const DELETE = withErrorHandling(async (request: NextRequest, context: Ro
 
   const property = await propertiesContainer.deactivatePropertyUseCase.execute({
     actorTenantId: actor.tenantId,
-    id: context.params.id,
+    id: (await context.params).id,
   })
 
   return NextResponse.json({ property }, { status: 200 })

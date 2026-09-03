@@ -24,7 +24,7 @@ describe('requireAdminSession', () => {
     getServerSessionMock.mockResolvedValueOnce(session)
 
     const requireAdminSession = await getRequireAdminSession()
-    const result = await requireAdminSession()
+    const result = await requireAdminSession('pt-BR')
 
     expect(result).toBe(session)
     expect(redirectMock).not.toHaveBeenCalled()
@@ -35,8 +35,8 @@ describe('requireAdminSession', () => {
 
     const requireAdminSession = await getRequireAdminSession()
 
-    await expect(requireAdminSession()).rejects.toThrow('NEXT_REDIRECT')
-    expect(redirectMock).toHaveBeenCalledWith('/backoffice/login')
+    await expect(requireAdminSession('pt-BR')).rejects.toThrow('NEXT_REDIRECT')
+    expect(redirectMock).toHaveBeenCalledWith('/pt/backoffice/login')
   })
 
   it('redireciona para /backoffice/login quando a sessão não é de um ADMIN', async () => {
@@ -44,7 +44,7 @@ describe('requireAdminSession', () => {
 
     const requireAdminSession = await getRequireAdminSession()
 
-    await expect(requireAdminSession()).rejects.toThrow('NEXT_REDIRECT')
-    expect(redirectMock).toHaveBeenCalledWith('/backoffice/login')
+    await expect(requireAdminSession('pt-BR')).rejects.toThrow('NEXT_REDIRECT')
+    expect(redirectMock).toHaveBeenCalledWith('/pt/backoffice/login')
   })
 })

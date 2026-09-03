@@ -13,7 +13,7 @@ import {
 import { parseJsonBody, RequestValidationError, withErrorHandling } from '@server/shared/http'
 
 interface RouteContext {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export const GET = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
@@ -21,7 +21,7 @@ export const GET = withErrorHandling(async (request: NextRequest, context: Route
 
   const inquiry = await marketplaceContainer.getInquiryUseCase.execute({
     actorTenantId: actor.tenantId,
-    inquiryId: context.params.id,
+    inquiryId: (await context.params).id,
   })
 
   return NextResponse.json({ inquiry }, { status: 200 })
@@ -46,7 +46,7 @@ export const PUT = withErrorHandling(async (request: NextRequest, context: Route
 
   const inquiry = await marketplaceContainer.updateInquiryUseCase.execute({
     actorTenantId: actor.tenantId,
-    inquiryId: context.params.id,
+    inquiryId: (await context.params).id,
     changes,
   })
 
@@ -59,7 +59,7 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Rou
 
   const inquiry = await marketplaceContainer.updateInquiryUseCase.execute({
     actorTenantId: actor.tenantId,
-    inquiryId: context.params.id,
+    inquiryId: (await context.params).id,
     changes: body,
   })
 
@@ -85,7 +85,7 @@ export const DELETE = withErrorHandling(async (request: NextRequest, context: Ro
   if (parsed.data.permanent) {
     await marketplaceContainer.deleteInquiryUseCase.execute({
       actorTenantId: actor.tenantId,
-      inquiryId: context.params.id,
+      inquiryId: (await context.params).id,
     })
 
     return new NextResponse(null, { status: 204 })
@@ -93,7 +93,7 @@ export const DELETE = withErrorHandling(async (request: NextRequest, context: Ro
 
   const inquiry = await marketplaceContainer.archiveInquiryUseCase.execute({
     actorTenantId: actor.tenantId,
-    inquiryId: context.params.id,
+    inquiryId: (await context.params).id,
   })
 
   return NextResponse.json({ inquiry }, { status: 200 })

@@ -1,6 +1,7 @@
 'use client'
 
 import { Box, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { radius, surface } from '@shared/theme/tokens'
 
@@ -20,6 +21,8 @@ export function SearchResultsList({
   setSelectedPropertyId,
   viewMode,
 }: SearchResultsListProps) {
+  const t = useTranslations('marketplace.searchResults.empty')
+
   return (
     <Box
       sx={{
@@ -52,9 +55,9 @@ export function SearchResultsList({
             textAlign: 'center',
           }}
         >
-          <Typography sx={{ fontWeight: 900, mb: 0.5 }}>Nenhum imóvel encontrado</Typography>
+          <Typography sx={{ fontWeight: 900, mb: 0.5 }}>{t('title')}</Typography>
           <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 700 }}>
-            Ajuste os filtros para ver mais opções.
+            {t('description')}
           </Typography>
         </Box>
       )}

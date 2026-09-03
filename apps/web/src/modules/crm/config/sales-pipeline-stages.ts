@@ -6,6 +6,7 @@ export const salesPipelineStages: readonly SalesPipelineStage[] = [
   {
     id: 'prospecting',
     label: 'Prospecção',
+    labelKey: 'prospecting',
     statuses: ['RASCUNHO'],
     color: brand.magenta[500],
     softColor: brand.magenta[50],
@@ -13,6 +14,7 @@ export const salesPipelineStages: readonly SalesPipelineStage[] = [
   {
     id: 'qualification',
     label: 'Qualificação',
+    labelKey: 'qualification',
     statuses: [],
     color: brand.semantic.info,
     softColor: supportColor.infoSoft,
@@ -20,6 +22,7 @@ export const salesPipelineStages: readonly SalesPipelineStage[] = [
   {
     id: 'proposal',
     label: 'Proposta',
+    labelKey: 'proposal',
     statuses: ['ENVIADA'],
     color: brand.semantic.warning,
     softColor: supportColor.warningSoft,
@@ -27,6 +30,7 @@ export const salesPipelineStages: readonly SalesPipelineStage[] = [
   {
     id: 'negotiation',
     label: 'Negociação',
+    labelKey: 'negotiation',
     statuses: ['EM_NEGOCIACAO'],
     color: supportColor.orange,
     softColor: supportColor.orangeSoft,
@@ -34,6 +38,7 @@ export const salesPipelineStages: readonly SalesPipelineStage[] = [
   {
     id: 'closed',
     label: 'Fechado',
+    labelKey: 'closed',
     statuses: ['ACEITA', 'RECUSADA'],
     color: brand.semantic.success,
     softColor: supportColor.successSoft,

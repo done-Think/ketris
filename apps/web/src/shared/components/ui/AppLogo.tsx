@@ -1,7 +1,10 @@
+'use client'
+
 import { Box } from '@mui/material'
 import type { SxProps, Theme } from '@mui/material/styles'
 import type { StaticImageData } from 'next/image'
-import Link from 'next/link'
+
+import { Link } from '@/i18n/navigation'
 
 type AppLogoProps = {
   src: string | StaticImageData

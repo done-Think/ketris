@@ -7,7 +7,7 @@ import { SiteFooter } from '@shared/components/layout'
 import { useClickAway } from '@shared/hooks'
 import { surface } from '@shared/theme/tokens'
 
-import { footerColumns, legalLinks } from '../config/navigation'
+import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import { useMarketplaceSearch } from '../hooks/use-marketplace-search'
 import { FeaturedPropertiesSection } from './FeaturedPropertiesSection'
 import { HeroSection } from './HeroSection'
@@ -16,6 +16,7 @@ import { MiniPropertiesSection } from './MiniPropertiesSection'
 
 export function HomePageClient() {
   const search = useMarketplaceSearch()
+  const { footerColumns, legalLinks } = useMarketplaceNavigation()
   const { activeSearchMenu, closeSearchMenu } = search
   const desktopSearchRef = useRef<HTMLDivElement | null>(null)
   const mobileSearchRef = useRef<HTMLDivElement | null>(null)
@@ -49,6 +50,7 @@ export function HomePageClient() {
         selectSearchValue={search.selectSearchValue}
         updatePriceRange={search.updatePriceRange}
         filterSearchOptions={search.filterSearchOptions}
+        getSearchOptionLabel={search.getSearchOptionLabel}
         setSearchDraft={search.setSearchDraft}
       />
 

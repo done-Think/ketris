@@ -1,6 +1,7 @@
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { Box, Button, InputAdornment, Stack, TextField, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
@@ -14,6 +15,8 @@ export function ContactsHeader({
   onFilterChange,
   onNewContact,
 }: ContactsHeaderProps) {
+  const t = useTranslations('crm.contacts')
+
   return (
     <Stack
       component="header"
@@ -38,7 +41,7 @@ export function ContactsHeader({
           letterSpacing: '-0.02em',
         }}
       >
-        Contatos
+        {t('title')}
       </Typography>
 
       <Stack
@@ -51,8 +54,7 @@ export function ContactsHeader({
         <TextField
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="Buscar contato por nome, email, fone..."
-          inputProps={{ 'aria-label': 'Buscar contatos' }}
+          placeholder={t('searchPlaceholder')}
           size="small"
           sx={{
             width: { xs: '100%', sm: 268 },
@@ -70,6 +72,7 @@ export function ContactsHeader({
             },
           }}
           slotProps={{
+            htmlInput: { 'aria-label': t('searchAriaLabel') },
             input: {
               startAdornment: (
                 <InputAdornment position="start">
@@ -83,12 +86,12 @@ export function ContactsHeader({
         <Stack
           component="div"
           role="group"
-          aria-label="Filtrar contatos por tipo"
+          aria-label={t('filterAriaLabel')}
           direction="row"
           spacing={0.75}
           sx={{ overflowX: { xs: 'auto', sm: 'visible' }, pb: { xs: 0.25, sm: 0 } }}
         >
-          {contactFilters.map(({ label }) => {
+          {contactFilters.map(({ label, labelKey }) => {
             const active = label === activeFilter
 
             return (
@@ -116,7 +119,7 @@ export function ContactsHeader({
                   },
                 }}
               >
-                {label}
+                {t(`filters.${labelKey}`)}
               </Button>
             )
           })}
@@ -148,7 +151,7 @@ export function ContactsHeader({
               },
             }}
           >
-            Novo Contato
+            {t('newContact')}
           </Button>
         </Box>
       </Stack>

@@ -1,5 +1,6 @@
 import { Chip } from '@mui/material'
 import { alpha as muiAlpha } from '@mui/material/styles'
+import { useTranslations } from 'next-intl'
 
 import { brand, radius } from '@shared/theme/tokens'
 
@@ -20,12 +21,19 @@ const typePresentation: Record<ContactType, { color: string; backgroundColor: st
   },
 }
 
+const contactTypeLabelKeys: Record<ContactType, 'tenant' | 'owner' | 'broker'> = {
+  Locatário: 'tenant',
+  Proprietário: 'owner',
+  Corretor: 'broker',
+}
+
 export function ContactTypeChip({ type }: ContactTypeChipProps) {
+  const t = useTranslations('crm.contacts.types')
   const presentation = typePresentation[type]
 
   return (
     <Chip
-      label={type}
+      label={t(contactTypeLabelKeys[type])}
       size="small"
       sx={{
         height: 20,

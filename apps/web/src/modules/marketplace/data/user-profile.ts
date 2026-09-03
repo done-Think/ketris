@@ -3,15 +3,10 @@ import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import SupportAgentOutlinedIcon from '@mui/icons-material/SupportAgentOutlined'
 import SwapHorizOutlinedIcon from '@mui/icons-material/SwapHorizOutlined'
 
-import { publicMarketplaceText } from '@shared/i18n/pt-br'
-
 import type { ProfileAction, UserProfile } from '../types/user-profile'
-
-const profileText = publicMarketplaceText.profile
 
 export const userProfile: UserProfile = {
   name: 'Rafael Martins',
-  role: profileText.role,
   company: 'Ketris Prime',
   email: 'rafael@ketris.com.br',
   avatar:
@@ -19,8 +14,8 @@ export const userProfile: UserProfile = {
 }
 
 export const profileActions: ProfileAction[] = [
-  { label: profileText.actions.support, icon: SupportAgentOutlinedIcon, href: '/login' },
-  { label: profileText.actions.settings, icon: SettingsOutlinedIcon, href: '/login' },
-  { label: profileText.actions.switchMode, icon: SwapHorizOutlinedIcon, href: '/imoveis' },
-  { label: profileText.actions.signOut, icon: LogoutOutlinedIcon, href: '/login', tone: 'danger' },
+  { labelKey: 'support', icon: SupportAgentOutlinedIcon, href: '/login' },
+  { labelKey: 'settings', icon: SettingsOutlinedIcon, href: '/login' },
+  { labelKey: 'switchMode', icon: SwapHorizOutlinedIcon, href: '/properties' },
+  { labelKey: 'signOut', icon: LogoutOutlinedIcon, href: '/login', tone: 'danger' },
 ]

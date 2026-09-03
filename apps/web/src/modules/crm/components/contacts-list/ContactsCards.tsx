@@ -1,4 +1,5 @@
 import { Box, Checkbox, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { iconSize } from '@shared/theme/tokens'
 
@@ -15,9 +16,11 @@ export function ContactsCards({
   onOpenInteractions,
   onOpenMoreOptions,
 }: ContactsCardsProps) {
+  const t = useTranslations('crm.contacts')
+
   return (
     <Stack
-      aria-label="Lista móvel de contatos"
+      aria-label={t('mobileListAriaLabel')}
       sx={{ display: { xs: 'flex', md: 'none' } }}
       divider={<Box sx={{ borderTop: 1, borderColor: 'divider' }} />}
     >
@@ -28,7 +31,7 @@ export function ContactsCards({
               size="small"
               checked={selectedIds.has(contact.id)}
               onChange={() => onToggleContact(contact.id)}
-              inputProps={{ 'aria-label': `Selecionar ${contact.name}` }}
+              slotProps={{ input: { 'aria-label': t('selectContact', { name: contact.name }) } }}
               sx={{ ml: -0.5, p: 0.5, '& .MuiSvgIcon-root': { fontSize: iconSize.md } }}
             />
             <ContactAvatar contact={contact} />
@@ -58,7 +61,7 @@ export function ContactsCards({
           <Stack direction="row" justifyContent="space-between" spacing={2}>
             <Typography sx={{ fontSize: 11.5 }}>{contact.phone}</Typography>
             <Typography sx={{ fontSize: 11.5, fontWeight: 600 }}>
-              {contact.propertyCount} {contact.propertyCount === 1 ? 'imóvel' : 'imóveis'}
+              {t('propertyCount', { count: contact.propertyCount })}
             </Typography>
           </Stack>
         </Stack>

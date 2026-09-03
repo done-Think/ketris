@@ -141,7 +141,7 @@ describe('/api/properties/{id} (integração)', () => {
   }
 
   function context(id: string) {
-    return { params: { id } }
+    return { params: Promise.resolve({ id }) }
   }
 
   it('consulta imóvel dentro do tenant do ator', async () => {

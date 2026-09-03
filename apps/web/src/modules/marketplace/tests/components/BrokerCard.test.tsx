@@ -25,19 +25,19 @@ const broker: BrokerCardProps = {
   email: 'marina@ketris.com.br',
   availability: 'Segunda a sexta, 9h às 18h',
   bio: 'Atuação focada em apartamentos prontos para morar nos Jardins.',
-  href: '/corretores/marina-costa',
+  href: '/brokers/marina-costa',
   highlightedListings: [
     {
       title: 'Apartamento espaçoso com vista para o parque',
       location: 'Jardins',
       price: 'R$ 4.800 / mês',
-      href: '/imoveis/apartamento-jardins',
+      href: '/properties/apartamento-jardins',
     },
     {
       title: 'Apartamento Garden Remodelado',
       location: 'Jardins',
       price: 'R$ 6.200 / mês',
-      href: '/imoveis/apartamento-garden-remodelado',
+      href: '/properties/apartamento-garden-remodelado',
     },
   ],
   viewMode: 'list',

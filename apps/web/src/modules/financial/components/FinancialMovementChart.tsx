@@ -2,22 +2,23 @@
 
 import { Box, Stack, Typography } from '@mui/material'
 import { LineChart } from '@mui/x-charts/LineChart'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { FinancialMovementChartProps } from '../types/financial-entry'
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-    maximumFractionDigits: 0,
-  }).format(value)
-}
-
 export function FinancialMovementChart({ movement }: FinancialMovementChartProps) {
+  const format = useFormatter()
+  const t = useTranslations('dashboard.finance')
   const totalSales = movement.reduce((total, item) => total + item.sales, 0)
   const totalCommissions = movement.reduce((total, item) => total + item.commissions, 0)
+  const formatCurrency = (value: number) =>
+    format.number(value, {
+      style: 'currency',
+      currency: 'BRL',
+      maximumFractionDigits: 0,
+    })
 
   return (
     <Box
@@ -37,15 +38,15 @@ export function FinancialMovementChart({ movement }: FinancialMovementChartProps
         sx={{ mb: 1.6 }}
       >
         <Box>
-          <Typography variant="h5">Movimentação mensal</Typography>
+          <Typography variant="h5">{t('movementTitle')}</Typography>
           <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 700 }}>
-            Entradas de vendas e comissões por mês.
+            {t('movementSubtitle')}
           </Typography>
         </Box>
         <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
           <Box>
             <Typography sx={{ color: 'text.secondary', fontSize: 11, fontWeight: 800 }}>
-              Vendas
+              {t('sales')}
             </Typography>
             <Typography sx={{ color: brand.graphite[500], fontSize: 18, fontWeight: 900 }}>
               {formatCurrency(totalSales)}
@@ -53,7 +54,7 @@ export function FinancialMovementChart({ movement }: FinancialMovementChartProps
           </Box>
           <Box>
             <Typography sx={{ color: 'text.secondary', fontSize: 11, fontWeight: 800 }}>
-              Comissões
+              {t('commissions')}
             </Typography>
             <Typography sx={{ color: brand.magenta[600], fontSize: 18, fontWeight: 900 }}>
               {formatCurrency(totalCommissions)}
@@ -69,7 +70,7 @@ export function FinancialMovementChart({ movement }: FinancialMovementChartProps
           series={[
             {
               dataKey: 'sales',
-              label: 'Vendas',
+              label: t('sales'),
               color: brand.graphite[500],
               curve: 'monotoneX',
               showMark: true,
@@ -77,7 +78,7 @@ export function FinancialMovementChart({ movement }: FinancialMovementChartProps
             },
             {
               dataKey: 'commissions',
-              label: 'Comissões',
+              label: t('commissions'),
               color: brand.magenta[500],
               curve: 'monotoneX',
               showMark: true,

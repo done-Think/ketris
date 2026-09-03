@@ -1,5 +1,6 @@
 import { Box, Stack, Typography } from '@mui/material'
 import { alpha as muiAlpha } from '@mui/material/styles'
+import { useTranslations } from 'next-intl'
 
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
@@ -8,18 +9,17 @@ import { componentText, gradients, surface } from '@shared/theme/tokens'
 import authCityImage from '../assets/ketris-city-network.jpg'
 
 const AUTH_CITY_IMAGE_URL = authCityImage.src
-const DEFAULT_DESCRIPTION = 'A infraestrutura digital do mercado imobiliário'
 
 import type { AuthBrandPanelProps } from '../types/auth-shell'
 
-export function AuthBrandPanel({
-  description = DEFAULT_DESCRIPTION,
-  mobileBackdrop = false,
-}: AuthBrandPanelProps) {
+export function AuthBrandPanel({ description, mobileBackdrop = false }: AuthBrandPanelProps) {
+  const t = useTranslations('auth.brand')
+  const panelDescription = description ?? t('description')
+
   return (
     <Box
       component="section"
-      aria-label="Ketris, infraestrutura digital do mercado imobiliário"
+      aria-label={t('ariaLabel')}
       sx={{
         position: { xs: mobileBackdrop ? 'absolute' : 'relative', md: 'absolute' },
         inset: { xs: mobileBackdrop ? 0 : 'auto', md: 0 },
@@ -76,7 +76,7 @@ export function AuthBrandPanel({
             ...componentText.authBrandTagline,
           }}
         >
-          {description}
+          {panelDescription}
         </Typography>
 
         <Typography
@@ -87,7 +87,7 @@ export function AuthBrandPanel({
             letterSpacing: '0.01em',
           }}
         >
-          2.500+ imóveis conectados
+          {t('connectedProperties')}
         </Typography>
       </Stack>
     </Box>

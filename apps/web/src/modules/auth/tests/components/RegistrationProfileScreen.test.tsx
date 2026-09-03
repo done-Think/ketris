@@ -5,9 +5,18 @@ import { RegistrationProfileScreen } from '../../components/RegistrationProfileS
 
 const { pushMock } = vi.hoisted(() => ({ pushMock: vi.fn() }))
 
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: pushMock }),
-}))
+vi.mock('@/i18n/navigation', async () => {
+  const React = await import('react')
+
+  return {
+    useRouter: () => ({ push: pushMock }),
+    Link: React.forwardRef<HTMLAnchorElement, React.AnchorHTMLAttributes<HTMLAnchorElement>>(
+      function MockLocalizedLink({ href = '', ...props }, ref) {
+        return React.createElement('a', { ...props, href, ref })
+      },
+    ),
+  }
+})
 
 describe('RegistrationProfileScreen', () => {
   beforeEach(() => {
@@ -32,6 +41,9 @@ describe('RegistrationProfileScreen', () => {
       vi.advanceTimersByTime(320)
     })
 
-    expect(pushMock).toHaveBeenCalledWith('/register/details?profile=corretor')
+    expect(pushMock).toHaveBeenCalledWith({
+      pathname: '/register/details',
+      query: { profile: 'corretor' },
+    })
   })
 })

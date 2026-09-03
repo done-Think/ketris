@@ -52,7 +52,6 @@ export type DashboardPerformancePoint = {
 export type DashboardRecentLeadStatus = 'new' | 'inProgress' | 'qualified' | 'pending'
 
 export type DashboardStatusStyle = {
-  label: string
   bgcolor: string
   color: string
 }

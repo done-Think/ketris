@@ -2,6 +2,7 @@ import { Box, Button, Stack, Typography } from '@mui/material'
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined'
 import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
+import { useTranslations } from 'next-intl'
 
 import { RhfTextField } from '@shared/components/form'
 import { alpha, iconSize, motion, radius, surface } from '@shared/theme/tokens'
@@ -15,10 +16,12 @@ import type {
 import { agencyEditorPanelSx } from './agency-public-profile-editor-shared'
 
 export function AgencyPublicProfileMainFields({ control }: AgencyPublicProfileMainFieldsProps) {
+  const t = useTranslations('marketplace.agencyProfileEditor')
+
   return (
     <Box sx={agencyEditorPanelSx}>
       <Typography variant="h5" sx={{ mb: 2 }}>
-        Conteúdo principal
+        {t('mainContent')}
       </Typography>
       <Box
         sx={{
@@ -27,23 +30,38 @@ export function AgencyPublicProfileMainFields({ control }: AgencyPublicProfileMa
           gap: 1.6,
         }}
       >
-        <RhfTextField control={control} name="displayName" label="Nome da imobiliária" fullWidth />
-        <RhfTextField control={control} name="headline" label="Chamada institucional" fullWidth />
-        <RhfTextField control={control} name="legalCreci" label="CRECI" fullWidth />
-        <RhfTextField control={control} name="headquarters" label="Sede" fullWidth />
-        <RhfTextField control={control} name="address" label="Endereço" fullWidth />
-        <RhfTextField control={control} name="coverage" label="Cobertura" fullWidth />
+        <RhfTextField
+          control={control}
+          name="displayName"
+          label={t('fields.displayName')}
+          fullWidth
+        />
+        <RhfTextField control={control} name="headline" label={t('fields.headline')} fullWidth />
+        <RhfTextField
+          control={control}
+          name="legalCreci"
+          label={t('fields.legalCreci')}
+          fullWidth
+        />
+        <RhfTextField
+          control={control}
+          name="headquarters"
+          label={t('fields.headquarters')}
+          fullWidth
+        />
+        <RhfTextField control={control} name="address" label={t('fields.address')} fullWidth />
+        <RhfTextField control={control} name="coverage" label={t('fields.coverage')} fullWidth />
         <RhfTextField
           control={control}
           name="segments"
-          label="Segmentos"
+          label={t('fields.segments')}
           fullWidth
           sx={{ gridColumn: { md: '1 / -1' } }}
         />
         <RhfTextField
           control={control}
           name="summary"
-          label="Resumo"
+          label={t('fields.summary')}
           multiline
           minRows={4}
           fullWidth
@@ -57,10 +75,12 @@ export function AgencyPublicProfileMainFields({ control }: AgencyPublicProfileMa
 export function AgencyPublicProfileAppearanceFields({
   control,
 }: AgencyPublicProfileMainFieldsProps) {
+  const t = useTranslations('marketplace.agencyProfileEditor')
+
   return (
     <Box sx={agencyEditorPanelSx}>
       <Typography variant="h5" sx={{ mb: 2 }}>
-        Aparência
+        {t('appearance')}
       </Typography>
       <Box
         sx={{
@@ -72,21 +92,21 @@ export function AgencyPublicProfileAppearanceFields({
         <RhfTextField
           control={control}
           name="primaryColor"
-          label="Cor principal"
+          label={t('fields.primaryColor')}
           type="color"
           fullWidth
         />
         <RhfTextField
           control={control}
           name="accentColor"
-          label="Cor de destaque"
+          label={t('fields.accentColor')}
           type="color"
           fullWidth
         />
         <RhfTextField
           control={control}
           name="backgroundColor"
-          label="Fundo da marca"
+          label={t('fields.backgroundColor')}
           type="color"
           fullWidth
         />
@@ -105,6 +125,7 @@ function AgencyPublicProfileImageField({
   uploadLabel,
 }: AgencyPublicProfileImageFieldConfig &
   Pick<AgencyPublicProfileImageFieldsProps, 'control' | 'profileDraft'>) {
+  const t = useTranslations('marketplace.agencyProfileEditor')
   const imageUrl = profileDraft[fieldName]
 
   return (
@@ -125,7 +146,7 @@ function AgencyPublicProfileImageField({
         <input {...dropzone.getInputProps()} aria-label={uploadLabel} />
         <Stack direction="row" spacing={1.2} alignItems="center">
           <Box
-            aria-label={previewVariant === 'logo' ? 'Prévia do logo' : 'Prévia do banner'}
+            aria-label={previewVariant === 'logo' ? t('logoPreview') : t('bannerPreview')}
             sx={{
               width: previewVariant === 'logo' ? 116 : 104,
               height: 58,
@@ -142,11 +163,11 @@ function AgencyPublicProfileImageField({
             <Stack direction="row" spacing={0.8} alignItems="center">
               <UploadFileOutlinedIcon sx={{ color: profileDraft.primaryColor, fontSize: 20 }} />
               <Typography sx={{ color: surface.darkText, fontSize: 13, fontWeight: 900 }}>
-                {dropzone.isDragActive ? 'Solte a imagem aqui' : uploadLabel}
+                {dropzone.isDragActive ? t('dropImage') : uploadLabel}
               </Typography>
             </Stack>
             <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>
-              JPG, PNG ou WEBP. Você também pode manter apenas o link acima.
+              {t('uploadHelper')}
             </Typography>
           </Box>
         </Stack>
@@ -160,10 +181,12 @@ export function AgencyPublicProfileImageFields({
   imageFields,
   profileDraft,
 }: AgencyPublicProfileImageFieldsProps) {
+  const t = useTranslations('marketplace.agencyProfileEditor')
+
   return (
     <Box sx={agencyEditorPanelSx}>
       <Typography variant="h5" sx={{ mb: 2 }}>
-        Imagens da marca
+        {t('brandImages')}
       </Typography>
       <Box
         sx={{
@@ -188,6 +211,8 @@ export function AgencyPublicProfileImageFields({
 export function AgencyPublicProfileEditorActions({
   onPreview,
 }: AgencyPublicProfileEditorActionsProps) {
+  const t = useTranslations('marketplace.agencyProfileEditor')
+
   return (
     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
       <Button
@@ -198,7 +223,7 @@ export function AgencyPublicProfileEditorActions({
         onClick={onPreview}
         sx={{ minHeight: 44, borderRadius: `${radius.sm}px`, flex: 1 }}
       >
-        Visualizar
+        {t('preview')}
       </Button>
       <Button
         type="submit"
@@ -206,7 +231,7 @@ export function AgencyPublicProfileEditorActions({
         startIcon={<SaveOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
         sx={{ minHeight: 44, borderRadius: `${radius.sm}px`, flex: 1 }}
       >
-        Salvar
+        {t('saveDraft')}
       </Button>
     </Stack>
   )

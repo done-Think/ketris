@@ -2,7 +2,6 @@
 
 import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined'
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined'
-import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import InsertChartOutlinedRoundedIcon from '@mui/icons-material/InsertChartOutlinedRounded'
 import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined'
@@ -24,10 +23,10 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 
+import { Link, usePathname } from '@/i18n/navigation'
 import ketrisLogo from '@shared/assets/ketris-logo-footer.png'
 import {
   alpha,
@@ -42,15 +41,14 @@ import {
 import type { DashboardNavigationContentProps } from '@shared/types/dashboard-navigation'
 
 const navigationItems = [
-  { label: 'Dashboard', href: '/dashboard', icon: DashboardOutlinedIcon },
-  { label: 'Contratos', href: '/dashboard/contracts', icon: DescriptionOutlinedIcon },
-  { label: 'Meus Imóveis', href: '/dashboard/imoveis', icon: HomeWorkOutlinedIcon },
-  { label: 'Perfil Público', href: '/dashboard/public-profile', icon: PaletteOutlinedIcon },
-  { label: 'Leads', href: '/dashboard/leads', icon: PeopleAltOutlinedIcon },
-  { label: 'Agenda', href: '/dashboard/agenda', icon: CalendarTodayOutlinedIcon },
-  { label: 'Propostas', href: '/dashboard/propostas', icon: LocalOfferOutlinedIcon },
-  { label: 'Financeiro', href: '/dashboard/financeiro', icon: InsertChartOutlinedRoundedIcon },
-]
+  { labelKey: 'dashboard', href: '/dashboard', icon: DashboardOutlinedIcon },
+  { labelKey: 'properties', href: '/dashboard/properties', icon: HomeWorkOutlinedIcon },
+  { labelKey: 'publicProfile', href: '/dashboard/public-profile', icon: PaletteOutlinedIcon },
+  { labelKey: 'leads', href: '/dashboard/leads', icon: PeopleAltOutlinedIcon },
+  { labelKey: 'agenda', href: '/dashboard/agenda', icon: CalendarTodayOutlinedIcon },
+  { labelKey: 'proposals', href: '/dashboard/proposals', icon: LocalOfferOutlinedIcon },
+  { labelKey: 'finance', href: '/dashboard/finance', icon: InsertChartOutlinedRoundedIcon },
+] as const
 
 function isActiveNavigationItem(pathname: string, href: string) {
   if (href === '/dashboard') return pathname === href
@@ -59,6 +57,7 @@ function isActiveNavigationItem(pathname: string, href: string) {
 
 export function DashboardSidebar() {
   const pathname = usePathname()
+  const t = useTranslations('dashboard.sidebar')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const closeMobileMenu = () => setIsMobileMenuOpen(false)
 
@@ -84,7 +83,7 @@ export function DashboardSidebar() {
         <Box
           component={Link}
           href="/"
-          aria-label="Voltar para o marketplace"
+          aria-label={t('backToMarketplace')}
           sx={{
             display: 'inline-flex',
             width: 42,
@@ -106,7 +105,7 @@ export function DashboardSidebar() {
         </Box>
 
         <IconButton
-          aria-label="Abrir menu do dashboard"
+          aria-label={t('openMenu')}
           aria-expanded={isMobileMenuOpen ? 'true' : undefined}
           onClick={() => setIsMobileMenuOpen(true)}
           sx={{
@@ -142,7 +141,7 @@ export function DashboardSidebar() {
           },
         }}
       >
-        <DashboardNavigationContent pathname={pathname} onNavigate={closeMobileMenu} />
+        <DashboardNavigationContent pathname={pathname} t={t} onNavigate={closeMobileMenu} />
       </Drawer>
 
       <Box
@@ -156,19 +155,19 @@ export function DashboardSidebar() {
           py: 2.2,
         }}
       >
-        <DashboardNavigationContent pathname={pathname} />
+        <DashboardNavigationContent pathname={pathname} t={t} />
       </Box>
     </>
   )
 }
 
-function DashboardNavigationContent({ onNavigate, pathname }: DashboardNavigationContentProps) {
+function DashboardNavigationContent({ onNavigate, pathname, t }: DashboardNavigationContentProps) {
   return (
     <>
       <Box
         component={Link}
         href="/"
-        aria-label="Voltar para o marketplace"
+        aria-label={t('backToMarketplace')}
         onClick={onNavigate}
         sx={{
           display: 'block',
@@ -223,7 +222,7 @@ function DashboardNavigationContent({ onNavigate, pathname }: DashboardNavigatio
                 <Icon sx={{ fontSize: iconSize.md }} />
               </ListItemIcon>
               <ListItemText
-                primary={item.label}
+                primary={t(item.labelKey)}
                 primaryTypographyProps={{
                   sx: { fontSize: 12, fontWeight: active ? 900 : 700 },
                 }}
@@ -252,15 +251,15 @@ function DashboardNavigationContent({ onNavigate, pathname }: DashboardNavigatio
             Guilherme Silva
           </Typography>
           <Typography noWrap sx={{ ...componentText.footerLegal, color: alpha.white[50] }}>
-            Gestor de Operações
+            {t('userRole')}
           </Typography>
         </Box>
         <Box sx={{ flex: 1 }} />
-        <Tooltip title="Voltar">
+        <Tooltip title={t('back')}>
           <IconButton
             component={Link}
             href="/"
-            aria-label="Voltar para o marketplace"
+            aria-label={t('backToMarketplace')}
             onClick={onNavigate}
             sx={{
               width: 32,

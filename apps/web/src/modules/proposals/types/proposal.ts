@@ -1,4 +1,4 @@
-export type ProposalStatus = 'Em análise' | 'Contraproposta' | 'Aprovada'
+export type ProposalStatus = 'underReview' | 'counteroffer' | 'approved'
 
 export type DashboardProposal = {
   id: string

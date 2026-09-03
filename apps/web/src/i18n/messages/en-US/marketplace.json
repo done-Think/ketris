@@ -1,0 +1,431 @@
+{
+  "header": {
+    "announceProperty": "List Property",
+    "closeMenu": "Close menu",
+    "mainMenu": "Main menu",
+    "notifications": "notifications",
+    "openMenu": "Open menu",
+    "openProfile": "Open profile"
+  },
+  "profile": {
+    "dialogLabel": "User profile",
+    "closeProfile": "Close profile",
+    "language": "Language",
+    "languages": {
+      "en": "English",
+      "es": "Spanish",
+      "ptBR": "Portuguese"
+    },
+    "role": "Partner broker",
+    "actions": {
+      "settings": "Settings",
+      "signOut": "Sign out",
+      "support": "Support",
+      "switchMode": "Switch mode"
+    }
+  },
+  "navigation": {
+    "agencies": "Agencies",
+    "brokers": "Brokers",
+    "buy": "Buy",
+    "home": "Home",
+    "rent": "Rent"
+  },
+  "metadata": {
+    "agencies": {
+      "metadataTitle": "Ketris | Agencies",
+      "metadataDescription": "Compare partner agencies by coverage, team, and operation."
+    },
+    "brokers": {
+      "metadataTitle": "Ketris | Brokers",
+      "metadataDescription": "Find specialist brokers by region and purpose."
+    },
+    "agencyNotFound": {
+      "metadataTitle": "Ketris | Agency not found"
+    },
+    "brokerNotFound": {
+      "metadataTitle": "Ketris | Broker not found"
+    },
+    "searchRent": {
+      "metadataTitle": "Ketris | Rent",
+      "metadataDescription": "Search properties to rent and buy."
+    },
+    "searchBuy": {
+      "metadataTitle": "Ketris | Buy",
+      "metadataDescription": "Search properties to rent and buy."
+    },
+    "details": {
+      "notFoundTitle": "Ketris",
+      "agencyDescription": "{name}, {creci}, operates in {headquarters}.",
+      "brokerDescription": "{name}, {creci}, represents properties in {region}."
+    }
+  },
+  "home": {
+    "hero": {
+      "titleLine1": "The digital infrastructure",
+      "titleLine2": "for real estate",
+      "subtitle": "Rent and buy properties with advanced technology, faster processes, and complete confidence.",
+      "stats": {
+        "activeProperties": "active properties",
+        "partnerBrokers": "partner brokers",
+        "servedCities": "served cities"
+      },
+      "brandAnimation": "Ketris brand animation"
+    },
+    "search": {
+      "submit": "Search",
+      "mobilePlaceholder": "Search by neighborhood or city...",
+      "locationPlaceholder": "Enter a city or neighborhood",
+      "propertyTypePlaceholder": "Enter the property type",
+      "clearSearch": "Clear search",
+      "noResults": "No results",
+      "priceRange": "Price range",
+      "closePriceRange": "Close price range",
+      "minPrice": "Minimum",
+      "maxPrice": "Maximum",
+      "apply": "Apply",
+      "filters": {
+        "location": "Location",
+        "propertyType": "Property type",
+        "priceRange": "Price range"
+      },
+      "propertyTypes": {
+        "apartment": "Apartment",
+        "residentialHouses": "Residential houses",
+        "commercialRooms": "Commercial units",
+        "landLots": "Land and lots",
+        "penthouses": "Penthouses",
+        "farms": "Country homes and farms",
+        "studios": "Studios"
+      }
+    },
+    "featured": {
+      "title": "Featured properties",
+      "viewAll": "View all properties"
+    },
+    "miniProperties": {
+      "eyebrow": "+2,500 qualified and digitally verified properties"
+    }
+  },
+  "footer": {
+    "description": "End-to-end technology and simplification for corporate and residential real estate.",
+    "rights": "Tecnologias Ltda. All rights reserved.",
+    "columns": {
+      "company": "Company",
+      "forYou": "For you",
+      "brokers": "Brokers"
+    },
+    "links": {
+      "contact": "Contact",
+      "favorites": "Favorites",
+      "financialSimulator": "Financial simulator",
+      "listProperty": "List property",
+      "partnerPortal": "Partner portal",
+      "privacyPolicy": "Privacy Policy",
+      "searchProperties": "Search properties",
+      "termsOfUse": "Terms of Use",
+      "workWithUs": "Work with us",
+      "aboutUs": "About us",
+      "corporateSolutions": "Corporate solutions"
+    }
+  },
+  "publicProfile": {
+    "propertyCard": {
+      "new": "New",
+      "viewDetails": "View details"
+    },
+    "metrics": {
+      "active": "Active",
+      "closed": "Closed",
+      "properties": "Listings",
+      "rating": "Rating",
+      "responseTime": "Avg. response",
+      "team": "Team",
+      "years": "Years"
+    },
+    "facts": {
+      "activeListings": "Active listings",
+      "address": "Address",
+      "availability": "Availability",
+      "coverage": "Coverage",
+      "deals": "Deals",
+      "neighborhoods": "Neighborhoods",
+      "response": "Response"
+    },
+    "sidebar": {
+      "agencyLinkDescription": "Use this address as the agency public page.",
+      "brokerLinkDescription": "Use this address as the broker public page.",
+      "call": "Call",
+      "openOwnLink": "Open public link",
+      "publicLink": "Public link"
+    },
+    "listings": {
+      "featured": "FEATURED",
+      "featuredTitle": "Featured properties",
+      "title": "Represented listings",
+      "viewAriaLabel": "View property {title}",
+      "viewProperty": "View property"
+    }
+  },
+  "propertyDetail": {
+    "condominium": "Condo fee {value}",
+    "scheduleVisit": "Schedule visit",
+    "sendProposal": "Send proposal",
+    "brokerRole": "Ketris broker",
+    "gallery": {
+      "openGallery": "Open property photo gallery",
+      "openPhoto": "Open photo {index} of {total}",
+      "hiddenPhotos": "+{count, plural, one {# photo} other {# photos}}",
+      "viewPhotos": "View photos",
+      "photoCounter": "{current} of {total}",
+      "closeGallery": "Close gallery",
+      "photoAlt": "{title} - photo {index}",
+      "previousPhoto": "Previous photo",
+      "nextPhoto": "Next photo",
+      "selectPhoto": "View photo {index}"
+    },
+    "contactActions": {
+      "call": "Call",
+      "whatsapp": "WhatsApp",
+      "email": "Email"
+    }
+  },
+  "profileEditor": {
+    "title": "Edit Profile",
+    "subtitle": "Adjust appearance, images and section order shown to visitors.",
+    "validatedDraft": "Draft validated",
+    "mainContent": "Main content",
+    "appearance": "Appearance",
+    "images": "Images",
+    "team": "Team",
+    "teamDescription": "Add highlighted members and the link to each public profile.",
+    "addMember": "Add member",
+    "removeMember": "Remove",
+    "memberTitle": "Member {index}",
+    "emptyMembers": "No members added.",
+    "dropImage": "Drop the image here",
+    "uploadHelper": "JPG, PNG or WEBP. You can also keep only the link above.",
+    "photoPreview": "Photo preview",
+    "bannerPreview": "Banner preview",
+    "saveDraft": "Save draft",
+    "preview": "Preview",
+    "configurableProfile": "Configurable public profile",
+    "newMember": "New member",
+    "dropToMove": "Drop to move",
+    "preparing": "Preparing...",
+    "positionLabel": "Position {position}: {label}",
+    "position": "Position {position}",
+    "profileOrder": "Profile order",
+    "previewDialog": {
+      "title": "Profile preview",
+      "close": "Close preview"
+    },
+    "sections": {
+      "none": {
+        "label": "None",
+        "description": "Do not show a section in this position."
+      },
+      "hero": {
+        "label": "Presentation",
+        "description": "Banner, photo, name, and main headline."
+      },
+      "metrics": {
+        "label": "Indicators",
+        "description": "Rating, average response, active listings, and deals."
+      },
+      "team": {
+        "label": "Team",
+        "description": "Brokers or people highlighted in the profile."
+      },
+      "listings": {
+        "label": "Listings",
+        "description": "Cards for represented properties."
+      },
+      "contact": {
+        "label": "Contact",
+        "description": "Public link, phone, email, and quick facts."
+      }
+    },
+    "contactActions": {
+      "call": "Call",
+      "email": "Email",
+      "openPublicLink": "Open public link"
+    },
+    "fields": {
+      "displayName": "Display name",
+      "headline": "Banner headline",
+      "summary": "Summary",
+      "primaryColor": "Primary color",
+      "accentColor": "Accent color",
+      "backgroundColor": "Profile background",
+      "photoUrl": "Photo URL",
+      "bannerUrl": "Banner URL",
+      "uploadPhoto": "Upload profile photo",
+      "uploadBanner": "Upload banner",
+      "name": "Name",
+      "role": "Role",
+      "profileUrl": "Profile link"
+    }
+  },
+  "agencyProfileEditor": {
+    "title": "Edit Agency Profile",
+    "subtitle": "Adjust brand, images and section order shown to visitors.",
+    "validatedDraft": "Draft validated",
+    "mainContent": "Main content",
+    "appearance": "Appearance",
+    "brandImages": "Brand images",
+    "dropImage": "Drop the image here",
+    "uploadHelper": "JPG, PNG or WEBP. You can also keep only the link above.",
+    "logoPreview": "Logo preview",
+    "bannerPreview": "Banner preview",
+    "saveDraft": "Save draft",
+    "preview": "Preview",
+    "dropToMove": "Drop to move",
+    "preparing": "Preparing...",
+    "positionLabel": "Position {position}: {label}",
+    "position": "Position {position}",
+    "profileOrder": "Profile order",
+    "previewDialog": {
+      "title": "Agency profile preview",
+      "close": "Close preview"
+    },
+    "sections": {
+      "none": {
+        "label": "None",
+        "description": "Do not show a section in this position."
+      },
+      "brand": {
+        "label": "Brand",
+        "description": "Logo, banner, name, and institutional headline."
+      },
+      "metrics": {
+        "label": "Indicators",
+        "description": "Properties, team, years in market, and rating."
+      },
+      "contact": {
+        "label": "Contact",
+        "description": "Public link, phone, email, and quick facts."
+      },
+      "team": {
+        "label": "Team",
+        "description": "Featured brokers in the agency."
+      },
+      "listings": {
+        "label": "Listings",
+        "description": "Cards for represented properties."
+      }
+    },
+    "metrics": {
+      "properties": "Properties",
+      "team": "Team",
+      "years": "Years",
+      "rating": "Rating"
+    },
+    "contactActions": {
+      "call": "Call",
+      "email": "Email",
+      "openPublicLink": "Open public link"
+    },
+    "fields": {
+      "displayName": "Agency name",
+      "headline": "Institutional headline",
+      "legalCreci": "CRECI",
+      "headquarters": "Headquarters",
+      "address": "Address",
+      "coverage": "Coverage",
+      "segments": "Segments",
+      "summary": "Summary",
+      "primaryColor": "Primary color",
+      "accentColor": "Accent color",
+      "backgroundColor": "Brand background",
+      "logoUrl": "Logo URL",
+      "bannerUrl": "Banner URL",
+      "uploadLogo": "Upload logo",
+      "uploadBanner": "Upload banner"
+    }
+  },
+  "searchResults": {
+    "toolbar": {
+      "resultCount": "{count} properties found",
+      "sortRelevance": "Sort by: Relevance",
+      "sortLowerPrice": "Lowest price",
+      "sortHigherPrice": "Highest price",
+      "gridView": "Grid view",
+      "listView": "List view"
+    },
+    "empty": {
+      "title": "No properties found",
+      "description": "Adjust the filters to see more options."
+    },
+    "map": {
+      "openProperty": "Open {title}"
+    },
+    "filters": {
+      "allRegions": "All regions",
+      "clearSearch": "Clear search",
+      "button": "Filters",
+      "buttonWithCount": "Filters ({count})",
+      "title": "Filters",
+      "close": "Close filters",
+      "clear": "Clear",
+      "done": "Done",
+      "type": "Type",
+      "price": "Price",
+      "maxPrice": "Maximum price",
+      "bedrooms": "Bedrooms",
+      "area": "Area",
+      "minArea": "Minimum area",
+      "onlyWithParking": "Only properties with parking",
+      "options": {
+        "Todos os tipos": "All types",
+        "Apartamento": "Apartment",
+        "Cobertura": "Penthouse",
+        "Loft": "Loft",
+        "Casa": "House",
+        "price": "Price",
+        "upTo6000": "Up to R$ 6,000",
+        "upTo10000": "Up to R$ 10,000",
+        "bedrooms": "Bedrooms",
+        "bedrooms2Plus": "2+ bedrooms",
+        "bedrooms3Plus": "3+ bedrooms",
+        "area": "Area",
+        "area90Plus": "90m²+",
+        "area100Plus": "100m²+",
+        "all": "All",
+        "withParking": "With parking"
+      }
+    }
+  },
+  "directory": {
+    "viewMode": {
+      "grid": "Grid view",
+      "list": "List view"
+    },
+    "agencies": {
+      "title": "Agencies",
+      "placeholder": "Name, CRECI, region, or coverage",
+      "resultCount": "{visible} of {total} agencies found",
+      "empty": "No agencies found",
+      "loaded": "All agencies have been loaded",
+      "loading": "Loading more agencies"
+    },
+    "brokers": {
+      "title": "Brokers",
+      "placeholder": "Name, CRECI, neighborhood, or region",
+      "resultCount": "{visible} of {total} brokers found",
+      "empty": "No brokers found",
+      "loaded": "All brokers have been loaded",
+      "loading": "Loading more brokers"
+    },
+    "cards": {
+      "viewPublicPage": "View public page",
+      "viewPublicPageAriaLabel": "View public page for {name}",
+      "region": "Region",
+      "properties": "Properties",
+      "activeProperties": "{count} active",
+      "response": "Response",
+      "team": "Team",
+      "rating": "Rating"
+    }
+  }
+}

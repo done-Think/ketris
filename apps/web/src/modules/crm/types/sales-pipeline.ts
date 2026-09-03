@@ -8,6 +8,7 @@ export type SalesPipelineStageId =
 export type SalesPipelineStage = {
   id: SalesPipelineStageId
   label: string
+  labelKey: string
   statuses: readonly OpportunityStatus[]
   color: string
   softColor: string
@@ -15,6 +16,7 @@ export type SalesPipelineStage = {
 
 export type SalesPipelineProjectedTotal = {
   label: string
+  labelKey: 'rent' | 'sale' | 'uncategorized'
   value: string
 }
 

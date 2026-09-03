@@ -5,6 +5,8 @@ import { marketplaceContainer } from '@server/marketplace/container'
 import { searchPropertiesQuerySchema } from '@server/marketplace/schemas/search-properties.schema'
 import { RequestValidationError, withErrorHandling } from '@server/shared/http'
 
+export const dynamic = 'force-dynamic'
+
 export const GET = withErrorHandling(async (request: NextRequest) => {
   const rawQuery = Object.fromEntries(request.nextUrl.searchParams)
   const parsed = searchPropertiesQuerySchema.safeParse(rawQuery)

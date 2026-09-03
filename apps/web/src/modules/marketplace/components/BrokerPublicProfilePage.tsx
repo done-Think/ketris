@@ -1,23 +1,26 @@
 'use client'
 
 import { Box, Container } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
 import { getBrokerProfileTheme } from '../config/broker-profile-themes'
-import { footerColumns, legalLinks } from '../config/navigation'
+import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { BrokerPublicProfilePageProps } from '../types/broker'
 import { formatRating } from '../utils/format-rating'
 import { buildProfileListings } from '../utils/profile-listings'
-import { MarketplaceHeader } from './MarketplaceHeader'
 import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
+import { MarketplaceHeader } from './MarketplaceHeader'
 import { BrokerProfileHero } from './profile/BrokerProfileHero'
 import { PublicProfileListings } from './profile/PublicProfileListings'
 import { PublicProfileMetrics } from './profile/PublicProfileMetrics'
 import { PublicProfileSidebar } from './profile/PublicProfileSidebar'
 
 export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps) {
+  const t = useTranslations('marketplace')
+  const { footerColumns, legalLinks } = useMarketplaceNavigation()
   const theme = getBrokerProfileTheme(broker.id)
   const representedListings = buildProfileListings(broker.highlightedListings, {
     brokerName: broker.name,
@@ -31,8 +34,8 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
       <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
         <MarketplaceBreadcrumbs
           items={[
-            { label: 'Home', href: '/' },
-            { label: 'Corretores', href: '/corretores' },
+            { label: t('navigation.home'), href: '/' },
+            { label: t('navigation.brokers'), href: '/brokers' },
             { label: broker.name },
           ]}
         />
@@ -49,10 +52,10 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
             <PublicProfileMetrics
               accentColor={theme.accent}
               metrics={[
-                { label: 'Nota', value: formatRating(broker.rating) },
-                { label: 'Tempo médio', value: broker.responseTime },
-                { label: 'Ativos', value: broker.activeListings },
-                { label: 'Fechados', value: broker.dealsClosed },
+                { label: t('publicProfile.metrics.rating'), value: formatRating(broker.rating) },
+                { label: t('publicProfile.metrics.responseTime'), value: broker.responseTime },
+                { label: t('publicProfile.metrics.active'), value: broker.activeListings },
+                { label: t('publicProfile.metrics.closed'), value: broker.dealsClosed },
               ]}
             />
           </Box>
@@ -61,14 +64,18 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
             accentColor={theme.accent}
             hoverColor={theme.tone}
             href={broker.href}
-            linkDescription="Use este endereço como página própria do corretor."
+            sourceType="broker"
+            linkDescription={t('publicProfile.sidebar.brokerLinkDescription')}
             phone={broker.phone}
             email={broker.email}
             facts={[
-              { label: 'Atendimento', value: broker.availability },
-              { label: 'Bairros', value: broker.neighborhoods.join(', ') },
-              { label: 'Imóveis ativos', value: `${broker.activeListings}` },
-              { label: 'Negociações', value: `${broker.dealsClosed}` },
+              { label: t('publicProfile.facts.availability'), value: broker.availability },
+              {
+                label: t('publicProfile.facts.neighborhoods'),
+                value: broker.neighborhoods.join(', '),
+              },
+              { label: t('publicProfile.facts.activeListings'), value: `${broker.activeListings}` },
+              { label: t('publicProfile.facts.deals'), value: `${broker.dealsClosed}` },
             ]}
           />
 

@@ -1,4 +1,5 @@
 import { Chip, Stack } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { alpha, motion, radius, surface } from '@shared/theme/tokens'
 
@@ -10,6 +11,8 @@ export function PropertyStatusFilters({
   statusFilterCounts,
   onStatusFilterChange,
 }: PropertyStatusFiltersProps) {
+  const t = useTranslations('properties.dashboard.filters')
+
   return (
     <Stack direction="row" spacing={0.8} useFlexGap flexWrap="wrap" sx={{ mb: 1.8 }}>
       {propertyStatusFilters.map((filter) => {
@@ -19,7 +22,7 @@ export function PropertyStatusFilters({
           <Chip
             key={filter.label}
             clickable
-            label={`${filter.label} ${statusFilterCounts[filter.label]}`}
+            label={`${t(filter.label)} ${statusFilterCounts[filter.label]}`}
             onClick={() => onStatusFilterChange(filter.label)}
             sx={{
               height: 38,
