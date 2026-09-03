@@ -30,6 +30,7 @@ model Tenant {
   oportunidades Oportunidade[]
   contratos     Contrato[]
   cobrancas     Cobranca[]
+  contatos      Contato[]
 
   @@map("tenants")
 }
@@ -227,18 +228,89 @@ model Oportunidade {
   observacoes         String?
   status              StatusOportunidade @default(RASCUNHO)
   arquivadaEm         DateTime?
+  // Vínculo opcional: a oportunidade nasce do marketplace sem conta de usuário (data-model.md),
+  // e só é associada a um Contato quando o corretor identifica o interessado na base.
+  contatoId           String?
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
 
-  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  imovel   Imovel    @relation(fields: [imovelId], references: [id], onDelete: Cascade)
-  contrato Contrato?
+  tenant     Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  imovel     Imovel                  @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  contrato   Contrato?
+  contato    Contato?                @relation(fields: [contatoId], references: [id], onDelete: SetNull)
+  atividades AtividadeOportunidade[]
 
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([tenantId, arquivadaEm])
   @@index([imovelId])
+  @@index([contatoId])
   @@map("oportunidades")
+}
+
+// ---------------------------------------------------------------------------
+// Contato / Atividade (módulo `crm`)
+// ---------------------------------------------------------------------------
+
+enum TipoContato {
+  PROPRIETARIO
+  LOCATARIO
+  CORRETOR
+}
+
+// Agenda de relacionamento do tenant. Independente de `Usuario`: um contato é alguém com quem o
+// tenant se relaciona (proprietário, locatário, corretor parceiro), não alguém que loga no sistema.
+model Contato {
+  id              String      @id @default(cuid())
+  tenantId        String
+  nome            String
+  email           String
+  telefone        String?
+  tipo            TipoContato @default(LOCATARIO)
+  avatarUrl       String?
+  observacoes     String?
+  ultimaInteracao DateTime?
+  arquivadoEm     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  oportunidades Oportunidade[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([tenantId, tipo])
+  @@index([tenantId, arquivadoEm])
+  @@map("contatos")
+}
+
+enum TipoAtividadeOportunidade {
+  NOTA
+  MUDANCA_STATUS
+  CONTATO_REALIZADO
+  PROPOSTA_RESPONDIDA
+}
+
+// Timeline da oportunidade. Registro append-only: alimenta o painel de atividades do CRM e serve
+// de trilha de auditoria de quem respondeu o quê e quando.
+model AtividadeOportunidade {
+  id             String                    @id @default(cuid())
+  oportunidadeId String
+  tipo           TipoAtividadeOportunidade
+  descricao      String
+  // Autor é opcional porque atividades também nascem de eventos do sistema (ex.: proposta recebida
+  // pelo marketplace, sem usuário autenticado por trás).
+  autorId        String?
+  autorNome      String?
+  statusAnterior StatusOportunidade?
+  statusNovo     StatusOportunidade?
+  createdAt      DateTime                  @default(now())
+
+  oportunidade Oportunidade @relation(fields: [oportunidadeId], references: [id], onDelete: Cascade)
+
+  @@index([oportunidadeId])
+  @@index([oportunidadeId, createdAt])
+  @@map("atividades_oportunidade")
 }
 
 // ---------------------------------------------------------------------------

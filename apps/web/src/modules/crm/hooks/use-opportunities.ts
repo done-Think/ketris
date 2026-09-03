@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { crmService } from '../services/crm-service'
-import type { OpportunityFilters, UpdateOpportunityPayload } from '../types/opportunity'
+import type { OpportunityFilters, UpdateOpportunityInput } from '../types/opportunity'
 import type { PublicPropertySearchFilters } from '../types/property'
 
 function normalizeFilters(filters: OpportunityFilters) {
@@ -69,11 +69,6 @@ export function useOpportunity(
     queryFn: () => crmService.getById(scopedOpportunityId),
     enabled: Boolean(tenantId && opportunityId),
   })
-}
-
-export interface UpdateOpportunityInput {
-  id: string
-  changes: UpdateOpportunityPayload
 }
 
 export function useUpdateOpportunity(tenantId: string) {

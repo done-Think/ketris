@@ -1,8 +1,10 @@
 import { BaseService } from '@shared/lib/api/base-service'
 
 import type {
+  CreateOpportunityPayload,
   Opportunity,
   OpportunityFilters,
+  RespondOpportunityPayload,
   UpdateOpportunityPayload,
 } from '../types/opportunity'
 import type {
@@ -11,14 +13,17 @@ import type {
   PublicPropertySummary,
 } from '../types/property'
 import type {
+  ActivityResponse,
+  ListActivitiesResponse,
   ListOpportunitiesResponse,
   ListPropertiesResponse,
   OpportunityResponse,
   PropertyResponse,
+  RespondOpportunityResponse,
 } from '../types/service'
 
 export class CrmService extends BaseService {
-  private readonly path = '/marketplace/inquiries'
+  private readonly path = '/crm/opportunities'
 
   list(filters: OpportunityFilters = {}): Promise<Opportunity[]> {
     const params = {
@@ -30,21 +35,43 @@ export class CrmService extends BaseService {
 
     return this.http
       .get<ListOpportunitiesResponse>(this.path, { params })
-      .then((data) => data.inquiries)
+      .then((data) => data.opportunities)
   }
 
   getById(id: string): Promise<Opportunity> {
-    return this.http.get<OpportunityResponse>(`${this.path}/${id}`).then((data) => data.inquiry)
+    return this.http.get<OpportunityResponse>(`${this.path}/${id}`).then((data) => data.opportunity)
+  }
+
+  create(payload: CreateOpportunityPayload): Promise<Opportunity> {
+    return this.http.post<OpportunityResponse>(this.path, payload).then((data) => data.opportunity)
   }
 
   update(id: string, payload: UpdateOpportunityPayload): Promise<Opportunity> {
     return this.http
       .patch<OpportunityResponse>(`${this.path}/${id}`, payload)
-      .then((data) => data.inquiry)
+      .then((data) => data.opportunity)
   }
 
   archive(id: string): Promise<Opportunity> {
-    return this.http.delete<OpportunityResponse>(`${this.path}/${id}`).then((data) => data.inquiry)
+    return this.http
+      .delete<OpportunityResponse>(`${this.path}/${id}`)
+      .then((data) => data.opportunity)
+  }
+
+  respond(id: string, payload: RespondOpportunityPayload): Promise<RespondOpportunityResponse> {
+    return this.http.post<RespondOpportunityResponse>(`${this.path}/${id}/respond`, payload)
+  }
+
+  listActivities(opportunityId: string) {
+    return this.http
+      .get<ListActivitiesResponse>(`${this.path}/${opportunityId}/activities`)
+      .then((data) => data.activities)
+  }
+
+  addNote(opportunityId: string, descricao: string) {
+    return this.http
+      .post<ActivityResponse>(`${this.path}/${opportunityId}/activities`, { descricao })
+      .then((data) => data.activity)
   }
 
   listProperties(filters: PublicPropertySearchFilters = {}): Promise<PublicPropertySummary[]> {
