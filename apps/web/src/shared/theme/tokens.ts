@@ -351,6 +351,7 @@ export const alpha = {
 } as const
 
 export const shadows = {
+  none: 'none',
   propertyCard: `0 16px 44px ${alpha.graphite[8]}`,
   propertyCardHover: `0 24px 58px ${alpha.graphite[16]}`,
   crmCard: `0 8px 24px ${alpha.graphite[6]}`,

@@ -17,13 +17,10 @@ import {
   PublicProfileMainFields,
   PublicProfileTeamFields,
 } from './public-profile-editor/PublicProfileEditorFormSections'
-import { PublicProfileDemonstrative } from './public-profile-editor/PublicProfileDemonstrative'
-import { PublicProfileOrderPanel } from './public-profile-editor/PublicProfileOrderPanel'
 import { PublicProfileSectionPreviewDialog } from './public-profile-editor/PublicProfilePreviewDialog'
 import { isPublicProfileSectionKey } from './public-profile-editor/public-profile-editor-shared'
 import { publicProfileEditorDefaultValues } from '../data/public-profile-editor'
 import { useProfileEditorImageUpload } from '../hooks/use-profile-editor-image-upload'
-import { useProfileEditorSectionOrder } from '../hooks/use-profile-editor-section-order'
 import { publicProfileEditorSchema } from '../schemas/public-profile-editor-schema'
 import type {
   PublicProfileEditorFormValues,
@@ -53,27 +50,6 @@ export function PublicProfileEditorPage() {
   })
   const profileDraft = watch()
   const visibleSectionOrder = profileDraft.sectionOrder.filter(isPublicProfileSectionKey)
-  const setSectionOrder = useCallback(
-    (sectionOrder: PublicProfileEditorFormValues['sectionOrder']) => {
-      setValue('sectionOrder', sectionOrder, { shouldDirty: true, shouldValidate: true })
-    },
-    [setValue],
-  )
-  const {
-    draggedPosition,
-    finishLongPress,
-    isTouchLikeDevice,
-    moveLongPress,
-    pressedPosition,
-    resetLongPress,
-    setDraggedPosition,
-    startLongPress,
-    swapSectionPositions,
-    updateSectionOrder,
-  } = useProfileEditorSectionOrder({
-    sectionOrder: profileDraft.sectionOrder,
-    setSectionOrder,
-  })
   const setImageValue = useCallback(
     (fieldName: PublicProfileImageFieldName, previewUrl: string) => {
       setValue(fieldName, previewUrl, { shouldDirty: true, shouldValidate: true })
@@ -164,43 +140,6 @@ export function PublicProfileEditorPage() {
             />
             <PublicProfileEditorActions onPreview={() => setIsPreviewOpen(true)} />
           </Stack>
-
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 390px' },
-              gap: 2,
-              alignItems: 'start',
-            }}
-          >
-            <PublicProfileDemonstrative
-              draggedPosition={draggedPosition}
-              finishLongPress={finishLongPress}
-              isTouchLikeDevice={isTouchLikeDevice}
-              moveLongPress={moveLongPress}
-              pressedPosition={pressedPosition}
-              profileDraft={profileDraft}
-              resetLongPress={resetLongPress}
-              setDraggedPosition={setDraggedPosition}
-              startLongPress={startLongPress}
-              swapSectionPositions={swapSectionPositions}
-              visibleSectionOrder={visibleSectionOrder}
-            />
-            <PublicProfileOrderPanel
-              control={control}
-              draggedPosition={draggedPosition}
-              finishLongPress={finishLongPress}
-              isTouchLikeDevice={isTouchLikeDevice}
-              moveLongPress={moveLongPress}
-              pressedPosition={pressedPosition}
-              profileDraft={profileDraft}
-              resetLongPress={resetLongPress}
-              setDraggedPosition={setDraggedPosition}
-              startLongPress={startLongPress}
-              swapSectionPositions={swapSectionPositions}
-              updateSectionOrder={updateSectionOrder}
-            />
-          </Box>
         </Box>
       </Box>
 
