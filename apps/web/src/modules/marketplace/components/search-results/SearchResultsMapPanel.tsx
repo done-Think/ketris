@@ -9,6 +9,7 @@ export function SearchResultsMapPanel({
   properties,
   selectedPropertyId,
   setSelectedPropertyId,
+  searchQuery,
 }: SearchResultsMapPanelProps) {
   return (
     <Box
@@ -28,6 +29,7 @@ export function SearchResultsMapPanel({
         properties={properties}
         selectedPropertyId={selectedPropertyId}
         onSelectProperty={setSelectedPropertyId}
+        searchQuery={searchQuery}
       />
     </Box>
   )
