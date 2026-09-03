@@ -56,41 +56,41 @@ vi.mock('../../hooks/use-opportunities', () => ({
 const opportunity: Opportunity = {
   id: 'opportunity-1',
   tenantId: 'tenant-1',
-  imovelId: 'property-1',
-  interessadoNome: 'Ricardo Mendes',
-  interessadoEmail: 'ricardo@example.com',
-  interessadoTelefone: '(11) 98722-1200',
-  valorProposto: 4800,
-  prazoContratoMeses: 30,
-  inicioPretendido: '2026-09-01T00:00:00.000Z',
-  garantiaContratual: 'FIADOR',
-  condicoesEspeciais: ['Aceita pets'],
-  observacoes: 'Prefere visitas pela manhã.',
+  propertyId: 'property-1',
+  leadName: 'Ricardo Mendes',
+  leadEmail: 'ricardo@example.com',
+  leadPhone: '(11) 98722-1200',
+  proposedValue: 4800,
+  contractTermMonths: 30,
+  desiredStartDate: '2026-09-01T00:00:00.000Z',
+  guaranteeType: 'FIADOR',
+  specialConditions: ['Aceita pets'],
+  notes: 'Prefere visitas pela manhã.',
   status: 'ENVIADA',
-  arquivadaEm: null,
+  archivedAt: null,
   createdAt: '2026-08-10T10:00:00.000Z',
   updatedAt: '2026-08-12T10:00:00.000Z',
 }
 
 const property: PublicPropertyDetail = {
   id: 'property-1',
-  titulo: 'Apartamento Jardins',
-  finalidade: 'ALUGUEL',
-  tipo: 'apartamento',
-  valor: 4500,
-  condominio: 800,
-  iptu: null,
-  quartos: 2,
-  banheiros: 2,
-  vagas: 1,
-  areaM2: 84,
-  cidade: 'São Paulo',
-  bairro: 'Jardins',
-  capaUrl: null,
-  publicadoEm: '2026-08-01T10:00:00.000Z',
-  descricao: null,
-  endereco: null,
-  midias: [],
+  title: 'Apartamento Jardins',
+  purpose: 'ALUGUEL',
+  propertyType: 'apartamento',
+  price: 4500,
+  condoFee: 800,
+  propertyTax: null,
+  bedrooms: 2,
+  bathrooms: 2,
+  parkingSpots: 1,
+  area: 84,
+  city: 'São Paulo',
+  neighborhood: 'Jardins',
+  coverUrl: null,
+  publishedAt: '2026-08-01T10:00:00.000Z',
+  description: null,
+  address: null,
+  media: [],
 }
 
 function renderDetail() {
@@ -127,7 +127,7 @@ describe('OpportunityDetail', () => {
     mocks.update.mockResolvedValue(opportunity)
     mocks.archive.mockResolvedValue({
       ...opportunity,
-      arquivadaEm: '2026-08-12T12:00:00.000Z',
+      archivedAt: '2026-08-12T12:00:00.000Z',
     })
   })
 
@@ -180,10 +180,10 @@ describe('OpportunityDetail', () => {
     expect(mocks.update).toHaveBeenCalledWith({
       id: opportunity.id,
       changes: expect.objectContaining({
-        interessadoNome: opportunity.interessadoNome,
-        interessadoEmail: opportunity.interessadoEmail,
-        valorProposto: opportunity.valorProposto,
-        observacoes: 'Agendar retorno na sexta-feira.',
+        leadName: opportunity.leadName,
+        leadEmail: opportunity.leadEmail,
+        proposedValue: opportunity.proposedValue,
+        notes: 'Agendar retorno na sexta-feira.',
       }),
     })
     expect(mocks.enqueueSnackbar).toHaveBeenCalledWith('Oportunidade atualizada.', {

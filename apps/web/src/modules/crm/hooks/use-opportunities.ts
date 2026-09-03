@@ -13,12 +13,12 @@ function normalizeFilters(filters: OpportunityFilters) {
 
 function normalizePropertyFilters(filters: PublicPropertySearchFilters) {
   return {
-    finalidade: filters.finalidade ?? null,
-    tipo: filters.tipo ?? null,
-    cidade: filters.cidade ?? null,
-    precoMin: filters.precoMin ?? null,
-    precoMax: filters.precoMax ?? null,
-    quartosMin: filters.quartosMin ?? null,
+    purpose: filters.purpose ?? null,
+    propertyType: filters.propertyType ?? null,
+    city: filters.city ?? null,
+    minPrice: filters.minPrice ?? null,
+    maxPrice: filters.maxPrice ?? null,
+    minBedrooms: filters.minBedrooms ?? null,
     q: filters.q ?? null,
   }
 }

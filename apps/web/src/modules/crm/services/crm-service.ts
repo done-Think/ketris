@@ -68,9 +68,9 @@ export class CrmService extends BaseService {
       .then((data) => data.activities)
   }
 
-  addNote(opportunityId: string, descricao: string) {
+  addNote(opportunityId: string, description: string) {
     return this.http
-      .post<ActivityResponse>(`${this.path}/${opportunityId}/activities`, { descricao })
+      .post<ActivityResponse>(`${this.path}/${opportunityId}/activities`, { description })
       .then((data) => data.activity)
   }
 

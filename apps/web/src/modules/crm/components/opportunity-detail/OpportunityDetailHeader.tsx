@@ -28,7 +28,7 @@ export function OpportunityDetailHeader({
         </Link>
         <Typography color="text.secondary">{stageLabel}</Typography>
         <Typography color="text.primary" fontWeight={700}>
-          {opportunity.interessadoNome}
+          {opportunity.leadName}
         </Typography>
       </Breadcrumbs>
 
@@ -41,7 +41,7 @@ export function OpportunityDetailHeader({
       >
         <Stack direction="row" alignItems="center" spacing={1.2} flexWrap="wrap" useFlexGap>
           <Typography component="h1" sx={{ fontSize: { xs: 27, md: 31 }, fontWeight: 800 }}>
-            {opportunity.interessadoNome}
+            {opportunity.leadName}
           </Typography>
           <Chip
             size="small"
@@ -50,9 +50,9 @@ export function OpportunityDetailHeader({
           />
         </Stack>
         <Typography sx={{ color: 'primary.main', fontSize: { xs: 24, md: 28 }, fontWeight: 900 }}>
-          {property?.finalidade === 'ALUGUEL'
-            ? formatMonthlyCurrency(opportunity.valorProposto)
-            : formatCurrency(opportunity.valorProposto)}
+          {property?.purpose === 'ALUGUEL'
+            ? formatMonthlyCurrency(opportunity.proposedValue)
+            : formatCurrency(opportunity.proposedValue)}
         </Typography>
       </Stack>
     </>

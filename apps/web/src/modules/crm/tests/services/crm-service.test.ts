@@ -8,38 +8,38 @@ import { CrmService } from '../../services/crm-service'
 const opportunity: Opportunity = {
   id: 'opportunity-1',
   tenantId: 'tenant-1',
-  imovelId: 'property-1',
-  interessadoNome: 'Maria Silva',
-  interessadoEmail: 'maria@example.com',
-  interessadoTelefone: null,
-  valorProposto: 4800,
-  prazoContratoMeses: null,
-  inicioPretendido: null,
-  garantiaContratual: 'NENHUMA',
-  condicoesEspeciais: [],
-  observacoes: null,
+  propertyId: 'property-1',
+  leadName: 'Maria Silva',
+  leadEmail: 'maria@example.com',
+  leadPhone: null,
+  proposedValue: 4800,
+  contractTermMonths: null,
+  desiredStartDate: null,
+  guaranteeType: 'NENHUMA',
+  specialConditions: [],
+  notes: null,
   status: 'ENVIADA',
-  arquivadaEm: null,
+  archivedAt: null,
   createdAt: '2026-08-12T10:00:00.000Z',
   updatedAt: '2026-08-12T10:00:00.000Z',
 }
 
 const property = {
   id: 'property-1',
-  titulo: 'Apartamento Jardins',
-  finalidade: 'ALUGUEL' as const,
-  tipo: 'apartamento',
-  valor: 4800,
-  condominio: 900,
-  iptu: null,
-  quartos: 2,
-  banheiros: 2,
-  vagas: 1,
-  areaM2: 84,
-  cidade: 'Sao Paulo',
-  bairro: 'Jardins',
-  capaUrl: null,
-  publicadoEm: '2026-08-12T10:00:00.000Z',
+  title: 'Apartamento Jardins',
+  purpose: 'ALUGUEL' as const,
+  propertyType: 'apartamento',
+  price: 4800,
+  condoFee: 900,
+  propertyTax: null,
+  bedrooms: 2,
+  bathrooms: 2,
+  parkingSpots: 1,
+  area: 84,
+  city: 'Sao Paulo',
+  neighborhood: 'Jardins',
+  coverUrl: null,
+  publishedAt: '2026-08-12T10:00:00.000Z',
 }
 
 describe('CrmService', () => {
@@ -79,17 +79,17 @@ describe('CrmService', () => {
 
     await expect(
       service.create({
-        imovelId: opportunity.imovelId,
-        interessadoNome: opportunity.interessadoNome,
-        interessadoEmail: opportunity.interessadoEmail,
-        valorProposto: opportunity.valorProposto,
+        propertyId: opportunity.propertyId,
+        leadName: opportunity.leadName,
+        leadEmail: opportunity.leadEmail,
+        proposedValue: opportunity.proposedValue,
       }),
     ).resolves.toEqual(opportunity)
     expect(http.post).toHaveBeenCalledWith('/crm/opportunities', {
-      imovelId: opportunity.imovelId,
-      interessadoNome: opportunity.interessadoNome,
-      interessadoEmail: opportunity.interessadoEmail,
-      valorProposto: opportunity.valorProposto,
+      propertyId: opportunity.propertyId,
+      leadName: opportunity.leadName,
+      leadEmail: opportunity.leadEmail,
+      proposedValue: opportunity.proposedValue,
     })
   })
 
@@ -104,7 +104,7 @@ describe('CrmService', () => {
   })
 
   it('archives one opportunity with the non-permanent DELETE endpoint', async () => {
-    const archived = { ...opportunity, arquivadaEm: '2026-08-12T12:00:00.000Z' }
+    const archived = { ...opportunity, archivedAt: '2026-08-12T12:00:00.000Z' }
     http.delete.mockResolvedValueOnce({ opportunity: archived })
 
     await expect(service.archive(opportunity.id)).resolves.toEqual(archived)
@@ -113,14 +113,14 @@ describe('CrmService', () => {
 
   it('lists public properties through the existing marketplace endpoint', async () => {
     http.get.mockResolvedValueOnce({ properties: [property] })
-    const filters = { finalidade: 'ALUGUEL' as const, q: 'Jardins' }
+    const filters = { purpose: 'ALUGUEL' as const, q: 'Jardins' }
 
     await expect(service.listProperties(filters)).resolves.toEqual([property])
     expect(http.get).toHaveBeenCalledWith('/marketplace/properties', { params: filters })
   })
 
   it('gets public property detail through the existing marketplace endpoint', async () => {
-    const detail = { ...property, descricao: null, endereco: null, midias: [] }
+    const detail = { ...property, description: null, address: null, media: [] }
     http.get.mockResolvedValueOnce({ property: detail })
 
     await expect(service.getProperty(property.id)).resolves.toEqual(detail)
@@ -131,13 +131,13 @@ describe('CrmService', () => {
     const accepted = { ...opportunity, status: 'ACEITA' as const }
     const activity = {
       id: 'activity-1',
-      oportunidadeId: opportunity.id,
-      tipo: 'PROPOSTA_RESPONDIDA' as const,
-      descricao: 'Proposta aceita.',
-      autorId: null,
-      autorNome: null,
-      statusAnterior: 'ENVIADA' as const,
-      statusNovo: 'ACEITA' as const,
+      opportunityId: opportunity.id,
+      type: 'PROPOSTA_RESPONDIDA' as const,
+      description: 'Proposta aceita.',
+      authorId: null,
+      authorName: null,
+      previousStatus: 'ENVIADA' as const,
+      newStatus: 'ACEITA' as const,
       createdAt: '2026-08-12T12:00:00.000Z',
     }
     http.post.mockResolvedValueOnce({ opportunity: accepted, activity })
@@ -161,13 +161,13 @@ describe('CrmService', () => {
   it('adds a manual note to the opportunity timeline', async () => {
     const note = {
       id: 'activity-2',
-      oportunidadeId: opportunity.id,
-      tipo: 'NOTA' as const,
-      descricao: 'Ligou para confirmar a visita.',
-      autorId: null,
-      autorNome: null,
-      statusAnterior: null,
-      statusNovo: null,
+      opportunityId: opportunity.id,
+      type: 'NOTA' as const,
+      description: 'Ligou para confirmar a visita.',
+      authorId: null,
+      authorName: null,
+      previousStatus: null,
+      newStatus: null,
       createdAt: '2026-08-12T12:00:00.000Z',
     }
     http.post.mockResolvedValueOnce({ activity: note })
@@ -176,7 +176,7 @@ describe('CrmService', () => {
       service.addNote(opportunity.id, 'Ligou para confirmar a visita.'),
     ).resolves.toEqual(note)
     expect(http.post).toHaveBeenCalledWith(`/crm/opportunities/${opportunity.id}/activities`, {
-      descricao: 'Ligou para confirmar a visita.',
+      description: 'Ligou para confirmar a visita.',
     })
   })
 })
