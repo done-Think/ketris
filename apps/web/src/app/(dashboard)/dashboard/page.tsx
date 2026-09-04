@@ -1,7 +1,7 @@
-import { DashboardOverviewPage } from '@modules/dashboard'
+import { OwnerDashboardPage } from '@modules/dashboard'
 
-export const metadata = { title: 'Dashboard | Ketris' }
+export const metadata = { title: 'Painel do Proprietário | Ketris' }
 
 export default function DashboardPage() {
-  return <DashboardOverviewPage />
+  return <OwnerDashboardPage />
 }
