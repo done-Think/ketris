@@ -105,6 +105,76 @@
       "brokers": "Brokers"
     }
   },
+  "leads": {
+    "title": "Leads",
+    "subtitle": "Manage your contacts and negotiations",
+    "searchPlaceholder": "Search lead by name or property...",
+    "newLead": "New Lead",
+    "contactAction": "Contact",
+    "createdNow": "Now",
+    "resultsCount": "Showing {count} of {total}",
+    "create": {
+      "eyebrow": "New sales contact",
+      "title": "Register lead",
+      "success": "Lead registered successfully.",
+      "steps": {
+        "contact": "Contact",
+        "interest": "Interest",
+        "review": "Review"
+      },
+      "fields": {
+        "name": "Name",
+        "phone": "Phone",
+        "email": "Email",
+        "interest": "Property or interest",
+        "budget": "Budget",
+        "source": "Source",
+        "broker": "Responsible broker",
+        "stage": "Initial status",
+        "notes": "Notes"
+      },
+      "sources": {
+        "marketplace": "Marketplace",
+        "whatsApp": "WhatsApp",
+        "instagram": "Instagram",
+        "site": "Site",
+        "referral": "Referral"
+      },
+      "actions": {
+        "back": "Back",
+        "cancel": "Cancel",
+        "close": "Close new lead",
+        "create": "Create lead",
+        "next": "Next"
+      }
+    },
+    "filters": {
+      "all": "All",
+      "new": "New",
+      "contacted": "Contacted",
+      "visitScheduled": "Visit scheduled",
+      "proposal": "Proposal"
+    },
+    "tableColumns": {
+      "name": "Name",
+      "interest": "Interest",
+      "budget": "Budget",
+      "status": "Status",
+      "source": "Source",
+      "lastContact": "Last contact",
+      "actions": "Actions"
+    },
+    "contact": {
+      "eyebrow": "Lead contact",
+      "phoneLabel": "Phone",
+      "call": "Call",
+      "whatsApp": "WhatsApp",
+      "cancel": "Close",
+      "close": "Close lead contact",
+      "emailLabel": "Email",
+      "email": "Email"
+    }
+  },
   "opportunityDetail": {
     "editTitle": "Edit opportunity",
     "breadcrumbAriaLabel": "Breadcrumb",

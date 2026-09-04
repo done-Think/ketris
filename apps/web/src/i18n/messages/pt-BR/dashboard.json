@@ -107,7 +107,9 @@
       "status": "Status",
       "noRows": "Nenhum lançamento encontrado",
       "totalRows": "Total de linhas:",
-      "rowsPerPage": "Linhas por página"
+      "rowsPerPage": "Linhas por página",
+      "title": "Movimentações recentes",
+      "date": "Data"
     },
     "types": {
       "Venda": "Venda",
@@ -116,7 +118,34 @@
     "statuses": {
       "Recebido": "Recebido",
       "Previsto": "Previsto",
-      "Atrasado": "Atrasado"
+      "Atrasado": "Atrasado",
+      "Pago": "Pago",
+      "Pendente": "Pendente"
+    },
+    "selectedMonth": "Julho 2025",
+    "export": "Exportar",
+    "revenueChartTitle": "Faturamento (6 meses)",
+    "revenue": "Faturamento",
+    "upcomingDuesTitle": "Próximos vencimentos",
+    "kpis": {
+      "monthlyRevenue": "Receita mensal",
+      "receivable": "A receber",
+      "delinquency": "Inadimplência",
+      "occupancyRate": "Taxa ocupação"
+    },
+    "history": {
+      "eyebrow": "Histórico financeiro",
+      "close": "Fechar histórico",
+      "propertyLabel": "Imóvel",
+      "clientLabel": "Cliente"
+    },
+    "entryDetail": {
+      "eyebrow": "Registro financeiro",
+      "close": "Fechar registro financeiro",
+      "propertyLabel": "Imóvel",
+      "clientLabel": "Cliente",
+      "amountLabel": "Valor",
+      "receiptsTitle": "Comprovantes"
     }
   },
   "proposals": {
