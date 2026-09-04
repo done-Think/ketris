@@ -4,7 +4,7 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { Avatar, Box, Button, Chip, InputAdornment, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
 import { RhfTextField } from '@shared/components/form'
@@ -19,7 +19,7 @@ import {
   surface,
 } from '@shared/theme/tokens'
 
-import { dashboardLeads } from '../data/leads'
+import { useLeadsStore } from '../stores/leads-store'
 import type {
   DashboardLead,
   LeadFilterKey,
@@ -30,6 +30,8 @@ import type {
   LeadStatusFilterOption,
   LeadStatusChipProps,
 } from '../types/lead'
+import { CreateLeadDialog } from './CreateLeadDialog'
+import { LeadContactDialog } from './LeadContactDialog'
 
 const leadStatusFilters: LeadStatusFilterOption[] = [
   { labelKey: 'all', label: 'Todos' },
@@ -53,10 +55,10 @@ const leadStageStyles: Record<LeadStage, LeadStageStyle> = {
   Proposta: { bgcolor: supportColor.successSoft, color: brand.semantic.success },
 }
 
-function getFilterCount(filter: LeadFilterKey) {
-  if (filter === 'Todos') return dashboardLeads.length
+function getFilterCount(leads: DashboardLead[], filter: LeadFilterKey) {
+  if (filter === 'Todos') return leads.length
 
-  return dashboardLeads.filter((lead) => lead.stage === filter).length
+  return leads.filter((lead) => lead.stage === filter).length
 }
 
 function getLeadInitials(name: string) {
@@ -115,6 +117,9 @@ const leadTableColumnKeys = [
 
 export function LeadsDashboardPage() {
   const t = useTranslations('crm.leads')
+  const leads = useLeadsStore((state) => state.leads)
+  const [isCreateLeadDialogOpen, setIsCreateLeadDialogOpen] = useState(false)
+  const [selectedContactLead, setSelectedContactLead] = useState<DashboardLead | null>(null)
   const { control, setValue } = useForm<LeadsDashboardFiltersFormValues>({
     defaultValues: {
       activeFilter: 'Todos',
@@ -124,8 +129,8 @@ export function LeadsDashboardPage() {
   const activeFilter = useWatch({ control, name: 'activeFilter' })
   const searchQuery = useWatch({ control, name: 'searchQuery' })
   const filteredLeads = useMemo(
-    () => filterLeads(dashboardLeads, searchQuery, activeFilter),
-    [activeFilter, searchQuery],
+    () => filterLeads(leads, searchQuery, activeFilter),
+    [activeFilter, leads, searchQuery],
   )
 
   return (
@@ -175,8 +180,10 @@ export function LeadsDashboardPage() {
               }}
             />
             <Button
+              type="button"
               variant="contained"
               startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
+              onClick={() => setIsCreateLeadDialogOpen(true)}
               sx={{ minHeight: 40, borderRadius: `${radius.sm}px`, fontWeight: 900 }}
             >
               {t('newLead')}
@@ -184,7 +191,14 @@ export function LeadsDashboardPage() {
           </Stack>
         </Stack>
 
-        <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+        <Stack
+          direction="row"
+          sx={{
+            flexWrap: 'wrap',
+            gap: 1,
+            justifyContent: { xs: 'center', md: 'flex-start' },
+          }}
+        >
           {leadStatusFilters.map((filter) => {
             const active = activeFilter === filter.label
 
@@ -202,7 +216,7 @@ export function LeadsDashboardPage() {
                   fontWeight: 900,
                 }}
               >
-                {t(`filters.${filter.labelKey}`)} {getFilterCount(filter.label)}
+                {t(`filters.${filter.labelKey}`)} {getFilterCount(leads, filter.label)}
               </Button>
             )
           })}
@@ -303,7 +317,9 @@ export function LeadsDashboardPage() {
                   {lead.lastContact}
                 </Typography>
                 <Button
+                  type="button"
                   size="small"
+                  onClick={() => setSelectedContactLead(lead)}
                   sx={{
                     justifySelf: 'start',
                     minWidth: 0,
@@ -325,7 +341,7 @@ export function LeadsDashboardPage() {
             sx={{ borderTop: '1px solid', borderColor: alpha.graphite[6], px: 2.4, py: 1.6 }}
           >
             <Typography sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 700 }}>
-              {t('resultsCount', { count: filteredLeads.length, total: dashboardLeads.length })}
+              {t('resultsCount', { count: filteredLeads.length, total: leads.length })}
             </Typography>
             <Stack direction="row" spacing={0.6}>
               {[1, 2, 3].map((page) => (
@@ -421,8 +437,10 @@ export function LeadsDashboardPage() {
                 </Stack>
 
                 <Button
+                  type="button"
                   variant="outlined"
                   fullWidth
+                  onClick={() => setSelectedContactLead(lead)}
                   sx={{ borderRadius: `${radius.sm}px`, fontWeight: 900 }}
                 >
                   {t('contactAction')}
@@ -432,6 +450,15 @@ export function LeadsDashboardPage() {
           ))}
         </Stack>
       </Stack>
+      <CreateLeadDialog
+        open={isCreateLeadDialogOpen}
+        onClose={() => setIsCreateLeadDialogOpen(false)}
+      />
+      <LeadContactDialog
+        lead={selectedContactLead}
+        open={Boolean(selectedContactLead)}
+        onClose={() => setSelectedContactLead(null)}
+      />
     </Box>
   )
 }
