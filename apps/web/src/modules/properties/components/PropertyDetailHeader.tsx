@@ -1,8 +1,10 @@
 import { Box, Button, Chip, Stack, Typography } from '@mui/material'
+import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
 import { useTranslations } from 'next-intl'
 
+import { Link } from '@/i18n/navigation'
 import { radius, surface } from '@shared/theme/tokens'
 
 import { dashboardPropertyStatusStyles } from '../config/dashboard-property-ui'
@@ -12,6 +14,7 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
   const t = useTranslations('properties.detail')
   const statusT = useTranslations('properties.dashboard.filters')
   const status = dashboardPropertyStatusStyles[property.status]
+  const showActiveContractLink = Boolean(property.activeContractId && property.status === 'Alugado')
 
   return (
     <Stack
@@ -43,7 +46,7 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
         </Typography>
       </Box>
 
-      <Stack direction="row" spacing={1.2}>
+      <Stack direction="row" alignItems="flex-start" spacing={1.2}>
         <Button
           variant="outlined"
           color="secondary"
@@ -59,19 +62,40 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
         >
           {t('edit')}
         </Button>
-        <Button
-          variant="contained"
-          startIcon={<VisibilityOffOutlinedIcon />}
-          sx={{
-            height: 46,
-            px: 2.4,
-            borderRadius: `${radius.sm}px`,
-            fontSize: 15,
-            fontWeight: 900,
-          }}
-        >
-          {t('unpublish')}
-        </Button>
+        <Stack spacing={1.1}>
+          <Button
+            variant="contained"
+            startIcon={<VisibilityOffOutlinedIcon />}
+            sx={{
+              height: 46,
+              px: 2.4,
+              borderRadius: `${radius.sm}px`,
+              fontSize: 15,
+              fontWeight: 900,
+            }}
+          >
+            {t('unpublish')}
+          </Button>
+          {showActiveContractLink ? (
+            <Button
+              component={Link}
+              href={`/dashboard/contracts/${property.activeContractId}`}
+              variant="outlined"
+              color="secondary"
+              startIcon={<ArticleOutlinedIcon />}
+              sx={{
+                height: 46,
+                px: 2.4,
+                borderRadius: `${radius.sm}px`,
+                bgcolor: surface.paper,
+                fontSize: 15,
+                fontWeight: 900,
+              }}
+            >
+              {t('contract')}
+            </Button>
+          ) : null}
+        </Stack>
       </Stack>
     </Stack>
   )

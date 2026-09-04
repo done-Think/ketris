@@ -105,6 +105,30 @@
       "brokers": "Corretores"
     }
   },
+  "leads": {
+    "title": "Leads",
+    "subtitle": "Gerencie seus contatos e negociações",
+    "searchPlaceholder": "Buscar lead por nome ou imóvel...",
+    "newLead": "Novo Lead",
+    "contactAction": "Contato",
+    "resultsCount": "Mostrando {count} de {total}",
+    "filters": {
+      "all": "Todos",
+      "new": "Novo",
+      "contacted": "Em contato",
+      "visitScheduled": "Visita marcada",
+      "proposal": "Proposta"
+    },
+    "tableColumns": {
+      "name": "Nome",
+      "interest": "Interesse",
+      "budget": "Orçamento",
+      "status": "Status",
+      "source": "Origem",
+      "lastContact": "Último contato",
+      "actions": "Ações"
+    }
+  },
   "opportunityDetail": {
     "editTitle": "Editar oportunidade",
     "breadcrumbAriaLabel": "Navegação estrutural",

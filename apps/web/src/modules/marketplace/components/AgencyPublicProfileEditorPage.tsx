@@ -16,13 +16,10 @@ import {
   AgencyPublicProfileImageFields,
   AgencyPublicProfileMainFields,
 } from './agency-public-profile-editor/AgencyPublicProfileEditorFormSections'
-import { AgencyPublicProfileDemonstrative } from './agency-public-profile-editor/AgencyPublicProfileDemonstrative'
-import { AgencyPublicProfileOrderPanel } from './agency-public-profile-editor/AgencyPublicProfileOrderPanel'
 import { AgencyPublicProfilePreviewDialog } from './agency-public-profile-editor/AgencyPublicProfilePreviewDialog'
 import { isAgencyPublicProfileSectionKey } from './agency-public-profile-editor/agency-public-profile-editor-shared'
 import { agencyPublicProfileEditorDefaultValues } from '../data/agency-public-profile-editor'
 import { useProfileEditorImageUpload } from '../hooks/use-profile-editor-image-upload'
-import { useProfileEditorSectionOrder } from '../hooks/use-profile-editor-section-order'
 import { agencyPublicProfileEditorSchema } from '../schemas/agency-public-profile-editor-schema'
 import type {
   AgencyPublicProfileEditorFormValues,
@@ -44,27 +41,6 @@ export function AgencyPublicProfileEditorPage() {
   })
   const profileDraft = watch()
   const visibleSectionOrder = profileDraft.sectionOrder.filter(isAgencyPublicProfileSectionKey)
-  const setSectionOrder = useCallback(
-    (sectionOrder: AgencyPublicProfileEditorFormValues['sectionOrder']) => {
-      setValue('sectionOrder', sectionOrder, { shouldDirty: true, shouldValidate: true })
-    },
-    [setValue],
-  )
-  const {
-    draggedPosition,
-    finishLongPress,
-    isTouchLikeDevice,
-    moveLongPress,
-    pressedPosition,
-    resetLongPress,
-    setDraggedPosition,
-    startLongPress,
-    swapSectionPositions,
-    updateSectionOrder,
-  } = useProfileEditorSectionOrder({
-    sectionOrder: profileDraft.sectionOrder,
-    setSectionOrder,
-  })
   const setImageValue = useCallback(
     (fieldName: AgencyPublicProfileImageFieldName, previewUrl: string) => {
       setValue(fieldName, previewUrl, { shouldDirty: true, shouldValidate: true })
@@ -90,9 +66,19 @@ export function AgencyPublicProfileEditorPage() {
 
   return (
     <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
-      <Box sx={{ width: '100%', maxWidth: 1180, mx: 'auto' }}>
-        <Stack alignItems="center" spacing={2} sx={{ mb: 2.6, textAlign: 'center' }}>
-          <Box sx={{ width: '100%' }}>
+      <Box
+        component="form"
+        onSubmit={handleSubmit(handleStaticSubmit)}
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2.2 }}
+      >
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          alignItems={{ xs: 'flex-start', md: 'center' }}
+          justifyContent="space-between"
+          spacing={2}
+          sx={{ mb: 2.6, textAlign: 'left' }}
+        >
+          <Box sx={{ minWidth: 0 }}>
             <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 38 }, fontWeight: 900 }}>
               {t('title')}
             </Typography>
@@ -114,12 +100,31 @@ export function AgencyPublicProfileEditorPage() {
         </Stack>
 
         <Box
-          component="form"
-          onSubmit={handleSubmit(handleStaticSubmit)}
-          sx={{ display: 'flex', flexDirection: 'column', gap: 2.2 }}
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', xl: 'minmax(0, 3fr) minmax(420px, 2fr)' },
+            gridTemplateAreas: {
+              xs: '"main" "settings"',
+              xl: '"main settings"',
+            },
+            alignItems: { xs: 'start', xl: 'stretch' },
+            columnGap: { xs: 2.2, xl: 4 },
+            rowGap: 2.2,
+          }}
         >
-          <Stack spacing={2} sx={{ width: '100%', maxWidth: 920, mx: 'auto' }}>
+          <Box
+            sx={{
+              gridArea: 'main',
+              display: 'flex',
+              '& > *': {
+                flex: 1,
+              },
+            }}
+          >
             <AgencyPublicProfileMainFields control={control} />
+          </Box>
+          <Stack spacing={2} sx={{ gridArea: 'settings' }}>
+            <AgencyPublicProfileEditorActions onPreview={() => setIsPreviewOpen(true)} />
             <AgencyPublicProfileAppearanceFields control={control} />
             <AgencyPublicProfileImageFields
               control={control}
@@ -141,46 +146,7 @@ export function AgencyPublicProfileEditorPage() {
               ]}
               profileDraft={profileDraft}
             />
-            <AgencyPublicProfileEditorActions onPreview={() => setIsPreviewOpen(true)} />
           </Stack>
-
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 390px' },
-              gap: 2,
-              alignItems: 'start',
-            }}
-          >
-            <AgencyPublicProfileDemonstrative
-              draggedPosition={draggedPosition}
-              finishLongPress={finishLongPress}
-              isTouchLikeDevice={isTouchLikeDevice}
-              moveLongPress={moveLongPress}
-              pressedPosition={pressedPosition}
-              profileDraft={profileDraft}
-              resetLongPress={resetLongPress}
-              setDraggedPosition={setDraggedPosition}
-              startLongPress={startLongPress}
-              swapSectionPositions={swapSectionPositions}
-              visibleSectionOrder={visibleSectionOrder}
-            />
-            <AgencyPublicProfileOrderPanel
-              control={control}
-              draggedPosition={draggedPosition}
-              finishLongPress={finishLongPress}
-              isTouchLikeDevice={isTouchLikeDevice}
-              moveLongPress={moveLongPress}
-              pressedPosition={pressedPosition}
-              profileDraft={profileDraft}
-              resetLongPress={resetLongPress}
-              setDraggedPosition={setDraggedPosition}
-              startLongPress={startLongPress}
-              swapSectionPositions={swapSectionPositions}
-              updateSectionOrder={updateSectionOrder}
-              visibleSectionOrder={visibleSectionOrder}
-            />
-          </Box>
         </Box>
       </Box>
 
