@@ -19,7 +19,7 @@ export function AgencyPublicProfileMainFields({ control }: AgencyPublicProfileMa
   const t = useTranslations('marketplace.agencyProfileEditor')
 
   return (
-    <Box sx={agencyEditorPanelSx}>
+    <Box sx={{ ...agencyEditorPanelSx, display: 'flex', flexDirection: 'column' }}>
       <Typography variant="h5" sx={{ mb: 2 }}>
         {t('mainContent')}
       </Typography>
@@ -27,7 +27,9 @@ export function AgencyPublicProfileMainFields({ control }: AgencyPublicProfileMa
         sx={{
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+          gridTemplateRows: { xl: 'repeat(4, auto) minmax(0, 1fr)' },
           gap: 1.6,
+          flex: 1,
         }}
       >
         <RhfTextField
@@ -63,9 +65,18 @@ export function AgencyPublicProfileMainFields({ control }: AgencyPublicProfileMa
           name="summary"
           label={t('fields.summary')}
           multiline
-          minRows={4}
+          minRows={6}
           fullWidth
-          sx={{ gridColumn: { md: '1 / -1' } }}
+          sx={{
+            gridColumn: { md: '1 / -1' },
+            '& .MuiInputBase-root': {
+              alignItems: 'flex-start',
+              height: { xl: '100%' },
+            },
+            '& textarea': {
+              height: { xl: '100% !important' },
+            },
+          }}
         />
       </Box>
     </Box>
@@ -129,11 +140,13 @@ function AgencyPublicProfileImageField({
   const imageUrl = profileDraft[fieldName]
 
   return (
-    <Stack spacing={1.2}>
+    <Stack spacing={1.2} sx={{ height: '100%' }}>
       <RhfTextField control={control} name={fieldName} label={label} fullWidth />
       <Box
         {...dropzone.getRootProps()}
         sx={{
+          minHeight: 86,
+          height: '100%',
           border: '1px dashed',
           borderColor: dropzone.isDragActive ? profileDraft.primaryColor : alpha.graphite[18],
           borderRadius: `${radius.sm}px`,
@@ -144,7 +157,13 @@ function AgencyPublicProfileImageField({
         }}
       >
         <input {...dropzone.getInputProps()} aria-label={uploadLabel} />
-        <Stack direction="row" spacing={1.2} alignItems="center">
+        <Stack
+          direction="row"
+          spacing={1.2}
+          alignItems="center"
+          justifyContent="center"
+          sx={{ height: '100%' }}
+        >
           <Box
             aria-label={previewVariant === 'logo' ? t('logoPreview') : t('bannerPreview')}
             sx={{
@@ -192,6 +211,7 @@ export function AgencyPublicProfileImageFields({
         sx={{
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+          alignItems: 'stretch',
           gap: 1.6,
         }}
       >
@@ -216,14 +236,6 @@ export function AgencyPublicProfileEditorActions({
   return (
     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
       <Button
-        type="submit"
-        variant="contained"
-        startIcon={<SaveOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-        sx={{ minHeight: 44, borderRadius: `${radius.sm}px`, flex: 1 }}
-      >
-        {t('saveDraft')}
-      </Button>
-      <Button
         type="button"
         variant="outlined"
         color="secondary"
@@ -232,6 +244,14 @@ export function AgencyPublicProfileEditorActions({
         sx={{ minHeight: 44, borderRadius: `${radius.sm}px`, flex: 1 }}
       >
         {t('preview')}
+      </Button>
+      <Button
+        type="submit"
+        variant="contained"
+        startIcon={<SaveOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+        sx={{ minHeight: 44, borderRadius: `${radius.sm}px`, flex: 1 }}
+      >
+        {t('saveDraft')}
       </Button>
     </Stack>
   )

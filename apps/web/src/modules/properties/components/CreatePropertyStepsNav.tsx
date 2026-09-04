@@ -9,6 +9,7 @@ import type { CreatePropertyStepsNavProps } from '../types/dashboard-property'
 
 export function CreatePropertyStepsNav({
   activeStepIndex,
+  maxVisitedStepIndex,
   onStepSelect,
 }: CreatePropertyStepsNavProps) {
   const t = useTranslations('properties.create.steps')
@@ -26,8 +27,9 @@ export function CreatePropertyStepsNav({
     >
       {createPropertySteps.map((step, index) => {
         const active = index === activeStepIndex
-        const completed = index < activeStepIndex
-        const reachable = index <= activeStepIndex
+        const completed = index <= maxVisitedStepIndex && !active
+        const reached = index <= maxVisitedStepIndex
+        const reachable = reached
 
         return (
           <Stack
@@ -56,7 +58,7 @@ export function CreatePropertyStepsNav({
                 display: { xs: 'none', md: 'block' },
                 flex: 1,
                 height: 1,
-                bgcolor: completed ? 'primary.main' : 'divider',
+                bgcolor: index < maxVisitedStepIndex ? 'primary.main' : 'divider',
                 ml: 1,
               },
               '&:hover': {
@@ -70,7 +72,7 @@ export function CreatePropertyStepsNav({
                 height: 25,
                 borderRadius: radius.full,
                 border: '2px solid',
-                borderColor: active || completed ? 'primary.main' : brand.neutral[400],
+                borderColor: reached ? 'primary.main' : brand.neutral[400],
                 color: completed ? surface.lightText : active ? 'primary.main' : 'text.secondary',
                 bgcolor: completed ? 'primary.main' : 'transparent',
                 display: 'grid',

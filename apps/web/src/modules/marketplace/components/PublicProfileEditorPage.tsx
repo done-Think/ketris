@@ -17,13 +17,10 @@ import {
   PublicProfileMainFields,
   PublicProfileTeamFields,
 } from './public-profile-editor/PublicProfileEditorFormSections'
-import { PublicProfileDemonstrative } from './public-profile-editor/PublicProfileDemonstrative'
-import { PublicProfileOrderPanel } from './public-profile-editor/PublicProfileOrderPanel'
 import { PublicProfileSectionPreviewDialog } from './public-profile-editor/PublicProfilePreviewDialog'
 import { isPublicProfileSectionKey } from './public-profile-editor/public-profile-editor-shared'
 import { publicProfileEditorDefaultValues } from '../data/public-profile-editor'
 import { useProfileEditorImageUpload } from '../hooks/use-profile-editor-image-upload'
-import { useProfileEditorSectionOrder } from '../hooks/use-profile-editor-section-order'
 import { publicProfileEditorSchema } from '../schemas/public-profile-editor-schema'
 import type {
   PublicProfileEditorFormValues,
@@ -53,27 +50,6 @@ export function PublicProfileEditorPage() {
   })
   const profileDraft = watch()
   const visibleSectionOrder = profileDraft.sectionOrder.filter(isPublicProfileSectionKey)
-  const setSectionOrder = useCallback(
-    (sectionOrder: PublicProfileEditorFormValues['sectionOrder']) => {
-      setValue('sectionOrder', sectionOrder, { shouldDirty: true, shouldValidate: true })
-    },
-    [setValue],
-  )
-  const {
-    draggedPosition,
-    finishLongPress,
-    isTouchLikeDevice,
-    moveLongPress,
-    pressedPosition,
-    resetLongPress,
-    setDraggedPosition,
-    startLongPress,
-    swapSectionPositions,
-    updateSectionOrder,
-  } = useProfileEditorSectionOrder({
-    sectionOrder: profileDraft.sectionOrder,
-    setSectionOrder,
-  })
   const setImageValue = useCallback(
     (fieldName: PublicProfileImageFieldName, previewUrl: string) => {
       setValue(fieldName, previewUrl, { shouldDirty: true, shouldValidate: true })
@@ -99,15 +75,19 @@ export function PublicProfileEditorPage() {
 
   return (
     <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
-      <Box sx={{ width: '100%', maxWidth: 1180, mx: 'auto' }}>
+      <Box
+        component="form"
+        onSubmit={handleSubmit(handleStaticSubmit)}
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2.2 }}
+      >
         <Stack
-          direction="column"
-          justifyContent="center"
-          alignItems="center"
+          direction={{ xs: 'column', md: 'row' }}
+          justifyContent="space-between"
+          alignItems={{ xs: 'flex-start', md: 'center' }}
           spacing={2}
-          sx={{ mb: 2.6, textAlign: 'center' }}
+          sx={{ mb: 2.6, textAlign: 'left' }}
         >
-          <Box sx={{ width: '100%' }}>
+          <Box sx={{ minWidth: 0 }}>
             <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 38 }, fontWeight: 900 }}>
               {t('title')}
             </Typography>
@@ -129,18 +109,31 @@ export function PublicProfileEditorPage() {
         </Stack>
 
         <Box
-          component="form"
-          onSubmit={handleSubmit(handleStaticSubmit)}
-          sx={{ display: 'flex', flexDirection: 'column', gap: 2.2 }}
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', xl: 'minmax(0, 3fr) minmax(420px, 2fr)' },
+            gridTemplateAreas: {
+              xs: '"main" "settings" "team"',
+              xl: '"main settings" "team team"',
+            },
+            alignItems: { xs: 'start', xl: 'stretch' },
+            columnGap: { xs: 2.2, xl: 4 },
+            rowGap: 2.2,
+          }}
         >
-          <Stack spacing={2} sx={{ width: '100%', maxWidth: 920, mx: 'auto' }}>
+          <Box
+            sx={{
+              gridArea: 'main',
+              display: 'flex',
+              '& > *': {
+                flex: 1,
+              },
+            }}
+          >
             <PublicProfileMainFields control={control} />
-            <PublicProfileTeamFields
-              appendTeamMember={appendTeamMember}
-              control={control}
-              removeTeamMember={removeTeamMember}
-              teamFields={teamFields}
-            />
+          </Box>
+          <Stack spacing={2} sx={{ gridArea: 'settings' }}>
+            <PublicProfileEditorActions onPreview={() => setIsPreviewOpen(true)} />
             <PublicProfileAppearanceFields control={control} />
             <PublicProfileImageFields
               control={control}
@@ -162,43 +155,13 @@ export function PublicProfileEditorPage() {
               ]}
               profileDraft={profileDraft}
             />
-            <PublicProfileEditorActions onPreview={() => setIsPreviewOpen(true)} />
           </Stack>
-
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 390px' },
-              gap: 2,
-              alignItems: 'start',
-            }}
-          >
-            <PublicProfileDemonstrative
-              draggedPosition={draggedPosition}
-              finishLongPress={finishLongPress}
-              isTouchLikeDevice={isTouchLikeDevice}
-              moveLongPress={moveLongPress}
-              pressedPosition={pressedPosition}
-              profileDraft={profileDraft}
-              resetLongPress={resetLongPress}
-              setDraggedPosition={setDraggedPosition}
-              startLongPress={startLongPress}
-              swapSectionPositions={swapSectionPositions}
-              visibleSectionOrder={visibleSectionOrder}
-            />
-            <PublicProfileOrderPanel
+          <Box sx={{ gridArea: 'team' }}>
+            <PublicProfileTeamFields
+              appendTeamMember={appendTeamMember}
               control={control}
-              draggedPosition={draggedPosition}
-              finishLongPress={finishLongPress}
-              isTouchLikeDevice={isTouchLikeDevice}
-              moveLongPress={moveLongPress}
-              pressedPosition={pressedPosition}
-              profileDraft={profileDraft}
-              resetLongPress={resetLongPress}
-              setDraggedPosition={setDraggedPosition}
-              startLongPress={startLongPress}
-              swapSectionPositions={swapSectionPositions}
-              updateSectionOrder={updateSectionOrder}
+              removeTeamMember={removeTeamMember}
+              teamFields={teamFields}
             />
           </Box>
         </Box>
