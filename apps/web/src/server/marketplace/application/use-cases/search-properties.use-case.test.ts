@@ -21,6 +21,7 @@ const summary: PublishedPropertySummary = {
   latitude: -25.4284,
   longitude: -49.2733,
   brokerName: 'Marina Costa',
+  brokerAvatarUrl: null,
   coverUrl: 'https://cdn.ketris.dev/imovel-1/capa.jpg',
   publishedAt: new Date('2026-08-01T00:00:00.000Z'),
 }

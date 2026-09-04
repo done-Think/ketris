@@ -56,11 +56,12 @@ async function main() {
 
     const broker = await prisma.usuario.upsert({
       where: { tenantId_email: { tenantId: tenant.id, email: property.broker.email } },
-      update: {},
+      update: { avatarUrl: property.broker.avatarUrl },
       create: {
         tenantId: tenant.id,
         nome: property.broker.name,
         email: property.broker.email,
+        avatarUrl: property.broker.avatarUrl,
         senhaHash,
         papel: 'AGENT',
       },

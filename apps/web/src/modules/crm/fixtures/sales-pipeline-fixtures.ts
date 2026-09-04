@@ -76,6 +76,7 @@ function createFixture({
       latitude: null,
       longitude: null,
       brokerName: null,
+      brokerAvatarUrl: null,
       coverUrl: null,
       publishedAt: relativeDate,
     },

@@ -25,6 +25,7 @@ const detail: PublishedPropertyDetail = {
   latitude: null,
   longitude: null,
   brokerName: null,
+  brokerAvatarUrl: null,
   coverUrl: null,
   publishedAt: new Date('2026-08-01T00:00:00.000Z'),
   description: null,

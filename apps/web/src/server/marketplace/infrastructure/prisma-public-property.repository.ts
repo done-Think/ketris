@@ -52,7 +52,7 @@ type ImovelSummaryRow = {
     latitude: DecimalLike | null
     longitude: DecimalLike | null
   } | null
-  responsavel: { nome: string } | null
+  responsavel: { nome: string; avatarUrl: string | null } | null
   midias: { url: string }[]
 }
 
@@ -81,6 +81,7 @@ function toSummary(row: ImovelSummaryRow): PublishedPropertySummary {
     latitude: toNumber(row.endereco?.latitude ?? null),
     longitude: toNumber(row.endereco?.longitude ?? null),
     brokerName: row.responsavel?.nome ?? null,
+    brokerAvatarUrl: row.responsavel?.avatarUrl ?? null,
     coverUrl: row.midias[0]?.url ?? null,
     publishedAt: row.publicadoEm,
   }
@@ -180,7 +181,7 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
         areaM2: true,
         publicadoEm: true,
         endereco: { select: { cidade: true, bairro: true, latitude: true, longitude: true } },
-        responsavel: { select: { nome: true } },
+        responsavel: { select: { nome: true, avatarUrl: true } },
         midias: { orderBy: { ordem: 'asc' }, take: 1, select: { url: true } },
       },
     })
@@ -193,7 +194,7 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
       where: { id, status: 'PUBLISHED' },
       include: {
         endereco: true,
-        responsavel: { select: { nome: true } },
+        responsavel: { select: { nome: true, avatarUrl: true } },
         midias: { orderBy: { ordem: 'asc' } },
       },
     })

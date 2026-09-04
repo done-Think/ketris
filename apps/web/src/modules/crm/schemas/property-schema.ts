@@ -29,6 +29,7 @@ export const publicPropertySummarySchema = z.object({
   latitude: z.number().nullable(),
   longitude: z.number().nullable(),
   brokerName: z.string().nullable(),
+  brokerAvatarUrl: z.string().nullable(),
   coverUrl: z.string().nullable(),
   publishedAt: z.string().nullable(),
 })

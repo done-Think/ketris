@@ -30,8 +30,6 @@ function buildPrice(summary: PublicPropertySummary): string {
   return summary.purpose === 'ALUGUEL' ? `${formatted} / mês` : formatted
 }
 
-// O contrato público de imóveis ainda não expõe foto do corretor responsável, só o nome — o
-// avatar fica vazio (sem imagem fabricada) até essa lacuna ser fechada no backend.
 export function mapSummaryToSearchResult(
   summary: PublicPropertySummary,
   purpose: SearchResultPurpose,
@@ -45,7 +43,7 @@ export function mapSummaryToSearchResult(
     price: buildPrice(summary),
     details: buildDetails(summary),
     broker: summary.brokerName ?? '',
-    avatar: '',
+    avatar: summary.brokerAvatarUrl ?? '',
     purpose,
     mapCenter:
       summary.latitude !== null && summary.longitude !== null

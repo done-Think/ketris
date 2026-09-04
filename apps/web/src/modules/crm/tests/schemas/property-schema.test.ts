@@ -23,6 +23,7 @@ const summary = {
   latitude: -23.56,
   longitude: -46.65,
   brokerName: 'Marina Costa',
+  brokerAvatarUrl: 'https://cdn.example.com/marina.jpg',
   coverUrl: 'https://cdn.example.com/property.jpg',
   publishedAt: '2026-08-12T10:00:00.000Z',
 }

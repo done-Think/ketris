@@ -47,6 +47,7 @@ model Usuario {
   nome      String
   email     String
   senhaHash String
+  avatarUrl String?
   papel     PapelUsuario @default(AGENT)
   ativo     Boolean      @default(true)
   createdAt DateTime     @default(now())

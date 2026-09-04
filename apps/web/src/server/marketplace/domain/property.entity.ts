@@ -36,6 +36,7 @@ export interface PublishedPropertySummary {
   latitude: number | null
   longitude: number | null
   brokerName: string | null
+  brokerAvatarUrl: string | null
   coverUrl: string | null
   publishedAt: Date | null
 }
@@ -67,6 +68,7 @@ export function toPublicPropertyDetail(property: PublishedPropertyDetail): Publi
     latitude: property.latitude,
     longitude: property.longitude,
     brokerName: property.brokerName,
+    brokerAvatarUrl: property.brokerAvatarUrl,
     coverUrl: property.coverUrl,
     publishedAt: property.publishedAt,
     description: property.description,

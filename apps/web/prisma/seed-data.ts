@@ -4,6 +4,7 @@
 export interface SeedPropertyBroker {
   name: string
   email: string
+  avatarUrl: string
 }
 
 export interface SeedProperty {
@@ -52,7 +53,12 @@ export const seedProperties: SeedProperty[] = [
     latitude: -23.5617,
     longitude: -46.6559,
     images: apartmentGallery,
-    broker: { name: 'Marina Costa', email: 'marina@ketris.com.br' },
+    broker: {
+      name: 'Marina Costa',
+      email: 'marina@ketris.com.br',
+      avatarUrl:
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80',
+    },
   },
   {
     id: 'studio-vila-madalena',
@@ -77,7 +83,12 @@ export const seedProperties: SeedProperty[] = [
       'https://images.unsplash.com/photo-1600210491369-e753d80a41f3?auto=format&fit=crop&w=700&q=80',
       'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=700&q=80',
     ],
-    broker: { name: 'Thiago Santos', email: 'thiago@ketris.com.br' },
+    broker: {
+      name: 'Thiago Santos',
+      email: 'thiago@ketris.com.br',
+      avatarUrl:
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80',
+    },
   },
   {
     id: 'cobertura-itaim-bibi',
@@ -102,7 +113,12 @@ export const seedProperties: SeedProperty[] = [
       'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=700&q=80',
       'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=700&q=80',
     ],
-    broker: { name: 'Juliana Mendes', email: 'juliana@ketris.com.br' },
+    broker: {
+      name: 'Juliana Mendes',
+      email: 'juliana@ketris.com.br',
+      avatarUrl:
+        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
+    },
   },
   {
     id: 'apartamento-garden-remodelado',
@@ -121,7 +137,12 @@ export const seedProperties: SeedProperty[] = [
     latitude: -23.5686,
     longitude: -46.6625,
     images: apartmentGallery,
-    broker: { name: 'Ana Silva', email: 'ana@ketris.com.br' },
+    broker: {
+      name: 'Ana Silva',
+      email: 'ana@ketris.com.br',
+      avatarUrl:
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80',
+    },
   },
   {
     id: 'loft-industrial-mobiliado',
@@ -140,7 +161,12 @@ export const seedProperties: SeedProperty[] = [
     latitude: -23.5632,
     longitude: -46.6712,
     images: apartmentGallery,
-    broker: { name: 'Carlos Souza', email: 'carlos@ketris.com.br' },
+    broker: {
+      name: 'Carlos Souza',
+      email: 'carlos@ketris.com.br',
+      avatarUrl:
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80',
+    },
   },
   {
     id: 'casa-alto-da-boa-vista',
@@ -159,7 +185,12 @@ export const seedProperties: SeedProperty[] = [
     latitude: -23.6346,
     longitude: -46.6993,
     images: apartmentGallery,
-    broker: { name: 'Renato Alves', email: 'renato@ketris.com.br' },
+    broker: {
+      name: 'Renato Alves',
+      email: 'renato@ketris.com.br',
+      avatarUrl:
+        'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=120&q=80',
+    },
   },
   {
     id: 'sala-comercial-paulista',
@@ -178,7 +209,12 @@ export const seedProperties: SeedProperty[] = [
     latitude: -23.563,
     longitude: -46.6543,
     images: apartmentGallery,
-    broker: { name: 'Camila Rocha', email: 'camila@ketris.com.br' },
+    broker: {
+      name: 'Camila Rocha',
+      email: 'camila@ketris.com.br',
+      avatarUrl:
+        'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=120&q=80',
+    },
   },
   {
     id: 'apartamento-moema',
@@ -197,7 +233,12 @@ export const seedProperties: SeedProperty[] = [
     latitude: -23.6032,
     longitude: -46.6654,
     images: apartmentGallery,
-    broker: { name: 'Bruna Lima', email: 'bruna@ketris.com.br' },
+    broker: {
+      name: 'Bruna Lima',
+      email: 'bruna@ketris.com.br',
+      avatarUrl:
+        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=120&q=80',
+    },
   },
   {
     id: 'apartamento-jardins-venda',
@@ -222,7 +263,12 @@ export const seedProperties: SeedProperty[] = [
       'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=700&q=80',
       'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=700&q=80',
     ],
-    broker: { name: 'Laura Martins', email: 'laura@ketris.com.br' },
+    broker: {
+      name: 'Laura Martins',
+      email: 'laura@ketris.com.br',
+      avatarUrl:
+        'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=120&q=80',
+    },
   },
   {
     id: 'apartamento-jardim-paulista-venda',
@@ -247,7 +293,12 @@ export const seedProperties: SeedProperty[] = [
       'https://images.unsplash.com/photo-1600210491369-e753d80a41f3?auto=format&fit=crop&w=700&q=80',
       'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=700&q=80',
     ],
-    broker: { name: 'Patrícia Nogueira', email: 'patricia@ketris.com.br' },
+    broker: {
+      name: 'Patrícia Nogueira',
+      email: 'patricia@ketris.com.br',
+      avatarUrl:
+        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=120&q=80',
+    },
   },
   {
     id: 'cobertura-pinheiros-venda',
@@ -272,7 +323,12 @@ export const seedProperties: SeedProperty[] = [
       'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=700&q=80',
       'https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?auto=format&fit=crop&w=700&q=80',
     ],
-    broker: { name: 'Roberto Lima', email: 'roberto@ketris.com.br' },
+    broker: {
+      name: 'Roberto Lima',
+      email: 'roberto@ketris.com.br',
+      avatarUrl:
+        'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=120&q=80',
+    },
   },
   {
     id: 'casa-alto-da-lapa-venda',
@@ -297,7 +353,12 @@ export const seedProperties: SeedProperty[] = [
       'https://images.unsplash.com/photo-1600210491369-e753d80a41f3?auto=format&fit=crop&w=700&q=80',
       'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=700&q=80',
     ],
-    broker: { name: 'Fernando Barros', email: 'fernando@ketris.com.br' },
+    broker: {
+      name: 'Fernando Barros',
+      email: 'fernando@ketris.com.br',
+      avatarUrl:
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80',
+    },
   },
   {
     id: 'loft-vila-madalena-venda',
@@ -322,7 +383,12 @@ export const seedProperties: SeedProperty[] = [
       'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=700&q=80',
       'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=700&q=80',
     ],
-    broker: { name: 'Bianca Azevedo', email: 'bianca@ketris.com.br' },
+    broker: {
+      name: 'Bianca Azevedo',
+      email: 'bianca@ketris.com.br',
+      avatarUrl:
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80',
+    },
   },
 ]
 
