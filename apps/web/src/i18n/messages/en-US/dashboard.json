@@ -107,7 +107,9 @@
       "status": "Status",
       "noRows": "No entries found",
       "totalRows": "Total rows:",
-      "rowsPerPage": "Rows per page"
+      "rowsPerPage": "Rows per page",
+      "title": "Recent movements",
+      "date": "Date"
     },
     "types": {
       "Venda": "Sale",
@@ -116,7 +118,34 @@
     "statuses": {
       "Recebido": "Received",
       "Previsto": "Expected",
-      "Atrasado": "Overdue"
+      "Atrasado": "Overdue",
+      "Pago": "Paid",
+      "Pendente": "Pending"
+    },
+    "selectedMonth": "July 2025",
+    "export": "Export",
+    "revenueChartTitle": "Revenue (6 months)",
+    "revenue": "Revenue",
+    "upcomingDuesTitle": "Upcoming dues",
+    "kpis": {
+      "monthlyRevenue": "Monthly revenue",
+      "receivable": "Receivable",
+      "delinquency": "Delinquency",
+      "occupancyRate": "Occupancy rate"
+    },
+    "history": {
+      "eyebrow": "Financial history",
+      "close": "Close history",
+      "propertyLabel": "Property",
+      "clientLabel": "Client"
+    },
+    "entryDetail": {
+      "eyebrow": "Financial record",
+      "close": "Close financial record",
+      "propertyLabel": "Property",
+      "clientLabel": "Client",
+      "amountLabel": "Amount",
+      "receiptsTitle": "Receipts"
     }
   },
   "proposals": {
