@@ -4,6 +4,7 @@ export const dashboardLeads: DashboardLead[] = [
   {
     id: 'lead-001',
     name: 'João Silva',
+    budget: 'R$ 4.5M',
     lastContact: 'Há 30 min',
     interest: 'Apartamento 3 quartos nos Jardins',
     source: 'Marketplace',
@@ -13,6 +14,7 @@ export const dashboardLeads: DashboardLead[] = [
   {
     id: 'lead-002',
     name: 'Maria Fernandes',
+    budget: 'R$ 650K',
     lastContact: 'Há 2 horas',
     interest: 'Studio mobiliado em Pinheiros',
     source: 'WhatsApp',
@@ -22,6 +24,7 @@ export const dashboardLeads: DashboardLead[] = [
   {
     id: 'lead-003',
     name: 'Rafael Lima',
+    budget: 'R$ 3.8M',
     lastContact: 'Ontem',
     interest: 'Casa Alto de Pinheiros',
     source: 'Indicação',
@@ -31,10 +34,31 @@ export const dashboardLeads: DashboardLead[] = [
   {
     id: 'lead-004',
     name: 'Carla Rocha',
+    budget: 'R$ 4.5M',
     lastContact: 'Há 3 dias',
     interest: 'Cobertura Itaim Bibi',
     source: 'Site',
     broker: 'Clara G.',
     stage: 'Proposta',
+  },
+  {
+    id: 'lead-005',
+    name: 'Guilherme Santos',
+    budget: 'R$ 2.8M',
+    lastContact: 'Há 4 dias',
+    interest: 'Casa em condomínio',
+    source: 'Instagram',
+    broker: 'Marina Costa',
+    stage: 'Novo',
+  },
+  {
+    id: 'lead-006',
+    name: 'Patrícia Lima',
+    budget: 'R$ 5.4M',
+    lastContact: '1 semana atrás',
+    interest: 'Cobertura Moema',
+    source: 'Indicação',
+    broker: 'Roberto Souza',
+    stage: 'Em contato',
   },
 ]

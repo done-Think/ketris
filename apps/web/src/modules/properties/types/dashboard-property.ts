@@ -105,6 +105,7 @@ export type PropertiesTableProps = {
 
 export type CreatePropertyStepsNavProps = {
   activeStepIndex: number
+  maxVisitedStepIndex: number
   onStepSelect: (stepIndex: number) => void
 }
 

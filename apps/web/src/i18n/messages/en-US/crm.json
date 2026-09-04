@@ -105,6 +105,30 @@
       "brokers": "Brokers"
     }
   },
+  "leads": {
+    "title": "Leads",
+    "subtitle": "Manage your contacts and negotiations",
+    "searchPlaceholder": "Search lead by name or property...",
+    "newLead": "New Lead",
+    "contactAction": "Contact",
+    "resultsCount": "Showing {count} of {total}",
+    "filters": {
+      "all": "All",
+      "new": "New",
+      "contacted": "Contacted",
+      "visitScheduled": "Visit scheduled",
+      "proposal": "Proposal"
+    },
+    "tableColumns": {
+      "name": "Name",
+      "interest": "Interest",
+      "budget": "Budget",
+      "status": "Status",
+      "source": "Source",
+      "lastContact": "Last contact",
+      "actions": "Actions"
+    }
+  },
   "opportunityDetail": {
     "editTitle": "Edit opportunity",
     "breadcrumbAriaLabel": "Breadcrumb",
