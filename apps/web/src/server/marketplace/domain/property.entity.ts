@@ -33,6 +33,9 @@ export interface PublishedPropertySummary {
   area: number | null
   city: string | null
   neighborhood: string | null
+  latitude: number | null
+  longitude: number | null
+  brokerName: string | null
   coverUrl: string | null
   publishedAt: Date | null
 }
@@ -61,6 +64,9 @@ export function toPublicPropertyDetail(property: PublishedPropertyDetail): Publi
     area: property.area,
     city: property.city,
     neighborhood: property.neighborhood,
+    latitude: property.latitude,
+    longitude: property.longitude,
+    brokerName: property.brokerName,
     coverUrl: property.coverUrl,
     publishedAt: property.publishedAt,
     description: property.description,

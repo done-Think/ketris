@@ -14,6 +14,9 @@ export interface PublicPropertySummary {
   area: number | null
   city: string | null
   neighborhood: string | null
+  latitude: number | null
+  longitude: number | null
+  brokerName: string | null
   coverUrl: string | null
   publishedAt: string | null
 }

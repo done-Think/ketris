@@ -20,6 +20,9 @@ const summary = {
   area: 84,
   city: 'Sao Paulo',
   neighborhood: 'Jardins',
+  latitude: -23.56,
+  longitude: -46.65,
+  brokerName: 'Marina Costa',
   coverUrl: 'https://cdn.example.com/property.jpg',
   publishedAt: '2026-08-12T10:00:00.000Z',
 }

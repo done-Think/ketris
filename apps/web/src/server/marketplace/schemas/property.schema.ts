@@ -18,6 +18,9 @@ export const publicPropertySummarySchema = z
     area: z.number().nullable(),
     city: z.string().nullable(),
     neighborhood: z.string().nullable(),
+    latitude: z.number().nullable(),
+    longitude: z.number().nullable(),
+    brokerName: z.string().nullable(),
     coverUrl: z.string().nullable(),
     publishedAt: z.string().nullable(),
   })

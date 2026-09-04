@@ -46,7 +46,13 @@ type ImovelSummaryRow = {
   vagas: number | null
   areaM2: DecimalLike | null
   publicadoEm: Date | null
-  endereco: { cidade: string; bairro: string } | null
+  endereco: {
+    cidade: string
+    bairro: string
+    latitude: DecimalLike | null
+    longitude: DecimalLike | null
+  } | null
+  responsavel: { nome: string } | null
   midias: { url: string }[]
 }
 
@@ -72,6 +78,9 @@ function toSummary(row: ImovelSummaryRow): PublishedPropertySummary {
     area: toNumber(row.areaM2),
     city: row.endereco?.cidade ?? null,
     neighborhood: row.endereco?.bairro ?? null,
+    latitude: toNumber(row.endereco?.latitude ?? null),
+    longitude: toNumber(row.endereco?.longitude ?? null),
+    brokerName: row.responsavel?.nome ?? null,
     coverUrl: row.midias[0]?.url ?? null,
     publishedAt: row.publicadoEm,
   }
@@ -170,7 +179,8 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
         vagas: true,
         areaM2: true,
         publicadoEm: true,
-        endereco: { select: { cidade: true, bairro: true } },
+        endereco: { select: { cidade: true, bairro: true, latitude: true, longitude: true } },
+        responsavel: { select: { nome: true } },
         midias: { orderBy: { ordem: 'asc' }, take: 1, select: { url: true } },
       },
     })
@@ -183,6 +193,7 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
       where: { id, status: 'PUBLISHED' },
       include: {
         endereco: true,
+        responsavel: { select: { nome: true } },
         midias: { orderBy: { ordem: 'asc' } },
       },
     })

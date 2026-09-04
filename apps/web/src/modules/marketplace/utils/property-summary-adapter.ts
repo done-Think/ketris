@@ -30,10 +30,8 @@ function buildPrice(summary: PublicPropertySummary): string {
   return summary.purpose === 'ALUGUEL' ? `${formatted} / mês` : formatted
 }
 
-// O contrato público de imóveis (PublicPropertySummary) ainda não expõe corretor responsável nem
-// coordenadas geográficas — só o texto de localização (bairro/cidade). O card mostra uma marca
-// genérica no lugar do corretor, e o mapa não recebe mapCenter até essa lacuna ser fechada no
-// backend; o texto de busca por endereço continua chegando até o mapa via `searchQuery`.
+// O contrato público de imóveis ainda não expõe foto do corretor responsável, só o nome — o
+// avatar fica vazio (sem imagem fabricada) até essa lacuna ser fechada no backend.
 export function mapSummaryToSearchResult(
   summary: PublicPropertySummary,
   purpose: SearchResultPurpose,
@@ -46,8 +44,12 @@ export function mapSummaryToSearchResult(
     title: summary.title,
     price: buildPrice(summary),
     details: buildDetails(summary),
-    broker: 'Ketris',
+    broker: summary.brokerName ?? '',
     avatar: '',
     purpose,
+    mapCenter:
+      summary.latitude !== null && summary.longitude !== null
+        ? { latitude: summary.latitude, longitude: summary.longitude }
+        : undefined,
   }
 }
