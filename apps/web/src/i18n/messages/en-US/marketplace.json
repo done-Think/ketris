@@ -357,6 +357,10 @@
       "title": "No properties found",
       "description": "Adjust the filters to see more options."
     },
+    "error": {
+      "title": "We couldn't load the properties.",
+      "retry": "Try again"
+    },
     "map": {
       "openProperty": "Open {title}"
     },

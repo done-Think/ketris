@@ -4,15 +4,16 @@ import type { LocalizedStringHref } from './localized-href'
 
 export type ProfileModalUserProfile = {
   name: string
-  company: string
+  company?: string
   email: string
-  avatar: string
+  avatar?: string
 }
 
 export type ProfileModalAction = {
   label: string
   icon: ComponentType<SvgIconProps>
-  href: LocalizedStringHref
+  href?: LocalizedStringHref
+  onClick?: () => void
   tone?: 'danger'
 }
 

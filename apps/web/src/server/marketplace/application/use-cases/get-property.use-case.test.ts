@@ -8,34 +8,38 @@ import { GetPropertyUseCase } from './get-property.use-case'
 const detail: PublishedPropertyDetail = {
   id: 'imovel-1',
   tenantId: 'tenant-1',
-  titulo: 'Apartamento no centro',
-  finalidade: 'ALUGUEL',
-  tipo: 'apartamento',
-  valor: 2500,
-  condominio: 400,
-  iptu: 100,
-  quartos: 2,
-  banheiros: 1,
-  vagas: 1,
-  areaM2: 60,
-  cidade: 'Curitiba',
-  bairro: 'Centro',
-  capaUrl: 'https://cdn.ketris.dev/imovel-1/capa.jpg',
-  publicadoEm: new Date('2026-08-01T00:00:00.000Z'),
-  descricao: 'Ótima localização',
-  endereco: {
-    logradouro: 'Rua XV',
-    numero: '100',
-    complemento: null,
-    bairro: 'Centro',
-    cidade: 'Curitiba',
-    estado: 'PR',
-    cep: '80000-000',
+  title: 'Apartamento no centro',
+  purpose: 'ALUGUEL',
+  propertyType: 'apartamento',
+  price: 2500,
+  condoFee: 400,
+  propertyTax: 100,
+  bedrooms: 2,
+  bathrooms: 1,
+  parkingSpots: 1,
+  area: 60,
+  city: 'Curitiba',
+  neighborhood: 'Centro',
+  latitude: -25.4284,
+  longitude: -49.2733,
+  brokerName: 'Marina Costa',
+  brokerAvatarUrl: null,
+  coverUrl: 'https://cdn.ketris.dev/imovel-1/capa.jpg',
+  publishedAt: new Date('2026-08-01T00:00:00.000Z'),
+  description: 'Ótima localização',
+  address: {
+    street: 'Rua XV',
+    number: '100',
+    complement: null,
+    neighborhood: 'Centro',
+    city: 'Curitiba',
+    state: 'PR',
+    zipCode: '80000-000',
     latitude: null,
     longitude: null,
   },
-  midias: [
-    { id: 'midia-1', url: 'https://cdn.ketris.dev/imovel-1/capa.jpg', tipo: 'foto', ordem: 0 },
+  media: [
+    { id: 'midia-1', url: 'https://cdn.ketris.dev/imovel-1/capa.jpg', type: 'foto', order: 0 },
   ],
 }
 
@@ -57,7 +61,7 @@ describe('GetPropertyUseCase', () => {
 
     expect(result.id).toBe('imovel-1')
     expect(result).not.toHaveProperty('tenantId')
-    expect(result.midias).toHaveLength(1)
+    expect(result.media).toHaveLength(1)
   })
 
   it('lança PropertyNotFoundError quando o imóvel não existe ou não está publicado', async () => {

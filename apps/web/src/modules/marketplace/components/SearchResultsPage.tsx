@@ -1,6 +1,6 @@
 'use client'
 
-import { Box } from '@mui/material'
+import { Alert, Box, Button } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { surface } from '@shared/theme/tokens'
@@ -21,6 +21,7 @@ import { SearchResultsToolbar } from './search-results/SearchResultsToolbar'
 
 export function SearchResultsPage({ initialLocation = '', purpose }: SearchResultsPageProps) {
   const t = useTranslations('marketplace')
+  const errorT = useTranslations('marketplace.searchResults.error')
   const results = useSearchResults({ purpose, initialLocation })
   const activeItemId = getMarketplaceNavigationItemIdByPurpose(purpose)
   const purposeLabel = purpose === 'comprar' ? t('navigation.buy') : t('navigation.rent')
@@ -86,8 +87,22 @@ export function SearchResultsPage({ initialLocation = '', purpose }: SearchResul
             sortOption={results.sortOption}
             viewMode={results.viewMode}
           />
+          {results.isError ? (
+            <Alert
+              severity="error"
+              sx={{ mb: 2 }}
+              action={
+                <Button color="inherit" size="small" onClick={() => results.refetch()}>
+                  {errorT('retry')}
+                </Button>
+              }
+            >
+              {errorT('title')}
+            </Alert>
+          ) : null}
           <SearchResultsList
             properties={results.filteredResults}
+            isLoading={results.isLoading}
             selectedPropertyId={results.selectedPropertyId}
             setSelectedPropertyId={results.setSelectedPropertyId}
             viewMode={results.viewMode}
@@ -99,6 +114,7 @@ export function SearchResultsPage({ initialLocation = '', purpose }: SearchResul
           properties={results.filteredResults}
           selectedPropertyId={results.selectedPropertyId}
           setSelectedPropertyId={results.setSelectedPropertyId}
+          searchQuery={results.locationQuery}
         />
       </Box>
     </Box>

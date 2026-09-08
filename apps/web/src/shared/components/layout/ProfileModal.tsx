@@ -16,6 +16,7 @@ import {
   zIndex,
 } from '@shared/theme/tokens'
 import type { ProfileModalProps } from '@shared/types/profile-modal'
+import { getInitials } from '@shared/utils/get-initials'
 import { LanguageSelector } from './LanguageSelector'
 
 export function ProfileModal({
@@ -118,7 +119,9 @@ export function ProfileModal({
               alt={userProfile.name}
               src={userProfile.avatar}
               sx={{ width: 48, height: 48, flexShrink: 0 }}
-            />
+            >
+              {!userProfile.avatar ? getInitials(userProfile.name) : null}
+            </Avatar>
             <Box sx={{ minWidth: 0 }}>
               <Typography noWrap sx={componentText.modalTitle}>
                 {userProfile.name}
@@ -144,9 +147,11 @@ export function ProfileModal({
             mb: 2,
           }}
         >
-          <Typography sx={{ color: 'text.secondary', ...componentText.modalEyebrow }}>
-            {userProfile.company}
-          </Typography>
+          {userProfile.company ? (
+            <Typography sx={{ color: 'text.secondary', ...componentText.modalEyebrow }}>
+              {userProfile.company}
+            </Typography>
+          ) : null}
           <Typography sx={{ color: 'text.primary', ...componentText.modalSubtitle }}>
             {userProfile.email}
           </Typography>
@@ -160,12 +165,17 @@ export function ProfileModal({
           {actions.map((action) => {
             const Icon = action.icon
             const isDanger = action.tone === 'danger'
+            const linkProps = action.href
+              ? { component: Link, href: action.href }
+              : { component: 'button' as const, type: 'button' as const }
             return (
               <Button
                 key={action.label}
-                component={Link}
-                href={action.href}
-                onClick={onClose}
+                {...linkProps}
+                onClick={() => {
+                  action.onClick?.()
+                  onClose()
+                }}
                 startIcon={<Icon fontSize="small" />}
                 fullWidth
                 sx={{

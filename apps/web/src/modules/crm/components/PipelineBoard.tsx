@@ -34,12 +34,9 @@ const validStatuses = new Set<OpportunityStatus>(opportunityStages.map((stage) =
 function matchesSearch(opportunity: Opportunity, propertyTitle: string, search: string): boolean {
   if (!search) return true
 
-  return [
-    opportunity.interessadoNome,
-    opportunity.interessadoEmail,
-    opportunity.interessadoTelefone,
-    propertyTitle,
-  ].some((value) => value?.toLocaleLowerCase('pt-BR').includes(search))
+  return [opportunity.leadName, opportunity.leadEmail, opportunity.leadPhone, propertyTitle].some(
+    (value) => value?.toLocaleLowerCase('pt-BR').includes(search),
+  )
 }
 
 export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
@@ -71,7 +68,7 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
         if (selectedStatus && opportunity.status !== selectedStatus) return false
 
         const propertyTitle =
-          propertiesById.get(opportunity.imovelId)?.titulo ?? opportunity.imovelId
+          propertiesById.get(opportunity.propertyId)?.title ?? opportunity.propertyId
         return matchesSearch(opportunity, propertyTitle, normalizedSearch)
       }),
     [normalizedSearch, opportunitiesQuery.data, propertiesById, selectedStatus],
@@ -244,11 +241,11 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
             )
             const totals = opportunities.reduce(
               (result, opportunity) => {
-                const purpose = propertiesById.get(opportunity.imovelId)?.finalidade
+                const purpose = propertiesById.get(opportunity.propertyId)?.purpose
 
-                if (purpose === 'ALUGUEL') result.rental += opportunity.valorProposto
-                else if (purpose === 'VENDA') result.sale += opportunity.valorProposto
-                else result.unclassified += opportunity.valorProposto
+                if (purpose === 'ALUGUEL') result.rental += opportunity.proposedValue
+                else if (purpose === 'VENDA') result.sale += opportunity.proposedValue
+                else result.unclassified += opportunity.proposedValue
 
                 return result
               },
@@ -340,7 +337,7 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
                         <OpportunityCard
                           key={opportunity.id}
                           opportunity={opportunity}
-                          property={propertiesById.get(opportunity.imovelId)}
+                          property={propertiesById.get(opportunity.propertyId)}
                         />
                       ))}
 

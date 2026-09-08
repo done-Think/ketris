@@ -2,13 +2,13 @@ import type { Dispatch, FormEventHandler, ReactNode, Ref, SetStateAction } from 
 import type { z } from 'zod'
 
 import type { LocalizedHref } from '@shared/types/localized-href'
+import type { PropertyCardData } from '@shared/types'
 import type { searchOptions } from '../config/search-filters'
 import type {
   marketplaceSearchFormSchema,
   searchResultsFiltersDialogFormSchema,
   searchResultsFormSchema,
 } from '../schemas/marketplace-search-schema'
-import type { MarketplacePropertyDetail } from './property-detail'
 
 export type SearchFilterKey = keyof typeof searchOptions
 
@@ -18,8 +18,14 @@ export type SearchResultPurpose = 'alugar' | 'comprar'
 
 export type SearchResultPurposeParam = 'rent' | 'buy'
 
-export type SearchResultProperty = MarketplacePropertyDetail & {
+export type SearchResultProperty = PropertyCardData & {
+  id: string
   purpose: SearchResultPurpose
+  // Sem coordenadas no contrato público hoje — ver utils/property-summary-adapter.ts.
+  mapCenter?: {
+    latitude: number
+    longitude: number
+  }
 }
 
 export type MarketplaceSearchFormValues = z.infer<typeof marketplaceSearchFormSchema>
@@ -89,12 +95,14 @@ export type SearchResultsMapProps = {
   properties: SearchResultProperty[]
   selectedPropertyId: string
   onSelectProperty: (propertyId: string) => void
+  searchQuery?: string
 }
 
 export type SearchResultsMapPanelProps = {
   properties: SearchResultProperty[]
   selectedPropertyId: string
   setSelectedPropertyId: (propertyId: string) => void
+  searchQuery?: string
 }
 
 export type SearchResultsToolbarProps = {

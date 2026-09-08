@@ -1,0 +1,9 @@
+# Copie para terraform.tfvars (já git-ignorado) e preencha os valores reais.
+# NUNCA commite terraform.tfvars — só este .example, sem segredo nenhum dentro.
+
+aws_region  = "us-east-1"
+db_username = "ketris"
+
+# db_password: NÃO defina aqui. Use uma das duas opções:
+#   1) export TF_VAR_db_password="sua-senha-forte-aqui"   (antes de rodar terraform)
+#   2) gere e cole em terraform.tfvars (arquivo git-ignorado), nunca neste .example
