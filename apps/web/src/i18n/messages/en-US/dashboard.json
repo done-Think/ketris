@@ -37,6 +37,31 @@
       "Reagendar": "Reschedule"
     }
   },
+  "notificationsCenter": {
+    "tooltip": "Notifications",
+    "ariaLabel": "Open dashboard notifications",
+    "title": "Dashboard alerts",
+    "subtitle": "Today visits and assigned appointments",
+    "empty": "No alerts to show.",
+    "defaultItems": {
+      "todayVisit": {
+        "title": "Visit scheduled for today",
+        "message": "10:30 - Marina Costa at Apt Jardins 3q"
+      },
+      "agencyAssigned": {
+        "title": "New assigned appointment",
+        "message": "Ketris Agency scheduled a follow-up with Bruno Oliveira"
+      },
+      "brokerAssigned": {
+        "title": "Shared lead",
+        "message": "Ana Silva assigned a proposal contact"
+      },
+      "proposalReturn": {
+        "title": "Pending follow-up",
+        "message": "16:00 - Review Juliana Mendes counteroffer"
+      }
+    }
+  },
   "overview": {
     "title": "Dashboard",
     "notifications": "Notifications",

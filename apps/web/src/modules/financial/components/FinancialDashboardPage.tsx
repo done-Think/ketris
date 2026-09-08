@@ -3,6 +3,7 @@ import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownR
 import { Box, Button, Stack, Typography } from '@mui/material'
 import { getTranslations } from 'next-intl/server'
 
+import { DashboardNotificationsButton } from '@shared/components/layout'
 import { brand, iconSize, radius } from '@shared/theme/tokens'
 
 import {
@@ -54,6 +55,7 @@ export async function FinancialDashboardPage() {
             >
               {t('export')}
             </Button>
+            <DashboardNotificationsButton />
           </Stack>
         </Stack>
 

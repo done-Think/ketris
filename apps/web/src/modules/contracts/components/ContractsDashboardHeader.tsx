@@ -3,6 +3,7 @@ import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { Box, Button, InputAdornment, Stack, TextField, Typography } from '@mui/material'
 import { Controller } from 'react-hook-form'
 
+import { DashboardNotificationsButton } from '@shared/components/layout'
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { ContractsDashboardPageHeaderProps } from '../types/contract'
@@ -80,6 +81,7 @@ export function ContractsDashboardHeader({
         >
           Novo Contrato
         </Button>
+        <DashboardNotificationsButton />
       </Stack>
     </Stack>
   )

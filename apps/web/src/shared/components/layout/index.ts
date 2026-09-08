@@ -1,5 +1,6 @@
 export { HomeHeader } from './HomeHeader'
 export { DashboardSidebar } from './DashboardSidebar'
+export { DashboardNotificationsButton } from './DashboardNotificationsButton'
 export { LanguageSelector } from './LanguageSelector'
 export { ProfileModal } from './ProfileModal'
 export { SiteFooter } from './SiteFooter'

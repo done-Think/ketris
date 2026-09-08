@@ -37,6 +37,31 @@
       "Reagendar": "Reagendar"
     }
   },
+  "notificationsCenter": {
+    "tooltip": "Notificações",
+    "ariaLabel": "Abrir notificações do dashboard",
+    "title": "Alertas do dashboard",
+    "subtitle": "Visitas de hoje e compromissos atribuídos",
+    "empty": "Nenhum alerta para exibir.",
+    "defaultItems": {
+      "todayVisit": {
+        "title": "Visita marcada para hoje",
+        "message": "10:30 - Marina Costa em Apt Jardins 3q"
+      },
+      "agencyAssigned": {
+        "title": "Novo compromisso atribuído",
+        "message": "Imobiliária Ketris marcou retorno com Bruno Oliveira"
+      },
+      "brokerAssigned": {
+        "title": "Lead compartilhado",
+        "message": "Colega Ana Silva atribuiu atendimento de proposta"
+      },
+      "proposalReturn": {
+        "title": "Retorno pendente",
+        "message": "16:00 - Revisar contraproposta de Juliana Mendes"
+      }
+    }
+  },
   "overview": {
     "title": "Dashboard",
     "notifications": "Notificações",

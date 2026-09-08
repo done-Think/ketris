@@ -52,16 +52,6 @@ export type AgendaEventToneStyle = {
   color: string
 }
 
-export type AgendaNotificationKind = 'todayVisit' | 'assignedEvent'
-
-export type AgendaNotification = {
-  event: AgendaEvent
-  id: string
-  kind: AgendaNotificationKind
-  message: string
-  title: string
-}
-
 export type AgendaEventCardProps = {
   event: AgendaEvent
   top: number

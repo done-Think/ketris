@@ -8,6 +8,7 @@ import { Box, Stack, Typography } from '@mui/material'
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded'
 import { useTranslations } from 'next-intl'
 
+import { DashboardNotificationsButton } from '@shared/components/layout'
 import { brand, iconSize } from '@shared/theme/tokens'
 
 import {
@@ -95,17 +96,22 @@ export function PublicProfileEditorPage() {
               {t('subtitle')}
             </Typography>
           </Box>
-          {isSubmitSuccessful ? (
-            <Stack
-              direction="row"
-              spacing={0.8}
-              alignItems="center"
-              sx={{ color: brand.semantic.success }}
-            >
-              <CheckCircleOutlineRoundedIcon sx={{ fontSize: iconSize.md }} />
-              <Typography sx={{ fontSize: 13, fontWeight: 800 }}>{t('validatedDraft')}</Typography>
-            </Stack>
-          ) : null}
+          <Stack direction="row" spacing={1.2} alignItems="center">
+            {isSubmitSuccessful ? (
+              <Stack
+                direction="row"
+                spacing={0.8}
+                alignItems="center"
+                sx={{ color: brand.semantic.success }}
+              >
+                <CheckCircleOutlineRoundedIcon sx={{ fontSize: iconSize.md }} />
+                <Typography sx={{ fontSize: 13, fontWeight: 800 }}>
+                  {t('validatedDraft')}
+                </Typography>
+              </Stack>
+            ) : null}
+            <DashboardNotificationsButton />
+          </Stack>
         </Stack>
 
         <Box

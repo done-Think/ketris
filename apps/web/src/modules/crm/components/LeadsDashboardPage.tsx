@@ -8,6 +8,7 @@ import { useMemo, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
 import { RhfTextField } from '@shared/components/form'
+import { DashboardNotificationsButton } from '@shared/components/layout'
 import {
   alpha,
   brand,
@@ -179,15 +180,23 @@ export function LeadsDashboardPage() {
                 ),
               }}
             />
-            <Button
-              type="button"
-              variant="contained"
-              startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
-              onClick={() => setIsCreateLeadDialogOpen(true)}
-              sx={{ minHeight: 40, borderRadius: `${radius.sm}px`, fontWeight: 900 }}
-            >
-              {t('newLead')}
-            </Button>
+            <Stack direction="row" spacing={1.2} sx={{ alignItems: 'center' }}>
+              <Button
+                type="button"
+                variant="contained"
+                startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
+                onClick={() => setIsCreateLeadDialogOpen(true)}
+                sx={{
+                  flex: { xs: 1, sm: 'initial' },
+                  minHeight: 40,
+                  borderRadius: `${radius.sm}px`,
+                  fontWeight: 900,
+                }}
+              >
+                {t('newLead')}
+              </Button>
+              <DashboardNotificationsButton />
+            </Stack>
           </Stack>
         </Stack>
 

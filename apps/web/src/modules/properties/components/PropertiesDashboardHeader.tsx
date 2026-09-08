@@ -3,6 +3,7 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { useTranslations } from 'next-intl'
 
+import { DashboardNotificationsButton } from '@shared/components/layout'
 import { brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
 import type { PropertiesDashboardHeaderProps } from '../types/dashboard-property'
@@ -31,7 +32,11 @@ export function PropertiesDashboardHeader({
         </Typography>
       </Box>
 
-      <Stack direction="row" spacing={1.2}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={1.2}
+        sx={{ width: { xs: '100%', md: 'auto' } }}
+      >
         <Box
           sx={{
             position: 'relative',
@@ -74,21 +79,25 @@ export function PropertiesDashboardHeader({
             }}
           />
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddRoundedIcon />}
-          onClick={onCreateProperty}
-          sx={{
-            height: 48,
-            borderRadius: `${radius.sm}px`,
-            px: 2.6,
-            fontSize: 16,
-            fontWeight: 900,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {t('create')}
-        </Button>
+        <Stack direction="row" spacing={1.2} sx={{ alignItems: 'center' }}>
+          <Button
+            variant="contained"
+            startIcon={<AddRoundedIcon />}
+            onClick={onCreateProperty}
+            sx={{
+              flex: { xs: 1, sm: 'initial' },
+              height: 48,
+              borderRadius: `${radius.sm}px`,
+              px: 2.6,
+              fontSize: 16,
+              fontWeight: 900,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {t('create')}
+          </Button>
+          <DashboardNotificationsButton />
+        </Stack>
       </Stack>
     </Stack>
   )
