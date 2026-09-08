@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { Box, Button, Menu, MenuItem, Stack, Typography } from '@mui/material'
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
 import TranslateOutlinedIcon from '@mui/icons-material/TranslateOutlined'
@@ -13,7 +13,18 @@ import type { AppLocale } from '@/i18n/types/locale.types'
 import type { LanguageOption, LanguageSelectorProps } from '@shared/types/language-selector'
 import { alpha, componentText, radius, shadows } from '@shared/theme/tokens'
 
-export function LanguageSelector({ variant = 'profile' }: LanguageSelectorProps) {
+// useSearchParams() exige um boundary de Suspense para não travar a pré-renderização estática
+// (next build faz bail-out com "missing-suspense-with-csr-bailout" sem isso) — só descoberto
+// agora porque este componente nunca tinha sido de fato renderizado num build de produção antes.
+export function LanguageSelector(props: LanguageSelectorProps) {
+  return (
+    <Suspense fallback={null}>
+      <LanguageSelectorContent {...props} />
+    </Suspense>
+  )
+}
+
+function LanguageSelectorContent({ variant = 'profile' }: LanguageSelectorProps) {
   const locale = useLocale() as AppLocale
   const pathname = usePathname()
   const searchParams = useSearchParams()
