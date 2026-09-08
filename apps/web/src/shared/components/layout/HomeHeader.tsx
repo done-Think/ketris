@@ -40,6 +40,7 @@ export function HomeHeader({
   profileButtonRef,
   userProfile,
   onToggleProfile,
+  isSessionLoading = false,
 }: HomeHeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const closeMobileMenu = () => setIsMobileMenuOpen(false)
@@ -184,6 +185,8 @@ export function HomeHeader({
                   {!userProfile.avatar ? getInitials(userProfile.name) : null}
                 </Avatar>
               </Box>
+            ) : isSessionLoading ? (
+              <Box sx={{ width: 48, height: 42 }} />
             ) : (
               <LanguageSelector variant="header" />
             )}

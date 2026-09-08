@@ -42,10 +42,23 @@ describe('MarketplaceHeader', () => {
     renderMarketplaceHeader()
 
     expect(screen.queryByRole('button', { name: 'Abrir perfil' })).not.toBeInTheDocument()
+    expect(screen.getAllByText('BR')[0]).toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: 'Anunciar Imóvel' })[0]).toHaveAttribute(
       'href',
       '/login',
     )
+  })
+
+  it('enquanto a sessão carrega: não mostra nem o avatar nem o seletor de idioma (evita flash)', () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: undefined,
+      status: 'loading',
+    } as unknown as ReturnType<typeof useSession>)
+
+    renderMarketplaceHeader()
+
+    expect(screen.queryByRole('button', { name: 'Abrir perfil' })).not.toBeInTheDocument()
+    expect(screen.queryByText('BR')).not.toBeInTheDocument()
   })
 
   it('com sessão: mostra o avatar com dados reais e abre o dropdown com nome/e-mail da sessão', async () => {

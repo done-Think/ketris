@@ -47,6 +47,7 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
         profileButtonRef={profileButtonRef}
         userProfile={userProfile}
         onToggleProfile={userProfile ? () => setIsProfileOpen((current) => !current) : undefined}
+        isSessionLoading={status === 'loading'}
       />
 
       {userProfile ? (
