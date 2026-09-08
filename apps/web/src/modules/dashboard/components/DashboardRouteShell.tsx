@@ -11,8 +11,9 @@ import { OwnerDashboardHeader } from './OwnerDashboardHeader'
 
 export function DashboardRouteShell({ children }: DashboardLayoutProps) {
   const pathname = usePathname()
+  const usesOwnerHeader = pathname === '/dashboard' || pathname === '/dashboard/imoveis'
 
-  if (pathname === '/dashboard') {
+  if (usesOwnerHeader) {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: surface.app }}>
         <OwnerDashboardHeader />

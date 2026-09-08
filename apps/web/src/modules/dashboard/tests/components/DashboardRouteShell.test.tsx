@@ -36,19 +36,23 @@ describe('DashboardRouteShell', () => {
     })
   })
 
-  it('uses the isolated owner header only on the dashboard root', () => {
-    vi.mocked(usePathname).mockReturnValue('/dashboard')
+  it.each(['/dashboard', '/dashboard/imoveis'])(
+    'uses the isolated owner header on %s',
+    (pathname) => {
+      vi.mocked(usePathname).mockReturnValue(pathname)
 
-    renderShell()
+      renderShell()
 
-    expect(screen.getByRole('banner')).toBeVisible()
-    expect(screen.queryByRole('complementary')).not.toBeInTheDocument()
-    expect(screen.getByRole('main')).toHaveTextContent('Route content')
-  })
+      expect(screen.getByRole('banner')).toBeVisible()
+      expect(screen.queryByRole('complementary')).not.toBeInTheDocument()
+      expect(screen.getByRole('main')).toHaveTextContent('Route content')
+    },
+  )
 
   it.each([
     '/dashboard/propostas',
-    '/dashboard/imoveis',
+    '/dashboard/imoveis/novo',
+    '/dashboard/imoveis/property-123',
     '/dashboard/agenda',
     '/dashboard/financeiro',
     '/dashboard/leads',
