@@ -126,9 +126,14 @@ variáveis que mudam raramente, o dashboard manual já resolve.
   para produção, mover o RDS para `publicly_accessible = false` e colocar um PgBouncer em um
   compute pequeno e público (Fargate/App Runner) na frente, resolvendo pooling de verdade sem
   reabrir a porta do Postgres ao mundo.
-- **`sslmode=verify-full`**: hoje a `DATABASE_URL` usa `sslmode=require` (criptografa, mas não
-  valida o certificado do servidor). Upgrade de curto prazo: baixar o `global-bundle.pem` da AWS
-  e usar `sslmode=verify-full` + `sslrootcert`.
+- **`sslmode=verify-full`**: hoje a `DATABASE_URL` usa `sslmode=require&uselibpqcompat=true`
+  (criptografa, mas não valida o certificado do servidor). A flag `uselibpqcompat=true` é
+  necessária porque versões recentes do driver `pg` tratam `sslmode=require` como alias de
+  `verify-full` por padrão, e o certificado do RDS não bate com uma CA confiável no Node sem o
+  bundle da AWS — sem essa flag, a conexão falha com `self-signed certificate in certificate
+  chain` (descoberto testando a conexão real). Upgrade de curto prazo: baixar o
+  `global-bundle.pem` da AWS e usar `sslmode=verify-full` + `sslrootcert` (aí sim sem precisar de
+  `uselibpqcompat`).
 - **Backend remoto do Terraform**: state hoje é local (não commitado). Migrar para S3+DynamoDB
   lock assim que mais de uma pessoa passar a rodar `apply`.
 - **Ajuste de código, fora deste diretório**: `apps/web/src/server/db/prisma.ts` não passa `max`

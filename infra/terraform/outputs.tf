@@ -4,8 +4,14 @@ output "rds_endpoint" {
 }
 
 output "rds_database_url" {
-  description = "DATABASE_URL pronta (com sslmode=require) para colar no .env/Vercel/GitHub secret."
-  value       = "postgresql://${var.db_username}:${var.db_password}@${aws_db_instance.main.endpoint}/${var.db_name}?sslmode=require"
+  description = <<-EOT
+    DATABASE_URL pronta (com sslmode=require) para colar no .env/Vercel/GitHub secret.
+    uselibpqcompat=true é necessário: versões recentes do driver `pg` tratam sslmode=require como
+    alias de verify-full, e o certificado do RDS não bate com uma CA confiável por padrão no
+    Node - essa flag restaura o comportamento tradicional (criptografa, não valida a cadeia),
+    suficiente para o nível de risco aceito em staging (ver README).
+  EOT
+  value       = "postgresql://${var.db_username}:${var.db_password}@${aws_db_instance.main.endpoint}/${var.db_name}?sslmode=require&uselibpqcompat=true"
   sensitive   = true
 }
 
