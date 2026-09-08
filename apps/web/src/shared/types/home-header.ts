@@ -9,7 +9,7 @@ export type HomeHeaderNavigationItem = {
 
 export type HomeHeaderUserProfile = {
   name: string
-  avatar: string
+  avatar?: string
 }
 
 export type HomeHeaderProps = {
