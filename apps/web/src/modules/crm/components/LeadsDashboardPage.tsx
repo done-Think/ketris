@@ -1,84 +1,139 @@
-import { Box, Chip, Stack, Typography } from '@mui/material'
+'use client'
 
-import { alpha, brand, motion, radius, shadows, surface } from '@shared/theme/tokens'
+import AddRoundedIcon from '@mui/icons-material/AddRounded'
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
+import { Box, Button, InputAdornment, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { useForm, useWatch } from 'react-hook-form'
 
-import { dashboardLeads } from '../data/leads'
-import type { LeadStage } from '../types/lead'
+import { RhfTextField } from '@shared/components/form'
+import { DashboardNotificationsButton } from '@shared/components/layout'
+import { brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
-const leadStageStyles: Record<LeadStage, { bgcolor: string; color: string }> = {
-  Novo: { bgcolor: alpha.magenta[10], color: brand.magenta[700] },
-  'Em contato': { bgcolor: alpha.graphite[6], color: brand.graphite[500] },
-  'Visita marcada': { bgcolor: alpha.magenta[6], color: brand.magenta[600] },
-  Proposta: { bgcolor: alpha.graphite[8], color: brand.graphite[700] },
-}
+import { useLeadsStore } from '../stores/leads-store'
+import type { DashboardLead, LeadsDashboardFiltersFormValues } from '../types/lead'
+import { filterLeads } from '../utils/lead-dashboard'
+import { CreateLeadDialog } from './CreateLeadDialog'
+import { LeadContactDialog } from './LeadContactDialog'
+import { LeadsDesktopTable } from './LeadsDesktopTable'
+import { LeadsFilterBar } from './LeadsFilterBar'
+import { LeadsMobileList } from './LeadsMobileList'
 
 export function LeadsDashboardPage() {
+  const t = useTranslations('crm.leads')
+  const searchParams = useSearchParams()
+  const leads = useLeadsStore((state) => state.leads)
+  const [isCreateLeadDialogOpen, setIsCreateLeadDialogOpen] = useState(false)
+  const [selectedContactLead, setSelectedContactLead] = useState<DashboardLead | null>(null)
+  const { control, setValue } = useForm<LeadsDashboardFiltersFormValues>({
+    defaultValues: {
+      activeFilter: 'Todos',
+      searchQuery: '',
+    },
+  })
+  const activeFilter = useWatch({ control, name: 'activeFilter' })
+  const searchQuery = useWatch({ control, name: 'searchQuery' })
+  const filteredLeads = useMemo(
+    () => filterLeads(leads, searchQuery, activeFilter),
+    [activeFilter, leads, searchQuery],
+  )
+
+  useEffect(() => {
+    const leadId = searchParams.get('leadId')
+    const lead = leads.find((currentLead) => currentLead.id === leadId)
+    if (!lead) return
+
+    setSelectedContactLead(lead)
+  }, [leads, searchParams])
+
   return (
     <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
-      <Stack spacing={2.4}>
-        <Box>
-          <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 40 }, fontWeight: 900 }}>
-            Leads
-          </Typography>
-          <Typography sx={{ color: 'text.secondary', fontSize: { xs: 15, md: 17 } }}>
-            Base inicial para acompanhar contatos e oportunidades.
-          </Typography>
-        </Box>
-
-        <Box
-          sx={{
-            bgcolor: surface.paper,
-            border: '1px solid',
-            borderColor: alpha.graphite[6],
-            borderRadius: `${radius.sm}px`,
-            boxShadow: shadows.propertyCard,
-            overflow: 'hidden',
-          }}
+      <Stack spacing={2.2}>
+        <Stack
+          direction={{ xs: 'column', lg: 'row' }}
+          alignItems={{ xs: 'stretch', lg: 'flex-start' }}
+          justifyContent="space-between"
+          spacing={1.6}
         >
-          {dashboardLeads.map((lead) => {
-            const stage = leadStageStyles[lead.stage]
+          <Box sx={{ minWidth: 0 }}>
+            <Typography
+              variant="h3"
+              sx={{ color: brand.graphite[500], fontSize: { xs: 30, md: 40 }, fontWeight: 900 }}
+            >
+              {t('title')}
+            </Typography>
+            <Typography sx={{ color: brand.neutral[500], fontSize: { xs: 14, md: 15 } }}>
+              {t('subtitle')}
+            </Typography>
+          </Box>
 
-            return (
-              <Box
-                key={lead.id}
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.2}
+            sx={{ width: { xs: '100%', lg: 'auto' } }}
+          >
+            <RhfTextField
+              control={control}
+              name="searchQuery"
+              placeholder={t('searchPlaceholder')}
+              size="small"
+              sx={{
+                width: { xs: '100%', sm: 320 },
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: surface.paper,
+                  borderRadius: `${radius.sm}px`,
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchRoundedIcon sx={{ color: brand.neutral[400], fontSize: iconSize.md }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <Stack direction="row" spacing={1.2} sx={{ alignItems: 'center' }}>
+              <Button
+                type="button"
+                variant="contained"
+                startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
+                onClick={() => setIsCreateLeadDialogOpen(true)}
                 sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { xs: '1fr', md: '1.3fr 1.8fr 0.8fr 1fr 0.9fr' },
-                  gap: 1.4,
-                  alignItems: 'center',
-                  px: 2.4,
-                  py: 1.8,
-                  borderBottom: '1px solid',
-                  borderColor: 'divider',
-                  transition: motion.transition.interactive,
-                  '&:hover': { bgcolor: brand.neutral[50] },
+                  flex: { xs: 1, sm: 'initial' },
+                  minHeight: 40,
+                  borderRadius: `${radius.sm}px`,
+                  fontWeight: 900,
                 }}
               >
-                <Box>
-                  <Typography sx={{ fontWeight: 900 }}>{lead.name}</Typography>
-                  <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
-                    {lead.lastContact}
-                  </Typography>
-                </Box>
-                <Typography sx={{ color: 'text.secondary' }}>{lead.interest}</Typography>
-                <Typography sx={{ fontWeight: 800 }}>{lead.source}</Typography>
-                <Typography sx={{ color: 'text.secondary' }}>{lead.broker}</Typography>
-                <Chip
-                  label={lead.stage}
-                  sx={{
-                    justifySelf: { md: 'end' },
-                    width: 'fit-content',
-                    bgcolor: stage.bgcolor,
-                    color: stage.color,
-                    borderRadius: `${radius.full}px`,
-                    fontWeight: 900,
-                  }}
-                />
-              </Box>
-            )
-          })}
-        </Box>
+                {t('newLead')}
+              </Button>
+              <DashboardNotificationsButton />
+            </Stack>
+          </Stack>
+        </Stack>
+        <LeadsFilterBar
+          activeFilter={activeFilter}
+          leads={leads}
+          onFilterChange={(filter) => setValue('activeFilter', filter)}
+        />
+        <LeadsDesktopTable
+          leads={filteredLeads}
+          totalCount={leads.length}
+          onLeadContactSelect={setSelectedContactLead}
+        />
+        <LeadsMobileList leads={filteredLeads} onLeadContactSelect={setSelectedContactLead} />{' '}
       </Stack>
+      <CreateLeadDialog
+        open={isCreateLeadDialogOpen}
+        onClose={() => setIsCreateLeadDialogOpen(false)}
+      />
+      <LeadContactDialog
+        lead={selectedContactLead}
+        open={Boolean(selectedContactLead)}
+        onClose={() => setSelectedContactLead(null)}
+      />
     </Box>
   )
 }

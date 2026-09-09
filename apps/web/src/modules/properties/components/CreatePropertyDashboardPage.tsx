@@ -24,6 +24,7 @@ export function CreatePropertyDashboardPage() {
     resolver: zodResolver(createDashboardPropertySchema),
   })
   const activeStepIndex = watch('activeStepIndex')
+  const maxVisitedStepIndex = watch('maxVisitedStepIndex')
   const propertyPurpose = watch('purpose')
   const activeStep = createPropertySteps[activeStepIndex]
   const firstStep = activeStepIndex === 0
@@ -34,20 +35,24 @@ export function CreatePropertyDashboardPage() {
   }
 
   const goToNextStep = () => {
-    setValue('activeStepIndex', Math.min(activeStepIndex + 1, createPropertySteps.length - 1))
+    const nextStepIndex = Math.min(activeStepIndex + 1, createPropertySteps.length - 1)
+
+    setValue('activeStepIndex', nextStepIndex)
+    setValue('maxVisitedStepIndex', Math.max(maxVisitedStepIndex, nextStepIndex))
   }
 
   const handleStaticSubmit = () => undefined
 
   return (
     <Box sx={{ width: '100%', px: { xs: 2, md: 4.8 }, py: { xs: 2.8, md: 4.2 } }}>
-      <Box sx={{ width: '100%', maxWidth: 1180 }}>
+      <Box sx={{ width: '100%' }}>
         <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 36 }, fontWeight: 900, mb: 3 }}>
           {t('title')}
         </Typography>
 
         <CreatePropertyStepsNav
           activeStepIndex={activeStepIndex}
+          maxVisitedStepIndex={maxVisitedStepIndex}
           onStepSelect={(stepIndex) => setValue('activeStepIndex', stepIndex)}
         />
 

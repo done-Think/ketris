@@ -41,6 +41,7 @@ export type DashboardProperty = {
   status: DashboardPropertyStatus
   broker: string
   updatedAt: string
+  activeContractId?: string
   imageUrl: string
   heroImageUrl: string
   media: Array<{
@@ -104,6 +105,7 @@ export type PropertiesTableProps = {
 
 export type CreatePropertyStepsNavProps = {
   activeStepIndex: number
+  maxVisitedStepIndex: number
   onStepSelect: (stepIndex: number) => void
 }
 

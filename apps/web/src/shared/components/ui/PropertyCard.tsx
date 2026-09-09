@@ -10,7 +10,7 @@ import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
 import { componentText, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
-import type { PropertyCardData, PropertyFeatureKey } from '@shared/types'
+import type { PropertyCardProps, PropertyFeatureKey } from '@shared/types'
 import type { LocalizedHref } from '@shared/types/localized-href'
 import { PillBadge } from './PillBadge'
 
@@ -21,12 +21,6 @@ const detailIcons: Record<PropertyFeatureKey, typeof ApartmentOutlinedIcon> = {
   area: SquareFootOutlinedIcon,
 }
 
-type PropertyCardProps = {
-  property: PropertyCardData
-}
-
-// Mantido local de propósito: `shared/` não importa de `modules/`, e o equivalente
-// em modules/marketplace/utils/property-links.ts serve a outra camada.
 function getPropertyCardHref(href: string): LocalizedHref {
   const id = href.split('?')[0].split('/').filter(Boolean).at(-1)
 
@@ -41,13 +35,13 @@ function getPropertyCardHref(href: string): LocalizedHref {
   return href as LocalizedHref
 }
 
-export function PropertyCard({ property }: PropertyCardProps) {
+export function PropertyCard({ href, property }: PropertyCardProps) {
   const t = useTranslations('marketplace.publicProfile.propertyCard')
 
   return (
     <Card
       component={Link}
-      href={getPropertyCardHref(property.href)}
+      href={href ?? getPropertyCardHref(property.href)}
       sx={{
         overflow: 'hidden',
         borderRadius: `${radius.sm}px`,
