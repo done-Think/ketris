@@ -251,7 +251,7 @@ export function AgencyPublicProfileEditorActions({
         startIcon={<SaveOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
         sx={{ minHeight: 44, borderRadius: `${radius.sm}px`, flex: 1 }}
       >
-        {t('saveDraft')}
+        {t('save')}
       </Button>
     </Stack>
   )

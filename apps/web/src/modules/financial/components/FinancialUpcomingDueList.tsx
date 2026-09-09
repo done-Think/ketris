@@ -2,7 +2,8 @@
 
 import { Box, Chip, Stack, Typography } from '@mui/material'
 import { useFormatter, useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 import { alpha, brand, motion, radius, shadows, surface } from '@shared/theme/tokens'
 
@@ -14,6 +15,7 @@ export function FinancialUpcomingDueList({ items }: FinancialUpcomingDueListProp
   const format = useFormatter()
   const t = useTranslations('dashboard.finance')
   const statusT = useTranslations('dashboard.finance.statuses')
+  const searchParams = useSearchParams()
   const [selectedDue, setSelectedDue] = useState<FinancialUpcomingDue | null>(null)
   const formatCurrency = (value: number) =>
     format.number(value, {
@@ -24,6 +26,14 @@ export function FinancialUpcomingDueList({ items }: FinancialUpcomingDueListProp
   const openDueHistory = (due: FinancialUpcomingDue) => {
     setSelectedDue(due)
   }
+
+  useEffect(() => {
+    const dueId = searchParams.get('dueId')
+    const due = items.find((item) => item.id === dueId)
+    if (!due) return
+
+    setSelectedDue(due)
+  }, [items, searchParams])
 
   return (
     <Box

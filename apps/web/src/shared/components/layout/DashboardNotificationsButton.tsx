@@ -7,6 +7,7 @@ import { Badge, Box, Divider, IconButton, Popover, Stack, Tooltip, Typography } 
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 
+import { useRouter } from '@/i18n/navigation'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 import type {
   DashboardNotificationItem,
@@ -24,24 +25,28 @@ function useDefaultDashboardNotifications() {
   return useMemo<DashboardNotificationItem[]>(
     () => [
       {
+        href: { pathname: '/dashboard/agenda', query: { eventId: 'agenda-001' } },
         id: 'today-visit',
         kind: 'todayVisit',
         title: t('todayVisit.title'),
         message: t('todayVisit.message'),
       },
       {
+        href: { pathname: '/dashboard/agenda', query: { eventId: 'agenda-003' } },
         id: 'agency-assigned',
         kind: 'assignedEvent',
         title: t('agencyAssigned.title'),
         message: t('agencyAssigned.message'),
       },
       {
+        href: { pathname: '/dashboard/leads', query: { leadId: 'lead-004' } },
         id: 'broker-assigned',
         kind: 'assignedEvent',
         title: t('brokerAssigned.title'),
         message: t('brokerAssigned.message'),
       },
       {
+        href: { pathname: '/dashboard/proposals', query: { proposalId: 'proposal-002' } },
         id: 'proposal-return',
         kind: 'todayVisit',
         title: t('proposalReturn.title'),
@@ -56,6 +61,7 @@ export function DashboardNotificationsButton({
   notifications,
   onNotificationSelect,
 }: DashboardNotificationsButtonProps) {
+  const router = useRouter()
   const t = useTranslations('dashboard.notificationsCenter')
   const defaultNotifications = useDefaultDashboardNotifications()
   const notificationItems = notifications ?? defaultNotifications
@@ -65,9 +71,17 @@ export function DashboardNotificationsButton({
   const closeNotifications = () => setAnchorEl(null)
 
   const selectNotification = (notification: DashboardNotificationItem) => {
-    onNotificationSelect?.(notification)
+    if (onNotificationSelect) {
+      onNotificationSelect(notification)
+    } else if (notification.href) {
+      router.push(notification.href)
+    }
+
     closeNotifications()
   }
+
+  const hasNotificationAction = (notification: DashboardNotificationItem) =>
+    Boolean(onNotificationSelect || notification.href)
 
   return (
     <>
@@ -154,10 +168,12 @@ export function DashboardNotificationsButton({
                     bgcolor: surface.paper,
                     px: 1,
                     py: 1.1,
-                    cursor: onNotificationSelect ? 'pointer' : 'default',
+                    cursor: hasNotificationAction(notification) ? 'pointer' : 'default',
                     textAlign: 'left',
                     '&:hover, &:focus-visible': {
-                      bgcolor: onNotificationSelect ? alpha.magenta[6] : surface.paper,
+                      bgcolor: hasNotificationAction(notification)
+                        ? alpha.magenta[6]
+                        : surface.paper,
                       outline: 'none',
                     },
                   }}

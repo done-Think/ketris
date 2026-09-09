@@ -87,3 +87,9 @@ export type AgendaEventFormDialogProps = {
   open: boolean
   propertyOptions: AgendaPropertyOption[]
 }
+
+export type AgendaTimelineProps = {
+  days: AgendaCalendarDay[]
+  events: AgendaEvent[]
+  onEventSelect: (event: AgendaEvent) => void
+}

@@ -8,3 +8,9 @@ export type DashboardProposal = {
   ownerExpectation: string
   status: ProposalStatus
 }
+
+export type ProposalDetailDialogProps = {
+  onClose: () => void
+  open: boolean
+  proposal: DashboardProposal | null
+}

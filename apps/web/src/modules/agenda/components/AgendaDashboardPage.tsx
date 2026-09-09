@@ -6,184 +6,36 @@ import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
 import { Box, Button, IconButton, Stack, Tooltip, Typography } from '@mui/material'
 import dayjs from 'dayjs'
 import 'dayjs/locale/pt-br'
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
 import { DashboardNotificationsButton } from '@shared/components/layout'
 import { dashboardProperties } from '@modules/properties/data/dashboard-properties'
-import {
-  alpha,
-  brand,
-  iconSize,
-  radius,
-  shadows,
-  supportColor,
-  surface,
-} from '@shared/theme/tokens'
+import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
-import { agendaEvents, agendaTimeSlots } from '../data/agenda-events'
+import { agendaEvents } from '../data/agenda-events'
 import { agendaOtherPropertyValue } from '../schemas/agenda-reschedule-schema'
 import type {
-  AgendaCalendarDay,
   AgendaEvent,
-  AgendaEventCardProps,
   AgendaEventFormValues,
-  AgendaEventTone,
-  AgendaEventToneStyle,
   AgendaPropertyOption,
   AgendaRescheduleFormValues,
-  AgendaWeekRange,
 } from '../types/agenda-event'
+import {
+  agendaVisibleDayCount,
+  buildAgendaCalendarDays,
+  getAgendaNotifications,
+  getAgendaWeekRange,
+} from '../utils/agenda-calendar'
 import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
 import { AgendaEventDetailDialog } from './AgendaEventDetailDialog'
 import { AgendaEventFormDialog } from './AgendaEventFormDialog'
-
-const scheduleStartHour = 8
-const scheduleEndHour = 18
-const scheduleHourHeight = 62
-const scheduleTimelineHeight = (scheduleEndHour - scheduleStartHour + 1) * scheduleHourHeight
-const agendaVisibleDayCount = 5
-
-const agendaEventToneStyles: Record<AgendaEventTone, AgendaEventToneStyle> = {
-  primary: {
-    bgcolor: alpha.magenta[10],
-    borderColor: brand.magenta[500],
-    color: brand.magenta[600],
-  },
-  info: {
-    bgcolor: supportColor.infoSoft,
-    borderColor: brand.semantic.info,
-    color: brand.semantic.info,
-  },
-  warning: {
-    bgcolor: supportColor.warningSoft,
-    borderColor: brand.semantic.warning,
-    color: brand.semantic.warning,
-  },
-}
-
-function getEventOffsetTop(time: string) {
-  const [hour = scheduleStartHour, minute = 0] = time.split(':').map(Number)
-
-  return (hour - scheduleStartHour) * scheduleHourHeight + (minute / 60) * scheduleHourHeight
-}
-
-function getEventHeight(durationMinutes: number) {
-  return Math.max((durationMinutes / 60) * scheduleHourHeight, 38)
-}
-
-function capitalize(value: string) {
-  return value.charAt(0).toLocaleUpperCase('pt-BR') + value.slice(1)
-}
-
-function buildAgendaCalendarDays(weekStartDate: dayjs.Dayjs): AgendaCalendarDay[] {
-  const today = dayjs().locale('pt-br').startOf('day')
-
-  return Array.from({ length: agendaVisibleDayCount }, (_, index) => {
-    const date = weekStartDate.add(index, 'day')
-
-    return {
-      dateLabel: date.format('DD'),
-      dayLabel: capitalize(date.format('ddd').replace('.', '')),
-      key: date.format('YYYY-MM-DD'),
-      monthLabel: capitalize(date.format('MMM').replace('.', '')),
-      today: date.isSame(today, 'day'),
-    }
-  })
-}
-
-function getAgendaWeekRange(days: AgendaCalendarDay[]): AgendaWeekRange {
-  const [startDay] = days
-  const endDay = days.at(-1) ?? startDay
-  const sameMonth = startDay.monthLabel === endDay.monthLabel
-
-  return {
-    startLabel: sameMonth ? startDay.dateLabel : `${startDay.dateLabel} ${startDay.monthLabel}`,
-    endLabel: `${endDay.dateLabel} ${endDay.monthLabel}`,
-  }
-}
-
-function isVisitEvent(event: AgendaEvent) {
-  return event.title.toLocaleLowerCase('pt-BR').includes('visita')
-}
-
-function getAgendaNotifications(
-  events: AgendaEvent[],
-  today: dayjs.Dayjs,
-): DashboardNotificationItem[] {
-  return events.flatMap((event) => {
-    const eventDate = dayjs(event.scheduledDate)
-    const notifications: DashboardNotificationItem[] = []
-
-    if (eventDate.isSame(today, 'day') && isVisitEvent(event)) {
-      notifications.push({
-        id: `${event.id}-today-visit`,
-        kind: 'todayVisit',
-        message: `${event.time} - ${event.participant} em ${event.property}`,
-        metadata: { eventId: event.id },
-        title: 'Visita marcada para hoje',
-      })
-    }
-
-    if (event.createdBy && event.createdByRole) {
-      notifications.push({
-        id: `${event.id}-assigned`,
-        kind: 'assignedEvent',
-        message: `${event.createdByRole} ${event.createdBy} marcou ${event.title}`,
-        metadata: { eventId: event.id },
-        title: 'Novo compromisso atribuído',
-      })
-    }
-
-    return notifications
-  })
-}
-
-function AgendaEventCard({ event, height, onSelect, top }: AgendaEventCardProps) {
-  const tone = agendaEventToneStyles[event.tone]
-
-  return (
-    <Box
-      component="button"
-      type="button"
-      aria-label={`Abrir ${event.title}`}
-      onClick={() => onSelect(event)}
-      sx={{
-        position: 'absolute',
-        top,
-        left: { xs: 8, md: 16 },
-        right: { xs: 8, md: 16 },
-        minHeight: height,
-        border: 0,
-        borderLeft: '3px solid',
-        borderColor: tone.borderColor,
-        borderRadius: `${radius.sm}px`,
-        bgcolor: tone.bgcolor,
-        px: 1.1,
-        py: 0.8,
-        overflow: 'hidden',
-        cursor: 'pointer',
-        textAlign: 'left',
-        transition: 'box-shadow 160ms ease, transform 160ms ease',
-        '&:hover, &:focus-visible': {
-          boxShadow: shadows.crmCardHover,
-          transform: 'translateY(-1px)',
-          outline: 'none',
-        },
-      }}
-    >
-      <Typography noWrap sx={{ color: tone.color, fontSize: 12, fontWeight: 900 }}>
-        {event.time} - {event.title}
-      </Typography>
-      <Typography noWrap sx={{ color: brand.graphite[500], fontSize: 11, fontWeight: 700 }}>
-        {event.participant} - {event.property}
-      </Typography>
-    </Box>
-  )
-}
+import { AgendaTimeline } from './AgendaTimeline'
 
 export function AgendaDashboardPage() {
   const { enqueueSnackbar } = useSnackbar()
+  const searchParams = useSearchParams()
   const [events, setEvents] = useState<AgendaEvent[]>(agendaEvents)
   const [isEventFormOpen, setIsEventFormOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null)
@@ -209,17 +61,20 @@ export function AgendaDashboardPage() {
   const disableNextWeek = nextWeekStart.isAfter(currentMonthEnd, 'day')
 
   const closeEventDialog = () => setSelectedEvent(null)
-  const showScheduledWeek = (date: dayjs.Dayjs) => {
-    if (date.isBefore(today, 'day')) {
-      setWeekStartDate(today)
-      return
-    }
+  const showScheduledWeek = useCallback(
+    (date: dayjs.Dayjs) => {
+      if (date.isBefore(today, 'day')) {
+        setWeekStartDate(today)
+        return
+      }
 
-    const daysFromToday = date.startOf('day').diff(today, 'day')
-    const weekOffset = Math.floor(daysFromToday / agendaVisibleDayCount) * agendaVisibleDayCount
+      const daysFromToday = date.startOf('day').diff(today, 'day')
+      const weekOffset = Math.floor(daysFromToday / agendaVisibleDayCount) * agendaVisibleDayCount
 
-    setWeekStartDate(today.add(weekOffset, 'day'))
-  }
+      setWeekStartDate(today.add(weekOffset, 'day'))
+    },
+    [today],
+  )
 
   const openNotificationEvent = (notification: DashboardNotificationItem) => {
     const event = events.find((agendaEvent) => agendaEvent.id === notification.metadata?.eventId)
@@ -228,6 +83,15 @@ export function AgendaDashboardPage() {
     showScheduledWeek(dayjs(event.scheduledDate))
     setSelectedEvent(event)
   }
+
+  useEffect(() => {
+    const eventId = searchParams.get('eventId')
+    const event = events.find((agendaEvent) => agendaEvent.id === eventId)
+    if (!event) return
+
+    showScheduledWeek(dayjs(event.scheduledDate))
+    setSelectedEvent(event)
+  }, [events, searchParams, showScheduledWeek])
 
   const rescheduleSelectedEvent = (values: AgendaRescheduleFormValues) => {
     if (!selectedEvent) return
@@ -360,110 +224,7 @@ export function AgendaDashboardPage() {
           </Stack>
         </Stack>
 
-        <Box
-          sx={{
-            bgcolor: surface.paper,
-            border: '1px solid',
-            borderColor: alpha.graphite[6],
-            borderRadius: `${radius.sm}px`,
-            boxShadow: shadows.crmDetailPanel,
-            overflow: 'hidden',
-          }}
-        >
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: '48px repeat(5, minmax(132px, 1fr))',
-                md: '72px repeat(5, minmax(0, 1fr))',
-              },
-              overflowX: 'auto',
-            }}
-          >
-            <Box sx={{ minHeight: 78 }} />
-            {agendaDays.map((day) => (
-              <Stack
-                key={day.key}
-                alignItems="center"
-                justifyContent="center"
-                spacing={0.6}
-                sx={{ minHeight: 78 }}
-              >
-                <Typography
-                  sx={{
-                    color: day.today ? brand.magenta[500] : brand.graphite[500],
-                    fontSize: 13,
-                    fontWeight: 900,
-                  }}
-                >
-                  {day.dayLabel} {day.dateLabel}
-                </Typography>
-                {day.today ? (
-                  <Box
-                    sx={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: radius.full,
-                      bgcolor: brand.magenta[500],
-                    }}
-                  />
-                ) : null}
-              </Stack>
-            ))}
-
-            <Box
-              sx={{
-                position: 'relative',
-                height: scheduleTimelineHeight,
-                borderTop: '1px solid',
-                borderColor: alpha.graphite[8],
-              }}
-            >
-              {agendaTimeSlots.map((slot, index) => (
-                <Typography
-                  key={slot.label}
-                  sx={{
-                    position: 'absolute',
-                    top: index * scheduleHourHeight + 14,
-                    left: { xs: 8, md: 18 },
-                    color: brand.neutral[500],
-                    fontSize: 12,
-                    fontWeight: 700,
-                  }}
-                >
-                  {slot.label}
-                </Typography>
-              ))}
-            </Box>
-
-            {agendaDays.map((day) => (
-              <Box
-                key={`timeline-${day.key}`}
-                sx={{
-                  position: 'relative',
-                  height: scheduleTimelineHeight,
-                  borderTop: '1px solid',
-                  borderLeft: '1px solid',
-                  borderColor: alpha.graphite[8],
-                  backgroundImage: `linear-gradient(${alpha.graphite[6]} 1px, ${surface.paper} 1px)`,
-                  backgroundSize: `100% ${scheduleHourHeight}px`,
-                }}
-              >
-                {events
-                  .filter((event) => event.scheduledDate === day.key)
-                  .map((event) => (
-                    <AgendaEventCard
-                      key={event.id}
-                      event={event}
-                      height={getEventHeight(event.durationMinutes)}
-                      onSelect={setSelectedEvent}
-                      top={getEventOffsetTop(event.time)}
-                    />
-                  ))}
-              </Box>
-            ))}
-          </Box>
-        </Box>
+        <AgendaTimeline days={agendaDays} events={events} onEventSelect={setSelectedEvent} />
       </Stack>
 
       <AgendaEventDetailDialog

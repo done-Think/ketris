@@ -176,6 +176,13 @@
   "proposals": {
     "title": "Proposals",
     "subtitle": "Ongoing negotiations and reference values.",
+    "detail": {
+      "eyebrow": "Proposal detail",
+      "close": "Close proposal",
+      "value": "Proposed value",
+      "ownerExpectation": "Owner expectation",
+      "status": "Status"
+    },
     "statuses": {
       "underReview": "Under review",
       "counteroffer": "Counteroffer",

@@ -83,3 +83,15 @@ export type LeadContactDialogProps = {
   onClose: () => void
   open: boolean
 }
+
+export type LeadsFilterBarProps = {
+  activeFilter: LeadFilterKey
+  leads: DashboardLead[]
+  onFilterChange: (filter: LeadFilterKey) => void
+}
+
+export type LeadsListProps = {
+  leads: DashboardLead[]
+  onLeadContactSelect: (lead: DashboardLead) => void
+  totalCount?: number
+}

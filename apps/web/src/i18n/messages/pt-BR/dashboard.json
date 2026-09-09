@@ -176,6 +176,13 @@
   "proposals": {
     "title": "Propostas",
     "subtitle": "Negociações em andamento e valores de referência.",
+    "detail": {
+      "eyebrow": "Detalhe da proposta",
+      "close": "Fechar proposta",
+      "value": "Valor proposto",
+      "ownerExpectation": "Expectativa do proprietário",
+      "status": "Status"
+    },
     "statuses": {
       "underReview": "Em análise",
       "counteroffer": "Contraproposta",
