@@ -19,14 +19,25 @@ import {
 } from '@mui/material'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
+import { useSnackbar } from 'notistack'
 
 import { brand, radius, surface } from '@shared/theme/tokens'
 
 import { opportunityStages } from '../config/opportunity-stages'
-import { useCrmProperties, useOpportunities } from '../hooks/use-opportunities'
-import type { Opportunity, OpportunityStatus } from '../types/opportunity'
+import {
+  useCreateOpportunity,
+  useCrmProperties,
+  useOpportunities,
+} from '../hooks/use-opportunities'
+import type {
+  CreateOpportunityFormValues,
+  Opportunity,
+  OpportunityStatus,
+} from '../types/opportunity'
 import type { PipelineBoardProps } from '../types/pipeline-board'
+import { errorMessage } from '../utils/error-message'
 import { formatCurrency, formatMonthlyCurrency } from '../utils/formatters'
+import { CreateOpportunityDialog } from './opportunity-detail/CreateOpportunityDialog'
 import { OpportunityCard } from './OpportunityCard'
 
 const validStatuses = new Set<OpportunityStatus>(opportunityStages.map((stage) => stage.status))
@@ -48,9 +59,30 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
     initialStatus && validStatuses.has(initialStatus) ? initialStatus : null,
   )
   const [filterAnchor, setFilterAnchor] = useState<null | HTMLElement>(null)
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const { enqueueSnackbar } = useSnackbar()
 
   const opportunitiesQuery = useOpportunities(tenantId)
   const propertiesQuery = useCrmProperties(tenantId)
+  const createOpportunity = useCreateOpportunity(tenantId)
+
+  async function handleCreateOpportunity(values: CreateOpportunityFormValues) {
+    try {
+      await createOpportunity.mutateAsync({
+        propertyId: values.propertyId,
+        leadName: values.leadName.trim(),
+        leadEmail: values.leadEmail.trim(),
+        leadPhone: values.leadPhone.trim() || null,
+        proposedValue: Number(values.proposedValue),
+        notes: values.notes.trim() || null,
+        status: values.status,
+      })
+      enqueueSnackbar(t('createSuccess'), { variant: 'success' })
+      setIsCreateOpen(false)
+    } catch (error) {
+      enqueueSnackbar(errorMessage(error, t('createError')), { variant: 'error' })
+    }
+  }
 
   useEffect(() => {
     setSelectedStatus(initialStatus && validStatuses.has(initialStatus) ? initialStatus : null)
@@ -189,13 +221,21 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
           <Button
             variant="contained"
             startIcon={<AddRoundedIcon />}
-            disabled
+            onClick={() => setIsCreateOpen(true)}
             sx={{ minWidth: { sm: 188 }, height: 40, whiteSpace: 'nowrap' }}
           >
             {t('newOpportunity')}
           </Button>
         </Stack>
       </Stack>
+
+      <CreateOpportunityDialog
+        open={isCreateOpen}
+        tenantId={tenantId}
+        isPending={createOpportunity.isPending}
+        onClose={() => setIsCreateOpen(false)}
+        onSave={handleCreateOpportunity}
+      />
 
       {opportunitiesQuery.isError ? (
         <Alert

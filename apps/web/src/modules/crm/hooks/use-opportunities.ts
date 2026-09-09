@@ -1,7 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { crmService } from '../services/crm-service'
-import type { OpportunityFilters, UpdateOpportunityInput } from '../types/opportunity'
+import type {
+  CreateOpportunityPayload,
+  OpportunityFilters,
+  UpdateOpportunityInput,
+} from '../types/opportunity'
 import type { PublicPropertySearchFilters } from '../types/property'
 
 function normalizeFilters(filters: OpportunityFilters) {
@@ -68,6 +72,17 @@ export function useOpportunity(
     queryKey: crmQueryKeys.detail(scopedTenantId, scopedOpportunityId),
     queryFn: () => crmService.getById(scopedOpportunityId),
     enabled: Boolean(tenantId && opportunityId),
+  })
+}
+
+export function useCreateOpportunity(tenantId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: CreateOpportunityPayload) => crmService.create(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmQueryKeys.lists(tenantId) })
+    },
   })
 }
 

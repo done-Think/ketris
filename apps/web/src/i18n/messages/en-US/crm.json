@@ -34,8 +34,6 @@
     "filterByStage": "Filter by stage",
     "allStages": "All stages",
     "newOpportunity": "New Opportunity",
-    "newOpportunityTooltip": "Creation flow in progress",
-    "newOpportunityDisabledAriaLabel": "New Opportunity: creation flow in progress",
     "openOpportunityAriaLabel": "Open opportunity for {name}",
     "propertyUnavailable": "Property unavailable in the catalog",
     "boardAriaLabel": "Opportunities pipeline",
@@ -60,7 +58,9 @@
       "sent": "Proposal sent",
       "accepted": "Closed",
       "rejected": "Lost"
-    }
+    },
+    "createSuccess": "Opportunity created.",
+    "createError": "Could not create the opportunity."
   },
   "contacts": {
     "title": "Contacts",
@@ -103,6 +103,37 @@
       "owners": "Owners",
       "tenants": "Tenants",
       "brokers": "Brokers"
+    },
+    "contactForm": {
+      "createTitle": "New contact",
+      "editTitle": "Edit contact",
+      "fields": {
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "type": "Type",
+        "notes": "Notes"
+      },
+      "types": {
+        "PROPRIETARIO": "Owner",
+        "LOCATARIO": "Tenant",
+        "CORRETOR": "Broker"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "save": "Save"
+      },
+      "createSuccess": "Contact created.",
+      "updateSuccess": "Contact updated.",
+      "saveError": "Could not save the contact."
+    },
+    "archiveDialog": {
+      "title": "Archive contact?",
+      "description": "The contact will stop appearing in the active list, but stays stored in the CRM.",
+      "cancel": "Cancel",
+      "confirm": "Archive",
+      "success": "Contact archived.",
+      "error": "Could not archive the contact."
     }
   },
   "opportunityDetail": {
@@ -148,7 +179,9 @@
       "specialConditionsHelper": "Separate conditions with commas.",
       "notes": "Notes",
       "notInformed": "Not informed",
-      "months": "{count, plural, one {# month} other {# months}}"
+      "months": "{count, plural, one {# month} other {# months}}",
+      "property": "Property",
+      "status": "Initial status"
     },
     "guarantees": {
       "NENHUMA": "Not informed",
@@ -159,7 +192,15 @@
     "actions": {
       "cancel": "Cancel",
       "saveChanges": "Save changes",
-      "confirmStageChange": "Confirm change"
-    }
+      "confirmStageChange": "Confirm change",
+      "createOpportunity": "Create opportunity"
+    },
+    "createTitle": "New opportunity",
+    "statuses": {
+      "RASCUNHO": "Draft",
+      "ENVIADA": "Sent"
+    },
+    "noProperties": "No properties found.",
+    "loadingProperties": "Searching properties..."
   }
 }
