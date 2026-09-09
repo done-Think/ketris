@@ -46,7 +46,7 @@ export function AgendaDashboardPage() {
   const propertyOptions = useMemo<AgendaPropertyOption[]>(
     () =>
       dashboardProperties.map((property) => ({
-        href: `/dashboard/imoveis/${property.id}`,
+        href: `/dashboard/properties/${property.id}`,
         id: property.id,
         label: `${property.title} - ${property.location}`,
       })),
@@ -129,8 +129,8 @@ export function AgendaDashboardPage() {
       ? customProperty
       : (selectedProperty?.label ?? customProperty)
     const propertyHref = useCustomProperty
-      ? '/dashboard/imoveis'
-      : (selectedProperty?.href ?? '/dashboard/imoveis')
+      ? '/dashboard/properties'
+      : (selectedProperty?.href ?? '/dashboard/properties')
     const nextEvent: AgendaEvent = {
       id: `agenda-${Date.now()}`,
       scheduledDate: values.scheduledDate,

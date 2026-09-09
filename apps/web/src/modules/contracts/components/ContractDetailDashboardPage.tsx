@@ -121,7 +121,7 @@ function ContractInfoPanel({ contract }: { contract: ContractListItem }) {
     {
       label: 'Imovel',
       value: contract.property,
-      href: `/dashboard/imoveis/${contract.propertyId}`,
+      href: `/dashboard/properties/${contract.propertyId}`,
     },
     { label: 'Locatario', value: contract.tenant },
     { label: 'Valor', value: `${contract.amount}/mes` },
@@ -313,7 +313,7 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
           <Typography sx={{ fontSize: 13 }}>›</Typography>
           <MuiLink
             component={NextLink}
-            href={`/dashboard/imoveis/${contract.propertyId}`}
+            href={`/dashboard/properties/${contract.propertyId}`}
             underline="hover"
             color="inherit"
             sx={{ fontSize: 13 }}
