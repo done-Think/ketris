@@ -1,0 +1,36 @@
+name: Deploy staging (migrate + seed)
+
+on:
+  push:
+    branches: [dev]
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+jobs:
+  migrate-and-seed:
+    runs-on: ubuntu-latest
+    environment: staging
+
+    env:
+      DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+      PLATFORM_ADMIN_NAME: ${{ secrets.PLATFORM_ADMIN_NAME }}
+      PLATFORM_ADMIN_EMAIL: ${{ secrets.PLATFORM_ADMIN_EMAIL }}
+      PLATFORM_ADMIN_PASSWORD: ${{ secrets.PLATFORM_ADMIN_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Aplica as migrations pendentes no RDS de staging
+        run: npm run db:deploy -w @ketris/web
+
+      - name: Roda o seed (idempotente — ver prisma/seed.ts)
+        run: npm run db:seed -w @ketris/web

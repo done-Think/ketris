@@ -17,15 +17,15 @@ export const opportunityFiltersSchema = z.object({
 
 export const updateOpportunitySchema = z
   .object({
-    interessadoNome: z.string().trim().min(1, 'Nome e obrigatorio.').optional(),
-    interessadoEmail: z.string().trim().email('E-mail invalido.').optional(),
-    interessadoTelefone: z.string().trim().min(1, 'Telefone invalido.').nullable().optional(),
-    valorProposto: z.number().positive('Valor proposto deve ser positivo.').optional(),
-    prazoContratoMeses: z.number().int().positive().nullable().optional(),
-    inicioPretendido: z.string().trim().min(1).nullable().optional(),
-    garantiaContratual: contractGuaranteeSchema.optional(),
-    condicoesEspeciais: z.array(z.string().trim().min(1)).optional(),
-    observacoes: z.string().trim().min(1).nullable().optional(),
+    leadName: z.string().trim().min(1, 'Nome e obrigatorio.').optional(),
+    leadEmail: z.string().trim().email('E-mail invalido.').optional(),
+    leadPhone: z.string().trim().min(1, 'Telefone invalido.').nullable().optional(),
+    proposedValue: z.number().positive('Valor proposto deve ser positivo.').optional(),
+    contractTermMonths: z.number().int().positive().nullable().optional(),
+    desiredStartDate: z.string().trim().min(1).nullable().optional(),
+    guaranteeType: contractGuaranteeSchema.optional(),
+    specialConditions: z.array(z.string().trim().min(1)).optional(),
+    notes: z.string().trim().min(1).nullable().optional(),
     status: opportunityStatusSchema.optional(),
   })
   .refine((data) => Object.values(data).some((value) => value !== undefined), {
@@ -33,10 +33,10 @@ export const updateOpportunitySchema = z
   })
 
 export const editOpportunityFormSchema = z.object({
-  interessadoNome: z.string().trim().min(1, 'Nome e obrigatorio.'),
-  interessadoEmail: z.string().trim().email('E-mail invalido.'),
-  interessadoTelefone: z.string().trim(),
-  valorProposto: z
+  leadName: z.string().trim().min(1, 'Nome e obrigatorio.'),
+  leadEmail: z.string().trim().email('E-mail invalido.'),
+  leadPhone: z.string().trim(),
+  proposedValue: z
     .string()
     .trim()
     .min(1, 'Valor proposto e obrigatorio.')
@@ -44,7 +44,7 @@ export const editOpportunityFormSchema = z.object({
       const amount = Number(value)
       return Number.isFinite(amount) && amount > 0
     }, 'Valor proposto deve ser positivo.'),
-  prazoContratoMeses: z
+  contractTermMonths: z
     .string()
     .trim()
     .refine((value) => {
@@ -53,8 +53,8 @@ export const editOpportunityFormSchema = z.object({
       const months = Number(value)
       return Number.isInteger(months) && months > 0
     }, 'Prazo deve ser um numero inteiro positivo.'),
-  inicioPretendido: z.string().trim(),
-  garantiaContratual: contractGuaranteeSchema,
-  condicoesEspeciais: z.string().trim(),
-  observacoes: z.string().trim(),
+  desiredStartDate: z.string().trim(),
+  guaranteeType: contractGuaranteeSchema,
+  specialConditions: z.string().trim(),
+  notes: z.string().trim(),
 })

@@ -26,18 +26,18 @@ vi.mock('../../services/crm-service', () => ({
 const opportunity: Opportunity = {
   id: 'opportunity-1',
   tenantId: 'tenant-1',
-  imovelId: 'property-1',
-  interessadoNome: 'Maria Silva',
-  interessadoEmail: 'maria@example.com',
-  interessadoTelefone: null,
-  valorProposto: 4800,
-  prazoContratoMeses: null,
-  inicioPretendido: null,
-  garantiaContratual: 'NENHUMA',
-  condicoesEspeciais: [],
-  observacoes: null,
+  propertyId: 'property-1',
+  leadName: 'Maria Silva',
+  leadEmail: 'maria@example.com',
+  leadPhone: null,
+  proposedValue: 4800,
+  contractTermMonths: null,
+  desiredStartDate: null,
+  guaranteeType: 'NENHUMA',
+  specialConditions: [],
+  notes: null,
   status: 'ENVIADA',
-  arquivadaEm: null,
+  archivedAt: null,
   createdAt: '2026-08-12T10:00:00.000Z',
   updatedAt: '2026-08-12T10:00:00.000Z',
 }
@@ -92,7 +92,7 @@ describe('CRM query keys and hooks', () => {
   it('scopes public property queries by the active CRM tenant', async () => {
     vi.mocked(crmService.listProperties).mockResolvedValueOnce([])
     const queryClient = createQueryClient()
-    const filters = { finalidade: 'ALUGUEL' as const, q: 'Jardins' }
+    const filters = { purpose: 'ALUGUEL' as const, q: 'Jardins' }
     const { result } = renderHook(() => useCrmProperties('tenant-1', filters), {
       wrapper: createWrapper(queryClient),
     })

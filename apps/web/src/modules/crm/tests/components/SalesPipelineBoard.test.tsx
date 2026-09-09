@@ -52,18 +52,18 @@ function makeOpportunity(
   return {
     id: `opportunity-${index}`,
     tenantId: 'tenant-1',
-    imovelId: `property-${index}`,
-    interessadoNome: `Contato ${index}`,
-    interessadoEmail: `contato${index}@example.com`,
-    interessadoTelefone: `(11) 90000-000${index}`,
-    valorProposto: index * 1000,
-    prazoContratoMeses: null,
-    inicioPretendido: null,
-    garantiaContratual: 'NENHUMA',
-    condicoesEspeciais: [],
-    observacoes: null,
+    propertyId: `property-${index}`,
+    leadName: `Contato ${index}`,
+    leadEmail: `contato${index}@example.com`,
+    leadPhone: `(11) 90000-000${index}`,
+    proposedValue: index * 1000,
+    contractTermMonths: null,
+    desiredStartDate: null,
+    guaranteeType: 'NENHUMA',
+    specialConditions: [],
+    notes: null,
     status,
-    arquivadaEm: null,
+    archivedAt: null,
     createdAt: '2026-08-10T10:00:00.000Z',
     updatedAt: '2026-08-12T10:00:00.000Z',
     ...overrides,
@@ -76,20 +76,24 @@ function makeProperty(
 ): PublicPropertySummary {
   return {
     id: `property-${index}`,
-    titulo: `Imóvel ${index}`,
-    finalidade: 'ALUGUEL',
-    tipo: 'Apartamento',
-    valor: index * 1000,
-    condominio: null,
-    iptu: null,
-    quartos: 2,
-    banheiros: 1,
-    vagas: 1,
-    areaM2: 70,
-    cidade: 'São Paulo',
-    bairro: `Bairro ${index}`,
-    capaUrl: null,
-    publicadoEm: '2026-08-01T10:00:00.000Z',
+    title: `Imóvel ${index}`,
+    purpose: 'ALUGUEL',
+    propertyType: 'Apartamento',
+    price: index * 1000,
+    condoFee: null,
+    propertyTax: null,
+    bedrooms: 2,
+    bathrooms: 1,
+    parkingSpots: 1,
+    area: 70,
+    city: 'São Paulo',
+    neighborhood: `Bairro ${index}`,
+    latitude: null,
+    longitude: null,
+    brokerName: null,
+    brokerAvatarUrl: null,
+    coverUrl: null,
+    publishedAt: '2026-08-01T10:00:00.000Z',
     ...overrides,
   }
 }
@@ -198,9 +202,9 @@ describe('SalesPipelineBoard', () => {
     expect(
       salesPipelineFixtures.map(({ stageId, opportunity, property, presentation }) => [
         stageId,
-        opportunity.interessadoNome,
-        property.titulo,
-        opportunity.valorProposto,
+        opportunity.leadName,
+        property.title,
+        opportunity.proposedValue,
         presentation.relativeDateLabel,
         presentation.indicatorLabel,
       ]),
@@ -249,11 +253,11 @@ describe('SalesPipelineBoard', () => {
     for (const fixture of salesPipelineFixtures) {
       const stage = screen.getByRole('region', { name: stageLabels[fixture.stageId] })
       const card = within(stage).getByRole('link', {
-        name: `Abrir oportunidade de ${fixture.opportunity.interessadoNome}`,
+        name: `Abrir oportunidade de ${fixture.opportunity.leadName}`,
       })
 
       expect(card).toHaveAttribute('href', `/crm/opportunities/${fixture.opportunity.id}`)
-      expect(within(card).getByText(fixture.property.titulo)).toBeVisible()
+      expect(within(card).getByText(fixture.property.title)).toBeVisible()
       expect(within(card).getByText(fixture.presentation.relativeDateLabel)).toBeVisible()
       expect(within(card).getByLabelText(fixture.presentation.indicatorLabel)).toBeVisible()
     }
@@ -266,7 +270,7 @@ describe('SalesPipelineBoard', () => {
         name: `Total projetado de ${stageLabels[stageId]}`,
       })
       const fixtureTotal = fixtures.reduce(
-        (sum, fixture) => sum + fixture.opportunity.valorProposto,
+        (sum, fixture) => sum + fixture.opportunity.proposedValue,
         0,
       )
 
@@ -323,7 +327,7 @@ describe('SalesPipelineBoard', () => {
 
     expect(screen.getAllByText('Sem oportunidades nesta etapa.')).toHaveLength(5)
     for (const fixture of salesPipelineFixtures) {
-      expect(screen.queryByText(fixture.opportunity.interessadoNome)).not.toBeInTheDocument()
+      expect(screen.queryByText(fixture.opportunity.leadName)).not.toBeInTheDocument()
     }
   })
 
@@ -370,11 +374,11 @@ describe('SalesPipelineBoard', () => {
 
   it('renders the requested five-stage sales pipeline with real API statuses', () => {
     const opportunities = [
-      makeOpportunity(1, 'RASCUNHO', { interessadoNome: 'Carlos Eduardo' }),
-      makeOpportunity(2, 'ENVIADA', { interessadoNome: 'Ricardo Mendes' }),
-      makeOpportunity(3, 'EM_NEGOCIACAO', { interessadoNome: 'Daniela Flores' }),
-      makeOpportunity(4, 'ACEITA', { interessadoNome: 'Gabriel Henrique' }),
-      makeOpportunity(5, 'RECUSADA', { interessadoNome: 'Oportunidade perdida' }),
+      makeOpportunity(1, 'RASCUNHO', { leadName: 'Carlos Eduardo' }),
+      makeOpportunity(2, 'ENVIADA', { leadName: 'Ricardo Mendes' }),
+      makeOpportunity(3, 'EM_NEGOCIACAO', { leadName: 'Daniela Flores' }),
+      makeOpportunity(4, 'ACEITA', { leadName: 'Gabriel Henrique' }),
+      makeOpportunity(5, 'RECUSADA', { leadName: 'Oportunidade perdida' }),
     ]
     mockOpportunitiesQuery({ data: opportunities })
     mockPropertiesQuery({ data: opportunities.map((_, index) => makeProperty(index + 1)) })
@@ -403,19 +407,19 @@ describe('SalesPipelineBoard', () => {
     mockOpportunitiesQuery({
       data: [
         makeOpportunity(1, 'RASCUNHO', {
-          interessadoNome: 'Carlos Eduardo',
-          valorProposto: 5200,
+          leadName: 'Carlos Eduardo',
+          proposedValue: 5200,
         }),
         makeOpportunity(2, 'RASCUNHO', {
-          interessadoNome: 'Letícia Ramos',
-          valorProposto: 920000,
+          leadName: 'Letícia Ramos',
+          proposedValue: 920000,
         }),
       ],
     })
     mockPropertiesQuery({
       data: [
-        makeProperty(1, { titulo: 'Studio Vila Mariana', finalidade: 'ALUGUEL' }),
-        makeProperty(2, { titulo: 'Casa Pinheiros', finalidade: 'VENDA' }),
+        makeProperty(1, { title: 'Studio Vila Mariana', purpose: 'ALUGUEL' }),
+        makeProperty(2, { title: 'Casa Pinheiros', purpose: 'VENDA' }),
       ],
     })
 
@@ -445,14 +449,14 @@ describe('SalesPipelineBoard', () => {
     const user = userEvent.setup()
     mockOpportunitiesQuery({
       data: [
-        makeOpportunity(1, 'RASCUNHO', { interessadoNome: 'Carlos Eduardo' }),
-        makeOpportunity(2, 'ENVIADA', { interessadoNome: 'Ricardo Mendes' }),
+        makeOpportunity(1, 'RASCUNHO', { leadName: 'Carlos Eduardo' }),
+        makeOpportunity(2, 'ENVIADA', { leadName: 'Ricardo Mendes' }),
       ],
     })
     mockPropertiesQuery({
       data: [
-        makeProperty(1, { titulo: 'Studio Centro' }),
-        makeProperty(2, { titulo: 'Casa Familiar', bairro: 'Pinheiros' }),
+        makeProperty(1, { title: 'Studio Centro' }),
+        makeProperty(2, { title: 'Casa Familiar', neighborhood: 'Pinheiros' }),
       ],
     })
     renderPipeline()
@@ -467,8 +471,8 @@ describe('SalesPipelineBoard', () => {
     const user = userEvent.setup()
     mockOpportunitiesQuery({
       data: [
-        makeOpportunity(1, 'RASCUNHO', { interessadoNome: 'Carlos Eduardo' }),
-        makeOpportunity(2, 'EM_NEGOCIACAO', { interessadoNome: 'Daniela Flores' }),
+        makeOpportunity(1, 'RASCUNHO', { leadName: 'Carlos Eduardo' }),
+        makeOpportunity(2, 'EM_NEGOCIACAO', { leadName: 'Daniela Flores' }),
       ],
     })
     renderPipeline()

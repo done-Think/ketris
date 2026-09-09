@@ -64,7 +64,7 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
 
       return matchesSalesPipelineSearch(
         opportunity,
-        propertiesById.get(opportunity.imovelId),
+        propertiesById.get(opportunity.propertyId),
         normalizedSearch,
       )
     })

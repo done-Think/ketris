@@ -14,11 +14,11 @@ export const POST = withErrorHandling(async (request: NextRequest, context: Rout
 
   const inquiry = await marketplaceContainer.submitInquiryUseCase.execute({
     propertyId: (await context.params).id,
-    interessadoNome: body.interessadoNome,
-    interessadoEmail: body.interessadoEmail,
-    interessadoTelefone: body.interessadoTelefone,
-    valorProposto: body.valorProposto,
-    observacoes: body.observacoes,
+    leadName: body.leadName,
+    leadEmail: body.leadEmail,
+    leadPhone: body.leadPhone,
+    proposedValue: body.proposedValue,
+    notes: body.notes,
   })
 
   return NextResponse.json({ inquiry }, { status: 201 })

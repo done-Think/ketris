@@ -15,6 +15,7 @@ import {
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
+import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
@@ -31,6 +32,7 @@ import {
   zIndex,
 } from '@shared/theme/tokens'
 import type { HomeHeaderProps } from '@shared/types/home-header'
+import { getInitials } from '@shared/utils/get-initials'
 import { LanguageSelector } from './LanguageSelector'
 
 export function HomeHeader({
@@ -38,10 +40,13 @@ export function HomeHeader({
   profileButtonRef,
   userProfile,
   onToggleProfile,
+  isSessionLoading = false,
 }: HomeHeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const closeMobileMenu = () => setIsMobileMenuOpen(false)
   const t = useTranslations('marketplace.header')
+  const { status } = useSession()
+  const announcePropertyHref = status === 'authenticated' ? '/dashboard/properties' : '/login'
 
   return (
     <Box
@@ -119,7 +124,7 @@ export function HomeHeader({
           <Stack direction="row" alignItems="center" spacing={1} sx={{ justifySelf: 'end' }}>
             <Button
               component={Link}
-              href="/login"
+              href={announcePropertyHref}
               variant="outlined"
               color="secondary"
               size="small"
@@ -176,8 +181,12 @@ export function HomeHeader({
                   alt={userProfile.name}
                   src={userProfile.avatar}
                   sx={{ width: 48, height: 48 }}
-                />
+                >
+                  {!userProfile.avatar ? getInitials(userProfile.name) : null}
+                </Avatar>
               </Box>
+            ) : isSessionLoading ? (
+              <Box sx={{ width: 48, height: 42 }} />
             ) : (
               <LanguageSelector variant="header" />
             )}
@@ -262,7 +271,7 @@ export function HomeHeader({
 
           <Button
             component={Link}
-            href="/login"
+            href={announcePropertyHref}
             variant="contained"
             color="primary"
             onClick={closeMobileMenu}

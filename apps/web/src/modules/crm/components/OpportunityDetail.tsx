@@ -52,17 +52,17 @@ function toDateInput(value: string | null): string {
 
 function buildEditValues(opportunity: Opportunity): OpportunityEditFormValues {
   return {
-    interessadoNome: opportunity.interessadoNome,
-    interessadoEmail: opportunity.interessadoEmail,
-    interessadoTelefone: opportunity.interessadoTelefone ?? '',
-    valorProposto: String(opportunity.valorProposto),
-    prazoContratoMeses: opportunity.prazoContratoMeses
-      ? String(opportunity.prazoContratoMeses)
+    leadName: opportunity.leadName,
+    leadEmail: opportunity.leadEmail,
+    leadPhone: opportunity.leadPhone ?? '',
+    proposedValue: String(opportunity.proposedValue),
+    contractTermMonths: opportunity.contractTermMonths
+      ? String(opportunity.contractTermMonths)
       : '',
-    inicioPretendido: toDateInput(opportunity.inicioPretendido),
-    garantiaContratual: opportunity.garantiaContratual,
-    condicoesEspeciais: opportunity.condicoesEspeciais.join(', '),
-    observacoes: opportunity.observacoes ?? '',
+    desiredStartDate: toDateInput(opportunity.desiredStartDate),
+    guaranteeType: opportunity.guaranteeType,
+    specialConditions: opportunity.specialConditions.join(', '),
+    notes: opportunity.notes ?? '',
   }
 }
 
@@ -74,7 +74,7 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
   const tenantId = session?.tenantId
   const opportunityQuery = useOpportunity(tenantId, opportunityId)
   const opportunity = opportunityQuery.data
-  const propertyQuery = useCrmProperty(tenantId, opportunity?.imovelId)
+  const propertyQuery = useCrmProperty(tenantId, opportunity?.propertyId)
   const updateOpportunity = useUpdateOpportunity(tenantId ?? '')
   const archiveOpportunity = useArchiveOpportunity(tenantId ?? '')
   const { enqueueSnackbar } = useSnackbar()
@@ -137,7 +137,7 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
   const isMutating = updateOpportunity.isPending || archiveOpportunity.isPending
   const property = propertyQuery.data
   const propertyLocation = property
-    ? [property.bairro, property.cidade].filter(Boolean).join(' · ') || t('unknownLocation')
+    ? [property.neighborhood, property.city].filter(Boolean).join(' · ') || t('unknownLocation')
     : ''
 
   function requestStatusChange(status: OpportunityStatus) {
@@ -172,25 +172,25 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
   }
 
   async function saveOpportunity(values: OpportunityEditFormValues) {
-    const proposedValue = Number(values.valorProposto)
-    const contractMonths = values.prazoContratoMeses ? Number(values.prazoContratoMeses) : null
+    const proposedValue = Number(values.proposedValue)
+    const contractMonths = values.contractTermMonths ? Number(values.contractTermMonths) : null
 
     try {
       await updateOpportunity.mutateAsync({
         id: currentOpportunity.id,
         changes: {
-          interessadoNome: values.interessadoNome.trim(),
-          interessadoEmail: values.interessadoEmail.trim(),
-          interessadoTelefone: values.interessadoTelefone.trim() || null,
-          valorProposto: proposedValue,
-          prazoContratoMeses: contractMonths,
-          inicioPretendido: values.inicioPretendido || null,
-          garantiaContratual: values.garantiaContratual,
-          condicoesEspeciais: values.condicoesEspeciais
+          leadName: values.leadName.trim(),
+          leadEmail: values.leadEmail.trim(),
+          leadPhone: values.leadPhone.trim() || null,
+          proposedValue: proposedValue,
+          contractTermMonths: contractMonths,
+          desiredStartDate: values.desiredStartDate || null,
+          guaranteeType: values.guaranteeType,
+          specialConditions: values.specialConditions
             .split(',')
             .map((condition) => condition.trim())
             .filter(Boolean),
-          observacoes: values.observacoes.trim() || null,
+          notes: values.notes.trim() || null,
         },
       })
       enqueueSnackbar(t('updateSuccess'), { variant: 'success' })

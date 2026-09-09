@@ -357,6 +357,10 @@
       "title": "Nenhum imóvel encontrado",
       "description": "Ajuste os filtros para ver mais opções."
     },
+    "error": {
+      "title": "Não foi possível carregar os imóveis.",
+      "retry": "Tentar novamente"
+    },
     "map": {
       "openProperty": "Abrir {title}"
     },
