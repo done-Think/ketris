@@ -21,6 +21,29 @@ function renderPage() {
 }
 
 describe('PropertiesDashboardPage', () => {
+  it('filters through the mobile pills and shows publication age', async () => {
+    renderPage()
+    const user = userEvent.setup()
+    const filters = within(screen.getByRole('group', { name: 'Filtrar imóveis' }))
+    expect(screen.getByRole('link', { name: '+ Novo' })).toHaveAttribute(
+      'href',
+      '/dashboard/imoveis/novo',
+    )
+    await user.click(filters.getByRole('button', { name: 'Ativos' }))
+    expect(screen.getAllByRole('article')).toHaveLength(3)
+    await user.click(filters.getByRole('button', { name: 'Pausados' }))
+    expect(screen.getAllByRole('article')).toHaveLength(1)
+    expect(screen.getByText('Há 12 dias')).toBeInTheDocument()
+    await user.click(filters.getByRole('button', { name: 'Sem Proposta' }))
+    expect(filters.getByRole('button', { name: 'Sem Proposta' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getAllByRole('article')).toHaveLength(1)
+    await user.click(filters.getByRole('button', { name: 'Todos' }))
+    expect(screen.getAllByRole('article')).toHaveLength(4)
+  })
+
   it('renders the four reference cards with metrics and compatible detail links', () => {
     renderPage()
     expect(screen.getAllByRole('article')).toHaveLength(4)

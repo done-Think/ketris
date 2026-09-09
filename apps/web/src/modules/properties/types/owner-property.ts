@@ -2,7 +2,7 @@ export type OwnerPropertyStatus = 'active' | 'paused'
 
 export type OwnerPropertyPurpose = 'rent' | 'sale'
 
-export type OwnerPropertyStatusFilter = 'all' | OwnerPropertyStatus
+export type OwnerPropertyStatusFilter = 'all' | 'without-proposals' | OwnerPropertyStatus
 
 export type OwnerPropertyPurposeFilter = 'all' | OwnerPropertyPurpose
 
@@ -24,6 +24,7 @@ export type OwnerProperty = {
   views: number
   favorites: number
   proposals: number
+  publishedDaysAgo: number
 }
 
 export type OwnerPropertiesSummary = {

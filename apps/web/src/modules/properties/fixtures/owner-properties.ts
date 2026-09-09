@@ -17,6 +17,7 @@ export const ownerProperties: OwnerProperty[] = [
     views: 342,
     favorites: 28,
     proposals: 5,
+    publishedDaysAgo: 23,
   },
   {
     id: 'studio-pinheiros',
@@ -30,6 +31,7 @@ export const ownerProperties: OwnerProperty[] = [
     views: 124,
     favorites: 12,
     proposals: 2,
+    publishedDaysAgo: 5,
   },
   {
     id: 'casa-alto-pinheiros',
@@ -43,6 +45,7 @@ export const ownerProperties: OwnerProperty[] = [
     views: 204,
     favorites: 18,
     proposals: 1,
+    publishedDaysAgo: 45,
   },
   {
     id: 'apt-moema-2q',
@@ -56,6 +59,7 @@ export const ownerProperties: OwnerProperty[] = [
     views: 410,
     favorites: 35,
     proposals: 0,
+    publishedDaysAgo: 12,
   },
 ]
 

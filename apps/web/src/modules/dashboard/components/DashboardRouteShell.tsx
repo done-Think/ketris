@@ -8,18 +8,31 @@ import { surface } from '@shared/theme/tokens'
 
 import type { DashboardLayoutProps } from '../types/dashboard-layout'
 import { OwnerDashboardHeader } from './OwnerDashboardHeader'
+import { OwnerBottomNavigation } from './OwnerBottomNavigation'
 
 export function DashboardRouteShell({ children }: DashboardLayoutProps) {
   const pathname = usePathname()
   const usesOwnerHeader = pathname === '/dashboard' || pathname === '/dashboard/imoveis'
+  const usesMobilePropertiesLayout = pathname === '/dashboard/imoveis'
 
   if (usesOwnerHeader) {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: surface.app }}>
-        <OwnerDashboardHeader />
-        <Box component="main" sx={{ minWidth: 0 }}>
+        <Box sx={{ display: usesMobilePropertiesLayout ? { xs: 'none', md: 'block' } : 'block' }}>
+          <OwnerDashboardHeader />
+        </Box>
+        <Box
+          component="main"
+          sx={{
+            minWidth: 0,
+            pb: usesMobilePropertiesLayout
+              ? { xs: 'calc(80px + env(safe-area-inset-bottom, 0px))', md: 0 }
+              : 0,
+          }}
+        >
           {children}
         </Box>
+        {usesMobilePropertiesLayout && <OwnerBottomNavigation />}
       </Box>
     )
   }

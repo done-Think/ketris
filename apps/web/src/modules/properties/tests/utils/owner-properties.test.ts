@@ -75,6 +75,22 @@ describe('owner properties fixtures', () => {
 })
 
 describe('filterOwnerProperties', () => {
+  it('finds properties without proposals independently of their publication status', () => {
+    const properties = ownerProperties.map((property) => ({ ...property, proposals: 0 }))
+    expect(
+      filterOwnerProperties(properties, {
+        ...ownerPropertiesDefaultFilters,
+        status: 'without-proposals',
+      }),
+    ).toHaveLength(4)
+    expect(
+      filterOwnerProperties(ownerProperties, {
+        ...ownerPropertiesDefaultFilters,
+        status: 'without-proposals',
+      }).map(({ id }) => id),
+    ).toEqual(['apt-moema-2q'])
+  })
+
   it('returns all rental properties with the default filters', () => {
     expect(filterOwnerProperties(ownerProperties, ownerPropertiesDefaultFilters)).toEqual(
       ownerProperties,

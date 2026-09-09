@@ -13,7 +13,7 @@ export function PropertiesDashboardPage() {
   const properties = filterOwnerProperties(ownerProperties, filters)
 
   return (
-    <Box sx={{ width: '100%', px: { xs: 2, sm: 3, lg: 4 }, py: { xs: 3, md: 4.5 } }}>
+    <Box sx={{ width: '100%', px: { xs: 2, sm: 3, lg: 4 }, py: { xs: 1.5, md: 4.5 } }}>
       <Box sx={{ width: '100%', maxWidth: 1184, mx: 'auto' }}>
         <OwnerPropertiesHeader filters={filters} onFiltersChange={setFilters} />
         {properties.length ? (
@@ -23,7 +23,7 @@ export function PropertiesDashboardPage() {
             sx={{
               display: 'grid',
               gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'repeat(2, minmax(0, 1fr))' },
-              gap: { xs: 3, md: 4 },
+              gap: { xs: 2, md: 4 },
             }}
           >
             {properties.map((property) => (

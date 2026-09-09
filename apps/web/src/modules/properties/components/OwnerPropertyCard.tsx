@@ -15,10 +15,11 @@ import type { OwnerPropertyCardProps } from '../types/owner-property'
 
 const actionSx = {
   ...componentText.cardAction,
-  minWidth: 0,
+  fontSize: { xs: 11, md: componentText.cardAction.fontSize },
+  minWidth: { xs: 44, md: 0 },
   whiteSpace: 'nowrap',
-  px: 1.5,
-  minHeight: 32,
+  px: { xs: 0.5, md: 1.5 },
+  minHeight: { xs: 44, md: 32 },
   borderRadius: `${radius.sm}px`,
 } as const
 
@@ -43,8 +44,9 @@ export function OwnerPropertyCard({ property }: OwnerPropertyCardProps) {
     >
       <Box
         sx={{
-          height: { xs: 200, md: 220 },
-          p: 3,
+          height: { md: 220 },
+          aspectRatio: { xs: '2.2', md: 'auto' },
+          p: { xs: 2, md: 3 },
           background: `linear-gradient(35deg, ${brand.magenta[500]} 30%, ${brand.graphite[500]} 65%)`,
         }}
       >
@@ -52,24 +54,34 @@ export function OwnerPropertyCard({ property }: OwnerPropertyCardProps) {
           component="span"
           sx={{
             display: 'inline-flex',
-            px: 1.5,
-            py: 0.75,
+            px: { xs: 0.5, md: 1.5 },
+            py: { xs: 0.25, md: 0.75 },
             borderRadius: `${radius.sm}px`,
-            bgcolor: brand.magenta[50],
-            color: brand.magenta[600],
-            fontSize: 12,
+            bgcolor: { xs: 'transparent', md: brand.magenta[50] },
+            color: { xs: brand.semantic.success, md: brand.magenta[600] },
+            fontSize: { xs: 10, md: 12 },
             lineHeight: 1.2,
           }}
         >
-          {property.badgeStatus === 'active' ? 'Ativo' : 'Pausado'}
+          <Box component="span" sx={{ display: { xs: 'none', md: 'inline' } }}>
+            {property.badgeStatus === 'active' ? 'Ativo' : 'Pausado'}
+          </Box>
+          <Box component="span" sx={{ display: { xs: 'inline', md: 'none' } }}>
+            {property.status === 'active' ? 'Ativo' : 'Pausado'}
+          </Box>
         </Box>
       </Box>
-      <Box sx={{ p: { xs: 2, sm: 3 } }}>
+      <Box sx={{ p: { xs: 1.5, md: 3 }, pb: { xs: 0, md: 3 } }}>
         <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1}>
           <Typography
             id={titleId}
             component="h2"
-            sx={{ ...componentText.cardTitle, fontWeight: 700, minWidth: 0 }}
+            sx={{
+              ...componentText.cardTitle,
+              fontSize: { xs: 14, md: componentText.cardTitle.fontSize },
+              fontWeight: 700,
+              minWidth: 0,
+            }}
           >
             {property.title}
           </Typography>
@@ -77,6 +89,7 @@ export function OwnerPropertyCard({ property }: OwnerPropertyCardProps) {
             component="span"
             sx={{
               flexShrink: 0,
+              display: { xs: 'none', md: 'block' },
               bgcolor: brand.magenta[50],
               color: brand.magenta[500],
               px: 1,
@@ -88,47 +101,110 @@ export function OwnerPropertyCard({ property }: OwnerPropertyCardProps) {
             {property.purpose === 'rent' ? 'Aluguel' : 'Venda'}
           </Box>
         </Stack>
-        <Typography sx={{ mt: 0.75, color: brand.neutral[500], fontSize: 13, lineHeight: 1.5 }}>
-          {property.address}
-        </Typography>
         <Typography
-          sx={{ ...componentText.cardPrice, mt: 0.5, color: 'primary.main', fontWeight: 700 }}
+          sx={{
+            display: { xs: 'none', md: 'block' },
+            mt: 0.75,
+            color: brand.neutral[500],
+            fontSize: 13,
+            lineHeight: 1.5,
+          }}
         >
-          {property.price}
+          {property.address}
         </Typography>
         <Box
           sx={{
             display: 'flex',
-            flexWrap: 'wrap',
+            alignItems: 'baseline',
             justifyContent: 'space-between',
             gap: 1,
-            mt: 2,
-            px: 1.25,
+            mt: 0.5,
+          }}
+        >
+          <Typography
+            sx={{
+              ...componentText.cardPrice,
+              fontSize: { xs: 12, md: componentText.cardPrice.fontSize },
+              color: 'primary.main',
+              fontWeight: 700,
+            }}
+          >
+            <Box component="span">{property.price}</Box>
+            <Box component="span" sx={{ display: { xs: 'inline', md: 'none' } }}>
+              {' '}
+              · {property.purpose === 'rent' ? 'Aluguel' : 'Venda'}
+            </Box>
+          </Typography>
+          <Typography
+            sx={{
+              display: { xs: 'block', md: 'none' },
+              color: brand.neutral[400],
+              fontSize: 10,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Há {property.publishedDaysAgo} dias
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: { xs: 'nowrap', md: 'wrap' },
+            justifyContent: 'space-between',
+            gap: { xs: 0.5, md: 1 },
+            mt: { xs: 1, md: 2 },
+            px: { xs: 0, md: 1.25 },
             py: 1,
-            bgcolor: surface.app,
-            border: '1px solid',
+            bgcolor: { xs: 'transparent', md: surface.app },
+            border: { xs: 0, md: '1px solid' },
             borderColor: 'divider',
             borderRadius: `${radius.sm}px`,
           }}
         >
           {[
-            { label: 'visualizações', value: property.views, Icon: VisibilityOutlinedIcon },
-            { label: 'favoritos', value: property.favorites, Icon: FavoriteBorderOutlinedIcon },
-            { label: 'propostas', value: property.proposals, Icon: DescriptionOutlinedIcon },
-          ].map(({ label, value, Icon }) => (
+            {
+              label: 'visualizações',
+              mobileLabel: 'views',
+              value: property.views,
+              Icon: VisibilityOutlinedIcon,
+            },
+            {
+              label: 'favoritos',
+              mobileLabel: 'favs',
+              value: property.favorites,
+              Icon: FavoriteBorderOutlinedIcon,
+            },
+            {
+              label: 'propostas',
+              mobileLabel: 'propostas',
+              value: property.proposals,
+              Icon: DescriptionOutlinedIcon,
+            },
+          ].map(({ label, mobileLabel, value, Icon }) => (
             <Stack
               key={label}
               direction="row"
               alignItems="center"
-              spacing={0.75}
+              spacing={{ xs: 0.5, md: 0.75 }}
               sx={{ color: brand.neutral[600] }}
             >
-              <Icon sx={{ fontSize: iconSize.xs }} />
-              <Typography sx={{ ...componentText.cardMeta }}>
+              <Icon sx={{ fontSize: { xs: 12, md: iconSize.xs } }} />
+              <Typography
+                sx={{
+                  ...componentText.cardMeta,
+                  fontSize: { xs: 10, md: componentText.cardMeta.fontSize },
+                  whiteSpace: 'nowrap',
+                }}
+              >
                 <Box component="span" sx={{ fontWeight: 700 }}>
                   {value}
                 </Box>{' '}
-                {label}
+                <Box component="span" sx={{ display: { xs: 'none', md: 'inline' } }}>
+                  {label}
+                </Box>
+                <Box component="span" sx={{ display: { xs: 'inline', md: 'none' } }}>
+                  {mobileLabel}
+                </Box>
               </Typography>
             </Stack>
           ))}
@@ -138,9 +214,9 @@ export function OwnerPropertyCard({ property }: OwnerPropertyCardProps) {
             display: 'flex',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: { xs: 0.5, sm: 1.5 },
-            mt: 2.5,
-            pt: 2.5,
+            gap: { xs: 1, md: 1.5 },
+            mt: { xs: 0, md: 2.5 },
+            pt: { xs: 0, md: 2.5 },
             borderTop: '1px solid',
             borderColor: 'divider',
           }}
@@ -150,9 +226,15 @@ export function OwnerPropertyCard({ property }: OwnerPropertyCardProps) {
             href={detailHref}
             variant="outlined"
             color="secondary"
-            sx={{ ...actionSx, borderColor: 'divider' }}
+            aria-label="Editar Anúncio"
+            sx={{ ...actionSx, borderColor: 'divider', borderWidth: { xs: 0, md: 1 } }}
           >
-            Editar Anúncio
+            <Box component="span" sx={{ display: { xs: 'none', md: 'inline' } }}>
+              Editar Anúncio
+            </Box>
+            <Box component="span" sx={{ display: { xs: 'inline', md: 'none' } }}>
+              Editar
+            </Box>
           </Button>
           <Button
             color="secondary"
@@ -178,7 +260,7 @@ export function OwnerPropertyCard({ property }: OwnerPropertyCardProps) {
             aria-haspopup="menu"
             aria-expanded={menuAnchor ? true : undefined}
             onClick={(event) => setMenuAnchor(event.currentTarget)}
-            sx={{ color: brand.neutral[500], p: 0.5 }}
+            sx={{ display: { xs: 'none', md: 'inline-flex' }, color: brand.neutral[500], p: 0.5 }}
           >
             <MoreHorizRoundedIcon sx={{ fontSize: iconSize.lg }} />
           </IconButton>

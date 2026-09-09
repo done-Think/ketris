@@ -20,7 +20,11 @@ export function filterOwnerProperties(
       [property.title, property.address, property.code].some((value) =>
         normalizeFilterValue(value).includes(normalizedQuery),
       )
-    const matchesStatus = filters.status === 'all' || property.status === filters.status
+    const matchesStatus =
+      filters.status === 'all' ||
+      (filters.status === 'without-proposals'
+        ? property.proposals === 0
+        : property.status === filters.status)
     const matchesPurpose = filters.purpose === 'all' || property.purpose === filters.purpose
 
     return matchesSearch && matchesStatus && matchesPurpose
