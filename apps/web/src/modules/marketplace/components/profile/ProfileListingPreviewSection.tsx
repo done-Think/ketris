@@ -1,11 +1,15 @@
+'use client'
+
 import { Box, Stack, Typography } from '@mui/material'
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
+import { Link } from '@/i18n/navigation'
 import { PillBadge } from '@shared/components/ui'
 import { iconSize, motion, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { ProfileListingPreviewSectionProps } from '../../types/profile-listings'
+import { buildProfileListingHref } from '../../utils/property-links'
 
 export function ProfileListingPreviewSection({
   accentColor,
@@ -14,6 +18,7 @@ export function ProfileListingPreviewSection({
   listings,
   sideBorderBreakpoint = 'md',
 }: ProfileListingPreviewSectionProps) {
+  const t = useTranslations('marketplace.publicProfile.listings')
   const sideBorderStyles =
     sideBorderBreakpoint === 'lg'
       ? {
@@ -39,7 +44,7 @@ export function ProfileListingPreviewSection({
     >
       <Stack direction="row" alignItems="center" spacing={0.7} sx={{ mb: 1.2 }}>
         <HomeWorkOutlinedIcon sx={{ color: accentColor, fontSize: iconSize.sm }} />
-        <Typography sx={{ fontSize: 12, fontWeight: 900 }}>Imóveis em destaque</Typography>
+        <Typography sx={{ fontSize: 12, fontWeight: 900 }}>{t('featuredTitle')}</Typography>
       </Stack>
 
       <Box
@@ -52,7 +57,7 @@ export function ProfileListingPreviewSection({
         {listings.map((listing) => (
           <Box
             component={Link}
-            href={listing.href}
+            href={buildProfileListingHref(listing.href)}
             key={listing.href}
             sx={{
               display: 'block',
@@ -81,7 +86,7 @@ export function ProfileListingPreviewSection({
               }}
             >
               <Box sx={{ position: 'absolute', top: 8, left: 8 }}>
-                <PillBadge>DESTAQUE</PillBadge>
+                <PillBadge>{t('featured')}</PillBadge>
               </Box>
             </Box>
             <Box sx={{ minWidth: 0, px: 1, py: 0.75 }}>

@@ -1,0 +1,207 @@
+{
+  "metadata": {
+    "pipeline": {
+      "metadataTitle": "Ketris | Pipeline de ventas"
+    },
+    "contacts": {
+      "metadataTitle": "Ketris | Contactos"
+    },
+    "proposals": {
+      "metadataTitle": "Ketris | Propuestas"
+    }
+  },
+  "navigation": {
+    "ariaLabel": "Navegación del CRM",
+    "dashboard": "Dashboard",
+    "pipeline": "Pipeline",
+    "contacts": "Contactos",
+    "properties": "Inmuebles",
+    "proposals": "Propuestas",
+    "defaultUserName": "Equipo Ketris",
+    "defaultUserContext": "CRM inmobiliario",
+    "openNavigation": "Abrir navegación"
+  },
+  "access": {
+    "loadingSession": "Cargando sesión",
+    "restrictedTitle": "Acceso restringido al CRM",
+    "restrictedDescription": "Inicia sesión con una cuenta vinculada a un tenant para ver las oportunidades.",
+    "signIn": "Entrar a Ketris"
+  },
+  "pipeline": {
+    "title": "Pipeline de ventas",
+    "searchPlaceholder": "Buscar oportunidad...",
+    "searchAriaLabel": "Buscar oportunidad",
+    "filterByStage": "Filtrar por etapa",
+    "allStages": "Todas las etapas",
+    "newOpportunity": "Nueva oportunidad",
+    "openOpportunityAriaLabel": "Abrir oportunidad de {name}",
+    "propertyUnavailable": "Inmueble no disponible en el catálogo",
+    "boardAriaLabel": "Pipeline de oportunidades",
+    "loadError": "No fue posible cargar las oportunidades.",
+    "dataLoadError": "No fue posible cargar los datos del pipeline.",
+    "retry": "Intentar de nuevo",
+    "emptyStage": "No hay oportunidades en esta etapa.",
+    "projectedTotal": "Total proyectado",
+    "projectedTotalAriaLabel": "Total proyectado de {stage}",
+    "totalLabels": {
+      "rent": "Alquiler",
+      "sale": "Venta",
+      "uncategorized": "Sin categoría"
+    },
+    "stages": {
+      "prospecting": "Prospección",
+      "qualification": "Calificación",
+      "proposal": "Propuesta",
+      "negotiation": "Negociación",
+      "closed": "Cerrado",
+      "draft": "Prospección",
+      "sent": "Propuesta enviada",
+      "accepted": "Cerrado",
+      "rejected": "Perdido"
+    },
+    "createSuccess": "Oportunidad creada.",
+    "createError": "No se pudo crear la oportunidad."
+  },
+  "contacts": {
+    "title": "Contactos",
+    "searchPlaceholder": "Buscar contacto por nombre, email, teléfono...",
+    "searchAriaLabel": "Buscar contactos",
+    "filterAriaLabel": "Filtrar contactos por tipo",
+    "mobileListAriaLabel": "Lista móvil de contactos",
+    "tableAriaLabel": "Contactos del CRM",
+    "newContact": "Nuevo contacto",
+    "empty": "No se encontraron contactos.",
+    "resultsRange": "Mostrando {first}–{last} de {total}",
+    "selectContact": "Seleccionar {name}",
+    "selectAllVisible": "Seleccionar todos los contactos visibles",
+    "propertyCount": "{count, plural, one {# inmueble} other {# inmuebles}}",
+    "pagination": {
+      "previous": "Anterior",
+      "next": "Siguiente"
+    },
+    "actions": {
+      "editContact": "Editar {name}",
+      "viewInteractions": "Ver interacciones de {name}",
+      "moreOptions": "Más opciones para {name}",
+      "archiveContact": "Archivar {name}"
+    },
+    "types": {
+      "tenant": "Inquilino",
+      "owner": "Propietario",
+      "broker": "Corredor"
+    },
+    "tableColumns": {
+      "name": "Nombre",
+      "type": "Tipo",
+      "phone": "Teléfono",
+      "email": "Email",
+      "properties": "Inmuebles",
+      "lastInteraction": "Última interacción",
+      "actions": "Acciones"
+    },
+    "filters": {
+      "all": "Todos",
+      "owners": "Propietarios",
+      "tenants": "Inquilinos",
+      "brokers": "Corredores"
+    },
+    "contactForm": {
+      "createTitle": "Nuevo contacto",
+      "editTitle": "Editar contacto",
+      "fields": {
+        "name": "Nombre",
+        "email": "Correo electrónico",
+        "phone": "Teléfono",
+        "type": "Tipo",
+        "notes": "Notas"
+      },
+      "types": {
+        "PROPRIETARIO": "Propietario",
+        "LOCATARIO": "Inquilino",
+        "CORRETOR": "Corredor"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "save": "Guardar"
+      },
+      "createSuccess": "Contacto creado.",
+      "updateSuccess": "Contacto actualizado.",
+      "saveError": "No se pudo guardar el contacto."
+    },
+    "archiveDialog": {
+      "title": "¿Archivar contacto?",
+      "description": "El contacto dejará de aparecer en la lista activa, pero seguirá almacenado en el CRM.",
+      "cancel": "Cancelar",
+      "confirm": "Archivar",
+      "success": "Contacto archivado.",
+      "error": "No se pudo archivar el contacto."
+    }
+  },
+  "opportunityDetail": {
+    "editTitle": "Editar oportunidad",
+    "breadcrumbAriaLabel": "Navegación estructural",
+    "pipelineLink": "Pipeline",
+    "contactInterestTitle": "Información de contacto e interés",
+    "archive": "Archivar oportunidad",
+    "archiveTitle": "¿Archivar oportunidad?",
+    "archiveDescription": "La oportunidad dejará de aparecer en el pipeline activo, pero seguirá almacenada en el CRM.",
+    "loadingAriaLabel": "Cargando oportunidad",
+    "createdActivityTitle": "Oportunidad creada",
+    "createdActivityDetail": "Registro incluido en el pipeline.",
+    "updatedActivityTitle": "Oportunidad actualizada",
+    "updatedActivityDetail": "Etapa actual: {stage}.",
+    "loadError": "No fue posible cargar esta oportunidad.",
+    "backToPipeline": "Volver al pipeline",
+    "movedSuccess": "Oportunidad movida a {stage}.",
+    "updateStageError": "No fue posible actualizar la etapa.",
+    "updateSuccess": "Oportunidad actualizada.",
+    "updateError": "No fue posible actualizar la oportunidad.",
+    "archiveSuccess": "Oportunidad archivada.",
+    "archiveError": "No fue posible archivar la oportunidad.",
+    "unknownLocation": "Ubicación no informada",
+    "confirmStageTitle": "Confirmar cambio de etapa",
+    "confirmStageDescription": "¿Mover {name} de {from} a {to}?",
+    "propertyPanel": {
+      "title": "Inmueble asociado",
+      "retry": "Intentar de nuevo",
+      "loadError": "No fue posible cargar el inmueble asociado. Referencia: {id}",
+      "monthlySuffix": "/mes"
+    },
+    "fields": {
+      "name": "Nombre",
+      "email": "Email",
+      "phone": "Teléfono",
+      "proposedValue": "Valor propuesto",
+      "contractTerm": "Plazo del contrato (meses)",
+      "contractTermLabel": "Plazo del contrato",
+      "intendedStart": "Inicio previsto",
+      "guarantee": "Garantía",
+      "specialConditions": "Condiciones especiales",
+      "specialConditionsHelper": "Separe las condiciones con comas.",
+      "notes": "Observaciones",
+      "notInformed": "No informado",
+      "months": "{count, plural, one {# mes} other {# meses}}",
+      "property": "Inmueble",
+      "status": "Estado inicial"
+    },
+    "guarantees": {
+      "NENHUMA": "No informada",
+      "FIADOR": "Fiador",
+      "CAUCAO": "Depósito",
+      "SEGURO_FIANCA": "Seguro de alquiler"
+    },
+    "actions": {
+      "cancel": "Cancelar",
+      "saveChanges": "Guardar cambios",
+      "confirmStageChange": "Confirmar cambio",
+      "createOpportunity": "Crear oportunidad"
+    },
+    "createTitle": "Nueva oportunidad",
+    "statuses": {
+      "RASCUNHO": "Borrador",
+      "ENVIADA": "Enviada"
+    },
+    "noProperties": "No se encontraron inmuebles.",
+    "loadingProperties": "Buscando inmuebles..."
+  }
+}

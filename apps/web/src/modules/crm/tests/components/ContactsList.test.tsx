@@ -169,6 +169,7 @@ describe('ContactsList', () => {
     fireEvent.click(
       within(ricardoRow!).getByRole('button', { name: 'Mais opções para Ricardo Mendes' }),
     )
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Arquivar Ricardo Mendes' }))
     fireEvent.click(screen.getByRole('button', { name: 'Próximo' }))
 
     expect(onNewContact).toHaveBeenCalledOnce()

@@ -71,7 +71,6 @@ export function AuthShell({
   brandDescription,
   children,
   contentMaxWidth = 560,
-  contentPaddingTop = 11.5,
   footer,
   mobileVariant = 'plain',
 }: AuthShellProps) {

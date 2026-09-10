@@ -10,6 +10,7 @@ import {
   Typography,
 } from '@mui/material'
 import DragIndicatorRoundedIcon from '@mui/icons-material/DragIndicatorRounded'
+import { useTranslations } from 'next-intl'
 
 import { alpha, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
 
@@ -34,10 +35,12 @@ export function PublicProfileOrderPanel({
   swapSectionPositions,
   updateSectionOrder,
 }: PublicProfileOrderPanelProps) {
+  const t = useTranslations('marketplace.profileEditor')
+
   return (
     <Box>
       <Typography variant="h5" sx={{ mb: 1.4 }}>
-        Ordem do perfil
+        {t('profileOrder')}
       </Typography>
       <Box sx={editorPanelSx}>
         <Stack spacing={1.3}>
@@ -97,10 +100,12 @@ export function PublicProfileOrderPanel({
                   name="sectionOrder"
                   render={({ fieldState }) => (
                     <FormControl fullWidth error={Boolean(fieldState.error)}>
-                      <InputLabel id={`section-order-${index}`}>Posição {index + 1}</InputLabel>
+                      <InputLabel id={`section-order-${index}`}>
+                        {t('position', { position: index + 1 })}
+                      </InputLabel>
                       <Select
                         labelId={`section-order-${index}`}
-                        label={`Posição ${index + 1}`}
+                        label={t('position', { position: index + 1 })}
                         value={sectionKey}
                         onChange={(event) =>
                           updateSectionOrder(
@@ -153,12 +158,13 @@ export function PublicProfileOrderPanel({
                       >
                         {publicProfileSectionOptions.map((section) => (
                           <MenuItem key={section.key} value={section.key}>
-                            {section.label}
+                            {t(`sections.${section.key}.label`)}
                           </MenuItem>
                         ))}
                       </Select>
                       <FormHelperText>
-                        {fieldState.error?.message ?? option?.description}
+                        {fieldState.error?.message ??
+                          (option ? t(`sections.${option.key}.description`) : undefined)}
                       </FormHelperText>
                     </FormControl>
                   )}

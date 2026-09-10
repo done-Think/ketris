@@ -5,6 +5,7 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import { Box, Chip, IconButton, Stack, Typography } from '@mui/material'
 import type { GridColDef, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid'
 import { DataGrid } from '@mui/x-data-grid'
+import { useTranslations } from 'next-intl'
 
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
@@ -38,12 +39,15 @@ function PropertyIdentityCell({ row }: GridRenderCellParams<DashboardProperty>) 
   )
 }
 
-function PropertyStatusCell({ row }: GridRenderCellParams<DashboardProperty>) {
+function PropertyStatusCell({
+  row,
+  label,
+}: GridRenderCellParams<DashboardProperty> & { label: string }) {
   const status = dashboardPropertyStatusStyles[row.status]
 
   return (
     <Chip
-      label={row.status}
+      label={label}
       size="small"
       sx={{
         height: 30,
@@ -62,29 +66,31 @@ export function PropertiesTable({
   totalCount,
   onPropertySelect,
 }: PropertiesTableProps) {
+  const t = useTranslations('properties.dashboard.table')
+  const filterT = useTranslations('properties.dashboard.filters')
   const columns: GridColDef<DashboardProperty>[] = [
     {
       field: 'title',
-      headerName: 'Imóvel',
+      headerName: t('property'),
       flex: 2.2,
       minWidth: 360,
       sortable: true,
       renderCell: (params) => <PropertyIdentityCell {...params} />,
     },
-    { field: 'type', headerName: 'Tipo', flex: 0.9, minWidth: 130 },
-    { field: 'price', headerName: 'Preço', flex: 1, minWidth: 150 },
+    { field: 'type', headerName: t('type'), flex: 0.9, minWidth: 130 },
+    { field: 'price', headerName: t('price'), flex: 1, minWidth: 150 },
     {
       field: 'status',
-      headerName: 'Status',
+      headerName: t('status'),
       flex: 0.8,
       minWidth: 130,
-      renderCell: (params) => <PropertyStatusCell {...params} />,
+      renderCell: (params) => <PropertyStatusCell {...params} label={filterT(params.row.status)} />,
     },
-    { field: 'broker', headerName: 'Corretor', flex: 1, minWidth: 160 },
-    { field: 'updatedAt', headerName: 'Atualizado', flex: 0.9, minWidth: 140 },
+    { field: 'broker', headerName: t('broker'), flex: 1, minWidth: 160 },
+    { field: 'updatedAt', headerName: t('updated'), flex: 0.9, minWidth: 140 },
     {
       field: 'actions',
-      headerName: 'Ações',
+      headerName: t('actions'),
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
@@ -103,7 +109,7 @@ export function PropertiesTable({
           }}
         >
           <IconButton
-            aria-label={`Editar ${row.title}`}
+            aria-label={t('editAriaLabel', { title: row.title })}
             onClick={(event) => event.stopPropagation()}
             sx={{
               width: 36,
@@ -121,7 +127,7 @@ export function PropertiesTable({
             <EditOutlinedIcon sx={{ fontSize: iconSize.md }} />
           </IconButton>
           <IconButton
-            aria-label={`Visualizar ${row.title}`}
+            aria-label={t('viewAriaLabel', { title: row.title })}
             onClick={(event) => {
               event.stopPropagation()
               onPropertySelect(row.id)
@@ -166,11 +172,12 @@ export function PropertiesTable({
         pageSizeOptions={[5, 10, 25]}
         initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
         localeText={{
-          noRowsLabel: 'Nenhum imóvel encontrado',
-          footerTotalRows: 'Total de linhas:',
+          noRowsLabel: t('noRows'),
+          footerTotalRows: t('totalRows'),
           MuiTablePagination: {
-            labelRowsPerPage: 'Linhas por página',
-            labelDisplayedRows: ({ from, to }) => `${from}-${to} de ${totalCount}`,
+            labelRowsPerPage: t('rowsPerPage'),
+            labelDisplayedRows: ({ from, to }) =>
+              t('displayedRows', { from, to, count: totalCount }),
           },
         }}
         onRowClick={(params: GridRowParams<DashboardProperty>) => onPropertySelect(params.row.id)}

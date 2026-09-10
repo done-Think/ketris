@@ -1,6 +1,6 @@
 import type { ViewMode } from '../types/search'
 
-export type SearchResultsViewModeScope = 'alugar' | 'comprar' | 'corretores' | 'imobiliarias'
+export type SearchResultsViewModeScope = 'rent' | 'buy' | 'brokers' | 'agencies'
 
 export const defaultSearchResultsViewMode: ViewMode = 'grid'
 export const searchResultsViewModes = ['grid', 'list'] as const satisfies readonly ViewMode[]

@@ -1,13 +1,13 @@
-export type Finalidade = 'ALUGUEL' | 'VENDA'
+export type PropertyPurpose = 'ALUGUEL' | 'VENDA'
 
 export interface PropertyAddress {
-  logradouro: string
-  numero: string
-  complemento: string | null
-  bairro: string
-  cidade: string
-  estado: string
-  cep: string
+  street: string
+  number: string
+  complement: string | null
+  neighborhood: string
+  city: string
+  state: string
+  zipCode: string
   latitude: number | null
   longitude: number | null
 }
@@ -15,33 +15,37 @@ export interface PropertyAddress {
 export interface PropertyMedia {
   id: string
   url: string
-  tipo: string
-  ordem: number
+  type: string
+  order: number
 }
 
 export interface PublishedPropertySummary {
   id: string
-  titulo: string
-  finalidade: Finalidade
-  tipo: string
-  valor: number
-  condominio: number | null
-  iptu: number | null
-  quartos: number | null
-  banheiros: number | null
-  vagas: number | null
-  areaM2: number | null
-  cidade: string | null
-  bairro: string | null
-  capaUrl: string | null
-  publicadoEm: Date | null
+  title: string
+  purpose: PropertyPurpose
+  propertyType: string
+  price: number
+  condoFee: number | null
+  propertyTax: number | null
+  bedrooms: number | null
+  bathrooms: number | null
+  parkingSpots: number | null
+  area: number | null
+  city: string | null
+  neighborhood: string | null
+  latitude: number | null
+  longitude: number | null
+  brokerName: string | null
+  brokerAvatarUrl: string | null
+  coverUrl: string | null
+  publishedAt: Date | null
 }
 
 export interface PublishedPropertyDetail extends PublishedPropertySummary {
   tenantId: string
-  descricao: string | null
-  endereco: PropertyAddress | null
-  midias: PropertyMedia[]
+  description: string | null
+  address: PropertyAddress | null
+  media: PropertyMedia[]
 }
 
 export type PublicPropertyDetail = Omit<PublishedPropertyDetail, 'tenantId'>
@@ -49,22 +53,26 @@ export type PublicPropertyDetail = Omit<PublishedPropertyDetail, 'tenantId'>
 export function toPublicPropertyDetail(property: PublishedPropertyDetail): PublicPropertyDetail {
   return {
     id: property.id,
-    titulo: property.titulo,
-    finalidade: property.finalidade,
-    tipo: property.tipo,
-    valor: property.valor,
-    condominio: property.condominio,
-    iptu: property.iptu,
-    quartos: property.quartos,
-    banheiros: property.banheiros,
-    vagas: property.vagas,
-    areaM2: property.areaM2,
-    cidade: property.cidade,
-    bairro: property.bairro,
-    capaUrl: property.capaUrl,
-    publicadoEm: property.publicadoEm,
-    descricao: property.descricao,
-    endereco: property.endereco,
-    midias: property.midias,
+    title: property.title,
+    purpose: property.purpose,
+    propertyType: property.propertyType,
+    price: property.price,
+    condoFee: property.condoFee,
+    propertyTax: property.propertyTax,
+    bedrooms: property.bedrooms,
+    bathrooms: property.bathrooms,
+    parkingSpots: property.parkingSpots,
+    area: property.area,
+    city: property.city,
+    neighborhood: property.neighborhood,
+    latitude: property.latitude,
+    longitude: property.longitude,
+    brokerName: property.brokerName,
+    brokerAvatarUrl: property.brokerAvatarUrl,
+    coverUrl: property.coverUrl,
+    publishedAt: property.publishedAt,
+    description: property.description,
+    address: property.address,
+    media: property.media,
   }
 }

@@ -1,4 +1,5 @@
 import { Avatar, Box, Chip, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
@@ -6,6 +7,8 @@ import { dashboardPropertyActivityToneStyles } from '../config/dashboard-propert
 import type { PropertyDetailSidebarProps } from '../types/dashboard-property'
 
 export function PropertyDetailSidebar({ property }: PropertyDetailSidebarProps) {
+  const t = useTranslations('properties.detail')
+
   return (
     <Stack sx={{ width: { xs: '100%', lg: 430 }, flexShrink: 0 }} spacing={2.8}>
       <Box
@@ -19,7 +22,9 @@ export function PropertyDetailSidebar({ property }: PropertyDetailSidebarProps) 
           py: 2.8,
         }}
       >
-        <Typography sx={{ fontSize: 22, fontWeight: 900, mb: 2.4 }}>Participantes</Typography>
+        <Typography sx={{ fontSize: 22, fontWeight: 900, mb: 2.4 }}>
+          {t('participantsTitle')}
+        </Typography>
         <Stack spacing={2}>
           {property.participants.map((participant) => (
             <Stack key={participant.name} direction="row" alignItems="center" spacing={1.5}>
@@ -66,7 +71,7 @@ export function PropertyDetailSidebar({ property }: PropertyDetailSidebarProps) 
         }}
       >
         <Typography sx={{ fontSize: 22, fontWeight: 900, mb: 2.5 }}>
-          Histórico de Atividade
+          {t('activityTitle')}
         </Typography>
         <Stack spacing={2.4}>
           {property.activityHistory.map((activity) => (

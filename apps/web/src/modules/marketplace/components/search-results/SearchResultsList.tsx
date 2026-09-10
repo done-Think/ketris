@@ -1,6 +1,7 @@
 'use client'
 
-import { Box, Typography } from '@mui/material'
+import { Box, Skeleton, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { radius, surface } from '@shared/theme/tokens'
 
@@ -9,6 +10,7 @@ import { SearchPropertyCard } from '../SearchPropertyCard'
 
 type SearchResultsListProps = {
   properties: SearchResultProperty[]
+  isLoading?: boolean
   selectedPropertyId: string
   setSelectedPropertyId: (propertyId: string) => void
   viewMode: ViewMode
@@ -16,10 +18,13 @@ type SearchResultsListProps = {
 
 export function SearchResultsList({
   properties,
+  isLoading = false,
   selectedPropertyId,
   setSelectedPropertyId,
   viewMode,
 }: SearchResultsListProps) {
+  const t = useTranslations('marketplace.searchResults.empty')
+
   return (
     <Box
       sx={{
@@ -29,7 +34,11 @@ export function SearchResultsList({
         gap: { xs: 2, xl: 2.5 },
       }}
     >
-      {properties.length ? (
+      {isLoading ? (
+        [0, 1, 2, 3].map((index) => (
+          <Skeleton key={index} variant="rounded" height={320} sx={{ borderRadius: 1.5 }} />
+        ))
+      ) : properties.length ? (
         properties.map((property) => (
           <SearchPropertyCard
             key={property.id}
@@ -52,9 +61,9 @@ export function SearchResultsList({
             textAlign: 'center',
           }}
         >
-          <Typography sx={{ fontWeight: 900, mb: 0.5 }}>Nenhum imóvel encontrado</Typography>
+          <Typography sx={{ fontWeight: 900, mb: 0.5 }}>{t('title')}</Typography>
           <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 700 }}>
-            Ajuste os filtros para ver mais opções.
+            {t('description')}
           </Typography>
         </Box>
       )}

@@ -8,7 +8,11 @@ import { theme } from '@shared/theme/theme'
 
 import { PipelineBoard } from '../../components/PipelineBoard'
 import { opportunityStages } from '../../config/opportunity-stages'
-import { useCrmProperties, useOpportunities } from '../../hooks/use-opportunities'
+import {
+  useCreateOpportunity,
+  useCrmProperties,
+  useOpportunities,
+} from '../../hooks/use-opportunities'
 import type { Opportunity, OpportunityStatus } from '../../types/opportunity'
 import type { PublicPropertySummary } from '../../types/property'
 import { formatCurrency, formatMonthlyCurrency } from '../../utils/formatters'
@@ -24,6 +28,7 @@ vi.mock('../../hooks/use-opportunities', async (importOriginal) => {
     ...original,
     useCrmProperties: vi.fn(),
     useOpportunities: vi.fn(),
+    useCreateOpportunity: vi.fn(),
   }
 })
 
@@ -35,18 +40,18 @@ function makeOpportunity(
   return {
     id: `opportunity-${index}`,
     tenantId: 'tenant-1',
-    imovelId: `property-${index}`,
-    interessadoNome: `Contato ${index}`,
-    interessadoEmail: `contact${index}@example.com`,
-    interessadoTelefone: `(11) 90000-000${index}`,
-    valorProposto: index * 1000,
-    prazoContratoMeses: null,
-    inicioPretendido: null,
-    garantiaContratual: 'NENHUMA',
-    condicoesEspeciais: [],
-    observacoes: null,
+    propertyId: `property-${index}`,
+    leadName: `Contato ${index}`,
+    leadEmail: `contact${index}@example.com`,
+    leadPhone: `(11) 90000-000${index}`,
+    proposedValue: index * 1000,
+    contractTermMonths: null,
+    desiredStartDate: null,
+    guaranteeType: 'NENHUMA',
+    specialConditions: [],
+    notes: null,
     status,
-    arquivadaEm: null,
+    archivedAt: null,
     createdAt: '2026-08-10T10:00:00.000Z',
     updatedAt: '2026-08-12T10:00:00.000Z',
     ...overrides,
@@ -56,20 +61,24 @@ function makeOpportunity(
 function makeProperty(index: number, overrides: Partial<PublicPropertySummary> = {}) {
   return {
     id: `property-${index}`,
-    titulo: `Imovel ${index}`,
-    finalidade: 'ALUGUEL' as const,
-    tipo: 'Apartamento',
-    valor: index * 1000,
-    condominio: null,
-    iptu: null,
-    quartos: 2,
-    banheiros: 1,
-    vagas: 1,
-    areaM2: 70,
-    cidade: 'Sao Paulo',
-    bairro: `Bairro ${index}`,
-    capaUrl: null,
-    publicadoEm: '2026-08-01T10:00:00.000Z',
+    title: `Imovel ${index}`,
+    purpose: 'ALUGUEL' as const,
+    propertyType: 'Apartamento',
+    price: index * 1000,
+    condoFee: null,
+    propertyTax: null,
+    bedrooms: 2,
+    bathrooms: 1,
+    parkingSpots: 1,
+    area: 70,
+    city: 'Sao Paulo',
+    neighborhood: `Bairro ${index}`,
+    latitude: null,
+    longitude: null,
+    brokerName: null,
+    brokerAvatarUrl: null,
+    coverUrl: null,
+    publishedAt: '2026-08-01T10:00:00.000Z',
     ...overrides,
   } satisfies PublicPropertySummary
 }
@@ -92,6 +101,14 @@ function mockPropertiesQuery(overrides: Record<string, unknown> = {}) {
     refetch: vi.fn(),
     ...overrides,
   } as unknown as ReturnType<typeof useCrmProperties>)
+}
+
+function mockCreateOpportunity(overrides: Record<string, unknown> = {}) {
+  vi.mocked(useCreateOpportunity).mockReturnValue({
+    mutateAsync: vi.fn(),
+    isPending: false,
+    ...overrides,
+  } as unknown as ReturnType<typeof useCreateOpportunity>)
 }
 
 function renderPipeline(initialStatus?: OpportunityStatus) {
@@ -125,6 +142,7 @@ describe('PipelineBoard', () => {
     } as unknown as ReturnType<typeof useSession>)
     mockOpportunitiesQuery()
     mockPropertiesQuery()
+    mockCreateOpportunity()
   })
 
   it('renders the five API stages with their counts, totals, and detail links', () => {
@@ -156,12 +174,12 @@ describe('PipelineBoard', () => {
   it('separates rental and sale totals instead of aggregating incompatible values', () => {
     mockOpportunitiesQuery({
       data: [
-        makeOpportunity(1, 'RASCUNHO', { valorProposto: 3000 }),
-        makeOpportunity(2, 'RASCUNHO', { valorProposto: 500000 }),
+        makeOpportunity(1, 'RASCUNHO', { proposedValue: 3000 }),
+        makeOpportunity(2, 'RASCUNHO', { proposedValue: 500000 }),
       ],
     })
     mockPropertiesQuery({
-      data: [makeProperty(1, { finalidade: 'ALUGUEL' }), makeProperty(2, { finalidade: 'VENDA' })],
+      data: [makeProperty(1, { purpose: 'ALUGUEL' }), makeProperty(2, { purpose: 'VENDA' })],
     })
 
     renderPipeline()
@@ -187,7 +205,7 @@ describe('PipelineBoard', () => {
   it('renders an empty state in every stage', () => {
     renderPipeline()
 
-    expect(screen.getAllByText('Nenhuma oportunidade nesta etapa.')).toHaveLength(5)
+    expect(screen.getAllByText('Sem oportunidades nesta etapa.')).toHaveLength(5)
     expect(screen.getAllByText(matchesText(formatCurrency(0)))).toHaveLength(5)
   })
 
@@ -207,14 +225,14 @@ describe('PipelineBoard', () => {
     const user = userEvent.setup()
     mockOpportunitiesQuery({
       data: [
-        makeOpportunity(1, 'RASCUNHO', { interessadoNome: 'Carlos Eduardo' }),
-        makeOpportunity(2, 'ENVIADA', { interessadoNome: 'Leticia Ramos' }),
+        makeOpportunity(1, 'RASCUNHO', { leadName: 'Carlos Eduardo' }),
+        makeOpportunity(2, 'ENVIADA', { leadName: 'Leticia Ramos' }),
       ],
     })
     mockPropertiesQuery({
       data: [
-        makeProperty(1, { titulo: 'Apartamento Jardins' }),
-        makeProperty(2, { titulo: 'Casa Pinheiros' }),
+        makeProperty(1, { title: 'Apartamento Jardins' }),
+        makeProperty(2, { title: 'Casa Pinheiros' }),
       ],
     })
     renderPipeline()
@@ -254,9 +272,14 @@ describe('PipelineBoard', () => {
     expect(screen.queryByText('Contato 1')).not.toBeInTheDocument()
   })
 
-  it('keeps creation unavailable until a tenant-scoped endpoint exists', () => {
+  it('opens the create opportunity dialog from the toolbar button', async () => {
+    const user = userEvent.setup()
     renderPipeline()
 
-    expect(screen.getByRole('button', { name: 'Nova Oportunidade' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Nova Oportunidade' })).toBeEnabled()
+
+    await user.click(screen.getByRole('button', { name: 'Nova Oportunidade' }))
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 })

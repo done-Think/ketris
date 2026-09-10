@@ -7,7 +7,7 @@ export const dashboardProposals: DashboardProposal[] = [
     property: 'Cobertura Itaim Bibi',
     value: 'R$ 4.320.000',
     ownerExpectation: 'Pede R$ 4.500.000',
-    status: 'Em análise',
+    status: 'underReview',
   },
   {
     id: 'proposal-002',
@@ -15,7 +15,7 @@ export const dashboardProposals: DashboardProposal[] = [
     property: 'Casa Alto da Boa Vista',
     value: 'R$ 3.650.000',
     ownerExpectation: 'Pede R$ 3.800.000',
-    status: 'Contraproposta',
+    status: 'counteroffer',
   },
   {
     id: 'proposal-003',
@@ -23,6 +23,6 @@ export const dashboardProposals: DashboardProposal[] = [
     property: 'Apartamento Alameda Jardins',
     value: 'R$ 6.500/mês',
     ownerExpectation: 'Valor cheio',
-    status: 'Aprovada',
+    status: 'approved',
   },
 ]

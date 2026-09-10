@@ -1,4 +1,5 @@
 import { Box, Chip, Stack, Typography } from '@mui/material'
+import { getTranslations } from 'next-intl/server'
 
 import { alpha, brand, motion, radius, shadows, surface } from '@shared/theme/tokens'
 
@@ -6,21 +7,23 @@ import { dashboardProposals } from '../data/proposals'
 import type { ProposalStatus } from '../types/proposal'
 
 const proposalStatusStyles: Record<ProposalStatus, { bgcolor: string; color: string }> = {
-  'Em análise': { bgcolor: alpha.graphite[6], color: brand.graphite[500] },
-  Contraproposta: { bgcolor: alpha.magenta[6], color: brand.magenta[700] },
-  Aprovada: { bgcolor: alpha.magenta[10], color: brand.magenta[700] },
+  underReview: { bgcolor: alpha.graphite[6], color: brand.graphite[500] },
+  counteroffer: { bgcolor: alpha.magenta[6], color: brand.magenta[700] },
+  approved: { bgcolor: alpha.magenta[10], color: brand.magenta[700] },
 }
 
-export function ProposalsDashboardPage() {
+export async function ProposalsDashboardPage() {
+  const t = await getTranslations('dashboard.proposals')
+
   return (
     <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
       <Stack spacing={2.4}>
         <Box>
           <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 40 }, fontWeight: 900 }}>
-            Propostas
+            {t('title')}
           </Typography>
           <Typography sx={{ color: 'text.secondary', fontSize: { xs: 15, md: 17 } }}>
-            Negociações em andamento e valores de referência.
+            {t('subtitle')}
           </Typography>
         </Box>
 
@@ -60,7 +63,7 @@ export function ProposalsDashboardPage() {
                   {proposal.ownerExpectation}
                 </Typography>
                 <Chip
-                  label={proposal.status}
+                  label={t(`statuses.${proposal.status}`)}
                   sx={{
                     justifySelf: { md: 'end' },
                     width: 'fit-content',

@@ -1,13 +1,14 @@
 import type { Dispatch, FormEventHandler, ReactNode, Ref, SetStateAction } from 'react'
 import type { z } from 'zod'
 
+import type { LocalizedHref } from '@shared/types/localized-href'
+import type { PropertyCardData } from '@shared/types'
 import type { searchOptions } from '../config/search-filters'
 import type {
   marketplaceSearchFormSchema,
   searchResultsFiltersDialogFormSchema,
   searchResultsFormSchema,
 } from '../schemas/marketplace-search-schema'
-import type { MarketplacePropertyDetail } from './property-detail'
 
 export type SearchFilterKey = keyof typeof searchOptions
 
@@ -15,8 +16,16 @@ export type TextSearchFilterKey = Exclude<SearchFilterKey, 'priceRange'>
 
 export type SearchResultPurpose = 'alugar' | 'comprar'
 
-export type SearchResultProperty = MarketplacePropertyDetail & {
+export type SearchResultPurposeParam = 'rent' | 'buy'
+
+export type SearchResultProperty = PropertyCardData & {
+  id: string
   purpose: SearchResultPurpose
+  // Sem coordenadas no contrato público hoje — ver utils/property-summary-adapter.ts.
+  mapCenter?: {
+    latitude: number
+    longitude: number
+  }
 }
 
 export type MarketplaceSearchFormValues = z.infer<typeof marketplaceSearchFormSchema>
@@ -83,9 +92,17 @@ export type SearchResultsFilterDialogProps = SearchResultsFiltersDialogFormValue
 }
 
 export type SearchResultsMapProps = {
-  properties: MarketplacePropertyDetail[]
+  properties: SearchResultProperty[]
   selectedPropertyId: string
   onSelectProperty: (propertyId: string) => void
+  searchQuery?: string
+}
+
+export type SearchResultsMapPanelProps = {
+  properties: SearchResultProperty[]
+  selectedPropertyId: string
+  setSelectedPropertyId: (propertyId: string) => void
+  searchQuery?: string
 }
 
 export type SearchResultsToolbarProps = {
@@ -120,6 +137,7 @@ export type SearchMenuProps = {
   selectedSearch: SelectedSearch
   searchDraft: SearchDraft
   filterSearchOptions: (key: TextSearchFilterKey) => readonly string[]
+  getSearchOptionLabel: (key: TextSearchFilterKey, value: string) => string
   selectSearchValue: (key: SearchFilterKey, value: string) => void
   setSearchDraft: Dispatch<SetStateAction<SearchDraft>>
 }
@@ -150,15 +168,16 @@ export type DesktopSearchBarProps = SearchMenuProps &
   PriceRangeMenuProps & {
     priceRangeLabel: string
     activeSearchMenu: SearchFilterKey | null
-    searchHref: string
+    searchHref: LocalizedHref
     desktopSearchRef: Ref<HTMLDivElement>
+    getSearchOptionLabel: (key: TextSearchFilterKey, value: string) => string
     openSearchMenu: (key: SearchFilterKey) => void
   }
 
 export type MobileSearchBoxProps = SearchMenuProps & {
   activeSearchMenu: SearchFilterKey | null
   mobileSearchRef: Ref<HTMLDivElement>
-  searchHref: string
+  searchHref: LocalizedHref
   openSearchMenu: (key: SearchFilterKey) => void
 }
 

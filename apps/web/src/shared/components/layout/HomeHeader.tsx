@@ -15,12 +15,12 @@ import {
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
-import Link from 'next/link'
+import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 
+import { Link } from '@/i18n/navigation'
 import ketrisLogoTransparent from '@shared/assets/ketris-logo-transparent.png'
 import { AppLogo } from '@shared/components/ui'
-import type { HomeHeaderProps } from '@shared/types'
-import { publicMarketplaceText } from '@shared/i18n/pt-br'
 import {
   alpha,
   componentText,
@@ -31,16 +31,22 @@ import {
   surface,
   zIndex,
 } from '@shared/theme/tokens'
+import type { HomeHeaderProps } from '@shared/types/home-header'
+import { getInitials } from '@shared/utils/get-initials'
+import { LanguageSelector } from './LanguageSelector'
 
 export function HomeHeader({
   navigationItems,
   profileButtonRef,
   userProfile,
   onToggleProfile,
+  isSessionLoading = false,
 }: HomeHeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const closeMobileMenu = () => setIsMobileMenuOpen(false)
-  const headerText = publicMarketplaceText.header
+  const t = useTranslations('marketplace.header')
+  const { status } = useSession()
+  const announcePropertyHref = status === 'authenticated' ? '/dashboard/properties' : '/login'
 
   return (
     <Box
@@ -118,7 +124,7 @@ export function HomeHeader({
           <Stack direction="row" alignItems="center" spacing={1} sx={{ justifySelf: 'end' }}>
             <Button
               component={Link}
-              href="/login"
+              href={announcePropertyHref}
               variant="outlined"
               color="secondary"
               size="small"
@@ -139,20 +145,16 @@ export function HomeHeader({
                 },
               }}
             >
-              {headerText.announceProperty}
+              {t('announceProperty')}
             </Button>
-            <IconButton
-              aria-label={headerText.notifications}
-              size="small"
-              sx={{ width: 42, height: 42 }}
-            >
+            <IconButton aria-label={t('notifications')} size="small" sx={{ width: 42, height: 42 }}>
               <NotificationsNoneOutlinedIcon sx={{ fontSize: iconSize.xl }} />
             </IconButton>
             {userProfile && profileButtonRef && onToggleProfile ? (
               <Box
                 component="button"
                 type="button"
-                aria-label={headerText.openProfile}
+                aria-label={t('openProfile')}
                 aria-haspopup="dialog"
                 ref={profileButtonRef}
                 onClick={onToggleProfile}
@@ -179,11 +181,17 @@ export function HomeHeader({
                   alt={userProfile.name}
                   src={userProfile.avatar}
                   sx={{ width: 48, height: 48 }}
-                />
+                >
+                  {!userProfile.avatar ? getInitials(userProfile.name) : null}
+                </Avatar>
               </Box>
-            ) : null}
+            ) : isSessionLoading ? (
+              <Box sx={{ width: 48, height: 42 }} />
+            ) : (
+              <LanguageSelector variant="header" />
+            )}
             <IconButton
-              aria-label={headerText.openMenu}
+              aria-label={t('openMenu')}
               aria-controls="home-mobile-menu"
               aria-expanded={isMobileMenuOpen ? 'true' : undefined}
               onClick={() => setIsMobileMenuOpen(true)}
@@ -206,10 +214,12 @@ export function HomeHeader({
         id="home-mobile-menu"
         open={isMobileMenuOpen}
         onClose={closeMobileMenu}
-        PaperProps={{
-          sx: {
-            width: 'min(82vw, 320px)',
-            bgcolor: surface.paper,
+        slotProps={{
+          paper: {
+            sx: {
+              width: 'min(82vw, 320px)',
+              bgcolor: surface.paper,
+            },
           },
         }}
       >
@@ -221,14 +231,14 @@ export function HomeHeader({
               width={104}
               sx={{ flexShrink: 0 }}
             />
-            <IconButton aria-label={headerText.closeMenu} onClick={closeMobileMenu} size="small">
+            <IconButton aria-label={t('closeMenu')} onClick={closeMobileMenu} size="small">
               <CloseRoundedIcon sx={{ fontSize: iconSize.xl }} />
             </IconButton>
           </Stack>
 
           <Divider />
 
-          <Stack component="nav" spacing={0.5} aria-label={headerText.mainMenu}>
+          <Stack component="nav" spacing={0.5} aria-label={t('mainMenu')}>
             {navigationItems.map((item) => (
               <MuiLink
                 key={item.label}
@@ -261,7 +271,7 @@ export function HomeHeader({
 
           <Button
             component={Link}
-            href="/login"
+            href={announcePropertyHref}
             variant="contained"
             color="primary"
             onClick={closeMobileMenu}
@@ -272,7 +282,7 @@ export function HomeHeader({
               ...componentText.headerCta,
             }}
           >
-            {headerText.announceProperty}
+            {t('announceProperty')}
           </Button>
         </Stack>
       </Drawer>

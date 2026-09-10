@@ -5,17 +5,16 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Button, Stack, Typography } from '@mui/material'
 import { getSession, signIn, signOut } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
+import { useRouter } from '@/i18n/navigation'
 import { RhfTextField } from '@shared/components/form'
 import { ActionTextLink } from '@shared/components/ui'
 
 import { signInSchema, type SignInFormValues } from '../schemas/sign-in-schema'
 
-const GENERIC_ERROR = 'Não foi possível entrar. Confira o e-mail e a senha.'
-const FORBIDDEN_ERROR = 'Acesso restrito a administradores.'
-
 export function SignInForm() {
+  const t = useTranslations('auth.backoffice')
   const router = useRouter()
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -38,7 +37,7 @@ export function SignInForm() {
     })
 
     if (!result || result.error) {
-      setFormError(GENERIC_ERROR)
+      setFormError(t('signInGenericError'))
       return
     }
 
@@ -46,7 +45,7 @@ export function SignInForm() {
 
     if (session?.papel !== 'ADMIN') {
       await signOut({ redirect: false })
-      setFormError(FORBIDDEN_ERROR)
+      setFormError(t('signInForbiddenError'))
       return
     }
 
@@ -59,7 +58,7 @@ export function SignInForm() {
       <RhfTextField
         control={control}
         name="email"
-        label="E-mail"
+        label={t('fields.email')}
         type="email"
         autoComplete="username"
         fullWidth
@@ -68,7 +67,7 @@ export function SignInForm() {
       <RhfTextField
         control={control}
         name="password"
-        label="Senha"
+        label={t('fields.password')}
         type="password"
         autoComplete="current-password"
         fullWidth
@@ -77,19 +76,17 @@ export function SignInForm() {
       {formError ? <Alert severity="error">{formError}</Alert> : null}
 
       <Button type="submit" variant="contained" size="large" disabled={isSubmitting} fullWidth>
-        Entrar
+        {t('signInSubmit')}
       </Button>
 
       <Typography variant="body2" color="text.secondary" textAlign="center">
-        Área restrita à administração do Ketris.
+        {t('restrictedArea')}
       </Typography>
 
       <Stack direction="row" justifyContent="center">
         <Typography variant="body2" color="text.secondary">
-          Já é administrador?{' '}
-          <ActionTextLink href="/backoffice/admins/new">
-            Cadastrar novo administrador
-          </ActionTextLink>
+          {t('alreadyAdmin')}{' '}
+          <ActionTextLink href="/backoffice/admins/new">{t('registerNewAdmin')}</ActionTextLink>
         </Typography>
       </Stack>
     </Stack>

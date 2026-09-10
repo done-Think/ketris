@@ -1,5 +1,6 @@
 import { Box, Stack, Typography } from '@mui/material'
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
+import { useTranslations } from 'next-intl'
 
 import { brand, iconSize, motion, radius, surface } from '@shared/theme/tokens'
 
@@ -10,9 +11,11 @@ export function CreatePropertyStepsNav({
   activeStepIndex,
   onStepSelect,
 }: CreatePropertyStepsNavProps) {
+  const t = useTranslations('properties.create.steps')
+
   return (
     <Box
-      aria-label="Etapas do cadastro"
+      aria-label={t('ariaLabel')}
       sx={{
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', md: 'repeat(6, minmax(0, 1fr))' },
@@ -80,7 +83,7 @@ export function CreatePropertyStepsNav({
               {completed ? <CheckRoundedIcon sx={{ fontSize: iconSize.xs }} /> : index + 1}
             </Box>
             <Typography noWrap sx={{ fontSize: 13, fontWeight: active ? 900 : 700 }}>
-              {step.label}
+              {t(step.key)}
             </Typography>
           </Stack>
         )

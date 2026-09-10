@@ -1,6 +1,7 @@
 import { Box, Button, Stack, Typography } from '@mui/material'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
+import { useTranslations } from 'next-intl'
 
 import { brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
@@ -11,6 +12,8 @@ export function PropertiesDashboardHeader({
   onSearchQueryChange,
   onCreateProperty,
 }: PropertiesDashboardHeaderProps) {
+  const t = useTranslations('properties.dashboard')
+
   return (
     <Stack
       direction={{ xs: 'column', md: 'row' }}
@@ -21,10 +24,10 @@ export function PropertiesDashboardHeader({
     >
       <Box>
         <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 40 }, fontWeight: 900 }}>
-          Meus Imóveis
+          {t('title')}
         </Typography>
         <Typography sx={{ color: 'text.secondary', fontSize: { xs: 15, md: 17 } }}>
-          Gerencie seu portfólio de imóveis
+          {t('subtitle')}
         </Typography>
       </Box>
 
@@ -49,8 +52,8 @@ export function PropertiesDashboardHeader({
           />
           <Box
             component="input"
-            placeholder="Buscar imóveis..."
-            aria-label="Buscar imóveis"
+            placeholder={t('searchPlaceholder')}
+            aria-label={t('searchAriaLabel')}
             value={searchQuery}
             onChange={(event) => onSearchQueryChange(event.target.value)}
             sx={{
@@ -84,7 +87,7 @@ export function PropertiesDashboardHeader({
             whiteSpace: 'nowrap',
           }}
         >
-          Novo Imóvel
+          {t('create')}
         </Button>
       </Stack>
     </Stack>

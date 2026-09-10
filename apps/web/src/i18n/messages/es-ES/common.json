@@ -1,0 +1,33 @@
+{
+  "metadata": {
+    "title": "Ketris",
+    "description": "Plataforma que conecta propietarios, corredores, inmobiliarias, constructoras e inquilinos en una única infraestructura tecnológica."
+  },
+  "app": {
+    "name": "Ketris"
+  },
+  "actions": {
+    "backHome": "Volver al inicio"
+  },
+  "errors": {
+    "backHome": "Volver al inicio",
+    "notFound": "Página no encontrada.",
+    "unexpectedTitle": "Algo salió mal.",
+    "unexpectedDescription": "Nuestro equipo fue notificado. Inténtalo nuevamente en unos instantes."
+  },
+  "appShell": {
+    "ariaLabel": "Navegación principal",
+    "openNavigation": "Abrir navegación",
+    "defaultUserName": "Equipo Ketris",
+    "defaultUserContext": "Panel administrativo",
+    "backToMarketplace": "Volver al marketplace",
+    "dashboard": "Dashboard",
+    "pipeline": "Pipeline",
+    "contacts": "Contactos",
+    "properties": "Mis inmuebles",
+    "publicProfile": "Perfil público",
+    "agenda": "Agenda",
+    "proposals": "Propuestas",
+    "finance": "Finanzas"
+  }
+}

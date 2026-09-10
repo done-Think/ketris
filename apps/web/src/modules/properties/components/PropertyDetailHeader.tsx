@@ -1,6 +1,7 @@
 import { Box, Button, Chip, Stack, Typography } from '@mui/material'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
+import { useTranslations } from 'next-intl'
 
 import { radius, surface } from '@shared/theme/tokens'
 
@@ -8,6 +9,8 @@ import { dashboardPropertyStatusStyles } from '../config/dashboard-property-ui'
 import type { PropertyDetailHeaderProps } from '../types/dashboard-property'
 
 export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
+  const t = useTranslations('properties.detail')
+  const statusT = useTranslations('properties.dashboard.filters')
   const status = dashboardPropertyStatusStyles[property.status]
 
   return (
@@ -24,7 +27,7 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
             {property.title}
           </Typography>
           <Chip
-            label={property.status}
+            label={statusT(property.status)}
             sx={{
               height: 32,
               borderRadius: `${radius.full}px`,
@@ -54,7 +57,7 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
             fontWeight: 900,
           }}
         >
-          Editar
+          {t('edit')}
         </Button>
         <Button
           variant="contained"
@@ -67,7 +70,7 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
             fontWeight: 900,
           }}
         >
-          Despublicar
+          {t('unpublish')}
         </Button>
       </Stack>
     </Stack>

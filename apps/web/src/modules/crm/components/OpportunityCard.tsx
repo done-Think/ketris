@@ -2,8 +2,9 @@
 
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
 import { Avatar, Box, Card, Stack, Typography } from '@mui/material'
-import NextLink from 'next/link'
+import { useTranslations } from 'next-intl'
 
+import { Link } from '@/i18n/navigation'
 import { motion, radius, shadows } from '@shared/theme/tokens'
 
 import { opportunityStageByStatus } from '../config/opportunity-stages'
@@ -16,10 +17,13 @@ import {
   getInitials,
 } from '../utils/formatters'
 
-function getPropertyLocation(property?: PublicPropertySummary): string {
-  if (!property) return 'Imóvel indisponível no catálogo'
+function getPropertyLocation(
+  property: PublicPropertySummary | undefined,
+  unavailableLabel: string,
+): string {
+  if (!property) return unavailableLabel
 
-  return [property.bairro, property.cidade].filter(Boolean).join(' - ') || property.tipo
+  return [property.neighborhood, property.city].filter(Boolean).join(' - ') || property.propertyType
 }
 
 export function OpportunityCard({
@@ -28,21 +32,23 @@ export function OpportunityCard({
   density = 'regular',
   presentation,
 }: OpportunityCardProps) {
+  const t = useTranslations('crm.pipeline')
   const stage = opportunityStageByStatus[opportunity.status]
   const isCompact = density === 'compact'
   const indicatorColor = presentation?.indicatorColor ?? stage.color
-  const indicatorLabel = presentation?.indicatorLabel ?? stage.label
-  const propertyTitle = property?.titulo ?? `Imóvel ${opportunity.imovelId}`
+  const indicatorLabel = presentation?.indicatorLabel ?? t(`stages.${stage.labelKey}`)
+  const propertyTitle = property?.title ?? `Imóvel ${opportunity.propertyId}`
+  const propertyLocation = getPropertyLocation(property, t('propertyUnavailable'))
   const value =
-    property?.finalidade === 'ALUGUEL'
-      ? formatMonthlyCurrency(opportunity.valorProposto)
-      : formatCurrency(opportunity.valorProposto)
+    property?.purpose === 'ALUGUEL'
+      ? formatMonthlyCurrency(opportunity.proposedValue)
+      : formatCurrency(opportunity.proposedValue)
 
   return (
     <Card
-      component={NextLink}
-      href={`/crm/opportunities/${opportunity.id}`}
-      aria-label={`Abrir oportunidade de ${opportunity.interessadoNome}`}
+      component={Link}
+      href={{ pathname: '/crm/opportunities/[id]', params: { id: opportunity.id } }}
+      aria-label={t('openOpportunityAriaLabel', { name: opportunity.leadName })}
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -75,7 +81,7 @@ export function OpportunityCard({
           lineHeight: isCompact ? 1.3 : 1.4,
         }}
       >
-        {opportunity.interessadoNome}
+        {opportunity.leadName}
       </Typography>
       <Typography
         noWrap
@@ -91,7 +97,7 @@ export function OpportunityCard({
       </Typography>
       <Typography
         noWrap
-        title={getPropertyLocation(property)}
+        title={propertyLocation}
         sx={{
           display: isCompact ? 'none' : 'block',
           color: 'text.secondary',
@@ -99,7 +105,7 @@ export function OpportunityCard({
           lineHeight: 1.4,
         }}
       >
-        {getPropertyLocation(property)}
+        {propertyLocation}
       </Typography>
 
       <Typography
@@ -136,7 +142,7 @@ export function OpportunityCard({
             fontSize: isCompact ? 8 : 9,
           }}
         >
-          {getInitials(opportunity.interessadoNome)}
+          {getInitials(opportunity.leadName)}
         </Avatar>
         <Stack direction="row" alignItems="center" spacing={0.4} sx={{ minWidth: 0 }}>
           <AccessTimeRoundedIcon

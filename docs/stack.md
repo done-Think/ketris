@@ -70,14 +70,23 @@ Documentos relacionados: `ketris-design-system.md` (identidade visual e tokens),
 - **Multi-tenancy:** schema compartilhado com coluna `tenantId` em toda tabela de domínio (não
   schema-per-tenant nem database-per-tenant) — reforçado por um helper de query que sempre filtra por
   tenant ativo.
-- **Ambiente local:** Postgres via Docker Compose (a adicionar em `docker-compose.yml` na raiz);
+- **Ambiente local:** Postgres via Docker Compose (`docker-compose.yml` na raiz, `postgres:16-alpine`);
   `DATABASE_URL` configurado via `.env` (`apps/web/.env`, nunca commitado — ver `.env.example`).
-- **Hospedagem (produção):** a decidir quando houver deploy real (candidatos: Neon, Supabase, RDS) — não
-  bloqueia o desenvolvimento local.
+- **Hospedagem (staging):** AWS RDS para Postgres — ver seção "Infraestrutura / Deploy" abaixo.
 
 ## Infraestrutura / Deploy
 
-_A definir_
+- **Banco (staging):** AWS RDS Postgres, provisionado via Terraform em `infra/terraform/`. RDS público
+  (TLS obrigatório + senha forte, sem RDS Proxy — ver justificativa e riscos aceitos no README daquele
+  diretório).
+- **Storage:** bucket S3 privado + IAM user dedicado (mesmo Terraform), provisionado para a futura
+  feature de upload de foto de imóvel — a rota de upload em si ainda não existe no código.
+- **CI:** GitHub Actions (`.github/workflows/ci.yml`) — typecheck, lint, testes unitários e de
+  integração contra um Postgres efêmero do próprio runner, nunca contra o RDS de staging.
+- **Deploy do schema:** `.github/workflows/deploy-staging.yml`, disparado só em push para `dev`, roda
+  `prisma migrate deploy` + `npm run db:seed` (idempotente) contra o RDS de staging.
+- **App:** Vercel (Preview + Production). Envs configurados manualmente no dashboard — ver
+  `infra/terraform/README.md`.
 
 ## Integrações
 

@@ -1,3 +1,5 @@
+'use client'
+
 import { Avatar, Box, Card, CardContent, Divider, Stack, Typography } from '@mui/material'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import BathtubOutlinedIcon from '@mui/icons-material/BathtubOutlined'
@@ -5,12 +7,14 @@ import BedOutlinedIcon from '@mui/icons-material/BedOutlined'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import LocalParkingOutlinedIcon from '@mui/icons-material/LocalParkingOutlined'
 import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
+import { Link } from '@/i18n/navigation'
 import { PillBadge } from '@shared/components/ui'
 import { alpha, componentText, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
 import type { PropertyFeatureKey } from '@shared/types'
 import type { SearchPropertyCardProps } from '../types/search'
+import { buildPropertyDetailHref } from '../utils/property-links'
 
 const detailIcons: Record<PropertyFeatureKey, typeof ApartmentOutlinedIcon> = {
   bedrooms: BedOutlinedIcon,
@@ -25,8 +29,9 @@ export function SearchPropertyCard({
   onActivate,
   viewMode = 'grid',
 }: SearchPropertyCardProps) {
+  const t = useTranslations('marketplace.publicProfile')
   const isListView = viewMode === 'list'
-  const detailsHref = `${property.href}?purpose=${property.purpose}`
+  const detailsHref = buildPropertyDetailHref(property.href, property.purpose)
 
   return (
     <Card
@@ -65,7 +70,7 @@ export function SearchPropertyCard({
         }}
       >
         <Box sx={{ position: 'absolute', top: 12, left: 12 }}>
-          <PillBadge>DESTAQUE</PillBadge>
+          <PillBadge>{t('listings.featured')}</PillBadge>
         </Box>
       </Box>
 
@@ -117,7 +122,7 @@ export function SearchPropertyCard({
           </Stack>
           <Stack direction="row" alignItems="center" spacing={0.2}>
             <Typography sx={{ color: 'primary.main', ...componentText.cardAction }}>
-              Ver detalhes
+              {t('propertyCard.viewDetails')}
             </Typography>
             <ChevronRightIcon sx={{ color: 'primary.main', fontSize: iconSize.sm }} />
           </Stack>
