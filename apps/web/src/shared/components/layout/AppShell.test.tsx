@@ -13,6 +13,7 @@ vi.mock('@/i18n/navigation', async () => {
 
   return {
     usePathname: vi.fn(),
+    useRouter: vi.fn(() => ({ replace: vi.fn(), push: vi.fn() })),
     Link: React.forwardRef<HTMLAnchorElement, React.AnchorHTMLAttributes<HTMLAnchorElement>>(
       function MockLocalizedLink({ href = '', ...props }, ref) {
         return React.createElement('a', { ...props, href, ref })
