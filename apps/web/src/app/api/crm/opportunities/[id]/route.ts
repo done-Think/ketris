@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
+import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { crmContainer } from '@server/crm/container'
 import type { OpportunityUpdate } from '@server/crm/domain/opportunity.entity'
@@ -21,6 +22,8 @@ export const GET = withErrorHandling(async (request: NextRequest, context: Route
 
   const opportunity = await crmContainer.getOpportunityUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorId: actor.sub,
+    actorPapel: actor.papel as Papel,
     opportunityId: (await context.params).id,
   })
 
@@ -48,6 +51,7 @@ export const PUT = withErrorHandling(async (request: NextRequest, context: Route
   const opportunity = await crmContainer.updateOpportunityUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
+    actorPapel: actor.papel as Papel,
     opportunityId: (await context.params).id,
     changes,
   })
@@ -62,6 +66,7 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Rou
   const opportunity = await crmContainer.updateOpportunityUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
+    actorPapel: actor.papel as Papel,
     opportunityId: (await context.params).id,
     changes: body,
   })
@@ -88,6 +93,8 @@ export const DELETE = withErrorHandling(async (request: NextRequest, context: Ro
   if (parsed.data.permanent) {
     await crmContainer.deleteOpportunityUseCase.execute({
       actorTenantId: actor.tenantId,
+      actorId: actor.sub,
+      actorPapel: actor.papel as Papel,
       opportunityId: (await context.params).id,
     })
 
@@ -96,6 +103,8 @@ export const DELETE = withErrorHandling(async (request: NextRequest, context: Ro
 
   const opportunity = await crmContainer.archiveOpportunityUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorId: actor.sub,
+    actorPapel: actor.papel as Papel,
     opportunityId: (await context.params).id,
   })
 

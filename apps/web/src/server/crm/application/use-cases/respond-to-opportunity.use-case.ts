@@ -1,3 +1,5 @@
+import type { Papel } from '@server/auth/domain/user.entity'
+
 import type { OpportunityActivity } from '../../domain/activity.entity'
 import { OpportunityNotAnswerableError, OpportunityNotFoundError } from '../../domain/errors'
 import type { Opportunity } from '../../domain/opportunity.entity'
@@ -6,12 +8,15 @@ import {
   statusForResponse,
   type OpportunityResponseAction,
 } from '../../domain/opportunity-status'
+import { assertAgentOwnsProperty } from '../authorization'
 import type { ActivityRepository } from '../ports/activity-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
+import type { PropertyLookupPort } from '../ports/property-lookup.port'
 
 export interface RespondToOpportunityInput {
   actorTenantId: string
   actorId?: string | null
+  actorPapel: Papel
   actorName?: string | null
   opportunityId: string
   action: OpportunityResponseAction
@@ -41,6 +46,7 @@ export class RespondToOpportunityUseCase {
   constructor(
     private readonly opportunityRepository: OpportunityRepository,
     private readonly activityRepository: ActivityRepository,
+    private readonly propertyLookup: PropertyLookupPort,
   ) {}
 
   async execute(input: RespondToOpportunityInput): Promise<RespondToOpportunityOutput> {
@@ -49,6 +55,14 @@ export class RespondToOpportunityUseCase {
     if (!current || current.tenantId !== input.actorTenantId) {
       throw new OpportunityNotFoundError()
     }
+
+    await assertAgentOwnsProperty(
+      this.propertyLookup,
+      input.actorTenantId,
+      current.propertyId,
+      input.actorId ?? '',
+      input.actorPapel,
+    )
 
     if (!canRespond(current.status)) {
       throw new OpportunityNotAnswerableError(current.status)

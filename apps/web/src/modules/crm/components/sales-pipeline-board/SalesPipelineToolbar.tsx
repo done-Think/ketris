@@ -10,12 +10,11 @@ import {
   MenuItem,
   Stack,
   TextField,
-  Tooltip,
   Typography,
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { brand, radius, surface } from '@shared/theme/tokens'
+import { brand, radius } from '@shared/theme/tokens'
 
 import { salesPipelineStages } from '../../config/sales-pipeline-stages'
 import type { SalesPipelineToolbarProps } from '../../types/sales-pipeline'
@@ -29,6 +28,7 @@ export function SalesPipelineToolbar({
   onFilterOpen,
   onFilterClose,
   onStageSelect,
+  onNewOpportunity,
 }: SalesPipelineToolbarProps) {
   const t = useTranslations('crm.pipeline')
 
@@ -151,38 +151,25 @@ export function SalesPipelineToolbar({
             </MenuItem>
           ))}
         </Menu>
-        <Tooltip title={t('newOpportunityTooltip')}>
-          <Box
-            component="span"
-            tabIndex={0}
-            aria-label={t('newOpportunityDisabledAriaLabel')}
-            sx={{ display: 'inline-flex', width: { sm: 166 }, minWidth: { sm: 166 } }}
-          >
-            <Button
-              variant="contained"
-              startIcon={<AddRoundedIcon />}
-              disabled
-              sx={{
-                width: '100%',
-                height: { xs: 40, sm: 32 },
-                px: 1.5,
-                borderRadius: `${radius.sm}px`,
-                fontSize: 12,
-                fontWeight: 700,
-                whiteSpace: 'nowrap',
-                '& .MuiButton-startIcon': { ml: 0, mr: 0.75 },
-                '& .MuiSvgIcon-root': { fontSize: 16 },
-                '&.Mui-disabled': {
-                  bgcolor: brand.magenta[500],
-                  color: surface.lightText,
-                  opacity: 1,
-                },
-              }}
-            >
-              {t('newOpportunity')}
-            </Button>
-          </Box>
-        </Tooltip>
+        <Button
+          variant="contained"
+          startIcon={<AddRoundedIcon />}
+          onClick={onNewOpportunity}
+          sx={{
+            width: { sm: 166 },
+            minWidth: { sm: 166 },
+            height: { xs: 40, sm: 32 },
+            px: 1.5,
+            borderRadius: `${radius.sm}px`,
+            fontSize: 12,
+            fontWeight: 700,
+            whiteSpace: 'nowrap',
+            '& .MuiButton-startIcon': { ml: 0, mr: 0.75 },
+            '& .MuiSvgIcon-root': { fontSize: 16 },
+          }}
+        >
+          {t('newOpportunity')}
+        </Button>
       </Stack>
     </Stack>
   )

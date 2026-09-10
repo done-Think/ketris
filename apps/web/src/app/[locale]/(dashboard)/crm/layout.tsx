@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
-import { CrmShell } from '@modules/crm/components/CrmShell'
+import { AppShell } from '@shared/components/layout/AppShell'
 
 export default function CrmLayout({ children }: { children: ReactNode }) {
-  return <CrmShell>{children}</CrmShell>
+  return <AppShell>{children}</AppShell>
 }

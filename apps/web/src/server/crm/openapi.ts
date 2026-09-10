@@ -49,7 +49,8 @@ export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
     description:
       'Requer autenticação (Bearer). Retorna apenas as oportunidades do próprio tenant do ator. Por ' +
       'padrão exclui as arquivadas (soft delete); use includeArchived=true para incluí-las. Filtra ' +
-      'por status e/ou por contato vinculado.',
+      'por status e/ou por contato vinculado. Quando o ator tem papel AGENT, a listagem é restrita ' +
+      'às oportunidades de imóveis dos quais o ator é responsável; ADMIN e OWNER veem todo o tenant.',
     security: [{ bearerAuth: [] }],
     request: { query: listOpportunitiesQuerySchema },
     responses: {
@@ -79,7 +80,9 @@ export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
       'se `contatoId` for informado, também precisa pertencer ao tenant. Nasce em RASCUNHO por padrão ' +
       '(prospecção) — pode nascer em ENVIADA quando o corretor está registrando uma proposta já feita ' +
       'fora do sistema. Não aceita ACEITA/EM_NEGOCIACAO/RECUSADA como estado inicial: essas transições ' +
-      'só acontecem através da timeline (PATCH ou /respond).',
+      'só acontecem através da timeline (PATCH ou /respond). Um ator com papel AGENT só pode criar ' +
+      'oportunidades em imóveis dos quais é responsável (403 caso contrário); ADMIN e OWNER podem ' +
+      'usar qualquer imóvel do tenant.',
     security: [{ bearerAuth: [] }],
     request: {
       body: { content: { 'application/json': { schema: createOpportunityRequestSchema } } },
@@ -97,6 +100,10 @@ export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
         description: 'Access token ausente, inválido ou expirado.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
+      403: {
+        description: 'Ator com papel AGENT tentando criar em um imóvel do qual não é responsável.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
       404: {
         description: 'Imóvel ou contato informado não pertence a este tenant.',
         content: { 'application/json': { schema: errorResponseSchema } },
@@ -111,7 +118,8 @@ export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
     summary: 'Consulta uma oportunidade do tenant autenticado',
     description:
       'Requer autenticação (Bearer). Uma oportunidade de outro tenant responde 404 (opaco), igual a ' +
-      'um id inexistente — nunca revela se o registro existe em outro tenant.',
+      'um id inexistente — nunca revela se o registro existe em outro tenant. O mesmo 404 opaco vale ' +
+      'para um ator AGENT consultando uma oportunidade de imóvel do qual não é responsável.',
     security: [{ bearerAuth: [] }],
     request: { params: opportunityIdParamsSchema },
     responses: {
@@ -340,7 +348,10 @@ export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
     summary: 'Lista os contatos do tenant autenticado',
     description:
       'Requer autenticação (Bearer). Cada contato traz `propertyCount`: quantas oportunidades ativas ' +
-      'estão vinculadas a ele. Aceita filtro por tipo e busca textual por nome/e-mail.',
+      'estão vinculadas a ele (contagem sempre do tenant inteiro, não recortada por corretor). Aceita ' +
+      'filtro por tipo e busca textual por nome/e-mail. Quando o ator tem papel AGENT, a listagem é ' +
+      'restrita aos contatos com pelo menos uma oportunidade em imóvel do qual o ator é responsável; ' +
+      'ADMIN e OWNER veem todo o tenant.',
     security: [{ bearerAuth: [] }],
     request: { query: listContactsQuerySchema },
     responses: {
@@ -390,7 +401,9 @@ export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
     path: '/crm/contacts/{id}',
     tags: ['CRM'],
     summary: 'Consulta um contato do tenant autenticado',
-    description: 'Requer autenticação (Bearer).',
+    description:
+      'Requer autenticação (Bearer). Um ator AGENT recebe 404 opaco para um contato sem nenhuma ' +
+      'oportunidade em imóvel do qual é responsável.',
     security: [{ bearerAuth: [] }],
     request: { params: contactIdParamsSchema },
     responses: {

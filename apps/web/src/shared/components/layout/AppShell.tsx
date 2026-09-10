@@ -2,46 +2,80 @@
 
 import { useMemo, useState } from 'react'
 import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined'
-import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined'
+import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined'
+import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
+import InsertChartOutlinedRoundedIcon from '@mui/icons-material/InsertChartOutlinedRounded'
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined'
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
+import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline'
 import ViewKanbanOutlinedIcon from '@mui/icons-material/ViewKanbanOutlined'
+import type { SvgIconComponent } from '@mui/icons-material'
 import { Avatar, Box, Drawer, IconButton, Stack, Tooltip, Typography } from '@mui/material'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
 import { Link, usePathname } from '@/i18n/navigation'
+import type { Papel } from '@server/auth/domain/user.entity'
+import { CrmAccessBoundary } from '@modules/crm/components/CrmAccessBoundary'
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
-
-import type { CrmShellProps } from '../types/layout'
-import { CrmAccessBoundary } from './CrmAccessBoundary'
+import { getInitials } from '@shared/utils/get-initials'
 
 const sidebarWidth = 200
 
-const navigationItems = [
-  { labelKey: 'dashboard', href: '/dashboard', icon: BarChartOutlinedIcon },
-  { labelKey: 'pipeline', href: '/crm', icon: ViewKanbanOutlinedIcon },
-  { labelKey: 'contacts', href: '/crm/contacts', icon: PeopleOutlineIcon },
-  { labelKey: 'properties', href: '/properties', icon: HomeOutlinedIcon },
-  { labelKey: 'proposals', href: '/crm/proposals', icon: InsertDriveFileOutlinedIcon },
-] as const
+type NavHref =
+  | '/dashboard'
+  | '/crm'
+  | '/crm/contacts'
+  | '/dashboard/properties'
+  | '/dashboard/public-profile'
+  | '/dashboard/agenda'
+  | '/crm/proposals'
+  | '/dashboard/finance'
 
-function getInitials(name?: string | null): string {
-  if (!name) return 'K'
-
-  return name
-    .split(' ')
-    .slice(0, 2)
-    .map((part) => part.charAt(0))
-    .join('')
-    .toUpperCase()
+interface NavItem {
+  labelKey: string
+  href: NavHref
+  icon: SvgIconComponent
+  /** Omitted = visible to every tenant role (ADMIN, OWNER, AGENT). */
+  roles?: readonly Papel[]
 }
 
-export function CrmShell({ children }: CrmShellProps) {
-  const t = useTranslations('crm.navigation')
+const navigationItems: readonly NavItem[] = [
+  {
+    labelKey: 'dashboard',
+    href: '/dashboard',
+    icon: BarChartOutlinedIcon,
+    roles: ['ADMIN', 'OWNER'],
+  },
+  { labelKey: 'pipeline', href: '/crm', icon: ViewKanbanOutlinedIcon },
+  { labelKey: 'contacts', href: '/crm/contacts', icon: PeopleOutlineIcon },
+  { labelKey: 'properties', href: '/dashboard/properties', icon: HomeWorkOutlinedIcon },
+  {
+    labelKey: 'publicProfile',
+    href: '/dashboard/public-profile',
+    icon: PaletteOutlinedIcon,
+    roles: ['ADMIN', 'OWNER'],
+  },
+  { labelKey: 'agenda', href: '/dashboard/agenda', icon: CalendarTodayOutlinedIcon },
+  { labelKey: 'proposals', href: '/crm/proposals', icon: InsertDriveFileOutlinedIcon },
+  {
+    labelKey: 'finance',
+    href: '/dashboard/finance',
+    icon: InsertChartOutlinedRoundedIcon,
+    roles: ['ADMIN', 'OWNER'],
+  },
+]
+
+export interface AppShellProps {
+  children: React.ReactNode
+}
+
+export function AppShell({ children }: AppShellProps) {
+  const t = useTranslations('common.appShell')
   const pathname = usePathname()
   const { data: session } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -49,6 +83,13 @@ export function CrmShell({ children }: CrmShellProps) {
   const userName = session?.user?.name ?? t('defaultUserName')
   const userContext = session?.user?.email ?? t('defaultUserContext')
   const userInitials = useMemo(() => getInitials(userName), [userName])
+  const visibleItems = useMemo(
+    () =>
+      navigationItems.filter(
+        (item) => !item.roles || (session?.papel && item.roles.includes(session.papel)),
+      ),
+    [session],
+  )
 
   const sidebar = (
     <Stack
@@ -74,7 +115,7 @@ export function CrmShell({ children }: CrmShellProps) {
         aria-label={t('ariaLabel')}
         sx={{ ml: -1.5, mr: -0.5 }}
       >
-        {navigationItems.map(({ labelKey, href, icon: Icon }) => {
+        {visibleItems.map(({ labelKey, href, icon: Icon }) => {
           const targetPath = href.split('?')[0]
           const active =
             targetPath === '/crm'
@@ -145,6 +186,22 @@ export function CrmShell({ children }: CrmShellProps) {
             {userContext}
           </Typography>
         </Box>
+        <Box sx={{ flex: 1 }} />
+        <Tooltip title={t('backToMarketplace')}>
+          <IconButton
+            component={Link}
+            href="/"
+            aria-label={t('backToMarketplace')}
+            sx={{
+              width: 32,
+              height: 32,
+              color: alpha.white[62],
+              '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
+            }}
+          >
+            <LogoutOutlinedIcon sx={{ fontSize: iconSize.sm }} />
+          </IconButton>
+        </Tooltip>
       </Stack>
     </Stack>
   )

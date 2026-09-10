@@ -11,6 +11,12 @@ const nextConfig = {
     remotePatterns: [],
   },
   transpilePackages: ['@mui/x-charts', '@mui/x-data-grid'],
+  turbopack: {
+    rules: {
+      '*.mp4': { type: 'asset' },
+      '*.webm': { type: 'asset' },
+    },
+  },
   webpack(config) {
     config.infrastructureLogging = {
       ...(config.infrastructureLogging ?? {}),
@@ -40,17 +46,13 @@ const nextConfig = {
 export default withSentryConfig(withNextIntl(nextConfig), {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
-
-  // Secret de build. Sem ele o upload de source maps é ignorado (o build não quebra).
   authToken: process.env.SENTRY_AUTH_TOKEN,
 
-  // Envia mais arquivos do client para melhorar os stack traces do browser.
   widenClientFileUpload: true,
 
   sourcemaps: {
     deleteSourcemapsAfterUpload: true,
   },
 
-  // Silencioso localmente, verboso no CI — onde o log do upload é o que permite diagnosticar.
   silent: !process.env.CI,
 })
