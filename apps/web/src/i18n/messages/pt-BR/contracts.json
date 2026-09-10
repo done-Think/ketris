@@ -1,0 +1,217 @@
+{
+  "metadata": {
+    "dashboard": {
+      "metadataTitle": "Ketris | Contratos"
+    },
+    "create": {
+      "metadataTitle": "Ketris | Gerar Contrato"
+    }
+  },
+  "dashboardHeader": {
+    "title": "Contratos",
+    "searchPlaceholder": "Buscar contratos...",
+    "newContract": "Novo Contrato"
+  },
+  "filters": {
+    "tabs": {
+      "Todos": "Todos",
+      "Ativos": "Ativos",
+      "Vencendo": "Vencendo",
+      "Encerrados": "Encerrados"
+    },
+    "typeFilter": {
+      "label": "Tipo de contrato",
+      "Todos": "Todos os tipos",
+      "Residencial": "Residencial",
+      "Comercial": "Comercial",
+      "Temporada": "Temporada"
+    }
+  },
+  "summary": {
+    "Ativos": {
+      "label": "Ativos",
+      "caption": "Contratos vigentes"
+    },
+    "Vencendo em 30d": {
+      "label": "Vencendo em 30d",
+      "caption": "Exigem acompanhamento"
+    },
+    "Inadimplentes": {
+      "label": "Inadimplentes",
+      "caption": "Com pendencias financeiras"
+    }
+  },
+  "table": {
+    "columns": {
+      "property": "Imóvel",
+      "tenant": "Locatário",
+      "amount": "Valor",
+      "startDate": "Início",
+      "endDate": "Vencimento",
+      "status": "Status",
+      "actions": "Ações"
+    },
+    "noRowsLabel": "Nenhum contrato encontrado",
+    "totalRows": "Total de linhas:",
+    "rowsPerPage": "Linhas por página",
+    "displayedRows": "Mostrando {from}-{to} de {total}",
+    "actionsTooltip": "Ações",
+    "actionsAriaLabel": "Ações do contrato {code}",
+    "menu": {
+      "view-summary": "Ver resumo",
+      "view-history": "Ver histórico",
+      "edit-data": "Editar dados",
+      "duplicate": "Duplicar contrato",
+      "download-pdf": "Baixar PDF",
+      "download-draft": "Baixar minuta",
+      "send-signature": "Enviar assinatura",
+      "copy-signature-link": "Copiar link"
+    }
+  },
+  "status": {
+    "Rascunho": "Rascunho",
+    "Em revisão": "Em revisão",
+    "Aguardando assinatura": "Aguardando assinatura",
+    "Assinado": "Assinado",
+    "Ativo": "Ativo",
+    "Encerrado": "Encerrado",
+    "Cancelado": "Cancelado"
+  },
+  "emptyState": {
+    "title": "Nenhum contrato encontrado",
+    "description": "Gere um novo contrato ou ajuste os filtros para ampliar a busca.",
+    "cta": "Gerar contrato"
+  },
+  "wizard": {
+    "breadcrumbContracts": "Contratos",
+    "breadcrumbNew": "Gerar novo",
+    "title": "Gerar Contrato",
+    "stepsAriaLabel": "Etapas do contrato",
+    "steps": {
+      "parties": "Partes",
+      "property": "Imóvel",
+      "conditions": "Condições",
+      "review": "Revisão"
+    },
+    "stepFormTitleReview": "Revisão do Contrato",
+    "stepFormTitle": "{step} do Contrato",
+    "successMessage": "{code} adicionado em revisão.",
+    "actions": {
+      "back": "Voltar",
+      "next": "Próximo passo",
+      "generate": "Gerar contrato"
+    },
+    "parties": {
+      "ownerTitle": "Locador (Proprietário)",
+      "tenantTitle": "Locatário",
+      "guarantorTitle": "Fiador",
+      "addGuarantor": "Adicionar fiador",
+      "fields": {
+        "fullName": "Nome completo",
+        "cpf": "CPF",
+        "email": "E-mail",
+        "phone": "Telefone"
+      }
+    },
+    "property": {
+      "title": "Dados do imóvel",
+      "fields": {
+        "propertyTitle": "Imóvel",
+        "propertyType": "Tipo",
+        "propertyAddress": "Endereço",
+        "propertyZipCode": "CEP",
+        "propertyCity": "Cidade",
+        "propertyState": "UF",
+        "propertyRegistration": "Matrícula",
+        "propertyArea": "Área útil"
+      },
+      "typeOptions": {
+        "Apartamento": "Apartamento",
+        "Casa": "Casa",
+        "Studio": "Studio",
+        "Cobertura": "Cobertura",
+        "Sala comercial": "Sala comercial"
+      },
+      "picker": {
+        "label": "Selecionar imóvel cadastrado",
+        "helperText": "Escolha um imóvel já cadastrado para preencher os dados automaticamente.",
+        "noOptions": "Nenhum imóvel encontrado."
+      }
+    },
+    "conditions": {
+      "title": "Condições comerciais",
+      "fields": {
+        "contractType": "Tipo de contrato",
+        "monthlyRent": "Valor do aluguel",
+        "condominiumFee": "Condomínio",
+        "iptu": "IPTU",
+        "dueDay": "Vencimento",
+        "guaranteeType": "Garantia",
+        "startDate": "Início",
+        "endDate": "Término",
+        "adjustmentIndex": "Reajuste",
+        "notes": "Observações"
+      },
+      "contractTypeOptions": {
+        "Locação residencial": "Locação residencial",
+        "Locação comercial": "Locação comercial",
+        "Temporada": "Temporada"
+      },
+      "guaranteeTypeOptions": {
+        "Fiador": "Fiador",
+        "Caução": "Caução",
+        "Seguro fiança": "Seguro fiança",
+        "Título de capitalização": "Título de capitalização"
+      },
+      "adjustmentIndexOptions": {
+        "IPCA": "IPCA",
+        "IGP-M": "IGP-M",
+        "INPC": "INPC"
+      }
+    },
+    "review": {
+      "partiesTitle": "Partes",
+      "propertyTitle": "Imóvel",
+      "conditionsTitle": "Condições",
+      "termTitle": "Vigência",
+      "labels": {
+        "owner": "Locador",
+        "ownerCpf": "CPF do locador",
+        "tenant": "Locatário",
+        "tenantCpf": "CPF do locatário",
+        "guarantor": "Fiador",
+        "guarantorCpf": "CPF do fiador",
+        "property": "Imóvel",
+        "type": "Tipo",
+        "address": "Endereço",
+        "cityState": "Cidade/UF",
+        "contract": "Contrato",
+        "rent": "Aluguel",
+        "dueDay": "Vencimento",
+        "dueDayValue": "Dia {day}",
+        "guarantee": "Garantia",
+        "start": "Início",
+        "end": "Término",
+        "adjustment": "Reajuste",
+        "notes": "Observações"
+      }
+    },
+    "discardDialog": {
+      "title": "Descartar contrato?",
+      "description": "Os dados preenchidos serão perdidos e não poderão ser recuperados.",
+      "cancel": "Continuar editando",
+      "confirm": "Descartar"
+    }
+  },
+  "actionDialog": {
+    "close": "Fechar",
+    "summaryLabels": {
+      "property": "Imovel",
+      "owner": "Locador",
+      "tenant": "Locatario",
+      "amount": "Valor",
+      "start": "Inicio",
+      "end": "Termino"
+    }
+  }
+}

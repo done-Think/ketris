@@ -18,10 +18,11 @@ export default getRequestConfig(async ({ locale }) => {
 })
 
 async function loadMessages(locale: AppLocale) {
-  const [common, auth, crm, dashboard, marketplace, platform, properties, validation] =
+  const [common, auth, contracts, crm, dashboard, marketplace, platform, properties, validation] =
     await Promise.all([
       import(`./messages/${locale}/common.json`),
       import(`./messages/${locale}/auth.json`),
+      import(`./messages/${locale}/contracts.json`),
       import(`./messages/${locale}/crm.json`),
       import(`./messages/${locale}/dashboard.json`),
       import(`./messages/${locale}/marketplace.json`),
@@ -33,6 +34,7 @@ async function loadMessages(locale: AppLocale) {
   return {
     common: common.default,
     auth: auth.default,
+    contracts: contracts.default,
     crm: crm.default,
     dashboard: dashboard.default,
     marketplace: marketplace.default,

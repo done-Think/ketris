@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined'
 import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined'
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import InsertChartOutlinedRoundedIcon from '@mui/icons-material/InsertChartOutlinedRounded'
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined'
@@ -12,7 +13,16 @@ import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline'
 import ViewKanbanOutlinedIcon from '@mui/icons-material/ViewKanbanOutlined'
 import type { SvgIconComponent } from '@mui/icons-material'
-import { Avatar, Box, Drawer, IconButton, Stack, Tooltip, Typography } from '@mui/material'
+import {
+  Avatar,
+  Box,
+  Drawer,
+  IconButton,
+  Skeleton,
+  Stack,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
@@ -31,6 +41,7 @@ type NavHref =
   | '/crm'
   | '/crm/contacts'
   | '/dashboard/properties'
+  | '/dashboard/contracts'
   | '/dashboard/public-profile'
   | '/dashboard/agenda'
   | '/crm/proposals'
@@ -54,6 +65,7 @@ const navigationItems: readonly NavItem[] = [
   { labelKey: 'pipeline', href: '/crm', icon: ViewKanbanOutlinedIcon },
   { labelKey: 'contacts', href: '/crm/contacts', icon: PeopleOutlineIcon },
   { labelKey: 'properties', href: '/dashboard/properties', icon: HomeWorkOutlinedIcon },
+  { labelKey: 'contracts', href: '/dashboard/contracts', icon: DescriptionOutlinedIcon },
   {
     labelKey: 'publicProfile',
     href: '/dashboard/public-profile',
@@ -77,7 +89,7 @@ export interface AppShellProps {
 export function AppShell({ children }: AppShellProps) {
   const t = useTranslations('common.appShell')
   const pathname = usePathname()
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
   const isPublicCrmRoute = pathname === '/crm' || pathname === '/crm/contacts'
   const userName = session?.user?.name ?? t('defaultUserName')
@@ -115,54 +127,65 @@ export function AppShell({ children }: AppShellProps) {
         aria-label={t('ariaLabel')}
         sx={{ ml: -1.5, mr: -0.5 }}
       >
-        {visibleItems.map(({ labelKey, href, icon: Icon }) => {
-          const targetPath = href.split('?')[0]
-          const active =
-            targetPath === '/crm'
-              ? pathname === '/crm' || pathname.startsWith('/crm/opportunities')
-              : pathname === targetPath || pathname.startsWith(`${targetPath}/`)
+        {status === 'loading'
+          ? navigationItems.map((item) => (
+              <Skeleton
+                key={item.labelKey}
+                variant="rounded"
+                height={36}
+                sx={{ bgcolor: alpha.white[8], borderRadius: `${radius.sm}px` }}
+              />
+            ))
+          : visibleItems.map(({ labelKey, href, icon: Icon }) => {
+              const targetPath = href.split('?')[0]
+              const active =
+                targetPath === '/crm'
+                  ? pathname === '/crm' || pathname.startsWith('/crm/opportunities')
+                  : pathname === targetPath || pathname.startsWith(`${targetPath}/`)
 
-          return (
-            <Box
-              key={labelKey}
-              component={Link}
-              href={href}
-              onClick={() => setMobileOpen(false)}
-              aria-current={active ? 'page' : undefined}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.125,
-                minHeight: 36,
-                px: 1.125,
-                borderLeft: '3px solid',
-                borderColor: active ? 'primary.main' : 'transparent',
-                borderRadius: `${radius.sm}px`,
-                bgcolor: active ? alpha.white[8] : 'transparent',
-                color: active ? surface.lightText : alpha.white[62],
-                textDecoration: 'none',
-                transition: 'background-color 160ms ease, color 160ms ease',
-                '&:hover': {
-                  bgcolor: alpha.white[8],
-                  color: surface.lightText,
-                },
-              }}
-            >
-              <Icon sx={{ fontSize: iconSize.sm, color: active ? 'primary.main' : 'inherit' }} />
-              <Typography
-                sx={{
-                  fontFamily: 'var(--font-inter), system-ui, -apple-system, sans-serif',
-                  fontSize: 13,
-                  fontWeight: active ? 600 : 500,
-                  lineHeight: '18px',
-                  letterSpacing: 0,
-                }}
-              >
-                {t(labelKey)}
-              </Typography>
-            </Box>
-          )
-        })}
+              return (
+                <Box
+                  key={labelKey}
+                  component={Link}
+                  href={href}
+                  onClick={() => setMobileOpen(false)}
+                  aria-current={active ? 'page' : undefined}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.125,
+                    minHeight: 36,
+                    px: 1.125,
+                    borderLeft: '3px solid',
+                    borderColor: active ? 'primary.main' : 'transparent',
+                    borderRadius: `${radius.sm}px`,
+                    bgcolor: active ? alpha.white[8] : 'transparent',
+                    color: active ? surface.lightText : alpha.white[62],
+                    textDecoration: 'none',
+                    transition: 'background-color 160ms ease, color 160ms ease',
+                    '&:hover': {
+                      bgcolor: alpha.white[8],
+                      color: surface.lightText,
+                    },
+                  }}
+                >
+                  <Icon
+                    sx={{ fontSize: iconSize.sm, color: active ? 'primary.main' : 'inherit' }}
+                  />
+                  <Typography
+                    sx={{
+                      fontFamily: 'var(--font-inter), system-ui, -apple-system, sans-serif',
+                      fontSize: 13,
+                      fontWeight: active ? 600 : 500,
+                      lineHeight: '18px',
+                      letterSpacing: 0,
+                    }}
+                  >
+                    {t(labelKey)}
+                  </Typography>
+                </Box>
+              )
+            })}
       </Stack>
 
       <Stack
