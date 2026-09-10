@@ -29,6 +29,7 @@ export function OwnerQuickActions() {
           fontWeight: 700,
           letterSpacing: '0.025em',
           textTransform: 'uppercase',
+          display: { xs: 'none', md: 'block' },
         }}
       >
         Atalhos Rápidos
@@ -54,10 +55,16 @@ export function OwnerQuickActions() {
               href={action.href}
               elevation={0}
               sx={{
-                display: 'flex',
+                display: {
+                  xs:
+                    action.id === 'list-property' || action.id === 'generate-report'
+                      ? 'flex'
+                      : 'none',
+                  md: 'flex',
+                },
                 alignItems: 'center',
                 minWidth: 0,
-                minHeight: { xs: 72, md: 78 },
+                minHeight: { xs: 94, md: 78 },
                 border: '1px solid',
                 borderColor: brand.neutral[100],
                 borderRadius: `${radius.md}px`,
@@ -78,8 +85,8 @@ export function OwnerQuickActions() {
               }}
             >
               <Stack
-                direction="row"
-                alignItems="center"
+                direction={{ xs: 'column', md: 'row' }}
+                alignItems={{ xs: 'flex-start', md: 'center' }}
                 spacing={{ xs: 1.2, md: 1.7 }}
                 sx={{ minWidth: 0 }}
               >
@@ -87,12 +94,18 @@ export function OwnerQuickActions() {
                   sx={{
                     display: 'grid',
                     placeItems: 'center',
-                    width: 38,
-                    height: 38,
+                    width: { xs: 30, md: 38 },
+                    height: { xs: 30, md: 38 },
                     flexShrink: 0,
                     borderRadius: `${radius.sm}px`,
-                    bgcolor: surface.app,
-                    color: brand.graphite[500],
+                    bgcolor: {
+                      xs: action.id === 'list-property' ? alpha.magenta[8] : surface.app,
+                      md: surface.app,
+                    },
+                    color: {
+                      xs: action.id === 'list-property' ? 'primary.main' : brand.graphite[500],
+                      md: brand.graphite[500],
+                    },
                   }}
                 >
                   <Icon sx={{ fontSize: iconSize.lg }} />

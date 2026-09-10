@@ -66,7 +66,7 @@ describe('Owner Dashboard', () => {
     cy.viewport(1440, 960)
     loginAsOwner()
 
-    cy.get('h1').should('have.text', 'Painel do Proprietário')
+    cy.get('h1:visible').should('have.text', 'Painel do Proprietário')
     cy.get('a[href="/dashboard/imoveis/novo"]')
       .contains('Anunciar Novo Imóvel')
       .should('be.visible')
@@ -100,26 +100,44 @@ describe('Owner Dashboard', () => {
       cy.viewport(width, height)
       loginAsOwner()
 
-      cy.get('h1').should('be.visible')
+      cy.get('h1:visible').should('have.text', 'Meu Painel')
       cy.get('table[aria-label="Propostas recentes do proprietário"]').should('not.be.visible')
       cy.get('[aria-label="Lista móvel de propostas recentes"]')
         .should('be.visible')
         .within(() => {
-          cy.get('button[aria-label^="Aceitar proposta"]').should('have.length', 4)
+          cy.get('button[aria-label^="Aceitar proposta"]').should('have.length', 3)
           cy.contains('Mariana Costa').should('be.visible')
           cy.contains('R$ 4.500/mês').should('be.visible')
         })
       expectNoHorizontalOverflow()
       cy.screenshot(`owner-dashboard-mobile-${width}`, { capture: 'fullPage' })
 
-      cy.get('button[aria-label="Abrir menu"]').click()
-      cy.get('#owner-mobile-navigation').within(() => {
-        cy.get('nav[aria-label="Navegação móvel do proprietário"]').should('be.visible')
-        cy.contains('Carlos Oliveira').should('be.visible')
+      cy.get('button[aria-label="Abrir menu"]').should('not.be.visible')
+      const navigation = 'nav[aria-label="Navegação inferior do proprietário"]'
+      cy.get(navigation).should('have.css', 'position', 'fixed')
+      cy.scrollTo('bottom')
+      cy.get(navigation).should('be.visible')
+      cy.get('[aria-label="Atalhos rápidos do proprietário"]').then(($actions) => {
+        cy.get(navigation).then(($nav) => {
+          expect($actions[0].getBoundingClientRect().bottom).to.be.at.most(
+            $nav[0].getBoundingClientRect().top,
+          )
+        })
       })
-      cy.screenshot(`owner-dashboard-mobile-navigation-${width}`, { capture: 'viewport' })
-      cy.get('button[aria-label="Fechar menu"]').click()
-      cy.get('nav[aria-label="Navegação móvel do proprietário"]').should('not.exist')
+      ;[
+        ['Imóveis', '/dashboard/imoveis'],
+        ['Propostas', '/dashboard/propostas'],
+        ['Visitas', '/dashboard/agenda'],
+        ['Painel', '/dashboard'],
+      ].forEach(([label, pathname]) => {
+        cy.get(navigation).contains('a', label).click()
+        cy.location('pathname').should('eq', pathname)
+        cy.get(navigation).find('a[aria-current="page"]').should('have.text', label)
+        expectNoHorizontalOverflow()
+      })
+      cy.get(navigation).contains('button', 'Perfil').click()
+      cy.get('[role="dialog"]').should('contain', 'Carlos Oliveira')
+      cy.contains('button', 'Fechar').click()
     })
   })
 })

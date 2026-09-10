@@ -1,8 +1,8 @@
 import { Box, Chip, Paper, Stack, Typography } from '@mui/material'
 
-import { brand, radius, surface } from '@shared/theme/tokens'
+import { brand, radius, surface, supportColor } from '@shared/theme/tokens'
 
-import { ownerDashboardMetrics } from '../fixtures/owner-dashboard-fixtures'
+import { ownerDashboardMetrics, ownerMobileSummary } from '../fixtures/owner-dashboard-fixtures'
 import { ownerDashboardPanelSx } from './owner-dashboard.styles'
 
 export function OwnerMetricCards() {
@@ -11,11 +11,59 @@ export function OwnerMetricCards() {
       role="group"
       aria-label="Indicadores do painel do proprietário"
       sx={{
-        display: 'grid',
+        display: { xs: 'block', md: 'grid' },
         gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(4, 1fr)' },
         gap: { xs: 1.5, md: 2.25 },
       }}
     >
+      <Paper
+        elevation={0}
+        sx={{
+          ...ownerDashboardPanelSx,
+          display: { xs: 'block', md: 'none' },
+          borderLeft: '3px solid',
+          borderLeftColor: 'primary.main',
+          p: 2,
+        }}
+      >
+        <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
+          <Typography sx={{ fontWeight: 700, fontSize: 13 }}>
+            {ownerMobileSummary.totalProperties} imóveis anunciados
+          </Typography>
+          <Stack direction="row" spacing={0.75}>
+            <Box
+              component="span"
+              sx={{
+                bgcolor: supportColor.successSoft,
+                color: brand.semantic.success,
+                px: 0.75,
+                py: 0.25,
+                borderRadius: `${radius.sm}px`,
+                fontSize: 10,
+              }}
+            >
+              {ownerMobileSummary.activeProperties} ativos
+            </Box>
+            <Box
+              component="span"
+              sx={{
+                bgcolor: brand.neutral[100],
+                color: brand.neutral[600],
+                px: 0.75,
+                py: 0.25,
+                borderRadius: `${radius.sm}px`,
+                fontSize: 10,
+              }}
+            >
+              {ownerMobileSummary.pausedProperties} pausado
+            </Box>
+          </Stack>
+        </Stack>
+        <Typography sx={{ mt: 1, color: brand.neutral[500], fontSize: 11 }}>
+          {ownerDashboardMetrics.find((metric) => metric.id === 'potential-revenue')?.value}/mês em
+          receita potencial
+        </Typography>
+      </Paper>
       {ownerDashboardMetrics.map((metric) => (
         <Paper
           component="article"
@@ -23,7 +71,7 @@ export function OwnerMetricCards() {
           elevation={0}
           sx={{
             ...ownerDashboardPanelSx,
-            display: 'flex',
+            display: { xs: 'none', md: 'flex' },
             minWidth: 0,
             minHeight: { xs: 132, md: 144 },
             p: { xs: 2, md: 2.75 },

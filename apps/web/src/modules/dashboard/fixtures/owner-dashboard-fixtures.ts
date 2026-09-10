@@ -4,7 +4,15 @@ import type {
   OwnerRecentProposal,
   OwnerUpcomingVisit,
   OwnerWeeklyPerformance,
+  OwnerMobileSummary,
 } from '../types/owner-dashboard'
+
+export const ownerMobileSummary: OwnerMobileSummary = {
+  dateLabel: '15 Jul, 2025',
+  totalProperties: 4,
+  activeProperties: 3,
+  pausedProperties: 1,
+}
 
 export const ownerDashboardMetrics: OwnerDashboardMetric[] = [
   {
@@ -38,6 +46,8 @@ export const ownerDashboardMetrics: OwnerDashboardMetric[] = [
 export const ownerRecentProposals: OwnerRecentProposal[] = [
   {
     id: 'proposal-mariana-costa',
+    mobileProperty: 'Apartamento Jardins - 3q',
+    mobileDate: '2h atrás',
     property: 'Ap Jardins',
     proponent: 'Mariana Costa',
     value: 'R$ 4.500/mês',
@@ -46,6 +56,8 @@ export const ownerRecentProposals: OwnerRecentProposal[] = [
   },
   {
     id: 'proposal-bruno-guedes',
+    mobileProperty: 'Studio Loft Pinheiros',
+    mobileDate: '4h atrás',
     property: 'Studio Pinheiros',
     proponent: 'Bruno Guedes',
     value: 'R$ 3.200/mês',
@@ -54,6 +66,7 @@ export const ownerRecentProposals: OwnerRecentProposal[] = [
   },
   {
     id: 'proposal-carla-souza',
+    mobileVisible: false,
     property: 'Ap Jardins',
     proponent: 'Carla Souza',
     value: 'R$ 4.700/mês',
@@ -62,6 +75,8 @@ export const ownerRecentProposals: OwnerRecentProposal[] = [
   },
   {
     id: 'proposal-felipe-melo',
+    mobileProperty: 'Casa Duplex Alto da Lapa',
+    mobileDate: '1d atrás',
     property: 'Duplex Alto Lapa',
     proponent: 'Felipe Melo',
     value: 'R$ 8.900/mês',
@@ -73,6 +88,7 @@ export const ownerRecentProposals: OwnerRecentProposal[] = [
 export const ownerUpcomingVisits: OwnerUpcomingVisit[] = [
   {
     id: 'visit-apartment-jardins',
+    mobileDate: '16 JUL',
     date: 'Hoje',
     time: '14:00',
     property: 'Apartamento Jardins',
@@ -81,6 +97,7 @@ export const ownerUpcomingVisits: OwnerUpcomingVisit[] = [
   },
   {
     id: 'visit-studio-pinheiros',
+    mobileDate: '18 JUL',
     date: 'Amanhã',
     time: '10:30',
     property: 'Studio Loft Pinheiros',
@@ -89,6 +106,7 @@ export const ownerUpcomingVisits: OwnerUpcomingVisit[] = [
   },
   {
     id: 'visit-casa-campo-belo',
+    mobileVisible: false,
     date: '18 Jul',
     time: '16:00',
     property: 'Casa Campo Belo',

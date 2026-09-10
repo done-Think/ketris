@@ -8,16 +8,19 @@ import { OwnerQuickActions } from './OwnerQuickActions'
 import { RecentProposalsCard } from './RecentProposalsCard'
 import { UpcomingVisitsCard } from './UpcomingVisitsCard'
 import { WeeklyPerformanceCard } from './WeeklyPerformanceCard'
+import { OwnerDashboardMobileHeader } from './OwnerDashboardMobileHeader'
 
 export function OwnerDashboardPage() {
   return (
-    <Box sx={{ width: '100%', px: { xs: 2, sm: 3, lg: 4 }, py: { xs: 3, md: 4.5 } }}>
+    <Box sx={{ width: '100%', px: { xs: 2, sm: 3, lg: 4 }, py: { xs: 1.5, md: 4.5 } }}>
       <Box sx={{ width: '100%', maxWidth: 1184, mx: 'auto' }}>
+        <OwnerDashboardMobileHeader />
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
           alignItems={{ xs: 'stretch', sm: 'center' }}
           justifyContent="space-between"
           spacing={2}
+          sx={{ display: { xs: 'none', md: 'flex' } }}
         >
           <Typography
             component="h1"
@@ -49,7 +52,7 @@ export function OwnerDashboardPage() {
           </Button>
         </Stack>
 
-        <Box sx={{ mt: { xs: 2.5, md: 3.5 } }}>
+        <Box sx={{ mt: { xs: 2, md: 3.5 } }}>
           <OwnerMetricCards />
         </Box>
 
@@ -61,14 +64,16 @@ export function OwnerDashboardPage() {
               lg: 'minmax(0, 1.3fr) minmax(360px, 1fr)',
             },
             alignItems: 'stretch',
-            gap: { xs: 2, md: 2.5, lg: 3 },
-            mt: { xs: 2, md: 3 },
+            gap: { xs: 3, md: 2.5, lg: 3 },
+            mt: { xs: 4, md: 3 },
           }}
         >
           <RecentProposalsCard />
           <Stack spacing={{ xs: 2, md: 2.5 }}>
             <UpcomingVisitsCard />
-            <WeeklyPerformanceCard />
+            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+              <WeeklyPerformanceCard />
+            </Box>
           </Stack>
         </Box>
 

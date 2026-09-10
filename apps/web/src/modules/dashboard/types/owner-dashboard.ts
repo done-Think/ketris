@@ -1,6 +1,13 @@
 export type OwnerMetricId =
   'active-properties' | 'pending-proposals' | 'weekly-visits' | 'potential-revenue'
 
+export type OwnerMobileSummary = {
+  dateLabel: string
+  totalProperties: number
+  activeProperties: number
+  pausedProperties: number
+}
+
 export type OwnerDashboardMetric = {
   id: OwnerMetricId
   label: string
@@ -19,6 +26,9 @@ export type OwnerRecentProposal = {
   value: string
   date: string
   status: OwnerProposalStatus
+  mobileProperty?: string
+  mobileDate?: string
+  mobileVisible?: boolean
 }
 
 export type OwnerUpcomingVisit = {
@@ -28,6 +38,8 @@ export type OwnerUpcomingVisit = {
   property: string
   visitor: string
   status: 'Confirmada'
+  mobileDate?: string
+  mobileVisible?: boolean
 }
 
 export type OwnerWeeklyPerformance = {

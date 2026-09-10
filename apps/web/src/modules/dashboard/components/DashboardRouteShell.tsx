@@ -13,26 +13,23 @@ import { OwnerBottomNavigation } from './OwnerBottomNavigation'
 export function DashboardRouteShell({ children }: DashboardLayoutProps) {
   const pathname = usePathname()
   const usesOwnerHeader = pathname === '/dashboard' || pathname === '/dashboard/imoveis'
-  const usesMobilePropertiesLayout = pathname === '/dashboard/imoveis'
 
   if (usesOwnerHeader) {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: surface.app }}>
-        <Box sx={{ display: usesMobilePropertiesLayout ? { xs: 'none', md: 'block' } : 'block' }}>
+        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
           <OwnerDashboardHeader />
         </Box>
         <Box
           component="main"
           sx={{
             minWidth: 0,
-            pb: usesMobilePropertiesLayout
-              ? { xs: 'calc(80px + env(safe-area-inset-bottom, 0px))', md: 0 }
-              : 0,
+            pb: { xs: 'calc(80px + env(safe-area-inset-bottom, 0px))', md: 0 },
           }}
         >
           {children}
         </Box>
-        {usesMobilePropertiesLayout && <OwnerBottomNavigation />}
+        <OwnerBottomNavigation />
       </Box>
     )
   }
@@ -46,12 +43,18 @@ export function DashboardRouteShell({ children }: DashboardLayoutProps) {
           minHeight: '100vh',
         }}
       >
-        <DashboardSidebar />
+        <Box sx={{ display: { xs: 'none', md: 'contents' } }}>
+          <DashboardSidebar />
+        </Box>
 
-        <Box component="main" sx={{ minWidth: 0 }}>
+        <Box
+          component="main"
+          sx={{ minWidth: 0, pb: { xs: 'calc(80px + env(safe-area-inset-bottom, 0px))', md: 0 } }}
+        >
           {children}
         </Box>
       </Box>
+      <OwnerBottomNavigation />
     </Box>
   )
 }

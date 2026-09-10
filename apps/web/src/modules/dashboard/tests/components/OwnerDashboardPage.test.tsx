@@ -1,10 +1,14 @@
 import { ThemeProvider } from '@mui/material'
 import { render, screen, within } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
 
 import { OwnerDashboardPage } from '../../components/OwnerDashboardPage'
+
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({ data: { user: { name: 'Carlos Oliveira' } } }),
+}))
 
 function renderOwnerDashboard() {
   return render(
@@ -47,11 +51,30 @@ describe('OwnerDashboardPage', () => {
 
     expect(screen.getByRole('heading', { name: 'Próximas Visitas' })).toBeVisible()
     expect(screen.getByText('Apartamento Jardins')).toBeVisible()
-    expect(screen.getByText('Studio Loft Pinheiros')).toBeVisible()
+    expect(screen.getAllByText('Studio Loft Pinheiros').length).toBeGreaterThan(0)
     expect(screen.getByText('Casa Campo Belo')).toBeVisible()
     expect(screen.getByRole('heading', { name: 'Desempenho Semanal' })).toBeVisible()
     expect(screen.getByText('+15% views')).toBeVisible()
     expect(screen.getByRole('img', { name: 'Tendência semanal de visualizações' })).toBeVisible()
+  })
+
+  it('renders the compact mobile reference using the existing dashboard fixtures', () => {
+    renderOwnerDashboard()
+    expect(screen.getByRole('heading', { name: 'Meu Painel' })).toBeVisible()
+    expect(screen.getByText('Olá, Carlos')).toBeVisible()
+    expect(screen.getByText('4 imóveis anunciados')).toBeVisible()
+    expect(screen.getByText('3 ativos')).toBeVisible()
+    expect(screen.getByText('1 pausado')).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Ver propostas recebidas' })).toHaveAttribute(
+      'href',
+      '/dashboard/propostas',
+    )
+    const proposals = within(screen.getByLabelText('Lista móvel de propostas recentes'))
+    expect(proposals.getAllByRole('button', { name: /Aceitar proposta/ })).toHaveLength(3)
+    expect(proposals.getByText('Apartamento Jardins - 3q')).toBeVisible()
+    expect(proposals.getByText('Casa Duplex Alto da Lapa')).toBeVisible()
+    expect(proposals.getByText('2h atrás')).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'VISITAS AGENDADAS' })).toBeVisible()
   })
 
   it('exposes the reference quick actions with valid destinations', () => {

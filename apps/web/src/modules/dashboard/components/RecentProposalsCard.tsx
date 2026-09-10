@@ -13,9 +13,9 @@ import {
   Typography,
 } from '@mui/material'
 
-import { alpha, brand, radius, supportColor } from '@shared/theme/tokens'
+import { alpha, brand, radius, supportColor, surface, shadows } from '@shared/theme/tokens'
 
-import { ownerRecentProposals } from '../fixtures/owner-dashboard-fixtures'
+import { ownerRecentProposals, ownerDashboardMetrics } from '../fixtures/owner-dashboard-fixtures'
 import type { OwnerProposalStatus } from '../types/owner-dashboard'
 import {
   ownerDashboardMetaSx,
@@ -65,7 +65,13 @@ function ProposalActions({ proposalId }: { proposalId: string }) {
       <Button
         size="small"
         aria-label={`Recusar proposta ${proposalId}`}
-        sx={{ minWidth: 0, px: 0.7, color: brand.neutral[500], fontSize: 10.5 }}
+        sx={{
+          minWidth: { xs: 44, md: 0 },
+          minHeight: { xs: 44, md: 28 },
+          px: 0.7,
+          color: brand.neutral[500],
+          fontSize: { xs: 11, md: 10.5 },
+        }}
       >
         Recusar
       </Button>
@@ -75,7 +81,7 @@ function ProposalActions({ proposalId }: { proposalId: string }) {
         aria-label={`Aceitar proposta ${proposalId}`}
         sx={{
           minWidth: 60,
-          minHeight: 28,
+          minHeight: { xs: 44, md: 28 },
           borderRadius: `${radius.sm}px`,
           px: 1.1,
           fontSize: 10.5,
@@ -93,11 +99,45 @@ export function RecentProposalsCard() {
       component="section"
       aria-labelledby="recent-proposals-title"
       elevation={0}
-      sx={{ ...ownerDashboardPanelSx, height: '100%', p: { xs: 2, md: 2.75 } }}
+      sx={{
+        ...ownerDashboardPanelSx,
+        height: '100%',
+        p: { xs: 0, md: 2.75 },
+        bgcolor: { xs: 'transparent', md: surface.paper },
+        border: { xs: 0, md: ownerDashboardPanelSx.border },
+        boxShadow: { xs: 'none', md: ownerDashboardPanelSx.boxShadow },
+      }}
     >
-      <Typography id="recent-proposals-title" component="h2" sx={ownerDashboardSectionTitleSx}>
+      <Typography
+        id="recent-proposals-title"
+        component="h2"
+        sx={{ ...ownerDashboardSectionTitleSx, display: { xs: 'none', md: 'block' } }}
+      >
         Propostas Recentes
       </Typography>
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={1}
+        sx={{ display: { xs: 'flex', md: 'none' } }}
+      >
+        <Typography
+          component="h2"
+          sx={{ fontSize: 11, fontWeight: 700, color: brand.neutral[600] }}
+        >
+          PROPOSTAS RECEBIDAS
+        </Typography>
+        <Chip
+          label={ownerDashboardMetrics.find((metric) => metric.id === 'pending-proposals')?.value}
+          sx={{
+            height: 18,
+            bgcolor: 'primary.main',
+            color: surface.lightText,
+            fontSize: 10,
+            '& .MuiChip-label': { px: 0.75 },
+          }}
+        />
+      </Stack>
 
       <TableContainer sx={{ display: { xs: 'none', md: 'block' }, mt: 1.5, overflow: 'visible' }}>
         <Table
@@ -179,40 +219,60 @@ export function RecentProposalsCard() {
 
       <Stack
         aria-label="Lista móvel de propostas recentes"
-        divider={<Box sx={{ borderTop: '1px solid', borderColor: brand.neutral[100] }} />}
+        spacing={1.5}
         sx={{ display: { xs: 'flex', md: 'none' }, mt: 1.5 }}
       >
-        {ownerRecentProposals.map((proposal) => (
-          <Box key={proposal.id} sx={{ py: 1.75 }}>
-            <Stack
-              direction="row"
-              alignItems="flex-start"
-              justifyContent="space-between"
-              spacing={1}
+        {ownerRecentProposals
+          .filter((proposal) => proposal.mobileVisible !== false)
+          .map((proposal) => (
+            <Box
+              key={proposal.id}
+              sx={{
+                p: 1.5,
+                bgcolor: surface.paper,
+                borderRadius: `${radius.md}px`,
+                boxShadow: shadows.crmCardCompact,
+              }}
             >
-              <Box sx={{ minWidth: 0 }}>
-                <Typography sx={{ color: brand.graphite[500], fontSize: 13, fontWeight: 700 }}>
-                  {proposal.property}
+              <Stack
+                direction="row"
+                alignItems="flex-start"
+                justifyContent="space-between"
+                spacing={1}
+              >
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography sx={{ color: brand.graphite[500], fontSize: 13, fontWeight: 700 }}>
+                    {proposal.mobileProperty || proposal.property}
+                  </Typography>
+                  <Typography sx={{ ...ownerDashboardMetaSx, mt: 0.25 }}>
+                    {proposal.proponent}
+                  </Typography>
+                </Box>
+                <Typography
+                  sx={{
+                    alignSelf: 'flex-end',
+                    whiteSpace: 'nowrap',
+                    color: 'primary.main',
+                    fontSize: 13,
+                    fontWeight: 700,
+                  }}
+                >
+                  {proposal.value}
                 </Typography>
-                <Typography sx={{ ...ownerDashboardMetaSx, mt: 0.25 }}>
-                  {proposal.proponent} · {proposal.date}
+              </Stack>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ mt: 0.5 }}
+              >
+                <Typography sx={{ color: brand.neutral[400], fontSize: 10 }}>
+                  {proposal.mobileDate || proposal.date}
                 </Typography>
-              </Box>
-              <ProposalStatusChip status={proposal.status} />
-            </Stack>
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              sx={{ mt: 1.25 }}
-            >
-              <Typography sx={{ color: brand.magenta[600], fontSize: 12, fontWeight: 700 }}>
-                {proposal.value}
-              </Typography>
-              <ProposalActions proposalId={proposal.id} />
-            </Stack>
-          </Box>
-        ))}
+                <ProposalActions proposalId={proposal.id} />
+              </Stack>
+            </Box>
+          ))}
       </Stack>
     </Paper>
   )

@@ -46,6 +46,9 @@ describe('DashboardRouteShell', () => {
       expect(screen.getByRole('banner')).toBeVisible()
       expect(screen.queryByRole('complementary')).not.toBeInTheDocument()
       expect(screen.getByRole('main')).toHaveTextContent('Route content')
+      expect(
+        screen.getByRole('navigation', { name: 'Navegação inferior do proprietário' }),
+      ).toBeInTheDocument()
     },
   )
 
@@ -64,5 +67,8 @@ describe('DashboardRouteShell', () => {
     expect(screen.getByRole('complementary')).toBeVisible()
     expect(screen.queryByRole('banner')).not.toBeInTheDocument()
     expect(screen.getByRole('main')).toHaveTextContent('Route content')
+    expect(
+      screen.getByRole('navigation', { name: 'Navegação inferior do proprietário' }),
+    ).toBeInTheDocument()
   })
 })
