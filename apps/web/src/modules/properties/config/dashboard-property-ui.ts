@@ -28,33 +28,20 @@ export const dashboardPropertyActivityToneStyles: Record<DashboardActivityTone, 
   error: brand.semantic.error,
 }
 
-export const dashboardPropertyColumns = [
-  'IMÓVEL',
-  'TIPO',
-  'PREÇO',
-  'STATUS',
-  'CORRETOR',
-  'ATUALIZADO',
-  'AÇÕES',
-]
-
-export const dashboardPropertyTableGridColumns =
-  'minmax(420px, 2.35fr) minmax(170px, 0.9fr) minmax(190px, 1fr) minmax(165px, 0.85fr) minmax(205px, 1fr) minmax(180px, 0.9fr) minmax(130px, 0.65fr)'
-
 export const dashboardPropertyTabs: DashboardPropertyDetailTab[] = [
-  'Dados',
-  'Mídia',
-  'Valores',
-  'Histórico',
+  'data',
+  'media',
+  'values',
+  'history',
 ]
 
-export const createPropertySteps: Array<{ key: CreatePropertyStepKey; label: string }> = [
-  { key: 'basic', label: 'Dados Básicos' },
-  { key: 'address', label: 'Endereço' },
-  { key: 'features', label: 'Características' },
-  { key: 'media', label: 'Mídia' },
-  { key: 'values', label: 'Valores' },
-  { key: 'publishing', label: 'Publicação' },
+export const createPropertySteps: Array<{ key: CreatePropertyStepKey }> = [
+  { key: 'basic' },
+  { key: 'address' },
+  { key: 'features' },
+  { key: 'media' },
+  { key: 'values' },
+  { key: 'publishing' },
 ]
 
 export const createPropertyTypeOptions = ['Apartamento', 'Casa', 'Studio', 'Cobertura', 'Comercial']

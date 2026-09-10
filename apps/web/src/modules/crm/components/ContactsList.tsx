@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { Box, GlobalStyles, Paper, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { brand, radius, shadows, surface } from '@shared/theme/tokens'
 
@@ -26,6 +27,7 @@ export function ContactsList({
   onOpenInteractions,
   onOpenMoreOptions,
 }: ContactsListProps = {}) {
+  const t = useTranslations('crm.contacts')
   const [search, setSearch] = useState('')
   const [activeFilter, setActiveFilter] = useState<ContactFilter>('Todos')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
@@ -135,9 +137,7 @@ export function ContactsList({
           </>
         ) : (
           <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 240, px: 2 }}>
-            <Typography sx={{ color: 'text.secondary', fontSize: 12.5 }}>
-              Nenhum contato encontrado.
-            </Typography>
+            <Typography sx={{ color: 'text.secondary', fontSize: 12.5 }}>{t('empty')}</Typography>
           </Stack>
         )}
 

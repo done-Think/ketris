@@ -25,8 +25,6 @@ export type AgencyPublicProfileEditorFormValues = {
 
 export type AgencyPublicProfileSectionOption = {
   key: AgencyPublicProfileSectionSlotKey
-  label: string
-  description: string
 }
 
 export type AgencyPublicProfileImageFieldConfig = {

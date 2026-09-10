@@ -8,6 +8,7 @@ export type SalesPipelineStageId =
 export type SalesPipelineStage = {
   id: SalesPipelineStageId
   label: string
+  labelKey: string
   statuses: readonly OpportunityStatus[]
   color: string
   softColor: string
@@ -15,6 +16,7 @@ export type SalesPipelineStage = {
 
 export type SalesPipelineProjectedTotal = {
   label: string
+  labelKey: 'rent' | 'sale' | 'uncategorized'
   value: string
 }
 
@@ -31,6 +33,7 @@ export type SalesPipelineToolbarProps = {
   onFilterOpen: (anchor: HTMLElement) => void
   onFilterClose: () => void
   onStageSelect: (stageId: SalesPipelineStageId | null) => void
+  onNewOpportunity: () => void
 }
 
 export type PipelineStageColumnProps = {

@@ -1,14 +1,15 @@
 'use client'
 
-import { Box } from '@mui/material'
+import { Alert, Box, Button } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { surface } from '@shared/theme/tokens'
 
 import { getMarketplaceNavigationItemIdByPurpose } from '../config/navigation'
 import { useSearchResults } from '../hooks/use-search-results'
 import type { SearchResultsPageProps } from '../types/search'
-import { MarketplaceHeader } from './MarketplaceHeader'
 import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
+import { MarketplaceHeader } from './MarketplaceHeader'
 import {
   SearchResultsFilterButton,
   SearchResultsFilters,
@@ -19,9 +20,11 @@ import { SearchResultsPagination } from './search-results/SearchResultsPaginatio
 import { SearchResultsToolbar } from './search-results/SearchResultsToolbar'
 
 export function SearchResultsPage({ initialLocation = '', purpose }: SearchResultsPageProps) {
+  const t = useTranslations('marketplace')
+  const errorT = useTranslations('marketplace.searchResults.error')
   const results = useSearchResults({ purpose, initialLocation })
   const activeItemId = getMarketplaceNavigationItemIdByPurpose(purpose)
-  const purposeLabel = purpose === 'comprar' ? 'Comprar' : 'Alugar'
+  const purposeLabel = purpose === 'comprar' ? t('navigation.buy') : t('navigation.rent')
 
   return (
     <Box
@@ -50,7 +53,9 @@ export function SearchResultsPage({ initialLocation = '', purpose }: SearchResul
             minWidth: 0,
           }}
         >
-          <MarketplaceBreadcrumbs items={[{ label: 'Home', href: '/' }, { label: purposeLabel }]} />
+          <MarketplaceBreadcrumbs
+            items={[{ label: t('navigation.home'), href: '/' }, { label: purposeLabel }]}
+          />
           <SearchResultsFilters
             locationQuery={results.locationQuery}
             setLocationQuery={results.setLocationQuery}
@@ -82,8 +87,22 @@ export function SearchResultsPage({ initialLocation = '', purpose }: SearchResul
             sortOption={results.sortOption}
             viewMode={results.viewMode}
           />
+          {results.isError ? (
+            <Alert
+              severity="error"
+              sx={{ mb: 2 }}
+              action={
+                <Button color="inherit" size="small" onClick={() => results.refetch()}>
+                  {errorT('retry')}
+                </Button>
+              }
+            >
+              {errorT('title')}
+            </Alert>
+          ) : null}
           <SearchResultsList
             properties={results.filteredResults}
+            isLoading={results.isLoading}
             selectedPropertyId={results.selectedPropertyId}
             setSelectedPropertyId={results.setSelectedPropertyId}
             viewMode={results.viewMode}
@@ -95,6 +114,7 @@ export function SearchResultsPage({ initialLocation = '', purpose }: SearchResul
           properties={results.filteredResults}
           selectedPropertyId={results.selectedPropertyId}
           setSelectedPropertyId={results.setSelectedPropertyId}
+          searchQuery={results.locationQuery}
         />
       </Box>
     </Box>

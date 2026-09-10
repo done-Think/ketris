@@ -1,4 +1,5 @@
 import { Box, Container, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { alpha, componentText, gradients, surface, zIndex } from '@shared/theme/tokens'
 
@@ -22,8 +23,11 @@ export function HeroSection({
   selectSearchValue,
   updatePriceRange,
   filterSearchOptions,
+  getSearchOptionLabel,
   setSearchDraft,
 }: HeroSectionProps) {
+  const t = useTranslations('marketplace.home.hero')
+
   return (
     <Box
       component="section"
@@ -68,10 +72,10 @@ export function HeroSection({
               }}
             >
               <Box component="span" sx={{ display: 'block' }}>
-                A infraestrutura digital
+                {t('titleLine1')}
               </Box>
               <Box component="span" sx={{ display: 'block' }}>
-                do mercado imobiliário
+                {t('titleLine2')}
               </Box>
             </Typography>
 
@@ -85,7 +89,7 @@ export function HeroSection({
                 whiteSpace: { md: 'nowrap' },
               }}
             >
-              Aluguel e venda de imóveis com tecnologia de ponta, processos ágeis e total confiança.
+              {t('subtitle')}
             </Typography>
 
             <DesktopSearchBar
@@ -101,6 +105,7 @@ export function HeroSection({
               selectSearchValue={selectSearchValue}
               updatePriceRange={updatePriceRange}
               filterSearchOptions={filterSearchOptions}
+              getSearchOptionLabel={getSearchOptionLabel}
               setSearchDraft={setSearchDraft}
             />
 
@@ -113,6 +118,7 @@ export function HeroSection({
               openSearchMenu={openSearchMenu}
               selectSearchValue={selectSearchValue}
               filterSearchOptions={filterSearchOptions}
+              getSearchOptionLabel={getSearchOptionLabel}
               setSearchDraft={setSearchDraft}
             />
 

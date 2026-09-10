@@ -6,25 +6,28 @@ export const propertyTypeFilterOptions = [
   'Casa',
 ] as const
 
+// `label` é usado como chave de tradução em `options.<label>`, então precisa ser um
+// identificador estável: o next-intl reserva o "." para expressar aninhamento e rejeita
+// chaves como "Até R$ 6.000". O texto exibido vive nos arquivos de mensagens.
 export const priceFilterOptions = [
-  { label: 'Preço', max: null },
-  { label: 'Até R$ 6.000', max: 6000 },
-  { label: 'Até R$ 10.000', max: 10000 },
+  { label: 'price', max: null },
+  { label: 'upTo6000', max: 6000 },
+  { label: 'upTo10000', max: 10000 },
 ] as const
 
 export const bedroomFilterOptions = [
-  { label: 'Quartos', min: null },
-  { label: '2+ quartos', min: 2 },
-  { label: '3+ quartos', min: 3 },
+  { label: 'bedrooms', min: null },
+  { label: 'bedrooms2Plus', min: 2 },
+  { label: 'bedrooms3Plus', min: 3 },
 ] as const
 
 export const areaFilterOptions = [
-  { label: 'Área', min: null },
-  { label: '90m²+', min: 90 },
-  { label: '100m²+', min: 100 },
+  { label: 'area', min: null },
+  { label: 'area90Plus', min: 90 },
+  { label: 'area100Plus', min: 100 },
 ] as const
 
 export const moreFilterOptions = [
-  { label: 'Todos', onlyWithParking: false },
-  { label: 'Com vaga', onlyWithParking: true },
+  { label: 'all', onlyWithParking: false },
+  { label: 'withParking', onlyWithParking: true },
 ] as const

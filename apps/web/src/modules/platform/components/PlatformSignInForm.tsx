@@ -5,8 +5,9 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Button, Stack, Typography } from '@mui/material'
 import { getSession, signIn, signOut } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
+import { useRouter } from '@/i18n/navigation'
 import { RhfTextField } from '@shared/components/form'
 
 import {
@@ -14,10 +15,9 @@ import {
   type PlatformSignInFormValues,
 } from '../schemas/platform-sign-in-schema'
 
-const GENERIC_ERROR = 'Não foi possível entrar. Confira o e-mail e a senha.'
-const FORBIDDEN_ERROR = 'Acesso restrito a administradores da plataforma.'
-
 export function PlatformSignInForm() {
+  const t = useTranslations('platform.login')
+  const formsT = useTranslations('platform.forms')
   const router = useRouter()
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -40,7 +40,7 @@ export function PlatformSignInForm() {
     })
 
     if (!result || result.error) {
-      setFormError(GENERIC_ERROR)
+      setFormError(t('genericError'))
       return
     }
 
@@ -48,7 +48,7 @@ export function PlatformSignInForm() {
 
     if (session?.scope !== 'platform') {
       await signOut({ redirect: false })
-      setFormError(FORBIDDEN_ERROR)
+      setFormError(t('forbiddenError'))
       return
     }
 
@@ -61,7 +61,7 @@ export function PlatformSignInForm() {
       <RhfTextField
         control={control}
         name="email"
-        label="E-mail"
+        label={formsT('email')}
         type="email"
         autoComplete="username"
         fullWidth
@@ -70,7 +70,7 @@ export function PlatformSignInForm() {
       <RhfTextField
         control={control}
         name="password"
-        label="Senha"
+        label={formsT('password')}
         type="password"
         autoComplete="current-password"
         fullWidth
@@ -79,11 +79,11 @@ export function PlatformSignInForm() {
       {formError ? <Alert severity="error">{formError}</Alert> : null}
 
       <Button type="submit" variant="contained" size="large" disabled={isSubmitting} fullWidth>
-        Entrar
+        {t('submit')}
       </Button>
 
       <Typography variant="body2" color="text.secondary" textAlign="center">
-        Acesso restrito à administração geral do Ketris.
+        {t('restrictedAccess')}
       </Typography>
     </Stack>
   )

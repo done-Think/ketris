@@ -1,26 +1,40 @@
 'use client'
 
+import { useEffect } from 'react'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material'
-import NextLink from 'next/link'
 import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 
+import { Link, useRouter } from '@/i18n/navigation'
 import { alpha, radius, surface } from '@shared/theme/tokens'
 
 import type { CrmAccessBoundaryProps } from '../types/layout'
 
 export function CrmAccessBoundary({ children }: CrmAccessBoundaryProps) {
+  const t = useTranslations('crm.access')
+  const router = useRouter()
   const { data: session, status } = useSession()
+  const isSessionInvalid =
+    status !== 'authenticated' || session?.scope !== 'tenant' || !session.tenantId
+
+  // The server-side layout only redirects on the initial navigation — if the session becomes
+  // invalid while the SPA is already open (token revalidated as stale, expiry, etc.), this is what
+  // sends the user back to /login instead of leaving them stuck on an empty/restricted screen.
+  useEffect(() => {
+    if (status === 'loading') return
+    if (isSessionInvalid) router.replace('/login')
+  }, [status, isSessionInvalid, router])
 
   if (status === 'loading') {
     return (
       <Stack alignItems="center" justifyContent="center" sx={{ minHeight: '55vh' }}>
-        <CircularProgress size={30} aria-label="Carregando sessão" />
+        <CircularProgress size={30} aria-label={t('loadingSession')} />
       </Stack>
     )
   }
 
-  if (status !== 'authenticated' || session?.scope !== 'tenant' || !session.tenantId) {
+  if (isSessionInvalid) {
     return (
       <Stack
         alignItems="center"
@@ -43,14 +57,14 @@ export function CrmAccessBoundary({ children }: CrmAccessBoundaryProps) {
         </Box>
         <Box>
           <Typography variant="h5" sx={{ mb: 0.5 }}>
-            Acesso restrito ao CRM
+            {t('restrictedTitle')}
           </Typography>
           <Typography color="text.secondary" sx={{ maxWidth: 430 }}>
-            Entre com uma conta vinculada a um tenant para visualizar as oportunidades.
+            {t('restrictedDescription')}
           </Typography>
         </Box>
-        <Button component={NextLink} href="/login" variant="contained">
-          Entrar no Ketris
+        <Button component={Link} href="/login" variant="contained">
+          {t('signIn')}
         </Button>
       </Stack>
     )

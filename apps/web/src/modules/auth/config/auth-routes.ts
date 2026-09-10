@@ -8,5 +8,8 @@ export const authRoutes = {
 } as const satisfies Record<string, AuthRoute>
 
 export function getRegisterDetailsRoute(profile: RegistrationProfileId) {
-  return `${authRoutes.registerDetails}?profile=${profile}`
+  return {
+    pathname: authRoutes.registerDetails,
+    query: { profile },
+  } as const
 }

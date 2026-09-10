@@ -3,8 +3,9 @@
 import { Box, Chip, Stack, Typography } from '@mui/material'
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
+import { Link } from '@/i18n/navigation'
 import {
   alpha,
   componentText,
@@ -15,28 +16,19 @@ import {
   surface,
 } from '@shared/theme/tokens'
 import type { PublicProfileListingsProps } from '../../types/profile-listings'
-
-function buildListingHref(href: string, source: PublicProfileListingsProps['source']) {
-  if (!source) return href
-
-  const params = new URLSearchParams({
-    source: source.type,
-    sourceHref: source.href,
-    sourceName: source.name,
-  })
-
-  return `${href}?${params.toString()}`
-}
+import { buildProfileListingHref } from '../../utils/property-links'
 
 export function PublicProfileListings({
   accentColor,
   listings,
   source,
 }: PublicProfileListingsProps) {
+  const t = useTranslations('marketplace.publicProfile.listings')
+
   return (
     <>
       <Typography variant="h5" sx={{ mb: 1.5 }}>
-        Imóveis representados
+        {t('title')}
       </Typography>
       <Box
         sx={{
@@ -53,8 +45,8 @@ export function PublicProfileListings({
           <Box
             key={listing.href}
             component={Link}
-            href={buildListingHref(listing.href, source)}
-            aria-label={`Ver imóvel ${listing.title}`}
+            href={buildProfileListingHref(listing.href, source)}
+            aria-label={t('viewAriaLabel', { title: listing.title })}
             sx={{
               border: '1px solid',
               borderColor: 'divider',
@@ -132,7 +124,7 @@ export function PublicProfileListings({
                 }}
               >
                 <HomeWorkOutlinedIcon sx={{ fontSize: iconSize.sm }} />
-                Ver imóvel
+                {t('viewProperty')}
               </Box>
             </Box>
           </Box>

@@ -6,6 +6,8 @@ import { InvalidCredentialsError } from '@server/auth/domain/errors'
 import { platformContainer } from '@server/platform/container'
 import { InvalidPlatformCredentialsError } from '@server/platform/domain/errors'
 
+import { buildMockTenantUser, isAuthMockEnabled, matchesMockCredentials } from './auth-mock'
+
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: 'jwt' },
@@ -22,6 +24,13 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
+
+        if (
+          isAuthMockEnabled() &&
+          matchesMockCredentials(credentials.email, credentials.password)
+        ) {
+          return buildMockTenantUser()
+        }
 
         try {
           const { user, accessToken, refreshToken } = await authContainer.loginUseCase.execute({
@@ -85,7 +94,22 @@ export const authOptions: NextAuthOptions = {
         token.scope = user.scope
         token.tenantId = user.tenantId
         token.papel = user.papel
+        return token
       }
+
+      // The JWT strategy never re-hits the DB on its own, so a token stays "valid" (signature +
+      // expiry only) even after the user is deactivated or the tenant is gone — revalidating here
+      // on every session check is what lets the existing scope!=='tenant' redirects actually fire.
+      if (token.scope === 'tenant' && typeof token.sub === 'string') {
+        const currentUser = await authContainer.userRepository.findById(token.sub)
+
+        if (!currentUser || !currentUser.ativo || currentUser.tenantId !== token.tenantId) {
+          token.scope = undefined
+          token.tenantId = undefined
+          token.papel = undefined
+        }
+      }
+
       return token
     },
     async session({ session, token }) {

@@ -1,4 +1,5 @@
 import type { PropertyCardData } from '@shared/types'
+import type { LocalizedHref } from '@shared/types/localized-href'
 
 export type MarketplacePropertyDetail = PropertyCardData & {
   id: string
@@ -20,7 +21,7 @@ export type PropertyBreadcrumbPurpose = 'alugar' | 'comprar'
 export type PropertyBreadcrumbOriginType = 'agency' | 'broker'
 
 export type PropertyBreadcrumbContext = {
-  originHref?: string
+  originHref?: LocalizedHref
   originName?: string
   originType?: PropertyBreadcrumbOriginType
   purpose?: PropertyBreadcrumbPurpose

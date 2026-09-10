@@ -1,20 +1,25 @@
-import { Box, Button } from '@mui/material'
+import { Box, Button, FormControl, MenuItem, Select } from '@mui/material'
+import { useTranslations } from 'next-intl'
 import { useWatch } from 'react-hook-form'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
-import { contractFilterTabs } from '../config/contract-ui'
-import type { ContractsFiltersProps } from '../types/contract'
+import { contractFilterTabs, contractTypeFilterOptions } from '../config/contract-ui'
+import type { ContractsFiltersFormValues, ContractsFiltersProps } from '../types/contract'
 
 export function ContractsFilters({ control, setValue }: ContractsFiltersProps) {
+  const t = useTranslations('contracts.filters.tabs')
+  const tType = useTranslations('contracts.filters.typeFilter')
   const status = useWatch({ control, name: 'status' })
   const period = useWatch({ control, name: 'period' })
+  const type = useWatch({ control, name: 'type' })
 
   return (
     <Box
       sx={{
         display: 'flex',
         flexWrap: 'wrap',
+        alignItems: 'center',
         gap: 1,
         mb: 2.4,
       }}
@@ -51,10 +56,37 @@ export function ContractsFilters({ control, setValue }: ContractsFiltersProps) {
               },
             }}
           >
-            {tab.label}
+            {t(tab.label)}
           </Button>
         )
       })}
+
+      <FormControl size="small" sx={{ minWidth: 168, ml: { sm: 'auto' } }}>
+        <Select
+          aria-label={tType('label')}
+          displayEmpty
+          value={type}
+          onChange={(event) =>
+            setValue('type', event.target.value as ContractsFiltersFormValues['type'], {
+              shouldDirty: true,
+            })
+          }
+          sx={{
+            height: 36,
+            borderRadius: `${radius.full}px`,
+            bgcolor: surface.paper,
+            fontSize: 14,
+            fontWeight: 800,
+            '& .MuiOutlinedInput-notchedOutline': { borderColor: alpha.graphite[8] },
+          }}
+        >
+          {contractTypeFilterOptions.map((option) => (
+            <MenuItem key={option} value={option}>
+              {tType(option)}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
     </Box>
   )
 }

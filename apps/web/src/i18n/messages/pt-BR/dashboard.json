@@ -1,0 +1,131 @@
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "properties": "Meus Imóveis",
+    "publicProfile": "Perfil Público",
+    "leads": "Leads",
+    "agenda": "Agenda",
+    "proposals": "Propostas",
+    "finance": "Financeiro",
+    "backToMarketplace": "Voltar para o marketplace",
+    "back": "Voltar",
+    "userRole": "Gestor de Operações"
+  },
+  "metadata": {
+    "overview": {
+      "metadataTitle": "Ketris | Dashboard"
+    },
+    "agenda": {
+      "metadataTitle": "Ketris | Agenda"
+    },
+    "finance": {
+      "metadataTitle": "Ketris | Financeiro"
+    },
+    "leads": {
+      "metadataTitle": "Ketris | Leads"
+    },
+    "proposals": {
+      "metadataTitle": "Ketris | Propostas"
+    }
+  },
+  "agenda": {
+    "title": "Agenda",
+    "subtitle": "Compromissos comerciais, visitas e retornos.",
+    "statuses": {
+      "Confirmada": "Confirmada",
+      "Pendente": "Pendente",
+      "Reagendar": "Reagendar"
+    }
+  },
+  "overview": {
+    "title": "Dashboard",
+    "notifications": "Notificações",
+    "performanceTitle": "Desempenho 6 meses",
+    "performanceTarget": "Meta: {value}%",
+    "activityDetail": {
+      "close": "Fechar",
+      "openGps": "Abrir no GPS",
+      "openGpsAriaLabel": "Abrir {address} no GPS",
+      "meetingTime": "Horário de encontro",
+      "location": "Local",
+      "client": "Cliente",
+      "owner": "Proprietário",
+      "notes": "Observações",
+      "visitProperty": "Imóvel da visita"
+    },
+    "leadDetails": {
+      "title": "Detalhes do lead",
+      "close": "Fechar",
+      "client": "Cliente",
+      "interest": "Interesse",
+      "origin": "Origem",
+      "desiredRegions": "Regiões de busca",
+      "cancel": "Cancelar",
+      "save": "Salvar",
+      "fields": {
+        "reportedNeed": "O que relatou",
+        "lookingFor": "O que procura",
+        "budgetRange": "Base de valores",
+        "downPayment": "Valor de entrada",
+        "financingStatus": "Financiamento",
+        "timeline": "Prazo de decisão",
+        "notes": "Observações para atendimento"
+      }
+    },
+    "recentLeads": {
+      "title": "Leads recentes",
+      "columns": {
+        "name": "Nome",
+        "interest": "Interesse",
+        "status": "Status",
+        "origin": "Origem",
+        "actions": "Ações"
+      },
+      "call": "Ligar",
+      "details": "Detalhes",
+      "statuses": {
+        "new": "Novo",
+        "inProgress": "Em andamento",
+        "qualified": "Qualificado",
+        "pending": "Pendente"
+      }
+    }
+  },
+  "finance": {
+    "title": "Financeiro",
+    "subtitle": "Movimentação financeira mensal e registros de venda/comissão.",
+    "movementTitle": "Movimentação mensal",
+    "movementSubtitle": "Entradas de vendas e comissões por mês.",
+    "sales": "Vendas",
+    "commissions": "Comissões",
+    "table": {
+      "type": "Tipo",
+      "description": "Lançamento",
+      "property": "Imóvel",
+      "dueDate": "Vencimento",
+      "amount": "Valor",
+      "status": "Status",
+      "noRows": "Nenhum lançamento encontrado",
+      "totalRows": "Total de linhas:",
+      "rowsPerPage": "Linhas por página"
+    },
+    "types": {
+      "Venda": "Venda",
+      "Comissão": "Comissão"
+    },
+    "statuses": {
+      "Recebido": "Recebido",
+      "Previsto": "Previsto",
+      "Atrasado": "Atrasado"
+    }
+  },
+  "proposals": {
+    "title": "Propostas",
+    "subtitle": "Negociações em andamento e valores de referência.",
+    "statuses": {
+      "underReview": "Em análise",
+      "counteroffer": "Contraproposta",
+      "approved": "Aprovada"
+    }
+  }
+}

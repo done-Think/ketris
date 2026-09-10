@@ -16,21 +16,22 @@ import {
   TextField,
 } from '@mui/material'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslations } from 'next-intl'
 
 import { editOpportunityFormSchema } from '../../schemas/opportunity-schema'
 import type { Opportunity, OpportunityEditFormValues } from '../../types/opportunity'
 import type { EditOpportunityDialogProps } from '../../types/opportunity-detail'
 
 const emptyEditOpportunityValues: OpportunityEditFormValues = {
-  interessadoNome: '',
-  interessadoEmail: '',
-  interessadoTelefone: '',
-  valorProposto: '',
-  prazoContratoMeses: '',
-  inicioPretendido: '',
-  garantiaContratual: 'NENHUMA',
-  condicoesEspeciais: '',
-  observacoes: '',
+  leadName: '',
+  leadEmail: '',
+  leadPhone: '',
+  proposedValue: '',
+  contractTermMonths: '',
+  desiredStartDate: '',
+  guaranteeType: 'NENHUMA',
+  specialConditions: '',
+  notes: '',
 }
 
 export function EditOpportunityDialog({
@@ -40,6 +41,7 @@ export function EditOpportunityDialog({
   onClose,
   onSave,
 }: EditOpportunityDialogProps) {
+  const t = useTranslations('crm.opportunityDetail')
   const {
     control,
     handleSubmit,
@@ -58,7 +60,7 @@ export function EditOpportunityDialog({
   return (
     <Dialog open={open} onClose={() => !isPending && onClose()} fullWidth maxWidth="sm">
       <Box component="form" noValidate onSubmit={handleSubmit(onSave)}>
-        <DialogTitle sx={{ letterSpacing: 0 }}>Editar oportunidade</DialogTitle>
+        <DialogTitle sx={{ letterSpacing: 0 }}>{t('editTitle')}</DialogTitle>
         <DialogContent>
           {initialValues && (
             <Box
@@ -70,104 +72,104 @@ export function EditOpportunityDialog({
               }}
             >
               <TextField
-                label="Nome"
+                label={t('fields.name')}
                 required
-                error={Boolean(errors.interessadoNome)}
-                helperText={errors.interessadoNome?.message}
-                {...register('interessadoNome')}
+                error={Boolean(errors.leadName)}
+                helperText={errors.leadName?.message}
+                {...register('leadName')}
               />
               <TextField
-                label="E-mail"
+                label={t('fields.email')}
                 type="email"
                 required
-                error={Boolean(errors.interessadoEmail)}
-                helperText={errors.interessadoEmail?.message}
-                {...register('interessadoEmail')}
+                error={Boolean(errors.leadEmail)}
+                helperText={errors.leadEmail?.message}
+                {...register('leadEmail')}
               />
               <TextField
-                label="Telefone"
-                error={Boolean(errors.interessadoTelefone)}
-                helperText={errors.interessadoTelefone?.message}
-                {...register('interessadoTelefone')}
+                label={t('fields.phone')}
+                error={Boolean(errors.leadPhone)}
+                helperText={errors.leadPhone?.message}
+                {...register('leadPhone')}
               />
               <TextField
-                label="Valor proposto"
+                label={t('fields.proposedValue')}
                 type="number"
                 required
-                inputProps={{ min: 0, step: 100 }}
-                error={Boolean(errors.valorProposto)}
-                helperText={errors.valorProposto?.message}
-                {...register('valorProposto')}
+                slotProps={{ htmlInput: { min: 0, step: 100 } }}
+                error={Boolean(errors.proposedValue)}
+                helperText={errors.proposedValue?.message}
+                {...register('proposedValue')}
               />
               <TextField
-                label="Prazo do contrato (meses)"
+                label={t('fields.contractTerm')}
                 type="number"
-                inputProps={{ min: 1, step: 1 }}
-                error={Boolean(errors.prazoContratoMeses)}
-                helperText={errors.prazoContratoMeses?.message}
-                {...register('prazoContratoMeses')}
+                slotProps={{ htmlInput: { min: 1, step: 1 } }}
+                error={Boolean(errors.contractTermMonths)}
+                helperText={errors.contractTermMonths?.message}
+                {...register('contractTermMonths')}
               />
               <TextField
-                label="Início pretendido"
+                label={t('fields.intendedStart')}
                 type="date"
-                InputLabelProps={{ shrink: true }}
-                error={Boolean(errors.inicioPretendido)}
-                helperText={errors.inicioPretendido?.message}
-                {...register('inicioPretendido')}
+                slotProps={{ inputLabel: { shrink: true } }}
+                error={Boolean(errors.desiredStartDate)}
+                helperText={errors.desiredStartDate?.message}
+                {...register('desiredStartDate')}
               />
               <Controller
                 control={control}
-                name="garantiaContratual"
+                name="guaranteeType"
                 render={({ field }) => (
-                  <FormControl error={Boolean(errors.garantiaContratual)}>
-                    <InputLabel id="guarantee-label">Garantia</InputLabel>
+                  <FormControl error={Boolean(errors.guaranteeType)}>
+                    <InputLabel id="guarantee-label">{t('fields.guarantee')}</InputLabel>
                     <Select
                       labelId="guarantee-label"
-                      label="Garantia"
+                      label={t('fields.guarantee')}
                       value={field.value}
                       onChange={(event) =>
-                        field.onChange(event.target.value as Opportunity['garantiaContratual'])
+                        field.onChange(event.target.value as Opportunity['guaranteeType'])
                       }
                       onBlur={field.onBlur}
                       inputRef={field.ref}
                     >
-                      <MenuItem value="NENHUMA">Não informada</MenuItem>
-                      <MenuItem value="FIADOR">Fiador</MenuItem>
-                      <MenuItem value="CAUCAO">Caução</MenuItem>
-                      <MenuItem value="SEGURO_FIANCA">Seguro-fiança</MenuItem>
+                      <MenuItem value="NENHUMA">{t('guarantees.NENHUMA')}</MenuItem>
+                      <MenuItem value="FIADOR">{t('guarantees.FIADOR')}</MenuItem>
+                      <MenuItem value="CAUCAO">{t('guarantees.CAUCAO')}</MenuItem>
+                      <MenuItem value="SEGURO_FIANCA">{t('guarantees.SEGURO_FIANCA')}</MenuItem>
                     </Select>
-                    {errors.garantiaContratual?.message && (
-                      <FormHelperText>{errors.garantiaContratual.message}</FormHelperText>
+                    {errors.guaranteeType?.message && (
+                      <FormHelperText>{errors.guaranteeType.message}</FormHelperText>
                     )}
                   </FormControl>
                 )}
               />
               <TextField
-                label="Condições especiais"
+                label={t('fields.specialConditions')}
                 helperText={
-                  errors.condicoesEspeciais?.message ?? 'Separe as condições por vírgulas.'
+                  errors.specialConditions?.message ?? t('fields.specialConditionsHelper')
                 }
-                error={Boolean(errors.condicoesEspeciais)}
-                {...register('condicoesEspeciais')}
+                error={Boolean(errors.specialConditions)}
+                {...register('specialConditions')}
               />
               <TextField
-                label="Observações"
+                label={t('fields.notes')}
                 multiline
                 minRows={3}
-                error={Boolean(errors.observacoes)}
-                helperText={errors.observacoes?.message}
+                error={Boolean(errors.notes)}
+                helperText={errors.notes?.message}
                 sx={{ gridColumn: { sm: '1 / -1' } }}
-                {...register('observacoes')}
+                {...register('notes')}
               />
             </Box>
           )}
         </DialogContent>
         <DialogActions>
           <Button disabled={isPending} onClick={onClose}>
-            Cancelar
+            {t('actions.cancel')}
           </Button>
           <Button type="submit" variant="contained" disabled={isPending || !initialValues}>
-            {isPending ? <CircularProgress size={20} /> : 'Salvar alterações'}
+            {isPending ? <CircularProgress size={20} /> : t('actions.saveChanges')}
           </Button>
         </DialogActions>
       </Box>

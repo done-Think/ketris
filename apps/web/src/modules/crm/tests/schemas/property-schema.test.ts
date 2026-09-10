@@ -8,20 +8,24 @@ import {
 
 const summary = {
   id: 'property-1',
-  titulo: 'Apartamento Jardins',
-  finalidade: 'ALUGUEL',
-  tipo: 'apartamento',
-  valor: 4800,
-  condominio: 900,
-  iptu: null,
-  quartos: 2,
-  banheiros: 2,
-  vagas: 1,
-  areaM2: 84,
-  cidade: 'Sao Paulo',
-  bairro: 'Jardins',
-  capaUrl: 'https://cdn.example.com/property.jpg',
-  publicadoEm: '2026-08-12T10:00:00.000Z',
+  title: 'Apartamento Jardins',
+  purpose: 'ALUGUEL',
+  propertyType: 'apartamento',
+  price: 4800,
+  condoFee: 900,
+  propertyTax: null,
+  bedrooms: 2,
+  bathrooms: 2,
+  parkingSpots: 1,
+  area: 84,
+  city: 'Sao Paulo',
+  neighborhood: 'Jardins',
+  latitude: -23.56,
+  longitude: -46.65,
+  brokerName: 'Marina Costa',
+  brokerAvatarUrl: 'https://cdn.example.com/marina.jpg',
+  coverUrl: 'https://cdn.example.com/property.jpg',
+  publishedAt: '2026-08-12T10:00:00.000Z',
 }
 
 describe('public property schemas', () => {
@@ -32,19 +36,19 @@ describe('public property schemas', () => {
   it('accepts the existing public property detail contract', () => {
     const result = publicPropertyDetailSchema.safeParse({
       ...summary,
-      descricao: 'Apartamento reformado.',
-      endereco: {
-        logradouro: 'Alameda Santos',
-        numero: '1000',
-        complemento: null,
-        bairro: 'Jardins',
-        cidade: 'Sao Paulo',
-        estado: 'SP',
-        cep: '01418-100',
+      description: 'Apartamento reformado.',
+      address: {
+        street: 'Alameda Santos',
+        number: '1000',
+        complement: null,
+        neighborhood: 'Jardins',
+        city: 'Sao Paulo',
+        state: 'SP',
+        zipCode: '01418-100',
         latitude: -23.56,
         longitude: -46.65,
       },
-      midias: [{ id: 'media-1', url: summary.capaUrl, tipo: 'foto', ordem: 0 }],
+      media: [{ id: 'media-1', url: summary.coverUrl, type: 'foto', order: 0 }],
     })
 
     expect(result.success).toBe(true)
@@ -53,13 +57,13 @@ describe('public property schemas', () => {
   it('validates only search filters accepted by the endpoint', () => {
     expect(
       publicPropertySearchFiltersSchema.safeParse({
-        finalidade: 'ALUGUEL',
-        precoMax: 5000,
-        quartosMin: 2,
+        purpose: 'ALUGUEL',
+        maxPrice: 5000,
+        minBedrooms: 2,
         q: 'Jardins',
       }).success,
     ).toBe(true)
-    expect(publicPropertySearchFiltersSchema.safeParse({ finalidade: 'TEMPORADA' }).success).toBe(
+    expect(publicPropertySearchFiltersSchema.safeParse({ purpose: 'TEMPORADA' }).success).toBe(
       false,
     )
   })

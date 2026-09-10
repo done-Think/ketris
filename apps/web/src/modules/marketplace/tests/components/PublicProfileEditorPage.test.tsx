@@ -1,6 +1,5 @@
 import { ThemeProvider } from '@mui/material'
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { fireEvent, render, screen } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 
@@ -40,21 +39,19 @@ describe('PublicProfileEditorPage', () => {
     expect(screen.getByRole('button', { name: 'Visualizar' })).toBeVisible()
   })
 
-  it('manages highlighted team members in the broker editor form', async () => {
-    const user = userEvent.setup()
-
+  it('manages highlighted team members in the broker editor form', () => {
     renderWithTheme(<PublicProfileEditorPage />)
 
     expect(screen.getByRole('heading', { name: 'Equipe' })).toBeVisible()
     expect(screen.getAllByDisplayValue('Marina Costa')).toHaveLength(2)
 
-    await user.click(screen.getByRole('button', { name: 'Adicionar membro' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Adicionar membro' }))
 
     expect(screen.getByText('Membro 4')).toBeVisible()
 
     const removeButtons = screen.getAllByRole('button', { name: 'Remover' })
 
-    await user.click(removeButtons[3])
+    fireEvent.click(removeButtons[3])
 
     expect(screen.queryByText('Membro 4')).not.toBeInTheDocument()
   })

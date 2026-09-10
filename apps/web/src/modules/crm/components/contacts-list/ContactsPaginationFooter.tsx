@@ -1,4 +1,5 @@
 import { Button, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { brand, radius, surface } from '@shared/theme/tokens'
 
@@ -13,6 +14,8 @@ export function ContactsPaginationFooter({
   canGoForward,
   onPageChange,
 }: ContactsPaginationFooterProps) {
+  const t = useTranslations('crm.contacts')
+
   return (
     <Stack
       component="footer"
@@ -29,23 +32,25 @@ export function ContactsPaginationFooter({
       }}
     >
       <Typography color="text.secondary" sx={{ fontSize: 11.5 }}>
-        Mostrando {firstVisible}–{lastVisible} de {resultTotal}
+        {t('resultsRange', { first: firstVisible, last: lastVisible, total: resultTotal })}
       </Typography>
       <Stack direction="row" spacing={0.75}>
         {[
           {
-            label: 'Anterior',
+            key: 'previous',
+            label: t('pagination.previous'),
             disabled: !onPageChange || !canGoBack,
             onClick: () => onPageChange?.(page - 1),
           },
           {
-            label: 'Próximo',
+            key: 'next',
+            label: t('pagination.next'),
             disabled: !onPageChange || !canGoForward,
             onClick: () => onPageChange?.(page + 1),
           },
-        ].map(({ label, disabled, onClick }) => (
+        ].map(({ key, label, disabled, onClick }) => (
           <Button
-            key={label}
+            key={key}
             type="button"
             variant="outlined"
             size="small"

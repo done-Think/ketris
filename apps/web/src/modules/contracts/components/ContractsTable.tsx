@@ -26,13 +26,14 @@ import {
 } from '@mui/material'
 import type { GridColDef, GridRowParams } from '@mui/x-data-grid'
 import { DataGrid } from '@mui/x-data-grid'
+import dayjs from 'dayjs'
+import { useTranslations } from 'next-intl'
 
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { contractActionMenuOptions, contractStatusStyles } from '../config/contract-ui'
 import type {
   ContractActionMenuIconKey,
-  ContractActionMenuState,
   ContractActionsCellProps,
   ContractIdentityCellProps,
   ContractListItem,
@@ -40,23 +41,39 @@ import type {
   ContractStatusCellProps,
 } from '../types/contract'
 
+// `amount`/`startDate`/`endDate` are pre-formatted display strings ("R$ 6.500/mês", "01/09/2026"),
+// which the DataGrid would otherwise sort lexicographically — these comparators make column
+// sorting numeric/chronological instead.
+function parseAmountValue(amount: string): number {
+  const digitsOnly = amount.replace(/\D/g, '')
+  return digitsOnly ? Number(digitsOnly) : 0
+}
+
+function compareAmount(a: string, b: string): number {
+  return parseAmountValue(a) - parseAmountValue(b)
+}
+
+function compareDate(a: string, b: string): number {
+  return dayjs(a, 'DD/MM/YYYY').valueOf() - dayjs(b, 'DD/MM/YYYY').valueOf()
+}
+
 function ContractIdentityCell({ row }: ContractIdentityCellProps) {
   return (
-    <Stack direction="row" alignItems="center" spacing={1.6} sx={{ minWidth: 0, height: '100%' }}>
+    <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0, height: '100%' }}>
       <Box
         component="img"
         src={row.propertyImageUrl}
         alt={row.property}
         sx={{
-          width: 78,
-          height: 78,
+          width: 56,
+          height: 56,
           borderRadius: `${radius.sm}px`,
           objectFit: 'cover',
           flexShrink: 0,
         }}
       />
       <Stack justifyContent="center" spacing={0.2} sx={{ minWidth: 0 }}>
-        <Typography noWrap sx={{ color: brand.graphite[500], fontSize: 16, fontWeight: 900 }}>
+        <Typography noWrap sx={{ color: brand.graphite[500], fontSize: 15, fontWeight: 900 }}>
           {row.property}
         </Typography>
         <Typography noWrap sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 700 }}>
@@ -68,15 +85,16 @@ function ContractIdentityCell({ row }: ContractIdentityCellProps) {
 }
 
 function ContractStatusCell({ status }: ContractStatusCellProps) {
+  const t = useTranslations('contracts.status')
   const statusStyle = contractStatusStyles[status]
 
   return (
     <Chip
-      label={status}
+      label={t(status)}
       size="small"
       sx={{
-        height: 29,
-        borderRadius: `${radius.sm}px`,
+        height: 30,
+        borderRadius: `${radius.full}px`,
         bgcolor: statusStyle.bgcolor,
         color: statusStyle.color,
         fontSize: 13,
@@ -98,20 +116,17 @@ const contractActionMenuIcons: Record<ContractActionMenuIconKey, typeof Visibili
 }
 
 function ContractActionsCell({ contract, onContractAction }: ContractActionsCellProps) {
-  const [menuState, setMenuState] = useState<ContractActionMenuState>({
-    anchorEl: null,
-    contract: null,
-    menu: null,
-  })
-  const menuOpen = Boolean(menuState.anchorEl)
+  const t = useTranslations('contracts.table')
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+  const menuOpen = Boolean(anchorEl)
 
   const openMenu = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation()
-    setMenuState({ anchorEl: event.currentTarget, contract, menu: 'view' })
+    setAnchorEl(event.currentTarget)
   }
 
   const closeMenu = () => {
-    setMenuState({ anchorEl: null, contract: null, menu: null })
+    setAnchorEl(null)
   }
 
   return (
@@ -124,9 +139,9 @@ function ContractActionsCell({ contract, onContractAction }: ContractActionsCell
         alignItems: 'center',
       }}
     >
-      <Tooltip title="Ações">
+      <Tooltip title={t('actionsTooltip')}>
         <IconButton
-          aria-label={`Ações do contrato ${contract.code}`}
+          aria-label={t('actionsAriaLabel', { code: contract.code })}
           onClick={openMenu}
           sx={contractIconButtonSx}
         >
@@ -134,7 +149,7 @@ function ContractActionsCell({ contract, onContractAction }: ContractActionsCell
         </IconButton>
       </Tooltip>
       <Menu
-        anchorEl={menuState.anchorEl}
+        anchorEl={anchorEl}
         open={menuOpen}
         onClose={closeMenu}
         onClick={(event) => event.stopPropagation()}
@@ -163,7 +178,7 @@ function ContractActionsCell({ contract, onContractAction }: ContractActionsCell
                 <MenuItem
                   key={option.action}
                   onClick={() => {
-                    if (menuState.contract) onContractAction(menuState.contract, option.action)
+                    onContractAction(contract, option.action)
                     closeMenu()
                   }}
                   sx={{ minHeight: 48, gap: 1.2 }}
@@ -172,7 +187,7 @@ function ContractActionsCell({ contract, onContractAction }: ContractActionsCell
                     <OptionIcon sx={{ fontSize: iconSize.sm }} />
                   </ListItemIcon>
                   <ListItemText
-                    primary={option.label}
+                    primary={t(`menu.${option.action}`)}
                     primaryTypographyProps={{ fontSize: 16, fontWeight: 800 }}
                   />
                 </MenuItem>
@@ -203,10 +218,11 @@ export function ContractsTable({
   onContractAction,
   onContractSelect,
 }: ContractsTableProps) {
+  const t = useTranslations('contracts.table')
   const columns: GridColDef<ContractListItem>[] = [
     {
       field: 'property',
-      headerName: 'Imóvel',
+      headerName: t('columns.property'),
       flex: 1.45,
       minWidth: 300,
       disableColumnMenu: true,
@@ -215,7 +231,7 @@ export function ContractsTable({
     },
     {
       field: 'tenant',
-      headerName: 'Locatário',
+      headerName: t('columns.tenant'),
       flex: 1,
       minWidth: 200,
       disableColumnMenu: true,
@@ -223,31 +239,34 @@ export function ContractsTable({
     },
     {
       field: 'amount',
-      headerName: 'Valor',
+      headerName: t('columns.amount'),
       flex: 0.7,
       minWidth: 140,
       disableColumnMenu: true,
       hideable: false,
+      sortComparator: compareAmount,
     },
     {
       field: 'startDate',
-      headerName: 'Início',
+      headerName: t('columns.startDate'),
       flex: 0.7,
       minWidth: 130,
       disableColumnMenu: true,
       hideable: false,
+      sortComparator: compareDate,
     },
     {
       field: 'endDate',
-      headerName: 'Vencimento',
+      headerName: t('columns.endDate'),
       flex: 0.8,
       minWidth: 150,
       disableColumnMenu: true,
       hideable: false,
+      sortComparator: compareDate,
     },
     {
       field: 'status',
-      headerName: 'Status',
+      headerName: t('columns.status'),
       flex: 0.7,
       minWidth: 150,
       disableColumnMenu: true,
@@ -256,7 +275,7 @@ export function ContractsTable({
     },
     {
       field: 'actions',
-      headerName: 'Ações',
+      headerName: t('columns.actions'),
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
@@ -284,8 +303,7 @@ export function ContractsTable({
         rows={contracts}
         columns={columns}
         autoHeight
-        rowHeight={108}
-        columnHeaderHeight={60}
+        rowHeight={82}
         disableRowSelectionOnClick
         pageSizeOptions={[5, 10, 25]}
         initialState={{
@@ -303,31 +321,28 @@ export function ContractsTable({
           pagination: { paginationModel: { pageSize: 5 } },
         }}
         localeText={{
-          noRowsLabel: 'Nenhum contrato encontrado',
-          footerTotalRows: 'Total de linhas:',
+          noRowsLabel: t('noRowsLabel'),
+          footerTotalRows: t('totalRows'),
           MuiTablePagination: {
-            labelRowsPerPage: 'Linhas por página',
-            labelDisplayedRows: ({ from, to }) => `Mostrando ${from}-${to} de ${totalCount}`,
+            labelRowsPerPage: t('rowsPerPage'),
+            labelDisplayedRows: ({ from, to }) =>
+              t('displayedRows', { from, to, total: totalCount }),
           },
         }}
         onRowClick={(params: GridRowParams<ContractListItem>) => onContractSelect(params.row)}
         sx={{
           border: 0,
-          minHeight: 500,
+          minHeight: 400,
           color: brand.graphite[500],
           '& .MuiDataGrid-columnHeaders': {
             bgcolor: surface.app,
             color: brand.neutral[500],
-            fontSize: 14,
+            fontSize: 12,
             fontWeight: 900,
-          },
-          '& .MuiDataGrid-columnHeaderTitle': {
-            fontWeight: 900,
+            textTransform: 'uppercase',
           },
           '& .MuiDataGrid-cell': {
             borderColor: brand.neutral[100],
-            fontSize: 16,
-            fontWeight: 800,
             outline: 'none',
           },
           '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': {
@@ -347,13 +362,7 @@ export function ContractsTable({
             bgcolor: alpha.magenta[6],
           },
           '& .MuiDataGrid-footerContainer': {
-            minHeight: 70,
             borderColor: brand.neutral[100],
-          },
-          '& .MuiTablePagination-root': {
-            color: brand.graphite[500],
-            fontSize: 15,
-            fontWeight: 700,
           },
         }}
       />

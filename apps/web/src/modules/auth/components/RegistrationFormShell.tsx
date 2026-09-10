@@ -1,4 +1,5 @@
 import { Box, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { surface } from '@shared/theme/tokens'
 
@@ -13,6 +14,8 @@ export function RegistrationFormShell({
   title,
   totalSteps,
 }: RegistrationFormShellProps) {
+  const t = useTranslations('auth.register.progress')
+
   return (
     <Box
       sx={{
@@ -39,7 +42,7 @@ export function RegistrationFormShell({
         <Box sx={{ width: '100%', maxWidth: 550 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Typography variant="overline" sx={{ color: 'primary.main' }}>
-              Passo {currentStep} de {totalSteps}
+              {t('shortLabel', { currentStep, totalSteps })}
             </Typography>
             <RegistrationProgress currentStep={currentStep} totalSteps={totalSteps} />
           </Box>

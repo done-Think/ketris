@@ -17,24 +17,24 @@ import {
 import { useSnackbar } from 'notistack'
 import axios from 'axios'
 import { useSession } from 'next-auth/react'
-import NextLink from 'next/link'
+import { useTranslations } from 'next-intl'
 
+import { Link } from '@/i18n/navigation'
 import { radius, shadows } from '@shared/theme/tokens'
 
 import { useAdmins } from '../hooks/use-admins'
 import { useDeactivateAdmin } from '../hooks/use-deactivate-admin'
 
-const GENERIC_ERROR = 'Não foi possível desativar o administrador. Tente novamente.'
-
-function extractErrorMessage(error: unknown): string {
+function extractErrorMessage(error: unknown, fallback: string): string {
   if (axios.isAxiosError(error)) {
     const message = error.response?.data?.error?.message
     if (typeof message === 'string') return message
   }
-  return GENERIC_ERROR
+  return fallback
 }
 
 export function AdminsList() {
+  const t = useTranslations('auth.backoffice')
   const { data: session } = useSession()
   const { data: admins, isLoading, isError } = useAdmins()
   const deactivateAdmin = useDeactivateAdmin()
@@ -45,9 +45,11 @@ export function AdminsList() {
     setPendingId(id)
     try {
       await deactivateAdmin.mutateAsync(id)
-      enqueueSnackbar('Administrador desativado.', { variant: 'success' })
+      enqueueSnackbar(t('deactivateSuccess'), { variant: 'success' })
     } catch (error) {
-      enqueueSnackbar(extractErrorMessage(error), { variant: 'error' })
+      enqueueSnackbar(extractErrorMessage(error, t('deactivateGenericError')), {
+        variant: 'error',
+      })
     } finally {
       setPendingId(null)
     }
@@ -61,18 +63,16 @@ export function AdminsList() {
         </Stack>
       ) : isError ? (
         <Stack sx={{ py: 6 }} alignItems="center">
-          <Typography color="text.secondary">
-            Não foi possível carregar os administradores.
-          </Typography>
+          <Typography color="text.secondary">{t('adminsLoadError')}</Typography>
         </Stack>
       ) : admins && admins.length > 0 ? (
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Nome</TableCell>
-              <TableCell>E-mail</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell align="right">Ações</TableCell>
+              <TableCell>{t('fields.name')}</TableCell>
+              <TableCell>{t('fields.email')}</TableCell>
+              <TableCell>{t('fields.status')}</TableCell>
+              <TableCell align="right">{t('fields.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -82,12 +82,14 @@ export function AdminsList() {
               return (
                 <TableRow key={admin.id}>
                   <TableCell>
-                    <NextLink href={`/backoffice/admins/${admin.id}`}>{admin.nome}</NextLink>
+                    <Link href={{ pathname: '/backoffice/admins/[id]', params: { id: admin.id } }}>
+                      {admin.nome}
+                    </Link>
                   </TableCell>
                   <TableCell>{admin.email}</TableCell>
                   <TableCell>
                     <Chip
-                      label={admin.ativo ? 'Ativo' : 'Inativo'}
+                      label={admin.ativo ? t('statusActive') : t('statusInactive')}
                       color={admin.ativo ? 'success' : 'default'}
                       size="small"
                     />
@@ -99,7 +101,7 @@ export function AdminsList() {
                       disabled={isSelf || !admin.ativo || pendingId === admin.id}
                       onClick={() => handleDeactivate(admin.id)}
                     >
-                      Desativar
+                      {t('deactivate')}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -109,7 +111,7 @@ export function AdminsList() {
         </Table>
       ) : (
         <Stack sx={{ py: 6 }} alignItems="center">
-          <Typography color="text.secondary">Nenhum administrador cadastrado ainda.</Typography>
+          <Typography color="text.secondary">{t('emptyAdmins')}</Typography>
         </Stack>
       )}
     </Card>

@@ -1,0 +1,144 @@
+{
+  "metadata": {
+    "dashboard": {
+      "metadataTitle": "Ketris | My Properties"
+    },
+    "detail": {
+      "metadataTitle": "Ketris | Property Details"
+    },
+    "create": {
+      "metadataTitle": "Ketris | List Property"
+    }
+  },
+  "dashboard": {
+    "title": "My Properties",
+    "subtitle": "Manage your property portfolio",
+    "searchPlaceholder": "Search properties...",
+    "searchAriaLabel": "Search properties",
+    "create": "New Property",
+    "table": {
+      "property": "Property",
+      "type": "Type",
+      "price": "Price",
+      "status": "Status",
+      "broker": "Broker",
+      "updated": "Updated",
+      "actions": "Actions",
+      "editAriaLabel": "Edit {title}",
+      "viewAriaLabel": "View {title}",
+      "noRows": "No properties found",
+      "totalRows": "Total rows:",
+      "rowsPerPage": "Rows per page",
+      "displayedRows": "{from}-{to} of {count}"
+    },
+    "filters": {
+      "Todos": "All",
+      "Disponível": "Available",
+      "Alugado": "Rented",
+      "Ativo": "Active",
+      "Vendido": "Sold",
+      "Em análise": "Under review",
+      "Vencendo": "Expiring",
+      "Inativo": "Inactive"
+    }
+  },
+  "detail": {
+    "edit": "Edit",
+    "unpublish": "Unpublish",
+    "summaryTitle": "Property Summary",
+    "mediaTitle": "Media",
+    "valuesTitle": "Values",
+    "historyTitle": "Full history",
+    "participantsTitle": "Participants",
+    "activityTitle": "Activity History",
+    "summary": {
+      "type": "TYPE",
+      "purpose": "PURPOSE",
+      "bedrooms": "BEDROOMS",
+      "bathrooms": "BATHROOMS",
+      "parkingSpaces": "PARKING",
+      "area": "AREA",
+      "condominium": "CONDO FEE",
+      "iptu": "PROPERTY TAX"
+    },
+    "pricing": {
+      "rent": "RENT",
+      "sale": "SALE",
+      "condominium": "CONDO FEE",
+      "iptu": "PROPERTY TAX",
+      "administrationFee": "MANAGEMENT FEE",
+      "securityDeposit": "GUARANTEE",
+      "lastAdjustment": "LAST ADJUSTMENT"
+    },
+    "tabs": {
+      "data": "Data",
+      "media": "Media",
+      "values": "Values",
+      "history": "History"
+    }
+  },
+  "create": {
+    "title": "List property",
+    "back": "Back",
+    "next": "Next",
+    "publish": "Publish",
+    "fields": {
+      "propertyType": "Property type",
+      "purpose": "Purpose",
+      "title": "Listing title",
+      "description": "Description",
+      "street": "Address",
+      "number": "Number",
+      "neighborhood": "Neighborhood",
+      "city": "City",
+      "state": "State",
+      "zipCode": "ZIP code",
+      "bedrooms": "Bedrooms",
+      "bathrooms": "Bathrooms",
+      "parkingSpaces": "Parking spaces",
+      "area": "Usable area",
+      "rentValue": "Rent value",
+      "saleValue": "Sale value",
+      "condominium": "Condo fee",
+      "iptu": "Monthly property tax",
+      "securityDeposit": "Guarantee",
+      "commission": "Commission"
+    },
+    "steps": {
+      "ariaLabel": "Listing steps",
+      "basic": "Basic Data",
+      "address": "Address",
+      "features": "Features",
+      "media": "Media",
+      "values": "Values",
+      "publishing": "Publishing"
+    },
+    "purposes": {
+      "Aluguel": "Rent",
+      "Venda": "Sale"
+    },
+    "propertyTypes": {
+      "Apartamento": "Apartment",
+      "Casa": "House",
+      "Studio": "Studio",
+      "Cobertura": "Penthouse",
+      "Comercial": "Commercial"
+    },
+    "features": {
+      "Mobiliado": "Furnished",
+      "Varanda gourmet": "Gourmet balcony",
+      "Aceita pets": "Pet friendly",
+      "Portaria 24h": "24h concierge"
+    },
+    "mediaSlots": {
+      "Foto principal": "Main photo",
+      "Galeria": "Gallery",
+      "Planta baixa": "Floor plan"
+    },
+    "publishingOptions": {
+      "Publicar no marketplace após revisão": "Publish on the marketplace after review",
+      "Permitir contato por WhatsApp": "Allow WhatsApp contact",
+      "Destacar imóvel na listagem inicial": "Feature property in the initial listing"
+    }
+  }
+}

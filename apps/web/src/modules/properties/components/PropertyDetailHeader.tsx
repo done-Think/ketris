@@ -3,6 +3,7 @@ import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
 import NextLink from 'next/link'
+import { useTranslations } from 'next-intl'
 
 import { radius, surface } from '@shared/theme/tokens'
 
@@ -10,6 +11,8 @@ import { dashboardPropertyStatusStyles } from '../config/dashboard-property-ui'
 import type { PropertyDetailHeaderProps } from '../types/dashboard-property'
 
 export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
+  const t = useTranslations('properties.detail')
+  const statusT = useTranslations('properties.dashboard.filters')
   const status = dashboardPropertyStatusStyles[property.status]
   const showActiveContractLink = Boolean(property.activeContractId && property.status === 'Alugado')
 
@@ -27,7 +30,7 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
             {property.title}
           </Typography>
           <Chip
-            label={property.status}
+            label={statusT(property.status)}
             sx={{
               height: 32,
               borderRadius: `${radius.full}px`,
@@ -57,7 +60,7 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
             fontWeight: 900,
           }}
         >
-          Editar
+          {t('edit')}
         </Button>
         <Stack spacing={1.1}>
           <Button
@@ -71,7 +74,7 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
               fontWeight: 900,
             }}
           >
-            Despublicar
+            {t('unpublish')}
           </Button>
           {showActiveContractLink ? (
             <Button

@@ -1,0 +1,144 @@
+{
+  "metadata": {
+    "dashboard": {
+      "metadataTitle": "Ketris | Mis inmuebles"
+    },
+    "detail": {
+      "metadataTitle": "Ketris | Detalle del inmueble"
+    },
+    "create": {
+      "metadataTitle": "Ketris | Publicar inmueble"
+    }
+  },
+  "dashboard": {
+    "title": "Mis inmuebles",
+    "subtitle": "Gestiona tu cartera de inmuebles",
+    "searchPlaceholder": "Buscar inmuebles...",
+    "searchAriaLabel": "Buscar inmuebles",
+    "create": "Nuevo inmueble",
+    "table": {
+      "property": "Inmueble",
+      "type": "Tipo",
+      "price": "Precio",
+      "status": "Estado",
+      "broker": "Corredor",
+      "updated": "Actualizado",
+      "actions": "Acciones",
+      "editAriaLabel": "Editar {title}",
+      "viewAriaLabel": "Ver {title}",
+      "noRows": "No se encontraron inmuebles",
+      "totalRows": "Total de filas:",
+      "rowsPerPage": "Filas por página",
+      "displayedRows": "{from}-{to} de {count}"
+    },
+    "filters": {
+      "Todos": "Todos",
+      "Disponível": "Disponible",
+      "Alugado": "Alquilado",
+      "Ativo": "Activo",
+      "Vendido": "Vendido",
+      "Em análise": "En revisión",
+      "Vencendo": "Por vencer",
+      "Inativo": "Inactivo"
+    }
+  },
+  "detail": {
+    "edit": "Editar",
+    "unpublish": "Despublicar",
+    "summaryTitle": "Resumen del inmueble",
+    "mediaTitle": "Medios",
+    "valuesTitle": "Valores",
+    "historyTitle": "Historial completo",
+    "participantsTitle": "Participantes",
+    "activityTitle": "Historial de actividad",
+    "summary": {
+      "type": "TIPO",
+      "purpose": "FINALIDAD",
+      "bedrooms": "DORMITORIOS",
+      "bathrooms": "BAÑOS",
+      "parkingSpaces": "PLAZAS",
+      "area": "ÁREA",
+      "condominium": "GASTOS COMUNES",
+      "iptu": "IMPUESTO"
+    },
+    "pricing": {
+      "rent": "ALQUILER",
+      "sale": "VENTA",
+      "condominium": "GASTOS COMUNES",
+      "iptu": "IMPUESTO",
+      "administrationFee": "TASA DE ADMINISTRACIÓN",
+      "securityDeposit": "GARANTÍA",
+      "lastAdjustment": "ÚLTIMO AJUSTE"
+    },
+    "tabs": {
+      "data": "Datos",
+      "media": "Medios",
+      "values": "Valores",
+      "history": "Historial"
+    }
+  },
+  "create": {
+    "title": "Publicar inmueble",
+    "back": "Volver",
+    "next": "Siguiente",
+    "publish": "Publicar",
+    "fields": {
+      "propertyType": "Tipo de inmueble",
+      "purpose": "Finalidad",
+      "title": "Título del anuncio",
+      "description": "Descripción",
+      "street": "Dirección",
+      "number": "Número",
+      "neighborhood": "Barrio",
+      "city": "Ciudad",
+      "state": "Estado",
+      "zipCode": "Código postal",
+      "bedrooms": "Dormitorios",
+      "bathrooms": "Baños",
+      "parkingSpaces": "Plazas",
+      "area": "Área útil",
+      "rentValue": "Valor del alquiler",
+      "saleValue": "Valor de venta",
+      "condominium": "Gastos comunes",
+      "iptu": "Impuesto mensual",
+      "securityDeposit": "Garantía",
+      "commission": "Comisión"
+    },
+    "steps": {
+      "ariaLabel": "Etapas del registro",
+      "basic": "Datos básicos",
+      "address": "Dirección",
+      "features": "Características",
+      "media": "Medios",
+      "values": "Valores",
+      "publishing": "Publicación"
+    },
+    "purposes": {
+      "Aluguel": "Alquiler",
+      "Venda": "Venta"
+    },
+    "propertyTypes": {
+      "Apartamento": "Apartamento",
+      "Casa": "Casa",
+      "Studio": "Studio",
+      "Cobertura": "Ático",
+      "Comercial": "Comercial"
+    },
+    "features": {
+      "Mobiliado": "Amueblado",
+      "Varanda gourmet": "Balcón gourmet",
+      "Aceita pets": "Acepta mascotas",
+      "Portaria 24h": "Conserjería 24h"
+    },
+    "mediaSlots": {
+      "Foto principal": "Foto principal",
+      "Galeria": "Galería",
+      "Planta baixa": "Plano"
+    },
+    "publishingOptions": {
+      "Publicar no marketplace após revisão": "Publicar en el marketplace tras revisión",
+      "Permitir contato por WhatsApp": "Permitir contacto por WhatsApp",
+      "Destacar imóvel na listagem inicial": "Destacar inmueble en la lista inicial"
+    }
+  }
+}
