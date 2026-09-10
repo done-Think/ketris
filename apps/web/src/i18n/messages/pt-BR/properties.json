@@ -35,8 +35,10 @@
       "Todos": "Todos",
       "Disponível": "Disponível",
       "Alugado": "Alugado",
+      "Ativo": "Ativo",
       "Vendido": "Vendido",
       "Em análise": "Em análise",
+      "Vencendo": "Vencendo",
       "Inativo": "Inativo"
     }
   },

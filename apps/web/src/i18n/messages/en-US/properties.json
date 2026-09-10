@@ -35,8 +35,10 @@
       "Todos": "All",
       "Disponível": "Available",
       "Alugado": "Rented",
+      "Ativo": "Active",
       "Vendido": "Sold",
       "Em análise": "Under review",
+      "Vencendo": "Expiring",
       "Inativo": "Inactive"
     }
   },
