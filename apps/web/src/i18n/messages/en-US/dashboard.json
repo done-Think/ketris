@@ -31,6 +31,7 @@
   "agenda": {
     "title": "Schedule",
     "subtitle": "Commercial appointments, visits, and follow-ups.",
+    "freeSlot": "Free slot",
     "statuses": {
       "Confirmada": "Confirmed",
       "Pendente": "Pending",
@@ -86,6 +87,7 @@
       "origin": "Source",
       "desiredRegions": "Search regions",
       "cancel": "Cancel",
+      "edit": "Edit",
       "save": "Save",
       "fields": {
         "reportedNeed": "Reported need",
@@ -176,12 +178,22 @@
   "proposals": {
     "title": "Proposals",
     "subtitle": "Ongoing negotiations and reference values.",
+    "columns": {
+      "client": "Client",
+      "property": "Property",
+      "value": "Proposal",
+      "ownerExpectation": "Expectation",
+      "status": "Status"
+    },
     "detail": {
       "eyebrow": "Proposal detail",
       "close": "Close proposal",
       "value": "Proposed value",
       "ownerExpectation": "Owner expectation",
-      "status": "Status"
+      "currentStatus": "Current status",
+      "status": "Change status",
+      "cancel": "Cancel",
+      "saveStatus": "Save status"
     },
     "statuses": {
       "underReview": "Under review",

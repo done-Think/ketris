@@ -155,12 +155,7 @@ export function AgendaDashboardPage() {
   return (
     <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
       <Stack spacing={2.4}>
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          alignItems={{ xs: 'flex-start', md: 'center' }}
-          justifyContent="space-between"
-          spacing={2}
-        >
+        <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
           <Box>
             <Typography
               variant="h3"
@@ -180,6 +175,7 @@ export function AgendaDashboardPage() {
                 disabled={disablePreviousWeek}
                 onClick={() => setWeekStartDate(previousWeekStart)}
                 sx={{
+                  display: { xs: 'none', md: 'inline-flex' },
                   width: 36,
                   height: 36,
                   border: '1px solid',
@@ -190,7 +186,14 @@ export function AgendaDashboardPage() {
                 <ChevronLeftRoundedIcon sx={{ fontSize: iconSize.md }} />
               </IconButton>
             </Tooltip>
-            <Typography sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 900 }}>
+            <Typography
+              sx={{
+                color: brand.graphite[500],
+                display: { xs: 'none', md: 'block' },
+                fontSize: 14,
+                fontWeight: 900,
+              }}
+            >
               Agenda de {weekRange.startLabel}-{weekRange.endLabel}
             </Typography>
             <Tooltip title="Próxima semana">
@@ -199,6 +202,7 @@ export function AgendaDashboardPage() {
                 disabled={disableNextWeek}
                 onClick={() => setWeekStartDate(nextWeekStart)}
                 sx={{
+                  display: { xs: 'none', md: 'inline-flex' },
                   width: 36,
                   height: 36,
                   border: '1px solid',
@@ -209,18 +213,41 @@ export function AgendaDashboardPage() {
                 <ChevronRightRoundedIcon sx={{ fontSize: iconSize.md }} />
               </IconButton>
             </Tooltip>
+            <Tooltip title="Novo Evento">
+              <IconButton
+                aria-label="Novo Evento"
+                onClick={() => setIsEventFormOpen(true)}
+                sx={{
+                  display: { xs: 'inline-flex', md: 'none' },
+                  width: 44,
+                  height: 44,
+                  bgcolor: brand.magenta[500],
+                  color: surface.paper,
+                  '&:hover': { bgcolor: brand.magenta[600] },
+                }}
+              >
+                <AddRoundedIcon sx={{ fontSize: iconSize.xl }} />
+              </IconButton>
+            </Tooltip>
             <Button
               variant="contained"
               startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
               onClick={() => setIsEventFormOpen(true)}
-              sx={{ minHeight: 42, borderRadius: `${radius.sm}px`, fontWeight: 900 }}
+              sx={{
+                display: { xs: 'none', md: 'inline-flex' },
+                minHeight: 42,
+                borderRadius: `${radius.sm}px`,
+                fontWeight: 900,
+              }}
             >
               Novo Evento
             </Button>
-            <DashboardNotificationsButton
-              notifications={notifications}
-              onNotificationSelect={openNotificationEvent}
-            />
+            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+              <DashboardNotificationsButton
+                notifications={notifications}
+                onNotificationSelect={openNotificationEvent}
+              />
+            </Box>
           </Stack>
         </Stack>
 

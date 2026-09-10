@@ -33,6 +33,7 @@ export type AgendaCalendarDay = {
   dayLabel: string
   key: string
   monthLabel: string
+  monthLongLabel: string
   today: boolean
 }
 

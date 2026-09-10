@@ -4,7 +4,7 @@ import type { DashboardNotificationItem } from '@shared/types/dashboard-notifica
 
 import type { AgendaCalendarDay, AgendaEvent, AgendaWeekRange } from '../types/agenda-event'
 
-export const agendaVisibleDayCount = 5
+export const agendaVisibleDayCount = 7
 
 function capitalize(value: string) {
   return value.charAt(0).toLocaleUpperCase('pt-BR') + value.slice(1)
@@ -25,6 +25,7 @@ export function buildAgendaCalendarDays(weekStartDate: dayjs.Dayjs): AgendaCalen
       dayLabel: capitalize(date.format('ddd').replace('.', '')),
       key: date.format('YYYY-MM-DD'),
       monthLabel: capitalize(date.format('MMM').replace('.', '')),
+      monthLongLabel: capitalize(date.format('MMMM')),
       today: date.isSame(today, 'day'),
     }
   })

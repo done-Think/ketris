@@ -10,7 +10,12 @@ export type DashboardProposal = {
 }
 
 export type ProposalDetailDialogProps = {
+  onStatusChange: (proposalId: string, status: ProposalStatus) => void
   onClose: () => void
   open: boolean
   proposal: DashboardProposal | null
+}
+
+export type ProposalStatusFormValues = {
+  status: ProposalStatus
 }

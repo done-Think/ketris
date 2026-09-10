@@ -31,6 +31,7 @@
   "agenda": {
     "title": "Agenda",
     "subtitle": "Compromisos comerciales, visitas y retornos.",
+    "freeSlot": "Horario libre",
     "statuses": {
       "Confirmada": "Confirmada",
       "Pendente": "Pendiente",
@@ -86,6 +87,7 @@
       "origin": "Origen",
       "desiredRegions": "Regiones de búsqueda",
       "cancel": "Cancelar",
+      "edit": "Editar",
       "save": "Guardar",
       "fields": {
         "reportedNeed": "Qué relató",
@@ -176,12 +178,22 @@
   "proposals": {
     "title": "Propuestas",
     "subtitle": "Negociaciones en curso y valores de referencia.",
+    "columns": {
+      "client": "Cliente",
+      "property": "Inmueble",
+      "value": "Propuesta",
+      "ownerExpectation": "Expectativa",
+      "status": "Estado"
+    },
     "detail": {
       "eyebrow": "Detalle de la propuesta",
       "close": "Cerrar propuesta",
       "value": "Valor propuesto",
       "ownerExpectation": "Expectativa del propietario",
-      "status": "Estado"
+      "currentStatus": "Estado actual",
+      "status": "Cambiar estado",
+      "cancel": "Cancelar",
+      "saveStatus": "Guardar estado"
     },
     "statuses": {
       "underReview": "En revisión",

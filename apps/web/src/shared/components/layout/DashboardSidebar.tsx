@@ -39,6 +39,7 @@ import {
   zIndex,
 } from '@shared/theme/tokens'
 import type { DashboardNavigationContentProps } from '@shared/types/dashboard-navigation'
+import { DashboardNotificationsButton } from './DashboardNotificationsButton'
 
 const navigationItems = [
   { labelKey: 'dashboard', href: '/dashboard', icon: DashboardOutlinedIcon },
@@ -104,22 +105,25 @@ export function DashboardSidebar() {
           />
         </Box>
 
-        <IconButton
-          aria-label={t('openMenu')}
-          aria-expanded={isMobileMenuOpen ? 'true' : undefined}
-          onClick={() => setIsMobileMenuOpen(true)}
-          sx={{
-            width: 42,
-            height: 42,
-            border: '1px solid',
-            borderColor: alpha.graphite[8],
-            borderRadius: `${radius.sm}px`,
-            bgcolor: surface.paper,
-            color: brand.graphite[500],
-          }}
-        >
-          <MenuRoundedIcon sx={{ fontSize: iconSize.xl }} />
-        </IconButton>
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <DashboardNotificationsButton />
+          <IconButton
+            aria-label={t('openMenu')}
+            aria-expanded={isMobileMenuOpen ? 'true' : undefined}
+            onClick={() => setIsMobileMenuOpen(true)}
+            sx={{
+              width: 42,
+              height: 42,
+              border: '1px solid',
+              borderColor: alpha.graphite[8],
+              borderRadius: `${radius.sm}px`,
+              bgcolor: surface.paper,
+              color: brand.graphite[500],
+            }}
+          >
+            <MenuRoundedIcon sx={{ fontSize: iconSize.xl }} />
+          </IconButton>
+        </Stack>
       </Box>
 
       <Drawer
