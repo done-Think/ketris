@@ -1,4 +1,4 @@
-import { Box, Button, FormControl, InputLabel, MenuItem, Select } from '@mui/material'
+import { Box, Button, FormControl, MenuItem, Select } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { useWatch } from 'react-hook-form'
 
@@ -62,10 +62,9 @@ export function ContractsFilters({ control, setValue }: ContractsFiltersProps) {
       })}
 
       <FormControl size="small" sx={{ minWidth: 168, ml: { sm: 'auto' } }}>
-        <InputLabel id="contracts-type-filter-label">{tType('label')}</InputLabel>
         <Select
-          labelId="contracts-type-filter-label"
-          label={tType('label')}
+          aria-label={tType('label')}
+          displayEmpty
           value={type}
           onChange={(event) =>
             setValue('type', event.target.value as ContractsFiltersFormValues['type'], {

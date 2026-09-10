@@ -122,7 +122,28 @@ describe('AppShell navigation per papel', () => {
     expect(screen.getAllByText('Pipeline').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Contatos').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Meus Imóveis').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Contratos').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Agenda').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Propostas').length).toBeGreaterThan(0)
+  })
+})
+
+describe('AppShell navigation while the session is loading', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(usePathname).mockReturnValue('/crm')
+    vi.mocked(useSession).mockReturnValue({
+      data: undefined,
+      status: 'loading',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
+  })
+
+  it('shows placeholders instead of flashing an incomplete role-filtered menu', () => {
+    renderShell()
+
+    expect(screen.queryByText('Pipeline')).not.toBeInTheDocument()
+    expect(screen.queryByText('Dashboard')).not.toBeInTheDocument()
+    expect(screen.queryByText('Financeiro')).not.toBeInTheDocument()
   })
 })

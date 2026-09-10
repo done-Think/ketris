@@ -38,24 +38,30 @@ export function ContractsSummaryCards({ metrics }: ContractsSummaryCardsProps) {
               minWidth: 0,
               borderRadius: `${radius.sm}px`,
               bgcolor: surface.paper,
-              minHeight: 138,
-              p: { xs: 2.2, md: 2.9 },
+              p: { xs: 1.8, md: 2.2 },
               boxShadow: shadows.crmCardCompact,
             }}
           >
-            <Stack spacing={1.1} sx={{ minWidth: 0 }}>
-              <Typography sx={{ color: brand.neutral[500], fontSize: 14, fontWeight: 800 }}>
+            <Stack spacing={0.7} sx={{ minWidth: 0 }}>
+              <Typography
+                sx={{
+                  color: brand.neutral[500],
+                  fontSize: 11,
+                  fontWeight: 900,
+                  textTransform: 'uppercase',
+                }}
+              >
                 {t(`${metric.label}.label`)}
               </Typography>
-              <Typography sx={{ color: brand.graphite[500], fontSize: 36, fontWeight: 900 }}>
+              <Typography sx={{ color: brand.graphite[500], fontSize: 28, fontWeight: 900 }}>
                 {metric.value}
               </Typography>
             </Stack>
             <Box
               aria-hidden
               sx={{
-                width: 50,
-                height: 50,
+                width: 40,
+                height: 40,
                 borderRadius: radius.full,
                 bgcolor: tone.bgcolor,
                 color: tone.color,
@@ -64,7 +70,7 @@ export function ContractsSummaryCards({ metrics }: ContractsSummaryCardsProps) {
                 flexShrink: 0,
               }}
             >
-              <MetricIcon sx={{ fontSize: iconSize.lg }} />
+              <MetricIcon sx={{ fontSize: iconSize.md }} />
             </Box>
           </Stack>
         )

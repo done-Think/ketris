@@ -59,21 +59,21 @@ function compareDate(a: string, b: string): number {
 
 function ContractIdentityCell({ row }: ContractIdentityCellProps) {
   return (
-    <Stack direction="row" alignItems="center" spacing={1.6} sx={{ minWidth: 0, height: '100%' }}>
+    <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0, height: '100%' }}>
       <Box
         component="img"
         src={row.propertyImageUrl}
         alt={row.property}
         sx={{
-          width: 78,
-          height: 78,
+          width: 56,
+          height: 56,
           borderRadius: `${radius.sm}px`,
           objectFit: 'cover',
           flexShrink: 0,
         }}
       />
       <Stack justifyContent="center" spacing={0.2} sx={{ minWidth: 0 }}>
-        <Typography noWrap sx={{ color: brand.graphite[500], fontSize: 16, fontWeight: 900 }}>
+        <Typography noWrap sx={{ color: brand.graphite[500], fontSize: 15, fontWeight: 900 }}>
           {row.property}
         </Typography>
         <Typography noWrap sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 700 }}>
@@ -93,8 +93,8 @@ function ContractStatusCell({ status }: ContractStatusCellProps) {
       label={t(status)}
       size="small"
       sx={{
-        height: 29,
-        borderRadius: `${radius.sm}px`,
+        height: 30,
+        borderRadius: `${radius.full}px`,
         bgcolor: statusStyle.bgcolor,
         color: statusStyle.color,
         fontSize: 13,
@@ -303,8 +303,7 @@ export function ContractsTable({
         rows={contracts}
         columns={columns}
         autoHeight
-        rowHeight={108}
-        columnHeaderHeight={60}
+        rowHeight={82}
         disableRowSelectionOnClick
         pageSizeOptions={[5, 10, 25]}
         initialState={{
@@ -333,21 +332,17 @@ export function ContractsTable({
         onRowClick={(params: GridRowParams<ContractListItem>) => onContractSelect(params.row)}
         sx={{
           border: 0,
-          minHeight: 500,
+          minHeight: 400,
           color: brand.graphite[500],
           '& .MuiDataGrid-columnHeaders': {
             bgcolor: surface.app,
             color: brand.neutral[500],
-            fontSize: 14,
+            fontSize: 12,
             fontWeight: 900,
-          },
-          '& .MuiDataGrid-columnHeaderTitle': {
-            fontWeight: 900,
+            textTransform: 'uppercase',
           },
           '& .MuiDataGrid-cell': {
             borderColor: brand.neutral[100],
-            fontSize: 16,
-            fontWeight: 800,
             outline: 'none',
           },
           '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': {
@@ -367,13 +362,7 @@ export function ContractsTable({
             bgcolor: alpha.magenta[6],
           },
           '& .MuiDataGrid-footerContainer': {
-            minHeight: 70,
             borderColor: brand.neutral[100],
-          },
-          '& .MuiTablePagination-root': {
-            color: brand.graphite[500],
-            fontSize: 15,
-            fontWeight: 700,
           },
         }}
       />

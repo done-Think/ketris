@@ -23,7 +23,10 @@ export function ContractsDashboardHeader({
       sx={{ mb: 1.6 }}
     >
       <Box sx={{ minWidth: 0 }}>
-        <Typography variant="h3" sx={{ color: brand.graphite[500], fontSize: 34, fontWeight: 900 }}>
+        <Typography
+          variant="h3"
+          sx={{ color: brand.graphite[500], fontSize: { xs: 26, md: 32 }, fontWeight: 900 }}
+        >
           {t('title')}
         </Typography>
       </Box>
