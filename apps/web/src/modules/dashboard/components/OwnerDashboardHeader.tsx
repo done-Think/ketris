@@ -2,7 +2,16 @@
 
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
-import { Avatar, Box, Drawer, IconButton, Link as MuiLink, Stack, Typography } from '@mui/material'
+import {
+  Avatar,
+  Box,
+  Drawer,
+  GlobalStyles,
+  IconButton,
+  Link as MuiLink,
+  Stack,
+  Typography,
+} from '@mui/material'
 import NextLink from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
@@ -46,6 +55,13 @@ export function OwnerDashboardHeader() {
 
   return (
     <>
+      <GlobalStyles
+        styles={(theme) => ({
+          [theme.breakpoints.up('md')]: {
+            html: { scrollbarGutter: 'stable' },
+          },
+        })}
+      />
       <Box
         component="header"
         sx={{
