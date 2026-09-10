@@ -57,15 +57,16 @@ export function OwnerDashboardHeader() {
           borderBottom: '1px solid',
           borderColor: 'divider',
           bgcolor: surface.paper,
+          px: { xs: 2, sm: 3, lg: 4 },
         }}
       >
         <Box
           sx={{
             display: 'grid',
             width: '100%',
+            maxWidth: 1184,
             height: '100%',
             mx: 'auto',
-            px: { xs: 2, sm: 3, md: '5vw' },
             gridTemplateColumns: {
               xs: 'minmax(0, 1fr) auto',
               md: 'minmax(160px, 1fr) auto minmax(160px, 1fr)',
