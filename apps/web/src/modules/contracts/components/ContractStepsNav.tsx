@@ -1,5 +1,6 @@
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
 import { Box, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { createContractSteps } from '../config/contract-ui'
 import type { ContractStepsNavProps } from '../types/contract'
@@ -10,9 +11,11 @@ export function ContractStepsNav({
   maxStepIndex,
   onStepSelect,
 }: ContractStepsNavProps) {
+  const t = useTranslations('contracts.wizard')
+
   return (
     <Box
-      aria-label="Etapas do contrato"
+      aria-label={t('stepsAriaLabel')}
       sx={{
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(4, 1fr)' },
@@ -81,7 +84,7 @@ export function ContractStepsNav({
               {completed ? <CheckRoundedIcon sx={{ fontSize: iconSize.xs }} /> : index + 1}
             </Box>
             <Typography noWrap sx={{ fontSize: 13, fontWeight: active ? 900 : 700 }}>
-              {step.label}
+              {t(`steps.${step.key}`)}
             </Typography>
           </Stack>
         )

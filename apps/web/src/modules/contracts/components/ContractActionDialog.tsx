@@ -12,6 +12,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { alpha, brand, radius, surface } from '@shared/theme/tokens'
 
@@ -23,6 +24,8 @@ import type {
 } from '../types/contract'
 
 function ContractActionSummary({ contract }: ContractActionSummaryProps) {
+  const t = useTranslations('contracts')
+  const tStatus = useTranslations('contracts.status')
   const statusStyle = contractStatusStyles[contract.status]
 
   return (
@@ -48,7 +51,7 @@ function ContractActionSummary({ contract }: ContractActionSummaryProps) {
           </Typography>
         </Stack>
         <Chip
-          label={contract.status}
+          label={tStatus(contract.status)}
           size="small"
           sx={{
             bgcolor: statusStyle.bgcolor,
@@ -69,12 +72,12 @@ function ContractActionSummary({ contract }: ContractActionSummaryProps) {
         }}
       >
         {[
-          { label: 'Imovel', value: contract.property },
-          { label: 'Locador', value: contract.owner },
-          { label: 'Locatario', value: contract.tenant },
-          { label: 'Valor', value: contract.amount },
-          { label: 'Inicio', value: contract.startDate },
-          { label: 'Termino', value: contract.endDate },
+          { label: t('actionDialog.summaryLabels.property'), value: contract.property },
+          { label: t('actionDialog.summaryLabels.owner'), value: contract.owner },
+          { label: t('actionDialog.summaryLabels.tenant'), value: contract.tenant },
+          { label: t('actionDialog.summaryLabels.amount'), value: contract.amount },
+          { label: t('actionDialog.summaryLabels.start'), value: contract.startDate },
+          { label: t('actionDialog.summaryLabels.end'), value: contract.endDate },
         ].map((item) => (
           <Stack key={item.label} spacing={0.3} sx={{ minWidth: 0 }}>
             <Typography sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 900 }}>
@@ -125,6 +128,7 @@ export function ContractActionDialog({
   onClose,
   onConfirm,
 }: ContractActionDialogProps) {
+  const t = useTranslations('contracts.actionDialog')
   const content = action ? contractActionMockContents[action] : null
 
   return (
@@ -180,7 +184,7 @@ export function ContractActionDialog({
 
           <DialogActions sx={{ px: { xs: 2, md: 2.6 }, pb: 2.4, pt: 0 }}>
             <Button variant="outlined" onClick={onClose}>
-              Fechar
+              {t('close')}
             </Button>
             <Button variant="contained" onClick={onConfirm}>
               {content.primaryActionLabel}

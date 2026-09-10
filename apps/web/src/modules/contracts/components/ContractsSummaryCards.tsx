@@ -1,6 +1,7 @@
 import ShowChartRoundedIcon from '@mui/icons-material/ShowChartRounded'
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded'
 import { Box, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
@@ -8,6 +9,8 @@ import { contractMetricToneStyles } from '../config/contract-ui'
 import type { ContractsSummaryCardsProps } from '../types/contract'
 
 export function ContractsSummaryCards({ metrics }: ContractsSummaryCardsProps) {
+  const t = useTranslations('contracts.summary')
+
   return (
     <Box
       sx={{
@@ -42,7 +45,7 @@ export function ContractsSummaryCards({ metrics }: ContractsSummaryCardsProps) {
           >
             <Stack spacing={1.1} sx={{ minWidth: 0 }}>
               <Typography sx={{ color: brand.neutral[500], fontSize: 14, fontWeight: 800 }}>
-                {metric.label}
+                {t(`${metric.label}.label`)}
               </Typography>
               <Typography sx={{ color: brand.graphite[500], fontSize: 36, fontWeight: 900 }}>
                 {metric.value}

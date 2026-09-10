@@ -1,6 +1,7 @@
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { Box, Button, InputAdornment, Stack, TextField, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 import { Controller } from 'react-hook-form'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
@@ -11,6 +12,8 @@ export function ContractsDashboardHeader({
   control,
   onCreateContract,
 }: ContractsDashboardPageHeaderProps) {
+  const t = useTranslations('contracts.dashboardHeader')
+
   return (
     <Stack
       direction={{ xs: 'column', md: 'row' }}
@@ -21,7 +24,7 @@ export function ContractsDashboardHeader({
     >
       <Box sx={{ minWidth: 0 }}>
         <Typography variant="h3" sx={{ color: brand.graphite[500], fontSize: 34, fontWeight: 900 }}>
-          Contratos
+          {t('title')}
         </Typography>
       </Box>
 
@@ -36,7 +39,7 @@ export function ContractsDashboardHeader({
           render={({ field }) => (
             <TextField
               {...field}
-              placeholder="Buscar contratos..."
+              placeholder={t('searchPlaceholder')}
               size="small"
               sx={{
                 width: { xs: '100%', sm: 320 },
@@ -78,7 +81,7 @@ export function ContractsDashboardHeader({
             whiteSpace: 'nowrap',
           }}
         >
-          Novo Contrato
+          {t('newContract')}
         </Button>
       </Stack>
     </Stack>

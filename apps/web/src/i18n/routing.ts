@@ -46,6 +46,8 @@ export const routing = defineRouting({
     '/crm/proposals': '/crm/proposals',
     '/dashboard': '/dashboard',
     '/dashboard/agenda': '/dashboard/agenda',
+    '/dashboard/contracts': '/dashboard/contracts',
+    '/dashboard/contracts/new': '/dashboard/contracts/new',
     '/dashboard/finance': '/dashboard/finance',
     '/dashboard/leads': '/dashboard/leads',
     '/dashboard/properties': '/dashboard/properties',

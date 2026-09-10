@@ -188,6 +188,8 @@ export type ContractFieldConfig = {
   label: string
   mask?: string
   options?: string[]
+  /** Translates an option's internal value into display text. Falls back to the raw value. */
+  getOptionLabel?: (option: string) => string
   multiline?: boolean
 }
 

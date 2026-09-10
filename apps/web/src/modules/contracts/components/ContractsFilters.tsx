@@ -1,4 +1,5 @@
 import { Box, Button } from '@mui/material'
+import { useTranslations } from 'next-intl'
 import { useWatch } from 'react-hook-form'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
@@ -7,6 +8,7 @@ import { contractFilterTabs } from '../config/contract-ui'
 import type { ContractsFiltersProps } from '../types/contract'
 
 export function ContractsFilters({ control, setValue }: ContractsFiltersProps) {
+  const t = useTranslations('contracts.filters.tabs')
   const status = useWatch({ control, name: 'status' })
   const period = useWatch({ control, name: 'period' })
 
@@ -51,7 +53,7 @@ export function ContractsFilters({ control, setValue }: ContractsFiltersProps) {
               },
             }}
           >
-            {tab.label}
+            {t(tab.label)}
           </Button>
         )
       })}

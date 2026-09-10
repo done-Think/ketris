@@ -26,6 +26,7 @@ import {
 } from '@mui/material'
 import type { GridColDef, GridRowParams } from '@mui/x-data-grid'
 import { DataGrid } from '@mui/x-data-grid'
+import { useTranslations } from 'next-intl'
 
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
@@ -68,11 +69,12 @@ function ContractIdentityCell({ row }: ContractIdentityCellProps) {
 }
 
 function ContractStatusCell({ status }: ContractStatusCellProps) {
+  const t = useTranslations('contracts.status')
   const statusStyle = contractStatusStyles[status]
 
   return (
     <Chip
-      label={status}
+      label={t(status)}
       size="small"
       sx={{
         height: 29,
@@ -98,6 +100,7 @@ const contractActionMenuIcons: Record<ContractActionMenuIconKey, typeof Visibili
 }
 
 function ContractActionsCell({ contract, onContractAction }: ContractActionsCellProps) {
+  const t = useTranslations('contracts.table')
   const [menuState, setMenuState] = useState<ContractActionMenuState>({
     anchorEl: null,
     contract: null,
@@ -124,9 +127,9 @@ function ContractActionsCell({ contract, onContractAction }: ContractActionsCell
         alignItems: 'center',
       }}
     >
-      <Tooltip title="Ações">
+      <Tooltip title={t('actionsTooltip')}>
         <IconButton
-          aria-label={`Ações do contrato ${contract.code}`}
+          aria-label={t('actionsAriaLabel', { code: contract.code })}
           onClick={openMenu}
           sx={contractIconButtonSx}
         >
@@ -172,7 +175,7 @@ function ContractActionsCell({ contract, onContractAction }: ContractActionsCell
                     <OptionIcon sx={{ fontSize: iconSize.sm }} />
                   </ListItemIcon>
                   <ListItemText
-                    primary={option.label}
+                    primary={t(`menu.${option.action}`)}
                     primaryTypographyProps={{ fontSize: 16, fontWeight: 800 }}
                   />
                 </MenuItem>
@@ -203,10 +206,11 @@ export function ContractsTable({
   onContractAction,
   onContractSelect,
 }: ContractsTableProps) {
+  const t = useTranslations('contracts.table')
   const columns: GridColDef<ContractListItem>[] = [
     {
       field: 'property',
-      headerName: 'Imóvel',
+      headerName: t('columns.property'),
       flex: 1.45,
       minWidth: 300,
       disableColumnMenu: true,
@@ -215,7 +219,7 @@ export function ContractsTable({
     },
     {
       field: 'tenant',
-      headerName: 'Locatário',
+      headerName: t('columns.tenant'),
       flex: 1,
       minWidth: 200,
       disableColumnMenu: true,
@@ -223,7 +227,7 @@ export function ContractsTable({
     },
     {
       field: 'amount',
-      headerName: 'Valor',
+      headerName: t('columns.amount'),
       flex: 0.7,
       minWidth: 140,
       disableColumnMenu: true,
@@ -231,7 +235,7 @@ export function ContractsTable({
     },
     {
       field: 'startDate',
-      headerName: 'Início',
+      headerName: t('columns.startDate'),
       flex: 0.7,
       minWidth: 130,
       disableColumnMenu: true,
@@ -239,7 +243,7 @@ export function ContractsTable({
     },
     {
       field: 'endDate',
-      headerName: 'Vencimento',
+      headerName: t('columns.endDate'),
       flex: 0.8,
       minWidth: 150,
       disableColumnMenu: true,
@@ -247,7 +251,7 @@ export function ContractsTable({
     },
     {
       field: 'status',
-      headerName: 'Status',
+      headerName: t('columns.status'),
       flex: 0.7,
       minWidth: 150,
       disableColumnMenu: true,
@@ -256,7 +260,7 @@ export function ContractsTable({
     },
     {
       field: 'actions',
-      headerName: 'Ações',
+      headerName: t('columns.actions'),
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
@@ -303,11 +307,12 @@ export function ContractsTable({
           pagination: { paginationModel: { pageSize: 5 } },
         }}
         localeText={{
-          noRowsLabel: 'Nenhum contrato encontrado',
-          footerTotalRows: 'Total de linhas:',
+          noRowsLabel: t('noRowsLabel'),
+          footerTotalRows: t('totalRows'),
           MuiTablePagination: {
-            labelRowsPerPage: 'Linhas por página',
-            labelDisplayedRows: ({ from, to }) => `Mostrando ${from}-${to} de ${totalCount}`,
+            labelRowsPerPage: t('rowsPerPage'),
+            labelDisplayedRows: ({ from, to }) =>
+              t('displayedRows', { from, to, total: totalCount }),
           },
         }}
         onRowClick={(params: GridRowParams<ContractListItem>) => onContractSelect(params.row)}

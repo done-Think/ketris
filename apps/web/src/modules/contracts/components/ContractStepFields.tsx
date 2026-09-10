@@ -1,5 +1,6 @@
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import { Box, Button, Divider, MenuItem, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
 import { alpha, brand, radius } from '@shared/theme/tokens'
@@ -57,7 +58,7 @@ function ContractField({ control, field }: ContractFieldProps) {
       >
         {field.options.map((option) => (
           <MenuItem key={option} value={option}>
-            {option}
+            {field.getOptionLabel ? field.getOptionLabel(option) : option}
           </MenuItem>
         ))}
       </RhfTextField>
@@ -109,25 +110,27 @@ function FieldGrid({ control, fields }: ContractFieldGridProps) {
 }
 
 function PartiesStep({ control, setValue, values }: ContractPartiesStepProps) {
+  const t = useTranslations('contracts.wizard.parties')
+
   const ownerFields: ContractFieldConfig[] = [
-    { name: 'ownerName', label: 'Nome completo' },
-    { name: 'ownerCpf', label: 'CPF', mask: '000.000.000-00' },
-    { name: 'ownerEmail', label: 'E-mail' },
-    { name: 'ownerPhone', label: 'Telefone', mask: '(00) 00000-0000' },
+    { name: 'ownerName', label: t('fields.fullName') },
+    { name: 'ownerCpf', label: t('fields.cpf'), mask: '000.000.000-00' },
+    { name: 'ownerEmail', label: t('fields.email') },
+    { name: 'ownerPhone', label: t('fields.phone'), mask: '(00) 00000-0000' },
   ]
 
   const tenantFields: ContractFieldConfig[] = [
-    { name: 'tenantName', label: 'Nome completo' },
-    { name: 'tenantCpf', label: 'CPF', mask: '000.000.000-00' },
-    { name: 'tenantEmail', label: 'E-mail' },
-    { name: 'tenantPhone', label: 'Telefone', mask: '(00) 00000-0000' },
+    { name: 'tenantName', label: t('fields.fullName') },
+    { name: 'tenantCpf', label: t('fields.cpf'), mask: '000.000.000-00' },
+    { name: 'tenantEmail', label: t('fields.email') },
+    { name: 'tenantPhone', label: t('fields.phone'), mask: '(00) 00000-0000' },
   ]
 
   const guarantorFields: ContractFieldConfig[] = [
-    { name: 'guarantorName', label: 'Nome completo' },
-    { name: 'guarantorCpf', label: 'CPF', mask: '000.000.000-00' },
-    { name: 'guarantorEmail', label: 'E-mail' },
-    { name: 'guarantorPhone', label: 'Telefone', mask: '(00) 00000-0000' },
+    { name: 'guarantorName', label: t('fields.fullName') },
+    { name: 'guarantorCpf', label: t('fields.cpf'), mask: '000.000.000-00' },
+    { name: 'guarantorEmail', label: t('fields.email') },
+    { name: 'guarantorPhone', label: t('fields.phone'), mask: '(00) 00000-0000' },
   ]
 
   const addGuarantor = () => {
@@ -146,7 +149,7 @@ function PartiesStep({ control, setValue, values }: ContractPartiesStepProps) {
         }}
       >
         <Box sx={{ minWidth: 0 }}>
-          <SectionTitle>Locador (Proprietário)</SectionTitle>
+          <SectionTitle>{t('ownerTitle')}</SectionTitle>
           <FieldGrid control={control} fields={ownerFields} />
         </Box>
         <Divider
@@ -160,14 +163,14 @@ function PartiesStep({ control, setValue, values }: ContractPartiesStepProps) {
           }}
         />
         <Box sx={{ minWidth: 0 }}>
-          <SectionTitle>Locatário</SectionTitle>
+          <SectionTitle>{t('tenantTitle')}</SectionTitle>
           <FieldGrid control={control} fields={tenantFields} />
         </Box>
       </Box>
 
       {values.hasGuarantor ? (
         <Box sx={{ mt: 3.2 }}>
-          <SectionTitle>Fiador</SectionTitle>
+          <SectionTitle>{t('guarantorTitle')}</SectionTitle>
           <FieldGrid control={control} fields={guarantorFields} />
         </Box>
       ) : (
@@ -185,7 +188,7 @@ function PartiesStep({ control, setValue, values }: ContractPartiesStepProps) {
             '&:hover': { bgcolor: 'transparent', color: brand.magenta[700] },
           }}
         >
-          Adicionar fiador
+          {t('addGuarantor')}
         </Button>
       )}
     </>
@@ -193,21 +196,28 @@ function PartiesStep({ control, setValue, values }: ContractPartiesStepProps) {
 }
 
 function PropertyStep({ control }: ContractStepControlProps) {
+  const t = useTranslations('contracts.wizard.property')
+
   return (
     <Stack spacing={3}>
       <Box>
-        <SectionTitle>Dados do imóvel</SectionTitle>
+        <SectionTitle>{t('title')}</SectionTitle>
         <FieldGrid
           control={control}
           fields={[
-            { name: 'propertyTitle', label: 'Imóvel' },
-            { name: 'propertyType', label: 'Tipo', options: propertyTypeOptions },
-            { name: 'propertyAddress', label: 'Endereço' },
-            { name: 'propertyZipCode', label: 'CEP', mask: '00000-000' },
-            { name: 'propertyCity', label: 'Cidade' },
-            { name: 'propertyState', label: 'UF', mask: 'aa' },
-            { name: 'propertyRegistration', label: 'Matrícula' },
-            { name: 'propertyArea', label: 'Área útil' },
+            { name: 'propertyTitle', label: t('fields.propertyTitle') },
+            {
+              name: 'propertyType',
+              label: t('fields.propertyType'),
+              options: propertyTypeOptions,
+              getOptionLabel: (option) => t(`typeOptions.${option}`),
+            },
+            { name: 'propertyAddress', label: t('fields.propertyAddress') },
+            { name: 'propertyZipCode', label: t('fields.propertyZipCode'), mask: '00000-000' },
+            { name: 'propertyCity', label: t('fields.propertyCity') },
+            { name: 'propertyState', label: t('fields.propertyState'), mask: 'aa' },
+            { name: 'propertyRegistration', label: t('fields.propertyRegistration') },
+            { name: 'propertyArea', label: t('fields.propertyArea') },
           ]}
         />
       </Box>
@@ -216,23 +226,40 @@ function PropertyStep({ control }: ContractStepControlProps) {
 }
 
 function ConditionsStep({ control }: ContractStepControlProps) {
+  const t = useTranslations('contracts.wizard.conditions')
+
   return (
     <Stack spacing={3}>
       <Box>
-        <SectionTitle>Condições comerciais</SectionTitle>
+        <SectionTitle>{t('title')}</SectionTitle>
         <FieldGrid
           control={control}
           fields={[
-            { name: 'contractType', label: 'Tipo de contrato', options: contractTypeOptions },
-            { name: 'monthlyRent', label: 'Valor do aluguel' },
-            { name: 'condominiumFee', label: 'Condomínio' },
-            { name: 'iptu', label: 'IPTU' },
-            { name: 'dueDay', label: 'Vencimento', mask: '00' },
-            { name: 'guaranteeType', label: 'Garantia', options: guaranteeTypeOptions },
-            { name: 'startDate', label: 'Início', mask: '00/00/0000' },
-            { name: 'endDate', label: 'Término', mask: '00/00/0000' },
-            { name: 'adjustmentIndex', label: 'Reajuste', options: adjustmentIndexOptions },
-            { name: 'notes', label: 'Observações', multiline: true },
+            {
+              name: 'contractType',
+              label: t('fields.contractType'),
+              options: contractTypeOptions,
+              getOptionLabel: (option) => t(`contractTypeOptions.${option}`),
+            },
+            { name: 'monthlyRent', label: t('fields.monthlyRent') },
+            { name: 'condominiumFee', label: t('fields.condominiumFee') },
+            { name: 'iptu', label: t('fields.iptu') },
+            { name: 'dueDay', label: t('fields.dueDay'), mask: '00' },
+            {
+              name: 'guaranteeType',
+              label: t('fields.guaranteeType'),
+              options: guaranteeTypeOptions,
+              getOptionLabel: (option) => t(`guaranteeTypeOptions.${option}`),
+            },
+            { name: 'startDate', label: t('fields.startDate'), mask: '00/00/0000' },
+            { name: 'endDate', label: t('fields.endDate'), mask: '00/00/0000' },
+            {
+              name: 'adjustmentIndex',
+              label: t('fields.adjustmentIndex'),
+              options: adjustmentIndexOptions,
+              getOptionLabel: (option) => t(`adjustmentIndexOptions.${option}`),
+            },
+            { name: 'notes', label: t('fields.notes'), multiline: true },
           ]}
         />
       </Box>
@@ -280,15 +307,17 @@ function ReviewPanel({ title, items }: ContractReviewPanelProps) {
 }
 
 function ReviewStep({ values }: ContractStepReviewProps) {
+  const t = useTranslations('contracts.wizard.review')
+
   const partiesItems = [
-    { label: 'Locador', value: values.ownerName },
-    { label: 'CPF do locador', value: values.ownerCpf },
-    { label: 'Locatário', value: values.tenantName },
-    { label: 'CPF do locatário', value: values.tenantCpf },
+    { label: t('labels.owner'), value: values.ownerName },
+    { label: t('labels.ownerCpf'), value: values.ownerCpf },
+    { label: t('labels.tenant'), value: values.tenantName },
+    { label: t('labels.tenantCpf'), value: values.tenantCpf },
     ...(values.hasGuarantor
       ? [
-          { label: 'Fiador', value: values.guarantorName },
-          { label: 'CPF do fiador', value: values.guarantorCpf },
+          { label: t('labels.guarantor'), value: values.guarantorName },
+          { label: t('labels.guarantorCpf'), value: values.guarantorCpf },
         ]
       : []),
   ]
@@ -301,32 +330,32 @@ function ReviewStep({ values }: ContractStepReviewProps) {
         gap: { xs: 2, md: 2.4 },
       }}
     >
-      <ReviewPanel title="Partes" items={partiesItems} />
+      <ReviewPanel title={t('partiesTitle')} items={partiesItems} />
       <ReviewPanel
-        title="Imóvel"
+        title={t('propertyTitle')}
         items={[
-          { label: 'Imóvel', value: values.propertyTitle },
-          { label: 'Tipo', value: values.propertyType },
-          { label: 'Endereço', value: values.propertyAddress },
-          { label: 'Cidade/UF', value: `${values.propertyCity}/${values.propertyState}` },
+          { label: t('labels.property'), value: values.propertyTitle },
+          { label: t('labels.type'), value: values.propertyType },
+          { label: t('labels.address'), value: values.propertyAddress },
+          { label: t('labels.cityState'), value: `${values.propertyCity}/${values.propertyState}` },
         ]}
       />
       <ReviewPanel
-        title="Condições"
+        title={t('conditionsTitle')}
         items={[
-          { label: 'Contrato', value: values.contractType },
-          { label: 'Aluguel', value: values.monthlyRent },
-          { label: 'Vencimento', value: `Dia ${values.dueDay}` },
-          { label: 'Garantia', value: values.guaranteeType },
+          { label: t('labels.contract'), value: values.contractType },
+          { label: t('labels.rent'), value: values.monthlyRent },
+          { label: t('labels.dueDay'), value: t('labels.dueDayValue', { day: values.dueDay }) },
+          { label: t('labels.guarantee'), value: values.guaranteeType },
         ]}
       />
       <ReviewPanel
-        title="Vigência"
+        title={t('termTitle')}
         items={[
-          { label: 'Início', value: values.startDate },
-          { label: 'Término', value: values.endDate },
-          { label: 'Reajuste', value: values.adjustmentIndex },
-          { label: 'Observações', value: values.notes },
+          { label: t('labels.start'), value: values.startDate },
+          { label: t('labels.end'), value: values.endDate },
+          { label: t('labels.adjustment'), value: values.adjustmentIndex },
+          { label: t('labels.notes'), value: values.notes },
         ]}
       />
     </Box>

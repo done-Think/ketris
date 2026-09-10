@@ -1,0 +1,190 @@
+{
+  "metadata": {
+    "dashboard": {
+      "metadataTitle": "Ketris | Contracts"
+    },
+    "create": {
+      "metadataTitle": "Ketris | Generate Contract"
+    }
+  },
+  "dashboardHeader": {
+    "title": "Contracts",
+    "searchPlaceholder": "Search contracts...",
+    "newContract": "New Contract"
+  },
+  "filters": {
+    "tabs": {
+      "Todos": "All",
+      "Ativos": "Active",
+      "Vencendo": "Expiring",
+      "Encerrados": "Closed"
+    }
+  },
+  "summary": {
+    "Ativos": { "label": "Active", "caption": "Contracts in force" },
+    "Vencendo em 30d": { "label": "Expiring in 30d", "caption": "Need follow-up" },
+    "Inadimplentes": { "label": "Delinquent", "caption": "With outstanding balances" }
+  },
+  "table": {
+    "columns": {
+      "property": "Property",
+      "tenant": "Tenant",
+      "amount": "Amount",
+      "startDate": "Start",
+      "endDate": "Due date",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "noRowsLabel": "No contracts found",
+    "totalRows": "Total rows:",
+    "rowsPerPage": "Rows per page",
+    "displayedRows": "Showing {from}-{to} of {total}",
+    "actionsTooltip": "Actions",
+    "actionsAriaLabel": "Actions for contract {code}",
+    "menu": {
+      "view-summary": "View summary",
+      "view-history": "View history",
+      "edit-data": "Edit data",
+      "duplicate": "Duplicate contract",
+      "download-pdf": "Download PDF",
+      "download-draft": "Download draft",
+      "send-signature": "Send for signature",
+      "copy-signature-link": "Copy link"
+    }
+  },
+  "status": {
+    "Rascunho": "Draft",
+    "Em revisão": "Under review",
+    "Aguardando assinatura": "Awaiting signature",
+    "Assinado": "Signed",
+    "Ativo": "Active",
+    "Encerrado": "Closed",
+    "Cancelado": "Cancelled"
+  },
+  "emptyState": {
+    "title": "No contracts found",
+    "description": "Create a new contract or adjust the filters to broaden the search.",
+    "cta": "Generate contract"
+  },
+  "wizard": {
+    "breadcrumbContracts": "Contracts",
+    "breadcrumbNew": "Generate new",
+    "title": "Generate Contract",
+    "stepsAriaLabel": "Contract steps",
+    "steps": {
+      "parties": "Parties",
+      "property": "Property",
+      "conditions": "Conditions",
+      "review": "Review"
+    },
+    "stepFormTitleReview": "Contract Review",
+    "stepFormTitle": "Contract {step}",
+    "successMessage": "{code} added for review.",
+    "actions": {
+      "back": "Back",
+      "next": "Next step",
+      "generate": "Generate contract"
+    },
+    "parties": {
+      "ownerTitle": "Landlord (Owner)",
+      "tenantTitle": "Tenant",
+      "guarantorTitle": "Guarantor",
+      "addGuarantor": "Add guarantor",
+      "fields": {
+        "fullName": "Full name",
+        "cpf": "National ID",
+        "email": "Email",
+        "phone": "Phone"
+      }
+    },
+    "property": {
+      "title": "Property details",
+      "fields": {
+        "propertyTitle": "Property",
+        "propertyType": "Type",
+        "propertyAddress": "Address",
+        "propertyZipCode": "ZIP code",
+        "propertyCity": "City",
+        "propertyState": "State",
+        "propertyRegistration": "Registration",
+        "propertyArea": "Usable area"
+      },
+      "typeOptions": {
+        "Apartamento": "Apartment",
+        "Casa": "House",
+        "Studio": "Studio",
+        "Cobertura": "Penthouse",
+        "Sala comercial": "Commercial unit"
+      }
+    },
+    "conditions": {
+      "title": "Commercial conditions",
+      "fields": {
+        "contractType": "Contract type",
+        "monthlyRent": "Rent amount",
+        "condominiumFee": "HOA fee",
+        "iptu": "Property tax",
+        "dueDay": "Due day",
+        "guaranteeType": "Guarantee",
+        "startDate": "Start",
+        "endDate": "End",
+        "adjustmentIndex": "Adjustment index",
+        "notes": "Notes"
+      },
+      "contractTypeOptions": {
+        "Locação residencial": "Residential lease",
+        "Locação comercial": "Commercial lease",
+        "Temporada": "Short-term"
+      },
+      "guaranteeTypeOptions": {
+        "Fiador": "Guarantor",
+        "Caução": "Security deposit",
+        "Seguro fiança": "Lease insurance",
+        "Título de capitalização": "Savings bond"
+      },
+      "adjustmentIndexOptions": {
+        "IPCA": "IPCA",
+        "IGP-M": "IGP-M",
+        "INPC": "INPC"
+      }
+    },
+    "review": {
+      "partiesTitle": "Parties",
+      "propertyTitle": "Property",
+      "conditionsTitle": "Conditions",
+      "termTitle": "Term",
+      "labels": {
+        "owner": "Landlord",
+        "ownerCpf": "Landlord's ID",
+        "tenant": "Tenant",
+        "tenantCpf": "Tenant's ID",
+        "guarantor": "Guarantor",
+        "guarantorCpf": "Guarantor's ID",
+        "property": "Property",
+        "type": "Type",
+        "address": "Address",
+        "cityState": "City/State",
+        "contract": "Contract",
+        "rent": "Rent",
+        "dueDay": "Due date",
+        "dueDayValue": "Day {day}",
+        "guarantee": "Guarantee",
+        "start": "Start",
+        "end": "End",
+        "adjustment": "Adjustment",
+        "notes": "Notes"
+      }
+    }
+  },
+  "actionDialog": {
+    "close": "Close",
+    "summaryLabels": {
+      "property": "Property",
+      "owner": "Landlord",
+      "tenant": "Tenant",
+      "amount": "Amount",
+      "start": "Start",
+      "end": "End"
+    }
+  }
+}

@@ -5,9 +5,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Box } from '@mui/material'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
-import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 import { useForm } from 'react-hook-form'
+
+import { useRouter } from '@/i18n/navigation'
 
 import {
   contractActionMockContents,
@@ -101,7 +102,7 @@ export function ContractsDashboardPage() {
     setActionDialog({ contract, action })
   }
   const openContractProperty = (contract: ContractListItem) => {
-    router.push(`/dashboard/imoveis/${contract.propertyId}`)
+    router.push({ pathname: '/dashboard/properties/[id]', params: { id: contract.propertyId } })
   }
   const closeContractActionDialog = () => {
     setActionDialog({ contract: null, action: null })
