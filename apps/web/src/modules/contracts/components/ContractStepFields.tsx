@@ -1,21 +1,36 @@
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
-import { Box, Button, Divider, MenuItem, Stack, Typography } from '@mui/material'
+import {
+  Autocomplete,
+  Box,
+  Button,
+  Divider,
+  MenuItem,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { useTranslations } from 'next-intl'
+import { Controller } from 'react-hook-form'
 
 import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
 import { alpha, brand, radius } from '@shared/theme/tokens'
+
+import { dashboardProperties } from '@modules/properties/data/dashboard-properties'
+import type { DashboardProperty } from '@modules/properties/types/dashboard-property'
 
 import type {
   ContractFieldConfig,
   ContractFieldGridProps,
   ContractFieldProps,
   ContractPartiesStepProps,
+  ContractPropertyStepProps,
   ContractReviewItemProps,
   ContractReviewPanelProps,
   ContractSectionTitleProps,
   ContractStepControlProps,
   ContractStepFieldsProps,
   ContractStepReviewProps,
+  CreateContractFieldName,
 } from '../types/contract'
 import { contractTextFieldSx } from './contract-form.styles'
 
@@ -23,6 +38,105 @@ const propertyTypeOptions = ['Apartamento', 'Casa', 'Studio', 'Cobertura', 'Sala
 const contractTypeOptions = ['Locação residencial', 'Locação comercial', 'Temporada']
 const guaranteeTypeOptions = ['Fiador', 'Caução', 'Seguro fiança', 'Título de capitalização']
 const adjustmentIndexOptions = ['IPCA', 'IGP-M', 'INPC']
+
+/**
+ * Field-shape metadata, without labels (labels need `t()`, resolved when rendering). Each step's
+ * rendered fields AND its wizard-validation field-name list (see `*StepFieldNames` below) are both
+ * derived from these arrays, so a field added here can't silently be missing from validation.
+ */
+type ContractFieldMeta = {
+  name: CreateContractFieldName
+  labelKey: string
+  mask?: string
+  options?: string[]
+  optionsNamespace?: string
+}
+
+function toFieldConfig(
+  meta: ContractFieldMeta,
+  t: (key: string) => string,
+  multiline?: boolean,
+): ContractFieldConfig {
+  return {
+    name: meta.name,
+    label: t(`fields.${meta.labelKey}`),
+    mask: meta.mask,
+    options: meta.options,
+    getOptionLabel: meta.optionsNamespace
+      ? (option) => t(`${meta.optionsNamespace}.${option}`)
+      : undefined,
+    multiline,
+  }
+}
+
+function makePartyFieldsMeta(prefix: 'owner' | 'tenant' | 'guarantor'): ContractFieldMeta[] {
+  return [
+    { name: `${prefix}Name`, labelKey: 'fullName' },
+    { name: `${prefix}Cpf`, labelKey: 'cpf', mask: '000.000.000-00' },
+    { name: `${prefix}Email`, labelKey: 'email' },
+    { name: `${prefix}Phone`, labelKey: 'phone', mask: '(00) 00000-0000' },
+  ]
+}
+
+export const partiesStepFieldNames = [
+  ...makePartyFieldsMeta('owner').map((field) => field.name),
+  ...makePartyFieldsMeta('tenant').map((field) => field.name),
+  'hasGuarantor' as const,
+  ...makePartyFieldsMeta('guarantor').map((field) => field.name),
+]
+
+const propertyStepFieldsMeta: ContractFieldMeta[] = [
+  { name: 'propertyTitle', labelKey: 'propertyTitle' },
+  {
+    name: 'propertyType',
+    labelKey: 'propertyType',
+    options: propertyTypeOptions,
+    optionsNamespace: 'typeOptions',
+  },
+  { name: 'propertyAddress', labelKey: 'propertyAddress' },
+  { name: 'propertyZipCode', labelKey: 'propertyZipCode', mask: '00000-000' },
+  { name: 'propertyCity', labelKey: 'propertyCity' },
+  { name: 'propertyState', labelKey: 'propertyState', mask: 'aa' },
+  { name: 'propertyRegistration', labelKey: 'propertyRegistration' },
+  { name: 'propertyArea', labelKey: 'propertyArea' },
+]
+
+export const propertyStepFieldNames = [
+  'propertyId' as const,
+  ...propertyStepFieldsMeta.map((field) => field.name),
+]
+
+const conditionsStepFieldsMeta: ContractFieldMeta[] = [
+  {
+    name: 'contractType',
+    labelKey: 'contractType',
+    options: contractTypeOptions,
+    optionsNamespace: 'contractTypeOptions',
+  },
+  { name: 'monthlyRent', labelKey: 'monthlyRent' },
+  { name: 'condominiumFee', labelKey: 'condominiumFee' },
+  { name: 'iptu', labelKey: 'iptu' },
+  { name: 'dueDay', labelKey: 'dueDay', mask: '00' },
+  {
+    name: 'guaranteeType',
+    labelKey: 'guaranteeType',
+    options: guaranteeTypeOptions,
+    optionsNamespace: 'guaranteeTypeOptions',
+  },
+  { name: 'startDate', labelKey: 'startDate', mask: '00/00/0000' },
+  { name: 'endDate', labelKey: 'endDate', mask: '00/00/0000' },
+  {
+    name: 'adjustmentIndex',
+    labelKey: 'adjustmentIndex',
+    options: adjustmentIndexOptions,
+    optionsNamespace: 'adjustmentIndexOptions',
+  },
+]
+
+export const conditionsStepFieldNames = [
+  ...conditionsStepFieldsMeta.map((field) => field.name),
+  'notes' as const,
+]
 
 function SectionTitle({ children }: ContractSectionTitleProps) {
   return (
@@ -112,26 +226,12 @@ function FieldGrid({ control, fields }: ContractFieldGridProps) {
 function PartiesStep({ control, setValue, values }: ContractPartiesStepProps) {
   const t = useTranslations('contracts.wizard.parties')
 
-  const ownerFields: ContractFieldConfig[] = [
-    { name: 'ownerName', label: t('fields.fullName') },
-    { name: 'ownerCpf', label: t('fields.cpf'), mask: '000.000.000-00' },
-    { name: 'ownerEmail', label: t('fields.email') },
-    { name: 'ownerPhone', label: t('fields.phone'), mask: '(00) 00000-0000' },
-  ]
-
-  const tenantFields: ContractFieldConfig[] = [
-    { name: 'tenantName', label: t('fields.fullName') },
-    { name: 'tenantCpf', label: t('fields.cpf'), mask: '000.000.000-00' },
-    { name: 'tenantEmail', label: t('fields.email') },
-    { name: 'tenantPhone', label: t('fields.phone'), mask: '(00) 00000-0000' },
-  ]
-
-  const guarantorFields: ContractFieldConfig[] = [
-    { name: 'guarantorName', label: t('fields.fullName') },
-    { name: 'guarantorCpf', label: t('fields.cpf'), mask: '000.000.000-00' },
-    { name: 'guarantorEmail', label: t('fields.email') },
-    { name: 'guarantorPhone', label: t('fields.phone'), mask: '(00) 00000-0000' },
-  ]
+  const ownerFields = makePartyFieldsMeta('owner').map((field) => toFieldConfig(field, t))
+  const tenantFields = makePartyFieldsMeta('tenant').map((field) => toFieldConfig(field, t))
+  const guarantorFields = makePartyFieldsMeta('guarantor').map((field) => toFieldConfig(field, t))
+  // Either signal reveals the section: the explicit flag, or "Fiador" picked directly as the
+  // guarantee type in the Conditions step — kept in sync with the schema's superRefine trigger.
+  const hasActiveGuarantor = values.hasGuarantor || values.guaranteeType === 'Fiador'
 
   const addGuarantor = () => {
     setValue('hasGuarantor', true, { shouldDirty: true })
@@ -168,7 +268,7 @@ function PartiesStep({ control, setValue, values }: ContractPartiesStepProps) {
         </Box>
       </Box>
 
-      {values.hasGuarantor ? (
+      {hasActiveGuarantor ? (
         <Box sx={{ mt: 3.2 }}>
           <SectionTitle>{t('guarantorTitle')}</SectionTitle>
           <FieldGrid control={control} fields={guarantorFields} />
@@ -195,30 +295,67 @@ function PartiesStep({ control, setValue, values }: ContractPartiesStepProps) {
   )
 }
 
-function PropertyStep({ control }: ContractStepControlProps) {
+function derivePropertyCity(location: string): string {
+  const parts = location.split(',')
+  return parts.length > 1 ? parts[parts.length - 1].trim() : location.trim()
+}
+
+function PropertyStep({ control, setValue, values }: ContractPropertyStepProps) {
   const t = useTranslations('contracts.wizard.property')
+  const selectedProperty =
+    dashboardProperties.find((property) => property.id === values.propertyId) ?? null
+
+  const applyProperty = (property: DashboardProperty | null) => {
+    if (!property) {
+      setValue('propertyId', '', { shouldDirty: true })
+      return
+    }
+
+    setValue('propertyId', property.id, { shouldDirty: true })
+    setValue('propertyTitle', property.title, { shouldDirty: true })
+    setValue('propertyAddress', property.address, { shouldDirty: true })
+    setValue('propertyCity', derivePropertyCity(property.location), { shouldDirty: true })
+    if (propertyTypeOptions.includes(property.type)) {
+      setValue('propertyType', property.type, { shouldDirty: true })
+    }
+  }
 
   return (
     <Stack spacing={3}>
       <Box>
         <SectionTitle>{t('title')}</SectionTitle>
+        <Controller
+          control={control}
+          name="propertyId"
+          render={({ field, fieldState }) => (
+            <Autocomplete
+              options={dashboardProperties}
+              getOptionLabel={(property) => `${property.title} — ${property.location}`}
+              isOptionEqualToValue={(option, selected) => option.id === selected.id}
+              value={selectedProperty}
+              noOptionsText={t('picker.noOptions')}
+              onChange={(_event, property) => {
+                field.onChange(property?.id ?? '')
+                applyProperty(property)
+              }}
+              onBlur={field.onBlur}
+              sx={{ mb: 2.2 }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label={t('picker.label')}
+                  helperText={fieldState.error?.message ?? t('picker.helperText')}
+                  error={Boolean(fieldState.error)}
+                  InputLabelProps={{ shrink: true }}
+                  sx={contractTextFieldSx}
+                />
+              )}
+            />
+          )}
+        />
         <FieldGrid
           control={control}
-          fields={[
-            { name: 'propertyTitle', label: t('fields.propertyTitle') },
-            {
-              name: 'propertyType',
-              label: t('fields.propertyType'),
-              options: propertyTypeOptions,
-              getOptionLabel: (option) => t(`typeOptions.${option}`),
-            },
-            { name: 'propertyAddress', label: t('fields.propertyAddress') },
-            { name: 'propertyZipCode', label: t('fields.propertyZipCode'), mask: '00000-000' },
-            { name: 'propertyCity', label: t('fields.propertyCity') },
-            { name: 'propertyState', label: t('fields.propertyState'), mask: 'aa' },
-            { name: 'propertyRegistration', label: t('fields.propertyRegistration') },
-            { name: 'propertyArea', label: t('fields.propertyArea') },
-          ]}
+          fields={propertyStepFieldsMeta.map((field) => toFieldConfig(field, t))}
         />
       </Box>
     </Stack>
@@ -235,31 +372,8 @@ function ConditionsStep({ control }: ContractStepControlProps) {
         <FieldGrid
           control={control}
           fields={[
-            {
-              name: 'contractType',
-              label: t('fields.contractType'),
-              options: contractTypeOptions,
-              getOptionLabel: (option) => t(`contractTypeOptions.${option}`),
-            },
-            { name: 'monthlyRent', label: t('fields.monthlyRent') },
-            { name: 'condominiumFee', label: t('fields.condominiumFee') },
-            { name: 'iptu', label: t('fields.iptu') },
-            { name: 'dueDay', label: t('fields.dueDay'), mask: '00' },
-            {
-              name: 'guaranteeType',
-              label: t('fields.guaranteeType'),
-              options: guaranteeTypeOptions,
-              getOptionLabel: (option) => t(`guaranteeTypeOptions.${option}`),
-            },
-            { name: 'startDate', label: t('fields.startDate'), mask: '00/00/0000' },
-            { name: 'endDate', label: t('fields.endDate'), mask: '00/00/0000' },
-            {
-              name: 'adjustmentIndex',
-              label: t('fields.adjustmentIndex'),
-              options: adjustmentIndexOptions,
-              getOptionLabel: (option) => t(`adjustmentIndexOptions.${option}`),
-            },
-            { name: 'notes', label: t('fields.notes'), multiline: true },
+            ...conditionsStepFieldsMeta.map((field) => toFieldConfig(field, t)),
+            toFieldConfig({ name: 'notes', labelKey: 'notes' }, t, true),
           ]}
         />
       </Box>
@@ -308,13 +422,14 @@ function ReviewPanel({ title, items }: ContractReviewPanelProps) {
 
 function ReviewStep({ values }: ContractStepReviewProps) {
   const t = useTranslations('contracts.wizard.review')
+  const hasActiveGuarantor = values.hasGuarantor || values.guaranteeType === 'Fiador'
 
   const partiesItems = [
     { label: t('labels.owner'), value: values.ownerName },
     { label: t('labels.ownerCpf'), value: values.ownerCpf },
     { label: t('labels.tenant'), value: values.tenantName },
     { label: t('labels.tenantCpf'), value: values.tenantCpf },
-    ...(values.hasGuarantor
+    ...(hasActiveGuarantor
       ? [
           { label: t('labels.guarantor'), value: values.guarantorName },
           { label: t('labels.guarantorCpf'), value: values.guarantorCpf },
@@ -368,7 +483,9 @@ export function ContractStepFields({
   setValue,
   values,
 }: ContractStepFieldsProps) {
-  if (activeStepKey === 'property') return <PropertyStep control={control} />
+  if (activeStepKey === 'property') {
+    return <PropertyStep control={control} setValue={setValue} values={values} />
+  }
   if (activeStepKey === 'conditions') return <ConditionsStep control={control} />
   if (activeStepKey === 'review') return <ReviewStep values={values} />
 

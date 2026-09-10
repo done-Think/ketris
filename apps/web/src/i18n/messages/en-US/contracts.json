@@ -18,12 +18,28 @@
       "Ativos": "Active",
       "Vencendo": "Expiring",
       "Encerrados": "Closed"
+    },
+    "typeFilter": {
+      "label": "Contract type",
+      "Todos": "All types",
+      "Residencial": "Residential",
+      "Comercial": "Commercial",
+      "Temporada": "Short-term"
     }
   },
   "summary": {
-    "Ativos": { "label": "Active", "caption": "Contracts in force" },
-    "Vencendo em 30d": { "label": "Expiring in 30d", "caption": "Need follow-up" },
-    "Inadimplentes": { "label": "Delinquent", "caption": "With outstanding balances" }
+    "Ativos": {
+      "label": "Active",
+      "caption": "Contracts in force"
+    },
+    "Vencendo em 30d": {
+      "label": "Expiring in 30d",
+      "caption": "Need follow-up"
+    },
+    "Inadimplentes": {
+      "label": "Delinquent",
+      "caption": "With outstanding balances"
+    }
   },
   "table": {
     "columns": {
@@ -115,6 +131,11 @@
         "Studio": "Studio",
         "Cobertura": "Penthouse",
         "Sala comercial": "Commercial unit"
+      },
+      "picker": {
+        "label": "Select a listed property",
+        "helperText": "Choose an existing property to auto-fill its details.",
+        "noOptions": "No properties found."
       }
     },
     "conditions": {
@@ -174,6 +195,12 @@
         "adjustment": "Adjustment",
         "notes": "Notes"
       }
+    },
+    "discardDialog": {
+      "title": "Discard contract?",
+      "description": "The information you entered will be lost and cannot be recovered.",
+      "cancel": "Keep editing",
+      "confirm": "Discard"
     }
   },
   "actionDialog": {

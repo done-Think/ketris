@@ -26,6 +26,7 @@ import {
 } from '@mui/material'
 import type { GridColDef, GridRowParams } from '@mui/x-data-grid'
 import { DataGrid } from '@mui/x-data-grid'
+import dayjs from 'dayjs'
 import { useTranslations } from 'next-intl'
 
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
@@ -33,13 +34,28 @@ import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/
 import { contractActionMenuOptions, contractStatusStyles } from '../config/contract-ui'
 import type {
   ContractActionMenuIconKey,
-  ContractActionMenuState,
   ContractActionsCellProps,
   ContractIdentityCellProps,
   ContractListItem,
   ContractsTableProps,
   ContractStatusCellProps,
 } from '../types/contract'
+
+// `amount`/`startDate`/`endDate` are pre-formatted display strings ("R$ 6.500/mês", "01/09/2026"),
+// which the DataGrid would otherwise sort lexicographically — these comparators make column
+// sorting numeric/chronological instead.
+function parseAmountValue(amount: string): number {
+  const digitsOnly = amount.replace(/\D/g, '')
+  return digitsOnly ? Number(digitsOnly) : 0
+}
+
+function compareAmount(a: string, b: string): number {
+  return parseAmountValue(a) - parseAmountValue(b)
+}
+
+function compareDate(a: string, b: string): number {
+  return dayjs(a, 'DD/MM/YYYY').valueOf() - dayjs(b, 'DD/MM/YYYY').valueOf()
+}
 
 function ContractIdentityCell({ row }: ContractIdentityCellProps) {
   return (
@@ -101,20 +117,16 @@ const contractActionMenuIcons: Record<ContractActionMenuIconKey, typeof Visibili
 
 function ContractActionsCell({ contract, onContractAction }: ContractActionsCellProps) {
   const t = useTranslations('contracts.table')
-  const [menuState, setMenuState] = useState<ContractActionMenuState>({
-    anchorEl: null,
-    contract: null,
-    menu: null,
-  })
-  const menuOpen = Boolean(menuState.anchorEl)
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+  const menuOpen = Boolean(anchorEl)
 
   const openMenu = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation()
-    setMenuState({ anchorEl: event.currentTarget, contract, menu: 'view' })
+    setAnchorEl(event.currentTarget)
   }
 
   const closeMenu = () => {
-    setMenuState({ anchorEl: null, contract: null, menu: null })
+    setAnchorEl(null)
   }
 
   return (
@@ -137,7 +149,7 @@ function ContractActionsCell({ contract, onContractAction }: ContractActionsCell
         </IconButton>
       </Tooltip>
       <Menu
-        anchorEl={menuState.anchorEl}
+        anchorEl={anchorEl}
         open={menuOpen}
         onClose={closeMenu}
         onClick={(event) => event.stopPropagation()}
@@ -166,7 +178,7 @@ function ContractActionsCell({ contract, onContractAction }: ContractActionsCell
                 <MenuItem
                   key={option.action}
                   onClick={() => {
-                    if (menuState.contract) onContractAction(menuState.contract, option.action)
+                    onContractAction(contract, option.action)
                     closeMenu()
                   }}
                   sx={{ minHeight: 48, gap: 1.2 }}
@@ -232,6 +244,7 @@ export function ContractsTable({
       minWidth: 140,
       disableColumnMenu: true,
       hideable: false,
+      sortComparator: compareAmount,
     },
     {
       field: 'startDate',
@@ -240,6 +253,7 @@ export function ContractsTable({
       minWidth: 130,
       disableColumnMenu: true,
       hideable: false,
+      sortComparator: compareDate,
     },
     {
       field: 'endDate',
@@ -248,6 +262,7 @@ export function ContractsTable({
       minWidth: 150,
       disableColumnMenu: true,
       hideable: false,
+      sortComparator: compareDate,
     },
     {
       field: 'status',

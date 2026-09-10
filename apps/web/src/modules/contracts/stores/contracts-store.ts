@@ -1,6 +1,8 @@
 import dayjs from 'dayjs'
 import { create } from 'zustand'
 
+import { getDashboardPropertyById } from '@modules/properties/data/dashboard-properties'
+
 import { dashboardContracts } from '../config/contracts-data'
 import type {
   ContractListItem,
@@ -26,6 +28,7 @@ function createContractListItem(
   contractCount: number,
 ): ContractListItem {
   const nextContractNumber = String(contractCount + 1).padStart(4, '0')
+  const selectedProperty = getDashboardPropertyById(values.propertyId)
 
   return {
     id: `contract-${nextContractNumber}`,
@@ -33,8 +36,8 @@ function createContractListItem(
     title: values.propertyTitle || values.contractType || 'Contrato em revisao',
     property: values.propertyTitle,
     propertyAddress: values.propertyAddress,
-    propertyId: 'apt-jardins-3q',
-    propertyImageUrl: fallbackPropertyImageUrl,
+    propertyId: values.propertyId,
+    propertyImageUrl: selectedProperty?.imageUrl ?? fallbackPropertyImageUrl,
     owner: values.ownerName,
     tenant: values.tenantName,
     status: 'Em revisão',

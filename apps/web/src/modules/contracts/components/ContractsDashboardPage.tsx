@@ -6,7 +6,7 @@ import { Box } from '@mui/material'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import { useSnackbar } from 'notistack'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 
 import { useRouter } from '@/i18n/navigation'
 
@@ -19,7 +19,7 @@ import {
   contractsFiltersDefaultValues,
   contractsFiltersSchema,
 } from '../schemas/contracts-filters-schema'
-import { useContractsStore } from '../stores/contracts-store'
+import { useContracts } from '../hooks/use-contracts'
 import type {
   ContractActionDialogState,
   ContractListItem,
@@ -87,15 +87,23 @@ export function ContractsDashboardPage() {
     contract: null,
     action: null,
   })
-  const contracts = useContractsStore((state) => state.contracts)
-  const { control, setValue, watch } = useForm<ContractsFiltersFormValues>({
+  const contracts = useContracts()
+  const { control, setValue } = useForm<ContractsFiltersFormValues>({
     defaultValues: contractsFiltersDefaultValues,
     resolver: zodResolver(contractsFiltersSchema),
   })
-  const filters = watch()
+  // Watching each primitive field individually (instead of the whole form via `watch()`) keeps
+  // stable dependency values, so the filter below only recomputes when a filter actually changes.
+  const searchQuery = useWatch({ control, name: 'searchQuery' })
+  const status = useWatch({ control, name: 'status' })
+  const type = useWatch({ control, name: 'type' })
+  const period = useWatch({ control, name: 'period' })
   const filteredContracts = useMemo(
-    () => contracts.filter((contract) => matchesContractsFilters(contract, filters)),
-    [contracts, filters],
+    () =>
+      contracts.filter((contract) =>
+        matchesContractsFilters(contract, { searchQuery, status, type, period }),
+      ),
+    [contracts, searchQuery, status, type, period],
   )
   const createContract = () => router.push('/dashboard/contracts/new')
   const handleContractAction = (contract: ContractListItem, action: ContractTableAction) => {

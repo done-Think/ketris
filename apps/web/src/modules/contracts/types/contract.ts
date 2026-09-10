@@ -58,12 +58,6 @@ export type ContractActionMockContent = {
   sections: ContractActionMockSection[]
 }
 
-export type ContractActionMenuState = {
-  anchorEl: HTMLElement | null
-  contract: ContractListItem | null
-  menu: ContractActionMenuKey | null
-}
-
 export type ContractActionDialogState = {
   contract: ContractListItem | null
   action: ContractTableAction | null
@@ -207,6 +201,11 @@ export type ContractStepFieldsProps = {
 }
 
 export type ContractStepControlProps = Pick<ContractStepFieldsProps, 'control'>
+
+export type ContractPropertyStepProps = Pick<
+  ContractStepFieldsProps,
+  'control' | 'setValue' | 'values'
+>
 
 export type ContractPartiesStepProps = Pick<
   ContractStepFieldsProps,

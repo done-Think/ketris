@@ -18,12 +18,28 @@
       "Ativos": "Ativos",
       "Vencendo": "Vencendo",
       "Encerrados": "Encerrados"
+    },
+    "typeFilter": {
+      "label": "Tipo de contrato",
+      "Todos": "Todos os tipos",
+      "Residencial": "Residencial",
+      "Comercial": "Comercial",
+      "Temporada": "Temporada"
     }
   },
   "summary": {
-    "Ativos": { "label": "Ativos", "caption": "Contratos vigentes" },
-    "Vencendo em 30d": { "label": "Vencendo em 30d", "caption": "Exigem acompanhamento" },
-    "Inadimplentes": { "label": "Inadimplentes", "caption": "Com pendencias financeiras" }
+    "Ativos": {
+      "label": "Ativos",
+      "caption": "Contratos vigentes"
+    },
+    "Vencendo em 30d": {
+      "label": "Vencendo em 30d",
+      "caption": "Exigem acompanhamento"
+    },
+    "Inadimplentes": {
+      "label": "Inadimplentes",
+      "caption": "Com pendencias financeiras"
+    }
   },
   "table": {
     "columns": {
@@ -115,6 +131,11 @@
         "Studio": "Studio",
         "Cobertura": "Cobertura",
         "Sala comercial": "Sala comercial"
+      },
+      "picker": {
+        "label": "Selecionar imóvel cadastrado",
+        "helperText": "Escolha um imóvel já cadastrado para preencher os dados automaticamente.",
+        "noOptions": "Nenhum imóvel encontrado."
       }
     },
     "conditions": {
@@ -174,6 +195,12 @@
         "adjustment": "Reajuste",
         "notes": "Observações"
       }
+    },
+    "discardDialog": {
+      "title": "Descartar contrato?",
+      "description": "Os dados preenchidos serão perdidos e não poderão ser recuperados.",
+      "cancel": "Continuar editando",
+      "confirm": "Descartar"
     }
   },
   "actionDialog": {

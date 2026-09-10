@@ -1,7 +1,18 @@
 'use client'
 
+import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Box, Link as MuiLink, Stack, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Link as MuiLink,
+  Stack,
+  Typography,
+} from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 import { useForm } from 'react-hook-form'
@@ -14,49 +25,23 @@ import {
   createContractDefaultValues,
   createContractSchema,
 } from '../schemas/create-contract-schema'
-import { useContractsStore } from '../stores/contracts-store'
+import { useCreateContract } from '../hooks/use-contracts'
 import type { CreateContractFieldName, CreateContractFormValues } from '../types/contract'
 import { ContractActions } from './ContractActions'
-import { ContractStepFields } from './ContractStepFields'
+import {
+  ContractStepFields,
+  conditionsStepFieldNames,
+  partiesStepFieldNames,
+  propertyStepFieldNames,
+} from './ContractStepFields'
 import { ContractStepsNav } from './ContractStepsNav'
 
+// Derived from the same field metadata each step actually renders (see ContractStepFields.tsx) —
+// a field added to a step's FieldGrid is automatically required here too, nothing to keep in sync.
 const stepValidationFields: Record<number, CreateContractFieldName[]> = {
-  0: [
-    'ownerName',
-    'ownerCpf',
-    'ownerEmail',
-    'ownerPhone',
-    'tenantName',
-    'tenantCpf',
-    'tenantEmail',
-    'tenantPhone',
-    'hasGuarantor',
-    'guarantorName',
-    'guarantorCpf',
-    'guarantorEmail',
-    'guarantorPhone',
-  ],
-  1: [
-    'propertyTitle',
-    'propertyAddress',
-    'propertyZipCode',
-    'propertyCity',
-    'propertyState',
-    'propertyType',
-    'propertyRegistration',
-    'propertyArea',
-  ],
-  2: [
-    'contractType',
-    'monthlyRent',
-    'condominiumFee',
-    'iptu',
-    'dueDay',
-    'startDate',
-    'endDate',
-    'guaranteeType',
-    'adjustmentIndex',
-  ],
+  0: partiesStepFieldNames,
+  1: propertyStepFieldNames,
+  2: conditionsStepFieldNames,
   3: [],
 }
 
@@ -64,8 +49,16 @@ export function ContractsCreatePage() {
   const t = useTranslations('contracts.wizard')
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
-  const addContract = useContractsStore((state) => state.addContract)
-  const { control, handleSubmit, setValue, trigger, watch } = useForm<CreateContractFormValues>({
+  const addContract = useCreateContract()
+  const [discardDialogOpen, setDiscardDialogOpen] = useState(false)
+  const {
+    control,
+    formState: { isDirty },
+    handleSubmit,
+    setValue,
+    trigger,
+    watch,
+  } = useForm<CreateContractFormValues>({
     defaultValues: createContractDefaultValues,
     resolver: zodResolver(createContractSchema),
     mode: 'onBlur',
@@ -86,6 +79,11 @@ export function ContractsCreatePage() {
 
   const goToPreviousStep = () => {
     if (firstStep) {
+      if (isDirty) {
+        setDiscardDialogOpen(true)
+        return
+      }
+
       router.push('/dashboard/contracts')
       return
     }
@@ -182,6 +180,26 @@ export function ContractsCreatePage() {
           onNextStep={goToNextStep}
         />
       </Box>
+
+      <Dialog open={discardDialogOpen} onClose={() => setDiscardDialogOpen(false)}>
+        <DialogTitle sx={{ letterSpacing: 0 }}>{t('discardDialog.title')}</DialogTitle>
+        <DialogContent>
+          <Typography color="text.secondary">{t('discardDialog.description')}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDiscardDialogOpen(false)}>{t('discardDialog.cancel')}</Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => {
+              setDiscardDialogOpen(false)
+              router.push('/dashboard/contracts')
+            }}
+          >
+            {t('discardDialog.confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }
