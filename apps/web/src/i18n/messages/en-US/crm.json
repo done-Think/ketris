@@ -82,7 +82,8 @@
     "actions": {
       "editContact": "Edit {name}",
       "viewInteractions": "View interactions for {name}",
-      "moreOptions": "More options for {name}"
+      "moreOptions": "More options for {name}",
+      "archiveContact": "Archive {name}"
     },
     "types": {
       "tenant": "Tenant",

@@ -82,7 +82,8 @@
     "actions": {
       "editContact": "Editar {name}",
       "viewInteractions": "Ver interacciones de {name}",
-      "moreOptions": "Más opciones para {name}"
+      "moreOptions": "Más opciones para {name}",
+      "archiveContact": "Archivar {name}"
     },
     "types": {
       "tenant": "Inquilino",

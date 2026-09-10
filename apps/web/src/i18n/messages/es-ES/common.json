@@ -14,5 +14,20 @@
     "notFound": "Página no encontrada.",
     "unexpectedTitle": "Algo salió mal.",
     "unexpectedDescription": "Nuestro equipo fue notificado. Inténtalo nuevamente en unos instantes."
+  },
+  "appShell": {
+    "ariaLabel": "Navegación principal",
+    "openNavigation": "Abrir navegación",
+    "defaultUserName": "Equipo Ketris",
+    "defaultUserContext": "Panel administrativo",
+    "backToMarketplace": "Volver al marketplace",
+    "dashboard": "Dashboard",
+    "pipeline": "Pipeline",
+    "contacts": "Contactos",
+    "properties": "Mis inmuebles",
+    "publicProfile": "Perfil público",
+    "agenda": "Agenda",
+    "proposals": "Propuestas",
+    "finance": "Finanzas"
   }
 }

@@ -82,7 +82,8 @@
     "actions": {
       "editContact": "Editar {name}",
       "viewInteractions": "Ver interações de {name}",
-      "moreOptions": "Mais opções para {name}"
+      "moreOptions": "Mais opções para {name}",
+      "archiveContact": "Arquivar {name}"
     },
     "types": {
       "tenant": "Locatário",

@@ -134,6 +134,7 @@ describe('ContactsPage', () => {
 
     const table = screen.getByRole('table', { name: 'Contatos do CRM' })
     await user.click(within(table).getByRole('button', { name: 'Mais opções para Ricardo Mendes' }))
+    await user.click(screen.getByRole('menuitem', { name: 'Arquivar Ricardo Mendes' }))
     expect(screen.getByRole('heading', { name: 'Arquivar contato?' })).toBeVisible()
 
     await user.click(screen.getByRole('button', { name: 'Arquivar' }))
