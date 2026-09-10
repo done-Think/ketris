@@ -149,12 +149,6 @@ export type ContractDetailDashboardPageProps = {
   contractId: string
 }
 
-export type DashboardContractDetailRouteProps = {
-  params: {
-    id: string
-  }
-}
-
 export type ContractIdentityCellProps = GridRenderCellParams<ContractListItem>
 
 export type ContractStatusCellProps = {
