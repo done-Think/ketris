@@ -36,7 +36,7 @@ describe('publicProfileEditorSchema', () => {
         name: `Membro ${index + 1}`,
         role: 'Corretor',
         avatarUrl: 'https://example.com/avatar.jpg',
-        profileUrl: `/corretores/membro-${index + 1}`,
+        profileUrl: `/brokers/membro-${index + 1}`,
       })),
     })
 

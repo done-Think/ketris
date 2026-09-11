@@ -1,4 +1,5 @@
 import { Box, Container, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { componentText, surface } from '@shared/theme/tokens'
 
@@ -6,6 +7,8 @@ import { miniProperties } from '../data/mini-properties'
 import { MiniPropertyCard } from './MiniPropertyCard'
 
 export function MiniPropertiesSection() {
+  const t = useTranslations('marketplace.home.miniProperties')
+
   return (
     <Box
       component="section"
@@ -25,7 +28,7 @@ export function MiniPropertiesSection() {
             mb: 3,
           }}
         >
-          +2.500 imóveis qualificados e verificados digitalmente
+          {t('eyebrow')}
         </Typography>
         <Box
           sx={{

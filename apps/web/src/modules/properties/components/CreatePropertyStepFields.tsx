@@ -12,6 +12,7 @@ import {
   Typography,
 } from '@mui/material'
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
+import { useTranslations } from 'next-intl'
 
 import { alpha, motion, radius, surface } from '@shared/theme/tokens'
 
@@ -31,6 +32,8 @@ export function CreatePropertyStepFields({
   propertyPurpose,
   onPropertyPurposeChange,
 }: CreatePropertyStepFieldsProps) {
+  const t = useTranslations('properties.create')
+
   return (
     <>
       <Typography sx={{ color: 'primary.main', fontSize: 13, fontWeight: 900, mb: 2.2 }}>
@@ -49,7 +52,7 @@ export function CreatePropertyStepFields({
           >
             <FormControl fullWidth>
               <Typography sx={{ fontSize: 13, fontWeight: 900, mb: 0.8 }}>
-                Tipo de imóvel
+                {t('fields.propertyType')}
               </Typography>
               <Controller
                 control={control}
@@ -67,7 +70,7 @@ export function CreatePropertyStepFields({
                   >
                     {createPropertyTypeOptions.map((type) => (
                       <MenuItem key={type} value={type}>
-                        {type}
+                        {t(`propertyTypes.${type}`)}
                       </MenuItem>
                     ))}
                   </Select>
@@ -76,7 +79,9 @@ export function CreatePropertyStepFields({
             </FormControl>
 
             <Box>
-              <Typography sx={{ fontSize: 13, fontWeight: 900, mb: 0.8 }}>Finalidade</Typography>
+              <Typography sx={{ fontSize: 13, fontWeight: 900, mb: 0.8 }}>
+                {t('fields.purpose')}
+              </Typography>
               <Box
                 sx={{
                   display: 'grid',
@@ -109,7 +114,7 @@ export function CreatePropertyStepFields({
                         },
                       }}
                     >
-                      {purpose}
+                      {t(`purposes.${purpose}`)}
                     </Button>
                   )
                 })}
@@ -125,7 +130,7 @@ export function CreatePropertyStepFields({
                 <TextField
                   {...field}
                   fullWidth
-                  label="Título do anúncio"
+                  label={t('fields.title')}
                   error={Boolean(fieldState.error)}
                   helperText={fieldState.error?.message}
                 />
@@ -141,7 +146,7 @@ export function CreatePropertyStepFields({
                   fullWidth
                   multiline
                   minRows={4}
-                  label="Descrição"
+                  label={t('fields.description')}
                   error={Boolean(fieldState.error)}
                   helperText={fieldState.error?.message}
                 />
@@ -160,12 +165,12 @@ export function CreatePropertyStepFields({
           }}
         >
           {[
-            ['street', 'Endereço'],
-            ['number', 'Número'],
-            ['neighborhood', 'Bairro'],
-            ['city', 'Cidade'],
-            ['state', 'Estado'],
-            ['zipCode', 'CEP'],
+            ['street', 'street'],
+            ['number', 'number'],
+            ['neighborhood', 'neighborhood'],
+            ['city', 'city'],
+            ['state', 'state'],
+            ['zipCode', 'zipCode'],
           ].map(([name, label]) => (
             <Controller
               key={name}
@@ -174,7 +179,7 @@ export function CreatePropertyStepFields({
               render={({ field, fieldState }) => (
                 <TextField
                   {...field}
-                  label={label}
+                  label={t(`fields.${label}`)}
                   error={Boolean(fieldState.error)}
                   helperText={fieldState.error?.message}
                 />
@@ -193,10 +198,10 @@ export function CreatePropertyStepFields({
           }}
         >
           {[
-            ['bedrooms', 'Quartos', 'number'],
-            ['bathrooms', 'Banheiros', 'number'],
-            ['parkingSpaces', 'Vagas', 'number'],
-            ['area', 'Área útil', 'text'],
+            ['bedrooms', 'bedrooms', 'number'],
+            ['bathrooms', 'bathrooms', 'number'],
+            ['parkingSpaces', 'parkingSpaces', 'number'],
+            ['area', 'area', 'text'],
           ].map(([name, label, type]) => (
             <Controller
               key={name}
@@ -205,7 +210,7 @@ export function CreatePropertyStepFields({
               render={({ field, fieldState }) => (
                 <TextField
                   {...field}
-                  label={label}
+                  label={t(`fields.${label}`)}
                   type={type}
                   error={Boolean(fieldState.error)}
                   helperText={fieldState.error?.message}
@@ -237,7 +242,7 @@ export function CreatePropertyStepFields({
                         }}
                       />
                     }
-                    label={feature}
+                    label={t(`features.${feature}`)}
                     sx={{
                       minHeight: 44,
                       border: '1px solid',
@@ -296,7 +301,7 @@ export function CreatePropertyStepFields({
                       cursor: 'pointer',
                     }}
                   >
-                    <Typography sx={{ fontWeight: 900 }}>{label}</Typography>
+                    <Typography sx={{ fontWeight: 900 }}>{t(`mediaSlots.${label}`)}</Typography>
                   </Box>
                 )
               }}
@@ -314,10 +319,10 @@ export function CreatePropertyStepFields({
           }}
         >
           {[
-            ['mainValue', propertyPurpose === 'Aluguel' ? 'Valor do aluguel' : 'Valor de venda'],
-            ['condominium', 'Condomínio'],
-            ['iptu', 'IPTU mensal'],
-            ['negotiationTerm', propertyPurpose === 'Aluguel' ? 'Garantia' : 'Comissão'],
+            ['mainValue', propertyPurpose === 'Aluguel' ? 'rentValue' : 'saleValue'],
+            ['condominium', 'condominium'],
+            ['iptu', 'iptu'],
+            ['negotiationTerm', propertyPurpose === 'Aluguel' ? 'securityDeposit' : 'commission'],
           ].map(([name, label]) => (
             <Controller
               key={name}
@@ -326,7 +331,7 @@ export function CreatePropertyStepFields({
               render={({ field, fieldState }) => (
                 <TextField
                   {...field}
-                  label={label}
+                  label={t(`fields.${label}`)}
                   error={Boolean(fieldState.error)}
                   helperText={fieldState.error?.message}
                 />
@@ -361,7 +366,7 @@ export function CreatePropertyStepFields({
                         }}
                       />
                     }
-                    label={option}
+                    label={t(`publishingOptions.${option}`)}
                     sx={{
                       minHeight: 44,
                       border: '1px solid',

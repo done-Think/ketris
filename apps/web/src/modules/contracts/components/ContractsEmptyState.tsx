@@ -1,12 +1,15 @@
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 import { Box, Button, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { ContractsEmptyStateProps } from '../types/contract'
 
 export function ContractsEmptyState({ onCreateContract }: ContractsEmptyStateProps) {
+  const t = useTranslations('contracts.emptyState')
+
   return (
     <Stack
       alignItems="center"
@@ -37,11 +40,9 @@ export function ContractsEmptyState({ onCreateContract }: ContractsEmptyStatePro
       </Box>
       <Box>
         <Typography sx={{ color: brand.graphite[500], fontSize: 18, fontWeight: 900, mb: 0.6 }}>
-          Nenhum contrato encontrado
+          {t('title')}
         </Typography>
-        <Typography sx={{ color: brand.neutral[500], fontSize: 14 }}>
-          Gere um novo contrato ou ajuste os filtros para ampliar a busca.
-        </Typography>
+        <Typography sx={{ color: brand.neutral[500], fontSize: 14 }}>{t('description')}</Typography>
       </Box>
       <Button
         variant="contained"
@@ -55,7 +56,7 @@ export function ContractsEmptyState({ onCreateContract }: ContractsEmptyStatePro
           fontWeight: 900,
         }}
       >
-        Gerar contrato
+        {t('cta')}
       </Button>
     </Stack>
   )

@@ -39,7 +39,6 @@ export const dashboardProperties: DashboardProperty[] = [
     status: 'Alugado',
     broker: 'Roberto Souza',
     updatedAt: 'Há 2 horas',
-    activeContractId: 'contract-001',
     imageUrl:
       'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=160&q=80',
     heroImageUrl:
@@ -98,7 +97,6 @@ export const dashboardProperties: DashboardProperty[] = [
     status: 'Alugado',
     broker: 'Ana Paula',
     updatedAt: 'Há 1 dia',
-    activeContractId: 'contract-002',
     imageUrl:
       'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=160&q=80',
     heroImageUrl:

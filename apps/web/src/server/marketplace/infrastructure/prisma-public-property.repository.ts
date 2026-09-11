@@ -7,7 +7,7 @@ import type {
   PublicPropertyRepository,
 } from '../application/ports/public-property-repository.port'
 import type {
-  Finalidade,
+  PropertyPurpose,
   PropertyMedia,
   PublishedPropertyDetail,
   PublishedPropertySummary,
@@ -36,7 +36,7 @@ type MidiaRow = { id: string; url: string; tipo: string; ordem: number }
 type ImovelSummaryRow = {
   id: string
   titulo: string
-  finalidade: Finalidade
+  finalidade: PropertyPurpose
   tipo: string
   valor: DecimalLike
   condominio: DecimalLike | null
@@ -46,7 +46,13 @@ type ImovelSummaryRow = {
   vagas: number | null
   areaM2: DecimalLike | null
   publicadoEm: Date | null
-  endereco: { cidade: string; bairro: string } | null
+  endereco: {
+    cidade: string
+    bairro: string
+    latitude: DecimalLike | null
+    longitude: DecimalLike | null
+  } | null
+  responsavel: { nome: string; avatarUrl: string | null } | null
   midias: { url: string }[]
 }
 
@@ -60,66 +66,95 @@ type ImovelDetailRow = ImovelSummaryRow & {
 function toSummary(row: ImovelSummaryRow): PublishedPropertySummary {
   return {
     id: row.id,
-    titulo: row.titulo,
-    finalidade: row.finalidade,
-    tipo: row.tipo,
-    valor: row.valor.toNumber(),
-    condominio: toNumber(row.condominio),
-    iptu: toNumber(row.iptu),
-    quartos: row.quartos,
-    banheiros: row.banheiros,
-    vagas: row.vagas,
-    areaM2: toNumber(row.areaM2),
-    cidade: row.endereco?.cidade ?? null,
-    bairro: row.endereco?.bairro ?? null,
-    capaUrl: row.midias[0]?.url ?? null,
-    publicadoEm: row.publicadoEm,
+    title: row.titulo,
+    purpose: row.finalidade,
+    propertyType: row.tipo,
+    price: row.valor.toNumber(),
+    condoFee: toNumber(row.condominio),
+    propertyTax: toNumber(row.iptu),
+    bedrooms: row.quartos,
+    bathrooms: row.banheiros,
+    parkingSpots: row.vagas,
+    area: toNumber(row.areaM2),
+    city: row.endereco?.cidade ?? null,
+    neighborhood: row.endereco?.bairro ?? null,
+    latitude: toNumber(row.endereco?.latitude ?? null),
+    longitude: toNumber(row.endereco?.longitude ?? null),
+    brokerName: row.responsavel?.nome ?? null,
+    brokerAvatarUrl: row.responsavel?.avatarUrl ?? null,
+    coverUrl: row.midias[0]?.url ?? null,
+    publishedAt: row.publicadoEm,
   }
 }
 
 function toMedia(row: MidiaRow): PropertyMedia {
-  return { id: row.id, url: row.url, tipo: row.tipo, ordem: row.ordem }
+  return { id: row.id, url: row.url, type: row.tipo, order: row.ordem }
 }
 
 function toDetail(row: ImovelDetailRow): PublishedPropertyDetail {
   return {
     ...toSummary(row),
     tenantId: row.tenantId,
-    descricao: row.descricao,
-    endereco: row.endereco
+    description: row.descricao,
+    address: row.endereco
       ? {
-          logradouro: row.endereco.logradouro,
-          numero: row.endereco.numero,
-          complemento: row.endereco.complemento,
-          bairro: row.endereco.bairro,
-          cidade: row.endereco.cidade,
-          estado: row.endereco.estado,
-          cep: row.endereco.cep,
+          street: row.endereco.logradouro,
+          number: row.endereco.numero,
+          complement: row.endereco.complemento,
+          neighborhood: row.endereco.bairro,
+          city: row.endereco.cidade,
+          state: row.endereco.estado,
+          zipCode: row.endereco.cep,
           latitude: toNumber(row.endereco.latitude),
           longitude: toNumber(row.endereco.longitude),
         }
       : null,
-    midias: row.midias.map(toMedia),
+    media: row.midias.map(toMedia),
   }
+}
+
+const sortOrderBy: Record<
+  NonNullable<PropertySearchFilters['sortBy']>,
+  Prisma.ImovelOrderByWithRelationInput
+> = {
+  recent: { publicadoEm: 'desc' },
+  priceAsc: { valor: 'asc' },
+  priceDesc: { valor: 'desc' },
 }
 
 export class PrismaPublicPropertyRepository implements PublicPropertyRepository {
   async search(filters: PropertySearchFilters): Promise<PublishedPropertySummary[]> {
     const where: Prisma.ImovelWhereInput = { status: 'PUBLISHED' }
 
-    if (filters.finalidade) where.finalidade = filters.finalidade
-    if (filters.tipo) where.tipo = { equals: filters.tipo, mode: 'insensitive' }
-    if (filters.quartosMin !== undefined) where.quartos = { gte: filters.quartosMin }
+    if (filters.purpose) where.finalidade = filters.purpose
+    if (filters.propertyType) where.tipo = { equals: filters.propertyType, mode: 'insensitive' }
+    if (filters.minBedrooms !== undefined) where.quartos = { gte: filters.minBedrooms }
+    if (filters.minArea !== undefined) where.areaM2 = { gte: filters.minArea }
+    if (filters.hasParking) where.vagas = { gt: 0 }
 
-    if (filters.precoMin !== undefined || filters.precoMax !== undefined) {
+    if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
       where.valor = {
-        ...(filters.precoMin !== undefined ? { gte: filters.precoMin } : {}),
-        ...(filters.precoMax !== undefined ? { lte: filters.precoMax } : {}),
+        ...(filters.minPrice !== undefined ? { gte: filters.minPrice } : {}),
+        ...(filters.maxPrice !== undefined ? { lte: filters.maxPrice } : {}),
       }
     }
 
-    if (filters.cidade) {
-      where.endereco = { is: { cidade: { equals: filters.cidade, mode: 'insensitive' } } }
+    if (filters.city) {
+      where.endereco = { is: { cidade: { equals: filters.city, mode: 'insensitive' } } }
+    }
+
+    // `location` is a free-text match across bairro/cidade combined — distinct from `city`'s
+    // exact match. Matches how the home search's location field works: a substring against
+    // "Bairro, Cidade" rather than a strict city filter.
+    if (filters.location) {
+      where.endereco = {
+        is: {
+          OR: [
+            { bairro: { contains: filters.location, mode: 'insensitive' } },
+            { cidade: { contains: filters.location, mode: 'insensitive' } },
+          ],
+        },
+      }
     }
 
     if (filters.q) {
@@ -131,7 +166,7 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
 
     const imoveis = await prisma.imovel.findMany({
       where,
-      orderBy: { publicadoEm: 'desc' },
+      orderBy: sortOrderBy[filters.sortBy ?? 'recent'],
       select: {
         id: true,
         titulo: true,
@@ -145,7 +180,8 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
         vagas: true,
         areaM2: true,
         publicadoEm: true,
-        endereco: { select: { cidade: true, bairro: true } },
+        endereco: { select: { cidade: true, bairro: true, latitude: true, longitude: true } },
+        responsavel: { select: { nome: true, avatarUrl: true } },
         midias: { orderBy: { ordem: 'asc' }, take: 1, select: { url: true } },
       },
     })
@@ -158,6 +194,7 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
       where: { id, status: 'PUBLISHED' },
       include: {
         endereco: true,
+        responsavel: { select: { nome: true, avatarUrl: true } },
         midias: { orderBy: { ordem: 'asc' } },
       },
     })

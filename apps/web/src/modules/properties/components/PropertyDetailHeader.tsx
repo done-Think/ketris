@@ -2,16 +2,29 @@ import { Box, Button, Chip, Stack, Typography } from '@mui/material'
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
-import NextLink from 'next/link'
+import { useTranslations } from 'next-intl'
 
+import { useRouter } from '@/i18n/navigation'
 import { radius, surface } from '@shared/theme/tokens'
+
+import { useContractsStore } from '@modules/contracts/stores/contracts-store'
 
 import { dashboardPropertyStatusStyles } from '../config/dashboard-property-ui'
 import type { PropertyDetailHeaderProps } from '../types/dashboard-property'
 
 export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
+  const router = useRouter()
+  const t = useTranslations('properties.detail')
+  const statusT = useTranslations('properties.dashboard.filters')
   const status = dashboardPropertyStatusStyles[property.status]
-  const showActiveContractLink = Boolean(property.activeContractId && property.status === 'Alugado')
+  // Derived from the contracts store (instead of a manually-synced `activeContractId` field on the
+  // property) so it can never drift: a property is only ever linked to a contract that actually
+  // references it, and a newly created contract shows up here immediately.
+  const activeContract = useContractsStore((state) =>
+    property.status === 'Alugado'
+      ? state.contracts.find((contract) => contract.propertyId === property.id)
+      : undefined,
+  )
 
   return (
     <Stack
@@ -27,7 +40,7 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
             {property.title}
           </Typography>
           <Chip
-            label={property.status}
+            label={statusT(property.status)}
             sx={{
               height: 32,
               borderRadius: `${radius.full}px`,
@@ -57,7 +70,7 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
             fontWeight: 900,
           }}
         >
-          Editar
+          {t('edit')}
         </Button>
         <Stack spacing={1.1}>
           <Button
@@ -71,12 +84,16 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
               fontWeight: 900,
             }}
           >
-            Despublicar
+            {t('unpublish')}
           </Button>
-          {showActiveContractLink ? (
+          {activeContract ? (
             <Button
-              component={NextLink}
-              href={`/dashboard/contracts/${property.activeContractId}`}
+              onClick={() =>
+                router.push({
+                  pathname: '/dashboard/contracts/[id]',
+                  params: { id: activeContract.id },
+                })
+              }
               variant="outlined"
               color="secondary"
               startIcon={<ArticleOutlinedIcon />}
@@ -89,7 +106,7 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
                 fontWeight: 900,
               }}
             >
-              Contrato
+              {t('activeContract')}
             </Button>
           ) : null}
         </Stack>

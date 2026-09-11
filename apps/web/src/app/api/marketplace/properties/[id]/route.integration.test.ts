@@ -84,19 +84,21 @@ describe('GET /api/marketplace/properties/[id] (integração)', () => {
   }
 
   it('retorna 200 com o detalhe do imóvel publicado, endereço e mídias ordenadas', async () => {
-    const response = await GET(buildRequest(publishedId), { params: { id: publishedId } })
+    const response = await GET(buildRequest(publishedId), {
+      params: Promise.resolve({ id: publishedId }),
+    })
     const json = await response.json()
 
     expect(response.status).toBe(200)
     expect(json.property.id).toBe(publishedId)
     expect(json.property).not.toHaveProperty('tenantId')
-    expect(json.property.endereco.cidade).toBe('Curitiba')
-    expect(json.property.midias.map((m: { ordem: number }) => m.ordem)).toEqual([0, 1])
-    expect(json.property.capaUrl).toBe('https://cdn.ketris.dev/1.jpg')
+    expect(json.property.address.city).toBe('Curitiba')
+    expect(json.property.media.map((m: { order: number }) => m.order)).toEqual([0, 1])
+    expect(json.property.coverUrl).toBe('https://cdn.ketris.dev/1.jpg')
   })
 
   it('retorna 404 para um imóvel em rascunho (não publicado)', async () => {
-    const response = await GET(buildRequest(draftId), { params: { id: draftId } })
+    const response = await GET(buildRequest(draftId), { params: Promise.resolve({ id: draftId }) })
     const json = await response.json()
 
     expect(response.status).toBe(404)
@@ -104,7 +106,9 @@ describe('GET /api/marketplace/properties/[id] (integração)', () => {
   })
 
   it('retorna 404 para um id inexistente', async () => {
-    const response = await GET(buildRequest('inexistente'), { params: { id: 'inexistente' } })
+    const response = await GET(buildRequest('inexistente'), {
+      params: Promise.resolve({ id: 'inexistente' }),
+    })
 
     expect(response.status).toBe(404)
   })

@@ -22,6 +22,7 @@ const refreshTokenRepository = new PrismaRefreshTokenRepository()
 
 export const authContainer = {
   tokenService,
+  userRepository,
   loginUseCase: new LoginUseCase(
     userRepository,
     passwordHasher,

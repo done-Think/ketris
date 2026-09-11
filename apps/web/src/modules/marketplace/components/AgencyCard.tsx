@@ -6,18 +6,21 @@ import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
 import StarRoundedIcon from '@mui/icons-material/StarRounded'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
+import { Link } from '@/i18n/navigation'
 import { alpha, componentText, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
 
 import type { AgencyCardProps } from '../types/agency'
 import { formatRating } from '../utils/format-rating'
+import { buildPublicProfileHref } from '../utils/property-links'
 import { buildProfileListings } from '../utils/profile-listings'
 import { AgencyBrandBanner } from './AgencyBrandBanner'
 import { DirectoryCardMetrics } from './directory/DirectoryCardMetrics'
 import { ProfileListingPreviewSection } from './profile/ProfileListingPreviewSection'
 
 export function AgencyCard(agency: AgencyCardProps) {
+  const t = useTranslations('marketplace.directory.cards')
   const profileLinkRef = useRef<HTMLAnchorElement | null>(null)
   const isListView = agency.viewMode === 'list'
   const featuredListings = buildProfileListings(agency.featuredListings).slice(0, 2)
@@ -50,8 +53,8 @@ export function AgencyCard(agency: AgencyCardProps) {
     >
       <Box
         component={Link}
-        href={agency.href}
-        aria-label={`Ver página pública de ${agency.name}`}
+        href={buildPublicProfileHref(agency.href, 'agency')}
+        aria-label={t('viewPublicPageAriaLabel', { name: agency.name })}
         ref={profileLinkRef}
         sx={{
           position: 'absolute',
@@ -129,9 +132,9 @@ export function AgencyCard(agency: AgencyCardProps) {
             gridTemplateColumns="repeat(3, minmax(0, 1fr))"
             labelFontWeight={700}
             metrics={[
-              { label: 'Imóveis', value: agency.activeListings, icon: ApartmentOutlinedIcon },
-              { label: 'Equipe', value: agency.brokersCount, icon: GroupsOutlinedIcon },
-              { label: 'Nota', value: formatRating(agency.rating), icon: StarRoundedIcon },
+              { label: t('properties'), value: agency.activeListings, icon: ApartmentOutlinedIcon },
+              { label: t('team'), value: agency.brokersCount, icon: GroupsOutlinedIcon },
+              { label: t('rating'), value: formatRating(agency.rating), icon: StarRoundedIcon },
             ]}
             valueFontWeight={700}
           />
@@ -159,7 +162,7 @@ export function AgencyCard(agency: AgencyCardProps) {
             sx={{ textDecoration: 'none' }}
           >
             <Typography sx={{ color: 'primary.main', ...componentText.cardAction }}>
-              Ver página pública
+              {t('viewPublicPage')}
             </Typography>
             <ChevronRightIcon sx={{ color: 'primary.main', fontSize: iconSize.sm }} />
           </Stack>

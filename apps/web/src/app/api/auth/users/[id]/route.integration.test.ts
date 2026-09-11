@@ -91,7 +91,7 @@ describe('/api/auth/users/[id] (integração)', () => {
   }
 
   function context(id: string) {
-    return { params: { id } }
+    return { params: Promise.resolve({ id }) }
   }
 
   describe('GET', () => {

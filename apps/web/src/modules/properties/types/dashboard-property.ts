@@ -10,7 +10,7 @@ export type DashboardPropertyStatus =
 export type DashboardPropertyFilterKey =
   'Todos' | 'Disponível' | 'Alugado' | 'Vendido' | 'Em análise' | 'Inativo'
 
-export type DashboardPropertyDetailTab = 'Dados' | 'Mídia' | 'Valores' | 'Histórico'
+export type DashboardPropertyDetailTab = 'data' | 'media' | 'values' | 'history'
 
 export type CreatePropertyStepKey =
   'basic' | 'address' | 'features' | 'media' | 'values' | 'publishing'
@@ -41,7 +41,6 @@ export type DashboardProperty = {
   status: DashboardPropertyStatus
   broker: string
   updatedAt: string
-  activeContractId?: string
   imageUrl: string
   heroImageUrl: string
   media: Array<{
@@ -81,10 +80,6 @@ export type DashboardProperty = {
 
 export type PropertyDetailDashboardPageProps = {
   propertyId: string
-}
-
-export type DashboardPropertyDetailRouteProps = {
-  params: { id: string }
 }
 
 export type PropertyNavigationHandler = (propertyId: string) => void

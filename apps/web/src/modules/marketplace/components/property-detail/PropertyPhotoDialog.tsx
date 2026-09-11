@@ -4,6 +4,7 @@ import { Box, Dialog, IconButton, Stack, Typography } from '@mui/material'
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded'
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import { useTranslations } from 'next-intl'
 
 import { alpha, radius, surface } from '@shared/theme/tokens'
 
@@ -18,6 +19,8 @@ export function PropertyPhotoDialog({
   open,
   property,
 }: PropertyPhotoDialogProps) {
+  const t = useTranslations('marketplace.propertyDetail.gallery')
+
   return (
     <Dialog
       fullScreen
@@ -27,10 +30,12 @@ export function PropertyPhotoDialog({
         if (event.key === 'ArrowLeft') onPreviousPhoto()
         if (event.key === 'ArrowRight') onNextPhoto()
       }}
-      PaperProps={{
-        sx: {
-          bgcolor: surface.darkDeep,
-          color: surface.lightText,
+      slotProps={{
+        paper: {
+          sx: {
+            bgcolor: surface.darkDeep,
+            color: surface.lightText,
+          },
         },
       }}
     >
@@ -46,10 +51,10 @@ export function PropertyPhotoDialog({
       >
         <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
           <Typography sx={{ fontSize: 13, fontWeight: 700 }}>
-            {activePhotoIndex + 1} de {property.gallery.length}
+            {t('photoCounter', { current: activePhotoIndex + 1, total: property.gallery.length })}
           </Typography>
           <IconButton
-            aria-label="Fechar galeria"
+            aria-label={t('closeGallery')}
             onClick={onClose}
             sx={{ color: surface.lightText }}
           >
@@ -68,7 +73,7 @@ export function PropertyPhotoDialog({
           <Box
             component="img"
             src={property.gallery[activePhotoIndex]}
-            alt={`${property.title} - foto ${activePhotoIndex + 1}`}
+            alt={t('photoAlt', { title: property.title, index: activePhotoIndex + 1 })}
             sx={{
               display: 'block',
               maxWidth: '100%',
@@ -79,7 +84,7 @@ export function PropertyPhotoDialog({
           />
 
           <IconButton
-            aria-label="Foto anterior"
+            aria-label={t('previousPhoto')}
             onClick={onPreviousPhoto}
             sx={{
               position: 'absolute',
@@ -97,7 +102,7 @@ export function PropertyPhotoDialog({
           </IconButton>
 
           <IconButton
-            aria-label="Próxima foto"
+            aria-label={t('nextPhoto')}
             onClick={onNextPhoto}
             sx={{
               position: 'absolute',
@@ -129,7 +134,7 @@ export function PropertyPhotoDialog({
               component="button"
               type="button"
               key={image}
-              aria-label={`Ver foto ${index + 1}`}
+              aria-label={t('selectPhoto', { index: index + 1 })}
               onClick={() => onSelectPhoto(index)}
               sx={{
                 flex: '0 0 auto',

@@ -27,20 +27,20 @@ export const agencies: AgencyProfile[] = [
     address: 'Alameda Santos, 1320 - Jardins',
     summary:
       'Operação focada em imóveis residenciais de alto padrão, com esteira própria para administração de locações e carteira forte nos Jardins.',
-    href: '/imobiliarias/alameda-prime',
+    href: '/agencies/alameda-prime',
     teamHighlights: ['Marina Costa', 'Juliana Mendes', 'Bianca Azevedo'],
     featuredListings: [
       {
         title: 'Apartamento pronto para morar perto da Oscar Freire',
         location: 'Jardins',
         price: 'R$ 1.420.000',
-        href: '/imoveis/apartamento-jardins-venda',
+        href: '/properties/apartamento-jardins-venda',
       },
       {
         title: 'Cobertura tríplex com piscina privativa',
         location: 'Itaim Bibi',
         price: 'R$ 12.500 / mês',
-        href: '/imoveis/cobertura-itaim-bibi',
+        href: '/properties/cobertura-itaim-bibi',
       },
     ],
   },
@@ -70,20 +70,20 @@ export const agencies: AgencyProfile[] = [
     address: 'Rua Harmonia, 540 - Vila Madalena',
     summary:
       'Imobiliária boutique com foco em studios, lofts e apartamentos compactos na zona oeste, combinando atendimento consultivo e alta rotatividade.',
-    href: '/imobiliarias/hub-vila',
+    href: '/agencies/hub-vila',
     teamHighlights: ['Thiago Santos', 'Bianca Azevedo', 'Laura Martins'],
     featuredListings: [
       {
         title: 'Studio moderno totalmente reformado',
         location: 'Vila Madalena',
         price: 'R$ 2.900 / mês',
-        href: '/imoveis/studio-vila-madalena',
+        href: '/properties/studio-vila-madalena',
       },
       {
         title: 'Loft autoral em prédio boutique',
         location: 'Vila Madalena',
         price: 'R$ 890.000',
-        href: '/imoveis/loft-vila-madalena-venda',
+        href: '/properties/loft-vila-madalena-venda',
       },
     ],
   },
@@ -113,20 +113,20 @@ export const agencies: AgencyProfile[] = [
     address: 'Av. Paulista, 1009 - Bela Vista',
     summary:
       'Especialista em salas comerciais e conjuntos corporativos, com carteira ativa em endereços próximos a metrô e polos empresariais.',
-    href: '/imobiliarias/corporate-paulista',
+    href: '/agencies/corporate-paulista',
     teamHighlights: ['Camila Rocha', 'Fernando Barros', 'Roberto Lima'],
     featuredListings: [
       {
         title: 'Sala comercial pronta para operação',
         location: 'Paulista',
         price: 'R$ 6.600 / mês',
-        href: '/imoveis/sala-comercial-paulista',
+        href: '/properties/sala-comercial-paulista',
       },
       {
         title: 'Conjunto corporativo flexível',
         location: 'Bela Vista',
         price: 'R$ 8.900 / mês',
-        href: '/imoveis',
+        href: '/properties',
       },
     ],
   },
@@ -156,20 +156,20 @@ export const agencies: AgencyProfile[] = [
     address: 'Rua São Benedito, 812 - Alto da Boa Vista',
     summary:
       'Operação residencial voltada a casas, condomínios e imóveis familiares, com forte presença em bairros arborizados da zona sul.',
-    href: '/imobiliarias/boa-vista-family',
+    href: '/agencies/boa-vista-family',
     teamHighlights: ['Renato Alves', 'Patrícia Nogueira', 'Ana Silva'],
     featuredListings: [
       {
         title: 'Casa térrea com jardim privativo',
         location: 'Alto da Boa Vista',
         price: 'R$ 7.200 / mês',
-        href: '/imoveis/casa-alto-da-boa-vista',
+        href: '/properties/casa-alto-da-boa-vista',
       },
       {
         title: 'Casa com quintal e escritório independente',
         location: 'Alto da Lapa',
         price: 'R$ 1.980.000',
-        href: '/imoveis/casa-alto-da-lapa-venda',
+        href: '/properties/casa-alto-da-lapa-venda',
       },
     ],
   },
@@ -199,20 +199,20 @@ export const agencies: AgencyProfile[] = [
     address: 'Av. Ibirapuera, 2233 - Moema',
     summary:
       'Carteira premium em apartamentos próximos ao Parque Ibirapuera, com atuação forte em compra e locação de unidades mobiliadas.',
-    href: '/imobiliarias/moema-select',
+    href: '/agencies/moema-select',
     teamHighlights: ['Bianca Azevedo', 'Marina Costa', 'Roberto Lima'],
     featuredListings: [
       {
         title: 'Apartamento mobiliado perto do parque',
         location: 'Moema',
         price: 'R$ 5.400 / mês',
-        href: '/imoveis/apartamento-moema',
+        href: '/properties/apartamento-moema',
       },
       {
         title: 'Apartamento ensolarado no Jardim Paulista',
         location: 'Jardins',
         price: 'R$ 1.180.000',
-        href: '/imoveis/apartamento-jardim-paulista-venda',
+        href: '/properties/apartamento-jardim-paulista-venda',
       },
     ],
   },

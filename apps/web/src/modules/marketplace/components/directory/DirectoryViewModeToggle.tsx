@@ -3,17 +3,20 @@
 import { IconButton, Stack, Tooltip } from '@mui/material'
 import AppsRoundedIcon from '@mui/icons-material/AppsRounded'
 import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBulletedRounded'
+import { useTranslations } from 'next-intl'
 
 import { alpha, iconSize, radius, surface } from '@shared/theme/tokens'
 
 import type { DirectoryViewModeToggleProps } from '../../types/directory'
 
 export function DirectoryViewModeToggle({ value, onChange }: DirectoryViewModeToggleProps) {
+  const t = useTranslations('marketplace.directory.viewMode')
+
   return (
     <Stack direction="row" spacing={0.5}>
-      <Tooltip title="Visualização em grade">
+      <Tooltip title={t('grid')}>
         <IconButton
-          aria-label="Visualização em grade"
+          aria-label={t('grid')}
           onClick={() => onChange('grid')}
           sx={{
             width: 40,
@@ -28,9 +31,9 @@ export function DirectoryViewModeToggle({ value, onChange }: DirectoryViewModeTo
           <AppsRoundedIcon sx={{ fontSize: iconSize.md }} />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Visualização em lista">
+      <Tooltip title={t('list')}>
         <IconButton
-          aria-label="Visualização em lista"
+          aria-label={t('list')}
           onClick={() => onChange('list')}
           sx={{
             width: 40,

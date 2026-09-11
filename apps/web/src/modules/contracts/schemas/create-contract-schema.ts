@@ -1,14 +1,44 @@
 import { z } from 'zod'
 
+import { phoneSchema } from '@modules/auth/schemas/registration-details-schema'
+import { cpfSchema, isValidCpf } from '@shared/schemas/cpf-schema'
+
 const requiredText = (message: string) => z.string().min(1, message)
 
-function addGuarantorIssue(context: z.RefinementCtx, path: string, value: string, message: string) {
+/**
+ * The guarantor block is only conditionally required (see the `superRefine` below), so its base
+ * fields stay as loose strings — `cpfSchema`/`phoneSchema` are applied here instead, once we know
+ * the guarantor section is actually active, so an empty/untouched guarantor doesn't fail the rest
+ * of the form.
+ */
+function addGuarantorTextIssue(
+  context: z.RefinementCtx,
+  path: string,
+  value: string,
+  message: string,
+) {
   if (value.trim()) return
+
+  context.addIssue({ code: z.ZodIssueCode.custom, message, path: [path] })
+}
+
+function addGuarantorCpfIssue(context: z.RefinementCtx, value: string) {
+  if (isValidCpf(value)) return
 
   context.addIssue({
     code: z.ZodIssueCode.custom,
-    message,
-    path: [path],
+    message: value.trim() ? 'Informe um CPF válido' : 'Informe o CPF do fiador',
+    path: ['guarantorCpf'],
+  })
+}
+
+function addGuarantorPhoneIssue(context: z.RefinementCtx, value: string) {
+  if (phoneSchema.safeParse(value).success) return
+
+  context.addIssue({
+    code: z.ZodIssueCode.custom,
+    message: value.trim() ? 'Informe um telefone válido' : 'Informe o telefone do fiador',
+    path: ['guarantorPhone'],
   })
 }
 
@@ -17,18 +47,19 @@ export const createContractSchema = z
     activeStepIndex: z.number().int().min(0).default(0),
     maxStepIndex: z.number().int().min(0).max(3).default(0),
     ownerName: requiredText('Informe o nome do locador'),
-    ownerCpf: requiredText('Informe o CPF do locador'),
+    ownerCpf: cpfSchema,
     ownerEmail: z.string().email('Informe um e-mail válido'),
-    ownerPhone: requiredText('Informe o telefone do locador'),
+    ownerPhone: phoneSchema,
     tenantName: requiredText('Informe o nome do locatário'),
-    tenantCpf: requiredText('Informe o CPF do locatário'),
+    tenantCpf: cpfSchema,
     tenantEmail: z.string().email('Informe um e-mail válido'),
-    tenantPhone: requiredText('Informe o telefone do locatário'),
+    tenantPhone: phoneSchema,
     hasGuarantor: z.boolean().default(false),
     guarantorName: z.string().default(''),
     guarantorCpf: z.string().default(''),
     guarantorEmail: z.string().default(''),
     guarantorPhone: z.string().default(''),
+    propertyId: requiredText('Selecione o imóvel'),
     propertyTitle: requiredText('Informe o imóvel'),
     propertyAddress: requiredText('Informe o endereço'),
     propertyZipCode: requiredText('Informe o CEP'),
@@ -49,22 +80,25 @@ export const createContractSchema = z
     notes: z.string().default(''),
   })
   .superRefine((values, context) => {
-    if (!values.hasGuarantor) return
+    // Triggered by either signal: the explicit "add guarantor" flag, or picking "Fiador" as the
+    // guarantee type directly in the Conditions step — the two must stay consistent, otherwise a
+    // contract can claim a guarantor exists ("Garantia: Fiador") with no guarantor data recorded.
+    if (!values.hasGuarantor && values.guaranteeType !== 'Fiador') return
 
-    addGuarantorIssue(context, 'guarantorName', values.guarantorName, 'Informe o nome do fiador')
-    addGuarantorIssue(context, 'guarantorCpf', values.guarantorCpf, 'Informe o CPF do fiador')
-    addGuarantorIssue(
+    addGuarantorTextIssue(
+      context,
+      'guarantorName',
+      values.guarantorName,
+      'Informe o nome do fiador',
+    )
+    addGuarantorCpfIssue(context, values.guarantorCpf)
+    addGuarantorTextIssue(
       context,
       'guarantorEmail',
       values.guarantorEmail,
       'Informe o e-mail do fiador',
     )
-    addGuarantorIssue(
-      context,
-      'guarantorPhone',
-      values.guarantorPhone,
-      'Informe o telefone do fiador',
-    )
+    addGuarantorPhoneIssue(context, values.guarantorPhone)
 
     if (
       values.guarantorEmail.trim() &&
@@ -82,19 +116,20 @@ export const createContractDefaultValues = {
   activeStepIndex: 0,
   maxStepIndex: 0,
   ownerName: 'Carlos Eduardo Mendes',
-  ownerCpf: '123.456.789-00',
+  ownerCpf: '529.982.247-25',
   ownerEmail: 'exemplo@email.com',
   ownerPhone: '(11) 99999-9999',
   tenantName: 'Bruno Oliveira',
-  tenantCpf: '000.000.000-00',
+  tenantCpf: '987.654.321-00',
   tenantEmail: 'exemplo@email.com',
   tenantPhone: '(11) 99999-9999',
-  hasGuarantor: false,
-  guarantorName: '',
-  guarantorCpf: '',
-  guarantorEmail: '',
-  guarantorPhone: '',
-  propertyTitle: 'Apartamento moderno nos Jardins',
+  hasGuarantor: true,
+  guarantorName: 'Fernanda Lima',
+  guarantorCpf: '456.789.123-64',
+  guarantorEmail: 'exemplo@email.com',
+  guarantorPhone: '(11) 99999-9999',
+  propertyId: 'apt-jardins-3q',
+  propertyTitle: 'Apt Jardins 3q',
   propertyAddress: 'Alameda Lorena, 1420',
   propertyZipCode: '01424-001',
   propertyCity: 'São Paulo',

@@ -6,7 +6,7 @@ const marinaListing = {
   title: 'Apartamento espaçoso com vista para o parque',
   location: 'Jardins',
   price: 'R$ 4.800 / mês',
-  href: '/imoveis/apartamento-jardins',
+  href: '/properties/apartamento-jardins',
 }
 
 describe('profile listings utils', () => {
@@ -34,9 +34,9 @@ describe('profile listings utils', () => {
     })
 
     expect(listings.map((listing) => listing.href)).toEqual([
-      '/imoveis/apartamento-jardins',
-      '/imoveis/apartamento-garden-remodelado',
-      '/imoveis/loft-industrial-mobiliado',
+      '/properties/apartamento-jardins',
+      '/properties/apartamento-garden-remodelado',
+      '/properties/loft-industrial-mobiliado',
     ])
   })
 })

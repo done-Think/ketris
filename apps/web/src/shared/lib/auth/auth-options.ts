@@ -85,7 +85,22 @@ export const authOptions: NextAuthOptions = {
         token.scope = user.scope
         token.tenantId = user.tenantId
         token.papel = user.papel
+        return token
       }
+
+      // The JWT strategy never re-hits the DB on its own, so a token stays "valid" (signature +
+      // expiry only) even after the user is deactivated or the tenant is gone — revalidating here
+      // on every session check is what lets the existing scope!=='tenant' redirects actually fire.
+      if (token.scope === 'tenant' && typeof token.sub === 'string') {
+        const currentUser = await authContainer.userRepository.findById(token.sub)
+
+        if (!currentUser || !currentUser.ativo || currentUser.tenantId !== token.tenantId) {
+          token.scope = undefined
+          token.tenantId = undefined
+          token.papel = undefined
+        }
+      }
+
       return token
     },
     async session({ session, token }) {

@@ -18,14 +18,26 @@ import {
   Typography,
 } from '@mui/material'
 import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
+import { useSnackbar } from 'notistack'
 
 import { brand, radius, surface } from '@shared/theme/tokens'
 
 import { opportunityStages } from '../config/opportunity-stages'
-import { useCrmProperties, useOpportunities } from '../hooks/use-opportunities'
-import type { Opportunity, OpportunityStatus } from '../types/opportunity'
+import {
+  useCreateOpportunity,
+  useCrmProperties,
+  useOpportunities,
+} from '../hooks/use-opportunities'
+import type {
+  CreateOpportunityFormValues,
+  Opportunity,
+  OpportunityStatus,
+} from '../types/opportunity'
 import type { PipelineBoardProps } from '../types/pipeline-board'
+import { errorMessage } from '../utils/error-message'
 import { formatCurrency, formatMonthlyCurrency } from '../utils/formatters'
+import { CreateOpportunityDialog } from './opportunity-detail/CreateOpportunityDialog'
 import { OpportunityCard } from './OpportunityCard'
 
 const validStatuses = new Set<OpportunityStatus>(opportunityStages.map((stage) => stage.status))
@@ -33,15 +45,13 @@ const validStatuses = new Set<OpportunityStatus>(opportunityStages.map((stage) =
 function matchesSearch(opportunity: Opportunity, propertyTitle: string, search: string): boolean {
   if (!search) return true
 
-  return [
-    opportunity.interessadoNome,
-    opportunity.interessadoEmail,
-    opportunity.interessadoTelefone,
-    propertyTitle,
-  ].some((value) => value?.toLocaleLowerCase('pt-BR').includes(search))
+  return [opportunity.leadName, opportunity.leadEmail, opportunity.leadPhone, propertyTitle].some(
+    (value) => value?.toLocaleLowerCase('pt-BR').includes(search),
+  )
 }
 
 export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
+  const t = useTranslations('crm.pipeline')
   const { data: session } = useSession()
   const tenantId = session?.tenantId ?? ''
   const [search, setSearch] = useState('')
@@ -49,9 +59,30 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
     initialStatus && validStatuses.has(initialStatus) ? initialStatus : null,
   )
   const [filterAnchor, setFilterAnchor] = useState<null | HTMLElement>(null)
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const { enqueueSnackbar } = useSnackbar()
 
   const opportunitiesQuery = useOpportunities(tenantId)
   const propertiesQuery = useCrmProperties(tenantId)
+  const createOpportunity = useCreateOpportunity(tenantId)
+
+  async function handleCreateOpportunity(values: CreateOpportunityFormValues) {
+    try {
+      await createOpportunity.mutateAsync({
+        propertyId: values.propertyId,
+        leadName: values.leadName.trim(),
+        leadEmail: values.leadEmail.trim(),
+        leadPhone: values.leadPhone.trim() || null,
+        proposedValue: Number(values.proposedValue),
+        notes: values.notes.trim() || null,
+        status: values.status,
+      })
+      enqueueSnackbar(t('createSuccess'), { variant: 'success' })
+      setIsCreateOpen(false)
+    } catch (error) {
+      enqueueSnackbar(errorMessage(error, t('createError')), { variant: 'error' })
+    }
+  }
 
   useEffect(() => {
     setSelectedStatus(initialStatus && validStatuses.has(initialStatus) ? initialStatus : null)
@@ -69,15 +100,19 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
         if (selectedStatus && opportunity.status !== selectedStatus) return false
 
         const propertyTitle =
-          propertiesById.get(opportunity.imovelId)?.titulo ?? opportunity.imovelId
+          propertiesById.get(opportunity.propertyId)?.title ?? opportunity.propertyId
         return matchesSearch(opportunity, propertyTitle, normalizedSearch)
       }),
     [normalizedSearch, opportunitiesQuery.data, propertiesById, selectedStatus],
   )
 
   const filterLabel = selectedStatus
-    ? opportunityStages.find((stage) => stage.status === selectedStatus)?.label
-    : 'Filtrar por etapa'
+    ? t(
+        `stages.${
+          opportunityStages.find((stage) => stage.status === selectedStatus)?.labelKey ?? 'draft'
+        }`,
+      )
+    : t('filterByStage')
 
   return (
     <Box
@@ -106,22 +141,24 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
             letterSpacing: 0,
           }}
         >
-          Pipeline de Vendas
+          {t('title')}
         </Typography>
 
         <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.5} sx={{ minWidth: 0 }}>
           <TextField
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Buscar oportunidade..."
+            placeholder={t('searchPlaceholder')}
             size="small"
-            inputProps={{ 'aria-label': 'Buscar oportunidade' }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchRoundedIcon sx={{ color: 'text.disabled', fontSize: 19 }} />
-                </InputAdornment>
-              ),
+            slotProps={{
+              htmlInput: { 'aria-label': t('searchAriaLabel') },
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchRoundedIcon sx={{ color: 'text.disabled', fontSize: 19 }} />
+                  </InputAdornment>
+                ),
+              },
             }}
             sx={{ width: { xs: '100%', sm: 240 }, bgcolor: 'background.paper' }}
           />
@@ -156,7 +193,7 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
                 setFilterAnchor(null)
               }}
             >
-              Todas as etapas
+              {t('allStages')}
             </MenuItem>
             {opportunityStages.map((stage) => (
               <MenuItem
@@ -177,20 +214,28 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
                     bgcolor: stage.color,
                   }}
                 />
-                {stage.label}
+                {t(`stages.${stage.labelKey}`)}
               </MenuItem>
             ))}
           </Menu>
           <Button
             variant="contained"
             startIcon={<AddRoundedIcon />}
-            disabled
+            onClick={() => setIsCreateOpen(true)}
             sx={{ minWidth: { sm: 188 }, height: 40, whiteSpace: 'nowrap' }}
           >
-            Nova Oportunidade
+            {t('newOpportunity')}
           </Button>
         </Stack>
       </Stack>
+
+      <CreateOpportunityDialog
+        open={isCreateOpen}
+        tenantId={tenantId}
+        isPending={createOpportunity.isPending}
+        onClose={() => setIsCreateOpen(false)}
+        onSave={handleCreateOpportunity}
+      />
 
       {opportunitiesQuery.isError ? (
         <Alert
@@ -198,16 +243,16 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
           sx={{ mt: 3 }}
           action={
             <Button color="inherit" size="small" onClick={() => opportunitiesQuery.refetch()}>
-              Tentar novamente
+              {t('retry')}
             </Button>
           }
         >
-          Não foi possível carregar as oportunidades.
+          {t('loadError')}
         </Alert>
       ) : null}
 
       <Box
-        aria-label="Pipeline de oportunidades"
+        aria-label={t('boardAriaLabel')}
         sx={{
           mt: 2,
           mx: { xs: -2, sm: -3, lg: -4 },
@@ -236,11 +281,11 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
             )
             const totals = opportunities.reduce(
               (result, opportunity) => {
-                const purpose = propertiesById.get(opportunity.imovelId)?.finalidade
+                const purpose = propertiesById.get(opportunity.propertyId)?.purpose
 
-                if (purpose === 'ALUGUEL') result.rental += opportunity.valorProposto
-                else if (purpose === 'VENDA') result.sale += opportunity.valorProposto
-                else result.unclassified += opportunity.valorProposto
+                if (purpose === 'ALUGUEL') result.rental += opportunity.proposedValue
+                else if (purpose === 'VENDA') result.sale += opportunity.proposedValue
+                else result.unclassified += opportunity.proposedValue
 
                 return result
               },
@@ -248,13 +293,21 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
             )
             const projectedTotals = [
               ...(totals.rental
-                ? [{ label: 'Aluguel', value: formatMonthlyCurrency(totals.rental) }]
+                ? [{ label: t('totalLabels.rent'), value: formatMonthlyCurrency(totals.rental) }]
                 : []),
-              ...(totals.sale ? [{ label: 'Venda', value: formatCurrency(totals.sale) }] : []),
+              ...(totals.sale
+                ? [{ label: t('totalLabels.sale'), value: formatCurrency(totals.sale) }]
+                : []),
               ...(totals.unclassified
-                ? [{ label: 'Sem categoria', value: formatCurrency(totals.unclassified) }]
+                ? [
+                    {
+                      label: t('totalLabels.uncategorized'),
+                      value: formatCurrency(totals.unclassified),
+                    },
+                  ]
                 : []),
             ]
+            const stageLabel = t(`stages.${stage.labelKey}`)
 
             return (
               <Stack
@@ -288,7 +341,7 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
                     noWrap
                     sx={{ fontSize: 11.5, fontWeight: 800, textTransform: 'uppercase' }}
                   >
-                    {stage.label}
+                    {stageLabel}
                   </Typography>
                   <Box
                     component="span"
@@ -324,7 +377,7 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
                         <OpportunityCard
                           key={opportunity.id}
                           opportunity={opportunity}
-                          property={propertiesById.get(opportunity.imovelId)}
+                          property={propertiesById.get(opportunity.propertyId)}
                         />
                       ))}
 
@@ -345,7 +398,7 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
                       }}
                     >
                       <Typography color="text.secondary" sx={{ fontSize: 12 }}>
-                        Nenhuma oportunidade nesta etapa.
+                        {t('emptyStage')}
                       </Typography>
                     </Stack>
                   ) : null}
@@ -353,7 +406,7 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
 
                 <Box
                   role="group"
-                  aria-label={`Total projetado de ${stage.label}`}
+                  aria-label={t('projectedTotalAriaLabel', { stage: stageLabel })}
                   sx={{ mt: 'auto', pt: 2, borderTop: '1px solid', borderColor: 'divider' }}
                 >
                   <Typography
@@ -364,7 +417,7 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
                       textTransform: 'uppercase',
                     }}
                   >
-                    Total projetado
+                    {t('projectedTotal')}
                   </Typography>
                   {opportunitiesQuery.isLoading ? (
                     <Skeleton width={92} />

@@ -1,52 +1,39 @@
 export type InquiryStatus = 'RASCUNHO' | 'ENVIADA' | 'EM_NEGOCIACAO' | 'ACEITA' | 'RECUSADA'
 
-export type GarantiaContratual = 'FIADOR' | 'CAUCAO' | 'SEGURO_FIANCA' | 'NENHUMA'
+export type GuaranteeType = 'FIADOR' | 'CAUCAO' | 'SEGURO_FIANCA' | 'NENHUMA'
 
 export interface Inquiry {
   id: string
   tenantId: string
-  imovelId: string
-  interessadoNome: string
-  interessadoEmail: string
-  interessadoTelefone: string | null
-  valorProposto: number
-  prazoContratoMeses: number | null
-  inicioPretendido: Date | null
-  garantiaContratual: GarantiaContratual
-  condicoesEspeciais: string[]
-  observacoes: string | null
+  propertyId: string
+  leadName: string
+  leadEmail: string
+  leadPhone: string | null
+  proposedValue: number
+  contractTermMonths: number | null
+  desiredStartDate: Date | null
+  guaranteeType: GuaranteeType
+  specialConditions: string[]
+  notes: string | null
   status: InquiryStatus
-  arquivadaEm: Date | null
+  archivedAt: Date | null
   createdAt: Date
   updatedAt: Date
 }
 
 export interface NewInquiry {
   tenantId: string
-  imovelId: string
-  interessadoNome: string
-  interessadoEmail: string
-  interessadoTelefone: string | null
-  valorProposto: number
-  observacoes: string | null
-}
-
-export interface InquiryUpdate {
-  interessadoNome?: string
-  interessadoEmail?: string
-  interessadoTelefone?: string | null
-  valorProposto?: number
-  prazoContratoMeses?: number | null
-  inicioPretendido?: Date | null
-  garantiaContratual?: GarantiaContratual
-  condicoesEspeciais?: string[]
-  observacoes?: string | null
-  status?: InquiryStatus
+  propertyId: string
+  leadName: string
+  leadEmail: string
+  leadPhone: string | null
+  proposedValue: number
+  notes: string | null
 }
 
 export interface CreatedInquiry {
   id: string
-  imovelId: string
+  propertyId: string
   status: InquiryStatus
   createdAt: Date
 }
@@ -54,7 +41,7 @@ export interface CreatedInquiry {
 export function toCreatedInquiry(inquiry: Inquiry): CreatedInquiry {
   return {
     id: inquiry.id,
-    imovelId: inquiry.imovelId,
+    propertyId: inquiry.propertyId,
     status: inquiry.status,
     createdAt: inquiry.createdAt,
   }

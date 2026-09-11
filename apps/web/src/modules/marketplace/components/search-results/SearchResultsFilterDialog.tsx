@@ -16,6 +16,7 @@ import {
   TextField,
 } from '@mui/material'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import { useTranslations } from 'next-intl'
 
 import { componentText, radius, surface } from '@shared/theme/tokens'
 
@@ -38,11 +39,13 @@ function SearchResultsTypeFilter({
   propertyTypeFilter,
   setPropertyTypeFilter,
 }: Pick<SearchResultsFilterDialogProps, 'propertyTypeFilter' | 'setPropertyTypeFilter'>) {
+  const t = useTranslations('marketplace.searchResults.filters')
+
   return (
     <TextField
       select
       fullWidth
-      label="Tipo"
+      label={t('type')}
       value={propertyTypeFilter || 'Todos os tipos'}
       onChange={(event) =>
         setPropertyTypeFilter(event.target.value === 'Todos os tipos' ? '' : event.target.value)
@@ -51,7 +54,7 @@ function SearchResultsTypeFilter({
     >
       {propertyTypeFilterOptions.map((option) => (
         <MenuItem key={option} value={option} sx={componentText.menuItem}>
-          {option}
+          {t(`options.${option}`)}
         </MenuItem>
       ))}
     </TextField>
@@ -67,12 +70,14 @@ function SearchResultsPriceFilters({
   SearchResultsFilterDialogProps,
   'customMaxPrice' | 'priceFilterIndex' | 'setCustomMaxPrice' | 'setPriceFilterIndex'
 >) {
+  const t = useTranslations('marketplace.searchResults.filters')
+
   return (
     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
       <TextField
         select
         fullWidth
-        label="Preço"
+        label={t('price')}
         value={priceFilterIndex}
         onChange={(event) => {
           setPriceFilterIndex(Number(event.target.value))
@@ -82,13 +87,13 @@ function SearchResultsPriceFilters({
       >
         {priceFilterOptions.map((option, optionIndex) => (
           <MenuItem key={option.label} value={optionIndex} sx={componentText.menuItem}>
-            {option.label}
+            {t(`options.${option.label}`)}
           </MenuItem>
         ))}
       </TextField>
       <TextField
         fullWidth
-        label="Preço máximo"
+        label={t('maxPrice')}
         type="number"
         value={customMaxPrice}
         onChange={(event) => {
@@ -106,18 +111,20 @@ function SearchResultsBedroomFilter({
   bedroomFilterIndex,
   setBedroomFilterIndex,
 }: Pick<SearchResultsFilterDialogProps, 'bedroomFilterIndex' | 'setBedroomFilterIndex'>) {
+  const t = useTranslations('marketplace.searchResults.filters')
+
   return (
     <TextField
       select
       fullWidth
-      label="Quartos"
+      label={t('bedrooms')}
       value={bedroomFilterIndex}
       onChange={(event) => setBedroomFilterIndex(Number(event.target.value))}
       sx={fieldSx}
     >
       {bedroomFilterOptions.map((option, optionIndex) => (
         <MenuItem key={option.label} value={optionIndex} sx={componentText.menuItem}>
-          {option.label}
+          {t(`options.${option.label}`)}
         </MenuItem>
       ))}
     </TextField>
@@ -133,12 +140,14 @@ function SearchResultsAreaFilters({
   SearchResultsFilterDialogProps,
   'areaFilterIndex' | 'customMinArea' | 'setAreaFilterIndex' | 'setCustomMinArea'
 >) {
+  const t = useTranslations('marketplace.searchResults.filters')
+
   return (
     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
       <TextField
         select
         fullWidth
-        label="Área"
+        label={t('area')}
         value={areaFilterIndex}
         onChange={(event) => {
           setAreaFilterIndex(Number(event.target.value))
@@ -148,13 +157,13 @@ function SearchResultsAreaFilters({
       >
         {areaFilterOptions.map((option, optionIndex) => (
           <MenuItem key={option.label} value={optionIndex} sx={componentText.menuItem}>
-            {option.label}
+            {t(`options.${option.label}`)}
           </MenuItem>
         ))}
       </TextField>
       <TextField
         fullWidth
-        label="Área mínima"
+        label={t('minArea')}
         type="number"
         value={customMinArea}
         onChange={(event) => {
@@ -172,6 +181,8 @@ function SearchResultsParkingFilter({
   onlyWithParking,
   setOnlyWithParking,
 }: Pick<SearchResultsFilterDialogProps, 'onlyWithParking' | 'setOnlyWithParking'>) {
+  const t = useTranslations('marketplace.searchResults.filters')
+
   return (
     <Box
       sx={{
@@ -190,7 +201,7 @@ function SearchResultsParkingFilter({
             onChange={(event) => setOnlyWithParking(event.target.checked)}
           />
         }
-        label="Somente imóveis com vaga"
+        label={t('onlyWithParking')}
       />
     </Box>
   )
@@ -216,6 +227,8 @@ export function SearchResultsFilterDialog({
   setPriceFilterIndex,
   setPropertyTypeFilter,
 }: SearchResultsFilterDialogProps) {
+  const t = useTranslations('marketplace.searchResults.filters')
+
   return (
     <Dialog
       open={isFiltersOpen}
@@ -240,9 +253,9 @@ export function SearchResultsFilterDialog({
           fontWeight: 800,
         }}
       >
-        Filtros
+        {t('title')}
         <IconButton
-          aria-label="Fechar filtros"
+          aria-label={t('close')}
           onClick={closeFiltersDialog}
           sx={{ width: 36, height: 36, borderRadius: `${radius.sm}px` }}
         >
@@ -285,14 +298,14 @@ export function SearchResultsFilterDialog({
             onClick={clearDraftFilters}
             sx={{ textTransform: 'none', fontWeight: 700 }}
           >
-            Limpar
+            {t('clear')}
           </Button>
           <Button
             type="submit"
             variant="contained"
             sx={{ borderRadius: `${radius.sm}px`, textTransform: 'none', fontWeight: 800 }}
           >
-            Concluir
+            {t('done')}
           </Button>
         </DialogActions>
       </Box>

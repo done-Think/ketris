@@ -1,16 +1,23 @@
 import type {
-  Finalidade,
+  PropertyPurpose,
   PublishedPropertyDetail,
   PublishedPropertySummary,
 } from '../../domain/property.entity'
 
+export type PropertySort = 'recent' | 'priceAsc' | 'priceDesc'
+
 export interface PropertySearchFilters {
-  finalidade?: Finalidade
-  tipo?: string
-  cidade?: string
-  precoMin?: number
-  precoMax?: number
-  quartosMin?: number
+  purpose?: PropertyPurpose
+  propertyType?: string
+  city?: string
+  /** Free-text match across neighborhood and city, unlike `city`'s exact match. */
+  location?: string
+  minPrice?: number
+  maxPrice?: number
+  minBedrooms?: number
+  minArea?: number
+  hasParking?: boolean
+  sortBy?: PropertySort
   q?: string
 }
 

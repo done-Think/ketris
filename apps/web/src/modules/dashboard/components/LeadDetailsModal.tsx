@@ -14,6 +14,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
+import { useTranslations } from 'next-intl'
 
 import { RhfTextField } from '@shared/components/form'
 import { alpha, brand, radius } from '@shared/theme/tokens'
@@ -47,6 +48,7 @@ function LeadBriefingItem({ label, value }: LeadBriefingItemProps) {
 }
 
 export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsModalProps) {
+  const t = useTranslations('dashboard.overview.leadDetails')
   const { control, handleSubmit, reset } = useForm<DashboardLeadDetailsFormValues>({
     defaultValues: {
       reportedNeed: '',
@@ -107,7 +109,7 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
             >
               <Box sx={{ minWidth: 0 }}>
                 <Typography sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 900 }}>
-                  Detalhes do lead
+                  {t('title')}
                 </Typography>
                 <Typography
                   noWrap
@@ -116,7 +118,7 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
                   {lead.name}
                 </Typography>
               </Box>
-              <IconButton aria-label="Fechar" onClick={onClose} size="small">
+              <IconButton aria-label={t('close')} onClick={onClose} size="small">
                 <CloseIcon fontSize="small" />
               </IconButton>
             </Stack>
@@ -130,9 +132,9 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
                 gap: 1,
               }}
             >
-              <ContactInfoCard label="Cliente" name={lead.name} phone={lead.phone} />
-              <LeadBriefingItem label="Interesse" value={lead.interest} />
-              <LeadBriefingItem label="Origem" value={lead.origin} />
+              <ContactInfoCard label={t('client')} name={lead.name} phone={lead.phone} />
+              <LeadBriefingItem label={t('interest')} value={lead.interest} />
+              <LeadBriefingItem label={t('origin')} value={lead.origin} />
             </Box>
 
             <Box
@@ -149,7 +151,7 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
               <RhfTextField
                 control={control}
                 name="reportedNeed"
-                label="O que relatou"
+                label={t('fields.reportedNeed')}
                 multiline
                 minRows={3}
                 fullWidth
@@ -157,7 +159,7 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
               <RhfTextField
                 control={control}
                 name="lookingFor"
-                label="O que procura"
+                label={t('fields.lookingFor')}
                 multiline
                 minRows={3}
                 fullWidth
@@ -165,19 +167,19 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
               <RhfTextField
                 control={control}
                 name="budgetRange"
-                label="Base de valores"
+                label={t('fields.budgetRange')}
                 fullWidth
               />
               <RhfTextField
                 control={control}
                 name="downPayment"
-                label="Valor de entrada"
+                label={t('fields.downPayment')}
                 fullWidth
               />
               <RhfTextField
                 control={control}
                 name="financingStatus"
-                label="Financiamento"
+                label={t('fields.financingStatus')}
                 multiline
                 minRows={2}
                 fullWidth
@@ -185,7 +187,7 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
               <RhfTextField
                 control={control}
                 name="timeline"
-                label="Prazo de decisão"
+                label={t('fields.timeline')}
                 multiline
                 minRows={2}
                 fullWidth
@@ -202,7 +204,7 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
               }}
             >
               <Typography sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 900 }}>
-                Regiões de busca
+                {t('desiredRegions')}
               </Typography>
               <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 1 }}>
                 {lead.desiredRegions.map((region) => (
@@ -224,7 +226,7 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
             <RhfTextField
               control={control}
               name="notes"
-              label="Observações para atendimento"
+              label={t('fields.notes')}
               multiline
               minRows={3}
               fullWidth
@@ -234,7 +236,7 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
 
           <DialogActions sx={{ px: { xs: 2, md: 2.6 }, pb: 2.6, pt: 0 }}>
             <Button onClick={onClose} sx={{ color: brand.neutral[500], fontWeight: 800 }}>
-              Cancelar
+              {t('cancel')}
             </Button>
             <Button
               type="submit"
@@ -242,7 +244,7 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
               variant="contained"
               sx={{ fontWeight: 900 }}
             >
-              Salvar
+              {t('save')}
             </Button>
           </DialogActions>
         </>

@@ -2,6 +2,7 @@
 
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import { Box, Button, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { RhfTextField } from '@shared/components/form'
 import { brand, componentText, radius } from '@shared/theme/tokens'
@@ -15,6 +16,8 @@ export function PasswordRecoveryForm({
   isSubmitting,
   onSubmit,
 }: PasswordRecoveryFormProps) {
+  const t = useTranslations('auth.passwordRecovery')
+
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -35,28 +38,28 @@ export function PasswordRecoveryForm({
 
       <Box sx={{ mt: { xs: 2, md: 4 }, textAlign: 'center' }}>
         <Typography variant="h3" sx={componentText.authCompactTitle}>
-          Recuperar senha
+          {t('title')}
         </Typography>
         <Typography
           color="text.secondary"
           variant="body2"
           sx={{ mt: 0.5, ...componentText.authCompactBody }}
         >
-          Digite seu e-mail para redefinir sua senha
+          {t('subtitle')}
         </Typography>
       </Box>
 
       <Box component="form" noValidate onSubmit={onSubmit} sx={{ mt: { xs: 1.5, md: 2.5 } }}>
         <AuthFormField
           htmlFor="password-recovery-email"
-          label="E-mail"
+          label={t('email.label')}
           labelSx={componentText.authCompactBody}
         >
           <RhfTextField
             id="password-recovery-email"
             control={control}
             name="email"
-            placeholder="seu@email.com"
+            placeholder={t('email.placeholder')}
             type="email"
             autoComplete="email"
             fullWidth
@@ -89,7 +92,7 @@ export function PasswordRecoveryForm({
             },
           ]}
         >
-          Enviar instruções
+          {t('submit')}
         </Button>
       </Box>
     </Box>

@@ -1,15 +1,11 @@
-import type { Inquiry, InquiryUpdate, NewInquiry } from '../../domain/inquiry.entity'
+import type { NewInquiry, Inquiry } from '../../domain/inquiry.entity'
 
-export interface InquiryListFilters {
-  status?: Inquiry['status']
-  includeArchived?: boolean
-}
-
+/**
+ * Deliberately narrow scope: only `create()`, used by the public proposal-submission flow
+ * (`SubmitInquiryUseCase`). Listing/detail/update/archive/delete of opportunities — which require
+ * an authenticated tenant — live in `src/server/crm/` (see ADR-0002). Kept here only for the
+ * public table/route's historical name.
+ */
 export interface InquiryRepository {
   create(inquiry: NewInquiry): Promise<Inquiry>
-  findManyByTenant(tenantId: string, filters?: InquiryListFilters): Promise<Inquiry[]>
-  findById(id: string): Promise<Inquiry | null>
-  update(id: string, changes: InquiryUpdate): Promise<Inquiry>
-  archive(id: string): Promise<Inquiry>
-  delete(id: string): Promise<void>
 }
