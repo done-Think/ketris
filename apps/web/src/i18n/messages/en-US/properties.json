@@ -45,6 +45,7 @@
   "detail": {
     "edit": "Edit",
     "unpublish": "Unpublish",
+    "activeContract": "Contract",
     "summaryTitle": "Property Summary",
     "mediaTitle": "Media",
     "valuesTitle": "Values",

@@ -5,6 +5,9 @@
     },
     "create": {
       "metadataTitle": "Ketris | Generate Contract"
+    },
+    "detail": {
+      "metadataTitle": "Ketris | Contract Detail"
     }
   },
   "dashboardHeader": {

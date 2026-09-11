@@ -36,7 +36,7 @@ export const dashboardProperties: DashboardProperty[] = [
     type: 'Apartamento',
     purpose: 'Aluguel',
     price: 'R$ 6.500/mês',
-    status: 'Disponível',
+    status: 'Alugado',
     broker: 'Roberto Souza',
     updatedAt: 'Há 2 horas',
     imageUrl:
@@ -79,7 +79,7 @@ export const dashboardProperties: DashboardProperty[] = [
       { name: 'Lopes Jardins', role: 'Imobiliária', initials: 'LJ' },
     ],
     activityHistory: [
-      { label: 'Status alterado para Disponível', date: 'há 2 horas', tone: 'success' },
+      { label: 'Contrato ativo vinculado', date: 'há 2 horas', tone: 'success' },
       { label: 'Fotos atualizadas', date: 'há 1 dia', tone: 'accent' },
       { label: 'Visita agendada com João Silva', date: 'há 3 dias', tone: 'info' },
       { label: 'Ajuste de preço para R$ 6.500', date: 'há 5 dias', tone: 'warning' },

@@ -106,11 +106,16 @@ export function ContractsDashboardPage() {
     [contracts, searchQuery, status, type, period],
   )
   const createContract = () => router.push('/dashboard/contracts/new')
-  const handleContractAction = (contract: ContractListItem, action: ContractTableAction) => {
-    setActionDialog({ contract, action })
+  const openContractDetail = (contract: ContractListItem) => {
+    router.push({ pathname: '/dashboard/contracts/[id]', params: { id: contract.id } })
   }
-  const openContractProperty = (contract: ContractListItem) => {
-    router.push({ pathname: '/dashboard/properties/[id]', params: { id: contract.propertyId } })
+  const handleContractAction = (contract: ContractListItem, action: ContractTableAction) => {
+    if (action === 'view-summary') {
+      openContractDetail(contract)
+      return
+    }
+
+    setActionDialog({ contract, action })
   }
   const closeContractActionDialog = () => {
     setActionDialog({ contract: null, action: null })
@@ -145,7 +150,7 @@ export function ContractsDashboardPage() {
             contracts={filteredContracts}
             totalCount={contracts.length}
             onContractAction={handleContractAction}
-            onContractSelect={openContractProperty}
+            onContractSelect={openContractDetail}
           />
         ) : (
           <ContractsEmptyState onCreateContract={createContract} />

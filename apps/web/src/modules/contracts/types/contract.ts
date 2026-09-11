@@ -96,7 +96,25 @@ export type ContractListItem = {
   startDate: string
   endDate: string
   amount: string
+  adjustment: string
+  paymentDay: string
+  guarantee: string
+  notes: string
+  paymentHistory: ContractPaymentHistoryItem[]
+  documents: ContractDocumentItem[]
   updatedAt: string
+}
+
+export type ContractPaymentHistoryItem = {
+  period: string
+  amount: string
+  status: 'Pago' | 'Pendente'
+  date: string
+}
+
+export type ContractDocumentItem = {
+  name: string
+  sentAt: string
 }
 
 export type ContractStatusStyle = {
@@ -125,6 +143,10 @@ export type ContractsTableProps = {
   totalCount: number
   onContractAction: ContractActionHandler
   onContractSelect: (contract: ContractListItem) => void
+}
+
+export type ContractDetailDashboardPageProps = {
+  contractId: string
 }
 
 export type ContractIdentityCellProps = GridRenderCellParams<ContractListItem>
