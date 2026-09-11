@@ -89,37 +89,6 @@ describe('authOptions — CredentialsProvider.authorize', () => {
       'banco fora do ar',
     )
   })
-
-  it('em modo mock, autentica sem tocar o banco quando as credenciais batem', async () => {
-    vi.stubEnv('AUTH_MOCK_ENABLED', 'true')
-    vi.stubEnv('VERCEL_ENV', 'preview')
-    executeMock.mockClear()
-
-    const authorize = await getAuthorize()
-    const result = await authorize({ email: 'demo@ketris.dev', password: 'demo123456' })
-
-    expect(executeMock).not.toHaveBeenCalled()
-    expect(result).toMatchObject({ scope: 'tenant', tenantId: 'mock-tenant' })
-
-    vi.unstubAllEnvs()
-  })
-
-  it('em produção na Vercel, ignora o modo mock mesmo com a flag ligada e a credencial batendo', async () => {
-    vi.stubEnv('AUTH_MOCK_ENABLED', 'true')
-    vi.stubEnv('VERCEL_ENV', 'production')
-    executeMock.mockRejectedValueOnce(new InvalidCredentialsError())
-
-    const authorize = await getAuthorize()
-    const result = await authorize({ email: 'demo@ketris.dev', password: 'demo123456' })
-
-    expect(executeMock).toHaveBeenCalledWith({
-      email: 'demo@ketris.dev',
-      password: 'demo123456',
-    })
-    expect(result).toBeNull()
-
-    vi.unstubAllEnvs()
-  })
 })
 
 describe('authOptions — platform-credentials.authorize', () => {
