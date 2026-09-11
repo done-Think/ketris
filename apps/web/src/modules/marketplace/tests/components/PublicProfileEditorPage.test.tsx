@@ -35,8 +35,16 @@ describe('PublicProfileEditorPage', () => {
     expect(screen.getByRole('heading', { name: 'Editar Perfil' })).toBeVisible()
     expect(screen.getByLabelText('Nome exibido')).toBeVisible()
     expect(screen.getByLabelText('Cor principal')).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Salvar rascunho' })).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Visualizar' })).toBeVisible()
+    expect(screen.queryByText('Demonstrativo')).not.toBeInTheDocument()
+    expect(screen.queryByText('Ordem do perfil')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Salvar rascunho' })).not.toBeInTheDocument()
+
+    const previewButton = screen.getByRole('button', { name: 'Visualizar' })
+    const saveButton = screen.getByRole('button', { name: 'Salvar' })
+
+    expect(previewButton).toBeVisible()
+    expect(saveButton).toBeVisible()
+    expect(previewButton.compareDocumentPosition(saveButton)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
   })
 
   it('manages highlighted team members in the broker editor form', () => {
@@ -62,7 +70,15 @@ describe('PublicProfileEditorPage', () => {
     expect(screen.getByRole('heading', { name: 'Editar Perfil da Imobiliária' })).toBeVisible()
     expect(screen.getByLabelText('Nome da imobiliária')).toBeVisible()
     expect(screen.getByLabelText('CRECI')).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Salvar rascunho' })).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Visualizar' })).toBeVisible()
+    expect(screen.queryByText('Demonstrativo')).not.toBeInTheDocument()
+    expect(screen.queryByText('Ordem do perfil')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Salvar rascunho' })).not.toBeInTheDocument()
+
+    const previewButton = screen.getByRole('button', { name: 'Visualizar' })
+    const saveButton = screen.getByRole('button', { name: 'Salvar' })
+
+    expect(previewButton).toBeVisible()
+    expect(saveButton).toBeVisible()
+    expect(previewButton.compareDocumentPosition(saveButton)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
   })
 })
