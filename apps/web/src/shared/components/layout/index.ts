@@ -1,5 +1,5 @@
+export { AppShell } from './AppShell'
 export { HomeHeader } from './HomeHeader'
-export { DashboardSidebar } from './DashboardSidebar'
 export { LanguageSelector } from './LanguageSelector'
 export { ProfileModal } from './ProfileModal'
 export { SiteFooter } from './SiteFooter'

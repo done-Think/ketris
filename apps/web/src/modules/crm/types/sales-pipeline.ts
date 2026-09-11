@@ -33,6 +33,7 @@ export type SalesPipelineToolbarProps = {
   onFilterOpen: (anchor: HTMLElement) => void
   onFilterClose: () => void
   onStageSelect: (stageId: SalesPipelineStageId | null) => void
+  onNewOpportunity: () => void
 }
 
 export type PipelineStageColumnProps = {

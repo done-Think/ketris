@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, Typography } from '@mui/material'
+import { Box, Skeleton, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { radius, surface } from '@shared/theme/tokens'
@@ -10,6 +10,7 @@ import { SearchPropertyCard } from '../SearchPropertyCard'
 
 type SearchResultsListProps = {
   properties: SearchResultProperty[]
+  isLoading?: boolean
   selectedPropertyId: string
   setSelectedPropertyId: (propertyId: string) => void
   viewMode: ViewMode
@@ -17,6 +18,7 @@ type SearchResultsListProps = {
 
 export function SearchResultsList({
   properties,
+  isLoading = false,
   selectedPropertyId,
   setSelectedPropertyId,
   viewMode,
@@ -32,7 +34,11 @@ export function SearchResultsList({
         gap: { xs: 2, xl: 2.5 },
       }}
     >
-      {properties.length ? (
+      {isLoading ? (
+        [0, 1, 2, 3].map((index) => (
+          <Skeleton key={index} variant="rounded" height={320} sx={{ borderRadius: 1.5 }} />
+        ))
+      ) : properties.length ? (
         properties.map((property) => (
           <SearchPropertyCard
             key={property.id}

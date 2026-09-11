@@ -23,7 +23,7 @@ function getPropertyLocation(
 ): string {
   if (!property) return unavailableLabel
 
-  return [property.bairro, property.cidade].filter(Boolean).join(' - ') || property.tipo
+  return [property.neighborhood, property.city].filter(Boolean).join(' - ') || property.propertyType
 }
 
 export function OpportunityCard({
@@ -37,18 +37,18 @@ export function OpportunityCard({
   const isCompact = density === 'compact'
   const indicatorColor = presentation?.indicatorColor ?? stage.color
   const indicatorLabel = presentation?.indicatorLabel ?? t(`stages.${stage.labelKey}`)
-  const propertyTitle = property?.titulo ?? `Imóvel ${opportunity.imovelId}`
+  const propertyTitle = property?.title ?? `Imóvel ${opportunity.propertyId}`
   const propertyLocation = getPropertyLocation(property, t('propertyUnavailable'))
   const value =
-    property?.finalidade === 'ALUGUEL'
-      ? formatMonthlyCurrency(opportunity.valorProposto)
-      : formatCurrency(opportunity.valorProposto)
+    property?.purpose === 'ALUGUEL'
+      ? formatMonthlyCurrency(opportunity.proposedValue)
+      : formatCurrency(opportunity.proposedValue)
 
   return (
     <Card
       component={Link}
       href={{ pathname: '/crm/opportunities/[id]', params: { id: opportunity.id } }}
-      aria-label={t('openOpportunityAriaLabel', { name: opportunity.interessadoNome })}
+      aria-label={t('openOpportunityAriaLabel', { name: opportunity.leadName })}
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -81,7 +81,7 @@ export function OpportunityCard({
           lineHeight: isCompact ? 1.3 : 1.4,
         }}
       >
-        {opportunity.interessadoNome}
+        {opportunity.leadName}
       </Typography>
       <Typography
         noWrap
@@ -142,7 +142,7 @@ export function OpportunityCard({
             fontSize: isCompact ? 8 : 9,
           }}
         >
-          {getInitials(opportunity.interessadoNome)}
+          {getInitials(opportunity.leadName)}
         </Avatar>
         <Stack direction="row" alignItems="center" spacing={0.4} sx={{ minWidth: 0 }}>
           <AccessTimeRoundedIcon

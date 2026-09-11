@@ -53,7 +53,7 @@ export function DashboardOverviewPage() {
       <Stack spacing={2.4}>
         <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
           <Box>
-            <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 34 }, fontWeight: 900 }}>
+            <Typography variant="h3" sx={{ fontSize: { xs: 20, md: 24 }, fontWeight: 800 }}>
               {t('title')}
             </Typography>
             <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 600, mt: 0.3 }}>

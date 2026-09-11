@@ -1,6 +1,7 @@
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { Box, Button, InputAdornment, Stack, TextField, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 import { Controller } from 'react-hook-form'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
@@ -11,6 +12,8 @@ export function ContractsDashboardHeader({
   control,
   onCreateContract,
 }: ContractsDashboardPageHeaderProps) {
+  const t = useTranslations('contracts.dashboardHeader')
+
   return (
     <Stack
       direction={{ xs: 'column', md: 'row' }}
@@ -20,8 +23,11 @@ export function ContractsDashboardHeader({
       sx={{ mb: 1.6 }}
     >
       <Box sx={{ minWidth: 0 }}>
-        <Typography variant="h3" sx={{ color: brand.graphite[500], fontSize: 34, fontWeight: 900 }}>
-          Contratos
+        <Typography
+          variant="h3"
+          sx={{ color: brand.graphite[500], fontSize: { xs: 20, md: 24 }, fontWeight: 800 }}
+        >
+          {t('title')}
         </Typography>
       </Box>
 
@@ -36,16 +42,16 @@ export function ContractsDashboardHeader({
           render={({ field }) => (
             <TextField
               {...field}
-              placeholder="Buscar contratos..."
+              placeholder={t('searchPlaceholder')}
               size="small"
               sx={{
-                width: { xs: '100%', sm: 320 },
+                width: { xs: '100%', sm: 280 },
                 '& .MuiInputBase-root': {
-                  height: 48,
+                  height: 36,
                   borderRadius: `${radius.sm}px`,
                   bgcolor: surface.paper,
                   color: brand.graphite[500],
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: 700,
                 },
                 '& .MuiOutlinedInput-notchedOutline': {
@@ -55,7 +61,7 @@ export function ContractsDashboardHeader({
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchRoundedIcon sx={{ color: brand.neutral[400], fontSize: 22 }} />
+                    <SearchRoundedIcon sx={{ color: brand.neutral[400], fontSize: 18 }} />
                   </InputAdornment>
                 ),
               }}
@@ -65,20 +71,20 @@ export function ContractsDashboardHeader({
 
         <Button
           variant="contained"
-          startIcon={<AddRoundedIcon />}
+          startIcon={<AddRoundedIcon sx={{ fontSize: 18 }} />}
           onClick={onCreateContract}
           sx={{
             borderRadius: `${radius.sm}px`,
             boxShadow: shadows.none,
-            minHeight: 48,
-            px: 2.6,
-            fontSize: 16,
-            fontWeight: 900,
+            minHeight: 36,
+            px: 2,
+            fontSize: 14,
+            fontWeight: 800,
             textTransform: 'none',
             whiteSpace: 'nowrap',
           }}
         >
-          Novo Contrato
+          {t('newContract')}
         </Button>
       </Stack>
     </Stack>

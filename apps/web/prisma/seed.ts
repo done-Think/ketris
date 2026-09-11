@@ -3,6 +3,7 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import bcrypt from 'bcryptjs'
 
 import { getDatabaseUrl } from '../src/server/db/database-url'
+import { seedContacts, seedOpportunities, seedProperties } from './seed-data'
 
 // Seed mínimo para desenvolvimento local: um tenant + um usuário admin, mais o platform admin.
 // Rodar com `npm run db:seed -w @ketris/web` (ou `npm run db:seed` dentro de apps/web).
@@ -47,6 +48,139 @@ async function main() {
   })
 
   console.log(`Seed concluído — tenant "${tenant.slug}" com usuário admin@ketris.dev`)
+
+  const brokerByEmail = new Map<string, string>()
+
+  for (const property of seedProperties) {
+    if (brokerByEmail.has(property.broker.email)) continue
+
+    const broker = await prisma.usuario.upsert({
+      where: { tenantId_email: { tenantId: tenant.id, email: property.broker.email } },
+      update: { avatarUrl: property.broker.avatarUrl },
+      create: {
+        tenantId: tenant.id,
+        nome: property.broker.name,
+        email: property.broker.email,
+        avatarUrl: property.broker.avatarUrl,
+        senhaHash,
+        papel: 'AGENT',
+      },
+    })
+    brokerByEmail.set(property.broker.email, broker.id)
+  }
+
+  console.log(`Seed concluído — ${brokerByEmail.size} corretores (usuarios AGENT)`)
+
+  for (const [index, property] of seedProperties.entries()) {
+    const responsavelId = brokerByEmail.get(property.broker.email)!
+
+    await prisma.imovel.upsert({
+      where: { id: `seed-imovel-${property.id}` },
+      update: {},
+      create: {
+        id: `seed-imovel-${property.id}`,
+        tenantId: tenant.id,
+        responsavelId,
+        titulo: property.title,
+        descricao: property.description,
+        finalidade: property.purpose,
+        tipo: property.category,
+        quartos: property.bedrooms,
+        banheiros: property.bathrooms,
+        vagas: property.parking,
+        areaM2: property.areaM2,
+        valor: property.price,
+        status: 'PUBLISHED',
+        publicadoEm: new Date(),
+        endereco: {
+          create: {
+            logradouro: `Rua ${property.neighborhood}`,
+            numero: String(100 + index),
+            complemento: null,
+            bairro: property.neighborhood,
+            cidade: property.city,
+            estado: 'SP',
+            cep: '01000-000',
+            latitude: property.latitude,
+            longitude: property.longitude,
+          },
+        },
+        midias: {
+          create: property.images.map((url, order) => ({ url, tipo: 'foto', ordem: order })),
+        },
+      },
+    })
+  }
+
+  console.log(`Seed concluído — ${seedProperties.length} imóveis publicados`)
+
+  const contactByLegacyId = new Map<string, string>()
+
+  for (const contact of seedContacts) {
+    const record = await prisma.contato.upsert({
+      where: { tenantId_email: { tenantId: tenant.id, email: contact.email } },
+      update: {},
+      create: {
+        id: `seed-contato-${contact.id}`,
+        tenantId: tenant.id,
+        nome: contact.name,
+        email: contact.email,
+        telefone: contact.phone,
+        tipo: contact.type,
+        avatarUrl: contact.avatarUrl,
+        ultimaInteracao: new Date(Date.now() - contact.hoursSinceLastInteraction * 3_600_000),
+      },
+    })
+    contactByLegacyId.set(contact.id, record.id)
+  }
+
+  console.log(`Seed concluído — ${seedContacts.length} contatos do crm`)
+
+  for (const opportunity of seedOpportunities) {
+    const record = await prisma.oportunidade.upsert({
+      where: { id: opportunity.id },
+      update: {},
+      create: {
+        id: opportunity.id,
+        tenantId: tenant.id,
+        imovelId: `seed-imovel-${opportunity.propertyId}`,
+        contatoId: opportunity.contactId ? contactByLegacyId.get(opportunity.contactId) : null,
+        interessadoNome: opportunity.leadName,
+        interessadoEmail: opportunity.leadEmail,
+        valorProposto: opportunity.proposedValue,
+        status: opportunity.status,
+        arquivadaEm: opportunity.status === 'RECUSADA' ? new Date() : null,
+      },
+    })
+
+    await prisma.atividadeOportunidade.upsert({
+      where: { id: `${opportunity.id}-criada` },
+      update: {},
+      create: {
+        id: `${opportunity.id}-criada`,
+        oportunidadeId: record.id,
+        tipo: 'NOTA',
+        descricao: 'Oportunidade criada a partir do marketplace.',
+      },
+    })
+
+    if (opportunity.status !== 'RASCUNHO') {
+      await prisma.atividadeOportunidade.upsert({
+        where: { id: `${opportunity.id}-status` },
+        update: {},
+        create: {
+          id: `${opportunity.id}-status`,
+          oportunidadeId: record.id,
+          tipo: 'MUDANCA_STATUS',
+          descricao: `Status atualizado para ${opportunity.status}.`,
+          statusAnterior: 'RASCUNHO',
+          statusNovo: opportunity.status,
+        },
+      })
+    }
+  }
+
+  console.log(`Seed concluído — ${seedOpportunities.length} oportunidades do crm`)
 
   const platformAdminCount = await prisma.platformAdmin.count()
 

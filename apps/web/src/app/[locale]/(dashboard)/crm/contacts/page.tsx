@@ -1,6 +1,6 @@
 import { createLocalizedMetadata } from '@/i18n/metadata'
 import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
-import { ContactsList } from '@modules/crm/components/ContactsList'
+import { ContactsPage } from '@modules/crm/components/ContactsPage'
 
 export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
   const { locale } = await params
@@ -9,5 +9,5 @@ export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
 }
 
 export default function CrmContactsPage() {
-  return <ContactsList />
+  return <ContactsPage />
 }

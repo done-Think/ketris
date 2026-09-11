@@ -15,6 +15,7 @@ import {
   Typography,
 } from '@mui/material'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useTranslations } from 'next-intl'
 import { useEffect } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
@@ -24,7 +25,7 @@ import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 import {
   agendaEventFormSchema,
   agendaOtherPropertyValue,
-} from '../schemas/agenda-reschedule-schema'
+} from '../schemas/agenda-event-form-schema'
 import type { AgendaEventFormDialogProps, AgendaEventFormValues } from '../types/agenda-event'
 
 const phoneMask = [{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }]
@@ -37,6 +38,7 @@ export function AgendaEventFormDialog({
   open,
   propertyOptions,
 }: AgendaEventFormDialogProps) {
+  const t = useTranslations('agenda.eventForm')
   const { control, handleSubmit, reset } = useForm<AgendaEventFormValues>({
     defaultValues: {
       customProperty: '',
@@ -77,13 +79,13 @@ export function AgendaEventFormDialog({
           <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
             <Box sx={{ minWidth: 0 }}>
               <Typography sx={{ color: brand.magenta[600], fontSize: 13, fontWeight: 900 }}>
-                Novo ponto na agenda
+                {t('eyebrow')}
               </Typography>
               <Typography sx={{ color: brand.graphite[500], fontSize: 22, fontWeight: 900 }}>
-                Adicionar evento
+                {t('title')}
               </Typography>
             </Box>
-            <IconButton aria-label="Fechar novo evento" onClick={onClose}>
+            <IconButton aria-label={t('closeAriaLabel')} onClick={onClose}>
               <CloseRoundedIcon sx={{ fontSize: iconSize.lg }} />
             </IconButton>
           </Stack>
@@ -101,11 +103,11 @@ export function AgendaEventFormDialog({
               }}
             >
               <Stack spacing={1.4}>
-                <RhfTextField control={control} name="title" label="Título" fullWidth />
+                <RhfTextField control={control} name="title" label={t('fields.title')} fullWidth />
                 <RhfTextField
                   control={control}
                   name="propertyId"
-                  label="Imóvel em questão"
+                  label={t('fields.property')}
                   select
                   fullWidth
                 >
@@ -114,13 +116,13 @@ export function AgendaEventFormDialog({
                       {property.label}
                     </MenuItem>
                   ))}
-                  <MenuItem value={agendaOtherPropertyValue}>Outro</MenuItem>
+                  <MenuItem value={agendaOtherPropertyValue}>{t('fields.otherProperty')}</MenuItem>
                 </RhfTextField>
                 {showCustomPropertyField ? (
                   <RhfTextField
                     control={control}
                     name="customProperty"
-                    label="Imóvel ou referência"
+                    label={t('fields.customProperty')}
                     fullWidth
                   />
                 ) : null}
@@ -134,11 +136,11 @@ export function AgendaEventFormDialog({
                 gap: 1.4,
               }}
             >
-              <RhfTextField control={control} name="participant" label="Pessoa" fullWidth />
+              <RhfTextField control={control} name="participant" label={t('fields.participant')} fullWidth />
               <RhfMaskedTextField
                 control={control}
                 name="phone"
-                label="Telefone"
+                label={t('fields.phone')}
                 mask={phoneMask}
                 fullWidth
               />
@@ -154,7 +156,7 @@ export function AgendaEventFormDialog({
               <RhfTextField
                 control={control}
                 name="scheduledDate"
-                label="Data"
+                label={t('fields.date')}
                 type="date"
                 fullWidth
                 InputLabelProps={{ shrink: true }}
@@ -163,7 +165,7 @@ export function AgendaEventFormDialog({
               <RhfTextField
                 control={control}
                 name="scheduledTime"
-                label="Horário"
+                label={t('fields.time')}
                 type="time"
                 fullWidth
                 InputLabelProps={{ shrink: true }}
@@ -171,7 +173,7 @@ export function AgendaEventFormDialog({
               <RhfTextField
                 control={control}
                 name="durationMinutes"
-                label="Duração"
+                label={t('fields.duration')}
                 type="number"
                 fullWidth
                 inputProps={{ min: 15, step: 15 }}
@@ -181,7 +183,7 @@ export function AgendaEventFormDialog({
             <RhfTextField
               control={control}
               name="notes"
-              label="Observações"
+              label={t('fields.notes')}
               minRows={3}
               multiline
               fullWidth
@@ -191,10 +193,10 @@ export function AgendaEventFormDialog({
 
         <DialogActions sx={{ px: { xs: 2, md: 2.8 }, pb: 2.5, pt: 0 }}>
           <Button type="button" variant="outlined" color="secondary" onClick={onClose}>
-            Cancelar
+            {t('cancel')}
           </Button>
           <Button type="submit" variant="contained" startIcon={<AddRoundedIcon />}>
-            Criar evento
+            {t('submit')}
           </Button>
         </DialogActions>
       </Box>
