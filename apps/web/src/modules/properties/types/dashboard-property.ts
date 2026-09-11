@@ -112,8 +112,7 @@ export type CreatePropertyStepFieldsProps = {
   control: Control<CreateDashboardPropertyFormValues>
   activeStepKey: CreatePropertyStepKey
   activeStepLabel: string
-  propertyPurpose: CreatePropertyPurpose
-  onPropertyPurposeChange: (purpose: CreatePropertyPurpose) => void
+  propertyPurpose: CreatePropertyPurpose[]
 }
 
 export type CreatePropertyActionsProps = {

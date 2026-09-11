@@ -80,6 +80,7 @@
   },
   "create": {
     "title": "Publicar inmueble",
+    "mobileTitle": "Nuevo inmueble",
     "back": "Volver",
     "next": "Siguiente",
     "publish": "Publicar",
@@ -100,13 +101,16 @@
       "area": "Área útil",
       "rentValue": "Valor del alquiler",
       "saleValue": "Valor de venta",
+      "referenceValue": "Valor de referencia",
       "condominium": "Gastos comunes",
       "iptu": "Impuesto mensual",
       "securityDeposit": "Garantía",
-      "commission": "Comisión"
+      "commission": "Comisión",
+      "commercialTerms": "Condición comercial"
     },
     "steps": {
       "ariaLabel": "Etapas del registro",
+      "progress": "Paso {current} de {total}",
       "basic": "Datos básicos",
       "address": "Dirección",
       "features": "Características",

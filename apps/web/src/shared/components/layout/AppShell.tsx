@@ -33,6 +33,7 @@ import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 import { getInitials } from '@shared/utils/get-initials'
+import { DashboardNotificationsButton } from './DashboardNotificationsButton'
 
 const sidebarWidth = 200
 
@@ -268,29 +269,46 @@ export function AppShell({ children }: AppShellProps) {
           inset: '0 0 auto 0',
           zIndex: 20,
           height: 64,
+          minHeight: 64,
+          maxHeight: 64,
+          overflow: 'hidden',
           px: 2,
-          bgcolor: brand.graphite[600],
-          color: surface.lightText,
+          bgcolor: surface.paper,
+          color: brand.graphite[500],
           boxShadow: shadows.crmMobileHeader,
         }}
       >
-        <Tooltip title={t('openNavigation')}>
-          <IconButton
-            aria-label={t('openNavigation')}
-            onClick={() => setMobileOpen(true)}
-            sx={{ color: 'inherit' }}
-          >
-            <MenuRoundedIcon />
-          </IconButton>
-        </Tooltip>
-        <AppLogo src={ketrisLogoFooter} width={92} />
-        <Avatar
-          src={session?.user?.image ?? undefined}
-          alt={userName}
-          sx={{ width: 34, height: 34, bgcolor: 'primary.main', fontSize: 12, fontWeight: 800 }}
-        >
-          {userInitials}
-        </Avatar>
+        <AppLogo
+          src={ketrisLogoFooter}
+          width={42}
+          sx={{
+            height: 42,
+            overflow: 'hidden',
+            '& img': {
+              width: 112,
+              maxWidth: 'none',
+            },
+          }}
+        />
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <DashboardNotificationsButton />
+          <Tooltip title={t('openNavigation')}>
+            <IconButton
+              aria-label={t('openNavigation')}
+              onClick={() => setMobileOpen(true)}
+              sx={{
+                width: 42,
+                height: 42,
+                border: '1px solid',
+                borderColor: alpha.graphite[8],
+                borderRadius: `${radius.sm}px`,
+                color: brand.graphite[500],
+              }}
+            >
+              <MenuRoundedIcon sx={{ fontSize: iconSize.xl }} />
+            </IconButton>
+          </Tooltip>
+        </Stack>
       </Stack>
 
       <Drawer
