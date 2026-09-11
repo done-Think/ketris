@@ -11,6 +11,7 @@ import type {
   ContractStatus,
   ContractStatusStyle,
   ContractType,
+  ContractsFiltersFormValues,
   CreateContractStep,
 } from '../types/contract'
 
@@ -32,6 +33,11 @@ export const contractStatusOptions: ContractStatus[] = [
 ]
 
 export const contractTypeOptions: ContractType[] = ['Residencial', 'Comercial', 'Temporada']
+
+export const contractTypeFilterOptions: Array<ContractsFiltersFormValues['type']> = [
+  'Todos',
+  ...contractTypeOptions,
+]
 
 export const contractPeriodOptions = ['Todos', 'Vencem este mês', 'Vencem em 90 dias'] as const
 

@@ -11,6 +11,12 @@ const nextConfig = {
     remotePatterns: [],
   },
   transpilePackages: ['@mui/x-charts', '@mui/x-data-grid'],
+  turbopack: {
+    rules: {
+      '*.mp4': { type: 'asset' },
+      '*.webm': { type: 'asset' },
+    },
+  },
   webpack(config) {
     config.infrastructureLogging = {
       ...(config.infrastructureLogging ?? {}),

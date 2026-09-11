@@ -1,6 +1,13 @@
 import { BaseService } from '@shared/lib/api/base-service'
 
 import type {
+  ApiContact,
+  ApiContactListItem,
+  ContactFilters,
+  CreateContactPayload,
+  UpdateContactPayload,
+} from '../types/contact'
+import type {
   CreateOpportunityPayload,
   Opportunity,
   OpportunityFilters,
@@ -14,7 +21,9 @@ import type {
 } from '../types/property'
 import type {
   ActivityResponse,
+  ContactResponse,
   ListActivitiesResponse,
+  ListContactsResponse,
   ListOpportunitiesResponse,
   ListPropertiesResponse,
   OpportunityResponse,
@@ -24,6 +33,7 @@ import type {
 
 export class CrmService extends BaseService {
   private readonly path = '/crm/opportunities'
+  private readonly contactsPath = '/crm/contacts'
 
   list(filters: OpportunityFilters = {}): Promise<Opportunity[]> {
     const params = {
@@ -84,6 +94,40 @@ export class CrmService extends BaseService {
     return this.http
       .get<PropertyResponse>(`/marketplace/properties/${id}`)
       .then((data) => data.property)
+  }
+
+  listContacts(filters: ContactFilters = {}): Promise<ApiContactListItem[]> {
+    const params = {
+      ...(filters.type ? { type: filters.type } : {}),
+      ...(filters.q ? { q: filters.q } : {}),
+      ...(filters.includeArchived !== undefined
+        ? { includeArchived: String(filters.includeArchived) }
+        : {}),
+    }
+
+    return this.http
+      .get<ListContactsResponse>(this.contactsPath, { params })
+      .then((data) => data.contacts)
+  }
+
+  getContact(id: string): Promise<ApiContact> {
+    return this.http.get<ContactResponse>(`${this.contactsPath}/${id}`).then((data) => data.contact)
+  }
+
+  createContact(payload: CreateContactPayload): Promise<ApiContact> {
+    return this.http.post<ContactResponse>(this.contactsPath, payload).then((data) => data.contact)
+  }
+
+  updateContact(id: string, changes: UpdateContactPayload): Promise<ApiContact> {
+    return this.http
+      .patch<ContactResponse>(`${this.contactsPath}/${id}`, changes)
+      .then((data) => data.contact)
+  }
+
+  archiveContact(id: string): Promise<ApiContact> {
+    return this.http
+      .delete<ContactResponse>(`${this.contactsPath}/${id}`)
+      .then((data) => data.contact)
   }
 }
 

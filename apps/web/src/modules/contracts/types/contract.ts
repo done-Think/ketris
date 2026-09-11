@@ -58,12 +58,6 @@ export type ContractActionMockContent = {
   sections: ContractActionMockSection[]
 }
 
-export type ContractActionMenuState = {
-  anchorEl: HTMLElement | null
-  contract: ContractListItem | null
-  menu: ContractActionMenuKey | null
-}
-
 export type ContractActionDialogState = {
   contract: ContractListItem | null
   action: ContractTableAction | null
@@ -210,6 +204,8 @@ export type ContractFieldConfig = {
   label: string
   mask?: string
   options?: string[]
+  /** Translates an option's internal value into display text. Falls back to the raw value. */
+  getOptionLabel?: (option: string) => string
   multiline?: boolean
 }
 
@@ -227,6 +223,11 @@ export type ContractStepFieldsProps = {
 }
 
 export type ContractStepControlProps = Pick<ContractStepFieldsProps, 'control'>
+
+export type ContractPropertyStepProps = Pick<
+  ContractStepFieldsProps,
+  'control' | 'setValue' | 'values'
+>
 
 export type ContractPartiesStepProps = Pick<
   ContractStepFieldsProps,

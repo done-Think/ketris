@@ -1,10 +1,13 @@
 import { Button, Stack } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { brand, radius, shadows } from '@shared/theme/tokens'
 
 import type { ContractActionsProps } from '../types/contract'
 
 export function ContractActions({ lastStep, onPreviousStep, onNextStep }: ContractActionsProps) {
+  const t = useTranslations('contracts.wizard.actions')
+
   return (
     <Stack
       direction="row"
@@ -27,7 +30,7 @@ export function ContractActions({ lastStep, onPreviousStep, onNextStep }: Contra
           textTransform: 'none',
         }}
       >
-        Voltar
+        {t('back')}
       </Button>
       <Button
         variant="contained"
@@ -42,7 +45,7 @@ export function ContractActions({ lastStep, onPreviousStep, onNextStep }: Contra
           textTransform: 'none',
         }}
       >
-        {lastStep ? 'Gerar contrato' : 'Próximo passo'}
+        {lastStep ? t('generate') : t('next')}
       </Button>
     </Stack>
   )

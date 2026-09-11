@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
+import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { crmContainer } from '@server/crm/container'
 import {
@@ -30,6 +31,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   const opportunities = await crmContainer.listOpportunitiesUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorId: actor.sub,
+    actorPapel: actor.papel as Papel,
     filters: {
       status: parsed.data.status,
       contactId: parsed.data.contactId,
@@ -47,6 +50,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const opportunity = await crmContainer.createOpportunityUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
+    actorPapel: actor.papel as Papel,
     propertyId: body.propertyId,
     contactId: body.contactId,
     leadName: body.leadName,

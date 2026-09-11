@@ -1,0 +1,220 @@
+{
+  "metadata": {
+    "dashboard": {
+      "metadataTitle": "Ketris | Contratos"
+    },
+    "create": {
+      "metadataTitle": "Ketris | Generar Contrato"
+    },
+    "detail": {
+      "metadataTitle": "Ketris | Detalle del Contrato"
+    }
+  },
+  "dashboardHeader": {
+    "title": "Contratos",
+    "searchPlaceholder": "Buscar contratos...",
+    "newContract": "Nuevo Contrato"
+  },
+  "filters": {
+    "tabs": {
+      "Todos": "Todos",
+      "Ativos": "Activos",
+      "Vencendo": "Por vencer",
+      "Encerrados": "Finalizados"
+    },
+    "typeFilter": {
+      "label": "Tipo de contrato",
+      "Todos": "Todos los tipos",
+      "Residencial": "Residencial",
+      "Comercial": "Comercial",
+      "Temporada": "Temporada"
+    }
+  },
+  "summary": {
+    "Ativos": {
+      "label": "Activos",
+      "caption": "Contratos vigentes"
+    },
+    "Vencendo em 30d": {
+      "label": "Vencen en 30d",
+      "caption": "Requieren seguimiento"
+    },
+    "Inadimplentes": {
+      "label": "Morosos",
+      "caption": "Con pendencias financieras"
+    }
+  },
+  "table": {
+    "columns": {
+      "property": "Inmueble",
+      "tenant": "Inquilino",
+      "amount": "Valor",
+      "startDate": "Inicio",
+      "endDate": "Vencimiento",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "noRowsLabel": "No se encontraron contratos",
+    "totalRows": "Total de filas:",
+    "rowsPerPage": "Filas por página",
+    "displayedRows": "Mostrando {from}-{to} de {total}",
+    "actionsTooltip": "Acciones",
+    "actionsAriaLabel": "Acciones del contrato {code}",
+    "menu": {
+      "view-summary": "Ver resumen",
+      "view-history": "Ver historial",
+      "edit-data": "Editar datos",
+      "duplicate": "Duplicar contrato",
+      "download-pdf": "Descargar PDF",
+      "download-draft": "Descargar borrador",
+      "send-signature": "Enviar firma",
+      "copy-signature-link": "Copiar enlace"
+    }
+  },
+  "status": {
+    "Rascunho": "Borrador",
+    "Em revisão": "En revisión",
+    "Aguardando assinatura": "Esperando firma",
+    "Assinado": "Firmado",
+    "Ativo": "Activo",
+    "Encerrado": "Finalizado",
+    "Cancelado": "Cancelado"
+  },
+  "emptyState": {
+    "title": "No se encontraron contratos",
+    "description": "Genera un nuevo contrato o ajusta los filtros para ampliar la búsqueda.",
+    "cta": "Generar contrato"
+  },
+  "wizard": {
+    "breadcrumbContracts": "Contratos",
+    "breadcrumbNew": "Generar nuevo",
+    "title": "Generar Contrato",
+    "stepsAriaLabel": "Etapas del contrato",
+    "steps": {
+      "parties": "Partes",
+      "property": "Inmueble",
+      "conditions": "Condiciones",
+      "review": "Revisión"
+    },
+    "stepFormTitleReview": "Revisión del Contrato",
+    "stepFormTitle": "{step} del Contrato",
+    "successMessage": "{code} añadido en revisión.",
+    "actions": {
+      "back": "Volver",
+      "next": "Siguiente paso",
+      "generate": "Generar contrato"
+    },
+    "parties": {
+      "ownerTitle": "Arrendador (Propietario)",
+      "tenantTitle": "Inquilino",
+      "guarantorTitle": "Fiador",
+      "addGuarantor": "Añadir fiador",
+      "fields": {
+        "fullName": "Nombre completo",
+        "cpf": "Documento de identidad",
+        "email": "Correo electrónico",
+        "phone": "Teléfono"
+      }
+    },
+    "property": {
+      "title": "Datos del inmueble",
+      "fields": {
+        "propertyTitle": "Inmueble",
+        "propertyType": "Tipo",
+        "propertyAddress": "Dirección",
+        "propertyZipCode": "Código postal",
+        "propertyCity": "Ciudad",
+        "propertyState": "Provincia",
+        "propertyRegistration": "Matrícula",
+        "propertyArea": "Área útil"
+      },
+      "typeOptions": {
+        "Apartamento": "Apartamento",
+        "Casa": "Casa",
+        "Studio": "Estudio",
+        "Cobertura": "Ático",
+        "Sala comercial": "Local comercial"
+      },
+      "picker": {
+        "label": "Seleccionar inmueble registrado",
+        "helperText": "Elige un inmueble ya registrado para completar los datos automáticamente.",
+        "noOptions": "No se encontraron inmuebles."
+      }
+    },
+    "conditions": {
+      "title": "Condiciones comerciales",
+      "fields": {
+        "contractType": "Tipo de contrato",
+        "monthlyRent": "Valor del alquiler",
+        "condominiumFee": "Comunidad",
+        "iptu": "Impuesto predial",
+        "dueDay": "Vencimiento",
+        "guaranteeType": "Garantía",
+        "startDate": "Inicio",
+        "endDate": "Término",
+        "adjustmentIndex": "Reajuste",
+        "notes": "Observaciones"
+      },
+      "contractTypeOptions": {
+        "Locação residencial": "Alquiler residencial",
+        "Locação comercial": "Alquiler comercial",
+        "Temporada": "Temporada"
+      },
+      "guaranteeTypeOptions": {
+        "Fiador": "Fiador",
+        "Caução": "Depósito de garantía",
+        "Seguro fiança": "Seguro de alquiler",
+        "Título de capitalização": "Título de capitalización"
+      },
+      "adjustmentIndexOptions": {
+        "IPCA": "IPCA",
+        "IGP-M": "IGP-M",
+        "INPC": "INPC"
+      }
+    },
+    "review": {
+      "partiesTitle": "Partes",
+      "propertyTitle": "Inmueble",
+      "conditionsTitle": "Condiciones",
+      "termTitle": "Vigencia",
+      "labels": {
+        "owner": "Arrendador",
+        "ownerCpf": "Documento del arrendador",
+        "tenant": "Inquilino",
+        "tenantCpf": "Documento del inquilino",
+        "guarantor": "Fiador",
+        "guarantorCpf": "Documento del fiador",
+        "property": "Inmueble",
+        "type": "Tipo",
+        "address": "Dirección",
+        "cityState": "Ciudad/Provincia",
+        "contract": "Contrato",
+        "rent": "Alquiler",
+        "dueDay": "Vencimiento",
+        "dueDayValue": "Día {day}",
+        "guarantee": "Garantía",
+        "start": "Inicio",
+        "end": "Término",
+        "adjustment": "Reajuste",
+        "notes": "Observaciones"
+      }
+    },
+    "discardDialog": {
+      "title": "¿Descartar contrato?",
+      "description": "Los datos ingresados se perderán y no podrán recuperarse.",
+      "cancel": "Seguir editando",
+      "confirm": "Descartar"
+    }
+  },
+  "actionDialog": {
+    "close": "Cerrar",
+    "summaryLabels": {
+      "property": "Inmueble",
+      "owner": "Arrendador",
+      "tenant": "Inquilino",
+      "amount": "Valor",
+      "start": "Inicio",
+      "end": "Término"
+    }
+  }
+}

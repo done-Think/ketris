@@ -20,13 +20,15 @@ describe('/api/crm/opportunities/[id]/activities (integração)', () => {
     })
     tenantId = tenant.id
 
+    // ADMIN — o escopo por AGENT já é coberto nos testes unitários do use-case e na suíte de
+    // integração de /api/crm/opportunities (list/create).
     const actor = await prisma.usuario.create({
       data: {
         tenantId,
-        nome: 'Agente',
-        email: `agente-${randomUUID()}@ketris.dev`,
+        nome: 'Admin',
+        email: `admin-${randomUUID()}@ketris.dev`,
         senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        papel: 'ADMIN',
       },
     })
     actorToken = await tokenService.sign({

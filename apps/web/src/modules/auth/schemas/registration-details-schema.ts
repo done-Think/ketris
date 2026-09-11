@@ -4,7 +4,7 @@ import { emailSchema } from './login-schema'
 
 const NON_BROKER_PROFILE_IDS = ['proprietario', 'imobiliaria', 'construtora', 'locatario'] as const
 
-const phoneSchema = z
+export const phoneSchema = z
   .string()
   .trim()
   .min(1, 'Informe seu telefone')

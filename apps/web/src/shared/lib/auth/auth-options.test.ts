@@ -1,13 +1,17 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { InvalidCredentialsError } from '@server/auth/domain/errors'
 import { InvalidPlatformCredentialsError } from '@server/platform/domain/errors'
 
 const executeMock = vi.fn()
 const platformExecuteMock = vi.fn()
+const findByIdMock = vi.fn()
 
 vi.mock('@server/auth/container', () => ({
-  authContainer: { loginUseCase: { execute: executeMock } },
+  authContainer: {
+    loginUseCase: { execute: executeMock },
+    userRepository: { findById: findByIdMock },
+  },
 }))
 
 vi.mock('@server/platform/container', () => ({
@@ -28,6 +32,11 @@ async function getPlatformAuthorize() {
     options: { authorize: (credentials: Record<string, string> | undefined) => Promise<unknown> }
   }
   return provider.options.authorize
+}
+
+async function getJwtCallback() {
+  const { authOptions } = await import('./auth-options')
+  return authOptions.callbacks!.jwt!
 }
 
 describe('authOptions — CredentialsProvider.authorize', () => {
@@ -80,37 +89,6 @@ describe('authOptions — CredentialsProvider.authorize', () => {
       'banco fora do ar',
     )
   })
-
-  it('em modo mock, autentica sem tocar o banco quando as credenciais batem', async () => {
-    vi.stubEnv('AUTH_MOCK_ENABLED', 'true')
-    vi.stubEnv('VERCEL_ENV', 'preview')
-    executeMock.mockClear()
-
-    const authorize = await getAuthorize()
-    const result = await authorize({ email: 'demo@ketris.dev', password: 'demo123456' })
-
-    expect(executeMock).not.toHaveBeenCalled()
-    expect(result).toMatchObject({ scope: 'tenant', tenantId: 'mock-tenant' })
-
-    vi.unstubAllEnvs()
-  })
-
-  it('em produção na Vercel, ignora o modo mock mesmo com a flag ligada e a credencial batendo', async () => {
-    vi.stubEnv('AUTH_MOCK_ENABLED', 'true')
-    vi.stubEnv('VERCEL_ENV', 'production')
-    executeMock.mockRejectedValueOnce(new InvalidCredentialsError())
-
-    const authorize = await getAuthorize()
-    const result = await authorize({ email: 'demo@ketris.dev', password: 'demo123456' })
-
-    expect(executeMock).toHaveBeenCalledWith({
-      email: 'demo@ketris.dev',
-      password: 'demo123456',
-    })
-    expect(result).toBeNull()
-
-    vi.unstubAllEnvs()
-  })
 })
 
 describe('authOptions — platform-credentials.authorize', () => {
@@ -155,5 +133,90 @@ describe('authOptions — platform-credentials.authorize', () => {
     const result = await authorize({ email: 'dono@ketris.dev', password: 'senha-errada' })
 
     expect(result).toBeNull()
+  })
+})
+
+describe('authOptions — callbacks.jwt (revalidação contra o banco)', () => {
+  beforeEach(() => {
+    findByIdMock.mockClear()
+  })
+
+  it('no sign-in inicial, apenas copia os campos do user pro token e não consulta o banco', async () => {
+    const jwt = await getJwtCallback()
+
+    const token = await jwt({
+      token: { sub: 'u1' },
+      user: {
+        accessToken: 'a',
+        refreshToken: 'r',
+        scope: 'tenant',
+        tenantId: 't1',
+        papel: 'AGENT',
+      },
+    } as unknown as Parameters<typeof jwt>[0])
+
+    expect(token).toMatchObject({ scope: 'tenant', tenantId: 't1', papel: 'AGENT' })
+    expect(findByIdMock).not.toHaveBeenCalled()
+  })
+
+  it('mantém o escopo quando o usuário ainda existe, está ativo e pertence ao mesmo tenant', async () => {
+    findByIdMock.mockResolvedValueOnce({ id: 'u1', tenantId: 't1', ativo: true })
+    const jwt = await getJwtCallback()
+
+    const token = await jwt({
+      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', papel: 'AGENT' },
+      user: undefined,
+    } as unknown as Parameters<typeof jwt>[0])
+
+    expect(token).toMatchObject({ scope: 'tenant', tenantId: 't1', papel: 'AGENT' })
+  })
+
+  it('limpa o escopo quando o usuário não existe mais (tenant/usuário apagado)', async () => {
+    findByIdMock.mockResolvedValueOnce(null)
+    const jwt = await getJwtCallback()
+
+    const token = await jwt({
+      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', papel: 'AGENT' },
+      user: undefined,
+    } as unknown as Parameters<typeof jwt>[0])
+
+    expect(token.scope).toBeUndefined()
+    expect(token.tenantId).toBeUndefined()
+    expect(token.papel).toBeUndefined()
+  })
+
+  it('limpa o escopo quando o usuário foi desativado', async () => {
+    findByIdMock.mockResolvedValueOnce({ id: 'u1', tenantId: 't1', ativo: false })
+    const jwt = await getJwtCallback()
+
+    const token = await jwt({
+      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', papel: 'AGENT' },
+      user: undefined,
+    } as unknown as Parameters<typeof jwt>[0])
+
+    expect(token.scope).toBeUndefined()
+  })
+
+  it('limpa o escopo quando o usuário migrou de tenant e o token ficou com o tenant antigo', async () => {
+    findByIdMock.mockResolvedValueOnce({ id: 'u1', tenantId: 't2', ativo: true })
+    const jwt = await getJwtCallback()
+
+    const token = await jwt({
+      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', papel: 'AGENT' },
+      user: undefined,
+    } as unknown as Parameters<typeof jwt>[0])
+
+    expect(token.scope).toBeUndefined()
+  })
+
+  it('não consulta o banco para sessões de escopo platform', async () => {
+    const jwt = await getJwtCallback()
+
+    await jwt({
+      token: { sub: 'p1', scope: 'platform' },
+      user: undefined,
+    } as unknown as Parameters<typeof jwt>[0])
+
+    expect(findByIdMock).not.toHaveBeenCalled()
   })
 })

@@ -62,6 +62,9 @@ export class PrismaContactRepository implements ContactRepository {
 
     if (filters?.type) where.tipo = filters.type
     if (!filters?.includeArchived) where.arquivadoEm = null
+    if (filters?.responsavelId) {
+      where.oportunidades = { some: { imovel: { responsavelId: filters.responsavelId } } }
+    }
 
     if (filters?.q) {
       where.OR = [

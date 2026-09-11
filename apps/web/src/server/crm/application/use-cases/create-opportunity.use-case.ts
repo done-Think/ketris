@@ -1,3 +1,6 @@
+import type { Papel } from '@server/auth/domain/user.entity'
+import { ForbiddenError } from '@server/shared/errors'
+
 import { ContactNotFoundError, OpportunityPropertyNotFoundError } from '../../domain/errors'
 import type { Opportunity } from '../../domain/opportunity.entity'
 import type { ActivityRepository } from '../ports/activity-repository.port'
@@ -8,6 +11,7 @@ import type { PropertyLookupPort } from '../ports/property-lookup.port'
 export interface CreateOpportunityInput {
   actorTenantId: string
   actorId?: string | null
+  actorPapel: Papel
   actorName?: string | null
   propertyId: string
   contactId?: string | null
@@ -45,6 +49,17 @@ export class CreateOpportunityUseCase {
     )
 
     if (!ownsProperty) throw new OpportunityPropertyNotFoundError()
+
+    if (input.actorPapel === 'AGENT') {
+      const responsavelId = await this.propertyLookup.findResponsavelId(
+        input.actorTenantId,
+        input.propertyId,
+      )
+
+      if (responsavelId !== input.actorId) {
+        throw new ForbiddenError('Você só pode criar oportunidades para os próprios imóveis.')
+      }
+    }
 
     if (input.contactId) {
       const contact = await this.contactRepository.findById(input.contactId)

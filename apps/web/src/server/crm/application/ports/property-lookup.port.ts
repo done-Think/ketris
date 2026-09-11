@@ -5,4 +5,6 @@
  */
 export interface PropertyLookupPort {
   existsForTenant(tenantId: string, propertyId: string): Promise<boolean>
+  /** Resolves the property's responsible broker (`Imovel.responsavelId`), used to scope AGENT access. */
+  findResponsavelId(tenantId: string, propertyId: string): Promise<string | null>
 }

@@ -4,6 +4,7 @@ import { OpportunityNotAnswerableError, OpportunityNotFoundError } from '../../.
 import type { Opportunity } from '../../../domain/opportunity.entity'
 import type { ActivityRepository } from '../../../application/ports/activity-repository.port'
 import type { OpportunityRepository } from '../../../application/ports/opportunity-repository.port'
+import type { PropertyLookupPort } from '../../../application/ports/property-lookup.port'
 import { RespondToOpportunityUseCase } from '../../../application/use-cases/respond-to-opportunity.use-case'
 
 const opportunity: Opportunity = {
@@ -30,6 +31,7 @@ function createDeps(overrides?: {
   status?: Opportunity['status']
   findById?: OpportunityRepository['findById']
   update?: OpportunityRepository['update']
+  findResponsavelId?: PropertyLookupPort['findResponsavelId']
 }) {
   const current = { ...opportunity, status: overrides?.status ?? opportunity.status }
 
@@ -46,7 +48,11 @@ function createDeps(overrides?: {
       .mockImplementation((activity) => ({ id: 'act-1', createdAt: new Date(), ...activity })),
   } as unknown as ActivityRepository
 
-  return { opportunityRepository, activityRepository, current }
+  const propertyLookup = {
+    findResponsavelId: overrides?.findResponsavelId ?? vi.fn().mockResolvedValue('agent-1'),
+  } as unknown as PropertyLookupPort
+
+  return { opportunityRepository, activityRepository, propertyLookup, current }
 }
 
 describe('RespondToOpportunityUseCase', () => {
@@ -55,10 +61,12 @@ describe('RespondToOpportunityUseCase', () => {
     const useCase = new RespondToOpportunityUseCase(
       deps.opportunityRepository,
       deps.activityRepository,
+      deps.propertyLookup,
     )
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorPapel: 'ADMIN',
       actorId: 'user-1',
       actorName: 'Ana',
       opportunityId: 'op-1',
@@ -85,10 +93,12 @@ describe('RespondToOpportunityUseCase', () => {
     const useCase = new RespondToOpportunityUseCase(
       deps.opportunityRepository,
       deps.activityRepository,
+      deps.propertyLookup,
     )
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorPapel: 'ADMIN',
       opportunityId: 'op-1',
       action: 'RECUSAR',
       message: 'Valor abaixo do mínimo aceito pelo proprietário.',
@@ -108,10 +118,12 @@ describe('RespondToOpportunityUseCase', () => {
     const useCase = new RespondToOpportunityUseCase(
       deps.opportunityRepository,
       deps.activityRepository,
+      deps.propertyLookup,
     )
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorPapel: 'ADMIN',
       opportunityId: 'op-1',
       action: 'SOLICITAR_INFORMACOES',
       message: '   ',
@@ -127,10 +139,12 @@ describe('RespondToOpportunityUseCase', () => {
     const useCase = new RespondToOpportunityUseCase(
       deps.opportunityRepository,
       deps.activityRepository,
+      deps.propertyLookup,
     )
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorPapel: 'ADMIN',
       opportunityId: 'op-1',
       action: 'SOLICITAR_INFORMACOES',
     })
@@ -145,10 +159,16 @@ describe('RespondToOpportunityUseCase', () => {
     const useCase = new RespondToOpportunityUseCase(
       deps.opportunityRepository,
       deps.activityRepository,
+      deps.propertyLookup,
     )
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', opportunityId: 'op-1', action: 'ACEITAR' }),
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorPapel: 'ADMIN',
+        opportunityId: 'op-1',
+        action: 'ACEITAR',
+      }),
     ).rejects.toThrow(OpportunityNotFoundError)
     expect(deps.activityRepository.create).not.toHaveBeenCalled()
   })
@@ -158,10 +178,16 @@ describe('RespondToOpportunityUseCase', () => {
     const useCase = new RespondToOpportunityUseCase(
       deps.opportunityRepository,
       deps.activityRepository,
+      deps.propertyLookup,
     )
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', opportunityId: 'op-1', action: 'ACEITAR' }),
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorPapel: 'ADMIN',
+        opportunityId: 'op-1',
+        action: 'ACEITAR',
+      }),
     ).rejects.toThrow(OpportunityNotAnswerableError)
     expect(deps.activityRepository.create).not.toHaveBeenCalled()
   })
@@ -171,10 +197,16 @@ describe('RespondToOpportunityUseCase', () => {
     const useCase = new RespondToOpportunityUseCase(
       deps.opportunityRepository,
       deps.activityRepository,
+      deps.propertyLookup,
     )
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', opportunityId: 'op-1', action: 'RECUSAR' }),
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorPapel: 'ADMIN',
+        opportunityId: 'op-1',
+        action: 'RECUSAR',
+      }),
     ).rejects.toThrow(OpportunityNotAnswerableError)
   })
 
@@ -183,14 +215,36 @@ describe('RespondToOpportunityUseCase', () => {
     const useCase = new RespondToOpportunityUseCase(
       deps.opportunityRepository,
       deps.activityRepository,
+      deps.propertyLookup,
     )
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorPapel: 'ADMIN',
       opportunityId: 'op-1',
       action: 'SOLICITAR_INFORMACOES',
     })
 
     expect(result.opportunity.status).toBe('EM_NEGOCIACAO')
+  })
+
+  it('AGENT que não é responsável pelo imóvel recebe 404 opaco e não responde', async () => {
+    const deps = createDeps({ findResponsavelId: vi.fn().mockResolvedValue('outro-agente') })
+    const useCase = new RespondToOpportunityUseCase(
+      deps.opportunityRepository,
+      deps.activityRepository,
+      deps.propertyLookup,
+    )
+
+    await expect(
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'agent-1',
+        actorPapel: 'AGENT',
+        opportunityId: 'op-1',
+        action: 'ACEITAR',
+      }),
+    ).rejects.toThrow(OpportunityNotFoundError)
+    expect(deps.activityRepository.create).not.toHaveBeenCalled()
   })
 })

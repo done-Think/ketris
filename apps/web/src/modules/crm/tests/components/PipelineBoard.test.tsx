@@ -8,7 +8,11 @@ import { theme } from '@shared/theme/theme'
 
 import { PipelineBoard } from '../../components/PipelineBoard'
 import { opportunityStages } from '../../config/opportunity-stages'
-import { useCrmProperties, useOpportunities } from '../../hooks/use-opportunities'
+import {
+  useCreateOpportunity,
+  useCrmProperties,
+  useOpportunities,
+} from '../../hooks/use-opportunities'
 import type { Opportunity, OpportunityStatus } from '../../types/opportunity'
 import type { PublicPropertySummary } from '../../types/property'
 import { formatCurrency, formatMonthlyCurrency } from '../../utils/formatters'
@@ -24,6 +28,7 @@ vi.mock('../../hooks/use-opportunities', async (importOriginal) => {
     ...original,
     useCrmProperties: vi.fn(),
     useOpportunities: vi.fn(),
+    useCreateOpportunity: vi.fn(),
   }
 })
 
@@ -98,6 +103,14 @@ function mockPropertiesQuery(overrides: Record<string, unknown> = {}) {
   } as unknown as ReturnType<typeof useCrmProperties>)
 }
 
+function mockCreateOpportunity(overrides: Record<string, unknown> = {}) {
+  vi.mocked(useCreateOpportunity).mockReturnValue({
+    mutateAsync: vi.fn(),
+    isPending: false,
+    ...overrides,
+  } as unknown as ReturnType<typeof useCreateOpportunity>)
+}
+
 function renderPipeline(initialStatus?: OpportunityStatus) {
   return render(
     <ThemeProvider theme={theme}>
@@ -129,6 +142,7 @@ describe('PipelineBoard', () => {
     } as unknown as ReturnType<typeof useSession>)
     mockOpportunitiesQuery()
     mockPropertiesQuery()
+    mockCreateOpportunity()
   })
 
   it('renders the five API stages with their counts, totals, and detail links', () => {
@@ -258,9 +272,14 @@ describe('PipelineBoard', () => {
     expect(screen.queryByText('Contato 1')).not.toBeInTheDocument()
   })
 
-  it('keeps creation unavailable until a tenant-scoped endpoint exists', () => {
+  it('opens the create opportunity dialog from the toolbar button', async () => {
+    const user = userEvent.setup()
     renderPipeline()
 
-    expect(screen.getByRole('button', { name: 'Nova Oportunidade' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Nova Oportunidade' })).toBeEnabled()
+
+    await user.click(screen.getByRole('button', { name: 'Nova Oportunidade' }))
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 })

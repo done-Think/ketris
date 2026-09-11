@@ -35,25 +35,46 @@ describe('ListContactsUseCase', () => {
     const opportunityRepository = { countByContact } as unknown as OpportunityRepository
     const useCase = new ListContactsUseCase(contactRepository, opportunityRepository)
 
-    const result = await useCase.execute({ actorTenantId: 'tenant-1' })
+    const result = await useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorId: 'user-1',
+      actorPapel: 'ADMIN',
+    })
 
     expect(result).toEqual([])
     expect(countByContact).not.toHaveBeenCalled()
   })
 
-  it('enriquece cada contato com o total de oportunidades ativas', async () => {
+  it('enriquece cada contato com o total de oportunidades ativas (sem recorte pra ADMIN)', async () => {
     const findManyByTenant = vi.fn().mockResolvedValue([contactA, contactB])
     const countByContact = vi.fn().mockResolvedValue(new Map([['contato-1', 3]]))
     const contactRepository = { findManyByTenant } as unknown as ContactRepository
     const opportunityRepository = { countByContact } as unknown as OpportunityRepository
     const useCase = new ListContactsUseCase(contactRepository, opportunityRepository)
 
-    const result = await useCase.execute({ actorTenantId: 'tenant-1' })
+    const result = await useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorId: 'user-1',
+      actorPapel: 'ADMIN',
+    })
 
+    expect(findManyByTenant).toHaveBeenCalledWith('tenant-1', {})
     expect(countByContact).toHaveBeenCalledWith('tenant-1', ['contato-1', 'contato-2'])
     expect(result).toEqual([
       { ...contactA, propertyCount: 3 },
       { ...contactB, propertyCount: 0 },
     ])
+  })
+
+  it('AGENT tem a listagem escopada pelo próprio id, via responsavelId', async () => {
+    const findManyByTenant = vi.fn().mockResolvedValue([contactA])
+    const countByContact = vi.fn().mockResolvedValue(new Map())
+    const contactRepository = { findManyByTenant } as unknown as ContactRepository
+    const opportunityRepository = { countByContact } as unknown as OpportunityRepository
+    const useCase = new ListContactsUseCase(contactRepository, opportunityRepository)
+
+    await useCase.execute({ actorTenantId: 'tenant-1', actorId: 'agent-1', actorPapel: 'AGENT' })
+
+    expect(findManyByTenant).toHaveBeenCalledWith('tenant-1', { responsavelId: 'agent-1' })
   })
 })

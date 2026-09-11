@@ -8,7 +8,11 @@ import { theme } from '@shared/theme/theme'
 
 import { SalesPipelineBoard } from '../../components/SalesPipelineBoard'
 import { salesPipelineFixtures } from '../../fixtures/sales-pipeline-fixtures'
-import { useCrmProperties, useOpportunities } from '../../hooks/use-opportunities'
+import {
+  useCreateOpportunity,
+  useCrmProperties,
+  useOpportunities,
+} from '../../hooks/use-opportunities'
 import type { Opportunity, OpportunityStatus } from '../../types/opportunity'
 import type { PublicPropertySummary } from '../../types/property'
 import type { SalesPipelineStageId } from '../../types/sales-pipeline'
@@ -41,6 +45,7 @@ vi.mock('../../hooks/use-opportunities', async (importOriginal) => {
     ...original,
     useCrmProperties: vi.fn(),
     useOpportunities: vi.fn(),
+    useCreateOpportunity: vi.fn(),
   }
 })
 
@@ -118,6 +123,14 @@ function mockPropertiesQuery(overrides: Record<string, unknown> = {}) {
   } as unknown as ReturnType<typeof useCrmProperties>)
 }
 
+function mockCreateOpportunity(overrides: Record<string, unknown> = {}) {
+  vi.mocked(useCreateOpportunity).mockReturnValue({
+    mutateAsync: vi.fn(),
+    isPending: false,
+    ...overrides,
+  } as unknown as ReturnType<typeof useCreateOpportunity>)
+}
+
 function renderPipeline({ preview = false }: { preview?: boolean } = {}) {
   return render(
     <ThemeProvider theme={theme}>
@@ -153,6 +166,7 @@ describe('SalesPipelineBoard', () => {
     } as unknown as ReturnType<typeof useSession>)
     mockOpportunitiesQuery()
     mockPropertiesQuery()
+    mockCreateOpportunity()
   })
 
   it('keeps every stage label on the same explicit typography rule', () => {
@@ -490,14 +504,23 @@ describe('SalesPipelineBoard', () => {
     expect(screen.getByText('Carlos Eduardo')).toBeVisible()
   })
 
-  it('keeps all columns stable while loading and creation explicitly unavailable', () => {
+  it('keeps all columns stable while loading and creation available', () => {
     mockOpportunitiesQuery({ isLoading: true })
 
     const { container } = renderPipeline()
 
     expect(screen.getAllByRole('region')).toHaveLength(5)
     expect(container.querySelectorAll('.MuiSkeleton-root')).toHaveLength(15)
-    expect(screen.getByRole('button', { name: 'Nova Oportunidade' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Nova Oportunidade' })).toBeEnabled()
+  })
+
+  it('opens the create opportunity dialog from the toolbar button', async () => {
+    const user = userEvent.setup()
+    renderPipeline()
+
+    await user.click(screen.getByRole('button', { name: 'Nova Oportunidade' }))
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 
   it('shows the API error and retries the opportunities query', () => {

@@ -34,8 +34,6 @@
     "filterByStage": "Filtrar por etapa",
     "allStages": "Todas as etapas",
     "newOpportunity": "Nova Oportunidade",
-    "newOpportunityTooltip": "Fluxo de criação em preparação",
-    "newOpportunityDisabledAriaLabel": "Nova Oportunidade: fluxo de criação em preparação",
     "openOpportunityAriaLabel": "Abrir oportunidade de {name}",
     "propertyUnavailable": "Imóvel indisponível no catálogo",
     "boardAriaLabel": "Pipeline de oportunidades",
@@ -60,7 +58,9 @@
       "sent": "Proposta enviada",
       "accepted": "Fechado",
       "rejected": "Perdido"
-    }
+    },
+    "createSuccess": "Oportunidade criada.",
+    "createError": "Não foi possível criar a oportunidade."
   },
   "contacts": {
     "title": "Contatos",
@@ -82,7 +82,8 @@
     "actions": {
       "editContact": "Editar {name}",
       "viewInteractions": "Ver interações de {name}",
-      "moreOptions": "Mais opções para {name}"
+      "moreOptions": "Mais opções para {name}",
+      "archiveContact": "Arquivar {name}"
     },
     "types": {
       "tenant": "Locatário",
@@ -103,6 +104,37 @@
       "owners": "Proprietários",
       "tenants": "Locatários",
       "brokers": "Corretores"
+    },
+    "contactForm": {
+      "createTitle": "Novo contato",
+      "editTitle": "Editar contato",
+      "fields": {
+        "name": "Nome",
+        "email": "E-mail",
+        "phone": "Telefone",
+        "type": "Tipo",
+        "notes": "Observações"
+      },
+      "types": {
+        "PROPRIETARIO": "Proprietário",
+        "LOCATARIO": "Locatário",
+        "CORRETOR": "Corretor"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "save": "Salvar"
+      },
+      "createSuccess": "Contato criado.",
+      "updateSuccess": "Contato atualizado.",
+      "saveError": "Não foi possível salvar o contato."
+    },
+    "archiveDialog": {
+      "title": "Arquivar contato?",
+      "description": "O contato deixará de aparecer na lista ativa, mas continuará armazenado no CRM.",
+      "cancel": "Cancelar",
+      "confirm": "Arquivar",
+      "success": "Contato arquivado.",
+      "error": "Não foi possível arquivar o contato."
     }
   },
   "leads": {
@@ -218,7 +250,9 @@
       "specialConditionsHelper": "Separe as condições por vírgulas.",
       "notes": "Observações",
       "notInformed": "Não informado",
-      "months": "{count, plural, one {# mês} other {# meses}}"
+      "months": "{count, plural, one {# mês} other {# meses}}",
+      "property": "Imóvel",
+      "status": "Status inicial"
     },
     "guarantees": {
       "NENHUMA": "Não informada",
@@ -229,7 +263,15 @@
     "actions": {
       "cancel": "Cancelar",
       "saveChanges": "Salvar alterações",
-      "confirmStageChange": "Confirmar mudança"
-    }
+      "confirmStageChange": "Confirmar mudança",
+      "createOpportunity": "Criar oportunidade"
+    },
+    "createTitle": "Nova oportunidade",
+    "statuses": {
+      "RASCUNHO": "Rascunho",
+      "ENVIADA": "Enviada"
+    },
+    "noProperties": "Nenhum imóvel encontrado.",
+    "loadingProperties": "Buscando imóveis..."
   }
 }
