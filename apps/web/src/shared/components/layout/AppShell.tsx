@@ -102,6 +102,23 @@ export function AppShell({ children }: AppShellProps) {
       ),
     [session],
   )
+  // Rotas como /crm e /dashboard são prefixo de várias outras entradas do menu (ex.:
+  // /dashboard/finance). O item ativo deve ser o de prefixo mais específico que bate com a
+  // rota atual, e não todo item cujo prefixo é um match parcial.
+  const activeTargetPath = useMemo(() => {
+    let bestMatch: string | null = null
+
+    for (const item of visibleItems) {
+      const targetPath = item.href.split('?')[0]
+      const matches = pathname === targetPath || pathname.startsWith(`${targetPath}/`)
+
+      if (matches && (!bestMatch || targetPath.length > bestMatch.length)) {
+        bestMatch = targetPath
+      }
+    }
+
+    return bestMatch
+  }, [pathname, visibleItems])
 
   const sidebar = (
     <Stack
@@ -138,10 +155,7 @@ export function AppShell({ children }: AppShellProps) {
             ))
           : visibleItems.map(({ labelKey, href, icon: Icon }) => {
               const targetPath = href.split('?')[0]
-              const active =
-                targetPath === '/crm'
-                  ? pathname === '/crm' || pathname.startsWith('/crm/opportunities')
-                  : pathname === targetPath || pathname.startsWith(`${targetPath}/`)
+              const active = targetPath === activeTargetPath
 
               return (
                 <Box

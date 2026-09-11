@@ -128,6 +128,56 @@ describe('AppShell navigation per papel', () => {
   })
 })
 
+describe('AppShell active nav item', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockSession({ papel: 'ADMIN' })
+  })
+
+  // A sidebar é renderizada duas vezes (rail fixo + Drawer mobile com keepMounted), então
+  // cada rótulo ativo aparece em dobro — o que importa é o conjunto de rótulos únicos.
+  function activeLabels() {
+    const labels = screen
+      .getAllByRole('link')
+      .filter((link) => link.getAttribute('aria-current') === 'page')
+      .map((link) => link.textContent)
+
+    return [...new Set(labels)]
+  }
+
+  it('marca só o Dashboard como ativo em /dashboard', () => {
+    vi.mocked(usePathname).mockReturnValue('/dashboard')
+
+    renderShell()
+
+    expect(activeLabels()).toEqual(['Dashboard'])
+  })
+
+  it('marca só o Financeiro como ativo em /dashboard/finance, não o Dashboard', () => {
+    vi.mocked(usePathname).mockReturnValue('/dashboard/finance')
+
+    renderShell()
+
+    expect(activeLabels()).toEqual(['Financeiro'])
+  })
+
+  it('marca só o Pipeline como ativo em /crm/opportunities/[id]', () => {
+    vi.mocked(usePathname).mockReturnValue('/crm/opportunities/[id]')
+
+    renderShell()
+
+    expect(activeLabels()).toEqual(['Pipeline'])
+  })
+
+  it('marca só o Contatos como ativo em /crm/contacts, não o Pipeline', () => {
+    vi.mocked(usePathname).mockReturnValue('/crm/contacts')
+
+    renderShell()
+
+    expect(activeLabels()).toEqual(['Contatos'])
+  })
+})
+
 describe('AppShell navigation while the session is loading', () => {
   beforeEach(() => {
     vi.clearAllMocks()
