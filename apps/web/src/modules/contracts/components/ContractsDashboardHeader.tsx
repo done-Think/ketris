@@ -4,6 +4,7 @@ import { Box, Button, InputAdornment, Stack, TextField, Typography } from '@mui/
 import { useTranslations } from 'next-intl'
 import { Controller } from 'react-hook-form'
 
+import { DashboardNotificationsButton } from '@shared/components/layout'
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { ContractsDashboardPageHeaderProps } from '../types/contract'
@@ -86,6 +87,9 @@ export function ContractsDashboardHeader({
         >
           {t('newContract')}
         </Button>
+        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          <DashboardNotificationsButton />
+        </Box>
       </Stack>
     </Stack>
   )

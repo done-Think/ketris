@@ -1,82 +1,277 @@
-import { Box, Chip, Stack, Typography } from '@mui/material'
-import { getTranslations } from 'next-intl/server'
+'use client'
 
-import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
+import AddRoundedIcon from '@mui/icons-material/AddRounded'
+import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded'
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
+import { Box, Button, IconButton, Stack, Tooltip, Typography } from '@mui/material'
+import dayjs from 'dayjs'
+import 'dayjs/locale/pt-br'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { useSnackbar } from 'notistack'
+
+import { DashboardNotificationsButton } from '@shared/components/layout'
+import { dashboardProperties } from '@modules/properties/data/dashboard-properties'
+import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
 import { agendaEvents } from '../data/agenda-events'
-import type { AgendaEventStatus } from '../types/agenda-event'
+import { agendaOtherPropertyValue } from '../schemas/agenda-reschedule-schema'
+import type {
+  AgendaEvent,
+  AgendaEventFormValues,
+  AgendaPropertyOption,
+  AgendaRescheduleFormValues,
+} from '../types/agenda-event'
+import {
+  agendaVisibleDayCount,
+  buildAgendaCalendarDays,
+  getAgendaNotifications,
+  getAgendaWeekRange,
+} from '../utils/agenda-calendar'
+import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
+import { AgendaEventDetailDialog } from './AgendaEventDetailDialog'
+import { AgendaEventFormDialog } from './AgendaEventFormDialog'
+import { AgendaTimeline } from './AgendaTimeline'
 
-const eventStatusStyles: Record<AgendaEventStatus, { bgcolor: string; color: string }> = {
-  Confirmada: { bgcolor: alpha.magenta[10], color: brand.magenta[700] },
-  Pendente: { bgcolor: alpha.graphite[6], color: brand.graphite[500] },
-  Reagendar: { bgcolor: alpha.error[10], color: brand.semantic.error },
-}
+export function AgendaDashboardPage() {
+  const { enqueueSnackbar } = useSnackbar()
+  const searchParams = useSearchParams()
+  const [events, setEvents] = useState<AgendaEvent[]>(agendaEvents)
+  const [isEventFormOpen, setIsEventFormOpen] = useState(false)
+  const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null)
+  const today = useMemo(() => dayjs().locale('pt-br').startOf('day'), [])
+  const currentMonthEnd = useMemo(() => today.endOf('month'), [today])
+  const [weekStartDate, setWeekStartDate] = useState(() => today)
+  const agendaDays = useMemo(() => buildAgendaCalendarDays(weekStartDate), [weekStartDate])
+  const propertyOptions = useMemo<AgendaPropertyOption[]>(
+    () =>
+      dashboardProperties.map((property) => ({
+        href: `/dashboard/properties/${property.id}`,
+        id: property.id,
+        label: `${property.title} - ${property.location}`,
+      })),
+    [],
+  )
+  const weekRange = getAgendaWeekRange(agendaDays)
+  const notifications = useMemo(() => getAgendaNotifications(events, today), [events, today])
+  const selectedEventDate = selectedEvent?.scheduledDate ?? ''
+  const nextWeekStart = weekStartDate.add(agendaVisibleDayCount, 'day')
+  const previousWeekStart = weekStartDate.subtract(agendaVisibleDayCount, 'day')
+  const disablePreviousWeek = !previousWeekStart.isAfter(today.subtract(1, 'day'), 'day')
+  const disableNextWeek = nextWeekStart.isAfter(currentMonthEnd, 'day')
 
-export async function AgendaDashboardPage() {
-  const t = await getTranslations('dashboard.agenda')
+  const closeEventDialog = () => setSelectedEvent(null)
+  const showScheduledWeek = useCallback(
+    (date: dayjs.Dayjs) => {
+      if (date.isBefore(today, 'day')) {
+        setWeekStartDate(today)
+        return
+      }
+
+      const daysFromToday = date.startOf('day').diff(today, 'day')
+      const weekOffset = Math.floor(daysFromToday / agendaVisibleDayCount) * agendaVisibleDayCount
+
+      setWeekStartDate(today.add(weekOffset, 'day'))
+    },
+    [today],
+  )
+
+  const openNotificationEvent = (notification: DashboardNotificationItem) => {
+    const event = events.find((agendaEvent) => agendaEvent.id === notification.metadata?.eventId)
+    if (!event) return
+
+    showScheduledWeek(dayjs(event.scheduledDate))
+    setSelectedEvent(event)
+  }
+
+  useEffect(() => {
+    const eventId = searchParams.get('eventId')
+    const event = events.find((agendaEvent) => agendaEvent.id === eventId)
+    if (!event) return
+
+    showScheduledWeek(dayjs(event.scheduledDate))
+    setSelectedEvent(event)
+  }, [events, searchParams, showScheduledWeek])
+
+  const rescheduleSelectedEvent = (values: AgendaRescheduleFormValues) => {
+    if (!selectedEvent) return
+
+    const nextDate = dayjs(values.scheduledDate)
+
+    setEvents((currentEvents) =>
+      currentEvents.map((event) =>
+        event.id === selectedEvent.id
+          ? {
+              ...event,
+              scheduledDate: values.scheduledDate,
+              time: values.scheduledTime,
+              status: 'Confirmada',
+            }
+          : event,
+      ),
+    )
+    showScheduledWeek(nextDate)
+    enqueueSnackbar(
+      `${selectedEvent.title} reagendado para ${nextDate.format('DD/MM/YYYY')} as ${
+        values.scheduledTime
+      }.`,
+      { variant: 'success' },
+    )
+    closeEventDialog()
+  }
+
+  const createAgendaEvent = (values: AgendaEventFormValues) => {
+    const scheduledDate = dayjs(values.scheduledDate)
+    const selectedProperty = propertyOptions.find((property) => property.id === values.propertyId)
+    const customProperty = values.customProperty.trim()
+    const useCustomProperty = values.propertyId === agendaOtherPropertyValue
+    const propertyLabel = useCustomProperty
+      ? customProperty
+      : (selectedProperty?.label ?? customProperty)
+    const propertyHref = useCustomProperty
+      ? '/dashboard/properties'
+      : (selectedProperty?.href ?? '/dashboard/properties')
+    const nextEvent: AgendaEvent = {
+      id: `agenda-${Date.now()}`,
+      scheduledDate: values.scheduledDate,
+      time: values.scheduledTime,
+      durationMinutes: values.durationMinutes,
+      title: values.title,
+      property: propertyLabel,
+      propertyHref,
+      participant: values.participant,
+      phone: values.phone,
+      notes: values.notes.trim() || 'Evento criado manualmente na agenda.',
+      status: 'Confirmada',
+      tone: 'primary',
+    }
+
+    setEvents((currentEvents) => [...currentEvents, nextEvent])
+    showScheduledWeek(scheduledDate)
+    setIsEventFormOpen(false)
+    enqueueSnackbar(`${values.title} adicionado à agenda.`, { variant: 'success' })
+  }
 
   return (
     <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
       <Stack spacing={2.4}>
-        <Box>
-          <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 40 }, fontWeight: 900 }}>
-            {t('title')}
-          </Typography>
-          <Typography sx={{ color: 'text.secondary', fontSize: { xs: 15, md: 17 } }}>
-            {t('subtitle')}
-          </Typography>
-        </Box>
+        <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
+          <Box>
+            <Typography
+              variant="h3"
+              sx={{ color: brand.graphite[500], fontSize: { xs: 30, md: 40 }, fontWeight: 900 }}
+            >
+              Agenda
+            </Typography>
+            <Typography sx={{ color: brand.neutral[500], fontSize: { xs: 14, md: 15 } }}>
+              Seus compromissos e tarefas organizados
+            </Typography>
+          </Box>
 
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, 1fr)' },
-            gap: 1.6,
-          }}
-        >
-          {agendaEvents.map((event) => {
-            const status = eventStatusStyles[event.status]
-
-            return (
-              <Box
-                key={event.id}
+          <Stack direction="row" alignItems="center" spacing={1.2} sx={{ flexWrap: 'wrap' }}>
+            <Tooltip title="Semana anterior">
+              <IconButton
+                aria-label="Semana anterior"
+                disabled={disablePreviousWeek}
+                onClick={() => setWeekStartDate(previousWeekStart)}
                 sx={{
-                  bgcolor: surface.paper,
+                  display: { xs: 'none', md: 'inline-flex' },
+                  width: 36,
+                  height: 36,
                   border: '1px solid',
-                  borderColor: alpha.graphite[6],
-                  borderRadius: `${radius.sm}px`,
-                  boxShadow: shadows.propertyCard,
-                  p: 2.4,
+                  borderColor: alpha.graphite[8],
+                  bgcolor: surface.paper,
                 }}
               >
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  spacing={2}
-                >
-                  <Typography sx={{ color: brand.magenta[600], fontWeight: 900 }}>
-                    {event.time}
-                  </Typography>
-                  <Chip
-                    label={t(`statuses.${event.status}`)}
-                    size="small"
-                    sx={{
-                      bgcolor: status.bgcolor,
-                      color: status.color,
-                      borderRadius: `${radius.full}px`,
-                      fontWeight: 900,
-                    }}
-                  />
-                </Stack>
-                <Typography sx={{ mt: 2, fontSize: 20, fontWeight: 900 }}>{event.title}</Typography>
-                <Typography sx={{ mt: 0.8, color: 'text.secondary' }}>{event.property}</Typography>
-                <Typography sx={{ mt: 1.5, fontWeight: 800 }}>{event.participant}</Typography>
-              </Box>
-            )
-          })}
-        </Box>
+                <ChevronLeftRoundedIcon sx={{ fontSize: iconSize.md }} />
+              </IconButton>
+            </Tooltip>
+            <Typography
+              sx={{
+                color: brand.graphite[500],
+                display: { xs: 'none', md: 'block' },
+                fontSize: 14,
+                fontWeight: 900,
+              }}
+            >
+              Agenda de {weekRange.startLabel}-{weekRange.endLabel}
+            </Typography>
+            <Tooltip title="Próxima semana">
+              <IconButton
+                aria-label="Próxima semana"
+                disabled={disableNextWeek}
+                onClick={() => setWeekStartDate(nextWeekStart)}
+                sx={{
+                  display: { xs: 'none', md: 'inline-flex' },
+                  width: 36,
+                  height: 36,
+                  border: '1px solid',
+                  borderColor: alpha.graphite[8],
+                  bgcolor: surface.paper,
+                }}
+              >
+                <ChevronRightRoundedIcon sx={{ fontSize: iconSize.md }} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Novo Evento">
+              <IconButton
+                aria-label="Novo Evento"
+                onClick={() => setIsEventFormOpen(true)}
+                sx={{
+                  display: { xs: 'inline-flex', md: 'none' },
+                  width: 44,
+                  height: 44,
+                  bgcolor: brand.magenta[500],
+                  color: surface.paper,
+                  '&:hover': { bgcolor: brand.magenta[600] },
+                }}
+              >
+                <AddRoundedIcon sx={{ fontSize: iconSize.xl }} />
+              </IconButton>
+            </Tooltip>
+            <Button
+              variant="contained"
+              startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
+              onClick={() => setIsEventFormOpen(true)}
+              sx={{
+                display: { xs: 'none', md: 'inline-flex' },
+                minHeight: 42,
+                borderRadius: `${radius.sm}px`,
+                fontWeight: 900,
+              }}
+            >
+              Novo Evento
+            </Button>
+            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+              <DashboardNotificationsButton
+                notifications={notifications}
+                onNotificationSelect={openNotificationEvent}
+              />
+            </Box>
+          </Stack>
+        </Stack>
+
+        <AgendaTimeline days={agendaDays} events={events} onEventSelect={setSelectedEvent} />
       </Stack>
+
+      <AgendaEventDetailDialog
+        event={selectedEvent}
+        eventDate={selectedEventDate}
+        maxDate={currentMonthEnd.format('YYYY-MM-DD')}
+        minDate={today.format('YYYY-MM-DD')}
+        onClose={closeEventDialog}
+        onReschedule={rescheduleSelectedEvent}
+        open={Boolean(selectedEvent)}
+      />
+
+      <AgendaEventFormDialog
+        maxDate={currentMonthEnd.format('YYYY-MM-DD')}
+        minDate={today.format('YYYY-MM-DD')}
+        onClose={() => setIsEventFormOpen(false)}
+        onCreate={createAgendaEvent}
+        open={isEventFormOpen}
+        propertyOptions={propertyOptions}
+      />
     </Box>
   )
 }

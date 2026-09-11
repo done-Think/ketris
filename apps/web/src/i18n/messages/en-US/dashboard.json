@@ -31,10 +31,36 @@
   "agenda": {
     "title": "Schedule",
     "subtitle": "Commercial appointments, visits, and follow-ups.",
+    "freeSlot": "Free slot",
     "statuses": {
       "Confirmada": "Confirmed",
       "Pendente": "Pending",
       "Reagendar": "Reschedule"
+    }
+  },
+  "notificationsCenter": {
+    "tooltip": "Notifications",
+    "ariaLabel": "Open dashboard notifications",
+    "title": "Dashboard alerts",
+    "subtitle": "Today visits and assigned appointments",
+    "empty": "No alerts to show.",
+    "defaultItems": {
+      "todayVisit": {
+        "title": "Visit scheduled for today",
+        "message": "10:30 - Marina Costa at Apt Jardins 3q"
+      },
+      "agencyAssigned": {
+        "title": "New assigned appointment",
+        "message": "Ketris Agency scheduled a follow-up with Bruno Oliveira"
+      },
+      "brokerAssigned": {
+        "title": "Shared lead",
+        "message": "Ana Silva assigned a proposal contact"
+      },
+      "proposalReturn": {
+        "title": "Pending follow-up",
+        "message": "16:00 - Review Juliana Mendes counteroffer"
+      }
     }
   },
   "overview": {
@@ -61,6 +87,7 @@
       "origin": "Source",
       "desiredRegions": "Search regions",
       "cancel": "Cancel",
+      "edit": "Edit",
       "save": "Save",
       "fields": {
         "reportedNeed": "Reported need",
@@ -107,7 +134,9 @@
       "status": "Status",
       "noRows": "No entries found",
       "totalRows": "Total rows:",
-      "rowsPerPage": "Rows per page"
+      "rowsPerPage": "Rows per page",
+      "title": "Recent movements",
+      "date": "Date"
     },
     "types": {
       "Venda": "Sale",
@@ -116,12 +145,56 @@
     "statuses": {
       "Recebido": "Received",
       "Previsto": "Expected",
-      "Atrasado": "Overdue"
+      "Atrasado": "Overdue",
+      "Pago": "Paid",
+      "Pendente": "Pending"
+    },
+    "selectedMonth": "July 2025",
+    "export": "Export",
+    "revenueChartTitle": "Revenue (6 months)",
+    "revenue": "Revenue",
+    "upcomingDuesTitle": "Upcoming dues",
+    "kpis": {
+      "monthlyRevenue": "Monthly revenue",
+      "receivable": "Receivable",
+      "delinquency": "Delinquency",
+      "occupancyRate": "Occupancy rate"
+    },
+    "history": {
+      "eyebrow": "Financial history",
+      "close": "Close history",
+      "propertyLabel": "Property",
+      "clientLabel": "Client"
+    },
+    "entryDetail": {
+      "eyebrow": "Financial record",
+      "close": "Close financial record",
+      "propertyLabel": "Property",
+      "clientLabel": "Client",
+      "amountLabel": "Amount",
+      "receiptsTitle": "Receipts"
     }
   },
   "proposals": {
     "title": "Proposals",
     "subtitle": "Ongoing negotiations and reference values.",
+    "columns": {
+      "client": "Client",
+      "property": "Property",
+      "value": "Proposal",
+      "ownerExpectation": "Expectation",
+      "status": "Status"
+    },
+    "detail": {
+      "eyebrow": "Proposal detail",
+      "close": "Close proposal",
+      "value": "Proposed value",
+      "ownerExpectation": "Owner expectation",
+      "currentStatus": "Current status",
+      "status": "Change status",
+      "cancel": "Cancel",
+      "saveStatus": "Save status"
+    },
     "statuses": {
       "underReview": "Under review",
       "counteroffer": "Counteroffer",

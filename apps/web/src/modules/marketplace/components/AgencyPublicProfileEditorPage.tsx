@@ -66,9 +66,19 @@ export function AgencyPublicProfileEditorPage() {
 
   return (
     <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
-      <Box sx={{ width: '100%', maxWidth: 1180, mx: 'auto' }}>
-        <Stack alignItems="center" spacing={2} sx={{ mb: 2.6, textAlign: 'center' }}>
-          <Box sx={{ width: '100%' }}>
+      <Box
+        component="form"
+        onSubmit={handleSubmit(handleStaticSubmit)}
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2.2 }}
+      >
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          alignItems={{ xs: 'flex-start', md: 'center' }}
+          justifyContent="space-between"
+          spacing={2}
+          sx={{ mb: 2.6, textAlign: 'left' }}
+        >
+          <Box sx={{ minWidth: 0 }}>
             <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 38 }, fontWeight: 900 }}>
               {t('title')}
             </Typography>
@@ -90,12 +100,31 @@ export function AgencyPublicProfileEditorPage() {
         </Stack>
 
         <Box
-          component="form"
-          onSubmit={handleSubmit(handleStaticSubmit)}
-          sx={{ display: 'flex', flexDirection: 'column', gap: 2.2 }}
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', xl: 'minmax(0, 3fr) minmax(420px, 2fr)' },
+            gridTemplateAreas: {
+              xs: '"main" "settings"',
+              xl: '"main settings"',
+            },
+            alignItems: { xs: 'start', xl: 'stretch' },
+            columnGap: { xs: 2.2, xl: 4 },
+            rowGap: 2.2,
+          }}
         >
-          <Stack spacing={2} sx={{ width: '100%', maxWidth: 920, mx: 'auto' }}>
+          <Box
+            sx={{
+              gridArea: 'main',
+              display: 'flex',
+              '& > *': {
+                flex: 1,
+              },
+            }}
+          >
             <AgencyPublicProfileMainFields control={control} />
+          </Box>
+          <Stack spacing={2} sx={{ gridArea: 'settings' }}>
+            <AgencyPublicProfileEditorActions onPreview={() => setIsPreviewOpen(true)} />
             <AgencyPublicProfileAppearanceFields control={control} />
             <AgencyPublicProfileImageFields
               control={control}
@@ -117,7 +146,6 @@ export function AgencyPublicProfileEditorPage() {
               ]}
               profileDraft={profileDraft}
             />
-            <AgencyPublicProfileEditorActions onPreview={() => setIsPreviewOpen(true)} />
           </Stack>
         </Box>
       </Box>

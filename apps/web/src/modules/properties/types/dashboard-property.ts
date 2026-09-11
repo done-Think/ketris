@@ -104,6 +104,7 @@ export type PropertiesTableProps = {
 
 export type CreatePropertyStepsNavProps = {
   activeStepIndex: number
+  maxVisitedStepIndex: number
   onStepSelect: (stepIndex: number) => void
 }
 
@@ -111,8 +112,7 @@ export type CreatePropertyStepFieldsProps = {
   control: Control<CreateDashboardPropertyFormValues>
   activeStepKey: CreatePropertyStepKey
   activeStepLabel: string
-  propertyPurpose: CreatePropertyPurpose
-  onPropertyPurposeChange: (purpose: CreatePropertyPurpose) => void
+  propertyPurpose: CreatePropertyPurpose[]
 }
 
 export type CreatePropertyActionsProps = {

@@ -31,10 +31,36 @@
   "agenda": {
     "title": "Agenda",
     "subtitle": "Compromissos comerciais, visitas e retornos.",
+    "freeSlot": "Horário livre",
     "statuses": {
       "Confirmada": "Confirmada",
       "Pendente": "Pendente",
       "Reagendar": "Reagendar"
+    }
+  },
+  "notificationsCenter": {
+    "tooltip": "Notificações",
+    "ariaLabel": "Abrir notificações do dashboard",
+    "title": "Alertas do dashboard",
+    "subtitle": "Visitas de hoje e compromissos atribuídos",
+    "empty": "Nenhum alerta para exibir.",
+    "defaultItems": {
+      "todayVisit": {
+        "title": "Visita marcada para hoje",
+        "message": "10:30 - Marina Costa em Apt Jardins 3q"
+      },
+      "agencyAssigned": {
+        "title": "Novo compromisso atribuído",
+        "message": "Imobiliária Ketris marcou retorno com Bruno Oliveira"
+      },
+      "brokerAssigned": {
+        "title": "Lead compartilhado",
+        "message": "Colega Ana Silva atribuiu atendimento de proposta"
+      },
+      "proposalReturn": {
+        "title": "Retorno pendente",
+        "message": "16:00 - Revisar contraproposta de Juliana Mendes"
+      }
     }
   },
   "overview": {
@@ -61,6 +87,7 @@
       "origin": "Origem",
       "desiredRegions": "Regiões de busca",
       "cancel": "Cancelar",
+      "edit": "Editar",
       "save": "Salvar",
       "fields": {
         "reportedNeed": "O que relatou",
@@ -107,7 +134,9 @@
       "status": "Status",
       "noRows": "Nenhum lançamento encontrado",
       "totalRows": "Total de linhas:",
-      "rowsPerPage": "Linhas por página"
+      "rowsPerPage": "Linhas por página",
+      "title": "Movimentações recentes",
+      "date": "Data"
     },
     "types": {
       "Venda": "Venda",
@@ -116,12 +145,56 @@
     "statuses": {
       "Recebido": "Recebido",
       "Previsto": "Previsto",
-      "Atrasado": "Atrasado"
+      "Atrasado": "Atrasado",
+      "Pago": "Pago",
+      "Pendente": "Pendente"
+    },
+    "selectedMonth": "Julho 2025",
+    "export": "Exportar",
+    "revenueChartTitle": "Faturamento (6 meses)",
+    "revenue": "Faturamento",
+    "upcomingDuesTitle": "Próximos vencimentos",
+    "kpis": {
+      "monthlyRevenue": "Receita mensal",
+      "receivable": "A receber",
+      "delinquency": "Inadimplência",
+      "occupancyRate": "Taxa ocupação"
+    },
+    "history": {
+      "eyebrow": "Histórico financeiro",
+      "close": "Fechar histórico",
+      "propertyLabel": "Imóvel",
+      "clientLabel": "Cliente"
+    },
+    "entryDetail": {
+      "eyebrow": "Registro financeiro",
+      "close": "Fechar registro financeiro",
+      "propertyLabel": "Imóvel",
+      "clientLabel": "Cliente",
+      "amountLabel": "Valor",
+      "receiptsTitle": "Comprovantes"
     }
   },
   "proposals": {
     "title": "Propostas",
     "subtitle": "Negociações em andamento e valores de referência.",
+    "columns": {
+      "client": "Cliente",
+      "property": "Imóvel",
+      "value": "Proposta",
+      "ownerExpectation": "Expectativa",
+      "status": "Status"
+    },
+    "detail": {
+      "eyebrow": "Detalhe da proposta",
+      "close": "Fechar proposta",
+      "value": "Valor proposto",
+      "ownerExpectation": "Expectativa do proprietário",
+      "currentStatus": "Status atual",
+      "status": "Alterar status",
+      "cancel": "Cancelar",
+      "saveStatus": "Salvar status"
+    },
     "statuses": {
       "underReview": "Em análise",
       "counteroffer": "Contraproposta",

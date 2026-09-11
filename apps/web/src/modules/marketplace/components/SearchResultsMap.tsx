@@ -52,6 +52,7 @@ export function SearchResultsMap({
           .filter((property) => property.mapCenter)
           .map((property) => {
             const selected = property.id === selectedPropertyId
+            const detailsHref = buildPropertyDetailHref(property.href, property.purpose)
             const mapCenter = property.mapCenter!
 
             return (
@@ -63,7 +64,7 @@ export function SearchResultsMap({
               >
                 <Box
                   component={Link}
-                  href={buildPropertyDetailHref(property.href, property.purpose)}
+                  href={detailsHref}
                   aria-label={t('openProperty', { title: property.title })}
                   onClick={() => onSelectProperty(property.id)}
                   onFocus={() => onSelectProperty(property.id)}

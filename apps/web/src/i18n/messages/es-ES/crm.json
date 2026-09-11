@@ -137,6 +137,76 @@
       "error": "No se pudo archivar el contacto."
     }
   },
+  "leads": {
+    "title": "Leads",
+    "subtitle": "Gestiona tus contactos y negociaciones",
+    "searchPlaceholder": "Buscar lead por nombre o inmueble...",
+    "newLead": "Nuevo lead",
+    "contactAction": "Contacto",
+    "createdNow": "Ahora",
+    "resultsCount": "Mostrando {count} de {total}",
+    "create": {
+      "eyebrow": "Nuevo contacto comercial",
+      "title": "Registrar lead",
+      "success": "Lead registrado correctamente.",
+      "steps": {
+        "contact": "Contacto",
+        "interest": "Interés",
+        "review": "Revisión"
+      },
+      "fields": {
+        "name": "Nombre",
+        "phone": "Teléfono",
+        "email": "Email",
+        "interest": "Inmueble o interés",
+        "budget": "Presupuesto",
+        "source": "Origen",
+        "broker": "Corredor responsable",
+        "stage": "Status inicial",
+        "notes": "Observaciones"
+      },
+      "sources": {
+        "marketplace": "Marketplace",
+        "whatsApp": "WhatsApp",
+        "instagram": "Instagram",
+        "site": "Site",
+        "referral": "Indicación"
+      },
+      "actions": {
+        "back": "Volver",
+        "cancel": "Cancelar",
+        "close": "Cerrar nuevo lead",
+        "create": "Crear lead",
+        "next": "Siguiente"
+      }
+    },
+    "filters": {
+      "all": "Todos",
+      "new": "Nuevo",
+      "contacted": "Contactado",
+      "visitScheduled": "Visita programada",
+      "proposal": "Propuesta"
+    },
+    "tableColumns": {
+      "name": "Nombre",
+      "interest": "Interés",
+      "budget": "Presupuesto",
+      "status": "Status",
+      "source": "Origen",
+      "lastContact": "Último contacto",
+      "actions": "Acciones"
+    },
+    "contact": {
+      "eyebrow": "Contacto del lead",
+      "phoneLabel": "Teléfono",
+      "call": "Llamar",
+      "whatsApp": "WhatsApp",
+      "cancel": "Cerrar",
+      "close": "Cerrar contacto del lead",
+      "emailLabel": "Email",
+      "email": "Email"
+    }
+  },
   "opportunityDetail": {
     "editTitle": "Editar oportunidad",
     "breadcrumbAriaLabel": "Navegación estructural",

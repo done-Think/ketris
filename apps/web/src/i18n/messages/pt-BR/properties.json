@@ -80,6 +80,7 @@
   },
   "create": {
     "title": "Cadastrar imóvel",
+    "mobileTitle": "Novo Imóvel",
     "back": "Voltar",
     "next": "Próximo",
     "publish": "Publicar",
@@ -100,13 +101,16 @@
       "area": "Área útil",
       "rentValue": "Valor do aluguel",
       "saleValue": "Valor de venda",
+      "referenceValue": "Valor de referência",
       "condominium": "Condomínio",
       "iptu": "IPTU mensal",
       "securityDeposit": "Garantia",
-      "commission": "Comissão"
+      "commission": "Comissão",
+      "commercialTerms": "Condição comercial"
     },
     "steps": {
       "ariaLabel": "Etapas do cadastro",
+      "progress": "Passo {current} de {total}",
       "basic": "Dados Básicos",
       "address": "Endereço",
       "features": "Características",
