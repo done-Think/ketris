@@ -111,10 +111,10 @@ function mockCreateOpportunity(overrides: Record<string, unknown> = {}) {
   } as unknown as ReturnType<typeof useCreateOpportunity>)
 }
 
-function renderPipeline(initialStatus?: OpportunityStatus) {
+function renderPipeline(initialStatus?: OpportunityStatus, titleKey?: 'title' | 'proposalsTitle') {
   return render(
     <ThemeProvider theme={theme}>
-      <PipelineBoard initialStatus={initialStatus} />
+      <PipelineBoard initialStatus={initialStatus} titleKey={titleKey} />
     </ThemeProvider>,
   )
 }
@@ -270,6 +270,13 @@ describe('PipelineBoard', () => {
 
     expect(screen.getByText('Contato 2')).toBeInTheDocument()
     expect(screen.queryByText('Contato 1')).not.toBeInTheDocument()
+  })
+
+  it('shows its own heading instead of "Pipeline de Vendas" when used for Propostas', () => {
+    renderPipeline('ENVIADA', 'proposalsTitle')
+
+    expect(screen.getByRole('heading', { name: 'Propostas' })).toBeInTheDocument()
+    expect(screen.queryByText('Pipeline de Vendas')).not.toBeInTheDocument()
   })
 
   it('opens the create opportunity dialog from the toolbar button', async () => {
