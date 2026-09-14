@@ -1,16 +1,4 @@
 {
-  "sidebar": {
-    "dashboard": "Dashboard",
-    "properties": "Mis inmuebles",
-    "publicProfile": "Perfil público",
-    "leads": "Leads",
-    "agenda": "Agenda",
-    "proposals": "Propuestas",
-    "finance": "Finanzas",
-    "backToMarketplace": "Volver al marketplace",
-    "back": "Volver",
-    "userRole": "Gestor de operaciones"
-  },
   "metadata": {
     "overview": {
       "metadataTitle": "Ketris | Dashboard"
@@ -20,9 +8,6 @@
     },
     "finance": {
       "metadataTitle": "Ketris | Finanzas"
-    },
-    "leads": {
-      "metadataTitle": "Ketris | Leads"
     },
     "proposals": {
       "metadataTitle": "Ketris | Propuestas"

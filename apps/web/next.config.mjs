@@ -55,4 +55,5 @@ export default withSentryConfig(withNextIntl(nextConfig), {
   },
 
   silent: !process.env.CI,
+  // org e project vem das variaveis de ambiente do Sentry
 })
