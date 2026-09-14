@@ -5,12 +5,6 @@
     },
     "contacts": {
       "metadataTitle": "Ketris | Contacts"
-    },
-    "proposals": {
-      "metadataTitle": "Ketris | Proposals"
-    },
-    "proposalDetail": {
-      "metadataTitle": "Ketris | Proposal Detail"
     }
   },
   "navigation": {
@@ -36,6 +30,10 @@
     "searchPlaceholder": "Search opportunity...",
     "searchAriaLabel": "Search opportunity",
     "filterByStage": "Filter by stage",
+    "viewMode": {
+      "kanban": "Board view",
+      "list": "List view"
+    },
     "allStages": "All stages",
     "newOpportunity": "New Opportunity",
     "openOpportunityAriaLabel": "Open opportunity for {name}",
@@ -45,6 +43,7 @@
     "dataLoadError": "Could not load pipeline data.",
     "retry": "Try again",
     "emptyStage": "No opportunities in this stage.",
+    "noResults": "No opportunities found.",
     "projectedTotal": "Projected total",
     "projectedTotalAriaLabel": "Projected total for {stage}",
     "totalLabels": {

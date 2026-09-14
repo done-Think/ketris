@@ -1,6 +1,4 @@
-import { proposalStatusPresentations } from '../config/proposal-statuses'
 import type {
-  ProposalManagementDetail,
   ProposalManagementListItem,
   ProposalManagementStatus,
   ProposalManagementStatusCounts,
@@ -33,14 +31,6 @@ const propertyThumbnailUrls = [
   'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=240&q=82',
   'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=240&q=80',
 ] as const
-
-const marinaCosta = {
-  id: 'broker-marina-costa',
-  name: 'Marina Costa',
-  email: 'marina.costa@ketris.com',
-  avatarUrl:
-    'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=96&q=80',
-} as const
 
 function formatFixtureValue(amount: number, transactionKind: ProposalTransactionKind): string {
   const value = new Intl.NumberFormat('pt-BR', {
@@ -396,104 +386,4 @@ export const proposalManagementSummary: ProposalManagementSummary = {
   acceptedTotalLabel: 'R$ 2.4M',
   conversionRate: 38,
   conversionRateLabel: '38%',
-}
-
-function createDefaultDetail(proposal: ProposalManagementListItem): ProposalManagementDetail {
-  const isRental = proposal.transactionKind === 'rent'
-  const statusLabel = proposalStatusPresentations[proposal.status].label
-
-  return {
-    proposal,
-    contractTermMonths: isRental ? 30 : null,
-    contractTermLabel: isRental ? '30 meses' : 'Não se aplica',
-    intendedStartDate: '2025-03-15',
-    intendedStartDateLabel: '15/03/2025',
-    guaranteeLabel: isRental ? 'Seguro-fiança' : 'Não se aplica',
-    observations: `${proposal.lead.name} demonstrou interesse em ${proposal.property.title}.`,
-    specialConditions: [],
-    broker: marinaCosta,
-    history: [
-      {
-        id: `${proposal.id}-current-status`,
-        title: statusLabel,
-        description: 'Status atual da proposta',
-        dateLabel: proposal.createdLabel,
-        isCurrent: true,
-      },
-      {
-        id: `${proposal.id}-created`,
-        title: 'Proposta criada',
-        description: 'Por Marina Costa',
-        dateLabel: proposal.createdLabel,
-        isCurrent: false,
-      },
-    ],
-  }
-}
-
-function createFeaturedDetail(proposal: ProposalManagementListItem): ProposalManagementDetail {
-  return {
-    proposal,
-    contractTermMonths: 30,
-    contractTermLabel: '30 meses',
-    intendedStartDate: '2025-03-01',
-    intendedStartDateLabel: '01/03/2025',
-    guaranteeLabel: 'Fiador',
-    observations:
-      'Inquilino prefere incluir vaga de garagem adicional se disponível para locação interna.',
-    specialConditions: [
-      'Permissão para animais de estimação (2 cães de pequeno porte).',
-      'Pintura completa na saída com a mesma marca e código de cores atual.',
-      'Desconto de 5% sobre o valor do aluguel para pagamento até o dia 25 de cada mês antecedente.',
-    ],
-    broker: marinaCosta,
-    history: [
-      {
-        id: 'prp-0042-negotiation',
-        title: 'Em negociação',
-        description: 'Inquilino solicitou garagem',
-        dateLabel: 'Hoje, 14:20',
-        isCurrent: true,
-      },
-      {
-        id: 'prp-0042-counteroffer',
-        title: 'Contraproposta recebida',
-        description: 'Proprietário alterou condições',
-        dateLabel: 'Ontem, 11:15',
-        isCurrent: false,
-      },
-      {
-        id: 'prp-0042-sent',
-        title: 'Enviada ao proprietário',
-        description: 'Aguardando retorno formal',
-        dateLabel: '11 Fev, 09:30',
-        isCurrent: false,
-      },
-      {
-        id: 'prp-0042-created',
-        title: 'Proposta criada',
-        description: 'Por Marina Costa',
-        dateLabel: '10 Fev, 17:00',
-        isCurrent: false,
-      },
-    ],
-  }
-}
-
-export const featuredProposalId = 'prp-0042'
-
-export const proposalManagementDetailsById: Readonly<Record<string, ProposalManagementDetail>> =
-  Object.fromEntries(
-    proposalManagementFixtures.map((proposal) => [
-      proposal.id,
-      proposal.id === featuredProposalId
-        ? createFeaturedDetail(proposal)
-        : createDefaultDetail(proposal),
-    ]),
-  )
-
-export function getProposalManagementDetail(
-  proposalId: string,
-): ProposalManagementDetail | undefined {
-  return proposalManagementDetailsById[proposalId]
 }

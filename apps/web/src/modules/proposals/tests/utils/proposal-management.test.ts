@@ -8,9 +8,6 @@ import {
   proposalStatusPresentations,
 } from '../../config/proposal-statuses'
 import {
-  featuredProposalId,
-  getProposalManagementDetail,
-  proposalManagementDetailsById,
   proposalManagementFirstPageFixtures,
   proposalManagementFixtures,
   proposalManagementSummary,
@@ -82,39 +79,6 @@ describe('proposal management fixtures', () => {
       conversionRate: 38,
       conversionRateLabel: '38%',
     })
-  })
-
-  it('provides the exact featured detail and structured details for every proposal', () => {
-    const detail = getProposalManagementDetail(featuredProposalId)
-
-    expect(detail).toMatchObject({
-      proposal: expect.objectContaining({
-        id: 'prp-0042',
-        reference: '#PRP-0042',
-        status: 'EM_NEGOCIACAO',
-      }),
-      contractTermMonths: 30,
-      contractTermLabel: '30 meses',
-      intendedStartDateLabel: '01/03/2025',
-      guaranteeLabel: 'Fiador',
-      broker: expect.objectContaining({
-        name: 'Marina Costa',
-        email: 'marina.costa@ketris.com',
-      }),
-    })
-    expect(detail?.specialConditions).toHaveLength(3)
-    expect(detail?.history).toHaveLength(4)
-    expect(detail?.history.filter(({ isCurrent }) => isCurrent)).toHaveLength(1)
-
-    expect(Object.keys(proposalManagementDetailsById)).toHaveLength(23)
-    proposalManagementFixtures.forEach((proposal) => {
-      const proposalDetail = getProposalManagementDetail(proposal.id)
-
-      expect(proposalDetail?.proposal).toBe(proposal)
-      expect(proposalDetail?.broker.name).toBe('Marina Costa')
-      expect(proposalDetail?.history.length).toBeGreaterThan(0)
-    })
-    expect(getProposalManagementDetail('unknown-proposal')).toBeUndefined()
   })
 })
 

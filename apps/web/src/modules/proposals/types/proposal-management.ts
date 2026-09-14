@@ -55,27 +55,6 @@ export type ProposalManagementSummary = {
   conversionRateLabel: string
 }
 
-export type ProposalManagementHistoryEntry = {
-  id: string
-  title: string
-  description: string
-  dateLabel: string
-  isCurrent: boolean
-}
-
-export type ProposalManagementDetail = {
-  proposal: ProposalManagementListItem
-  contractTermMonths: number | null
-  contractTermLabel: string
-  intendedStartDate: string
-  intendedStartDateLabel: string
-  guaranteeLabel: string
-  observations: string
-  specialConditions: readonly string[]
-  broker: ProposalManagementPerson
-  history: readonly ProposalManagementHistoryEntry[]
-}
-
 export type ProposalManagementQuery = {
   search?: string
   status?: ProposalManagementFilterId
@@ -93,32 +72,8 @@ export type ProposalManagementPage = {
   lastItem: number
 }
 
-export type ProposalsListProps = {
-  proposals?: readonly ProposalManagementListItem[]
-  summary?: ProposalManagementSummary
-  initialPage?: number
-  pageSize?: number
-  onNewProposal?: () => void
-  onViewProposal?: (proposal: ProposalManagementListItem) => void
-  onOpenMoreOptions?: (proposal: ProposalManagementListItem) => void
-  onPageChange?: (page: number) => void
-}
-
-export type ProposalDetailProps = {
-  proposalId: string
-  detail?: ProposalManagementDetail | null
-  onEdit?: (detail: ProposalManagementDetail) => void
-  onSendToOwner?: (detail: ProposalManagementDetail) => void
-}
-
 export type ProposalStatusChipProps = {
   status: ProposalManagementStatus
-}
-
-export type ProposalListHeaderProps = {
-  search: string
-  onSearchChange: (search: string) => void
-  onNewProposal?: () => void
 }
 
 export type ProposalStatusFiltersProps = {
@@ -152,28 +107,4 @@ export type ProposalPaginationProps = {
   visibleCount: number
   totalCount: number
   onPageChange?: (page: number) => void
-}
-
-export type ProposalDetailHeaderProps = {
-  detail: ProposalManagementDetail
-  onEdit?: (detail: ProposalManagementDetail) => void
-  onSendToOwner?: (detail: ProposalManagementDetail) => void
-}
-
-export type ProposalInformationPanelProps = {
-  detail: ProposalManagementDetail
-}
-
-export type ProposalSpecialConditionsPanelProps = {
-  conditions: readonly string[]
-}
-
-export type ProposalBindingPanelProps = {
-  lead: ProposalManagementPerson
-  property: ProposalManagementProperty
-  broker: ProposalManagementPerson
-}
-
-export type ProposalHistoryPanelProps = {
-  entries: readonly ProposalManagementHistoryEntry[]
 }

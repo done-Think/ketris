@@ -38,7 +38,7 @@ export function ProposalActions({
       <Tooltip title={`Visualizar ${proposal.reference}`}>
         <IconButton
           component={Link}
-          href={{ pathname: '/crm/proposals/[id]', params: { id: proposal.id } }}
+          href={{ pathname: '/crm/opportunities/[id]', params: { id: proposal.id } }}
           aria-label={`Visualizar ${proposal.reference}`}
           size="small"
           onClick={() => onViewProposal?.(proposal)}

@@ -1,21 +1,15 @@
-import { opportunityStageByStatus } from '@modules/crm/config/opportunity-stages'
 import type { Opportunity } from '@modules/crm/types/opportunity'
 import type { PublicPropertyDetail, PublicPropertySummary } from '@modules/crm/types/property'
 import { formatCurrency, formatDate, formatMonthlyCurrency } from '@modules/crm/utils/formatters'
 
 import type {
-  ProposalManagementDetail,
-  ProposalManagementHistoryEntry,
   ProposalManagementListItem,
-  ProposalManagementPerson,
   ProposalManagementProperty,
   ProposalManagementStatusCounts,
   ProposalManagementSummary,
   ProposalTransactionKind,
 } from '../types/proposal-management'
 import { proposalManagementStatuses } from '../config/proposal-statuses'
-
-type GuaranteeLabelTranslator = (key: `guarantees.${Opportunity['guaranteeType']}`) => string
 
 function toTransactionKind(
   property: PublicPropertyDetail | PublicPropertySummary | undefined,
@@ -52,18 +46,6 @@ function toProperty(
     title: property.title,
     address,
     thumbnailUrl: property.coverUrl ?? undefined,
-  }
-}
-
-function toBroker(
-  property: PublicPropertyDetail | PublicPropertySummary | undefined,
-  fallbackName: string,
-): ProposalManagementPerson {
-  return {
-    id: property?.id ?? 'unknown-broker',
-    name: property?.brokerName ?? fallbackName,
-    email: '',
-    avatarUrl: property?.brokerAvatarUrl ?? undefined,
   }
 }
 
@@ -114,61 +96,5 @@ export function buildProposalManagementSummary(
     acceptedTotalLabel: formatCurrency(acceptedTotalAmount),
     conversionRate,
     conversionRateLabel: `${Math.round(conversionRate * 100)}%`,
-  }
-}
-
-function buildHistory(
-  opportunity: Opportunity,
-  t: (key: string, values?: Record<string, string>) => string,
-): readonly ProposalManagementHistoryEntry[] {
-  const stage = opportunityStageByStatus[opportunity.status]
-  const entries: ProposalManagementHistoryEntry[] = [
-    {
-      id: 'created',
-      title: t('createdActivityTitle'),
-      description: t('createdActivityDetail'),
-      dateLabel: formatDate(opportunity.createdAt),
-      isCurrent: false,
-    },
-  ]
-
-  if (new Date(opportunity.updatedAt).getTime() > new Date(opportunity.createdAt).getTime()) {
-    entries.push({
-      id: 'updated',
-      title: t('updatedActivityTitle'),
-      description: t('updatedActivityDetail', { stage: stage.label }),
-      dateLabel: formatDate(opportunity.updatedAt),
-      isCurrent: true,
-    })
-  }
-
-  return entries
-}
-
-export function mapOpportunityToProposalDetail(
-  opportunity: Opportunity,
-  property: PublicPropertyDetail | PublicPropertySummary | undefined,
-  fallbackAddressLabel: string,
-  translateGuarantee: GuaranteeLabelTranslator,
-  translateActivity: (key: string, values?: Record<string, string>) => string,
-  emptyLabel: string,
-): ProposalManagementDetail {
-  const proposal = mapOpportunityToProposalListItem(opportunity, property, fallbackAddressLabel)
-
-  return {
-    proposal,
-    contractTermMonths: opportunity.contractTermMonths,
-    contractTermLabel: opportunity.contractTermMonths
-      ? `${opportunity.contractTermMonths} meses`
-      : emptyLabel,
-    intendedStartDate: opportunity.desiredStartDate ?? '',
-    intendedStartDateLabel: opportunity.desiredStartDate
-      ? formatDate(opportunity.desiredStartDate)
-      : emptyLabel,
-    guaranteeLabel: translateGuarantee(`guarantees.${opportunity.guaranteeType}`),
-    observations: opportunity.notes ?? '',
-    specialConditions: opportunity.specialConditions,
-    broker: toBroker(property, emptyLabel),
-    history: buildHistory(opportunity, translateActivity),
   }
 }
