@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react'
 
 import { brand, iconSize } from '@shared/theme/tokens'
 import { ownerMobileSummary } from '../fixtures/owner-dashboard-fixtures'
+import { ownerDashboardDisplayFontFamily } from './owner-dashboard.styles'
 
 export function OwnerDashboardMobileHeader() {
   const { data: session } = useSession()
@@ -15,7 +16,10 @@ export function OwnerDashboardMobileHeader() {
   return (
     <Box sx={{ display: { xs: 'block', md: 'none' } }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <Typography component="h1" sx={{ fontSize: 20, fontWeight: 700 }}>
+        <Typography
+          component="h1"
+          sx={{ fontFamily: ownerDashboardDisplayFontFamily, fontSize: 20, fontWeight: 700 }}
+        >
           Meu Painel
         </Typography>
         <IconButton

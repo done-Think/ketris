@@ -9,10 +9,21 @@ import { UpcomingVisitsCard } from './UpcomingVisitsCard'
 import { WeeklyPerformanceCard } from './WeeklyPerformanceCard'
 import { OwnerDashboardMobileHeader } from './OwnerDashboardMobileHeader'
 import { OwnerCreatePropertyButton } from './OwnerCreatePropertyButton'
+import {
+  ownerDashboardBodyFontFamily,
+  ownerDashboardDisplayFontFamily,
+} from './owner-dashboard.styles'
 
 export function OwnerDashboardPage() {
   return (
-    <Box sx={{ width: '100%', px: { xs: 2, sm: 3, lg: 4 }, py: { xs: 1.5, md: 4 } }}>
+    <Box
+      sx={{
+        width: '100%',
+        px: { xs: 2, sm: 3, lg: 4 },
+        py: { xs: 1.5, md: 4 },
+        fontFamily: ownerDashboardBodyFontFamily,
+      }}
+    >
       <Box sx={{ width: '100%', maxWidth: 1184, mx: 'auto' }}>
         <OwnerDashboardMobileHeader />
         <Stack
@@ -26,6 +37,7 @@ export function OwnerDashboardPage() {
             component="h1"
             sx={{
               color: brand.graphite[500],
+              fontFamily: ownerDashboardDisplayFontFamily,
               fontSize: { xs: 27, md: 24 },
               fontWeight: 700,
               letterSpacing: '-0.015em',

@@ -1,5 +1,11 @@
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
+export const ownerDashboardBodyFontFamily =
+  'var(--font-inter), var(--font-primary), system-ui, -apple-system, sans-serif'
+
+export const ownerDashboardDisplayFontFamily =
+  'var(--font-space-grotesk), var(--font-primary), system-ui, sans-serif'
+
 export const ownerDashboardPanelSx = {
   bgcolor: surface.paper,
   border: '1px solid',

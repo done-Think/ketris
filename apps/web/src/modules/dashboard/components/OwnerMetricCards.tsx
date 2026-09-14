@@ -3,7 +3,7 @@ import { Box, Chip, Paper, Stack, Typography } from '@mui/material'
 import { brand, radius, surface, supportColor } from '@shared/theme/tokens'
 
 import { ownerDashboardMetrics, ownerMobileSummary } from '../fixtures/owner-dashboard-fixtures'
-import { ownerDashboardPanelSx } from './owner-dashboard.styles'
+import { ownerDashboardDisplayFontFamily, ownerDashboardPanelSx } from './owner-dashboard.styles'
 
 export function OwnerMetricCards() {
   return (
@@ -93,6 +93,7 @@ export function OwnerMetricCards() {
               <Typography
                 sx={{
                   color: brand.graphite[500],
+                  fontFamily: ownerDashboardDisplayFontFamily,
                   fontSize: { xs: metric.id === 'potential-revenue' ? 23 : 27, md: 24 },
                   fontWeight: 700,
                   letterSpacing: '-0.025em',

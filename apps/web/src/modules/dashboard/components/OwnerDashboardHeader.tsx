@@ -32,6 +32,7 @@ import {
   isOwnerNavigationItemActive,
   ownerDashboardNavigationItems,
 } from '../config/owner-dashboard-navigation'
+import { ownerDashboardBodyFontFamily } from './owner-dashboard.styles'
 
 const fallbackOwnerName = 'Carlos Oliveira'
 
@@ -74,6 +75,7 @@ export function OwnerDashboardHeader() {
           borderColor: 'divider',
           bgcolor: surface.paper,
           px: { xs: 2, sm: 3, lg: 4 },
+          fontFamily: ownerDashboardBodyFontFamily,
         }}
       >
         <Box
