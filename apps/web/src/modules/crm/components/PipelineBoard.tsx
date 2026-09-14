@@ -50,7 +50,7 @@ function matchesSearch(opportunity: Opportunity, propertyTitle: string, search: 
   )
 }
 
-export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
+export function PipelineBoard({ initialStatus = null, titleKey = 'title' }: PipelineBoardProps) {
   const t = useTranslations('crm.pipeline')
   const { data: session } = useSession()
   const tenantId = session?.tenantId ?? ''
@@ -141,7 +141,7 @@ export function PipelineBoard({ initialStatus = null }: PipelineBoardProps) {
             letterSpacing: 0,
           }}
         >
-          {t('title')}
+          {t(titleKey)}
         </Typography>
 
         <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.5} sx={{ minWidth: 0 }}>

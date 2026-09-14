@@ -29,6 +29,7 @@
   },
   "pipeline": {
     "title": "Sales Pipeline",
+    "proposalsTitle": "Proposals",
     "searchPlaceholder": "Search opportunity...",
     "searchAriaLabel": "Search opportunity",
     "filterByStage": "Filter by stage",

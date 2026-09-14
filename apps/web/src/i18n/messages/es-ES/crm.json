@@ -29,6 +29,7 @@
   },
   "pipeline": {
     "title": "Pipeline de ventas",
+    "proposalsTitle": "Propuestas",
     "searchPlaceholder": "Buscar oportunidad...",
     "searchAriaLabel": "Buscar oportunidad",
     "filterByStage": "Filtrar por etapa",

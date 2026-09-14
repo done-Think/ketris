@@ -74,7 +74,7 @@ export function DashboardNotificationsButton({
     if (onNotificationSelect) {
       onNotificationSelect(notification)
     } else if (notification.href) {
-      router.push(notification.href)
+      router.push(notification.href as Parameters<typeof router.push>[0])
     }
 
     closeNotifications()

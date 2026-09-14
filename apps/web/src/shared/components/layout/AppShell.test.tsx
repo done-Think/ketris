@@ -13,7 +13,7 @@ vi.mock('@/i18n/navigation', async () => {
 
   return {
     usePathname: vi.fn(),
-    useRouter: vi.fn(() => ({ replace: vi.fn(), push: vi.fn() })),
+    useRouter: vi.fn(() => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn() })),
     Link: React.forwardRef<HTMLAnchorElement, React.AnchorHTMLAttributes<HTMLAnchorElement>>(
       function MockLocalizedLink({ href = '', ...props }, ref) {
         return React.createElement('a', { ...props, href, ref })
@@ -24,6 +24,7 @@ vi.mock('@/i18n/navigation', async () => {
 
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
+  signOut: vi.fn().mockResolvedValue(undefined),
 }))
 
 function mockSession(overrides?: Partial<{ papel: 'ADMIN' | 'OWNER' | 'AGENT' }>) {

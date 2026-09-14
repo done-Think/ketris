@@ -1,15 +1,21 @@
+import type { Dayjs } from 'dayjs'
 import type { z } from 'zod'
 
-import type {
-  agendaEventFormSchema,
-  agendaRescheduleSchema,
-} from '../schemas/agenda-reschedule-schema'
+import type { agendaEventFormSchema } from '../schemas/agenda-event-form-schema'
+import type { agendaRescheduleSchema } from '../schemas/agenda-reschedule-schema'
 
 export type AgendaEventStatus = 'Confirmada' | 'Pendente' | 'Reagendar'
 
 export type AgendaEventTone = 'primary' | 'info' | 'warning'
 
-export type AgendaEventCreatorRole = 'Colega' | 'Imobiliária'
+export type AgendaEventCreatorRole = 'agency' | 'colleague'
+
+export type AgendaEventKind = 'visit' | 'followUp' | 'meeting' | 'inspection' | 'signature'
+
+export type AgendaTranslationGetter = (
+  key: string,
+  values?: Record<string, string | number>,
+) => string
 
 export type AgendaEvent = {
   id: string
@@ -24,8 +30,16 @@ export type AgendaEvent = {
   notes: string
   status: AgendaEventStatus
   tone: AgendaEventTone
+  kind: AgendaEventKind
   createdBy?: string
   createdByRole?: AgendaEventCreatorRole
+}
+
+export type AgendaEventSeed = Omit<AgendaEvent, 'notes' | 'participant' | 'property' | 'title'> & {
+  notesKey: string
+  participant: string
+  propertyKey: string
+  titleKey: string
 }
 
 export type AgendaCalendarDay = {
@@ -89,8 +103,42 @@ export type AgendaEventFormDialogProps = {
   propertyOptions: AgendaPropertyOption[]
 }
 
-export type AgendaTimelineProps = {
+export type AgendaDashboardHeaderProps = {
+  disableNextWeek: boolean
+  disablePreviousWeek: boolean
+  notificationCount: number
+  notificationsExpanded: boolean
+  onNewEvent: () => void
+  onNextWeek: () => void
+  onOpenNotifications: (anchorEl: HTMLButtonElement) => void
+  onPreviousWeek: () => void
+  weekRange: AgendaWeekRange
+}
+
+export type AgendaWeekCalendarProps = {
   days: AgendaCalendarDay[]
   events: AgendaEvent[]
-  onEventSelect: (event: AgendaEvent) => void
+  onSelectEvent: (event: AgendaEvent) => void
+  timeSlots: AgendaTimeSlot[]
+}
+
+export type AgendaNotification = {
+  event: AgendaEvent
+  id: string
+  kind: 'assignedEvent' | 'todayVisit'
+  message: string
+  title: string
+}
+
+export type AgendaNotificationsPopoverProps = {
+  anchorEl: HTMLButtonElement | null
+  notifications: AgendaNotification[]
+  onClose: () => void
+  onSelectNotification: (event: AgendaEvent) => void
+}
+
+export type AgendaBuildNotificationsOptions = {
+  events: AgendaEvent[]
+  t: AgendaTranslationGetter
+  today: Dayjs
 }

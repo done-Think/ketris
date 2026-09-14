@@ -23,7 +23,6 @@ import { useEffect, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useSearchParams } from 'next/navigation'
 
-import { DashboardNotificationsButton } from '@shared/components/layout'
 import { alpha, brand, motion, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { dashboardProposals } from '../data/proposals'
@@ -203,19 +202,14 @@ export function ProposalsDashboardPage() {
   return (
     <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
       <Stack spacing={2.4}>
-        <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
-          <Box>
-            <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 40 }, fontWeight: 900 }}>
-              {t('title')}
-            </Typography>
-            <Typography sx={{ color: 'text.secondary', fontSize: { xs: 15, md: 17 } }}>
-              {t('subtitle')}
-            </Typography>
-          </Box>
-          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-            <DashboardNotificationsButton />
-          </Box>
-        </Stack>
+        <Box>
+          <Typography variant="h3" sx={{ fontSize: { xs: 20, md: 24 }, fontWeight: 800 }}>
+            {t('title')}
+          </Typography>
+          <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 700 }}>
+            {t('subtitle')}
+          </Typography>
+        </Box>
 
         <Box
           sx={{

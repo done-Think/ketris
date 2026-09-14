@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
 import { Link, useRouter } from '@/i18n/navigation'
+import { clearClientSession } from '@shared/lib/auth/clear-client-session'
 import { alpha, radius, surface } from '@shared/theme/tokens'
 
 import type { CrmAccessBoundaryProps } from '../types/layout'
@@ -21,9 +22,16 @@ export function CrmAccessBoundary({ children }: CrmAccessBoundaryProps) {
   // The server-side layout only redirects on the initial navigation — if the session becomes
   // invalid while the SPA is already open (token revalidated as stale, expiry, etc.), this is what
   // sends the user back to /login instead of leaving them stuck on an empty/restricted screen.
+  // clearClientSession() drops the stale NextAuth cookie plus any client-side storage before the
+  // redirect, so a subsequent login never inherits leftover state from the invalidated session.
   useEffect(() => {
     if (status === 'loading') return
-    if (isSessionInvalid) router.replace('/login')
+    if (!isSessionInvalid) return
+
+    clearClientSession().finally(() => {
+      router.replace('/login')
+      router.refresh()
+    })
   }, [status, isSessionInvalid, router])
 
   if (status === 'loading') {

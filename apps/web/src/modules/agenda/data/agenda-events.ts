@@ -42,8 +42,9 @@ export const agendaEvents: AgendaEvent[] = [
     notes: 'Cliente quer validar luminosidade da sala e vaga de garagem antes de enviar proposta.',
     status: 'Confirmada',
     tone: 'primary',
+    kind: 'visit',
     createdBy: 'Roberto Souza',
-    createdByRole: 'Colega',
+    createdByRole: 'colleague',
   },
   {
     id: 'agenda-002',
@@ -58,6 +59,7 @@ export const agendaEvents: AgendaEvent[] = [
     notes: 'Enviar comparativo de preço e confirmar margem para contraproposta.',
     status: 'Pendente',
     tone: 'warning',
+    kind: 'followUp',
   },
   {
     id: 'agenda-003',
@@ -72,8 +74,9 @@ export const agendaEvents: AgendaEvent[] = [
     notes: 'Alinhar exclusividade, prazo de publicação e estratégia de fotos.',
     status: 'Confirmada',
     tone: 'info',
+    kind: 'meeting',
     createdBy: 'Lopes Jardins',
-    createdByRole: 'Imobiliária',
+    createdByRole: 'agency',
   },
   {
     id: 'agenda-004',
@@ -88,6 +91,7 @@ export const agendaEvents: AgendaEvent[] = [
     notes: 'Conferir pintura, checklist de chaves e leitura inicial de medidores.',
     status: 'Confirmada',
     tone: 'primary',
+    kind: 'inspection',
   },
   {
     id: 'agenda-005',
@@ -102,6 +106,7 @@ export const agendaEvents: AgendaEvent[] = [
     notes: 'Acompanhar retorno do banco e documentos pendentes do comprador.',
     status: 'Pendente',
     tone: 'warning',
+    kind: 'followUp',
   },
   {
     id: 'agenda-006',
@@ -116,7 +121,8 @@ export const agendaEvents: AgendaEvent[] = [
     notes: 'Reagendar com fiador e locatária no mesmo horário para concluir assinatura.',
     status: 'Reagendar',
     tone: 'info',
+    kind: 'signature',
     createdBy: 'Mariana Costa',
-    createdByRole: 'Colega',
+    createdByRole: 'colleague',
   },
 ]

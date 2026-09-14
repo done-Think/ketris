@@ -9,5 +9,5 @@ export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
 }
 
 export default function CrmProposalsPage() {
-  return <PipelineBoard initialStatus="ENVIADA" />
+  return <PipelineBoard initialStatus="ENVIADA" titleKey="proposalsTitle" />
 }

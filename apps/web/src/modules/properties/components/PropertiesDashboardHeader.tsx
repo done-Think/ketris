@@ -3,8 +3,7 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { useTranslations } from 'next-intl'
 
-import { DashboardNotificationsButton } from '@shared/components/layout'
-import { brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import { brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { PropertiesDashboardHeaderProps } from '../types/dashboard-property'
 
@@ -24,10 +23,10 @@ export function PropertiesDashboardHeader({
       sx={{ mb: 2.4 }}
     >
       <Box>
-        <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 40 }, fontWeight: 900 }}>
+        <Typography variant="h3" sx={{ fontSize: { xs: 20, md: 24 }, fontWeight: 800 }}>
           {t('title')}
         </Typography>
-        <Typography sx={{ color: 'text.secondary', fontSize: { xs: 15, md: 17 } }}>
+        <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 700 }}>
           {t('subtitle')}
         </Typography>
       </Box>
@@ -51,7 +50,7 @@ export function PropertiesDashboardHeader({
               top: '50%',
               transform: 'translateY(-50%)',
               color: brand.neutral[500],
-              fontSize: iconSize.md,
+              fontSize: iconSize.sm,
               pointerEvents: 'none',
             }}
           />
@@ -63,7 +62,7 @@ export function PropertiesDashboardHeader({
             onChange={(event) => onSearchQueryChange(event.target.value)}
             sx={{
               width: '100%',
-              height: 48,
+              height: 36,
               border: '1px solid',
               borderColor: 'divider',
               borderRadius: `${radius.sm}px`,
@@ -72,34 +71,31 @@ export function PropertiesDashboardHeader({
               pl: 4,
               pr: 1.2,
               font: 'inherit',
-              fontSize: 16,
+              fontSize: 14,
+              fontWeight: 700,
               outline: 0,
               '&::placeholder': { color: brand.neutral[400] },
               '&:focus': { borderColor: 'primary.main' },
             }}
           />
         </Box>
-        <Stack direction="row" spacing={1.2} sx={{ alignItems: 'center' }}>
-          <Button
-            variant="contained"
-            startIcon={<AddRoundedIcon />}
-            onClick={onCreateProperty}
-            sx={{
-              flex: { xs: 1, sm: 'initial' },
-              height: 48,
-              borderRadius: `${radius.sm}px`,
-              px: 2.6,
-              fontSize: 16,
-              fontWeight: 900,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {t('create')}
-          </Button>
-          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-            <DashboardNotificationsButton />
-          </Box>
-        </Stack>
+        <Button
+          variant="contained"
+          startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.lg }} />}
+          onClick={onCreateProperty}
+          sx={{
+            borderRadius: `${radius.sm}px`,
+            boxShadow: shadows.none,
+            minHeight: 36,
+            px: 2,
+            fontSize: 14,
+            fontWeight: 800,
+            textTransform: 'none',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {t('create')}
+        </Button>
       </Stack>
     </Stack>
   )

@@ -18,21 +18,33 @@ export default getRequestConfig(async ({ locale }) => {
 })
 
 async function loadMessages(locale: AppLocale) {
-  const [common, auth, contracts, crm, dashboard, marketplace, platform, properties, validation] =
-    await Promise.all([
-      import(`./messages/${locale}/common.json`),
-      import(`./messages/${locale}/auth.json`),
-      import(`./messages/${locale}/contracts.json`),
-      import(`./messages/${locale}/crm.json`),
-      import(`./messages/${locale}/dashboard.json`),
-      import(`./messages/${locale}/marketplace.json`),
-      import(`./messages/${locale}/platform.json`),
-      import(`./messages/${locale}/properties.json`),
-      import(`./messages/${locale}/validation.json`),
-    ])
+  const [
+    common,
+    agenda,
+    auth,
+    contracts,
+    crm,
+    dashboard,
+    marketplace,
+    platform,
+    properties,
+    validation,
+  ] = await Promise.all([
+    import(`./messages/${locale}/common.json`),
+    import(`./messages/${locale}/agenda.json`),
+    import(`./messages/${locale}/auth.json`),
+    import(`./messages/${locale}/contracts.json`),
+    import(`./messages/${locale}/crm.json`),
+    import(`./messages/${locale}/dashboard.json`),
+    import(`./messages/${locale}/marketplace.json`),
+    import(`./messages/${locale}/platform.json`),
+    import(`./messages/${locale}/properties.json`),
+    import(`./messages/${locale}/validation.json`),
+  ])
 
   return {
     common: common.default,
+    agenda: agenda.default,
     auth: auth.default,
     contracts: contracts.default,
     crm: crm.default,
