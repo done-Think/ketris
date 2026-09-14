@@ -87,7 +87,10 @@ export function OwnerDashboardHeader() {
             mx: 'auto',
             gridTemplateColumns: {
               xs: 'minmax(0, 1fr) auto',
-              md: 'minmax(160px, 1fr) auto minmax(160px, 1fr)',
+              md: 'minmax(0, 1fr) auto minmax(0, 1fr)',
+            },
+            gridTemplateAreas: {
+              md: '"brand navigation profile"',
             },
             alignItems: 'center',
             columnGap: { xs: 1, lg: 2 },
@@ -103,6 +106,8 @@ export function OwnerDashboardHeader() {
             sx={{
               minWidth: 0,
               width: 'fit-content',
+              gridArea: { md: 'brand' },
+              justifySelf: { md: 'start' },
               color: 'inherit',
               textDecoration: 'none',
             }}
@@ -140,7 +145,12 @@ export function OwnerDashboardHeader() {
             direction="row"
             alignItems="stretch"
             spacing={{ md: 1.5, lg: 2.5, xl: 3.5 }}
-            sx={{ display: { xs: 'none', md: 'flex' }, height: '100%', justifySelf: 'center' }}
+            sx={{
+              display: { xs: 'none', md: 'flex' },
+              height: '100%',
+              gridArea: { md: 'navigation' },
+              justifySelf: { md: 'center' },
+            }}
           >
             {ownerDashboardNavigationItems.map((item) => {
               const active = isOwnerNavigationItemActive(pathname, item)
@@ -206,7 +216,12 @@ export function OwnerDashboardHeader() {
             direction="row"
             alignItems="center"
             spacing={1.1}
-            sx={{ display: { xs: 'none', md: 'flex' }, minWidth: 0, justifySelf: 'end' }}
+            sx={{
+              display: { xs: 'none', md: 'flex' },
+              minWidth: 0,
+              gridArea: { md: 'profile' },
+              justifySelf: { md: 'end' },
+            }}
           >
             <Avatar
               src={session?.user?.image ?? '/owner-avatar.svg'}
