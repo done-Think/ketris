@@ -31,7 +31,11 @@ export function PropertiesDashboardHeader({
         </Typography>
       </Box>
 
-      <Stack direction="row" spacing={1.2}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={1.2}
+        sx={{ width: { xs: '100%', md: 'auto' } }}
+      >
         <Box
           sx={{
             position: 'relative',

@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Box, IconButton, Stack, Typography } from '@mui/material'
-import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
+import { Box, Stack, Typography } from '@mui/material'
 import { useLocale, useTranslations } from 'next-intl'
 
-import { alpha, brand, shadows, surface } from '@shared/theme/tokens'
+import { DashboardNotificationsButton } from '@shared/components/layout'
+import { brand } from '@shared/theme/tokens'
 
 import type {
   DashboardLeadDetailsFormValues,
@@ -61,31 +61,9 @@ export function DashboardOverviewPage() {
             </Typography>
           </Box>
 
-          <IconButton
-            aria-label={t('notifications')}
-            sx={{
-              width: 38,
-              height: 38,
-              bgcolor: surface.paper,
-              border: '1px solid',
-              borderColor: alpha.graphite[6],
-              boxShadow: shadows.crmCardCompact,
-              '&:hover': { bgcolor: surface.paper },
-            }}
-          >
-            <NotificationsNoneOutlinedIcon sx={{ color: brand.graphite[500], fontSize: 19 }} />
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 10,
-                right: 10,
-                width: 7,
-                height: 7,
-                borderRadius: '50%',
-                bgcolor: brand.magenta[500],
-              }}
-            />
-          </IconButton>
+          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+            <DashboardNotificationsButton />
+          </Box>
         </Stack>
 
         <DashboardMetricGrid />

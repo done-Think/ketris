@@ -80,6 +80,7 @@
   },
   "create": {
     "title": "List property",
+    "mobileTitle": "New Property",
     "back": "Back",
     "next": "Next",
     "publish": "Publish",
@@ -100,13 +101,16 @@
       "area": "Usable area",
       "rentValue": "Rent value",
       "saleValue": "Sale value",
+      "referenceValue": "Reference value",
       "condominium": "Condo fee",
       "iptu": "Monthly property tax",
       "securityDeposit": "Guarantee",
-      "commission": "Commission"
+      "commission": "Commission",
+      "commercialTerms": "Commercial terms"
     },
     "steps": {
       "ariaLabel": "Listing steps",
+      "progress": "Step {current} of {total}",
       "basic": "Basic Data",
       "address": "Address",
       "features": "Features",

@@ -109,7 +109,7 @@
   },
   "footer": {
     "description": "Tecnologia e simplificação de ponta a ponta no mercado imobiliário corporativo e residencial.",
-    "rights": "Tecnologias Ltda. Todos os direitos reservados.",
+    "rights": "Todos os direitos reservados.",
     "columns": {
       "company": "Empresa",
       "forYou": "Para você",
@@ -208,6 +208,7 @@
     "photoPreview": "Prévia da foto",
     "bannerPreview": "Prévia do banner",
     "saveDraft": "Salvar",
+    "save": "Salvar",
     "preview": "Visualizar",
     "configurableProfile": "Perfil público configurável",
     "newMember": "Novo membro",
@@ -279,6 +280,7 @@
     "logoPreview": "Prévia do logo",
     "bannerPreview": "Prévia do banner",
     "saveDraft": "Salvar",
+    "save": "Salvar",
     "preview": "Visualizar",
     "dropToMove": "Solte para mover",
     "preparing": "Preparando...",

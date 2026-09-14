@@ -1,7 +1,7 @@
 'use client'
 
-import { Box, Stack, Typography } from '@mui/material'
-import { LineChart } from '@mui/x-charts/LineChart'
+import { Box, Typography } from '@mui/material'
+import { BarChart } from '@mui/x-charts/BarChart'
 import { useFormatter, useTranslations } from 'next-intl'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
@@ -11,8 +11,6 @@ import type { FinancialMovementChartProps } from '../types/financial-entry'
 export function FinancialMovementChart({ movement }: FinancialMovementChartProps) {
   const format = useFormatter()
   const t = useTranslations('dashboard.finance')
-  const totalSales = movement.reduce((total, item) => total + item.sales, 0)
-  const totalCommissions = movement.reduce((total, item) => total + item.commissions, 0)
   const formatCurrency = (value: number) =>
     format.number(value, {
       style: 'currency',
@@ -28,66 +26,42 @@ export function FinancialMovementChart({ movement }: FinancialMovementChartProps
         borderColor: alpha.graphite[6],
         borderRadius: `${radius.sm}px`,
         boxShadow: shadows.propertyCard,
+        minWidth: 0,
         p: { xs: 2, md: 2.4 },
       }}
     >
-      <Stack
-        direction={{ xs: 'column', md: 'row' }}
-        justifyContent="space-between"
-        spacing={1.5}
-        sx={{ mb: 1.6 }}
-      >
-        <Box>
-          <Typography variant="h5">{t('movementTitle')}</Typography>
-          <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 700 }}>
-            {t('movementSubtitle')}
-          </Typography>
-        </Box>
-        <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
-          <Box>
-            <Typography sx={{ color: 'text.secondary', fontSize: 11, fontWeight: 800 }}>
-              {t('sales')}
-            </Typography>
-            <Typography sx={{ color: brand.graphite[500], fontSize: 18, fontWeight: 900 }}>
-              {formatCurrency(totalSales)}
-            </Typography>
-          </Box>
-          <Box>
-            <Typography sx={{ color: 'text.secondary', fontSize: 11, fontWeight: 800 }}>
-              {t('commissions')}
-            </Typography>
-            <Typography sx={{ color: brand.magenta[600], fontSize: 18, fontWeight: 900 }}>
-              {formatCurrency(totalCommissions)}
-            </Typography>
-          </Box>
-        </Stack>
-      </Stack>
-
-      <Box sx={{ width: '100%', height: { xs: 280, md: 340 } }}>
-        <LineChart
+      <Typography sx={{ color: brand.graphite[500], fontSize: 18, fontWeight: 900, mb: 2 }}>
+        {t('revenueChartTitle')}
+      </Typography>
+      <Box sx={{ height: { xs: 260, md: 320 }, width: '100%' }}>
+        <BarChart
           dataset={movement}
-          xAxis={[{ scaleType: 'point', dataKey: 'month' }]}
+          xAxis={[
+            {
+              scaleType: 'band',
+              dataKey: 'month',
+            },
+          ]}
+          yAxis={[{ disableLine: true, disableTicks: true }]}
           series={[
             {
-              dataKey: 'sales',
-              label: t('sales'),
-              color: brand.graphite[500],
-              curve: 'monotoneX',
-              showMark: true,
-              valueFormatter: (value) => formatCurrency(value ?? 0),
-            },
-            {
-              dataKey: 'commissions',
-              label: t('commissions'),
+              dataKey: 'revenue',
+              label: t('revenue'),
               color: brand.magenta[500],
-              curve: 'monotoneX',
-              showMark: true,
               valueFormatter: (value) => formatCurrency(value ?? 0),
             },
           ]}
-          height={320}
-          margin={{ left: 68, right: 18, top: 28, bottom: 36 }}
-          grid={{ horizontal: true }}
+          height={300}
+          margin={{ left: 12, right: 12, top: 24, bottom: 28 }}
+          grid={{ horizontal: false, vertical: false }}
+          sx={{
+            '& .MuiChartsAxis-left': { display: 'none' },
+            '& .MuiChartsLegend-root': { display: 'none' },
+            '& .MuiBarElement-root': {
+              rx: 5,
+              ry: 5,
+            },
+          }}
         />
       </Box>
     </Box>

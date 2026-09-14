@@ -8,7 +8,14 @@ export type AgendaEventStatus = 'Confirmada' | 'Pendente' | 'Reagendar'
 
 export type AgendaEventTone = 'primary' | 'info' | 'warning'
 
-export type AgendaEventCreatorRole = 'Colega' | 'Imobiliária'
+export type AgendaEventCreatorRole = 'agency' | 'colleague'
+
+export type AgendaEventKind = 'visit' | 'followUp' | 'meeting' | 'inspection' | 'signature'
+
+export type AgendaTranslationGetter = (
+  key: string,
+  values?: Record<string, string | number>,
+) => string
 
 export type AgendaEvent = {
   id: string
@@ -23,8 +30,16 @@ export type AgendaEvent = {
   notes: string
   status: AgendaEventStatus
   tone: AgendaEventTone
+  kind: AgendaEventKind
   createdBy?: string
   createdByRole?: AgendaEventCreatorRole
+}
+
+export type AgendaEventSeed = Omit<AgendaEvent, 'notes' | 'participant' | 'property' | 'title'> & {
+  notesKey: string
+  participant: string
+  propertyKey: string
+  titleKey: string
 }
 
 export type AgendaCalendarDay = {
@@ -32,6 +47,7 @@ export type AgendaCalendarDay = {
   dayLabel: string
   key: string
   monthLabel: string
+  monthLongLabel: string
   today: boolean
 }
 
@@ -49,16 +65,6 @@ export type AgendaEventToneStyle = {
   bgcolor: string
   borderColor: string
   color: string
-}
-
-export type AgendaNotificationKind = 'todayVisit' | 'assignedEvent'
-
-export type AgendaNotification = {
-  event: AgendaEvent
-  id: string
-  kind: AgendaNotificationKind
-  message: string
-  title: string
 }
 
 export type AgendaEventCardProps = {
@@ -116,6 +122,22 @@ export type AgendaWeekCalendarProps = {
   timeSlots: AgendaTimeSlot[]
 }
 
+export type AgendaMobileDayListProps = {
+  days: AgendaCalendarDay[]
+  events: AgendaEvent[]
+  onSelectDay: (dayKey: string) => void
+  onSelectEvent: (event: AgendaEvent) => void
+  selectedDayKey: string
+}
+
+export type AgendaNotification = {
+  event: AgendaEvent
+  id: string
+  kind: 'assignedEvent' | 'todayVisit'
+  message: string
+  title: string
+}
+
 export type AgendaNotificationsPopoverProps = {
   anchorEl: HTMLButtonElement | null
   notifications: AgendaNotification[]
@@ -125,6 +147,6 @@ export type AgendaNotificationsPopoverProps = {
 
 export type AgendaBuildNotificationsOptions = {
   events: AgendaEvent[]
-  t: (key: string, values?: Record<string, string | number>) => string
+  t: AgendaTranslationGetter
   today: Dayjs
 }

@@ -9,8 +9,11 @@ const numberField = z.coerce.number().nonnegative('Informe um valor válido')
 
 export const createDashboardPropertySchema = z.object({
   activeStepIndex: z.number().int().min(0).default(0),
+  maxVisitedStepIndex: z.number().int().min(0).default(0),
   type: z.string().min(1, 'Selecione o tipo de imóvel'),
-  purpose: z.enum(['Aluguel', 'Venda'] satisfies [CreatePropertyPurpose, CreatePropertyPurpose]),
+  purpose: z
+    .array(z.enum(['Aluguel', 'Venda'] satisfies [CreatePropertyPurpose, CreatePropertyPurpose]))
+    .min(1, 'Selecione ao menos uma finalidade'),
   title: z.string().min(3, 'Informe o título do anúncio'),
   description: z.string().min(10, 'Informe uma descrição mais completa'),
   street: z.string().min(3, 'Informe o endereço'),
@@ -34,8 +37,9 @@ export const createDashboardPropertySchema = z.object({
 
 export const createDashboardPropertyDefaultValues: CreateDashboardPropertyFormValues = {
   activeStepIndex: 0,
+  maxVisitedStepIndex: 0,
   type: 'Apartamento',
-  purpose: 'Aluguel',
+  purpose: ['Aluguel'],
   title: 'Apartamento moderno com vista incrível nos Jardins',
   description:
     'Excelente apartamento mobiliado, com 3 quartos, varanda gourmet espaçosa e 2 vagas de garagem demarcadas. Localização nobre, próximo a comércio especializado, restaurantes premiados e estação de metrô.',

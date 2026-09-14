@@ -20,8 +20,9 @@ const event: AgendaEvent = {
   notes: 'Cliente quer validar luminosidade da sala.',
   status: 'Confirmada',
   tone: 'primary',
+  kind: 'visit',
   createdBy: 'Roberto Souza',
-  createdByRole: 'Colega',
+  createdByRole: 'colleague',
 }
 
 function renderDialog(onReschedule = vi.fn()) {

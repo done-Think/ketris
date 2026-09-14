@@ -1,5 +1,6 @@
 export { AppShell } from './AppShell'
 export { HomeHeader } from './HomeHeader'
+export { DashboardNotificationsButton } from './DashboardNotificationsButton'
 export { LanguageSelector } from './LanguageSelector'
 export { ProfileModal } from './ProfileModal'
 export { SiteFooter } from './SiteFooter'

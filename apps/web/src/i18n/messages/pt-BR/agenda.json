@@ -9,10 +9,15 @@
     "notificationsAriaLabel": "Abrir notificações da agenda",
     "notificationsTooltip": "Notificações",
     "openEventAriaLabel": "Abrir {title}",
+    "selectedDayLabel": "{day}, {date} de {month}",
     "todayVisitTitle": "Visita marcada para hoje",
     "todayVisitMessage": "{time} - {participant} em {property}",
     "assignedEventTitle": "Novo compromisso atribuído",
     "assignedEventMessage": "{role} {name} marcou {title}",
+    "creatorRoles": {
+      "agency": "imobiliária",
+      "colleague": "colega"
+    },
     "defaultEventNotes": "Evento criado manualmente na agenda.",
     "rescheduleSuccess": "{title} reagendado para {date} às {time}.",
     "createSuccess": "{title} adicionado à agenda.",
@@ -20,6 +25,38 @@
       "title": "Alertas da agenda",
       "subtitle": "Visitas de hoje e compromissos atribuídos",
       "empty": "Nenhum alerta para exibir."
+    },
+    "sampleEvents": {
+      "digitalSignature": {
+        "notes": "Reagendar com fiador e inquilino no mesmo horário para concluir a assinatura.",
+        "property": "Contrato Studio Pinheiros",
+        "title": "Assinatura digital"
+      },
+      "entryInspection": {
+        "notes": "Conferir pintura, checklist de chaves e leituras iniciais dos medidores.",
+        "property": "Studio Vila Madalena",
+        "title": "Vistoria de entrada"
+      },
+      "financingFollowUp": {
+        "notes": "Acompanhar retorno do banco e documentos pendentes do comprador.",
+        "property": "Apartamento Jardins",
+        "title": "Follow-up financiamento"
+      },
+      "intakeMeeting": {
+        "notes": "Alinhar exclusividade, prazo de publicação e estratégia de fotos.",
+        "property": "Casa Alto da Lapa",
+        "title": "Reunião captação"
+      },
+      "jardimVisit": {
+        "notes": "Cliente quer validar luminosidade da sala e vaga antes de enviar proposta.",
+        "property": "Apartamento Jardim Paulista",
+        "title": "Visita Jardim Paulista"
+      },
+      "proposalReturn": {
+        "notes": "Enviar comparação de preços e confirmar margem para contraproposta.",
+        "property": "Cobertura Itaim Bibi",
+        "title": "Retorno proposta"
+      }
     }
   },
   "eventForm": {
