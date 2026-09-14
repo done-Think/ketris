@@ -20,7 +20,7 @@ export function OwnerDashboardPage() {
       sx={{
         width: '100%',
         px: { xs: 2, sm: 3, lg: 4 },
-        py: { xs: 1.5, md: 4 },
+        py: { xs: 1.5, md: 4.5 },
         fontFamily: ownerDashboardBodyFontFamily,
       }}
     >
@@ -49,7 +49,7 @@ export function OwnerDashboardPage() {
           <OwnerCreatePropertyButton />
         </Stack>
 
-        <Box sx={{ mt: { xs: 2, md: 3.25 } }}>
+        <Box sx={{ mt: { xs: 2, md: 2.5 } }}>
           <OwnerMetricCards />
         </Box>
 
@@ -62,7 +62,7 @@ export function OwnerDashboardPage() {
             },
             alignItems: 'stretch',
             gap: { xs: 3, md: 2.75, lg: 3 },
-            mt: { xs: 4, md: 3.25 },
+            mt: { xs: 4, md: 3 },
           }}
         >
           <RecentProposalsCard />

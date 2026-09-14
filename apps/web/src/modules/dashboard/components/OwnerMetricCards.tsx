@@ -73,8 +73,8 @@ export function OwnerMetricCards() {
             ...ownerDashboardPanelSx,
             display: { xs: 'none', md: 'flex' },
             minWidth: 0,
-            minHeight: { xs: 132, md: 108 },
-            p: { xs: 2, md: 2.25 },
+            minHeight: { xs: 132, md: 112 },
+            p: { xs: 2, md: 2.5 },
           }}
         >
           <Stack sx={{ minWidth: 0, width: '100%' }}>
