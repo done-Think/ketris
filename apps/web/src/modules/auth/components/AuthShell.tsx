@@ -96,7 +96,7 @@ export function AuthShell({
             zIndex: 2,
             top: 1.25,
             left: 0.5,
-            display: { xs: 'flex', md: 'none' },
+            display: 'none',
           }}
         >
           <AppLogo src={ketrisLogoTransparent} variant="transparent" width={76} />
