@@ -19,7 +19,7 @@ export function UpcomingVisitsCard() {
         ...ownerDashboardPanelSx,
         p: { xs: 0, md: 3 },
         bgcolor: { xs: 'transparent', md: surface.paper },
-        border: { xs: 0, md: ownerDashboardPanelSx.border },
+        border: 0,
         boxShadow: { xs: 'none', md: ownerDashboardPanelSx.boxShadow },
       }}
     >

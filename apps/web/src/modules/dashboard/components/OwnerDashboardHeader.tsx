@@ -74,7 +74,7 @@ export function OwnerDashboardHeader() {
           borderBottom: '1px solid',
           borderColor: 'divider',
           bgcolor: surface.paper,
-          px: { xs: 2, sm: 3, lg: 4 },
+          px: { xs: 2, sm: 3, md: 4, lg: 6 },
           fontFamily: ownerDashboardBodyFontFamily,
         }}
       >
@@ -82,7 +82,7 @@ export function OwnerDashboardHeader() {
           sx={{
             display: 'grid',
             width: '100%',
-            maxWidth: 1184,
+            maxWidth: 'none',
             height: '100%',
             mx: 'auto',
             gridTemplateColumns: {
