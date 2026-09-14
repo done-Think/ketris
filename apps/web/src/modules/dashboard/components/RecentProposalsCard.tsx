@@ -166,7 +166,7 @@ export function RecentProposalsCard() {
                     fontWeight: 700,
                     letterSpacing: '0.025em',
                     px: 0,
-                    py: 1.55,
+                    py: 1.7,
                     textTransform: 'uppercase',
                     whiteSpace: 'nowrap',
                   }}
@@ -179,7 +179,7 @@ export function RecentProposalsCard() {
           <TableBody>
             {ownerRecentProposals.map((proposal) => (
               <TableRow key={proposal.id} sx={{ '&:last-child td': { borderBottom: 0 } }}>
-                <TableCell sx={{ borderColor: brand.neutral[100], px: 0, py: 1.8 }}>
+                <TableCell sx={{ borderColor: brand.neutral[100], px: 0, py: 2 }}>
                   <Typography
                     noWrap
                     sx={{ color: brand.graphite[500], fontSize: 12, fontWeight: 700 }}
@@ -187,12 +187,12 @@ export function RecentProposalsCard() {
                     {proposal.property}
                   </Typography>
                 </TableCell>
-                <TableCell sx={{ borderColor: brand.neutral[100], px: 0, py: 1.8 }}>
+                <TableCell sx={{ borderColor: brand.neutral[100], px: 0, py: 2 }}>
                   <Typography noWrap sx={{ color: brand.neutral[600], fontSize: 11.5 }}>
                     {proposal.proponent}
                   </Typography>
                 </TableCell>
-                <TableCell sx={{ borderColor: brand.neutral[100], px: 0, py: 1.8 }}>
+                <TableCell sx={{ borderColor: brand.neutral[100], px: 0, py: 2 }}>
                   <Typography
                     noWrap
                     sx={{ color: brand.magenta[600], fontSize: 11.5, fontWeight: 700 }}
@@ -200,7 +200,7 @@ export function RecentProposalsCard() {
                     {proposal.value}
                   </Typography>
                 </TableCell>
-                <TableCell sx={{ borderColor: brand.neutral[100], px: 0, py: 1.8 }}>
+                <TableCell sx={{ borderColor: brand.neutral[100], px: 0, py: 2 }}>
                   <Typography noWrap sx={{ color: brand.neutral[400], fontSize: 10.5 }}>
                     {proposal.date}
                   </Typography>

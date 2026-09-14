@@ -1,7 +1,6 @@
-import { Box, Button, Stack, Typography } from '@mui/material'
-import { Link as NextLink } from '@/i18n/navigation'
+import { Box, Stack, Typography } from '@mui/material'
 
-import { brand, radius } from '@shared/theme/tokens'
+import { brand } from '@shared/theme/tokens'
 
 import { OwnerMetricCards } from './OwnerMetricCards'
 import { OwnerQuickActions } from './OwnerQuickActions'
@@ -9,10 +8,11 @@ import { RecentProposalsCard } from './RecentProposalsCard'
 import { UpcomingVisitsCard } from './UpcomingVisitsCard'
 import { WeeklyPerformanceCard } from './WeeklyPerformanceCard'
 import { OwnerDashboardMobileHeader } from './OwnerDashboardMobileHeader'
+import { OwnerCreatePropertyButton } from './OwnerCreatePropertyButton'
 
 export function OwnerDashboardPage() {
   return (
-    <Box sx={{ width: '100%', px: { xs: 2, sm: 3, lg: 4 }, py: { xs: 1.5, md: 4.5 } }}>
+    <Box sx={{ width: '100%', px: { xs: 2, sm: 3, lg: 4 }, py: { xs: 1.5, md: 4 } }}>
       <Box sx={{ width: '100%', maxWidth: 1184, mx: 'auto' }}>
         <OwnerDashboardMobileHeader />
         <Stack
@@ -26,7 +26,7 @@ export function OwnerDashboardPage() {
             component="h1"
             sx={{
               color: brand.graphite[500],
-              fontSize: { xs: 27, md: 32 },
+              fontSize: { xs: 27, md: 30 },
               fontWeight: 700,
               letterSpacing: '-0.02em',
               lineHeight: 1.2,
@@ -34,25 +34,10 @@ export function OwnerDashboardPage() {
           >
             Painel do Proprietário
           </Typography>
-          <Button
-            component={NextLink}
-            href="/dashboard/properties/new"
-            variant="contained"
-            sx={{
-              alignSelf: { xs: 'stretch', sm: 'center' },
-              minHeight: 44,
-              borderRadius: `${radius.sm}px`,
-              px: 2.6,
-              fontSize: 13,
-              fontWeight: 700,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            Anunciar Novo Imóvel
-          </Button>
+          <OwnerCreatePropertyButton />
         </Stack>
 
-        <Box sx={{ mt: { xs: 2, md: 3.5 } }}>
+        <Box sx={{ mt: { xs: 2, md: 3.25 } }}>
           <OwnerMetricCards />
         </Box>
 
@@ -64,8 +49,8 @@ export function OwnerDashboardPage() {
               lg: 'minmax(0, 1.3fr) minmax(360px, 1fr)',
             },
             alignItems: 'stretch',
-            gap: { xs: 3, md: 2.5, lg: 3 },
-            mt: { xs: 4, md: 3 },
+            gap: { xs: 3, md: 2.75, lg: 3 },
+            mt: { xs: 4, md: 3.25 },
           }}
         >
           <RecentProposalsCard />
@@ -77,7 +62,7 @@ export function OwnerDashboardPage() {
           </Stack>
         </Box>
 
-        <Box sx={{ mt: { xs: 2.5, md: 3.5 } }}>
+        <Box sx={{ mt: { xs: 2.5, md: 3.75 } }}>
           <OwnerQuickActions />
         </Box>
       </Box>

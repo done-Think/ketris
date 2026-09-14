@@ -53,7 +53,7 @@ export function UpcomingVisitsCard() {
                 md: '58px 54px minmax(0, 1fr) auto',
               },
               alignItems: 'center',
-              minHeight: { xs: 86, md: 61 },
+              minHeight: { xs: 86, md: 65 },
               borderBottom: {
                 xs: 0,
                 md: index === ownerUpcomingVisits.length - 1 ? 0 : '1px solid',

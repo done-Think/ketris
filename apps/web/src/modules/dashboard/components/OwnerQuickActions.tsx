@@ -1,3 +1,5 @@
+'use client'
+
 import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded'
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
@@ -65,13 +67,13 @@ export function OwnerQuickActions() {
                 },
                 alignItems: 'center',
                 minWidth: 0,
-                minHeight: { xs: 94, md: 78 },
+                minHeight: { xs: 94, md: 80 },
                 border: '1px solid',
                 borderColor: brand.neutral[100],
                 borderRadius: `${radius.md}px`,
                 bgcolor: surface.paper,
                 color: brand.graphite[500],
-                px: { xs: 1.5, md: 2 },
+                px: { xs: 1.5, md: 2.1 },
                 textDecoration: 'none',
                 transition: motion.transition.card,
                 '&:hover': {
@@ -88,7 +90,7 @@ export function OwnerQuickActions() {
               <Stack
                 direction={{ xs: 'column', md: 'row' }}
                 alignItems={{ xs: 'flex-start', md: 'center' }}
-                spacing={{ xs: 1.2, md: 1.7 }}
+                spacing={{ xs: 1.2, md: 1.5 }}
                 sx={{ minWidth: 0 }}
               >
                 <Box
