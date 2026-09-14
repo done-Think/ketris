@@ -1,24 +1,14 @@
-import { type Dispatch, type Ref, type SetStateAction } from 'react'
+'use client'
+
 import { Box, Button, Typography } from '@mui/material'
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
+import { Link } from '@/i18n/navigation'
 import { componentText, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
-import type { SearchFilterKey, TextSearchFilterKey } from '../config/search-filters'
+import type { MobileSearchBoxProps } from '../types/search'
 import { TextSearchMenu } from './TextSearchMenu'
-
-type MobileSearchBoxProps = {
-  activeSearchMenu: SearchFilterKey | null
-  mobileSearchRef: Ref<HTMLDivElement>
-  searchDraft: Record<TextSearchFilterKey, string>
-  searchHref: string
-  selectedSearch: Record<SearchFilterKey, string>
-  openSearchMenu: (key: SearchFilterKey) => void
-  selectSearchValue: (key: SearchFilterKey, value: string) => void
-  filterSearchOptions: (key: TextSearchFilterKey) => readonly string[]
-  setSearchDraft: Dispatch<SetStateAction<Record<TextSearchFilterKey, string>>>
-}
 
 export function MobileSearchBox({
   activeSearchMenu,
@@ -29,8 +19,11 @@ export function MobileSearchBox({
   openSearchMenu,
   selectSearchValue,
   filterSearchOptions,
+  getSearchOptionLabel,
   setSearchDraft,
 }: MobileSearchBoxProps) {
+  const t = useTranslations('marketplace.home.search')
+
   return (
     <Box
       ref={mobileSearchRef}
@@ -77,7 +70,7 @@ export function MobileSearchBox({
             whiteSpace: 'nowrap',
           }}
         >
-          Buscar por bairro, cidade...
+          {t('mobilePlaceholder')}
         </Typography>
       </Button>
 
@@ -97,26 +90,35 @@ export function MobileSearchBox({
             selectedSearch={selectedSearch}
             searchDraft={searchDraft}
             filterSearchOptions={filterSearchOptions}
+            getSearchOptionLabel={getSearchOptionLabel}
             selectSearchValue={selectSearchValue}
             setSearchDraft={setSearchDraft}
           />
         </Box>
       )}
 
-      <Button
+      <Box
         component={Link}
         href={searchHref}
-        variant="contained"
-        fullWidth
         sx={{
+          display: 'block',
           mt: 0.9,
-          minHeight: 36,
-          borderRadius: `${radius.sm}px`,
-          ...componentText.mobileSearchSubmit,
+          textDecoration: 'none',
         }}
       >
-        Buscar
-      </Button>
+        <Button
+          component="span"
+          variant="contained"
+          fullWidth
+          sx={{
+            minHeight: 36,
+            borderRadius: `${radius.sm}px`,
+            ...componentText.mobileSearchSubmit,
+          }}
+        >
+          {t('submit')}
+        </Button>
+      </Box>
     </Box>
   )
 }

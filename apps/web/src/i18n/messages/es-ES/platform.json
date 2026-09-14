@@ -1,0 +1,65 @@
+{
+  "metadata": {
+    "login": {
+      "metadataTitle": "Ketris | Iniciar sesión Plataforma"
+    },
+    "dashboard": {
+      "metadataTitle": "Ketris | Inmobiliarias Plataforma"
+    },
+    "tenant": {
+      "metadataTitle": "Ketris | Inmobiliaria Plataforma"
+    },
+    "newTenant": {
+      "metadataTitle": "Ketris | Nueva inmobiliaria Plataforma"
+    },
+    "newAdmin": {
+      "metadataTitle": "Ketris | Administradores de plataforma"
+    }
+  },
+  "login": {
+    "title": "Administración de la plataforma",
+    "subtitle": "Inicia sesión con tu cuenta de administrador general de Ketris.",
+    "genericError": "No fue posible iniciar sesión. Verifica el email y la contraseña.",
+    "forbiddenError": "Acceso restringido a administradores de la plataforma.",
+    "submit": "Entrar",
+    "restrictedAccess": "Acceso restringido a la administración general de Ketris."
+  },
+  "dashboard": {
+    "title": "Inmobiliarias",
+    "platformAdmins": "Administradores de plataforma",
+    "newTenant": "Nueva inmobiliaria",
+    "loadError": "No fue posible cargar las inmobiliarias.",
+    "empty": "Aún no hay inmobiliarias registradas.",
+    "createdAt": "Creada en"
+  },
+  "tenant": {
+    "usersTitle": "Usuarios de la inmobiliaria",
+    "newAdmin": "Nuevo administrador",
+    "usersLoadError": "No fue posible cargar los usuarios.",
+    "emptyUsers": "Aún no hay usuarios registrados."
+  },
+  "newAdmin": {
+    "title": "Nuevo administrador de plataforma"
+  },
+  "forms": {
+    "name": "Nombre",
+    "email": "Email",
+    "password": "Contraseña",
+    "passwordConfirmation": "Confirmar contraseña",
+    "slug": "Slug",
+    "slugHelper": "Identificador único, ej.: inmobiliaria-ejemplo",
+    "role": "Rol",
+    "status": "Estado",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "createTenantSubmit": "Crear inmobiliaria",
+    "createTenantError": "No fue posible crear la inmobiliaria. Inténtalo de nuevo.",
+    "createTenantSuccess": "Inmobiliaria {name} creada con éxito.",
+    "createPlatformAdminSubmit": "Crear administrador de plataforma",
+    "createPlatformAdminError": "No fue posible crear el administrador de plataforma. Inténtalo de nuevo.",
+    "createPlatformAdminSuccess": "Administrador de plataforma {email} creado con éxito.",
+    "createTenantAdminSubmit": "Crear administrador de la inmobiliaria",
+    "createTenantAdminError": "No fue posible crear el administrador de la inmobiliaria. Inténtalo de nuevo.",
+    "createTenantAdminSuccess": "Administrador {email} creado con éxito."
+  }
+}

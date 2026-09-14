@@ -1,35 +1,17 @@
-import { type Dispatch, type Ref, type SetStateAction } from 'react'
-import { Box, Button, Stack } from '@mui/material'
-import Link from 'next/link'
+'use client'
 
+import { Box, Button, Stack } from '@mui/material'
+import { useTranslations } from 'next-intl'
+
+import { Link } from '@/i18n/navigation'
 import { componentText, radius, shadows, surface } from '@shared/theme/tokens'
 
-import {
-  searchFilterOrder,
-  textSearchFilterOrder,
-  type SearchFilterKey,
-  type TextSearchFilterKey,
-} from '../config/search-filters'
+import { searchFilterOrder, textSearchFilterOrder } from '../config/search-filters'
+import type { DesktopSearchBarProps, TextSearchFilterKey } from '../types/search'
 import { PriceRangeMenu } from './PriceRangeMenu'
 import { SearchDropdownFrame } from './SearchDropdownFrame'
 import { SearchFilterTrigger } from './SearchFilterTrigger'
 import { TextSearchMenu } from './TextSearchMenu'
-
-type DesktopSearchBarProps = {
-  selectedSearch: Record<SearchFilterKey, string>
-  priceRange: [number, number]
-  priceRangeLabel: string
-  activeSearchMenu: SearchFilterKey | null
-  searchDraft: Record<TextSearchFilterKey, string>
-  searchHref: string
-  desktopSearchRef: Ref<HTMLDivElement>
-  openSearchMenu: (key: SearchFilterKey) => void
-  closeSearchMenu: () => void
-  selectSearchValue: (key: SearchFilterKey, value: string) => void
-  updatePriceRange: (nextRange: [number, number]) => void
-  filterSearchOptions: (key: TextSearchFilterKey) => readonly string[]
-  setSearchDraft: Dispatch<SetStateAction<Record<TextSearchFilterKey, string>>>
-}
 
 export function DesktopSearchBar({
   selectedSearch,
@@ -44,8 +26,11 @@ export function DesktopSearchBar({
   selectSearchValue,
   updatePriceRange,
   filterSearchOptions,
+  getSearchOptionLabel,
   setSearchDraft,
 }: DesktopSearchBarProps) {
+  const t = useTranslations('marketplace.home.search')
+
   return (
     <Stack
       ref={desktopSearchRef}
@@ -82,7 +67,13 @@ export function DesktopSearchBar({
         >
           <SearchFilterTrigger
             filterKey={key}
-            value={key === 'priceRange' ? priceRangeLabel : selectedSearch[key]}
+            value={
+              key === 'priceRange'
+                ? priceRangeLabel
+                : key === 'propertyType'
+                  ? getSearchOptionLabel(key, selectedSearch[key])
+                  : selectedSearch[key]
+            }
             onOpen={openSearchMenu}
           />
 
@@ -100,6 +91,7 @@ export function DesktopSearchBar({
                   selectedSearch={selectedSearch}
                   searchDraft={searchDraft}
                   filterSearchOptions={filterSearchOptions}
+                  getSearchOptionLabel={getSearchOptionLabel}
                   selectSearchValue={selectSearchValue}
                   setSearchDraft={setSearchDraft}
                 />
@@ -109,22 +101,30 @@ export function DesktopSearchBar({
         </Box>
       ))}
 
-      <Button
+      <Box
         component={Link}
         href={searchHref}
-        variant="contained"
         sx={{
           flex: { md: '0 0 104px', xl: '0 0 118px' },
           minWidth: { md: 104, xl: 118 },
-          minHeight: { md: 40, xl: 55 },
           ml: { md: 0.7, xl: 0.9 },
-          px: 0,
-          borderRadius: `${radius.sm}px`,
-          ...componentText.desktopSearchButton,
+          textDecoration: 'none',
         }}
       >
-        Buscar
-      </Button>
+        <Button
+          component="span"
+          variant="contained"
+          sx={{
+            width: '100%',
+            minHeight: { md: 40, xl: 55 },
+            px: 0,
+            borderRadius: `${radius.sm}px`,
+            ...componentText.desktopSearchButton,
+          }}
+        >
+          {t('submit')}
+        </Button>
+      </Box>
     </Stack>
   )
 }

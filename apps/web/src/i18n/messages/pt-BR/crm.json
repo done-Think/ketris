@@ -1,0 +1,165 @@
+{
+  "metadata": {
+    "pipeline": {
+      "metadataTitle": "Ketris | Pipeline de Vendas"
+    },
+    "contacts": {
+      "metadataTitle": "Ketris | Contatos"
+    },
+    "proposals": {
+      "metadataTitle": "Ketris | Propostas"
+    }
+  },
+  "navigation": {
+    "ariaLabel": "Navegação do CRM",
+    "dashboard": "Dashboard",
+    "pipeline": "Pipeline",
+    "contacts": "Contatos",
+    "properties": "Imóveis",
+    "proposals": "Propostas",
+    "defaultUserName": "Equipe Ketris",
+    "defaultUserContext": "CRM imobiliário",
+    "openNavigation": "Abrir navegação"
+  },
+  "access": {
+    "loadingSession": "Carregando sessão",
+    "restrictedTitle": "Acesso restrito ao CRM",
+    "restrictedDescription": "Entre com uma conta vinculada a um tenant para visualizar as oportunidades.",
+    "signIn": "Entrar no Ketris"
+  },
+  "pipeline": {
+    "title": "Pipeline de Vendas",
+    "searchPlaceholder": "Buscar oportunidade...",
+    "searchAriaLabel": "Buscar oportunidade",
+    "filterByStage": "Filtrar por etapa",
+    "allStages": "Todas as etapas",
+    "newOpportunity": "Nova Oportunidade",
+    "newOpportunityTooltip": "Fluxo de criação em preparação",
+    "newOpportunityDisabledAriaLabel": "Nova Oportunidade: fluxo de criação em preparação",
+    "openOpportunityAriaLabel": "Abrir oportunidade de {name}",
+    "propertyUnavailable": "Imóvel indisponível no catálogo",
+    "boardAriaLabel": "Pipeline de oportunidades",
+    "loadError": "Não foi possível carregar as oportunidades.",
+    "dataLoadError": "Não foi possível carregar os dados do pipeline.",
+    "retry": "Tentar novamente",
+    "emptyStage": "Sem oportunidades nesta etapa.",
+    "projectedTotal": "Total projetado",
+    "projectedTotalAriaLabel": "Total projetado de {stage}",
+    "totalLabels": {
+      "rent": "Aluguel",
+      "sale": "Venda",
+      "uncategorized": "Sem categoria"
+    },
+    "stages": {
+      "prospecting": "Prospecção",
+      "qualification": "Qualificação",
+      "proposal": "Proposta",
+      "negotiation": "Negociação",
+      "closed": "Fechado",
+      "draft": "Prospecção",
+      "sent": "Proposta enviada",
+      "accepted": "Fechado",
+      "rejected": "Perdido"
+    }
+  },
+  "contacts": {
+    "title": "Contatos",
+    "searchPlaceholder": "Buscar contato por nome, email, fone...",
+    "searchAriaLabel": "Buscar contatos",
+    "filterAriaLabel": "Filtrar contatos por tipo",
+    "mobileListAriaLabel": "Lista móvel de contatos",
+    "tableAriaLabel": "Contatos do CRM",
+    "newContact": "Novo Contato",
+    "empty": "Nenhum contato encontrado.",
+    "resultsRange": "Mostrando {first}–{last} de {total}",
+    "selectContact": "Selecionar {name}",
+    "selectAllVisible": "Selecionar todos os contatos visíveis",
+    "propertyCount": "{count, plural, one {# imóvel} other {# imóveis}}",
+    "pagination": {
+      "previous": "Anterior",
+      "next": "Próximo"
+    },
+    "actions": {
+      "editContact": "Editar {name}",
+      "viewInteractions": "Ver interações de {name}",
+      "moreOptions": "Mais opções para {name}"
+    },
+    "types": {
+      "tenant": "Locatário",
+      "owner": "Proprietário",
+      "broker": "Corretor"
+    },
+    "tableColumns": {
+      "name": "Nome",
+      "type": "Tipo",
+      "phone": "Telefone",
+      "email": "Email",
+      "properties": "Imóveis",
+      "lastInteraction": "Última interação",
+      "actions": "Ações"
+    },
+    "filters": {
+      "all": "Todos",
+      "owners": "Proprietários",
+      "tenants": "Locatários",
+      "brokers": "Corretores"
+    }
+  },
+  "opportunityDetail": {
+    "editTitle": "Editar oportunidade",
+    "breadcrumbAriaLabel": "Navegação estrutural",
+    "pipelineLink": "Pipeline",
+    "contactInterestTitle": "Informações de contato e interesse",
+    "archive": "Arquivar oportunidade",
+    "archiveTitle": "Arquivar oportunidade?",
+    "archiveDescription": "A oportunidade deixará de aparecer no pipeline ativo, mas continuará armazenada no CRM.",
+    "loadingAriaLabel": "Carregando oportunidade",
+    "createdActivityTitle": "Oportunidade criada",
+    "createdActivityDetail": "Registro incluído no pipeline.",
+    "updatedActivityTitle": "Oportunidade atualizada",
+    "updatedActivityDetail": "Etapa atual: {stage}.",
+    "loadError": "Não foi possível carregar esta oportunidade.",
+    "backToPipeline": "Voltar ao pipeline",
+    "movedSuccess": "Oportunidade movida para {stage}.",
+    "updateStageError": "Não foi possível atualizar a etapa.",
+    "updateSuccess": "Oportunidade atualizada.",
+    "updateError": "Não foi possível atualizar a oportunidade.",
+    "archiveSuccess": "Oportunidade arquivada.",
+    "archiveError": "Não foi possível arquivar a oportunidade.",
+    "unknownLocation": "Localização não informada",
+    "confirmStageTitle": "Confirmar mudança de etapa",
+    "confirmStageDescription": "Mover {name} de {from} para {to}?",
+    "propertyPanel": {
+      "title": "Imóvel associado",
+      "retry": "Tentar novamente",
+      "loadError": "Não foi possível carregar o imóvel associado. Referência: {id}",
+      "monthlySuffix": "/mês"
+    },
+    "fields": {
+      "name": "Nome",
+      "email": "E-mail",
+      "phone": "Telefone",
+      "proposedValue": "Valor proposto",
+      "contractTerm": "Prazo do contrato (meses)",
+      "contractTermLabel": "Prazo de contrato",
+      "intendedStart": "Início pretendido",
+      "guarantee": "Garantia",
+      "specialConditions": "Condições especiais",
+      "specialConditionsHelper": "Separe as condições por vírgulas.",
+      "notes": "Observações",
+      "notInformed": "Não informado",
+      "months": "{count, plural, one {# mês} other {# meses}}"
+    },
+    "guarantees": {
+      "NENHUMA": "Não informada",
+      "FIADOR": "Fiador",
+      "CAUCAO": "Caução",
+      "SEGURO_FIANCA": "Seguro-fiança"
+    },
+    "actions": {
+      "cancel": "Cancelar",
+      "saveChanges": "Salvar alterações",
+      "confirmStageChange": "Confirmar mudança"
+    }
+  }
+}

@@ -1,19 +1,10 @@
-import { type Dispatch, type SetStateAction } from 'react'
-import { Box, MenuItem, TextField, Typography } from '@mui/material'
+import { Box, IconButton, InputAdornment, MenuItem, TextField, Typography } from '@mui/material'
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import { useTranslations } from 'next-intl'
 
 import { alpha, componentText, surface } from '@shared/theme/tokens'
 
-import type { SearchFilterKey, TextSearchFilterKey } from '../config/search-filters'
-
-type TextSearchMenuProps = {
-  filterKey: TextSearchFilterKey
-  centered?: boolean
-  selectedSearch: Record<SearchFilterKey, string>
-  searchDraft: Record<TextSearchFilterKey, string>
-  filterSearchOptions: (key: TextSearchFilterKey) => readonly string[]
-  selectSearchValue: (key: SearchFilterKey, value: string) => void
-  setSearchDraft: Dispatch<SetStateAction<Record<TextSearchFilterKey, string>>>
-}
+import type { TextSearchMenuProps } from '../types/search'
 
 export function TextSearchMenu({
   filterKey,
@@ -21,10 +12,20 @@ export function TextSearchMenu({
   selectedSearch,
   searchDraft,
   filterSearchOptions,
+  getSearchOptionLabel,
   selectSearchValue,
   setSearchDraft,
 }: TextSearchMenuProps) {
+  const t = useTranslations('marketplace.home.search')
   const options = filterSearchOptions(filterKey)
+  const draftValue = searchDraft[filterKey]
+
+  const clearDraft = () => {
+    setSearchDraft((current) => ({
+      ...current,
+      [filterKey]: '',
+    }))
+  }
 
   return (
     <Box>
@@ -34,9 +35,9 @@ export function TextSearchMenu({
           fullWidth
           size="small"
           placeholder={
-            filterKey === 'location' ? 'Digite cidade ou bairro' : 'Digite o tipo de imóvel'
+            filterKey === 'location' ? t('locationPlaceholder') : t('propertyTypePlaceholder')
           }
-          value={searchDraft[filterKey]}
+          value={draftValue}
           onChange={(event) =>
             setSearchDraft((current) => ({
               ...current,
@@ -47,6 +48,23 @@ export function TextSearchMenu({
             if (event.key !== 'Enter') return
             const [firstOption] = options
             if (firstOption) selectSearchValue(filterKey, firstOption)
+          }}
+          slotProps={{
+            input: {
+              endAdornment: draftValue ? (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label={t('clearSearch')}
+                    edge="end"
+                    size="small"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={clearDraft}
+                  >
+                    <CloseRoundedIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ) : null,
+            },
           }}
         />
       </Box>
@@ -75,7 +93,7 @@ export function TextSearchMenu({
                 },
               }}
             >
-              {value}
+              {getSearchOptionLabel(filterKey, value)}
             </MenuItem>
           ))
         ) : (
@@ -88,7 +106,7 @@ export function TextSearchMenu({
               textAlign: centered ? 'center' : 'left',
             }}
           >
-            Nenhum resultado
+            {t('noResults')}
           </Typography>
         )}
       </Box>

@@ -3,11 +3,10 @@ import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import SupportAgentOutlinedIcon from '@mui/icons-material/SupportAgentOutlined'
 import SwapHorizOutlinedIcon from '@mui/icons-material/SwapHorizOutlined'
 
-import type { ProfileAction, UserProfile } from '../types'
+import type { ProfileAction, UserProfile } from '../types/user-profile'
 
 export const userProfile: UserProfile = {
   name: 'Rafael Martins',
-  role: 'Corretor parceiro',
   company: 'Ketris Prime',
   email: 'rafael@ketris.com.br',
   avatar:
@@ -15,8 +14,8 @@ export const userProfile: UserProfile = {
 }
 
 export const profileActions: ProfileAction[] = [
-  { label: 'Suporte', icon: SupportAgentOutlinedIcon, href: '/login' },
-  { label: 'Configurações', icon: SettingsOutlinedIcon, href: '/login' },
-  { label: 'Trocar modalidade', icon: SwapHorizOutlinedIcon, href: '/imoveis' },
-  { label: 'Sair', icon: LogoutOutlinedIcon, href: '/login', tone: 'danger' },
+  { labelKey: 'support', icon: SupportAgentOutlinedIcon, href: '/login' },
+  { labelKey: 'settings', icon: SettingsOutlinedIcon, href: '/login' },
+  { labelKey: 'switchMode', icon: SwapHorizOutlinedIcon, href: '/properties' },
+  { labelKey: 'signOut', icon: LogoutOutlinedIcon, href: '/login', tone: 'danger' },
 ]

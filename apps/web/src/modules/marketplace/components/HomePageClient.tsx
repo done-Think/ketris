@@ -1,24 +1,23 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
 import { Box } from '@mui/material'
 
-import { HomeHeader, ProfileModal, SiteFooter } from '@shared/components/layout'
+import { SiteFooter } from '@shared/components/layout'
 import { useClickAway } from '@shared/hooks'
 import { surface } from '@shared/theme/tokens'
 
-import { footerColumns, homeNavigationItems, legalLinks } from '../config/navigation'
-import { profileActions, userProfile } from '../data/user-profile'
+import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import { useMarketplaceSearch } from '../hooks/use-marketplace-search'
 import { FeaturedPropertiesSection } from './FeaturedPropertiesSection'
 import { HeroSection } from './HeroSection'
+import { MarketplaceHeader } from './MarketplaceHeader'
 import { MiniPropertiesSection } from './MiniPropertiesSection'
 
 export function HomePageClient() {
   const search = useMarketplaceSearch()
+  const { footerColumns, legalLinks } = useMarketplaceNavigation()
   const { activeSearchMenu, closeSearchMenu } = search
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const desktopSearchRef = useRef<HTMLDivElement | null>(null)
   const mobileSearchRef = useRef<HTMLDivElement | null>(null)
   const searchRefs = useMemo(() => [desktopSearchRef, mobileSearchRef], [])
@@ -35,20 +34,7 @@ export function HomePageClient() {
         bgcolor: surface.app,
       }}
     >
-      <HomeHeader
-        navigationItems={homeNavigationItems}
-        profileButtonRef={profileButtonRef}
-        userProfile={userProfile}
-        onToggleProfile={() => setIsProfileOpen((current) => !current)}
-      />
-
-      <ProfileModal
-        open={isProfileOpen}
-        anchorRef={profileButtonRef}
-        actions={profileActions}
-        userProfile={userProfile}
-        onClose={() => setIsProfileOpen(false)}
-      />
+      <MarketplaceHeader activeItemId="home" />
 
       <HeroSection
         selectedSearch={search.selectedSearch}
@@ -64,6 +50,7 @@ export function HomePageClient() {
         selectSearchValue={search.selectSearchValue}
         updatePriceRange={search.updatePriceRange}
         filterSearchOptions={search.filterSearchOptions}
+        getSearchOptionLabel={search.getSearchOptionLabel}
         setSearchDraft={search.setSearchDraft}
       />
 

@@ -1,4 +1,4 @@
-import type { MiniMarketplaceProperty } from '../types'
+import type { MiniMarketplaceProperty } from '../types/mini-property'
 
 export const miniProperties: MiniMarketplaceProperty[] = [
   {

@@ -7,7 +7,6 @@ interface TenantState {
   clearTenant: () => void
 }
 
-// Estado global do tenant ativo (multi-tenant).
 export const useTenantStore = create<TenantState>((set) => ({
   tenantId: null,
   tenantName: null,
