@@ -18,8 +18,8 @@ const actionSx = {
   fontSize: { xs: 11, md: componentText.cardAction.fontSize },
   minWidth: { xs: 44, md: 0 },
   whiteSpace: 'nowrap',
-  px: { xs: 0.5, md: 1.5 },
-  minHeight: { xs: 44, md: 32 },
+  px: { xs: 0.25, md: 1.5 },
+  minHeight: { xs: 36, md: 32 },
   borderRadius: `${radius.sm}px`,
 } as const
 
@@ -74,7 +74,7 @@ export function OwnerPropertyCard({ property }: OwnerPropertyCardProps) {
           </Box>
         </Box>
       </Box>
-      <Box sx={{ p: { xs: 1.5, md: 2.25 }, pb: { xs: 0, md: 2.25 } }}>
+      <Box sx={{ p: { xs: 1.25, md: 2.25 }, pb: { xs: 0, md: 2.25 } }}>
         <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1}>
           <Typography
             id={titleId}
@@ -157,7 +157,7 @@ export function OwnerPropertyCard({ property }: OwnerPropertyCardProps) {
             flexWrap: { xs: 'nowrap', md: 'wrap' },
             justifyContent: 'space-between',
             gap: { xs: 0.5, md: 1 },
-            mt: { xs: 1, md: 1.5 },
+            mt: { xs: 0.75, md: 1.5 },
             px: { xs: 0, md: 1.25 },
             py: 0.75,
             bgcolor: { xs: 'transparent', md: surface.app },
@@ -193,11 +193,11 @@ export function OwnerPropertyCard({ property }: OwnerPropertyCardProps) {
               spacing={{ xs: 0.5, md: 0.75 }}
               sx={{ color: brand.neutral[600] }}
             >
-              <Icon sx={{ fontSize: { xs: 12, md: iconSize.xs } }} />
+              <Icon sx={{ fontSize: { xs: 11, md: iconSize.xs } }} />
               <Typography
                 sx={{
                   ...componentText.cardMeta,
-                  fontSize: { xs: 10, md: componentText.cardMeta.fontSize },
+                  fontSize: { xs: 9.5, md: componentText.cardMeta.fontSize },
                   whiteSpace: 'nowrap',
                 }}
               >

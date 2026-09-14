@@ -56,7 +56,7 @@ export function OwnerPropertiesHeader({ filters, onFiltersChange }: OwnerPropert
           variant="contained"
           sx={{
             display: { xs: 'inline-flex', md: 'none' },
-            minHeight: 44,
+            minHeight: 36,
             minWidth: 64,
             px: 1.5,
             borderRadius: `${radius.sm}px`,
@@ -167,7 +167,7 @@ export function OwnerPropertiesHeader({ filters, onFiltersChange }: OwnerPropert
         aria-label="Filtrar imóveis"
         sx={{
           display: { xs: 'flex', md: 'none' },
-          gap: 1,
+          gap: 0.75,
           mt: 1,
           overflowX: 'auto',
           scrollbarWidth: 'none',
@@ -188,7 +188,7 @@ export function OwnerPropertiesHeader({ filters, onFiltersChange }: OwnerPropert
             onClick={() => onFiltersChange({ searchQuery: '', purpose: 'all', status: value })}
             sx={{
               flexShrink: 0,
-              minHeight: 44,
+              minHeight: 36,
               minWidth: 0,
               px: 0,
               fontSize: 11,
@@ -198,8 +198,8 @@ export function OwnerPropertiesHeader({ filters, onFiltersChange }: OwnerPropert
             <Box
               component="span"
               sx={{
-                px: 2,
-                py: 0.75,
+                px: 1.5,
+                py: 0.5,
                 borderRadius: `${radius.full}px`,
                 border: '1px solid',
                 borderColor: filters.status === value ? 'primary.main' : 'divider',

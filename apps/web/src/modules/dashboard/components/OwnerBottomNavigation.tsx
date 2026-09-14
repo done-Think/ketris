@@ -74,6 +74,7 @@ export function OwnerBottomNavigation() {
           borderTop: '1px solid',
           borderColor: 'divider',
           zIndex: zIndex.header,
+          fontFamily: 'var(--font-inter), var(--font-primary), system-ui, sans-serif',
         }}
       >
         {navigationItems.map(({ label, href, Icon }) => {
