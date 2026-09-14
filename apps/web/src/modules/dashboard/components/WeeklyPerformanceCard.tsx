@@ -22,7 +22,7 @@ export function WeeklyPerformanceCard() {
       component="section"
       aria-labelledby="weekly-performance-title"
       elevation={0}
-      sx={{ ...ownerDashboardPanelSx, minHeight: 112, p: { xs: 2, md: 2.35 } }}
+      sx={{ ...ownerDashboardPanelSx, minHeight: 82, p: { xs: 2, md: 1.75 } }}
     >
       <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
         <Box>

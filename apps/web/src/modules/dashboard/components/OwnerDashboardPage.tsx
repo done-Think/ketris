@@ -26,9 +26,9 @@ export function OwnerDashboardPage() {
             component="h1"
             sx={{
               color: brand.graphite[500],
-              fontSize: { xs: 27, md: 30 },
+              fontSize: { xs: 27, md: 24 },
               fontWeight: 700,
-              letterSpacing: '-0.02em',
+              letterSpacing: '-0.015em',
               lineHeight: 1.2,
             }}
           >

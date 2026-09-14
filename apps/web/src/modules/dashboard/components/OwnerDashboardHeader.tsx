@@ -69,7 +69,7 @@ export function OwnerDashboardHeader() {
           top: 0,
           zIndex: zIndex.header,
           width: '100%',
-          height: 64,
+          height: { xs: 64, md: 48 },
           borderBottom: '1px solid',
           borderColor: 'divider',
           bgcolor: surface.paper,
@@ -109,7 +109,7 @@ export function OwnerDashboardHeader() {
               component="span"
               sx={{
                 color: 'primary.main',
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: 900,
                 lineHeight: 1,
                 letterSpacing: '-0.035em',
@@ -121,7 +121,7 @@ export function OwnerDashboardHeader() {
               component="span"
               sx={{
                 color: brand.neutral[500],
-                fontSize: 9,
+                fontSize: 8,
                 fontWeight: 700,
                 lineHeight: 1,
                 letterSpacing: '0.025em',
@@ -149,7 +149,7 @@ export function OwnerDashboardHeader() {
                 alignItems: 'center',
                 px: 0.5,
                 color: active ? brand.magenta[500] : brand.neutral[600],
-                fontSize: 12.5,
+                fontSize: 11,
                 fontWeight: active ? 700 : 500,
                 lineHeight: 1,
                 textDecoration: 'none',

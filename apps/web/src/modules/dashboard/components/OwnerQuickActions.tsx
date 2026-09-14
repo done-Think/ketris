@@ -67,7 +67,7 @@ export function OwnerQuickActions() {
                 },
                 alignItems: 'center',
                 minWidth: 0,
-                minHeight: { xs: 94, md: 80 },
+                minHeight: { xs: 94, md: 60 },
                 border: '1px solid',
                 borderColor: brand.neutral[100],
                 borderRadius: `${radius.md}px`,

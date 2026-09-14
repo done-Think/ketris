@@ -73,8 +73,8 @@ export function OwnerMetricCards() {
             ...ownerDashboardPanelSx,
             display: { xs: 'none', md: 'flex' },
             minWidth: 0,
-            minHeight: { xs: 132, md: 136 },
-            p: { xs: 2, md: 2.5 },
+            minHeight: { xs: 132, md: 108 },
+            p: { xs: 2, md: 2.25 },
           }}
         >
           <Stack sx={{ minWidth: 0, width: '100%' }}>
@@ -93,7 +93,7 @@ export function OwnerMetricCards() {
               <Typography
                 sx={{
                   color: brand.graphite[500],
-                  fontSize: { xs: metric.id === 'potential-revenue' ? 23 : 27, md: 30 },
+                  fontSize: { xs: metric.id === 'potential-revenue' ? 23 : 27, md: 24 },
                   fontWeight: 700,
                   letterSpacing: '-0.025em',
                   lineHeight: 1,
