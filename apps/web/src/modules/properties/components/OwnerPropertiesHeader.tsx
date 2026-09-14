@@ -107,6 +107,7 @@ export function OwnerPropertiesHeader({ filters, onFiltersChange }: OwnerPropert
             slotProps={{
               select: {
                 IconComponent: ExpandMoreRoundedIcon,
+                MenuProps: { disableScrollLock: true },
                 SelectDisplayProps: { 'aria-label': 'Status' },
                 renderValue: (value) =>
                   `Status: ${{ all: 'Todos', active: 'Ativo', paused: 'Pausado', 'without-proposals': 'Sem Proposta' }[value as OwnerPropertyStatusFilter]}`,
@@ -133,6 +134,7 @@ export function OwnerPropertiesHeader({ filters, onFiltersChange }: OwnerPropert
             slotProps={{
               select: {
                 IconComponent: ExpandMoreRoundedIcon,
+                MenuProps: { disableScrollLock: true },
                 SelectDisplayProps: { 'aria-label': 'Tipo' },
                 renderValue: (value) =>
                   `Tipo: ${{ all: 'Todos', rent: 'Aluguel', sale: 'Venda' }[value as OwnerPropertyPurposeFilter]}`,
