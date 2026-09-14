@@ -17,7 +17,7 @@ export function UpcomingVisitsCard() {
       elevation={0}
       sx={{
         ...ownerDashboardPanelSx,
-        p: { xs: 0, md: 2.75 },
+        p: { xs: 0, md: 3 },
         bgcolor: { xs: 'transparent', md: surface.paper },
         border: { xs: 0, md: ownerDashboardPanelSx.border },
         boxShadow: { xs: 'none', md: ownerDashboardPanelSx.boxShadow },
@@ -53,7 +53,7 @@ export function UpcomingVisitsCard() {
                 md: '58px 54px minmax(0, 1fr) auto',
               },
               alignItems: 'center',
-              minHeight: { xs: 86, md: 43 },
+              minHeight: { xs: 86, md: 52 },
               borderBottom: {
                 xs: 0,
                 md: index === ownerUpcomingVisits.length - 1 ? 0 : '1px solid',
@@ -76,7 +76,7 @@ export function UpcomingVisitsCard() {
                 color: brand.graphite[500],
                 px: 1,
                 py: 0.65,
-                fontSize: 10.5,
+                fontSize: 11.5,
                 fontWeight: 700,
                 lineHeight: 1,
                 whiteSpace: 'nowrap',
@@ -108,14 +108,14 @@ export function UpcomingVisitsCard() {
               sx={{
                 display: { xs: 'none', md: 'block' },
                 color: brand.magenta[600],
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: 700,
               }}
             >
               {visit.time}
             </Typography>
             <Box sx={{ minWidth: 0 }}>
-              <Typography noWrap sx={{ color: brand.graphite[500], fontSize: 12, fontWeight: 700 }}>
+              <Typography noWrap sx={{ color: brand.graphite[500], fontSize: 13, fontWeight: 700 }}>
                 {visit.property}
               </Typography>
               <Typography noWrap sx={ownerDashboardMetaSx}>

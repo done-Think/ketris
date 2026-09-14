@@ -22,7 +22,7 @@ export function WeeklyPerformanceCard() {
       component="section"
       aria-labelledby="weekly-performance-title"
       elevation={0}
-      sx={{ ...ownerDashboardPanelSx, minHeight: 82, p: { xs: 2, md: 1.75 } }}
+      sx={{ ...ownerDashboardPanelSx, minHeight: { xs: 82, md: 108 }, p: { xs: 2, md: 2.25 } }}
     >
       <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
         <Box>
@@ -37,7 +37,7 @@ export function WeeklyPerformanceCard() {
             sx={{
               mt: 0.35,
               color: brand.graphite[500],
-              fontSize: { xs: 21, md: 23 },
+              fontSize: { xs: 21, md: 26 },
               fontWeight: 700,
               lineHeight: 1.1,
             }}
@@ -54,7 +54,12 @@ export function WeeklyPerformanceCard() {
           role="img"
           aria-label="Tendência semanal de visualizações"
           viewBox="0 0 152 58"
-          sx={{ width: { xs: 116, sm: 152 }, height: 58, flexShrink: 0, overflow: 'visible' }}
+          sx={{
+            width: { xs: 116, sm: 152, md: 170 },
+            height: { xs: 58, md: 64 },
+            flexShrink: 0,
+            overflow: 'visible',
+          }}
         >
           <polyline
             points={points}

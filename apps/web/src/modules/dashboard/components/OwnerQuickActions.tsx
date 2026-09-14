@@ -67,13 +67,13 @@ export function OwnerQuickActions() {
                 },
                 alignItems: 'center',
                 minWidth: 0,
-                minHeight: { xs: 94, md: 60 },
+                minHeight: { xs: 94, md: 76 },
                 border: '1px solid',
                 borderColor: brand.neutral[100],
                 borderRadius: `${radius.md}px`,
                 bgcolor: surface.paper,
                 color: brand.graphite[500],
-                px: { xs: 1.5, md: 2.1 },
+                px: { xs: 1.5, md: 2.5 },
                 textDecoration: 'none',
                 transition: motion.transition.card,
                 '&:hover': {
@@ -90,15 +90,15 @@ export function OwnerQuickActions() {
               <Stack
                 direction={{ xs: 'column', md: 'row' }}
                 alignItems={{ xs: 'flex-start', md: 'center' }}
-                spacing={{ xs: 1.2, md: 1.5 }}
+                spacing={{ xs: 1.2, md: 1.75 }}
                 sx={{ minWidth: 0 }}
               >
                 <Box
                   sx={{
                     display: 'grid',
                     placeItems: 'center',
-                    width: { xs: 30, md: 38 },
-                    height: { xs: 30, md: 38 },
+                    width: { xs: 30, md: 42 },
+                    height: { xs: 30, md: 42 },
                     flexShrink: 0,
                     borderRadius: `${radius.sm}px`,
                     bgcolor: {
@@ -115,7 +115,7 @@ export function OwnerQuickActions() {
                 </Box>
                 <Typography
                   sx={{
-                    fontSize: { xs: 11.5, md: 12.5 },
+                    fontSize: { xs: 11.5, md: 13.5 },
                     fontWeight: 700,
                     lineHeight: 1.25,
                   }}

@@ -13,10 +13,10 @@ export function OwnerCreatePropertyButton() {
       variant="contained"
       sx={{
         alignSelf: { xs: 'stretch', sm: 'center' },
-        minHeight: 34,
+        minHeight: 42,
         borderRadius: `${radius.sm}px`,
-        px: 2.2,
-        fontSize: 11.5,
+        px: 2.6,
+        fontSize: 13,
         fontWeight: 700,
         whiteSpace: 'nowrap',
       }}

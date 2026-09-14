@@ -38,7 +38,7 @@ export function OwnerDashboardPage() {
             sx={{
               color: brand.graphite[500],
               fontFamily: ownerDashboardDisplayFontFamily,
-              fontSize: { xs: 27, md: 24 },
+              fontSize: { xs: 27, md: 30 },
               fontWeight: 700,
               letterSpacing: '-0.015em',
               lineHeight: 1.2,
@@ -61,8 +61,8 @@ export function OwnerDashboardPage() {
               lg: 'minmax(0, 1.3fr) minmax(360px, 1fr)',
             },
             alignItems: 'stretch',
-            gap: { xs: 3, md: 2.75, lg: 3 },
-            mt: { xs: 4, md: 3 },
+            gap: { xs: 3, md: 3, lg: 3.5 },
+            mt: { xs: 4, md: 3.5 },
           }}
         >
           <RecentProposalsCard />

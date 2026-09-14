@@ -70,7 +70,7 @@ export function OwnerDashboardHeader() {
           top: 0,
           zIndex: zIndex.header,
           width: '100%',
-          height: { xs: 64, md: 48 },
+          height: { xs: 64, md: 56 },
           borderBottom: '1px solid',
           borderColor: 'divider',
           bgcolor: surface.paper,
@@ -116,7 +116,7 @@ export function OwnerDashboardHeader() {
               component="span"
               sx={{
                 color: 'primary.main',
-                fontSize: 18,
+                fontSize: { xs: 18, md: 20 },
                 fontWeight: 900,
                 lineHeight: 1,
                 letterSpacing: '-0.035em',
@@ -128,7 +128,7 @@ export function OwnerDashboardHeader() {
               component="span"
               sx={{
                 color: brand.neutral[500],
-                fontSize: 8,
+                fontSize: { xs: 8, md: 9 },
                 fontWeight: 700,
                 lineHeight: 1,
                 letterSpacing: '0.025em',
@@ -161,7 +161,7 @@ export function OwnerDashboardHeader() {
                 alignItems: 'center',
                 px: 0.5,
                 color: active ? brand.magenta[500] : brand.neutral[600],
-                fontSize: 11,
+                fontSize: 12.5,
                 fontWeight: active ? 700 : 500,
                 lineHeight: 1,
                 textDecoration: 'none',
@@ -227,8 +227,8 @@ export function OwnerDashboardHeader() {
               src={session?.user?.image ?? '/owner-avatar.svg'}
               alt={ownerName}
               sx={{
-                width: 30,
-                height: 30,
+                width: 32,
+                height: 32,
                 flexShrink: 0,
                 bgcolor: brand.neutral[700],
                 color: surface.lightText,
@@ -240,7 +240,7 @@ export function OwnerDashboardHeader() {
             </Avatar>
             <Typography
               noWrap
-              sx={{ maxWidth: 154, color: brand.graphite[500], fontSize: 12.5, fontWeight: 700 }}
+              sx={{ maxWidth: 154, color: brand.graphite[500], fontSize: 13.5, fontWeight: 700 }}
             >
               {ownerName}
             </Typography>

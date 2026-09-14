@@ -16,7 +16,7 @@ export const ownerDashboardPanelSx = {
 
 export const ownerDashboardSectionTitleSx = {
   color: brand.graphite[500],
-  fontSize: { xs: 18, md: 20 },
+  fontSize: { xs: 18, md: 22 },
   fontWeight: 700,
   lineHeight: 1.25,
 }
