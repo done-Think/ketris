@@ -1,6 +1,6 @@
 import { createLocalizedMetadata } from '@/i18n/metadata'
 import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
-import { PipelineBoard } from '@modules/crm/components/PipelineBoard'
+import { ProposalsListPage } from '@modules/proposals/components/ProposalsListPage'
 
 export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
   const { locale } = await params
@@ -9,5 +9,5 @@ export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
 }
 
 export default function CrmProposalsPage() {
-  return <PipelineBoard initialStatus="ENVIADA" titleKey="proposalsTitle" />
+  return <ProposalsListPage />
 }

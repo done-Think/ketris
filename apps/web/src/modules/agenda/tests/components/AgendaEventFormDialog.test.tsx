@@ -9,7 +9,11 @@ import { AgendaEventFormDialog } from '../../components/AgendaEventFormDialog'
 import type { AgendaPropertyOption } from '../../types/agenda-event'
 
 const propertyOptions: AgendaPropertyOption[] = [
-  { href: '/dashboard/properties/apt-jardins-3q', id: 'apt-jardins-3q', label: 'Apartamento Jardins' },
+  {
+    href: '/dashboard/properties/apt-jardins-3q',
+    id: 'apt-jardins-3q',
+    label: 'Apartamento Jardins',
+  },
 ]
 
 function renderDialog(onCreate = vi.fn()) {

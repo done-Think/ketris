@@ -136,7 +136,12 @@ export function AgendaEventFormDialog({
                 gap: 1.4,
               }}
             >
-              <RhfTextField control={control} name="participant" label={t('fields.participant')} fullWidth />
+              <RhfTextField
+                control={control}
+                name="participant"
+                label={t('fields.participant')}
+                fullWidth
+              />
               <RhfMaskedTextField
                 control={control}
                 name="phone"

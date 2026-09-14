@@ -8,6 +8,9 @@
     },
     "proposals": {
       "metadataTitle": "Ketris | Propostas"
+    },
+    "proposalDetail": {
+      "metadataTitle": "Ketris | Detalhe da Proposta"
     }
   },
   "navigation": {
