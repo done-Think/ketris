@@ -2,15 +2,16 @@
 
 import { Box, Stack } from '@mui/material'
 import dayjs from 'dayjs'
+import 'dayjs/locale/es'
 import 'dayjs/locale/pt-br'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSnackbar } from 'notistack'
 
 import { dashboardProperties } from '@modules/properties/data/dashboard-properties'
 
-import { agendaEvents, agendaTimeSlots } from '../data/agenda-events'
+import { agendaTimeSlots, getAgendaEvents } from '../data/agenda-events'
 import { agendaOtherPropertyValue } from '../schemas/agenda-event-form-schema'
 import type {
   AgendaEvent,
@@ -19,11 +20,13 @@ import type {
   AgendaRescheduleFormValues,
 } from '../types/agenda-event'
 import { AgendaDashboardHeader } from './agenda-dashboard/AgendaDashboardHeader'
+import { AgendaMobileDayList } from './agenda-dashboard/AgendaMobileDayList'
 import { AgendaNotificationsPopover } from './agenda-dashboard/AgendaNotificationsPopover'
 import { AgendaWeekCalendar } from './agenda-dashboard/AgendaWeekCalendar'
 import {
   agendaVisibleDayCount,
   buildAgendaCalendarDays,
+  getAgendaDayjsLocale,
   getAgendaNotifications,
   getAgendaWeekRange,
 } from './agenda-dashboard/agenda-dashboard-shared'
@@ -31,17 +34,23 @@ import { AgendaEventDetailDialog } from './AgendaEventDetailDialog'
 import { AgendaEventFormDialog } from './AgendaEventFormDialog'
 
 export function AgendaDashboardPage() {
+  const locale = useLocale()
   const t = useTranslations('agenda.dashboard')
   const { enqueueSnackbar } = useSnackbar()
   const searchParams = useSearchParams()
-  const [events, setEvents] = useState<AgendaEvent[]>(agendaEvents)
+  const dayjsLocale = getAgendaDayjsLocale(locale)
+  const [events, setEvents] = useState<AgendaEvent[]>(() => getAgendaEvents(t))
   const [isEventFormOpen, setIsEventFormOpen] = useState(false)
   const [notificationAnchorEl, setNotificationAnchorEl] = useState<HTMLButtonElement | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null)
-  const today = useMemo(() => dayjs().locale('pt-br').startOf('day'), [])
+  const today = useMemo(() => dayjs().locale(dayjsLocale).startOf('day'), [dayjsLocale])
   const currentMonthEnd = useMemo(() => today.endOf('month'), [today])
   const [weekStartDate, setWeekStartDate] = useState(() => today)
-  const agendaDays = useMemo(() => buildAgendaCalendarDays(weekStartDate), [weekStartDate])
+  const [selectedDayKey, setSelectedDayKey] = useState(() => today.format('YYYY-MM-DD'))
+  const agendaDays = useMemo(
+    () => buildAgendaCalendarDays(weekStartDate, locale),
+    [locale, weekStartDate],
+  )
   const propertyOptions = useMemo<AgendaPropertyOption[]>(
     () =>
       dashboardProperties.map((property) => ({
@@ -87,13 +96,19 @@ export function AgendaDashboardPage() {
   }
 
   useEffect(() => {
-    const eventId = searchParams.get('eventId')
+    const eventId = searchParams?.get('eventId')
     const event = events.find((agendaEvent) => agendaEvent.id === eventId)
     if (!event) return
 
     showScheduledWeek(dayjs(event.scheduledDate))
     setSelectedEvent(event)
   }, [events, searchParams, showScheduledWeek])
+
+  useEffect(() => {
+    if (agendaDays.some((day) => day.key === selectedDayKey)) return
+
+    setSelectedDayKey(agendaDays[0]?.key ?? today.format('YYYY-MM-DD'))
+  }, [agendaDays, selectedDayKey, today])
 
   const rescheduleSelectedEvent = (values: AgendaRescheduleFormValues) => {
     if (!selectedEvent) return
@@ -115,7 +130,7 @@ export function AgendaDashboardPage() {
     showScheduledWeek(nextDate)
     enqueueSnackbar(
       t('rescheduleSuccess', {
-        date: nextDate.format('DD/MM/YYYY'),
+        date: nextDate.locale(dayjsLocale).format('DD/MM/YYYY'),
         time: values.scheduledTime,
         title: selectedEvent.title,
       }),
@@ -153,6 +168,7 @@ export function AgendaDashboardPage() {
 
     setEvents((currentEvents) => [...currentEvents, nextEvent])
     showScheduledWeek(scheduledDate)
+    setSelectedDayKey(values.scheduledDate)
     setIsEventFormOpen(false)
     enqueueSnackbar(t('createSuccess', { title: values.title }), { variant: 'success' })
   }
@@ -177,6 +193,14 @@ export function AgendaDashboardPage() {
           events={events}
           onSelectEvent={setSelectedEvent}
           timeSlots={agendaTimeSlots}
+        />
+
+        <AgendaMobileDayList
+          days={agendaDays}
+          events={events}
+          onSelectDay={setSelectedDayKey}
+          onSelectEvent={setSelectedEvent}
+          selectedDayKey={selectedDayKey}
         />
       </Stack>
 

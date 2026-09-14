@@ -13,16 +13,6 @@
       "metadataTitle": "Ketris | Propuestas"
     }
   },
-  "agenda": {
-    "title": "Agenda",
-    "subtitle": "Compromisos comerciales, visitas y retornos.",
-    "freeSlot": "Horario libre",
-    "statuses": {
-      "Confirmada": "Confirmada",
-      "Pendente": "Pendiente",
-      "Reagendar": "Reprogramar"
-    }
-  },
   "notificationsCenter": {
     "tooltip": "Notificaciones",
     "ariaLabel": "Abrir notificaciones del dashboard",

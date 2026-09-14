@@ -9,6 +9,7 @@
     "notificationsAriaLabel": "Abrir notificaciones de la agenda",
     "notificationsTooltip": "Notificaciones",
     "openEventAriaLabel": "Abrir {title}",
+    "selectedDayLabel": "{day}, {date} de {month}",
     "todayVisitTitle": "Visita programada para hoy",
     "todayVisitMessage": "{time} - {participant} en {property}",
     "assignedEventTitle": "Nuevo compromiso asignado",
@@ -24,6 +25,38 @@
       "title": "Alertas de la agenda",
       "subtitle": "Visitas de hoy y compromisos asignados",
       "empty": "No hay alertas para mostrar."
+    },
+    "sampleEvents": {
+      "digitalSignature": {
+        "notes": "Reprogramar con fiador e inquilino al mismo tiempo para completar la firma.",
+        "property": "Contrato Studio Pinheiros",
+        "title": "Firma digital"
+      },
+      "entryInspection": {
+        "notes": "Revisar pintura, checklist de llaves y lecturas iniciales de medidores.",
+        "property": "Studio Vila Madalena",
+        "title": "Inspección de entrada"
+      },
+      "financingFollowUp": {
+        "notes": "Acompañar la respuesta del banco y documentos pendientes del comprador.",
+        "property": "Apartamento Jardins",
+        "title": "Seguimiento de financiación"
+      },
+      "intakeMeeting": {
+        "notes": "Alinear exclusividad, plazo de publicación y estrategia de fotos.",
+        "property": "Casa Alto da Lapa",
+        "title": "Reunión de captación"
+      },
+      "jardimVisit": {
+        "notes": "El cliente quiere validar la luz de la sala y la plaza antes de enviar una propuesta.",
+        "property": "Apartamento Jardim Paulista",
+        "title": "Visita Jardim Paulista"
+      },
+      "proposalReturn": {
+        "notes": "Enviar comparación de precios y confirmar margen para contrapropuesta.",
+        "property": "Penthouse Itaim Bibi",
+        "title": "Retorno de propuesta"
+      }
     }
   },
   "eventForm": {
@@ -32,7 +65,7 @@
     "closeAriaLabel": "Cerrar nuevo evento",
     "fields": {
       "title": "Título",
-      "property": "Inmueble en cuestión",
+      "property": "Inmueble relacionado",
       "otherProperty": "Otro",
       "customProperty": "Inmueble o referencia",
       "participant": "Persona",

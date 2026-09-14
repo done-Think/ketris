@@ -209,6 +209,14 @@ export type ContractFieldConfig = {
   multiline?: boolean
 }
 
+export type ContractFieldMeta = {
+  name: CreateContractFieldName
+  labelKey: string
+  mask?: string
+  options?: string[]
+  optionsNamespace?: string
+}
+
 export type ContractStepsNavProps = {
   activeStepIndex: number
   maxStepIndex: number

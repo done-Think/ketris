@@ -18,7 +18,7 @@ import {
   Typography,
 } from '@mui/material'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 
@@ -42,7 +42,9 @@ export function AgendaEventDetailDialog({
   onReschedule,
   open,
 }: AgendaEventDetailDialogProps) {
+  const locale = useLocale()
   const t = useTranslations('agenda.eventDetail')
+  const agendaT = useTranslations('agenda.dashboard')
   const { control, handleSubmit, reset } = useForm<AgendaRescheduleFormValues>({
     defaultValues: {
       scheduledDate: eventDate,
@@ -60,6 +62,10 @@ export function AgendaEventDetailDialog({
 
   if (!event) return null
 
+  const formattedEventDate = new Intl.DateTimeFormat(locale).format(
+    new Date(`${eventDate}T00:00:00`),
+  )
+
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <Box component="form" onSubmit={handleSubmit(onReschedule)}>
@@ -67,7 +73,7 @@ export function AgendaEventDetailDialog({
           <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
             <Box sx={{ minWidth: 0 }}>
               <Typography sx={{ color: brand.magenta[600], fontSize: 13, fontWeight: 900 }}>
-                {event.time} · {eventDate}
+                {event.time} · {formattedEventDate}
               </Typography>
               <Typography sx={{ color: brand.graphite[500], fontSize: 22, fontWeight: 900 }}>
                 {event.title}
@@ -112,7 +118,7 @@ export function AgendaEventDetailDialog({
                   <Typography sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 700 }}>
                     {t('createdBy', {
                       name: event.createdBy,
-                      role: event.createdByRole.toLocaleLowerCase('pt-BR'),
+                      role: agendaT(`creatorRoles.${event.createdByRole}`),
                     })}
                   </Typography>
                 ) : null}

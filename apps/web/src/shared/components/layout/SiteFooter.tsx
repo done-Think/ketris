@@ -144,7 +144,7 @@ export function SiteFooter({ columns, legalLinks }: SiteFooterProps) {
           <Typography sx={{ color: alpha.white[50], ...componentText.footerLegal }}>
             © 2026{' '}
             <Box component="strong" sx={componentText.footerBrand}>
-              Ketris
+              doneThink
             </Box>{' '}
             {t('rights')}
           </Typography>

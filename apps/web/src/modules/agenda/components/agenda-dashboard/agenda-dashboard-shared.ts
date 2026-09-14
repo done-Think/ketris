@@ -5,7 +5,6 @@ import { alpha, brand, supportColor } from '@shared/theme/tokens'
 import type {
   AgendaBuildNotificationsOptions,
   AgendaCalendarDay,
-  AgendaEvent,
   AgendaEventTone,
   AgendaEventToneStyle,
   AgendaNotification,
@@ -46,22 +45,30 @@ export function getEventHeight(durationMinutes: number) {
   return Math.max((durationMinutes / 60) * scheduleHourHeight, 38)
 }
 
-function capitalize(value: string) {
-  return value.charAt(0).toLocaleUpperCase('pt-BR') + value.slice(1)
+export function getAgendaDayjsLocale(locale: string) {
+  if (locale === 'pt-BR') return 'pt-br'
+  if (locale === 'es-ES') return 'es'
+
+  return 'en'
 }
 
-export function buildAgendaCalendarDays(weekStartDate: Dayjs): AgendaCalendarDay[] {
-  const today = dayjs().locale('pt-br').startOf('day')
+function capitalize(value: string, locale: string) {
+  return value.charAt(0).toLocaleUpperCase(locale) + value.slice(1)
+}
+
+export function buildAgendaCalendarDays(weekStartDate: Dayjs, locale: string): AgendaCalendarDay[] {
+  const dayjsLocale = getAgendaDayjsLocale(locale)
+  const today = dayjs().locale(dayjsLocale).startOf('day')
 
   return Array.from({ length: agendaVisibleDayCount }, (_, index) => {
-    const date = weekStartDate.add(index, 'day')
+    const date = weekStartDate.locale(dayjsLocale).add(index, 'day')
 
     return {
       dateLabel: date.format('DD'),
-      dayLabel: capitalize(date.format('ddd').replace('.', '')),
+      dayLabel: capitalize(date.format('ddd').replace('.', ''), locale),
       key: date.format('YYYY-MM-DD'),
-      monthLabel: capitalize(date.format('MMM').replace('.', '')),
-      monthLongLabel: capitalize(date.format('MMMM')),
+      monthLabel: capitalize(date.format('MMM').replace('.', ''), locale),
+      monthLongLabel: capitalize(date.format('MMMM'), locale),
       today: date.isSame(today, 'day'),
     }
   })

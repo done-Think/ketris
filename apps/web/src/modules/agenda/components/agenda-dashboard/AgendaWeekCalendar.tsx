@@ -27,6 +27,7 @@ export function AgendaWeekCalendar({
         borderColor: alpha.graphite[6],
         borderRadius: `${radius.sm}px`,
         boxShadow: shadows.crmDetailPanel,
+        display: { xs: 'none', md: 'block' },
         overflow: 'hidden',
       }}
     >

@@ -1,4 +1,9 @@
-import type { AgendaEvent, AgendaTimeSlot } from '../types/agenda-event'
+import type {
+  AgendaEvent,
+  AgendaEventSeed,
+  AgendaTimeSlot,
+  AgendaTranslationGetter,
+} from '../types/agenda-event'
 
 const currentAgendaDay = new Date()
 const currentAgendaDate = new Date(
@@ -28,18 +33,18 @@ export const agendaTimeSlots: AgendaTimeSlot[] = [
   { label: '18:00', hour: 18 },
 ]
 
-export const agendaEvents: AgendaEvent[] = [
+const agendaEventSeeds: AgendaEventSeed[] = [
   {
     id: 'agenda-001',
     scheduledDate: getAgendaDate(0),
     time: '09:00',
     durationMinutes: 60,
-    title: 'Visita Jardim Paulista',
-    property: 'Apartamento Jardim Paulista',
+    titleKey: 'sampleEvents.jardimVisit.title',
+    propertyKey: 'sampleEvents.jardimVisit.property',
     propertyHref: '/dashboard/properties/apt-jardins-3q',
     participant: 'Ana Nóbrega',
     phone: '(11) 99842-2109',
-    notes: 'Cliente quer validar luminosidade da sala e vaga de garagem antes de enviar proposta.',
+    notesKey: 'sampleEvents.jardimVisit.notes',
     status: 'Confirmada',
     tone: 'primary',
     kind: 'visit',
@@ -51,12 +56,12 @@ export const agendaEvents: AgendaEvent[] = [
     scheduledDate: getAgendaDate(0),
     time: '14:30',
     durationMinutes: 45,
-    title: 'Retorno proposta',
-    property: 'Cobertura Itaim Bibi',
+    titleKey: 'sampleEvents.proposalReturn.title',
+    propertyKey: 'sampleEvents.proposalReturn.property',
     propertyHref: '/dashboard/properties/cobertura-itaim',
     participant: 'Marcos Lima',
     phone: '(11) 98731-4402',
-    notes: 'Enviar comparativo de preço e confirmar margem para contraproposta.',
+    notesKey: 'sampleEvents.proposalReturn.notes',
     status: 'Pendente',
     tone: 'warning',
     kind: 'followUp',
@@ -66,12 +71,12 @@ export const agendaEvents: AgendaEvent[] = [
     scheduledDate: getAgendaDate(2),
     time: '10:30',
     durationMinutes: 60,
-    title: 'Reunião captação',
-    property: 'Casa Alto da Lapa',
+    titleKey: 'sampleEvents.intakeMeeting.title',
+    propertyKey: 'sampleEvents.intakeMeeting.property',
     propertyHref: '/dashboard/properties/casa-alto-pinheiros',
     participant: 'Helena Prado',
     phone: '(11) 99420-8810',
-    notes: 'Alinhar exclusividade, prazo de publicação e estratégia de fotos.',
+    notesKey: 'sampleEvents.intakeMeeting.notes',
     status: 'Confirmada',
     tone: 'info',
     kind: 'meeting',
@@ -83,12 +88,12 @@ export const agendaEvents: AgendaEvent[] = [
     scheduledDate: getAgendaDate(6),
     time: '11:00',
     durationMinutes: 75,
-    title: 'Vistoria de entrada',
-    property: 'Studio Vila Madalena',
+    titleKey: 'sampleEvents.entryInspection.title',
+    propertyKey: 'sampleEvents.entryInspection.property',
     propertyHref: '/dashboard/properties/studio-pinheiros',
     participant: 'Bruno Oliveira',
     phone: '(11) 99618-3321',
-    notes: 'Conferir pintura, checklist de chaves e leitura inicial de medidores.',
+    notesKey: 'sampleEvents.entryInspection.notes',
     status: 'Confirmada',
     tone: 'primary',
     kind: 'inspection',
@@ -98,12 +103,12 @@ export const agendaEvents: AgendaEvent[] = [
     scheduledDate: getAgendaDate(8),
     time: '16:00',
     durationMinutes: 45,
-    title: 'Follow-up financiamento',
-    property: 'Apartamento Jardins',
+    titleKey: 'sampleEvents.financingFollowUp.title',
+    propertyKey: 'sampleEvents.financingFollowUp.property',
     propertyHref: '/dashboard/properties/apt-jardins-3q',
     participant: 'Laura Martins',
     phone: '(11) 98244-6901',
-    notes: 'Acompanhar retorno do banco e documentos pendentes do comprador.',
+    notesKey: 'sampleEvents.financingFollowUp.notes',
     status: 'Pendente',
     tone: 'warning',
     kind: 'followUp',
@@ -113,12 +118,12 @@ export const agendaEvents: AgendaEvent[] = [
     scheduledDate: getAgendaDate(13),
     time: '13:30',
     durationMinutes: 60,
-    title: 'Assinatura digital',
-    property: 'Contrato Studio Pinheiros',
+    titleKey: 'sampleEvents.digitalSignature.title',
+    propertyKey: 'sampleEvents.digitalSignature.property',
     propertyHref: '/dashboard/contracts/contract-002',
     participant: 'Mariana Costa',
     phone: '(11) 99172-0045',
-    notes: 'Reagendar com fiador e locatária no mesmo horário para concluir assinatura.',
+    notesKey: 'sampleEvents.digitalSignature.notes',
     status: 'Reagendar',
     tone: 'info',
     kind: 'signature',
@@ -126,3 +131,12 @@ export const agendaEvents: AgendaEvent[] = [
     createdByRole: 'colleague',
   },
 ]
+
+export function getAgendaEvents(t: AgendaTranslationGetter): AgendaEvent[] {
+  return agendaEventSeeds.map(({ notesKey, propertyKey, titleKey, ...event }) => ({
+    ...event,
+    notes: t(notesKey),
+    property: t(propertyKey),
+    title: t(titleKey),
+  }))
+}

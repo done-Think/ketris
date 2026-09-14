@@ -122,6 +122,14 @@ export type AgendaWeekCalendarProps = {
   timeSlots: AgendaTimeSlot[]
 }
 
+export type AgendaMobileDayListProps = {
+  days: AgendaCalendarDay[]
+  events: AgendaEvent[]
+  onSelectDay: (dayKey: string) => void
+  onSelectEvent: (event: AgendaEvent) => void
+  selectedDayKey: string
+}
+
 export type AgendaNotification = {
   event: AgendaEvent
   id: string
