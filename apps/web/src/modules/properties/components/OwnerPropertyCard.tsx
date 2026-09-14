@@ -47,7 +47,7 @@ export function OwnerPropertyCard({ property }: OwnerPropertyCardProps) {
     >
       <Box
         sx={{
-          height: { md: 220 },
+          height: { md: 164 },
           aspectRatio: { xs: '2.2', md: 'auto' },
           p: { xs: 2, md: 3 },
           background: `linear-gradient(35deg, ${brand.magenta[500]} 30%, ${brand.graphite[500]} 65%)`,
@@ -74,14 +74,15 @@ export function OwnerPropertyCard({ property }: OwnerPropertyCardProps) {
           </Box>
         </Box>
       </Box>
-      <Box sx={{ p: { xs: 1.5, md: 3 }, pb: { xs: 0, md: 3 } }}>
+      <Box sx={{ p: { xs: 1.5, md: 2.25 }, pb: { xs: 0, md: 2.25 } }}>
         <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1}>
           <Typography
             id={titleId}
             component="h2"
             sx={{
               ...componentText.cardTitle,
-              fontSize: { xs: 14, md: componentText.cardTitle.fontSize },
+              fontFamily: 'var(--font-space-grotesk), var(--font-primary), system-ui, sans-serif',
+              fontSize: { xs: 14, md: 15 },
               fontWeight: 700,
               minWidth: 0,
             }}
@@ -107,10 +108,10 @@ export function OwnerPropertyCard({ property }: OwnerPropertyCardProps) {
         <Typography
           sx={{
             display: { xs: 'none', md: 'block' },
-            mt: 0.75,
+            mt: 0.5,
             color: brand.neutral[500],
-            fontSize: 13,
-            lineHeight: 1.5,
+            fontSize: 11,
+            lineHeight: 1.35,
           }}
         >
           {property.address}
@@ -127,7 +128,8 @@ export function OwnerPropertyCard({ property }: OwnerPropertyCardProps) {
           <Typography
             sx={{
               ...componentText.cardPrice,
-              fontSize: { xs: 12, md: componentText.cardPrice.fontSize },
+              fontFamily: 'var(--font-space-grotesk), var(--font-primary), system-ui, sans-serif',
+              fontSize: { xs: 12, md: 15 },
               color: 'primary.main',
               fontWeight: 700,
             }}
@@ -155,9 +157,9 @@ export function OwnerPropertyCard({ property }: OwnerPropertyCardProps) {
             flexWrap: { xs: 'nowrap', md: 'wrap' },
             justifyContent: 'space-between',
             gap: { xs: 0.5, md: 1 },
-            mt: { xs: 1, md: 2 },
+            mt: { xs: 1, md: 1.5 },
             px: { xs: 0, md: 1.25 },
-            py: 1,
+            py: 0.75,
             bgcolor: { xs: 'transparent', md: surface.app },
             border: { xs: 0, md: '1px solid' },
             borderColor: 'divider',
@@ -218,8 +220,8 @@ export function OwnerPropertyCard({ property }: OwnerPropertyCardProps) {
             alignItems: 'center',
             flexWrap: 'wrap',
             gap: { xs: 1, md: 1.5 },
-            mt: { xs: 0, md: 2.5 },
-            pt: { xs: 0, md: 2.5 },
+            mt: { xs: 0, md: 2 },
+            pt: { xs: 0, md: 2 },
             borderTop: '1px solid',
             borderColor: 'divider',
           }}

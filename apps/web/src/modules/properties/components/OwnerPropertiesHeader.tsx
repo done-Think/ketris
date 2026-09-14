@@ -15,10 +15,10 @@ import type {
 const controlSx = {
   minWidth: 0,
   '& .MuiInputBase-root': {
-    height: 42,
+    height: 32,
     bgcolor: surface.paper,
     borderRadius: `${radius.sm}px`,
-    fontSize: 13,
+    fontSize: 11.5,
   },
   '& .MuiOutlinedInput-notchedOutline': { borderColor: 'divider' },
   '& .MuiSelect-select': { pl: 2 },
@@ -28,20 +28,21 @@ export function OwnerPropertiesHeader({ filters, onFiltersChange }: OwnerPropert
   const summary = ownerPropertiesSummary
 
   return (
-    <Box sx={{ mb: { xs: 1, md: 4 } }}>
+    <Box sx={{ mb: { xs: 1, md: 3 } }}>
       <Box
         sx={{
           display: 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: 3,
+          gap: 2,
         }}
       >
         <Typography
           component="h1"
           sx={{
-            fontSize: { xs: 20, md: 32 },
+            fontFamily: 'var(--font-space-grotesk), var(--font-primary), system-ui, sans-serif',
+            fontSize: { xs: 20, md: 24 },
             fontWeight: 700,
             letterSpacing: '-0.02em',
             lineHeight: 1.2,
@@ -69,7 +70,7 @@ export function OwnerPropertiesHeader({ filters, onFiltersChange }: OwnerPropert
           sx={{
             display: { xs: 'none', md: 'grid' },
             gridTemplateColumns: { xs: '1fr 1fr', sm: 'minmax(220px, 1fr) auto auto auto' },
-            gap: 2,
+            gap: 1.5,
             width: { xs: '100%', md: 'auto' },
             flexGrow: { sm: 1, md: 0 },
           }}
@@ -91,7 +92,7 @@ export function OwnerPropertiesHeader({ filters, onFiltersChange }: OwnerPropert
             sx={{
               ...controlSx,
               gridColumn: { xs: '1 / -1', sm: 'auto' },
-              width: { md: 250, lg: 340 },
+              width: { md: 250, lg: 320 },
             }}
           />
           <TextField
@@ -148,10 +149,10 @@ export function OwnerPropertiesHeader({ filters, onFiltersChange }: OwnerPropert
             href="/dashboard/properties/new"
             variant="contained"
             sx={{
-              minHeight: 44,
-              px: 3,
+              minHeight: 32,
+              px: 2.25,
               borderRadius: `${radius.sm}px`,
-              fontSize: 13,
+              fontSize: 11.5,
               fontWeight: 700,
               whiteSpace: 'nowrap',
               gridColumn: { xs: '1 / -1', sm: 'auto' },
@@ -213,11 +214,11 @@ export function OwnerPropertiesHeader({ filters, onFiltersChange }: OwnerPropert
       <Typography
         sx={{
           display: { xs: 'none', md: 'block' },
-          mt: 4,
+          mt: 3,
           color: brand.neutral[500],
-          fontSize: 12,
+          fontSize: 10,
           fontWeight: 500,
-          lineHeight: 1.6,
+          lineHeight: 1.3,
         }}
       >
         {summary.totalProperties} IMÓVEIS · {summary.activeProperties} ATIVOS ·{' '}
