@@ -106,12 +106,9 @@ export type ProposalsListProps = {
 
 export type ProposalDetailProps = {
   proposalId: string
+  detail?: ProposalManagementDetail | null
   onEdit?: (detail: ProposalManagementDetail) => void
   onSendToOwner?: (detail: ProposalManagementDetail) => void
-}
-
-export type CrmProposalDetailPageProps = {
-  params: { id: string }
 }
 
 export type ProposalStatusChipProps = {

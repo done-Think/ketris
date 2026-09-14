@@ -24,7 +24,7 @@ describe('requirePlatformSession', () => {
     getServerSessionMock.mockResolvedValueOnce(session)
 
     const requirePlatformSession = await getRequirePlatformSession()
-    const result = await requirePlatformSession()
+    const result = await requirePlatformSession('pt-BR')
 
     expect(result).toBe(session)
     expect(redirectMock).not.toHaveBeenCalled()
@@ -35,8 +35,8 @@ describe('requirePlatformSession', () => {
 
     const requirePlatformSession = await getRequirePlatformSession()
 
-    await expect(requirePlatformSession()).rejects.toThrow('NEXT_REDIRECT')
-    expect(redirectMock).toHaveBeenCalledWith('/platform/login')
+    await expect(requirePlatformSession('pt-BR')).rejects.toThrow('NEXT_REDIRECT')
+    expect(redirectMock).toHaveBeenCalledWith('/pt/platform/login')
   })
 
   it('redireciona para /platform/login quando a sessão é de um tenant (não é platform)', async () => {
@@ -44,7 +44,7 @@ describe('requirePlatformSession', () => {
 
     const requirePlatformSession = await getRequirePlatformSession()
 
-    await expect(requirePlatformSession()).rejects.toThrow('NEXT_REDIRECT')
-    expect(redirectMock).toHaveBeenCalledWith('/platform/login')
+    await expect(requirePlatformSession('pt-BR')).rejects.toThrow('NEXT_REDIRECT')
+    expect(redirectMock).toHaveBeenCalledWith('/pt/platform/login')
   })
 })

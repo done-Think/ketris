@@ -1,4 +1,5 @@
 import { Box, Chip, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
@@ -7,27 +8,28 @@ import type { PropertyDetailMainPanelProps } from '../types/dashboard-property'
 import { PropertyDetailPanel } from './PropertyDetailPanel'
 
 export function PropertyDetailMainPanel({ property, activeTab }: PropertyDetailMainPanelProps) {
+  const t = useTranslations('properties.detail')
   const summaryItems = [
-    { label: 'TIPO', value: property.type },
-    { label: 'FINALIDADE', value: property.purpose },
-    { label: 'QUARTOS', value: property.summary.bedrooms },
-    { label: 'BANHEIROS', value: property.summary.bathrooms },
-    { label: 'VAGAS', value: property.summary.parkingSpaces },
-    { label: 'ÁREA', value: property.summary.area },
-    { label: 'CONDOMÍNIO', value: property.summary.condominium },
-    { label: 'IPTU', value: property.summary.iptu },
+    { label: t('summary.type'), value: property.type },
+    { label: t('summary.purpose'), value: property.purpose },
+    { label: t('summary.bedrooms'), value: property.summary.bedrooms },
+    { label: t('summary.bathrooms'), value: property.summary.bathrooms },
+    { label: t('summary.parkingSpaces'), value: property.summary.parkingSpaces },
+    { label: t('summary.area'), value: property.summary.area },
+    { label: t('summary.condominium'), value: property.summary.condominium },
+    { label: t('summary.iptu'), value: property.summary.iptu },
   ]
   const pricingItems = [
-    { label: 'ALUGUEL', value: property.pricing.rent },
-    { label: 'VENDA', value: property.pricing.sale },
-    { label: 'CONDOMÍNIO', value: property.pricing.condominium },
-    { label: 'IPTU', value: property.pricing.iptu },
-    { label: 'TAXA DE ADMINISTRAÇÃO', value: property.pricing.administrationFee },
-    { label: 'GARANTIA', value: property.pricing.securityDeposit },
-    { label: 'ÚLTIMO AJUSTE', value: property.pricing.lastAdjustment },
+    { label: t('pricing.rent'), value: property.pricing.rent },
+    { label: t('pricing.sale'), value: property.pricing.sale },
+    { label: t('pricing.condominium'), value: property.pricing.condominium },
+    { label: t('pricing.iptu'), value: property.pricing.iptu },
+    { label: t('pricing.administrationFee'), value: property.pricing.administrationFee },
+    { label: t('pricing.securityDeposit'), value: property.pricing.securityDeposit },
+    { label: t('pricing.lastAdjustment'), value: property.pricing.lastAdjustment },
   ]
 
-  if (activeTab === 'Dados') {
+  if (activeTab === 'data') {
     return (
       <>
         <Box
@@ -55,7 +57,7 @@ export function PropertyDetailMainPanel({ property, activeTab }: PropertyDetailM
             py: { xs: 2.4, md: 3.2 },
           }}
         >
-          <Typography sx={{ fontSize: 24, fontWeight: 900, mb: 3 }}>Resumo do Imóvel</Typography>
+          <Typography sx={{ fontSize: 24, fontWeight: 900, mb: 3 }}>{t('summaryTitle')}</Typography>
           <Box
             sx={{
               display: 'grid',
@@ -80,9 +82,9 @@ export function PropertyDetailMainPanel({ property, activeTab }: PropertyDetailM
     )
   }
 
-  if (activeTab === 'Mídia') {
+  if (activeTab === 'media') {
     return (
-      <PropertyDetailPanel title="Mídia">
+      <PropertyDetailPanel title={t('mediaTitle')}>
         <Box
           sx={{
             display: 'grid',
@@ -126,9 +128,9 @@ export function PropertyDetailMainPanel({ property, activeTab }: PropertyDetailM
     )
   }
 
-  if (activeTab === 'Valores') {
+  if (activeTab === 'values') {
     return (
-      <PropertyDetailPanel title="Valores">
+      <PropertyDetailPanel title={t('valuesTitle')}>
         <Box
           sx={{
             display: 'grid',
@@ -159,7 +161,7 @@ export function PropertyDetailMainPanel({ property, activeTab }: PropertyDetailM
   }
 
   return (
-    <PropertyDetailPanel title="Histórico completo">
+    <PropertyDetailPanel title={t('historyTitle')}>
       <Stack spacing={2.1}>
         {property.activityHistory.map((activity) => (
           <Stack key={`${activity.label}-${activity.date}`} direction="row" spacing={1.7}>

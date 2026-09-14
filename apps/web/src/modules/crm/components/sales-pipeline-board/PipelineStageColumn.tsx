@@ -1,16 +1,20 @@
 import { Box, Skeleton, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
-import { brand, componentText, radius, surface } from '@shared/theme/tokens'
+import { brand, radius, surface } from '@shared/theme/tokens'
 
 import type { PipelineStageColumnProps } from '../../types/sales-pipeline'
 import { formatCurrency } from '../../utils/formatters'
 import { OpportunityCard } from '../OpportunityCard'
 
+const pipelineBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
 const pipelineStageLabelSx = {
-  ...componentText.cardMeta,
+  fontFamily: pipelineBodyFontFamily,
+  fontSize: 10.5,
   fontWeight: 700,
-  lineHeight: '16px',
-  letterSpacing: '0.04em',
+  lineHeight: '14px',
+  letterSpacing: 0,
+  fontSynthesis: 'none',
   textTransform: 'uppercase',
 } as const
 
@@ -24,6 +28,9 @@ export function PipelineStageColumn({
   propertiesById,
   presentationByOpportunityId,
 }: PipelineStageColumnProps) {
+  const t = useTranslations('crm.pipeline')
+  const stageLabel = t(`stages.${stage.labelKey}`)
+
   return (
     <Stack
       component="section"
@@ -39,8 +46,8 @@ export function PipelineStageColumn({
         direction="row"
         alignItems="center"
         sx={{
-          minHeight: 40,
-          pb: 1,
+          minHeight: 32,
+          pb: 0.75,
           borderBottom: '1px solid',
           borderColor: 'divider',
         }}
@@ -48,30 +55,30 @@ export function PipelineStageColumn({
         <Box
           aria-hidden="true"
           sx={{
-            width: 8,
-            height: 8,
-            mr: 1,
+            width: 7,
+            height: 7,
+            mr: 0.75,
             flexShrink: 0,
             borderRadius: `${radius.full}px`,
             bgcolor: stage.color,
           }}
         />
         <Typography id={`sales-pipeline-stage-${stage.id}`} noWrap sx={pipelineStageLabelSx}>
-          {stage.label}
+          {stageLabel}
         </Typography>
         <Box
           component="span"
           sx={{
             display: 'inline-grid',
             placeItems: 'center',
-            minWidth: 24,
-            height: 22,
+            minWidth: 20,
+            height: 18,
             ml: 'auto',
-            px: 1,
+            px: 0.625,
             borderRadius: `${radius.full}px`,
             bgcolor: stage.softColor,
             color: stage.color,
-            fontSize: componentText.cardMeta.fontSize,
+            fontSize: 10.5,
             fontWeight: 700,
           }}
         >
@@ -79,13 +86,13 @@ export function PipelineStageColumn({
         </Box>
       </Stack>
 
-      <Stack spacing={2} sx={{ pt: 2 }}>
+      <Stack spacing={{ xs: 1.5, lg: 1.375 }} sx={{ pt: { xs: 2, lg: 1.75 } }}>
         {isPipelineLoading
           ? [0, 1].map((index) => (
               <Skeleton
                 key={index}
                 variant="rounded"
-                height={148}
+                height={124}
                 sx={{ borderRadius: `${radius.md}px` }}
               />
             ))
@@ -93,7 +100,7 @@ export function PipelineStageColumn({
               <OpportunityCard
                 key={opportunity.id}
                 opportunity={opportunity}
-                property={propertiesById.get(opportunity.imovelId)}
+                property={propertiesById.get(opportunity.propertyId)}
                 density="compact"
                 presentation={
                   fixtureMode ? presentationByOpportunityId.get(opportunity.id) : undefined
@@ -106,7 +113,7 @@ export function PipelineStageColumn({
             alignItems="center"
             justifyContent="center"
             sx={{
-              minHeight: 148,
+              minHeight: 124,
               px: 1.5,
               border: '1px dashed',
               borderColor: brand.neutral[200],
@@ -115,8 +122,8 @@ export function PipelineStageColumn({
               textAlign: 'center',
             }}
           >
-            <Typography color="text.secondary" sx={componentText.cardMeta}>
-              Nenhuma oportunidade nesta etapa.
+            <Typography color="text.secondary" sx={{ fontSize: 11.5 }}>
+              {t('emptyStage')}
             </Typography>
           </Stack>
         ) : null}
@@ -124,10 +131,10 @@ export function PipelineStageColumn({
 
       <Box
         role="group"
-        aria-label={`Total projetado de ${stage.label}`}
+        aria-label={t('projectedTotalAriaLabel', { stage: stageLabel })}
         sx={{
           mt: 'auto',
-          pt: 2,
+          pt: { xs: 1.25, lg: 1.5 },
           borderTop: '1px solid',
           borderColor: 'divider',
         }}
@@ -135,42 +142,37 @@ export function PipelineStageColumn({
         <Typography
           sx={{
             color: 'text.disabled',
-            ...componentText.cardEyebrow,
+            fontSize: 9,
             fontWeight: 700,
-            lineHeight: '16px',
-            letterSpacing: '0.04em',
+            lineHeight: 1.2,
+            letterSpacing: '0.01em',
+            textTransform: 'uppercase',
           }}
         >
-          Total projetado
+          {t('projectedTotal')}
         </Typography>
         {isPipelineLoading ? (
           <Skeleton width={92} />
         ) : projectedTotals.length === 0 ? (
-          <Typography sx={{ mt: 0.5, fontSize: 16, fontWeight: 900, lineHeight: 1.3 }}>
+          <Typography sx={{ mt: 0.25, fontSize: 13, fontWeight: 800, lineHeight: 1.3 }}>
             {formatCurrency(0)}
           </Typography>
         ) : (
-          <Stack spacing={0.25} sx={{ mt: 0.5, minHeight: projectedTotals.length > 1 ? 44 : 0 }}>
+          <Stack spacing={0.25} sx={{ mt: 0.25, minHeight: projectedTotals.length > 1 ? 36 : 0 }}>
             {projectedTotals.map((total) => (
               <Stack
-                key={total.label}
+                key={total.labelKey}
                 direction="row"
                 alignItems="baseline"
                 justifyContent="space-between"
                 gap={1}
               >
                 {projectedTotals.length > 1 ? (
-                  <Typography
-                    sx={{
-                      color: 'text.secondary',
-                      fontSize: componentText.cardMeta.fontSize,
-                      lineHeight: 1.3,
-                    }}
-                  >
-                    {total.label}
+                  <Typography sx={{ color: 'text.secondary', fontSize: 9.5, lineHeight: 1.2 }}>
+                    {t(`totalLabels.${total.labelKey}`)}
                   </Typography>
                 ) : null}
-                <Typography sx={{ fontSize: 16, fontWeight: 900, lineHeight: 1.3 }}>
+                <Typography sx={{ fontSize: 13, fontWeight: 800, lineHeight: 1.3 }}>
                   {total.value}
                 </Typography>
               </Stack>

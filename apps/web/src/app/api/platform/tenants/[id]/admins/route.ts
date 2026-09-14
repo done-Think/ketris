@@ -7,7 +7,7 @@ import { createTenantAdminRequestSchema } from '@server/platform/schemas/create-
 import { parseJsonBody, withErrorHandling } from '@server/shared/http'
 
 interface RouteContext {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export const POST = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
@@ -15,7 +15,7 @@ export const POST = withErrorHandling(async (request: NextRequest, context: Rout
   const body = await parseJsonBody(request, createTenantAdminRequestSchema)
 
   const user = await platformContainer.createTenantAdminUseCase.execute({
-    tenantId: context.params.id,
+    tenantId: (await context.params).id,
     nome: body.nome,
     email: body.email,
     password: body.password,

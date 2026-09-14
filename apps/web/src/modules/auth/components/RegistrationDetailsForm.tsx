@@ -15,6 +15,7 @@ import {
 } from '@mui/material'
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
+import { useTranslations } from 'next-intl'
 import { Controller, useForm } from 'react-hook-form'
 
 import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
@@ -33,15 +34,12 @@ import type {
 const PHONE_MASK = [{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }]
 
 const passwordFields: ReadonlyArray<RegistrationPasswordField> = [
-  { name: 'password', label: 'Senha', placeholder: 'Crie uma senha' },
-  {
-    name: 'passwordConfirmation',
-    label: 'Confirmar senha',
-    placeholder: 'Confirme a senha',
-  },
+  { name: 'password', translationKey: 'password' },
+  { name: 'passwordConfirmation', translationKey: 'passwordConfirmation' },
 ]
 
 export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetailsFormProps) {
+  const t = useTranslations('auth.registerDetails')
   const [visiblePasswordField, setVisiblePasswordField] =
     useState<RegistrationPasswordFieldName | null>(null)
   const {
@@ -73,12 +71,12 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
   return (
     <Box component="form" noValidate onSubmit={handleSubmit(submitDetails)} sx={{ mt: 4 }}>
       <Box sx={{ display: 'grid', gap: 2.25 }}>
-        <AuthFormField htmlFor="registration-full-name" label="Nome completo" required>
+        <AuthFormField htmlFor="registration-full-name" label={t('fullName.label')} required>
           <RhfTextField
             id="registration-full-name"
             control={control}
             name="fullName"
-            placeholder="Digite seu nome completo"
+            placeholder={t('fullName.placeholder')}
             autoComplete="name"
             fullWidth
             sx={authTextFieldSx}
@@ -92,12 +90,12 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
             gap: 2,
           }}
         >
-          <AuthFormField htmlFor="registration-email" label="E-mail" required>
+          <AuthFormField htmlFor="registration-email" label={t('email.label')} required>
             <RhfTextField
               id="registration-email"
               control={control}
               name="email"
-              placeholder="seu@email.com"
+              placeholder={t('email.placeholder')}
               type="email"
               autoComplete="email"
               fullWidth
@@ -105,13 +103,13 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
             />
           </AuthFormField>
 
-          <AuthFormField htmlFor="registration-phone" label="Telefone" required>
+          <AuthFormField htmlFor="registration-phone" label={t('phone.label')} required>
             <RhfMaskedTextField
               id="registration-phone"
               control={control}
               name="phone"
               mask={PHONE_MASK}
-              placeholder="(11) 99999-9999"
+              placeholder={t('phone.placeholder')}
               type="tel"
               autoComplete="tel"
               fullWidth
@@ -129,43 +127,47 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
         >
           {passwordFields.map((field) => {
             const isVisible = visiblePasswordField === field.name
+            const label = t(`${field.translationKey}.label`)
 
             return (
               <AuthFormField
                 key={field.name}
                 htmlFor={`registration-${field.name}`}
-                label={field.label}
+                label={label}
                 required
               >
                 <RhfTextField
                   id={`registration-${field.name}`}
                   control={control}
                   name={field.name}
-                  placeholder={field.placeholder}
+                  placeholder={t(`${field.translationKey}.placeholder`)}
                   type={isVisible ? 'text' : 'password'}
                   autoComplete="new-password"
                   fullWidth
                   sx={authTextFieldSx}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label={
-                            isVisible ? `Ocultar ${field.label}` : `Mostrar ${field.label}`
-                          }
-                          edge="end"
-                          size="small"
-                          onClick={() => togglePasswordVisibility(field.name)}
-                          sx={{ color: brand.neutral[500] }}
-                        >
-                          {isVisible ? (
-                            <VisibilityOffOutlinedIcon fontSize="small" />
-                          ) : (
-                            <VisibilityOutlinedIcon fontSize="small" />
-                          )}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label={t(
+                              isVisible ? 'passwordVisibility.hide' : 'passwordVisibility.show',
+                              { field: label },
+                            )}
+                            edge="end"
+                            size="small"
+                            onClick={() => togglePasswordVisibility(field.name)}
+                            sx={{ color: brand.neutral[500] }}
+                          >
+                            {isVisible ? (
+                              <VisibilityOffOutlinedIcon fontSize="small" />
+                            ) : (
+                              <VisibilityOutlinedIcon fontSize="small" />
+                            )}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
                   }}
                 />
               </AuthFormField>
@@ -173,16 +175,18 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
           })}
         </Box>
 
-        <AuthFormField htmlFor="registration-creci" label="CRECI" required={profile === 'corretor'}>
+        <AuthFormField
+          htmlFor="registration-creci"
+          label={t('creci.label')}
+          required={profile === 'corretor'}
+        >
           <RhfTextField
             id="registration-creci"
             control={control}
             name="creci"
-            placeholder="00000-F"
+            placeholder={t('creci.placeholder')}
             helperText={
-              profile === 'corretor'
-                ? 'Campo obrigatório para corretores'
-                : 'Campo opcional para este perfil'
+              profile === 'corretor' ? t('creci.requiredHelper') : t('creci.optionalHelper')
             }
             fullWidth
             sx={authTextFieldSx}
@@ -209,13 +213,13 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
               }
               label={
                 <Typography color="text.secondary" variant="body2">
-                  Li e aceito os{' '}
+                  {t('terms.prefix')}{' '}
                   <Box component="span" sx={{ color: 'primary.main' }}>
-                    Termos de Uso
+                    {t('terms.termsOfUse')}
                   </Box>{' '}
-                  e{' '}
+                  {t('terms.connector')}{' '}
                   <Box component="span" sx={{ color: 'primary.main' }}>
-                    Política de Privacidade
+                    {t('terms.privacyPolicy')}
                   </Box>
                 </Typography>
               }
@@ -239,7 +243,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
           mt: 3.25,
         }}
       >
-        Criar conta
+        {t('submit')}
       </Button>
     </Box>
   )

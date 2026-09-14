@@ -1,8 +1,8 @@
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import { IconButton, Stack, Tooltip } from '@mui/material'
-import NextLink from 'next/link'
 
+import { Link } from '@/i18n/navigation'
 import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
 import type { ProposalActionsProps } from '../../types/proposal-management'
@@ -37,8 +37,8 @@ export function ProposalActions({
     <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={0.75}>
       <Tooltip title={`Visualizar ${proposal.reference}`}>
         <IconButton
-          component={NextLink}
-          href={`/crm/proposals/${proposal.id}`}
+          component={Link}
+          href={{ pathname: '/crm/proposals/[id]', params: { id: proposal.id } }}
           aria-label={`Visualizar ${proposal.reference}`}
           size="small"
           onClick={() => onViewProposal?.(proposal)}

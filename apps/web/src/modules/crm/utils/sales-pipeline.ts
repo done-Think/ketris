@@ -22,14 +22,14 @@ export function matchesSalesPipelineSearch(
   if (!search) return true
 
   return [
-    opportunity.interessadoNome,
-    opportunity.interessadoEmail,
-    opportunity.interessadoTelefone,
-    property?.titulo,
-    property?.tipo,
-    property?.bairro,
-    property?.cidade,
-    opportunity.imovelId,
+    opportunity.leadName,
+    opportunity.leadEmail,
+    opportunity.leadPhone,
+    property?.title,
+    property?.propertyType,
+    property?.neighborhood,
+    property?.city,
+    opportunity.propertyId,
   ].some((value) => value?.toLocaleLowerCase('pt-BR').includes(search))
 }
 
@@ -39,11 +39,11 @@ export function getProjectedTotals(
 ): readonly SalesPipelineProjectedTotal[] {
   const totals = opportunities.reduce(
     (result, opportunity) => {
-      const purpose = propertiesById.get(opportunity.imovelId)?.finalidade
+      const purpose = propertiesById.get(opportunity.propertyId)?.purpose
 
-      if (purpose === 'ALUGUEL') result.rental += opportunity.valorProposto
-      else if (purpose === 'VENDA') result.sale += opportunity.valorProposto
-      else result.unclassified += opportunity.valorProposto
+      if (purpose === 'ALUGUEL') result.rental += opportunity.proposedValue
+      else if (purpose === 'VENDA') result.sale += opportunity.proposedValue
+      else result.unclassified += opportunity.proposedValue
 
       return result
     },
@@ -51,10 +51,26 @@ export function getProjectedTotals(
   )
 
   return [
-    ...(totals.rental ? [{ label: 'Aluguel', value: formatMonthlyCurrency(totals.rental) }] : []),
-    ...(totals.sale ? [{ label: 'Venda', value: formatCurrency(totals.sale) }] : []),
+    ...(totals.rental
+      ? [
+          {
+            label: 'Aluguel',
+            labelKey: 'rent' as const,
+            value: formatMonthlyCurrency(totals.rental),
+          },
+        ]
+      : []),
+    ...(totals.sale
+      ? [{ label: 'Venda', labelKey: 'sale' as const, value: formatCurrency(totals.sale) }]
+      : []),
     ...(totals.unclassified
-      ? [{ label: 'Sem categoria', value: formatCurrency(totals.unclassified) }]
+      ? [
+          {
+            label: 'Sem categoria',
+            labelKey: 'uncategorized' as const,
+            value: formatCurrency(totals.unclassified),
+          },
+        ]
       : []),
   ]
 }

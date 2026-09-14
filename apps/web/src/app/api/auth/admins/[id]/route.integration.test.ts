@@ -94,7 +94,7 @@ describe('/api/auth/admins/[id] (integração)', () => {
 
   it('GET retorna o admin quando o ator é ADMIN do mesmo tenant', async () => {
     const response = await GET(buildRequest('GET', undefined, actorToken), {
-      params: { id: targetAdminId },
+      params: Promise.resolve({ id: targetAdminId }),
     })
     const json = await response.json()
 
@@ -105,7 +105,7 @@ describe('/api/auth/admins/[id] (integração)', () => {
 
   it('GET retorna 404 quando o alvo não é ADMIN (ex.: AGENT)', async () => {
     const response = await GET(buildRequest('GET', undefined, actorToken), {
-      params: { id: targetAgentId },
+      params: Promise.resolve({ id: targetAgentId }),
     })
 
     expect(response.status).toBe(404)
@@ -113,7 +113,7 @@ describe('/api/auth/admins/[id] (integração)', () => {
 
   it('GET retorna 403 quando o ator não é ADMIN', async () => {
     const response = await GET(buildRequest('GET', undefined, agentToken), {
-      params: { id: targetAdminId },
+      params: Promise.resolve({ id: targetAdminId }),
     })
 
     expect(response.status).toBe(403)
@@ -122,7 +122,7 @@ describe('/api/auth/admins/[id] (integração)', () => {
   it('PATCH atualiza nome/e-mail do admin', async () => {
     const response = await PATCH(
       buildRequest('PATCH', { nome: 'Admin Alvo Atualizado' }, actorToken),
-      { params: { id: targetAdminId } },
+      { params: Promise.resolve({ id: targetAdminId }) },
     )
     const json = await response.json()
 
@@ -132,7 +132,7 @@ describe('/api/auth/admins/[id] (integração)', () => {
 
   it('DELETE retorna 400 quando o ator tenta se autodesativar', async () => {
     const response = await DELETE(buildRequest('DELETE', undefined, actorToken), {
-      params: { id: actorId },
+      params: Promise.resolve({ id: actorId }),
     })
     const json = await response.json()
 
@@ -142,7 +142,7 @@ describe('/api/auth/admins/[id] (integração)', () => {
 
   it('DELETE desativa o admin alvo e ele não consegue mais logar', async () => {
     const response = await DELETE(buildRequest('DELETE', undefined, actorToken), {
-      params: { id: targetAdminId },
+      params: Promise.resolve({ id: targetAdminId }),
     })
     const json = await response.json()
 

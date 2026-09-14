@@ -2,17 +2,20 @@
 
 import { useMemo, useState } from 'react'
 import { Box, GlobalStyles, Paper, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { contactFilters } from '../config/contact-filters'
 import { contactListFixtures, contactsFixtureTotal } from '../fixtures/contact-list-fixtures'
-import type { ContactFilterId, ContactsListProps } from '../types/contact'
+import type { ContactFilter, ContactsListProps } from '../types/contact'
 import { filterContacts } from '../utils/contacts'
 import { ContactsCards } from './contacts-list/ContactsCards'
 import { ContactsHeader } from './contacts-list/ContactsHeader'
 import { ContactsPaginationFooter } from './contacts-list/ContactsPaginationFooter'
 import { ContactsTable } from './contacts-list/ContactsTable'
+
+const contactsBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
 
 export function ContactsList({
   contacts = contactListFixtures,
@@ -24,14 +27,16 @@ export function ContactsList({
   onOpenInteractions,
   onOpenMoreOptions,
 }: ContactsListProps = {}) {
+  const t = useTranslations('crm.contacts')
   const [search, setSearch] = useState('')
-  const [activeFilterId, setActiveFilterId] = useState<ContactFilterId>('all')
+  const [activeFilter, setActiveFilter] = useState<ContactFilter>('Todos')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
 
   const filteredContacts = useMemo(() => {
-    const selectedType = contactFilters.find((filter) => filter.id === activeFilterId)?.type ?? null
+    const selectedType =
+      contactFilters.find((filter) => filter.label === activeFilter)?.type ?? null
     return filterContacts(contacts, search, selectedType)
-  }, [activeFilterId, contacts, search])
+  }, [activeFilter, contacts, search])
 
   const toggleContact = (contactId: string) => {
     setSelectedIds((current) => {
@@ -56,7 +61,7 @@ export function ContactsList({
     })
   }
 
-  const isDefaultView = activeFilterId === 'all' && search.trim() === ''
+  const isDefaultView = activeFilter === 'Todos' && search.trim() === ''
   const resultTotal = isDefaultView ? totalCount : filteredContacts.length
   const firstVisible =
     filteredContacts.length > 0 ? (isDefaultView ? (page - 1) * contacts.length + 1 : 1) : 0
@@ -75,22 +80,24 @@ export function ContactsList({
   return (
     <Box
       sx={{
-        display: 'flex',
         minHeight: '100vh',
-        flexDirection: 'column',
         px: { xs: 2, sm: 3, lg: 3.5 },
         pt: { xs: 2, sm: 3, lg: 3.5 },
         pb: { xs: 2, sm: 2.5, lg: 2.5 },
         bgcolor: surface.app,
+        fontFamily: contactsBodyFontFamily,
+        '& .MuiTypography-root, & .MuiButton-root, & .MuiInputBase-root, & .MuiTableCell-root': {
+          fontFamily: contactsBodyFontFamily,
+        },
       }}
     >
       <GlobalStyles styles={{ '.tsqd-parent-container': { display: 'none' } }} />
 
       <ContactsHeader
         search={search}
-        activeFilterId={activeFilterId}
+        activeFilter={activeFilter}
         onSearchChange={setSearch}
-        onFilterChange={setActiveFilterId}
+        onFilterChange={setActiveFilter}
         onNewContact={onNewContact}
       />
 
@@ -98,10 +105,9 @@ export function ContactsList({
         variant="outlined"
         sx={{
           display: 'flex',
-          minHeight: { xs: 520, md: 0 },
+          minHeight: { xs: 520, md: 'calc(100vh - 118px)' },
           mt: 2.25,
           overflow: 'hidden',
-          flex: 1,
           flexDirection: 'column',
           borderColor: brand.neutral[100],
           borderRadius: `${radius.lg}px`,
@@ -131,9 +137,7 @@ export function ContactsList({
           </>
         ) : (
           <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 240, px: 2 }}>
-            <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
-              Nenhum contato encontrado.
-            </Typography>
+            <Typography sx={{ color: 'text.secondary', fontSize: 12.5 }}>{t('empty')}</Typography>
           </Stack>
         )}
 

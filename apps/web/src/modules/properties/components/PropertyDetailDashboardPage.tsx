@@ -17,7 +17,7 @@ import { PropertyDetailTabs } from './PropertyDetailTabs'
 export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashboardPageProps) {
   const { setValue, watch } = useForm<PropertyDetailDashboardFormValues>({
     defaultValues: {
-      activeTab: 'Dados',
+      activeTab: 'data',
     },
   })
   const activeTab = watch('activeTab')

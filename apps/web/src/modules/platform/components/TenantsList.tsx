@@ -11,13 +11,17 @@ import {
   TableRow,
   Typography,
 } from '@mui/material'
-import NextLink from 'next/link'
+import { useFormatter, useTranslations } from 'next-intl'
 
+import { Link } from '@/i18n/navigation'
 import { radius, shadows } from '@shared/theme/tokens'
 
 import { useTenants } from '../hooks/use-tenants'
 
 export function TenantsList() {
+  const t = useTranslations('platform.dashboard')
+  const formsT = useTranslations('platform.forms')
+  const format = useFormatter()
   const { data: tenants, isLoading, isError } = useTenants()
 
   return (
@@ -28,15 +32,15 @@ export function TenantsList() {
         </Stack>
       ) : isError ? (
         <Stack sx={{ py: 6 }} alignItems="center">
-          <Typography color="text.secondary">Não foi possível carregar as imobiliárias.</Typography>
+          <Typography color="text.secondary">{t('loadError')}</Typography>
         </Stack>
       ) : tenants && tenants.length > 0 ? (
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Nome</TableCell>
-              <TableCell>Slug</TableCell>
-              <TableCell>Criada em</TableCell>
+              <TableCell>{formsT('name')}</TableCell>
+              <TableCell>{formsT('slug')}</TableCell>
+              <TableCell>{t('createdAt')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -44,20 +48,20 @@ export function TenantsList() {
               <TableRow
                 key={tenant.id}
                 hover
-                component={NextLink}
-                href={`/platform/tenants/${tenant.id}`}
+                component={Link}
+                href={{ pathname: '/platform/tenants/[id]', params: { id: tenant.id } }}
                 sx={{ textDecoration: 'none', cursor: 'pointer' }}
               >
                 <TableCell>{tenant.nome}</TableCell>
                 <TableCell>{tenant.slug}</TableCell>
-                <TableCell>{new Date(tenant.createdAt).toLocaleDateString('pt-BR')}</TableCell>
+                <TableCell>{format.dateTime(new Date(tenant.createdAt))}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       ) : (
         <Stack sx={{ py: 6 }} alignItems="center">
-          <Typography color="text.secondary">Nenhuma imobiliária cadastrada ainda.</Typography>
+          <Typography color="text.secondary">{t('empty')}</Typography>
         </Stack>
       )}
     </Card>

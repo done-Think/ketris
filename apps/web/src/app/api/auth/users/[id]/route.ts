@@ -8,7 +8,7 @@ import { updateUserRequestSchema } from '@server/auth/schemas/update-user.schema
 import { parseJsonBody, withErrorHandling } from '@server/shared/http'
 
 interface RouteContext {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export const GET = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
@@ -17,7 +17,7 @@ export const GET = withErrorHandling(async (request: NextRequest, context: Route
   const user = await authContainer.getUserUseCase.execute({
     actorTenantId: actor.tenantId,
     actorPapel: actor.papel as Papel,
-    userId: context.params.id,
+    userId: (await context.params).id,
   })
 
   return NextResponse.json({ user }, { status: 200 })
@@ -30,7 +30,7 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Rou
   const user = await authContainer.updateUserUseCase.execute({
     actorTenantId: actor.tenantId,
     actorPapel: actor.papel as Papel,
-    userId: context.params.id,
+    userId: (await context.params).id,
     nome: body.nome,
     email: body.email,
     papel: body.papel,
@@ -46,7 +46,7 @@ export const DELETE = withErrorHandling(async (request: NextRequest, context: Ro
     actorId: actor.sub,
     actorTenantId: actor.tenantId,
     actorPapel: actor.papel as Papel,
-    userId: context.params.id,
+    userId: (await context.params).id,
   })
 
   return NextResponse.json({ user }, { status: 200 })

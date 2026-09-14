@@ -6,7 +6,8 @@ import { Box, Container } from '@mui/material'
 import { SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
-import { footerColumns, getPropertyDetailNavigationItemId, legalLinks } from '../config/navigation'
+import { getPropertyDetailNavigationItemId } from '../config/navigation'
+import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { PropertyDetailPageProps } from '../types/property-detail'
 import { MarketplaceHeader } from './MarketplaceHeader'
 import { PropertyBreadcrumbs } from './PropertyBreadcrumbs'
@@ -20,6 +21,7 @@ export function PropertyDetailPage({
   breadcrumbContext,
   property,
 }: PropertyDetailPageProps) {
+  const { footerColumns, legalLinks } = useMarketplaceNavigation()
   const [activePhotoIndex, setActivePhotoIndex] = useState(0)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
   const activeItemId = getPropertyDetailNavigationItemId({

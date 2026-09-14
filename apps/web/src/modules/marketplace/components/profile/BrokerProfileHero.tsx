@@ -5,13 +5,8 @@ import StarRoundedIcon from '@mui/icons-material/StarRounded'
 
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
-import type { BrokerProfileTheme } from '../../config/broker-profile-themes'
-import type { BrokerProfile } from '../../types/broker'
-
-type BrokerProfileHeroProps = {
-  broker: BrokerProfile
-  theme: BrokerProfileTheme
-}
+import type { BrokerProfileHeroProps } from '../../types/broker'
+import { formatRating } from '../../utils/format-rating'
 
 export function BrokerProfileHero({ broker, theme }: BrokerProfileHeroProps) {
   return (
@@ -85,7 +80,7 @@ export function BrokerProfileHero({ broker, theme }: BrokerProfileHeroProps) {
             />
             <Chip
               icon={<StarRoundedIcon sx={{ fontSize: iconSize.xs }} />}
-              label={broker.rating}
+              label={formatRating(broker.rating)}
               size="small"
               sx={{
                 borderRadius: `${radius.sm}px`,

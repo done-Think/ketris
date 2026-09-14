@@ -1,12 +1,12 @@
-import type { ContactFilter, ContactFilterId, ContactType } from '../types/contact'
+import type { ContactFilter, ContactFilterKey, ContactType } from '../types/contact'
 
 export const contactFilters: readonly {
-  id: ContactFilterId
   label: ContactFilter
+  labelKey: ContactFilterKey
   type: ContactType | null
 }[] = [
-  { id: 'all', label: 'Todos', type: null },
-  { id: 'owner', label: 'Proprietários', type: 'owner' },
-  { id: 'renter', label: 'Locatários', type: 'renter' },
-  { id: 'broker', label: 'Corretores', type: 'broker' },
+  { label: 'Todos', labelKey: 'all', type: null },
+  { label: 'Proprietários', labelKey: 'owners', type: 'Proprietário' },
+  { label: 'Locatários', labelKey: 'tenants', type: 'Locatário' },
+  { label: 'Corretores', labelKey: 'brokers', type: 'Corretor' },
 ]

@@ -59,7 +59,7 @@ describe('POST /api/platform/tenants/[id]/admins (integração)', () => {
 
     const response = await POST(
       buildRequest({ nome: 'Admin do Tenant', email, password: 'senha-longa-123' }, actorToken),
-      { params: { id: tenantId } },
+      { params: Promise.resolve({ id: tenantId }) },
     )
     const json = await response.json()
 
@@ -73,7 +73,7 @@ describe('POST /api/platform/tenants/[id]/admins (integração)', () => {
 
     const response = await POST(
       buildRequest({ nome: 'Segundo Admin', email, password: 'senha-longa-123' }, actorToken),
-      { params: { id: tenantId } },
+      { params: Promise.resolve({ id: tenantId }) },
     )
 
     expect(response.status).toBe(201)
@@ -86,7 +86,7 @@ describe('POST /api/platform/tenants/[id]/admins (integração)', () => {
         email: `x-${randomUUID()}@ketris.dev`,
         password: 'senha-longa-123',
       }),
-      { params: { id: tenantId } },
+      { params: Promise.resolve({ id: tenantId }) },
     )
 
     expect(response.status).toBe(401)
@@ -98,7 +98,7 @@ describe('POST /api/platform/tenants/[id]/admins (integração)', () => {
         { nome: 'X', email: `x-${randomUUID()}@ketris.dev`, password: 'senha-longa-123' },
         actorToken,
       ),
-      { params: { id: 'inexistente' } },
+      { params: Promise.resolve({ id: 'inexistente' }) },
     )
 
     expect(response.status).toBe(404)

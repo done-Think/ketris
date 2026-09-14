@@ -10,11 +10,11 @@ import {
   MenuItem,
   Stack,
   TextField,
-  Tooltip,
   Typography,
 } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
-import { brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import { brand, radius } from '@shared/theme/tokens'
 
 import { salesPipelineStages } from '../../config/sales-pipeline-stages'
 import type { SalesPipelineToolbarProps } from '../../types/sales-pipeline'
@@ -28,16 +28,20 @@ export function SalesPipelineToolbar({
   onFilterOpen,
   onFilterClose,
   onStageSelect,
+  onNewOpportunity,
 }: SalesPipelineToolbarProps) {
+  const t = useTranslations('crm.pipeline')
+
   return (
     <Stack
       direction={{ xs: 'column', lg: 'row' }}
       alignItems={{ xs: 'stretch', lg: 'center' }}
       justifyContent="space-between"
-      gap={2}
+      gap={1.5}
       sx={{
         flexWrap: { lg: 'nowrap' },
-        pb: 2,
+        mr: { lg: -1.75 },
+        pb: 1.75,
         borderBottom: '1px solid',
         borderColor: 'divider',
       }}
@@ -46,46 +50,49 @@ export function SalesPipelineToolbar({
         <Typography
           component="h1"
           sx={{
-            fontSize: { xs: 28, sm: 32 },
+            fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
+            fontSize: { xs: 26, sm: 30, xl: 32 },
             fontWeight: 700,
             lineHeight: { xs: 1.2, sm: 1.15 },
             letterSpacing: '-0.02em',
           }}
         >
-          Pipeline de Vendas
+          {t('title')}
         </Typography>
       </Box>
 
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
-        gap={1}
+        gap={1.25}
         sx={{ minWidth: 0, alignItems: { sm: 'center' }, flexWrap: { sm: 'wrap', lg: 'nowrap' } }}
       >
         <TextField
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="Buscar oportunidade..."
+          placeholder={t('searchPlaceholder')}
           size="small"
-          inputProps={{ 'aria-label': 'Buscar oportunidade' }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchRoundedIcon sx={{ color: brand.neutral[500], fontSize: iconSize.lg }} />
-              </InputAdornment>
-            ),
+          slotProps={{
+            htmlInput: { 'aria-label': t('searchAriaLabel') },
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchRoundedIcon sx={{ color: 'text.disabled', fontSize: 16 }} />
+                </InputAdornment>
+              ),
+            },
           }}
           sx={{
-            width: { xs: '100%', sm: 224 },
+            width: { xs: '100%', sm: 210, xl: 224 },
             '& .MuiOutlinedInput-root': {
-              height: 40,
+              height: { xs: 40, sm: 32 },
               borderRadius: `${radius.sm}px`,
               bgcolor: 'background.paper',
-              fontSize: 14,
+              fontSize: 12,
               '& fieldset': { borderColor: brand.neutral[100] },
               '&:hover fieldset': { borderColor: brand.neutral[200] },
             },
             '& .MuiInputBase-input::placeholder': {
-              color: brand.neutral[500],
+              color: brand.neutral[400],
               opacity: 1,
             },
           }}
@@ -99,30 +106,30 @@ export function SalesPipelineToolbar({
           aria-haspopup="menu"
           aria-expanded={Boolean(filterAnchor)}
           sx={{
-            width: { sm: 176 },
-            minWidth: { sm: 176 },
+            width: { sm: 160 },
+            minWidth: { sm: 160 },
             flexShrink: 0,
-            height: 40,
+            height: { xs: 40, sm: 32 },
             px: 1.25,
             justifyContent: 'space-between',
             borderColor: brand.neutral[100],
             borderRadius: `${radius.sm}px`,
             bgcolor: 'background.paper',
             color: 'text.secondary',
-            fontSize: 14,
+            fontSize: 12,
             fontWeight: 500,
             whiteSpace: 'nowrap',
             '&:hover': { borderColor: brand.neutral[200], bgcolor: 'background.paper' },
             '& .MuiButton-startIcon': { ml: 0, mr: 0.75 },
             '& .MuiButton-endIcon': { ml: 0.75, mr: 0 },
-            '& .MuiSvgIcon-root': { fontSize: iconSize.lg },
+            '& .MuiSvgIcon-root': { fontSize: 16 },
           }}
         >
-          {selectedStage?.label ?? 'Filtrar por Etapa'}
+          {selectedStage ? t(`stages.${selectedStage.labelKey}`) : t('filterByStage')}
         </Button>
         <Menu anchorEl={filterAnchor} open={Boolean(filterAnchor)} onClose={onFilterClose}>
           <MenuItem selected={!selectedStageId} onClick={() => onStageSelect(null)}>
-            Todas as etapas
+            {t('allStages')}
           </MenuItem>
           {salesPipelineStages.map((stage) => (
             <MenuItem
@@ -140,42 +147,29 @@ export function SalesPipelineToolbar({
                   bgcolor: stage.color,
                 }}
               />
-              {stage.label}
+              {t(`stages.${stage.labelKey}`)}
             </MenuItem>
           ))}
         </Menu>
-        <Tooltip title="Fluxo de criação em preparação">
-          <Box
-            component="span"
-            tabIndex={0}
-            aria-label="Nova Oportunidade: fluxo de criação em preparação"
-            sx={{ display: 'inline-flex', width: { sm: 176 }, minWidth: { sm: 176 } }}
-          >
-            <Button
-              variant="contained"
-              startIcon={<AddRoundedIcon />}
-              disabled
-              sx={{
-                width: '100%',
-                height: 40,
-                px: 1.5,
-                borderRadius: `${radius.sm}px`,
-                fontSize: 14,
-                fontWeight: 700,
-                whiteSpace: 'nowrap',
-                '& .MuiButton-startIcon': { ml: 0, mr: 0.75 },
-                '& .MuiSvgIcon-root': { fontSize: iconSize.lg },
-                '&.Mui-disabled': {
-                  bgcolor: brand.magenta[500],
-                  color: surface.lightText,
-                  opacity: 1,
-                },
-              }}
-            >
-              Nova Oportunidade
-            </Button>
-          </Box>
-        </Tooltip>
+        <Button
+          variant="contained"
+          startIcon={<AddRoundedIcon />}
+          onClick={onNewOpportunity}
+          sx={{
+            width: { sm: 166 },
+            minWidth: { sm: 166 },
+            height: { xs: 40, sm: 32 },
+            px: 1.5,
+            borderRadius: `${radius.sm}px`,
+            fontSize: 12,
+            fontWeight: 700,
+            whiteSpace: 'nowrap',
+            '& .MuiButton-startIcon': { ml: 0, mr: 0.75 },
+            '& .MuiSvgIcon-root': { fontSize: 16 },
+          }}
+        >
+          {t('newOpportunity')}
+        </Button>
       </Stack>
     </Stack>
   )

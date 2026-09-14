@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Button, Stack } from '@mui/material'
 import { useSnackbar } from 'notistack'
 import axios from 'axios'
+import { useTranslations } from 'next-intl'
 
 import { RhfTextField } from '@shared/components/form'
 
@@ -14,14 +15,12 @@ import {
 } from '../schemas/create-tenant-admin-schema'
 import { useCreateTenantAdmin } from '../hooks/use-create-tenant-admin'
 
-const GENERIC_ERROR = 'Não foi possível criar o administrador da imobiliária. Tente novamente.'
-
-function extractErrorMessage(error: unknown): string {
+function extractErrorMessage(error: unknown, fallback: string): string {
   if (axios.isAxiosError(error)) {
     const message = error.response?.data?.error?.message
     if (typeof message === 'string') return message
   }
-  return GENERIC_ERROR
+  return fallback
 }
 
 type CreateTenantAdminFormProps = {
@@ -29,6 +28,7 @@ type CreateTenantAdminFormProps = {
 }
 
 export function CreateTenantAdminForm({ tenantId }: CreateTenantAdminFormProps) {
+  const t = useTranslations('platform.forms')
   const { enqueueSnackbar } = useSnackbar()
   const createTenantAdmin = useCreateTenantAdmin()
 
@@ -45,20 +45,20 @@ export function CreateTenantAdminForm({ tenantId }: CreateTenantAdminFormProps) 
   async function onSubmit(values: CreateTenantAdminFormValues) {
     try {
       const user = await createTenantAdmin.mutateAsync({ tenantId, ...values })
-      enqueueSnackbar(`Administrador ${user.email} criado com sucesso.`, { variant: 'success' })
+      enqueueSnackbar(t('createTenantAdminSuccess', { email: user.email }), { variant: 'success' })
       reset()
     } catch (error) {
-      enqueueSnackbar(extractErrorMessage(error), { variant: 'error' })
+      enqueueSnackbar(extractErrorMessage(error, t('createTenantAdminError')), { variant: 'error' })
     }
   }
 
   return (
     <Stack component="form" onSubmit={handleSubmit(onSubmit)} spacing={2.5} sx={{ maxWidth: 420 }}>
-      <RhfTextField control={control} name="nome" label="Nome" fullWidth />
+      <RhfTextField control={control} name="nome" label={t('name')} fullWidth />
       <RhfTextField
         control={control}
         name="email"
-        label="E-mail"
+        label={t('email')}
         type="email"
         autoComplete="username"
         fullWidth
@@ -66,7 +66,7 @@ export function CreateTenantAdminForm({ tenantId }: CreateTenantAdminFormProps) 
       <RhfTextField
         control={control}
         name="password"
-        label="Senha"
+        label={t('password')}
         type="password"
         autoComplete="new-password"
         fullWidth
@@ -74,18 +74,20 @@ export function CreateTenantAdminForm({ tenantId }: CreateTenantAdminFormProps) 
       <RhfTextField
         control={control}
         name="confirmarSenha"
-        label="Confirmar senha"
+        label={t('passwordConfirmation')}
         type="password"
         autoComplete="new-password"
         fullWidth
       />
 
       {createTenantAdmin.isError ? (
-        <Alert severity="error">{extractErrorMessage(createTenantAdmin.error)}</Alert>
+        <Alert severity="error">
+          {extractErrorMessage(createTenantAdmin.error, t('createTenantAdminError'))}
+        </Alert>
       ) : null}
 
       <Button type="submit" variant="contained" size="large" disabled={isSubmitting}>
-        Criar administrador da imobiliária
+        {t('createTenantAdminSubmit')}
       </Button>
     </Stack>
   )

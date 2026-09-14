@@ -4,39 +4,32 @@ import { Box, Button, Divider, Stack, Typography } from '@mui/material'
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined'
 import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined'
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
+import { Link } from '@/i18n/navigation'
 import { componentText, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
+import type { PublicProfileSidebarProps } from '../../types/profile-sidebar'
+import { buildPublicProfileHref } from '../../utils/property-links'
 import { getPublicProfileLink } from '../../utils/profile-listings'
-
-type PublicProfileSidebarProps = {
-  accentColor: string
-  hoverColor: string
-  href: string
-  linkDescription: string
-  phone: string
-  email: string
-  facts: Array<{
-    label: string
-    value: string
-  }>
-}
 
 export function PublicProfileSidebar({
   accentColor,
   hoverColor,
   href,
+  sourceType,
   linkDescription,
   phone,
   email,
   facts,
 }: PublicProfileSidebarProps) {
+  const t = useTranslations('marketplace.publicProfile.sidebar')
+  const publicProfileHref = buildPublicProfileHref(href, sourceType)
+
   return (
     <Box
       sx={{
-        position: { lg: 'sticky' },
-        top: { lg: 84 },
+        alignSelf: 'start',
         border: '1px solid',
         borderColor: 'divider',
         borderRadius: `${radius.sm}px`,
@@ -45,7 +38,7 @@ export function PublicProfileSidebar({
         p: 2,
       }}
     >
-      <Typography sx={{ ...componentText.cardTitle, mb: 0.8 }}>Link público</Typography>
+      <Typography sx={{ ...componentText.cardTitle, mb: 0.8 }}>{t('publicLink')}</Typography>
       <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 500, mb: 1.5 }}>
         {linkDescription}
       </Typography>
@@ -64,25 +57,30 @@ export function PublicProfileSidebar({
           {getPublicProfileLink(href)}
         </Typography>
       </Box>
-      <Button
+      <Box
         component={Link}
-        href={href}
-        variant="outlined"
-        color="secondary"
-        fullWidth
-        startIcon={<LinkOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-        sx={{
-          mb: 2,
-          borderColor: accentColor,
-          color: accentColor,
-          '&:hover': {
-            borderColor: accentColor,
-            bgcolor: hoverColor,
-          },
-        }}
+        href={publicProfileHref}
+        sx={{ display: 'block', textDecoration: 'none' }}
       >
-        Abrir link próprio
-      </Button>
+        <Button
+          component="span"
+          variant="outlined"
+          color="secondary"
+          fullWidth
+          startIcon={<LinkOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+          sx={{
+            mb: 2,
+            borderColor: accentColor,
+            color: accentColor,
+            '&:hover': {
+              borderColor: accentColor,
+              bgcolor: hoverColor,
+            },
+          }}
+        >
+          {t('openOwnLink')}
+        </Button>
+      </Box>
 
       <Divider sx={{ mb: 2 }} />
 
@@ -100,7 +98,7 @@ export function PublicProfileSidebar({
             },
           }}
         >
-          Ligar
+          {t('call')}
         </Button>
         <Button
           component="a"

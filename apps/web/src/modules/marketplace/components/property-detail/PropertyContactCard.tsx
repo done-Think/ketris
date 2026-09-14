@@ -3,12 +3,15 @@
 import { Avatar, Box, Button, Divider, Stack, Typography } from '@mui/material'
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined'
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined'
+import { useTranslations } from 'next-intl'
 
 import { alpha, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { PropertyContactCardProps } from '../../types/property-detail'
 
 export function PropertyContactCard({ property }: PropertyContactCardProps) {
+  const t = useTranslations('marketplace.propertyDetail')
+
   return (
     <Box
       sx={{
@@ -24,15 +27,15 @@ export function PropertyContactCard({ property }: PropertyContactCardProps) {
         {property.price}
       </Typography>
       <Typography sx={{ color: 'text.secondary', fontSize: 12, fontWeight: 700, mb: 2 }}>
-        Condomínio {property.condominium}
+        {t('condominium', { value: property.condominium })}
       </Typography>
 
       <Stack spacing={1} sx={{ mb: 2 }}>
         <Button variant="contained" size="large" fullWidth>
-          Agendar visita
+          {t('scheduleVisit')}
         </Button>
         <Button variant="outlined" color="secondary" size="large" fullWidth>
-          Enviar proposta
+          {t('sendProposal')}
         </Button>
       </Stack>
 
@@ -43,16 +46,16 @@ export function PropertyContactCard({ property }: PropertyContactCardProps) {
         <Box>
           <Typography sx={{ fontWeight: 900 }}>{property.broker}</Typography>
           <Typography sx={{ color: 'text.secondary', fontSize: 12, fontWeight: 700 }}>
-            Corretor Ketris
+            {t('brokerRole')}
           </Typography>
         </Box>
       </Stack>
 
       <Stack direction="row" spacing={1}>
         {[
-          { label: 'Ligar', icon: PhoneOutlinedIcon },
-          { label: 'WhatsApp', icon: PhoneOutlinedIcon },
-          { label: 'E-mail', icon: EmailOutlinedIcon },
+          { label: t('contactActions.call'), icon: PhoneOutlinedIcon },
+          { label: t('contactActions.whatsapp'), icon: PhoneOutlinedIcon },
+          { label: t('contactActions.email'), icon: EmailOutlinedIcon },
         ].map(({ label, icon: Icon }) => (
           <Button
             key={label}

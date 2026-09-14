@@ -1,3 +1,5 @@
+'use client'
+
 import {
   Box,
   Container,
@@ -10,25 +12,13 @@ import {
 import FacebookOutlinedIcon from '@mui/icons-material/FacebookOutlined'
 import InstagramIcon from '@mui/icons-material/Instagram'
 import LinkedInIcon from '@mui/icons-material/LinkedIn'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
+import { Link } from '@/i18n/navigation'
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
 import { alpha, componentText, iconSize, surface } from '@shared/theme/tokens'
-
-type SiteFooterProps = {
-  columns: Array<{
-    title: string
-    links: Array<{
-      label: string
-      href: string
-    }>
-  }>
-  legalLinks: ReadonlyArray<{
-    label: string
-    href: string
-  }>
-}
+import type { SiteFooterProps } from '@shared/types/site-footer'
 
 const socialLinks = [
   { label: 'Instagram', icon: InstagramIcon },
@@ -37,6 +27,8 @@ const socialLinks = [
 ] as const
 
 export function SiteFooter({ columns, legalLinks }: SiteFooterProps) {
+  const t = useTranslations('marketplace.footer')
+
   return (
     <Box component="footer" sx={{ bgcolor: surface.dark, color: surface.lightText }}>
       <Container maxWidth="xl">
@@ -65,8 +57,7 @@ export function SiteFooter({ columns, legalLinks }: SiteFooterProps) {
                 mx: { xs: 'auto', md: 0 },
               }}
             >
-              Tecnologia e simplificação de ponta a ponta no mercado imobiliário corporativo e
-              residencial.
+              {t('description')}
             </Typography>
             <Stack
               direction="row"
@@ -155,7 +146,7 @@ export function SiteFooter({ columns, legalLinks }: SiteFooterProps) {
             <Box component="strong" sx={componentText.footerBrand}>
               Ketris
             </Box>{' '}
-            Tecnologias Ltda. Todos os direitos reservados.
+            {t('rights')}
           </Typography>
           <Stack direction="row" spacing={3}>
             {legalLinks.map((item) => (

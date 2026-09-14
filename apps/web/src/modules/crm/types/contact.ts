@@ -1,4 +1,51 @@
-export type ContactType = 'owner' | 'renter' | 'broker'
+export type ContactType = 'Proprietário' | 'Locatário' | 'Corretor'
+export type ContactFilterKey = 'all' | 'owners' | 'tenants' | 'brokers'
+
+/** Shape real da API (/crm/contacts) — enum sem acento, nulos explícitos, datas como ISO string. */
+export type ApiContactType = 'PROPRIETARIO' | 'LOCATARIO' | 'CORRETOR'
+
+export interface ApiContact {
+  id: string
+  tenantId: string
+  name: string
+  email: string
+  phone: string | null
+  type: ApiContactType
+  avatarUrl: string | null
+  notes: string | null
+  lastInteraction: string | null
+  archivedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApiContactListItem extends ApiContact {
+  propertyCount: number
+}
+
+export interface ContactFilters {
+  type?: ApiContactType
+  q?: string
+  includeArchived?: boolean
+}
+
+export interface CreateContactPayload {
+  name: string
+  email: string
+  phone?: string | null
+  type?: ApiContactType
+  avatarUrl?: string | null
+  notes?: string | null
+}
+
+export interface UpdateContactPayload {
+  name?: string
+  email?: string
+  phone?: string | null
+  type?: ApiContactType
+  avatarUrl?: string | null
+  notes?: string | null
+}
 
 export type ContactListItem = {
   id: string
@@ -12,8 +59,6 @@ export type ContactListItem = {
 }
 
 export type ContactFilter = 'Todos' | 'Proprietários' | 'Locatários' | 'Corretores'
-
-export type ContactFilterId = 'all' | ContactType
 
 export type ContactsListProps = {
   contacts?: readonly ContactListItem[]
@@ -52,9 +97,9 @@ export type ContactsCardsProps = Omit<ContactsTableProps, 'onToggleAll'>
 
 export type ContactsHeaderProps = {
   search: string
-  activeFilterId: ContactFilterId
+  activeFilter: ContactFilter
   onSearchChange: (search: string) => void
-  onFilterChange: (filterId: ContactFilterId) => void
+  onFilterChange: (filter: ContactFilter) => void
   onNewContact?: () => void
 }
 

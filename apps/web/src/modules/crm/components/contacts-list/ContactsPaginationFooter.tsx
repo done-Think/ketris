@@ -1,4 +1,5 @@
 import { Button, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { brand, radius, surface } from '@shared/theme/tokens'
 
@@ -13,6 +14,8 @@ export function ContactsPaginationFooter({
   canGoForward,
   onPageChange,
 }: ContactsPaginationFooterProps) {
+  const t = useTranslations('crm.contacts')
+
   return (
     <Stack
       component="footer"
@@ -22,44 +25,46 @@ export function ContactsPaginationFooter({
       spacing={2}
       sx={{
         mt: 'auto',
-        minHeight: 56,
+        minHeight: 52,
         px: 2,
         borderTop: 1,
         borderColor: 'divider',
       }}
     >
-      <Typography color="text.secondary" sx={{ fontSize: 12 }}>
-        Mostrando {firstVisible}–{lastVisible} de {resultTotal}
+      <Typography color="text.secondary" sx={{ fontSize: 11.5 }}>
+        {t('resultsRange', { first: firstVisible, last: lastVisible, total: resultTotal })}
       </Typography>
       <Stack direction="row" spacing={0.75}>
         {[
           {
-            label: 'Anterior',
+            key: 'previous',
+            label: t('pagination.previous'),
             disabled: !onPageChange || !canGoBack,
             onClick: () => onPageChange?.(page - 1),
           },
           {
-            label: 'Próximo',
+            key: 'next',
+            label: t('pagination.next'),
             disabled: !onPageChange || !canGoForward,
             onClick: () => onPageChange?.(page + 1),
           },
-        ].map(({ label, disabled, onClick }) => (
+        ].map(({ key, label, disabled, onClick }) => (
           <Button
-            key={label}
+            key={key}
             type="button"
             variant="outlined"
             size="small"
             disabled={disabled}
             onClick={onClick}
             sx={{
-              minWidth: 68,
-              height: 28,
-              px: 1.25,
+              minWidth: 62,
+              height: 24,
+              px: 1,
               borderColor: brand.neutral[100],
               borderRadius: `${radius.sm}px`,
               bgcolor: surface.paper,
               color: brand.neutral[500],
-              fontSize: 11.5,
+              fontSize: 10.5,
               fontWeight: 500,
               '&:hover': { borderColor: brand.neutral[200], bgcolor: surface.paper },
               '&.Mui-disabled': {

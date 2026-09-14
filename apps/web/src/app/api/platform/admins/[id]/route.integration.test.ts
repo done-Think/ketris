@@ -61,7 +61,7 @@ describe('/api/platform/admins/[id] (integração)', () => {
 
   it('GET retorna 200 e o platform admin quando autenticado', async () => {
     const response = await GET(buildRequest('GET', undefined, actorToken), {
-      params: { id: targetId },
+      params: Promise.resolve({ id: targetId }),
     })
     const json = await response.json()
 
@@ -71,7 +71,7 @@ describe('/api/platform/admins/[id] (integração)', () => {
 
   it('GET retorna 404 para um id inexistente', async () => {
     const response = await GET(buildRequest('GET', undefined, actorToken), {
-      params: { id: 'inexistente' },
+      params: Promise.resolve({ id: 'inexistente' }),
     })
 
     expect(response.status).toBe(404)
@@ -79,7 +79,7 @@ describe('/api/platform/admins/[id] (integração)', () => {
 
   it('PATCH atualiza o nome quando autenticado', async () => {
     const response = await PATCH(buildRequest('PATCH', { nome: 'Nome Atualizado' }, actorToken), {
-      params: { id: targetId },
+      params: Promise.resolve({ id: targetId }),
     })
     const json = await response.json()
 
@@ -89,7 +89,7 @@ describe('/api/platform/admins/[id] (integração)', () => {
 
   it('DELETE desativa o alvo quando autenticado e o ator não é o próprio alvo', async () => {
     const response = await DELETE(buildRequest('DELETE', undefined, actorToken), {
-      params: { id: targetId },
+      params: Promise.resolve({ id: targetId }),
     })
     const json = await response.json()
 
@@ -99,7 +99,7 @@ describe('/api/platform/admins/[id] (integração)', () => {
 
   it('DELETE retorna 400 quando o ator tenta se autodesativar', async () => {
     const response = await DELETE(buildRequest('DELETE', undefined, actorToken), {
-      params: { id: actorId },
+      params: Promise.resolve({ id: actorId }),
     })
     const json = await response.json()
 

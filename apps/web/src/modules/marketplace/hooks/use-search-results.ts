@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQuery } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 
 import {
@@ -9,44 +10,44 @@ import {
   bedroomFilterOptions,
   priceFilterOptions,
 } from '../config/search-results-filters'
-import {
-  defaultSearchResultsViewMode,
-  getSearchResultsViewModeCookie,
-  isSearchResultsViewMode,
-  searchResultsViewModeCookieKey,
-} from '../config/search-results-view-mode'
-import { searchResults } from '../data/search-results'
+import { defaultSearchResultsViewMode } from '../config/search-results-view-mode'
+import { marketplaceService } from '../services/marketplace-service'
 import { searchResultsFormSchema } from '../schemas/marketplace-search-schema'
+import type { PropertySortOption, PublicPropertyPurpose } from '../types/public-property'
 import type {
   SearchResultsFormValues,
   SearchResultsPageProps,
   SortOption,
   ViewMode,
 } from '../types/search'
-import {
-  formatCompactCurrency,
-  getCurrencyValue,
-  getFeatureNumber,
-  normalizeLocationFilter,
-} from '../utils/search-results'
+import type { SearchResultsViewModeScope } from '../config/search-results-view-mode'
+import { mapSummaryToSearchResult } from '../utils/property-summary-adapter'
+import { formatCompactCurrency } from '../utils/search-results'
+import { useViewModePreference } from './use-view-mode-preference'
 
-const saveViewModePreference = (mode: ViewMode) => {
-  document.cookie = getSearchResultsViewModeCookie(mode)
+const viewModeScopeByPurpose: Record<
+  SearchResultsPageProps['purpose'],
+  SearchResultsViewModeScope
+> = {
+  alugar: 'rent',
+  comprar: 'buy',
 }
 
-const getStoredViewModePreference = () => {
-  const cookieValue = document.cookie
-    .split('; ')
-    .find((cookie) => cookie.startsWith(`${searchResultsViewModeCookieKey}=`))
-    ?.slice(searchResultsViewModeCookieKey.length + 1)
+const apiPurposeByPurpose: Record<SearchResultsPageProps['purpose'], PublicPropertyPurpose> = {
+  alugar: 'ALUGUEL',
+  comprar: 'VENDA',
+}
 
-  return isSearchResultsViewMode(cookieValue) ? cookieValue : undefined
+const sortByOption: Record<SortOption, PropertySortOption | undefined> = {
+  relevancia: undefined,
+  'menor-preco': 'priceAsc',
+  'maior-preco': 'priceDesc',
 }
 
 export function useSearchResults({ purpose, initialLocation = '' }: SearchResultsPageProps) {
   const { setValue, watch } = useForm<SearchResultsFormValues>({
     defaultValues: {
-      selectedPropertyId: searchResults[0]?.id ?? '',
+      selectedPropertyId: '',
       locationQuery: initialLocation,
       propertyTypeFilter: '',
       priceFilterIndex: 0,
@@ -60,6 +61,7 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
     },
     resolver: zodResolver(searchResultsFormSchema),
   })
+  const persistedViewMode = useViewModePreference(viewModeScopeByPurpose[purpose])
   const {
     areaFilterIndex,
     bedroomFilterIndex,
@@ -87,48 +89,26 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
       : priceFilter.label
   const areaFilterLabel = customMinAreaValue > 0 ? `${customMinAreaValue}m²+` : areaFilter.label
 
-  const filteredResults = useMemo(() => {
-    const nextResults = searchResults
-      .filter((property) => property.purpose === purpose)
-      .filter(
-        (property) =>
-          !locationQuery ||
-          normalizeLocationFilter(property.location).includes(
-            normalizeLocationFilter(locationQuery),
-          ),
-      )
-      .filter((property) => !propertyTypeFilter || property.category === propertyTypeFilter)
-      .filter((property) => !maxPrice || getCurrencyValue(property.price) <= maxPrice)
-      .filter(
-        (property) =>
-          !bedroomFilter.min || getFeatureNumber(property, 'bedrooms') >= bedroomFilter.min,
-      )
-      .filter((property) => !minArea || getFeatureNumber(property, 'area') >= minArea)
-      .filter((property) => !onlyWithParking || getFeatureNumber(property, 'parking') > 0)
+  const searchFilters = {
+    purpose: apiPurposeByPurpose[purpose],
+    location: locationQuery || undefined,
+    propertyType: propertyTypeFilter || undefined,
+    maxPrice: maxPrice ?? undefined,
+    minBedrooms: bedroomFilter.min ?? undefined,
+    minArea: minArea ?? undefined,
+    hasParking: onlyWithParking || undefined,
+    sortBy: sortByOption[sortOption],
+  }
 
-    if (sortOption === 'menor-preco') {
-      return [...nextResults].sort(
-        (current, next) => getCurrencyValue(current.price) - getCurrencyValue(next.price),
-      )
-    }
+  const propertiesQuery = useQuery({
+    queryKey: ['marketplace', 'properties', 'search', searchFilters],
+    queryFn: () => marketplaceService.searchProperties(searchFilters),
+  })
 
-    if (sortOption === 'maior-preco') {
-      return [...nextResults].sort(
-        (current, next) => getCurrencyValue(next.price) - getCurrencyValue(current.price),
-      )
-    }
-
-    return nextResults
-  }, [
-    bedroomFilter.min,
-    locationQuery,
-    maxPrice,
-    minArea,
-    onlyWithParking,
-    propertyTypeFilter,
-    purpose,
-    sortOption,
-  ])
+  const filteredResults = useMemo(
+    () => (propertiesQuery.data ?? []).map((summary) => mapSummaryToSearchResult(summary, purpose)),
+    [propertiesQuery.data, purpose],
+  )
 
   useEffect(() => {
     if (filteredResults.some((property) => property.id === selectedPropertyId)) return
@@ -137,12 +117,10 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
   }, [filteredResults, selectedPropertyId, setValue])
 
   useEffect(() => {
-    const storedViewMode = getStoredViewModePreference()
+    if (persistedViewMode.viewMode === viewMode) return
 
-    if (!storedViewMode || storedViewMode === viewMode) return
-
-    setValue('viewMode', storedViewMode)
-  }, [setValue, viewMode])
+    setValue('viewMode', persistedViewMode.viewMode)
+  }, [persistedViewMode.viewMode, setValue, viewMode])
 
   const clearPriceFilter = () => {
     setValue('customMaxPrice', '')
@@ -165,6 +143,8 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
     customMaxPrice,
     customMinArea,
     filteredResults,
+    isError: propertiesQuery.isError,
+    isLoading: propertiesQuery.isLoading,
     locationQuery,
     maxPrice,
     minArea,
@@ -172,6 +152,7 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
     priceFilterIndex,
     priceFilterLabel,
     propertyTypeFilter,
+    refetch: propertiesQuery.refetch,
     selectedPropertyId,
     setAreaFilterIndex: (index: number) => setValue('areaFilterIndex', index),
     setBedroomFilterIndex: (index: number) => setValue('bedroomFilterIndex', index),
@@ -184,7 +165,7 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
     setSelectedPropertyId: (propertyId: string) => setValue('selectedPropertyId', propertyId),
     setSortOption: (option: SortOption) => setValue('sortOption', option),
     setViewMode: (mode: ViewMode) => {
-      saveViewModePreference(mode)
+      persistedViewMode.setViewMode(mode)
       setValue('viewMode', mode)
     },
     sortOption,

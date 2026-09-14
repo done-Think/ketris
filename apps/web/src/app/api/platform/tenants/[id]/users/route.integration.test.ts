@@ -71,7 +71,7 @@ describe('GET /api/platform/tenants/[id]/users (integração)', () => {
   it('retorna 200 e todos os usuários do tenant, incluindo a conta ADMIN', async () => {
     const response = await GET(
       buildRequest(`http://localhost/api/platform/tenants/${tenantId}/users`, actorToken),
-      { params: { id: tenantId } },
+      { params: Promise.resolve({ id: tenantId }) },
     )
     const json = await response.json()
 
@@ -83,7 +83,7 @@ describe('GET /api/platform/tenants/[id]/users (integração)', () => {
   it('retorna 401 sem Authorization header', async () => {
     const response = await GET(
       buildRequest(`http://localhost/api/platform/tenants/${tenantId}/users`),
-      { params: { id: tenantId } },
+      { params: Promise.resolve({ id: tenantId }) },
     )
 
     expect(response.status).toBe(401)
@@ -92,7 +92,7 @@ describe('GET /api/platform/tenants/[id]/users (integração)', () => {
   it('retorna 404 para um tenant inexistente', async () => {
     const response = await GET(
       buildRequest('http://localhost/api/platform/tenants/inexistente/users', actorToken),
-      { params: { id: 'inexistente' } },
+      { params: Promise.resolve({ id: 'inexistente' }) },
     )
 
     expect(response.status).toBe(404)

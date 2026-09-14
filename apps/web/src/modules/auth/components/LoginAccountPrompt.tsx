@@ -1,12 +1,17 @@
-import Link from 'next/link'
+'use client'
+
 import { Link as MuiLink, Stack, Typography } from '@mui/material'
 import { alpha as muiAlpha } from '@mui/material/styles'
+import { useTranslations } from 'next-intl'
 
+import { Link } from '@/i18n/navigation'
 import { componentText, surface } from '@shared/theme/tokens'
 
 import { authRoutes } from '../config/auth-routes'
 
 export function LoginAccountPrompt() {
+  const t = useTranslations('auth.login.prompt')
+
   return (
     <Stack direction="row" justifyContent="center" spacing={0.5} alignItems="center">
       <Typography
@@ -16,7 +21,7 @@ export function LoginAccountPrompt() {
           ...componentText.authPrompt,
         }}
       >
-        Não tem conta?
+        {t('question')}
       </Typography>
       <MuiLink
         component={Link}
@@ -24,7 +29,7 @@ export function LoginAccountPrompt() {
         underline="hover"
         sx={{ color: 'primary.main', ...componentText.authPrompt, fontWeight: 700 }}
       >
-        Criar conta
+        {t('createAccount')}
       </MuiLink>
     </Stack>
   )

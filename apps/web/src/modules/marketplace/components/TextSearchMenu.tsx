@@ -1,5 +1,6 @@
 import { Box, IconButton, InputAdornment, MenuItem, TextField, Typography } from '@mui/material'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import { useTranslations } from 'next-intl'
 
 import { alpha, componentText, surface } from '@shared/theme/tokens'
 
@@ -11,9 +12,11 @@ export function TextSearchMenu({
   selectedSearch,
   searchDraft,
   filterSearchOptions,
+  getSearchOptionLabel,
   selectSearchValue,
   setSearchDraft,
 }: TextSearchMenuProps) {
+  const t = useTranslations('marketplace.home.search')
   const options = filterSearchOptions(filterKey)
   const draftValue = searchDraft[filterKey]
 
@@ -32,7 +35,7 @@ export function TextSearchMenu({
           fullWidth
           size="small"
           placeholder={
-            filterKey === 'location' ? 'Digite cidade ou bairro' : 'Digite o tipo de imóvel'
+            filterKey === 'location' ? t('locationPlaceholder') : t('propertyTypePlaceholder')
           }
           value={draftValue}
           onChange={(event) =>
@@ -51,7 +54,7 @@ export function TextSearchMenu({
               endAdornment: draftValue ? (
                 <InputAdornment position="end">
                   <IconButton
-                    aria-label="Limpar busca"
+                    aria-label={t('clearSearch')}
                     edge="end"
                     size="small"
                     onMouseDown={(event) => event.preventDefault()}
@@ -90,7 +93,7 @@ export function TextSearchMenu({
                 },
               }}
             >
-              {value}
+              {getSearchOptionLabel(filterKey, value)}
             </MenuItem>
           ))
         ) : (
@@ -103,7 +106,7 @@ export function TextSearchMenu({
               textAlign: centered ? 'center' : 'left',
             }}
           >
-            Nenhum resultado
+            {t('noResults')}
           </Typography>
         )}
       </Box>

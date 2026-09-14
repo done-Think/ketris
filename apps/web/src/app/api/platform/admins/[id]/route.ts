@@ -7,14 +7,14 @@ import { updatePlatformAdminRequestSchema } from '@server/platform/schemas/updat
 import { parseJsonBody, withErrorHandling } from '@server/shared/http'
 
 interface RouteContext {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export const GET = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
   await requirePlatformBearerAuth(request, platformContainer.tokenService)
 
   const admin = await platformContainer.getPlatformAdminUseCase.execute({
-    platformAdminId: context.params.id,
+    platformAdminId: (await context.params).id,
   })
 
   return NextResponse.json({ admin }, { status: 200 })
@@ -25,7 +25,7 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Rou
   const body = await parseJsonBody(request, updatePlatformAdminRequestSchema)
 
   const admin = await platformContainer.updatePlatformAdminUseCase.execute({
-    platformAdminId: context.params.id,
+    platformAdminId: (await context.params).id,
     nome: body.nome,
     email: body.email,
   })
@@ -38,7 +38,7 @@ export const DELETE = withErrorHandling(async (request: NextRequest, context: Ro
 
   const admin = await platformContainer.deactivatePlatformAdminUseCase.execute({
     actorId: actor.sub,
-    platformAdminId: context.params.id,
+    platformAdminId: (await context.params).id,
   })
 
   return NextResponse.json({ admin }, { status: 200 })

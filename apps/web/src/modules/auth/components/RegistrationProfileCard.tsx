@@ -5,7 +5,12 @@ import { alpha, brand, motion, radius, surface } from '@shared/theme/tokens'
 import { RegistrationProfileIcon } from './RegistrationProfileIcon'
 import type { RegistrationProfileCardProps } from '../types/registration'
 
-export function RegistrationProfileCard({ profile, selected }: RegistrationProfileCardProps) {
+export function RegistrationProfileCard({
+  description,
+  profile,
+  selected,
+  title,
+}: RegistrationProfileCardProps) {
   return (
     <FormControlLabel
       value={profile.id}
@@ -13,7 +18,7 @@ export function RegistrationProfileCard({ profile, selected }: RegistrationProfi
       control={
         <Radio
           disableRipple
-          inputProps={{ 'aria-label': profile.title }}
+          slotProps={{ input: { 'aria-label': title } }}
           sx={{ position: 'absolute', width: 1, height: 1, p: 0, opacity: 0 }}
         />
       }
@@ -22,10 +27,10 @@ export function RegistrationProfileCard({ profile, selected }: RegistrationProfi
           <RegistrationProfileIcon variant={profile.icon} />
 
           <Typography variant="h6" sx={{ mt: 2, fontWeight: 700 }}>
-            {profile.title}
+            {title}
           </Typography>
           <Typography color="text.secondary" variant="body2" sx={{ mt: 0.5 }}>
-            {profile.description}
+            {description}
           </Typography>
         </Stack>
       }

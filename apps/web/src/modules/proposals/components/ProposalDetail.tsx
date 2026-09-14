@@ -2,8 +2,8 @@
 
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
 import { Box, Button, Stack, Typography } from '@mui/material'
-import NextLink from 'next/link'
 
+import { Link } from '@/i18n/navigation'
 import { brand, radius, surface } from '@shared/theme/tokens'
 
 import { getProposalManagementDetail } from '../fixtures/proposal-management-fixtures'
@@ -14,8 +14,14 @@ import { ProposalHistoryPanel } from './proposal-detail/ProposalHistoryPanel'
 import { ProposalInformationPanel } from './proposal-detail/ProposalInformationPanel'
 import { ProposalSpecialConditionsPanel } from './proposal-detail/ProposalSpecialConditionsPanel'
 
-export function ProposalDetail({ proposalId, onEdit, onSendToOwner }: ProposalDetailProps) {
-  const detail = getProposalManagementDetail(proposalId)
+export function ProposalDetail({
+  proposalId,
+  detail: detailOverride,
+  onEdit,
+  onSendToOwner,
+}: ProposalDetailProps) {
+  const detail =
+    detailOverride !== undefined ? detailOverride : getProposalManagementDetail(proposalId)
 
   if (!detail) {
     return (
@@ -32,7 +38,7 @@ export function ProposalDetail({ proposalId, onEdit, onSendToOwner }: ProposalDe
           Verifique o endereço ou retorne para a lista de propostas.
         </Typography>
         <Button
-          component={NextLink}
+          component={Link}
           href="/crm/proposals"
           variant="outlined"
           startIcon={<ArrowBackRoundedIcon />}

@@ -1,62 +1,18 @@
-import type { PropertyBreadcrumbsProps } from '../types/property-detail'
+import { useTranslations } from 'next-intl'
+
+import type { MarketplaceBreadcrumbItem } from '../types/breadcrumb'
+import type { PropertyBreadcrumbPurpose, PropertyBreadcrumbsProps } from '../types/property-detail'
 import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 
 function buildLocationHref(location: string) {
-  const params = new URLSearchParams({ location })
-
-  return `/imoveis?${params.toString()}`
+  return { pathname: '/properties', query: { location } } as const
 }
 
-function buildPurposeHref(purpose: string) {
-  const params = new URLSearchParams({ purpose })
-
-  return `/imoveis?${params.toString()}`
-}
-
-function formatPurposeLabel(purpose: string) {
-  return purpose === 'comprar' ? 'Comprar' : 'Alugar'
-}
-
-function buildLocationBreadcrumbItems(location: string) {
-  const [neighborhood = location, city = 'São Paulo'] = location
-    .split(',')
-    .map((item) => item.trim())
-
-  return [
-    { label: 'Home', href: '/' },
-    { label: city, href: buildLocationHref(city) },
-    { label: neighborhood, href: buildLocationHref(neighborhood) },
-  ]
-}
-
-function buildJourneyBreadcrumbItems({
-  context,
-  location,
-}: Pick<PropertyBreadcrumbsProps, 'context' | 'location'>) {
-  if (context?.originType === 'broker' && context.originName && context.originHref) {
-    return [
-      { label: 'Home', href: '/' },
-      { label: 'Corretores', href: '/corretores' },
-      { label: context.originName, href: context.originHref },
-    ]
-  }
-
-  if (context?.originType === 'agency' && context.originName && context.originHref) {
-    return [
-      { label: 'Home', href: '/' },
-      { label: 'Imobiliárias', href: '/imobiliarias' },
-      { label: context.originName, href: context.originHref },
-    ]
-  }
-
-  if (context?.purpose === 'alugar' || context?.purpose === 'comprar') {
-    return [
-      { label: 'Home', href: '/' },
-      { label: formatPurposeLabel(context.purpose), href: buildPurposeHref(context.purpose) },
-    ]
-  }
-
-  return buildLocationBreadcrumbItems(location)
+function buildPurposeHref(purpose: PropertyBreadcrumbPurpose) {
+  return {
+    pathname: '/properties',
+    query: { purpose: purpose === 'comprar' ? 'buy' : 'rent' },
+  } as const
 }
 
 export function PropertyBreadcrumbs({
@@ -64,7 +20,57 @@ export function PropertyBreadcrumbs({
   location,
   propertyTitle,
 }: PropertyBreadcrumbsProps) {
-  const breadcrumbs = buildJourneyBreadcrumbItems({ context, location })
+  const t = useTranslations('marketplace')
+  const [neighborhood = location, city = 'São Paulo'] = location
+    .split(',')
+    .map((item) => item.trim())
 
-  return <MarketplaceBreadcrumbs items={[...breadcrumbs, { label: propertyTitle }]} />
+  const locationBreadcrumbs: MarketplaceBreadcrumbItem[] = [
+    { label: t('navigation.home'), href: '/' },
+    { label: city, href: buildLocationHref(city) },
+    { label: neighborhood, href: buildLocationHref(neighborhood) },
+  ]
+
+  if (context?.originType === 'broker' && context.originName && context.originHref) {
+    return (
+      <MarketplaceBreadcrumbs
+        items={[
+          { label: t('navigation.home'), href: '/' },
+          { label: t('navigation.brokers'), href: '/brokers' },
+          { label: context.originName, href: context.originHref },
+          { label: propertyTitle },
+        ]}
+      />
+    )
+  }
+
+  if (context?.originType === 'agency' && context.originName && context.originHref) {
+    return (
+      <MarketplaceBreadcrumbs
+        items={[
+          { label: t('navigation.home'), href: '/' },
+          { label: t('navigation.agencies'), href: '/agencies' },
+          { label: context.originName, href: context.originHref },
+          { label: propertyTitle },
+        ]}
+      />
+    )
+  }
+
+  if (context?.purpose === 'alugar' || context?.purpose === 'comprar') {
+    return (
+      <MarketplaceBreadcrumbs
+        items={[
+          { label: t('navigation.home'), href: '/' },
+          {
+            label: context.purpose === 'comprar' ? t('navigation.buy') : t('navigation.rent'),
+            href: buildPurposeHref(context.purpose),
+          },
+          { label: propertyTitle },
+        ]}
+      />
+    )
+  }
+
+  return <MarketplaceBreadcrumbs items={[...locationBreadcrumbs, { label: propertyTitle }]} />
 }

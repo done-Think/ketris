@@ -1,6 +1,7 @@
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { Box, Button, InputAdornment, Stack, TextField, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
@@ -9,11 +10,13 @@ import type { ContactsHeaderProps } from '../../types/contact'
 
 export function ContactsHeader({
   search,
-  activeFilterId,
+  activeFilter,
   onSearchChange,
   onFilterChange,
   onNewContact,
 }: ContactsHeaderProps) {
+  const t = useTranslations('crm.contacts')
+
   return (
     <Stack
       component="header"
@@ -22,7 +25,7 @@ export function ContactsHeader({
       justifyContent="space-between"
       gap={1.5}
       sx={{
-        pb: 2,
+        pb: 1.75,
         borderBottom: '1px solid',
         borderColor: 'divider',
       }}
@@ -31,13 +34,14 @@ export function ContactsHeader({
         component="h1"
         sx={{
           flexShrink: 0,
-          fontSize: { xs: 28, sm: 32 },
+          fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
+          fontSize: { xs: 26, sm: 30 },
           fontWeight: 700,
           lineHeight: 1.15,
           letterSpacing: '-0.02em',
         }}
       >
-        Contatos
+        {t('title')}
       </Typography>
 
       <Stack
@@ -50,29 +54,29 @@ export function ContactsHeader({
         <TextField
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="Buscar contato por nome, email, fone..."
-          inputProps={{ 'aria-label': 'Buscar contatos' }}
+          placeholder={t('searchPlaceholder')}
           size="small"
           sx={{
             width: { xs: '100%', sm: 268 },
             '& .MuiOutlinedInput-root': {
-              height: { xs: 40, sm: 36 },
+              height: 32,
               borderRadius: `${radius.sm}px`,
               bgcolor: surface.paper,
-              fontSize: 13,
+              fontSize: 11.5,
               '& fieldset': { borderColor: brand.neutral[100] },
               '&:hover fieldset': { borderColor: brand.neutral[200] },
             },
             '& .MuiInputBase-input::placeholder': {
-              color: brand.neutral[500],
+              color: brand.neutral[400],
               opacity: 1,
             },
           }}
           slotProps={{
+            htmlInput: { 'aria-label': t('searchAriaLabel') },
             input: {
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchRoundedIcon sx={{ color: brand.neutral[500], fontSize: iconSize.lg }} />
+                  <SearchRoundedIcon sx={{ color: brand.neutral[400], fontSize: iconSize.sm }} />
                 </InputAdornment>
               ),
             },
@@ -82,31 +86,31 @@ export function ContactsHeader({
         <Stack
           component="div"
           role="group"
-          aria-label="Filtrar contatos por tipo"
+          aria-label={t('filterAriaLabel')}
           direction="row"
           spacing={0.75}
           sx={{ overflowX: { xs: 'auto', sm: 'visible' }, pb: { xs: 0.25, sm: 0 } }}
         >
-          {contactFilters.map(({ id, label }) => {
-            const active = id === activeFilterId
+          {contactFilters.map(({ label, labelKey }) => {
+            const active = label === activeFilter
 
             return (
               <Button
-                key={id}
+                key={label}
                 type="button"
                 variant={active ? 'contained' : 'outlined'}
                 aria-pressed={active}
-                onClick={() => onFilterChange(id)}
+                onClick={() => onFilterChange(label)}
                 sx={{
                   minWidth: 0,
-                  height: 30,
-                  px: 1.5,
+                  height: 28,
+                  px: 1.4,
                   flexShrink: 0,
                   borderColor: active ? brand.magenta[500] : brand.neutral[100],
                   borderRadius: `${radius.full}px`,
                   bgcolor: active ? brand.magenta[500] : surface.paper,
                   color: active ? surface.lightText : brand.graphite[500],
-                  fontSize: 11.5,
+                  fontSize: 10.5,
                   fontWeight: active ? 700 : 500,
                   whiteSpace: 'nowrap',
                   '&:hover': {
@@ -115,7 +119,7 @@ export function ContactsHeader({
                   },
                 }}
               >
-                {label}
+                {t(`filters.${labelKey}`)}
               </Button>
             )
           })}
@@ -129,17 +133,17 @@ export function ContactsHeader({
             disabled={!onNewContact}
             onClick={onNewContact}
             sx={{
-              width: { sm: 132 },
-              minWidth: { sm: 132 },
-              height: { xs: 40, sm: 36 },
+              width: { sm: 126 },
+              minWidth: { sm: 126 },
+              height: 32,
               px: 1.5,
               flexShrink: 0,
               borderRadius: `${radius.sm}px`,
-              fontSize: 13,
+              fontSize: 11.5,
               fontWeight: 700,
               whiteSpace: 'nowrap',
               '& .MuiButton-startIcon': { ml: 0, mr: 0.625 },
-              '& .MuiSvgIcon-root': { fontSize: iconSize.lg },
+              '& .MuiSvgIcon-root': { fontSize: iconSize.sm },
               '&.Mui-disabled': {
                 bgcolor: brand.magenta[500],
                 color: surface.lightText,
@@ -147,7 +151,7 @@ export function ContactsHeader({
               },
             }}
           >
-            Novo Contato
+            {t('newContact')}
           </Button>
         </Box>
       </Stack>

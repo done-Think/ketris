@@ -8,6 +8,7 @@ import { iconSize, radius, surface } from '@shared/theme/tokens'
 import type { DirectoryPageHeaderProps } from '../../types/directory'
 
 export function DirectoryPageHeader({
+  actions,
   placeholder,
   resultCountLabel,
   searchInputProps,
@@ -40,30 +41,40 @@ export function DirectoryPageHeader({
         </Typography>
       </Box>
 
-      <TextField
-        {...searchInputProps}
-        placeholder={placeholder}
-        size="small"
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchRoundedIcon sx={{ color: 'text.primary', fontSize: iconSize.lg }} />
-              </InputAdornment>
-            ),
-          },
-        }}
-        sx={{
-          width: { xs: '100%', md: 390 },
-          '& .MuiOutlinedInput-root': {
-            minHeight: 44,
-            borderRadius: `${radius.sm}px`,
-            bgcolor: surface.paper,
-            fontSize: 13,
-            fontWeight: 500,
-          },
-        }}
-      />
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent={{ xs: 'space-between', md: 'flex-end' }}
+        spacing={1}
+        useFlexGap
+        flexWrap="wrap"
+      >
+        <TextField
+          {...searchInputProps}
+          placeholder={placeholder}
+          size="small"
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchRoundedIcon sx={{ color: 'text.primary', fontSize: iconSize.lg }} />
+                </InputAdornment>
+              ),
+            },
+          }}
+          sx={{
+            width: { xs: '100%', md: 390 },
+            '& .MuiOutlinedInput-root': {
+              minHeight: 44,
+              borderRadius: `${radius.sm}px`,
+              bgcolor: surface.paper,
+              fontSize: 13,
+              fontWeight: 500,
+            },
+          }}
+        />
+        {actions}
+      </Stack>
     </Stack>
   )
 }

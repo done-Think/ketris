@@ -1,6 +1,7 @@
 import type { MouseEvent } from 'react'
 
 import type { Opportunity, OpportunityEditFormValues, OpportunityStatus } from './opportunity'
+import type { OpportunityStage } from './opportunity-stage'
 import type { PublicPropertyDetail } from './property'
 
 export type OpportunityDetailProps = {
@@ -19,12 +20,7 @@ export type DetailItemProps = {
   value: string
 }
 
-export type OpportunityStagePresentation = {
-  status: OpportunityStatus
-  label: string
-  color: string
-  softColor: string
-}
+export type OpportunityStagePresentation = OpportunityStage
 
 export type OpportunityDetailHeaderProps = {
   opportunity: Opportunity
@@ -87,58 +83,4 @@ export type ArchiveOpportunityDialogProps = {
   isPending: boolean
   onClose: () => void
   onConfirm: () => void
-}
-
-export type OpportunityInterestDetails = {
-  interest: string
-  budget: string
-  deadline: string
-}
-
-export type SuggestedPropertyPresentation = {
-  id: string
-  title: string
-  imageUrl?: string
-  meta: string
-  priceLabel: string
-  matchPercentage?: number
-  href?: string
-}
-
-export type OpportunityActivityKind = 'phone' | 'email' | 'opportunity'
-
-export type OpportunityActivityPresentation = {
-  id: string
-  kind: OpportunityActivityKind
-  title: string
-  dateLabel: string
-  description: string
-}
-
-export type OpportunityNextActionKind = 'visit' | 'followUp'
-
-export type OpportunityNextActionPresentation = {
-  id: string
-  kind: OpportunityNextActionKind
-  title: string
-  scheduleLabel: string
-}
-
-export type OpportunityDetailStagePresentation = {
-  label: string
-  color: string
-  softColor: string
-}
-
-export type OpportunityDetailPresentation = {
-  interestDetails: OpportunityInterestDetails
-  suggestedProperties: readonly SuggestedPropertyPresentation[]
-  activities: readonly OpportunityActivityPresentation[]
-  nextActions: readonly OpportunityNextActionPresentation[]
-}
-
-export type OpportunityDetailFixture = {
-  opportunity: Opportunity
-  stage: OpportunityDetailStagePresentation
-  presentation: OpportunityDetailPresentation
 }

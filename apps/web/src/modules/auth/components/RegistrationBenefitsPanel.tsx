@@ -1,5 +1,6 @@
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
 import { Box, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import ketrisLogoTransparent from '@shared/assets/ketris-logo-transparent.png'
 import { AppLogo } from '@shared/components/ui'
@@ -8,6 +9,8 @@ import { brand, gradients, iconSize, radius, surface } from '@shared/theme/token
 import { REGISTRATION_BENEFITS } from '../config/registration-benefits'
 
 export function RegistrationBenefitsPanel() {
+  const t = useTranslations('auth.register')
+
   return (
     <Box
       component="aside"
@@ -57,7 +60,7 @@ export function RegistrationBenefitsPanel() {
               >
                 <CheckRoundedIcon sx={{ color: brand.magenta[500], fontSize: iconSize.sm }} />
               </Box>
-              <Typography sx={{ fontSize: 15 }}>{benefit}</Typography>
+              <Typography sx={{ fontSize: 15 }}>{t(`benefits.${benefit}`)}</Typography>
             </Stack>
           ))}
         </Stack>
@@ -68,7 +71,7 @@ export function RegistrationBenefitsPanel() {
         variant="caption"
         sx={{ display: { xs: 'none', md: 'block' } }}
       >
-        © 2026 Ketris. Todos os direitos reservados.
+        {t('copyright')}
       </Typography>
     </Box>
   )

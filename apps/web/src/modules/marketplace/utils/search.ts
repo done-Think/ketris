@@ -26,5 +26,8 @@ export function buildSearchHref({ selectedSearch, searchDraft, priceRange }: Sea
     params.set(searchOptions[key].query, value)
   })
 
-  return `/imoveis?${params.toString()}`
+  return {
+    pathname: '/properties',
+    query: Object.fromEntries(params.entries()),
+  } as const
 }

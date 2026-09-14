@@ -1,6 +1,7 @@
 import { Button, Stack } from '@mui/material'
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded'
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
+import { useTranslations } from 'next-intl'
 
 import { iconSize, radius } from '@shared/theme/tokens'
 
@@ -12,6 +13,8 @@ export function CreatePropertyActions({
   onPreviousStep,
   onNextStep,
 }: CreatePropertyActionsProps) {
+  const t = useTranslations('properties.create')
+
   return (
     <Stack direction="row" justifyContent="space-between" spacing={1.2}>
       <Button
@@ -28,7 +31,7 @@ export function CreatePropertyActions({
           fontWeight: 900,
         }}
       >
-        Voltar
+        {t('back')}
       </Button>
       <Button
         type={lastStep ? 'submit' : 'button'}
@@ -42,7 +45,7 @@ export function CreatePropertyActions({
           fontWeight: 900,
         }}
       >
-        {lastStep ? 'Publicar' : 'Próximo'}
+        {lastStep ? t('publish') : t('next')}
       </Button>
     </Stack>
   )

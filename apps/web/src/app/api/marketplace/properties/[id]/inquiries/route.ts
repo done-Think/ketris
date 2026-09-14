@@ -6,19 +6,19 @@ import { submitInquiryRequestSchema } from '@server/marketplace/schemas/submit-i
 import { parseJsonBody, withErrorHandling } from '@server/shared/http'
 
 interface RouteContext {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export const POST = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
   const body = await parseJsonBody(request, submitInquiryRequestSchema)
 
   const inquiry = await marketplaceContainer.submitInquiryUseCase.execute({
-    propertyId: context.params.id,
-    interessadoNome: body.interessadoNome,
-    interessadoEmail: body.interessadoEmail,
-    interessadoTelefone: body.interessadoTelefone,
-    valorProposto: body.valorProposto,
-    observacoes: body.observacoes,
+    propertyId: (await context.params).id,
+    leadName: body.leadName,
+    leadEmail: body.leadEmail,
+    leadPhone: body.leadPhone,
+    proposedValue: body.proposedValue,
+    notes: body.notes,
   })
 
   return NextResponse.json({ inquiry }, { status: 201 })

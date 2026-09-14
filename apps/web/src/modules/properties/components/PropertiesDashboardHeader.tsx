@@ -1,8 +1,9 @@
 import { Box, Button, Stack, Typography } from '@mui/material'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
+import { useTranslations } from 'next-intl'
 
-import { brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import { brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { PropertiesDashboardHeaderProps } from '../types/dashboard-property'
 
@@ -11,6 +12,8 @@ export function PropertiesDashboardHeader({
   onSearchQueryChange,
   onCreateProperty,
 }: PropertiesDashboardHeaderProps) {
+  const t = useTranslations('properties.dashboard')
+
   return (
     <Stack
       direction={{ xs: 'column', md: 'row' }}
@@ -20,11 +23,11 @@ export function PropertiesDashboardHeader({
       sx={{ mb: 2.4 }}
     >
       <Box>
-        <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 40 }, fontWeight: 900 }}>
-          Meus Imóveis
+        <Typography variant="h3" sx={{ fontSize: { xs: 20, md: 24 }, fontWeight: 800 }}>
+          {t('title')}
         </Typography>
-        <Typography sx={{ color: 'text.secondary', fontSize: { xs: 15, md: 17 } }}>
-          Gerencie seu portfólio de imóveis
+        <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 700 }}>
+          {t('subtitle')}
         </Typography>
       </Box>
 
@@ -43,19 +46,19 @@ export function PropertiesDashboardHeader({
               top: '50%',
               transform: 'translateY(-50%)',
               color: brand.neutral[500],
-              fontSize: iconSize.md,
+              fontSize: iconSize.sm,
               pointerEvents: 'none',
             }}
           />
           <Box
             component="input"
-            placeholder="Buscar imóveis..."
-            aria-label="Buscar imóveis"
+            placeholder={t('searchPlaceholder')}
+            aria-label={t('searchAriaLabel')}
             value={searchQuery}
             onChange={(event) => onSearchQueryChange(event.target.value)}
             sx={{
               width: '100%',
-              height: 48,
+              height: 36,
               border: '1px solid',
               borderColor: 'divider',
               borderRadius: `${radius.sm}px`,
@@ -64,7 +67,8 @@ export function PropertiesDashboardHeader({
               pl: 4,
               pr: 1.2,
               font: 'inherit',
-              fontSize: 16,
+              fontSize: 14,
+              fontWeight: 700,
               outline: 0,
               '&::placeholder': { color: brand.neutral[400] },
               '&:focus': { borderColor: 'primary.main' },
@@ -73,18 +77,20 @@ export function PropertiesDashboardHeader({
         </Box>
         <Button
           variant="contained"
-          startIcon={<AddRoundedIcon />}
+          startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.lg }} />}
           onClick={onCreateProperty}
           sx={{
-            height: 48,
             borderRadius: `${radius.sm}px`,
-            px: 2.6,
-            fontSize: 16,
-            fontWeight: 900,
+            boxShadow: shadows.none,
+            minHeight: 36,
+            px: 2,
+            fontSize: 14,
+            fontWeight: 800,
+            textTransform: 'none',
             whiteSpace: 'nowrap',
           }}
         >
-          Novo Imóvel
+          {t('create')}
         </Button>
       </Stack>
     </Stack>

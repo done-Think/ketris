@@ -3,6 +3,7 @@
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { IconButton, InputAdornment, TextField } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { iconSize, radius, surface } from '@shared/theme/tokens'
 
@@ -15,11 +16,13 @@ export function SearchResultsLocationField({
   locationQuery,
   setLocationQuery,
 }: SearchResultsLocationFieldProps) {
+  const t = useTranslations('marketplace.searchResults.filters')
+
   return (
     <TextField
       fullWidth
       value={locationQuery}
-      placeholder="Todas as regiões"
+      placeholder={t('allRegions')}
       onChange={(event) => setLocationQuery(event.target.value)}
       size="small"
       slotProps={{
@@ -32,7 +35,7 @@ export function SearchResultsLocationField({
           endAdornment: (
             <InputAdornment position="end">
               <IconButton
-                aria-label="Limpar busca"
+                aria-label={t('clearSearch')}
                 size="small"
                 onClick={() => setLocationQuery('')}
               >

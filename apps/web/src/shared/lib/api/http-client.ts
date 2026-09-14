@@ -7,10 +7,14 @@ import axios, {
 
 import { env } from '@config/env'
 
-// Cliente HTTP base, instanciado como classe para ser estendido e reutilizado.
-// Ex.: cada módulo cria um service que recebe esta instância.
+type RetryableRequestConfig = InternalAxiosRequestConfig & { _retriedAfterRefresh?: boolean }
+
+export type UnauthorizedHandler = () => Promise<string | null>
+
 export class HttpClient {
   protected instance: AxiosInstance
+  private unauthorizedHandler: UnauthorizedHandler | null = null
+  private refreshPromise: Promise<string | null> | null = null
 
   constructor(baseURL: string = env.apiUrl) {
     this.instance = axios.create({
@@ -25,7 +29,6 @@ export class HttpClient {
   private setupInterceptors(): void {
     this.instance.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        // Token e tenant são injetados aqui (integra com NextAuth no client).
         return config
       },
       (error) => Promise.reject(error),
@@ -33,14 +36,43 @@ export class HttpClient {
 
     this.instance.interceptors.response.use(
       (response: AxiosResponse) => response,
-      (error) => {
-        // Ponto central para tratar 401 (refresh), 403, 5xx etc.
-        return Promise.reject(error)
+      async (error) => {
+        const originalRequest = error.config as RetryableRequestConfig | undefined
+        const isUnauthorized = error.response?.status === 401
+
+        if (!isUnauthorized || !originalRequest || originalRequest._retriedAfterRefresh) {
+          return Promise.reject(error)
+        }
+
+        const newAccessToken = await this.refreshAccessToken()
+
+        if (!newAccessToken) {
+          return Promise.reject(error)
+        }
+
+        originalRequest._retriedAfterRefresh = true
+        originalRequest.headers = originalRequest.headers ?? {}
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+
+        return this.instance(originalRequest)
       },
     )
   }
 
-  // Permite setar o token de autenticação em runtime.
+  private async refreshAccessToken(): Promise<string | null> {
+    if (!this.unauthorizedHandler) return null
+
+    this.refreshPromise ??= this.unauthorizedHandler().finally(() => {
+      this.refreshPromise = null
+    })
+
+    return this.refreshPromise
+  }
+
+  setUnauthorizedHandler(handler: UnauthorizedHandler | null): void {
+    this.unauthorizedHandler = handler
+  }
+
   setAuthToken(token: string | null): void {
     if (token) {
       this.instance.defaults.headers.common.Authorization = `Bearer ${token}`
@@ -49,7 +81,6 @@ export class HttpClient {
     }
   }
 
-  // Permite setar o tenant ativo (multi-tenant).
   setTenant(tenantId: string | null): void {
     if (tenantId) {
       this.instance.defaults.headers.common['X-Tenant-Id'] = tenantId
@@ -84,5 +115,4 @@ export class HttpClient {
   }
 }
 
-// Instância única compartilhada.
 export const httpClient = new HttpClient()

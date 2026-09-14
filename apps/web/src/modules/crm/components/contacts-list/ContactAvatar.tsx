@@ -12,11 +12,11 @@ export function ContactAvatar({ contact }: ContactAvatarProps) {
       alt=""
       aria-hidden="true"
       sx={{
-        width: 32,
-        height: 32,
+        width: 28,
+        height: 28,
         bgcolor: alpha.magenta[10],
         color: brand.magenta[700],
-        fontSize: 11,
+        fontSize: 9.5,
         fontWeight: 800,
       }}
     >

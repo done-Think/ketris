@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { brand, componentText, radius } from '@shared/theme/tokens'
 
@@ -20,6 +21,7 @@ export function ResendCountdownButton({
   onResend,
   seconds = RESEND_DELAY_SECONDS,
 }: ResendCountdownButtonProps) {
+  const t = useTranslations('auth.passwordRecovery')
   const { remainingSeconds, isCountingDown, restart } = useResendCountdown(seconds)
 
   function resend() {
@@ -47,7 +49,9 @@ export function ResendCountdownButton({
         },
       }}
     >
-      {isCountingDown ? `Reenviar em ${formatCountdown(remainingSeconds)}` : 'Reenviar e-mail'}
+      {isCountingDown
+        ? t('resendCountdown', { time: formatCountdown(remainingSeconds) })
+        : t('resend')}
     </Button>
   )
 }

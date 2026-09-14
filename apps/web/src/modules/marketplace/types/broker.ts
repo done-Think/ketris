@@ -1,3 +1,5 @@
+import type { ViewMode } from './search'
+
 export type BrokerSpecialty = 'Aluguel' | 'Compra' | 'Alto padrão' | 'Comercial'
 
 export type BrokerProfile = {
@@ -27,8 +29,24 @@ export type BrokerProfile = {
 
 export type BrokerCardProps = BrokerProfile & {
   href: string
+  viewMode?: ViewMode
 }
 
 export type BrokerPublicProfilePageProps = {
   broker: BrokerProfile
+}
+
+export type BrokerProfileTheme = {
+  label: string
+  tone: string
+  accent: string
+  cover: string
+  signature: string
+  summary: string
+  method: string[]
+}
+
+export type BrokerProfileHeroProps = {
+  broker: BrokerProfile
+  theme: BrokerProfileTheme
 }

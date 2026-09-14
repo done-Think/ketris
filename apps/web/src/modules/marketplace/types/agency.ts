@@ -1,3 +1,5 @@
+import type { ViewMode } from './search'
+
 export type AgencySegment = 'Residencial' | 'Comercial' | 'Alto padrão' | 'Administração'
 
 export type AgencyProfile = {
@@ -35,7 +37,9 @@ export type AgencyProfile = {
   }>
 }
 
-export type AgencyCardProps = AgencyProfile
+export type AgencyCardProps = AgencyProfile & {
+  viewMode?: ViewMode
+}
 
 export type AgencyPublicProfilePageProps = {
   agency: AgencyProfile

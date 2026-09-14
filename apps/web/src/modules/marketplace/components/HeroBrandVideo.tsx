@@ -1,10 +1,13 @@
 import { Box } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { gradients, zIndex } from '@shared/theme/tokens'
 
 import videoLogoChromaUrl from '../assets/videologo-chroma.webm'
 
 export function HeroBrandVideo() {
+  const t = useTranslations('marketplace.home.hero')
+
   return (
     <Box
       sx={{
@@ -78,7 +81,7 @@ export function HeroBrandVideo() {
             autoPlay
             muted
             playsInline
-            aria-label="Animação da marca Ketris"
+            aria-label={t('brandAnimation')}
             sx={{
               position: 'relative',
               zIndex: zIndex.content - 1,

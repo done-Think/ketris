@@ -1,7 +1,7 @@
 export const searchOptions = {
   location: {
-    label: 'Localização',
-    query: 'localizacao',
+    labelKey: 'location',
+    query: 'location',
     values: [
       'Jardins, São Paulo',
       'Vila Madalena, São Paulo',
@@ -13,21 +13,21 @@ export const searchOptions = {
     ],
   },
   propertyType: {
-    label: 'Tipo de imóvel',
-    query: 'tipo',
+    labelKey: 'propertyType',
+    query: 'propertyType',
     values: [
-      'Apartamento',
-      'Casas residenciais',
-      'Salas comerciais',
-      'Terrenos e lotes',
-      'Coberturas',
-      'Chácaras e sítios',
-      'Studios',
+      'apartment',
+      'residentialHouses',
+      'commercialRooms',
+      'landLots',
+      'penthouses',
+      'farms',
+      'studios',
     ],
   },
   priceRange: {
-    label: 'Faixa de preço',
-    query: 'preco',
+    labelKey: 'priceRange',
+    query: 'priceRange',
     values: [
       'Até R$ 2.500',
       'R$ 2.500 - R$ 6.000',

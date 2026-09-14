@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Button, Stack } from '@mui/material'
 import { useSnackbar } from 'notistack'
 import axios from 'axios'
+import { useTranslations } from 'next-intl'
 
 import { RhfTextField } from '@shared/components/form'
 
@@ -14,17 +15,16 @@ import {
 } from '../schemas/create-platform-admin-schema'
 import { useCreatePlatformAdmin } from '../hooks/use-create-platform-admin'
 
-const GENERIC_ERROR = 'Não foi possível criar o administrador da plataforma. Tente novamente.'
-
-function extractErrorMessage(error: unknown): string {
+function extractErrorMessage(error: unknown, fallback: string): string {
   if (axios.isAxiosError(error)) {
     const message = error.response?.data?.error?.message
     if (typeof message === 'string') return message
   }
-  return GENERIC_ERROR
+  return fallback
 }
 
 export function CreatePlatformAdminForm() {
+  const t = useTranslations('platform.forms')
   const { enqueueSnackbar } = useSnackbar()
   const createPlatformAdmin = useCreatePlatformAdmin()
 
@@ -45,22 +45,24 @@ export function CreatePlatformAdminForm() {
         email: values.email,
         password: values.password,
       })
-      enqueueSnackbar(`Administrador da plataforma ${admin.email} criado com sucesso.`, {
+      enqueueSnackbar(t('createPlatformAdminSuccess', { email: admin.email }), {
         variant: 'success',
       })
       reset()
     } catch (error) {
-      enqueueSnackbar(extractErrorMessage(error), { variant: 'error' })
+      enqueueSnackbar(extractErrorMessage(error, t('createPlatformAdminError')), {
+        variant: 'error',
+      })
     }
   }
 
   return (
     <Stack component="form" onSubmit={handleSubmit(onSubmit)} spacing={2.5} sx={{ maxWidth: 420 }}>
-      <RhfTextField control={control} name="nome" label="Nome" fullWidth autoFocus />
+      <RhfTextField control={control} name="nome" label={t('name')} fullWidth autoFocus />
       <RhfTextField
         control={control}
         name="email"
-        label="E-mail"
+        label={t('email')}
         type="email"
         autoComplete="username"
         fullWidth
@@ -68,7 +70,7 @@ export function CreatePlatformAdminForm() {
       <RhfTextField
         control={control}
         name="password"
-        label="Senha"
+        label={t('password')}
         type="password"
         autoComplete="new-password"
         fullWidth
@@ -76,18 +78,20 @@ export function CreatePlatformAdminForm() {
       <RhfTextField
         control={control}
         name="confirmarSenha"
-        label="Confirmar senha"
+        label={t('passwordConfirmation')}
         type="password"
         autoComplete="new-password"
         fullWidth
       />
 
       {createPlatformAdmin.isError ? (
-        <Alert severity="error">{extractErrorMessage(createPlatformAdmin.error)}</Alert>
+        <Alert severity="error">
+          {extractErrorMessage(createPlatformAdmin.error, t('createPlatformAdminError'))}
+        </Alert>
       ) : null}
 
       <Button type="submit" variant="contained" size="large" disabled={isSubmitting}>
-        Criar administrador da plataforma
+        {t('createPlatformAdminSubmit')}
       </Button>
     </Stack>
   )

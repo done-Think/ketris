@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
 
+import { useRouter } from '@/i18n/navigation'
 import { RegistrationProfileStep } from './RegistrationProfileStep'
 import { RegistrationShell } from './RegistrationShell'
 import type { RegistrationProfileId } from '../types/registration'

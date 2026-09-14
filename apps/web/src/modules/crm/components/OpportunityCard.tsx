@@ -2,9 +2,10 @@
 
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
 import { Avatar, Box, Card, Stack, Typography } from '@mui/material'
-import NextLink from 'next/link'
+import { useTranslations } from 'next-intl'
 
-import { brand, componentText, motion, radius, shadows } from '@shared/theme/tokens'
+import { Link } from '@/i18n/navigation'
+import { motion, radius, shadows } from '@shared/theme/tokens'
 
 import { opportunityStageByStatus } from '../config/opportunity-stages'
 import type { OpportunityCardProps } from '../types/opportunity-card'
@@ -16,10 +17,13 @@ import {
   getInitials,
 } from '../utils/formatters'
 
-function getPropertyLocation(property?: PublicPropertySummary): string {
-  if (!property) return 'Imóvel indisponível no catálogo'
+function getPropertyLocation(
+  property: PublicPropertySummary | undefined,
+  unavailableLabel: string,
+): string {
+  if (!property) return unavailableLabel
 
-  return [property.bairro, property.cidade].filter(Boolean).join(' - ') || property.tipo
+  return [property.neighborhood, property.city].filter(Boolean).join(' - ') || property.propertyType
 }
 
 export function OpportunityCard({
@@ -28,26 +32,29 @@ export function OpportunityCard({
   density = 'regular',
   presentation,
 }: OpportunityCardProps) {
+  const t = useTranslations('crm.pipeline')
   const stage = opportunityStageByStatus[opportunity.status]
   const isCompact = density === 'compact'
   const indicatorColor = presentation?.indicatorColor ?? stage.color
-  const indicatorLabel = presentation?.indicatorLabel ?? stage.label
-  const propertyTitle = property?.titulo ?? `Imóvel ${opportunity.imovelId}`
+  const indicatorLabel = presentation?.indicatorLabel ?? t(`stages.${stage.labelKey}`)
+  const propertyTitle = property?.title ?? `Imóvel ${opportunity.propertyId}`
+  const propertyLocation = getPropertyLocation(property, t('propertyUnavailable'))
   const value =
-    property?.finalidade === 'ALUGUEL'
-      ? formatMonthlyCurrency(opportunity.valorProposto)
-      : formatCurrency(opportunity.valorProposto)
+    property?.purpose === 'ALUGUEL'
+      ? formatMonthlyCurrency(opportunity.proposedValue)
+      : formatCurrency(opportunity.proposedValue)
 
   return (
     <Card
-      component={NextLink}
-      href={`/crm/opportunities/${opportunity.id}`}
-      aria-label={`Abrir oportunidade de ${opportunity.interessadoNome}`}
+      component={Link}
+      href={{ pathname: '/crm/opportunities/[id]', params: { id: opportunity.id } }}
+      aria-label={t('openOpportunityAriaLabel', { name: opportunity.leadName })}
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        minHeight: isCompact ? 148 : 140,
-        p: 2,
+        height: isCompact ? 124 : undefined,
+        minHeight: isCompact ? 124 : 140,
+        p: isCompact ? 1.75 : 2,
         border: '1px solid',
         borderColor: isCompact ? 'transparent' : 'divider',
         borderRadius: isCompact ? `${radius.md}px` : 1.5,
@@ -69,12 +76,12 @@ export function OpportunityCard({
       <Typography
         noWrap
         sx={{
-          fontSize: 14,
+          fontSize: isCompact ? 12.5 : 14,
           fontWeight: 700,
           lineHeight: isCompact ? 1.3 : 1.4,
         }}
       >
-        {opportunity.interessadoNome}
+        {opportunity.leadName}
       </Typography>
       <Typography
         noWrap
@@ -82,7 +89,7 @@ export function OpportunityCard({
         sx={{
           mt: 0.25,
           color: 'text.secondary',
-          fontSize: isCompact ? componentText.cardMeta.fontSize : 11.5,
+          fontSize: isCompact ? 10.5 : 11.5,
           lineHeight: isCompact ? 1.35 : 1.45,
         }}
       >
@@ -90,7 +97,7 @@ export function OpportunityCard({
       </Typography>
       <Typography
         noWrap
-        title={getPropertyLocation(property)}
+        title={propertyLocation}
         sx={{
           display: isCompact ? 'none' : 'block',
           color: 'text.secondary',
@@ -98,7 +105,7 @@ export function OpportunityCard({
           lineHeight: 1.4,
         }}
       >
-        {getPropertyLocation(property)}
+        {propertyLocation}
       </Typography>
 
       <Typography
@@ -106,8 +113,8 @@ export function OpportunityCard({
         sx={{
           mt: isCompact ? 0.75 : 1,
           color: 'primary.main',
-          fontSize: isCompact ? 16 : 14,
-          fontWeight: isCompact ? 900 : 800,
+          fontSize: isCompact ? 13 : 14,
+          fontWeight: 800,
           lineHeight: isCompact ? 1.35 : 1.4,
         }}
       >
@@ -117,10 +124,10 @@ export function OpportunityCard({
       <Stack
         direction="row"
         alignItems="center"
+        spacing={0.8}
         sx={{
-          gap: isCompact ? 1 : 0.8,
           mt: 'auto',
-          pt: isCompact ? 1 : 1.1,
+          pt: isCompact ? 0.75 : 1.1,
           borderTop: '1px solid',
           borderColor: 'divider',
         }}
@@ -128,15 +135,14 @@ export function OpportunityCard({
         <Avatar
           aria-hidden="true"
           sx={{
-            width: isCompact ? 28 : 24,
-            height: isCompact ? 28 : 24,
+            width: isCompact ? 20 : 24,
+            height: isCompact ? 20 : 24,
             bgcolor: stage.softColor,
             color: stage.color,
-            fontSize: isCompact ? 10 : 9,
-            fontWeight: isCompact ? 700 : undefined,
+            fontSize: isCompact ? 8 : 9,
           }}
         >
-          {getInitials(opportunity.interessadoNome)}
+          {getInitials(opportunity.leadName)}
         </Avatar>
         <Stack direction="row" alignItems="center" spacing={0.4} sx={{ minWidth: 0 }}>
           <AccessTimeRoundedIcon
@@ -145,12 +151,12 @@ export function OpportunityCard({
           <Typography
             noWrap
             sx={{
-              px: isCompact ? 1 : 0,
-              py: isCompact ? 0.375 : 0,
-              borderRadius: isCompact ? `${radius.full}px` : 0,
-              bgcolor: isCompact ? brand.neutral[50] : 'transparent',
+              px: isCompact ? 0.625 : 0,
+              py: isCompact ? 0.25 : 0,
+              borderRadius: isCompact ? '4px' : 0,
+              bgcolor: isCompact ? 'grey.100' : 'transparent',
               color: 'text.secondary',
-              fontSize: isCompact ? componentText.cardMeta.fontSize : 10.5,
+              fontSize: isCompact ? 10 : 10.5,
               lineHeight: isCompact ? 1.2 : 'normal',
             }}
           >
@@ -161,9 +167,9 @@ export function OpportunityCard({
           aria-label={indicatorLabel}
           title={indicatorLabel}
           sx={{
-            width: 8,
-            height: 8,
-            ml: 'auto',
+            width: isCompact ? 6 : 8,
+            height: isCompact ? 6 : 8,
+            ml: 'auto !important',
             borderRadius: `${radius.full}px`,
             bgcolor: indicatorColor,
           }}

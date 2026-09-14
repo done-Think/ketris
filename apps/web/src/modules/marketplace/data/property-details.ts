@@ -11,7 +11,7 @@ const apartmentGallery = [
 export const propertyDetails: MarketplacePropertyDetail[] = [
   {
     id: 'apartamento-jardins',
-    href: '/imoveis/apartamento-jardins',
+    href: '/properties/apartamento-jardins',
     image: apartmentGallery[0],
     gallery: apartmentGallery,
     location: 'Jardins, São Paulo',
@@ -37,7 +37,7 @@ export const propertyDetails: MarketplacePropertyDetail[] = [
   },
   {
     id: 'studio-vila-madalena',
-    href: '/imoveis/studio-vila-madalena',
+    href: '/properties/studio-vila-madalena',
     image:
       'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=82',
     gallery: [
@@ -70,7 +70,7 @@ export const propertyDetails: MarketplacePropertyDetail[] = [
   },
   {
     id: 'cobertura-itaim-bibi',
-    href: '/imoveis/cobertura-itaim-bibi',
+    href: '/properties/cobertura-itaim-bibi',
     image:
       'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=82',
     gallery: [
@@ -103,7 +103,7 @@ export const propertyDetails: MarketplacePropertyDetail[] = [
   },
   {
     id: 'apartamento-garden-remodelado',
-    href: '/imoveis/apartamento-garden-remodelado',
+    href: '/properties/apartamento-garden-remodelado',
     image:
       'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=900&q=80',
     gallery: apartmentGallery,
@@ -130,7 +130,7 @@ export const propertyDetails: MarketplacePropertyDetail[] = [
   },
   {
     id: 'loft-industrial-mobiliado',
-    href: '/imoveis/loft-industrial-mobiliado',
+    href: '/properties/loft-industrial-mobiliado',
     image:
       'https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?auto=format&fit=crop&w=900&q=80',
     gallery: apartmentGallery,
@@ -157,7 +157,7 @@ export const propertyDetails: MarketplacePropertyDetail[] = [
   },
   {
     id: 'casa-alto-da-boa-vista',
-    href: '/imoveis/casa-alto-da-boa-vista',
+    href: '/properties/casa-alto-da-boa-vista',
     image:
       'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=80',
     gallery: apartmentGallery,
@@ -184,7 +184,7 @@ export const propertyDetails: MarketplacePropertyDetail[] = [
   },
   {
     id: 'sala-comercial-paulista',
-    href: '/imoveis/sala-comercial-paulista',
+    href: '/properties/sala-comercial-paulista',
     image:
       'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=900&q=80',
     gallery: apartmentGallery,
@@ -211,7 +211,7 @@ export const propertyDetails: MarketplacePropertyDetail[] = [
   },
   {
     id: 'apartamento-moema',
-    href: '/imoveis/apartamento-moema',
+    href: '/properties/apartamento-moema',
     image:
       'https://images.unsplash.com/photo-1615874959474-d609969a20ed?auto=format&fit=crop&w=900&q=80',
     gallery: apartmentGallery,
@@ -238,7 +238,7 @@ export const propertyDetails: MarketplacePropertyDetail[] = [
   },
   {
     id: 'apartamento-jardins-venda',
-    href: '/imoveis/apartamento-jardins-venda',
+    href: '/properties/apartamento-jardins-venda',
     image:
       'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=82',
     gallery: [
@@ -271,7 +271,7 @@ export const propertyDetails: MarketplacePropertyDetail[] = [
   },
   {
     id: 'apartamento-jardim-paulista-venda',
-    href: '/imoveis/apartamento-jardim-paulista-venda',
+    href: '/properties/apartamento-jardim-paulista-venda',
     image:
       'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=82',
     gallery: [
@@ -304,7 +304,7 @@ export const propertyDetails: MarketplacePropertyDetail[] = [
   },
   {
     id: 'cobertura-pinheiros-venda',
-    href: '/imoveis/cobertura-pinheiros-venda',
+    href: '/properties/cobertura-pinheiros-venda',
     image:
       'https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=1200&q=82',
     gallery: [
@@ -337,7 +337,7 @@ export const propertyDetails: MarketplacePropertyDetail[] = [
   },
   {
     id: 'casa-alto-da-lapa-venda',
-    href: '/imoveis/casa-alto-da-lapa-venda',
+    href: '/properties/casa-alto-da-lapa-venda',
     image:
       'https://images.unsplash.com/photo-1572120360610-d971b9d7767c?auto=format&fit=crop&w=1200&q=82',
     gallery: [
@@ -370,7 +370,7 @@ export const propertyDetails: MarketplacePropertyDetail[] = [
   },
   {
     id: 'loft-vila-madalena-venda',
-    href: '/imoveis/loft-vila-madalena-venda',
+    href: '/properties/loft-vila-madalena-venda',
     image:
       'https://images.unsplash.com/photo-1600607688960-e095ff83135c?auto=format&fit=crop&w=1200&q=82',
     gallery: [

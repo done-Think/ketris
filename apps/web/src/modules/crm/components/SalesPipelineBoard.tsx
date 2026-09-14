@@ -3,21 +3,31 @@
 import { useMemo, useState } from 'react'
 import { Alert, Box, Button } from '@mui/material'
 import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
+import { useSnackbar } from 'notistack'
 
 import { surface } from '@shared/theme/tokens'
 
 import { salesPipelineStages, visibleSalesPipelineStatuses } from '../config/sales-pipeline-stages'
 import { salesPipelineFixtures } from '../fixtures/sales-pipeline-fixtures'
-import { useCrmProperties, useOpportunities } from '../hooks/use-opportunities'
+import {
+  useCreateOpportunity,
+  useCrmProperties,
+  useOpportunities,
+} from '../hooks/use-opportunities'
+import type { CreateOpportunityFormValues } from '../types/opportunity'
 import type { SalesPipelineBoardProps, SalesPipelineStageId } from '../types/sales-pipeline'
+import { errorMessage } from '../utils/error-message'
 import {
   getOpportunityStageId,
   getProjectedTotals,
   matchesSalesPipelineSearch,
 } from '../utils/sales-pipeline'
+import { CreateOpportunityDialog } from './opportunity-detail/CreateOpportunityDialog'
 import { PipelineStageColumn } from './sales-pipeline-board/PipelineStageColumn'
 import { SalesPipelineToolbar } from './sales-pipeline-board/SalesPipelineToolbar'
 
+const pipelineBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
 const fixtureOpportunities = salesPipelineFixtures.map((fixture) => fixture.opportunity)
 const fixtureProperties = salesPipelineFixtures.map((fixture) => fixture.property)
 const fixtureStageByOpportunityId = new Map(
@@ -28,15 +38,37 @@ const fixturePresentationByOpportunityId = new Map(
 )
 
 export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps) {
+  const t = useTranslations('crm.pipeline')
   const { data: session, status: sessionStatus } = useSession()
   const fixtureMode = preview && process.env.NODE_ENV !== 'production'
   const tenantId = fixtureMode ? '' : (session?.tenantId ?? '')
   const [search, setSearch] = useState('')
   const [selectedStageId, setSelectedStageId] = useState<SalesPipelineStageId | null>(null)
   const [filterAnchor, setFilterAnchor] = useState<HTMLElement | null>(null)
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const { enqueueSnackbar } = useSnackbar()
 
   const opportunitiesQuery = useOpportunities(tenantId)
   const propertiesQuery = useCrmProperties(tenantId)
+  const createOpportunity = useCreateOpportunity(tenantId)
+
+  async function handleCreateOpportunity(values: CreateOpportunityFormValues) {
+    try {
+      await createOpportunity.mutateAsync({
+        propertyId: values.propertyId,
+        leadName: values.leadName.trim(),
+        leadEmail: values.leadEmail.trim(),
+        leadPhone: values.leadPhone.trim() || null,
+        proposedValue: Number(values.proposedValue),
+        notes: values.notes.trim() || null,
+        status: values.status,
+      })
+      enqueueSnackbar(t('createSuccess'), { variant: 'success' })
+      setIsCreateOpen(false)
+    } catch (error) {
+      enqueueSnackbar(errorMessage(error, t('createError')), { variant: 'error' })
+    }
+  }
 
   const propertiesById = useMemo(
     () =>
@@ -61,7 +93,7 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
 
       return matchesSalesPipelineSearch(
         opportunity,
-        propertiesById.get(opportunity.imovelId),
+        propertiesById.get(opportunity.propertyId),
         normalizedSearch,
       )
     })
@@ -81,6 +113,13 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
         p: { xs: 2, sm: 3, lg: 3.5 },
         bgcolor: surface.app,
         overflow: 'hidden',
+        fontFamily: pipelineBodyFontFamily,
+        '& .MuiTypography-root, & .MuiButton-root, & .MuiInputBase-root': {
+          fontFamily: pipelineBodyFontFamily,
+        },
+        '& h1.MuiTypography-root': {
+          fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
+        },
       }}
     >
       <SalesPipelineToolbar
@@ -95,7 +134,18 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
           setSelectedStageId(stageId)
           setFilterAnchor(null)
         }}
+        onNewOpportunity={() => !fixtureMode && setIsCreateOpen(true)}
       />
+
+      {!fixtureMode ? (
+        <CreateOpportunityDialog
+          open={isCreateOpen}
+          tenantId={tenantId}
+          isPending={createOpportunity.isPending}
+          onClose={() => setIsCreateOpen(false)}
+          onSave={handleCreateOpportunity}
+        />
+      ) : null}
 
       {hasPipelineError ? (
         <Alert
@@ -110,23 +160,23 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
                 if (propertiesQuery.isError) void propertiesQuery.refetch()
               }}
             >
-              Tentar novamente
+              {t('retry')}
             </Button>
           }
         >
-          Não foi possível carregar os dados do pipeline.
+          {t('dataLoadError')}
         </Alert>
       ) : (
         <Box
-          aria-label="Pipeline de oportunidades"
+          aria-label={t('boardAriaLabel')}
           sx={{
-            mt: 2,
+            mt: { xs: 2.25, lg: 1.5 },
             mx: { xs: -2, sm: -3, lg: -3.5 },
             pl: { xs: 2, sm: 3, lg: 3.5 },
-            pr: { xs: 2, sm: 3, lg: 3.5 },
+            pr: { xs: 2, sm: 3, lg: 1.75 },
             pb: 1,
             overflowX: 'auto',
-            scrollSnapType: { xs: 'x proximity', xl: 'none' },
+            scrollSnapType: { xs: 'x proximity', lg: 'none' },
             scrollbarWidth: 'thin',
           }}
         >
@@ -134,11 +184,12 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
             sx={{
               display: 'grid',
               gridTemplateColumns: {
-                xs: 'repeat(5, 280px)',
-                lg: 'repeat(5, minmax(216px, 1fr))',
+                xs: 'repeat(5, 264px)',
+                sm: 'repeat(5, 280px)',
+                lg: 'repeat(5, minmax(0, 1fr))',
               },
-              gap: 2,
-              minWidth: { xs: 'max-content', lg: 1144 },
+              gap: { xs: 2, lg: 1.75 },
+              minWidth: { xs: 'max-content', lg: 0 },
             }}
           >
             {salesPipelineStages.map((stage) => {

@@ -31,7 +31,7 @@ export function RhfMaskedTextField<
   shouldUnregister,
   disabled,
   mask,
-  InputProps,
+  slotProps,
   ...textFieldProps
 }: RhfMaskedTextFieldProps<TFieldValues, TName>) {
   return (
@@ -48,10 +48,16 @@ export function RhfMaskedTextField<
           disabled={disabled}
           error={Boolean(fieldState.error)}
           helperText={fieldState.error?.message ?? textFieldProps.helperText}
-          InputProps={{
-            ...InputProps,
-            inputComponent: MaskedInput as never,
-            inputProps: { ...InputProps?.inputProps, mask },
+          slotProps={{
+            ...slotProps,
+            input: {
+              ...slotProps?.input,
+              inputComponent: MaskedInput as never,
+            },
+            htmlInput: {
+              ...slotProps?.htmlInput,
+              mask,
+            },
           }}
         />
       )}

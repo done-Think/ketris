@@ -1,6 +1,7 @@
 'use client'
 
 import { Box, MenuItem, TextField } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { alpha, componentText } from '@shared/theme/tokens'
 
@@ -50,6 +51,7 @@ export function SearchResultsFilterMenu({
   setPriceFilterIndex,
   setPropertyTypeFilter,
 }: SearchResultsFilterMenuProps) {
+  const t = useTranslations('marketplace.searchResults.filters')
   const quickFilterMenuItemSx = {
     ...componentText.menuItem,
     '&.Mui-selected': {
@@ -68,7 +70,7 @@ export function SearchResultsFilterMenu({
         }}
         sx={quickFilterMenuItemSx}
       >
-        {option}
+        {t(`options.${option}`)}
       </MenuItem>
     ))
   }
@@ -87,14 +89,14 @@ export function SearchResultsFilterMenu({
             }}
             sx={quickFilterMenuItemSx}
           >
-            {option.label}
+            {t(`options.${option.label}`)}
           </MenuItem>
         ))}
         <Box sx={{ px: 1.2, py: 1 }}>
           <TextField
             autoFocus
             fullWidth
-            label="Preço máximo"
+            label={t('maxPrice')}
             type="number"
             size="small"
             value={customMaxPrice}
@@ -123,7 +125,7 @@ export function SearchResultsFilterMenu({
         }}
         sx={quickFilterMenuItemSx}
       >
-        {option.label}
+        {t(`options.${option.label}`)}
       </MenuItem>
     ))
   }
@@ -142,14 +144,14 @@ export function SearchResultsFilterMenu({
             }}
             sx={quickFilterMenuItemSx}
           >
-            {option.label}
+            {t(`options.${option.label}`)}
           </MenuItem>
         ))}
         <Box sx={{ px: 1.2, py: 1 }}>
           <TextField
             autoFocus
             fullWidth
-            label="Área mínima"
+            label={t('minArea')}
             type="number"
             size="small"
             value={customMinArea}
@@ -177,7 +179,7 @@ export function SearchResultsFilterMenu({
       }}
       sx={quickFilterMenuItemSx}
     >
-      {option.label}
+      {t(`options.${option.label}`)}
     </MenuItem>
   ))
 }

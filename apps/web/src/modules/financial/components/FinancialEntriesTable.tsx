@@ -3,6 +3,7 @@
 import { Box, Chip } from '@mui/material'
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import { DataGrid } from '@mui/x-data-grid'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
@@ -24,12 +25,15 @@ const financialTypeStyles: Record<FinancialEntryType, { bgcolor: string; color: 
   Comissão: { bgcolor: alpha.magenta[6], color: brand.magenta[700] },
 }
 
-function FinancialTypeCell({ row }: GridRenderCellParams<FinancialEntry>) {
+function FinancialTypeCell({
+  row,
+  label,
+}: GridRenderCellParams<FinancialEntry> & { label: string }) {
   const type = financialTypeStyles[row.type]
 
   return (
     <Chip
-      label={row.type}
+      label={label}
       sx={{
         width: 'fit-content',
         bgcolor: type.bgcolor,
@@ -41,12 +45,15 @@ function FinancialTypeCell({ row }: GridRenderCellParams<FinancialEntry>) {
   )
 }
 
-function FinancialStatusCell({ row }: GridRenderCellParams<FinancialEntry>) {
+function FinancialStatusCell({
+  row,
+  label,
+}: GridRenderCellParams<FinancialEntry> & { label: string }) {
   const status = financialStatusStyles[row.status]
 
   return (
     <Chip
-      label={row.status}
+      label={label}
       sx={{
         width: 'fit-content',
         bgcolor: status.bgcolor,
@@ -59,35 +66,41 @@ function FinancialStatusCell({ row }: GridRenderCellParams<FinancialEntry>) {
 }
 
 export function FinancialEntriesTable({ entries }: FinancialEntriesTableProps) {
+  const format = useFormatter()
+  const t = useTranslations('dashboard.finance.table')
+  const typeT = useTranslations('dashboard.finance.types')
+  const statusT = useTranslations('dashboard.finance.statuses')
   const columns: GridColDef<FinancialEntry>[] = [
     {
       field: 'type',
-      headerName: 'Tipo',
+      headerName: t('type'),
       flex: 0.75,
       minWidth: 130,
-      renderCell: (params) => <FinancialTypeCell {...params} />,
+      renderCell: (params) => <FinancialTypeCell {...params} label={typeT(params.row.type)} />,
     },
-    { field: 'description', headerName: 'Lançamento', flex: 1.1, minWidth: 180 },
-    { field: 'property', headerName: 'Imóvel', flex: 1.4, minWidth: 220 },
-    { field: 'dueDate', headerName: 'Vencimento', flex: 0.8, minWidth: 130 },
+    { field: 'description', headerName: t('description'), flex: 1.1, minWidth: 180 },
+    { field: 'property', headerName: t('property'), flex: 1.4, minWidth: 220 },
+    { field: 'dueDate', headerName: t('dueDate'), flex: 0.8, minWidth: 130 },
     {
       field: 'amountValue',
-      headerName: 'Valor',
+      headerName: t('amount'),
       flex: 0.8,
       minWidth: 130,
       valueFormatter: (value) =>
-        new Intl.NumberFormat('pt-BR', {
+        format.number(value, {
           style: 'currency',
           currency: 'BRL',
           maximumFractionDigits: 0,
-        }).format(value),
+        }),
     },
     {
       field: 'status',
-      headerName: 'Status',
+      headerName: t('status'),
       flex: 0.75,
       minWidth: 130,
-      renderCell: (params) => <FinancialStatusCell {...params} />,
+      renderCell: (params) => (
+        <FinancialStatusCell {...params} label={statusT(params.row.status)} />
+      ),
     },
   ]
 
@@ -112,10 +125,10 @@ export function FinancialEntriesTable({ entries }: FinancialEntriesTableProps) {
         pageSizeOptions={[5, 10, 25]}
         initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
         localeText={{
-          noRowsLabel: 'Nenhum lançamento encontrado',
-          footerTotalRows: 'Total de linhas:',
+          noRowsLabel: t('noRows'),
+          footerTotalRows: t('totalRows'),
           MuiTablePagination: {
-            labelRowsPerPage: 'Linhas por página',
+            labelRowsPerPage: t('rowsPerPage'),
           },
         }}
         sx={{

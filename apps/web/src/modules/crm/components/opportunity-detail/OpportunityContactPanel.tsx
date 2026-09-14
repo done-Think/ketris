@@ -1,4 +1,5 @@
 import { Box, Chip, Divider, Paper, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import type { OpportunityContactPanelProps } from '../../types/opportunity-detail'
 import { formatCurrency, formatDate } from '../../utils/formatters'
@@ -6,10 +7,12 @@ import { DetailItem } from './DetailItem'
 import { labelSx, panelSx } from './opportunity-detail.styles'
 
 export function OpportunityContactPanel({ opportunity }: OpportunityContactPanelProps) {
+  const t = useTranslations('crm.opportunityDetail')
+
   return (
     <Paper component="section" elevation={0} sx={{ ...panelSx, p: { xs: 2, md: 2.5 } }}>
       <Typography component="h2" sx={{ mb: 2.2, fontSize: 16, fontWeight: 800 }}>
-        Informações de contato e interesse
+        {t('contactInterestTitle')}
       </Typography>
       <Box
         sx={{
@@ -18,50 +21,50 @@ export function OpportunityContactPanel({ opportunity }: OpportunityContactPanel
           gap: 2.2,
         }}
       >
-        <DetailItem label="E-mail" value={opportunity.interessadoEmail} />
-        <DetailItem label="Telefone" value={opportunity.interessadoTelefone ?? 'Não informado'} />
-        <DetailItem label="Valor proposto" value={formatCurrency(opportunity.valorProposto)} />
+        <DetailItem label={t('fields.email')} value={opportunity.leadEmail} />
         <DetailItem
-          label="Prazo de contrato"
+          label={t('fields.phone')}
+          value={opportunity.leadPhone ?? t('fields.notInformed')}
+        />
+        <DetailItem
+          label={t('fields.proposedValue')}
+          value={formatCurrency(opportunity.proposedValue)}
+        />
+        <DetailItem
+          label={t('fields.contractTermLabel')}
           value={
-            opportunity.prazoContratoMeses
-              ? `${opportunity.prazoContratoMeses} meses`
-              : 'Não informado'
+            opportunity.contractTermMonths
+              ? t('fields.months', { count: opportunity.contractTermMonths })
+              : t('fields.notInformed')
           }
         />
         <DetailItem
-          label="Início pretendido"
+          label={t('fields.intendedStart')}
           value={
-            opportunity.inicioPretendido
-              ? formatDate(opportunity.inicioPretendido)
-              : 'Não informado'
+            opportunity.desiredStartDate
+              ? formatDate(opportunity.desiredStartDate)
+              : t('fields.notInformed')
           }
         />
         <DetailItem
-          label="Garantia"
-          value={
-            opportunity.garantiaContratual === 'NENHUMA'
-              ? 'Não informada'
-              : opportunity.garantiaContratual.replace('_', ' ')
-          }
+          label={t('fields.guarantee')}
+          value={t(`guarantees.${opportunity.guaranteeType}`)}
         />
       </Box>
-      {(opportunity.condicoesEspeciais.length > 0 || opportunity.observacoes) && (
+      {(opportunity.specialConditions.length > 0 || opportunity.notes) && (
         <>
           <Divider sx={{ my: 2.2 }} />
-          {opportunity.condicoesEspeciais.length > 0 && (
-            <Box sx={{ mb: opportunity.observacoes ? 2 : 0 }}>
-              <Typography sx={labelSx}>Condições especiais</Typography>
+          {opportunity.specialConditions.length > 0 && (
+            <Box sx={{ mb: opportunity.notes ? 2 : 0 }}>
+              <Typography sx={labelSx}>{t('fields.specialConditions')}</Typography>
               <Stack direction="row" gap={0.7} flexWrap="wrap" sx={{ mt: 0.8 }}>
-                {opportunity.condicoesEspeciais.map((condition) => (
+                {opportunity.specialConditions.map((condition) => (
                   <Chip key={condition} label={condition} size="small" variant="outlined" />
                 ))}
               </Stack>
             </Box>
           )}
-          {opportunity.observacoes && (
-            <DetailItem label="Observações" value={opportunity.observacoes} />
-          )}
+          {opportunity.notes && <DetailItem label={t('fields.notes')} value={opportunity.notes} />}
         </>
       )}
     </Paper>

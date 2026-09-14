@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [dev, main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+
+    # Postgres efêmero do próprio runner — nunca o RDS de staging (ver
+    # infra/terraform/README.md). Mesma imagem do docker-compose.yml local, para paridade
+    # dev/CI.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ketris
+          POSTGRES_PASSWORD: ketris
+          POSTGRES_DB: ketris
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://ketris:ketris@localhost:55432/ketris?schema=public
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: ci-nextauth-secret
+      AUTH_TOKEN_SECRET: ci-auth-token-secret
+      PLATFORM_TOKEN_SECRET: ci-platform-token-secret
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Aplica as migrations no Postgres efêmero
+        run: npm run db:deploy -w @ketris/web
+
+      - name: Typecheck
+        run: npm run typecheck -w @ketris/web
+
+      - name: Lint
+        run: npm run lint -w @ketris/web
+
+      - name: Testes unitários
+        run: npm run test:run -w @ketris/web
+
+      - name: Testes de integração
+        run: npm run test:integration -w @ketris/web

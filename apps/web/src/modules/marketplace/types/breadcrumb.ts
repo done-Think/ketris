@@ -1,5 +1,7 @@
+import type { LocalizedHref } from '@shared/types/localized-href'
+
 export type MarketplaceBreadcrumbItem = {
-  href?: string
+  href?: LocalizedHref
   label: string
 }
 

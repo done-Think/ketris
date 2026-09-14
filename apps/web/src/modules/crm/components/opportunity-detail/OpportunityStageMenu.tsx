@@ -1,4 +1,5 @@
 import { Box, Menu, MenuItem } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { radius } from '@shared/theme/tokens'
 
@@ -11,6 +12,8 @@ export function OpportunityStageMenu({
   onClose,
   onRequestStatusChange,
 }: OpportunityStageMenuProps) {
+  const t = useTranslations('crm.pipeline')
+
   return (
     <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onClose}>
       {opportunityStages
@@ -26,7 +29,7 @@ export function OpportunityStageMenu({
                 bgcolor: option.color,
               }}
             />
-            {option.label}
+            {t(`stages.${option.labelKey}`)}
           </MenuItem>
         ))}
     </Menu>

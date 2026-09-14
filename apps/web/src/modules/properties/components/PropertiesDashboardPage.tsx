@@ -2,9 +2,9 @@
 
 import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
-import { useRouter } from 'next/navigation'
 import { Box } from '@mui/material'
 
+import { useRouter } from '@/i18n/navigation'
 import { dashboardProperties, propertyStatusFilters } from '../data/dashboard-properties'
 import type {
   DashboardProperty,
@@ -76,7 +76,7 @@ export function PropertiesDashboardPage() {
         <PropertiesDashboardHeader
           searchQuery={searchQuery}
           onSearchQueryChange={(value) => setValue('searchQuery', value)}
-          onCreateProperty={() => router.push('/dashboard/imoveis/novo')}
+          onCreateProperty={() => router.push('/dashboard/properties/new')}
         />
         <PropertyStatusFilters
           activeStatusFilter={activeStatusFilter}
@@ -86,7 +86,9 @@ export function PropertiesDashboardPage() {
         <PropertiesTable
           properties={filteredProperties}
           totalCount={dashboardProperties.length}
-          onPropertySelect={(propertyId) => router.push(`/dashboard/imoveis/${propertyId}`)}
+          onPropertySelect={(propertyId) =>
+            router.push({ pathname: '/dashboard/properties/[id]', params: { id: propertyId } })
+          }
         />
       </Box>
     </Box>
