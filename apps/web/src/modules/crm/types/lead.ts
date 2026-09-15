@@ -1,3 +1,8 @@
+import type { Control } from 'react-hook-form'
+import type { z } from 'zod'
+
+import type { createLeadSchema } from '../schemas/create-lead-schema'
+
 export type LeadStage = 'Novo' | 'Em contato' | 'Visita marcada' | 'Proposta'
 
 export type LeadFilter = 'Todos' | LeadStage
@@ -8,6 +13,8 @@ export type DashboardLead = {
   id: string
   name: string
   budget: string
+  phone: string
+  email: string
   lastContact: string
   interest: string
   source: string
@@ -62,4 +69,61 @@ export type LeadsPaginationFooterProps = {
   canGoBack: boolean
   canGoForward: boolean
   onPageChange?: (page: number) => void
+}
+
+export type CreateLeadFormValues = z.infer<ReturnType<typeof createLeadSchema>>
+
+export type CreateLeadStepKey = 'contact' | 'interest' | 'review'
+
+export type CreateLeadStepLabelKey = CreateLeadStepKey
+
+export type CreateLeadFieldName = keyof CreateLeadFormValues
+
+export type CreateLeadStep = {
+  key: CreateLeadStepKey
+  labelKey: CreateLeadStepLabelKey
+  fields: CreateLeadFieldName[]
+}
+
+export type LeadStageLabelKey = Exclude<LeadFilterKey, 'all'>
+
+export type LeadSourceLabelKey = 'marketplace' | 'whatsApp' | 'instagram' | 'site' | 'referral'
+
+export type LeadSourceOption = {
+  value: string
+  labelKey: LeadSourceLabelKey
+}
+
+export type LeadStageOption = {
+  value: LeadStage
+  labelKey: LeadStageLabelKey
+}
+
+export type LeadsStoreState = {
+  leads: DashboardLead[]
+  addLead: (values: CreateLeadFormValues, lastContactLabel: string) => DashboardLead
+}
+
+export type CreateLeadDialogProps = {
+  onClose: () => void
+  open: boolean
+}
+
+export type CreateLeadContactStepProps = {
+  control: Control<CreateLeadFormValues>
+}
+
+export type CreateLeadInterestStepProps = {
+  control: Control<CreateLeadFormValues>
+}
+
+export type CreateLeadReviewStepProps = {
+  control: Control<CreateLeadFormValues>
+  formValues: Partial<CreateLeadFormValues>
+}
+
+export type LeadContactDialogProps = {
+  lead: DashboardLead | null
+  onClose: () => void
+  open: boolean
 }

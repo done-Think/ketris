@@ -150,8 +150,53 @@
     "mobileListAriaLabel": "Lista móvel de leads",
     "newLead": "Novo Lead",
     "contactAction": "Contato",
+    "createdNow": "Agora",
     "empty": "Nenhum lead encontrado.",
     "resultsRange": "Mostrando {first}–{last} de {total}",
+    "create": {
+      "eyebrow": "Novo contato comercial",
+      "title": "Registrar lead",
+      "success": "Lead registrado com sucesso.",
+      "steps": {
+        "contact": "Contato",
+        "interest": "Interesse",
+        "review": "Revisão"
+      },
+      "fields": {
+        "name": "Nome",
+        "phone": "Telefone",
+        "email": "E-mail",
+        "interest": "Imóvel ou interesse",
+        "budget": "Orçamento",
+        "source": "Origem",
+        "broker": "Corretor responsável",
+        "stage": "Status inicial",
+        "notes": "Observações"
+      },
+      "sources": {
+        "marketplace": "Marketplace",
+        "whatsApp": "WhatsApp",
+        "instagram": "Instagram",
+        "site": "Site",
+        "referral": "Indicação"
+      },
+      "actions": {
+        "back": "Voltar",
+        "cancel": "Cancelar",
+        "close": "Fechar novo lead",
+        "create": "Criar lead",
+        "next": "Próximo"
+      },
+      "errors": {
+        "nameRequired": "Informe o nome do lead",
+        "phoneInvalid": "Informe um telefone válido",
+        "emailInvalid": "Informe um e-mail válido",
+        "interestRequired": "Informe o imóvel ou interesse",
+        "budgetRequired": "Informe o orçamento",
+        "sourceRequired": "Informe a origem",
+        "brokerRequired": "Informe o corretor responsável"
+      }
+    },
     "filters": {
       "all": "Todos",
       "new": "Novo",
@@ -167,6 +212,16 @@
       "source": "Origem",
       "lastContact": "Último contato",
       "actions": "Ações"
+    },
+    "contact": {
+      "eyebrow": "Contato do lead",
+      "phoneLabel": "Telefone",
+      "call": "Ligar",
+      "whatsApp": "WhatsApp",
+      "cancel": "Fechar",
+      "close": "Fechar contato do lead",
+      "emailLabel": "E-mail",
+      "email": "E-mail"
     },
     "pagination": {
       "previous": "Anterior",

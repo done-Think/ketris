@@ -6,9 +6,11 @@ import { useTranslations } from 'next-intl'
 
 import { brand, radius, shadows, surface } from '@shared/theme/tokens'
 
-import { leadFixtures } from '../fixtures/lead-fixtures'
-import type { LeadFilter } from '../types/lead'
+import type { DashboardLead, LeadFilter } from '../types/lead'
 import { filterLeads, leadsDefaultPageSize, paginateLeads } from '../utils/leads'
+import { useLeadsStore } from '../stores/leads-store'
+import { CreateLeadDialog } from './CreateLeadDialog'
+import { LeadContactDialog } from './LeadContactDialog'
 import { LeadsCards } from './leads-list/LeadsCards'
 import { LeadsHeader } from './leads-list/LeadsHeader'
 import { LeadsPaginationFooter } from './leads-list/LeadsPaginationFooter'
@@ -19,13 +21,16 @@ const leadsBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-s
 
 export function LeadsDashboardPage() {
   const t = useTranslations('crm.leads')
+  const leads = useLeadsStore((state) => state.leads)
   const [search, setSearch] = useState('')
   const [activeFilter, setActiveFilter] = useState<LeadFilter>('Todos')
   const [page, setPage] = useState(1)
+  const [isCreateLeadDialogOpen, setIsCreateLeadDialogOpen] = useState(false)
+  const [selectedContactLead, setSelectedContactLead] = useState<DashboardLead | null>(null)
 
   const filteredLeads = useMemo(
-    () => filterLeads(leadFixtures, search, activeFilter),
-    [search, activeFilter],
+    () => filterLeads(leads, search, activeFilter),
+    [search, activeFilter, leads],
   )
   const leadsPage = useMemo(
     () => paginateLeads(filteredLeads, page, leadsDefaultPageSize),
@@ -55,11 +60,15 @@ export function LeadsDashboardPage() {
       }}
     >
       <Stack spacing={2.2}>
-        <LeadsHeader search={search} onSearchChange={handleSearchChange} />
+        <LeadsHeader
+          search={search}
+          onSearchChange={handleSearchChange}
+          onNewLead={() => setIsCreateLeadDialogOpen(true)}
+        />
 
         <LeadsStatusFilters
           activeFilter={activeFilter}
-          leads={leadFixtures}
+          leads={leads}
           onFilterChange={handleFilterChange}
         />
 
@@ -78,8 +87,8 @@ export function LeadsDashboardPage() {
         >
           {leadsPage.items.length > 0 ? (
             <>
-              <LeadsTable leads={leadsPage.items} />
-              <LeadsCards leads={leadsPage.items} />
+              <LeadsTable leads={leadsPage.items} onContactLead={setSelectedContactLead} />
+              <LeadsCards leads={leadsPage.items} onContactLead={setSelectedContactLead} />
             </>
           ) : (
             <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 240, px: 2 }}>
@@ -98,6 +107,16 @@ export function LeadsDashboardPage() {
           />
         </Paper>
       </Stack>
+
+      <CreateLeadDialog
+        open={isCreateLeadDialogOpen}
+        onClose={() => setIsCreateLeadDialogOpen(false)}
+      />
+      <LeadContactDialog
+        lead={selectedContactLead}
+        open={Boolean(selectedContactLead)}
+        onClose={() => setSelectedContactLead(null)}
+      />
     </Box>
   )
 }
