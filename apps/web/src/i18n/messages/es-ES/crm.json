@@ -109,9 +109,14 @@
     "title": "Leads",
     "subtitle": "Gestiona tus contactos y negociaciones",
     "searchPlaceholder": "Buscar lead por nombre o inmueble...",
+    "searchAriaLabel": "Buscar leads",
+    "filterAriaLabel": "Filtrar leads por estado",
+    "tableAriaLabel": "Leads del CRM",
+    "mobileListAriaLabel": "Lista móvil de leads",
     "newLead": "Nuevo lead",
     "contactAction": "Contacto",
-    "resultsCount": "Mostrando {count} de {total}",
+    "empty": "No se encontraron leads.",
+    "resultsRange": "Mostrando {first}–{last} de {total}",
     "filters": {
       "all": "Todos",
       "new": "Nuevo",
@@ -127,6 +132,10 @@
       "source": "Origen",
       "lastContact": "Último contacto",
       "actions": "Acciones"
+    },
+    "pagination": {
+      "previous": "Anterior",
+      "next": "Siguiente"
     }
   },
   "opportunityDetail": {

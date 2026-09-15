@@ -109,9 +109,14 @@
     "title": "Leads",
     "subtitle": "Manage your contacts and negotiations",
     "searchPlaceholder": "Search lead by name or property...",
+    "searchAriaLabel": "Search leads",
+    "filterAriaLabel": "Filter leads by status",
+    "tableAriaLabel": "CRM leads",
+    "mobileListAriaLabel": "Mobile lead list",
     "newLead": "New Lead",
     "contactAction": "Contact",
-    "resultsCount": "Showing {count} of {total}",
+    "empty": "No leads found.",
+    "resultsRange": "Showing {first}–{last} of {total}",
     "filters": {
       "all": "All",
       "new": "New",
@@ -127,6 +132,10 @@
       "source": "Source",
       "lastContact": "Last contact",
       "actions": "Actions"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next"
     }
   },
   "opportunityDetail": {
