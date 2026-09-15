@@ -140,6 +140,39 @@
       "error": "Não foi possível arquivar o contato."
     }
   },
+  "leads": {
+    "title": "Leads",
+    "subtitle": "Gerencie seus contatos e negociações",
+    "searchPlaceholder": "Buscar lead por nome ou imóvel...",
+    "searchAriaLabel": "Buscar leads",
+    "filterAriaLabel": "Filtrar leads por status",
+    "tableAriaLabel": "Leads do CRM",
+    "mobileListAriaLabel": "Lista móvel de leads",
+    "newLead": "Novo Lead",
+    "contactAction": "Contato",
+    "empty": "Nenhum lead encontrado.",
+    "resultsRange": "Mostrando {first}–{last} de {total}",
+    "filters": {
+      "all": "Todos",
+      "new": "Novo",
+      "contacted": "Em contato",
+      "visitScheduled": "Visita marcada",
+      "proposal": "Proposta"
+    },
+    "tableColumns": {
+      "name": "Nome",
+      "interest": "Interesse",
+      "budget": "Orçamento",
+      "status": "Status",
+      "source": "Origem",
+      "lastContact": "Último contato",
+      "actions": "Ações"
+    },
+    "pagination": {
+      "previous": "Anterior",
+      "next": "Próximo"
+    }
+  },
   "opportunityDetail": {
     "editTitle": "Editar oportunidade",
     "breadcrumbAriaLabel": "Navegação estrutural",

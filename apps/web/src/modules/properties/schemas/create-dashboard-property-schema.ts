@@ -9,6 +9,7 @@ const numberField = z.coerce.number().nonnegative('Informe um valor válido')
 
 export const createDashboardPropertySchema = z.object({
   activeStepIndex: z.number().int().min(0).default(0),
+  maxVisitedStepIndex: z.number().int().min(0).default(0),
   type: z.string().min(1, 'Selecione o tipo de imóvel'),
   purpose: z.enum(['Aluguel', 'Venda'] satisfies [CreatePropertyPurpose, CreatePropertyPurpose]),
   title: z.string().min(3, 'Informe o título do anúncio'),
@@ -34,6 +35,7 @@ export const createDashboardPropertySchema = z.object({
 
 export const createDashboardPropertyDefaultValues: CreateDashboardPropertyFormValues = {
   activeStepIndex: 0,
+  maxVisitedStepIndex: 0,
   type: 'Apartamento',
   purpose: 'Aluguel',
   title: 'Apartamento moderno com vista incrível nos Jardins',

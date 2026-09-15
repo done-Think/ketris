@@ -140,6 +140,39 @@
       "error": "Could not archive the contact."
     }
   },
+  "leads": {
+    "title": "Leads",
+    "subtitle": "Manage your contacts and negotiations",
+    "searchPlaceholder": "Search lead by name or property...",
+    "searchAriaLabel": "Search leads",
+    "filterAriaLabel": "Filter leads by status",
+    "tableAriaLabel": "CRM leads",
+    "mobileListAriaLabel": "Mobile lead list",
+    "newLead": "New Lead",
+    "contactAction": "Contact",
+    "empty": "No leads found.",
+    "resultsRange": "Showing {first}–{last} of {total}",
+    "filters": {
+      "all": "All",
+      "new": "New",
+      "contacted": "Contacted",
+      "visitScheduled": "Visit scheduled",
+      "proposal": "Proposal"
+    },
+    "tableColumns": {
+      "name": "Name",
+      "interest": "Interest",
+      "budget": "Budget",
+      "status": "Status",
+      "source": "Source",
+      "lastContact": "Last contact",
+      "actions": "Actions"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next"
+    }
+  },
   "opportunityDetail": {
     "editTitle": "Edit opportunity",
     "breadcrumbAriaLabel": "Breadcrumb",
