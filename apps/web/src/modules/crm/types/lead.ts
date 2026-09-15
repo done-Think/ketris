@@ -1,3 +1,4 @@
+import type { Control } from 'react-hook-form'
 import type { z } from 'zod'
 
 import type { createLeadSchema } from '../schemas/create-lead-schema'
@@ -70,7 +71,7 @@ export type LeadsPaginationFooterProps = {
   onPageChange?: (page: number) => void
 }
 
-export type CreateLeadFormValues = z.infer<typeof createLeadSchema>
+export type CreateLeadFormValues = z.infer<ReturnType<typeof createLeadSchema>>
 
 export type CreateLeadStepKey = 'contact' | 'interest' | 'review'
 
@@ -106,6 +107,19 @@ export type LeadsStoreState = {
 export type CreateLeadDialogProps = {
   onClose: () => void
   open: boolean
+}
+
+export type CreateLeadContactStepProps = {
+  control: Control<CreateLeadFormValues>
+}
+
+export type CreateLeadInterestStepProps = {
+  control: Control<CreateLeadFormValues>
+}
+
+export type CreateLeadReviewStepProps = {
+  control: Control<CreateLeadFormValues>
+  formValues: Partial<CreateLeadFormValues>
 }
 
 export type LeadContactDialogProps = {

@@ -23,7 +23,7 @@ export const leadSourceOptions: LeadSourceOption[] = [
   { value: 'WhatsApp', labelKey: 'whatsApp' },
   { value: 'Instagram', labelKey: 'instagram' },
   { value: 'Site', labelKey: 'site' },
-  { value: 'Indicacao', labelKey: 'referral' },
+  { value: 'Indicação', labelKey: 'referral' },
 ]
 
 export const leadStageOptions: LeadStageOption[] = [

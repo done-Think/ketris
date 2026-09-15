@@ -186,6 +186,15 @@
         "close": "Fechar novo lead",
         "create": "Criar lead",
         "next": "Próximo"
+      },
+      "errors": {
+        "nameRequired": "Informe o nome do lead",
+        "phoneInvalid": "Informe um telefone válido",
+        "emailInvalid": "Informe um e-mail válido",
+        "interestRequired": "Informe o imóvel ou interesse",
+        "budgetRequired": "Informe o orçamento",
+        "sourceRequired": "Informe a origem",
+        "brokerRequired": "Informe o corretor responsável"
       }
     },
     "filters": {

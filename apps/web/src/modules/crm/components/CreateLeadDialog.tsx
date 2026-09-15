@@ -10,7 +10,6 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  MenuItem,
   Stack,
   Step,
   StepLabel,
@@ -19,19 +18,19 @@ import {
 } from '@mui/material'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { useSnackbar } from 'notistack'
 
-import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
 import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
-import { createLeadSteps, leadSourceOptions, leadStageOptions } from '../config/lead-creation'
+import { createLeadSteps } from '../config/lead-creation'
 import { createLeadDefaultValues, createLeadSchema } from '../schemas/create-lead-schema'
 import { useLeadsStore } from '../stores/leads-store'
 import type { CreateLeadDialogProps, CreateLeadFormValues } from '../types/lead'
-
-const phoneMask = [{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }]
+import { CreateLeadContactStep } from './create-lead-dialog/CreateLeadContactStep'
+import { CreateLeadInterestStep } from './create-lead-dialog/CreateLeadInterestStep'
+import { CreateLeadReviewStep } from './create-lead-dialog/CreateLeadReviewStep'
 
 function getNextStepIndex(activeStepIndex: number) {
   return Math.min(activeStepIndex + 1, createLeadSteps.length - 1)
@@ -45,9 +44,10 @@ export function CreateLeadDialog({ onClose, open }: CreateLeadDialogProps) {
   const t = useTranslations('crm.leads')
   const { enqueueSnackbar } = useSnackbar()
   const addLead = useLeadsStore((state) => state.addLead)
+  const leadSchema = useMemo(() => createLeadSchema((key) => t(`create.errors.${key}`)), [t])
   const { control, handleSubmit, reset, setValue, trigger } = useForm<CreateLeadFormValues>({
     defaultValues: createLeadDefaultValues,
-    resolver: zodResolver(createLeadSchema),
+    resolver: zodResolver(leadSchema),
   })
   const activeStepIndex = useWatch({ control, name: 'activeStepIndex' })
   const maxVisitedStepIndex = useWatch({ control, name: 'maxVisitedStepIndex' })
@@ -154,125 +154,10 @@ export function CreateLeadDialog({ onClose, open }: CreateLeadDialogProps) {
                 p: { xs: 1.6, md: 2 },
               }}
             >
-              {activeStep.key === 'contact' ? (
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                    gap: 1.4,
-                  }}
-                >
-                  <RhfTextField control={control} name="name" label={t('create.fields.name')} />
-                  <RhfMaskedTextField
-                    control={control}
-                    name="phone"
-                    label={t('create.fields.phone')}
-                    mask={phoneMask}
-                  />
-                  <RhfTextField
-                    control={control}
-                    name="email"
-                    label={t('create.fields.email')}
-                    type="email"
-                    sx={{ gridColumn: { md: '1 / -1' } }}
-                  />
-                </Box>
-              ) : null}
-
-              {activeStep.key === 'interest' ? (
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                    gap: 1.4,
-                  }}
-                >
-                  <RhfTextField
-                    control={control}
-                    name="interest"
-                    label={t('create.fields.interest')}
-                  />
-                  <RhfTextField control={control} name="budget" label={t('create.fields.budget')} />
-                  <RhfTextField
-                    control={control}
-                    name="source"
-                    label={t('create.fields.source')}
-                    select
-                  >
-                    {leadSourceOptions.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {t(`create.sources.${option.labelKey}`)}
-                      </MenuItem>
-                    ))}
-                  </RhfTextField>
-                  <RhfTextField control={control} name="broker" label={t('create.fields.broker')} />
-                  <RhfTextField
-                    control={control}
-                    name="stage"
-                    label={t('create.fields.stage')}
-                    select
-                    sx={{ gridColumn: { md: '1 / -1' } }}
-                  >
-                    {leadStageOptions.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {t(`filters.${option.labelKey}`)}
-                      </MenuItem>
-                    ))}
-                  </RhfTextField>
-                </Box>
-              ) : null}
-
+              {activeStep.key === 'contact' ? <CreateLeadContactStep control={control} /> : null}
+              {activeStep.key === 'interest' ? <CreateLeadInterestStep control={control} /> : null}
               {activeStep.key === 'review' ? (
-                <Stack spacing={1.6}>
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' },
-                      gap: 1.2,
-                    }}
-                  >
-                    {[
-                      ['name', formValues.name],
-                      ['phone', formValues.phone],
-                      ['interest', formValues.interest],
-                      ['budget', formValues.budget],
-                      ['source', formValues.source],
-                      ['broker', formValues.broker],
-                      ['stage', formValues.stage],
-                    ].map(([fieldKey, value]) => (
-                      <Box
-                        key={fieldKey}
-                        sx={{
-                          border: '1px solid',
-                          borderColor: alpha.graphite[8],
-                          borderRadius: `${radius.sm}px`,
-                          bgcolor: surface.paper,
-                          p: 1.2,
-                        }}
-                      >
-                        <Typography
-                          sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 800 }}
-                        >
-                          {t(`create.fields.${fieldKey}`)}
-                        </Typography>
-                        <Typography
-                          sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 900 }}
-                        >
-                          {value}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Box>
-
-                  <RhfTextField
-                    control={control}
-                    name="notes"
-                    label={t('create.fields.notes')}
-                    multiline
-                    minRows={3}
-                    fullWidth
-                  />
-                </Stack>
+                <CreateLeadReviewStep control={control} formValues={formValues} />
               ) : null}
             </Box>
           </Stack>
