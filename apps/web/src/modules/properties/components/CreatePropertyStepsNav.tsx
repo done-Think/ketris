@@ -1,5 +1,5 @@
-import { Box, Stack, Typography } from '@mui/material'
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
+import { Box, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { brand, iconSize, motion, radius, surface } from '@shared/theme/tokens'

@@ -5,9 +5,6 @@
     },
     "contacts": {
       "metadataTitle": "Ketris | Contactos"
-    },
-    "proposals": {
-      "metadataTitle": "Ketris | Propuestas"
     }
   },
   "navigation": {
@@ -33,6 +30,10 @@
     "searchPlaceholder": "Buscar oportunidad...",
     "searchAriaLabel": "Buscar oportunidad",
     "filterByStage": "Filtrar por etapa",
+    "viewMode": {
+      "kanban": "Ver en tablero",
+      "list": "Ver en lista"
+    },
     "allStages": "Todas las etapas",
     "newOpportunity": "Nueva oportunidad",
     "openOpportunityAriaLabel": "Abrir oportunidad de {name}",
@@ -42,6 +43,7 @@
     "dataLoadError": "No fue posible cargar los datos del pipeline.",
     "retry": "Intentar de nuevo",
     "emptyStage": "No hay oportunidades en esta etapa.",
+    "noResults": "No se encontraron oportunidades.",
     "projectedTotal": "Total proyectado",
     "projectedTotalAriaLabel": "Total proyectado de {stage}",
     "totalLabels": {
@@ -142,10 +144,15 @@
     "title": "Leads",
     "subtitle": "Gestiona tus contactos y negociaciones",
     "searchPlaceholder": "Buscar lead por nombre o inmueble...",
+    "searchAriaLabel": "Buscar leads",
+    "filterAriaLabel": "Filtrar leads por estado",
+    "tableAriaLabel": "Leads del CRM",
+    "mobileListAriaLabel": "Lista móvil de leads",
     "newLead": "Nuevo lead",
     "contactAction": "Contacto",
     "createdNow": "Ahora",
-    "resultsCount": "Mostrando {count} de {total}",
+    "empty": "No se encontraron leads.",
+    "resultsRange": "Mostrando {first}–{last} de {total}",
     "create": {
       "eyebrow": "Nuevo contacto comercial",
       "title": "Registrar lead",
@@ -179,6 +186,15 @@
         "close": "Cerrar nuevo lead",
         "create": "Crear lead",
         "next": "Siguiente"
+      },
+      "errors": {
+        "nameRequired": "Indica el nombre del lead",
+        "phoneInvalid": "Indica un teléfono válido",
+        "emailInvalid": "Indica un correo válido",
+        "interestRequired": "Indica el inmueble o interés",
+        "budgetRequired": "Indica el presupuesto",
+        "sourceRequired": "Indica el origen",
+        "brokerRequired": "Indica el corredor responsable"
       }
     },
     "filters": {
@@ -206,6 +222,10 @@
       "close": "Cerrar contacto del lead",
       "emailLabel": "Email",
       "email": "Email"
+    },
+    "pagination": {
+      "previous": "Anterior",
+      "next": "Siguiente"
     }
   },
   "opportunityDetail": {

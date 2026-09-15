@@ -5,9 +5,6 @@
     },
     "contacts": {
       "metadataTitle": "Ketris | Contacts"
-    },
-    "proposals": {
-      "metadataTitle": "Ketris | Proposals"
     }
   },
   "navigation": {
@@ -33,6 +30,10 @@
     "searchPlaceholder": "Search opportunity...",
     "searchAriaLabel": "Search opportunity",
     "filterByStage": "Filter by stage",
+    "viewMode": {
+      "kanban": "Board view",
+      "list": "List view"
+    },
     "allStages": "All stages",
     "newOpportunity": "New Opportunity",
     "openOpportunityAriaLabel": "Open opportunity for {name}",
@@ -42,6 +43,7 @@
     "dataLoadError": "Could not load pipeline data.",
     "retry": "Try again",
     "emptyStage": "No opportunities in this stage.",
+    "noResults": "No opportunities found.",
     "projectedTotal": "Projected total",
     "projectedTotalAriaLabel": "Projected total for {stage}",
     "totalLabels": {
@@ -142,10 +144,15 @@
     "title": "Leads",
     "subtitle": "Manage your contacts and negotiations",
     "searchPlaceholder": "Search lead by name or property...",
+    "searchAriaLabel": "Search leads",
+    "filterAriaLabel": "Filter leads by status",
+    "tableAriaLabel": "CRM leads",
+    "mobileListAriaLabel": "Mobile lead list",
     "newLead": "New Lead",
     "contactAction": "Contact",
     "createdNow": "Now",
-    "resultsCount": "Showing {count} of {total}",
+    "empty": "No leads found.",
+    "resultsRange": "Showing {first}–{last} of {total}",
     "create": {
       "eyebrow": "New sales contact",
       "title": "Register lead",
@@ -179,6 +186,15 @@
         "close": "Close new lead",
         "create": "Create lead",
         "next": "Next"
+      },
+      "errors": {
+        "nameRequired": "Enter the lead's name",
+        "phoneInvalid": "Enter a valid phone number",
+        "emailInvalid": "Enter a valid email",
+        "interestRequired": "Enter the property or interest",
+        "budgetRequired": "Enter the budget",
+        "sourceRequired": "Enter the source",
+        "brokerRequired": "Enter the responsible broker"
       }
     },
     "filters": {
@@ -206,6 +222,10 @@
       "close": "Close lead contact",
       "emailLabel": "Email",
       "email": "Email"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next"
     }
   },
   "opportunityDetail": {

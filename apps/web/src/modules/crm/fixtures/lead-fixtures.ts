@@ -1,6 +1,6 @@
 import type { DashboardLead } from '../types/lead'
 
-export const dashboardLeads: DashboardLead[] = [
+export const leadFixtures: readonly DashboardLead[] = [
   {
     id: 'lead-001',
     name: 'João Silva',

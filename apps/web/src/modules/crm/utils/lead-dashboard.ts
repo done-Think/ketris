@@ -1,6 +1,6 @@
-import type { DashboardLead, LeadFilterKey } from '../types/lead'
+import type { DashboardLead, LeadFilter } from '../types/lead'
 
-export function getFilterCount(leads: DashboardLead[], filter: LeadFilterKey) {
+export function getFilterCount(leads: DashboardLead[], filter: LeadFilter) {
   if (filter === 'Todos') return leads.length
 
   return leads.filter((lead) => lead.stage === filter).length
@@ -15,11 +15,7 @@ export function getLeadInitials(name: string) {
     .toLocaleUpperCase('pt-BR')
 }
 
-export function filterLeads(
-  leads: DashboardLead[],
-  searchQuery: string,
-  activeFilter: LeadFilterKey,
-) {
+export function filterLeads(leads: DashboardLead[], searchQuery: string, activeFilter: LeadFilter) {
   const normalizedSearch = searchQuery.trim().toLocaleLowerCase('pt-BR')
 
   return leads.filter((lead) => {

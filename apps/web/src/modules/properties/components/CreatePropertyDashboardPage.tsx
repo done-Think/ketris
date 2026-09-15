@@ -129,7 +129,12 @@ export function CreatePropertyDashboardPage() {
             borderRadius: `${radius.sm}px`,
             boxShadow: { xs: shadows.crmCardCompact, md: shadows.propertyCard },
             height: {
-              xs: `calc(100dvh - ${mobileDashboardHeaderHeight + mobileCreateHeaderHeight + mobileActionsHeight + mobileContentGap}px)`,
+              xs: `calc(100dvh - ${
+                mobileDashboardHeaderHeight +
+                mobileCreateHeaderHeight +
+                mobileActionsHeight +
+                mobileContentGap
+              }px)`,
               md: 'auto',
             },
             minHeight: { xs: 0, md: 'auto' },

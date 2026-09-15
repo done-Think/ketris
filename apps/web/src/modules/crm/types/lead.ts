@@ -1,14 +1,15 @@
+import type { Control } from 'react-hook-form'
 import type { z } from 'zod'
 
 import type { createLeadSchema } from '../schemas/create-lead-schema'
 
 export type LeadStage = 'Novo' | 'Em contato' | 'Visita marcada' | 'Proposta'
 
-export type LeadFilterKey = 'Todos' | LeadStage
+export type LeadFilter = 'Todos' | LeadStage
 
-export type LeadStageLabelKey = 'new' | 'contacted' | 'visitScheduled' | 'proposal'
+export type LeadFilterKey = 'all' | 'new' | 'contacted' | 'visitScheduled' | 'proposal'
 
-export type LeadFilterLabelKey = 'all' | LeadStageLabelKey
+export type LeadStageLabelKey = Exclude<LeadFilterKey, 'all'>
 
 export type DashboardLead = {
   id: string
@@ -29,20 +30,65 @@ export type LeadStageStyle = {
 }
 
 export type LeadStatusFilterOption = {
-  labelKey: LeadFilterLabelKey
-  label: LeadFilterKey
+  labelKey: LeadFilterKey
+  label: LeadFilter
 }
 
 export type LeadsDashboardFiltersFormValues = {
-  activeFilter: LeadFilterKey
+  activeFilter: LeadFilter
   searchQuery: string
+}
+
+export type LeadsPage = {
+  items: readonly DashboardLead[]
+  page: number
+  pageCount: number
+  totalCount: number
+  firstItem: number
+  lastItem: number
 }
 
 export type LeadStatusChipProps = {
   stage: LeadStage
 }
 
-export type CreateLeadFormValues = z.infer<typeof createLeadSchema>
+export type LeadAvatarProps = {
+  lead: DashboardLead
+}
+
+export type LeadsHeaderProps = {
+  search: string
+  onSearchChange: (search: string) => void
+  onNewLead?: () => void
+}
+
+export type LeadsStatusFiltersProps = {
+  activeFilter: LeadFilter
+  leads: readonly DashboardLead[]
+  onFilterChange: (filter: LeadFilter) => void
+}
+
+export type LeadsCollectionActions = {
+  onContactLead?: (lead: DashboardLead) => void
+}
+
+export type LeadsTableProps = LeadsCollectionActions & {
+  leads: readonly DashboardLead[]
+}
+
+export type LeadsCardsProps = LeadsTableProps
+
+export type LeadsPaginationFooterProps = {
+  firstVisible: number
+  lastVisible: number
+  resultTotal: number
+  page: number
+  canGoBack: boolean
+  canGoForward: boolean
+  onPageChange?: (page: number) => void
+}
+
+export type CreateLeadFormValues = z.infer<ReturnType<typeof createLeadSchema>>
 
 export type CreateLeadStepKey = 'contact' | 'interest' | 'review'
 
@@ -78,6 +124,19 @@ export type CreateLeadDialogProps = {
   open: boolean
 }
 
+export type CreateLeadContactStepProps = {
+  control: Control<CreateLeadFormValues>
+}
+
+export type CreateLeadInterestStepProps = {
+  control: Control<CreateLeadFormValues>
+}
+
+export type CreateLeadReviewStepProps = {
+  control: Control<CreateLeadFormValues>
+  formValues: Partial<CreateLeadFormValues>
+}
+
 export type LeadContactDialogProps = {
   lead: DashboardLead | null
   onClose: () => void
@@ -85,13 +144,13 @@ export type LeadContactDialogProps = {
 }
 
 export type LeadsFilterBarProps = {
-  activeFilter: LeadFilterKey
+  activeFilter: LeadFilter
   leads: DashboardLead[]
-  onFilterChange: (filter: LeadFilterKey) => void
+  onFilterChange: (filter: LeadFilter) => void
 }
 
 export type LeadsListProps = {
-  leads: DashboardLead[]
+  leads: readonly DashboardLead[]
   onLeadContactSelect: (lead: DashboardLead) => void
   totalCount?: number
 }

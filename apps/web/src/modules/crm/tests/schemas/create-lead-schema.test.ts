@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 import { createLeadDefaultValues, createLeadSchema } from '../../schemas/create-lead-schema'
 
+const schema = createLeadSchema((key) => key)
+
 const validLeadValues = {
   ...createLeadDefaultValues,
   name: 'Ana Costa',
@@ -15,16 +17,16 @@ const validLeadValues = {
 
 describe('createLeadSchema', () => {
   it('accepts a valid lead creation payload', () => {
-    expect(createLeadSchema.safeParse(validLeadValues).success).toBe(true)
+    expect(schema.safeParse(validLeadValues).success).toBe(true)
   })
 
   it('accepts an empty optional email', () => {
-    expect(createLeadSchema.safeParse({ ...validLeadValues, email: '' }).success).toBe(true)
+    expect(schema.safeParse({ ...validLeadValues, email: '' }).success).toBe(true)
   })
 
   it('rejects missing required contact and interest data', () => {
     expect(
-      createLeadSchema.safeParse({
+      schema.safeParse({
         ...validLeadValues,
         budget: '',
         interest: '',
@@ -35,6 +37,16 @@ describe('createLeadSchema', () => {
   })
 
   it('rejects an unsupported lead stage', () => {
-    expect(createLeadSchema.safeParse({ ...validLeadValues, stage: 'Fechado' }).success).toBe(false)
+    expect(schema.safeParse({ ...validLeadValues, stage: 'Fechado' }).success).toBe(false)
+  })
+
+  it('routes each validation message through the translator with the right key', () => {
+    const translated = createLeadSchema((key) => `translated:${key}`)
+    const result = translated.safeParse({ ...validLeadValues, name: '' })
+
+    expect(result.success).toBe(false)
+    expect(result.success ? undefined : result.error.issues[0]?.message).toBe(
+      'translated:nameRequired',
+    )
   })
 })

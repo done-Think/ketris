@@ -24,16 +24,20 @@ export type SalesPipelineBoardProps = {
   preview?: boolean
 }
 
+export type SalesPipelineViewMode = 'kanban' | 'list'
+
 export type SalesPipelineToolbarProps = {
   search: string
   selectedStage: SalesPipelineStage | null | undefined
   selectedStageId: SalesPipelineStageId | null
   filterAnchor: HTMLElement | null
+  viewMode: SalesPipelineViewMode
   onSearchChange: (search: string) => void
   onFilterOpen: (anchor: HTMLElement) => void
   onFilterClose: () => void
   onStageSelect: (stageId: SalesPipelineStageId | null) => void
   onNewOpportunity: () => void
+  onViewModeChange: (viewMode: SalesPipelineViewMode) => void
 }
 
 export type PipelineStageColumnProps = {
