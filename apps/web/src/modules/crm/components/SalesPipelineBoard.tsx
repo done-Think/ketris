@@ -31,21 +31,21 @@ import {
 import type {
   ProposalManagementFilterId,
   ProposalManagementListItem,
-} from '@modules/proposals/types/proposal-management'
+} from '../types/proposal-management'
 import {
   buildProposalManagementSummary,
   mapOpportunityToProposalListItem,
-} from '@modules/proposals/utils/opportunity-adapter'
+} from '../utils/opportunity-adapter'
 import {
   proposalManagementDefaultPageSize,
   queryProposalManagementItems,
-} from '@modules/proposals/utils/proposal-management'
-import { ProposalKpiCards } from '@modules/proposals/components/proposals-list/ProposalKpiCards'
-import { ProposalMobileCards } from '@modules/proposals/components/proposals-list/ProposalMobileCards'
-import { ProposalPagination } from '@modules/proposals/components/proposals-list/ProposalPagination'
-import { ProposalStatusFilters } from '@modules/proposals/components/proposals-list/ProposalStatusFilters'
-import { ProposalsTable } from '@modules/proposals/components/proposals-list/ProposalsTable'
+} from '../utils/proposal-management'
 import { CreateOpportunityDialog } from './opportunity-detail/CreateOpportunityDialog'
+import { ProposalKpiCards } from './proposals-list/ProposalKpiCards'
+import { ProposalMobileCards } from './proposals-list/ProposalMobileCards'
+import { ProposalPagination } from './proposals-list/ProposalPagination'
+import { ProposalStatusFilters } from './proposals-list/ProposalStatusFilters'
+import { ProposalsTable } from './proposals-list/ProposalsTable'
 import { PipelineStageColumn } from './sales-pipeline-board/PipelineStageColumn'
 import { SalesPipelineToolbar } from './sales-pipeline-board/SalesPipelineToolbar'
 

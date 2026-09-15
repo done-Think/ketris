@@ -1,6 +1,6 @@
-import type { Opportunity } from '@modules/crm/types/opportunity'
-import type { PublicPropertyDetail, PublicPropertySummary } from '@modules/crm/types/property'
-import { formatCurrency, formatDate, formatMonthlyCurrency } from '@modules/crm/utils/formatters'
+import type { Opportunity } from '../types/opportunity'
+import type { PublicPropertyDetail, PublicPropertySummary } from '../types/property'
+import { formatCurrency, formatDate, formatMonthlyCurrency } from './formatters'
 
 import type {
   ProposalManagementListItem,
