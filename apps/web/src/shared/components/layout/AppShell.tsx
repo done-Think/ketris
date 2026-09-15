@@ -7,6 +7,7 @@ import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import InsertChartOutlinedRoundedIcon from '@mui/icons-material/InsertChartOutlinedRounded'
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined'
+import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
@@ -46,6 +47,7 @@ type NavHref =
   | '/dashboard/agenda'
   | '/crm/proposals'
   | '/dashboard/finance'
+  | '/dashboard/maintenance'
 
 interface NavItem {
   labelKey: string
@@ -74,6 +76,12 @@ const navigationItems: readonly NavItem[] = [
   },
   { labelKey: 'agenda', href: '/dashboard/agenda', icon: CalendarTodayOutlinedIcon },
   { labelKey: 'proposals', href: '/crm/proposals', icon: InsertDriveFileOutlinedIcon },
+  {
+    labelKey: 'maintenance',
+    href: '/dashboard/maintenance',
+    icon: BuildOutlinedIcon,
+    roles: ['ADMIN', 'OWNER'],
+  },
   {
     labelKey: 'finance',
     href: '/dashboard/finance',

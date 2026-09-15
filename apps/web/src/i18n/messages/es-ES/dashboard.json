@@ -9,6 +9,9 @@
     "finance": {
       "metadataTitle": "Ketris | Finanzas"
     },
+    "maintenance": {
+      "metadataTitle": "Ketris | Solicitudes de mantenimiento"
+    },
     "proposals": {
       "metadataTitle": "Ketris | Propuestas"
     }
@@ -75,6 +78,46 @@
         "pending": "Pendiente"
       }
     }
+  },
+  "maintenance": {
+    "title": "Solicitudes de mantenimiento",
+    "subtitle": "Acompa\u00f1e las solicitudes de reparaci\u00f3n y mantenimiento",
+    "search": "Buscar solicitud...",
+    "allProperties": "Todos los inmuebles",
+    "newTicket": "Nueva solicitud",
+    "filters": {
+      "all": "Todos",
+      "open": "Abierto",
+      "inProgress": "En curso",
+      "urgent": "Urgente",
+      "resolved": "Resuelto",
+      "closed": "Cerrado"
+    },
+    "metrics": {
+      "open": "Abiertos",
+      "urgent": "Urgentes",
+      "averageResolution": "Tiempo medio de resoluci\u00f3n"
+    },
+    "columns": {
+      "ticket": "Solicitud",
+      "property": "Inmueble",
+      "category": "Categor\u00eda",
+      "priority": "Prioridad",
+      "tenant": "Inquilino",
+      "openedAt": "Abierto el",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "priorities": { "urgent": "Urgente", "high": "Alta", "normal": "Normal" },
+    "statuses": {
+      "inProgress": "En curso",
+      "open": "Abierto",
+      "resolved": "Resuelto",
+      "closed": "Cerrado"
+    },
+    "viewTicket": "Ver solicitud {ticket}",
+    "showing": "Mostrando 1-6 de 34 solicitudes",
+    "pagination": { "previous": "Anterior", "next": "Siguiente" }
   },
   "finance": {
     "title": "Finanzas",
