@@ -5,9 +5,6 @@
     },
     "contacts": {
       "metadataTitle": "Ketris | Contatos"
-    },
-    "proposals": {
-      "metadataTitle": "Ketris | Propostas"
     }
   },
   "navigation": {
@@ -33,6 +30,10 @@
     "searchPlaceholder": "Buscar oportunidade...",
     "searchAriaLabel": "Buscar oportunidade",
     "filterByStage": "Filtrar por etapa",
+    "viewMode": {
+      "kanban": "Ver em quadro",
+      "list": "Ver em lista"
+    },
     "allStages": "Todas as etapas",
     "newOpportunity": "Nova Oportunidade",
     "openOpportunityAriaLabel": "Abrir oportunidade de {name}",
@@ -42,6 +43,7 @@
     "dataLoadError": "Não foi possível carregar os dados do pipeline.",
     "retry": "Tentar novamente",
     "emptyStage": "Sem oportunidades nesta etapa.",
+    "noResults": "Nenhuma oportunidade encontrada.",
     "projectedTotal": "Total projetado",
     "projectedTotalAriaLabel": "Total projetado de {stage}",
     "totalLabels": {
@@ -136,6 +138,94 @@
       "confirm": "Arquivar",
       "success": "Contato arquivado.",
       "error": "Não foi possível arquivar o contato."
+    }
+  },
+  "leads": {
+    "title": "Leads",
+    "subtitle": "Gerencie seus contatos e negociações",
+    "searchPlaceholder": "Buscar lead por nome ou imóvel...",
+    "searchAriaLabel": "Buscar leads",
+    "filterAriaLabel": "Filtrar leads por status",
+    "tableAriaLabel": "Leads do CRM",
+    "mobileListAriaLabel": "Lista móvel de leads",
+    "newLead": "Novo Lead",
+    "contactAction": "Contato",
+    "createdNow": "Agora",
+    "empty": "Nenhum lead encontrado.",
+    "resultsRange": "Mostrando {first}–{last} de {total}",
+    "create": {
+      "eyebrow": "Novo contato comercial",
+      "title": "Registrar lead",
+      "success": "Lead registrado com sucesso.",
+      "steps": {
+        "contact": "Contato",
+        "interest": "Interesse",
+        "review": "Revisão"
+      },
+      "fields": {
+        "name": "Nome",
+        "phone": "Telefone",
+        "email": "E-mail",
+        "interest": "Imóvel ou interesse",
+        "budget": "Orçamento",
+        "source": "Origem",
+        "broker": "Corretor responsável",
+        "stage": "Status inicial",
+        "notes": "Observações"
+      },
+      "sources": {
+        "marketplace": "Marketplace",
+        "whatsApp": "WhatsApp",
+        "instagram": "Instagram",
+        "site": "Site",
+        "referral": "Indicação"
+      },
+      "actions": {
+        "back": "Voltar",
+        "cancel": "Cancelar",
+        "close": "Fechar novo lead",
+        "create": "Criar lead",
+        "next": "Próximo"
+      },
+      "errors": {
+        "nameRequired": "Informe o nome do lead",
+        "phoneInvalid": "Informe um telefone válido",
+        "emailInvalid": "Informe um e-mail válido",
+        "interestRequired": "Informe o imóvel ou interesse",
+        "budgetRequired": "Informe o orçamento",
+        "sourceRequired": "Informe a origem",
+        "brokerRequired": "Informe o corretor responsável"
+      }
+    },
+    "filters": {
+      "all": "Todos",
+      "new": "Novo",
+      "contacted": "Em contato",
+      "visitScheduled": "Visita marcada",
+      "proposal": "Proposta"
+    },
+    "tableColumns": {
+      "name": "Nome",
+      "interest": "Interesse",
+      "budget": "Orçamento",
+      "status": "Status",
+      "source": "Origem",
+      "lastContact": "Último contato",
+      "actions": "Ações"
+    },
+    "contact": {
+      "eyebrow": "Contato do lead",
+      "phoneLabel": "Telefone",
+      "call": "Ligar",
+      "whatsApp": "WhatsApp",
+      "cancel": "Fechar",
+      "close": "Fechar contato do lead",
+      "emailLabel": "E-mail",
+      "email": "E-mail"
+    },
+    "pagination": {
+      "previous": "Anterior",
+      "next": "Próximo"
     }
   },
   "opportunityDetail": {

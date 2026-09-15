@@ -11,6 +11,7 @@ import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
+import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline'
 import ViewKanbanOutlinedIcon from '@mui/icons-material/ViewKanbanOutlined'
 import type { SvgIconComponent } from '@mui/icons-material'
@@ -41,11 +42,11 @@ type NavHref =
   | '/dashboard'
   | '/crm'
   | '/crm/contacts'
+  | '/dashboard/leads'
   | '/dashboard/properties'
   | '/dashboard/contracts'
   | '/dashboard/public-profile'
   | '/dashboard/agenda'
-  | '/crm/proposals'
   | '/dashboard/finance'
   | '/dashboard/maintenance'
 
@@ -66,6 +67,7 @@ const navigationItems: readonly NavItem[] = [
   },
   { labelKey: 'pipeline', href: '/crm', icon: ViewKanbanOutlinedIcon },
   { labelKey: 'contacts', href: '/crm/contacts', icon: PeopleOutlineIcon },
+  { labelKey: 'leads', href: '/dashboard/leads', icon: PeopleAltOutlinedIcon },
   { labelKey: 'properties', href: '/dashboard/properties', icon: HomeWorkOutlinedIcon },
   { labelKey: 'contracts', href: '/dashboard/contracts', icon: DescriptionOutlinedIcon },
   {
@@ -75,7 +77,6 @@ const navigationItems: readonly NavItem[] = [
     roles: ['ADMIN', 'OWNER'],
   },
   { labelKey: 'agenda', href: '/dashboard/agenda', icon: CalendarTodayOutlinedIcon },
-  { labelKey: 'proposals', href: '/crm/proposals', icon: InsertDriveFileOutlinedIcon },
   {
     labelKey: 'maintenance',
     href: '/dashboard/maintenance',

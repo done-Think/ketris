@@ -12,6 +12,9 @@
     "maintenance": {
       "metadataTitle": "Ketris | Maintenance tickets"
     },
+    "leads": {
+      "metadataTitle": "Ketris | Leads"
+    },
     "proposals": {
       "metadataTitle": "Ketris | Proposals"
     }

@@ -7,6 +7,7 @@ import type { CreatePropertyStepsNavProps } from '../types/dashboard-property'
 
 export function CreatePropertyStepsNav({
   activeStepIndex,
+  maxVisitedStepIndex,
   onStepSelect,
 }: CreatePropertyStepsNavProps) {
   const t = useTranslations('properties.create.steps')
@@ -15,6 +16,7 @@ export function CreatePropertyStepsNav({
     <WizardStepsNav
       steps={createPropertySteps}
       activeStepIndex={activeStepIndex}
+      reachableUpToIndex={maxVisitedStepIndex}
       ariaLabel={t('ariaLabel')}
       getStepLabel={(step) => t(step.key)}
       onStepSelect={onStepSelect}

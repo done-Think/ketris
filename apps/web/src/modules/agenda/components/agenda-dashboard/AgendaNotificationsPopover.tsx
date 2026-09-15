@@ -93,7 +93,10 @@ export function AgendaNotificationsPopover({
                   <Icon sx={{ fontSize: iconSize.md }} />
                 </Box>
                 <Box sx={{ minWidth: 0 }}>
-                  <Typography noWrap sx={{ color: brand.graphite[500], fontSize: 13, fontWeight: 900 }}>
+                  <Typography
+                    noWrap
+                    sx={{ color: brand.graphite[500], fontSize: 13, fontWeight: 900 }}
+                  >
                     {notification.title}
                   </Typography>
                   <Typography sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 700 }}>
