@@ -13,7 +13,9 @@ describe('GET /api/marketplace/properties (integração)', () => {
   let responsavelId: string
   let publishedId: string
   let draftId: string
+  let noParkingId: string
   const cidade = `Cidade-${randomUUID().slice(0, 8)}`
+  const bairro = `Bairro-${randomUUID().slice(0, 8)}`
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
@@ -40,6 +42,8 @@ describe('GET /api/marketplace/properties (integração)', () => {
         finalidade: 'ALUGUEL',
         tipo: 'apartamento',
         quartos: 2,
+        vagas: 1,
+        areaM2: 90,
         valor: 2500,
         status: 'PUBLISHED',
         publicadoEm: new Date(),
@@ -47,7 +51,7 @@ describe('GET /api/marketplace/properties (integração)', () => {
           create: {
             logradouro: 'Rua A',
             numero: '10',
-            bairro: 'Centro',
+            bairro,
             cidade,
             estado: 'PR',
             cep: '80000-000',
@@ -72,6 +76,32 @@ describe('GET /api/marketplace/properties (integração)', () => {
       },
     })
     draftId = draft.id
+
+    const noParking = await prisma.imovel.create({
+      data: {
+        tenantId,
+        responsavelId,
+        titulo: 'Apartamento sem vaga',
+        finalidade: 'ALUGUEL',
+        tipo: 'apartamento',
+        vagas: 0,
+        areaM2: 40,
+        valor: 1800,
+        status: 'PUBLISHED',
+        publicadoEm: new Date(),
+        endereco: {
+          create: {
+            logradouro: 'Rua B',
+            numero: '20',
+            bairro,
+            cidade: 'Outra Cidade',
+            estado: 'PR',
+            cep: '80000-001',
+          },
+        },
+      },
+    })
+    noParkingId = noParking.id
   })
 
   afterAll(async () => {
@@ -102,18 +132,27 @@ describe('GET /api/marketplace/properties (integração)', () => {
     }
   })
 
-  it('filtra por cidade (case-insensitive)', async () => {
-    const response = await GET(buildRequest(`?cidade=${cidade.toLowerCase()}`))
+  it('filtra por city (case-insensitive, match exato)', async () => {
+    const response = await GET(buildRequest(`?city=${cidade.toLowerCase()}`))
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(json.properties.some((property: { id: string }) => property.id === publishedId)).toBe(
-      true,
-    )
+    const ids = json.properties.map((property: { id: string }) => property.id)
+    expect(ids).toContain(publishedId)
+    expect(ids).not.toContain(noParkingId)
+  })
+
+  it('filtra por location (substring em bairro OU cidade)', async () => {
+    const response = await GET(buildRequest(`?location=${bairro}`))
+    const json = await response.json()
+
+    const ids = json.properties.map((property: { id: string }) => property.id)
+    expect(ids).toContain(publishedId)
+    expect(ids).toContain(noParkingId)
   })
 
   it('filtra por faixa de preço (exclui imóveis fora do teto)', async () => {
-    const response = await GET(buildRequest('?precoMax=1000'))
+    const response = await GET(buildRequest('?maxPrice=1000'))
     const json = await response.json()
 
     expect(json.properties.some((property: { id: string }) => property.id === publishedId)).toBe(
@@ -121,8 +160,34 @@ describe('GET /api/marketplace/properties (integração)', () => {
     )
   })
 
-  it('retorna 400 quando a finalidade é inválida', async () => {
-    const response = await GET(buildRequest('?finalidade=TEMPORADA'))
+  it('filtra por minArea', async () => {
+    const response = await GET(buildRequest('?minArea=80'))
+    const json = await response.json()
+
+    const ids = json.properties.map((property: { id: string }) => property.id)
+    expect(ids).toContain(publishedId)
+    expect(ids).not.toContain(noParkingId)
+  })
+
+  it('filtra por hasParking=true', async () => {
+    const response = await GET(buildRequest('?hasParking=true'))
+    const json = await response.json()
+
+    const ids = json.properties.map((property: { id: string }) => property.id)
+    expect(ids).toContain(publishedId)
+    expect(ids).not.toContain(noParkingId)
+  })
+
+  it('ordena por sortBy=priceAsc', async () => {
+    const response = await GET(buildRequest(`?location=${bairro}&sortBy=priceAsc`))
+    const json = await response.json()
+
+    const ids = json.properties.map((property: { id: string }) => property.id)
+    expect(ids.indexOf(noParkingId)).toBeLessThan(ids.indexOf(publishedId))
+  })
+
+  it('retorna 400 quando purpose é inválido', async () => {
+    const response = await GET(buildRequest('?purpose=TEMPORADA'))
 
     expect(response.status).toBe(400)
   })

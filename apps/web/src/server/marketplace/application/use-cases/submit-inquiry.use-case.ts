@@ -5,11 +5,11 @@ import type { PublicPropertyRepository } from '../ports/public-property-reposito
 
 export interface SubmitInquiryInput {
   propertyId: string
-  interessadoNome: string
-  interessadoEmail: string
-  interessadoTelefone?: string
-  valorProposto?: number
-  observacoes?: string
+  leadName: string
+  leadEmail: string
+  leadPhone?: string
+  proposedValue?: number
+  notes?: string
 }
 
 export type SubmitInquiryOutput = CreatedInquiry
@@ -29,12 +29,12 @@ export class SubmitInquiryUseCase {
 
     const inquiry = await this.inquiryRepository.create({
       tenantId: property.tenantId,
-      imovelId: property.id,
-      interessadoNome: input.interessadoNome,
-      interessadoEmail: input.interessadoEmail,
-      interessadoTelefone: input.interessadoTelefone ?? null,
-      valorProposto: input.valorProposto ?? property.valor,
-      observacoes: input.observacoes ?? null,
+      propertyId: property.id,
+      leadName: input.leadName,
+      leadEmail: input.leadEmail,
+      leadPhone: input.leadPhone ?? null,
+      proposedValue: input.proposedValue ?? property.price,
+      notes: input.notes ?? null,
     })
 
     return toCreatedInquiry(inquiry)

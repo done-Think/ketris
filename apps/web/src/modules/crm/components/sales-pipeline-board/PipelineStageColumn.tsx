@@ -100,7 +100,7 @@ export function PipelineStageColumn({
               <OpportunityCard
                 key={opportunity.id}
                 opportunity={opportunity}
-                property={propertiesById.get(opportunity.imovelId)}
+                property={propertiesById.get(opportunity.propertyId)}
                 density="compact"
                 presentation={
                   fixtureMode ? presentationByOpportunityId.get(opportunity.id) : undefined

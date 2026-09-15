@@ -5,9 +5,6 @@
     },
     "contacts": {
       "metadataTitle": "Ketris | Contactos"
-    },
-    "proposals": {
-      "metadataTitle": "Ketris | Propuestas"
     }
   },
   "navigation": {
@@ -29,13 +26,16 @@
   },
   "pipeline": {
     "title": "Pipeline de ventas",
+    "proposalsTitle": "Propuestas",
     "searchPlaceholder": "Buscar oportunidad...",
     "searchAriaLabel": "Buscar oportunidad",
     "filterByStage": "Filtrar por etapa",
+    "viewMode": {
+      "kanban": "Ver en tablero",
+      "list": "Ver en lista"
+    },
     "allStages": "Todas las etapas",
     "newOpportunity": "Nueva oportunidad",
-    "newOpportunityTooltip": "Flujo de creación en preparación",
-    "newOpportunityDisabledAriaLabel": "Nueva oportunidad: flujo de creación en preparación",
     "openOpportunityAriaLabel": "Abrir oportunidad de {name}",
     "propertyUnavailable": "Inmueble no disponible en el catálogo",
     "boardAriaLabel": "Pipeline de oportunidades",
@@ -43,6 +43,7 @@
     "dataLoadError": "No fue posible cargar los datos del pipeline.",
     "retry": "Intentar de nuevo",
     "emptyStage": "No hay oportunidades en esta etapa.",
+    "noResults": "No se encontraron oportunidades.",
     "projectedTotal": "Total proyectado",
     "projectedTotalAriaLabel": "Total proyectado de {stage}",
     "totalLabels": {
@@ -60,7 +61,9 @@
       "sent": "Propuesta enviada",
       "accepted": "Cerrado",
       "rejected": "Perdido"
-    }
+    },
+    "createSuccess": "Oportunidad creada.",
+    "createError": "No se pudo crear la oportunidad."
   },
   "contacts": {
     "title": "Contactos",
@@ -82,7 +85,8 @@
     "actions": {
       "editContact": "Editar {name}",
       "viewInteractions": "Ver interacciones de {name}",
-      "moreOptions": "Más opciones para {name}"
+      "moreOptions": "Más opciones para {name}",
+      "archiveContact": "Archivar {name}"
     },
     "types": {
       "tenant": "Inquilino",
@@ -103,6 +107,37 @@
       "owners": "Propietarios",
       "tenants": "Inquilinos",
       "brokers": "Corredores"
+    },
+    "contactForm": {
+      "createTitle": "Nuevo contacto",
+      "editTitle": "Editar contacto",
+      "fields": {
+        "name": "Nombre",
+        "email": "Correo electrónico",
+        "phone": "Teléfono",
+        "type": "Tipo",
+        "notes": "Notas"
+      },
+      "types": {
+        "PROPRIETARIO": "Propietario",
+        "LOCATARIO": "Inquilino",
+        "CORRETOR": "Corredor"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "save": "Guardar"
+      },
+      "createSuccess": "Contacto creado.",
+      "updateSuccess": "Contacto actualizado.",
+      "saveError": "No se pudo guardar el contacto."
+    },
+    "archiveDialog": {
+      "title": "¿Archivar contacto?",
+      "description": "El contacto dejará de aparecer en la lista activa, pero seguirá almacenado en el CRM.",
+      "cancel": "Cancelar",
+      "confirm": "Archivar",
+      "success": "Contacto archivado.",
+      "error": "No se pudo archivar el contacto."
     }
   },
   "leads": {
@@ -181,7 +216,9 @@
       "specialConditionsHelper": "Separe las condiciones con comas.",
       "notes": "Observaciones",
       "notInformed": "No informado",
-      "months": "{count, plural, one {# mes} other {# meses}}"
+      "months": "{count, plural, one {# mes} other {# meses}}",
+      "property": "Inmueble",
+      "status": "Estado inicial"
     },
     "guarantees": {
       "NENHUMA": "No informada",
@@ -192,7 +229,15 @@
     "actions": {
       "cancel": "Cancelar",
       "saveChanges": "Guardar cambios",
-      "confirmStageChange": "Confirmar cambio"
-    }
+      "confirmStageChange": "Confirmar cambio",
+      "createOpportunity": "Crear oportunidad"
+    },
+    "createTitle": "Nueva oportunidad",
+    "statuses": {
+      "RASCUNHO": "Borrador",
+      "ENVIADA": "Enviada"
+    },
+    "noProperties": "No se encontraron inmuebles.",
+    "loadingProperties": "Buscando inmuebles..."
   }
 }

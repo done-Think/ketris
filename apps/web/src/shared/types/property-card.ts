@@ -1,5 +1,3 @@
-import type { LocalizedHref } from './localized-href'
-
 export type PropertyFeatureKey = 'bedrooms' | 'bathrooms' | 'parking' | 'area'
 
 export type PropertyCardData = {
@@ -14,9 +12,4 @@ export type PropertyCardData = {
   }>
   broker: string
   avatar: string
-}
-
-export type PropertyCardProps = {
-  href?: LocalizedHref
-  property: PropertyCardData
 }

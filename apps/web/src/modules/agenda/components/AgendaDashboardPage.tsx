@@ -1,197 +1,36 @@
 'use client'
 
-import AddRoundedIcon from '@mui/icons-material/AddRounded'
-import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded'
-import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
-import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded'
-import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded'
-import PersonAddAlt1RoundedIcon from '@mui/icons-material/PersonAddAlt1Rounded'
-import {
-  Badge,
-  Box,
-  Button,
-  Divider,
-  IconButton,
-  Popover,
-  Stack,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import { Box, Stack } from '@mui/material'
 import dayjs from 'dayjs'
 import 'dayjs/locale/pt-br'
+import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 import { useSnackbar } from 'notistack'
 
 import { dashboardProperties } from '@modules/properties/data/dashboard-properties'
-import {
-  alpha,
-  brand,
-  iconSize,
-  radius,
-  shadows,
-  supportColor,
-  surface,
-} from '@shared/theme/tokens'
 
 import { agendaEvents, agendaTimeSlots } from '../data/agenda-events'
-import { agendaOtherPropertyValue } from '../schemas/agenda-reschedule-schema'
+import { agendaOtherPropertyValue } from '../schemas/agenda-event-form-schema'
 import type {
-  AgendaCalendarDay,
   AgendaEvent,
-  AgendaEventCardProps,
   AgendaEventFormValues,
-  AgendaNotification,
-  AgendaEventTone,
-  AgendaEventToneStyle,
   AgendaPropertyOption,
   AgendaRescheduleFormValues,
-  AgendaWeekRange,
 } from '../types/agenda-event'
+import { AgendaDashboardHeader } from './agenda-dashboard/AgendaDashboardHeader'
+import { AgendaNotificationsPopover } from './agenda-dashboard/AgendaNotificationsPopover'
+import { AgendaWeekCalendar } from './agenda-dashboard/AgendaWeekCalendar'
+import {
+  agendaVisibleDayCount,
+  buildAgendaCalendarDays,
+  getAgendaNotifications,
+  getAgendaWeekRange,
+} from './agenda-dashboard/agenda-dashboard-shared'
 import { AgendaEventDetailDialog } from './AgendaEventDetailDialog'
 import { AgendaEventFormDialog } from './AgendaEventFormDialog'
 
-const scheduleStartHour = 8
-const scheduleEndHour = 18
-const scheduleHourHeight = 62
-const scheduleTimelineHeight = (scheduleEndHour - scheduleStartHour + 1) * scheduleHourHeight
-const agendaVisibleDayCount = 5
-
-const agendaEventToneStyles: Record<AgendaEventTone, AgendaEventToneStyle> = {
-  primary: {
-    bgcolor: alpha.magenta[10],
-    borderColor: brand.magenta[500],
-    color: brand.magenta[600],
-  },
-  info: {
-    bgcolor: supportColor.infoSoft,
-    borderColor: brand.semantic.info,
-    color: brand.semantic.info,
-  },
-  warning: {
-    bgcolor: supportColor.warningSoft,
-    borderColor: brand.semantic.warning,
-    color: brand.semantic.warning,
-  },
-}
-
-function getEventOffsetTop(time: string) {
-  const [hour = scheduleStartHour, minute = 0] = time.split(':').map(Number)
-
-  return (hour - scheduleStartHour) * scheduleHourHeight + (minute / 60) * scheduleHourHeight
-}
-
-function getEventHeight(durationMinutes: number) {
-  return Math.max((durationMinutes / 60) * scheduleHourHeight, 38)
-}
-
-function capitalize(value: string) {
-  return value.charAt(0).toLocaleUpperCase('pt-BR') + value.slice(1)
-}
-
-function buildAgendaCalendarDays(weekStartDate: dayjs.Dayjs): AgendaCalendarDay[] {
-  const today = dayjs().locale('pt-br').startOf('day')
-
-  return Array.from({ length: agendaVisibleDayCount }, (_, index) => {
-    const date = weekStartDate.add(index, 'day')
-
-    return {
-      dateLabel: date.format('DD'),
-      dayLabel: capitalize(date.format('ddd').replace('.', '')),
-      key: date.format('YYYY-MM-DD'),
-      monthLabel: capitalize(date.format('MMM').replace('.', '')),
-      today: date.isSame(today, 'day'),
-    }
-  })
-}
-
-function getAgendaWeekRange(days: AgendaCalendarDay[]): AgendaWeekRange {
-  const [startDay] = days
-  const endDay = days.at(-1) ?? startDay
-  const sameMonth = startDay.monthLabel === endDay.monthLabel
-
-  return {
-    startLabel: sameMonth ? startDay.dateLabel : `${startDay.dateLabel} ${startDay.monthLabel}`,
-    endLabel: `${endDay.dateLabel} ${endDay.monthLabel}`,
-  }
-}
-
-function isVisitEvent(event: AgendaEvent) {
-  return event.title.toLocaleLowerCase('pt-BR').includes('visita')
-}
-
-function getAgendaNotifications(events: AgendaEvent[], today: dayjs.Dayjs): AgendaNotification[] {
-  return events.flatMap((event) => {
-    const eventDate = dayjs(event.scheduledDate)
-    const notifications: AgendaNotification[] = []
-
-    if (eventDate.isSame(today, 'day') && isVisitEvent(event)) {
-      notifications.push({
-        event,
-        id: `${event.id}-today-visit`,
-        kind: 'todayVisit',
-        message: `${event.time} - ${event.participant} em ${event.property}`,
-        title: 'Visita marcada para hoje',
-      })
-    }
-
-    if (event.createdBy && event.createdByRole) {
-      notifications.push({
-        event,
-        id: `${event.id}-assigned`,
-        kind: 'assignedEvent',
-        message: `${event.createdByRole} ${event.createdBy} marcou ${event.title}`,
-        title: 'Novo compromisso atribuído',
-      })
-    }
-
-    return notifications
-  })
-}
-
-function AgendaEventCard({ event, height, onSelect, top }: AgendaEventCardProps) {
-  const tone = agendaEventToneStyles[event.tone]
-
-  return (
-    <Box
-      component="button"
-      type="button"
-      aria-label={`Abrir ${event.title}`}
-      onClick={() => onSelect(event)}
-      sx={{
-        position: 'absolute',
-        top,
-        left: { xs: 8, md: 16 },
-        right: { xs: 8, md: 16 },
-        minHeight: height,
-        border: 0,
-        borderLeft: '3px solid',
-        borderColor: tone.borderColor,
-        borderRadius: `${radius.sm}px`,
-        bgcolor: tone.bgcolor,
-        px: 1.1,
-        py: 0.8,
-        overflow: 'hidden',
-        cursor: 'pointer',
-        textAlign: 'left',
-        transition: 'box-shadow 160ms ease, transform 160ms ease',
-        '&:hover, &:focus-visible': {
-          boxShadow: shadows.crmCardHover,
-          transform: 'translateY(-1px)',
-          outline: 'none',
-        },
-      }}
-    >
-      <Typography noWrap sx={{ color: tone.color, fontSize: 12, fontWeight: 900 }}>
-        {event.time} - {event.title}
-      </Typography>
-      <Typography noWrap sx={{ color: brand.graphite[500], fontSize: 11, fontWeight: 700 }}>
-        {event.participant} - {event.property}
-      </Typography>
-    </Box>
-  )
-}
-
 export function AgendaDashboardPage() {
+  const t = useTranslations('agenda.dashboard')
   const { enqueueSnackbar } = useSnackbar()
   const [events, setEvents] = useState<AgendaEvent[]>(agendaEvents)
   const [isEventFormOpen, setIsEventFormOpen] = useState(false)
@@ -204,14 +43,17 @@ export function AgendaDashboardPage() {
   const propertyOptions = useMemo<AgendaPropertyOption[]>(
     () =>
       dashboardProperties.map((property) => ({
-        href: `/dashboard/imoveis/${property.id}`,
+        href: `/dashboard/properties/${property.id}`,
         id: property.id,
         label: `${property.title} - ${property.location}`,
       })),
     [],
   )
   const weekRange = getAgendaWeekRange(agendaDays)
-  const notifications = useMemo(() => getAgendaNotifications(events, today), [events, today])
+  const notifications = useMemo(
+    () => getAgendaNotifications({ events, t, today }),
+    [events, t, today],
+  )
   const selectedEventDate = selectedEvent?.scheduledDate ?? ''
   const nextWeekStart = weekStartDate.add(agendaVisibleDayCount, 'day')
   const previousWeekStart = weekStartDate.subtract(agendaVisibleDayCount, 'day')
@@ -257,9 +99,11 @@ export function AgendaDashboardPage() {
     )
     showScheduledWeek(nextDate)
     enqueueSnackbar(
-      `${selectedEvent.title} reagendado para ${nextDate.format('DD/MM/YYYY')} as ${
-        values.scheduledTime
-      }.`,
+      t('rescheduleSuccess', {
+        date: nextDate.format('DD/MM/YYYY'),
+        time: values.scheduledTime,
+        title: selectedEvent.title,
+      }),
       { variant: 'success' },
     )
     closeEventDialog()
@@ -274,8 +118,8 @@ export function AgendaDashboardPage() {
       ? customProperty
       : (selectedProperty?.label ?? customProperty)
     const propertyHref = useCustomProperty
-      ? '/dashboard/imoveis'
-      : (selectedProperty?.href ?? '/dashboard/imoveis')
+      ? '/dashboard/properties'
+      : (selectedProperty?.href ?? '/dashboard/properties')
     const nextEvent: AgendaEvent = {
       id: `agenda-${Date.now()}`,
       scheduledDate: values.scheduledDate,
@@ -286,7 +130,7 @@ export function AgendaDashboardPage() {
       propertyHref,
       participant: values.participant,
       phone: values.phone,
-      notes: values.notes.trim() || 'Evento criado manualmente na agenda.',
+      notes: values.notes.trim() || t('defaultEventNotes'),
       status: 'Confirmada',
       tone: 'primary',
     }
@@ -294,211 +138,30 @@ export function AgendaDashboardPage() {
     setEvents((currentEvents) => [...currentEvents, nextEvent])
     showScheduledWeek(scheduledDate)
     setIsEventFormOpen(false)
-    enqueueSnackbar(`${values.title} adicionado à agenda.`, { variant: 'success' })
+    enqueueSnackbar(t('createSuccess', { title: values.title }), { variant: 'success' })
   }
 
   return (
     <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
       <Stack spacing={2.4}>
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          alignItems={{ xs: 'flex-start', md: 'center' }}
-          justifyContent="space-between"
-          spacing={2}
-        >
-          <Box>
-            <Typography
-              variant="h3"
-              sx={{ color: brand.graphite[500], fontSize: { xs: 30, md: 40 }, fontWeight: 900 }}
-            >
-              Agenda
-            </Typography>
-            <Typography sx={{ color: brand.neutral[500], fontSize: { xs: 14, md: 15 } }}>
-              Seus compromissos e tarefas organizados
-            </Typography>
-          </Box>
+        <AgendaDashboardHeader
+          disableNextWeek={disableNextWeek}
+          disablePreviousWeek={disablePreviousWeek}
+          notificationCount={notifications.length}
+          notificationsExpanded={Boolean(notificationAnchorEl)}
+          onNewEvent={() => setIsEventFormOpen(true)}
+          onNextWeek={() => setWeekStartDate(nextWeekStart)}
+          onOpenNotifications={setNotificationAnchorEl}
+          onPreviousWeek={() => setWeekStartDate(previousWeekStart)}
+          weekRange={weekRange}
+        />
 
-          <Stack direction="row" alignItems="center" spacing={1.2} sx={{ flexWrap: 'wrap' }}>
-            <Tooltip title="Semana anterior">
-              <IconButton
-                aria-label="Semana anterior"
-                disabled={disablePreviousWeek}
-                onClick={() => setWeekStartDate(previousWeekStart)}
-                sx={{
-                  width: 36,
-                  height: 36,
-                  border: '1px solid',
-                  borderColor: alpha.graphite[8],
-                  bgcolor: surface.paper,
-                }}
-              >
-                <ChevronLeftRoundedIcon sx={{ fontSize: iconSize.md }} />
-              </IconButton>
-            </Tooltip>
-            <Typography sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 900 }}>
-              Agenda de {weekRange.startLabel}-{weekRange.endLabel}
-            </Typography>
-            <Tooltip title="Próxima semana">
-              <IconButton
-                aria-label="Próxima semana"
-                disabled={disableNextWeek}
-                onClick={() => setWeekStartDate(nextWeekStart)}
-                sx={{
-                  width: 36,
-                  height: 36,
-                  border: '1px solid',
-                  borderColor: alpha.graphite[8],
-                  bgcolor: surface.paper,
-                }}
-              >
-                <ChevronRightRoundedIcon sx={{ fontSize: iconSize.md }} />
-              </IconButton>
-            </Tooltip>
-            <Button
-              variant="contained"
-              startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
-              onClick={() => setIsEventFormOpen(true)}
-              sx={{ minHeight: 42, borderRadius: `${radius.sm}px`, fontWeight: 900 }}
-            >
-              Novo Evento
-            </Button>
-            <Tooltip title="Notificações">
-              <IconButton
-                aria-label="Abrir notificações da agenda"
-                aria-expanded={notificationAnchorEl ? 'true' : undefined}
-                onClick={(event) => setNotificationAnchorEl(event.currentTarget)}
-                sx={{
-                  width: 42,
-                  height: 42,
-                  border: '1px solid',
-                  borderColor: alpha.graphite[8],
-                  bgcolor: surface.paper,
-                  color: brand.graphite[500],
-                }}
-              >
-                <Badge
-                  badgeContent={notifications.length}
-                  overlap="circular"
-                  sx={{
-                    '& .MuiBadge-badge': {
-                      bgcolor: brand.magenta[500],
-                      color: surface.lightText,
-                      fontSize: 10,
-                      fontWeight: 900,
-                    },
-                  }}
-                >
-                  <NotificationsNoneRoundedIcon sx={{ fontSize: iconSize.lg }} />
-                </Badge>
-              </IconButton>
-            </Tooltip>
-          </Stack>
-        </Stack>
-
-        <Box
-          sx={{
-            bgcolor: surface.paper,
-            border: '1px solid',
-            borderColor: alpha.graphite[6],
-            borderRadius: `${radius.sm}px`,
-            boxShadow: shadows.crmDetailPanel,
-            overflow: 'hidden',
-          }}
-        >
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: '48px repeat(5, minmax(132px, 1fr))',
-                md: '72px repeat(5, minmax(0, 1fr))',
-              },
-              overflowX: 'auto',
-            }}
-          >
-            <Box sx={{ minHeight: 78 }} />
-            {agendaDays.map((day) => (
-              <Stack
-                key={day.key}
-                alignItems="center"
-                justifyContent="center"
-                spacing={0.6}
-                sx={{ minHeight: 78 }}
-              >
-                <Typography
-                  sx={{
-                    color: day.today ? brand.magenta[500] : brand.graphite[500],
-                    fontSize: 13,
-                    fontWeight: 900,
-                  }}
-                >
-                  {day.dayLabel} {day.dateLabel}
-                </Typography>
-                {day.today ? (
-                  <Box
-                    sx={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: radius.full,
-                      bgcolor: brand.magenta[500],
-                    }}
-                  />
-                ) : null}
-              </Stack>
-            ))}
-
-            <Box
-              sx={{
-                position: 'relative',
-                height: scheduleTimelineHeight,
-                borderTop: '1px solid',
-                borderColor: alpha.graphite[8],
-              }}
-            >
-              {agendaTimeSlots.map((slot, index) => (
-                <Typography
-                  key={slot.label}
-                  sx={{
-                    position: 'absolute',
-                    top: index * scheduleHourHeight + 14,
-                    left: { xs: 8, md: 18 },
-                    color: brand.neutral[500],
-                    fontSize: 12,
-                    fontWeight: 700,
-                  }}
-                >
-                  {slot.label}
-                </Typography>
-              ))}
-            </Box>
-
-            {agendaDays.map((day) => (
-              <Box
-                key={`timeline-${day.key}`}
-                sx={{
-                  position: 'relative',
-                  height: scheduleTimelineHeight,
-                  borderTop: '1px solid',
-                  borderLeft: '1px solid',
-                  borderColor: alpha.graphite[8],
-                  backgroundImage: `linear-gradient(${alpha.graphite[6]} 1px, ${surface.paper} 1px)`,
-                  backgroundSize: `100% ${scheduleHourHeight}px`,
-                }}
-              >
-                {events
-                  .filter((event) => event.scheduledDate === day.key)
-                  .map((event) => (
-                    <AgendaEventCard
-                      key={event.id}
-                      event={event}
-                      height={getEventHeight(event.durationMinutes)}
-                      onSelect={setSelectedEvent}
-                      top={getEventOffsetTop(event.time)}
-                    />
-                  ))}
-              </Box>
-            ))}
-          </Box>
-        </Box>
+        <AgendaWeekCalendar
+          days={agendaDays}
+          events={events}
+          onSelectEvent={setSelectedEvent}
+          timeSlots={agendaTimeSlots}
+        />
       </Stack>
 
       <AgendaEventDetailDialog
@@ -520,103 +183,12 @@ export function AgendaDashboardPage() {
         propertyOptions={propertyOptions}
       />
 
-      <Popover
-        open={Boolean(notificationAnchorEl)}
+      <AgendaNotificationsPopover
         anchorEl={notificationAnchorEl}
+        notifications={notifications}
         onClose={closeNotifications}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        slotProps={{
-          paper: {
-            sx: {
-              width: { xs: 312, sm: 360 },
-              maxWidth: 'calc(100vw - 32px)',
-              mt: 1,
-              border: '1px solid',
-              borderColor: alpha.graphite[8],
-              borderRadius: `${radius.sm}px`,
-              boxShadow: shadows.crmCardHover,
-            },
-          },
-        }}
-      >
-        <Box sx={{ p: 1.6 }}>
-          <Typography sx={{ color: brand.graphite[500], fontSize: 15, fontWeight: 900 }}>
-            Alertas da agenda
-          </Typography>
-          <Typography sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 700 }}>
-            Visitas de hoje e compromissos atribuídos
-          </Typography>
-        </Box>
-        <Divider sx={{ borderColor: alpha.graphite[8] }} />
-        <Stack sx={{ maxHeight: 360, overflowY: 'auto', p: 0.8 }}>
-          {notifications.length > 0 ? (
-            notifications.map((notification) => {
-              const Icon =
-                notification.kind === 'todayVisit'
-                  ? EventAvailableRoundedIcon
-                  : PersonAddAlt1RoundedIcon
-
-              return (
-                <Box
-                  key={notification.id}
-                  component="button"
-                  type="button"
-                  onClick={() => openNotificationEvent(notification.event)}
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: '32px 1fr',
-                    gap: 1,
-                    width: '100%',
-                    border: 0,
-                    borderRadius: `${radius.sm}px`,
-                    bgcolor: surface.paper,
-                    px: 1,
-                    py: 1.1,
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    '&:hover, &:focus-visible': {
-                      bgcolor: alpha.magenta[6],
-                      outline: 'none',
-                    },
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      placeItems: 'center',
-                      width: 32,
-                      height: 32,
-                      borderRadius: radius.full,
-                      bgcolor: alpha.magenta[10],
-                      color: brand.magenta[600],
-                    }}
-                  >
-                    <Icon sx={{ fontSize: iconSize.md }} />
-                  </Box>
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography
-                      noWrap
-                      sx={{ color: brand.graphite[500], fontSize: 13, fontWeight: 900 }}
-                    >
-                      {notification.title}
-                    </Typography>
-                    <Typography sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 700 }}>
-                      {notification.message}
-                    </Typography>
-                  </Box>
-                </Box>
-              )
-            })
-          ) : (
-            <Box sx={{ px: 1, py: 2.2 }}>
-              <Typography sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 700 }}>
-                Nenhum alerta para exibir.
-              </Typography>
-            </Box>
-          )}
-        </Stack>
-      </Popover>
+        onSelectNotification={openNotificationEvent}
+      />
     </Box>
   )
 }

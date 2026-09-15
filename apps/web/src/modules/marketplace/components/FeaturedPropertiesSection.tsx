@@ -6,8 +6,6 @@ import { ActionTextLink, PropertyCard, SectionHeader } from '@shared/components/
 import { iconSize, surface, zIndex } from '@shared/theme/tokens'
 
 import { featuredProperties } from '../data/featured-properties'
-import { buildPropertyDetailHref } from '../utils/property-links'
-import { getPropertyPurposeFromPrice } from '../utils/property-details-link'
 
 export function FeaturedPropertiesSection() {
   const t = useTranslations('marketplace.home.featured')
@@ -41,14 +39,9 @@ export function FeaturedPropertiesSection() {
             gap: { xs: 2, md: 3 },
           }}
         >
-          {featuredProperties.map((property) => {
-            const detailsHref = buildPropertyDetailHref(
-              property.href,
-              getPropertyPurposeFromPrice(property.price),
-            )
-
-            return <PropertyCard key={property.title} href={detailsHref} property={property} />
-          })}
+          {featuredProperties.map((property) => (
+            <PropertyCard key={property.title} property={property} />
+          ))}
         </Box>
       </Container>
     </Box>

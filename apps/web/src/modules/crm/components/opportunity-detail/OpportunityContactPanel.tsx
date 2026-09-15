@@ -21,52 +21,50 @@ export function OpportunityContactPanel({ opportunity }: OpportunityContactPanel
           gap: 2.2,
         }}
       >
-        <DetailItem label={t('fields.email')} value={opportunity.interessadoEmail} />
+        <DetailItem label={t('fields.email')} value={opportunity.leadEmail} />
         <DetailItem
           label={t('fields.phone')}
-          value={opportunity.interessadoTelefone ?? t('fields.notInformed')}
+          value={opportunity.leadPhone ?? t('fields.notInformed')}
         />
         <DetailItem
           label={t('fields.proposedValue')}
-          value={formatCurrency(opportunity.valorProposto)}
+          value={formatCurrency(opportunity.proposedValue)}
         />
         <DetailItem
           label={t('fields.contractTermLabel')}
           value={
-            opportunity.prazoContratoMeses
-              ? t('fields.months', { count: opportunity.prazoContratoMeses })
+            opportunity.contractTermMonths
+              ? t('fields.months', { count: opportunity.contractTermMonths })
               : t('fields.notInformed')
           }
         />
         <DetailItem
           label={t('fields.intendedStart')}
           value={
-            opportunity.inicioPretendido
-              ? formatDate(opportunity.inicioPretendido)
+            opportunity.desiredStartDate
+              ? formatDate(opportunity.desiredStartDate)
               : t('fields.notInformed')
           }
         />
         <DetailItem
           label={t('fields.guarantee')}
-          value={t(`guarantees.${opportunity.garantiaContratual}`)}
+          value={t(`guarantees.${opportunity.guaranteeType}`)}
         />
       </Box>
-      {(opportunity.condicoesEspeciais.length > 0 || opportunity.observacoes) && (
+      {(opportunity.specialConditions.length > 0 || opportunity.notes) && (
         <>
           <Divider sx={{ my: 2.2 }} />
-          {opportunity.condicoesEspeciais.length > 0 && (
-            <Box sx={{ mb: opportunity.observacoes ? 2 : 0 }}>
+          {opportunity.specialConditions.length > 0 && (
+            <Box sx={{ mb: opportunity.notes ? 2 : 0 }}>
               <Typography sx={labelSx}>{t('fields.specialConditions')}</Typography>
               <Stack direction="row" gap={0.7} flexWrap="wrap" sx={{ mt: 0.8 }}>
-                {opportunity.condicoesEspeciais.map((condition) => (
+                {opportunity.specialConditions.map((condition) => (
                   <Chip key={condition} label={condition} size="small" variant="outlined" />
                 ))}
               </Stack>
             </Box>
           )}
-          {opportunity.observacoes && (
-            <DetailItem label={t('fields.notes')} value={opportunity.observacoes} />
-          )}
+          {opportunity.notes && <DetailItem label={t('fields.notes')} value={opportunity.notes} />}
         </>
       )}
     </Paper>
