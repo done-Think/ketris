@@ -1,4 +1,3 @@
-import type { Control } from 'react-hook-form'
 import type { z } from 'zod'
 
 import type { createLeadSchema } from '../schemas/create-lead-schema'
