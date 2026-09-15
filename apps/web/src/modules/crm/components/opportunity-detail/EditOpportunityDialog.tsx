@@ -23,15 +23,15 @@ import type { Opportunity, OpportunityEditFormValues } from '../../types/opportu
 import type { EditOpportunityDialogProps } from '../../types/opportunity-detail'
 
 const emptyEditOpportunityValues: OpportunityEditFormValues = {
-  interessadoNome: '',
-  interessadoEmail: '',
-  interessadoTelefone: '',
-  valorProposto: '',
-  prazoContratoMeses: '',
-  inicioPretendido: '',
-  garantiaContratual: 'NENHUMA',
-  condicoesEspeciais: '',
-  observacoes: '',
+  leadName: '',
+  leadEmail: '',
+  leadPhone: '',
+  proposedValue: '',
+  contractTermMonths: '',
+  desiredStartDate: '',
+  guaranteeType: 'NENHUMA',
+  specialConditions: '',
+  notes: '',
 }
 
 export function EditOpportunityDialog({
@@ -74,61 +74,61 @@ export function EditOpportunityDialog({
               <TextField
                 label={t('fields.name')}
                 required
-                error={Boolean(errors.interessadoNome)}
-                helperText={errors.interessadoNome?.message}
-                {...register('interessadoNome')}
+                error={Boolean(errors.leadName)}
+                helperText={errors.leadName?.message}
+                {...register('leadName')}
               />
               <TextField
                 label={t('fields.email')}
                 type="email"
                 required
-                error={Boolean(errors.interessadoEmail)}
-                helperText={errors.interessadoEmail?.message}
-                {...register('interessadoEmail')}
+                error={Boolean(errors.leadEmail)}
+                helperText={errors.leadEmail?.message}
+                {...register('leadEmail')}
               />
               <TextField
                 label={t('fields.phone')}
-                error={Boolean(errors.interessadoTelefone)}
-                helperText={errors.interessadoTelefone?.message}
-                {...register('interessadoTelefone')}
+                error={Boolean(errors.leadPhone)}
+                helperText={errors.leadPhone?.message}
+                {...register('leadPhone')}
               />
               <TextField
                 label={t('fields.proposedValue')}
                 type="number"
                 required
                 slotProps={{ htmlInput: { min: 0, step: 100 } }}
-                error={Boolean(errors.valorProposto)}
-                helperText={errors.valorProposto?.message}
-                {...register('valorProposto')}
+                error={Boolean(errors.proposedValue)}
+                helperText={errors.proposedValue?.message}
+                {...register('proposedValue')}
               />
               <TextField
                 label={t('fields.contractTerm')}
                 type="number"
                 slotProps={{ htmlInput: { min: 1, step: 1 } }}
-                error={Boolean(errors.prazoContratoMeses)}
-                helperText={errors.prazoContratoMeses?.message}
-                {...register('prazoContratoMeses')}
+                error={Boolean(errors.contractTermMonths)}
+                helperText={errors.contractTermMonths?.message}
+                {...register('contractTermMonths')}
               />
               <TextField
                 label={t('fields.intendedStart')}
                 type="date"
                 slotProps={{ inputLabel: { shrink: true } }}
-                error={Boolean(errors.inicioPretendido)}
-                helperText={errors.inicioPretendido?.message}
-                {...register('inicioPretendido')}
+                error={Boolean(errors.desiredStartDate)}
+                helperText={errors.desiredStartDate?.message}
+                {...register('desiredStartDate')}
               />
               <Controller
                 control={control}
-                name="garantiaContratual"
+                name="guaranteeType"
                 render={({ field }) => (
-                  <FormControl error={Boolean(errors.garantiaContratual)}>
+                  <FormControl error={Boolean(errors.guaranteeType)}>
                     <InputLabel id="guarantee-label">{t('fields.guarantee')}</InputLabel>
                     <Select
                       labelId="guarantee-label"
                       label={t('fields.guarantee')}
                       value={field.value}
                       onChange={(event) =>
-                        field.onChange(event.target.value as Opportunity['garantiaContratual'])
+                        field.onChange(event.target.value as Opportunity['guaranteeType'])
                       }
                       onBlur={field.onBlur}
                       inputRef={field.ref}
@@ -138,8 +138,8 @@ export function EditOpportunityDialog({
                       <MenuItem value="CAUCAO">{t('guarantees.CAUCAO')}</MenuItem>
                       <MenuItem value="SEGURO_FIANCA">{t('guarantees.SEGURO_FIANCA')}</MenuItem>
                     </Select>
-                    {errors.garantiaContratual?.message && (
-                      <FormHelperText>{errors.garantiaContratual.message}</FormHelperText>
+                    {errors.guaranteeType?.message && (
+                      <FormHelperText>{errors.guaranteeType.message}</FormHelperText>
                     )}
                   </FormControl>
                 )}
@@ -147,19 +147,19 @@ export function EditOpportunityDialog({
               <TextField
                 label={t('fields.specialConditions')}
                 helperText={
-                  errors.condicoesEspeciais?.message ?? t('fields.specialConditionsHelper')
+                  errors.specialConditions?.message ?? t('fields.specialConditionsHelper')
                 }
-                error={Boolean(errors.condicoesEspeciais)}
-                {...register('condicoesEspeciais')}
+                error={Boolean(errors.specialConditions)}
+                {...register('specialConditions')}
               />
               <TextField
                 label={t('fields.notes')}
                 multiline
                 minRows={3}
-                error={Boolean(errors.observacoes)}
-                helperText={errors.observacoes?.message}
+                error={Boolean(errors.notes)}
+                helperText={errors.notes?.message}
                 sx={{ gridColumn: { sm: '1 / -1' } }}
-                {...register('observacoes')}
+                {...register('notes')}
               />
             </Box>
           )}
