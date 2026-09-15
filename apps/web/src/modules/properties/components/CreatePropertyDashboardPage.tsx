@@ -46,7 +46,7 @@ export function CreatePropertyDashboardPage() {
   return (
     <Box sx={{ width: '100%', px: { xs: 2, md: 4.8 }, py: { xs: 2.8, md: 4.2 } }}>
       <Box sx={{ width: '100%' }}>
-        <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 36 }, fontWeight: 900, mb: 3 }}>
+        <Typography variant="h3" sx={{ fontSize: { xs: 20, md: 24 }, fontWeight: 800, mb: 3 }}>
           {t('title')}
         </Typography>
 

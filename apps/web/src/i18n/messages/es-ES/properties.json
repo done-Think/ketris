@@ -35,14 +35,17 @@
       "Todos": "Todos",
       "Disponível": "Disponible",
       "Alugado": "Alquilado",
+      "Ativo": "Activo",
       "Vendido": "Vendido",
       "Em análise": "En revisión",
+      "Vencendo": "Por vencer",
       "Inativo": "Inactivo"
     }
   },
   "detail": {
     "edit": "Editar",
     "unpublish": "Despublicar",
+    "activeContract": "Contrato",
     "summaryTitle": "Resumen del inmueble",
     "mediaTitle": "Medios",
     "valuesTitle": "Valores",

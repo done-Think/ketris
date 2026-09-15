@@ -34,7 +34,7 @@ export function StatusChangeDialog({
         <Typography color="text.secondary">
           {nextStatus
             ? t('confirmStageDescription', {
-                name: opportunity.interessadoNome,
+                name: opportunity.leadName,
                 from: fromStage,
                 to: toStage,
               })

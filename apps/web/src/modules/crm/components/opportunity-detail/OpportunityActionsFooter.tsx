@@ -62,10 +62,10 @@ export function OpportunityActionsFooter({
           <Button
             color="inherit"
             startIcon={<ArchiveOutlinedIcon />}
-            disabled={isMutating || Boolean(opportunity.arquivadaEm)}
+            disabled={isMutating || Boolean(opportunity.archivedAt)}
             onClick={onArchive}
           >
-            {opportunity.arquivadaEm ? 'Arquivada' : 'Arquivar'}
+            {opportunity.archivedAt ? 'Arquivada' : 'Arquivar'}
           </Button>
         </Stack>
       </Stack>

@@ -1,0 +1,73 @@
+import { ThemeProvider } from '@mui/material'
+import { render, screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { theme } from '@shared/theme/theme'
+
+import { AgendaDashboardPage } from '../../components/AgendaDashboardPage'
+
+const mocks = vi.hoisted(() => ({
+  enqueueSnackbar: vi.fn(),
+}))
+
+vi.mock('notistack', () => ({
+  useSnackbar: () => ({ enqueueSnackbar: mocks.enqueueSnackbar }),
+}))
+
+function renderPage() {
+  render(
+    <ThemeProvider theme={theme}>
+      <AgendaDashboardPage />
+    </ThemeProvider>,
+  )
+}
+
+describe('AgendaDashboardPage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('renders the header and today events on the calendar', () => {
+    renderPage()
+
+    expect(screen.getByRole('heading', { name: 'Agenda' })).toBeVisible()
+    expect(screen.getByText('09:00 - Visita Jardim Paulista')).toBeVisible()
+  })
+
+  it('shows agenda alerts for today visits and assigned events', async () => {
+    renderPage()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir notificações da agenda' }))
+
+    const popover = await screen.findByText('Alertas da agenda')
+    const panel = popover.closest('[role="presentation"]') ?? document.body
+
+    expect(within(panel as HTMLElement).getByText('Visita marcada para hoje')).toBeVisible()
+    expect(
+      within(panel as HTMLElement).getAllByText('Novo compromisso atribuído').length,
+    ).toBeGreaterThan(0)
+  })
+
+  it('creates a new event through the form dialog', async () => {
+    renderPage()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Novo Evento' }))
+    await userEvent.type(screen.getByLabelText('Título'), 'Visita apartamento novo')
+    await userEvent.click(screen.getByLabelText('Imóvel em questão'))
+    await userEvent.click(await screen.findByRole('option', { name: 'Outro' }))
+    await userEvent.type(screen.getByLabelText('Imóvel ou referência'), 'Sala comercial centro')
+    await userEvent.type(screen.getByLabelText('Pessoa'), 'Novo Cliente')
+    await userEvent.type(screen.getByLabelText('Telefone'), '11987654321')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Criar evento' }))
+
+    await waitFor(() =>
+      expect(mocks.enqueueSnackbar).toHaveBeenCalledWith(
+        'Visita apartamento novo adicionado à agenda.',
+        { variant: 'success' },
+      ),
+    )
+    expect(screen.getByText('09:00 - Visita apartamento novo')).toBeVisible()
+  })
+})

@@ -43,4 +43,32 @@ describe('createContractSchema', () => {
 
     expect(result.success).toBe(false)
   })
+
+  it('requires guarantor fields when guaranteeType is Fiador even without hasGuarantor', () => {
+    const result = createContractSchema.safeParse({
+      ...createContractDefaultValues,
+      hasGuarantor: false,
+      guaranteeType: 'Fiador',
+      guarantorName: '',
+      guarantorCpf: '',
+      guarantorEmail: '',
+      guarantorPhone: '',
+    })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('does not require guarantor fields when guaranteeType is not Fiador', () => {
+    const result = createContractSchema.safeParse({
+      ...createContractDefaultValues,
+      hasGuarantor: false,
+      guaranteeType: 'Caução',
+      guarantorName: '',
+      guarantorCpf: '',
+      guarantorEmail: '',
+      guarantorPhone: '',
+    })
+
+    expect(result.success).toBe(true)
+  })
 })

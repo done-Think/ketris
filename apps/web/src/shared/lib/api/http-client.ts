@@ -7,8 +7,14 @@ import axios, {
 
 import { env } from '@config/env'
 
+type RetryableRequestConfig = InternalAxiosRequestConfig & { _retriedAfterRefresh?: boolean }
+
+export type UnauthorizedHandler = () => Promise<string | null>
+
 export class HttpClient {
   protected instance: AxiosInstance
+  private unauthorizedHandler: UnauthorizedHandler | null = null
+  private refreshPromise: Promise<string | null> | null = null
 
   constructor(baseURL: string = env.apiUrl) {
     this.instance = axios.create({
@@ -30,10 +36,41 @@ export class HttpClient {
 
     this.instance.interceptors.response.use(
       (response: AxiosResponse) => response,
-      (error) => {
-        return Promise.reject(error)
+      async (error) => {
+        const originalRequest = error.config as RetryableRequestConfig | undefined
+        const isUnauthorized = error.response?.status === 401
+
+        if (!isUnauthorized || !originalRequest || originalRequest._retriedAfterRefresh) {
+          return Promise.reject(error)
+        }
+
+        const newAccessToken = await this.refreshAccessToken()
+
+        if (!newAccessToken) {
+          return Promise.reject(error)
+        }
+
+        originalRequest._retriedAfterRefresh = true
+        originalRequest.headers = originalRequest.headers ?? {}
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+
+        return this.instance(originalRequest)
       },
     )
+  }
+
+  private async refreshAccessToken(): Promise<string | null> {
+    if (!this.unauthorizedHandler) return null
+
+    this.refreshPromise ??= this.unauthorizedHandler().finally(() => {
+      this.refreshPromise = null
+    })
+
+    return this.refreshPromise
+  }
+
+  setUnauthorizedHandler(handler: UnauthorizedHandler | null): void {
+    this.unauthorizedHandler = handler
   }
 
   setAuthToken(token: string | null): void {
