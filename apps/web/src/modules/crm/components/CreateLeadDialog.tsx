@@ -18,7 +18,7 @@ import {
 } from '@mui/material'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { useSnackbar } from 'notistack'
 
@@ -44,9 +44,10 @@ export function CreateLeadDialog({ onClose, open }: CreateLeadDialogProps) {
   const t = useTranslations('crm.leads')
   const { enqueueSnackbar } = useSnackbar()
   const addLead = useLeadsStore((state) => state.addLead)
+  const leadSchema = useMemo(() => createLeadSchema((key) => t(`create.errors.${key}`)), [t])
   const { control, handleSubmit, reset, setValue, trigger } = useForm<CreateLeadFormValues>({
     defaultValues: createLeadDefaultValues,
-    resolver: zodResolver(createLeadSchema),
+    resolver: zodResolver(leadSchema),
   })
   const activeStepIndex = useWatch({ control, name: 'activeStepIndex' })
   const maxVisitedStepIndex = useWatch({ control, name: 'maxVisitedStepIndex' })

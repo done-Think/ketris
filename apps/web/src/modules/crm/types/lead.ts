@@ -71,7 +71,7 @@ export type LeadsPaginationFooterProps = {
   onPageChange?: (page: number) => void
 }
 
-export type CreateLeadFormValues = z.infer<typeof createLeadSchema>
+export type CreateLeadFormValues = z.infer<ReturnType<typeof createLeadSchema>>
 
 export type CreateLeadStepKey = 'contact' | 'interest' | 'review'
 

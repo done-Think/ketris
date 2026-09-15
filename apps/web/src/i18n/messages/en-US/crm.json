@@ -186,6 +186,15 @@
         "close": "Close new lead",
         "create": "Create lead",
         "next": "Next"
+      },
+      "errors": {
+        "nameRequired": "Enter the lead's name",
+        "phoneInvalid": "Enter a valid phone number",
+        "emailInvalid": "Enter a valid email",
+        "interestRequired": "Enter the property or interest",
+        "budgetRequired": "Enter the budget",
+        "sourceRequired": "Enter the source",
+        "brokerRequired": "Enter the responsible broker"
       }
     },
     "filters": {
