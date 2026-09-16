@@ -27,6 +27,7 @@ import {
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
+import { Link } from '@/i18n/navigation'
 import {
   maintenanceFilters,
   maintenanceMetrics,
@@ -76,19 +77,37 @@ export function MaintenanceDashboardPage() {
   )
 
   function getFilterCount(filter: (typeof maintenanceFilters)[number]) {
-    const matchesFilter = (ticket: MaintenanceTicket) => filter.value === 'all' || (filter.value === 'urgent' ? ticket.priority === 'urgent' : ticket.status === filter.value)
-    return filter.count + tickets.filter(matchesFilter).length - maintenanceTickets.filter(matchesFilter).length
+    const matchesFilter = (ticket: MaintenanceTicket) =>
+      filter.value === 'all' ||
+      (filter.value === 'urgent' ? ticket.priority === 'urgent' : ticket.status === filter.value)
+    return (
+      filter.count +
+      tickets.filter(matchesFilter).length -
+      maintenanceTickets.filter(matchesFilter).length
+    )
   }
 
   function handleCreateTicket(values: MaintenanceCreateTicketFormValues) {
     const property = maintenanceProperties.find((option) => option.id === values.propertyId)
     if (!property) return
+
     const nextNumber = Math.max(...tickets.map((ticket) => Number(ticket.id.slice(-4)))) + 1
-    setTickets((currentTickets) => [{ id: `#MNT-2025-${String(nextNumber).padStart(4, '0')}`, property: property.label, category: values.category, priority: values.priority, tenant: property.tenant, openedAt: new Intl.DateTimeFormat('pt-BR').format(new Date()), status: 'open' }, ...currentTickets])
+    const ticket: MaintenanceTicket = {
+      id: `#MNT-2025-${String(nextNumber).padStart(4, '0')}`,
+      property: property.label,
+      category: values.category,
+      priority: values.priority,
+      tenant: property.tenant,
+      openedAt: new Intl.DateTimeFormat('pt-BR').format(new Date()),
+      status: 'open',
+    }
+
+    setTickets((currentTickets) => [ticket, ...currentTickets])
     setIsCreateDialogOpen(false)
   }
+
   return (
-    <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
+    <Box sx={{ width: '100%', px: { xs: 2, md: 2.5 }, py: { xs: 2.4, md: 3.2 } }}>
       <Stack spacing={{ xs: 2, md: 2.7 }}>
         <Stack
           direction={{ xs: 'column', lg: 'row' }}
@@ -99,11 +118,11 @@ export function MaintenanceDashboardPage() {
           <Box>
             <Typography
               variant="h3"
-              sx={{ fontSize: { xs: 21, md: 24 }, fontWeight: 800, color: brand.graphite[500] }}
+              sx={{ fontSize: { xs: 25, md: 29 }, fontWeight: 800, color: brand.graphite[500] }}
             >
               {t('title')}
             </Typography>
-            <Typography sx={{ mt: 0.2, color: brand.neutral[500], fontSize: 12 }}>
+            <Typography sx={{ mt: 0.45, color: 'text.secondary', fontSize: 14, fontWeight: 600 }}>
               {t('subtitle')}
             </Typography>
           </Box>
@@ -122,7 +141,7 @@ export function MaintenanceDashboardPage() {
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <SearchRoundedIcon sx={{ fontSize: 16, color: brand.neutral[400] }} />
+                      <SearchRoundedIcon sx={{ fontSize: 18, color: brand.neutral[400] }} />
                     </InputAdornment>
                   ),
                 },
@@ -132,24 +151,28 @@ export function MaintenanceDashboardPage() {
               select
               defaultValue="all"
               size="small"
-              sx={{ ...compactFieldSx, width: { xs: '100%', sm: 145 } }}
+              sx={{
+                ...compactFieldSx,
+                width: { xs: '100%', sm: 180 },
+                '& .MuiSelect-select': { pr: 4.5 },
+              }}
             >
               <MenuItem value="all">
                 <Stack direction="row" spacing={0.7} alignItems="center">
-                  <ApartmentOutlinedIcon sx={{ fontSize: 15 }} />
+                  <ApartmentOutlinedIcon sx={{ fontSize: 17 }} />
                   <span>{t('allProperties')}</span>
                 </Stack>
               </MenuItem>
             </TextField>
             <Button
               variant="contained"
-              startIcon={<AddRoundedIcon sx={{ fontSize: 15 }} />}
+              startIcon={<AddRoundedIcon sx={{ fontSize: 17 }} />}
               onClick={() => setIsCreateDialogOpen(true)}
               sx={{
-                minHeight: 30,
-                px: 1.7,
+                minHeight: 36,
+                px: 2,
                 borderRadius: `${radius.sm}px`,
-                fontSize: 11,
+                fontSize: 13,
                 fontWeight: 800,
                 whiteSpace: 'nowrap',
               }}
@@ -165,20 +188,20 @@ export function MaintenanceDashboardPage() {
               onClick={() => setActiveFilter(filter.value)}
               sx={{
                 minWidth: 'max-content',
-                minHeight: 25,
-                px: 1.35,
+                minHeight: 30,
+                px: 1.55,
                 py: 0,
                 borderRadius: `${radius.full}px`,
                 border: '1px solid',
                 borderColor: activeFilter === filter.value ? 'primary.main' : brand.neutral[100],
                 bgcolor: activeFilter === filter.value ? 'primary.main' : surface.paper,
                 color: activeFilter === filter.value ? surface.paper : brand.neutral[600],
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: 700,
               }}
             >
               {t(`filters.${filter.value}`)}
-              <Box component="span" sx={{ ml: 0.8, fontSize: 10, fontWeight: 800 }}>
+              <Box component="span" sx={{ ml: 0.8, fontSize: 11, fontWeight: 800 }}>
                 {getFilterCount(filter)}
               </Box>
             </Button>
@@ -230,10 +253,10 @@ export function MaintenanceDashboardPage() {
             <TableBody>
               {filteredTickets.map((ticket) => (
                 <TableRow key={ticket.id} sx={{ '&:last-child td': { borderBottom: 0 } }}>
-                  <TableCell sx={{ ...bodyCellSx, color: 'primary.main', fontWeight: 800 }}>
+                  <TableCell sx={{ ...bodyCellSx, color: 'primary.main', fontWeight: 900 }}>
                     {ticket.id}
                   </TableCell>
-                  <TableCell sx={{ ...bodyCellSx, fontWeight: 700 }}>{ticket.property}</TableCell>
+                  <TableCell sx={{ ...bodyCellSx, fontWeight: 900 }}>{ticket.property}</TableCell>
                   <TableCell sx={bodyCellSx}>{ticket.category}</TableCell>
                   <TableCell sx={bodyCellSx}>
                     <Stack direction="row" spacing={0.65} alignItems="center">
@@ -257,27 +280,29 @@ export function MaintenanceDashboardPage() {
                       label={t(`statuses.${ticket.status}`)}
                       size="small"
                       sx={{
-                        height: 19,
+                        height: 22,
                         bgcolor: statusStyles[ticket.status].bgcolor,
                         color: statusStyles[ticket.status].color,
-                        fontSize: 9.5,
-                        fontWeight: 800,
+                        fontSize: 11,
+                        fontWeight: 900,
                       }}
                     />
                   </TableCell>
                   <TableCell sx={bodyCellSx} align="center">
                     <IconButton
+                      component={Link}
+                      href={`/dashboard/maintenance/${ticket.id.slice(1)}`}
                       aria-label={t('viewTicket', { ticket: ticket.id })}
                       size="small"
                       sx={{
-                        width: 25,
-                        height: 25,
+                        width: 30,
+                        height: 30,
                         borderRadius: `${radius.sm}px`,
                         bgcolor: surface.app,
                         color: brand.graphite[500],
                       }}
                     >
-                      <VisibilityOutlinedIcon sx={{ fontSize: 14 }} />
+                      <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />
                     </IconButton>
                   </TableCell>
                 </TableRow>
@@ -289,24 +314,29 @@ export function MaintenanceDashboardPage() {
             alignItems={{ sm: 'center' }}
             justifyContent="space-between"
             spacing={1}
-            sx={{ px: 1.5, py: 1.1, borderTop: '1px solid', borderColor: brand.neutral[100] }}
+            sx={{ px: 1.75, py: 1.25, borderTop: '1px solid', borderColor: brand.neutral[100] }}
           >
-            <Typography sx={{ fontSize: 11, color: brand.neutral[600] }}>{t('showing', { showing: filteredTickets.length, total: getFilterCount(maintenanceFilters[0]) })}</Typography>
+            <Typography sx={{ fontSize: 13, color: brand.neutral[600], fontWeight: 700 }}>
+              {t('showing', {
+                showing: filteredTickets.length,
+                total: getFilterCount(maintenanceFilters[0]),
+              })}
+            </Typography>
             <Stack direction="row" spacing={0.5}>
               {['previous', '1', '2', '3', 'next'].map((item) => (
                 <Button
                   key={item}
                   sx={{
-                    minWidth: item.length === 1 ? 22 : 'auto',
-                    height: 22,
-                    px: 0.9,
+                    minWidth: item.length === 1 ? 28 : 'auto',
+                    height: 28,
+                    px: 1.05,
                     borderRadius: `${radius.sm}px`,
                     border: item === '1' ? 0 : '1px solid',
                     borderColor: brand.neutral[100],
                     bgcolor: item === '1' ? 'primary.main' : surface.paper,
                     color: item === '1' ? surface.paper : brand.neutral[600],
-                    fontSize: 9.5,
-                    fontWeight: 700,
+                    fontSize: 12,
+                    fontWeight: 800,
                   }}
                 >
                   {item === '1' || item === '2' || item === '3' ? item : t(`pagination.${item}`)}
@@ -332,38 +362,38 @@ const maintenanceProperties = [
   { id: 'cobertura-moema', label: 'Cobertura Moema', tenant: 'Aline Santos' },
 ] as const
 
-
 const compactFieldSx = {
   width: { xs: '100%', sm: 200 },
   '& .MuiInputBase-root': {
-    height: 30,
+    height: 36,
     borderRadius: `${radius.sm}px`,
     bgcolor: surface.paper,
-    fontSize: 11,
+    fontSize: 13,
     color: brand.neutral[600],
   },
   '& .MuiOutlinedInput-notchedOutline': { borderColor: alpha.graphite[8] },
 } as const
 const headerCellSx = {
-  height: 33,
-  px: 1.5,
-  py: 0.65,
+  height: 40,
+  px: 1.75,
+  py: 0.8,
   bgcolor: surface.app,
   borderColor: brand.neutral[100],
   color: brand.neutral[600],
-  fontSize: 9,
+  fontSize: 12,
   fontWeight: 900,
   letterSpacing: '.07em',
   textTransform: 'uppercase',
   whiteSpace: 'nowrap',
 } as const
 const bodyCellSx = {
-  height: 46,
-  px: 1.5,
-  py: 0.6,
+  height: 54,
+  px: 1.75,
+  py: 0.8,
   borderColor: brand.neutral[100],
   color: brand.neutral[600],
-  fontSize: 10.5,
+  fontSize: 13,
+  fontWeight: 700,
   whiteSpace: 'nowrap',
 } as const
 
@@ -388,9 +418,9 @@ function MetricCard({
       alignItems="center"
       spacing={1.3}
       sx={{
-        minHeight: 66,
-        px: 1.8,
-        py: 1.3,
+        minHeight: 78,
+        px: 2.1,
+        py: 1.5,
         bgcolor: surface.paper,
         borderRadius: `${radius.sm}px`,
         boxShadow: shadows.crmCardCompact,
@@ -398,8 +428,8 @@ function MetricCard({
     >
       <Box
         sx={{
-          width: 36,
-          height: 36,
+          width: 42,
+          height: 42,
           borderRadius: '50%',
           display: 'grid',
           placeItems: 'center',
@@ -407,12 +437,14 @@ function MetricCard({
           color: config.color,
         }}
       >
-        <config.Icon sx={{ fontSize: 19 }} />
+        <config.Icon sx={{ fontSize: 22 }} />
       </Box>
       <Box>
-        <Typography sx={{ color: brand.neutral[600], fontSize: 10.5 }}>{label}</Typography>
+        <Typography sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 900 }}>
+          {label}
+        </Typography>
         <Typography
-          sx={{ color: brand.graphite[500], fontSize: 17, lineHeight: 1.2, fontWeight: 900 }}
+          sx={{ color: brand.graphite[500], fontSize: 30, lineHeight: 1.1, fontWeight: 900 }}
         >
           {value}
         </Typography>

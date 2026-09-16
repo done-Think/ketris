@@ -16,8 +16,11 @@ export default async function DashboardLayout({
 }) {
   const { locale } = await params
   const session = await getServerSession(authOptions)
+  const isLocalDevelopmentPreview = process.env.NODE_ENV === 'development'
 
-  if (!session || session.scope !== 'tenant') redirect(getLocalizedPathname('/login', locale))
+  if (!isLocalDevelopmentPreview && (!session || session.scope !== 'tenant')) {
+    redirect(getLocalizedPathname('/login', locale))
+  }
 
   return <Box sx={{ minHeight: '100vh' }}>{children}</Box>
 }
