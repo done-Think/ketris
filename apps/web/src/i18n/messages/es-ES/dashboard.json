@@ -122,9 +122,11 @@
     "showing": "Mostrando 1-{showing} de {total} solicitudes",
     "createDialog": {
       "title": "Nueva solicitud",
+      "editTitle": "Editar solicitud",
       "close": "Cerrar",
       "cancel": "Cancelar",
       "submit": "Crear solicitud",
+      "save": "Guardar cambios",
       "fields": {
         "property": "Inmueble",
         "category": "Categoría",
@@ -134,6 +136,13 @@
         "descriptionPlaceholder": "Describa el problema...",
         "estimatedCost": "Costo estimado"
       }
+    },
+    "actions": {
+      "menu": "Acciones de la solicitud {ticket}",
+      "edit": "Editar solicitud",
+      "delete": "Eliminar solicitud",
+      "deleteTitle": "¿Eliminar solicitud?",
+      "deleteDescription": "¿Realmente desea eliminar esta solicitud? Esta acción no se puede deshacer."
     },
     "pagination": { "previous": "Anterior", "next": "Siguiente" }
   },

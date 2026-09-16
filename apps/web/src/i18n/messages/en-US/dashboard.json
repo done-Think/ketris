@@ -122,9 +122,11 @@
     "showing": "Showing 1-{showing} of {total} tickets",
     "createDialog": {
       "title": "New ticket",
+      "editTitle": "Edit ticket",
       "close": "Close",
       "cancel": "Cancel",
       "submit": "Create ticket",
+      "save": "Save changes",
       "fields": {
         "property": "Property",
         "category": "Category",
@@ -134,6 +136,13 @@
         "descriptionPlaceholder": "Describe the problem...",
         "estimatedCost": "Estimated cost"
       }
+    },
+    "actions": {
+      "menu": "Actions for ticket {ticket}",
+      "edit": "Edit ticket",
+      "delete": "Delete ticket",
+      "deleteTitle": "Delete ticket?",
+      "deleteDescription": "Do you really want to delete this ticket? This action cannot be undone."
     },
     "pagination": { "previous": "Previous", "next": "Next" }
   },

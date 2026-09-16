@@ -56,12 +56,16 @@ export type MaintenanceCreateTicketDialogProps = {
   open: boolean
   onClose: () => void
   onCreate: (values: MaintenanceCreateTicketFormValues) => void
+  initialValues?: MaintenanceCreateTicketFormValues
+  mode?: 'create' | 'edit'
 }
 
 export function MaintenanceCreateTicketDialog({
   open,
   onClose,
   onCreate,
+  initialValues,
+  mode = 'create',
 }: MaintenanceCreateTicketDialogProps) {
   const t = useTranslations('dashboard.maintenance.createDialog')
   const maintenanceT = useTranslations('dashboard.maintenance')
@@ -71,8 +75,8 @@ export function MaintenanceCreateTicketDialog({
   })
 
   useEffect(() => {
-    if (open) reset(defaultValues)
-  }, [open, reset])
+    if (open) reset(initialValues ?? defaultValues)
+  }, [initialValues, open, reset])
 
   function handleClose() {
     reset(defaultValues)
@@ -103,7 +107,7 @@ export function MaintenanceCreateTicketDialog({
         <DialogTitle sx={{ px: { xs: 2, md: 2.8 }, pb: 1.4, pt: 2.4 }}>
           <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
             <Typography sx={{ color: brand.graphite[500], fontSize: 22, fontWeight: 900 }}>
-              {t('title')}
+              {mode === 'edit' ? t('editTitle') : t('title')}
             </Typography>
             <IconButton aria-label={t('close')} onClick={handleClose}>
               <CloseRoundedIcon sx={{ fontSize: iconSize.lg }} />
@@ -202,7 +206,7 @@ export function MaintenanceCreateTicketDialog({
             {t('cancel')}
           </Button>
           <Button type="submit" variant="contained" startIcon={<AddRoundedIcon />}>
-            {t('submit')}
+            {mode === 'edit' ? t('save') : t('submit')}
           </Button>
         </DialogActions>
       </Box>

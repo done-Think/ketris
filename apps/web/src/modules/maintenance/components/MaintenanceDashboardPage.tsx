@@ -8,13 +8,21 @@ import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded'
+import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded'
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded'
 import {
   Box,
   Button,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   IconButton,
   InputAdornment,
   MenuItem,
+  Menu,
   Stack,
   Table,
   TableBody,
@@ -55,6 +63,10 @@ export function MaintenanceDashboardPage() {
   const [activeFilter, setActiveFilter] = useState<'all' | MaintenanceStatus | 'urgent'>('all')
   const [search, setSearch] = useState('')
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [editingTicket, setEditingTicket] = useState<MaintenanceTicket | null>(null)
+  const [deletingTicket, setDeletingTicket] = useState<MaintenanceTicket | null>(null)
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null)
+  const [menuTicket, setMenuTicket] = useState<MaintenanceTicket | null>(null)
   const [tickets, setTickets] = useState<readonly MaintenanceTicket[]>(maintenanceTickets)
   const filteredTickets = useMemo(
     () =>
@@ -100,10 +112,61 @@ export function MaintenanceDashboardPage() {
       tenant: property.tenant,
       openedAt: new Intl.DateTimeFormat('pt-BR').format(new Date()),
       status: 'open',
+      title: values.title,
+      description: values.description,
+      estimatedCost: values.estimatedCost,
     }
 
     setTickets((currentTickets) => [ticket, ...currentTickets])
     setIsCreateDialogOpen(false)
+  }
+
+  function closeMenu() {
+    setMenuAnchor(null)
+    setMenuTicket(null)
+  }
+
+  function getFormValues(ticket: MaintenanceTicket): MaintenanceCreateTicketFormValues {
+    return {
+      propertyId:
+        maintenanceProperties.find((property) => property.label === ticket.property)?.id ?? '',
+      category: ticket.category,
+      priority: ticket.priority,
+      title: ticket.title ?? ticket.id,
+      description:
+        ticket.description ?? `Chamado de ${ticket.category.toLocaleLowerCase('pt-BR')}.`,
+      estimatedCost: ticket.estimatedCost ?? '',
+    }
+  }
+
+  function handleSaveTicket(values: MaintenanceCreateTicketFormValues) {
+    if (!editingTicket) return
+    const property = maintenanceProperties.find((option) => option.id === values.propertyId)
+    if (!property) return
+    setTickets((current) =>
+      current.map((ticket) =>
+        ticket.id === editingTicket.id
+          ? {
+              ...ticket,
+              property: property.label,
+              tenant: property.tenant,
+              category: values.category,
+              priority: values.priority,
+              title: values.title,
+              description: values.description,
+              estimatedCost: values.estimatedCost,
+            }
+          : ticket,
+      ),
+    )
+    setEditingTicket(null)
+    setIsCreateDialogOpen(false)
+  }
+
+  function handleDeleteTicket() {
+    if (!deletingTicket) return
+    setTickets((current) => current.filter((ticket) => ticket.id !== deletingTicket.id))
+    setDeletingTicket(null)
   }
 
   return (
@@ -244,7 +307,11 @@ export function MaintenanceDashboardPage() {
                   'status',
                   'actions',
                 ].map((column) => (
-                  <TableCell key={column} sx={headerCellSx}>
+                  <TableCell
+                    key={column}
+                    align={column === 'actions' ? 'center' : undefined}
+                    sx={headerCellSx}
+                  >
                     {t(`columns.${column}`)}
                   </TableCell>
                 ))}
@@ -289,21 +356,34 @@ export function MaintenanceDashboardPage() {
                     />
                   </TableCell>
                   <TableCell sx={bodyCellSx} align="center">
-                    <IconButton
-                      component={Link}
-                      href={`/dashboard/maintenance/${ticket.id.slice(1)}`}
-                      aria-label={t('viewTicket', { ticket: ticket.id })}
-                      size="small"
-                      sx={{
-                        width: 30,
-                        height: 30,
-                        borderRadius: `${radius.sm}px`,
-                        bgcolor: surface.app,
-                        color: brand.graphite[500],
-                      }}
-                    >
-                      <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />
-                    </IconButton>
+                    <Stack direction="row" spacing={0.4} justifyContent="center">
+                      <IconButton
+                        component={Link}
+                        href={`/dashboard/maintenance/${ticket.id.slice(1)}`}
+                        aria-label={t('viewTicket', { ticket: ticket.id })}
+                        size="small"
+                        sx={{
+                          width: 30,
+                          height: 30,
+                          borderRadius: `${radius.sm}px`,
+                          bgcolor: surface.app,
+                          color: brand.graphite[500],
+                        }}
+                      >
+                        <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />
+                      </IconButton>
+                      <IconButton
+                        aria-label={t('actions.menu', { ticket: ticket.id })}
+                        size="small"
+                        onClick={(event) => {
+                          setMenuAnchor(event.currentTarget)
+                          setMenuTicket(ticket)
+                        }}
+                        sx={{ width: 30, height: 30, color: brand.graphite[500] }}
+                      >
+                        <MoreVertRoundedIcon sx={{ fontSize: 18 }} />
+                      </IconButton>
+                    </Stack>
                   </TableCell>
                 </TableRow>
               ))}
@@ -348,9 +428,46 @@ export function MaintenanceDashboardPage() {
       </Stack>
       <MaintenanceCreateTicketDialog
         open={isCreateDialogOpen}
-        onClose={() => setIsCreateDialogOpen(false)}
-        onCreate={handleCreateTicket}
+        onClose={() => {
+          setIsCreateDialogOpen(false)
+          setEditingTicket(null)
+        }}
+        onCreate={editingTicket ? handleSaveTicket : handleCreateTicket}
+        initialValues={editingTicket ? getFormValues(editingTicket) : undefined}
+        mode={editingTicket ? 'edit' : 'create'}
       />
+      <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={closeMenu}>
+        <MenuItem
+          onClick={() => {
+            setEditingTicket(menuTicket)
+            setIsCreateDialogOpen(Boolean(menuTicket))
+            closeMenu()
+          }}
+        >
+          <EditOutlinedIcon sx={{ mr: 1, fontSize: 18 }} />
+          {t('actions.edit')}
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            setDeletingTicket(menuTicket)
+            closeMenu()
+          }}
+          sx={{ color: 'error.main' }}
+        >
+          <DeleteOutlineRoundedIcon sx={{ mr: 1, fontSize: 18 }} />
+          {t('actions.delete')}
+        </MenuItem>
+      </Menu>
+      <Dialog open={Boolean(deletingTicket)} onClose={() => setDeletingTicket(null)}>
+        <DialogTitle>{t('actions.deleteTitle')}</DialogTitle>
+        <DialogContent>{t('actions.deleteDescription')}</DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeletingTicket(null)}>{t('createDialog.cancel')}</Button>
+          <Button color="error" variant="contained" onClick={handleDeleteTicket}>
+            {t('actions.delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }

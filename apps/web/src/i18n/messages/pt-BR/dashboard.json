@@ -122,9 +122,11 @@
     "showing": "Mostrando 1-{showing} de {total} chamados",
     "createDialog": {
       "title": "Novo Chamado",
+      "editTitle": "Editar Chamado",
       "close": "Fechar",
       "cancel": "Cancelar",
       "submit": "Criar Chamado",
+      "save": "Salvar Alterações",
       "fields": {
         "property": "Imóvel",
         "category": "Categoria",
@@ -134,6 +136,13 @@
         "descriptionPlaceholder": "Descreva o problema...",
         "estimatedCost": "Custo Estimado"
       }
+    },
+    "actions": {
+      "menu": "Ações do chamado {ticket}",
+      "edit": "Editar chamado",
+      "delete": "Excluir chamado",
+      "deleteTitle": "Excluir chamado?",
+      "deleteDescription": "Deseja realmente excluir este chamado? Esta ação não poderá ser desfeita."
     },
     "pagination": { "previous": "Anterior", "next": "Pr\u00f3ximo" }
   },

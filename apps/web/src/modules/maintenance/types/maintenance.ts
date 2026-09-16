@@ -19,6 +19,9 @@ export interface MaintenanceTicket {
   tenant: string
   openedAt: string
   status: MaintenanceStatus
+  title?: string
+  description?: string
+  estimatedCost?: string
 }
 
 export interface MaintenanceMetric {
