@@ -78,13 +78,19 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.accessToken = user.accessToken
         token.refreshToken = user.refreshToken
         token.scope = user.scope
         token.tenantId = user.tenantId
         token.papel = user.papel
+        return token
+      }
+
+      if (trigger === 'update' && session?.accessToken && session?.refreshToken) {
+        token.accessToken = session.accessToken
+        token.refreshToken = session.refreshToken
         return token
       }
 

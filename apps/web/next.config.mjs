@@ -43,23 +43,16 @@ const nextConfig = {
   },
 }
 
-const enableSentryReleaseUpload = process.env.SENTRY_ENABLE_RELEASE_UPLOAD === 'true'
-
 export default withSentryConfig(withNextIntl(nextConfig), {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
   authToken: process.env.SENTRY_AUTH_TOKEN,
-  silent: !process.env.CI,
-  widenClientFileUpload: enableSentryReleaseUpload,
-  release: {
-    create: enableSentryReleaseUpload,
-    finalize: enableSentryReleaseUpload,
-    setCommits: false,
-  },
+  widenClientFileUpload: true,
+
   sourcemaps: {
-    deleteSourcemapsAfterUpload: enableSentryReleaseUpload,
-    disable: !enableSentryReleaseUpload,
+    deleteSourcemapsAfterUpload: true,
   },
-  telemetry: false,
+
+  silent: !process.env.CI,
   // org e project vem das variaveis de ambiente do Sentry
 })

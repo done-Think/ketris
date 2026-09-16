@@ -13,7 +13,7 @@ vi.mock('@/i18n/navigation', async () => {
 
   return {
     usePathname: vi.fn(),
-    useRouter: vi.fn(() => ({ replace: vi.fn(), push: vi.fn() })),
+    useRouter: vi.fn(() => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn() })),
     Link: React.forwardRef<HTMLAnchorElement, React.AnchorHTMLAttributes<HTMLAnchorElement>>(
       function MockLocalizedLink({ href = '', ...props }, ref) {
         return React.createElement('a', { ...props, href, ref })
@@ -24,6 +24,7 @@ vi.mock('@/i18n/navigation', async () => {
 
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
+  signOut: vi.fn().mockResolvedValue(undefined),
 }))
 
 function mockSession(overrides?: Partial<{ papel: 'ADMIN' | 'OWNER' | 'AGENT' }>) {
@@ -70,19 +71,17 @@ describe('AppShell access rules', () => {
     },
   )
 
-  it.each([
-    '/crm/proposals',
-    '/crm/opportunities/[id]',
-    '/dashboard',
-    '/dashboard/finance',
-  ] as const)('keeps %s protected without a session', (pathname) => {
-    vi.mocked(usePathname).mockReturnValue(pathname)
+  it.each(['/crm/opportunities/[id]', '/dashboard', '/dashboard/finance'] as const)(
+    'keeps %s protected without a session',
+    (pathname) => {
+      vi.mocked(usePathname).mockReturnValue(pathname)
 
-    renderShell()
+      renderShell()
 
-    expect(screen.getByText('Acesso restrito ao CRM')).toBeVisible()
-    expect(screen.queryByText('Conteúdo da rota')).not.toBeInTheDocument()
-  })
+      expect(screen.getByText('Acesso restrito ao CRM')).toBeVisible()
+      expect(screen.queryByText('Conteúdo da rota')).not.toBeInTheDocument()
+    },
+  )
 })
 
 describe('AppShell navigation per papel', () => {
@@ -124,7 +123,6 @@ describe('AppShell navigation per papel', () => {
     expect(screen.getAllByText('Meus Imóveis').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Contratos').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Agenda').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('Propostas').length).toBeGreaterThan(0)
   })
 })
 

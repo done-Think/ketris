@@ -207,8 +207,6 @@
     "uploadHelper": "JPG, PNG or WEBP. You can also keep only the link above.",
     "photoPreview": "Photo preview",
     "bannerPreview": "Banner preview",
-    "saveDraft": "Save",
-    "save": "Save",
     "preview": "Preview",
     "configurableProfile": "Configurable public profile",
     "newMember": "New member",
@@ -266,7 +264,8 @@
       "name": "Name",
       "role": "Role",
       "profileUrl": "Profile link"
-    }
+    },
+    "save": "Save"
   },
   "agencyProfileEditor": {
     "title": "Edit Agency Profile",
@@ -279,8 +278,6 @@
     "uploadHelper": "JPG, PNG or WEBP. You can also keep only the link above.",
     "logoPreview": "Logo preview",
     "bannerPreview": "Banner preview",
-    "saveDraft": "Save",
-    "save": "Save",
     "preview": "Preview",
     "dropToMove": "Drop to move",
     "preparing": "Preparing...",
@@ -344,7 +341,8 @@
       "bannerUrl": "Banner URL",
       "uploadLogo": "Upload logo",
       "uploadBanner": "Upload banner"
-    }
+    },
+    "save": "Save"
   },
   "searchResults": {
     "toolbar": {

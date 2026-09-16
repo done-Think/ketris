@@ -136,7 +136,7 @@ export function ContractsCreatePage() {
               {t('breadcrumbNew')}
             </Typography>
           </Stack>
-          <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 36 }, fontWeight: 900 }}>
+          <Typography variant="h3" sx={{ fontSize: { xs: 20, md: 24 }, fontWeight: 800 }}>
             {t('title')}
           </Typography>
         </Stack>

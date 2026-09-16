@@ -4,7 +4,7 @@ import { Box, Button, Stack, Typography } from '@mui/material'
 import { getTranslations } from 'next-intl/server'
 
 import { DashboardNotificationsButton } from '@shared/components/layout'
-import { brand, iconSize, radius } from '@shared/theme/tokens'
+import { iconSize, radius } from '@shared/theme/tokens'
 
 import {
   financialEntries,
@@ -30,10 +30,7 @@ export async function FinancialDashboardPage() {
           spacing={1.6}
         >
           <Box>
-            <Typography
-              variant="h3"
-              sx={{ color: brand.graphite[500], fontSize: { xs: 30, md: 40 }, fontWeight: 900 }}
-            >
+            <Typography variant="h3" sx={{ fontSize: { xs: 20, md: 24 }, fontWeight: 800 }}>
               {t('title')}
             </Typography>
           </Box>

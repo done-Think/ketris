@@ -1,9 +1,10 @@
+import type { Dayjs } from 'dayjs'
 import type { z } from 'zod'
 
-import type {
-  agendaEventFormSchema,
-  agendaRescheduleSchema,
-} from '../schemas/agenda-reschedule-schema'
+import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
+
+import type { agendaEventFormSchema } from '../schemas/agenda-event-form-schema'
+import type { agendaRescheduleSchema } from '../schemas/agenda-reschedule-schema'
 
 export type AgendaEventStatus = 'Confirmada' | 'Pendente' | 'Reagendar'
 
@@ -89,8 +90,26 @@ export type AgendaEventFormDialogProps = {
   propertyOptions: AgendaPropertyOption[]
 }
 
-export type AgendaTimelineProps = {
+export type AgendaDashboardHeaderProps = {
+  disableNextWeek: boolean
+  disablePreviousWeek: boolean
+  notifications: DashboardNotificationItem[]
+  onNewEvent: () => void
+  onNextWeek: () => void
+  onNotificationSelect: (notification: DashboardNotificationItem) => void
+  onPreviousWeek: () => void
+  weekRange: AgendaWeekRange
+}
+
+export type AgendaWeekCalendarProps = {
   days: AgendaCalendarDay[]
   events: AgendaEvent[]
-  onEventSelect: (event: AgendaEvent) => void
+  onSelectEvent: (event: AgendaEvent) => void
+  timeSlots: AgendaTimeSlot[]
+}
+
+export type AgendaBuildNotificationsOptions = {
+  events: AgendaEvent[]
+  t: (key: string, values?: Record<string, string | number>) => string
+  today: Dayjs
 }

@@ -24,11 +24,11 @@
     "dashboard": "Dashboard",
     "pipeline": "Pipeline",
     "contacts": "Contacts",
+    "leads": "Leads",
     "properties": "My Properties",
     "contracts": "Contracts",
     "publicProfile": "Public Profile",
     "agenda": "Schedule",
-    "proposals": "Proposals",
     "finance": "Finance"
   }
 }

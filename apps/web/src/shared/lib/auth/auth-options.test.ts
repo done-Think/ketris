@@ -219,4 +219,38 @@ describe('authOptions — callbacks.jwt (revalidação contra o banco)', () => {
 
     expect(findByIdMock).not.toHaveBeenCalled()
   })
+
+  it('no trigger update, substitui accessToken/refreshToken sem consultar o banco', async () => {
+    const jwt = await getJwtCallback()
+
+    const token = await jwt({
+      token: {
+        sub: 'u1',
+        accessToken: 'stale-access',
+        refreshToken: 'stale-refresh',
+        scope: 'tenant',
+        tenantId: 't1',
+        papel: 'AGENT',
+      },
+      user: undefined,
+      trigger: 'update',
+      session: { accessToken: 'fresh-access', refreshToken: 'fresh-refresh' },
+    } as unknown as Parameters<typeof jwt>[0])
+
+    expect(token).toMatchObject({ accessToken: 'fresh-access', refreshToken: 'fresh-refresh' })
+    expect(findByIdMock).not.toHaveBeenCalled()
+  })
+
+  it('ignora um trigger update sem accessToken/refreshToken novos', async () => {
+    const jwt = await getJwtCallback()
+
+    const token = await jwt({
+      token: { sub: 'u1', accessToken: 'stale-access', refreshToken: 'stale-refresh' },
+      user: undefined,
+      trigger: 'update',
+      session: {},
+    } as unknown as Parameters<typeof jwt>[0])
+
+    expect(token).toMatchObject({ accessToken: 'stale-access', refreshToken: 'stale-refresh' })
+  })
 })
