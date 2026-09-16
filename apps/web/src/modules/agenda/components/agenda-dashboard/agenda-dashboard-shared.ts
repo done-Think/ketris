@@ -1,6 +1,7 @@
 import dayjs, { type Dayjs } from 'dayjs'
 
 import { alpha, brand, supportColor } from '@shared/theme/tokens'
+import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
 
 import type {
   AgendaBuildNotificationsOptions,
@@ -8,7 +9,6 @@ import type {
   AgendaEvent,
   AgendaEventTone,
   AgendaEventToneStyle,
-  AgendaNotification,
   AgendaWeekRange,
 } from '../../types/agenda-event'
 
@@ -85,14 +85,15 @@ export function getAgendaNotifications({
   events,
   t,
   today,
-}: AgendaBuildNotificationsOptions): AgendaNotification[] {
+}: AgendaBuildNotificationsOptions): DashboardNotificationItem[] {
   return events.flatMap((event) => {
     const eventDate = dayjs(event.scheduledDate)
-    const notifications: AgendaNotification[] = []
+    const notifications: DashboardNotificationItem[] = []
+    const href = { pathname: '/dashboard/agenda' as const, query: { eventId: event.id } }
 
     if (eventDate.isSame(today, 'day') && isVisitEvent(event)) {
       notifications.push({
-        event,
+        href,
         id: `${event.id}-today-visit`,
         kind: 'todayVisit',
         message: t('todayVisitMessage', {
@@ -106,7 +107,7 @@ export function getAgendaNotifications({
 
     if (event.createdBy && event.createdByRole) {
       notifications.push({
-        event,
+        href,
         id: `${event.id}-assigned`,
         kind: 'assignedEvent',
         message: t('assignedEventMessage', {

@@ -1,6 +1,8 @@
 import type { Dayjs } from 'dayjs'
 import type { z } from 'zod'
 
+import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
+
 import type { agendaEventFormSchema } from '../schemas/agenda-event-form-schema'
 import type { agendaRescheduleSchema } from '../schemas/agenda-reschedule-schema'
 
@@ -51,16 +53,6 @@ export type AgendaEventToneStyle = {
   color: string
 }
 
-export type AgendaNotificationKind = 'todayVisit' | 'assignedEvent'
-
-export type AgendaNotification = {
-  event: AgendaEvent
-  id: string
-  kind: AgendaNotificationKind
-  message: string
-  title: string
-}
-
 export type AgendaEventCardProps = {
   event: AgendaEvent
   top: number
@@ -100,11 +92,10 @@ export type AgendaEventFormDialogProps = {
 export type AgendaDashboardHeaderProps = {
   disableNextWeek: boolean
   disablePreviousWeek: boolean
-  notificationCount: number
-  notificationsExpanded: boolean
+  notifications: DashboardNotificationItem[]
   onNewEvent: () => void
   onNextWeek: () => void
-  onOpenNotifications: (anchorEl: HTMLButtonElement) => void
+  onNotificationSelect: (notification: DashboardNotificationItem) => void
   onPreviousWeek: () => void
   weekRange: AgendaWeekRange
 }
@@ -114,13 +105,6 @@ export type AgendaWeekCalendarProps = {
   events: AgendaEvent[]
   onSelectEvent: (event: AgendaEvent) => void
   timeSlots: AgendaTimeSlot[]
-}
-
-export type AgendaNotificationsPopoverProps = {
-  anchorEl: HTMLButtonElement | null
-  notifications: AgendaNotification[]
-  onClose: () => void
-  onSelectNotification: (event: AgendaEvent) => void
 }
 
 export type AgendaBuildNotificationsOptions = {

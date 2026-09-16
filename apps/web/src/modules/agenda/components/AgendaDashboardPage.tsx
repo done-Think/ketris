@@ -8,6 +8,7 @@ import { useMemo, useState } from 'react'
 import { useSnackbar } from 'notistack'
 
 import { dashboardProperties } from '@modules/properties/data/dashboard-properties'
+import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
 
 import { agendaEvents, agendaTimeSlots } from '../data/agenda-events'
 import { agendaOtherPropertyValue } from '../schemas/agenda-event-form-schema'
@@ -18,7 +19,6 @@ import type {
   AgendaRescheduleFormValues,
 } from '../types/agenda-event'
 import { AgendaDashboardHeader } from './agenda-dashboard/AgendaDashboardHeader'
-import { AgendaNotificationsPopover } from './agenda-dashboard/AgendaNotificationsPopover'
 import { AgendaWeekCalendar } from './agenda-dashboard/AgendaWeekCalendar'
 import {
   agendaVisibleDayCount,
@@ -34,7 +34,6 @@ export function AgendaDashboardPage() {
   const { enqueueSnackbar } = useSnackbar()
   const [events, setEvents] = useState<AgendaEvent[]>(agendaEvents)
   const [isEventFormOpen, setIsEventFormOpen] = useState(false)
-  const [notificationAnchorEl, setNotificationAnchorEl] = useState<HTMLButtonElement | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null)
   const today = useMemo(() => dayjs().locale('pt-br').startOf('day'), [])
   const currentMonthEnd = useMemo(() => today.endOf('month'), [today])
@@ -61,7 +60,6 @@ export function AgendaDashboardPage() {
   const disableNextWeek = nextWeekStart.isAfter(currentMonthEnd, 'day')
 
   const closeEventDialog = () => setSelectedEvent(null)
-  const closeNotifications = () => setNotificationAnchorEl(null)
   const showScheduledWeek = (date: dayjs.Dayjs) => {
     if (date.isBefore(today, 'day')) {
       setWeekStartDate(today)
@@ -74,10 +72,12 @@ export function AgendaDashboardPage() {
     setWeekStartDate(today.add(weekOffset, 'day'))
   }
 
-  const openNotificationEvent = (event: AgendaEvent) => {
+  const openNotificationEvent = (notification: DashboardNotificationItem) => {
+    const event = events.find((agendaEvent) => agendaEvent.id === notification.href?.query?.eventId)
+    if (!event) return
+
     showScheduledWeek(dayjs(event.scheduledDate))
     setSelectedEvent(event)
-    closeNotifications()
   }
 
   const rescheduleSelectedEvent = (values: AgendaRescheduleFormValues) => {
@@ -147,11 +147,10 @@ export function AgendaDashboardPage() {
         <AgendaDashboardHeader
           disableNextWeek={disableNextWeek}
           disablePreviousWeek={disablePreviousWeek}
-          notificationCount={notifications.length}
-          notificationsExpanded={Boolean(notificationAnchorEl)}
+          notifications={notifications}
           onNewEvent={() => setIsEventFormOpen(true)}
           onNextWeek={() => setWeekStartDate(nextWeekStart)}
-          onOpenNotifications={setNotificationAnchorEl}
+          onNotificationSelect={openNotificationEvent}
           onPreviousWeek={() => setWeekStartDate(previousWeekStart)}
           weekRange={weekRange}
         />
@@ -181,13 +180,6 @@ export function AgendaDashboardPage() {
         onCreate={createAgendaEvent}
         open={isEventFormOpen}
         propertyOptions={propertyOptions}
-      />
-
-      <AgendaNotificationsPopover
-        anchorEl={notificationAnchorEl}
-        notifications={notifications}
-        onClose={closeNotifications}
-        onSelectNotification={openNotificationEvent}
       />
     </Box>
   )

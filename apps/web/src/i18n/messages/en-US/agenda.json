@@ -6,8 +6,6 @@
     "nextWeek": "Next week",
     "weekRange": "Agenda for {start}-{end}",
     "newEvent": "New Event",
-    "notificationsAriaLabel": "Open agenda notifications",
-    "notificationsTooltip": "Notifications",
     "openEventAriaLabel": "Open {title}",
     "todayVisitTitle": "Visit scheduled for today",
     "todayVisitMessage": "{time} - {participant} at {property}",
@@ -15,12 +13,7 @@
     "assignedEventMessage": "{role} {name} booked {title}",
     "defaultEventNotes": "Event created manually in the agenda.",
     "rescheduleSuccess": "{title} rescheduled to {date} at {time}.",
-    "createSuccess": "{title} added to the agenda.",
-    "notifications": {
-      "title": "Agenda alerts",
-      "subtitle": "Today's visits and assigned appointments",
-      "empty": "No alerts to show."
-    }
+    "createSuccess": "{title} added to the agenda."
   },
   "eventForm": {
     "eyebrow": "New agenda entry",
