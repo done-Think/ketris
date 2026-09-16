@@ -9,6 +9,15 @@ export type DashboardProposal = {
   status: ProposalStatus
 }
 
+export type ProposalStatusStyle = {
+  bgcolor: string
+  color: string
+}
+
+export type ProposalsListProps = {
+  proposals: DashboardProposal[]
+}
+
 export type ProposalDetailDialogProps = {
   onClose: () => void
   open: boolean

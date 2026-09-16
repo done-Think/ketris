@@ -1,8 +1,9 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Box, Paper, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
+import { useSearchParams } from 'next/navigation'
 
 import { brand, radius, shadows, surface } from '@shared/theme/tokens'
 
@@ -21,6 +22,7 @@ const leadsBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-s
 
 export function LeadsDashboardPage() {
   const t = useTranslations('crm.leads')
+  const searchParams = useSearchParams()
   const leads = useLeadsStore((state) => state.leads)
   const [search, setSearch] = useState('')
   const [activeFilter, setActiveFilter] = useState<LeadFilter>('Todos')
@@ -46,6 +48,14 @@ export function LeadsDashboardPage() {
     setActiveFilter(filter)
     setPage(1)
   }
+
+  useEffect(() => {
+    const leadId = searchParams.get('leadId')
+    const lead = leads.find((currentLead) => currentLead.id === leadId)
+    if (!lead) return
+
+    setSelectedContactLead(lead)
+  }, [leads, searchParams])
 
   return (
     <Box
