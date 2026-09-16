@@ -1,5 +1,14 @@
 export type MaintenancePriority = 'urgent' | 'high' | 'normal'
 
+export type MaintenanceCreateTicketFormValues = {
+  propertyId: string
+  category: string
+  priority: MaintenancePriority
+  title: string
+  description: string
+  estimatedCost?: string
+}
+
 export type MaintenanceStatus = 'inProgress' | 'open' | 'resolved' | 'closed'
 
 export interface MaintenanceTicket {

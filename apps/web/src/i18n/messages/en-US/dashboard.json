@@ -119,7 +119,22 @@
       "closed": "Closed"
     },
     "viewTicket": "View ticket {ticket}",
-    "showing": "Showing 1-6 of 34 tickets",
+    "showing": "Showing 1-{showing} of {total} tickets",
+    "createDialog": {
+      "title": "New ticket",
+      "close": "Close",
+      "cancel": "Cancel",
+      "submit": "Create ticket",
+      "fields": {
+        "property": "Property",
+        "category": "Category",
+        "priority": "Priority",
+        "title": "Ticket title",
+        "description": "Problem description",
+        "descriptionPlaceholder": "Describe the problem...",
+        "estimatedCost": "Estimated cost"
+      }
+    },
     "pagination": { "previous": "Previous", "next": "Next" }
   },
   "finance": {

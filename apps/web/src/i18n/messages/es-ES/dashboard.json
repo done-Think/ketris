@@ -119,7 +119,22 @@
       "closed": "Cerrado"
     },
     "viewTicket": "Ver solicitud {ticket}",
-    "showing": "Mostrando 1-6 de 34 solicitudes",
+    "showing": "Mostrando 1-{showing} de {total} solicitudes",
+    "createDialog": {
+      "title": "Nueva solicitud",
+      "close": "Cerrar",
+      "cancel": "Cancelar",
+      "submit": "Crear solicitud",
+      "fields": {
+        "property": "Inmueble",
+        "category": "Categoría",
+        "priority": "Prioridad",
+        "title": "Título de la solicitud",
+        "description": "Descripción del problema",
+        "descriptionPlaceholder": "Describa el problema...",
+        "estimatedCost": "Costo estimado"
+      }
+    },
     "pagination": { "previous": "Anterior", "next": "Siguiente" }
   },
   "finance": {

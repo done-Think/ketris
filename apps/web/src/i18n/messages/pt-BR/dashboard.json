@@ -119,7 +119,22 @@
       "closed": "Fechado"
     },
     "viewTicket": "Visualizar chamado {ticket}",
-    "showing": "Mostrando 1-6 de 34 chamados",
+    "showing": "Mostrando 1-{showing} de {total} chamados",
+    "createDialog": {
+      "title": "Novo Chamado",
+      "close": "Fechar",
+      "cancel": "Cancelar",
+      "submit": "Criar Chamado",
+      "fields": {
+        "property": "Imóvel",
+        "category": "Categoria",
+        "priority": "Prioridade",
+        "title": "Título do Chamado",
+        "description": "Relato do Problema",
+        "descriptionPlaceholder": "Descreva o problema...",
+        "estimatedCost": "Custo Estimado"
+      }
+    },
     "pagination": { "previous": "Anterior", "next": "Pr\u00f3ximo" }
   },
   "finance": {

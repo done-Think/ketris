@@ -33,7 +33,9 @@ import {
   maintenanceTickets,
 } from '../data/maintenance-tickets'
 import type { MaintenancePriority, MaintenanceStatus } from '../types/maintenance'
+import type { MaintenanceCreateTicketFormValues, MaintenanceTicket } from '../types/maintenance'
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
+import { MaintenanceCreateTicketDialog } from './MaintenanceCreateTicketDialog'
 
 const statusStyles: Record<MaintenanceStatus, { bgcolor: string; color: string }> = {
   inProgress: { bgcolor: '#FFF2CC', color: '#D98900' },
@@ -51,9 +53,11 @@ export function MaintenanceDashboardPage() {
   const t = useTranslations('dashboard.maintenance')
   const [activeFilter, setActiveFilter] = useState<'all' | MaintenanceStatus | 'urgent'>('all')
   const [search, setSearch] = useState('')
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [tickets, setTickets] = useState<readonly MaintenanceTicket[]>(maintenanceTickets)
   const filteredTickets = useMemo(
     () =>
-      maintenanceTickets.filter((ticket) => {
+      tickets.filter((ticket) => {
         const matchesFilter =
           activeFilter === 'all' ||
           (activeFilter === 'urgent'
@@ -68,9 +72,21 @@ export function MaintenanceDashboardPage() {
             ))
         )
       }),
-    [activeFilter, search],
+    [activeFilter, search, tickets],
   )
 
+  function getFilterCount(filter: (typeof maintenanceFilters)[number]) {
+    const matchesFilter = (ticket: MaintenanceTicket) => filter.value === 'all' || (filter.value === 'urgent' ? ticket.priority === 'urgent' : ticket.status === filter.value)
+    return filter.count + tickets.filter(matchesFilter).length - maintenanceTickets.filter(matchesFilter).length
+  }
+
+  function handleCreateTicket(values: MaintenanceCreateTicketFormValues) {
+    const property = maintenanceProperties.find((option) => option.id === values.propertyId)
+    if (!property) return
+    const nextNumber = Math.max(...tickets.map((ticket) => Number(ticket.id.slice(-4)))) + 1
+    setTickets((currentTickets) => [{ id: `#MNT-2025-${String(nextNumber).padStart(4, '0')}`, property: property.label, category: values.category, priority: values.priority, tenant: property.tenant, openedAt: new Intl.DateTimeFormat('pt-BR').format(new Date()), status: 'open' }, ...currentTickets])
+    setIsCreateDialogOpen(false)
+  }
   return (
     <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
       <Stack spacing={{ xs: 2, md: 2.7 }}>
@@ -128,6 +144,7 @@ export function MaintenanceDashboardPage() {
             <Button
               variant="contained"
               startIcon={<AddRoundedIcon sx={{ fontSize: 15 }} />}
+              onClick={() => setIsCreateDialogOpen(true)}
               sx={{
                 minHeight: 30,
                 px: 1.7,
@@ -162,7 +179,7 @@ export function MaintenanceDashboardPage() {
             >
               {t(`filters.${filter.value}`)}
               <Box component="span" sx={{ ml: 0.8, fontSize: 10, fontWeight: 800 }}>
-                {filter.count}
+                {getFilterCount(filter)}
               </Box>
             </Button>
           ))}
@@ -274,7 +291,7 @@ export function MaintenanceDashboardPage() {
             spacing={1}
             sx={{ px: 1.5, py: 1.1, borderTop: '1px solid', borderColor: brand.neutral[100] }}
           >
-            <Typography sx={{ fontSize: 11, color: brand.neutral[600] }}>{t('showing')}</Typography>
+            <Typography sx={{ fontSize: 11, color: brand.neutral[600] }}>{t('showing', { showing: filteredTickets.length, total: getFilterCount(maintenanceFilters[0]) })}</Typography>
             <Stack direction="row" spacing={0.5}>
               {['previous', '1', '2', '3', 'next'].map((item) => (
                 <Button
@@ -299,9 +316,22 @@ export function MaintenanceDashboardPage() {
           </Stack>
         </TableContainer>
       </Stack>
+      <MaintenanceCreateTicketDialog
+        open={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+        onCreate={handleCreateTicket}
+      />
     </Box>
   )
 }
+
+const maintenanceProperties = [
+  { id: 'apt-jardins-3q', label: 'Apt Jardins 3q', tenant: 'Bruno Oliveira' },
+  { id: 'studio-pinheiros', label: 'Studio Pinheiros', tenant: 'Mariana Souza' },
+  { id: 'casa-vila-madalena', label: 'Casa Vila Madalena', tenant: 'Felipe Neto' },
+  { id: 'cobertura-moema', label: 'Cobertura Moema', tenant: 'Aline Santos' },
+] as const
+
 
 const compactFieldSx = {
   width: { xs: '100%', sm: 200 },
