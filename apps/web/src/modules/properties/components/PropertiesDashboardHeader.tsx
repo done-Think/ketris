@@ -3,6 +3,7 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { useTranslations } from 'next-intl'
 
+import { DashboardNotificationsButton } from '@shared/components/layout'
 import { brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { PropertiesDashboardHeaderProps } from '../types/dashboard-property'
@@ -92,6 +93,7 @@ export function PropertiesDashboardHeader({
         >
           {t('create')}
         </Button>
+        <DashboardNotificationsButton />
       </Stack>
     </Stack>
   )
