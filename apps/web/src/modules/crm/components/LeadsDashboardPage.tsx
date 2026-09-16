@@ -101,8 +101,7 @@ export function LeadsDashboardPage() {
             lastVisible={leadsPage.lastItem}
             resultTotal={leadsPage.totalCount}
             page={leadsPage.page}
-            canGoBack={leadsPage.page > 1}
-            canGoForward={leadsPage.page < leadsPage.pageCount}
+            pageCount={leadsPage.pageCount}
             onPageChange={setPage}
           />
         </Paper>

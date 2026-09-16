@@ -93,4 +93,16 @@ describe('LeadsDashboardPage', () => {
     expect(screen.getAllByText('Guilherme Santos').length).toBeGreaterThan(0)
     expect(screen.queryAllByText('Maria Fernandes')).toHaveLength(0)
   })
+
+  it('navigates between pages using the numbered pagination', async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    expect(screen.queryAllByText('Patrícia Lima')).toHaveLength(0)
+
+    await user.click(screen.getByRole('button', { name: 'Ir para a página 2' }))
+
+    expect(screen.getAllByText('Patrícia Lima').length).toBeGreaterThan(0)
+    expect(screen.queryAllByText('João Silva')).toHaveLength(0)
+  })
 })
