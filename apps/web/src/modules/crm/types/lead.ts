@@ -66,8 +66,7 @@ export type LeadsPaginationFooterProps = {
   lastVisible: number
   resultTotal: number
   page: number
-  canGoBack: boolean
-  canGoForward: boolean
+  pageCount: number
   onPageChange?: (page: number) => void
 }
 
@@ -126,4 +125,16 @@ export type LeadContactDialogProps = {
   lead: DashboardLead | null
   onClose: () => void
   open: boolean
+}
+
+export type LeadsFilterBarProps = {
+  activeFilter: LeadFilterKey
+  leads: DashboardLead[]
+  onFilterChange: (filter: LeadFilterKey) => void
+}
+
+export type LeadsListProps = {
+  leads: DashboardLead[]
+  onLeadContactSelect: (lead: DashboardLead) => void
+  totalCount?: number
 }

@@ -8,3 +8,18 @@ export type DashboardProposal = {
   ownerExpectation: string
   status: ProposalStatus
 }
+
+export type ProposalStatusStyle = {
+  bgcolor: string
+  color: string
+}
+
+export type ProposalsListProps = {
+  proposals: DashboardProposal[]
+}
+
+export type ProposalDetailDialogProps = {
+  onClose: () => void
+  open: boolean
+  proposal: DashboardProposal | null
+}

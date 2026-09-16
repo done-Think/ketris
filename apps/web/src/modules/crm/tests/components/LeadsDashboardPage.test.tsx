@@ -11,10 +11,15 @@ import { useLeadsStore } from '../../stores/leads-store'
 
 const mocks = vi.hoisted(() => ({
   enqueueSnackbar: vi.fn(),
+  searchParams: new URLSearchParams(),
 }))
 
 vi.mock('notistack', () => ({
   useSnackbar: () => ({ enqueueSnackbar: mocks.enqueueSnackbar }),
+}))
+
+vi.mock('next/navigation', () => ({
+  useSearchParams: () => mocks.searchParams,
 }))
 
 function renderPage() {
@@ -28,6 +33,7 @@ function renderPage() {
 describe('LeadsDashboardPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mocks.searchParams = new URLSearchParams()
     useLeadsStore.setState({ leads: [...leadFixtures] })
   })
 
@@ -92,5 +98,25 @@ describe('LeadsDashboardPage', () => {
     expect(screen.getAllByText('João Silva').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Guilherme Santos').length).toBeGreaterThan(0)
     expect(screen.queryAllByText('Maria Fernandes')).toHaveLength(0)
+  })
+
+  it('navigates between pages using the numbered pagination', async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    expect(screen.queryAllByText('Patrícia Lima')).toHaveLength(0)
+
+    await user.click(screen.getByRole('button', { name: 'Ir para a página 2' }))
+
+    expect(screen.getAllByText('Patrícia Lima').length).toBeGreaterThan(0)
+    expect(screen.queryAllByText('João Silva')).toHaveLength(0)
+  })
+
+  it('opens the contact dialog for the lead referenced by the leadId query param', () => {
+    mocks.searchParams = new URLSearchParams({ leadId: 'lead-001' })
+    renderPage()
+
+    const dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByText('João Silva')).toBeVisible()
   })
 })

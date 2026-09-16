@@ -38,9 +38,9 @@ describe('AgendaDashboardPage', () => {
   it('shows agenda alerts for today visits and assigned events', async () => {
     renderPage()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Abrir notificações da agenda' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir notificações do dashboard' }))
 
-    const popover = await screen.findByText('Alertas da agenda')
+    const popover = await screen.findByText('Alertas do dashboard')
     const panel = popover.closest('[role="presentation"]') ?? document.body
 
     expect(within(panel as HTMLElement).getByText('Visita marcada para hoje')).toBeVisible()

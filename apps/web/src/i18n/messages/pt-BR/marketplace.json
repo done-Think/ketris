@@ -207,7 +207,6 @@
     "uploadHelper": "JPG, PNG ou WEBP. Você também pode manter apenas o link acima.",
     "photoPreview": "Prévia da foto",
     "bannerPreview": "Prévia do banner",
-    "saveDraft": "Salvar",
     "preview": "Visualizar",
     "configurableProfile": "Perfil público configurável",
     "newMember": "Novo membro",
@@ -265,7 +264,8 @@
       "name": "Nome",
       "role": "Função",
       "profileUrl": "Link do perfil"
-    }
+    },
+    "save": "Salvar"
   },
   "agencyProfileEditor": {
     "title": "Editar Perfil da Imobiliária",
@@ -278,7 +278,6 @@
     "uploadHelper": "JPG, PNG ou WEBP. Você também pode manter apenas o link acima.",
     "logoPreview": "Prévia do logo",
     "bannerPreview": "Prévia do banner",
-    "saveDraft": "Salvar",
     "preview": "Visualizar",
     "dropToMove": "Solte para mover",
     "preparing": "Preparando...",
@@ -342,7 +341,8 @@
       "bannerUrl": "URL do banner",
       "uploadLogo": "Enviar logo",
       "uploadBanner": "Enviar banner"
-    }
+    },
+    "save": "Salvar"
   },
   "searchResults": {
     "toolbar": {

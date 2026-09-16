@@ -3,10 +3,10 @@
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded'
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
-import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded'
-import { Badge, Box, Button, IconButton, Stack, Tooltip, Typography } from '@mui/material'
+import { Box, Button, IconButton, Stack, Tooltip, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
+import { DashboardNotificationsButton } from '@shared/components/layout'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { AgendaDashboardHeaderProps } from '../../types/agenda-event'
@@ -14,11 +14,10 @@ import type { AgendaDashboardHeaderProps } from '../../types/agenda-event'
 export function AgendaDashboardHeader({
   disableNextWeek,
   disablePreviousWeek,
-  notificationCount,
-  notificationsExpanded,
+  notifications,
   onNewEvent,
   onNextWeek,
-  onOpenNotifications,
+  onNotificationSelect,
   onPreviousWeek,
   weekRange,
 }: AgendaDashboardHeaderProps) {
@@ -98,37 +97,10 @@ export function AgendaDashboardHeader({
         >
           {t('newEvent')}
         </Button>
-        <Tooltip title={t('notificationsTooltip')}>
-          <IconButton
-            aria-label={t('notificationsAriaLabel')}
-            aria-expanded={notificationsExpanded ? 'true' : undefined}
-            onClick={(event) => onOpenNotifications(event.currentTarget)}
-            sx={{
-              width: 36,
-              height: 36,
-              border: '1px solid',
-              borderColor: alpha.graphite[8],
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.paper,
-              color: brand.graphite[500],
-            }}
-          >
-            <Badge
-              badgeContent={notificationCount}
-              overlap="circular"
-              sx={{
-                '& .MuiBadge-badge': {
-                  bgcolor: brand.magenta[500],
-                  color: surface.lightText,
-                  fontSize: 10,
-                  fontWeight: 800,
-                },
-              }}
-            >
-              <NotificationsNoneRoundedIcon sx={{ fontSize: iconSize.md }} />
-            </Badge>
-          </IconButton>
-        </Tooltip>
+        <DashboardNotificationsButton
+          notifications={notifications}
+          onNotificationSelect={onNotificationSelect}
+        />
       </Stack>
     </Stack>
   )

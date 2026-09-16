@@ -10,11 +10,11 @@ export function LeadsPaginationFooter({
   lastVisible,
   resultTotal,
   page,
-  canGoBack,
-  canGoForward,
+  pageCount,
   onPageChange,
 }: LeadsPaginationFooterProps) {
   const t = useTranslations('crm.leads')
+  const pageNumbers = Array.from({ length: pageCount }, (_, index) => index + 1)
 
   return (
     <Stack
@@ -35,47 +35,32 @@ export function LeadsPaginationFooter({
         {t('resultsRange', { first: firstVisible, last: lastVisible, total: resultTotal })}
       </Typography>
       <Stack direction="row" spacing={0.75}>
-        {[
-          {
-            key: 'previous',
-            label: t('pagination.previous'),
-            disabled: !onPageChange || !canGoBack,
-            onClick: () => onPageChange?.(page - 1),
-          },
-          {
-            key: 'next',
-            label: t('pagination.next'),
-            disabled: !onPageChange || !canGoForward,
-            onClick: () => onPageChange?.(page + 1),
-          },
-        ].map(({ key, label, disabled, onClick }) => (
+        {pageNumbers.map((pageNumber) => (
           <Button
-            key={key}
+            key={pageNumber}
             type="button"
-            variant="outlined"
-            size="small"
-            disabled={disabled}
-            onClick={onClick}
+            variant={pageNumber === page ? 'contained' : 'outlined'}
+            aria-label={t('pagination.pageAriaLabel', { page: pageNumber })}
+            aria-current={pageNumber === page ? 'page' : undefined}
+            disabled={!onPageChange}
+            onClick={() => onPageChange?.(pageNumber)}
             sx={{
-              minWidth: 62,
-              height: 24,
-              px: 1,
-              borderColor: brand.neutral[100],
+              minWidth: 30,
+              width: 30,
+              height: 30,
+              p: 0,
               borderRadius: `${radius.sm}px`,
-              bgcolor: surface.paper,
-              color: brand.neutral[500],
-              fontSize: 10.5,
-              fontWeight: 500,
-              '&:hover': { borderColor: brand.neutral[200], bgcolor: surface.paper },
-              '&.Mui-disabled': {
+              fontSize: 11.5,
+              fontWeight: 700,
+              ...(pageNumber !== page && {
                 borderColor: brand.neutral[100],
                 bgcolor: surface.paper,
                 color: brand.neutral[500],
-                opacity: 1,
-              },
+                '&:hover': { borderColor: brand.neutral[200], bgcolor: surface.paper },
+              }),
             }}
           >
-            {label}
+            {pageNumber}
           </Button>
         ))}
       </Stack>

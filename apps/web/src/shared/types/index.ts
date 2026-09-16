@@ -1,4 +1,5 @@
 export * from './form'
+export * from './dashboard-notification'
 export * from './home-header'
 export * from './language-selector'
 export * from './property-card'

@@ -6,8 +6,6 @@
     "nextWeek": "Próxima semana",
     "weekRange": "Agenda de {start}-{end}",
     "newEvent": "Novo Evento",
-    "notificationsAriaLabel": "Abrir notificações da agenda",
-    "notificationsTooltip": "Notificações",
     "openEventAriaLabel": "Abrir {title}",
     "todayVisitTitle": "Visita marcada para hoje",
     "todayVisitMessage": "{time} - {participant} em {property}",
@@ -15,12 +13,7 @@
     "assignedEventMessage": "{role} {name} marcou {title}",
     "defaultEventNotes": "Evento criado manualmente na agenda.",
     "rescheduleSuccess": "{title} reagendado para {date} às {time}.",
-    "createSuccess": "{title} adicionado à agenda.",
-    "notifications": {
-      "title": "Alertas da agenda",
-      "subtitle": "Visitas de hoje e compromissos atribuídos",
-      "empty": "Nenhum alerta para exibir."
-    }
+    "createSuccess": "{title} adicionado à agenda."
   },
   "eventForm": {
     "eyebrow": "Novo ponto na agenda",
