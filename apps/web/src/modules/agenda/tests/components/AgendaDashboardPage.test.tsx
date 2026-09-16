@@ -52,7 +52,8 @@ describe('AgendaDashboardPage', () => {
   it('creates a new event through the form dialog', async () => {
     renderPage()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Novo Evento' }))
+    const [newEventButton] = screen.getAllByRole('button', { name: 'Novo Evento' })
+    await userEvent.click(newEventButton)
     await userEvent.type(screen.getByLabelText('Título'), 'Visita apartamento novo')
     await userEvent.click(screen.getByLabelText('Imóvel em questão'))
     await userEvent.click(await screen.findByRole('option', { name: 'Outro' }))

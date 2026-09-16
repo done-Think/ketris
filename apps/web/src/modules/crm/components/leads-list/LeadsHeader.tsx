@@ -86,7 +86,9 @@ export function LeadsHeader({ search, onSearchChange, onNewLead }: LeadsHeaderPr
         >
           {t('newLead')}
         </Button>
-        <DashboardNotificationsButton />
+        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          <DashboardNotificationsButton />
+        </Box>
       </Stack>
     </Stack>
   )

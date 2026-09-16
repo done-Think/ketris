@@ -49,6 +49,7 @@ export function AgendaDashboardHeader({
             disabled={disablePreviousWeek}
             onClick={onPreviousWeek}
             sx={{
+              display: { xs: 'none', md: 'inline-flex' },
               width: 36,
               height: 36,
               border: '1px solid',
@@ -60,7 +61,14 @@ export function AgendaDashboardHeader({
             <ChevronLeftRoundedIcon sx={{ fontSize: iconSize.sm }} />
           </IconButton>
         </Tooltip>
-        <Typography sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 800 }}>
+        <Typography
+          sx={{
+            display: { xs: 'none', md: 'block' },
+            color: brand.graphite[500],
+            fontSize: 14,
+            fontWeight: 800,
+          }}
+        >
           {t('weekRange', { end: weekRange.endLabel, start: weekRange.startLabel })}
         </Typography>
         <Tooltip title={t('nextWeek')}>
@@ -69,6 +77,7 @@ export function AgendaDashboardHeader({
             disabled={disableNextWeek}
             onClick={onNextWeek}
             sx={{
+              display: { xs: 'none', md: 'inline-flex' },
               width: 36,
               height: 36,
               border: '1px solid',
@@ -80,11 +89,28 @@ export function AgendaDashboardHeader({
             <ChevronRightRoundedIcon sx={{ fontSize: iconSize.sm }} />
           </IconButton>
         </Tooltip>
+        <Tooltip title={t('newEvent')}>
+          <IconButton
+            aria-label={t('newEvent')}
+            onClick={onNewEvent}
+            sx={{
+              display: { xs: 'inline-flex', md: 'none' },
+              width: 44,
+              height: 44,
+              bgcolor: brand.magenta[500],
+              color: surface.paper,
+              '&:hover': { bgcolor: brand.magenta[600] },
+            }}
+          >
+            <AddRoundedIcon sx={{ fontSize: iconSize.xl }} />
+          </IconButton>
+        </Tooltip>
         <Button
           variant="contained"
           startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.lg }} />}
           onClick={onNewEvent}
           sx={{
+            display: { xs: 'none', md: 'inline-flex' },
             borderRadius: `${radius.sm}px`,
             boxShadow: shadows.none,
             minHeight: 36,
@@ -97,10 +123,12 @@ export function AgendaDashboardHeader({
         >
           {t('newEvent')}
         </Button>
-        <DashboardNotificationsButton
-          notifications={notifications}
-          onNotificationSelect={onNotificationSelect}
-        />
+        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          <DashboardNotificationsButton
+            notifications={notifications}
+            onNotificationSelect={onNotificationSelect}
+          />
+        </Box>
       </Stack>
     </Stack>
   )
