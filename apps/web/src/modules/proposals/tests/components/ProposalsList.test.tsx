@@ -56,4 +56,23 @@ describe('ProposalsList', () => {
     const dialog = screen.getByRole('dialog')
     expect(within(dialog).getByText('Rafael Lima')).toBeVisible()
   })
+
+  it('changes a proposal status from the detail dialog', async () => {
+    const user = userEvent.setup()
+    renderList()
+
+    await user.click(screen.getByText('Rafael Lima'))
+
+    const dialog = screen.getByRole('dialog')
+    await user.click(within(dialog).getByLabelText('Alterar status'))
+    await user.click(await screen.findByRole('option', { name: 'Aprovada' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar status' }))
+
+    expect(within(dialog).getAllByText('Aprovada').length).toBeGreaterThan(0)
+
+    await user.click(within(dialog).getByLabelText('Fechar proposta'))
+
+    const row = screen.getByText('Rafael Lima').closest('[role="button"]')
+    expect(within(row as HTMLElement).getByText('Aprovada')).toBeVisible()
+  })
 })

@@ -176,6 +176,22 @@ describe('AppShell active nav item', () => {
   })
 })
 
+describe('AppShell mobile top bar', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(usePathname).mockReturnValue('/dashboard')
+    mockSession({ papel: 'ADMIN' })
+  })
+
+  it('shows a single notifications bell next to the menu button', () => {
+    renderShell()
+
+    expect(screen.getAllByRole('button', { name: 'Abrir notificações do dashboard' })).toHaveLength(
+      1,
+    )
+  })
+})
+
 describe('AppShell navigation while the session is loading', () => {
   beforeEach(() => {
     vi.clearAllMocks()

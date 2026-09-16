@@ -16,7 +16,7 @@ vi.mock('notistack', () => ({
 }))
 
 function renderPage() {
-  render(
+  return render(
     <ThemeProvider theme={theme}>
       <AgendaDashboardPage />
     </ThemeProvider>,
@@ -70,5 +70,18 @@ describe('AgendaDashboardPage', () => {
       ),
     )
     expect(screen.getByText('09:00 - Visita apartamento novo')).toBeVisible()
+  })
+
+  it('switches the mobile day list when a different day chip is selected', async () => {
+    const user = userEvent.setup()
+    const { container } = renderPage()
+
+    expect(screen.getByText(/Visita Jardim Paulista - /)).toBeVisible()
+
+    const dayButtons = container.querySelectorAll('button[aria-pressed]')
+    await user.click(dayButtons[2])
+
+    expect(screen.getByText(/Reunião captação - /)).toBeVisible()
+    expect(screen.queryByText(/Visita Jardim Paulista - /)).not.toBeInTheDocument()
   })
 })
