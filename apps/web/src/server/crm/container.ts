@@ -24,33 +24,40 @@ const propertyLookup = new PrismaPropertyLookupRepository()
 
 export const crmContainer = {
   listOpportunitiesUseCase: new ListOpportunitiesUseCase(opportunityRepository),
-  getOpportunityUseCase: new GetOpportunityUseCase(opportunityRepository),
+  getOpportunityUseCase: new GetOpportunityUseCase(opportunityRepository, propertyLookup),
   createOpportunityUseCase: new CreateOpportunityUseCase(
     opportunityRepository,
     contactRepository,
     propertyLookup,
     activityRepository,
   ),
-  updateOpportunityUseCase: new UpdateOpportunityUseCase(opportunityRepository, activityRepository),
+  updateOpportunityUseCase: new UpdateOpportunityUseCase(
+    opportunityRepository,
+    activityRepository,
+    propertyLookup,
+  ),
   respondToOpportunityUseCase: new RespondToOpportunityUseCase(
     opportunityRepository,
     activityRepository,
+    propertyLookup,
   ),
-  archiveOpportunityUseCase: new ArchiveOpportunityUseCase(opportunityRepository),
-  deleteOpportunityUseCase: new DeleteOpportunityUseCase(opportunityRepository),
+  archiveOpportunityUseCase: new ArchiveOpportunityUseCase(opportunityRepository, propertyLookup),
+  deleteOpportunityUseCase: new DeleteOpportunityUseCase(opportunityRepository, propertyLookup),
 
   listOpportunityActivitiesUseCase: new ListOpportunityActivitiesUseCase(
     opportunityRepository,
     activityRepository,
+    propertyLookup,
   ),
   addOpportunityNoteUseCase: new AddOpportunityNoteUseCase(
     opportunityRepository,
     activityRepository,
+    propertyLookup,
   ),
 
   listContactsUseCase: new ListContactsUseCase(contactRepository, opportunityRepository),
-  getContactUseCase: new GetContactUseCase(contactRepository),
+  getContactUseCase: new GetContactUseCase(contactRepository, opportunityRepository),
   createContactUseCase: new CreateContactUseCase(contactRepository),
-  updateContactUseCase: new UpdateContactUseCase(contactRepository),
-  archiveContactUseCase: new ArchiveContactUseCase(contactRepository),
+  updateContactUseCase: new UpdateContactUseCase(contactRepository, opportunityRepository),
+  archiveContactUseCase: new ArchiveContactUseCase(contactRepository, opportunityRepository),
 }

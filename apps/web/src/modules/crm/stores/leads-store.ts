@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-import { dashboardLeads } from '../data/leads'
+import { leadFixtures } from '../fixtures/lead-fixtures'
 import type { CreateLeadFormValues, DashboardLead, LeadsStoreState } from '../types/lead'
 
 function createLeadListItem(
@@ -25,7 +25,7 @@ function createLeadListItem(
 }
 
 export const useLeadsStore = create<LeadsStoreState>((set, get) => ({
-  leads: dashboardLeads,
+  leads: [...leadFixtures],
   addLead: (values, lastContactLabel) => {
     const lead = createLeadListItem(values, get().leads.length, lastContactLabel)
 

@@ -1,0 +1,56 @@
+{
+  "dashboard": {
+    "title": "Agenda",
+    "subtitle": "Tus compromisos y tareas organizados",
+    "previousWeek": "Semana anterior",
+    "nextWeek": "Semana siguiente",
+    "weekRange": "Agenda de {start}-{end}",
+    "newEvent": "Nuevo evento",
+    "notificationsAriaLabel": "Abrir notificaciones de la agenda",
+    "notificationsTooltip": "Notificaciones",
+    "openEventAriaLabel": "Abrir {title}",
+    "todayVisitTitle": "Visita programada para hoy",
+    "todayVisitMessage": "{time} - {participant} en {property}",
+    "assignedEventTitle": "Nuevo compromiso asignado",
+    "assignedEventMessage": "{role} {name} agendó {title}",
+    "defaultEventNotes": "Evento creado manualmente en la agenda.",
+    "rescheduleSuccess": "{title} reprogramado para {date} a las {time}.",
+    "createSuccess": "{title} añadido a la agenda.",
+    "notifications": {
+      "title": "Alertas de la agenda",
+      "subtitle": "Visitas de hoy y compromisos asignados",
+      "empty": "No hay alertas para mostrar."
+    }
+  },
+  "eventForm": {
+    "eyebrow": "Nuevo punto en la agenda",
+    "title": "Agregar evento",
+    "closeAriaLabel": "Cerrar nuevo evento",
+    "fields": {
+      "title": "Título",
+      "property": "Inmueble en cuestión",
+      "otherProperty": "Otro",
+      "customProperty": "Inmueble o referencia",
+      "participant": "Persona",
+      "phone": "Teléfono",
+      "date": "Fecha",
+      "time": "Horario",
+      "duration": "Duración",
+      "notes": "Observaciones"
+    },
+    "cancel": "Cancelar",
+    "submit": "Crear evento"
+  },
+  "eventDetail": {
+    "closeAriaLabel": "Cerrar detalles del evento",
+    "notesTitle": "Observaciones",
+    "createdBy": "Agendado por {role} {name}",
+    "rescheduleTitle": "Reprogramar compromiso",
+    "fields": {
+      "newDate": "Nueva fecha",
+      "newTime": "Nuevo horario"
+    },
+    "cancel": "Cancelar",
+    "submit": "Guardar reprogramación"
+  }
+}

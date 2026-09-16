@@ -2,6 +2,8 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined'
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
+import TableRowsRoundedIcon from '@mui/icons-material/TableRowsRounded'
+import ViewKanbanOutlinedIcon from '@mui/icons-material/ViewKanbanOutlined'
 import {
   Box,
   Button,
@@ -10,25 +12,30 @@ import {
   MenuItem,
   Stack,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Tooltip,
   Typography,
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { brand, radius, surface } from '@shared/theme/tokens'
+import { brand, radius } from '@shared/theme/tokens'
 
 import { salesPipelineStages } from '../../config/sales-pipeline-stages'
-import type { SalesPipelineToolbarProps } from '../../types/sales-pipeline'
+import type { SalesPipelineToolbarProps, SalesPipelineViewMode } from '../../types/sales-pipeline'
 
 export function SalesPipelineToolbar({
   search,
   selectedStage,
   selectedStageId,
   filterAnchor,
+  viewMode,
   onSearchChange,
   onFilterOpen,
   onFilterClose,
   onStageSelect,
+  onNewOpportunity,
+  onViewModeChange,
 }: SalesPipelineToolbarProps) {
   const t = useTranslations('crm.pipeline')
 
@@ -66,6 +73,38 @@ export function SalesPipelineToolbar({
         gap={1.25}
         sx={{ minWidth: 0, alignItems: { sm: 'center' }, flexWrap: { sm: 'wrap', lg: 'nowrap' } }}
       >
+        <ToggleButtonGroup
+          value={viewMode}
+          exclusive
+          onChange={(_event, nextViewMode: SalesPipelineViewMode | null) => {
+            if (nextViewMode) onViewModeChange(nextViewMode)
+          }}
+          sx={{
+            flexShrink: 0,
+            height: { xs: 40, sm: 32 },
+            '& .MuiToggleButton-root': {
+              px: 1,
+              borderColor: brand.neutral[100],
+              color: 'text.secondary',
+              '&.Mui-selected': {
+                bgcolor: brand.neutral[50],
+                color: 'text.primary',
+              },
+            },
+          }}
+        >
+          <Tooltip title={t('viewMode.kanban')}>
+            <ToggleButton value="kanban" aria-label={t('viewMode.kanban')}>
+              <ViewKanbanOutlinedIcon sx={{ fontSize: 16 }} />
+            </ToggleButton>
+          </Tooltip>
+          <Tooltip title={t('viewMode.list')}>
+            <ToggleButton value="list" aria-label={t('viewMode.list')}>
+              <TableRowsRoundedIcon sx={{ fontSize: 16 }} />
+            </ToggleButton>
+          </Tooltip>
+        </ToggleButtonGroup>
+
         <TextField
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
@@ -97,92 +136,83 @@ export function SalesPipelineToolbar({
             },
           }}
         />
+        {viewMode === 'kanban' ? (
+          <>
+            <Button
+              variant="outlined"
+              color="secondary"
+              startIcon={<FilterAltOutlinedIcon />}
+              endIcon={<KeyboardArrowDownRoundedIcon />}
+              onClick={(event) => onFilterOpen(event.currentTarget)}
+              aria-haspopup="menu"
+              aria-expanded={Boolean(filterAnchor)}
+              sx={{
+                width: { sm: 160 },
+                minWidth: { sm: 160 },
+                flexShrink: 0,
+                height: { xs: 40, sm: 32 },
+                px: 1.25,
+                justifyContent: 'space-between',
+                borderColor: brand.neutral[100],
+                borderRadius: `${radius.sm}px`,
+                bgcolor: 'background.paper',
+                color: 'text.secondary',
+                fontSize: 12,
+                fontWeight: 500,
+                whiteSpace: 'nowrap',
+                '&:hover': { borderColor: brand.neutral[200], bgcolor: 'background.paper' },
+                '& .MuiButton-startIcon': { ml: 0, mr: 0.75 },
+                '& .MuiButton-endIcon': { ml: 0.75, mr: 0 },
+                '& .MuiSvgIcon-root': { fontSize: 16 },
+              }}
+            >
+              {selectedStage ? t(`stages.${selectedStage.labelKey}`) : t('filterByStage')}
+            </Button>
+            <Menu anchorEl={filterAnchor} open={Boolean(filterAnchor)} onClose={onFilterClose}>
+              <MenuItem selected={!selectedStageId} onClick={() => onStageSelect(null)}>
+                {t('allStages')}
+              </MenuItem>
+              {salesPipelineStages.map((stage) => (
+                <MenuItem
+                  key={stage.id}
+                  selected={selectedStageId === stage.id}
+                  onClick={() => onStageSelect(stage.id)}
+                >
+                  <Box
+                    aria-hidden="true"
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      mr: 1.2,
+                      borderRadius: `${radius.full}px`,
+                      bgcolor: stage.color,
+                    }}
+                  />
+                  {t(`stages.${stage.labelKey}`)}
+                </MenuItem>
+              ))}
+            </Menu>
+          </>
+        ) : null}
         <Button
-          variant="outlined"
-          color="secondary"
-          startIcon={<FilterAltOutlinedIcon />}
-          endIcon={<KeyboardArrowDownRoundedIcon />}
-          onClick={(event) => onFilterOpen(event.currentTarget)}
-          aria-haspopup="menu"
-          aria-expanded={Boolean(filterAnchor)}
+          variant="contained"
+          startIcon={<AddRoundedIcon />}
+          onClick={onNewOpportunity}
           sx={{
-            width: { sm: 160 },
-            minWidth: { sm: 160 },
-            flexShrink: 0,
+            width: { sm: 166 },
+            minWidth: { sm: 166 },
             height: { xs: 40, sm: 32 },
-            px: 1.25,
-            justifyContent: 'space-between',
-            borderColor: brand.neutral[100],
+            px: 1.5,
             borderRadius: `${radius.sm}px`,
-            bgcolor: 'background.paper',
-            color: 'text.secondary',
             fontSize: 12,
-            fontWeight: 500,
+            fontWeight: 700,
             whiteSpace: 'nowrap',
-            '&:hover': { borderColor: brand.neutral[200], bgcolor: 'background.paper' },
             '& .MuiButton-startIcon': { ml: 0, mr: 0.75 },
-            '& .MuiButton-endIcon': { ml: 0.75, mr: 0 },
             '& .MuiSvgIcon-root': { fontSize: 16 },
           }}
         >
-          {selectedStage ? t(`stages.${selectedStage.labelKey}`) : t('filterByStage')}
+          {t('newOpportunity')}
         </Button>
-        <Menu anchorEl={filterAnchor} open={Boolean(filterAnchor)} onClose={onFilterClose}>
-          <MenuItem selected={!selectedStageId} onClick={() => onStageSelect(null)}>
-            {t('allStages')}
-          </MenuItem>
-          {salesPipelineStages.map((stage) => (
-            <MenuItem
-              key={stage.id}
-              selected={selectedStageId === stage.id}
-              onClick={() => onStageSelect(stage.id)}
-            >
-              <Box
-                aria-hidden="true"
-                sx={{
-                  width: 8,
-                  height: 8,
-                  mr: 1.2,
-                  borderRadius: `${radius.full}px`,
-                  bgcolor: stage.color,
-                }}
-              />
-              {t(`stages.${stage.labelKey}`)}
-            </MenuItem>
-          ))}
-        </Menu>
-        <Tooltip title={t('newOpportunityTooltip')}>
-          <Box
-            component="span"
-            tabIndex={0}
-            aria-label={t('newOpportunityDisabledAriaLabel')}
-            sx={{ display: 'inline-flex', width: { sm: 166 }, minWidth: { sm: 166 } }}
-          >
-            <Button
-              variant="contained"
-              startIcon={<AddRoundedIcon />}
-              disabled
-              sx={{
-                width: '100%',
-                height: { xs: 40, sm: 32 },
-                px: 1.5,
-                borderRadius: `${radius.sm}px`,
-                fontSize: 12,
-                fontWeight: 700,
-                whiteSpace: 'nowrap',
-                '& .MuiButton-startIcon': { ml: 0, mr: 0.75 },
-                '& .MuiSvgIcon-root': { fontSize: 16 },
-                '&.Mui-disabled': {
-                  bgcolor: brand.magenta[500],
-                  color: surface.lightText,
-                  opacity: 1,
-                },
-              }}
-            >
-              {t('newOpportunity')}
-            </Button>
-          </Box>
-        </Tooltip>
       </Stack>
     </Stack>
   )

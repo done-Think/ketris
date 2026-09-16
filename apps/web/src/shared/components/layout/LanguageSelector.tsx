@@ -1,17 +1,16 @@
 'use client'
 
-import { Suspense, useState } from 'react'
-import { Box, Button, Menu, MenuItem, Stack, Typography } from '@mui/material'
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
-import TranslateOutlinedIcon from '@mui/icons-material/TranslateOutlined'
+import { Box, Button, Menu, MenuItem, Stack, Typography } from '@mui/material'
 import { useLocale, useTranslations } from 'next-intl'
 import { usePathname, useSearchParams } from 'next/navigation'
+import { Suspense, useState } from 'react'
 
 import { localeCookieMaxAge, localeCookieName, localeCookiePath } from '@/i18n/locale-cookie'
 import { getLocaleFromPathname, getLocalizedPathnameForLocale } from '@/i18n/locale-prefix'
 import type { AppLocale } from '@/i18n/types/locale.types'
-import type { LanguageOption, LanguageSelectorProps } from '@shared/types/language-selector'
 import { alpha, componentText, radius, shadows } from '@shared/theme/tokens'
+import type { LanguageOption, LanguageSelectorProps } from '@shared/types/language-selector'
 
 // useSearchParams() exige um boundary de Suspense para não travar a pré-renderização estática
 // (next build faz bail-out com "missing-suspense-with-csr-bailout" sem isso) — só descoberto
@@ -70,7 +69,6 @@ function LanguageSelectorContent({ variant = 'profile' }: LanguageSelectorProps)
       <Button
         type="button"
         onClick={(event) => setAnchor(event.currentTarget)}
-        startIcon={<TranslateOutlinedIcon fontSize="small" />}
         endIcon={<KeyboardArrowDownRoundedIcon fontSize="small" />}
         fullWidth={!isHeader}
         sx={{

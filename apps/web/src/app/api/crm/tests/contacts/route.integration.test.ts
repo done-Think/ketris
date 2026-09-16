@@ -28,13 +28,15 @@ describe('/api/crm/contacts (integração)', () => {
     })
     otherTenantId = other.id
 
+    // ADMIN aqui — testa o acesso irrestrito ao tenant. O escopo por AGENT (responsavelId do
+    // imóvel, propagado até o contato via oportunidade) tem sua própria suíte mais abaixo.
     const actor = await prisma.usuario.create({
       data: {
         tenantId,
-        nome: 'Agente',
-        email: `agente-${randomUUID()}@ketris.dev`,
+        nome: 'Admin',
+        email: `admin-${randomUUID()}@ketris.dev`,
         senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        papel: 'ADMIN',
       },
     })
     actorToken = await tokenService.sign({
@@ -195,6 +197,98 @@ describe('/api/crm/contacts (integração)', () => {
       const response = await POST(buildPostRequest({ name: 'Sem E-mail' }, actorToken))
 
       expect(response.status).toBe(400)
+    })
+  })
+
+  describe('escopo por AGENT', () => {
+    let agentAToken: string
+    let agentBToken: string
+    let contactOfAgentAId: string
+
+    beforeAll(async () => {
+      const agentA = await prisma.usuario.create({
+        data: {
+          tenantId,
+          nome: 'Corretor A',
+          email: `corretor-a-${randomUUID()}@ketris.dev`,
+          senhaHash: 'hash-fake',
+          papel: 'AGENT',
+        },
+      })
+      agentAToken = await tokenService.sign({
+        id: agentA.id,
+        tenantId: agentA.tenantId,
+        nome: agentA.nome,
+        email: agentA.email,
+        papel: agentA.papel,
+        ativo: agentA.ativo,
+      })
+
+      const agentB = await prisma.usuario.create({
+        data: {
+          tenantId,
+          nome: 'Corretor B',
+          email: `corretor-b-${randomUUID()}@ketris.dev`,
+          senhaHash: 'hash-fake',
+          papel: 'AGENT',
+        },
+      })
+      agentBToken = await tokenService.sign({
+        id: agentB.id,
+        tenantId: agentB.tenantId,
+        nome: agentB.nome,
+        email: agentB.email,
+        papel: agentB.papel,
+        ativo: agentB.ativo,
+      })
+
+      const imovelAgentA = await prisma.imovel.create({
+        data: {
+          tenantId,
+          responsavelId: agentA.id,
+          titulo: 'Imóvel do Corretor A',
+          finalidade: 'ALUGUEL',
+          tipo: 'apartamento',
+          valor: 2200,
+          status: 'PUBLISHED',
+          publicadoEm: new Date(),
+        },
+      })
+
+      const contactOfAgentA = await prisma.contato.create({
+        data: { tenantId, nome: 'Lead do Corretor A', email: `lead-a-${randomUUID()}@exemplo.com` },
+      })
+      contactOfAgentAId = contactOfAgentA.id
+
+      await prisma.oportunidade.create({
+        data: {
+          tenantId,
+          imovelId: imovelAgentA.id,
+          contatoId: contactOfAgentAId,
+          interessadoNome: contactOfAgentA.nome,
+          interessadoEmail: contactOfAgentA.email,
+          valorProposto: 2200,
+          status: 'ENVIADA',
+        },
+      })
+    })
+
+    it('AGENT só vê contatos com oportunidade em imóvel do qual é responsável', async () => {
+      const response = await GET(buildGetRequest('', agentAToken))
+      const json = await response.json()
+      const ids = json.contacts.map((c: { id: string }) => c.id)
+
+      expect(ids).toContain(contactOfAgentAId)
+      expect(ids).not.toContain(contactWithOpportunityId)
+      expect(ids).not.toContain(contactWithoutOpportunityId)
+    })
+
+    it('outro AGENT não vê o contato que não é seu', async () => {
+      const response = await GET(buildGetRequest('', agentBToken))
+      const json = await response.json()
+      const ids = json.contacts.map((c: { id: string }) => c.id)
+
+      expect(ids).not.toContain(contactOfAgentAId)
     })
   })
 })

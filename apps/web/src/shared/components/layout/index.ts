@@ -1,6 +1,6 @@
-export { HomeHeader } from './HomeHeader'
-export { DashboardSidebar } from './DashboardSidebar'
+export { AppShell } from './AppShell'
 export { DashboardNotificationsButton } from './DashboardNotificationsButton'
+export { HomeHeader } from './HomeHeader'
 export { LanguageSelector } from './LanguageSelector'
 export { ProfileModal } from './ProfileModal'
 export { SiteFooter } from './SiteFooter'

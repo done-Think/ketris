@@ -79,6 +79,7 @@ export class PrismaOpportunityRepository implements OpportunityRepository {
 
     if (filters?.status) where.status = filters.status
     if (filters?.contactId) where.contatoId = filters.contactId
+    if (filters?.responsavelId) where.imovel = { responsavelId: filters.responsavelId }
     if (!filters?.includeArchived) where.arquivadaEm = null
 
     const rows = await prisma.oportunidade.findMany({ where, orderBy: { createdAt: 'desc' } })
@@ -143,5 +144,13 @@ export class PrismaOpportunityRepository implements OpportunityRepository {
         .filter((group): group is typeof group & { contatoId: string } => group.contatoId !== null)
         .map((group) => [group.contatoId, group._count._all]),
     )
+  }
+
+  async existsForAgent(tenantId: string, contactId: string, agentId: string): Promise<boolean> {
+    const count = await prisma.oportunidade.count({
+      where: { tenantId, contatoId: contactId, imovel: { responsavelId: agentId } },
+    })
+
+    return count > 0
   }
 }

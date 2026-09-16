@@ -1,16 +1,4 @@
 {
-  "sidebar": {
-    "dashboard": "Dashboard",
-    "properties": "Mis inmuebles",
-    "publicProfile": "Perfil público",
-    "leads": "Leads",
-    "agenda": "Agenda",
-    "proposals": "Propuestas",
-    "finance": "Finanzas",
-    "backToMarketplace": "Volver al marketplace",
-    "back": "Volver",
-    "userRole": "Gestor de operaciones"
-  },
   "metadata": {
     "overview": {
       "metadataTitle": "Ketris | Dashboard"
@@ -135,10 +123,6 @@
       "rowsPerPage": "Filas por página",
       "title": "Movimientos recientes",
       "date": "Fecha"
-    },
-    "types": {
-      "Venda": "Venta",
-      "Comissão": "Comisión"
     },
     "statuses": {
       "Recebido": "Recibido",

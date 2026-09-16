@@ -32,6 +32,23 @@ export const updateOpportunitySchema = z
     message: 'Informe ao menos um campo para atualizar.',
   })
 
+export const createOpportunityFormSchema = z.object({
+  propertyId: z.string().trim().min(1, 'Selecione um imóvel.'),
+  leadName: z.string().trim().min(1, 'Nome e obrigatorio.'),
+  leadEmail: z.string().trim().email('E-mail invalido.'),
+  leadPhone: z.string().trim(),
+  proposedValue: z
+    .string()
+    .trim()
+    .min(1, 'Valor proposto e obrigatorio.')
+    .refine((value) => {
+      const amount = Number(value)
+      return Number.isFinite(amount) && amount > 0
+    }, 'Valor proposto deve ser positivo.'),
+  notes: z.string().trim(),
+  status: z.enum(['RASCUNHO', 'ENVIADA']),
+})
+
 export const editOpportunityFormSchema = z.object({
   leadName: z.string().trim().min(1, 'Nome e obrigatorio.'),
   leadEmail: z.string().trim().email('E-mail invalido.'),

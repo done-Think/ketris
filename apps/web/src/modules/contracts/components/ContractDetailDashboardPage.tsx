@@ -7,9 +7,9 @@ import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined'
 import { Box, Button, Chip, IconButton, Link as MuiLink, Stack, Typography } from '@mui/material'
 import type { SxProps, Theme } from '@mui/material/styles'
 import { notFound } from 'next/navigation'
-import NextLink from 'next/link'
 import type { ReactNode } from 'react'
 
+import { Link } from '@/i18n/navigation'
 import {
   alpha,
   brand,
@@ -21,7 +21,6 @@ import {
 } from '@shared/theme/tokens'
 
 import { contractStatusStyles } from '../config/contract-ui'
-import { getDashboardContractById } from '../config/contracts-data'
 import { useContractsStore } from '../stores/contracts-store'
 import type {
   ContractDetailDashboardPageProps,
@@ -61,6 +60,10 @@ function DetailPanel({
   )
 }
 
+function formatContractCode(code: string) {
+  return code.replace(/^CTR-\d{4}-/, '#')
+}
+
 function ContractHeader({ contract }: { contract: ContractListItem }) {
   const statusStyle = contractStatusStyles[contract.status]
 
@@ -89,7 +92,7 @@ function ContractHeader({ contract }: { contract: ContractListItem }) {
             variant="h1"
             sx={{ color: brand.graphite[500], fontSize: { xs: 30, md: 36 }, fontWeight: 900 }}
           >
-            Contrato {contract.code.replace('CTR-2026-', '#')}
+            Contrato {formatContractCode(contract.code)}
           </Typography>
         </Stack>
       </Box>
@@ -116,13 +119,24 @@ function ContractHeader({ contract }: { contract: ContractListItem }) {
   )
 }
 
+const infoRowSx = {
+  py: { xs: 1.35, md: 1.65 },
+  borderBottom: '1px solid',
+  borderColor: alpha.graphite[8],
+  '&:last-child': { borderBottom: 0 },
+} as const
+
+const infoLabelSx = { color: brand.neutral[500], fontSize: 15, fontWeight: 700 } as const
+
+const infoValueSx = {
+  color: brand.graphite[500],
+  fontSize: 15,
+  fontWeight: 900,
+  textAlign: 'right',
+} as const
+
 function ContractInfoPanel({ contract }: { contract: ContractListItem }) {
   const rows = [
-    {
-      label: 'Imovel',
-      value: contract.property,
-      href: `/dashboard/properties/${contract.propertyId}`,
-    },
     { label: 'Locatario', value: contract.tenant },
     { label: 'Valor', value: `${contract.amount}/mes` },
     { label: 'Reajuste', value: contract.adjustment },
@@ -135,43 +149,27 @@ function ContractInfoPanel({ contract }: { contract: ContractListItem }) {
   return (
     <DetailPanel title="Dados do Contrato" sx={{ height: '100%' }}>
       <Stack sx={{ flex: 1, justifyContent: 'space-between' }}>
+        <Stack direction="row" justifyContent="space-between" spacing={2} sx={infoRowSx}>
+          <Typography sx={infoLabelSx}>Imovel</Typography>
+          <MuiLink
+            component={Link}
+            href={{ pathname: '/dashboard/properties/[id]', params: { id: contract.propertyId } }}
+            underline="hover"
+            sx={{ color: brand.magenta[500], fontSize: 15, fontWeight: 900 }}
+          >
+            {contract.property}
+          </MuiLink>
+        </Stack>
         {rows.map((row) => (
           <Stack
             key={row.label}
             direction="row"
             justifyContent="space-between"
             spacing={2}
-            sx={{
-              py: { xs: 1.35, md: 1.65 },
-              borderBottom: '1px solid',
-              borderColor: alpha.graphite[8],
-              '&:last-child': { borderBottom: 0 },
-            }}
+            sx={infoRowSx}
           >
-            <Typography sx={{ color: brand.neutral[500], fontSize: 15, fontWeight: 700 }}>
-              {row.label}
-            </Typography>
-            {row.href ? (
-              <MuiLink
-                component={NextLink}
-                href={row.href}
-                underline="hover"
-                sx={{ color: brand.magenta[500], fontSize: 15, fontWeight: 900 }}
-              >
-                {row.value}
-              </MuiLink>
-            ) : (
-              <Typography
-                sx={{
-                  color: brand.graphite[500],
-                  fontSize: 15,
-                  fontWeight: 900,
-                  textAlign: 'right',
-                }}
-              >
-                {row.value}
-              </Typography>
-            )}
+            <Typography sx={infoLabelSx}>{row.label}</Typography>
+            <Typography sx={infoValueSx}>{row.value}</Typography>
           </Stack>
         ))}
       </Stack>
@@ -287,10 +285,9 @@ function DocumentsPanel({ documents }: { documents: ContractDocumentItem[] }) {
 }
 
 export function ContractDetailDashboardPage({ contractId }: ContractDetailDashboardPageProps) {
-  const storeContract = useContractsStore((state) =>
-    state.contracts.find((contract) => contract.id === contractId),
+  const contract = useContractsStore((state) =>
+    state.contracts.find((item) => item.id === contractId),
   )
-  const contract = storeContract ?? getDashboardContractById(contractId)
 
   if (!contract) notFound()
 
@@ -302,18 +299,13 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
           spacing={0.8}
           sx={{ mb: 2, color: brand.neutral[500], fontSize: 13 }}
         >
-          <MuiLink
-            component={NextLink}
-            href="/dashboard/contracts"
-            underline="hover"
-            color="inherit"
-          >
+          <MuiLink component={Link} href="/dashboard/contracts" underline="hover" color="inherit">
             Contratos
           </MuiLink>
           <Typography sx={{ fontSize: 13 }}>›</Typography>
           <MuiLink
-            component={NextLink}
-            href={`/dashboard/properties/${contract.propertyId}`}
+            component={Link}
+            href={{ pathname: '/dashboard/properties/[id]', params: { id: contract.propertyId } }}
             underline="hover"
             color="inherit"
             sx={{ fontSize: 13 }}
@@ -322,7 +314,7 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
           </MuiLink>
           <Typography sx={{ fontSize: 13 }}>›</Typography>
           <Typography sx={{ color: brand.magenta[500], fontSize: 13, fontWeight: 900 }}>
-            Contrato {contract.code.replace('CTR-2026-', '#')}
+            Contrato {formatContractCode(contract.code)}
           </Typography>
         </Stack>
 

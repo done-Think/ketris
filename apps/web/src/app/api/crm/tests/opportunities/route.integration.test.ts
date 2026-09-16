@@ -32,13 +32,15 @@ describe('/api/crm/opportunities (integração)', () => {
     })
     otherTenantId = other.id
 
+    // ADMIN aqui — testa o acesso irrestrito ao tenant. O escopo por AGENT (responsavelId do
+    // imóvel) tem sua própria suíte mais abaixo, com atores dedicados.
     const actor = await prisma.usuario.create({
       data: {
         tenantId,
-        nome: 'Agente',
-        email: `agente-${randomUUID()}@ketris.dev`,
+        nome: 'Admin',
+        email: `admin-${randomUUID()}@ketris.dev`,
         senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        papel: 'ADMIN',
       },
     })
     actorToken = await tokenService.sign({
@@ -292,6 +294,146 @@ describe('/api/crm/opportunities (integração)', () => {
       )
 
       expect(response.status).toBe(401)
+    })
+  })
+
+  describe('escopo por AGENT', () => {
+    let agentAToken: string
+    let agentBToken: string
+    let imovelAgentAId: string
+    let imovelAgentBId: string
+    let oppAgentAId: string
+
+    beforeAll(async () => {
+      const agentA = await prisma.usuario.create({
+        data: {
+          tenantId,
+          nome: 'Corretor A',
+          email: `corretor-a-${randomUUID()}@ketris.dev`,
+          senhaHash: 'hash-fake',
+          papel: 'AGENT',
+        },
+      })
+      agentAToken = await tokenService.sign({
+        id: agentA.id,
+        tenantId: agentA.tenantId,
+        nome: agentA.nome,
+        email: agentA.email,
+        papel: agentA.papel,
+        ativo: agentA.ativo,
+      })
+
+      const agentB = await prisma.usuario.create({
+        data: {
+          tenantId,
+          nome: 'Corretor B',
+          email: `corretor-b-${randomUUID()}@ketris.dev`,
+          senhaHash: 'hash-fake',
+          papel: 'AGENT',
+        },
+      })
+      agentBToken = await tokenService.sign({
+        id: agentB.id,
+        tenantId: agentB.tenantId,
+        nome: agentB.nome,
+        email: agentB.email,
+        papel: agentB.papel,
+        ativo: agentB.ativo,
+      })
+
+      const imovelAgentA = await prisma.imovel.create({
+        data: {
+          tenantId,
+          responsavelId: agentA.id,
+          titulo: 'Imóvel do Corretor A',
+          finalidade: 'ALUGUEL',
+          tipo: 'apartamento',
+          valor: 2200,
+          status: 'PUBLISHED',
+          publicadoEm: new Date(),
+        },
+      })
+      imovelAgentAId = imovelAgentA.id
+
+      const imovelAgentB = await prisma.imovel.create({
+        data: {
+          tenantId,
+          responsavelId: agentB.id,
+          titulo: 'Imóvel do Corretor B',
+          finalidade: 'ALUGUEL',
+          tipo: 'apartamento',
+          valor: 2300,
+          status: 'PUBLISHED',
+          publicadoEm: new Date(),
+        },
+      })
+      imovelAgentBId = imovelAgentB.id
+
+      const oppAgentA = await prisma.oportunidade.create({
+        data: {
+          tenantId,
+          imovelId: imovelAgentAId,
+          interessadoNome: 'Lead do Corretor A',
+          interessadoEmail: `lead-a-${randomUUID()}@exemplo.com`,
+          valorProposto: 2200,
+          status: 'ENVIADA',
+        },
+      })
+      oppAgentAId = oppAgentA.id
+    })
+
+    it('AGENT só vê oportunidades de imóveis dos quais é responsável', async () => {
+      const response = await GET(buildGetRequest('', agentAToken))
+      const json = await response.json()
+      const ids = json.opportunities.map((o: { id: string }) => o.id)
+
+      expect(ids).toContain(oppAgentAId)
+      expect(ids).not.toContain(activeId)
+    })
+
+    it('outro AGENT não vê a oportunidade que não é sua', async () => {
+      const response = await GET(buildGetRequest('', agentBToken))
+      const json = await response.json()
+      const ids = json.opportunities.map((o: { id: string }) => o.id)
+
+      expect(ids).not.toContain(oppAgentAId)
+    })
+
+    it('AGENT cria oportunidade no próprio imóvel normalmente', async () => {
+      const response = await POST(
+        buildPostRequest(
+          {
+            propertyId: imovelAgentAId,
+            leadName: 'Novo Lead do Corretor A',
+            leadEmail: `lead-novo-a-${randomUUID()}@exemplo.com`,
+            proposedValue: 2500,
+          },
+          agentAToken,
+        ),
+      )
+      const json = await response.json()
+
+      expect(response.status).toBe(201)
+
+      await prisma.oportunidade.delete({ where: { id: json.opportunity.id } })
+    })
+
+    it('AGENT recebe 403 ao tentar criar oportunidade em imóvel do qual não é responsável', async () => {
+      const response = await POST(
+        buildPostRequest(
+          {
+            propertyId: imovelAgentBId,
+            leadName: 'Tentativa Indevida',
+            leadEmail: `tentativa-${randomUUID()}@exemplo.com`,
+            proposedValue: 2500,
+          },
+          agentAToken,
+        ),
+      )
+      const json = await response.json()
+
+      expect(response.status).toBe(403)
+      expect(json.error.code).toBe('FORBIDDEN')
     })
   })
 })

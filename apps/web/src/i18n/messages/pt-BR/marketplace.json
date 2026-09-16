@@ -192,7 +192,7 @@
   },
   "profileEditor": {
     "title": "Editar Perfil",
-    "subtitle": "Ajuste aparência, imagens e ordem das seções exibidas para visitantes.",
+    "subtitle": "Ajuste conteúdo, aparência e imagens exibidas para visitantes.",
     "validatedDraft": "Rascunho validado",
     "mainContent": "Conteúdo principal",
     "appearance": "Aparência",
@@ -207,8 +207,6 @@
     "uploadHelper": "JPG, PNG ou WEBP. Você também pode manter apenas o link acima.",
     "photoPreview": "Prévia da foto",
     "bannerPreview": "Prévia do banner",
-    "saveDraft": "Salvar rascunho",
-    "save": "Salvar",
     "preview": "Visualizar",
     "configurableProfile": "Perfil público configurável",
     "newMember": "Novo membro",
@@ -266,11 +264,12 @@
       "name": "Nome",
       "role": "Função",
       "profileUrl": "Link do perfil"
-    }
+    },
+    "save": "Salvar"
   },
   "agencyProfileEditor": {
     "title": "Editar Perfil da Imobiliária",
-    "subtitle": "Ajuste marca, imagens e ordem das seções exibidas para visitantes.",
+    "subtitle": "Ajuste marca, conteúdo e imagens exibidas para visitantes.",
     "validatedDraft": "Rascunho validado",
     "mainContent": "Conteúdo principal",
     "appearance": "Aparência",
@@ -279,8 +278,6 @@
     "uploadHelper": "JPG, PNG ou WEBP. Você também pode manter apenas o link acima.",
     "logoPreview": "Prévia do logo",
     "bannerPreview": "Prévia do banner",
-    "saveDraft": "Salvar rascunho",
-    "save": "Salvar",
     "preview": "Visualizar",
     "dropToMove": "Solte para mover",
     "preparing": "Preparando...",
@@ -344,7 +341,8 @@
       "bannerUrl": "URL do banner",
       "uploadLogo": "Enviar logo",
       "uploadBanner": "Enviar banner"
-    }
+    },
+    "save": "Salvar"
   },
   "searchResults": {
     "toolbar": {

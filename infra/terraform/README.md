@@ -98,8 +98,9 @@ No dashboard do projeto na Vercel → Settings → Environment Variables, adicio
 | `AWS_REGION` | o valor de `aws_region` usado (padrão `us-east-1`) |
 | `S3_BUCKET_NAME` | saída de `terraform output s3_bucket_name` |
 
-Depois disso, `AUTH_MOCK_ENABLED` pode ficar desligado nos Preview deploys — eles já vão
-conseguir falar com um Postgres de verdade.
+Depois disso, o login em Preview já fala direto com um Postgres de verdade — o antigo modo de
+login simulado (`AUTH_MOCK_ENABLED`) foi removido do código, já que não é mais necessário com RDS,
+S3 e as migrations/seeds de CI configurados.
 
 Se o volume de variáveis crescer ou precisar ficar sincronizado entre várias pessoas, dá pra
 automatizar isso via Vercel CLI (`vercel env add <NOME> preview --token=$VERCEL_TOKEN --force`)

@@ -2,6 +2,7 @@ import type { z } from 'zod'
 
 import type {
   contractGuaranteeSchema,
+  createOpportunityFormSchema,
   editOpportunityFormSchema,
   opportunityFiltersSchema,
   opportunityStatusSchema,
@@ -13,6 +14,7 @@ export type ContractGuarantee = z.infer<typeof contractGuaranteeSchema>
 export type OpportunityFilters = z.infer<typeof opportunityFiltersSchema>
 export type UpdateOpportunityPayload = z.infer<typeof updateOpportunitySchema>
 export type OpportunityEditFormValues = z.infer<typeof editOpportunityFormSchema>
+export type CreateOpportunityFormValues = z.infer<typeof createOpportunityFormSchema>
 
 export interface Opportunity {
   id: string
@@ -39,11 +41,7 @@ export interface UpdateOpportunityInput {
   changes: UpdateOpportunityPayload
 }
 
-/**
- * Manual opportunity creation — see POST /crm/opportunities. No Zod schema of its own yet: no
- * form in the frontend consumes this (the pipeline's "New Opportunity" button stays disabled);
- * the type exists for the service layer, ready for when that form gets built.
- */
+/** Manual opportunity creation — see POST /crm/opportunities and CreateOpportunityDialog. */
 export interface CreateOpportunityPayload {
   propertyId: string
   contactId?: string | null

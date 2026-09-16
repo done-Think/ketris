@@ -4,6 +4,7 @@ import { OpportunityNotFoundError } from '../../../domain/errors'
 import type { Opportunity } from '../../../domain/opportunity.entity'
 import type { ActivityRepository } from '../../../application/ports/activity-repository.port'
 import type { OpportunityRepository } from '../../../application/ports/opportunity-repository.port'
+import type { PropertyLookupPort } from '../../../application/ports/property-lookup.port'
 import { AddOpportunityNoteUseCase } from '../../../application/use-cases/add-opportunity-note.use-case'
 
 const opportunity: Opportunity = {
@@ -26,16 +27,27 @@ const opportunity: Opportunity = {
   updatedAt: new Date('2026-08-10T00:00:00.000Z'),
 }
 
+function createPropertyLookup(findResponsavelId?: PropertyLookupPort['findResponsavelId']) {
+  return {
+    findResponsavelId: findResponsavelId ?? vi.fn().mockResolvedValue('agent-1'),
+  } as unknown as PropertyLookupPort
+}
+
 describe('AddOpportunityNoteUseCase', () => {
   it('cria uma nota do tipo NOTA por padrão, com o texto sem espaços nas bordas', async () => {
     const findById = vi.fn().mockResolvedValue(opportunity)
     const create = vi.fn().mockResolvedValue({})
     const opportunityRepository = { findById } as unknown as OpportunityRepository
     const activityRepository = { create } as unknown as ActivityRepository
-    const useCase = new AddOpportunityNoteUseCase(opportunityRepository, activityRepository)
+    const useCase = new AddOpportunityNoteUseCase(
+      opportunityRepository,
+      activityRepository,
+      createPropertyLookup(),
+    )
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorPapel: 'ADMIN',
       actorId: 'user-1',
       actorName: 'Ana',
       opportunityId: 'op-1',
@@ -58,10 +70,15 @@ describe('AddOpportunityNoteUseCase', () => {
     const create = vi.fn().mockResolvedValue({})
     const opportunityRepository = { findById } as unknown as OpportunityRepository
     const activityRepository = { create } as unknown as ActivityRepository
-    const useCase = new AddOpportunityNoteUseCase(opportunityRepository, activityRepository)
+    const useCase = new AddOpportunityNoteUseCase(
+      opportunityRepository,
+      activityRepository,
+      createPropertyLookup(),
+    )
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorPapel: 'ADMIN',
       opportunityId: 'op-1',
       description: 'Falou com o interessado por telefone.',
       type: 'CONTATO_REALIZADO',
@@ -75,10 +92,42 @@ describe('AddOpportunityNoteUseCase', () => {
     const create = vi.fn()
     const opportunityRepository = { findById } as unknown as OpportunityRepository
     const activityRepository = { create } as unknown as ActivityRepository
-    const useCase = new AddOpportunityNoteUseCase(opportunityRepository, activityRepository)
+    const useCase = new AddOpportunityNoteUseCase(
+      opportunityRepository,
+      activityRepository,
+      createPropertyLookup(),
+    )
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', opportunityId: 'op-1', description: 'x' }),
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorPapel: 'ADMIN',
+        opportunityId: 'op-1',
+        description: 'x',
+      }),
+    ).rejects.toThrow(OpportunityNotFoundError)
+    expect(create).not.toHaveBeenCalled()
+  })
+
+  it('AGENT que não é responsável pelo imóvel recebe 404 opaco e não cria nota', async () => {
+    const findById = vi.fn().mockResolvedValue(opportunity)
+    const create = vi.fn()
+    const opportunityRepository = { findById } as unknown as OpportunityRepository
+    const activityRepository = { create } as unknown as ActivityRepository
+    const useCase = new AddOpportunityNoteUseCase(
+      opportunityRepository,
+      activityRepository,
+      createPropertyLookup(vi.fn().mockResolvedValue('outro-agente')),
+    )
+
+    await expect(
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'agent-1',
+        actorPapel: 'AGENT',
+        opportunityId: 'op-1',
+        description: 'x',
+      }),
     ).rejects.toThrow(OpportunityNotFoundError)
     expect(create).not.toHaveBeenCalled()
   })

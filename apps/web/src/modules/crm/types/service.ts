@@ -1,3 +1,4 @@
+import type { ApiContact, ApiContactListItem } from './contact'
 import type { Opportunity, OpportunityActivityRecord } from './opportunity'
 import type { PublicPropertyDetail, PublicPropertySummary } from './property'
 
@@ -28,4 +29,12 @@ export interface ListPropertiesResponse {
 
 export interface PropertyResponse {
   property: PublicPropertyDetail
+}
+
+export interface ListContactsResponse {
+  contacts: ApiContactListItem[]
+}
+
+export interface ContactResponse {
+  contact: ApiContact
 }

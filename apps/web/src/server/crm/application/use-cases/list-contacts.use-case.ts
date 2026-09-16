@@ -1,9 +1,13 @@
+import type { Papel } from '@server/auth/domain/user.entity'
+
 import type { ContactListItem } from '../../domain/contact.entity'
 import type { ContactListFilters, ContactRepository } from '../ports/contact-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
 
 export interface ListContactsInput {
   actorTenantId: string
+  actorId: string
+  actorPapel: Papel
   filters?: ContactListFilters
 }
 
@@ -16,10 +20,10 @@ export class ListContactsUseCase {
   ) {}
 
   async execute(input: ListContactsInput): Promise<ListContactsOutput> {
-    const contacts = await this.contactRepository.findManyByTenant(
-      input.actorTenantId,
-      input.filters,
-    )
+    const contacts = await this.contactRepository.findManyByTenant(input.actorTenantId, {
+      ...input.filters,
+      responsavelId: input.actorPapel === 'AGENT' ? input.actorId : undefined,
+    })
 
     if (contacts.length === 0) return []
 

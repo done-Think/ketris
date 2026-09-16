@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
+import { ForbiddenError } from '@server/shared/errors'
+
 import { ContactNotFoundError, OpportunityPropertyNotFoundError } from '../../../domain/errors'
 import type { Contact } from '../../../domain/contact.entity'
 import type { Opportunity } from '../../../domain/opportunity.entity'
@@ -46,6 +48,7 @@ const contact: Contact = {
 
 function createDeps(overrides?: {
   existsForTenant?: PropertyLookupPort['existsForTenant']
+  findResponsavelId?: PropertyLookupPort['findResponsavelId']
   findById?: ContactRepository['findById']
   create?: OpportunityRepository['create']
 }) {
@@ -59,6 +62,7 @@ function createDeps(overrides?: {
 
   const propertyLookup = {
     existsForTenant: overrides?.existsForTenant ?? vi.fn().mockResolvedValue(true),
+    findResponsavelId: overrides?.findResponsavelId ?? vi.fn().mockResolvedValue('agent-1'),
   } as unknown as PropertyLookupPort
 
   const activityRepository = {
@@ -81,6 +85,7 @@ describe('CreateOpportunityUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorPapel: 'ADMIN',
       actorId: 'user-1',
       actorName: 'Ana',
       propertyId: 'imovel-1',
@@ -110,6 +115,7 @@ describe('CreateOpportunityUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorPapel: 'ADMIN',
       propertyId: 'imovel-1',
       leadName: 'Maria',
       leadEmail: 'maria@exemplo.com',
@@ -133,6 +139,7 @@ describe('CreateOpportunityUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorPapel: 'ADMIN',
       propertyId: 'imovel-1',
       leadName: 'Maria',
       leadEmail: 'maria@exemplo.com',
@@ -156,6 +163,7 @@ describe('CreateOpportunityUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
+        actorPapel: 'ADMIN',
         propertyId: 'imovel-de-outro-tenant',
         leadName: 'Maria',
         leadEmail: 'maria@exemplo.com',
@@ -182,6 +190,7 @@ describe('CreateOpportunityUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
+        actorPapel: 'ADMIN',
         propertyId: 'imovel-1',
         contactId: 'contato-de-outro-tenant',
         leadName: 'Maria',
@@ -204,6 +213,7 @@ describe('CreateOpportunityUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorPapel: 'ADMIN',
       propertyId: 'imovel-1',
       leadName: 'Maria',
       leadEmail: 'maria@exemplo.com',
@@ -211,5 +221,55 @@ describe('CreateOpportunityUseCase', () => {
     })
 
     expect(findById).not.toHaveBeenCalled()
+  })
+
+  it('AGENT cria oportunidade no próprio imóvel normalmente', async () => {
+    const create = vi.fn().mockResolvedValue(created)
+    const deps = createDeps({ create, findResponsavelId: vi.fn().mockResolvedValue('agent-1') })
+    const useCase = new CreateOpportunityUseCase(
+      deps.opportunityRepository,
+      deps.contactRepository,
+      deps.propertyLookup,
+      deps.activityRepository,
+    )
+
+    await useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorId: 'agent-1',
+      actorPapel: 'AGENT',
+      propertyId: 'imovel-1',
+      leadName: 'Maria',
+      leadEmail: 'maria@exemplo.com',
+      proposedValue: 2500,
+    })
+
+    expect(create).toHaveBeenCalled()
+  })
+
+  it('AGENT não pode criar oportunidade em imóvel do qual não é responsável', async () => {
+    const create = vi.fn()
+    const deps = createDeps({
+      create,
+      findResponsavelId: vi.fn().mockResolvedValue('outro-agente'),
+    })
+    const useCase = new CreateOpportunityUseCase(
+      deps.opportunityRepository,
+      deps.contactRepository,
+      deps.propertyLookup,
+      deps.activityRepository,
+    )
+
+    await expect(
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'agent-1',
+        actorPapel: 'AGENT',
+        propertyId: 'imovel-1',
+        leadName: 'Maria',
+        leadEmail: 'maria@exemplo.com',
+        proposedValue: 2500,
+      }),
+    ).rejects.toThrow(ForbiddenError)
+    expect(create).not.toHaveBeenCalled()
   })
 })

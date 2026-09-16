@@ -190,7 +190,3 @@ export const dashboardContracts: ContractListItem[] = [
     updatedAt: '2 semanas',
   },
 ]
-
-export function getDashboardContractById(contractId: string) {
-  return dashboardContracts.find((contract) => contract.id === contractId) ?? null
-}

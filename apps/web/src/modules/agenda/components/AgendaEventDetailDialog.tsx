@@ -18,12 +18,14 @@ import {
   Typography,
 } from '@mui/material'
 import { zodResolver } from '@hookform/resolvers/zod'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 
+import { Link } from '@/i18n/navigation'
 import { RhfTextField } from '@shared/components/form'
 import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import type { LocalizedHref } from '@shared/types/localized-href'
 
 import { agendaRescheduleSchema } from '../schemas/agenda-reschedule-schema'
 import type {
@@ -40,6 +42,7 @@ export function AgendaEventDetailDialog({
   onReschedule,
   open,
 }: AgendaEventDetailDialogProps) {
+  const t = useTranslations('agenda.eventDetail')
   const { control, handleSubmit, reset } = useForm<AgendaRescheduleFormValues>({
     defaultValues: {
       scheduledDate: eventDate,
@@ -70,7 +73,7 @@ export function AgendaEventDetailDialog({
                 {event.title}
               </Typography>
             </Box>
-            <IconButton aria-label="Fechar detalhes do evento" onClick={onClose}>
+            <IconButton aria-label={t('closeAriaLabel')} onClick={onClose}>
               <CloseRoundedIcon sx={{ fontSize: iconSize.lg }} />
             </IconButton>
           </Stack>
@@ -92,7 +95,7 @@ export function AgendaEventDetailDialog({
                   <HomeWorkOutlinedIcon sx={{ color: brand.magenta[500], fontSize: iconSize.md }} />
                   <MuiLink
                     component={Link}
-                    href={event.propertyHref}
+                    href={event.propertyHref as LocalizedHref}
                     underline="hover"
                     sx={{ color: brand.graphite[500], fontSize: 15, fontWeight: 900 }}
                   >
@@ -107,7 +110,10 @@ export function AgendaEventDetailDialog({
                 </Stack>
                 {event.createdBy && event.createdByRole ? (
                   <Typography sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 700 }}>
-                    Marcado por {event.createdByRole.toLocaleLowerCase('pt-BR')} {event.createdBy}
+                    {t('createdBy', {
+                      name: event.createdBy,
+                      role: event.createdByRole.toLocaleLowerCase('pt-BR'),
+                    })}
                   </Typography>
                 ) : null}
               </Stack>
@@ -117,7 +123,7 @@ export function AgendaEventDetailDialog({
               <Typography
                 sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 900, mb: 0.8 }}
               >
-                Observações
+                {t('notesTitle')}
               </Typography>
               <Typography sx={{ color: brand.neutral[500], fontSize: 14, lineHeight: 1.65 }}>
                 {event.notes}
@@ -130,7 +136,7 @@ export function AgendaEventDetailDialog({
               <Stack direction="row" spacing={1} alignItems="center">
                 <EventRepeatRoundedIcon sx={{ color: brand.magenta[500], fontSize: iconSize.md }} />
                 <Typography sx={{ color: brand.graphite[500], fontSize: 15, fontWeight: 900 }}>
-                  Reagendar compromisso
+                  {t('rescheduleTitle')}
                 </Typography>
               </Stack>
               <Box
@@ -143,7 +149,7 @@ export function AgendaEventDetailDialog({
                 <RhfTextField
                   control={control}
                   name="scheduledDate"
-                  label="Nova data"
+                  label={t('fields.newDate')}
                   type="date"
                   fullWidth
                   InputLabelProps={{ shrink: true }}
@@ -152,7 +158,7 @@ export function AgendaEventDetailDialog({
                 <RhfTextField
                   control={control}
                   name="scheduledTime"
-                  label="Novo horário"
+                  label={t('fields.newTime')}
                   type="time"
                   fullWidth
                   InputLabelProps={{ shrink: true }}
@@ -164,10 +170,10 @@ export function AgendaEventDetailDialog({
 
         <DialogActions sx={{ px: { xs: 2, md: 2.8 }, pb: 2.5, pt: 0 }}>
           <Button type="button" variant="outlined" color="secondary" onClick={onClose}>
-            Cancelar
+            {t('cancel')}
           </Button>
           <Button type="submit" variant="contained">
-            Salvar reagendamento
+            {t('submit')}
           </Button>
         </DialogActions>
       </Box>

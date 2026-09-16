@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
+import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { crmContainer } from '@server/crm/container'
 import {
@@ -28,6 +29,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   const contacts = await crmContainer.listContactsUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorId: actor.sub,
+    actorPapel: actor.papel as Papel,
     filters: {
       type: parsed.data.type,
       q: parsed.data.q,

@@ -1,130 +1,113 @@
 'use client'
 
-import AddRoundedIcon from '@mui/icons-material/AddRounded'
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
-import { Box, Button, InputAdornment, Stack, Typography } from '@mui/material'
+import { useMemo, useState } from 'react'
+import { Box, Paper, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
-import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { useForm, useWatch } from 'react-hook-form'
 
-import { RhfTextField } from '@shared/components/form'
-import { DashboardNotificationsButton } from '@shared/components/layout'
-import { brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import { brand, radius, shadows, surface } from '@shared/theme/tokens'
 
+import type { DashboardLead, LeadFilter } from '../types/lead'
+import { filterLeads, leadsDefaultPageSize, paginateLeads } from '../utils/leads'
 import { useLeadsStore } from '../stores/leads-store'
-import type { DashboardLead, LeadsDashboardFiltersFormValues } from '../types/lead'
-import { filterLeads } from '../utils/lead-dashboard'
 import { CreateLeadDialog } from './CreateLeadDialog'
 import { LeadContactDialog } from './LeadContactDialog'
-import { LeadsDesktopTable } from './LeadsDesktopTable'
-import { LeadsFilterBar } from './LeadsFilterBar'
-import { LeadsMobileList } from './LeadsMobileList'
+import { LeadsCards } from './leads-list/LeadsCards'
+import { LeadsHeader } from './leads-list/LeadsHeader'
+import { LeadsPaginationFooter } from './leads-list/LeadsPaginationFooter'
+import { LeadsStatusFilters } from './leads-list/LeadsStatusFilters'
+import { LeadsTable } from './leads-list/LeadsTable'
+
+const leadsBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
 
 export function LeadsDashboardPage() {
   const t = useTranslations('crm.leads')
-  const searchParams = useSearchParams()
   const leads = useLeadsStore((state) => state.leads)
+  const [search, setSearch] = useState('')
+  const [activeFilter, setActiveFilter] = useState<LeadFilter>('Todos')
+  const [page, setPage] = useState(1)
   const [isCreateLeadDialogOpen, setIsCreateLeadDialogOpen] = useState(false)
   const [selectedContactLead, setSelectedContactLead] = useState<DashboardLead | null>(null)
-  const { control, setValue } = useForm<LeadsDashboardFiltersFormValues>({
-    defaultValues: {
-      activeFilter: 'Todos',
-      searchQuery: '',
-    },
-  })
-  const activeFilter = useWatch({ control, name: 'activeFilter' })
-  const searchQuery = useWatch({ control, name: 'searchQuery' })
+
   const filteredLeads = useMemo(
-    () => filterLeads(leads, searchQuery, activeFilter),
-    [activeFilter, leads, searchQuery],
+    () => filterLeads(leads, search, activeFilter),
+    [search, activeFilter, leads],
+  )
+  const leadsPage = useMemo(
+    () => paginateLeads(filteredLeads, page, leadsDefaultPageSize),
+    [filteredLeads, page],
   )
 
-  useEffect(() => {
-    const leadId = searchParams.get('leadId')
-    const lead = leads.find((currentLead) => currentLead.id === leadId)
-    if (!lead) return
+  function handleSearchChange(value: string) {
+    setSearch(value)
+    setPage(1)
+  }
 
-    setSelectedContactLead(lead)
-  }, [leads, searchParams])
+  function handleFilterChange(filter: LeadFilter) {
+    setActiveFilter(filter)
+    setPage(1)
+  }
 
   return (
-    <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
+    <Box
+      sx={{
+        width: '100%',
+        px: { xs: 2, md: 3.6 },
+        py: { xs: 2.4, md: 4.2 },
+        fontFamily: leadsBodyFontFamily,
+        '& .MuiTypography-root, & .MuiButton-root, & .MuiInputBase-root, & .MuiTableCell-root': {
+          fontFamily: leadsBodyFontFamily,
+        },
+      }}
+    >
       <Stack spacing={2.2}>
-        <Stack
-          direction={{ xs: 'column', lg: 'row' }}
-          alignItems={{ xs: 'stretch', lg: 'flex-start' }}
-          justifyContent="space-between"
-          spacing={1.6}
-        >
-          <Box sx={{ minWidth: 0 }}>
-            <Typography
-              variant="h3"
-              sx={{ color: brand.graphite[500], fontSize: { xs: 30, md: 40 }, fontWeight: 900 }}
-            >
-              {t('title')}
-            </Typography>
-            <Typography sx={{ color: brand.neutral[500], fontSize: { xs: 14, md: 15 } }}>
-              {t('subtitle')}
-            </Typography>
-          </Box>
+        <LeadsHeader
+          search={search}
+          onSearchChange={handleSearchChange}
+          onNewLead={() => setIsCreateLeadDialogOpen(true)}
+        />
 
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={1.2}
-            sx={{ width: { xs: '100%', lg: 'auto' } }}
-          >
-            <RhfTextField
-              control={control}
-              name="searchQuery"
-              placeholder={t('searchPlaceholder')}
-              size="small"
-              sx={{
-                width: { xs: '100%', sm: 320 },
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: surface.paper,
-                  borderRadius: `${radius.sm}px`,
-                },
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchRoundedIcon sx={{ color: brand.neutral[400], fontSize: iconSize.md }} />
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <Stack direction="row" spacing={1.2} sx={{ alignItems: 'center' }}>
-              <Button
-                type="button"
-                variant="contained"
-                startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
-                onClick={() => setIsCreateLeadDialogOpen(true)}
-                sx={{
-                  flex: { xs: 1, sm: 'initial' },
-                  minHeight: 40,
-                  borderRadius: `${radius.sm}px`,
-                  fontWeight: 900,
-                }}
-              >
-                {t('newLead')}
-              </Button>
-              <DashboardNotificationsButton />
-            </Stack>
-          </Stack>
-        </Stack>
-        <LeadsFilterBar
+        <LeadsStatusFilters
           activeFilter={activeFilter}
           leads={leads}
-          onFilterChange={(filter) => setValue('activeFilter', filter)}
+          onFilterChange={handleFilterChange}
         />
-        <LeadsDesktopTable
-          leads={filteredLeads}
-          totalCount={leads.length}
-          onLeadContactSelect={setSelectedContactLead}
-        />
-        <LeadsMobileList leads={filteredLeads} onLeadContactSelect={setSelectedContactLead} />{' '}
+
+        <Paper
+          variant="outlined"
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: { xs: 420, md: 360 },
+            overflow: 'hidden',
+            borderColor: brand.neutral[100],
+            borderRadius: `${radius.lg}px`,
+            bgcolor: surface.paper,
+            boxShadow: shadows.crmListPanel,
+          }}
+        >
+          {leadsPage.items.length > 0 ? (
+            <>
+              <LeadsTable leads={leadsPage.items} onContactLead={setSelectedContactLead} />
+              <LeadsCards leads={leadsPage.items} onContactLead={setSelectedContactLead} />
+            </>
+          ) : (
+            <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 240, px: 2 }}>
+              <Typography sx={{ color: 'text.secondary', fontSize: 12.5 }}>{t('empty')}</Typography>
+            </Stack>
+          )}
+
+          <LeadsPaginationFooter
+            firstVisible={leadsPage.firstItem}
+            lastVisible={leadsPage.lastItem}
+            resultTotal={leadsPage.totalCount}
+            page={leadsPage.page}
+            canGoBack={leadsPage.page > 1}
+            canGoForward={leadsPage.page < leadsPage.pageCount}
+            onPageChange={setPage}
+          />
+        </Paper>
       </Stack>
+
       <CreateLeadDialog
         open={isCreateLeadDialogOpen}
         onClose={() => setIsCreateLeadDialogOpen(false)}

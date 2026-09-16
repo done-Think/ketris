@@ -1,43 +1,40 @@
 'use client'
 
-import AddRoundedIcon from '@mui/icons-material/AddRounded'
-import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded'
-import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
-import { Box, Button, IconButton, Stack, Tooltip, Typography } from '@mui/material'
+import { Box, Stack } from '@mui/material'
 import dayjs from 'dayjs'
 import 'dayjs/locale/pt-br'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useMemo, useState } from 'react'
 import { useSnackbar } from 'notistack'
 
-import { DashboardNotificationsButton } from '@shared/components/layout'
 import { dashboardProperties } from '@modules/properties/data/dashboard-properties'
-import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
-import { agendaEvents } from '../data/agenda-events'
-import { agendaOtherPropertyValue } from '../schemas/agenda-reschedule-schema'
+import { agendaEvents, agendaTimeSlots } from '../data/agenda-events'
+import { agendaOtherPropertyValue } from '../schemas/agenda-event-form-schema'
 import type {
   AgendaEvent,
   AgendaEventFormValues,
   AgendaPropertyOption,
   AgendaRescheduleFormValues,
 } from '../types/agenda-event'
+import { AgendaDashboardHeader } from './agenda-dashboard/AgendaDashboardHeader'
+import { AgendaNotificationsPopover } from './agenda-dashboard/AgendaNotificationsPopover'
+import { AgendaWeekCalendar } from './agenda-dashboard/AgendaWeekCalendar'
 import {
   agendaVisibleDayCount,
   buildAgendaCalendarDays,
   getAgendaNotifications,
   getAgendaWeekRange,
-} from '../utils/agenda-calendar'
-import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
+} from './agenda-dashboard/agenda-dashboard-shared'
 import { AgendaEventDetailDialog } from './AgendaEventDetailDialog'
 import { AgendaEventFormDialog } from './AgendaEventFormDialog'
-import { AgendaTimeline } from './AgendaTimeline'
 
 export function AgendaDashboardPage() {
+  const t = useTranslations('agenda.dashboard')
   const { enqueueSnackbar } = useSnackbar()
-  const searchParams = useSearchParams()
   const [events, setEvents] = useState<AgendaEvent[]>(agendaEvents)
   const [isEventFormOpen, setIsEventFormOpen] = useState(false)
+  const [notificationAnchorEl, setNotificationAnchorEl] = useState<HTMLButtonElement | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null)
   const today = useMemo(() => dayjs().locale('pt-br').startOf('day'), [])
   const currentMonthEnd = useMemo(() => today.endOf('month'), [today])
@@ -53,7 +50,10 @@ export function AgendaDashboardPage() {
     [],
   )
   const weekRange = getAgendaWeekRange(agendaDays)
-  const notifications = useMemo(() => getAgendaNotifications(events, today), [events, today])
+  const notifications = useMemo(
+    () => getAgendaNotifications({ events, t, today }),
+    [events, t, today],
+  )
   const selectedEventDate = selectedEvent?.scheduledDate ?? ''
   const nextWeekStart = weekStartDate.add(agendaVisibleDayCount, 'day')
   const previousWeekStart = weekStartDate.subtract(agendaVisibleDayCount, 'day')
@@ -61,37 +61,24 @@ export function AgendaDashboardPage() {
   const disableNextWeek = nextWeekStart.isAfter(currentMonthEnd, 'day')
 
   const closeEventDialog = () => setSelectedEvent(null)
-  const showScheduledWeek = useCallback(
-    (date: dayjs.Dayjs) => {
-      if (date.isBefore(today, 'day')) {
-        setWeekStartDate(today)
-        return
-      }
+  const closeNotifications = () => setNotificationAnchorEl(null)
+  const showScheduledWeek = (date: dayjs.Dayjs) => {
+    if (date.isBefore(today, 'day')) {
+      setWeekStartDate(today)
+      return
+    }
 
-      const daysFromToday = date.startOf('day').diff(today, 'day')
-      const weekOffset = Math.floor(daysFromToday / agendaVisibleDayCount) * agendaVisibleDayCount
+    const daysFromToday = date.startOf('day').diff(today, 'day')
+    const weekOffset = Math.floor(daysFromToday / agendaVisibleDayCount) * agendaVisibleDayCount
 
-      setWeekStartDate(today.add(weekOffset, 'day'))
-    },
-    [today],
-  )
-
-  const openNotificationEvent = (notification: DashboardNotificationItem) => {
-    const event = events.find((agendaEvent) => agendaEvent.id === notification.metadata?.eventId)
-    if (!event) return
-
-    showScheduledWeek(dayjs(event.scheduledDate))
-    setSelectedEvent(event)
+    setWeekStartDate(today.add(weekOffset, 'day'))
   }
 
-  useEffect(() => {
-    const eventId = searchParams.get('eventId')
-    const event = events.find((agendaEvent) => agendaEvent.id === eventId)
-    if (!event) return
-
+  const openNotificationEvent = (event: AgendaEvent) => {
     showScheduledWeek(dayjs(event.scheduledDate))
     setSelectedEvent(event)
-  }, [events, searchParams, showScheduledWeek])
+    closeNotifications()
+  }
 
   const rescheduleSelectedEvent = (values: AgendaRescheduleFormValues) => {
     if (!selectedEvent) return
@@ -112,9 +99,11 @@ export function AgendaDashboardPage() {
     )
     showScheduledWeek(nextDate)
     enqueueSnackbar(
-      `${selectedEvent.title} reagendado para ${nextDate.format('DD/MM/YYYY')} as ${
-        values.scheduledTime
-      }.`,
+      t('rescheduleSuccess', {
+        date: nextDate.format('DD/MM/YYYY'),
+        time: values.scheduledTime,
+        title: selectedEvent.title,
+      }),
       { variant: 'success' },
     )
     closeEventDialog()
@@ -141,7 +130,7 @@ export function AgendaDashboardPage() {
       propertyHref,
       participant: values.participant,
       phone: values.phone,
-      notes: values.notes.trim() || 'Evento criado manualmente na agenda.',
+      notes: values.notes.trim() || t('defaultEventNotes'),
       status: 'Confirmada',
       tone: 'primary',
     }
@@ -149,82 +138,30 @@ export function AgendaDashboardPage() {
     setEvents((currentEvents) => [...currentEvents, nextEvent])
     showScheduledWeek(scheduledDate)
     setIsEventFormOpen(false)
-    enqueueSnackbar(`${values.title} adicionado à agenda.`, { variant: 'success' })
+    enqueueSnackbar(t('createSuccess', { title: values.title }), { variant: 'success' })
   }
 
   return (
     <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
       <Stack spacing={2.4}>
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          alignItems={{ xs: 'flex-start', md: 'center' }}
-          justifyContent="space-between"
-          spacing={2}
-        >
-          <Box>
-            <Typography
-              variant="h3"
-              sx={{ color: brand.graphite[500], fontSize: { xs: 30, md: 40 }, fontWeight: 900 }}
-            >
-              Agenda
-            </Typography>
-            <Typography sx={{ color: brand.neutral[500], fontSize: { xs: 14, md: 15 } }}>
-              Seus compromissos e tarefas organizados
-            </Typography>
-          </Box>
+        <AgendaDashboardHeader
+          disableNextWeek={disableNextWeek}
+          disablePreviousWeek={disablePreviousWeek}
+          notificationCount={notifications.length}
+          notificationsExpanded={Boolean(notificationAnchorEl)}
+          onNewEvent={() => setIsEventFormOpen(true)}
+          onNextWeek={() => setWeekStartDate(nextWeekStart)}
+          onOpenNotifications={setNotificationAnchorEl}
+          onPreviousWeek={() => setWeekStartDate(previousWeekStart)}
+          weekRange={weekRange}
+        />
 
-          <Stack direction="row" alignItems="center" spacing={1.2} sx={{ flexWrap: 'wrap' }}>
-            <Tooltip title="Semana anterior">
-              <IconButton
-                aria-label="Semana anterior"
-                disabled={disablePreviousWeek}
-                onClick={() => setWeekStartDate(previousWeekStart)}
-                sx={{
-                  width: 36,
-                  height: 36,
-                  border: '1px solid',
-                  borderColor: alpha.graphite[8],
-                  bgcolor: surface.paper,
-                }}
-              >
-                <ChevronLeftRoundedIcon sx={{ fontSize: iconSize.md }} />
-              </IconButton>
-            </Tooltip>
-            <Typography sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 900 }}>
-              Agenda de {weekRange.startLabel}-{weekRange.endLabel}
-            </Typography>
-            <Tooltip title="Próxima semana">
-              <IconButton
-                aria-label="Próxima semana"
-                disabled={disableNextWeek}
-                onClick={() => setWeekStartDate(nextWeekStart)}
-                sx={{
-                  width: 36,
-                  height: 36,
-                  border: '1px solid',
-                  borderColor: alpha.graphite[8],
-                  bgcolor: surface.paper,
-                }}
-              >
-                <ChevronRightRoundedIcon sx={{ fontSize: iconSize.md }} />
-              </IconButton>
-            </Tooltip>
-            <Button
-              variant="contained"
-              startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
-              onClick={() => setIsEventFormOpen(true)}
-              sx={{ minHeight: 42, borderRadius: `${radius.sm}px`, fontWeight: 900 }}
-            >
-              Novo Evento
-            </Button>
-            <DashboardNotificationsButton
-              notifications={notifications}
-              onNotificationSelect={openNotificationEvent}
-            />
-          </Stack>
-        </Stack>
-
-        <AgendaTimeline days={agendaDays} events={events} onEventSelect={setSelectedEvent} />
+        <AgendaWeekCalendar
+          days={agendaDays}
+          events={events}
+          onSelectEvent={setSelectedEvent}
+          timeSlots={agendaTimeSlots}
+        />
       </Stack>
 
       <AgendaEventDetailDialog
@@ -244,6 +181,13 @@ export function AgendaDashboardPage() {
         onCreate={createAgendaEvent}
         open={isEventFormOpen}
         propertyOptions={propertyOptions}
+      />
+
+      <AgendaNotificationsPopover
+        anchorEl={notificationAnchorEl}
+        notifications={notifications}
+        onClose={closeNotifications}
+        onSelectNotification={openNotificationEvent}
       />
     </Box>
   )

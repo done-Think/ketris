@@ -1,0 +1,56 @@
+{
+  "dashboard": {
+    "title": "Agenda",
+    "subtitle": "Your appointments and tasks, organized",
+    "previousWeek": "Previous week",
+    "nextWeek": "Next week",
+    "weekRange": "Agenda for {start}-{end}",
+    "newEvent": "New Event",
+    "notificationsAriaLabel": "Open agenda notifications",
+    "notificationsTooltip": "Notifications",
+    "openEventAriaLabel": "Open {title}",
+    "todayVisitTitle": "Visit scheduled for today",
+    "todayVisitMessage": "{time} - {participant} at {property}",
+    "assignedEventTitle": "New assigned appointment",
+    "assignedEventMessage": "{role} {name} booked {title}",
+    "defaultEventNotes": "Event created manually in the agenda.",
+    "rescheduleSuccess": "{title} rescheduled to {date} at {time}.",
+    "createSuccess": "{title} added to the agenda.",
+    "notifications": {
+      "title": "Agenda alerts",
+      "subtitle": "Today's visits and assigned appointments",
+      "empty": "No alerts to show."
+    }
+  },
+  "eventForm": {
+    "eyebrow": "New agenda entry",
+    "title": "Add event",
+    "closeAriaLabel": "Close new event",
+    "fields": {
+      "title": "Title",
+      "property": "Property in question",
+      "otherProperty": "Other",
+      "customProperty": "Property or reference",
+      "participant": "Person",
+      "phone": "Phone",
+      "date": "Date",
+      "time": "Time",
+      "duration": "Duration",
+      "notes": "Notes"
+    },
+    "cancel": "Cancel",
+    "submit": "Create event"
+  },
+  "eventDetail": {
+    "closeAriaLabel": "Close event details",
+    "notesTitle": "Notes",
+    "createdBy": "Booked by {role} {name}",
+    "rescheduleTitle": "Reschedule appointment",
+    "fields": {
+      "newDate": "New date",
+      "newTime": "New time"
+    },
+    "cancel": "Cancel",
+    "submit": "Save rescheduling"
+  }
+}

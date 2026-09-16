@@ -9,6 +9,7 @@ async function loadRealMessages() {
   const locale = defaultLocale
   const namespaces = [
     'common',
+    'agenda',
     'auth',
     'crm',
     'dashboard',
@@ -31,10 +32,6 @@ async function loadRealMessages() {
   }
 }
 
-// Usa o próprio next-intl sobre os arquivos de mensagem reais, em vez de um dicionário
-// paralelo. Um mock com mensagens hardcoded devolve `key` para chaves inexistentes e nunca
-// carrega os JSON entregues em produção — foi o que deixou passar tanto chaves inválidas
-// quanto traduções ausentes. Aqui uma chave errada quebra o teste, como deve.
 vi.mock('next-intl', async () => {
   const actual = await vi.importActual<typeof import('next-intl')>('next-intl')
   const { messages, locale, timeZone } = await loadRealMessages()

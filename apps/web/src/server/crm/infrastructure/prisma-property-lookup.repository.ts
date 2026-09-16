@@ -8,4 +8,13 @@ export class PrismaPropertyLookupRepository implements PropertyLookupPort {
 
     return count > 0
   }
+
+  async findResponsavelId(tenantId: string, propertyId: string): Promise<string | null> {
+    const imovel = await prisma.imovel.findFirst({
+      where: { tenantId, id: propertyId },
+      select: { responsavelId: true },
+    })
+
+    return imovel?.responsavelId ?? null
+  }
 }

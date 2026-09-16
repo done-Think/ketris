@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
+import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { crmContainer } from '@server/crm/container'
 import { patchContactRequestSchema } from '@server/crm/schemas/contact.schema'
@@ -16,6 +17,8 @@ export const GET = withErrorHandling(async (request: NextRequest, context: Route
 
   const contact = await crmContainer.getContactUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorId: actor.sub,
+    actorPapel: actor.papel as Papel,
     contactId: (await context.params).id,
   })
 
@@ -28,6 +31,8 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Rou
 
   const contact = await crmContainer.updateContactUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorId: actor.sub,
+    actorPapel: actor.papel as Papel,
     contactId: (await context.params).id,
     changes: body,
   })
@@ -40,6 +45,8 @@ export const DELETE = withErrorHandling(async (request: NextRequest, context: Ro
 
   const contact = await crmContainer.archiveContactUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorId: actor.sub,
+    actorPapel: actor.papel as Papel,
     contactId: (await context.params).id,
   })
 
