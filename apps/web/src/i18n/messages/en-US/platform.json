@@ -32,6 +32,88 @@
     "empty": "No agencies registered yet.",
     "createdAt": "Created at"
   },
+  "overview": {
+    "title": "Platform Overview",
+    "production": "Production",
+    "liveUtc": "Live UTC: {value}",
+    "navigation": {
+      "ariaLabel": "Platform navigation",
+      "openNavigation": "Open platform navigation",
+      "admin": "ADMIN",
+      "overview": "Overview",
+      "tenants": "Tenants",
+      "users": "Users",
+      "plans": "Plans",
+      "finance": "Finance",
+      "system": "System",
+      "logs": "Logs",
+      "online": "Online"
+    },
+    "metrics": {
+      "tenants": { "label": "Agencies" },
+      "brokers": { "label": "Brokers" },
+      "properties": { "label": "Properties" },
+      "mrr": { "label": "MRR" },
+      "churn": { "label": "Churn" },
+      "uptime": { "label": "Platform uptime" }
+    },
+    "growth": {
+      "title": "Growth Trends (12 Months)",
+      "tenants": "Tenants",
+      "contracts": "Contracts"
+    },
+    "months": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
+    },
+    "alerts": {
+      "title": "System alerts",
+      "active": "{count} active",
+      "backup": {
+        "title": "Automated backup failed",
+        "description": "S3-us-east-1 write error. A second attempt is scheduled."
+      },
+      "cpu": {
+        "title": "High CPU consumption",
+        "description": "Node-worker-02 is operating at 92% capacity."
+      },
+      "ssl": {
+        "title": "SSL renewed",
+        "description": "The gateway-api certificate was renewed successfully."
+      },
+      "tenant-registration": {
+        "title": "New tenant registration",
+        "description": "Vanguard Hub completed basic setup."
+      }
+    },
+    "recentTenants": {
+      "title": "Recent tenants",
+      "tableLabel": "Recent tenants table",
+      "columns": {
+        "name": "Name / Agency",
+        "plan": "Plan",
+        "brokers": "Brokers",
+        "registeredAt": "Registered",
+        "status": "Status"
+      },
+      "plans": {
+        "enterprise": "Enterprise",
+        "proGrowth": "Pro Growth",
+        "starterPack": "Starter Pack"
+      },
+      "statuses": { "active": "Active", "provisioning": "Provisioning", "suspended": "Suspended" }
+    }
+  },
   "tenant": {
     "usersTitle": "Agency users",
     "newAdmin": "New administrator",

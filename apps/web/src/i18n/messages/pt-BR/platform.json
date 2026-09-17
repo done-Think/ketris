@@ -32,6 +32,88 @@
     "empty": "Nenhuma imobiliária cadastrada ainda.",
     "createdAt": "Criada em"
   },
+  "overview": {
+    "title": "Visão geral da plataforma",
+    "production": "Produção",
+    "liveUtc": "UTC ao vivo: {value}",
+    "navigation": {
+      "ariaLabel": "Navegação da plataforma",
+      "openNavigation": "Abrir navegação da plataforma",
+      "admin": "ADMIN",
+      "overview": "Visão geral",
+      "tenants": "Tenants",
+      "users": "Usuários",
+      "plans": "Planos",
+      "finance": "Financeiro",
+      "system": "Sistema",
+      "logs": "Logs",
+      "online": "Online"
+    },
+    "metrics": {
+      "tenants": { "label": "Imobiliárias" },
+      "brokers": { "label": "Corretores" },
+      "properties": { "label": "Imóveis" },
+      "mrr": { "label": "MRR" },
+      "churn": { "label": "Churn" },
+      "uptime": { "label": "Uptime da plataforma" }
+    },
+    "growth": {
+      "title": "Tendências de crescimento (12 meses)",
+      "tenants": "Tenants",
+      "contracts": "Contratos"
+    },
+    "months": {
+      "jan": "Jan",
+      "feb": "Fev",
+      "mar": "Mar",
+      "apr": "Abr",
+      "may": "Mai",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Ago",
+      "sep": "Set",
+      "oct": "Out",
+      "nov": "Nov",
+      "dec": "Dez"
+    },
+    "alerts": {
+      "title": "Alertas do sistema",
+      "active": "{count} ativos",
+      "backup": {
+        "title": "Backup automatizado falhou",
+        "description": "Erro de gravação S3-us-east-1. Segunda tentativa agendada."
+      },
+      "cpu": {
+        "title": "Consumo alto de CPU",
+        "description": "Node-worker-02 operando em 92% da capacidade."
+      },
+      "ssl": {
+        "title": "SSL renovado",
+        "description": "Certificado de gateway-api renovado com sucesso."
+      },
+      "tenant-registration": {
+        "title": "Novo registro de tenant",
+        "description": "Imobiliária \"Vanguard Hub\" concluiu setup básico."
+      }
+    },
+    "recentTenants": {
+      "title": "Tenants recentes",
+      "tableLabel": "Tabela de tenants recentes",
+      "columns": {
+        "name": "Nome / Imobiliária",
+        "plan": "Plano",
+        "brokers": "Corretores",
+        "registeredAt": "Cadastro",
+        "status": "Status"
+      },
+      "plans": {
+        "enterprise": "Enterprise",
+        "proGrowth": "Pro Growth",
+        "starterPack": "Starter Pack"
+      },
+      "statuses": { "active": "Ativo", "provisioning": "Provisionando", "suspended": "Suspenso" }
+    }
+  },
   "tenant": {
     "usersTitle": "Usuários da imobiliária",
     "newAdmin": "Novo administrador",

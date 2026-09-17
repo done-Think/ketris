@@ -22,17 +22,20 @@ describe('Plataforma — sessão e visão cross-tenant (UI)', () => {
     cy.location('pathname').should('eq', '/platform/login')
   })
 
-  it('permite que um administrador da plataforma entre e crie outro administrador da plataforma', () => {
+  it('permite que um administrador da plataforma entre e veja o overview', () => {
     cy.visit('/platform/login')
     cy.get('input[name="email"]').type(adminEmail)
     cy.get('input[name="password"]').type(adminPassword)
     cy.get('button[type="submit"]').click()
 
     cy.location('pathname').should('eq', '/platform')
-    cy.contains('Imobiliárias').should('be.visible')
+    cy.contains('Visão geral da plataforma').should('be.visible')
+    cy.contains('Tendências de crescimento').should('be.visible')
+    cy.contains('Alertas do sistema').should('be.visible')
+    cy.contains('Tenants recentes').should('be.visible')
+    cy.get('a[aria-current="page"]').contains('Visão geral').should('be.visible')
 
-    cy.contains('a', 'Administradores da plataforma').click()
-    cy.location('pathname').should('eq', '/platform/admins/new')
+    cy.visit('/platform/admins/new')
 
     const socioEmail = `e2e-platform-socio-${Date.now()}@ketris.dev`
 
@@ -55,8 +58,7 @@ describe('Plataforma — sessão e visão cross-tenant (UI)', () => {
     cy.get('button[type="submit"]').click()
     cy.location('pathname').should('eq', '/platform')
 
-    cy.contains('a', 'Nova imobiliária').click()
-    cy.location('pathname').should('eq', '/platform/tenants/new')
+    cy.visit('/platform/tenants/new')
 
     cy.get('input[name="nome"]').type('Imobiliária E2E')
     cy.get('input[name="slug"]').type(tenantSlug)

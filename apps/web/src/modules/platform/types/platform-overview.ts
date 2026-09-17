@@ -1,0 +1,31 @@
+export type PlatformMetricTone = 'success' | 'neutral'
+
+export interface PlatformMetric {
+  id: 'tenants' | 'brokers' | 'properties' | 'mrr' | 'churn' | 'uptime'
+  value: string
+  indicator?: string
+  tone?: PlatformMetricTone
+}
+
+export interface GrowthTrendPoint extends Record<string, string | number> {
+  month: string
+  tenants: number
+  contracts: number
+}
+
+export type PlatformAlertTone = 'error' | 'warning' | 'info'
+
+export interface PlatformAlert {
+  id: 'backup' | 'cpu' | 'ssl' | 'tenant-registration'
+  time: string
+  tone: PlatformAlertTone
+}
+
+export interface RecentTenant {
+  id: string
+  name: string
+  plan: 'enterprise' | 'proGrowth' | 'starterPack'
+  brokers: number
+  registeredAt: string
+  status: 'active' | 'provisioning' | 'suspended'
+}
