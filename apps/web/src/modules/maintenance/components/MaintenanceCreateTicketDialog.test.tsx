@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
 import { MaintenanceCreateTicketDialog } from './MaintenanceCreateTicketDialog'
+import { maintenanceTicketSchema } from '../schemas/maintenance-ticket-schema'
 
 describe('MaintenanceCreateTicketDialog', () => {
   it('prevents an invalid ticket from being submitted', async () => {
@@ -11,11 +12,24 @@ describe('MaintenanceCreateTicketDialog', () => {
 
     render(<MaintenanceCreateTicketDialog open onClose={vi.fn()} onCreate={onCreate} />)
 
-    expect(screen.getByLabelText('Custo Estimado')).toHaveValue('0,00')
+    expect(screen.queryByLabelText('Custo Estimado')).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Criar Chamado' }))
 
     expect(await screen.findByText('Selecione o imóvel')).toBeVisible()
     expect(onCreate).not.toHaveBeenCalled()
+  })
+
+  it('does not include estimated cost in the form schema', () => {
+    const values = maintenanceTicketSchema.parse({
+      propertyId: 'apt-jardins-3q',
+      category: 'Hidráulica',
+      priority: 'normal',
+      title: 'Vazamento na cozinha',
+      description: 'A pia está vazando.',
+      estimatedCost: '120,00',
+    })
+
+    expect(values).not.toHaveProperty('estimatedCost')
   })
 
   it('submits a valid ticket and resets when opened again', async () => {

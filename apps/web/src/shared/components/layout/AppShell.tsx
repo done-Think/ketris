@@ -6,7 +6,6 @@ import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import InsertChartOutlinedRoundedIcon from '@mui/icons-material/InsertChartOutlinedRounded'
-import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined'
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
@@ -91,18 +90,12 @@ const navigationItems: readonly NavItem[] = [
   },
 ]
 
-const maintenanceNavigationItems: readonly NavItem[] = [
-  { labelKey: 'dashboard', href: '/dashboard', icon: BarChartOutlinedIcon },
-  { labelKey: 'properties', href: '/dashboard/properties', icon: HomeWorkOutlinedIcon },
-  { labelKey: 'maintenance', href: '/dashboard/maintenance', icon: BuildOutlinedIcon },
-  { labelKey: 'finance', href: '/dashboard/finance', icon: InsertChartOutlinedRoundedIcon },
-]
-
 export interface AppShellProps {
   children: React.ReactNode
+  allowLocalMaintenancePreview?: boolean
 }
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children, allowLocalMaintenancePreview = false }: AppShellProps) {
   const t = useTranslations('common.appShell')
   const pathname = usePathname()
   const { data: session, status } = useSession()
@@ -110,20 +103,17 @@ export function AppShell({ children }: AppShellProps) {
   const isPublicCrmRoute = pathname === '/crm' || pathname === '/crm/contacts'
   const isMaintenanceRoute =
     pathname === '/dashboard/maintenance' || pathname.startsWith('/dashboard/maintenance/')
-  const isLocalDevelopmentPreview = process.env.NODE_ENV === 'development'
-  const userName =
-    session?.user?.name ?? (isLocalDevelopmentPreview ? 'Carlos Eduardo' : t('defaultUserName'))
-  const userContext =
-    session?.user?.email ?? (isLocalDevelopmentPreview ? 'Proprietário' : t('defaultUserContext'))
+  const isLocalMaintenancePreview = allowLocalMaintenancePreview && isMaintenanceRoute
+  const userName = session?.user?.name ?? t('defaultUserName')
+  const userContext = session?.user?.email ?? t('defaultUserContext')
   const userInitials = useMemo(() => getInitials(userName), [userName])
   const visibleItems = useMemo(() => {
-    if (isMaintenanceRoute) return maintenanceNavigationItems
-    if (isLocalDevelopmentPreview) return navigationItems
+    if (isLocalMaintenancePreview) return navigationItems
 
     return navigationItems.filter(
       (item) => !item.roles || (session?.papel && item.roles.includes(session.papel)),
     )
-  }, [isLocalDevelopmentPreview, isMaintenanceRoute, session])
+  }, [isLocalMaintenancePreview, session])
   // Rotas como /crm e /dashboard são prefixo de várias outras entradas do menu (ex.:
   // /dashboard/finance). O item ativo deve ser o de prefixo mais específico que bate com a
   // rota atual, e não todo item cujo prefixo é um match parcial.
@@ -167,7 +157,7 @@ export function AppShell({ children }: AppShellProps) {
         sx={{ ml: -1.5, mr: -0.5 }}
       >
         {status === 'loading'
-          ? (isMaintenanceRoute ? maintenanceNavigationItems : navigationItems).map((item) => (
+          ? navigationItems.map((item) => (
               <Skeleton
                 key={item.labelKey}
                 variant="rounded"
@@ -192,14 +182,10 @@ export function AppShell({ children }: AppShellProps) {
                     gap: 1.125,
                     minHeight: 36,
                     px: 1.125,
-                    borderLeft: isMaintenanceRoute ? 0 : '3px solid',
-                    borderColor: active && !isMaintenanceRoute ? 'primary.main' : 'transparent',
+                    borderLeft: '3px solid',
+                    borderColor: active ? 'primary.main' : 'transparent',
                     borderRadius: `${radius.sm}px`,
-                    bgcolor: active
-                      ? isMaintenanceRoute
-                        ? 'primary.main'
-                        : alpha.white[8]
-                      : 'transparent',
+                    bgcolor: active ? alpha.white[8] : 'transparent',
                     color: active ? surface.lightText : alpha.white[62],
                     textDecoration: 'none',
                     transition: 'background-color 160ms ease, color 160ms ease',
@@ -212,7 +198,7 @@ export function AppShell({ children }: AppShellProps) {
                   <Icon
                     sx={{
                       fontSize: iconSize.sm,
-                      color: active && !isMaintenanceRoute ? 'primary.main' : 'inherit',
+                      color: active ? 'primary.main' : 'inherit',
                     }}
                   />
                   <Typography
@@ -259,23 +245,21 @@ export function AppShell({ children }: AppShellProps) {
           </Typography>
         </Box>
         <Box sx={{ flex: 1 }} />
-        {!isMaintenanceRoute && (
-          <Tooltip title={t('backToMarketplace')}>
-            <IconButton
-              component={Link}
-              href="/"
-              aria-label={t('backToMarketplace')}
-              sx={{
-                width: 32,
-                height: 32,
-                color: alpha.white[62],
-                '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
-              }}
-            >
-              <LogoutOutlinedIcon sx={{ fontSize: iconSize.sm }} />
-            </IconButton>
-          </Tooltip>
-        )}
+        <Tooltip title={t('backToMarketplace')}>
+          <IconButton
+            component={Link}
+            href="/"
+            aria-label={t('backToMarketplace')}
+            sx={{
+              width: 32,
+              height: 32,
+              color: alpha.white[62],
+              '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
+            }}
+          >
+            <LogoutOutlinedIcon sx={{ fontSize: iconSize.sm }} />
+          </IconButton>
+        </Tooltip>
       </Stack>
     </Stack>
   )
@@ -351,7 +335,7 @@ export function AppShell({ children }: AppShellProps) {
           pt: { xs: '64px', md: 0 },
         }}
       >
-        {isPublicCrmRoute || isLocalDevelopmentPreview ? (
+        {isPublicCrmRoute || isLocalMaintenancePreview ? (
           children
         ) : (
           <CrmAccessBoundary>{children}</CrmAccessBoundary>

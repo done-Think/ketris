@@ -7,11 +7,26 @@ import CallOutlinedIcon from '@mui/icons-material/CallOutlined'
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
 import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined'
 import { Avatar, Box, Button, Chip, Divider, Stack, TextField, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
-import { maintenanceTicketDetail as ticket } from '../data/maintenance-ticket-detail'
+import { getMaintenanceTicketDetail } from '../data/maintenance-ticket-detail'
+import { getMaintenanceTickets } from '../data/maintenance-tickets'
+import type { MaintenancePriority, MaintenanceStatus } from '../types/maintenance'
+
+const statusStyles: Record<MaintenanceStatus, { bgcolor: string; color: string }> = {
+  inProgress: { bgcolor: '#FFF2CC', color: '#D98900' },
+  open: { bgcolor: '#E8F1FF', color: '#2877E8' },
+  resolved: { bgcolor: '#E5F8ED', color: '#12A150' },
+  closed: { bgcolor: '#EFF1F4', color: '#617086' },
+}
+const priorityColors: Record<MaintenancePriority, string> = {
+  urgent: brand.semantic.error,
+  high: '#F59E0B',
+  normal: brand.neutral[400],
+}
 
 const cardSx = {
   bgcolor: surface.paper,
@@ -29,8 +44,27 @@ const labelSx = {
   textTransform: 'uppercase',
 } as const
 
-export function MaintenanceTicketDetailPage() {
+export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) {
+  const t = useTranslations('dashboard.maintenance')
   const [message, setMessage] = useState('')
+  const ticket = getMaintenanceTickets().find((currentTicket) => currentTicket.id === ticketId)
+
+  if (!ticket) {
+    return (
+      <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 3.2 } }}>
+        <Stack spacing={2} alignItems="flex-start">
+          <Typography sx={{ color: brand.graphite[500], fontSize: 24, fontWeight: 900 }}>
+            Chamado não encontrado
+          </Typography>
+          <Button component={Link} href="/dashboard/maintenance" variant="outlined">
+            Voltar para chamados
+          </Button>
+        </Stack>
+      </Box>
+    )
+  }
+
+  const detail = getMaintenanceTicketDetail(ticket)
   return (
     <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 3.2 } }}>
       <Stack spacing={2.2} sx={{ width: '100%' }}>
@@ -61,30 +95,36 @@ export function MaintenanceTicketDetailPage() {
             <Typography
               sx={{ color: brand.graphite[500], fontSize: { xs: 21, md: 24 }, fontWeight: 900 }}
             >
-              {ticket.code}
+              {detail.code}
             </Typography>
             <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: brand.neutral[500] }} />
             <Typography
               sx={{ color: brand.graphite[500], fontSize: { xs: 18, md: 20 }, fontWeight: 900 }}
             >
-              {ticket.title}
+              {detail.title}
             </Typography>
             <Chip
-              label="Em andamento"
+              label={t(`statuses.${detail.status}`)}
               size="small"
               sx={{
                 height: 21,
-                bgcolor: '#FFF2CC',
-                color: '#D98900',
+                ...statusStyles[detail.status],
                 fontSize: 10,
                 fontWeight: 900,
               }}
             />
             <Stack direction="row" spacing={0.6} alignItems="center">
               <Box
-                sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: brand.semantic.error }}
+                sx={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  bgcolor: priorityColors[detail.priority],
+                }}
               />
-              <Typography sx={{ fontSize: 11, fontWeight: 800 }}>Urgente</Typography>
+              <Typography sx={{ fontSize: 11, fontWeight: 800 }}>
+                {t(`priorities.${detail.priority}`)}
+              </Typography>
             </Stack>
           </Stack>
           <Stack direction="row" spacing={1}>
@@ -119,10 +159,10 @@ export function MaintenanceTicketDetailPage() {
                 }}
               >
                 {[
-                  ['Imóvel', ticket.property],
-                  ['Categoria', ticket.category],
-                  ['Aberto por', ticket.openedBy],
-                  ['Data de abertura', ticket.openedAt],
+                  ['Imóvel', detail.property],
+                  ['Categoria', detail.category],
+                  ['Aberto por', detail.openedBy],
+                  ['Data de abertura', detail.openedAt],
                 ].map(([label, value]) => (
                   <Box key={label}>
                     <Typography sx={labelSx}>{label}</Typography>
@@ -139,16 +179,13 @@ export function MaintenanceTicketDetailPage() {
               <Typography
                 sx={{ mt: 0.7, color: brand.neutral[600], fontSize: 13, lineHeight: 1.5 }}
               >
-                {ticket.description}
+                {detail.description}
               </Typography>
             </Box>
             <Box sx={cardSx}>
               <Typography sx={cardTitleSx}>Fotos Anexadas</Typography>
               <Stack direction="row" spacing={1.4} sx={{ mt: 1.4 }}>
-                {[
-                  ['pia_cozinha1.jpg', 'left'],
-                  ['armario_vazado.jpg', 'right'],
-                ].map(([name, position]) => (
+                {detail.photos.map(({ name, src, position }) => (
                   <Box
                     key={name}
                     sx={{
@@ -157,7 +194,7 @@ export function MaintenanceTicketDetailPage() {
                       height: 105,
                       borderRadius: `${radius.sm}px`,
                       overflow: 'hidden',
-                      backgroundImage: 'url(/maintenance/kitchen-leak-attachments.png)',
+                      backgroundImage: `url(${src})`,
                       backgroundPosition: position === 'left' ? 'left center' : 'right center',
                       backgroundSize: '200% 100%',
                     }}
@@ -182,7 +219,7 @@ export function MaintenanceTicketDetailPage() {
             <Box sx={cardSx}>
               <Typography sx={cardTitleSx}>Linha do Tempo e Atualizações</Typography>
               <Stack spacing={1.7} sx={{ mt: 1.7 }}>
-                {ticket.timeline.map((entry) => (
+                {detail.timeline.map((entry) => (
                   <Stack key={entry.timestamp} direction="row" spacing={1.2}>
                     <Avatar
                       sx={{
@@ -259,7 +296,7 @@ export function MaintenanceTicketDetailPage() {
             <Box sx={cardSx}>
               <Typography sx={cardTitleSx}>Responsáveis</Typography>
               <Stack divider={<Divider flexItem />} sx={{ mt: 1 }}>
-                {ticket.responsibles.map((person) => (
+                {detail.responsibles.map((person) => (
                   <Stack
                     key={person.name}
                     direction="row"
@@ -299,9 +336,14 @@ export function MaintenanceTicketDetailPage() {
               <Typography sx={cardTitleSx}>Informações Gerais</Typography>
               <Stack spacing={1.1} sx={{ mt: 1.6 }}>
                 {[
-                  ['Data abertura', '20/02/2025 às 10:15'],
-                  ['Última atualização', ticket.lastUpdated],
-                  ['SLA estimado', ticket.estimatedSla],
+                  [
+                    'Data abertura',
+                    detail.openedTime
+                      ? `${detail.openedAt} às ${detail.openedTime}`
+                      : detail.openedAt,
+                  ],
+                  ['Última atualização', detail.lastUpdated],
+                  ['SLA estimado', detail.estimatedSla],
                 ].map(([label, value]) => (
                   <Stack key={label} direction="row" justifyContent="space-between" spacing={1}>
                     <Typography sx={{ fontSize: 11, color: brand.neutral[500] }}>
@@ -319,15 +361,6 @@ export function MaintenanceTicketDetailPage() {
                     </Typography>
                   </Stack>
                 ))}
-              </Stack>
-              <Divider sx={{ my: 1.6 }} />
-              <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Typography sx={{ fontSize: 12, color: brand.graphite[500], fontWeight: 900 }}>
-                  Custo estimado
-                </Typography>
-                <Typography sx={{ color: 'primary.main', fontSize: 18, fontWeight: 900 }}>
-                  {ticket.estimatedCost}
-                </Typography>
               </Stack>
             </Box>
           </Stack>

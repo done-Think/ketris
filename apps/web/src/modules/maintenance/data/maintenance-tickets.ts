@@ -57,6 +57,16 @@ export const maintenanceTickets: readonly MaintenanceTicket[] = [
   },
 ]
 
+let currentMaintenanceTickets: readonly MaintenanceTicket[] = maintenanceTickets
+
+export function getMaintenanceTickets() {
+  return currentMaintenanceTickets
+}
+
+export function setMaintenanceTickets(tickets: readonly MaintenanceTicket[]) {
+  currentMaintenanceTickets = tickets
+}
+
 export const maintenanceMetrics: readonly MaintenanceMetric[] = [
   { label: 'open', value: '12' },
   { label: 'urgent', value: '3' },

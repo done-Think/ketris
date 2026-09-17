@@ -6,5 +6,4 @@ export const maintenanceTicketSchema = z.object({
   priority: z.enum(['normal', 'high', 'urgent'], { message: 'Selecione a prioridade' }),
   title: z.string().trim().min(1, 'Informe o título do chamado'),
   description: z.string().trim().min(1, 'Descreva o problema'),
-  estimatedCost: z.string().trim().optional(),
 })

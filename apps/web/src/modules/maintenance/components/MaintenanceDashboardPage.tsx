@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined'
@@ -11,6 +11,8 @@ import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded'
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded'
+import FilterListRoundedIcon from '@mui/icons-material/FilterListRounded'
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import {
   Box,
   Button,
@@ -38,13 +40,21 @@ import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import {
   maintenanceFilters,
+  getMaintenanceTickets,
   maintenanceMetrics,
   maintenanceTickets,
+  setMaintenanceTickets,
 } from '../data/maintenance-tickets'
-import type { MaintenancePriority, MaintenanceStatus } from '../types/maintenance'
-import type { MaintenanceCreateTicketFormValues, MaintenanceTicket } from '../types/maintenance'
+import type {
+  MaintenanceCreateTicketFormValues,
+  MaintenanceFilter,
+  MaintenancePriority,
+  MaintenanceStatus,
+  MaintenanceTicket,
+} from '../types/maintenance'
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 import { MaintenanceCreateTicketDialog } from './MaintenanceCreateTicketDialog'
+import { getMaintenanceTicketDetail } from '../data/maintenance-ticket-detail'
 
 const statusStyles: Record<MaintenanceStatus, { bgcolor: string; color: string }> = {
   inProgress: { bgcolor: '#FFF2CC', color: '#D98900' },
@@ -58,16 +68,21 @@ const priorityColors: Record<MaintenancePriority, string> = {
   normal: brand.neutral[400],
 }
 
+const ticketsPerPage = 6
+
 export function MaintenanceDashboardPage() {
   const t = useTranslations('dashboard.maintenance')
   const [activeFilter, setActiveFilter] = useState<'all' | MaintenanceStatus | 'urgent'>('all')
   const [search, setSearch] = useState('')
+  const [propertyFilter, setPropertyFilter] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false)
   const [editingTicket, setEditingTicket] = useState<MaintenanceTicket | null>(null)
   const [deletingTicket, setDeletingTicket] = useState<MaintenanceTicket | null>(null)
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null)
   const [menuTicket, setMenuTicket] = useState<MaintenanceTicket | null>(null)
-  const [tickets, setTickets] = useState<readonly MaintenanceTicket[]>(maintenanceTickets)
+  const [tickets, setTickets] = useState<readonly MaintenanceTicket[]>(getMaintenanceTickets)
   const filteredTickets = useMemo(
     () =>
       tickets.filter((ticket) => {
@@ -79,16 +94,28 @@ export function MaintenanceDashboardPage() {
         const normalized = search.trim().toLocaleLowerCase('pt-BR')
         return (
           matchesFilter &&
+          (propertyFilter === 'all' || ticket.property === propertyFilter) &&
           (!normalized ||
             [ticket.id, ticket.property, ticket.category, ticket.tenant].some((value) =>
               value.toLocaleLowerCase('pt-BR').includes(normalized),
             ))
         )
       }),
-    [activeFilter, search, tickets],
+    [activeFilter, propertyFilter, search, tickets],
   )
+  const totalPages = Math.max(1, Math.ceil(filteredTickets.length / ticketsPerPage))
+  const pagedTickets = filteredTickets.slice(
+    (currentPage - 1) * ticketsPerPage,
+    currentPage * ticketsPerPage,
+  )
+  const showingFrom = filteredTickets.length === 0 ? 0 : (currentPage - 1) * ticketsPerPage + 1
+  const showingTo = Math.min(currentPage * ticketsPerPage, filteredTickets.length)
 
-  function getFilterCount(filter: (typeof maintenanceFilters)[number]) {
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages))
+  }, [totalPages])
+
+  function getFilterCount(filter: MaintenanceFilter) {
     const matchesFilter = (ticket: MaintenanceTicket) =>
       filter.value === 'all' ||
       (filter.value === 'urgent' ? ticket.priority === 'urgent' : ticket.status === filter.value)
@@ -99,11 +126,24 @@ export function MaintenanceDashboardPage() {
     )
   }
 
+  function handleActiveFilterChange(value: MaintenanceFilter['value']) {
+    setActiveFilter(value)
+    setCurrentPage(1)
+  }
+
+  function handlePropertyFilterChange(value: string) {
+    setPropertyFilter(value)
+    setCurrentPage(1)
+  }
+
   function handleCreateTicket(values: MaintenanceCreateTicketFormValues) {
     const property = maintenanceProperties.find((option) => option.id === values.propertyId)
     if (!property) return
 
-    const nextNumber = Math.max(...tickets.map((ticket) => Number(ticket.id.slice(-4)))) + 1
+    const ticketNumbers = tickets
+      .map((ticket) => Number(ticket.id.slice(-4)))
+      .filter((ticketNumber) => Number.isFinite(ticketNumber))
+    const nextNumber = (ticketNumbers.length > 0 ? Math.max(...ticketNumbers) : 89) + 1
     const ticket: MaintenanceTicket = {
       id: `#MNT-2025-${String(nextNumber).padStart(4, '0')}`,
       property: property.label,
@@ -114,10 +154,14 @@ export function MaintenanceDashboardPage() {
       status: 'open',
       title: values.title,
       description: values.description,
-      estimatedCost: values.estimatedCost,
     }
 
-    setTickets((currentTickets) => [ticket, ...currentTickets])
+    setTickets((currentTickets) => {
+      const nextTickets = [ticket, ...currentTickets]
+      setMaintenanceTickets(nextTickets)
+      return nextTickets
+    })
+    setCurrentPage(1)
     setIsCreateDialogOpen(false)
   }
 
@@ -127,15 +171,14 @@ export function MaintenanceDashboardPage() {
   }
 
   function getFormValues(ticket: MaintenanceTicket): MaintenanceCreateTicketFormValues {
+    const detail = getMaintenanceTicketDetail(ticket)
     return {
       propertyId:
         maintenanceProperties.find((property) => property.label === ticket.property)?.id ?? '',
       category: ticket.category,
       priority: ticket.priority,
-      title: ticket.title ?? ticket.id,
-      description:
-        ticket.description ?? `Chamado de ${ticket.category.toLocaleLowerCase('pt-BR')}.`,
-      estimatedCost: ticket.estimatedCost ?? '',
+      title: detail.title,
+      description: detail.description,
     }
   }
 
@@ -143,8 +186,8 @@ export function MaintenanceDashboardPage() {
     if (!editingTicket) return
     const property = maintenanceProperties.find((option) => option.id === values.propertyId)
     if (!property) return
-    setTickets((current) =>
-      current.map((ticket) =>
+    setTickets((current) => {
+      const nextTickets = current.map((ticket) =>
         ticket.id === editingTicket.id
           ? {
               ...ticket,
@@ -154,18 +197,23 @@ export function MaintenanceDashboardPage() {
               priority: values.priority,
               title: values.title,
               description: values.description,
-              estimatedCost: values.estimatedCost,
             }
           : ticket,
-      ),
-    )
+      )
+      setMaintenanceTickets(nextTickets)
+      return nextTickets
+    })
     setEditingTicket(null)
     setIsCreateDialogOpen(false)
   }
 
   function handleDeleteTicket() {
     if (!deletingTicket) return
-    setTickets((current) => current.filter((ticket) => ticket.id !== deletingTicket.id))
+    setTickets((current) => {
+      const nextTickets = current.filter((ticket) => ticket.id !== deletingTicket.id)
+      setMaintenanceTickets(nextTickets)
+      return nextTickets
+    })
     setDeletingTicket(null)
   }
 
@@ -196,7 +244,10 @@ export function MaintenanceDashboardPage() {
           >
             <TextField
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value)
+                setCurrentPage(1)
+              }}
               placeholder={t('search')}
               size="small"
               sx={compactFieldSx}
@@ -212,11 +263,13 @@ export function MaintenanceDashboardPage() {
             />
             <TextField
               select
-              defaultValue="all"
+              value={propertyFilter}
+              onChange={(event) => handlePropertyFilterChange(event.target.value)}
               size="small"
               sx={{
                 ...compactFieldSx,
                 width: { xs: '100%', sm: 180 },
+                display: { xs: 'none', md: 'block' },
                 '& .MuiSelect-select': { pr: 4.5 },
               }}
             >
@@ -226,7 +279,29 @@ export function MaintenanceDashboardPage() {
                   <span>{t('allProperties')}</span>
                 </Stack>
               </MenuItem>
+              {maintenanceProperties.map((property) => (
+                <MenuItem key={property.id} value={property.label}>
+                  {property.label}
+                </MenuItem>
+              ))}
             </TextField>
+            <Button
+              variant="outlined"
+              startIcon={<FilterListRoundedIcon sx={{ fontSize: 17 }} />}
+              onClick={() => setIsFiltersDialogOpen(true)}
+              aria-label={t('filterDialog.open')}
+              sx={{
+                display: { xs: 'inline-flex', md: 'none' },
+                minHeight: 36,
+                px: 2,
+                borderRadius: `${radius.sm}px`,
+                fontSize: 13,
+                fontWeight: 800,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {t('filterDialog.open')}
+            </Button>
             <Button
               variant="contained"
               startIcon={<AddRoundedIcon sx={{ fontSize: 17 }} />}
@@ -244,32 +319,12 @@ export function MaintenanceDashboardPage() {
             </Button>
           </Stack>
         </Stack>
-        <Stack direction="row" spacing={0.8} sx={{ overflowX: 'auto', pb: 0.2 }}>
-          {maintenanceFilters.map((filter) => (
-            <Button
-              key={filter.value}
-              onClick={() => setActiveFilter(filter.value)}
-              sx={{
-                minWidth: 'max-content',
-                minHeight: 30,
-                px: 1.55,
-                py: 0,
-                borderRadius: `${radius.full}px`,
-                border: '1px solid',
-                borderColor: activeFilter === filter.value ? 'primary.main' : brand.neutral[100],
-                bgcolor: activeFilter === filter.value ? 'primary.main' : surface.paper,
-                color: activeFilter === filter.value ? surface.paper : brand.neutral[600],
-                fontSize: 12,
-                fontWeight: 700,
-              }}
-            >
-              {t(`filters.${filter.value}`)}
-              <Box component="span" sx={{ ml: 0.8, fontSize: 11, fontWeight: 800 }}>
-                {getFilterCount(filter)}
-              </Box>
-            </Button>
-          ))}
-        </Stack>
+        <MaintenanceStatusFilters
+          activeFilter={activeFilter}
+          getFilterCount={getFilterCount}
+          onChange={handleActiveFilterChange}
+          isDesktop
+        />
         <Box
           sx={{
             display: 'grid',
@@ -318,7 +373,7 @@ export function MaintenanceDashboardPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredTickets.map((ticket) => (
+              {pagedTickets.map((ticket) => (
                 <TableRow key={ticket.id} sx={{ '&:last-child td': { borderBottom: 0 } }}>
                   <TableCell sx={{ ...bodyCellSx, color: 'primary.main', fontWeight: 900 }}>
                     {ticket.id}
@@ -359,7 +414,10 @@ export function MaintenanceDashboardPage() {
                     <Stack direction="row" spacing={0.4} justifyContent="center">
                       <IconButton
                         component={Link}
-                        href={`/dashboard/maintenance/${ticket.id.slice(1)}`}
+                        href={{
+                          pathname: '/dashboard/maintenance/[id]',
+                          params: { id: ticket.id.slice(1) },
+                        }}
                         aria-label={t('viewTicket', { ticket: ticket.id })}
                         size="small"
                         sx={{
@@ -387,6 +445,13 @@ export function MaintenanceDashboardPage() {
                   </TableCell>
                 </TableRow>
               ))}
+              {pagedTickets.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={8} align="center" sx={bodyCellSx}>
+                    Nenhum chamado encontrado.
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
           <Stack
@@ -398,30 +463,46 @@ export function MaintenanceDashboardPage() {
           >
             <Typography sx={{ fontSize: 13, color: brand.neutral[600], fontWeight: 700 }}>
               {t('showing', {
-                showing: filteredTickets.length,
-                total: getFilterCount(maintenanceFilters[0]),
+                from: showingFrom,
+                to: showingTo,
+                total: filteredTickets.length,
               })}
             </Typography>
             <Stack direction="row" spacing={0.5}>
-              {['previous', '1', '2', '3', 'next'].map((item) => (
+              <Button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((page) => page - 1)}
+                sx={paginationButtonSx}
+              >
+                {t('pagination.previous')}
+              </Button>
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
                 <Button
-                  key={item}
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
                   sx={{
-                    minWidth: item.length === 1 ? 28 : 'auto',
+                    minWidth: 28,
                     height: 28,
                     px: 1.05,
                     borderRadius: `${radius.sm}px`,
-                    border: item === '1' ? 0 : '1px solid',
+                    border: page === currentPage ? 0 : '1px solid',
                     borderColor: brand.neutral[100],
-                    bgcolor: item === '1' ? 'primary.main' : surface.paper,
-                    color: item === '1' ? surface.paper : brand.neutral[600],
+                    bgcolor: page === currentPage ? 'primary.main' : surface.paper,
+                    color: page === currentPage ? surface.paper : brand.neutral[600],
                     fontSize: 12,
                     fontWeight: 800,
                   }}
                 >
-                  {item === '1' || item === '2' || item === '3' ? item : t(`pagination.${item}`)}
+                  {page}
                 </Button>
               ))}
+              <Button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((page) => page + 1)}
+                sx={paginationButtonSx}
+              >
+                {t('pagination.next')}
+              </Button>
             </Stack>
           </Stack>
         </TableContainer>
@@ -436,6 +517,59 @@ export function MaintenanceDashboardPage() {
         initialValues={editingTicket ? getFormValues(editingTicket) : undefined}
         mode={editingTicket ? 'edit' : 'create'}
       />
+      <Dialog
+        open={isFiltersDialogOpen}
+        onClose={() => setIsFiltersDialogOpen(false)}
+        fullWidth
+        maxWidth="xs"
+        aria-labelledby="maintenance-filters-title"
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: `${radius.sm}px`,
+              maxHeight: 'calc(100% - 32px)',
+            },
+          },
+        }}
+      >
+        <DialogTitle
+          id="maintenance-filters-title"
+          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}
+        >
+          {t('filterDialog.title')}
+          <IconButton
+            aria-label={t('filterDialog.close')}
+            onClick={() => setIsFiltersDialogOpen(false)}
+          >
+            <CloseRoundedIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={2} sx={{ pt: 0.5 }}>
+            <TextField
+              select
+              label={t('filterDialog.property')}
+              value={propertyFilter}
+              onChange={(event) => handlePropertyFilterChange(event.target.value)}
+              fullWidth
+              sx={compactFieldSx}
+            >
+              <MenuItem value="all">{t('allProperties')}</MenuItem>
+              {maintenanceProperties.map((property) => (
+                <MenuItem key={property.id} value={property.label}>
+                  {property.label}
+                </MenuItem>
+              ))}
+            </TextField>
+            <MaintenanceStatusFilters
+              activeFilter={activeFilter}
+              direction="column"
+              getFilterCount={getFilterCount}
+              onChange={handleActiveFilterChange}
+            />
+          </Stack>
+        </DialogContent>
+      </Dialog>
       <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={closeMenu}>
         <MenuItem
           onClick={() => {
@@ -513,6 +647,71 @@ const bodyCellSx = {
   fontWeight: 700,
   whiteSpace: 'nowrap',
 } as const
+const paginationButtonSx = {
+  height: 28,
+  px: 1.05,
+  borderRadius: `${radius.sm}px`,
+  border: '1px solid',
+  borderColor: brand.neutral[100],
+  color: brand.neutral[600],
+  fontSize: 12,
+  fontWeight: 800,
+} as const
+
+function MaintenanceStatusFilters({
+  activeFilter,
+  direction = 'row',
+  getFilterCount,
+  isDesktop = false,
+  onChange,
+}: {
+  activeFilter: MaintenanceFilter['value']
+  direction?: 'row' | 'column'
+  getFilterCount: (filter: MaintenanceFilter) => number
+  isDesktop?: boolean
+  onChange: (value: MaintenanceFilter['value']) => void
+}) {
+  const t = useTranslations('dashboard.maintenance')
+
+  return (
+    <Stack
+      direction={direction}
+      spacing={0.8}
+      sx={{
+        display: isDesktop ? { xs: 'none', md: 'flex' } : 'flex',
+        overflowX: direction === 'row' ? 'auto' : 'visible',
+        pb: direction === 'row' ? 0.2 : 0,
+      }}
+    >
+      {maintenanceFilters.map((filter) => (
+        <Button
+          key={filter.value}
+          aria-pressed={activeFilter === filter.value}
+          onClick={() => onChange(filter.value)}
+          sx={{
+            justifyContent: direction === 'column' ? 'space-between' : 'center',
+            minWidth: direction === 'row' ? 'max-content' : undefined,
+            minHeight: 30,
+            px: 1.55,
+            py: 0,
+            borderRadius: `${radius.full}px`,
+            border: '1px solid',
+            borderColor: activeFilter === filter.value ? 'primary.main' : brand.neutral[100],
+            bgcolor: activeFilter === filter.value ? 'primary.main' : surface.paper,
+            color: activeFilter === filter.value ? surface.paper : brand.neutral[600],
+            fontSize: 12,
+            fontWeight: 700,
+          }}
+        >
+          {t(`filters.${filter.value}`)}
+          <Box component="span" sx={{ ml: 0.8, fontSize: 11, fontWeight: 800 }}>
+            {getFilterCount(filter)}
+          </Box>
+        </Button>
+      ))}
+    </Stack>
+  )
+}
 
 function MetricCard({
   label,

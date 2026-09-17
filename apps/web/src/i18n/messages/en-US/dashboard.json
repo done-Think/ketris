@@ -88,6 +88,12 @@
     "search": "Search ticket...",
     "allProperties": "All properties",
     "newTicket": "New ticket",
+    "filterDialog": {
+      "open": "Filters",
+      "title": "Filters",
+      "close": "Close filters",
+      "property": "Property"
+    },
     "filters": {
       "all": "All",
       "open": "Open",
@@ -119,7 +125,7 @@
       "closed": "Closed"
     },
     "viewTicket": "View ticket {ticket}",
-    "showing": "Showing 1-{showing} of {total} tickets",
+    "showing": "Showing {from}-{to} of {total} tickets",
     "createDialog": {
       "title": "New ticket",
       "editTitle": "Edit ticket",
@@ -133,8 +139,7 @@
         "priority": "Priority",
         "title": "Ticket title",
         "description": "Problem description",
-        "descriptionPlaceholder": "Describe the problem...",
-        "estimatedCost": "Estimated cost"
+        "descriptionPlaceholder": "Describe the problem..."
       }
     },
     "actions": {

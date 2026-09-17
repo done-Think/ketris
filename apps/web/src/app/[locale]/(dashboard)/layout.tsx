@@ -16,9 +16,7 @@ export default async function DashboardLayout({
 }) {
   const { locale } = await params
   const session = await getServerSession(authOptions)
-  const isLocalDevelopmentPreview = process.env.NODE_ENV === 'development'
-
-  if (!isLocalDevelopmentPreview && (!session || session.scope !== 'tenant')) {
+  if (!session || session.scope !== 'tenant') {
     redirect(getLocalizedPathname('/login', locale))
   }
 

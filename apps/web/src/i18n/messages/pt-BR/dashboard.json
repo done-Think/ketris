@@ -88,6 +88,12 @@
     "search": "Buscar chamado...",
     "allProperties": "Todos os Im\u00f3veis",
     "newTicket": "Novo Chamado",
+    "filterDialog": {
+      "open": "Filtros",
+      "title": "Filtros",
+      "close": "Fechar filtros",
+      "property": "Imóvel"
+    },
     "filters": {
       "all": "Todos",
       "open": "Aberto",
@@ -119,7 +125,7 @@
       "closed": "Fechado"
     },
     "viewTicket": "Visualizar chamado {ticket}",
-    "showing": "Mostrando 1-{showing} de {total} chamados",
+    "showing": "Mostrando {from}-{to} de {total} chamados",
     "createDialog": {
       "title": "Novo Chamado",
       "editTitle": "Editar Chamado",
@@ -133,8 +139,7 @@
         "priority": "Prioridade",
         "title": "Título do Chamado",
         "description": "Relato do Problema",
-        "descriptionPlaceholder": "Descreva o problema...",
-        "estimatedCost": "Custo Estimado"
+        "descriptionPlaceholder": "Descreva o problema..."
       }
     },
     "actions": {

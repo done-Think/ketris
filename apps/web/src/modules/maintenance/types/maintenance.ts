@@ -6,7 +6,6 @@ export type MaintenanceCreateTicketFormValues = {
   priority: MaintenancePriority
   title: string
   description: string
-  estimatedCost?: string
 }
 
 export type MaintenanceStatus = 'inProgress' | 'open' | 'resolved' | 'closed'
@@ -21,7 +20,6 @@ export interface MaintenanceTicket {
   status: MaintenanceStatus
   title?: string
   description?: string
-  estimatedCost?: string
 }
 
 export interface MaintenanceMetric {
@@ -55,11 +53,16 @@ export interface MaintenanceTicketDetail {
   category: string
   openedBy: string
   openedAt: string
+  openedTime?: string
   lastUpdated: string
   estimatedSla: string
-  estimatedCost: string
   status: MaintenanceStatus
   priority: MaintenancePriority
   responsibles: readonly MaintenanceResponsible[]
   timeline: readonly MaintenanceTimelineEntry[]
+  photos: readonly {
+    name: string
+    src: string
+    position: 'left' | 'right'
+  }[]
 }

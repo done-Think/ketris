@@ -11,15 +11,13 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  InputAdornment,
   MenuItem,
   Stack,
-  TextField,
   Typography,
 } from '@mui/material'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
-import { Controller, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 
 import { RhfTextField } from '@shared/components/form'
 import { iconSize, brand, radius } from '@shared/theme/tokens'
@@ -33,7 +31,6 @@ const defaultValues: MaintenanceCreateTicketFormValues = {
   priority: 'normal',
   title: '',
   description: '',
-  estimatedCost: '',
 }
 
 const propertyOptions = [
@@ -44,13 +41,6 @@ const propertyOptions = [
 ] as const
 
 const categoryOptions = ['Hidráulica', 'Elétrica', 'Estrutural', 'Pintura'] as const
-
-function formatCurrencyValue(value: string) {
-  const digits = value.replace(/\D/g, '')
-  const cents = digits.padStart(3, '0')
-  const integer = cents.slice(0, -2).replace(/^0+(?=\d)/, '')
-  return `${integer},${cents.slice(-2)}`
-}
 
 export type MaintenanceCreateTicketDialogProps = {
   open: boolean
@@ -161,27 +151,6 @@ export function MaintenanceCreateTicketDialog({
               <MenuItem value="high">{maintenanceT('priorities.high')}</MenuItem>
               <MenuItem value="urgent">{maintenanceT('priorities.urgent')}</MenuItem>
             </RhfTextField>
-            <Controller
-              control={control}
-              name="estimatedCost"
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  value={formatCurrencyValue(field.value ?? '')}
-                  onChange={(event) => field.onChange(event.target.value.replace(/\D/g, ''))}
-                  label={t('fields.estimatedCost')}
-                  fullWidth
-                  error={Boolean(fieldState.error)}
-                  helperText={fieldState.error?.message}
-                  slotProps={{
-                    htmlInput: { inputMode: 'numeric' },
-                    input: {
-                      startAdornment: <InputAdornment position="start">R$</InputAdornment>,
-                    },
-                  }}
-                />
-              )}
-            />
             <RhfTextField
               control={control}
               name="title"

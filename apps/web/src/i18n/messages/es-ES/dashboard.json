@@ -88,6 +88,12 @@
     "search": "Buscar solicitud...",
     "allProperties": "Todos los inmuebles",
     "newTicket": "Nueva solicitud",
+    "filterDialog": {
+      "open": "Filtros",
+      "title": "Filtros",
+      "close": "Cerrar filtros",
+      "property": "Inmueble"
+    },
     "filters": {
       "all": "Todos",
       "open": "Abierto",
@@ -119,7 +125,7 @@
       "closed": "Cerrado"
     },
     "viewTicket": "Ver solicitud {ticket}",
-    "showing": "Mostrando 1-{showing} de {total} solicitudes",
+    "showing": "Mostrando {from}-{to} de {total} solicitudes",
     "createDialog": {
       "title": "Nueva solicitud",
       "editTitle": "Editar solicitud",
@@ -133,8 +139,7 @@
         "priority": "Prioridad",
         "title": "Título de la solicitud",
         "description": "Descripción del problema",
-        "descriptionPlaceholder": "Describa el problema...",
-        "estimatedCost": "Costo estimado"
+        "descriptionPlaceholder": "Describa el problema..."
       }
     },
     "actions": {
