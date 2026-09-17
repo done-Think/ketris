@@ -16,8 +16,9 @@ export default async function DashboardLayout({
 }) {
   const { locale } = await params
   const session = await getServerSession(authOptions)
-
-  if (!session || session.scope !== 'tenant') redirect(getLocalizedPathname('/login', locale))
+  if (!session || session.scope !== 'tenant') {
+    redirect(getLocalizedPathname('/login', locale))
+  }
 
   return <Box sx={{ minHeight: '100vh' }}>{children}</Box>
 }

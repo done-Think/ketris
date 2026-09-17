@@ -9,6 +9,9 @@
     "finance": {
       "metadataTitle": "Ketris | Finance"
     },
+    "maintenance": {
+      "metadataTitle": "Ketris | Maintenance tickets"
+    },
     "leads": {
       "metadataTitle": "Ketris | Leads"
     },
@@ -95,6 +98,75 @@
         "pending": "Pending"
       }
     }
+  },
+  "maintenance": {
+    "title": "Maintenance tickets",
+    "subtitle": "Track repair and maintenance requests",
+    "search": "Search ticket...",
+    "allProperties": "All properties",
+    "newTicket": "New ticket",
+    "filterDialog": {
+      "open": "Filters",
+      "title": "Filters",
+      "close": "Close filters",
+      "property": "Property"
+    },
+    "filters": {
+      "all": "All",
+      "open": "Open",
+      "inProgress": "In progress",
+      "urgent": "Urgent",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+    "metrics": {
+      "open": "Open",
+      "urgent": "Urgent",
+      "averageResolution": "Average resolution time"
+    },
+    "columns": {
+      "ticket": "Ticket",
+      "property": "Property",
+      "category": "Category",
+      "priority": "Priority",
+      "tenant": "Tenant",
+      "openedAt": "Opened on",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "priorities": { "urgent": "Urgent", "high": "High", "normal": "Normal" },
+    "statuses": {
+      "inProgress": "In progress",
+      "open": "Open",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+    "viewTicket": "View ticket {ticket}",
+    "showing": "Showing {from}-{to} of {total} tickets",
+    "createDialog": {
+      "title": "New ticket",
+      "editTitle": "Edit ticket",
+      "close": "Close",
+      "cancel": "Cancel",
+      "submit": "Create ticket",
+      "save": "Save changes",
+      "fields": {
+        "property": "Property",
+        "category": "Category",
+        "priority": "Priority",
+        "title": "Ticket title",
+        "description": "Problem description",
+        "descriptionPlaceholder": "Describe the problem..."
+      }
+    },
+    "actions": {
+      "menu": "Actions for ticket {ticket}",
+      "edit": "Edit ticket",
+      "delete": "Delete ticket",
+      "deleteTitle": "Delete ticket?",
+      "deleteDescription": "Do you really want to delete this ticket? This action cannot be undone."
+    },
+    "pagination": { "previous": "Previous", "next": "Next" }
   },
   "finance": {
     "title": "Finance",

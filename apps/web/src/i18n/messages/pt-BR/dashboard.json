@@ -9,6 +9,9 @@
     "finance": {
       "metadataTitle": "Ketris | Financeiro"
     },
+    "maintenance": {
+      "metadataTitle": "Ketris | Chamados de Manuten\u00e7\u00e3o"
+    },
     "leads": {
       "metadataTitle": "Ketris | Leads"
     },
@@ -95,6 +98,75 @@
         "pending": "Pendente"
       }
     }
+  },
+  "maintenance": {
+    "title": "Chamados de Manuten\u00e7\u00e3o",
+    "subtitle": "Acompanhe solicita\u00e7\u00f5es de reparo e manuten\u00e7\u00e3o",
+    "search": "Buscar chamado...",
+    "allProperties": "Todos os Im\u00f3veis",
+    "newTicket": "Novo Chamado",
+    "filterDialog": {
+      "open": "Filtros",
+      "title": "Filtros",
+      "close": "Fechar filtros",
+      "property": "Imóvel"
+    },
+    "filters": {
+      "all": "Todos",
+      "open": "Aberto",
+      "inProgress": "Em andamento",
+      "urgent": "Urgente",
+      "resolved": "Resolvido",
+      "closed": "Fechado"
+    },
+    "metrics": {
+      "open": "Abertos",
+      "urgent": "Urgentes",
+      "averageResolution": "Tempo m\u00e9dio resolu\u00e7\u00e3o"
+    },
+    "columns": {
+      "ticket": "Chamado",
+      "property": "Im\u00f3vel",
+      "category": "Categoria",
+      "priority": "Prioridade",
+      "tenant": "Locat\u00e1rio",
+      "openedAt": "Aberto em",
+      "status": "Status",
+      "actions": "A\u00e7\u00f5es"
+    },
+    "priorities": { "urgent": "Urgente", "high": "Alta", "normal": "Normal" },
+    "statuses": {
+      "inProgress": "Em andamento",
+      "open": "Aberto",
+      "resolved": "Resolvido",
+      "closed": "Fechado"
+    },
+    "viewTicket": "Visualizar chamado {ticket}",
+    "showing": "Mostrando {from}-{to} de {total} chamados",
+    "createDialog": {
+      "title": "Novo Chamado",
+      "editTitle": "Editar Chamado",
+      "close": "Fechar",
+      "cancel": "Cancelar",
+      "submit": "Criar Chamado",
+      "save": "Salvar Alterações",
+      "fields": {
+        "property": "Imóvel",
+        "category": "Categoria",
+        "priority": "Prioridade",
+        "title": "Título do Chamado",
+        "description": "Relato do Problema",
+        "descriptionPlaceholder": "Descreva o problema..."
+      }
+    },
+    "actions": {
+      "menu": "Ações do chamado {ticket}",
+      "edit": "Editar chamado",
+      "delete": "Excluir chamado",
+      "deleteTitle": "Excluir chamado?",
+      "deleteDescription": "Deseja realmente excluir este chamado? Esta ação não poderá ser desfeita."
+    },
+    "pagination": { "previous": "Anterior", "next": "Pr\u00f3ximo" }
   },
   "finance": {
     "title": "Financeiro",

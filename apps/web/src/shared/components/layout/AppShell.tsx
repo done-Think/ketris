@@ -6,6 +6,7 @@ import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import InsertChartOutlinedRoundedIcon from '@mui/icons-material/InsertChartOutlinedRounded'
+import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
@@ -47,6 +48,7 @@ type NavHref =
   | '/dashboard/public-profile'
   | '/dashboard/agenda'
   | '/dashboard/finance'
+  | '/dashboard/maintenance'
 
 interface NavItem {
   labelKey: string
@@ -76,6 +78,12 @@ const navigationItems: readonly NavItem[] = [
   },
   { labelKey: 'agenda', href: '/dashboard/agenda', icon: CalendarTodayOutlinedIcon },
   {
+    labelKey: 'maintenance',
+    href: '/dashboard/maintenance',
+    icon: BuildOutlinedIcon,
+    roles: ['ADMIN', 'OWNER'],
+  },
+  {
     labelKey: 'finance',
     href: '/dashboard/finance',
     icon: InsertChartOutlinedRoundedIcon,
@@ -85,24 +93,28 @@ const navigationItems: readonly NavItem[] = [
 
 export interface AppShellProps {
   children: React.ReactNode
+  allowLocalMaintenancePreview?: boolean
 }
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children, allowLocalMaintenancePreview = false }: AppShellProps) {
   const t = useTranslations('common.appShell')
   const pathname = usePathname()
   const { data: session, status } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
   const isPublicCrmRoute = pathname === '/crm' || pathname === '/crm/contacts'
+  const isMaintenanceRoute =
+    pathname === '/dashboard/maintenance' || pathname.startsWith('/dashboard/maintenance/')
+  const isLocalMaintenancePreview = allowLocalMaintenancePreview && isMaintenanceRoute
   const userName = session?.user?.name ?? t('defaultUserName')
   const userContext = session?.user?.email ?? t('defaultUserContext')
   const userInitials = useMemo(() => getInitials(userName), [userName])
-  const visibleItems = useMemo(
-    () =>
-      navigationItems.filter(
-        (item) => !item.roles || (session?.papel && item.roles.includes(session.papel)),
-      ),
-    [session],
-  )
+  const visibleItems = useMemo(() => {
+    if (isLocalMaintenancePreview) return navigationItems
+
+    return navigationItems.filter(
+      (item) => !item.roles || (session?.papel && item.roles.includes(session.papel)),
+    )
+  }, [isLocalMaintenancePreview, session])
   // Rotas como /crm e /dashboard são prefixo de várias outras entradas do menu (ex.:
   // /dashboard/finance). O item ativo deve ser o de prefixo mais específico que bate com a
   // rota atual, e não todo item cujo prefixo é um match parcial.
@@ -185,7 +197,10 @@ export function AppShell({ children }: AppShellProps) {
                   }}
                 >
                   <Icon
-                    sx={{ fontSize: iconSize.sm, color: active ? 'primary.main' : 'inherit' }}
+                    sx={{
+                      fontSize: iconSize.sm,
+                      color: active ? 'primary.main' : 'inherit',
+                    }}
                   />
                   <Typography
                     sx={{
@@ -212,7 +227,13 @@ export function AppShell({ children }: AppShellProps) {
         <Avatar
           src={session?.user?.image ?? undefined}
           alt={userName}
-          sx={{ width: 38, height: 38, bgcolor: 'primary.main', fontSize: 13, fontWeight: 800 }}
+          sx={{
+            width: 38,
+            height: 38,
+            bgcolor: 'primary.main',
+            fontSize: 11,
+            fontWeight: 800,
+          }}
         >
           {userInitials}
         </Avatar>
@@ -323,13 +344,20 @@ export function AppShell({ children }: AppShellProps) {
       <Box
         component="main"
         sx={{
-          width: { xs: '100%', md: `calc(100% - ${sidebarWidth}px)` },
+          width: {
+            xs: '100%',
+            md: `calc(100% - ${sidebarWidth}px)`,
+          },
           minWidth: 0,
           ml: { md: `${sidebarWidth}px` },
           pt: { xs: '64px', md: 0 },
         }}
       >
-        {isPublicCrmRoute ? children : <CrmAccessBoundary>{children}</CrmAccessBoundary>}
+        {isPublicCrmRoute || isLocalMaintenancePreview ? (
+          children
+        ) : (
+          <CrmAccessBoundary>{children}</CrmAccessBoundary>
+        )}
       </Box>
     </Box>
   )
