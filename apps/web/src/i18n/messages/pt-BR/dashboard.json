@@ -116,10 +116,6 @@
       "title": "Movimentações recentes",
       "date": "Data"
     },
-    "types": {
-      "Venda": "Venda",
-      "Comissão": "Comissão"
-    },
     "statuses": {
       "Recebido": "Recebido",
       "Previsto": "Previsto",

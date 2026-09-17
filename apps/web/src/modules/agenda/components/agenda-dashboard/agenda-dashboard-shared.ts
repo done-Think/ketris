@@ -1,13 +1,14 @@
 import dayjs, { type Dayjs } from 'dayjs'
 
 import { alpha, brand, supportColor } from '@shared/theme/tokens'
+import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
 
 import type {
   AgendaBuildNotificationsOptions,
   AgendaCalendarDay,
+  AgendaEvent,
   AgendaEventTone,
   AgendaEventToneStyle,
-  AgendaNotification,
   AgendaWeekRange,
 } from '../../types/agenda-event'
 
@@ -45,33 +46,33 @@ export function getEventHeight(durationMinutes: number) {
   return Math.max((durationMinutes / 60) * scheduleHourHeight, 38)
 }
 
-export function getAgendaDayjsLocale(locale: string) {
-  if (locale === 'pt-BR') return 'pt-br'
-  if (locale === 'es-ES') return 'es'
-
-  return 'en'
+function capitalize(value: string) {
+  return value.charAt(0).toLocaleUpperCase('pt-BR') + value.slice(1)
 }
 
-function capitalize(value: string, locale: string) {
-  return value.charAt(0).toLocaleUpperCase(locale) + value.slice(1)
-}
-
-export function buildAgendaCalendarDays(weekStartDate: Dayjs, locale: string): AgendaCalendarDay[] {
-  const dayjsLocale = getAgendaDayjsLocale(locale)
-  const today = dayjs().locale(dayjsLocale).startOf('day')
+export function buildAgendaCalendarDays(weekStartDate: Dayjs): AgendaCalendarDay[] {
+  const today = dayjs().locale('pt-br').startOf('day')
 
   return Array.from({ length: agendaVisibleDayCount }, (_, index) => {
-    const date = weekStartDate.locale(dayjsLocale).add(index, 'day')
+    const date = weekStartDate.add(index, 'day')
 
     return {
       dateLabel: date.format('DD'),
-      dayLabel: capitalize(date.format('ddd').replace('.', ''), locale),
+      dayLabel: capitalize(date.format('ddd').replace('.', '')),
       key: date.format('YYYY-MM-DD'),
-      monthLabel: capitalize(date.format('MMM').replace('.', ''), locale),
-      monthLongLabel: capitalize(date.format('MMMM'), locale),
+      monthLabel: capitalize(date.format('MMM').replace('.', '')),
+      monthLongLabel: capitalize(date.format('MMMM')),
       today: date.isSame(today, 'day'),
     }
   })
+}
+
+export function getEventEndTime(
+  event: Pick<AgendaEvent, 'durationMinutes' | 'scheduledDate' | 'time'>,
+) {
+  return dayjs(`${event.scheduledDate}T${event.time}`)
+    .add(event.durationMinutes, 'minute')
+    .format('HH:mm')
 }
 
 export function getAgendaWeekRange(days: AgendaCalendarDay[]): AgendaWeekRange {
@@ -85,18 +86,23 @@ export function getAgendaWeekRange(days: AgendaCalendarDay[]): AgendaWeekRange {
   }
 }
 
+function isVisitEvent(event: AgendaEvent) {
+  return event.title.toLocaleLowerCase('pt-BR').includes('visita')
+}
+
 export function getAgendaNotifications({
   events,
   t,
   today,
-}: AgendaBuildNotificationsOptions): AgendaNotification[] {
+}: AgendaBuildNotificationsOptions): DashboardNotificationItem[] {
   return events.flatMap((event) => {
     const eventDate = dayjs(event.scheduledDate)
-    const notifications: AgendaNotification[] = []
+    const notifications: DashboardNotificationItem[] = []
+    const href = { pathname: '/dashboard/agenda' as const, query: { eventId: event.id } }
 
-    if (eventDate.isSame(today, 'day') && event.kind === 'visit') {
+    if (eventDate.isSame(today, 'day') && isVisitEvent(event)) {
       notifications.push({
-        event,
+        href,
         id: `${event.id}-today-visit`,
         kind: 'todayVisit',
         message: t('todayVisitMessage', {
@@ -110,12 +116,12 @@ export function getAgendaNotifications({
 
     if (event.createdBy && event.createdByRole) {
       notifications.push({
-        event,
+        href,
         id: `${event.id}-assigned`,
         kind: 'assignedEvent',
         message: t('assignedEventMessage', {
           name: event.createdBy,
-          role: t(`creatorRoles.${event.createdByRole}`),
+          role: event.createdByRole,
           title: event.title,
         }),
         title: t('assignedEventTitle'),

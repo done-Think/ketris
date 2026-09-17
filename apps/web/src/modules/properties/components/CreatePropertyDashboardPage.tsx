@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Box, Divider, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { alpha, brand, radius, shadows, surface, zIndex } from '@shared/theme/tokens'
+import { alpha, radius, shadows, surface, zIndex } from '@shared/theme/tokens'
 
 import { createPropertySteps } from '../config/dashboard-property-ui'
 import {
@@ -96,9 +96,8 @@ export function CreatePropertyDashboardPage() {
             <Typography
               variant="h3"
               sx={{
-                color: brand.graphite[500],
-                fontSize: { xs: 20, md: 36 },
-                fontWeight: 900,
+                fontSize: { xs: 20, md: 24 },
+                fontWeight: 800,
                 mb: { xs: 0, md: 3 },
                 textAlign: { xs: 'center', md: 'left' },
               }}

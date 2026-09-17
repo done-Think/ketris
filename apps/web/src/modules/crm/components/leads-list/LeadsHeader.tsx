@@ -3,6 +3,7 @@ import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { Box, Button, InputAdornment, Stack, TextField, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
+import { DashboardNotificationsButton } from '@shared/components/layout'
 import { brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
 import type { LeadsHeaderProps } from '../../types/lead'
@@ -85,6 +86,9 @@ export function LeadsHeader({ search, onSearchChange, onNewLead }: LeadsHeaderPr
         >
           {t('newLead')}
         </Button>
+        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          <DashboardNotificationsButton />
+        </Box>
       </Stack>
     </Stack>
   )

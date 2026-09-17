@@ -1,6 +1,8 @@
 import type { Dayjs } from 'dayjs'
 import type { z } from 'zod'
 
+import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
+
 import type { agendaEventFormSchema } from '../schemas/agenda-event-form-schema'
 import type { agendaRescheduleSchema } from '../schemas/agenda-reschedule-schema'
 
@@ -8,14 +10,7 @@ export type AgendaEventStatus = 'Confirmada' | 'Pendente' | 'Reagendar'
 
 export type AgendaEventTone = 'primary' | 'info' | 'warning'
 
-export type AgendaEventCreatorRole = 'agency' | 'colleague'
-
-export type AgendaEventKind = 'visit' | 'followUp' | 'meeting' | 'inspection' | 'signature'
-
-export type AgendaTranslationGetter = (
-  key: string,
-  values?: Record<string, string | number>,
-) => string
+export type AgendaEventCreatorRole = 'colleague' | 'agency'
 
 export type AgendaEvent = {
   id: string
@@ -30,14 +25,15 @@ export type AgendaEvent = {
   notes: string
   status: AgendaEventStatus
   tone: AgendaEventTone
-  kind: AgendaEventKind
+  kind?: 'followUp' | 'inspection' | 'meeting' | 'signature' | 'visit'
   createdBy?: string
   createdByRole?: AgendaEventCreatorRole
 }
 
-export type AgendaEventSeed = Omit<AgendaEvent, 'notes' | 'participant' | 'property' | 'title'> & {
+export type AgendaTranslationGetter = (key: string) => string
+
+export type AgendaEventSeed = Omit<AgendaEvent, 'notes' | 'property' | 'title'> & {
   notesKey: string
-  participant: string
   propertyKey: string
   titleKey: string
 }
@@ -106,11 +102,10 @@ export type AgendaEventFormDialogProps = {
 export type AgendaDashboardHeaderProps = {
   disableNextWeek: boolean
   disablePreviousWeek: boolean
-  notificationCount: number
-  notificationsExpanded: boolean
+  notifications: DashboardNotificationItem[]
   onNewEvent: () => void
   onNextWeek: () => void
-  onOpenNotifications: (anchorEl: HTMLButtonElement) => void
+  onNotificationSelect: (notification: DashboardNotificationItem) => void
   onPreviousWeek: () => void
   weekRange: AgendaWeekRange
 }
@@ -130,23 +125,8 @@ export type AgendaMobileDayListProps = {
   selectedDayKey: string
 }
 
-export type AgendaNotification = {
-  event: AgendaEvent
-  id: string
-  kind: 'assignedEvent' | 'todayVisit'
-  message: string
-  title: string
-}
-
-export type AgendaNotificationsPopoverProps = {
-  anchorEl: HTMLButtonElement | null
-  notifications: AgendaNotification[]
-  onClose: () => void
-  onSelectNotification: (event: AgendaEvent) => void
-}
-
 export type AgendaBuildNotificationsOptions = {
   events: AgendaEvent[]
-  t: AgendaTranslationGetter
+  t: (key: string, values?: Record<string, string | number>) => string
   today: Dayjs
 }

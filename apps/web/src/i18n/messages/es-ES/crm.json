@@ -224,8 +224,7 @@
       "email": "Email"
     },
     "pagination": {
-      "previous": "Anterior",
-      "next": "Siguiente"
+      "pageAriaLabel": "Ir a la página {page}"
     }
   },
   "opportunityDetail": {

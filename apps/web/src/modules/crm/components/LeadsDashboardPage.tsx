@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { Box, Paper, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
+import { useSearchParams } from 'next/navigation'
 
 import { brand, radius, shadows, surface } from '@shared/theme/tokens'
 
@@ -39,14 +39,6 @@ export function LeadsDashboardPage() {
     [filteredLeads, page],
   )
 
-  useEffect(() => {
-    const leadId = searchParams?.get('leadId')
-    const lead = leads.find((currentLead) => currentLead.id === leadId)
-    if (!lead) return
-
-    setSelectedContactLead(lead)
-  }, [leads, searchParams])
-
   function handleSearchChange(value: string) {
     setSearch(value)
     setPage(1)
@@ -56,6 +48,14 @@ export function LeadsDashboardPage() {
     setActiveFilter(filter)
     setPage(1)
   }
+
+  useEffect(() => {
+    const leadId = searchParams?.get('leadId')
+    const lead = leads.find((currentLead) => currentLead.id === leadId)
+    if (!lead) return
+
+    setSelectedContactLead(lead)
+  }, [leads, searchParams])
 
   return (
     <Box
@@ -111,8 +111,7 @@ export function LeadsDashboardPage() {
             lastVisible={leadsPage.lastItem}
             resultTotal={leadsPage.totalCount}
             page={leadsPage.page}
-            canGoBack={leadsPage.page > 1}
-            canGoForward={leadsPage.page < leadsPage.pageCount}
+            pageCount={leadsPage.pageCount}
             onPageChange={setPage}
           />
         </Paper>

@@ -116,10 +116,6 @@
       "title": "Recent movements",
       "date": "Date"
     },
-    "types": {
-      "Venda": "Sale",
-      "Comissão": "Commission"
-    },
     "statuses": {
       "Recebido": "Received",
       "Previsto": "Expected",

@@ -16,7 +16,7 @@ vi.mock('notistack', () => ({
 }))
 
 function renderPage() {
-  render(
+  return render(
     <ThemeProvider theme={theme}>
       <AgendaDashboardPage />
     </ThemeProvider>,
@@ -38,9 +38,9 @@ describe('AgendaDashboardPage', () => {
   it('shows agenda alerts for today visits and assigned events', async () => {
     renderPage()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Abrir notificações da agenda' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir notificações do dashboard' }))
 
-    const popover = await screen.findByText('Alertas da agenda')
+    const popover = await screen.findByText('Alertas do dashboard')
     const panel = popover.closest('[role="presentation"]') ?? document.body
 
     expect(within(panel as HTMLElement).getByText('Visita marcada para hoje')).toBeVisible()
@@ -52,7 +52,8 @@ describe('AgendaDashboardPage', () => {
   it('creates a new event through the form dialog', async () => {
     renderPage()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Novo Evento' }))
+    const [newEventButton] = screen.getAllByRole('button', { name: 'Novo Evento' })
+    await userEvent.click(newEventButton)
     await userEvent.type(screen.getByLabelText('Título'), 'Visita apartamento novo')
     await userEvent.click(screen.getByLabelText('Imóvel em questão'))
     await userEvent.click(await screen.findByRole('option', { name: 'Outro' }))
@@ -69,5 +70,18 @@ describe('AgendaDashboardPage', () => {
       ),
     )
     expect(screen.getByText('09:00 - Visita apartamento novo')).toBeVisible()
+  })
+
+  it('switches the mobile day list when a different day chip is selected', async () => {
+    const user = userEvent.setup()
+    const { container } = renderPage()
+
+    expect(screen.getByText(/Visita Jardim Paulista - /)).toBeVisible()
+
+    const dayButtons = container.querySelectorAll('button[aria-pressed]')
+    await user.click(dayButtons[2])
+
+    expect(screen.getByText(/Reunião captação - /)).toBeVisible()
+    expect(screen.queryByText(/Visita Jardim Paulista - /)).not.toBeInTheDocument()
   })
 })

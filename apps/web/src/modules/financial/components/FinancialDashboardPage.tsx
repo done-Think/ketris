@@ -3,6 +3,7 @@ import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownR
 import { Box, Button, Stack, Typography } from '@mui/material'
 import { getTranslations } from 'next-intl/server'
 
+import { DashboardNotificationsButton } from '@shared/components/layout'
 import { iconSize, radius } from '@shared/theme/tokens'
 
 import {
@@ -24,16 +25,13 @@ export async function FinancialDashboardPage() {
       <Stack spacing={2.4}>
         <Stack
           direction={{ xs: 'column', md: 'row' }}
-          alignItems={{ xs: 'stretch', md: 'center' }}
+          alignItems={{ xs: 'stretch', md: 'flex-start' }}
           justifyContent="space-between"
           spacing={1.6}
         >
           <Box>
             <Typography variant="h3" sx={{ fontSize: { xs: 20, md: 24 }, fontWeight: 800 }}>
               {t('title')}
-            </Typography>
-            <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 700 }}>
-              {t('subtitle')}
             </Typography>
           </Box>
 
@@ -54,6 +52,9 @@ export async function FinancialDashboardPage() {
             >
               {t('export')}
             </Button>
+            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+              <DashboardNotificationsButton />
+            </Box>
           </Stack>
         </Stack>
 

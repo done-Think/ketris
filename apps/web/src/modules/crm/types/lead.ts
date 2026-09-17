@@ -83,8 +83,7 @@ export type LeadsPaginationFooterProps = {
   lastVisible: number
   resultTotal: number
   page: number
-  canGoBack: boolean
-  canGoForward: boolean
+  pageCount: number
   onPageChange?: (page: number) => void
 }
 

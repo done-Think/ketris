@@ -1,12 +1,16 @@
 'use client'
 
 import { Box, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
+import { useEffect, useMemo, useState } from 'react'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { AgendaWeekCalendarProps } from '../../types/agenda-event'
 import { AgendaEventCard } from './AgendaEventCard'
 import {
+  agendaEventToneStyles,
+  getEventEndTime,
   getEventHeight,
   getEventOffsetTop,
   scheduleHourHeight,
@@ -19,24 +23,206 @@ export function AgendaWeekCalendar({
   onSelectEvent,
   timeSlots,
 }: AgendaWeekCalendarProps) {
+  const t = useTranslations('agenda.dashboard')
+  const [selectedDayKey, setSelectedDayKey] = useState(days[0]?.key ?? '')
+  const selectedDay = days.find((day) => day.key === selectedDayKey) ?? days[0]
+  const selectedDayEvents = useMemo(
+    () =>
+      events
+        .filter((event) => event.scheduledDate === selectedDay?.key)
+        .sort((firstEvent, secondEvent) => firstEvent.time.localeCompare(secondEvent.time)),
+    [events, selectedDay?.key],
+  )
+  const firstAvailableSlot = timeSlots.find(
+    (slot) => !selectedDayEvents.some((event) => event.time.startsWith(slot.label)),
+  )
+
+  useEffect(() => {
+    const today = days.find((day) => day.today)
+
+    setSelectedDayKey((currentDayKey) => {
+      if (days.some((day) => day.key === currentDayKey)) return currentDayKey
+
+      return today?.key ?? days[0]?.key ?? ''
+    })
+  }, [days])
+
   return (
     <Box
       sx={{
-        bgcolor: surface.paper,
-        border: '1px solid',
+        bgcolor: { xs: surface.app, md: surface.paper },
+        border: { xs: 0, md: '1px solid' },
         borderColor: alpha.graphite[6],
         borderRadius: `${radius.sm}px`,
-        boxShadow: shadows.crmDetailPanel,
-        display: { xs: 'none', md: 'block' },
+        boxShadow: { xs: shadows.none, md: shadows.crmDetailPanel },
         overflow: 'hidden',
       }}
     >
+      <Box sx={{ display: { xs: 'block', md: 'none' }, px: 1.6, py: 1.8 }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))`,
+            gap: 0.8,
+          }}
+        >
+          {days.map((day) => {
+            const selected = day.key === selectedDay?.key
+
+            return (
+              <Box
+                key={day.key}
+                component="button"
+                type="button"
+                aria-pressed={selected}
+                aria-label={`${day.dayLabel}, ${day.dateLabel} ${day.monthLabel}`}
+                onClick={() => setSelectedDayKey(day.key)}
+                sx={{
+                  border: 0,
+                  borderRadius: `${radius.sm}px`,
+                  bgcolor: selected ? brand.magenta[500] : surface.app,
+                  color: selected ? surface.paper : brand.neutral[500],
+                  cursor: 'pointer',
+                  minHeight: 54,
+                  px: 0.8,
+                  py: 0.7,
+                }}
+              >
+                <Typography sx={{ display: 'block', fontSize: 11, fontWeight: 700 }}>
+                  {day.dayLabel}
+                </Typography>
+                <Typography sx={{ display: 'block', fontSize: 14, fontWeight: 900 }}>
+                  {day.dateLabel}
+                </Typography>
+              </Box>
+            )
+          })}
+        </Box>
+
+        {selectedDay ? (
+          <Typography
+            sx={{
+              color: brand.graphite[500],
+              fontSize: 18,
+              fontWeight: 900,
+              mt: 2.2,
+            }}
+          >
+            {t('selectedDayLabel', {
+              date: selectedDay.dateLabel,
+              day: selectedDay.dayLabel,
+              month: selectedDay.monthLongLabel,
+            })}
+          </Typography>
+        ) : null}
+
+        <Stack spacing={1.2} sx={{ mt: 1.6 }}>
+          {firstAvailableSlot ? (
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: '48px minmax(0, 1fr)',
+                gap: 1,
+                alignItems: 'stretch',
+              }}
+            >
+              <Typography sx={{ color: brand.neutral[500], fontSize: 14, fontWeight: 900, pt: 1 }}>
+                {firstAvailableSlot.label}
+              </Typography>
+              <Box
+                sx={{
+                  border: '1px dashed',
+                  borderColor: alpha.graphite[8],
+                  borderRadius: `${radius.sm}px`,
+                  color: brand.neutral[400],
+                  fontSize: 13,
+                  fontWeight: 700,
+                  px: 1.4,
+                  py: 1.2,
+                }}
+              >
+                {t('freeSlot')}
+              </Box>
+            </Box>
+          ) : null}
+
+          {selectedDayEvents.map((event) => {
+            const tone = agendaEventToneStyles[event.tone]
+
+            return (
+              <Box
+                key={event.id}
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: '48px minmax(0, 1fr)',
+                  gap: 1,
+                  alignItems: 'stretch',
+                }}
+              >
+                <Typography
+                  sx={{ color: brand.neutral[500], fontSize: 14, fontWeight: 900, pt: 2 }}
+                >
+                  {event.time}
+                </Typography>
+                <Box
+                  component="button"
+                  type="button"
+                  aria-label={t('openEventAriaLabel', { title: event.title })}
+                  onClick={() => onSelectEvent(event)}
+                  sx={{
+                    border: 0,
+                    borderLeft: '4px solid',
+                    borderColor: tone.borderColor,
+                    borderRadius: `${radius.sm}px`,
+                    bgcolor: surface.paper,
+                    boxShadow: shadows.crmCardCompact,
+                    cursor: 'pointer',
+                    display: 'grid',
+                    gap: 0.4,
+                    px: 1.4,
+                    py: 1.4,
+                    textAlign: 'left',
+                  }}
+                >
+                  <Stack
+                    direction="row"
+                    alignItems="flex-start"
+                    justifyContent="space-between"
+                    spacing={1}
+                  >
+                    <Typography sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 900 }}>
+                      {event.title} - {event.property}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        color: brand.neutral[500],
+                        flex: '0 0 auto',
+                        fontSize: 11,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {event.time} - {getEventEndTime(event)}
+                    </Typography>
+                  </Stack>
+                  <Typography sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 800 }}>
+                    {event.participant}
+                  </Typography>
+                  <Typography sx={{ color: brand.neutral[400], fontSize: 11, fontWeight: 700 }}>
+                    {event.notes}
+                  </Typography>
+                </Box>
+              </Box>
+            )
+          })}
+        </Stack>
+      </Box>
+
       <Box
         sx={{
-          display: 'grid',
+          display: { xs: 'none', md: 'grid' },
           gridTemplateColumns: {
-            xs: '48px repeat(5, minmax(132px, 1fr))',
-            md: '72px repeat(5, minmax(0, 1fr))',
+            xs: `48px repeat(${days.length}, minmax(132px, 1fr))`,
+            md: `72px repeat(${days.length}, minmax(0, 1fr))`,
           },
           overflowX: 'auto',
         }}

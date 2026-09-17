@@ -1,71 +1,29 @@
 {
   "dashboard": {
-    "title": "Schedule",
+    "title": "Agenda",
     "subtitle": "Your appointments and tasks, organized",
     "previousWeek": "Previous week",
     "nextWeek": "Next week",
-    "weekRange": "Schedule for {start}-{end}",
+    "weekRange": "Agenda for {start}-{end}",
     "newEvent": "New Event",
-    "notificationsAriaLabel": "Open schedule notifications",
-    "notificationsTooltip": "Notifications",
     "openEventAriaLabel": "Open {title}",
-    "selectedDayLabel": "{day}, {date} {month}",
     "todayVisitTitle": "Visit scheduled for today",
     "todayVisitMessage": "{time} - {participant} at {property}",
     "assignedEventTitle": "New assigned appointment",
     "assignedEventMessage": "{role} {name} booked {title}",
-    "creatorRoles": {
-      "agency": "agency",
-      "colleague": "colleague"
-    },
-    "defaultEventNotes": "Event created manually in the schedule.",
+    "defaultEventNotes": "Event created manually in the agenda.",
     "rescheduleSuccess": "{title} rescheduled to {date} at {time}.",
-    "createSuccess": "{title} added to the schedule.",
-    "notifications": {
-      "title": "Schedule alerts",
-      "subtitle": "Today's visits and assigned appointments",
-      "empty": "No alerts to show."
-    },
-    "sampleEvents": {
-      "digitalSignature": {
-        "notes": "Reschedule with guarantor and tenant at the same time to finish the signature.",
-        "property": "Studio Pinheiros Contract",
-        "title": "Digital signature"
-      },
-      "entryInspection": {
-        "notes": "Check painting, key checklist, and initial meter readings.",
-        "property": "Studio Vila Madalena",
-        "title": "Move-in inspection"
-      },
-      "financingFollowUp": {
-        "notes": "Follow up on bank response and pending buyer documents.",
-        "property": "Jardins Apartment",
-        "title": "Financing follow-up"
-      },
-      "intakeMeeting": {
-        "notes": "Align exclusivity, publication deadline, and photo strategy.",
-        "property": "Alto da Lapa House",
-        "title": "Listing intake meeting"
-      },
-      "jardimVisit": {
-        "notes": "Client wants to validate living room light and parking space before sending an offer.",
-        "property": "Jardim Paulista Apartment",
-        "title": "Jardim Paulista visit"
-      },
-      "proposalReturn": {
-        "notes": "Send price comparison and confirm room for a counteroffer.",
-        "property": "Itaim Bibi Penthouse",
-        "title": "Proposal follow-up"
-      }
-    }
+    "createSuccess": "{title} added to the agenda.",
+    "freeSlot": "Free slot",
+    "selectedDayLabel": "{day}, {month} {date}"
   },
   "eventForm": {
-    "eyebrow": "New schedule item",
+    "eyebrow": "New agenda entry",
     "title": "Add event",
     "closeAriaLabel": "Close new event",
     "fields": {
       "title": "Title",
-      "property": "Related property",
+      "property": "Property in question",
       "otherProperty": "Other",
       "customProperty": "Property or reference",
       "participant": "Person",
@@ -88,6 +46,6 @@
       "newTime": "New time"
     },
     "cancel": "Cancel",
-    "submit": "Save reschedule"
+    "submit": "Save rescheduling"
   }
 }

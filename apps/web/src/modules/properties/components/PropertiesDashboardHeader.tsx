@@ -3,6 +3,7 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { useTranslations } from 'next-intl'
 
+import { DashboardNotificationsButton } from '@shared/components/layout'
 import { brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { PropertiesDashboardHeaderProps } from '../types/dashboard-property'
@@ -31,11 +32,7 @@ export function PropertiesDashboardHeader({
         </Typography>
       </Box>
 
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        spacing={1.2}
-        sx={{ width: { xs: '100%', md: 'auto' } }}
-      >
+      <Stack direction="row" spacing={1.2}>
         <Box
           sx={{
             position: 'relative',
@@ -96,6 +93,9 @@ export function PropertiesDashboardHeader({
         >
           {t('create')}
         </Button>
+        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          <DashboardNotificationsButton />
+        </Box>
       </Stack>
     </Stack>
   )

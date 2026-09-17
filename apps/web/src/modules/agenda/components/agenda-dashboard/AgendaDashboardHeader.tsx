@@ -3,10 +3,10 @@
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded'
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
-import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded'
-import { Badge, Box, Button, IconButton, Stack, Tooltip, Typography } from '@mui/material'
+import { Box, Button, IconButton, Stack, Tooltip, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
+import { DashboardNotificationsButton } from '@shared/components/layout'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { AgendaDashboardHeaderProps } from '../../types/agenda-event'
@@ -14,11 +14,10 @@ import type { AgendaDashboardHeaderProps } from '../../types/agenda-event'
 export function AgendaDashboardHeader({
   disableNextWeek,
   disablePreviousWeek,
-  notificationCount,
-  notificationsExpanded,
+  notifications,
   onNewEvent,
   onNextWeek,
-  onOpenNotifications,
+  onNotificationSelect,
   onPreviousWeek,
   weekRange,
 }: AgendaDashboardHeaderProps) {
@@ -30,9 +29,8 @@ export function AgendaDashboardHeader({
       alignItems={{ xs: 'flex-start', md: 'center' }}
       justifyContent="space-between"
       spacing={2}
-      sx={{ width: '100%' }}
     >
-      <Box sx={{ minWidth: 0, width: { xs: '100%', md: 'auto' } }}>
+      <Box sx={{ minWidth: 0 }}>
         <Typography
           variant="h3"
           sx={{ color: brand.graphite[500], fontSize: { xs: 20, md: 24 }, fontWeight: 800 }}
@@ -44,22 +42,15 @@ export function AgendaDashboardHeader({
         </Typography>
       </Box>
 
-      <Stack
-        direction="row"
-        alignItems="center"
-        spacing={1.2}
-        sx={{
-          flexWrap: 'wrap',
-          width: { xs: '100%', md: 'auto' },
-        }}
-      >
+      <Stack direction="row" alignItems="center" spacing={1.2} sx={{ flexWrap: 'wrap' }}>
         <Tooltip title={t('previousWeek')}>
-          <Box component="span">
+          <span>
             <IconButton
               aria-label={t('previousWeek')}
               disabled={disablePreviousWeek}
               onClick={onPreviousWeek}
               sx={{
+                display: { xs: 'none', md: 'inline-flex' },
                 width: 36,
                 height: 36,
                 border: '1px solid',
@@ -70,27 +61,26 @@ export function AgendaDashboardHeader({
             >
               <ChevronLeftRoundedIcon sx={{ fontSize: iconSize.sm }} />
             </IconButton>
-          </Box>
+          </span>
         </Tooltip>
         <Typography
           sx={{
+            display: { xs: 'none', md: 'block' },
             color: brand.graphite[500],
-            flex: { xs: 1, md: 'initial' },
             fontSize: 14,
             fontWeight: 800,
-            minWidth: 0,
-            textAlign: { xs: 'center', md: 'left' },
           }}
         >
           {t('weekRange', { end: weekRange.endLabel, start: weekRange.startLabel })}
         </Typography>
         <Tooltip title={t('nextWeek')}>
-          <Box component="span">
+          <span>
             <IconButton
               aria-label={t('nextWeek')}
               disabled={disableNextWeek}
               onClick={onNextWeek}
               sx={{
+                display: { xs: 'none', md: 'inline-flex' },
                 width: 36,
                 height: 36,
                 border: '1px solid',
@@ -101,16 +91,32 @@ export function AgendaDashboardHeader({
             >
               <ChevronRightRoundedIcon sx={{ fontSize: iconSize.sm }} />
             </IconButton>
-          </Box>
+          </span>
+        </Tooltip>
+        <Tooltip title={t('newEvent')}>
+          <IconButton
+            aria-label={t('newEvent')}
+            onClick={onNewEvent}
+            sx={{
+              display: { xs: 'inline-flex', md: 'none' },
+              width: 44,
+              height: 44,
+              bgcolor: brand.magenta[500],
+              color: surface.paper,
+              '&:hover': { bgcolor: brand.magenta[600] },
+            }}
+          >
+            <AddRoundedIcon sx={{ fontSize: iconSize.xl }} />
+          </IconButton>
         </Tooltip>
         <Button
           variant="contained"
           startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.lg }} />}
           onClick={onNewEvent}
           sx={{
+            display: { xs: 'none', md: 'inline-flex' },
             borderRadius: `${radius.sm}px`,
             boxShadow: shadows.none,
-            flex: { xs: '1 1 calc(100% - 48px)', md: 'initial' },
             minHeight: 36,
             px: 2,
             fontSize: 14,
@@ -121,38 +127,12 @@ export function AgendaDashboardHeader({
         >
           {t('newEvent')}
         </Button>
-        <Tooltip title={t('notificationsTooltip')}>
-          <IconButton
-            aria-label={t('notificationsAriaLabel')}
-            aria-expanded={notificationsExpanded ? 'true' : undefined}
-            onClick={(event) => onOpenNotifications(event.currentTarget)}
-            sx={{
-              display: { xs: 'none', md: 'inline-flex' },
-              width: 36,
-              height: 36,
-              border: '1px solid',
-              borderColor: alpha.graphite[8],
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.paper,
-              color: brand.graphite[500],
-            }}
-          >
-            <Badge
-              badgeContent={notificationCount}
-              overlap="circular"
-              sx={{
-                '& .MuiBadge-badge': {
-                  bgcolor: brand.magenta[500],
-                  color: surface.lightText,
-                  fontSize: 10,
-                  fontWeight: 800,
-                },
-              }}
-            >
-              <NotificationsNoneRoundedIcon sx={{ fontSize: iconSize.md }} />
-            </Badge>
-          </IconButton>
-        </Tooltip>
+        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          <DashboardNotificationsButton
+            notifications={notifications}
+            onNotificationSelect={onNotificationSelect}
+          />
+        </Box>
       </Stack>
     </Stack>
   )
