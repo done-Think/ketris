@@ -5,15 +5,18 @@ import { useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
-import { alpha, brand, motion, radius } from '@shared/theme/tokens'
+import { alpha, brand, motion, radius, surface } from '@shared/theme/tokens'
 
 import { proposalStatusStyles } from '../config/proposal-status-styles'
-import type { DashboardProposal, ProposalsListProps } from '../types/proposal'
+import type { DashboardProposal, ProposalStatus, ProposalsListProps } from '../types/proposal'
 import { ProposalDetailDialog } from './ProposalDetailDialog'
 
-export function ProposalsList({ proposals }: ProposalsListProps) {
+const proposalColumns = ['client', 'property', 'value', 'ownerExpectation', 'status'] as const
+
+export function ProposalsList({ proposals: initialProposals }: ProposalsListProps) {
   const t = useTranslations('dashboard.proposals')
   const searchParams = useSearchParams()
+  const [proposals, setProposals] = useState<DashboardProposal[]>(initialProposals)
   const [selectedProposal, setSelectedProposal] = useState<DashboardProposal | null>(null)
 
   useEffect(() => {
@@ -24,8 +27,51 @@ export function ProposalsList({ proposals }: ProposalsListProps) {
     setSelectedProposal(proposal)
   }, [proposals, searchParams])
 
+  const updateProposalStatus = (proposalId: string, nextStatus: ProposalStatus) => {
+    setProposals((currentProposals) =>
+      currentProposals.map((proposal) =>
+        proposal.id === proposalId ? { ...proposal, status: nextStatus } : proposal,
+      ),
+    )
+    setSelectedProposal((currentProposal) =>
+      currentProposal?.id === proposalId
+        ? { ...currentProposal, status: nextStatus }
+        : currentProposal,
+    )
+  }
+
   return (
     <>
+      <Box
+        role="row"
+        sx={{
+          display: { xs: 'none', md: 'grid' },
+          gridTemplateColumns: '1fr 1.4fr 0.9fr 0.9fr 0.8fr',
+          gap: 1.4,
+          alignItems: 'center',
+          px: 2.4,
+          py: 1.4,
+          bgcolor: surface.app,
+          borderBottom: '1px solid',
+          borderColor: alpha.graphite[6],
+        }}
+      >
+        {proposalColumns.map((column) => (
+          <Typography
+            key={column}
+            role="columnheader"
+            sx={{
+              color: brand.neutral[500],
+              fontSize: 12,
+              fontWeight: 900,
+              justifySelf: column === 'status' ? 'end' : 'start',
+              textTransform: 'uppercase',
+            }}
+          >
+            {t(`columns.${column}`)}
+          </Typography>
+        ))}
+      </Box>
       {proposals.map((proposal) => {
         const status = proposalStatusStyles[proposal.status]
 
@@ -82,6 +128,7 @@ export function ProposalsList({ proposals }: ProposalsListProps) {
         proposal={selectedProposal}
         open={Boolean(selectedProposal)}
         onClose={() => setSelectedProposal(null)}
+        onStatusChange={updateProposalStatus}
       />
     </>
   )

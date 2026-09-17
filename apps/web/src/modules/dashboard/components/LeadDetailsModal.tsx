@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState, type MouseEvent } from 'react'
 import {
   Box,
   Button,
@@ -49,6 +49,7 @@ function LeadBriefingItem({ label, value }: LeadBriefingItemProps) {
 
 export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsModalProps) {
   const t = useTranslations('dashboard.overview.leadDetails')
+  const [isEditing, setIsEditing] = useState(false)
   const { control, handleSubmit, reset } = useForm<DashboardLeadDetailsFormValues>({
     defaultValues: {
       reportedNeed: '',
@@ -74,19 +75,33 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
       timeline: lead.timeline,
       notes: lead.notes,
     })
+    setIsEditing(false)
   }, [lead, reset])
 
   function onSubmit(values: DashboardLeadDetailsFormValues) {
     if (!lead) return
 
     onLeadUpdate(lead.id, values)
+    setIsEditing(false)
+    onClose()
+  }
+
+  function startEditing(event: MouseEvent<HTMLButtonElement>) {
+    event.preventDefault()
+    event.stopPropagation()
+    setIsEditing(true)
+  }
+
+  function closeModal(_: object, reason: 'backdropClick' | 'escapeKeyDown') {
+    if (reason === 'backdropClick') return
+
     onClose()
   }
 
   return (
     <Dialog
       open={Boolean(lead)}
-      onClose={onClose}
+      onClose={closeModal}
       fullWidth
       maxWidth="md"
       slotProps={{
@@ -154,6 +169,7 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
                 label={t('fields.reportedNeed')}
                 multiline
                 minRows={3}
+                disabled={!isEditing}
                 fullWidth
               />
               <RhfTextField
@@ -162,18 +178,21 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
                 label={t('fields.lookingFor')}
                 multiline
                 minRows={3}
+                disabled={!isEditing}
                 fullWidth
               />
               <RhfTextField
                 control={control}
                 name="budgetRange"
                 label={t('fields.budgetRange')}
+                disabled={!isEditing}
                 fullWidth
               />
               <RhfTextField
                 control={control}
                 name="downPayment"
                 label={t('fields.downPayment')}
+                disabled={!isEditing}
                 fullWidth
               />
               <RhfTextField
@@ -182,6 +201,7 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
                 label={t('fields.financingStatus')}
                 multiline
                 minRows={2}
+                disabled={!isEditing}
                 fullWidth
               />
               <RhfTextField
@@ -190,6 +210,7 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
                 label={t('fields.timeline')}
                 multiline
                 minRows={2}
+                disabled={!isEditing}
                 fullWidth
               />
             </Box>
@@ -229,6 +250,7 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
               label={t('fields.notes')}
               multiline
               minRows={3}
+              disabled={!isEditing}
               fullWidth
               sx={{ mt: 1 }}
             />
@@ -238,14 +260,25 @@ export function LeadDetailsModal({ lead, onClose, onLeadUpdate }: LeadDetailsMod
             <Button onClick={onClose} sx={{ color: brand.neutral[500], fontWeight: 800 }}>
               {t('cancel')}
             </Button>
-            <Button
-              type="submit"
-              form="lead-details-form"
-              variant="contained"
-              sx={{ fontWeight: 900 }}
-            >
-              {t('save')}
-            </Button>
+            {isEditing ? (
+              <Button
+                type="submit"
+                form="lead-details-form"
+                variant="contained"
+                sx={{ fontWeight: 900 }}
+              >
+                {t('save')}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="contained"
+                onClick={startEditing}
+                sx={{ fontWeight: 900 }}
+              >
+                {t('edit')}
+              </Button>
+            )}
           </DialogActions>
         </>
       ) : null}

@@ -44,40 +44,69 @@ export function AgendaDashboardHeader({
 
       <Stack direction="row" alignItems="center" spacing={1.2} sx={{ flexWrap: 'wrap' }}>
         <Tooltip title={t('previousWeek')}>
-          <IconButton
-            aria-label={t('previousWeek')}
-            disabled={disablePreviousWeek}
-            onClick={onPreviousWeek}
-            sx={{
-              width: 36,
-              height: 36,
-              border: '1px solid',
-              borderColor: alpha.graphite[8],
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.paper,
-            }}
-          >
-            <ChevronLeftRoundedIcon sx={{ fontSize: iconSize.sm }} />
-          </IconButton>
+          <span>
+            <IconButton
+              aria-label={t('previousWeek')}
+              disabled={disablePreviousWeek}
+              onClick={onPreviousWeek}
+              sx={{
+                display: { xs: 'none', md: 'inline-flex' },
+                width: 36,
+                height: 36,
+                border: '1px solid',
+                borderColor: alpha.graphite[8],
+                borderRadius: `${radius.sm}px`,
+                bgcolor: surface.paper,
+              }}
+            >
+              <ChevronLeftRoundedIcon sx={{ fontSize: iconSize.sm }} />
+            </IconButton>
+          </span>
         </Tooltip>
-        <Typography sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 800 }}>
+        <Typography
+          sx={{
+            display: { xs: 'none', md: 'block' },
+            color: brand.graphite[500],
+            fontSize: 14,
+            fontWeight: 800,
+          }}
+        >
           {t('weekRange', { end: weekRange.endLabel, start: weekRange.startLabel })}
         </Typography>
         <Tooltip title={t('nextWeek')}>
+          <span>
+            <IconButton
+              aria-label={t('nextWeek')}
+              disabled={disableNextWeek}
+              onClick={onNextWeek}
+              sx={{
+                display: { xs: 'none', md: 'inline-flex' },
+                width: 36,
+                height: 36,
+                border: '1px solid',
+                borderColor: alpha.graphite[8],
+                borderRadius: `${radius.sm}px`,
+                bgcolor: surface.paper,
+              }}
+            >
+              <ChevronRightRoundedIcon sx={{ fontSize: iconSize.sm }} />
+            </IconButton>
+          </span>
+        </Tooltip>
+        <Tooltip title={t('newEvent')}>
           <IconButton
-            aria-label={t('nextWeek')}
-            disabled={disableNextWeek}
-            onClick={onNextWeek}
+            aria-label={t('newEvent')}
+            onClick={onNewEvent}
             sx={{
-              width: 36,
-              height: 36,
-              border: '1px solid',
-              borderColor: alpha.graphite[8],
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.paper,
+              display: { xs: 'inline-flex', md: 'none' },
+              width: 44,
+              height: 44,
+              bgcolor: brand.magenta[500],
+              color: surface.paper,
+              '&:hover': { bgcolor: brand.magenta[600] },
             }}
           >
-            <ChevronRightRoundedIcon sx={{ fontSize: iconSize.sm }} />
+            <AddRoundedIcon sx={{ fontSize: iconSize.xl }} />
           </IconButton>
         </Tooltip>
         <Button
@@ -85,6 +114,7 @@ export function AgendaDashboardHeader({
           startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.lg }} />}
           onClick={onNewEvent}
           sx={{
+            display: { xs: 'none', md: 'inline-flex' },
             borderRadius: `${radius.sm}px`,
             boxShadow: shadows.none,
             minHeight: 36,
@@ -97,10 +127,12 @@ export function AgendaDashboardHeader({
         >
           {t('newEvent')}
         </Button>
-        <DashboardNotificationsButton
-          notifications={notifications}
-          onNotificationSelect={onNotificationSelect}
-        />
+        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          <DashboardNotificationsButton
+            notifications={notifications}
+            onNotificationSelect={onNotificationSelect}
+          />
+        </Box>
       </Stack>
     </Stack>
   )

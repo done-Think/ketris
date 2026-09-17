@@ -110,7 +110,9 @@ export function PublicProfileEditorPage() {
                 </Typography>
               </Stack>
             ) : null}
-            <DashboardNotificationsButton />
+            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+              <DashboardNotificationsButton />
+            </Box>
           </Stack>
         </Stack>
 

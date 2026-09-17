@@ -13,7 +13,9 @@
     "assignedEventMessage": "{role} {name} booked {title}",
     "defaultEventNotes": "Event created manually in the agenda.",
     "rescheduleSuccess": "{title} rescheduled to {date} at {time}.",
-    "createSuccess": "{title} added to the agenda."
+    "createSuccess": "{title} added to the agenda.",
+    "freeSlot": "Free slot",
+    "selectedDayLabel": "{day}, {month} {date}"
   },
   "eventForm": {
     "eyebrow": "New agenda entry",

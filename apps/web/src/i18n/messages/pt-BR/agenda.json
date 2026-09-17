@@ -13,7 +13,9 @@
     "assignedEventMessage": "{role} {name} marcou {title}",
     "defaultEventNotes": "Evento criado manualmente na agenda.",
     "rescheduleSuccess": "{title} reagendado para {date} às {time}.",
-    "createSuccess": "{title} adicionado à agenda."
+    "createSuccess": "{title} adicionado à agenda.",
+    "freeSlot": "Horário livre",
+    "selectedDayLabel": "{day}, {date} de {month}"
   },
   "eventForm": {
     "eyebrow": "Novo ponto na agenda",
