@@ -16,16 +16,6 @@
       "metadataTitle": "Ketris | Proposals"
     }
   },
-  "agenda": {
-    "title": "Schedule",
-    "subtitle": "Commercial appointments, visits, and follow-ups.",
-    "freeSlot": "Free slot",
-    "statuses": {
-      "Confirmada": "Confirmed",
-      "Pendente": "Pending",
-      "Reagendar": "Reschedule"
-    }
-  },
   "notificationsCenter": {
     "tooltip": "Notifications",
     "ariaLabel": "Open dashboard notifications",

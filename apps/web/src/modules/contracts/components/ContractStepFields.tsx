@@ -21,6 +21,7 @@ import type { DashboardProperty } from '@modules/properties/types/dashboard-prop
 import type {
   ContractFieldConfig,
   ContractFieldGridProps,
+  ContractFieldMeta,
   ContractFieldProps,
   ContractPartiesStepProps,
   ContractPropertyStepProps,
@@ -30,7 +31,6 @@ import type {
   ContractStepControlProps,
   ContractStepFieldsProps,
   ContractStepReviewProps,
-  CreateContractFieldName,
 } from '../types/contract'
 import { contractTextFieldSx } from './contract-form.styles'
 
@@ -38,19 +38,6 @@ const propertyTypeOptions = ['Apartamento', 'Casa', 'Studio', 'Cobertura', 'Sala
 const contractTypeOptions = ['Locação residencial', 'Locação comercial', 'Temporada']
 const guaranteeTypeOptions = ['Fiador', 'Caução', 'Seguro fiança', 'Título de capitalização']
 const adjustmentIndexOptions = ['IPCA', 'IGP-M', 'INPC']
-
-/**
- * Field-shape metadata, without labels (labels need `t()`, resolved when rendering). Each step's
- * rendered fields AND its wizard-validation field-name list (see `*StepFieldNames` below) are both
- * derived from these arrays, so a field added here can't silently be missing from validation.
- */
-type ContractFieldMeta = {
-  name: CreateContractFieldName
-  labelKey: string
-  mask?: string
-  options?: string[]
-  optionsNamespace?: string
-}
 
 function toFieldConfig(
   meta: ContractFieldMeta,

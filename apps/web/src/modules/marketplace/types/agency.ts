@@ -45,6 +45,10 @@ export type AgencyPublicProfilePageProps = {
   agency: AgencyProfile
 }
 
+export type AgencyProfileHeroProps = {
+  agency: AgencyProfile
+}
+
 export type AgencyBrandBannerProps = {
   agency: AgencyProfile
   size: 'compact' | 'hero'

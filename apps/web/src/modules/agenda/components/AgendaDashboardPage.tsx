@@ -10,7 +10,7 @@ import { useSnackbar } from 'notistack'
 import { dashboardProperties } from '@modules/properties/data/dashboard-properties'
 import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
 
-import { agendaEvents, agendaTimeSlots } from '../data/agenda-events'
+import { agendaTimeSlots, getAgendaEvents } from '../data/agenda-events'
 import { agendaOtherPropertyValue } from '../schemas/agenda-event-form-schema'
 import type {
   AgendaEvent,
@@ -32,7 +32,8 @@ import { AgendaEventFormDialog } from './AgendaEventFormDialog'
 export function AgendaDashboardPage() {
   const t = useTranslations('agenda.dashboard')
   const { enqueueSnackbar } = useSnackbar()
-  const [events, setEvents] = useState<AgendaEvent[]>(agendaEvents)
+  const initialEvents = useMemo(() => getAgendaEvents(t), [t])
+  const [events, setEvents] = useState<AgendaEvent[]>(initialEvents)
   const [isEventFormOpen, setIsEventFormOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null)
   const today = useMemo(() => dayjs().locale('pt-br').startOf('day'), [])

@@ -1,10 +1,10 @@
 import { BaseService } from '@shared/lib/api/base-service'
 
-import type { PublicPropertySummary, SearchPropertiesFilters } from '../types/public-property'
-
-interface ListPropertiesResponse {
-  properties: PublicPropertySummary[]
-}
+import type {
+  ListPropertiesResponse,
+  PublicPropertySummary,
+  SearchPropertiesFilters,
+} from '../types/public-property'
 
 export class MarketplaceService extends BaseService {
   private readonly propertiesPath = '/marketplace/properties'

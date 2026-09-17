@@ -22,6 +22,10 @@ export interface PublicPropertySummary {
   publishedAt: string | null
 }
 
+export interface ListPropertiesResponse {
+  properties: PublicPropertySummary[]
+}
+
 export type PropertySortOption = 'recent' | 'priceAsc' | 'priceDesc'
 
 export interface SearchPropertiesFilters {

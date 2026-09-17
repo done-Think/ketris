@@ -15,7 +15,48 @@
     "rescheduleSuccess": "{title} reagendado para {date} às {time}.",
     "createSuccess": "{title} adicionado à agenda.",
     "freeSlot": "Horário livre",
-    "selectedDayLabel": "{day}, {date} de {month}"
+    "selectedDayLabel": "{day}, {date} de {month}",
+    "creatorRoles": {
+      "agency": "imobiliária",
+      "colleague": "colega"
+    },
+    "sampleEvents": {
+      "jardimVisit": {
+        "title": "Visita Jardim Paulista",
+        "property": "Apartamento Jardim Paulista",
+        "notes": "Cliente quer validar luminosidade da sala."
+      },
+      "proposalReturn": {
+        "title": "Retorno proposta",
+        "property": "Cobertura Itaim",
+        "notes": "Revisar contraproposta e prazo de assinatura."
+      },
+      "intakeMeeting": {
+        "title": "Reunião captação",
+        "property": "Casa Alto Pinheiros",
+        "notes": "Alinhar expectativa de preço e documentação inicial."
+      },
+      "entryInspection": {
+        "title": "Vistoria de entrada",
+        "property": "Studio Pinheiros",
+        "notes": "Conferir pintura, chaves e checklist de entrega."
+      },
+      "financingFollowUp": {
+        "title": "Follow-up financiamento",
+        "property": "Apt Jardins 3q",
+        "notes": "Confirmar retorno do banco sobre carta de crédito."
+      },
+      "digitalSignature": {
+        "title": "Assinatura digital",
+        "property": "Contrato Studio Pinheiros",
+        "notes": "Acompanhar envio e confirmação das assinaturas."
+      },
+      "digitalVisit": {
+        "title": "Visita digital",
+        "property": "Apartamento Jardim Paulista",
+        "notes": "Enviar link da chamada e confirmar conexão do cliente."
+      }
+    }
   },
   "eventForm": {
     "eyebrow": "Novo ponto na agenda",

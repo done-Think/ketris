@@ -9,6 +9,8 @@ export type LeadFilter = 'Todos' | LeadStage
 
 export type LeadFilterKey = 'all' | 'new' | 'contacted' | 'visitScheduled' | 'proposal'
 
+export type LeadStageLabelKey = Exclude<LeadFilterKey, 'all'>
+
 export type DashboardLead = {
   id: string
   name: string
@@ -20,6 +22,21 @@ export type DashboardLead = {
   source: string
   broker: string
   stage: LeadStage
+}
+
+export type LeadStageStyle = {
+  bgcolor: string
+  color: string
+}
+
+export type LeadStatusFilterOption = {
+  labelKey: LeadFilterKey
+  label: LeadFilter
+}
+
+export type LeadsDashboardFiltersFormValues = {
+  activeFilter: LeadFilter
+  searchQuery: string
 }
 
 export type LeadsPage = {
@@ -84,8 +101,6 @@ export type CreateLeadStep = {
   fields: CreateLeadFieldName[]
 }
 
-export type LeadStageLabelKey = Exclude<LeadFilterKey, 'all'>
-
 export type LeadSourceLabelKey = 'marketplace' | 'whatsApp' | 'instagram' | 'site' | 'referral'
 
 export type LeadSourceOption = {
@@ -128,13 +143,13 @@ export type LeadContactDialogProps = {
 }
 
 export type LeadsFilterBarProps = {
-  activeFilter: LeadFilterKey
+  activeFilter: LeadFilter
   leads: DashboardLead[]
-  onFilterChange: (filter: LeadFilterKey) => void
+  onFilterChange: (filter: LeadFilter) => void
 }
 
 export type LeadsListProps = {
-  leads: DashboardLead[]
+  leads: readonly DashboardLead[]
   onLeadContactSelect: (lead: DashboardLead) => void
   totalCount?: number
 }
