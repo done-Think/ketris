@@ -26,21 +26,22 @@ export function PlatformSystemAlerts({ alerts }: { alerts: readonly PlatformAler
         borderColor: alpha.graphite[8],
         borderRadius: `${radius.md}px`,
         boxShadow: shadows.crmCard,
-        p: { xs: 1.8, md: 2 },
+        minHeight: { lg: 400 },
+        p: { xs: 2, md: 2.75 },
       }}
     >
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.1 }}>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
         <Typography
           id="system-alerts-title"
-          sx={{ color: brand.graphite[500], fontSize: 13, fontWeight: 900 }}
+          sx={{ color: brand.graphite[500], fontSize: 16, fontWeight: 900 }}
         >
           {t('title')}
         </Typography>
-        <Typography sx={{ color: brand.semantic.error, fontSize: 10, fontWeight: 800 }}>
+        <Typography sx={{ color: brand.semantic.error, fontSize: 11, fontWeight: 800 }}>
           {t('active', { count: alerts.length })}
         </Typography>
       </Stack>
-      <Stack spacing={0.8}>
+      <Stack spacing={1}>
         {alerts.map((alert) => (
           <Box
             key={alert.id}
@@ -49,20 +50,20 @@ export function PlatformSystemAlerts({ alerts }: { alerts: readonly PlatformAler
               borderColor: alertColors[alert.tone],
               bgcolor: brand.neutral[50],
               borderRadius: `${radius.sm}px`,
-              px: 1,
-              py: 0.85,
+              px: 1.35,
+              py: 1.15,
             }}
           >
             <Stack direction="row" spacing={1} justifyContent="space-between">
-              <Typography sx={{ color: brand.graphite[500], fontSize: 10.5, fontWeight: 900 }}>
+              <Typography sx={{ color: brand.graphite[500], fontSize: 12, fontWeight: 900 }}>
                 {t(`${alert.id}.title`)}
               </Typography>
-              <Typography sx={{ color: brand.neutral[500], fontSize: 9, whiteSpace: 'nowrap' }}>
+              <Typography sx={{ color: brand.neutral[500], fontSize: 10, whiteSpace: 'nowrap' }}>
                 {alert.time}
               </Typography>
             </Stack>
             <Typography
-              sx={{ color: brand.neutral[500], fontSize: 9.5, lineHeight: 1.35, mt: 0.35 }}
+              sx={{ color: brand.neutral[500], fontSize: 10.5, lineHeight: 1.4, mt: 0.45 }}
             >
               {t(`${alert.id}.description`)}
             </Typography>

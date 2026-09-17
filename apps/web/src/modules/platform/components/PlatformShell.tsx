@@ -18,20 +18,21 @@ import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
 import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
-const sidebarWidth = 192
+const sidebarWidth = 200
 
 type NavigationItem = {
   label: 'overview' | 'tenants' | 'users' | 'plans' | 'finance' | 'system' | 'logs'
   icon: SvgIconComponent
+  href?: '/platform' | '/platform/tenants' | '/platform/system'
 }
 
 const navigationItems: readonly NavigationItem[] = [
-  { label: 'overview', icon: HomeOutlinedIcon },
-  { label: 'tenants', icon: ApartmentOutlinedIcon },
+  { label: 'overview', icon: HomeOutlinedIcon, href: '/platform' },
+  { label: 'tenants', icon: ApartmentOutlinedIcon, href: '/platform/tenants' },
   { label: 'users', icon: PeopleOutlineIcon },
   { label: 'plans', icon: SellOutlinedIcon },
   { label: 'finance', icon: AccountBalanceWalletOutlinedIcon },
-  { label: 'system', icon: SettingsOutlinedIcon },
+  { label: 'system', icon: SettingsOutlinedIcon, href: '/platform/system' },
   { label: 'logs', icon: ShowChartOutlinedIcon },
 ]
 
@@ -39,7 +40,6 @@ export function PlatformShell({ children }: { children: ReactNode }) {
   const t = useTranslations('platform.overview.navigation')
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const overviewActive = pathname === '/platform'
 
   const sidebar = (
     <Stack
@@ -49,20 +49,20 @@ export function PlatformShell({ children }: { children: ReactNode }) {
         bgcolor: brand.graphite[800],
         color: surface.lightText,
         px: 1.25,
-        py: 2.4,
+        py: 2.5,
       }}
     >
-      <Stack direction="row" alignItems="center" spacing={0.75} sx={{ px: 0.75, mb: 3.1 }}>
-        <AppLogo src={ketrisLogoFooter} variant="transparent" width={54} sx={{ mb: 0 }} />
+      <Stack direction="row" alignItems="center" spacing={0.8} sx={{ px: 0.75, mb: 3.25 }}>
+        <AppLogo src={ketrisLogoFooter} variant="transparent" width={84} sx={{ mb: 0 }} />
         <Typography
           sx={{
             bgcolor: brand.magenta[500],
             borderRadius: `${radius.sm}px`,
-            fontSize: 9,
+            fontSize: 10.5,
             fontWeight: 900,
             lineHeight: 1,
-            px: 0.55,
-            py: 0.4,
+            px: 0.7,
+            py: 0.45,
           }}
         >
           {t('admin')}
@@ -70,20 +70,20 @@ export function PlatformShell({ children }: { children: ReactNode }) {
       </Stack>
 
       <Stack component="nav" spacing={0.55} aria-label={t('ariaLabel')}>
-        {navigationItems.map(({ label, icon: Icon }) => {
-          const active = label === 'overview' && overviewActive
+        {navigationItems.map(({ label, icon: Icon, href }) => {
+          const active = href === pathname
           const content = (
             <>
-              <Icon sx={{ fontSize: iconSize.md }} />
-              <Typography sx={{ flex: 1, fontSize: 12, fontWeight: active ? 800 : 600 }}>
+              <Icon sx={{ fontSize: iconSize.lg }} />
+              <Typography sx={{ flex: 1, fontSize: 13, fontWeight: active ? 800 : 600 }}>
                 {t(label)}
               </Typography>
               {active && (
                 <Box
                   aria-hidden
                   sx={{
-                    width: 3,
-                    height: 15,
+                    width: 4,
+                    height: 18,
                     borderRadius: radius.full,
                     bgcolor: brand.magenta[500],
                   }}
@@ -92,12 +92,12 @@ export function PlatformShell({ children }: { children: ReactNode }) {
             </>
           )
 
-          if (label === 'overview') {
+          if (href) {
             return (
               <Box
                 key={label}
                 component={Link}
-                href="/platform"
+                href={href}
                 aria-current={active ? 'page' : undefined}
                 onClick={() => setMobileOpen(false)}
                 sx={navItemSx(active)}
@@ -118,14 +118,14 @@ export function PlatformShell({ children }: { children: ReactNode }) {
       <Stack
         direction="row"
         alignItems="center"
-        spacing={0.7}
-        sx={{ mt: 'auto', px: 0.8, pt: 2, borderTop: '1px solid', borderColor: alpha.white[8] }}
+        spacing={0.8}
+        sx={{ mt: 'auto', px: 0.9, pt: 2.5, borderTop: '1px solid', borderColor: alpha.white[8] }}
       >
         <Box
           aria-hidden
-          sx={{ width: 7, height: 7, borderRadius: radius.full, bgcolor: brand.semantic.success }}
+          sx={{ width: 8, height: 8, borderRadius: radius.full, bgcolor: brand.semantic.success }}
         />
-        <Typography sx={{ color: alpha.white[72], fontSize: 11, fontWeight: 700 }}>
+        <Typography sx={{ color: alpha.white[72], fontSize: 12, fontWeight: 700 }}>
           {t('online')}
         </Typography>
       </Stack>
@@ -154,8 +154,8 @@ export function PlatformShell({ children }: { children: ReactNode }) {
           position: 'fixed',
           inset: '0 0 auto 0',
           zIndex: 20,
-          height: 60,
-          px: 1.5,
+          height: 68,
+          px: 2,
           bgcolor: brand.graphite[800],
           color: surface.lightText,
         }}
@@ -169,7 +169,7 @@ export function PlatformShell({ children }: { children: ReactNode }) {
             <MenuRoundedIcon />
           </IconButton>
         </Tooltip>
-        <AppLogo src={ketrisLogoFooter} variant="transparent" width={58} sx={{ mb: 0, ml: 1 }} />
+        <AppLogo src={ketrisLogoFooter} variant="transparent" width={76} sx={{ mb: 0, ml: 1 }} />
       </Stack>
       <Drawer
         open={mobileOpen}
@@ -184,7 +184,7 @@ export function PlatformShell({ children }: { children: ReactNode }) {
         sx={{
           width: { xs: '100%', md: `calc(100% - ${sidebarWidth}px)` },
           ml: { md: `${sidebarWidth}px` },
-          pt: { xs: '60px', md: 0 },
+          pt: { xs: '68px', md: 0 },
           minWidth: 0,
         }}
       >
@@ -202,8 +202,8 @@ function navItemSx(active: boolean) {
     color: active ? brand.magenta[300] : alpha.white[62],
     cursor: active ? 'pointer' : 'default',
     display: 'flex',
-    gap: 1.1,
-    minHeight: 36,
+    gap: 1,
+    minHeight: 42,
     px: 1,
     textDecoration: 'none',
     '&:hover': active ? { bgcolor: 'rgba(243, 2, 116, 0.25)' } : undefined,

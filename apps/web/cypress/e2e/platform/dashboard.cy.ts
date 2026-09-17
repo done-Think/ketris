@@ -35,6 +35,10 @@ describe('Plataforma — sessão e visão cross-tenant (UI)', () => {
     cy.contains('Tenants recentes').should('be.visible')
     cy.get('a[aria-current="page"]').contains('Visão geral').should('be.visible')
 
+    cy.contains('a', 'Tenants').click()
+    cy.location('pathname').should('eq', '/platform/tenants')
+    cy.contains('h1', 'Tenants').should('be.visible')
+
     cy.visit('/platform/admins/new')
 
     const socioEmail = `e2e-platform-socio-${Date.now()}@ketris.dev`

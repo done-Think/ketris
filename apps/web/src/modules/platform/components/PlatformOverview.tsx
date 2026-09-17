@@ -24,25 +24,26 @@ export function PlatformOverview() {
   return (
     <Box
       sx={{
-        maxWidth: 1360,
+        maxWidth: 1680,
         mx: 'auto',
-        px: { xs: 1.5, sm: 2.5, lg: 3 },
-        py: { xs: 2.25, md: 3.5 },
+        px: { xs: 1.5, sm: 3, lg: 4 },
+        py: { xs: 2.5, md: 4 },
       }}
     >
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         alignItems={{ sm: 'center' }}
         justifyContent="space-between"
-        spacing={1.2}
-        sx={{ mb: 2.25 }}
+        spacing={1.5}
+        sx={{ mb: 3 }}
       >
-        <Stack direction="row" alignItems="center" spacing={1.1}>
+        <Stack direction="row" alignItems="center" spacing={1.3}>
           <Typography
             component="h1"
             sx={{
               color: brand.graphite[500],
-              fontSize: { xs: 22, md: 24 },
+              fontSize: { xs: 24, md: 30 },
+              lineHeight: 1.15,
               fontWeight: 900,
               letterSpacing: -0.45,
             }}
@@ -58,20 +59,15 @@ export function PlatformOverview() {
               borderColor: brand.semantic.success,
               color: brand.semantic.success,
               borderRadius: `${radius.full}px`,
-              fontSize: 9,
+              fontSize: 10,
               fontWeight: 800,
-              height: 20,
+              height: 24,
             }}
           />
         </Stack>
-        <Stack
-          direction="row"
-          alignItems="center"
-          spacing={0.55}
-          sx={{ color: brand.neutral[500] }}
-        >
-          <AccessTimeOutlinedIcon sx={{ fontSize: 15 }} />
-          <Typography sx={{ fontSize: 11, fontWeight: 600 }}>
+        <Stack direction="row" alignItems="center" spacing={0.7} sx={{ color: brand.neutral[500] }}>
+          <AccessTimeOutlinedIcon sx={{ fontSize: 17 }} />
+          <Typography sx={{ fontSize: 12, fontWeight: 600 }}>
             {t('liveUtc', { value: platformLiveUtcDisplay })}
           </Typography>
         </Stack>
@@ -80,15 +76,15 @@ export function PlatformOverview() {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.62fr) minmax(300px, 0.95fr)' },
-          gap: 1.6,
-          mt: 2.25,
+          gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.7fr) minmax(360px, 0.95fr)' },
+          gap: 2,
+          mt: 3,
         }}
       >
         <PlatformGrowthChart trend={growthTrend} />
         <PlatformSystemAlerts alerts={platformAlerts} />
       </Box>
-      <Box sx={{ mt: 2.25 }}>
+      <Box sx={{ mt: 3 }}>
         <RecentTenantsTable tenants={recentTenants} />
       </Box>
     </Box>

@@ -6,6 +6,9 @@
     "dashboard": {
       "metadataTitle": "Ketris | Platform Agencies"
     },
+    "tenants": {
+      "metadataTitle": "Ketris | Platform Tenants"
+    },
     "tenant": {
       "metadataTitle": "Ketris | Platform Agency"
     },
@@ -14,6 +17,9 @@
     },
     "newAdmin": {
       "metadataTitle": "Ketris | Platform Admins"
+    },
+    "system": {
+      "metadataTitle": "Ketris | System Health"
     }
   },
   "login": {
@@ -39,7 +45,7 @@
     "navigation": {
       "ariaLabel": "Platform navigation",
       "openNavigation": "Open platform navigation",
-      "admin": "ADMIN",
+      "admin": "SUPER ADMIN",
       "overview": "Overview",
       "tenants": "Tenants",
       "users": "Users",
@@ -119,6 +125,61 @@
     "newAdmin": "New administrator",
     "usersLoadError": "Could not load users.",
     "emptyUsers": "No users registered yet."
+  },
+  "tenants": {
+    "title": "Tenants",
+    "searchLabel": "Search tenants",
+    "searchPlaceholder": "Search tenants...",
+    "planFilterLabel": "Filter by plan",
+    "statusFilterLabel": "Filter by status",
+    "newTenant": "New Tenant",
+    "activeBadge": "Active",
+    "metrics": { "total": "Total", "starter": "Starter", "pro": "Pro", "enterprise": "Enterprise" },
+    "tableLabel": "Tenants table",
+    "columns": {
+      "name": "Name",
+      "plan": "Plan",
+      "brokers": "Brokers",
+      "properties": "Properties",
+      "mrr": "MRR",
+      "status": "Status",
+      "createdAt": "Created",
+      "actions": "Actions"
+    },
+    "plans": { "all": "All", "starter": "Starter", "pro": "Pro", "enterprise": "Enterprise" },
+    "statuses": {
+      "all": "All",
+      "active": "Active",
+      "trial": "Trial",
+      "suspended": "Suspended"
+    },
+    "planFilterValue": "Plan: {value}",
+    "statusFilterValue": "Status: {value}",
+    "summary": "Showing {start}–{end} of {total} tenants",
+    "previous": "Previous",
+    "next": "Next",
+    "empty": "No tenants found.",
+    "editAction": "Edit {name}",
+    "moreActions": "More actions for {name}"
+  },
+  "system": {
+    "title": "System Health",
+    "autoRefresh": "Auto-refresh (5s)",
+    "networkEyebrow": "NETWORK TRAFFIC",
+    "networkTitle": "Request Volume (24h)",
+    "networkAverage": "Average: 14.8k req/min",
+    "errorsEyebrow": "ERROR NOTIFICATIONS",
+    "errorsTitle": "Error Occurrences (12h)",
+    "errorsTotal": "Total: 172 failures",
+    "logsTitle": "Recent Cluster Activity (Log Console)",
+    "clearConsole": "Clear Console",
+    "emptyConsole": "Console cleared.",
+    "metrics": {
+      "gateway": { "label": "API Gateway", "status": "Healthy" },
+      "database": { "label": "Database", "status": "Stable Latency" },
+      "storage": { "label": "Storage", "status": "Limited Space" },
+      "queue": { "label": "Task Queue", "status": "Processing" }
+    }
   },
   "newAdmin": {
     "title": "New platform administrator"

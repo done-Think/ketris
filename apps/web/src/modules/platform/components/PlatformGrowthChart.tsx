@@ -16,7 +16,7 @@ export function PlatformGrowthChart({ trend }: { trend: readonly GrowthTrendPoin
       <Typography id="growth-trends-title" sx={titleSx}>
         {t('growth.title')}
       </Typography>
-      <Box sx={{ height: { xs: 230, sm: 250 }, width: '100%' }}>
+      <Box sx={{ height: { xs: 300, lg: 340 }, width: '100%' }}>
         <LineChart
           dataset={[...trend]}
           xAxis={[
@@ -41,21 +41,21 @@ export function PlatformGrowthChart({ trend }: { trend: readonly GrowthTrendPoin
               showMark: false,
             },
           ]}
-          height={240}
-          margin={{ top: 20, right: 12, bottom: 28, left: 10 }}
+          height={300}
+          margin={{ top: 28, right: 18, bottom: 36, left: 14 }}
           grid={{ horizontal: true }}
           slotProps={{
             legend: {
               direction: 'row',
               position: { vertical: 'top', horizontal: 'right' },
-              labelStyle: { fontSize: 10, fill: brand.neutral[500] },
+              labelStyle: { fontSize: 12, fill: brand.neutral[500] },
             },
           }}
           sx={{
             '& .MuiChartsAxis-left': { display: 'none' },
             '& .MuiChartsAxis-bottom .MuiChartsAxis-tickLabel': {
               fill: brand.neutral[500],
-              fontSize: 10,
+              fontSize: 12,
             },
             '& .MuiChartsGrid-line': { stroke: alpha.graphite[8] },
           }}
@@ -72,6 +72,7 @@ const panelSx = {
   borderRadius: `${radius.md}px`,
   boxShadow: shadows.crmCard,
   minWidth: 0,
-  p: { xs: 1.8, md: 2 },
+  minHeight: { lg: 400 },
+  p: { xs: 2, md: 2.75 },
 }
-const titleSx = { color: brand.graphite[500], fontSize: 13, fontWeight: 900, mb: 0.6 }
+const titleSx = { color: brand.graphite[500], fontSize: 16, fontWeight: 900, mb: 1 }

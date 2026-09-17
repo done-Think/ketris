@@ -6,6 +6,9 @@
     "dashboard": {
       "metadataTitle": "Ketris | Imobiliárias Plataforma"
     },
+    "tenants": {
+      "metadataTitle": "Ketris | Tenants da Plataforma"
+    },
     "tenant": {
       "metadataTitle": "Ketris | Imobiliária Plataforma"
     },
@@ -14,6 +17,9 @@
     },
     "newAdmin": {
       "metadataTitle": "Ketris | Administradores da plataforma"
+    },
+    "system": {
+      "metadataTitle": "Ketris | Saúde do Sistema"
     }
   },
   "login": {
@@ -39,7 +45,7 @@
     "navigation": {
       "ariaLabel": "Navegação da plataforma",
       "openNavigation": "Abrir navegação da plataforma",
-      "admin": "ADMIN",
+      "admin": "SUPER ADMIN",
       "overview": "Visão geral",
       "tenants": "Tenants",
       "users": "Usuários",
@@ -119,6 +125,66 @@
     "newAdmin": "Novo administrador",
     "usersLoadError": "Não foi possível carregar os usuários.",
     "emptyUsers": "Nenhum usuário cadastrado ainda."
+  },
+  "tenants": {
+    "title": "Tenants",
+    "searchLabel": "Buscar tenant",
+    "searchPlaceholder": "Buscar tenant...",
+    "planFilterLabel": "Filtrar por plano",
+    "statusFilterLabel": "Filtrar por status",
+    "newTenant": "Novo Tenant",
+    "activeBadge": "Ativos",
+    "metrics": { "total": "Total", "starter": "Starter", "pro": "Pro", "enterprise": "Enterprise" },
+    "tableLabel": "Tabela de tenants",
+    "columns": {
+      "name": "Nome",
+      "plan": "Plano",
+      "brokers": "Corretores",
+      "properties": "Imóveis",
+      "mrr": "MRR",
+      "status": "Status",
+      "createdAt": "Criação",
+      "actions": "Ações"
+    },
+    "plans": {
+      "all": "Todos",
+      "starter": "Starter",
+      "pro": "Pro",
+      "enterprise": "Enterprise"
+    },
+    "statuses": {
+      "all": "Todos",
+      "active": "Ativos",
+      "trial": "Trial",
+      "suspended": "Suspenso"
+    },
+    "planFilterValue": "Plano: {value}",
+    "statusFilterValue": "Status: {value}",
+    "summary": "Mostrando {start}–{end} de {total} tenants",
+    "previous": "Anterior",
+    "next": "Próximo",
+    "empty": "Nenhum tenant encontrado.",
+    "editAction": "Editar {name}",
+    "moreActions": "Mais ações para {name}"
+  },
+  "system": {
+    "title": "Saúde do Sistema",
+    "autoRefresh": "Auto-refresh (5s)",
+    "networkEyebrow": "TRÁFEGO DE REDE",
+    "networkTitle": "Volume de Requisições (24h)",
+    "networkAverage": "Média: 14.8k req/min",
+    "errorsEyebrow": "NOTIFICAÇÕES DE ERRO",
+    "errorsTitle": "Ocorrência de Erros (12h)",
+    "errorsTotal": "Total: 172 falhas",
+    "logsTitle": "Atividades Recentes do Cluster (Console de Logs)",
+    "clearConsole": "Limpar Console",
+    "emptyConsole": "Console limpo.",
+    "metrics": {
+      "gateway": { "label": "API Gateway", "status": "Saudável" },
+      "database": { "label": "Banco de Dados", "status": "Latência Estável" },
+      "storage": { "label": "Armazenamento", "status": "Espaço Limitado" },
+      "queue": { "label": "Fila de Tarefas", "status": "Processando" }
+    }
   },
   "newAdmin": {
     "title": "Novo administrador da plataforma"

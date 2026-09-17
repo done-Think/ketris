@@ -42,12 +42,12 @@ export function RecentTenantsTable({ tenants }: { tenants: readonly RecentTenant
         borderRadius: `${radius.md}px`,
         boxShadow: shadows.crmCard,
         overflow: 'hidden',
-        p: { xs: 1.4, md: 2 },
+        p: { xs: 1.75, md: 2.75 },
       }}
     >
       <Typography
         id="recent-tenants-title"
-        sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 900, mb: 1.5 }}
+        sx={{ color: brand.graphite[500], fontSize: 17, fontWeight: 900, mb: 2 }}
       >
         {t('title')}
       </Typography>
@@ -97,19 +97,19 @@ const headerCellSx = {
   bgcolor: brand.neutral[50],
   borderBottom: 0,
   color: brand.neutral[500],
-  fontSize: 9,
+  fontSize: 10,
   fontWeight: 900,
   letterSpacing: 0.4,
-  py: 1.1,
+  py: 1.4,
   textTransform: 'uppercase',
   whiteSpace: 'nowrap',
 }
 const bodyCellSx = {
   borderColor: alpha.graphite[6],
   color: brand.neutral[500],
-  fontSize: 11,
+  fontSize: 13,
   fontWeight: 600,
-  py: 1.1,
+  py: 1.45,
   whiteSpace: 'nowrap',
 }
-const chipSx = { borderRadius: `${radius.full}px`, fontSize: 9, fontWeight: 800, height: 19 }
+const chipSx = { borderRadius: `${radius.full}px`, fontSize: 10, fontWeight: 800, height: 22 }

@@ -13,7 +13,9 @@ export default async function PlatformLayout({
 }) {
   const { locale } = await params
 
-  await requirePlatformSession(locale)
+  if (process.env.NODE_ENV !== 'development') {
+    await requirePlatformSession(locale)
+  }
 
   return <PlatformShell>{children}</PlatformShell>
 }
