@@ -26,7 +26,7 @@ export function PasswordRecoveryForm({
           sx={{
             width: { xs: 36, md: 60 },
             height: { xs: 36, md: 60 },
-            display: 'grid',
+            display: { xs: 'none', md: 'grid' },
             placeItems: 'center',
             borderRadius: `${radius.full}px`,
             bgcolor: brand.magenta[50],

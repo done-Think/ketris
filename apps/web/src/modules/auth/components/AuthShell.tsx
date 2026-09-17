@@ -4,14 +4,15 @@ import ketrisLogoTransparent from '@shared/assets/ketris-logo-transparent.png'
 import { AppLogo } from '@shared/components/ui'
 import { radius, shadows, surface } from '@shared/theme/tokens'
 
-import { AuthBrandPanel } from './AuthBrandPanel'
 import type { AuthMobileLayout, AuthMobileVariant, AuthShellProps } from '../types/auth-shell'
+import { AuthBrandPanel } from './AuthBrandPanel'
 
 const mobileLayouts: Record<AuthMobileVariant, AuthMobileLayout> = {
   plain: {
     pageBackground: surface.paper,
     pageRows: 'auto 1fr',
     mainZIndex: 'auto',
+    mainAlignItems: 'flex-start',
     mainMinHeight: 'calc(100dvh - 220px)',
     mainPaddingX: 2.5,
     mainPaddingXSm: 5,
@@ -31,6 +32,7 @@ const mobileLayouts: Record<AuthMobileVariant, AuthMobileLayout> = {
     pageBackground: surface.darkDeep,
     pageRows: '1fr',
     mainZIndex: 1,
+    mainAlignItems: 'center',
     mainMinHeight: '100dvh',
     mainPaddingX: 2.25,
     mainPaddingXSm: 3,
@@ -50,6 +52,7 @@ const mobileLayouts: Record<AuthMobileVariant, AuthMobileLayout> = {
     pageBackground: surface.darkDeep,
     pageRows: '1fr',
     mainZIndex: 1,
+    mainAlignItems: 'center',
     mainMinHeight: '100dvh',
     mainPaddingX: 2,
     mainPaddingXSm: 3,
@@ -96,7 +99,7 @@ export function AuthShell({
             zIndex: 2,
             top: 1.25,
             left: 0.5,
-            display: { xs: 'flex', md: 'none' },
+            display: 'none',
           }}
         >
           <AppLogo src={ketrisLogoTransparent} variant="transparent" width={76} />
@@ -113,7 +116,7 @@ export function AuthShell({
           minHeight: { xs: layout.mainMinHeight, md: '100dvh' },
           overflowY: 'auto',
           display: 'flex',
-          alignItems: { xs: 'flex-start', md: 'center' },
+          alignItems: { xs: layout.mainAlignItems, md: 'center' },
           justifyContent: 'center',
           px: { xs: layout.mainPaddingX, sm: layout.mainPaddingXSm, md: 4 },
           pt: { xs: layout.mainPaddingTop, sm: layout.mainPaddingTopSm, md: 0 },
