@@ -1,19 +1,17 @@
-import { Box, Typography } from '@mui/material'
-import Link from 'next/link'
+'use client'
 
+import { Box, Typography } from '@mui/material'
+
+import { Link } from '@/i18n/navigation'
 import { componentText, gradients, motion, radius, surface } from '@shared/theme/tokens'
 
-import type { MiniMarketplaceProperty } from '../types'
-
-type MiniPropertyCardProps = {
-  property: MiniMarketplaceProperty
-}
+import type { MiniPropertyCardProps } from '../types/mini-property'
 
 export function MiniPropertyCard({ property }: MiniPropertyCardProps) {
   return (
     <Box
       component={Link}
-      href="/imoveis"
+      href="/properties"
       sx={{
         overflow: 'hidden',
         borderRadius: `${radius.sm}px`,

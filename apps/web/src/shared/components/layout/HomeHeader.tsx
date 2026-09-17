@@ -1,10 +1,28 @@
-import { type RefObject } from 'react'
-import { Avatar, Box, Button, Container, IconButton, Link as MuiLink, Stack } from '@mui/material'
-import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
-import Link from 'next/link'
+'use client'
 
+import { useState } from 'react'
+import {
+  Avatar,
+  Box,
+  Button,
+  Container,
+  Divider,
+  Drawer,
+  IconButton,
+  Link as MuiLink,
+  Stack,
+} from '@mui/material'
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
+import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
+import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
+
+import { Link } from '@/i18n/navigation'
+import ketrisLogoTransparent from '@shared/assets/ketris-logo-transparent.png'
 import { AppLogo } from '@shared/components/ui'
 import {
+  alpha,
   componentText,
   iconSize,
   motion,
@@ -13,27 +31,23 @@ import {
   surface,
   zIndex,
 } from '@shared/theme/tokens'
-
-type HomeHeaderProps = {
-  navigationItems: ReadonlyArray<{
-    label: string
-    href: string
-    active?: boolean
-  }>
-  profileButtonRef: RefObject<HTMLButtonElement>
-  userProfile: {
-    name: string
-    avatar: string
-  }
-  onToggleProfile: () => void
-}
+import type { HomeHeaderProps } from '@shared/types/home-header'
+import { getInitials } from '@shared/utils/get-initials'
+import { LanguageSelector } from './LanguageSelector'
 
 export function HomeHeader({
   navigationItems,
   profileButtonRef,
   userProfile,
   onToggleProfile,
+  isSessionLoading = false,
 }: HomeHeaderProps) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const closeMobileMenu = () => setIsMobileMenuOpen(false)
+  const t = useTranslations('marketplace.header')
+  const { status } = useSession()
+  const announcePropertyHref = status === 'authenticated' ? '/dashboard/properties' : '/login'
+
   return (
     <Box
       component="header"
@@ -58,7 +72,8 @@ export function HomeHeader({
           }}
         >
           <AppLogo
-            src="/ketris-logo-transparent.png"
+            src={ketrisLogoTransparent}
+            variant="transparent"
             width={{ xs: 100, sm: 118 }}
             sx={{ justifySelf: 'start' }}
           />
@@ -109,7 +124,7 @@ export function HomeHeader({
           <Stack direction="row" alignItems="center" spacing={1} sx={{ justifySelf: 'end' }}>
             <Button
               component={Link}
-              href="/login"
+              href={announcePropertyHref}
               variant="outlined"
               color="secondary"
               size="small"
@@ -117,7 +132,7 @@ export function HomeHeader({
                 borderColor: 'divider',
                 color: 'text.primary',
                 borderRadius: `${radius.sm}px`,
-                display: { xs: 'none', sm: 'inline-flex' },
+                display: { xs: 'none', md: 'inline-flex' },
                 minHeight: 42,
                 px: 2,
                 ...componentText.headerCta,
@@ -130,46 +145,147 @@ export function HomeHeader({
                 },
               }}
             >
-              Anunciar Imóvel
+              {t('announceProperty')}
             </Button>
-            <IconButton aria-label="notificações" size="small" sx={{ width: 42, height: 42 }}>
+            <IconButton aria-label={t('notifications')} size="small" sx={{ width: 42, height: 42 }}>
               <NotificationsNoneOutlinedIcon sx={{ fontSize: iconSize.xl }} />
             </IconButton>
-            <Box
-              component="button"
-              type="button"
-              aria-label="Abrir perfil"
-              aria-haspopup="dialog"
-              ref={profileButtonRef}
-              onClick={onToggleProfile}
+            {userProfile && profileButtonRef && onToggleProfile ? (
+              <Box
+                component="button"
+                type="button"
+                aria-label={t('openProfile')}
+                aria-haspopup="dialog"
+                ref={profileButtonRef}
+                onClick={onToggleProfile}
+                sx={{
+                  width: 48,
+                  height: 48,
+                  p: 0,
+                  border: 0,
+                  borderRadius: radius.full,
+                  bgcolor: 'transparent',
+                  cursor: 'pointer',
+                  display: 'grid',
+                  placeItems: 'center',
+                  position: 'relative',
+                  zIndex: zIndex.content - 1,
+                  transition: motion.transition.avatar,
+                  '&:hover': {
+                    boxShadow: shadows.avatarFocus,
+                    transform: 'translateY(-1px)',
+                  },
+                }}
+              >
+                <Avatar
+                  alt={userProfile.name}
+                  src={userProfile.avatar}
+                  sx={{ width: 48, height: 48 }}
+                >
+                  {!userProfile.avatar ? getInitials(userProfile.name) : null}
+                </Avatar>
+              </Box>
+            ) : isSessionLoading ? (
+              <Box sx={{ width: 48, height: 42 }} />
+            ) : (
+              <LanguageSelector variant="header" />
+            )}
+            <IconButton
+              aria-label={t('openMenu')}
+              aria-controls="home-mobile-menu"
+              aria-expanded={isMobileMenuOpen ? 'true' : undefined}
+              onClick={() => setIsMobileMenuOpen(true)}
+              size="small"
               sx={{
-                width: 48,
-                height: 48,
-                p: 0,
-                border: 0,
-                borderRadius: radius.full,
-                bgcolor: 'transparent',
-                cursor: 'pointer',
-                display: 'grid',
-                placeItems: 'center',
-                position: 'relative',
-                zIndex: zIndex.content - 1,
-                transition: motion.transition.avatar,
-                '&:hover': {
-                  boxShadow: shadows.avatarFocus,
-                  transform: 'translateY(-1px)',
-                },
+                display: { xs: 'inline-flex', md: 'none' },
+                width: 42,
+                height: 42,
+                color: surface.darkText,
               }}
             >
-              <Avatar
-                alt={userProfile.name}
-                src={userProfile.avatar}
-                sx={{ width: 48, height: 48 }}
-              />
-            </Box>
+              <MenuRoundedIcon sx={{ fontSize: iconSize.xl }} />
+            </IconButton>
           </Stack>
         </Box>
       </Container>
+
+      <Drawer
+        anchor="right"
+        id="home-mobile-menu"
+        open={isMobileMenuOpen}
+        onClose={closeMobileMenu}
+        slotProps={{
+          paper: {
+            sx: {
+              width: 'min(82vw, 320px)',
+              bgcolor: surface.paper,
+            },
+          },
+        }}
+      >
+        <Stack sx={{ minHeight: '100%', p: 2.5 }} spacing={2}>
+          <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <AppLogo
+              src={ketrisLogoTransparent}
+              variant="transparent"
+              width={104}
+              sx={{ flexShrink: 0 }}
+            />
+            <IconButton aria-label={t('closeMenu')} onClick={closeMobileMenu} size="small">
+              <CloseRoundedIcon sx={{ fontSize: iconSize.xl }} />
+            </IconButton>
+          </Stack>
+
+          <Divider />
+
+          <Stack component="nav" spacing={0.5} aria-label={t('mainMenu')}>
+            {navigationItems.map((item) => (
+              <MuiLink
+                key={item.label}
+                component={Link}
+                href={item.href}
+                underline="none"
+                onClick={closeMobileMenu}
+                sx={{
+                  color: item.active ? 'primary.main' : 'text.primary',
+                  ...componentText.navLink,
+                  minHeight: 46,
+                  display: 'flex',
+                  alignItems: 'center',
+                  px: 1.5,
+                  borderRadius: `${radius.sm}px`,
+                  bgcolor: item.active ? alpha.magenta[8] : 'transparent',
+                  transition: motion.transition.interactive,
+                  '&:hover': {
+                    bgcolor: 'action.hover',
+                    color: surface.darkText,
+                  },
+                }}
+              >
+                {item.label}
+              </MuiLink>
+            ))}
+          </Stack>
+
+          <Divider />
+
+          <Button
+            component={Link}
+            href={announcePropertyHref}
+            variant="contained"
+            color="primary"
+            onClick={closeMobileMenu}
+            fullWidth
+            sx={{
+              minHeight: 44,
+              borderRadius: `${radius.sm}px`,
+              ...componentText.headerCta,
+            }}
+          >
+            {t('announceProperty')}
+          </Button>
+        </Stack>
+      </Drawer>
     </Box>
   )
 }

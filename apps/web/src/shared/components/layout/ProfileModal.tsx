@@ -1,11 +1,11 @@
 'use client'
 
-import { type ComponentType, type RefObject, useEffect, useState } from 'react'
-import { Avatar, Box, Button, IconButton, Stack, Typography } from '@mui/material'
-import type { SvgIconProps } from '@mui/material/SvgIcon'
+import { useEffect, useState } from 'react'
+import { Avatar, Box, Button, Divider, IconButton, Stack, Typography } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
+import { Link } from '@/i18n/navigation'
 import {
   alpha,
   componentText,
@@ -15,25 +15,9 @@ import {
   surface,
   zIndex,
 } from '@shared/theme/tokens'
-
-type ProfileModalProps = {
-  open: boolean
-  anchorRef: RefObject<HTMLButtonElement>
-  userProfile: {
-    name: string
-    role: string
-    company: string
-    email: string
-    avatar: string
-  }
-  actions: Array<{
-    label: string
-    icon: ComponentType<SvgIconProps>
-    href: string
-    tone?: 'danger'
-  }>
-  onClose: () => void
-}
+import type { ProfileModalProps } from '@shared/types/profile-modal'
+import { getInitials } from '@shared/utils/get-initials'
+import { LanguageSelector } from './LanguageSelector'
 
 export function ProfileModal({
   open,
@@ -45,6 +29,7 @@ export function ProfileModal({
   const [isMounted, setIsMounted] = useState(open)
   const [isVisible, setIsVisible] = useState(false)
   const [panelPosition, setPanelPosition] = useState({ top: 68, right: 16 })
+  const t = useTranslations('marketplace.profile')
 
   useEffect(() => {
     if (open) {
@@ -91,7 +76,7 @@ export function ProfileModal({
     <Box
       role="dialog"
       aria-modal="true"
-      aria-label="Perfil do usuário"
+      aria-label={t('dialogLabel')}
       onClick={onClose}
       sx={{
         position: 'fixed',
@@ -107,10 +92,13 @@ export function ProfileModal({
         onClick={(event) => event.stopPropagation()}
         sx={{
           position: 'fixed',
-          top: panelPosition.top,
-          right: panelPosition.right,
-          width: '100%',
-          maxWidth: { xs: 'calc(100vw - 24px)', sm: 390 },
+          top: { xs: 80, sm: panelPosition.top },
+          right: { xs: 12, sm: panelPosition.right },
+          left: { xs: 12, sm: 'auto' },
+          width: { xs: 'auto', sm: '100%' },
+          maxWidth: { sm: 390 },
+          maxHeight: { xs: 'calc(100vh - 96px)', sm: 'calc(100vh - 88px)' },
+          overflowY: 'auto',
           borderRadius: `${radius.sm}px`,
           bgcolor: surface.paper,
           boxShadow: shadows.modal,
@@ -126,20 +114,24 @@ export function ProfileModal({
           justifyContent="space-between"
           sx={{ mb: 2 }}
         >
-          <Stack direction="row" spacing={1.5} alignItems="center">
+          <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
             <Avatar
               alt={userProfile.name}
               src={userProfile.avatar}
-              sx={{ width: 48, height: 48 }}
-            />
-            <Box>
-              <Typography sx={componentText.modalTitle}>{userProfile.name}</Typography>
-              <Typography sx={{ color: 'text.secondary', ...componentText.modalSubtitle }}>
-                {userProfile.role}
+              sx={{ width: 48, height: 48, flexShrink: 0 }}
+            >
+              {!userProfile.avatar ? getInitials(userProfile.name) : null}
+            </Avatar>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography noWrap sx={componentText.modalTitle}>
+                {userProfile.name}
+              </Typography>
+              <Typography noWrap sx={{ color: 'text.secondary', ...componentText.modalSubtitle }}>
+                {t('role')}
               </Typography>
             </Box>
           </Stack>
-          <IconButton aria-label="Fechar perfil" size="small" onClick={onClose}>
+          <IconButton aria-label={t('closeProfile')} size="small" onClick={onClose}>
             <CloseIcon fontSize="small" />
           </IconButton>
         </Stack>
@@ -155,24 +147,35 @@ export function ProfileModal({
             mb: 2,
           }}
         >
-          <Typography sx={{ color: 'text.secondary', ...componentText.modalEyebrow }}>
-            {userProfile.company}
-          </Typography>
+          {userProfile.company ? (
+            <Typography sx={{ color: 'text.secondary', ...componentText.modalEyebrow }}>
+              {userProfile.company}
+            </Typography>
+          ) : null}
           <Typography sx={{ color: 'text.primary', ...componentText.modalSubtitle }}>
             {userProfile.email}
           </Typography>
         </Box>
 
+        <Divider sx={{ mb: 1 }} />
+
         <Stack spacing={1}>
+          <LanguageSelector />
+
           {actions.map((action) => {
             const Icon = action.icon
             const isDanger = action.tone === 'danger'
+            const linkProps = action.href
+              ? { component: Link, href: action.href }
+              : { component: 'button' as const, type: 'button' as const }
             return (
               <Button
                 key={action.label}
-                component={Link}
-                href={action.href}
-                onClick={onClose}
+                {...linkProps}
+                onClick={() => {
+                  action.onClick?.()
+                  onClose()
+                }}
                 startIcon={<Icon fontSize="small" />}
                 fullWidth
                 sx={{

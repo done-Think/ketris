@@ -1,30 +1,13 @@
-import { type Dispatch, type Ref, type SetStateAction } from 'react'
 import { Box, Container, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { alpha, componentText, gradients, surface, zIndex } from '@shared/theme/tokens'
 
-import type { SearchFilterKey, TextSearchFilterKey } from '../config/search-filters'
+import type { HeroSectionProps } from '../types/search'
 import { DesktopSearchBar } from './DesktopSearchBar'
 import { HeroBrandVideo } from './HeroBrandVideo'
 import { HeroStats } from './HeroStats'
 import { MobileSearchBox } from './MobileSearchBox'
-
-type HeroSectionProps = {
-  selectedSearch: Record<SearchFilterKey, string>
-  priceRange: [number, number]
-  priceRangeLabel: string
-  activeSearchMenu: SearchFilterKey | null
-  searchDraft: Record<TextSearchFilterKey, string>
-  searchHref: string
-  desktopSearchRef: Ref<HTMLDivElement>
-  mobileSearchRef: Ref<HTMLDivElement>
-  openSearchMenu: (key: SearchFilterKey) => void
-  closeSearchMenu: () => void
-  selectSearchValue: (key: SearchFilterKey, value: string) => void
-  updatePriceRange: (nextRange: [number, number]) => void
-  filterSearchOptions: (key: TextSearchFilterKey) => readonly string[]
-  setSearchDraft: Dispatch<SetStateAction<Record<TextSearchFilterKey, string>>>
-}
 
 export function HeroSection({
   selectedSearch,
@@ -40,8 +23,11 @@ export function HeroSection({
   selectSearchValue,
   updatePriceRange,
   filterSearchOptions,
+  getSearchOptionLabel,
   setSearchDraft,
 }: HeroSectionProps) {
+  const t = useTranslations('marketplace.home.hero')
+
   return (
     <Box
       component="section"
@@ -86,10 +72,10 @@ export function HeroSection({
               }}
             >
               <Box component="span" sx={{ display: 'block' }}>
-                A infraestrutura digital
+                {t('titleLine1')}
               </Box>
               <Box component="span" sx={{ display: 'block' }}>
-                do mercado imobiliário
+                {t('titleLine2')}
               </Box>
             </Typography>
 
@@ -103,7 +89,7 @@ export function HeroSection({
                 whiteSpace: { md: 'nowrap' },
               }}
             >
-              Aluguel e venda de imóveis com tecnologia de ponta, processos ágeis e total confiança.
+              {t('subtitle')}
             </Typography>
 
             <DesktopSearchBar
@@ -119,6 +105,7 @@ export function HeroSection({
               selectSearchValue={selectSearchValue}
               updatePriceRange={updatePriceRange}
               filterSearchOptions={filterSearchOptions}
+              getSearchOptionLabel={getSearchOptionLabel}
               setSearchDraft={setSearchDraft}
             />
 
@@ -131,6 +118,7 @@ export function HeroSection({
               openSearchMenu={openSearchMenu}
               selectSearchValue={selectSearchValue}
               filterSearchOptions={filterSearchOptions}
+              getSearchOptionLabel={getSearchOptionLabel}
               setSearchDraft={setSearchDraft}
             />
 
