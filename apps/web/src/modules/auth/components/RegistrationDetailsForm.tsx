@@ -16,7 +16,7 @@ import {
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import { useTranslations } from 'next-intl'
-import { Controller, useForm } from 'react-hook-form'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 
 import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
 import { brand } from '@shared/theme/tokens'
@@ -40,8 +40,9 @@ const passwordFields: ReadonlyArray<RegistrationPasswordField> = [
 
 export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetailsFormProps) {
   const t = useTranslations('auth.registerDetails')
-  const [visiblePasswordField, setVisiblePasswordField] =
-    useState<RegistrationPasswordFieldName | null>(null)
+  const [visiblePasswordFields, setVisiblePasswordFields] = useState<
+    ReadonlySet<RegistrationPasswordFieldName>
+  >(new Set())
   const {
     control,
     handleSubmit,
@@ -60,12 +61,22 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
     },
   })
 
+  const acceptTerms = useWatch({ control, name: 'acceptTerms' })
+
   function submitDetails(values: RegistrationDetailsFormValues) {
     onSubmit?.(values)
   }
 
   function togglePasswordVisibility(fieldName: RegistrationPasswordFieldName) {
-    setVisiblePasswordField((current) => (current === fieldName ? null : fieldName))
+    setVisiblePasswordFields((current) => {
+      const next = new Set(current)
+      if (next.has(fieldName)) {
+        next.delete(fieldName)
+      } else {
+        next.add(fieldName)
+      }
+      return next
+    })
   }
 
   return (
@@ -126,7 +137,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
           }}
         >
           {passwordFields.map((field) => {
-            const isVisible = visiblePasswordField === field.name
+            const isVisible = visiblePasswordFields.has(field.name)
             const label = t(`${field.translationKey}.label`)
 
             return (
@@ -235,7 +246,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
       <Button
         type="submit"
         variant="contained"
-        disabled={isSubmitting}
+        disabled={isSubmitting || !acceptTerms}
         sx={{
           ...authPrimaryButtonSx,
           width: '100%',
