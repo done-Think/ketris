@@ -21,7 +21,7 @@ vi.mock('@server/platform/container', () => ({
 }))
 
 async function getProviderAuthorize(id: string) {
-  const { authOptions } = await import('./auth-options')
+  const { authOptions } = await import('../auth-options')
   const provider = authOptions.providers.find(
     (candidate) => (candidate as unknown as { options: { id: string } }).options.id === id,
   ) as unknown as {
@@ -43,7 +43,7 @@ function getPlatformAuthorize() {
 }
 
 async function getJwtCallback() {
-  const { authOptions } = await import('./auth-options')
+  const { authOptions } = await import('../auth-options')
   return authOptions.callbacks!.jwt!
 }
 

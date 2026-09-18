@@ -1,7 +1,7 @@
 import { signOut } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { clearClientSession } from './clear-client-session'
+import { clearClientSession } from '../clear-client-session'
 
 vi.mock('next-auth/react', () => ({
   signOut: vi.fn().mockResolvedValue(undefined),

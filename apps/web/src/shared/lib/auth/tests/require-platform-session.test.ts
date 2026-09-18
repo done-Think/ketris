@@ -14,7 +14,7 @@ vi.mock('next/navigation', () => ({
 }))
 
 async function getRequirePlatformSession() {
-  const { requirePlatformSession } = await import('./require-platform-session')
+  const { requirePlatformSession } = await import('../require-platform-session')
   return requirePlatformSession
 }
 

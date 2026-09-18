@@ -14,7 +14,7 @@ vi.mock('next/navigation', () => ({
 }))
 
 async function getRequireAdminSession() {
-  const { requireAdminSession } = await import('./require-admin-session')
+  const { requireAdminSession } = await import('../require-admin-session')
   return requireAdminSession
 }
 
