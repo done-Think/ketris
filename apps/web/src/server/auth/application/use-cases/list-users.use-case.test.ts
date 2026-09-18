@@ -12,6 +12,7 @@ const admin: User = {
   senhaHash: 'hash-fake',
   papel: 'ADMIN',
   ativo: true,
+  vinculoAprovadoEm: new Date(),
 }
 
 const owner: User = {
@@ -22,6 +23,7 @@ const owner: User = {
   senhaHash: 'hash-fake',
   papel: 'OWNER',
   ativo: true,
+  vinculoAprovadoEm: new Date(),
 }
 
 const agent: User = {
@@ -32,6 +34,7 @@ const agent: User = {
   senhaHash: 'hash-fake',
   papel: 'AGENT',
   ativo: false,
+  vinculoAprovadoEm: new Date(),
 }
 
 function createDeps(findManyByTenant?: UserRepository['findManyByTenant']) {
@@ -43,6 +46,7 @@ function createDeps(findManyByTenant?: UserRepository['findManyByTenant']) {
     create: vi.fn(),
     update: vi.fn(),
     deactivate: vi.fn(),
+    approveMembership: vi.fn(),
   }
 
   return { userRepository }

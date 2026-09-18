@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
+import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { propertiesContainer } from '@server/properties/container'
 import { updatePropertyRequestSchema } from '@server/properties/schemas/property-input.schema'
@@ -29,6 +30,7 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Rou
   const property = await propertiesContainer.updatePropertyUseCase.execute({
     actorTenantId: actor.tenantId,
     id: (await context.params).id,
+    actorPapel: actor.papel as Papel,
     ...body,
     endereco: body.endereco
       ? {
@@ -54,6 +56,7 @@ export const DELETE = withErrorHandling(async (request: NextRequest, context: Ro
   const property = await propertiesContainer.deactivatePropertyUseCase.execute({
     actorTenantId: actor.tenantId,
     id: (await context.params).id,
+    actorPapel: actor.papel as Papel,
   })
 
   return NextResponse.json({ property }, { status: 200 })

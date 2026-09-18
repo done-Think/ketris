@@ -8,6 +8,7 @@ import {
 import type { Property } from '../../domain/property.entity'
 import type { PropertyRepository } from '../ports/property-repository.port'
 import { CreatePropertyUseCase } from './create-property.use-case'
+import { DeactivatePropertyUseCase } from './deactivate-property.use-case'
 import { ListPropertiesUseCase } from './list-properties.use-case'
 import { PublishPropertyUseCase } from './publish-property.use-case'
 import { TransitionPropertyFromActiveContractUseCase } from './transition-property-from-active-contract.use-case'
@@ -84,6 +85,7 @@ describe('properties use cases', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorUserId: 'user-1',
+      actorPapel: 'ADMIN',
       titulo: property.titulo,
       finalidade: property.finalidade,
       tipo: property.tipo,
@@ -97,6 +99,24 @@ describe('properties use cases', () => {
         titulo: property.titulo,
       }),
     )
+  })
+
+  it('bloqueia RENTER ao tentar criar imóvel', async () => {
+    const repository = createRepository()
+    const useCase = new CreatePropertyUseCase(repository)
+
+    expect(() =>
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorUserId: 'user-1',
+        actorPapel: 'RENTER',
+        titulo: property.titulo,
+        finalidade: property.finalidade,
+        tipo: property.tipo,
+        valor: property.valores.valor,
+      }),
+    ).toThrow('Locatários não podem gerenciar imóveis.')
+    expect(repository.create).not.toHaveBeenCalled()
   })
 
   it('lista imóveis filtrando pelo tenant do ator', async () => {
@@ -123,6 +143,7 @@ describe('properties use cases', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       id: 'property-1',
+      actorPapel: 'ADMIN',
       titulo: 'Novo título',
     })
 
@@ -141,9 +162,25 @@ describe('properties use cases', () => {
       useCase.execute({
         actorTenantId: 'tenant-2',
         id: 'property-1',
+        actorPapel: 'ADMIN',
         titulo: 'Novo título',
       }),
     ).rejects.toThrow(PropertyNotFoundError)
+  })
+
+  it('bloqueia RENTER ao tentar atualizar imóvel', async () => {
+    const repository = createRepository()
+    const useCase = new UpdatePropertyUseCase(repository)
+
+    await expect(
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        id: 'property-1',
+        actorPapel: 'RENTER',
+        titulo: 'Novo título',
+      }),
+    ).rejects.toThrow('Locatários não podem gerenciar imóveis.')
+    expect(repository.update).not.toHaveBeenCalled()
   })
 
   it('publica imóvel completo', async () => {
@@ -154,6 +191,7 @@ describe('properties use cases', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       id: 'property-1',
+      actorPapel: 'ADMIN',
       publishedAt,
     })
 
@@ -176,18 +214,49 @@ describe('properties use cases', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         id: 'property-1',
+        actorPapel: 'ADMIN',
       }),
     ).rejects.toThrow(PropertyPublishValidationError)
     expect(repository.setStatus).not.toHaveBeenCalled()
+  })
+
+  it('bloqueia RENTER ao tentar publicar imóvel', async () => {
+    const repository = createRepository()
+    const useCase = new PublishPropertyUseCase(repository)
+
+    await expect(
+      useCase.execute({ actorTenantId: 'tenant-1', id: 'property-1', actorPapel: 'RENTER' }),
+    ).rejects.toThrow('Locatários não podem gerenciar imóveis.')
+    expect(repository.findByTenantAndId).not.toHaveBeenCalled()
   })
 
   it('despublica imóvel movendo status para inativo', async () => {
     const repository = createRepository()
     const useCase = new UnpublishPropertyUseCase(repository)
 
-    await useCase.execute({ actorTenantId: 'tenant-1', id: 'property-1' })
+    await useCase.execute({ actorTenantId: 'tenant-1', id: 'property-1', actorPapel: 'ADMIN' })
 
     expect(repository.setStatus).toHaveBeenCalledWith('tenant-1', 'property-1', 'INACTIVE', null)
+  })
+
+  it('bloqueia RENTER ao tentar despublicar imóvel', async () => {
+    const repository = createRepository()
+    const useCase = new UnpublishPropertyUseCase(repository)
+
+    await expect(
+      useCase.execute({ actorTenantId: 'tenant-1', id: 'property-1', actorPapel: 'RENTER' }),
+    ).rejects.toThrow('Locatários não podem gerenciar imóveis.')
+    expect(repository.setStatus).not.toHaveBeenCalled()
+  })
+
+  it('bloqueia RENTER ao tentar desativar imóvel', async () => {
+    const repository = createRepository()
+    const useCase = new DeactivatePropertyUseCase(repository)
+
+    await expect(
+      useCase.execute({ actorTenantId: 'tenant-1', id: 'property-1', actorPapel: 'RENTER' }),
+    ).rejects.toThrow('Locatários não podem gerenciar imóveis.')
+    expect(repository.setStatus).not.toHaveBeenCalled()
   })
 
   it('marca imóvel como alugado quando contrato ativo de aluguel é processado', async () => {

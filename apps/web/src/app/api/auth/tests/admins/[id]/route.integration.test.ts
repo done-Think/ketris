@@ -64,6 +64,7 @@ describe('/api/auth/admins/[id] (integração)', () => {
       email: actor.email,
       papel: actor.papel,
       ativo: actor.ativo,
+      vinculoAprovadoEm: actor.vinculoAprovadoEm,
     })
 
     agentToken = await tokenService.sign({
@@ -73,6 +74,7 @@ describe('/api/auth/admins/[id] (integração)', () => {
       email: targetAgent.email,
       papel: targetAgent.papel,
       ativo: targetAgent.ativo,
+      vinculoAprovadoEm: targetAgent.vinculoAprovadoEm,
     })
   })
 

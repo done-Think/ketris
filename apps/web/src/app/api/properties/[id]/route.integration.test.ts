@@ -46,6 +46,7 @@ describe('/api/properties/{id} (integração)', () => {
       email: actor.email,
       papel: actor.papel,
       ativo: actor.ativo,
+      vinculoAprovadoEm: actor.vinculoAprovadoEm,
     })
 
     const completeProperty = await prisma.imovel.create({

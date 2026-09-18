@@ -6,6 +6,7 @@ export interface NewUser {
   email: string
   senhaHash: string
   papel: Papel
+  vinculoAprovadoEm?: Date | null
 }
 
 export interface UserUpdate {
@@ -22,4 +23,5 @@ export interface UserRepository {
   create(user: NewUser): Promise<User>
   update(id: string, changes: UserUpdate): Promise<User>
   deactivate(id: string): Promise<User>
+  approveMembership(id: string): Promise<User>
 }

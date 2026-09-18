@@ -16,7 +16,8 @@ export async function assertAgentOwnsProperty(
   actorId: string,
   actorPapel: Papel,
 ): Promise<void> {
-  if (actorPapel !== 'AGENT') return
+  if (actorPapel === 'ADMIN' || actorPapel === 'OWNER') return
+  if (actorPapel !== 'AGENT') throw new OpportunityNotFoundError()
 
   const responsavelId = await propertyLookup.findResponsavelId(tenantId, propertyId)
 
@@ -31,7 +32,8 @@ export async function assertAgentOwnsContact(
   actorId: string,
   actorPapel: Papel,
 ): Promise<void> {
-  if (actorPapel !== 'AGENT') return
+  if (actorPapel === 'ADMIN' || actorPapel === 'OWNER') return
+  if (actorPapel !== 'AGENT') throw new ContactNotFoundError()
 
   const hasAccess = await opportunityRepository.existsForAgent(tenantId, contactId, actorId)
 

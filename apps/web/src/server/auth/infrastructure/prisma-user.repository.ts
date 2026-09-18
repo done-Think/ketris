@@ -12,6 +12,7 @@ function toDomainUser(usuario: {
   senhaHash: string
   papel: User['papel']
   ativo: boolean
+  vinculoAprovadoEm: Date | null
 }): User {
   return {
     id: usuario.id,
@@ -21,6 +22,7 @@ function toDomainUser(usuario: {
     senhaHash: usuario.senhaHash,
     papel: usuario.papel,
     ativo: usuario.ativo,
+    vinculoAprovadoEm: usuario.vinculoAprovadoEm,
   }
 }
 
@@ -62,6 +64,9 @@ export class PrismaUserRepository implements UserRepository {
         email: normalizeEmail(newUser.email),
         senhaHash: newUser.senhaHash,
         papel: newUser.papel,
+        ...(newUser.vinculoAprovadoEm !== undefined
+          ? { vinculoAprovadoEm: newUser.vinculoAprovadoEm }
+          : {}),
       },
     })
 
@@ -85,6 +90,15 @@ export class PrismaUserRepository implements UserRepository {
     const usuario = await prisma.usuario.update({
       where: { id },
       data: { ativo: false },
+    })
+
+    return toDomainUser(usuario)
+  }
+
+  async approveMembership(id: string): Promise<User> {
+    const usuario = await prisma.usuario.update({
+      where: { id },
+      data: { vinculoAprovadoEm: new Date() },
     })
 
     return toDomainUser(usuario)

@@ -24,6 +24,7 @@ const users: User[] = [
     senhaHash: 'h',
     papel: 'ADMIN',
     ativo: true,
+    vinculoAprovadoEm: new Date(),
   },
   {
     id: 'u2',
@@ -33,6 +34,7 @@ const users: User[] = [
     senhaHash: 'h',
     papel: 'AGENT',
     ativo: true,
+    vinculoAprovadoEm: new Date(),
   },
 ]
 
@@ -51,6 +53,7 @@ function createDeps(overrides?: { findById?: TenantRepository['findById'] }) {
     create: vi.fn(),
     update: vi.fn(),
     deactivate: vi.fn(),
+    approveMembership: vi.fn(),
   }
 
   return { tenantRepository, userRepository }

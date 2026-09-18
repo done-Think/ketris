@@ -39,19 +39,21 @@ enum PapelUsuario {
   ADMIN
   OWNER
   AGENT
+  RENTER
 }
 
 model Usuario {
-  id        String       @id @default(cuid())
-  tenantId  String
-  nome      String
-  email     String
-  senhaHash String
-  avatarUrl String?
-  papel     PapelUsuario @default(AGENT)
-  ativo     Boolean      @default(true)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id                String       @id @default(cuid())
+  tenantId          String
+  nome              String
+  email             String
+  senhaHash         String
+  avatarUrl         String?
+  papel             PapelUsuario @default(AGENT)
+  ativo             Boolean      @default(true)
+  vinculoAprovadoEm DateTime?    @default(now())
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 
   tenant             Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   imoveisResponsavel Imovel[]       @relation("ImovelResponsavel")

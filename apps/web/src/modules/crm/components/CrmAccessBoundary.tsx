@@ -17,7 +17,10 @@ export function CrmAccessBoundary({ children }: CrmAccessBoundaryProps) {
   const router = useRouter()
   const { data: session, status } = useSession()
   const isSessionInvalid =
-    status !== 'authenticated' || session?.scope !== 'tenant' || !session.tenantId
+    status !== 'authenticated' ||
+    session?.scope !== 'tenant' ||
+    !session.tenantId ||
+    session.papel === 'RENTER'
 
   // The server-side layout only redirects on the initial navigation — if the session becomes
   // invalid while the SPA is already open (token revalidated as stale, expiry, etc.), this is what

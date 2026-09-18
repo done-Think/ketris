@@ -66,6 +66,7 @@ describe('POST /api/auth/login (integração)', () => {
       email,
       role: 'ADMIN',
       active: true,
+      pendingApproval: false,
     })
     expect(json.user).not.toHaveProperty('senhaHash')
     expect(json.user).not.toHaveProperty('nome')

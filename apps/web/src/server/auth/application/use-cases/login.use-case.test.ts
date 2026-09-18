@@ -16,6 +16,7 @@ const user: User = {
   senhaHash: 'hash-fake',
   papel: 'AGENT',
   ativo: true,
+  vinculoAprovadoEm: new Date(),
 }
 
 function createDeps(overrides?: {
@@ -30,6 +31,7 @@ function createDeps(overrides?: {
     create: vi.fn().mockResolvedValue(user),
     update: vi.fn(),
     deactivate: vi.fn(),
+    approveMembership: vi.fn(),
   }
   const passwordHasher: PasswordHasher = {
     compare: overrides?.compare ?? vi.fn().mockResolvedValue(true),
@@ -75,6 +77,7 @@ describe('LoginUseCase', () => {
       email: user.email,
       papel: user.papel,
       ativo: user.ativo,
+      vinculoAprovadoEm: user.vinculoAprovadoEm,
     })
     expect(result.user).not.toHaveProperty('senhaHash')
     expect(deps.tokenService.sign).toHaveBeenCalledWith(result.user)

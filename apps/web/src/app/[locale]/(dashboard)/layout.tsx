@@ -16,7 +16,7 @@ export default async function DashboardLayout({
 }) {
   const { locale } = await params
   const session = await getServerSession(authOptions)
-  if (!session || session.scope !== 'tenant') {
+  if (!session || session.scope !== 'tenant' || session.papel === 'RENTER') {
     redirect(getLocalizedPathname('/login', locale))
   }
 

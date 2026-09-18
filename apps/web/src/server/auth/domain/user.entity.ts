@@ -1,6 +1,6 @@
-export type Papel = 'ADMIN' | 'OWNER' | 'AGENT'
+export type Papel = 'ADMIN' | 'OWNER' | 'AGENT' | 'RENTER'
 
-export type NonAdminPapel = Exclude<Papel, 'ADMIN'>
+export type NonAdminPapel = Exclude<Papel, 'ADMIN' | 'RENTER'>
 
 export interface User {
   id: string
@@ -10,6 +10,7 @@ export interface User {
   senhaHash: string
   papel: Papel
   ativo: boolean
+  vinculoAprovadoEm: Date | null
 }
 
 export type AuthenticatedUser = Omit<User, 'senhaHash'>
@@ -22,6 +23,7 @@ export function toAuthenticatedUser(user: User): AuthenticatedUser {
     email: user.email,
     papel: user.papel,
     ativo: user.ativo,
+    vinculoAprovadoEm: user.vinculoAprovadoEm,
   }
 }
 
@@ -32,6 +34,7 @@ export type AuthenticatedUserResponse = {
   email: string
   role: Papel
   active: boolean
+  pendingApproval: boolean
 }
 
 export function toAuthenticatedUserResponse(user: AuthenticatedUser): AuthenticatedUserResponse {
@@ -42,5 +45,6 @@ export function toAuthenticatedUserResponse(user: AuthenticatedUser): Authentica
     email: user.email,
     role: user.papel,
     active: user.ativo,
+    pendingApproval: user.vinculoAprovadoEm === null,
   }
 }

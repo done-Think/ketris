@@ -13,6 +13,7 @@ describe('/api/properties (integração)', () => {
   let tenantId: string
   let otherTenantId: string
   let actorToken: string
+  let renterToken: string
   let createdPropertyId: string
   let otherTenantPropertyId: string
 
@@ -43,6 +44,26 @@ describe('/api/properties (integração)', () => {
       email: actor.email,
       papel: actor.papel,
       ativo: actor.ativo,
+      vinculoAprovadoEm: actor.vinculoAprovadoEm,
+    })
+
+    const renter = await prisma.usuario.create({
+      data: {
+        tenantId,
+        nome: 'Locatário Teste',
+        email: `locatario-${randomUUID()}@ketris.dev`,
+        senhaHash: 'hash-fake',
+        papel: 'RENTER',
+      },
+    })
+    renterToken = await tokenService.sign({
+      id: renter.id,
+      tenantId: renter.tenantId,
+      nome: renter.nome,
+      email: renter.email,
+      papel: renter.papel,
+      ativo: renter.ativo,
+      vinculoAprovadoEm: renter.vinculoAprovadoEm,
     })
 
     const otherActor = await prisma.usuario.create({
@@ -142,5 +163,24 @@ describe('/api/properties (integração)', () => {
     const response = await GET(buildRequest('GET'))
 
     expect(response.status).toBe(401)
+  })
+
+  it('retorna 403 quando um RENTER tenta criar imóvel', async () => {
+    const response = await POST(
+      buildRequest(
+        'POST',
+        {
+          titulo: 'Tentativa de locatário',
+          finalidade: 'ALUGUEL',
+          tipo: 'apartamento',
+          valor: 1000,
+        },
+        renterToken,
+      ),
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(403)
+    expect(json.error.code).toBe('FORBIDDEN')
   })
 })

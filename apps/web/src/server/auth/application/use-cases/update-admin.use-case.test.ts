@@ -13,6 +13,7 @@ function buildUser(overrides: Partial<User> = {}): User {
     senhaHash: 'hash',
     papel: 'ADMIN',
     ativo: true,
+    vinculoAprovadoEm: new Date(),
     ...overrides,
   }
 }

@@ -13,6 +13,7 @@ const owner: User = {
   senhaHash: 'hash-fake',
   papel: 'OWNER',
   ativo: true,
+  vinculoAprovadoEm: new Date(),
 }
 
 const adminEmOutroTenant: User = {
@@ -23,6 +24,7 @@ const adminEmOutroTenant: User = {
   senhaHash: 'hash-fake',
   papel: 'ADMIN',
   ativo: true,
+  vinculoAprovadoEm: new Date(),
 }
 
 function createDeps(findById?: UserRepository['findById']) {
@@ -34,6 +36,7 @@ function createDeps(findById?: UserRepository['findById']) {
     create: vi.fn(),
     update: vi.fn(),
     deactivate: vi.fn(),
+    approveMembership: vi.fn(),
   }
 
   return { userRepository }

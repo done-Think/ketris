@@ -13,6 +13,7 @@ const owner: User = {
   senhaHash: 'hash-fake',
   papel: 'OWNER',
   ativo: true,
+  vinculoAprovadoEm: new Date(),
 }
 
 function createDeps(overrides?: {
@@ -28,6 +29,7 @@ function createDeps(overrides?: {
     create: vi.fn(),
     update: overrides?.update ?? vi.fn().mockResolvedValue({ ...owner, nome: 'Atualizado' }),
     deactivate: vi.fn(),
+    approveMembership: vi.fn(),
   }
 
   return { userRepository }

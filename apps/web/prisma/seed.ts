@@ -49,6 +49,14 @@ async function main() {
 
   console.log(`Seed concluído — tenant "${tenant.slug}" com usuário admin@ketris.dev`)
 
+  const renterTenant = await prisma.tenant.upsert({
+    where: { slug: 'locatarios' },
+    update: {},
+    create: { nome: 'Locatários Ketris', slug: 'locatarios' },
+  })
+
+  console.log(`Seed concluído — tenant compartilhado "${renterTenant.slug}"`)
+
   const brokerByEmail = new Map<string, string>()
 
   for (const property of seedProperties) {

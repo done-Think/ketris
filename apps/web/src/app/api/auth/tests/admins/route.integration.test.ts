@@ -46,6 +46,7 @@ describe('POST /api/auth/admins (integração)', () => {
       email: admin.email,
       papel: admin.papel,
       ativo: admin.ativo,
+      vinculoAprovadoEm: admin.vinculoAprovadoEm,
     })
 
     agentToken = await tokenService.sign({
@@ -55,6 +56,7 @@ describe('POST /api/auth/admins (integração)', () => {
       email: agent.email,
       papel: agent.papel,
       ativo: agent.ativo,
+      vinculoAprovadoEm: agent.vinculoAprovadoEm,
     })
   })
 
@@ -90,6 +92,7 @@ describe('POST /api/auth/admins (integração)', () => {
       email,
       role: 'ADMIN',
       active: true,
+      pendingApproval: false,
     })
     expect(json.user).not.toHaveProperty('senhaHash')
     expect(json.user).not.toHaveProperty('nome')
@@ -170,6 +173,7 @@ describe('GET /api/auth/admins (integração)', () => {
       email: admin.email,
       papel: admin.papel,
       ativo: admin.ativo,
+      vinculoAprovadoEm: admin.vinculoAprovadoEm,
     })
 
     agentToken = await tokenService.sign({
@@ -179,6 +183,7 @@ describe('GET /api/auth/admins (integração)', () => {
       email: admin.email,
       papel: 'AGENT',
       ativo: admin.ativo,
+      vinculoAprovadoEm: admin.vinculoAprovadoEm,
     })
   })
 

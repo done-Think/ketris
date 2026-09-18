@@ -14,6 +14,7 @@ const agent: User = {
   senhaHash: 'hash-fake',
   papel: 'AGENT',
   ativo: true,
+  vinculoAprovadoEm: new Date(),
 }
 
 function createDeps(overrides?: { findById?: UserRepository['findById'] }) {
@@ -25,6 +26,7 @@ function createDeps(overrides?: { findById?: UserRepository['findById'] }) {
     create: vi.fn(),
     update: vi.fn(),
     deactivate: vi.fn().mockResolvedValue({ ...agent, ativo: false }),
+    approveMembership: vi.fn(),
   }
   const refreshTokenRepository: RefreshTokenRepository = {
     create: vi.fn(),

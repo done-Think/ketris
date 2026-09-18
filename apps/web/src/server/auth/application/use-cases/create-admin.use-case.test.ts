@@ -14,6 +14,7 @@ const admin: User = {
   senhaHash: 'hash-fake',
   papel: 'ADMIN',
   ativo: true,
+  vinculoAprovadoEm: new Date(),
 }
 
 const createdAdmin: User = {
@@ -24,6 +25,7 @@ const createdAdmin: User = {
   senhaHash: 'hash-novo',
   papel: 'ADMIN',
   ativo: true,
+  vinculoAprovadoEm: new Date(),
 }
 
 function createDeps(overrides?: {
@@ -38,6 +40,7 @@ function createDeps(overrides?: {
     create: overrides?.create ?? vi.fn().mockResolvedValue(createdAdmin),
     update: vi.fn(),
     deactivate: vi.fn(),
+    approveMembership: vi.fn(),
   }
   const passwordHasher: PasswordHasher = {
     compare: vi.fn(),
