@@ -8,7 +8,7 @@ import { Box, Stack, Typography } from '@mui/material'
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded'
 import { useTranslations } from 'next-intl'
 
-import { DashboardNotificationsButton } from '@shared/components/layout'
+import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/components/layout'
 import { brand, iconSize } from '@shared/theme/tokens'
 
 import {
@@ -81,40 +81,30 @@ export function PublicProfileEditorPage() {
         onSubmit={handleSubmit(handleStaticSubmit)}
         sx={{ display: 'flex', flexDirection: 'column', gap: 2.2 }}
       >
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          justifyContent="space-between"
-          alignItems={{ xs: 'flex-start', md: 'center' }}
-          spacing={2}
-          sx={{ mb: 2.6, textAlign: 'left' }}
-        >
-          <Box sx={{ minWidth: 0 }}>
-            <Typography variant="h3" sx={{ fontSize: { xs: 28, md: 38 }, fontWeight: 900 }}>
-              {t('title')}
-            </Typography>
-            <Typography sx={{ color: 'text.secondary', fontSize: { xs: 14, md: 16 }, mt: 0.5 }}>
-              {t('subtitle')}
-            </Typography>
-          </Box>
-          <Stack direction="row" spacing={1.2} alignItems="center">
-            {isSubmitSuccessful ? (
-              <Stack
-                direction="row"
-                spacing={0.8}
-                alignItems="center"
-                sx={{ color: brand.semantic.success }}
-              >
-                <CheckCircleOutlineRoundedIcon sx={{ fontSize: iconSize.md }} />
-                <Typography sx={{ fontSize: 13, fontWeight: 800 }}>
-                  {t('validatedDraft')}
-                </Typography>
-              </Stack>
-            ) : null}
-            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-              <DashboardNotificationsButton />
-            </Box>
-          </Stack>
-        </Stack>
+        <DashboardPageHeader
+          title={t('title')}
+          subtitle={t('subtitle')}
+          actions={
+            <Stack direction="row" spacing={1.2} alignItems="center">
+              {isSubmitSuccessful ? (
+                <Stack
+                  direction="row"
+                  spacing={0.8}
+                  alignItems="center"
+                  sx={{ color: brand.semantic.success }}
+                >
+                  <CheckCircleOutlineRoundedIcon sx={{ fontSize: iconSize.md }} />
+                  <Typography sx={{ fontSize: 13, fontWeight: 800 }}>
+                    {t('validatedDraft')}
+                  </Typography>
+                </Stack>
+              ) : null}
+              <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                <DashboardNotificationsButton />
+              </Box>
+            </Stack>
+          }
+        />
 
         <Box
           sx={{

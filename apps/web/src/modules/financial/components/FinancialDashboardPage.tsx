@@ -1,9 +1,9 @@
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
-import { Box, Button, Stack, Typography } from '@mui/material'
+import { Box, Button, Stack } from '@mui/material'
 import { getTranslations } from 'next-intl/server'
 
-import { DashboardNotificationsButton } from '@shared/components/layout'
+import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/components/layout'
 import { iconSize, radius } from '@shared/theme/tokens'
 
 import {
@@ -19,44 +19,34 @@ import { FinancialUpcomingDueList } from './FinancialUpcomingDueList'
 
 export async function FinancialDashboardPage() {
   const t = await getTranslations('dashboard.finance')
+  const actions = (
+    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2}>
+      <Button
+        type="button"
+        variant="outlined"
+        endIcon={<KeyboardArrowDownRoundedIcon sx={{ fontSize: iconSize.sm }} />}
+        sx={{ borderRadius: `${radius.sm}px`, fontWeight: 900, minHeight: 40 }}
+      >
+        {t('selectedMonth')}
+      </Button>
+      <Button
+        type="button"
+        variant="outlined"
+        startIcon={<FileDownloadOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+        sx={{ borderRadius: `${radius.sm}px`, fontWeight: 900, minHeight: 40 }}
+      >
+        {t('export')}
+      </Button>
+      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+        <DashboardNotificationsButton />
+      </Box>
+    </Stack>
+  )
 
   return (
     <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
       <Stack spacing={2.4}>
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          alignItems={{ xs: 'stretch', md: 'flex-start' }}
-          justifyContent="space-between"
-          spacing={1.6}
-        >
-          <Box>
-            <Typography variant="h3" sx={{ fontSize: { xs: 20, md: 24 }, fontWeight: 800 }}>
-              {t('title')}
-            </Typography>
-          </Box>
-
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2}>
-            <Button
-              type="button"
-              variant="outlined"
-              endIcon={<KeyboardArrowDownRoundedIcon sx={{ fontSize: iconSize.sm }} />}
-              sx={{ borderRadius: `${radius.sm}px`, fontWeight: 900, minHeight: 40 }}
-            >
-              {t('selectedMonth')}
-            </Button>
-            <Button
-              type="button"
-              variant="outlined"
-              startIcon={<FileDownloadOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-              sx={{ borderRadius: `${radius.sm}px`, fontWeight: 900, minHeight: 40 }}
-            >
-              {t('export')}
-            </Button>
-            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-              <DashboardNotificationsButton />
-            </Box>
-          </Stack>
-        </Stack>
+        <DashboardPageHeader title={t('title')} subtitle={t('subtitle')} actions={actions} />
 
         <FinancialKpiCards kpis={financialKpis} />
         <Box
