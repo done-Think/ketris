@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { hashRefreshToken } from '../../domain/refresh-token'
+import { hashRefreshToken } from '../../../domain/refresh-token'
 import type {
   RefreshTokenRepository,
   StoredRefreshToken,
-} from '../ports/refresh-token-repository.port'
-import { LogoutUseCase } from './logout.use-case'
+} from '../../../application/ports/refresh-token-repository.port'
+import { LogoutUseCase } from '../../../application/use-cases/logout.use-case'
 
 const stored: StoredRefreshToken = { id: 'rt-1', userId: 'user-1', tenantId: 'tenant-1' }
 

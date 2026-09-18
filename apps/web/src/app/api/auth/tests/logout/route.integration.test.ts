@@ -6,9 +6,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import { prisma } from '@server/db/prisma'
 
-import { POST as login } from '../login/route'
-import { POST as refresh } from '../refresh/route'
-import { POST as logout } from './route'
+import { POST as login } from '../../login/route'
+import { POST as refresh } from '../../refresh/route'
+import { POST as logout } from '../../logout/route'
 
 describe('POST /api/auth/logout (integração)', () => {
   const tenantSlug = `test-tenant-${randomUUID()}`
