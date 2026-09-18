@@ -1,4 +1,4 @@
-import { Box, MenuItem, Stack, TextField } from '@mui/material'
+import { Box, MenuItem, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
@@ -10,66 +10,43 @@ import { getLeadFilterCount } from '../../utils/leads'
 export function LeadsStatusFilters({
   activeFilter,
   leads,
-  sortOption,
   onFilterChange,
-  onSortChange,
 }: LeadsStatusFiltersProps) {
   const t = useTranslations('crm.leads')
   const activeCount = getLeadFilterCount(leads, activeFilter)
 
   return (
-    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2} sx={{ width: '100%' }}>
-      <TextField
-        select
-        size="small"
-        value={activeFilter}
-        onChange={(event) => onFilterChange(event.target.value as typeof activeFilter)}
-        sx={selectSx}
-        SelectProps={{
-          inputProps: { 'aria-label': t('filterAriaLabel') },
-          renderValue: () => (
-            <FilterOptionLabel
-              label={t(
-                `filters.${leadFilters.find((filter) => filter.label === activeFilter)?.labelKey ?? 'all'}`,
-              )}
-              count={activeCount}
-              active
-            />
-          ),
-          MenuProps: menuProps,
-        }}
-      >
-        {leadFilters.map(({ label, labelKey }) => {
-          const active = label === activeFilter
-          const count = getLeadFilterCount(leads, label)
+    <TextField
+      select
+      size="small"
+      value={activeFilter}
+      onChange={(event) => onFilterChange(event.target.value as typeof activeFilter)}
+      sx={selectSx}
+      SelectProps={{
+        inputProps: { 'aria-label': t('filterAriaLabel') },
+        renderValue: () => (
+          <FilterOptionLabel
+            label={t(
+              `filters.${leadFilters.find((filter) => filter.label === activeFilter)?.labelKey ?? 'all'}`,
+            )}
+            count={activeCount}
+            active
+          />
+        ),
+        MenuProps: menuProps,
+      }}
+    >
+      {leadFilters.map(({ label, labelKey }) => {
+        const active = label === activeFilter
+        const count = getLeadFilterCount(leads, label)
 
-          return (
-            <MenuItem key={label} value={label} sx={menuItemSx(active)}>
-              <FilterOptionLabel label={t(`filters.${labelKey}`)} count={count} active={active} />
-            </MenuItem>
-          )
-        })}
-      </TextField>
-
-      <TextField
-        select
-        size="small"
-        value={sortOption}
-        onChange={(event) => onSortChange(event.target.value as typeof sortOption)}
-        sx={selectSx}
-        SelectProps={{
-          inputProps: { 'aria-label': t('sort.ariaLabel') },
-          renderValue: () => t(`sort.options.${sortOption}`),
-          MenuProps: menuProps,
-        }}
-      >
-        {(['relevance', 'nameAsc'] as const).map((option) => (
-          <MenuItem key={option} value={option} sx={menuItemSx(option === sortOption)}>
-            {t(`sort.options.${option}`)}
+        return (
+          <MenuItem key={label} value={label} sx={menuItemSx(active)}>
+            <FilterOptionLabel label={t(`filters.${labelKey}`)} count={count} active={active} />
           </MenuItem>
-        ))}
-      </TextField>
-    </Stack>
+        )
+      })}
+    </TextField>
   )
 }
 

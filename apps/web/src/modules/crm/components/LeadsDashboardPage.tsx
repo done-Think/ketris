@@ -8,7 +8,12 @@ import { useSearchParams } from 'next/navigation'
 import { DashboardTablePagination } from '@shared/components/layout'
 import { brand, radius, shadows, surface } from '@shared/theme/tokens'
 
-import type { DashboardLead, LeadFilter, LeadSortOption } from '../types/lead'
+import type {
+  DashboardLead,
+  LeadFilter,
+  LeadTableSortField,
+  LeadTableSortState,
+} from '../types/lead'
 import { filterLeads, leadsDefaultPageSize, paginateLeads, sortLeads } from '../utils/leads'
 import { useLeadsStore } from '../stores/leads-store'
 import { CreateLeadDialog } from './CreateLeadDialog'
@@ -26,7 +31,7 @@ export function LeadsDashboardPage() {
   const leads = useLeadsStore((state) => state.leads)
   const [search, setSearch] = useState('')
   const [activeFilter, setActiveFilter] = useState<LeadFilter>('Todos')
-  const [sortOption, setSortOption] = useState<LeadSortOption>('relevance')
+  const [sort, setSort] = useState<LeadTableSortState>(null)
   const [page, setPage] = useState(1)
   const [rowsPerPage, setRowsPerPage] = useState(leadsDefaultPageSize)
   const [isCreateLeadDialogOpen, setIsCreateLeadDialogOpen] = useState(false)
@@ -36,10 +41,7 @@ export function LeadsDashboardPage() {
     () => filterLeads(leads, search, activeFilter),
     [search, activeFilter, leads],
   )
-  const sortedLeads = useMemo(
-    () => sortLeads(filteredLeads, sortOption),
-    [filteredLeads, sortOption],
-  )
+  const sortedLeads = useMemo(() => sortLeads(filteredLeads, sort), [filteredLeads, sort])
   const leadsPage = useMemo(
     () => paginateLeads(sortedLeads, page, rowsPerPage),
     [sortedLeads, page, rowsPerPage],
@@ -55,8 +57,15 @@ export function LeadsDashboardPage() {
     setPage(1)
   }
 
-  function handleSortChange(nextSortOption: LeadSortOption) {
-    setSortOption(nextSortOption)
+  function handleSortChange(field: LeadTableSortField) {
+    setSort((currentSort) => {
+      if (currentSort?.field !== field) return { field, direction: 'asc' }
+
+      return {
+        field,
+        direction: currentSort.direction === 'asc' ? 'desc' : 'asc',
+      }
+    })
     setPage(1)
   }
 
@@ -90,9 +99,7 @@ export function LeadsDashboardPage() {
         <LeadsStatusFilters
           activeFilter={activeFilter}
           leads={leads}
-          sortOption={sortOption}
           onFilterChange={handleFilterChange}
-          onSortChange={handleSortChange}
         />
 
         <Paper
@@ -110,7 +117,12 @@ export function LeadsDashboardPage() {
         >
           {leadsPage.items.length > 0 ? (
             <>
-              <LeadsTable leads={leadsPage.items} onContactLead={setSelectedContactLead} />
+              <LeadsTable
+                leads={leadsPage.items}
+                sort={sort}
+                onContactLead={setSelectedContactLead}
+                onSortChange={handleSortChange}
+              />
               <LeadsCards leads={leadsPage.items} onContactLead={setSelectedContactLead} />
             </>
           ) : (

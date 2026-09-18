@@ -7,7 +7,14 @@ export type LeadStage = 'Novo' | 'Em contato' | 'Visita marcada' | 'Proposta'
 
 export type LeadFilter = 'Todos' | LeadStage
 
-export type LeadSortOption = 'relevance' | 'nameAsc'
+export type LeadTableSortField = 'name' | 'interest' | 'budget' | 'stage' | 'source' | 'lastContact'
+
+export type LeadTableSortDirection = 'asc' | 'desc'
+
+export type LeadTableSortState = {
+  direction: LeadTableSortDirection
+  field: LeadTableSortField
+} | null
 
 export type LeadFilterKey = 'all' | 'new' | 'contacted' | 'visitScheduled' | 'proposal'
 
@@ -67,9 +74,7 @@ export type LeadsHeaderProps = {
 export type LeadsStatusFiltersProps = {
   activeFilter: LeadFilter
   leads: readonly DashboardLead[]
-  sortOption: LeadSortOption
   onFilterChange: (filter: LeadFilter) => void
-  onSortChange: (sortOption: LeadSortOption) => void
 }
 
 export type LeadsCollectionActions = {
@@ -78,9 +83,13 @@ export type LeadsCollectionActions = {
 
 export type LeadsTableProps = LeadsCollectionActions & {
   leads: readonly DashboardLead[]
+  onSortChange: (field: LeadTableSortField) => void
+  sort: LeadTableSortState
 }
 
-export type LeadsCardsProps = LeadsTableProps
+export type LeadsCardsProps = LeadsCollectionActions & {
+  leads: readonly DashboardLead[]
+}
 
 export type LeadsPaginationFooterProps = {
   firstVisible: number

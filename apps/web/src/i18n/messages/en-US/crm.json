@@ -204,13 +204,6 @@
       "visitScheduled": "Visit scheduled",
       "proposal": "Proposal"
     },
-    "sort": {
-      "ariaLabel": "Sort leads",
-      "options": {
-        "relevance": "Sort by: Relevance",
-        "nameAsc": "Initial letters"
-      }
-    },
     "tableColumns": {
       "name": "Name",
       "interest": "Interest",
