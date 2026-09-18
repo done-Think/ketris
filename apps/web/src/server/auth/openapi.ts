@@ -247,4 +247,35 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
       },
     },
   })
+
+  registry.registerPath({
+    method: 'patch',
+    path: '/auth/users/{id}/approve',
+    tags: ['Auth'],
+    summary: 'Aprova o vínculo pendente de um usuário (proprietário ou agente) com o tenant',
+    description:
+      'Requer papel ADMIN. Usada para aprovar um corretor que se autocadastrou pedindo para ' +
+      'entrar num tenant existente — ele não consegue logar até esse vínculo ser aprovado. ' +
+      'Idempotente: aprovar um vínculo já aprovado apenas retorna o usuário sem erro.',
+    security: [{ bearerAuth: [] }],
+    request: { params: userIdParamsSchema },
+    responses: {
+      200: {
+        description: 'Vínculo aprovado (ou já estava aprovado).',
+        content: { 'application/json': { schema: updateUserResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Autenticado, mas sem papel ADMIN.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      404: {
+        description: 'Usuário não encontrado neste tenant.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
 }

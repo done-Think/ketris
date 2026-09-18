@@ -26,6 +26,7 @@ const authPaths = new Set([
   '/api/auth/refresh',
   '/api/platform/login',
   '/api/platform/refresh',
+  '/api/register',
 ])
 
 export function proxy(request: NextRequest) {

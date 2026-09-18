@@ -1,4 +1,8 @@
-import { AccountDeactivatedError, InvalidCredentialsError } from '../../domain/errors'
+import {
+  AccountDeactivatedError,
+  InvalidCredentialsError,
+  MembershipPendingApprovalError,
+} from '../../domain/errors'
 import {
   generateRefreshToken,
   hashRefreshToken,
@@ -44,6 +48,10 @@ export class LoginUseCase {
 
     if (!user.ativo) {
       throw new AccountDeactivatedError()
+    }
+
+    if (user.papel === 'AGENT' && user.vinculoAprovadoEm === null) {
+      throw new MembershipPendingApprovalError()
     }
 
     const authenticatedUser = toAuthenticatedUser(user)

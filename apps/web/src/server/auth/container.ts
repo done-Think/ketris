@@ -1,3 +1,4 @@
+import { ApproveUserMembershipUseCase } from './application/use-cases/approve-user-membership.use-case'
 import { CreateAdminUseCase } from './application/use-cases/create-admin.use-case'
 import { CreateUserUseCase } from './application/use-cases/create-user.use-case'
 import { DeactivateAdminUseCase } from './application/use-cases/deactivate-admin.use-case'
@@ -36,6 +37,7 @@ export const authContainer = {
   getUserUseCase: new GetUserUseCase(userRepository),
   updateUserUseCase: new UpdateUserUseCase(userRepository),
   deactivateUserUseCase: new DeactivateUserUseCase(userRepository, refreshTokenRepository),
+  approveUserMembershipUseCase: new ApproveUserMembershipUseCase(userRepository),
   listAdminsUseCase: new ListAdminsUseCase(userRepository),
   getAdminUseCase: new GetAdminUseCase(userRepository),
   updateAdminUseCase: new UpdateAdminUseCase(userRepository),

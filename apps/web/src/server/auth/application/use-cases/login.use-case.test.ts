@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { AccountDeactivatedError, InvalidCredentialsError } from '../../domain/errors'
+import {
+  AccountDeactivatedError,
+  InvalidCredentialsError,
+  MembershipPendingApprovalError,
+} from '../../domain/errors'
 import type { User } from '../../domain/user.entity'
 import type { PasswordHasher } from '../ports/password-hasher.port'
 import type { RefreshTokenRepository } from '../ports/refresh-token-repository.port'
@@ -142,6 +146,41 @@ describe('LoginUseCase', () => {
     await expect(useCase.execute({ email: user.email, password: 'senha-errada' })).rejects.toThrow(
       InvalidCredentialsError,
     )
+  })
+
+  it('lança MembershipPendingApprovalError quando um AGENT ainda não foi aprovado pelo tenant', async () => {
+    const deps = createDeps({
+      findByEmail: vi.fn().mockResolvedValue({ ...user, vinculoAprovadoEm: null }),
+    })
+    const useCase = buildUseCase(deps)
+
+    await expect(useCase.execute({ email: user.email, password: 'senha-correta' })).rejects.toThrow(
+      MembershipPendingApprovalError,
+    )
+    expect(deps.tokenService.sign).not.toHaveBeenCalled()
+  })
+
+  it('lança InvalidCredentialsError (não MembershipPendingApprovalError) quando a senha está errada num AGENT pendente', async () => {
+    const deps = createDeps({
+      findByEmail: vi.fn().mockResolvedValue({ ...user, vinculoAprovadoEm: null }),
+      compare: vi.fn().mockResolvedValue(false),
+    })
+    const useCase = buildUseCase(deps)
+
+    await expect(useCase.execute({ email: user.email, password: 'senha-errada' })).rejects.toThrow(
+      InvalidCredentialsError,
+    )
+  })
+
+  it('não bloqueia ADMIN/OWNER sem vinculoAprovadoEm (a checagem só se aplica a AGENT)', async () => {
+    const deps = createDeps({
+      findByEmail: vi.fn().mockResolvedValue({ ...user, papel: 'ADMIN', vinculoAprovadoEm: null }),
+    })
+    const useCase = buildUseCase(deps)
+
+    const result = await useCase.execute({ email: user.email, password: 'senha-correta' })
+
+    expect(result.accessToken).toBe('jwt-fake')
   })
 
   it('não vaza qual campo (e-mail ou senha) estava errado — mesma mensagem em ambos os casos', async () => {
