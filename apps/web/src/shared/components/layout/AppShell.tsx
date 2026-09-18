@@ -13,7 +13,6 @@ import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline'
 import ViewKanbanOutlinedIcon from '@mui/icons-material/ViewKanbanOutlined'
-import type { SvgIconComponent } from '@mui/icons-material'
 import {
   Avatar,
   Box,
@@ -28,37 +27,17 @@ import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
 import { Link, usePathname } from '@/i18n/navigation'
-import type { Papel } from '@server/auth/domain/user.entity'
 import { CrmAccessBoundary } from '@modules/crm/components/CrmAccessBoundary'
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import type { AppShellNavItem, AppShellProps } from '@shared/types/app-shell'
 import { getInitials } from '@shared/utils/get-initials'
 import { DashboardNotificationsButton } from './DashboardNotificationsButton'
 
 const sidebarWidth = 200
 
-type NavHref =
-  | '/dashboard'
-  | '/crm'
-  | '/crm/contacts'
-  | '/dashboard/leads'
-  | '/dashboard/properties'
-  | '/dashboard/contracts'
-  | '/dashboard/public-profile'
-  | '/dashboard/agenda'
-  | '/dashboard/finance'
-  | '/dashboard/maintenance'
-
-interface NavItem {
-  labelKey: string
-  href: NavHref
-  icon: SvgIconComponent
-  /** Omitted = visible to every tenant role (ADMIN, OWNER, AGENT). */
-  roles?: readonly Papel[]
-}
-
-const navigationItems: readonly NavItem[] = [
+const navigationItems: readonly AppShellNavItem[] = [
   {
     labelKey: 'dashboard',
     href: '/dashboard',
@@ -68,6 +47,12 @@ const navigationItems: readonly NavItem[] = [
   { labelKey: 'pipeline', href: '/crm', icon: ViewKanbanOutlinedIcon },
   { labelKey: 'contacts', href: '/crm/contacts', icon: PeopleOutlineIcon },
   { labelKey: 'leads', href: '/dashboard/leads', icon: PeopleAltOutlinedIcon },
+  {
+    labelKey: 'team',
+    href: '/dashboard/team',
+    icon: PeopleAltOutlinedIcon,
+    roles: ['ADMIN', 'OWNER'],
+  },
   { labelKey: 'properties', href: '/dashboard/properties', icon: HomeWorkOutlinedIcon },
   { labelKey: 'contracts', href: '/dashboard/contracts', icon: DescriptionOutlinedIcon },
   {
@@ -90,11 +75,6 @@ const navigationItems: readonly NavItem[] = [
     roles: ['ADMIN', 'OWNER'],
   },
 ]
-
-export interface AppShellProps {
-  children: React.ReactNode
-  allowLocalMaintenancePreview?: boolean
-}
 
 export function AppShell({ children, allowLocalMaintenancePreview = false }: AppShellProps) {
   const t = useTranslations('common.appShell')
