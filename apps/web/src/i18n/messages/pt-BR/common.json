@@ -9,6 +9,10 @@
   "actions": {
     "backHome": "Voltar ao início"
   },
+  "dashboardPagination": {
+    "rowsPerPage": "Linhas por página",
+    "displayedRows": "{from}-{to} de {count}"
+  },
   "errors": {
     "backHome": "Voltar ao início",
     "notFound": "Página não encontrada.",

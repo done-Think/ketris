@@ -38,6 +38,7 @@ import {
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
+import { DashboardTablePagination } from '@shared/components/layout'
 import {
   maintenanceFilters,
   getMaintenanceTickets,
@@ -68,7 +69,7 @@ const priorityColors: Record<MaintenancePriority, string> = {
   normal: brand.neutral[400],
 }
 
-const ticketsPerPage = 6
+const ticketsPerPage = 5
 
 export function MaintenanceDashboardPage() {
   const t = useTranslations('dashboard.maintenance')
@@ -76,6 +77,7 @@ export function MaintenanceDashboardPage() {
   const [search, setSearch] = useState('')
   const [propertyFilter, setPropertyFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
+  const [rowsPerPage, setRowsPerPage] = useState(ticketsPerPage)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false)
   const [editingTicket, setEditingTicket] = useState<MaintenanceTicket | null>(null)
@@ -103,13 +105,11 @@ export function MaintenanceDashboardPage() {
       }),
     [activeFilter, propertyFilter, search, tickets],
   )
-  const totalPages = Math.max(1, Math.ceil(filteredTickets.length / ticketsPerPage))
+  const totalPages = Math.max(1, Math.ceil(filteredTickets.length / rowsPerPage))
   const pagedTickets = filteredTickets.slice(
-    (currentPage - 1) * ticketsPerPage,
-    currentPage * ticketsPerPage,
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage,
   )
-  const showingFrom = filteredTickets.length === 0 ? 0 : (currentPage - 1) * ticketsPerPage + 1
-  const showingTo = Math.min(currentPage * ticketsPerPage, filteredTickets.length)
 
   useEffect(() => {
     setCurrentPage((page) => Math.min(page, totalPages))
@@ -454,57 +454,16 @@ export function MaintenanceDashboardPage() {
               )}
             </TableBody>
           </Table>
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            alignItems={{ sm: 'center' }}
-            justifyContent="space-between"
-            spacing={1}
-            sx={{ px: 1.75, py: 1.25, borderTop: '1px solid', borderColor: brand.neutral[100] }}
-          >
-            <Typography sx={{ fontSize: 13, color: brand.neutral[600], fontWeight: 700 }}>
-              {t('showing', {
-                from: showingFrom,
-                to: showingTo,
-                total: filteredTickets.length,
-              })}
-            </Typography>
-            <Stack direction="row" spacing={0.5}>
-              <Button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((page) => page - 1)}
-                sx={paginationButtonSx}
-              >
-                {t('pagination.previous')}
-              </Button>
-              {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
-                <Button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  sx={{
-                    minWidth: 28,
-                    height: 28,
-                    px: 1.05,
-                    borderRadius: `${radius.sm}px`,
-                    border: page === currentPage ? 0 : '1px solid',
-                    borderColor: brand.neutral[100],
-                    bgcolor: page === currentPage ? 'primary.main' : surface.paper,
-                    color: page === currentPage ? surface.paper : brand.neutral[600],
-                    fontSize: 12,
-                    fontWeight: 800,
-                  }}
-                >
-                  {page}
-                </Button>
-              ))}
-              <Button
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((page) => page + 1)}
-                sx={paginationButtonSx}
-              >
-                {t('pagination.next')}
-              </Button>
-            </Stack>
-          </Stack>
+          <DashboardTablePagination
+            count={filteredTickets.length}
+            page={currentPage}
+            rowsPerPage={rowsPerPage}
+            onPageChange={setCurrentPage}
+            onRowsPerPageChange={(nextRowsPerPage) => {
+              setRowsPerPage(nextRowsPerPage)
+              setCurrentPage(1)
+            }}
+          />
         </TableContainer>
       </Stack>
       <MaintenanceCreateTicketDialog
@@ -647,17 +606,6 @@ const bodyCellSx = {
   fontWeight: 700,
   whiteSpace: 'nowrap',
 } as const
-const paginationButtonSx = {
-  height: 28,
-  px: 1.05,
-  borderRadius: `${radius.sm}px`,
-  border: '1px solid',
-  borderColor: brand.neutral[100],
-  color: brand.neutral[600],
-  fontSize: 12,
-  fontWeight: 800,
-} as const
-
 function MaintenanceStatusFilters({
   activeFilter,
   direction = 'row',
@@ -672,44 +620,120 @@ function MaintenanceStatusFilters({
   onChange: (value: MaintenanceFilter['value']) => void
 }) {
   const t = useTranslations('dashboard.maintenance')
+  const activeOption =
+    maintenanceFilters.find((filter) => filter.value === activeFilter) ?? maintenanceFilters[0]
 
   return (
-    <Stack
-      direction={direction}
-      spacing={0.8}
+    <TextField
+      select
+      size="small"
+      value={activeFilter}
+      onChange={(event) => onChange(event.target.value as MaintenanceFilter['value'])}
       sx={{
         display: isDesktop ? { xs: 'none', md: 'flex' } : 'flex',
-        overflowX: direction === 'row' ? 'auto' : 'visible',
-        pb: direction === 'row' ? 0.2 : 0,
+        width: direction === 'column' ? '100%' : { xs: '100%', sm: 250 },
+        '& .MuiOutlinedInput-root': {
+          minHeight: 46,
+          borderRadius: `${radius.sm}px`,
+          bgcolor: surface.paper,
+          color: brand.graphite[500],
+          fontSize: 14,
+          fontWeight: 800,
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'transparent',
+            borderWidth: 0,
+          },
+        },
+        '& .MuiOutlinedInput-notchedOutline': {
+          borderColor: 'transparent',
+          borderWidth: 0,
+        },
+        '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+          borderColor: 'transparent',
+        },
+        '& .MuiSelect-select': {
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.8,
+        },
+      }}
+      SelectProps={{
+        inputProps: { 'aria-label': t('filterDialog.title') },
+        renderValue: () => (
+          <MaintenanceFilterOptionLabel
+            active
+            count={getFilterCount(activeOption)}
+            label={t(`filters.${activeOption.value}`)}
+          />
+        ),
+        MenuProps: {
+          PaperProps: {
+            sx: {
+              mt: 0.6,
+              borderRadius: `${radius.sm}px`,
+              boxShadow: shadows.popover,
+            },
+          },
+        },
       }}
     >
-      {maintenanceFilters.map((filter) => (
-        <Button
-          key={filter.value}
-          aria-pressed={activeFilter === filter.value}
-          onClick={() => onChange(filter.value)}
-          sx={{
-            justifyContent: direction === 'column' ? 'space-between' : 'center',
-            minWidth: direction === 'row' ? 'max-content' : undefined,
-            minHeight: 30,
-            px: 1.55,
-            py: 0,
-            borderRadius: `${radius.full}px`,
-            border: '1px solid',
-            borderColor: activeFilter === filter.value ? 'primary.main' : brand.neutral[100],
-            bgcolor: activeFilter === filter.value ? 'primary.main' : surface.paper,
-            color: activeFilter === filter.value ? surface.paper : brand.neutral[600],
-            fontSize: 12,
-            fontWeight: 700,
-          }}
-        >
-          {t(`filters.${filter.value}`)}
-          <Box component="span" sx={{ ml: 0.8, fontSize: 11, fontWeight: 800 }}>
-            {getFilterCount(filter)}
-          </Box>
-        </Button>
-      ))}
-    </Stack>
+      {maintenanceFilters.map((filter) => {
+        const active = activeFilter === filter.value
+
+        return (
+          <MenuItem
+            key={filter.value}
+            value={filter.value}
+            sx={{
+              minHeight: 42,
+              bgcolor: active ? alpha.magenta[8] : 'transparent',
+              '&:hover': {
+                bgcolor: alpha.magenta[8],
+              },
+            }}
+          >
+            <MaintenanceFilterOptionLabel
+              active={active}
+              count={getFilterCount(filter)}
+              label={t(`filters.${filter.value}`)}
+            />
+          </MenuItem>
+        )
+      })}
+    </TextField>
+  )
+}
+
+function MaintenanceFilterOptionLabel({
+  active,
+  count,
+  label,
+}: {
+  active: boolean
+  count: number
+  label: string
+}) {
+  return (
+    <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+      <Box component="span">{label}</Box>
+      <Box
+        component="span"
+        sx={{
+          display: 'grid',
+          minWidth: 22,
+          height: 22,
+          placeItems: 'center',
+          px: 0.6,
+          borderRadius: `${radius.full}px`,
+          bgcolor: active ? brand.magenta[500] : alpha.graphite[6],
+          color: active ? surface.lightText : brand.neutral[500],
+          fontSize: 11,
+          fontWeight: 900,
+        }}
+      >
+        {count}
+      </Box>
+    </Box>
   )
 }
 

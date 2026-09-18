@@ -7,6 +7,8 @@ export type LeadStage = 'Novo' | 'Em contato' | 'Visita marcada' | 'Proposta'
 
 export type LeadFilter = 'Todos' | LeadStage
 
+export type LeadSortOption = 'relevance' | 'nameAsc'
+
 export type LeadFilterKey = 'all' | 'new' | 'contacted' | 'visitScheduled' | 'proposal'
 
 export type LeadStageLabelKey = Exclude<LeadFilterKey, 'all'>
@@ -65,7 +67,9 @@ export type LeadsHeaderProps = {
 export type LeadsStatusFiltersProps = {
   activeFilter: LeadFilter
   leads: readonly DashboardLead[]
+  sortOption: LeadSortOption
   onFilterChange: (filter: LeadFilter) => void
+  onSortChange: (sortOption: LeadSortOption) => void
 }
 
 export type LeadsCollectionActions = {

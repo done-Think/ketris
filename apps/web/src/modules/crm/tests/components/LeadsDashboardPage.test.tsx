@@ -92,21 +92,21 @@ describe('LeadsDashboardPage', () => {
     const user = userEvent.setup()
     renderPage()
 
-    const filterGroup = screen.getByRole('group', { name: 'Filtrar leads por status' })
-    await user.click(within(filterGroup).getByRole('button', { name: /^Novo/ }))
+    await user.click(screen.getByRole('combobox', { name: 'Filtrar leads por status' }))
+    await user.click(screen.getByRole('option', { name: /^Novo/ }))
 
     expect(screen.getAllByText('João Silva').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Guilherme Santos').length).toBeGreaterThan(0)
     expect(screen.queryAllByText('Maria Fernandes')).toHaveLength(0)
   })
 
-  it('navigates between pages using the numbered pagination', async () => {
+  it('navigates between pages using the dashboard pagination', async () => {
     const user = userEvent.setup()
     renderPage()
 
     expect(screen.queryAllByText('Patrícia Lima')).toHaveLength(0)
 
-    await user.click(screen.getByRole('button', { name: 'Ir para a página 2' }))
+    await user.click(screen.getByRole('button', { name: /next page/i }))
 
     expect(screen.getAllByText('Patrícia Lima').length).toBeGreaterThan(0)
     expect(screen.queryAllByText('João Silva')).toHaveLength(0)

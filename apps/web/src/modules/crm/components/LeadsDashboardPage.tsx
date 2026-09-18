@@ -5,16 +5,16 @@ import { Box, Paper, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 
+import { DashboardTablePagination } from '@shared/components/layout'
 import { brand, radius, shadows, surface } from '@shared/theme/tokens'
 
-import type { DashboardLead, LeadFilter } from '../types/lead'
-import { filterLeads, leadsDefaultPageSize, paginateLeads } from '../utils/leads'
+import type { DashboardLead, LeadFilter, LeadSortOption } from '../types/lead'
+import { filterLeads, leadsDefaultPageSize, paginateLeads, sortLeads } from '../utils/leads'
 import { useLeadsStore } from '../stores/leads-store'
 import { CreateLeadDialog } from './CreateLeadDialog'
 import { LeadContactDialog } from './LeadContactDialog'
 import { LeadsCards } from './leads-list/LeadsCards'
 import { LeadsHeader } from './leads-list/LeadsHeader'
-import { LeadsPaginationFooter } from './leads-list/LeadsPaginationFooter'
 import { LeadsStatusFilters } from './leads-list/LeadsStatusFilters'
 import { LeadsTable } from './leads-list/LeadsTable'
 
@@ -26,7 +26,9 @@ export function LeadsDashboardPage() {
   const leads = useLeadsStore((state) => state.leads)
   const [search, setSearch] = useState('')
   const [activeFilter, setActiveFilter] = useState<LeadFilter>('Todos')
+  const [sortOption, setSortOption] = useState<LeadSortOption>('relevance')
   const [page, setPage] = useState(1)
+  const [rowsPerPage, setRowsPerPage] = useState(leadsDefaultPageSize)
   const [isCreateLeadDialogOpen, setIsCreateLeadDialogOpen] = useState(false)
   const [selectedContactLead, setSelectedContactLead] = useState<DashboardLead | null>(null)
 
@@ -34,9 +36,13 @@ export function LeadsDashboardPage() {
     () => filterLeads(leads, search, activeFilter),
     [search, activeFilter, leads],
   )
+  const sortedLeads = useMemo(
+    () => sortLeads(filteredLeads, sortOption),
+    [filteredLeads, sortOption],
+  )
   const leadsPage = useMemo(
-    () => paginateLeads(filteredLeads, page, leadsDefaultPageSize),
-    [filteredLeads, page],
+    () => paginateLeads(sortedLeads, page, rowsPerPage),
+    [sortedLeads, page, rowsPerPage],
   )
 
   function handleSearchChange(value: string) {
@@ -46,6 +52,11 @@ export function LeadsDashboardPage() {
 
   function handleFilterChange(filter: LeadFilter) {
     setActiveFilter(filter)
+    setPage(1)
+  }
+
+  function handleSortChange(nextSortOption: LeadSortOption) {
+    setSortOption(nextSortOption)
     setPage(1)
   }
 
@@ -79,7 +90,9 @@ export function LeadsDashboardPage() {
         <LeadsStatusFilters
           activeFilter={activeFilter}
           leads={leads}
+          sortOption={sortOption}
           onFilterChange={handleFilterChange}
+          onSortChange={handleSortChange}
         />
 
         <Paper
@@ -106,13 +119,15 @@ export function LeadsDashboardPage() {
             </Stack>
           )}
 
-          <LeadsPaginationFooter
-            firstVisible={leadsPage.firstItem}
-            lastVisible={leadsPage.lastItem}
-            resultTotal={leadsPage.totalCount}
+          <DashboardTablePagination
+            count={leadsPage.totalCount}
             page={leadsPage.page}
-            pageCount={leadsPage.pageCount}
+            rowsPerPage={rowsPerPage}
             onPageChange={setPage}
+            onRowsPerPageChange={(nextRowsPerPage) => {
+              setRowsPerPage(nextRowsPerPage)
+              setPage(1)
+            }}
           />
         </Paper>
       </Stack>

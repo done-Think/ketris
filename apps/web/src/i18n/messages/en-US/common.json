@@ -9,6 +9,10 @@
   "actions": {
     "backHome": "Back to home"
   },
+  "dashboardPagination": {
+    "rowsPerPage": "Rows per page",
+    "displayedRows": "{from}-{to} of {count}"
+  },
   "errors": {
     "backHome": "Back home",
     "notFound": "Page not found.",

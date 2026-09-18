@@ -1,4 +1,4 @@
-import type { DashboardLead, LeadFilter, LeadsPage } from '../types/lead'
+import type { DashboardLead, LeadFilter, LeadSortOption, LeadsPage } from '../types/lead'
 
 export const leadsDefaultPageSize = 5
 
@@ -27,6 +27,17 @@ export function getLeadFilterCount(leads: readonly DashboardLead[], filter: Lead
   if (filter === 'Todos') return leads.length
 
   return leads.filter((lead) => lead.stage === filter).length
+}
+
+export function sortLeads(
+  leads: readonly DashboardLead[],
+  sortOption: LeadSortOption = 'relevance',
+): DashboardLead[] {
+  if (sortOption === 'relevance') return [...leads]
+
+  return [...leads].sort((firstLead, secondLead) =>
+    firstLead.name.localeCompare(secondLead.name, 'pt-BR', { sensitivity: 'base' }),
+  )
 }
 
 export function paginateLeads(

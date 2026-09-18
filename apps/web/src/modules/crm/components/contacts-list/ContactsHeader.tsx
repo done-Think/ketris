@@ -1,6 +1,6 @@
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
-import { Box, Button, InputAdornment, Stack, TextField, Typography } from '@mui/material'
+import { Box, Button, InputAdornment, MenuItem, Stack, TextField, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { brand, iconSize, radius, surface } from '@shared/theme/tokens'
@@ -83,47 +83,45 @@ export function ContactsHeader({
           }}
         />
 
-        <Stack
-          component="div"
-          role="group"
-          aria-label={t('filterAriaLabel')}
-          direction="row"
-          spacing={0.75}
-          sx={{ overflowX: { xs: 'auto', sm: 'visible' }, pb: { xs: 0.25, sm: 0 } }}
+        <TextField
+          select
+          size="small"
+          value={activeFilter}
+          onChange={(event) => onFilterChange(event.target.value as typeof activeFilter)}
+          sx={{
+            width: { xs: '100%', sm: 190 },
+            '& .MuiOutlinedInput-root': {
+              minHeight: 32,
+              borderRadius: `${radius.sm}px`,
+              bgcolor: surface.paper,
+              color: brand.graphite[500],
+              fontSize: 11.5,
+              fontWeight: 700,
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'transparent',
+                borderWidth: 0,
+              },
+            },
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'transparent',
+              borderWidth: 0,
+            },
+            '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'transparent',
+            },
+          }}
+          SelectProps={{
+            inputProps: { 'aria-label': t('filterAriaLabel') },
+          }}
         >
           {contactFilters.map(({ label, labelKey }) => {
-            const active = label === activeFilter
-
             return (
-              <Button
-                key={label}
-                type="button"
-                variant={active ? 'contained' : 'outlined'}
-                aria-pressed={active}
-                onClick={() => onFilterChange(label)}
-                sx={{
-                  minWidth: 0,
-                  height: 28,
-                  px: 1.4,
-                  flexShrink: 0,
-                  borderColor: active ? brand.magenta[500] : brand.neutral[100],
-                  borderRadius: `${radius.full}px`,
-                  bgcolor: active ? brand.magenta[500] : surface.paper,
-                  color: active ? surface.lightText : brand.graphite[500],
-                  fontSize: 10.5,
-                  fontWeight: active ? 700 : 500,
-                  whiteSpace: 'nowrap',
-                  '&:hover': {
-                    borderColor: active ? brand.magenta[600] : brand.neutral[200],
-                    bgcolor: active ? brand.magenta[600] : surface.paper,
-                  },
-                }}
-              >
+              <MenuItem key={label} value={label}>
                 {t(`filters.${labelKey}`)}
-              </Button>
+              </MenuItem>
             )
           })}
-        </Stack>
+        </TextField>
 
         <Box sx={{ display: 'inline-flex' }}>
           <Button
