@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { InvalidCredentialsError } from '../../domain/errors'
+import { AccountDeactivatedError, InvalidCredentialsError } from '../../domain/errors'
 import type { User } from '../../domain/user.entity'
 import type { PasswordHasher } from '../ports/password-hasher.port'
 import type { RefreshTokenRepository } from '../ports/refresh-token-repository.port'
@@ -116,17 +116,29 @@ describe('LoginUseCase', () => {
     expect(deps.refreshTokenRepository.create).not.toHaveBeenCalled()
   })
 
-  it('lança InvalidCredentialsError quando o usuário está desativado (ativo: false)', async () => {
+  it('lança AccountDeactivatedError quando o usuário está desativado (ativo: false), mas só após confirmar a senha', async () => {
     const deps = createDeps({
       findByEmail: vi.fn().mockResolvedValue({ ...user, ativo: false }),
     })
     const useCase = buildUseCase(deps)
 
     await expect(useCase.execute({ email: user.email, password: 'senha-correta' })).rejects.toThrow(
+      AccountDeactivatedError,
+    )
+    expect(deps.passwordHasher.compare).toHaveBeenCalled()
+    expect(deps.tokenService.sign).not.toHaveBeenCalled()
+  })
+
+  it('lança InvalidCredentialsError (não AccountDeactivatedError) quando a senha está errada numa conta desativada', async () => {
+    const deps = createDeps({
+      findByEmail: vi.fn().mockResolvedValue({ ...user, ativo: false }),
+      compare: vi.fn().mockResolvedValue(false),
+    })
+    const useCase = buildUseCase(deps)
+
+    await expect(useCase.execute({ email: user.email, password: 'senha-errada' })).rejects.toThrow(
       InvalidCredentialsError,
     )
-    expect(deps.passwordHasher.compare).not.toHaveBeenCalled()
-    expect(deps.tokenService.sign).not.toHaveBeenCalled()
   })
 
   it('não vaza qual campo (e-mail ou senha) estava errado — mesma mensagem em ambos os casos', async () => {

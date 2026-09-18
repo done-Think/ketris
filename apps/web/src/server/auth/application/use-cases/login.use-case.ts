@@ -1,4 +1,4 @@
-import { InvalidCredentialsError } from '../../domain/errors'
+import { AccountDeactivatedError, InvalidCredentialsError } from '../../domain/errors'
 import {
   generateRefreshToken,
   hashRefreshToken,
@@ -32,7 +32,7 @@ export class LoginUseCase {
   async execute(input: LoginInput): Promise<LoginOutput> {
     const user = await this.userRepository.findByEmail(input.email)
 
-    if (!user || !user.ativo) {
+    if (!user) {
       throw new InvalidCredentialsError()
     }
 
@@ -40,6 +40,10 @@ export class LoginUseCase {
 
     if (!passwordMatches) {
       throw new InvalidCredentialsError()
+    }
+
+    if (!user.ativo) {
+      throw new AccountDeactivatedError()
     }
 
     const authenticatedUser = toAuthenticatedUser(user)

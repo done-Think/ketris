@@ -6,6 +6,15 @@ export class InvalidCredentialsError extends AppError {
   }
 }
 
+export class AccountDeactivatedError extends AppError {
+  constructor() {
+    super('Esta conta foi desativada. Entre em contato com o administrador.', {
+      status: 403,
+      code: 'ACCOUNT_DEACTIVATED',
+    })
+  }
+}
+
 export class EmailAlreadyInUseError extends AppError {
   constructor() {
     super('Este e-mail já está em uso.', { status: 409, code: 'EMAIL_ALREADY_IN_USE' })

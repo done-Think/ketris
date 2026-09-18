@@ -1,16 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { InvalidCredentialsError } from '@server/auth/domain/errors'
+import { AccountDeactivatedError, InvalidCredentialsError } from '@server/auth/domain/errors'
 import { InvalidPlatformCredentialsError } from '@server/platform/domain/errors'
 
 const executeMock = vi.fn()
 const platformExecuteMock = vi.fn()
 const findByIdMock = vi.fn()
+const verifyTokenMock = vi.fn()
 
 vi.mock('@server/auth/container', () => ({
   authContainer: {
     loginUseCase: { execute: executeMock },
     userRepository: { findById: findByIdMock },
+    tokenService: { verify: verifyTokenMock },
   },
 }))
 
@@ -18,20 +20,26 @@ vi.mock('@server/platform/container', () => ({
   platformContainer: { loginPlatformAdminUseCase: { execute: platformExecuteMock } },
 }))
 
-async function getAuthorize() {
+async function getProviderAuthorize(id: string) {
   const { authOptions } = await import('./auth-options')
-  const provider = authOptions.providers[0] as unknown as {
+  const provider = authOptions.providers.find(
+    (candidate) => (candidate as unknown as { options: { id: string } }).options.id === id,
+  ) as unknown as {
     options: { authorize: (credentials: Record<string, string> | undefined) => Promise<unknown> }
   }
   return provider.options.authorize
 }
 
-async function getPlatformAuthorize() {
-  const { authOptions } = await import('./auth-options')
-  const provider = authOptions.providers[1] as unknown as {
-    options: { authorize: (credentials: Record<string, string> | undefined) => Promise<unknown> }
-  }
-  return provider.options.authorize
+function getAuthorize() {
+  return getProviderAuthorize('credentials')
+}
+
+function getTokenSessionAuthorize() {
+  return getProviderAuthorize('token-session')
+}
+
+function getPlatformAuthorize() {
+  return getProviderAuthorize('platform-credentials')
 }
 
 async function getJwtCallback() {
@@ -80,6 +88,15 @@ describe('authOptions — CredentialsProvider.authorize', () => {
     expect(result).toBeNull()
   })
 
+  it('retorna null (não lança) quando a conta está desativada', async () => {
+    executeMock.mockRejectedValueOnce(new AccountDeactivatedError())
+
+    const authorize = await getAuthorize()
+    const result = await authorize({ email: 'ana@ketris.dev', password: 'segredo123' })
+
+    expect(result).toBeNull()
+  })
+
   it('propaga erros inesperados (não mascara falhas de infraestrutura como credencial inválida)', async () => {
     executeMock.mockRejectedValueOnce(new Error('banco fora do ar'))
 
@@ -88,6 +105,79 @@ describe('authOptions — CredentialsProvider.authorize', () => {
     await expect(authorize({ email: 'ana@ketris.dev', password: 'x' })).rejects.toThrow(
       'banco fora do ar',
     )
+  })
+})
+
+describe('authOptions — token-session.authorize', () => {
+  it('retorna null quando faltam accessToken ou refreshToken', async () => {
+    const authorize = await getTokenSessionAuthorize()
+
+    expect(await authorize(undefined)).toBeNull()
+    expect(await authorize({ accessToken: '', refreshToken: '' })).toBeNull()
+    expect(verifyTokenMock).not.toHaveBeenCalled()
+  })
+
+  it('verifica o access token e monta a sessão sem checar senha', async () => {
+    verifyTokenMock.mockResolvedValueOnce({ sub: 'u1', tenantId: 't1', papel: 'AGENT' })
+    findByIdMock.mockResolvedValueOnce({
+      id: 'u1',
+      tenantId: 't1',
+      nome: 'Ana',
+      email: 'ana@ketris.dev',
+      papel: 'AGENT',
+      ativo: true,
+    })
+
+    const authorize = await getTokenSessionAuthorize()
+    const result = await authorize({ accessToken: 'token-valido', refreshToken: 'refresh-valido' })
+
+    expect(verifyTokenMock).toHaveBeenCalledWith('token-valido')
+    expect(result).toEqual({
+      id: 'u1',
+      name: 'Ana',
+      email: 'ana@ketris.dev',
+      accessToken: 'token-valido',
+      refreshToken: 'refresh-valido',
+      scope: 'tenant',
+      tenantId: 't1',
+      papel: 'AGENT',
+    })
+  })
+
+  it('retorna null quando o access token é inválido ou expirado', async () => {
+    verifyTokenMock.mockRejectedValueOnce(new Error('token expirado'))
+
+    const authorize = await getTokenSessionAuthorize()
+    const result = await authorize({ accessToken: 'token-expirado', refreshToken: 'r' })
+
+    expect(result).toBeNull()
+  })
+
+  it('retorna null quando o usuário do token não existe mais', async () => {
+    verifyTokenMock.mockResolvedValueOnce({ sub: 'u1', tenantId: 't1', papel: 'AGENT' })
+    findByIdMock.mockResolvedValueOnce(null)
+
+    const authorize = await getTokenSessionAuthorize()
+    const result = await authorize({ accessToken: 'token-valido', refreshToken: 'r' })
+
+    expect(result).toBeNull()
+  })
+
+  it('retorna null quando o usuário do token foi desativado', async () => {
+    verifyTokenMock.mockResolvedValueOnce({ sub: 'u1', tenantId: 't1', papel: 'AGENT' })
+    findByIdMock.mockResolvedValueOnce({
+      id: 'u1',
+      tenantId: 't1',
+      nome: 'Ana',
+      email: 'ana@ketris.dev',
+      papel: 'AGENT',
+      ativo: false,
+    })
+
+    const authorize = await getTokenSessionAuthorize()
+    const result = await authorize({ accessToken: 'token-valido', refreshToken: 'r' })
+
+    expect(result).toBeNull()
   })
 })
 

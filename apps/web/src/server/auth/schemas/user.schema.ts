@@ -15,3 +15,14 @@ export const authenticatedUserSchema = z
     ativo: z.boolean(),
   })
   .openapi('AuthenticatedUser')
+
+export const authenticatedUserResponseSchema = z
+  .object({
+    id: z.string(),
+    tenantId: z.string(),
+    name: z.string(),
+    email: z.string().email(),
+    role: papelSchema,
+    active: z.boolean(),
+  })
+  .openapi('AuthenticatedUserResponse')

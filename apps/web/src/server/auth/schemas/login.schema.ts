@@ -1,7 +1,7 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
-import { authenticatedUserSchema } from './user.schema'
+import { authenticatedUserResponseSchema } from './user.schema'
 
 export const loginRequestSchema = z
   .object({
@@ -17,7 +17,7 @@ export type LoginRequestDTO = z.infer<typeof loginRequestSchema>
 
 export const loginResponseSchema = z
   .object({
-    user: authenticatedUserSchema,
+    user: authenticatedUserResponseSchema,
     accessToken: z.string().openapi({ description: 'JWT (HS256), válido por 1 hora.' }),
     refreshToken: z.string().openapi({
       description:

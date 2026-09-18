@@ -24,3 +24,23 @@ export function toAuthenticatedUser(user: User): AuthenticatedUser {
     ativo: user.ativo,
   }
 }
+
+export type AuthenticatedUserResponse = {
+  id: string
+  tenantId: string
+  name: string
+  email: string
+  role: Papel
+  active: boolean
+}
+
+export function toAuthenticatedUserResponse(user: AuthenticatedUser): AuthenticatedUserResponse {
+  return {
+    id: user.id,
+    tenantId: user.tenantId,
+    name: user.nome,
+    email: user.email,
+    role: user.papel,
+    active: user.ativo,
+  }
+}

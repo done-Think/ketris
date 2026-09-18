@@ -12,6 +12,7 @@ describe('POST /api/auth/login (integração)', () => {
   const tenantSlug = `test-tenant-${randomUUID()}`
   const email = `login-${randomUUID()}@ketris.dev`
   const password = 'senha-correta-123'
+  const deactivatedEmail = `login-deactivated-${randomUUID()}@ketris.dev`
   let tenantId: string
 
   beforeAll(async () => {
@@ -25,6 +26,17 @@ describe('POST /api/auth/login (integração)', () => {
         email,
         senhaHash: await bcrypt.hash(password, 10),
         papel: 'ADMIN',
+      },
+    })
+
+    await prisma.usuario.create({
+      data: {
+        tenantId,
+        nome: 'Login Desativado',
+        email: deactivatedEmail,
+        senhaHash: await bcrypt.hash(password, 10),
+        papel: 'AGENT',
+        ativo: false,
       },
     })
   })
@@ -42,14 +54,23 @@ describe('POST /api/auth/login (integração)', () => {
     })
   }
 
-  it('retorna 200, o usuário (sem senhaHash), access token e refresh token com credenciais corretas', async () => {
+  it('retorna 200, o usuário em inglês (sem senhaHash), access token e refresh token com credenciais corretas', async () => {
     const response = await POST(buildRequest({ email, password }))
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(json.user.email).toBe(email)
-    expect(json.user.tenantId).toBe(tenantId)
+    expect(json.user).toEqual({
+      id: expect.any(String),
+      tenantId,
+      name: 'Login Teste',
+      email,
+      role: 'ADMIN',
+      active: true,
+    })
     expect(json.user).not.toHaveProperty('senhaHash')
+    expect(json.user).not.toHaveProperty('nome')
+    expect(json.user).not.toHaveProperty('papel')
+    expect(json.user).not.toHaveProperty('ativo')
     expect(typeof json.accessToken).toBe('string')
     expect(typeof json.refreshToken).toBe('string')
   })
@@ -70,12 +91,41 @@ describe('POST /api/auth/login (integração)', () => {
     expect(json.error.code).toBe('INVALID_CREDENTIALS')
   })
 
-  it('retorna 400 quando o corpo falha na validação Zod', async () => {
+  it('retorna 403 ACCOUNT_DEACTIVATED com credenciais corretas de conta desativada', async () => {
+    const response = await POST(buildRequest({ email: deactivatedEmail, password }))
+    const json = await response.json()
+
+    expect(response.status).toBe(403)
+    expect(json.error.code).toBe('ACCOUNT_DEACTIVATED')
+  })
+
+  it('retorna 401 INVALID_CREDENTIALS (não ACCOUNT_DEACTIVATED) com senha errada numa conta desativada', async () => {
+    const response = await POST(buildRequest({ email: deactivatedEmail, password: 'senha-errada' }))
+    const json = await response.json()
+
+    expect(response.status).toBe(401)
+    expect(json.error.code).toBe('INVALID_CREDENTIALS')
+  })
+
+  it('retorna 400 VALIDATION_ERROR quando o corpo falha na validação Zod', async () => {
     const response = await POST(buildRequest({ email: 'nao-e-email', password: '' }))
     const json = await response.json()
 
     expect(response.status).toBe(400)
     expect(json.error.code).toBe('VALIDATION_ERROR')
     expect(json.error.issues.length).toBeGreaterThan(0)
+  })
+
+  it('retorna 400 MALFORMED_JSON_BODY quando o corpo não é um JSON válido', async () => {
+    const request = new NextRequest('http://localhost/api/auth/login', {
+      method: 'POST',
+      body: '{not-json',
+      headers: { 'Content-Type': 'application/json' },
+    })
+    const response = await POST(request)
+    const json = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(json.error.code).toBe('MALFORMED_JSON_BODY')
   })
 })

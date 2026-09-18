@@ -6,8 +6,8 @@ import { AppError } from '@server/shared/errors'
 export class RequestValidationError extends AppError {
   readonly issues: { path: string; message: string }[]
 
-  constructor(issues: { path: string; message: string }[]) {
-    super('Dados inválidos.', { status: 400, code: 'VALIDATION_ERROR' })
+  constructor(issues: { path: string; message: string }[], code = 'VALIDATION_ERROR') {
+    super('Dados inválidos.', { status: 400, code })
     this.issues = issues
   }
 }
@@ -21,9 +21,10 @@ export async function parseJsonBody<T extends ZodTypeAny>(
   try {
     raw = await request.json()
   } catch {
-    throw new RequestValidationError([
-      { path: '', message: 'Corpo da requisição não é um JSON válido.' },
-    ])
+    throw new RequestValidationError(
+      [{ path: '', message: 'Corpo da requisição não é um JSON válido.' }],
+      'MALFORMED_JSON_BODY',
+    )
   }
 
   const result = schema.safeParse(raw)
