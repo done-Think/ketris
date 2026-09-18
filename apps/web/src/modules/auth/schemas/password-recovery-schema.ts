@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { emailSchema } from './login-schema'
+import { emailSchema } from '@shared/schemas/email-schema'
 
 export const passwordRecoverySchema = z.object({
   email: emailSchema,

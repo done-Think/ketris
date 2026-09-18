@@ -7,6 +7,7 @@ import { GetUserUseCase } from './application/use-cases/get-user.use-case'
 import { ListAdminsUseCase } from './application/use-cases/list-admins.use-case'
 import { ListUsersUseCase } from './application/use-cases/list-users.use-case'
 import { LoginUseCase } from './application/use-cases/login.use-case'
+import { LogoutUseCase } from './application/use-cases/logout.use-case'
 import { RefreshAccessTokenUseCase } from './application/use-cases/refresh-access-token.use-case'
 import { UpdateAdminUseCase } from './application/use-cases/update-admin.use-case'
 import { UpdateUserUseCase } from './application/use-cases/update-user.use-case'
@@ -44,4 +45,5 @@ export const authContainer = {
     tokenService,
     refreshTokenRepository,
   ),
+  logoutUseCase: new LogoutUseCase(refreshTokenRepository),
 }

@@ -5,7 +5,12 @@ import { authenticatedUserResponseSchema } from './user.schema'
 
 export const loginRequestSchema = z
   .object({
-    email: z.string().email('E-mail inválido.').openapi({ example: 'admin@ketris.dev' }),
+    email: z
+      .string()
+      .trim()
+      .email('E-mail inválido.')
+      .transform((value) => value.toLowerCase())
+      .openapi({ example: 'admin@ketris.dev' }),
     password: z
       .string()
       .min(1, 'Senha é obrigatória.')

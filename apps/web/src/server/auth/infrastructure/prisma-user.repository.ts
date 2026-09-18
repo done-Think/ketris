@@ -2,6 +2,7 @@ import { prisma } from '@server/db/prisma'
 
 import type { NewUser, UserRepository, UserUpdate } from '../application/ports/user-repository.port'
 import type { User } from '../domain/user.entity'
+import { normalizeEmail } from '@server/shared/normalize-email'
 
 function toDomainUser(usuario: {
   id: string
@@ -31,14 +32,14 @@ export class PrismaUserRepository implements UserRepository {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const usuario = await prisma.usuario.findFirst({ where: { email } })
+    const usuario = await prisma.usuario.findFirst({ where: { email: normalizeEmail(email) } })
 
     return usuario ? toDomainUser(usuario) : null
   }
 
   async findByEmailAndTenant(tenantId: string, email: string): Promise<User | null> {
     const usuario = await prisma.usuario.findUnique({
-      where: { tenantId_email: { tenantId, email } },
+      where: { tenantId_email: { tenantId, email: normalizeEmail(email) } },
     })
 
     return usuario ? toDomainUser(usuario) : null
@@ -58,7 +59,7 @@ export class PrismaUserRepository implements UserRepository {
       data: {
         tenantId: newUser.tenantId,
         nome: newUser.nome,
-        email: newUser.email,
+        email: normalizeEmail(newUser.email),
         senhaHash: newUser.senhaHash,
         papel: newUser.papel,
       },
@@ -72,7 +73,7 @@ export class PrismaUserRepository implements UserRepository {
       where: { id },
       data: {
         nome: changes.nome,
-        email: changes.email,
+        email: changes.email ? normalizeEmail(changes.email) : undefined,
         papel: changes.papel,
       },
     })
