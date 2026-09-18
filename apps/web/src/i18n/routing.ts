@@ -39,6 +39,7 @@ export const routing = defineRouting({
     '/backoffice/admins': '/backoffice/admins',
     '/backoffice/admins/[id]': '/backoffice/admins/[id]',
     '/backoffice/admins/new': '/backoffice/admins/new',
+    '/backoffice/users': '/backoffice/users',
     '/backoffice/login': '/backoffice/login',
     '/crm': '/crm',
     '/crm/contacts': '/crm/contacts',
