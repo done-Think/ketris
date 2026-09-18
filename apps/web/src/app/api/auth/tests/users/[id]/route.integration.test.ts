@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { prisma } from '@server/db/prisma'
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 
-import { DELETE, GET, PATCH } from './route'
+import { DELETE, GET, PATCH } from '../../../users/[id]/route'
 
 describe('/api/auth/users/[id] (integração)', () => {
   const tenantSlug = `test-tenant-${randomUUID()}`
@@ -141,21 +141,21 @@ describe('/api/auth/users/[id] (integração)', () => {
   })
 
   describe('PATCH', () => {
-    it('atualiza nome e papel quando o ator é ADMIN', async () => {
+    it('atualiza nome e role quando o ator é ADMIN', async () => {
       const response = await PATCH(
-        buildRequest('PATCH', targetId, { nome: 'Alvo Renomeado', papel: 'OWNER' }, adminToken),
+        buildRequest('PATCH', targetId, { name: 'Alvo Renomeado', role: 'OWNER' }, adminToken),
         context(targetId),
       )
       const json = await response.json()
 
       expect(response.status).toBe(200)
-      expect(json.user.nome).toBe('Alvo Renomeado')
-      expect(json.user.papel).toBe('OWNER')
+      expect(json.user.name).toBe('Alvo Renomeado')
+      expect(json.user.role).toBe('OWNER')
     })
 
-    it('rejeita papel ADMIN no corpo (schema não aceita)', async () => {
+    it('rejeita role ADMIN no corpo (schema não aceita)', async () => {
       const response = await PATCH(
-        buildRequest('PATCH', targetId, { papel: 'ADMIN' }, adminToken),
+        buildRequest('PATCH', targetId, { role: 'ADMIN' }, adminToken),
         context(targetId),
       )
       const json = await response.json()
@@ -166,7 +166,7 @@ describe('/api/auth/users/[id] (integração)', () => {
 
     it('retorna 403 quando o ator não é ADMIN', async () => {
       const response = await PATCH(
-        buildRequest('PATCH', targetId, { nome: 'X' }, agentToken),
+        buildRequest('PATCH', targetId, { name: 'X' }, agentToken),
         context(targetId),
       )
       const json = await response.json()
@@ -177,7 +177,7 @@ describe('/api/auth/users/[id] (integração)', () => {
   })
 
   describe('DELETE', () => {
-    it('desativa o usuário (soft delete) e retorna ativo: false', async () => {
+    it('desativa o usuário (soft delete) e retorna active: false', async () => {
       const toDeactivate = await prisma.usuario.create({
         data: {
           tenantId,
@@ -195,7 +195,7 @@ describe('/api/auth/users/[id] (integração)', () => {
       const json = await response.json()
 
       expect(response.status).toBe(200)
-      expect(json.user.ativo).toBe(false)
+      expect(json.user.active).toBe(false)
 
       const stillExists = await prisma.usuario.findUnique({ where: { id: toDeactivate.id } })
       expect(stillExists).not.toBeNull()

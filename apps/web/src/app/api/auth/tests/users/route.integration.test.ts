@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { prisma } from '@server/db/prisma'
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 
-import { GET, POST } from './route'
+import { GET, POST } from '../../users/route'
 
 describe('/api/auth/users (integração)', () => {
   const tenantSlug = `test-tenant-${randomUUID()}`
@@ -75,13 +75,13 @@ describe('/api/auth/users (integração)', () => {
   }
 
   describe('POST', () => {
-    it('retorna 201 e o usuário criado (sem senhaHash) quando o ator é ADMIN', async () => {
+    it('retorna 201 e o usuário criado (campos em inglês, sem senhaHash) quando o ator é ADMIN', async () => {
       const email = `nova-${randomUUID()}@ketris.dev`
 
       const response = await POST(
         buildRequest(
           'POST',
-          { nome: 'Novo Agente', email, password: 'senha-longa-123' },
+          { name: 'Novo Agente', email, password: 'senha-longa-123' },
           adminToken,
         ),
       )
@@ -90,15 +90,18 @@ describe('/api/auth/users (integração)', () => {
       expect(response.status).toBe(201)
       expect(json.user.email).toBe(email)
       expect(json.user.tenantId).toBe(tenantId)
-      expect(json.user.papel).toBe('AGENT')
-      expect(json.user.ativo).toBe(true)
+      expect(json.user.role).toBe('AGENT')
+      expect(json.user.active).toBe(true)
       expect(json.user).not.toHaveProperty('senhaHash')
+      expect(json.user).not.toHaveProperty('nome')
+      expect(json.user).not.toHaveProperty('papel')
+      expect(json.user).not.toHaveProperty('ativo')
     })
 
     it('retorna 401 sem Authorization header', async () => {
       const response = await POST(
         buildRequest('POST', {
-          nome: 'X',
+          name: 'X',
           email: `x-${randomUUID()}@ketris.dev`,
           password: 'senha-longa-123',
         }),
@@ -113,7 +116,7 @@ describe('/api/auth/users (integração)', () => {
       const response = await POST(
         buildRequest(
           'POST',
-          { nome: 'X', email: `x-${randomUUID()}@ketris.dev`, password: 'senha-longa-123' },
+          { name: 'X', email: `x-${randomUUID()}@ketris.dev`, password: 'senha-longa-123' },
           agentToken,
         ),
       )
@@ -127,12 +130,12 @@ describe('/api/auth/users (integração)', () => {
       const email = `duplicado-${randomUUID()}@ketris.dev`
 
       const primeira = await POST(
-        buildRequest('POST', { nome: 'Primeira', email, password: 'senha-longa-123' }, adminToken),
+        buildRequest('POST', { name: 'Primeira', email, password: 'senha-longa-123' }, adminToken),
       )
       expect(primeira.status).toBe(201)
 
       const segunda = await POST(
-        buildRequest('POST', { nome: 'Segunda', email, password: 'outra-senha-123' }, adminToken),
+        buildRequest('POST', { name: 'Segunda', email, password: 'outra-senha-123' }, adminToken),
       )
       const json = await segunda.json()
 
@@ -142,7 +145,7 @@ describe('/api/auth/users (integração)', () => {
 
     it('retorna 400 quando o corpo falha na validação Zod', async () => {
       const response = await POST(
-        buildRequest('POST', { nome: '', email: 'nao-e-email', password: '123' }, adminToken),
+        buildRequest('POST', { name: '', email: 'nao-e-email', password: '123' }, adminToken),
       )
       const json = await response.json()
 
@@ -151,15 +154,15 @@ describe('/api/auth/users (integração)', () => {
       expect(json.error.issues.length).toBeGreaterThan(0)
     })
 
-    it('rejeita papel ADMIN no corpo (schema não aceita)', async () => {
+    it('rejeita role ADMIN no corpo (schema não aceita)', async () => {
       const response = await POST(
         buildRequest(
           'POST',
           {
-            nome: 'Tentativa',
+            name: 'Tentativa',
             email: `tentativa-${randomUUID()}@ketris.dev`,
             password: 'senha-longa-123',
-            papel: 'ADMIN',
+            role: 'ADMIN',
           },
           adminToken,
         ),
@@ -178,7 +181,7 @@ describe('/api/auth/users (integração)', () => {
 
       expect(response.status).toBe(200)
       expect(Array.isArray(json.users)).toBe(true)
-      expect(json.users.every((user: { papel: string }) => user.papel !== 'ADMIN')).toBe(true)
+      expect(json.users.every((user: { role: string }) => user.role !== 'ADMIN')).toBe(true)
       expect(json.users.some((user: { tenantId: string }) => user.tenantId === tenantId)).toBe(true)
     })
 

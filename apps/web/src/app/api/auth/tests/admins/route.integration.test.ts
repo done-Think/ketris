@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { prisma } from '@server/db/prisma'
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 
-import { GET, POST } from './route'
+import { GET, POST } from '../../admins/route'
 
 describe('POST /api/auth/admins (integração)', () => {
   const tenantSlug = `test-tenant-${randomUUID()}`
@@ -74,24 +74,33 @@ describe('POST /api/auth/admins (integração)', () => {
     })
   }
 
-  it('retorna 201 e o administrador criado quando o ator é ADMIN', async () => {
+  it('retorna 201 e o administrador criado (campos em inglês) quando o ator é ADMIN', async () => {
     const email = `novo-admin-${randomUUID()}@ketris.dev`
 
     const response = await POST(
-      buildRequest({ nome: 'Novo Admin', email, password: 'senha-longa-123' }, adminToken),
+      buildRequest({ name: 'Novo Admin', email, password: 'senha-longa-123' }, adminToken),
     )
     const json = await response.json()
 
     expect(response.status).toBe(201)
-    expect(json.user.papel).toBe('ADMIN')
-    expect(json.user.tenantId).toBe(tenantId)
+    expect(json.user).toEqual({
+      id: expect.any(String),
+      tenantId,
+      name: 'Novo Admin',
+      email,
+      role: 'ADMIN',
+      active: true,
+    })
     expect(json.user).not.toHaveProperty('senhaHash')
+    expect(json.user).not.toHaveProperty('nome')
+    expect(json.user).not.toHaveProperty('papel')
+    expect(json.user).not.toHaveProperty('ativo')
   })
 
   it('retorna 403 quando o ator autenticado não é ADMIN', async () => {
     const response = await POST(
       buildRequest(
-        { nome: 'X', email: `x-${randomUUID()}@ketris.dev`, password: 'senha-longa-123' },
+        { name: 'X', email: `x-${randomUUID()}@ketris.dev`, password: 'senha-longa-123' },
         agentToken,
       ),
     )
@@ -104,7 +113,7 @@ describe('POST /api/auth/admins (integração)', () => {
   it('retorna 401 sem Authorization header', async () => {
     const response = await POST(
       buildRequest({
-        nome: 'X',
+        name: 'X',
         email: `x-${randomUUID()}@ketris.dev`,
         password: 'senha-longa-123',
       }),
@@ -187,14 +196,15 @@ describe('GET /api/auth/admins (integração)', () => {
     })
   }
 
-  it('retorna apenas as contas ADMIN do tenant do ator', async () => {
+  it('retorna apenas as contas ADMIN do tenant do ator, com campos em inglês', async () => {
     const response = await GET(buildGetRequest(adminToken))
     const json = await response.json()
 
     expect(response.status).toBe(200)
     expect(json.admins).toHaveLength(1)
-    expect(json.admins[0].papel).toBe('ADMIN')
+    expect(json.admins[0].role).toBe('ADMIN')
     expect(json.admins[0]).not.toHaveProperty('senhaHash')
+    expect(json.admins[0]).not.toHaveProperty('papel')
   })
 
   it('retorna 403 quando o ator autenticado não é ADMIN', async () => {

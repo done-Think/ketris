@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { prisma } from '@server/db/prisma'
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 
-import { DELETE, GET, PATCH } from './route'
+import { DELETE, GET, PATCH } from '../../../admins/[id]/route'
 
 describe('/api/auth/admins/[id] (integração)', () => {
   const tenantSlug = `test-tenant-admin-id-${randomUUID()}`
@@ -99,8 +99,9 @@ describe('/api/auth/admins/[id] (integração)', () => {
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(json.admin.papel).toBe('ADMIN')
+    expect(json.admin.role).toBe('ADMIN')
     expect(json.admin).not.toHaveProperty('senhaHash')
+    expect(json.admin).not.toHaveProperty('papel')
   })
 
   it('GET retorna 404 quando o alvo não é ADMIN (ex.: AGENT)', async () => {
@@ -121,13 +122,13 @@ describe('/api/auth/admins/[id] (integração)', () => {
 
   it('PATCH atualiza nome/e-mail do admin', async () => {
     const response = await PATCH(
-      buildRequest('PATCH', { nome: 'Admin Alvo Atualizado' }, actorToken),
+      buildRequest('PATCH', { name: 'Admin Alvo Atualizado' }, actorToken),
       { params: Promise.resolve({ id: targetAdminId }) },
     )
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(json.admin.nome).toBe('Admin Alvo Atualizado')
+    expect(json.admin.name).toBe('Admin Alvo Atualizado')
   })
 
   it('DELETE retorna 400 quando o ator tenta se autodesativar', async () => {
@@ -147,7 +148,7 @@ describe('/api/auth/admins/[id] (integração)', () => {
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(json.admin.ativo).toBe(false)
+    expect(json.admin.active).toBe(false)
   })
 
   it('nunca aparece no contrato OpenAPI público (/api/docs/openapi.json)', async () => {

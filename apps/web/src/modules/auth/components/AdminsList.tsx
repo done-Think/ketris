@@ -83,14 +83,14 @@ export function AdminsList() {
                 <TableRow key={admin.id}>
                   <TableCell>
                     <Link href={{ pathname: '/backoffice/admins/[id]', params: { id: admin.id } }}>
-                      {admin.nome}
+                      {admin.name}
                     </Link>
                   </TableCell>
                   <TableCell>{admin.email}</TableCell>
                   <TableCell>
                     <Chip
-                      label={admin.ativo ? t('statusActive') : t('statusInactive')}
-                      color={admin.ativo ? 'success' : 'default'}
+                      label={admin.active ? t('statusActive') : t('statusInactive')}
+                      color={admin.active ? 'success' : 'default'}
                       size="small"
                     />
                   </TableCell>
@@ -98,7 +98,7 @@ export function AdminsList() {
                     <Button
                       size="small"
                       color="error"
-                      disabled={isSelf || !admin.ativo || pendingId === admin.id}
+                      disabled={isSelf || !admin.active || pendingId === admin.id}
                       onClick={() => handleDeactivate(admin.id)}
                     >
                       {t('deactivate')}

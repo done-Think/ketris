@@ -1,10 +1,10 @@
-export type Papel = 'ADMIN' | 'OWNER' | 'AGENT'
+export type Role = 'ADMIN' | 'OWNER' | 'AGENT'
 
 export interface AdminUser {
   id: string
   tenantId: string
-  nome: string
+  name: string
   email: string
-  papel: Papel
-  ativo: boolean
+  role: Role
+  active: boolean
 }
