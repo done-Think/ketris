@@ -1,4 +1,6 @@
 export { AppShell } from './AppShell'
+export { DashboardPageHeader } from './DashboardPageHeader'
+export { DashboardTablePagination } from './DashboardTablePagination'
 export { DashboardNotificationsButton } from './DashboardNotificationsButton'
 export { HomeHeader } from './HomeHeader'
 export { LanguageSelector } from './LanguageSelector'

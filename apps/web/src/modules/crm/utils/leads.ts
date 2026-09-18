@@ -1,4 +1,4 @@
-import type { DashboardLead, LeadFilter, LeadsPage } from '../types/lead'
+import type { DashboardLead, LeadFilter, LeadTableSortState, LeadsPage } from '../types/lead'
 
 export const leadsDefaultPageSize = 5
 
@@ -27,6 +27,47 @@ export function getLeadFilterCount(leads: readonly DashboardLead[], filter: Lead
   if (filter === 'Todos') return leads.length
 
   return leads.filter((lead) => lead.stage === filter).length
+}
+
+function parseBudgetValue(budget: string): number {
+  const normalizedBudget = budget.toLocaleUpperCase('pt-BR')
+  const value = Number(normalizedBudget.replace(/[^\d,.]/g, '').replace(',', '.'))
+
+  if (!Number.isFinite(value)) return 0
+  if (normalizedBudget.includes('M')) return value * 1_000_000
+  if (normalizedBudget.includes('K')) return value * 1_000
+
+  return value
+}
+
+function getLeadSortValue(lead: DashboardLead, sort: NonNullable<LeadTableSortState>) {
+  if (sort.field === 'budget') return parseBudgetValue(lead.budget)
+  if (sort.field === 'stage') return lead.stage
+
+  return lead[sort.field]
+}
+
+export function sortLeads(
+  leads: readonly DashboardLead[],
+  sort: LeadTableSortState,
+): DashboardLead[] {
+  if (!sort) return [...leads]
+
+  return [...leads].sort((firstLead, secondLead) => {
+    const firstValue = getLeadSortValue(firstLead, sort)
+    const secondValue = getLeadSortValue(secondLead, sort)
+    const directionMultiplier = sort.direction === 'asc' ? 1 : -1
+
+    if (typeof firstValue === 'number' && typeof secondValue === 'number') {
+      return (firstValue - secondValue) * directionMultiplier
+    }
+
+    return (
+      String(firstValue).localeCompare(String(secondValue), 'pt-BR', {
+        sensitivity: 'base',
+      }) * directionMultiplier
+    )
+  })
 }
 
 export function paginateLeads(

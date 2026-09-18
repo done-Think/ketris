@@ -168,6 +168,7 @@ export function PropertiesTable({
         rows={properties}
         columns={columns}
         rowHeight={82}
+        disableColumnMenu
         disableRowSelectionOnClick
         pageSizeOptions={[5, 10, 25]}
         initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
@@ -190,6 +191,9 @@ export function PropertiesTable({
             fontSize: 12,
             fontWeight: 900,
             textTransform: 'uppercase',
+          },
+          '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': {
+            outline: 'none',
           },
           '& .MuiDataGrid-cell': {
             borderColor: 'divider',

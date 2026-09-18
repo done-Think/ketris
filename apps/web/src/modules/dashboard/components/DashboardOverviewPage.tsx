@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Box, Stack, Typography } from '@mui/material'
 import { useLocale, useTranslations } from 'next-intl'
 
-import { DashboardNotificationsButton } from '@shared/components/layout'
+import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/components/layout'
 import { brand } from '@shared/theme/tokens'
 
 import type {
@@ -49,22 +49,17 @@ export function DashboardOverviewPage() {
   }
 
   return (
-    <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 3.4 } }}>
+    <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
       <Stack spacing={2.4}>
-        <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
-          <Box>
-            <Typography variant="h3" sx={{ fontSize: { xs: 20, md: 24 }, fontWeight: 800 }}>
-              {t('title')}
-            </Typography>
-            <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 600, mt: 0.3 }}>
-              {currentDate}
-            </Typography>
-          </Box>
-
-          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-            <DashboardNotificationsButton />
-          </Box>
-        </Stack>
+        <DashboardPageHeader
+          title={t('title')}
+          subtitle={currentDate}
+          actions={
+            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+              <DashboardNotificationsButton />
+            </Box>
+          }
+        />
 
         <DashboardMetricGrid />
 

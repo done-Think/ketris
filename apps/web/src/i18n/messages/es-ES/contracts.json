@@ -12,6 +12,7 @@
   },
   "dashboardHeader": {
     "title": "Contratos",
+    "subtitle": "Gestiona contratos, vencimientos y firmas en curso.",
     "searchPlaceholder": "Buscar contratos...",
     "newContract": "Nuevo Contrato"
   },
