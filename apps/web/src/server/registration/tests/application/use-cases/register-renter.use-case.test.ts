@@ -35,7 +35,7 @@ const createdRenter: User = {
 
 function createDeps(overrides?: {
   findBySlug?: TenantRepository['findBySlug']
-  findByEmailAndTenant?: UserRepository['findByEmailAndTenant']
+  findByEmail?: UserRepository['findByEmail']
 }) {
   const tenantRepository: TenantRepository = {
     findBySlug: overrides?.findBySlug ?? vi.fn().mockResolvedValue(renterTenant),
@@ -46,8 +46,7 @@ function createDeps(overrides?: {
   }
   const userRepository: UserRepository = {
     findById: vi.fn(),
-    findByEmail: vi.fn(),
-    findByEmailAndTenant: overrides?.findByEmailAndTenant ?? vi.fn().mockResolvedValue(null),
+    findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(null),
     findManyByTenant: vi.fn(),
     create: vi.fn().mockResolvedValue(createdRenter),
     update: vi.fn(),
@@ -121,8 +120,8 @@ describe('RegisterRenterUseCase', () => {
     expect(deps.userRepository.create).not.toHaveBeenCalled()
   })
 
-  it('lança EmailAlreadyInUseError quando já existe um locatário com esse e-mail', async () => {
-    const deps = createDeps({ findByEmailAndTenant: vi.fn().mockResolvedValue(createdRenter) })
+  it('lança EmailAlreadyInUseError quando já existe uma conta (em qualquer tenant) com esse e-mail', async () => {
+    const deps = createDeps({ findByEmail: vi.fn().mockResolvedValue(createdRenter) })
     const useCase = new RegisterRenterUseCase(
       deps.tenantRepository,
       deps.userRepository,

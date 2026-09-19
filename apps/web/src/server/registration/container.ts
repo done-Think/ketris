@@ -20,6 +20,7 @@ const refreshTokenRepository = new PrismaRefreshTokenRepository()
 export const registrationContainer = {
   registerTenantOwnerUseCase: new RegisterTenantOwnerUseCase(
     registrationRepository,
+    userRepository,
     passwordHasher,
     tokenService,
     refreshTokenRepository,

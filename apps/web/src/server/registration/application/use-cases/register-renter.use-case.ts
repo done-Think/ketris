@@ -43,7 +43,7 @@ export class RegisterRenterUseCase {
       throw new RenterTenantNotConfiguredError()
     }
 
-    const existing = await this.userRepository.findByEmailAndTenant(renterTenant.id, input.email)
+    const existing = await this.userRepository.findByEmail(input.email)
 
     if (existing) {
       throw new EmailAlreadyInUseError()

@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
 
+import { EmailAlreadyInUseError } from '@server/auth/domain/errors'
 import type { User } from '@server/auth/domain/user.entity'
 import type { PasswordHasher } from '@server/auth/application/ports/password-hasher.port'
 import type { RefreshTokenRepository } from '@server/auth/application/ports/refresh-token-repository.port'
 import type { TokenService } from '@server/auth/application/ports/token-service.port'
+import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
 import type { TenantSummary } from '@server/platform/domain/tenant-summary.entity'
 
 import type { RegistrationRepository } from '../../../application/ports/registration-repository.port'
@@ -29,10 +31,20 @@ const user: User = {
 
 function createDeps(overrides?: {
   createTenantWithAdmin?: RegistrationRepository['createTenantWithAdmin']
+  findByEmail?: UserRepository['findByEmail']
 }) {
   const registrationRepository: RegistrationRepository = {
     createTenantWithAdmin:
       overrides?.createTenantWithAdmin ?? vi.fn().mockResolvedValue({ tenant, user }),
+  }
+  const userRepository: UserRepository = {
+    findById: vi.fn(),
+    findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(null),
+    findManyByTenant: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    deactivate: vi.fn(),
+    approveMembership: vi.fn(),
   }
   const passwordHasher: PasswordHasher = {
     compare: vi.fn(),
@@ -49,7 +61,13 @@ function createDeps(overrides?: {
     revokeAllForUser: vi.fn(),
   }
 
-  return { registrationRepository, passwordHasher, tokenService, refreshTokenRepository }
+  return {
+    registrationRepository,
+    userRepository,
+    passwordHasher,
+    tokenService,
+    refreshTokenRepository,
+  }
 }
 
 describe('RegisterTenantOwnerUseCase', () => {
@@ -57,6 +75,7 @@ describe('RegisterTenantOwnerUseCase', () => {
     const deps = createDeps()
     const useCase = new RegisterTenantOwnerUseCase(
       deps.registrationRepository,
+      deps.userRepository,
       deps.passwordHasher,
       deps.tokenService,
       deps.refreshTokenRepository,
@@ -88,6 +107,7 @@ describe('RegisterTenantOwnerUseCase', () => {
     const deps = createDeps()
     const useCase = new RegisterTenantOwnerUseCase(
       deps.registrationRepository,
+      deps.userRepository,
       deps.passwordHasher,
       deps.tokenService,
       deps.refreshTokenRepository,
@@ -102,5 +122,26 @@ describe('RegisterTenantOwnerUseCase', () => {
     expect(deps.registrationRepository.createTenantWithAdmin).toHaveBeenCalledWith(
       expect.objectContaining({ tenantName: 'Corretor Autônomo' }),
     )
+  })
+
+  it('rejeita quando o e-mail já está em uso em qualquer tenant', async () => {
+    const deps = createDeps({ findByEmail: vi.fn().mockResolvedValue(user) })
+    const useCase = new RegisterTenantOwnerUseCase(
+      deps.registrationRepository,
+      deps.userRepository,
+      deps.passwordHasher,
+      deps.tokenService,
+      deps.refreshTokenRepository,
+    )
+
+    await expect(
+      useCase.execute({
+        fullName: 'Outra Pessoa',
+        email: 'dona@ketris.dev',
+        password: 'senha-longa-123',
+      }),
+    ).rejects.toBeInstanceOf(EmailAlreadyInUseError)
+
+    expect(deps.registrationRepository.createTenantWithAdmin).not.toHaveBeenCalled()
   })
 })

@@ -34,15 +34,7 @@ export class PrismaUserRepository implements UserRepository {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const usuario = await prisma.usuario.findFirst({ where: { email: normalizeEmail(email) } })
-
-    return usuario ? toDomainUser(usuario) : null
-  }
-
-  async findByEmailAndTenant(tenantId: string, email: string): Promise<User | null> {
-    const usuario = await prisma.usuario.findUnique({
-      where: { tenantId_email: { tenantId, email: normalizeEmail(email) } },
-    })
+    const usuario = await prisma.usuario.findUnique({ where: { email: normalizeEmail(email) } })
 
     return usuario ? toDomainUser(usuario) : null
   }

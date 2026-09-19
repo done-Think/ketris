@@ -39,10 +39,10 @@ describe('UpdateAdminUseCase', () => {
     ).rejects.toThrow('Usuário não encontrado.')
   })
 
-  it('lança EmailAlreadyInUseError quando o novo e-mail já existe no tenant', async () => {
+  it('lança EmailAlreadyInUseError quando o novo e-mail já existe em qualquer tenant', async () => {
     const userRepository = {
       findById: vi.fn().mockResolvedValue(buildUser()),
-      findByEmailAndTenant: vi.fn().mockResolvedValue(buildUser({ id: 'outro' })),
+      findByEmail: vi.fn().mockResolvedValue(buildUser({ id: 'outro' })),
     } as unknown as UserRepository
     const useCase = new UpdateAdminUseCase(userRepository)
 
@@ -60,7 +60,7 @@ describe('UpdateAdminUseCase', () => {
     const updated = buildUser({ nome: 'Admin Atualizado' })
     const userRepository = {
       findById: vi.fn().mockResolvedValue(buildUser()),
-      findByEmailAndTenant: vi.fn().mockResolvedValue(null),
+      findByEmail: vi.fn().mockResolvedValue(null),
       update: vi.fn().mockResolvedValue(updated),
     } as unknown as UserRepository
     const useCase = new UpdateAdminUseCase(userRepository)

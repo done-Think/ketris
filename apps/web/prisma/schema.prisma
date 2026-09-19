@@ -46,7 +46,7 @@ model Usuario {
   id                String       @id @default(cuid())
   tenantId          String
   nome              String
-  email             String
+  email             String       @unique
   senhaHash         String
   avatarUrl         String?
   papel             PapelUsuario @default(AGENT)
@@ -59,7 +59,6 @@ model Usuario {
   imoveisResponsavel Imovel[]       @relation("ImovelResponsavel")
   refreshTokens      RefreshToken[]
 
-  @@unique([tenantId, email])
   @@index([tenantId])
   @@map("usuarios")
 }

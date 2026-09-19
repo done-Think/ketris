@@ -29,10 +29,7 @@ export class UpdateAdminUseCase {
     }
 
     if (input.email && input.email !== target.email) {
-      const existing = await this.userRepository.findByEmailAndTenant(
-        input.actorTenantId,
-        input.email,
-      )
+      const existing = await this.userRepository.findByEmail(input.email)
 
       if (existing) {
         throw new EmailAlreadyInUseError()

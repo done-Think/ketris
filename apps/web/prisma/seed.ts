@@ -36,7 +36,7 @@ async function main() {
   const senhaHash = await bcrypt.hash('trocar-em-desenvolvimento', SALT_ROUNDS)
 
   await prisma.usuario.upsert({
-    where: { tenantId_email: { tenantId: tenant.id, email: 'admin@ketris.dev' } },
+    where: { email: 'admin@ketris.dev' },
     update: {},
     create: {
       tenantId: tenant.id,
@@ -63,7 +63,7 @@ async function main() {
     if (brokerByEmail.has(property.broker.email)) continue
 
     const broker = await prisma.usuario.upsert({
-      where: { tenantId_email: { tenantId: tenant.id, email: property.broker.email } },
+      where: { email: property.broker.email },
       update: { avatarUrl: property.broker.avatarUrl },
       create: {
         tenantId: tenant.id,

@@ -30,7 +30,7 @@ export class RegisterTenantAgentUseCase {
       throw new AgencyNotFoundError()
     }
 
-    const existing = await this.userRepository.findByEmailAndTenant(agency.id, input.email)
+    const existing = await this.userRepository.findByEmail(input.email)
 
     if (existing) {
       throw new EmailAlreadyInUseError()

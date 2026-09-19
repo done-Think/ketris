@@ -21,7 +21,6 @@ function createDeps(overrides?: { findById?: UserRepository['findById'] }) {
   const userRepository: UserRepository = {
     findById: overrides?.findById ?? vi.fn().mockResolvedValue(agent),
     findByEmail: vi.fn(),
-    findByEmailAndTenant: vi.fn(),
     findManyByTenant: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),

@@ -41,7 +41,6 @@ function createDeps(findManyByTenant?: UserRepository['findManyByTenant']) {
   const userRepository: UserRepository = {
     findById: vi.fn(),
     findByEmail: vi.fn(),
-    findByEmailAndTenant: vi.fn(),
     findManyByTenant: findManyByTenant ?? vi.fn().mockResolvedValue([admin, owner, agent]),
     create: vi.fn(),
     update: vi.fn(),

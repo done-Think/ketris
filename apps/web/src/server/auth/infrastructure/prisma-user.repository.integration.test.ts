@@ -64,17 +64,21 @@ describe('PrismaUserRepository (integração)', () => {
     expect(user).toBeNull()
   })
 
-  it('findByEmailAndTenant encontra o usuário só dentro do tenant informado', async () => {
+  it('e-mail é único globalmente — criar em outro tenant com o mesmo e-mail falha', async () => {
     const outroTenant = await prisma.tenant.create({
       data: { nome: 'Outro Tenant', slug: `outro-${randomUUID()}` },
     })
 
     try {
-      const encontrado = await repository.findByEmailAndTenant(tenantId, email)
-      const naoEncontrado = await repository.findByEmailAndTenant(outroTenant.id, email)
-
-      expect(encontrado?.email).toBe(email)
-      expect(naoEncontrado).toBeNull()
+      await expect(
+        repository.create({
+          tenantId: outroTenant.id,
+          nome: 'Duplicado',
+          email,
+          senhaHash: 'hash-fake',
+          papel: 'AGENT',
+        }),
+      ).rejects.toThrow()
     } finally {
       await prisma.tenant.delete({ where: { id: outroTenant.id } })
     }
@@ -97,7 +101,7 @@ describe('PrismaUserRepository (integração)', () => {
     expect(created.papel).toBe('ADMIN')
     expect(created.ativo).toBe(true)
 
-    const persisted = await repository.findByEmailAndTenant(tenantId, novoEmail)
+    const persisted = await repository.findByEmail(novoEmail)
     expect(persisted?.id).toBe(created.id)
   })
 
