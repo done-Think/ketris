@@ -21,8 +21,10 @@ import { Controller, useForm, useWatch } from 'react-hook-form'
 import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
 import { brand } from '@shared/theme/tokens'
 
+import { AgencyAutocomplete } from './AgencyAutocomplete'
 import { AuthFormField } from './AuthFormField'
 import { authPrimaryButtonSx, authTextFieldSx } from './auth-form.styles'
+import type { AgencySearchResult } from '../services/registration-service'
 import { registrationDetailsSchema } from '../schemas/registration-details-schema'
 import type {
   RegistrationDetailsFormProps,
@@ -43,6 +45,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
   const [visiblePasswordFields, setVisiblePasswordFields] = useState<
     ReadonlySet<RegistrationPasswordFieldName>
   >(new Set())
+  const [selectedAgency, setSelectedAgency] = useState<AgencySearchResult | null>(null)
   const {
     control,
     handleSubmit,
@@ -57,9 +60,13 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
       password: '',
       passwordConfirmation: '',
       creci: '',
+      companyName: '',
       acceptTerms: false,
     },
   })
+
+  const showCompanyName =
+    profile === 'imobiliaria' || profile === 'construtora' || profile === 'corretor'
 
   const acceptTerms = useWatch({ control, name: 'acceptTerms' })
 
@@ -93,6 +100,20 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
             sx={authTextFieldSx}
           />
         </AuthFormField>
+
+        {showCompanyName ? (
+          <AuthFormField htmlFor="registration-company-name" label={t('companyName.label')}>
+            <RhfTextField
+              id="registration-company-name"
+              control={control}
+              name="companyName"
+              placeholder={t('companyName.placeholder')}
+              helperText={t('companyName.helper')}
+              fullWidth
+              sx={authTextFieldSx}
+            />
+          </AuthFormField>
+        ) : null}
 
         <Box
           sx={{
@@ -203,6 +224,22 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
             sx={authTextFieldSx}
           />
         </AuthFormField>
+
+        {profile === 'corretor' ? (
+          <Controller
+            control={control}
+            name="agencyId"
+            render={({ field }) => (
+              <AgencyAutocomplete
+                value={selectedAgency}
+                onChange={(agency) => {
+                  setSelectedAgency(agency)
+                  field.onChange(agency?.id)
+                }}
+              />
+            )}
+          />
+        ) : null}
       </Box>
 
       <Controller

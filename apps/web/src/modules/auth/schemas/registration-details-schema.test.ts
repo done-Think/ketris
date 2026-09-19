@@ -29,6 +29,31 @@ describe('registrationDetailsSchema', () => {
     }
   })
 
+  it('aceita companyName e agencyId opcionais só no perfil corretor', () => {
+    const withAgency = registrationDetailsSchema.safeParse({
+      ...validDetails,
+      profile: 'corretor',
+      creci: '00000-F',
+      agencyId: 'agency-1',
+      companyName: 'Minha Corretora',
+    })
+
+    expect(withAgency.success).toBe(true)
+  })
+
+  it('aceita corretor autônomo, sem agencyId', () => {
+    const autonomous = registrationDetailsSchema.safeParse({
+      ...validDetails,
+      profile: 'corretor',
+      creci: '00000-F',
+    })
+
+    expect(autonomous.success).toBe(true)
+    if (autonomous.success && autonomous.data.profile === 'corretor') {
+      expect(autonomous.data.agencyId).toBeUndefined()
+    }
+  })
+
   it('rejeita senhas diferentes e termos não aceitos', () => {
     const result = registrationDetailsSchema.safeParse({
       ...validDetails,

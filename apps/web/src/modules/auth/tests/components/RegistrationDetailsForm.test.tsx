@@ -1,12 +1,26 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
 import { RegistrationDetailsForm } from '../../components/RegistrationDetailsForm'
+import type { RegistrationProfileId } from '../../types/registration'
+
+function renderForm(profile: RegistrationProfileId, onSubmit?: (values: unknown) => void) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  })
+
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <RegistrationDetailsForm profile={profile} onSubmit={onSubmit} />
+    </QueryClientProvider>,
+  )
+}
 
 describe('RegistrationDetailsForm', () => {
   it('exibe os campos da segunda etapa e a regra de CRECI do corretor', () => {
-    render(<RegistrationDetailsForm profile="corretor" />)
+    renderForm('corretor')
 
     expect(screen.getByLabelText(/Nome completo/)).toBeInTheDocument()
     expect(screen.getByLabelText(/E-mail/)).toBeInTheDocument()
@@ -18,7 +32,7 @@ describe('RegistrationDetailsForm', () => {
 
   it('botão de criar conta fica desabilitado até os termos serem aceitos', async () => {
     const user = userEvent.setup()
-    render(<RegistrationDetailsForm profile="corretor" />)
+    renderForm('corretor')
 
     const submitButton = screen.getByRole('button', { name: 'Criar conta' })
     expect(submitButton).toBeDisabled()
@@ -33,7 +47,7 @@ describe('RegistrationDetailsForm', () => {
   it('valida os campos obrigatórios antes de continuar', async () => {
     const user = userEvent.setup()
     const submit = vi.fn()
-    render(<RegistrationDetailsForm profile="corretor" onSubmit={submit} />)
+    renderForm('corretor', submit)
 
     await user.click(screen.getByRole('checkbox', { name: /Li e aceito/ }))
     await user.click(screen.getByRole('button', { name: 'Criar conta' }))
@@ -47,7 +61,7 @@ describe('RegistrationDetailsForm', () => {
 
   it('alterna a visibilidade de senha e confirmar senha de forma independente', async () => {
     const user = userEvent.setup()
-    render(<RegistrationDetailsForm profile="corretor" />)
+    renderForm('corretor')
 
     const passwordInput = screen.getByLabelText(/^Senha/)
     const confirmationInput = screen.getByPlaceholderText('Confirme a senha')
@@ -71,7 +85,7 @@ describe('RegistrationDetailsForm', () => {
   it('envia dados válidos e normalizados para um proprietário', async () => {
     const user = userEvent.setup()
     const submit = vi.fn()
-    render(<RegistrationDetailsForm profile="proprietario" onSubmit={submit} />)
+    renderForm('proprietario', submit)
 
     await user.type(screen.getByLabelText(/Nome completo/), 'Maria da Silva')
     await user.type(screen.getByLabelText(/E-mail/), 'MARIA@EMAIL.COM')
@@ -89,7 +103,40 @@ describe('RegistrationDetailsForm', () => {
       password: 'senha-segura',
       passwordConfirmation: 'senha-segura',
       creci: '',
+      companyName: '',
       acceptTerms: true,
     })
   }, 20000)
+
+  it('mostra o campo de nome da empresa para imobiliária, mas não para proprietário', () => {
+    const { rerender } = render(
+      <QueryClientProvider client={new QueryClient()}>
+        <RegistrationDetailsForm profile="imobiliaria" />
+      </QueryClientProvider>,
+    )
+    expect(screen.getByLabelText(/Nome da empresa/)).toBeInTheDocument()
+
+    rerender(
+      <QueryClientProvider client={new QueryClient()}>
+        <RegistrationDetailsForm profile="proprietario" />
+      </QueryClientProvider>,
+    )
+    expect(screen.queryByLabelText(/Nome da empresa/)).not.toBeInTheDocument()
+  })
+
+  it('mostra o campo de buscar imobiliária apenas para corretor', () => {
+    const { rerender } = render(
+      <QueryClientProvider client={new QueryClient()}>
+        <RegistrationDetailsForm profile="corretor" />
+      </QueryClientProvider>,
+    )
+    expect(screen.getByLabelText(/Imobiliária/)).toBeInTheDocument()
+
+    rerender(
+      <QueryClientProvider client={new QueryClient()}>
+        <RegistrationDetailsForm profile="proprietario" />
+      </QueryClientProvider>,
+    )
+    expect(screen.queryByLabelText(/Imobiliária/)).not.toBeInTheDocument()
+  })
 })
