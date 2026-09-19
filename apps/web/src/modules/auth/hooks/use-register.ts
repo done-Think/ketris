@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
@@ -32,6 +32,8 @@ export function useRegister() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [pendingApproval, setPendingApproval] = useState(false)
+  const [pendingEmailVerification, setPendingEmailVerification] = useState<string | null>(null)
+  const pendingRedirect = useRef<string | null>(null)
 
   function messageForErrorCode(code: string | undefined) {
     if (code === 'AGENCY_NOT_FOUND') return t('errors.agencyNotFound')
@@ -44,6 +46,7 @@ export function useRegister() {
   const register = async (values: RegistrationDetailsFormValues): Promise<boolean> => {
     setError(null)
     setPendingApproval(false)
+    setPendingEmailVerification(null)
 
     let response: Response
 
@@ -84,8 +87,8 @@ export function useRegister() {
       }
 
       const destination = body.user.role === 'RENTER' ? '/' : '/dashboard'
-      router.replace(getLocalizedPathname(destination, locale))
-      router.refresh()
+      pendingRedirect.current = getLocalizedPathname(destination, locale)
+      setPendingEmailVerification(values.email)
       return true
     } catch {
       setError(t('errors.generic'))
@@ -93,5 +96,14 @@ export function useRegister() {
     }
   }
 
-  return { error, pendingApproval, register }
+  function completeEmailVerification() {
+    setPendingEmailVerification(null)
+
+    if (pendingRedirect.current) {
+      router.replace(pendingRedirect.current)
+      router.refresh()
+    }
+  }
+
+  return { error, pendingApproval, pendingEmailVerification, register, completeEmailVerification }
 }

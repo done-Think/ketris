@@ -53,7 +53,7 @@ describe('useRegister', () => {
     vi.clearAllMocks()
   })
 
-  it('cria a conta, estabelece a sessão via token-session e redireciona pro dashboard (ADMIN)', async () => {
+  it('cria a conta e estabelece a sessão, mas só redireciona depois de confirmar o e-mail', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(
@@ -70,18 +70,23 @@ describe('useRegister', () => {
     const { result } = renderHook(() => useRegister())
     const success = await register(result, proprietarioValues)
 
-    expect(fetch).toHaveBeenCalledWith('/api/register', expect.objectContaining({ method: 'POST' }))
     expect(signIn).toHaveBeenCalledWith(
       'token-session',
       expect.objectContaining({ accessToken: 'access-fake', refreshToken: 'refresh-fake' }),
     )
+    expect(success).toBe(true)
+    expect(result.current.pendingEmailVerification).toBe('ana@ketris.dev')
+    expect(routerMock.replace).not.toHaveBeenCalled()
+
+    act(() => {
+      result.current.completeEmailVerification()
+    })
+
     expect(routerMock.replace).toHaveBeenCalledWith('/pt/dashboard')
     expect(routerMock.refresh).toHaveBeenCalled()
-    expect(success).toBe(true)
-    expect(result.current.pendingApproval).toBe(false)
   })
 
-  it('redireciona pra home pública quando o papel é RENTER', async () => {
+  it('redireciona pra home pública quando o papel é RENTER, após confirmar o e-mail', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(
@@ -97,6 +102,10 @@ describe('useRegister', () => {
 
     const { result } = renderHook(() => useRegister())
     await register(result, { ...proprietarioValues, profile: 'locatario' })
+
+    act(() => {
+      result.current.completeEmailVerification()
+    })
 
     expect(routerMock.replace).toHaveBeenCalledWith('/pt')
   })
@@ -117,6 +126,7 @@ describe('useRegister', () => {
     expect(signIn).not.toHaveBeenCalled()
     expect(success).toBe(true)
     expect(result.current.pendingApproval).toBe(true)
+    expect(result.current.pendingEmailVerification).toBeNull()
   })
 
   it('mostra a mensagem específica quando a imobiliária não é encontrada', async () => {
@@ -191,6 +201,7 @@ describe('useRegister', () => {
 
     expect(success).toBe(false)
     expect(routerMock.replace).not.toHaveBeenCalled()
+    expect(result.current.pendingEmailVerification).toBeNull()
     expect(result.current.error).toBe('Não foi possível concluir o cadastro. Tente novamente.')
   })
 })

@@ -9,6 +9,7 @@ import { Link } from '@/i18n/navigation'
 import { brand, radius } from '@shared/theme/tokens'
 
 import { authPrimaryButtonSx } from './auth-form.styles'
+import { EmailVerificationStep } from './EmailVerificationStep'
 import { RegistrationDetailsForm } from './RegistrationDetailsForm'
 import { authRoutes } from '../config/auth-routes'
 import { useRegister } from '../hooks/use-register'
@@ -21,10 +22,20 @@ export interface RegistrationDetailsScreenProps {
 
 export function RegistrationDetailsScreen({ profile }: RegistrationDetailsScreenProps) {
   const t = useTranslations('auth.registerDetails')
-  const { error, pendingApproval, register } = useRegister()
+  const { error, pendingApproval, pendingEmailVerification, register, completeEmailVerification } =
+    useRegister()
 
   async function handleSubmit(values: RegistrationDetailsFormValues) {
     await register(values)
+  }
+
+  if (pendingEmailVerification) {
+    return (
+      <EmailVerificationStep
+        email={pendingEmailVerification}
+        onConfirmed={completeEmailVerification}
+      />
+    )
   }
 
   if (pendingApproval) {

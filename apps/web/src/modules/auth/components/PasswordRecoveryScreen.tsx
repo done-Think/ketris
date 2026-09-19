@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link as MuiLink } from '@mui/material'
 import { useTranslations } from 'next-intl'
@@ -11,30 +12,49 @@ import { componentText } from '@shared/theme/tokens'
 import { AuthShell } from './AuthShell'
 import { PasswordRecoveryConfirmation } from './PasswordRecoveryConfirmation'
 import { PasswordRecoveryForm } from './PasswordRecoveryForm'
+import { PasswordResetForm } from './PasswordResetForm'
 import { authRoutes } from '../config/auth-routes'
-import { passwordRecoverySchema } from '../schemas/password-recovery-schema'
-import type { PasswordRecoveryFormValues } from '../types/password-recovery'
+import { passwordRecoverySchema, passwordResetSchema } from '../schemas/password-recovery-schema'
+import type {
+  PasswordRecoveryFormValues,
+  PasswordResetFormValues,
+} from '../types/password-recovery'
+
+type RecoveryStep = 'request' | 'reset' | 'done'
 
 export function PasswordRecoveryScreen() {
   const t = useTranslations('auth.passwordRecovery')
-  const {
-    control,
-    handleSubmit,
-    formState: { isSubmitting, isSubmitSuccessful },
-  } = useForm<PasswordRecoveryFormValues>({
+  const [step, setStep] = useState<RecoveryStep>('request')
+
+  const requestForm = useForm<PasswordRecoveryFormValues>({
     resolver: zodResolver(passwordRecoverySchema),
     defaultValues: { email: '' },
   })
 
-  const requestRecovery = handleSubmit(() => {})
+  const resetForm = useForm<PasswordResetFormValues>({
+    resolver: zodResolver(passwordResetSchema),
+    defaultValues: { code: '', password: '', passwordConfirmation: '' },
+  })
+
+  const requestRecovery = requestForm.handleSubmit(() => {
+    setStep('reset')
+  })
+
+  const submitReset = resetForm.handleSubmit(() => {
+    setStep('done')
+  })
+
+  function resendCode() {
+    // Sem backend real ainda (SES pendente) — apenas reinicia o contador de reenvio.
+  }
 
   return (
     <AuthShell
-      brandDescription={isSubmitSuccessful ? t('successBrandDescription') : t('brandDescription')}
+      brandDescription={step === 'request' ? t('brandDescription') : t('successBrandDescription')}
       contentMaxWidth={560}
       mobileVariant="backdrop"
       footer={
-        isSubmitSuccessful ? undefined : (
+        step === 'done' ? undefined : (
           <MuiLink
             component={Link}
             href={authRoutes.login}
@@ -46,14 +66,21 @@ export function PasswordRecoveryScreen() {
         )
       }
     >
-      {isSubmitSuccessful ? (
-        <PasswordRecoveryConfirmation onResend={() => requestRecovery()} />
-      ) : (
+      {step === 'request' ? (
         <PasswordRecoveryForm
-          control={control}
-          isSubmitting={isSubmitting}
+          control={requestForm.control}
+          isSubmitting={requestForm.formState.isSubmitting}
           onSubmit={requestRecovery}
         />
+      ) : step === 'reset' ? (
+        <PasswordResetForm
+          control={resetForm.control}
+          isSubmitting={resetForm.formState.isSubmitting}
+          onSubmit={submitReset}
+          onResend={resendCode}
+        />
+      ) : (
+        <PasswordRecoveryConfirmation />
       )}
     </AuthShell>
   )

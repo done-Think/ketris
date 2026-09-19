@@ -68,6 +68,33 @@ describe('RegistrationDetailsScreen', () => {
     expect(screen.queryByRole('button', { name: 'Criar conta' })).not.toBeInTheDocument()
   }, 20000)
 
+  it('pede confirmação de e-mail antes de redirecionar quando o cadastro é concluído', async () => {
+    const user = userEvent.setup()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        mockResponse(201, {
+          outcome: 'REGISTERED',
+          user: { role: 'ADMIN' },
+          accessToken: 'access-fake',
+          refreshToken: 'refresh-fake',
+        }),
+      ),
+    )
+    vi.mocked(signIn).mockResolvedValue({ error: null, ok: true, status: 200, url: null })
+
+    renderScreen()
+    await fillAndSubmit(user)
+
+    expect(await screen.findByText('Confirme seu e-mail')).toBeInTheDocument()
+    expect(routerMock.replace).not.toHaveBeenCalled()
+
+    await user.type(screen.getByLabelText(/Código de verificação/), '123456')
+    await user.click(screen.getByRole('button', { name: 'Confirmar' }))
+
+    expect(routerMock.replace).toHaveBeenCalledWith('/pt/dashboard')
+  }, 20000)
+
   it('mostra a mensagem de erro sem trocar de tela quando o cadastro falha', async () => {
     const user = userEvent.setup()
     vi.stubGlobal(
