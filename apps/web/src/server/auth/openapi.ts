@@ -288,9 +288,12 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
     description:
       'Rota pública. Não exige autenticação: o e-mail identifica a conta. Após a troca, todos os ' +
       'refresh tokens ativos do usuário são revogados. E-mail desconhecido retorna 204 do mesmo jeito ' +
-      '(mesma postura anti-enumeração do login). ATENÇÃO — débito temporário e aceito: o campo `code` ' +
-      'hoje só é validado no formato (6 dígitos), ainda não é conferido contra um código real enviado ' +
-      'por e-mail (AWS SES ainda em sandbox, sem domínio verificado). Isso precisa ser corrigido antes ' +
+      '(mesma postura anti-enumeração do login). Esta rota não recebe nem valida nenhum código de ' +
+      'verificação — isso é responsabilidade de uma rota de validação separada, ainda não implementada ' +
+      '(depende do domínio do AWS SES, ainda em sandbox). ATENÇÃO — débito temporário e aceito: ' +
+      'enquanto essa rota de validação não existir, o frontend não bloqueia de fato o avanço até aqui ' +
+      'por um código real, então qualquer requisição válida com um e-mail existente troca a senha. ' +
+      'Isso precisa ser corrigido (validação real do código antes de permitir chamar esta rota) antes ' +
       'de qualquer exposição fora de ambiente local.',
     request: {
       body: {

@@ -48,7 +48,6 @@ export function PasswordRecoveryScreen() {
   const submitReset = resetForm.handleSubmit(async (values) => {
     const succeeded = await resetPassword({
       email,
-      code: values.code,
       password: values.password,
     })
 

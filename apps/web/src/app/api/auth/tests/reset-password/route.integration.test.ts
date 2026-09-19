@@ -62,7 +62,6 @@ describe('POST /api/auth/reset-password (integração)', () => {
     const response = await resetPassword(
       buildRequest('http://localhost/api/auth/reset-password', {
         email,
-        code: '123456',
         password: newPassword,
       }),
     )
@@ -92,7 +91,6 @@ describe('POST /api/auth/reset-password (integração)', () => {
     const response = await resetPassword(
       buildRequest('http://localhost/api/auth/reset-password', {
         email: 'nao-existe@ketris.dev',
-        code: '123456',
         password: 'qualquer-senha-123',
       }),
     )
@@ -104,7 +102,6 @@ describe('POST /api/auth/reset-password (integração)', () => {
     const response = await resetPassword(
       buildRequest('http://localhost/api/auth/reset-password', {
         email,
-        code: '123',
         password: '123',
       }),
     )

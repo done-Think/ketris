@@ -9,10 +9,6 @@ export const resetPasswordRequestSchema = z
       .email('E-mail inválido.')
       .transform((value) => value.toLowerCase())
       .openapi({ example: 'ana@ketris.dev' }),
-    code: z
-      .string()
-      .regex(/^\d{6}$/, 'Código inválido.')
-      .openapi({ example: '123456' }),
     password: z
       .string()
       .min(8, 'Senha deve ter pelo menos 8 caracteres.')

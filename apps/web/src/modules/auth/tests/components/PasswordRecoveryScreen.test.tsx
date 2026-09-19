@@ -131,7 +131,6 @@ describe('PasswordRecoveryScreen', () => {
         method: 'POST',
         body: JSON.stringify({
           email: 'usuario@email.com',
-          code: '123456',
           password: 'senha-longa-123',
         }),
       }),
