@@ -80,6 +80,7 @@ export class PrismaUserRepository implements UserRepository {
         nome: changes.nome,
         email: changes.email ? normalizeEmail(changes.email) : undefined,
         papel: changes.papel,
+        senhaHash: changes.senhaHash,
       },
     })
 

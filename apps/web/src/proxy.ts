@@ -27,6 +27,7 @@ const authPaths = new Set([
   '/api/platform/login',
   '/api/platform/refresh',
   '/api/register',
+  '/api/auth/reset-password',
 ])
 
 export function proxy(request: NextRequest) {

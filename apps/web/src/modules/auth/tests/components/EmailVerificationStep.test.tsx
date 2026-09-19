@@ -14,7 +14,9 @@ describe('EmailVerificationStep', () => {
     const submitButton = screen.getByRole('button', { name: 'Confirmar' })
     expect(submitButton).toBeDisabled()
 
-    await user.type(screen.getByLabelText(/Código de verificação/), '123456')
+    const codeBoxes = screen.getAllByLabelText(/Código de verificação/)
+    await user.click(codeBoxes[0])
+    await user.type(codeBoxes[0], '123456')
     expect(submitButton).toBeEnabled()
 
     await user.click(submitButton)

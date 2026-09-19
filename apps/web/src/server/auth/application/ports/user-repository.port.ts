@@ -13,6 +13,7 @@ export interface UserUpdate {
   nome?: string
   email?: string
   papel?: Papel
+  senhaHash?: string
 }
 
 export interface UserRepository {

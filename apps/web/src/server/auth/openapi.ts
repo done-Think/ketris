@@ -10,6 +10,7 @@ import {
   refreshTokenRequestSchema,
   refreshTokenResponseSchema,
 } from './schemas/refresh-token.schema'
+import { resetPasswordRequestSchema } from './schemas/reset-password.schema'
 import { updateUserRequestSchema, updateUserResponseSchema } from './schemas/update-user.schema'
 import { authenticatedUserSchema } from './schemas/user.schema'
 
@@ -274,6 +275,34 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
       },
       404: {
         description: 'Usuário não encontrado neste tenant.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'post',
+    path: '/auth/reset-password',
+    tags: ['Auth'],
+    summary: 'Redefine a senha de um usuário a partir do fluxo de recuperação por e-mail',
+    description:
+      'Rota pública. Não exige autenticação: o e-mail identifica a conta. Após a troca, todos os ' +
+      'refresh tokens ativos do usuário são revogados. E-mail desconhecido retorna 204 do mesmo jeito ' +
+      '(mesma postura anti-enumeração do login). ATENÇÃO — débito temporário e aceito: o campo `code` ' +
+      'hoje só é validado no formato (6 dígitos), ainda não é conferido contra um código real enviado ' +
+      'por e-mail (AWS SES ainda em sandbox, sem domínio verificado). Isso precisa ser corrigido antes ' +
+      'de qualquer exposição fora de ambiente local.',
+    request: {
+      body: {
+        content: { 'application/json': { schema: resetPasswordRequestSchema } },
+      },
+    },
+    responses: {
+      204: {
+        description: 'Senha redefinida (ou e-mail desconhecido — resposta idêntica).',
+      },
+      400: {
+        description: 'Corpo da requisição inválido (falha de validação Zod).',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },

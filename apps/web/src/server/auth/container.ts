@@ -10,6 +10,7 @@ import { ListUsersUseCase } from './application/use-cases/list-users.use-case'
 import { LoginUseCase } from './application/use-cases/login.use-case'
 import { LogoutUseCase } from './application/use-cases/logout.use-case'
 import { RefreshAccessTokenUseCase } from './application/use-cases/refresh-access-token.use-case'
+import { ResetPasswordUseCase } from './application/use-cases/reset-password.use-case'
 import { UpdateAdminUseCase } from './application/use-cases/update-admin.use-case'
 import { UpdateUserUseCase } from './application/use-cases/update-user.use-case'
 import { BcryptPasswordHasher } from './infrastructure/bcrypt-password-hasher'
@@ -48,4 +49,9 @@ export const authContainer = {
     refreshTokenRepository,
   ),
   logoutUseCase: new LogoutUseCase(refreshTokenRepository),
+  resetPasswordUseCase: new ResetPasswordUseCase(
+    userRepository,
+    passwordHasher,
+    refreshTokenRepository,
+  ),
 }

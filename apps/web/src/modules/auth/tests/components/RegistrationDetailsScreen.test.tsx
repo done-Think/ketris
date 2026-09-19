@@ -89,7 +89,9 @@ describe('RegistrationDetailsScreen', () => {
     expect(await screen.findByText('Confirme seu e-mail')).toBeInTheDocument()
     expect(routerMock.replace).not.toHaveBeenCalled()
 
-    await user.type(screen.getByLabelText(/Código de verificação/), '123456')
+    const codeBoxes = screen.getAllByLabelText(/Código de verificação/)
+    await user.click(codeBoxes[0])
+    await user.type(codeBoxes[0], '123456')
     await user.click(screen.getByRole('button', { name: 'Confirmar' }))
 
     expect(routerMock.replace).toHaveBeenCalledWith('/pt/dashboard')
