@@ -44,9 +44,7 @@ export function PasswordRecoveryScreen() {
     setStep('done')
   })
 
-  function resendCode() {
-    // Sem backend real ainda (SES pendente) — apenas reinicia o contador de reenvio.
-  }
+  function resendCode() {}
 
   return (
     <AuthShell
