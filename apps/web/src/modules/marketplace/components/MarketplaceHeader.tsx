@@ -32,6 +32,7 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
           name: session.user.name ?? session.user.email ?? '',
           email: session.user.email ?? '',
           avatar: session.user.image ?? undefined,
+          role: session.papel,
         }
       : undefined
 

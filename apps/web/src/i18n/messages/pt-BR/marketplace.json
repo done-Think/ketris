@@ -16,7 +16,12 @@
       "es": "Espanhol",
       "ptBR": "Português"
     },
-    "role": "Corretor parceiro",
+    "roles": {
+      "ADMIN": "Administrador",
+      "OWNER": "Proprietário",
+      "AGENT": "Corretor parceiro",
+      "RENTER": "Locatário"
+    },
     "actions": {
       "settings": "Configurações",
       "signOut": "Sair",
