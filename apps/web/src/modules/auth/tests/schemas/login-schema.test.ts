@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { loginSchema } from './login-schema'
+import { loginSchema } from '../../schemas/login-schema'
 
 describe('loginSchema', () => {
   it('normaliza o e-mail e aceita credenciais preenchidas', () => {

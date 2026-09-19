@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { registrationDetailsSchema } from './registration-details-schema'
+import { registrationDetailsSchema } from '../../schemas/registration-details-schema'
 
 const validDetails = {
   profile: 'proprietario' as const,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { passwordRecoverySchema } from './password-recovery-schema'
+import { passwordRecoverySchema } from '../../schemas/password-recovery-schema'
 
 describe('passwordRecoverySchema', () => {
   it('normaliza um e-mail válido', () => {

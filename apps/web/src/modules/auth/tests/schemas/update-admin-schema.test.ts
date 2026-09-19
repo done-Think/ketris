@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { updateAdminSchema } from './update-admin-schema'
+import { updateAdminSchema } from '../../schemas/update-admin-schema'
 
 describe('updateAdminSchema', () => {
   it('aceita nome e e-mail válidos', () => {

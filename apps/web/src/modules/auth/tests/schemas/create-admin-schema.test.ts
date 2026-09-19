@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { createAdminSchema } from './create-admin-schema'
+import { createAdminSchema } from '../../schemas/create-admin-schema'
 
 describe('createAdminSchema', () => {
   it('aceita payload válido com senhas coincidentes', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { signInSchema } from './sign-in-schema'
+import { signInSchema } from '../../schemas/sign-in-schema'
 
 describe('signInSchema', () => {
   it('aceita e-mail e senha válidos', () => {
