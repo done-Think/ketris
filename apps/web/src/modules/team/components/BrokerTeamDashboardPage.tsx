@@ -37,7 +37,7 @@ import { useForm, useWatch } from 'react-hook-form'
 
 import { useRouter } from '@/i18n/navigation'
 import { RhfTextField } from '@shared/components/form'
-import { DashboardPageHeader } from '@shared/components/layout'
+import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/components/layout'
 import {
   alpha,
   brand,
@@ -148,6 +148,7 @@ export function BrokerTeamDashboardPage() {
           actions={
             <Stack
               direction={{ xs: 'column', sm: 'row' }}
+              alignItems={{ sm: 'center' }}
               spacing={1.2}
               sx={{ width: { xs: '100%', lg: 'auto' } }}
             >
@@ -159,6 +160,7 @@ export function BrokerTeamDashboardPage() {
                 sx={{
                   width: { xs: '100%', sm: 300 },
                   '& .MuiOutlinedInput-root': {
+                    height: 36,
                     bgcolor: surface.paper,
                     borderRadius: `${radius.sm}px`,
                   },
@@ -178,14 +180,19 @@ export function BrokerTeamDashboardPage() {
                 variant="contained"
                 startIcon={<PersonAddAlt1OutlinedIcon sx={{ fontSize: iconSize.sm }} />}
                 sx={{
-                  minHeight: 40,
+                  minHeight: 36,
                   borderRadius: `${radius.sm}px`,
+                  boxShadow: shadows.none,
+                  fontSize: 14,
                   fontWeight: 900,
                   whiteSpace: 'nowrap',
                 }}
               >
                 {t('inviteBroker')}
               </Button>
+              <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                <DashboardNotificationsButton />
+              </Box>
             </Stack>
           }
         />

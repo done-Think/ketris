@@ -66,7 +66,7 @@ export function HomeHeader({
           sx={{
             minHeight: 60,
             display: 'grid',
-            gridTemplateColumns: { xs: 'auto 1fr', md: '1fr auto 1fr' },
+            gridTemplateColumns: { xs: 'auto 1fr', md: 'auto minmax(0, 1fr) auto' },
             alignItems: 'center',
             gap: 2,
           }}
@@ -82,8 +82,8 @@ export function HomeHeader({
             component="nav"
             direction="row"
             alignItems="center"
-            spacing={{ xs: 2, md: 4 }}
-            sx={{ display: { xs: 'none', md: 'flex' }, justifySelf: 'center' }}
+            spacing={{ xs: 2, md: 2.5, lg: 4 }}
+            sx={{ display: { xs: 'none', md: 'flex' }, justifySelf: 'center', minWidth: 0 }}
           >
             {navigationItems.map((item) => (
               <MuiLink
@@ -121,7 +121,12 @@ export function HomeHeader({
             ))}
           </Stack>
 
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ justifySelf: 'end' }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+            sx={{ justifySelf: 'end', flexShrink: 0 }}
+          >
             <Button
               component={Link}
               href={announcePropertyHref}
@@ -134,7 +139,9 @@ export function HomeHeader({
                 borderRadius: `${radius.sm}px`,
                 display: { xs: 'none', md: 'inline-flex' },
                 minHeight: 42,
+                minWidth: 138,
                 px: 2,
+                whiteSpace: 'nowrap',
                 ...componentText.headerCta,
                 transition: motion.transition.bordered,
                 '&:hover': {

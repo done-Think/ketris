@@ -1,10 +1,20 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Box, GlobalStyles, Paper, Stack, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  GlobalStyles,
+  MenuItem,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { brand, radius, shadows, surface } from '@shared/theme/tokens'
+import { DashboardTablePagination } from '@shared/components/layout'
+import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { contactFilters } from '../config/contact-filters'
 import { contactListFixtures, contactsFixtureTotal } from '../fixtures/contact-list-fixtures'
@@ -12,7 +22,6 @@ import type { ContactFilter, ContactsListProps } from '../types/contact'
 import { filterContacts } from '../utils/contacts'
 import { ContactsCards } from './contacts-list/ContactsCards'
 import { ContactsHeader } from './contacts-list/ContactsHeader'
-import { ContactsPaginationFooter } from './contacts-list/ContactsPaginationFooter'
 import { ContactsTable } from './contacts-list/ContactsTable'
 
 const contactsBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
@@ -63,27 +72,20 @@ export function ContactsList({
 
   const isDefaultView = activeFilter === 'Todos' && search.trim() === ''
   const resultTotal = isDefaultView ? totalCount : filteredContacts.length
-  const firstVisible =
-    filteredContacts.length > 0 ? (isDefaultView ? (page - 1) * contacts.length + 1 : 1) : 0
-  const lastVisible =
-    filteredContacts.length > 0
-      ? isDefaultView
-        ? Math.min(firstVisible + filteredContacts.length - 1, resultTotal)
-        : filteredContacts.length
-      : 0
-  const canGoBack = isDefaultView && page > 1
-  const canGoForward =
-    isDefaultView &&
-    filteredContacts.length > 0 &&
-    firstVisible + filteredContacts.length <= resultTotal
+  const rowsPerPage = isDefaultView
+    ? Math.max(contacts.length, 5)
+    : Math.max(filteredContacts.length, 5)
+  const getFilterCount = (filter: ContactFilter) => {
+    const selectedType = contactFilters.find((option) => option.label === filter)?.type ?? null
+    return filterContacts(contacts, search, selectedType).length
+  }
 
   return (
     <Box
       sx={{
         minHeight: '100vh',
-        px: { xs: 2, sm: 3, lg: 3.5 },
-        pt: { xs: 2, sm: 3, lg: 3.5 },
-        pb: { xs: 2, sm: 2.5, lg: 2.5 },
+        px: { xs: 2, md: 3.6 },
+        py: { xs: 2.4, md: 4.2 },
         bgcolor: surface.app,
         fontFamily: contactsBodyFontFamily,
         '& .MuiTypography-root, & .MuiButton-root, & .MuiInputBase-root, & .MuiTableCell-root': {
@@ -93,12 +95,12 @@ export function ContactsList({
     >
       <GlobalStyles styles={{ '.tsqd-parent-container': { display: 'none' } }} />
 
-      <ContactsHeader
-        search={search}
+      <ContactsHeader search={search} onSearchChange={setSearch} onNewContact={onNewContact} />
+
+      <ContactsTypeFilters
         activeFilter={activeFilter}
-        onSearchChange={setSearch}
+        getFilterCount={getFilterCount}
         onFilterChange={setActiveFilter}
-        onNewContact={onNewContact}
       />
 
       <Paper
@@ -141,16 +143,188 @@ export function ContactsList({
           </Stack>
         )}
 
-        <ContactsPaginationFooter
-          firstVisible={firstVisible}
-          lastVisible={lastVisible}
-          resultTotal={resultTotal}
+        <DashboardTablePagination
+          count={resultTotal}
           page={page}
-          canGoBack={canGoBack}
-          canGoForward={canGoForward}
+          rowsPerPage={rowsPerPage}
+          rowsPerPageOptions={[...new Set([rowsPerPage, 10, 25])]}
           onPageChange={onPageChange}
         />
       </Paper>
+    </Box>
+  )
+}
+
+function ContactsTypeFilters({
+  activeFilter,
+  getFilterCount,
+  onFilterChange,
+}: {
+  activeFilter: ContactFilter
+  getFilterCount: (filter: ContactFilter) => number
+  onFilterChange: (filter: ContactFilter) => void
+}) {
+  const t = useTranslations('crm.contacts')
+  const activeOption =
+    contactFilters.find((filter) => filter.label === activeFilter) ?? contactFilters[0]
+
+  return (
+    <>
+      <TextField
+        select
+        size="small"
+        value={activeFilter}
+        onChange={(event) => onFilterChange(event.target.value as ContactFilter)}
+        sx={{
+          display: { xs: 'block', sm: 'none' },
+          width: '100%',
+          mt: 2,
+          '& .MuiOutlinedInput-root': {
+            minHeight: 46,
+            borderRadius: `${radius.sm}px`,
+            bgcolor: surface.paper,
+            color: brand.graphite[500],
+            fontSize: 14,
+            fontWeight: 800,
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'transparent',
+              borderWidth: 0,
+            },
+          },
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'transparent',
+            borderWidth: 0,
+          },
+          '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'transparent',
+          },
+        }}
+        SelectProps={{
+          inputProps: { 'aria-label': t('filterAriaLabel') },
+          renderValue: () => (
+            <ContactFilterLabel
+              active
+              count={getFilterCount(activeOption.label)}
+              label={t(`filters.${activeOption.labelKey}`)}
+            />
+          ),
+          MenuProps: {
+            PaperProps: {
+              sx: {
+                mt: 0.6,
+                borderRadius: `${radius.sm}px`,
+                boxShadow: shadows.popover,
+              },
+            },
+          },
+        }}
+      >
+        {contactFilters.map((filter) => {
+          const active = filter.label === activeFilter
+
+          return (
+            <MenuItem
+              key={filter.label}
+              value={filter.label}
+              sx={{
+                minHeight: 42,
+                bgcolor: active ? alpha.magenta[8] : 'transparent',
+                '&:hover': { bgcolor: alpha.magenta[8] },
+              }}
+            >
+              <ContactFilterLabel
+                active={active}
+                count={getFilterCount(filter.label)}
+                label={t(`filters.${filter.labelKey}`)}
+              />
+            </MenuItem>
+          )
+        })}
+      </TextField>
+
+      <Stack
+        direction="row"
+        spacing={0.8}
+        useFlexGap
+        flexWrap="wrap"
+        sx={{ display: { xs: 'none', sm: 'flex' }, mt: 2, mb: -0.25 }}
+      >
+        {contactFilters.map((filter) => {
+          const active = filter.label === activeFilter
+
+          return (
+            <Button
+              key={filter.label}
+              type="button"
+              variant={active ? 'contained' : 'outlined'}
+              aria-pressed={active}
+              onClick={() => onFilterChange(filter.label)}
+              sx={{
+                minHeight: 38,
+                borderRadius: `${radius.full}px`,
+                px: 1.8,
+                gap: 0.6,
+                fontSize: 13,
+                fontWeight: 900,
+                boxShadow: 'none',
+                '&:hover': { boxShadow: 'none' },
+              }}
+            >
+              {t(`filters.${filter.labelKey}`)}
+              <Box
+                component="span"
+                sx={{
+                  display: 'grid',
+                  minWidth: 20,
+                  height: 20,
+                  placeItems: 'center',
+                  px: 0.5,
+                  borderRadius: `${radius.full}px`,
+                  bgcolor: active ? alpha.white[8] : alpha.graphite[6],
+                  color: active ? surface.lightText : brand.neutral[500],
+                  fontSize: 10.5,
+                  fontWeight: 800,
+                }}
+              >
+                {getFilterCount(filter.label)}
+              </Box>
+            </Button>
+          )
+        })}
+      </Stack>
+    </>
+  )
+}
+
+function ContactFilterLabel({
+  active,
+  count,
+  label,
+}: {
+  active: boolean
+  count: number
+  label: string
+}) {
+  return (
+    <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+      <Box component="span">{label}</Box>
+      <Box
+        component="span"
+        sx={{
+          display: 'grid',
+          minWidth: 22,
+          height: 22,
+          placeItems: 'center',
+          px: 0.6,
+          borderRadius: `${radius.full}px`,
+          bgcolor: active ? brand.magenta[500] : alpha.graphite[6],
+          color: active ? surface.lightText : brand.neutral[500],
+          fontSize: 11,
+          fontWeight: 900,
+        }}
+      >
+        {count}
+      </Box>
     </Box>
   )
 }

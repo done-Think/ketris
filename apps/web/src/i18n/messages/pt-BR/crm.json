@@ -26,6 +26,7 @@
   },
   "pipeline": {
     "title": "Pipeline de Vendas",
+    "subtitle": "Acompanhe oportunidades, etapas e negociações em andamento.",
     "proposalsTitle": "Propostas",
     "searchPlaceholder": "Buscar oportunidade...",
     "searchAriaLabel": "Buscar oportunidade",
@@ -67,6 +68,7 @@
   },
   "contacts": {
     "title": "Contatos",
+    "subtitle": "Gerencie sua base de clientes, proprietários e corretores.",
     "searchPlaceholder": "Buscar contato por nome, email, fone...",
     "searchAriaLabel": "Buscar contatos",
     "filterAriaLabel": "Filtrar contatos por tipo",

@@ -20,8 +20,15 @@ describe('createLeadSchema', () => {
     expect(schema.safeParse(validLeadValues).success).toBe(true)
   })
 
-  it('accepts an empty optional email', () => {
-    expect(schema.safeParse({ ...validLeadValues, email: '' }).success).toBe(true)
+  it('rejects an empty email', () => {
+    expect(schema.safeParse({ ...validLeadValues, email: '' }).success).toBe(false)
+  })
+
+  it('rejects an invalid email', () => {
+    const result = schema.safeParse({ ...validLeadValues, email: 'email-invalido' })
+
+    expect(result.success).toBe(false)
+    expect(result.success ? undefined : result.error.issues[0]?.message).toBe('emailInvalid')
   })
 
   it('rejects missing required contact and interest data', () => {

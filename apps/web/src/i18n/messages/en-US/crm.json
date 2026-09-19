@@ -26,6 +26,7 @@
   },
   "pipeline": {
     "title": "Sales Pipeline",
+    "subtitle": "Track opportunities, stages, and ongoing negotiations.",
     "proposalsTitle": "Proposals",
     "searchPlaceholder": "Search opportunity...",
     "searchAriaLabel": "Search opportunity",
@@ -67,6 +68,7 @@
   },
   "contacts": {
     "title": "Contacts",
+    "subtitle": "Manage your customer, owner, and broker database.",
     "searchPlaceholder": "Search contact by name, email, phone...",
     "searchAriaLabel": "Search contacts",
     "filterAriaLabel": "Filter contacts by type",

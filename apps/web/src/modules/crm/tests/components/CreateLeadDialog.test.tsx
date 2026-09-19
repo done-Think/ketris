@@ -28,7 +28,7 @@ function renderDialog(onClose = vi.fn()) {
 async function fillContactStep(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText('Nome'), 'Beatriz Nunes')
   await user.type(screen.getByLabelText('Telefone'), '11988887777')
-  await user.type(screen.getByLabelText('E-mail'), 'beatriz@example.com')
+  await user.type(screen.getByLabelText(/E-mail/), 'beatriz@example.com')
 }
 
 async function fillInterestStep(user: ReturnType<typeof userEvent.setup>) {
@@ -49,7 +49,7 @@ describe('CreateLeadDialog', () => {
     expect(screen.getByText('Registrar lead')).toBeVisible()
     expect(screen.getByLabelText('Nome')).toBeVisible()
     expect(screen.getByLabelText('Telefone')).toBeVisible()
-    expect(screen.getByLabelText('E-mail')).toBeVisible()
+    expect(screen.getByLabelText(/E-mail/)).toBeVisible()
   })
 
   it('blocks advancing to the next step when required fields are missing', async () => {
@@ -59,6 +59,7 @@ describe('CreateLeadDialog', () => {
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
 
     expect(await screen.findByText('Informe o nome do lead')).toBeVisible()
+    expect(screen.getByText('Informe um e-mail válido')).toBeVisible()
     expect(screen.queryByLabelText('Imóvel ou interesse')).not.toBeInTheDocument()
   })
 
