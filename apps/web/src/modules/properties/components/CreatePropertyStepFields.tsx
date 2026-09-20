@@ -1,7 +1,6 @@
 import { Controller } from 'react-hook-form'
 import {
   Box,
-  Button,
   Checkbox,
   FormControl,
   FormControlLabel,
@@ -11,10 +10,13 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import CameraAltOutlinedIcon from '@mui/icons-material/CameraAltOutlined'
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
+import RadioButtonCheckedRoundedIcon from '@mui/icons-material/RadioButtonCheckedRounded'
+import RadioButtonUncheckedRoundedIcon from '@mui/icons-material/RadioButtonUncheckedRounded'
 import { useTranslations } from 'next-intl'
 
-import { alpha, motion, radius, surface } from '@shared/theme/tokens'
+import { alpha, brand, iconSize, motion, radius, surface } from '@shared/theme/tokens'
 
 import {
   createPropertyFeatureOptions,
@@ -30,13 +32,34 @@ export function CreatePropertyStepFields({
   activeStepKey,
   activeStepLabel,
   propertyPurpose,
-  onPropertyPurposeChange,
 }: CreatePropertyStepFieldsProps) {
   const t = useTranslations('properties.create')
+  const hasRentPurpose = propertyPurpose.includes('Aluguel')
+  const hasSalePurpose = propertyPurpose.includes('Venda')
+  const mainValueLabel =
+    hasRentPurpose && !hasSalePurpose
+      ? 'rentValue'
+      : hasSalePurpose && !hasRentPurpose
+        ? 'saleValue'
+        : 'referenceValue'
+  const negotiationTermLabel =
+    hasRentPurpose && !hasSalePurpose
+      ? 'securityDeposit'
+      : hasSalePurpose && !hasRentPurpose
+        ? 'commission'
+        : 'commercialTerms'
 
   return (
     <>
-      <Typography sx={{ color: 'primary.main', fontSize: 13, fontWeight: 900, mb: 2.2 }}>
+      <Typography
+        sx={{
+          color: { xs: brand.neutral[500], md: 'primary.main' },
+          fontSize: { xs: 11, md: 13 },
+          fontWeight: 900,
+          mb: { xs: 1.8, md: 2.2 },
+          textTransform: 'uppercase',
+        }}
+      >
         {activeStepLabel}
       </Typography>
 
@@ -51,7 +74,9 @@ export function CreatePropertyStepFields({
             }}
           >
             <FormControl fullWidth>
-              <Typography sx={{ fontSize: 13, fontWeight: 900, mb: 0.8 }}>
+              <Typography
+                sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 800, mb: 0.8 }}
+              >
                 {t('fields.propertyType')}
               </Typography>
               <Controller
@@ -79,46 +104,74 @@ export function CreatePropertyStepFields({
             </FormControl>
 
             <Box>
-              <Typography sx={{ fontSize: 13, fontWeight: 900, mb: 0.8 }}>
+              <Typography
+                sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 800, mb: 0.8 }}
+              >
                 {t('fields.purpose')}
               </Typography>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  minHeight: 44,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: `${radius.sm}px`,
-                  overflow: 'hidden',
-                  bgcolor: surface.paper,
-                }}
-              >
-                {createPropertyPurposeOptions.map((purpose) => {
-                  const active = purpose === propertyPurpose
+              <Controller
+                control={control}
+                name="purpose"
+                render={({ field }) => (
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: { xs: 0.8, md: 1 },
+                      width: { xs: '100%', md: '50%' },
+                    }}
+                  >
+                    {createPropertyPurposeOptions.map((purpose) => {
+                      const active = field.value.includes(purpose)
 
-                  return (
-                    <Button
-                      key={purpose}
-                      type="button"
-                      aria-pressed={active}
-                      onClick={() => onPropertyPurposeChange(purpose)}
-                      sx={{
-                        borderRadius: 0,
-                        color: active ? surface.lightText : 'text.secondary',
-                        bgcolor: active ? 'primary.main' : surface.paper,
-                        fontWeight: 900,
-                        transition: motion.transition.interactive,
-                        '&:hover': {
-                          bgcolor: active ? 'primary.dark' : alpha.graphite[6],
-                        },
-                      }}
-                    >
-                      {t(`purposes.${purpose}`)}
-                    </Button>
-                  )
-                })}
-              </Box>
+                      return (
+                        <FormControlLabel
+                          key={purpose}
+                          control={
+                            <Checkbox
+                              checked={active}
+                              checkedIcon={<RadioButtonCheckedRoundedIcon />}
+                              icon={<RadioButtonUncheckedRoundedIcon />}
+                              size="small"
+                              onChange={(event) => {
+                                field.onChange(
+                                  event.target.checked
+                                    ? [...field.value, purpose]
+                                    : field.value.filter((item) => item !== purpose),
+                                )
+                              }}
+                            />
+                          }
+                          label={t(`purposes.${purpose}`)}
+                          sx={{
+                            minHeight: 44,
+                            color: active ? 'primary.main' : 'text.secondary',
+                            mx: 0,
+                            px: 0,
+                            transition: motion.transition.interactive,
+                            '& .MuiCheckbox-root': {
+                              color: active ? 'primary.main' : brand.neutral[400],
+                              p: 0.6,
+                              mr: 0.6,
+                              '& .MuiSvgIcon-root': {
+                                fontSize: iconSize.md,
+                                borderRadius: radius.full,
+                              },
+                            },
+                            '& .MuiFormControlLabel-label': {
+                              fontSize: 14,
+                              fontWeight: 900,
+                            },
+                            '&:hover': {
+                              color: 'primary.main',
+                            },
+                          }}
+                        />
+                      )
+                    })}
+                  </Box>
+                )}
+              />
             </Box>
           </Box>
 
@@ -160,8 +213,8 @@ export function CreatePropertyStepFields({
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' },
-            gap: 2,
+            gridTemplateColumns: { xs: '1fr 1fr', md: '2fr 1fr' },
+            gap: { xs: 1.2, md: 2 },
           }}
         >
           {[
@@ -182,6 +235,11 @@ export function CreatePropertyStepFields({
                   label={t(`fields.${label}`)}
                   error={Boolean(fieldState.error)}
                   helperText={fieldState.error?.message}
+                  sx={{
+                    gridColumn: {
+                      xs: name === 'street' || name === 'zipCode' ? '1 / -1' : 'auto',
+                    },
+                  }}
                 />
               )}
             />
@@ -193,8 +251,11 @@ export function CreatePropertyStepFields({
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: 'repeat(4, minmax(0, 1fr))' },
-            gap: 2,
+            gridTemplateColumns: {
+              xs: 'repeat(2, minmax(0, 1fr))',
+              md: 'repeat(4, minmax(0, 1fr))',
+            },
+            gap: { xs: 1.2, md: 2 },
           }}
         >
           {[
@@ -293,7 +354,7 @@ export function CreatePropertyStepFields({
                       border: '1px dashed',
                       borderColor: active ? 'primary.main' : 'divider',
                       borderRadius: `${radius.sm}px`,
-                      bgcolor: active ? alpha.magenta[6] : alpha.graphite[6],
+                      bgcolor: active ? alpha.magenta[6] : surface.paper,
                       display: 'grid',
                       placeItems: 'center',
                       px: 2,
@@ -301,7 +362,17 @@ export function CreatePropertyStepFields({
                       cursor: 'pointer',
                     }}
                   >
-                    <Typography sx={{ fontWeight: 900 }}>{t(`mediaSlots.${label}`)}</Typography>
+                    <Stack spacing={0.8} alignItems="center">
+                      <CameraAltOutlinedIcon
+                        sx={{
+                          color: active ? brand.magenta[500] : brand.neutral[500],
+                          fontSize: iconSize.xl,
+                        }}
+                      />
+                      <Typography sx={{ color: brand.neutral[500], fontWeight: 900 }}>
+                        {t(`mediaSlots.${label}`)}
+                      </Typography>
+                    </Stack>
                   </Box>
                 )
               }}
@@ -319,10 +390,10 @@ export function CreatePropertyStepFields({
           }}
         >
           {[
-            ['mainValue', propertyPurpose === 'Aluguel' ? 'rentValue' : 'saleValue'],
+            ['mainValue', mainValueLabel],
             ['condominium', 'condominium'],
             ['iptu', 'iptu'],
-            ['negotiationTerm', propertyPurpose === 'Aluguel' ? 'securityDeposit' : 'commission'],
+            ['negotiationTerm', negotiationTermLabel],
           ].map(([name, label]) => (
             <Controller
               key={name}

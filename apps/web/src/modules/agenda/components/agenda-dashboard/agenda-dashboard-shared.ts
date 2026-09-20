@@ -61,9 +61,18 @@ export function buildAgendaCalendarDays(weekStartDate: Dayjs): AgendaCalendarDay
       dayLabel: capitalize(date.format('ddd').replace('.', '')),
       key: date.format('YYYY-MM-DD'),
       monthLabel: capitalize(date.format('MMM').replace('.', '')),
+      monthLongLabel: capitalize(date.format('MMMM')),
       today: date.isSame(today, 'day'),
     }
   })
+}
+
+export function getEventEndTime(
+  event: Pick<AgendaEvent, 'durationMinutes' | 'scheduledDate' | 'time'>,
+) {
+  return dayjs(`${event.scheduledDate}T${event.time}`)
+    .add(event.durationMinutes, 'minute')
+    .format('HH:mm')
 }
 
 export function getAgendaWeekRange(days: AgendaCalendarDay[]): AgendaWeekRange {

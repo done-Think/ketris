@@ -7,6 +7,7 @@ export type AuthMobileLayout = {
   pageBackground: string
   pageRows: string
   mainZIndex: number | 'auto'
+  mainAlignItems: string
   mainMinHeight: string
   mainPaddingX: number
   mainPaddingXSm: number

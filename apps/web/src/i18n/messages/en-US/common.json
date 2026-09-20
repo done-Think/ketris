@@ -29,6 +29,8 @@
     "contracts": "Contracts",
     "publicProfile": "Public Profile",
     "agenda": "Schedule",
+    "proposals": "Proposals",
+    "maintenance": "Maintenance",
     "finance": "Finance"
   }
 }

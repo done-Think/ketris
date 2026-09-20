@@ -10,7 +10,7 @@ export type AgendaEventStatus = 'Confirmada' | 'Pendente' | 'Reagendar'
 
 export type AgendaEventTone = 'primary' | 'info' | 'warning'
 
-export type AgendaEventCreatorRole = 'Colega' | 'Imobiliária'
+export type AgendaEventCreatorRole = 'colleague' | 'agency'
 
 export type AgendaEvent = {
   id: string
@@ -25,8 +25,17 @@ export type AgendaEvent = {
   notes: string
   status: AgendaEventStatus
   tone: AgendaEventTone
+  kind?: 'followUp' | 'inspection' | 'meeting' | 'signature' | 'visit'
   createdBy?: string
   createdByRole?: AgendaEventCreatorRole
+}
+
+export type AgendaTranslationGetter = (key: string) => string
+
+export type AgendaEventSeed = Omit<AgendaEvent, 'notes' | 'property' | 'title'> & {
+  notesKey: string
+  propertyKey: string
+  titleKey: string
 }
 
 export type AgendaCalendarDay = {
@@ -34,6 +43,7 @@ export type AgendaCalendarDay = {
   dayLabel: string
   key: string
   monthLabel: string
+  monthLongLabel: string
   today: boolean
 }
 

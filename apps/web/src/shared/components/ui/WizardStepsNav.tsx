@@ -25,6 +25,11 @@ export interface WizardStepsNavProps<TStep extends WizardStepsNavStep> {
    * strictly-completed steps (before the active one) are filled.
    */
   fillActiveStep?: boolean
+  /**
+   * Replaces the full step grid with a compact dots + "current/total" bar below `md`. Meant for
+   * longer wizards (5+ steps) where the full grid gets cramped on narrow screens.
+   */
+  mobileProgressLabel?: (current: number, total: number) => string
   sx?: SxProps<Theme>
 }
 
@@ -37,13 +42,14 @@ export function WizardStepsNav<TStep extends WizardStepsNavStep>({
   onStepSelect,
   gridTemplateColumns,
   fillActiveStep = false,
+  mobileProgressLabel,
   sx,
 }: WizardStepsNavProps<TStep>) {
-  return (
+  const stepsGrid = (
     <Box
       aria-label={ariaLabel}
       sx={{
-        display: 'grid',
+        display: { xs: mobileProgressLabel ? 'none' : 'grid', md: 'grid' },
         gridTemplateColumns,
         alignItems: 'center',
         columnGap: { xs: 1.4, md: 2.4 },
@@ -121,5 +127,48 @@ export function WizardStepsNav<TStep extends WizardStepsNavStep>({
         )
       })}
     </Box>
+  )
+
+  if (!mobileProgressLabel) return stepsGrid
+
+  return (
+    <>
+      <Stack
+        aria-label={ariaLabel}
+        direction="row"
+        alignItems="center"
+        justifyContent="center"
+        spacing={0.8}
+        sx={{ display: { xs: 'flex', md: 'none' }, mb: 0 }}
+      >
+        <Box sx={{ width: 18, height: 7, borderRadius: radius.full, bgcolor: 'primary.main' }} />
+        <Typography sx={{ color: 'primary.main', fontSize: 12, fontWeight: 800 }}>
+          {mobileProgressLabel(activeStepIndex + 1, steps.length)}
+        </Typography>
+        {steps.map((step, index) => (
+          <Box
+            key={step.key}
+            component="button"
+            type="button"
+            aria-label={getStepLabel(step, index)}
+            disabled={index > reachableUpToIndex}
+            onClick={() => {
+              if (index <= reachableUpToIndex) onStepSelect(index)
+            }}
+            sx={{
+              width: 7,
+              height: 7,
+              border: 0,
+              borderRadius: radius.full,
+              bgcolor: index <= reachableUpToIndex ? 'primary.main' : 'text.disabled',
+              cursor: index <= reachableUpToIndex ? 'pointer' : 'default',
+              p: 0,
+            }}
+          />
+        ))}
+      </Stack>
+
+      {stepsGrid}
+    </>
   )
 }

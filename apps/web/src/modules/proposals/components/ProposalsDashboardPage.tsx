@@ -22,7 +22,9 @@ export async function ProposalsDashboardPage() {
               {t('subtitle')}
             </Typography>
           </Box>
-          <DashboardNotificationsButton />
+          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+            <DashboardNotificationsButton />
+          </Box>
         </Stack>
 
         <Box

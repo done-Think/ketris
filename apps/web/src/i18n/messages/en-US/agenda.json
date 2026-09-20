@@ -13,7 +13,50 @@
     "assignedEventMessage": "{role} {name} booked {title}",
     "defaultEventNotes": "Event created manually in the agenda.",
     "rescheduleSuccess": "{title} rescheduled to {date} at {time}.",
-    "createSuccess": "{title} added to the agenda."
+    "createSuccess": "{title} added to the agenda.",
+    "freeSlot": "Free slot",
+    "selectedDayLabel": "{day}, {month} {date}",
+    "creatorRoles": {
+      "agency": "agency",
+      "colleague": "colleague"
+    },
+    "sampleEvents": {
+      "jardimVisit": {
+        "title": "Jardim Paulista visit",
+        "property": "Jardim Paulista apartment",
+        "notes": "Client wants to check the living room natural light."
+      },
+      "proposalReturn": {
+        "title": "Proposal follow-up",
+        "property": "Itaim penthouse",
+        "notes": "Review counteroffer and signature timeline."
+      },
+      "intakeMeeting": {
+        "title": "Intake meeting",
+        "property": "Alto Pinheiros house",
+        "notes": "Align price expectations and initial documentation."
+      },
+      "entryInspection": {
+        "title": "Move-in inspection",
+        "property": "Pinheiros studio",
+        "notes": "Check painting, keys, and delivery checklist."
+      },
+      "financingFollowUp": {
+        "title": "Financing follow-up",
+        "property": "Jardins 3-bed apt",
+        "notes": "Confirm bank response about the credit letter."
+      },
+      "digitalSignature": {
+        "title": "Digital signature",
+        "property": "Pinheiros studio contract",
+        "notes": "Track delivery and confirmation of signatures."
+      },
+      "digitalVisit": {
+        "title": "Digital visit",
+        "property": "Jardim Paulista apartment",
+        "notes": "Send call link and confirm the client's connection."
+      }
+    }
   },
   "eventForm": {
     "eyebrow": "New agenda entry",

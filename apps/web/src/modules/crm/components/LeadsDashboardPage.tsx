@@ -50,7 +50,7 @@ export function LeadsDashboardPage() {
   }
 
   useEffect(() => {
-    const leadId = searchParams.get('leadId')
+    const leadId = searchParams?.get('leadId')
     const lead = leads.find((currentLead) => currentLead.id === leadId)
     if (!lead) return
 

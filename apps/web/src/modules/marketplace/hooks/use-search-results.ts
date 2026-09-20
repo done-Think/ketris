@@ -17,10 +17,10 @@ import type { PropertySortOption, PublicPropertyPurpose } from '../types/public-
 import type {
   SearchResultsFormValues,
   SearchResultsPageProps,
+  SearchResultsViewModeScope,
   SortOption,
   ViewMode,
 } from '../types/search'
-import type { SearchResultsViewModeScope } from '../config/search-results-view-mode'
 import { mapSummaryToSearchResult } from '../utils/property-summary-adapter'
 import { formatCompactCurrency } from '../utils/search-results'
 import { useViewModePreference } from './use-view-mode-preference'
