@@ -91,6 +91,17 @@ describe('MarketplaceHeader', () => {
     expect(screen.getByText('maria@example.com')).toBeInTheDocument()
   })
 
+  it('RENTER: não mostra o botão de anunciar imóvel', () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: { user: { name: 'Maria Locatária', email: 'maria@example.com' }, papel: 'RENTER' },
+      status: 'authenticated',
+    } as unknown as ReturnType<typeof useSession>)
+
+    renderMarketplaceHeader()
+
+    expect(screen.queryByRole('link', { name: 'Anunciar Imóvel' })).not.toBeInTheDocument()
+  })
+
   it('com sessão: clicar em "Sair" chama signOut()', async () => {
     const user = userEvent.setup()
     vi.mocked(useSession).mockReturnValue({
