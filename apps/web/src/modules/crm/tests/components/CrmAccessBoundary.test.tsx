@@ -2,6 +2,8 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { clearClientSession } from '@shared/lib/auth/clear-client-session'
+
 import { CrmAccessBoundary } from '../../components/CrmAccessBoundary'
 
 const routerMock = { replace: vi.fn(), refresh: vi.fn() }
@@ -57,13 +59,14 @@ describe('CrmAccessBoundary', () => {
     expect(routerMock.replace).not.toHaveBeenCalled()
   })
 
-  it('bloqueia e redireciona um RENTER, mesmo com sessão de tenant válida', async () => {
+  it('bloqueia um RENTER e manda pra home, sem derrubar a sessão válida dele', async () => {
     mockSession({ papel: 'RENTER' })
 
     renderBoundary()
 
     expect(screen.queryByText('Conteúdo do CRM')).not.toBeInTheDocument()
-    await waitFor(() => expect(routerMock.replace).toHaveBeenCalledWith('/login'))
+    await waitFor(() => expect(routerMock.replace).toHaveBeenCalledWith('/'))
+    expect(clearClientSession).not.toHaveBeenCalled()
   })
 
   it('bloqueia e redireciona quando não há sessão', async () => {

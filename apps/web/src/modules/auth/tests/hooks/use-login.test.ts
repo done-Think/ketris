@@ -69,10 +69,36 @@ describe('useLogin', () => {
       'token-session',
       expect.objectContaining({ accessToken: 'access-fake', refreshToken: 'refresh-fake' }),
     )
-    expect(routerMock.replace).toHaveBeenCalled()
+    expect(routerMock.replace).toHaveBeenCalledWith('/pt/dashboard')
     expect(routerMock.refresh).toHaveBeenCalled()
     expect(success).toBe(true)
     expect(result.current.error).toBeNull()
+  })
+
+  it('redireciona um RENTER pra home, mesmo quando o callbackUrl aponta pro dashboard', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        mockLoginResponse(200, {
+          user: {
+            id: 'u1',
+            name: 'Maria',
+            email: 'maria@ketris.dev',
+            role: 'RENTER',
+            active: true,
+          },
+          accessToken: 'access-fake',
+          refreshToken: 'refresh-fake',
+        }),
+      ),
+    )
+    vi.mocked(signIn).mockResolvedValue({ error: null, ok: true, status: 200, url: null })
+
+    const { result } = renderHook(() => useLogin('/dashboard'))
+    const success = await login(result, { email: 'maria@ketris.dev', password: 'segredo123' })
+
+    expect(routerMock.replace).toHaveBeenCalledWith('/pt')
+    expect(success).toBe(true)
   })
 
   it('mostra a mensagem genérica quando as credenciais são inválidas', async () => {

@@ -48,7 +48,7 @@ export function useLogin(callbackUrl: string) {
       return false
     }
 
-    const { accessToken, refreshToken } = await loginResponse.json()
+    const { user, accessToken, refreshToken } = await loginResponse.json()
 
     try {
       const result = await signIn('token-session', {
@@ -63,7 +63,10 @@ export function useLogin(callbackUrl: string) {
         return false
       }
 
-      router.replace(localizedCallbackUrl)
+      const destination =
+        user.role === 'RENTER' ? getLocalizedPathname('/', locale) : localizedCallbackUrl
+
+      router.replace(destination)
       router.refresh()
       return true
     } catch {
