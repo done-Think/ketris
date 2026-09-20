@@ -3,6 +3,7 @@
 import { Box, Stack } from '@mui/material'
 import dayjs from 'dayjs'
 import 'dayjs/locale/pt-br'
+import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 import { useSnackbar } from 'notistack'
@@ -10,7 +11,12 @@ import { useSnackbar } from 'notistack'
 import { dashboardProperties } from '@modules/properties/data/dashboard-properties'
 import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
 
-import { agendaTimeSlots, getAgendaEvents } from '../data/agenda-events'
+import { agendaTimeSlots } from '../data/agenda-events'
+import {
+  useAgendaEvents,
+  useCreateAgendaEvent,
+  useRescheduleAgendaEvent,
+} from '../hooks/use-agenda-events'
 import { agendaOtherPropertyValue } from '../schemas/agenda-event-form-schema'
 import type {
   AgendaEvent,
@@ -18,6 +24,8 @@ import type {
   AgendaPropertyOption,
   AgendaRescheduleFormValues,
 } from '../types/agenda-event'
+import { errorMessage } from '../utils/error-message'
+import { toAgendaEvent } from '../utils/map-agenda-event'
 import { AgendaDashboardHeader } from './agenda-dashboard/AgendaDashboardHeader'
 import { AgendaWeekCalendar } from './agenda-dashboard/AgendaWeekCalendar'
 import {
@@ -32,14 +40,24 @@ import { AgendaEventFormDialog } from './AgendaEventFormDialog'
 export function AgendaDashboardPage() {
   const t = useTranslations('agenda.dashboard')
   const { enqueueSnackbar } = useSnackbar()
-  const initialEvents = useMemo(() => getAgendaEvents(t), [t])
-  const [events, setEvents] = useState<AgendaEvent[]>(initialEvents)
+  const { data: session } = useSession()
+  const tenantId = session?.tenantId ?? ''
   const [isEventFormOpen, setIsEventFormOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null)
   const today = useMemo(() => dayjs().locale('pt-br').startOf('day'), [])
   const currentMonthEnd = useMemo(() => today.endOf('month'), [today])
   const [weekStartDate, setWeekStartDate] = useState(() => today)
   const agendaDays = useMemo(() => buildAgendaCalendarDays(weekStartDate), [weekStartDate])
+
+  const eventsQuery = useAgendaEvents(tenantId, today.toISOString(), currentMonthEnd.toISOString())
+  const events = useMemo(
+    () =>
+      (eventsQuery.data ?? []).filter((event) => event.status !== 'CANCELLED').map(toAgendaEvent),
+    [eventsQuery.data],
+  )
+  const createAgendaEventMutation = useCreateAgendaEvent(tenantId)
+  const rescheduleAgendaEventMutation = useRescheduleAgendaEvent(tenantId)
+
   const propertyOptions = useMemo<AgendaPropertyOption[]>(
     () =>
       dashboardProperties.map((property) => ({
@@ -81,65 +99,58 @@ export function AgendaDashboardPage() {
     setSelectedEvent(event)
   }
 
-  const rescheduleSelectedEvent = (values: AgendaRescheduleFormValues) => {
+  const rescheduleSelectedEvent = async (values: AgendaRescheduleFormValues) => {
     if (!selectedEvent) return
 
     const nextDate = dayjs(values.scheduledDate)
+    const nextStart = dayjs(`${values.scheduledDate}T${values.scheduledTime}`)
 
-    setEvents((currentEvents) =>
-      currentEvents.map((event) =>
-        event.id === selectedEvent.id
-          ? {
-              ...event,
-              scheduledDate: values.scheduledDate,
-              time: values.scheduledTime,
-              status: 'Confirmada',
-            }
-          : event,
-      ),
-    )
-    showScheduledWeek(nextDate)
-    enqueueSnackbar(
-      t('rescheduleSuccess', {
-        date: nextDate.format('DD/MM/YYYY'),
-        time: values.scheduledTime,
-        title: selectedEvent.title,
-      }),
-      { variant: 'success' },
-    )
-    closeEventDialog()
+    try {
+      await rescheduleAgendaEventMutation.mutateAsync({
+        id: selectedEvent.id,
+        payload: { start: nextStart.toISOString() },
+      })
+      showScheduledWeek(nextDate)
+      enqueueSnackbar(
+        t('rescheduleSuccess', {
+          date: nextDate.format('DD/MM/YYYY'),
+          time: values.scheduledTime,
+          title: selectedEvent.title,
+        }),
+        { variant: 'success' },
+      )
+      closeEventDialog()
+    } catch (error) {
+      enqueueSnackbar(errorMessage(error, t('rescheduleError')), { variant: 'error' })
+    }
   }
 
-  const createAgendaEvent = (values: AgendaEventFormValues) => {
+  const createAgendaEvent = async (values: AgendaEventFormValues) => {
     const scheduledDate = dayjs(values.scheduledDate)
+    const start = dayjs(`${values.scheduledDate}T${values.scheduledTime}`)
     const selectedProperty = propertyOptions.find((property) => property.id === values.propertyId)
     const customProperty = values.customProperty.trim()
     const useCustomProperty = values.propertyId === agendaOtherPropertyValue
-    const propertyLabel = useCustomProperty
+    const propertyReference = useCustomProperty
       ? customProperty
       : (selectedProperty?.label ?? customProperty)
-    const propertyHref = useCustomProperty
-      ? '/dashboard/properties'
-      : (selectedProperty?.href ?? '/dashboard/properties')
-    const nextEvent: AgendaEvent = {
-      id: `agenda-${Date.now()}`,
-      scheduledDate: values.scheduledDate,
-      time: values.scheduledTime,
-      durationMinutes: values.durationMinutes,
-      title: values.title,
-      property: propertyLabel,
-      propertyHref,
-      participant: values.participant,
-      phone: values.phone,
-      notes: values.notes.trim() || t('defaultEventNotes'),
-      status: 'Confirmada',
-      tone: 'primary',
-    }
 
-    setEvents((currentEvents) => [...currentEvents, nextEvent])
-    showScheduledWeek(scheduledDate)
-    setIsEventFormOpen(false)
-    enqueueSnackbar(t('createSuccess', { title: values.title }), { variant: 'success' })
+    try {
+      await createAgendaEventMutation.mutateAsync({
+        title: values.title,
+        propertyReference,
+        start: start.toISOString(),
+        durationMinutes: values.durationMinutes,
+        participantName: values.participant,
+        participantPhone: values.phone,
+        notes: values.notes.trim() || t('defaultEventNotes'),
+      })
+      showScheduledWeek(scheduledDate)
+      setIsEventFormOpen(false)
+      enqueueSnackbar(t('createSuccess', { title: values.title }), { variant: 'success' })
+    } catch (error) {
+      enqueueSnackbar(errorMessage(error, t('createError')), { variant: 'error' })
+    }
   }
 
   return (

@@ -39,7 +39,12 @@ export function AgendaEventFormDialog({
   propertyOptions,
 }: AgendaEventFormDialogProps) {
   const t = useTranslations('agenda.eventForm')
-  const { control, handleSubmit, reset } = useForm<AgendaEventFormValues>({
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = useForm<AgendaEventFormValues>({
     defaultValues: {
       customProperty: '',
       durationMinutes: 60,
@@ -200,7 +205,12 @@ export function AgendaEventFormDialog({
           <Button type="button" variant="outlined" color="secondary" onClick={onClose}>
             {t('cancel')}
           </Button>
-          <Button type="submit" variant="contained" startIcon={<AddRoundedIcon />}>
+          <Button
+            type="submit"
+            variant="contained"
+            startIcon={<AddRoundedIcon />}
+            disabled={isSubmitting}
+          >
             {t('submit')}
           </Button>
         </DialogActions>

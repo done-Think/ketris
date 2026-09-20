@@ -45,7 +45,12 @@ export function AgendaEventDetailDialog({
   const locale = useLocale()
   const t = useTranslations('agenda.eventDetail')
   const agendaT = useTranslations('agenda.dashboard')
-  const { control, handleSubmit, reset } = useForm<AgendaRescheduleFormValues>({
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = useForm<AgendaRescheduleFormValues>({
     defaultValues: {
       scheduledDate: eventDate,
       scheduledTime: event?.time ?? '',
@@ -178,7 +183,7 @@ export function AgendaEventDetailDialog({
           <Button type="button" variant="outlined" color="secondary" onClick={onClose}>
             {t('cancel')}
           </Button>
-          <Button type="submit" variant="contained">
+          <Button type="submit" variant="contained" disabled={isSubmitting}>
             {t('submit')}
           </Button>
         </DialogActions>

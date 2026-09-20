@@ -20,43 +20,8 @@
       "agency": "inmobiliaria",
       "colleague": "colega"
     },
-    "sampleEvents": {
-      "jardimVisit": {
-        "title": "Visita Jardim Paulista",
-        "property": "Apartamento Jardim Paulista",
-        "notes": "Cliente quiere validar la luminosidad de la sala."
-      },
-      "proposalReturn": {
-        "title": "Retorno de propuesta",
-        "property": "Penthouse Itaim",
-        "notes": "Revisar contraoferta y plazo de firma."
-      },
-      "intakeMeeting": {
-        "title": "Reunión de captación",
-        "property": "Casa Alto Pinheiros",
-        "notes": "Alinear expectativa de precio y documentación inicial."
-      },
-      "entryInspection": {
-        "title": "Inspección de entrada",
-        "property": "Studio Pinheiros",
-        "notes": "Revisar pintura, llaves y checklist de entrega."
-      },
-      "financingFollowUp": {
-        "title": "Seguimiento de financiación",
-        "property": "Apt Jardins 3q",
-        "notes": "Confirmar respuesta del banco sobre la carta de crédito."
-      },
-      "digitalSignature": {
-        "title": "Firma digital",
-        "property": "Contrato Studio Pinheiros",
-        "notes": "Acompañar envío y confirmación de las firmas."
-      },
-      "digitalVisit": {
-        "title": "Visita digital",
-        "property": "Apartamento Jardim Paulista",
-        "notes": "Enviar enlace de la llamada y confirmar conexión del cliente."
-      }
-    }
+    "createError": "No se pudo crear el evento. Inténtalo de nuevo.",
+    "rescheduleError": "No se pudo reprogramar el evento. Inténtalo de nuevo."
   },
   "eventForm": {
     "eyebrow": "Nuevo punto en la agenda",

@@ -30,14 +30,6 @@ export type AgendaEvent = {
   createdByRole?: AgendaEventCreatorRole
 }
 
-export type AgendaTranslationGetter = (key: string) => string
-
-export type AgendaEventSeed = Omit<AgendaEvent, 'notes' | 'property' | 'title'> & {
-  notesKey: string
-  propertyKey: string
-  titleKey: string
-}
-
 export type AgendaCalendarDay = {
   dateLabel: string
   dayLabel: string
@@ -121,4 +113,46 @@ export type AgendaBuildNotificationsOptions = {
   events: AgendaEvent[]
   t: (key: string, values?: Record<string, string | number>) => string
   today: Dayjs
+}
+
+export type AgendaEventApiStatus = 'CONFIRMED' | 'PENDING' | 'RESCHEDULE' | 'CANCELLED'
+
+export type AgendaEventApiKind =
+  'VISIT' | 'FOLLOW_UP' | 'MEETING' | 'INSPECTION' | 'SIGNATURE' | 'OTHER'
+
+export interface AgendaEventApi {
+  id: string
+  tenantId: string
+  responsibleId: string
+  createdById: string | null
+  propertyId: string | null
+  propertyReference: string | null
+  title: string
+  kind: AgendaEventApiKind | null
+  status: AgendaEventApiStatus
+  start: string
+  end: string
+  participantName: string
+  participantPhone: string
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateAgendaEventPayload {
+  responsibleId?: string
+  propertyId?: string
+  propertyReference?: string
+  title: string
+  kind?: AgendaEventApiKind
+  start: string
+  durationMinutes: number
+  participantName: string
+  participantPhone: string
+  notes?: string
+}
+
+export interface RescheduleAgendaEventPayload {
+  start: string
+  durationMinutes?: number
 }
