@@ -1,5 +1,6 @@
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi'
 
+import { registerAgendaOpenApi } from '@server/agenda/openapi'
 import { registerAuthOpenApi } from '@server/auth/openapi'
 import { registerCrmOpenApi } from '@server/crm/openapi'
 import { registerMarketplaceOpenApi } from '@server/marketplace/openapi'
@@ -22,6 +23,7 @@ registerMarketplaceOpenApi(registry)
 registerPropertiesOpenApi(registry)
 registerCrmOpenApi(registry)
 registerRegistrationOpenApi(registry)
+registerAgendaOpenApi(registry)
 
 export function generateOpenApiDocument() {
   const generator = new OpenApiGeneratorV3(registry.definitions)

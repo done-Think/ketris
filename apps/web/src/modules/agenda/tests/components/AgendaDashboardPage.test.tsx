@@ -58,7 +58,7 @@ describe('AgendaDashboardPage', () => {
     await userEvent.click(screen.getByLabelText('Imóvel em questão'))
     await userEvent.click(await screen.findByRole('option', { name: 'Outro' }))
     await userEvent.type(screen.getByLabelText('Imóvel ou referência'), 'Sala comercial centro')
-    await userEvent.type(screen.getByLabelText('Pessoa'), 'Novo Cliente')
+    await userEvent.type(screen.getByLabelText('Cliente'), 'Novo Cliente')
     await userEvent.type(screen.getByLabelText('Telefone'), '11987654321')
 
     await userEvent.click(screen.getByRole('button', { name: 'Criar evento' }))

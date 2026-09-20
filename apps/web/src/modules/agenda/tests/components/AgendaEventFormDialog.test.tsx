@@ -40,7 +40,7 @@ describe('AgendaEventFormDialog', () => {
     expect(screen.getByText('Adicionar evento')).toBeVisible()
     expect(screen.getByLabelText('Título')).toBeVisible()
     expect(screen.getByLabelText('Imóvel em questão')).toBeVisible()
-    expect(screen.getByLabelText('Pessoa')).toBeVisible()
+    expect(screen.getByLabelText('Cliente')).toBeVisible()
     expect(screen.getByLabelText('Telefone')).toBeVisible()
     expect(screen.getByRole('button', { name: 'Cancelar' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Criar evento' })).toBeVisible()
@@ -61,7 +61,7 @@ describe('AgendaEventFormDialog', () => {
     await userEvent.type(screen.getByLabelText('Título'), 'Visita apartamento')
     await userEvent.click(screen.getByLabelText('Imóvel em questão'))
     await userEvent.click(await screen.findByRole('option', { name: 'Apartamento Jardins' }))
-    await userEvent.type(screen.getByLabelText('Pessoa'), 'Cliente Teste')
+    await userEvent.type(screen.getByLabelText('Cliente'), 'Cliente Teste')
     await userEvent.type(screen.getByLabelText('Telefone'), '11987654321')
 
     await userEvent.click(screen.getByRole('button', { name: 'Criar evento' }))

@@ -31,6 +31,7 @@ model Tenant {
   contratos     Contrato[]
   cobrancas     Cobranca[]
   contatos      Contato[]
+  eventosAgenda EventoAgenda[]
 
   @@map("tenants")
 }
@@ -55,9 +56,11 @@ model Usuario {
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 
-  tenant             Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  imoveisResponsavel Imovel[]       @relation("ImovelResponsavel")
-  refreshTokens      RefreshToken[]
+  tenant                   Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  imoveisResponsavel       Imovel[]       @relation("ImovelResponsavel")
+  refreshTokens            RefreshToken[]
+  eventosAgendaResponsavel EventoAgenda[] @relation("EventoAgendaResponsavel")
+  eventosAgendaCriados     EventoAgenda[] @relation("EventoAgendaCriadoPor")
 
   @@index([tenantId])
   @@map("usuarios")
@@ -158,6 +161,7 @@ model Imovel {
   midias        Midia[]
   oportunidades Oportunidade[]
   contratos     Contrato[]
+  eventosAgenda EventoAgenda[]
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -383,6 +387,56 @@ model Assinatura {
   parteContrato ParteContrato @relation(fields: [parteContratoId], references: [id], onDelete: Cascade)
 
   @@map("assinaturas")
+}
+
+// ---------------------------------------------------------------------------
+// Evento de agenda (módulo `agenda`)
+// ---------------------------------------------------------------------------
+
+enum StatusEventoAgenda {
+  CONFIRMED
+  PENDING
+  RESCHEDULE
+  CANCELLED
+}
+
+enum TipoEventoAgenda {
+  VISIT
+  FOLLOW_UP
+  MEETING
+  INSPECTION
+  SIGNATURE
+  OTHER
+}
+
+model EventoAgenda {
+  id                    String             @id @default(cuid())
+  tenantId              String
+  responsavelId         String
+  criadoPorId           String?
+  imovelId              String?
+  referenciaImovelLivre String?
+  titulo                String
+  tipo                  TipoEventoAgenda?
+  status                StatusEventoAgenda @default(CONFIRMED)
+  inicio                DateTime
+  fim                   DateTime
+  participanteNome      String
+  participanteTelefone  String
+  notas                 String?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  responsavel Usuario  @relation("EventoAgendaResponsavel", fields: [responsavelId], references: [id], onDelete: Cascade)
+  criadoPor   Usuario? @relation("EventoAgendaCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  imovel      Imovel?  @relation(fields: [imovelId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tenantId, inicio])
+  @@index([responsavelId])
+  @@index([imovelId])
+  @@map("eventos_agenda")
 }
 
 // ---------------------------------------------------------------------------
