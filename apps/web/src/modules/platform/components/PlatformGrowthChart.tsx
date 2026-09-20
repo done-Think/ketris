@@ -1,6 +1,7 @@
 'use client'
 
-import { Box, Typography } from '@mui/material'
+import { Box, Typography, useMediaQuery } from '@mui/material'
+import type { Theme } from '@mui/material/styles'
 import { LineChart } from '@mui/x-charts/LineChart'
 import { useTranslations } from 'next-intl'
 
@@ -10,19 +11,22 @@ import type { GrowthTrendPoint } from '../types/platform-overview'
 
 export function PlatformGrowthChart({ trend }: { trend: readonly GrowthTrendPoint[] }) {
   const t = useTranslations('platform.overview')
+  const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'))
+  const chartHeight = isMobile ? 270 : 300
 
   return (
     <Box component="section" aria-labelledby="growth-trends-title" sx={panelSx}>
       <Typography id="growth-trends-title" sx={titleSx}>
         {t('growth.title')}
       </Typography>
-      <Box sx={{ height: { xs: 300, lg: 340 }, width: '100%' }}>
+      <Box sx={{ height: { xs: 270, sm: 300, lg: 340 }, width: '100%' }}>
         <LineChart
           dataset={[...trend]}
           xAxis={[
             {
               dataKey: 'month',
               scaleType: 'point',
+              tickLabelInterval: (_, index) => !isMobile || index % 2 === 0,
               valueFormatter: (value) => t(`months.${value}`),
             },
           ]}
@@ -41,13 +45,13 @@ export function PlatformGrowthChart({ trend }: { trend: readonly GrowthTrendPoin
               showMark: false,
             },
           ]}
-          height={300}
-          margin={{ top: 28, right: 18, bottom: 36, left: 14 }}
+          height={chartHeight}
+          margin={{ top: 28, right: isMobile ? 8 : 18, bottom: 36, left: 8 }}
           grid={{ horizontal: true }}
           slotProps={{
             legend: {
               direction: 'row',
-              position: { vertical: 'top', horizontal: 'right' },
+              position: { vertical: 'top', horizontal: isMobile ? 'middle' : 'right' },
               labelStyle: { fontSize: 12, fill: brand.neutral[500] },
             },
           }}
@@ -55,7 +59,7 @@ export function PlatformGrowthChart({ trend }: { trend: readonly GrowthTrendPoin
             '& .MuiChartsAxis-left': { display: 'none' },
             '& .MuiChartsAxis-bottom .MuiChartsAxis-tickLabel': {
               fill: brand.neutral[500],
-              fontSize: 12,
+              fontSize: isMobile ? 10 : 12,
             },
             '& .MuiChartsGrid-line': { stroke: alpha.graphite[8] },
           }}

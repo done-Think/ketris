@@ -1,20 +1,14 @@
 'use client'
 
-import {
-  Box,
-  Chip,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Typography,
-} from '@mui/material'
+import { Box, Chip, Typography } from '@mui/material'
+import { DataGrid } from '@mui/x-data-grid'
+import type { GridColDef } from '@mui/x-data-grid'
 import { useTranslations } from 'next-intl'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { RecentTenant } from '../types/platform-overview'
+import { platformTenantGridSx } from './platform-tenant-table.styles'
 
 const planSx = {
   enterprise: { bgcolor: '#FCE3F1', color: brand.magenta[600] },
@@ -30,6 +24,76 @@ const statusSx = {
 
 export function RecentTenantsTable({ tenants }: { tenants: readonly RecentTenant[] }) {
   const t = useTranslations('platform.overview.recentTenants')
+  const columns: GridColDef<RecentTenant>[] = [
+    {
+      field: 'name',
+      headerName: t('columns.name'),
+      align: 'left',
+      headerAlign: 'left',
+      flex: 1.5,
+      minWidth: 210,
+      renderCell: ({ row }) => (
+        <Typography
+          noWrap
+          sx={{
+            alignItems: 'center',
+            color: brand.graphite[500],
+            display: 'flex',
+            fontSize: 13.5,
+            fontWeight: 900,
+            height: '100%',
+            py: 0,
+            textAlign: 'left',
+            width: '100%',
+          }}
+        >
+          {row.name}
+        </Typography>
+      ),
+    },
+    {
+      field: 'plan',
+      headerName: t('columns.plan'),
+      align: 'center',
+      headerAlign: 'center',
+      flex: 0.9,
+      minWidth: 130,
+      renderCell: ({ row }) => (
+        <Chip label={t(`plans.${row.plan}`)} size="small" sx={{ ...chipSx, ...planSx[row.plan] }} />
+      ),
+    },
+    {
+      field: 'brokers',
+      headerName: t('columns.brokers'),
+      align: 'center',
+      headerAlign: 'center',
+      flex: 0.7,
+      minWidth: 110,
+    },
+    {
+      field: 'registeredAt',
+      headerName: t('columns.registeredAt'),
+      align: 'center',
+      headerAlign: 'center',
+      flex: 0.9,
+      minWidth: 130,
+    },
+    {
+      field: 'status',
+      headerName: t('columns.status'),
+      align: 'center',
+      headerAlign: 'center',
+      flex: 0.9,
+      minWidth: 130,
+      renderCell: ({ row }) => (
+        <Chip
+          label={t(`statuses.${row.status}`)}
+          size="small"
+          sx={{ ...chipSx, ...statusSx[row.status] }}
+        />
+      ),
+    },
+  ]
 
   return (
     <Box
@@ -51,65 +115,18 @@ export function RecentTenantsTable({ tenants }: { tenants: readonly RecentTenant
       >
         {t('title')}
       </Typography>
-      <Box sx={{ overflowX: 'auto' }}>
-        <Table size="small" sx={{ minWidth: 650 }} aria-label={t('tableLabel')}>
-          <TableHead>
-            <TableRow>
-              {(['name', 'plan', 'brokers', 'registeredAt', 'status'] as const).map((column) => (
-                <TableCell key={column} sx={headerCellSx}>
-                  {t(`columns.${column}`)}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {tenants.map((tenant) => (
-              <TableRow key={tenant.id} sx={{ '&:last-child td': { borderBottom: 0 } }}>
-                <TableCell sx={{ ...bodyCellSx, color: brand.graphite[500], fontWeight: 800 }}>
-                  {tenant.name}
-                </TableCell>
-                <TableCell sx={bodyCellSx}>
-                  <Chip
-                    label={t(`plans.${tenant.plan}`)}
-                    size="small"
-                    sx={{ ...chipSx, ...planSx[tenant.plan] }}
-                  />
-                </TableCell>
-                <TableCell sx={bodyCellSx}>{tenant.brokers}</TableCell>
-                <TableCell sx={bodyCellSx}>{tenant.registeredAt}</TableCell>
-                <TableCell sx={bodyCellSx}>
-                  <Chip
-                    label={t(`statuses.${tenant.status}`)}
-                    size="small"
-                    sx={{ ...chipSx, ...statusSx[tenant.status] }}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Box>
+      <DataGrid
+        rows={tenants}
+        columns={columns}
+        autoHeight
+        rowHeight={52}
+        hideFooter
+        disableRowSelectionOnClick
+        disableColumnMenu
+        sx={platformTenantGridSx}
+      />
     </Box>
   )
 }
 
-const headerCellSx = {
-  bgcolor: brand.neutral[50],
-  borderBottom: 0,
-  color: brand.neutral[500],
-  fontSize: 10,
-  fontWeight: 900,
-  letterSpacing: 0.4,
-  py: 1.4,
-  textTransform: 'uppercase',
-  whiteSpace: 'nowrap',
-}
-const bodyCellSx = {
-  borderColor: alpha.graphite[6],
-  color: brand.neutral[500],
-  fontSize: 13,
-  fontWeight: 600,
-  py: 1.45,
-  whiteSpace: 'nowrap',
-}
 const chipSx = { borderRadius: `${radius.full}px`, fontSize: 10, fontWeight: 800, height: 22 }

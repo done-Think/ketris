@@ -45,6 +45,7 @@
     "navigation": {
       "ariaLabel": "Navegação da plataforma",
       "openNavigation": "Abrir navegação da plataforma",
+      "closeNavigation": "Fechar navegação da plataforma",
       "admin": "SUPER ADMIN",
       "overview": "Visão geral",
       "tenants": "Tenants",

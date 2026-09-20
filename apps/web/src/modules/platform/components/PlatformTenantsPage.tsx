@@ -7,19 +7,16 @@ import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import {
   Box,
   Button,
-  IconButton,
+  Chip,
   InputAdornment,
   MenuItem,
   Select,
   Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   TextField,
   Typography,
 } from '@mui/material'
+import { DataGrid } from '@mui/x-data-grid'
+import type { GridColDef } from '@mui/x-data-grid'
 import { useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
 
@@ -30,7 +27,12 @@ import {
   platformTenants,
   platformTenantTotal,
 } from '../data/platform-tenants-fixtures'
-import type { PlatformTenantPlan, PlatformTenantStatus } from '../types/platform-tenant'
+import type {
+  PlatformTenant,
+  PlatformTenantPlan,
+  PlatformTenantStatus,
+} from '../types/platform-tenant'
+import { platformTenantGridSx } from './platform-tenant-table.styles'
 
 const pageSize = 6
 
@@ -77,18 +79,160 @@ export function PlatformTenantsPage() {
       }),
     [plan, query, status],
   )
-  const pageCount = Math.max(1, Math.ceil(filteredTenants.length / pageSize))
-  const currentPage = Math.min(page, pageCount)
+  const currentPage = Math.min(page, Math.max(1, Math.ceil(filteredTenants.length / pageSize)))
   const visibleTenants = filteredTenants.slice((currentPage - 1) * pageSize, currentPage * pageSize)
   const initialFixtureView = !query && plan === 'all' && status === 'active'
   const totalLabel = initialFixtureView ? platformTenantTotal : filteredTenants.length
-  const start = filteredTenants.length === 0 ? 0 : (currentPage - 1) * pageSize + 1
-  const end = Math.min(
-    currentPage * pageSize,
-    initialFixtureView ? platformTenantTotal : filteredTenants.length,
-  )
 
   const resetPage = () => setPage(1)
+  const columns: GridColDef<PlatformTenant>[] = [
+    {
+      field: 'name',
+      headerName: t('columns.name'),
+      align: 'left',
+      headerAlign: 'left',
+      flex: 1.7,
+      minWidth: 270,
+      renderCell: ({ row }) => (
+        <Stack
+          direction="row"
+          alignItems="center"
+          spacing={1}
+          sx={{ height: '100%', minWidth: 0, width: '100%' }}
+        >
+          <Box
+            aria-hidden
+            sx={{
+              width: 7,
+              height: 7,
+              borderRadius: radius.full,
+              flexShrink: 0,
+              bgcolor:
+                row.plan === 'enterprise'
+                  ? brand.magenta[500]
+                  : row.plan === 'pro'
+                    ? brand.semantic.info
+                    : brand.neutral[400],
+            }}
+          />
+          <Typography noWrap sx={{ color: brand.graphite[500], fontSize: 13.5, fontWeight: 800 }}>
+            {row.name}
+          </Typography>
+        </Stack>
+      ),
+    },
+    {
+      field: 'plan',
+      headerName: t('columns.plan'),
+      align: 'center',
+      headerAlign: 'center',
+      flex: 0.8,
+      minWidth: 125,
+      renderCell: ({ row }) => (
+        <Chip
+          label={t(`plans.${row.plan}`)}
+          size="small"
+          sx={{ ...chipSx, ...planStyles[row.plan] }}
+        />
+      ),
+    },
+    {
+      field: 'brokers',
+      headerName: t('columns.brokers'),
+      align: 'center',
+      headerAlign: 'center',
+      flex: 0.65,
+      minWidth: 105,
+    },
+    {
+      field: 'properties',
+      headerName: t('columns.properties'),
+      align: 'center',
+      headerAlign: 'center',
+      flex: 0.65,
+      minWidth: 105,
+    },
+    {
+      field: 'mrr',
+      headerName: t('columns.mrr'),
+      align: 'center',
+      headerAlign: 'center',
+      flex: 0.8,
+      minWidth: 120,
+      renderCell: ({ row }) => (
+        <Typography
+          sx={{
+            color: brand.graphite[500],
+            fontSize: 13.5,
+            fontWeight: 800,
+            alignItems: 'center',
+            display: 'flex',
+            height: '100%',
+            justifyContent: 'center',
+            textAlign: 'center',
+            width: '100%',
+          }}
+        >
+          {row.mrr}
+        </Typography>
+      ),
+    },
+    {
+      field: 'status',
+      headerName: t('columns.status'),
+      align: 'center',
+      headerAlign: 'center',
+      flex: 0.8,
+      minWidth: 125,
+      renderCell: ({ row }) => (
+        <Chip
+          label={t(`statuses.${row.status}`)}
+          size="small"
+          sx={{ ...chipSx, ...statusStyles[row.status] }}
+        />
+      ),
+    },
+    {
+      field: 'createdAt',
+      headerName: t('columns.createdAt'),
+      align: 'center',
+      headerAlign: 'center',
+      flex: 0.9,
+      minWidth: 130,
+    },
+    {
+      field: 'actions',
+      headerName: t('columns.actions'),
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      width: 108,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: ({ row }) => (
+        <Stack
+          direction="row"
+          spacing={0.25}
+          sx={{ alignItems: 'center', height: '100%', justifyContent: 'center', width: '100%' }}
+        >
+          <Button
+            aria-label={t('editAction', { name: row.name })}
+            onClick={(event) => event.stopPropagation()}
+            sx={gridActionButtonSx}
+          >
+            <EditOutlinedIcon sx={{ fontSize: 19 }} />
+          </Button>
+          <Button
+            aria-label={t('moreActions', { name: row.name })}
+            onClick={(event) => event.stopPropagation()}
+            sx={gridActionButtonSx}
+          >
+            <MoreHorizRoundedIcon sx={{ fontSize: 20 }} />
+          </Button>
+        </Stack>
+      ),
+    },
+  ]
 
   return (
     <Box sx={{ maxWidth: 1680, mx: 'auto', px: { xs: 1.5, sm: 3, lg: 4 }, py: { xs: 2.5, md: 4 } }}>
@@ -179,8 +323,7 @@ export function PlatformTenantsPage() {
         sx={{
           display: 'grid',
           gridTemplateColumns: {
-            xs: '1fr',
-            sm: 'repeat(2, minmax(0, 1fr))',
+            xs: 'repeat(2, minmax(0, 1fr))',
             lg: 'repeat(4, minmax(0, 1fr))',
           },
           gap: 1.75,
@@ -209,147 +352,37 @@ export function PlatformTenantsPage() {
         ))}
       </Box>
 
-      <Box component="section" aria-labelledby="tenants-table-title" sx={tablePanelSx}>
-        <Typography
-          id="tenants-table-title"
-          sx={{
-            position: 'absolute',
-            width: 1,
-            height: 1,
-            overflow: 'hidden',
-            clip: 'rect(0 0 0 0)',
+      <Box component="section" aria-label={t('tableLabel')} sx={tablePanelSx}>
+        <DataGrid
+          rows={visibleTenants}
+          columns={columns}
+          autoHeight
+          rowHeight={52}
+          pagination
+          paginationMode="server"
+          rowCount={filteredTenants.length}
+          pageSizeOptions={[pageSize]}
+          paginationModel={{ page: currentPage - 1, pageSize }}
+          onPaginationModelChange={(model) => setPage(model.page + 1)}
+          disableRowSelectionOnClick
+          disableColumnMenu
+          localeText={{
+            noRowsLabel: t('empty'),
+            MuiTablePagination: {
+              labelRowsPerPage: '',
+              labelDisplayedRows: ({ from, to }) =>
+                t('summary', { start: from, end: to, total: totalLabel }),
+            },
           }}
-        >
-          {t('tableLabel')}
-        </Typography>
-        <Box sx={{ overflowX: 'auto' }}>
-          <Table sx={{ minWidth: 1120 }} aria-label={t('tableLabel')}>
-            <TableHead>
-              <TableRow>
-                {(
-                  [
-                    'name',
-                    'plan',
-                    'brokers',
-                    'properties',
-                    'mrr',
-                    'status',
-                    'createdAt',
-                    'actions',
-                  ] as const
-                ).map((column) => (
-                  <TableCell key={column} sx={headerCellSx}>
-                    {t(`columns.${column}`)}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {visibleTenants.map((tenant) => (
-                <TableRow key={tenant.id} hover>
-                  <TableCell sx={{ ...bodyCellSx, color: brand.graphite[500], fontWeight: 800 }}>
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <Box
-                        aria-hidden
-                        sx={{
-                          width: 7,
-                          height: 7,
-                          borderRadius: radius.full,
-                          bgcolor:
-                            tenant.plan === 'enterprise'
-                              ? brand.magenta[500]
-                              : tenant.plan === 'pro'
-                                ? brand.semantic.info
-                                : brand.neutral[400],
-                        }}
-                      />
-                      <span>{tenant.name}</span>
-                    </Stack>
-                  </TableCell>
-                  <TableCell sx={bodyCellSx}>
-                    <Box component="span" sx={{ ...chipSx, ...planStyles[tenant.plan] }}>
-                      {t(`plans.${tenant.plan}`)}
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={bodyCellSx}>{tenant.brokers}</TableCell>
-                  <TableCell sx={bodyCellSx}>{tenant.properties}</TableCell>
-                  <TableCell sx={{ ...bodyCellSx, color: brand.graphite[500], fontWeight: 800 }}>
-                    {tenant.mrr}
-                  </TableCell>
-                  <TableCell sx={bodyCellSx}>
-                    <Box component="span" sx={{ ...chipSx, ...statusStyles[tenant.status] }}>
-                      {t(`statuses.${tenant.status}`)}
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={bodyCellSx}>{tenant.createdAt}</TableCell>
-                  <TableCell sx={bodyCellSx}>
-                    <Stack direction="row" spacing={0.25}>
-                      <IconButton aria-label={t('editAction', { name: tenant.name })} size="small">
-                        <EditOutlinedIcon sx={{ fontSize: 19 }} />
-                      </IconButton>
-                      <IconButton aria-label={t('moreActions', { name: tenant.name })} size="small">
-                        <MoreHorizRoundedIcon sx={{ fontSize: 20 }} />
-                      </IconButton>
-                    </Stack>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Box>
-        {visibleTenants.length === 0 && (
-          <Box sx={{ py: 7, textAlign: 'center' }}>
-            <Typography sx={{ color: brand.neutral[500], fontSize: 15 }}>{t('empty')}</Typography>
-          </Box>
-        )}
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          alignItems={{ sm: 'center' }}
-          justifyContent="space-between"
-          spacing={1.5}
-          sx={{ px: { xs: 0.5, md: 1.5 }, pt: 2.25 }}
-        >
-          <Typography sx={{ color: brand.neutral[500], fontSize: 12 }}>
-            {t('summary', { start, end, total: totalLabel })}
-          </Typography>
-          <Stack direction="row" spacing={0.65}>
-            <Button
-              size="small"
-              variant="outlined"
-              disabled={currentPage === 1}
-              onClick={() => setPage((value) => Math.max(1, value - 1))}
-              sx={paginationButtonSx}
-            >
-              {t('previous')}
-            </Button>
-            {Array.from({ length: Math.min(3, pageCount) }, (_, index) => index + 1).map((item) => (
-              <Button
-                key={item}
-                size="small"
-                variant={item === currentPage ? 'contained' : 'outlined'}
-                onClick={() => setPage(item)}
-                sx={pageButtonSx}
-              >
-                {item}
-              </Button>
-            ))}
-            <Button
-              size="small"
-              variant="outlined"
-              disabled={currentPage === pageCount}
-              onClick={() => setPage((value) => Math.min(pageCount, value + 1))}
-              sx={paginationButtonSx}
-            >
-              {t('next')}
-            </Button>
-          </Stack>
-        </Stack>
+          sx={tenantsGridSx}
+        />
       </Box>
     </Box>
   )
 }
 
 const searchSx = {
+  width: { xs: '100%', sm: 'auto' },
   minWidth: { sm: 260 },
   flex: { xs: 1, xl: 'initial' },
   '& .MuiOutlinedInput-root': {
@@ -360,6 +393,7 @@ const searchSx = {
   },
 }
 const filterSx = {
+  width: { xs: '100%', sm: 'auto' },
   minWidth: { sm: 145 },
   bgcolor: surface.paper,
   borderRadius: `${radius.sm}px`,
@@ -387,6 +421,7 @@ const newTenantButtonSx = {
   fontSize: 14,
   fontWeight: 800,
   height: 44,
+  width: { xs: '100%', sm: 'auto' },
   px: 2.25,
   textTransform: 'none',
   whiteSpace: 'nowrap',
@@ -418,53 +453,38 @@ const tablePanelSx = {
   borderRadius: `${radius.md}px`,
   boxShadow: shadows.crmCard,
   overflow: 'hidden',
-  p: { xs: 1.5, md: 2.25 },
-  position: 'relative',
-}
-const headerCellSx = {
-  bgcolor: brand.neutral[50],
-  borderBottom: 0,
-  color: brand.graphite[500],
-  fontSize: 12,
-  fontWeight: 800,
-  py: 1.35,
-  whiteSpace: 'nowrap',
-}
-const bodyCellSx = {
-  borderColor: alpha.graphite[6],
-  color: brand.neutral[500],
-  fontSize: 13.5,
-  fontWeight: 600,
-  py: 1.2,
-  whiteSpace: 'nowrap',
+  p: { xs: 1.75, md: 2.75 },
+  minWidth: 0,
+  width: '100%',
 }
 const chipSx = {
-  borderRadius: `${radius.sm}px`,
-  display: 'inline-flex',
-  fontSize: 12,
+  borderRadius: `${radius.full}px`,
+  fontSize: 10,
   fontWeight: 800,
-  lineHeight: 1,
-  px: 1.05,
-  py: 0.6,
+  height: 22,
 }
-const paginationButtonSx = {
-  borderColor: alpha.graphite[8],
+const gridActionButtonSx = {
   color: brand.neutral[500],
-  fontSize: 12,
-  minWidth: 0,
-  px: 1.15,
-  textTransform: 'none',
+  minWidth: 36,
+  width: 36,
+  height: 36,
+  p: 0,
+  borderRadius: `${radius.sm}px`,
+  '&:hover': { bgcolor: alpha.magenta[6], color: brand.magenta[500] },
 }
-const pageButtonSx = {
-  borderColor: alpha.graphite[8],
-  boxShadow: 'none',
-  fontSize: 12,
-  minWidth: 30,
-  px: 0.8,
-  ...{
-    '&.MuiButton-contained': {
-      bgcolor: brand.magenta[500],
-      '&:hover': { bgcolor: brand.magenta[600], boxShadow: 'none' },
-    },
+const tenantsGridSx = {
+  ...platformTenantGridSx,
+  minWidth: 0,
+  '& .MuiDataGrid-footerContainer': { borderColor: alpha.graphite[6] },
+  '& .MuiTablePagination-toolbar': { px: { xs: 1, sm: 2 }, flexWrap: 'wrap' },
+  '& .MuiTablePagination-displayedRows': {
+    color: brand.neutral[500],
+    fontSize: 12,
+    mr: 'auto',
   },
+  '& .MuiTablePagination-actions': { ml: 0 },
+  '& .MuiDataGrid-virtualScroller': { overflowX: 'auto' },
+  '& .MuiDataGrid-virtualScrollerContent': { minWidth: 1120 },
+  '& .MuiDataGrid-virtualScrollerRenderZone': { minWidth: 1120 },
+  '& .MuiDataGrid-columnHeadersInner': { minWidth: 1120 },
 }

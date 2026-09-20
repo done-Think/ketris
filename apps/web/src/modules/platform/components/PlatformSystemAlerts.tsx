@@ -54,17 +54,19 @@ export function PlatformSystemAlerts({ alerts }: { alerts: readonly PlatformAler
               py: 1.15,
             }}
           >
-            <Stack direction="row" spacing={1} justifyContent="space-between">
-              <Typography sx={{ color: brand.graphite[500], fontSize: 12, fontWeight: 900 }}>
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={{ xs: 0.35, sm: 1 }}
+              justifyContent="space-between"
+            >
+              <Typography sx={{ color: brand.graphite[500], fontSize: 12.5, fontWeight: 900 }}>
                 {t(`${alert.id}.title`)}
               </Typography>
-              <Typography sx={{ color: brand.neutral[500], fontSize: 10, whiteSpace: 'nowrap' }}>
+              <Typography sx={{ color: brand.neutral[500], fontSize: 10.5, whiteSpace: 'nowrap' }}>
                 {alert.time}
               </Typography>
             </Stack>
-            <Typography
-              sx={{ color: brand.neutral[500], fontSize: 10.5, lineHeight: 1.4, mt: 0.45 }}
-            >
+            <Typography sx={{ color: brand.neutral[500], fontSize: 11, lineHeight: 1.4, mt: 0.45 }}>
               {t(`${alert.id}.description`)}
             </Typography>
           </Box>

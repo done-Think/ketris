@@ -85,7 +85,7 @@ describe('PlatformTenantsPage', () => {
 
     await user.click(screen.getByLabelText('Filtrar por status'))
     await user.click(screen.getByRole('option', { name: 'Todos' }))
-    await user.click(screen.getByRole('button', { name: 'Próximo' }))
+    await user.click(screen.getByRole('button', { name: 'Go to next page' }))
     expect(screen.getByText('Orion Gestão Imobiliária')).toBeVisible()
     expect(screen.getByText('Mostrando 7–12 de 18 tenants')).toBeVisible()
   })

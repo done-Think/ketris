@@ -1,5 +1,6 @@
 import { ThemeProvider } from '@mui/material'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
@@ -46,10 +47,10 @@ describe('PlatformOverview', () => {
     expect(screen.getByText('Nobre Imobiliária')).toBeVisible()
   })
 
-  it('renders all five fixture tenants in the accessible table', () => {
+  it('renders all five fixture tenants in the accessible grid', () => {
     renderOverview()
 
-    expect(screen.getByRole('table', { name: 'Tabela de tenants recentes' })).toBeVisible()
+    expect(screen.getByRole('grid')).toBeVisible()
     expect(screen.getAllByRole('row')).toHaveLength(6)
   })
 })
@@ -69,5 +70,28 @@ describe('PlatformShell', () => {
       'page',
     )
     expect(screen.getAllByText('Online')[0]).toBeVisible()
+  })
+
+  it('opens and closes the mobile platform navigation', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <ThemeProvider theme={theme}>
+        <PlatformShell>
+          <div>Overview content</div>
+        </PlatformShell>
+      </ThemeProvider>,
+    )
+
+    await user.click(
+      screen.getByRole('button', { name: /Abrir navega\u00e7\u00e3o da plataforma/ }),
+    )
+    const closeNavigation = await screen.findByRole('button', {
+      name: /Fechar navega\u00e7\u00e3o da plataforma/,
+    })
+    await user.click(closeNavigation)
+    expect(
+      screen.queryByRole('button', { name: /Fechar navega\u00e7\u00e3o da plataforma/ }),
+    ).not.toBeInTheDocument()
   })
 })

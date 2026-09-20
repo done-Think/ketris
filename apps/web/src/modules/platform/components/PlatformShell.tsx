@@ -1,6 +1,7 @@
 'use client'
 
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline'
@@ -41,7 +42,7 @@ export function PlatformShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  const sidebar = (
+  const sidebar = (isMobile = false) => (
     <Stack
       component="aside"
       sx={{
@@ -67,6 +68,15 @@ export function PlatformShell({ children }: { children: ReactNode }) {
         >
           {t('admin')}
         </Typography>
+        {isMobile && (
+          <IconButton
+            aria-label={t('closeNavigation')}
+            onClick={() => setMobileOpen(false)}
+            sx={{ color: 'inherit', ml: 'auto' }}
+          >
+            <CloseRoundedIcon />
+          </IconButton>
+        )}
       </Stack>
 
       <Stack component="nav" spacing={0.55} aria-label={t('ariaLabel')}>
@@ -143,7 +153,7 @@ export function PlatformShell({ children }: { children: ReactNode }) {
           zIndex: 10,
         }}
       >
-        {sidebar}
+        {sidebar()}
       </Box>
       <Stack
         component="header"
@@ -170,14 +180,31 @@ export function PlatformShell({ children }: { children: ReactNode }) {
           </IconButton>
         </Tooltip>
         <AppLogo src={ketrisLogoFooter} variant="transparent" width={76} sx={{ mb: 0, ml: 1 }} />
+        <Typography
+          sx={{
+            bgcolor: brand.magenta[500],
+            borderRadius: `${radius.sm}px`,
+            fontSize: 10,
+            fontWeight: 900,
+            lineHeight: 1,
+            ml: 'auto',
+            px: 0.65,
+            py: 0.45,
+          }}
+        >
+          {t('admin')}
+        </Typography>
       </Stack>
       <Drawer
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
         ModalProps={{ keepMounted: true }}
-        PaperProps={{ sx: { width: sidebarWidth, border: 0 } }}
+        PaperProps={{
+          sx: { width: 'min(280px, calc(100vw - 48px))', border: 0 },
+          'aria-label': t('ariaLabel'),
+        }}
       >
-        {sidebar}
+        {sidebar(true)}
       </Drawer>
       <Box
         component="main"
