@@ -68,6 +68,7 @@ export class PrismaPropertyRepository implements PropertyRepository {
       tenantId: filters.tenantId,
       status: filters.status,
       finalidade: filters.finalidade,
+      responsavelId: filters.responsavelId,
     }
 
     return prisma.imovel

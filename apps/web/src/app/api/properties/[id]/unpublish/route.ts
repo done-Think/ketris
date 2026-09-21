@@ -16,6 +16,7 @@ export const POST = withErrorHandling(async (request: NextRequest, context: Rout
 
   const property = await propertiesContainer.unpublishPropertyUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorId: actor.sub,
     id: (await context.params).id,
     actorPapel: actor.papel as Papel,
   })

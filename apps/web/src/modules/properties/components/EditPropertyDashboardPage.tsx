@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect } from 'react'
+import { notFound } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Box, Divider, Typography } from '@mui/material'
+import { Box, CircularProgress, Divider, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 
@@ -11,12 +12,16 @@ import { useRouter } from '@/i18n/navigation'
 import { alpha, radius, shadows, surface, zIndex } from '@shared/theme/tokens'
 
 import { createPropertySteps } from '../config/dashboard-property-ui'
-import { useCreateProperty } from '../hooks/use-properties'
+import { useProperty, useUpdateProperty } from '../hooks/use-properties'
 import {
   createDashboardPropertyDefaultValues,
   createDashboardPropertySchema,
 } from '../schemas/create-dashboard-property-schema'
-import type { CreateDashboardPropertyFormValues } from '../types/dashboard-property'
+import type {
+  CreateDashboardPropertyFormValues,
+  EditPropertyDashboardPageProps,
+} from '../types/dashboard-property'
+import { buildEditPropertyFormValues } from '../utils/build-edit-property-form-values'
 import { errorMessage } from '../utils/error-message'
 import { toPropertyPayload } from '../utils/to-property-payload'
 import { CreatePropertyActions } from './CreatePropertyActions'
@@ -28,15 +33,18 @@ const mobileCreateHeaderHeight = 104
 const mobileActionsHeight = 78
 const mobileContentGap = 24
 
-export function CreatePropertyDashboardPage() {
-  const t = useTranslations('properties.create')
+export function EditPropertyDashboardPage({ propertyId }: EditPropertyDashboardPageProps) {
+  const t = useTranslations('properties.edit')
+  const stepsT = useTranslations('properties.create')
   const { enqueueSnackbar } = useSnackbar()
   const router = useRouter()
-  const createProperty = useCreateProperty()
-  const { control, handleSubmit, setValue, watch } = useForm<CreateDashboardPropertyFormValues>({
-    defaultValues: createDashboardPropertyDefaultValues,
-    resolver: zodResolver(createDashboardPropertySchema),
-  })
+  const propertyQuery = useProperty(propertyId)
+  const updateProperty = useUpdateProperty(propertyId)
+  const { control, handleSubmit, setValue, watch, reset } =
+    useForm<CreateDashboardPropertyFormValues>({
+      defaultValues: createDashboardPropertyDefaultValues,
+      resolver: zodResolver(createDashboardPropertySchema),
+    })
   const activeStepIndex = watch('activeStepIndex')
   const maxVisitedStepIndex = watch('maxVisitedStepIndex')
   const propertyPurpose = watch('purpose')
@@ -45,10 +53,28 @@ export function CreatePropertyDashboardPage() {
   const lastStep = activeStepIndex === createPropertySteps.length - 1
 
   useEffect(() => {
+    if (!propertyQuery.data) return
+
+    reset(buildEditPropertyFormValues(propertyQuery.data))
+  }, [propertyQuery.data, reset])
+
+  useEffect(() => {
     if (!window.matchMedia('(max-width: 899px)').matches) return
 
     window.scrollTo({ top: 0, behavior: 'auto' })
   }, [activeStepIndex])
+
+  if (propertyQuery.isLoading) {
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: '55vh' }}>
+        <CircularProgress size={30} />
+      </Stack>
+    )
+  }
+
+  if (propertyQuery.isError || !propertyQuery.data) {
+    notFound()
+  }
 
   const goToPreviousStep = () => {
     setValue('activeStepIndex', Math.max(activeStepIndex - 1, 0))
@@ -61,13 +87,13 @@ export function CreatePropertyDashboardPage() {
     setValue('maxVisitedStepIndex', Math.max(maxVisitedStepIndex, nextStepIndex))
   }
 
-  const handleCreateSubmit = async (values: CreateDashboardPropertyFormValues) => {
+  const handleEditSubmit = async (values: CreateDashboardPropertyFormValues) => {
     try {
-      const property = await createProperty.mutateAsync(toPropertyPayload(values))
-      enqueueSnackbar(t('createSuccess'), { variant: 'success' })
-      router.push({ pathname: '/dashboard/properties/[id]', params: { id: property.id } })
+      await updateProperty.mutateAsync(toPropertyPayload(values))
+      enqueueSnackbar(t('updateSuccess'), { variant: 'success' })
+      router.push({ pathname: '/dashboard/properties/[id]', params: { id: propertyId } })
     } catch (error) {
-      enqueueSnackbar(errorMessage(error, t('createError')), { variant: 'error' })
+      enqueueSnackbar(errorMessage(error, t('updateError')), { variant: 'error' })
     }
   }
 
@@ -136,7 +162,7 @@ export function CreatePropertyDashboardPage() {
 
         <Box
           component="form"
-          onSubmit={handleSubmit(handleCreateSubmit)}
+          onSubmit={handleSubmit(handleEditSubmit)}
           sx={{
             bgcolor: surface.paper,
             border: '1px solid',
@@ -161,7 +187,7 @@ export function CreatePropertyDashboardPage() {
           <CreatePropertyStepFields
             control={control}
             activeStepKey={activeStep.key}
-            activeStepLabel={t(`steps.${activeStep.key}`)}
+            activeStepLabel={stepsT(`steps.${activeStep.key}`)}
             propertyPurpose={propertyPurpose}
           />
 
@@ -170,9 +196,10 @@ export function CreatePropertyDashboardPage() {
           <CreatePropertyActions
             firstStep={firstStep}
             lastStep={lastStep}
-            isSubmitting={createProperty.isPending}
+            isSubmitting={updateProperty.isPending}
             onPreviousStep={goToPreviousStep}
             onNextStep={goToNextStep}
+            submitLabel={t('save')}
           />
         </Box>
       </Box>

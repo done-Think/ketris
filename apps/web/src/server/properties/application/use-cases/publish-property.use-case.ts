@@ -2,6 +2,7 @@ import { ForbiddenError } from '@server/shared/errors'
 
 import type { Papel } from '@server/auth/domain/user.entity'
 
+import { assertPropertyAccess } from '../authorization'
 import { PropertyNotFoundError, PropertyPublishValidationError } from '../../domain/errors'
 import type { Property } from '../../domain/property.entity'
 import type { PropertyRepository } from '../ports/property-repository.port'
@@ -11,6 +12,7 @@ export class PublishPropertyUseCase {
 
   async execute(input: {
     actorTenantId: string
+    actorId: string
     id: string
     publishedAt?: Date
     actorPapel: Papel
@@ -24,6 +26,8 @@ export class PublishPropertyUseCase {
     if (!property) {
       throw new PropertyNotFoundError()
     }
+
+    assertPropertyAccess(property.responsavelId, input.actorId, input.actorPapel)
 
     const missingFields = getPublishMissingFields(property)
 

@@ -55,6 +55,7 @@ export const routing = defineRouting({
     '/dashboard/maintenance/[id]': '/dashboard/maintenance/[id]',
     '/dashboard/properties': '/dashboard/properties',
     '/dashboard/properties/[id]': '/dashboard/properties/[id]',
+    '/dashboard/properties/[id]/edit': '/dashboard/properties/[id]/edit',
     '/dashboard/properties/new': '/dashboard/properties/new',
     '/dashboard/proposals': '/dashboard/proposals',
     '/dashboard/public-profile': '/dashboard/public-profile',

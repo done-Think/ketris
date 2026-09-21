@@ -28,6 +28,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   const properties = await propertiesContainer.listPropertiesUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorId: actor.sub,
+    actorPapel: actor.papel as Papel,
     status: parsed.data.status,
     finalidade: parsed.data.finalidade,
   })

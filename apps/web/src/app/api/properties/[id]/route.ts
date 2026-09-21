@@ -17,6 +17,8 @@ export const GET = withErrorHandling(async (request: NextRequest, context: Route
 
   const property = await propertiesContainer.getPropertyUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorId: actor.sub,
+    actorPapel: actor.papel as Papel,
     id: (await context.params).id,
   })
 
@@ -29,6 +31,7 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Rou
 
   const property = await propertiesContainer.updatePropertyUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorId: actor.sub,
     id: (await context.params).id,
     actorPapel: actor.papel as Papel,
     ...body,
@@ -55,6 +58,7 @@ export const DELETE = withErrorHandling(async (request: NextRequest, context: Ro
 
   const property = await propertiesContainer.deactivatePropertyUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorId: actor.sub,
     id: (await context.params).id,
     actorPapel: actor.papel as Papel,
   })

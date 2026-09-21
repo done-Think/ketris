@@ -4,16 +4,17 @@ import {
   ContractPropertyTransitionError,
   PropertyNotFoundError,
   PropertyPublishValidationError,
-} from '../../domain/errors'
-import type { Property } from '../../domain/property.entity'
-import type { PropertyRepository } from '../ports/property-repository.port'
-import { CreatePropertyUseCase } from './create-property.use-case'
-import { DeactivatePropertyUseCase } from './deactivate-property.use-case'
-import { ListPropertiesUseCase } from './list-properties.use-case'
-import { PublishPropertyUseCase } from './publish-property.use-case'
-import { TransitionPropertyFromActiveContractUseCase } from './transition-property-from-active-contract.use-case'
-import { UnpublishPropertyUseCase } from './unpublish-property.use-case'
-import { UpdatePropertyUseCase } from './update-property.use-case'
+} from '../../../domain/errors'
+import type { Property } from '../../../domain/property.entity'
+import type { PropertyRepository } from '../../../application/ports/property-repository.port'
+import { CreatePropertyUseCase } from '../../../application/use-cases/create-property.use-case'
+import { DeactivatePropertyUseCase } from '../../../application/use-cases/deactivate-property.use-case'
+import { GetPropertyUseCase } from '../../../application/use-cases/get-property.use-case'
+import { ListPropertiesUseCase } from '../../../application/use-cases/list-properties.use-case'
+import { PublishPropertyUseCase } from '../../../application/use-cases/publish-property.use-case'
+import { TransitionPropertyFromActiveContractUseCase } from '../../../application/use-cases/transition-property-from-active-contract.use-case'
+import { UnpublishPropertyUseCase } from '../../../application/use-cases/unpublish-property.use-case'
+import { UpdatePropertyUseCase } from '../../../application/use-cases/update-property.use-case'
 
 const property: Property = {
   id: 'property-1',
@@ -119,20 +120,94 @@ describe('properties use cases', () => {
     expect(repository.create).not.toHaveBeenCalled()
   })
 
-  it('lista imóveis filtrando pelo tenant do ator', async () => {
-    const repository = createRepository()
-    const useCase = new ListPropertiesUseCase(repository)
+  describe('GetPropertyUseCase', () => {
+    it('retorna o imóvel para o AGENT responsável', async () => {
+      const repository = createRepository()
+      const useCase = new GetPropertyUseCase(repository)
 
-    await useCase.execute({
-      actorTenantId: 'tenant-1',
-      status: 'DRAFT',
-      finalidade: 'ALUGUEL',
+      await expect(
+        useCase.execute({
+          actorTenantId: 'tenant-1',
+          actorId: 'user-1',
+          actorPapel: 'AGENT',
+          id: 'property-1',
+        }),
+      ).resolves.toEqual(property)
     })
 
-    expect(repository.list).toHaveBeenCalledWith({
-      tenantId: 'tenant-1',
-      status: 'DRAFT',
-      finalidade: 'ALUGUEL',
+    it('retorna o imóvel para o ADMIN do tenant mesmo sem ser o responsável', async () => {
+      const repository = createRepository()
+      const useCase = new GetPropertyUseCase(repository)
+
+      await expect(
+        useCase.execute({
+          actorTenantId: 'tenant-1',
+          actorId: 'admin-1',
+          actorPapel: 'ADMIN',
+          id: 'property-1',
+        }),
+      ).resolves.toEqual(property)
+    })
+
+    it('bloqueia com erro opaco um AGENT que não é o responsável', async () => {
+      const repository = createRepository()
+      const useCase = new GetPropertyUseCase(repository)
+
+      await expect(
+        useCase.execute({
+          actorTenantId: 'tenant-1',
+          actorId: 'outro-agente',
+          actorPapel: 'AGENT',
+          id: 'property-1',
+        }),
+      ).rejects.toThrow(PropertyNotFoundError)
+    })
+  })
+
+  describe('ListPropertiesUseCase', () => {
+    it('lista imóveis do tenant sem filtrar por responsável quando o ator é ADMIN', async () => {
+      const repository = createRepository()
+      const useCase = new ListPropertiesUseCase(repository)
+
+      await useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'admin-1',
+        actorPapel: 'ADMIN',
+        status: 'DRAFT',
+        finalidade: 'ALUGUEL',
+      })
+
+      expect(repository.list).toHaveBeenCalledWith({
+        tenantId: 'tenant-1',
+        status: 'DRAFT',
+        finalidade: 'ALUGUEL',
+        responsavelId: undefined,
+      })
+    })
+
+    it('filtra por responsável quando o ator é AGENT', async () => {
+      const repository = createRepository()
+      const useCase = new ListPropertiesUseCase(repository)
+
+      await useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'user-1',
+        actorPapel: 'AGENT',
+      })
+
+      expect(repository.list).toHaveBeenCalledWith(
+        expect.objectContaining({ tenantId: 'tenant-1', responsavelId: 'user-1' }),
+      )
+    })
+
+    it('retorna lista vazia sem consultar o repositório quando o ator é RENTER', async () => {
+      const repository = createRepository()
+      const useCase = new ListPropertiesUseCase(repository)
+
+      await expect(
+        useCase.execute({ actorTenantId: 'tenant-1', actorId: 'renter-1', actorPapel: 'RENTER' }),
+      ).resolves.toEqual([])
+      expect(repository.list).not.toHaveBeenCalled()
     })
   })
 
@@ -142,6 +217,7 @@ describe('properties use cases', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorId: 'user-1',
       id: 'property-1',
       actorPapel: 'ADMIN',
       titulo: 'Novo título',
@@ -155,12 +231,13 @@ describe('properties use cases', () => {
   })
 
   it('lança erro opaco quando imóvel de outro tenant não é encontrado', async () => {
-    const repository = createRepository({ update: vi.fn().mockResolvedValue(null) })
+    const repository = createRepository({ findByTenantAndId: vi.fn().mockResolvedValue(null) })
     const useCase = new UpdatePropertyUseCase(repository)
 
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-2',
+        actorId: 'user-1',
         id: 'property-1',
         actorPapel: 'ADMIN',
         titulo: 'Novo título',
@@ -175,12 +252,44 @@ describe('properties use cases', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
+        actorId: 'user-1',
         id: 'property-1',
         actorPapel: 'RENTER',
         titulo: 'Novo título',
       }),
     ).rejects.toThrow('Locatários não podem gerenciar imóveis.')
     expect(repository.update).not.toHaveBeenCalled()
+  })
+
+  it('bloqueia com erro opaco um AGENT que tenta atualizar imóvel de outro corretor', async () => {
+    const repository = createRepository()
+    const useCase = new UpdatePropertyUseCase(repository)
+
+    await expect(
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'outro-agente',
+        id: 'property-1',
+        actorPapel: 'AGENT',
+        titulo: 'Novo título',
+      }),
+    ).rejects.toThrow(PropertyNotFoundError)
+    expect(repository.update).not.toHaveBeenCalled()
+  })
+
+  it('permite que o admin da imobiliária atualize um imóvel de outro corretor do mesmo tenant', async () => {
+    const repository = createRepository()
+    const useCase = new UpdatePropertyUseCase(repository)
+
+    await useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorId: 'admin-1',
+      id: 'property-1',
+      actorPapel: 'ADMIN',
+      titulo: 'Novo título',
+    })
+
+    expect(repository.update).toHaveBeenCalled()
   })
 
   it('publica imóvel completo', async () => {
@@ -190,6 +299,7 @@ describe('properties use cases', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorId: 'user-1',
       id: 'property-1',
       actorPapel: 'ADMIN',
       publishedAt,
@@ -213,6 +323,7 @@ describe('properties use cases', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
+        actorId: 'user-1',
         id: 'property-1',
         actorPapel: 'ADMIN',
       }),
@@ -225,16 +336,41 @@ describe('properties use cases', () => {
     const useCase = new PublishPropertyUseCase(repository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', id: 'property-1', actorPapel: 'RENTER' }),
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'renter-1',
+        id: 'property-1',
+        actorPapel: 'RENTER',
+      }),
     ).rejects.toThrow('Locatários não podem gerenciar imóveis.')
     expect(repository.findByTenantAndId).not.toHaveBeenCalled()
+  })
+
+  it('bloqueia com erro opaco um AGENT que tenta publicar imóvel de outro corretor', async () => {
+    const repository = createRepository()
+    const useCase = new PublishPropertyUseCase(repository)
+
+    await expect(
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'outro-agente',
+        id: 'property-1',
+        actorPapel: 'AGENT',
+      }),
+    ).rejects.toThrow(PropertyNotFoundError)
+    expect(repository.setStatus).not.toHaveBeenCalled()
   })
 
   it('despublica imóvel movendo status para inativo', async () => {
     const repository = createRepository()
     const useCase = new UnpublishPropertyUseCase(repository)
 
-    await useCase.execute({ actorTenantId: 'tenant-1', id: 'property-1', actorPapel: 'ADMIN' })
+    await useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorId: 'user-1',
+      id: 'property-1',
+      actorPapel: 'ADMIN',
+    })
 
     expect(repository.setStatus).toHaveBeenCalledWith('tenant-1', 'property-1', 'INACTIVE', null)
   })
@@ -244,8 +380,28 @@ describe('properties use cases', () => {
     const useCase = new UnpublishPropertyUseCase(repository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', id: 'property-1', actorPapel: 'RENTER' }),
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'renter-1',
+        id: 'property-1',
+        actorPapel: 'RENTER',
+      }),
     ).rejects.toThrow('Locatários não podem gerenciar imóveis.')
+    expect(repository.setStatus).not.toHaveBeenCalled()
+  })
+
+  it('bloqueia com erro opaco um AGENT que tenta despublicar imóvel de outro corretor', async () => {
+    const repository = createRepository()
+    const useCase = new UnpublishPropertyUseCase(repository)
+
+    await expect(
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'outro-agente',
+        id: 'property-1',
+        actorPapel: 'AGENT',
+      }),
+    ).rejects.toThrow(PropertyNotFoundError)
     expect(repository.setStatus).not.toHaveBeenCalled()
   })
 
@@ -254,9 +410,43 @@ describe('properties use cases', () => {
     const useCase = new DeactivatePropertyUseCase(repository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', id: 'property-1', actorPapel: 'RENTER' }),
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'renter-1',
+        id: 'property-1',
+        actorPapel: 'RENTER',
+      }),
     ).rejects.toThrow('Locatários não podem gerenciar imóveis.')
     expect(repository.setStatus).not.toHaveBeenCalled()
+  })
+
+  it('bloqueia com erro opaco um AGENT que tenta desativar imóvel de outro corretor', async () => {
+    const repository = createRepository()
+    const useCase = new DeactivatePropertyUseCase(repository)
+
+    await expect(
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'outro-agente',
+        id: 'property-1',
+        actorPapel: 'AGENT',
+      }),
+    ).rejects.toThrow(PropertyNotFoundError)
+    expect(repository.setStatus).not.toHaveBeenCalled()
+  })
+
+  it('permite que o próprio corretor responsável desative seu imóvel', async () => {
+    const repository = createRepository()
+    const useCase = new DeactivatePropertyUseCase(repository)
+
+    await useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorId: 'user-1',
+      id: 'property-1',
+      actorPapel: 'AGENT',
+    })
+
+    expect(repository.setStatus).toHaveBeenCalledWith('tenant-1', 'property-1', 'INACTIVE', null)
   })
 
   it('marca imóvel como alugado quando contrato ativo de aluguel é processado', async () => {

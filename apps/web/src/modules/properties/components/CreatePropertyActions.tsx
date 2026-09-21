@@ -13,6 +13,7 @@ export function CreatePropertyActions({
   isSubmitting,
   onPreviousStep,
   onNextStep,
+  submitLabel,
 }: CreatePropertyActionsProps) {
   const t = useTranslations('properties.create')
 
@@ -64,7 +65,7 @@ export function CreatePropertyActions({
           fontWeight: 900,
         }}
       >
-        {lastStep ? t('publish') : t('next')}
+        {lastStep ? (submitLabel ?? t('publish')) : t('next')}
       </Button>
     </Stack>
   )

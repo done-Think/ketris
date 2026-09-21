@@ -8,6 +8,9 @@
     },
     "create": {
       "metadataTitle": "Ketris | List Property"
+    },
+    "edit": {
+      "metadataTitle": "Ketris | Edit Property"
     }
   },
   "dashboard": {
@@ -76,6 +79,20 @@
       "media": "Media",
       "values": "Values",
       "history": "History"
+    },
+    "publish": "Publish",
+    "delete": "Delete",
+    "publishSuccess": "Property published successfully.",
+    "publishError": "Could not publish the property. Please try again.",
+    "unpublishSuccess": "Property unpublished successfully.",
+    "unpublishError": "Could not unpublish the property. Please try again.",
+    "deleteSuccess": "Property deleted successfully.",
+    "deleteError": "Could not delete the property. Please try again.",
+    "deleteDialog": {
+      "title": "Delete property",
+      "description": "Are you sure you want to delete \"{title}\"? It will no longer appear in active listings.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
     }
   },
   "create": {
@@ -147,5 +164,12 @@
     },
     "createSuccess": "Property created successfully.",
     "createError": "Could not create the property. Please try again."
+  },
+  "edit": {
+    "title": "Edit property",
+    "mobileTitle": "Edit Property",
+    "save": "Save changes",
+    "updateSuccess": "Property updated successfully.",
+    "updateError": "Could not save the changes. Please try again."
   }
 }

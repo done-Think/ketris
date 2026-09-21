@@ -15,18 +15,20 @@ import type { DashboardProperty, PropertiesTableProps } from '../types/dashboard
 function PropertyIdentityCell({ row }: GridRenderCellParams<DashboardProperty>) {
   return (
     <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0, height: '100%' }}>
-      <Box
-        component="img"
-        src={row.imageUrl}
-        alt=""
-        sx={{
-          width: 56,
-          height: 56,
-          borderRadius: `${radius.sm}px`,
-          objectFit: 'cover',
-          flexShrink: 0,
-        }}
-      />
+      {row.imageUrl ? (
+        <Box
+          component="img"
+          src={row.imageUrl}
+          alt=""
+          sx={{
+            width: 56,
+            height: 56,
+            borderRadius: `${radius.sm}px`,
+            objectFit: 'cover',
+            flexShrink: 0,
+          }}
+        />
+      ) : null}
       <Box sx={{ minWidth: 0 }}>
         <Typography noWrap sx={{ fontSize: 15, fontWeight: 900 }}>
           {row.title}

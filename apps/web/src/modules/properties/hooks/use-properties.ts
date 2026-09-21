@@ -67,3 +67,15 @@ export function useUnpublishProperty() {
     },
   })
 }
+
+export function useDeactivateProperty() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => propertiesService.deactivate(id),
+    onSuccess: (property) => {
+      queryClient.invalidateQueries({ queryKey: propertyQueryKeys.all })
+      queryClient.setQueryData(propertyQueryKeys.detail(property.id), property)
+    },
+  })
+}

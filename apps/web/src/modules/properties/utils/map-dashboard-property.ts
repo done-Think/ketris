@@ -36,6 +36,8 @@ export function toDashboardProperty(property: Property): DashboardProperty {
 
   return {
     id: property.id,
+    responsibleUserId: property.responsibleUserId,
+    apiStatus: property.status,
     title: property.title,
     address: addressLine,
     location: locationLine,

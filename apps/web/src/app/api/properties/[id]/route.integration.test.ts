@@ -15,9 +15,12 @@ describe('/api/properties/{id} (integração)', () => {
   let tenantId: string
   let otherTenantId: string
   let actorToken: string
+  let otherAgentToken: string
+  let adminToken: string
   let completePropertyId: string
   let incompletePropertyId: string
   let otherTenantPropertyId: string
+  let ownedByActorPropertyId: string
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
@@ -113,6 +116,70 @@ describe('/api/properties/{id} (integração)', () => {
       },
     })
     otherTenantPropertyId = otherProperty.id
+
+    const otherAgentSameTenant = await prisma.usuario.create({
+      data: {
+        tenantId,
+        nome: 'Outro Corretor da Mesma Imobiliária',
+        email: `outro-corretor-${randomUUID()}@ketris.dev`,
+        senhaHash: 'hash-fake',
+        papel: 'AGENT',
+      },
+    })
+    otherAgentToken = await tokenService.sign({
+      id: otherAgentSameTenant.id,
+      tenantId: otherAgentSameTenant.tenantId,
+      nome: otherAgentSameTenant.nome,
+      email: otherAgentSameTenant.email,
+      papel: otherAgentSameTenant.papel,
+      ativo: otherAgentSameTenant.ativo,
+      vinculoAprovadoEm: otherAgentSameTenant.vinculoAprovadoEm,
+    })
+
+    const admin = await prisma.usuario.create({
+      data: {
+        tenantId,
+        nome: 'Admin da Imobiliária',
+        email: `admin-imobiliaria-${randomUUID()}@ketris.dev`,
+        senhaHash: 'hash-fake',
+        papel: 'ADMIN',
+      },
+    })
+    adminToken = await tokenService.sign({
+      id: admin.id,
+      tenantId: admin.tenantId,
+      nome: admin.nome,
+      email: admin.email,
+      papel: admin.papel,
+      ativo: admin.ativo,
+      vinculoAprovadoEm: admin.vinculoAprovadoEm,
+    })
+
+    const ownedByActorProperty = await prisma.imovel.create({
+      data: {
+        tenantId,
+        responsavelId: actor.id,
+        titulo: 'Casa do corretor dono',
+        finalidade: 'VENDA',
+        tipo: 'casa',
+        valor: 500000,
+        status: 'DRAFT',
+        endereco: {
+          create: {
+            logradouro: 'Rua do Dono',
+            numero: '10',
+            bairro: 'Centro',
+            cidade: 'Curitiba',
+            estado: 'PR',
+            cep: '80010000',
+          },
+        },
+        midias: {
+          create: [{ url: 'https://cdn.ketris.dev/owned/photo.jpg', tipo: 'foto', ordem: 0 }],
+        },
+      },
+    })
+    ownedByActorPropertyId = ownedByActorProperty.id
   })
 
   afterAll(async () => {
@@ -220,5 +287,101 @@ describe('/api/properties/{id} (integração)', () => {
 
     expect(response.status).toBe(200)
     expect(json.property.status).toBe('INACTIVE')
+  })
+
+  describe('permissões: dono, admin da imobiliária e outro corretor', () => {
+    it('retorna 404 quando outro corretor da mesma imobiliária tenta ver o imóvel', async () => {
+      const response = await GET(
+        buildRequest('GET', ownedByActorPropertyId, undefined, otherAgentToken),
+        context(ownedByActorPropertyId),
+      )
+
+      expect(response.status).toBe(404)
+    })
+
+    it('permite que o admin da imobiliária veja o imóvel de outro corretor', async () => {
+      const response = await GET(
+        buildRequest('GET', ownedByActorPropertyId, undefined, adminToken),
+        context(ownedByActorPropertyId),
+      )
+      const json = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(json.property.id).toBe(ownedByActorPropertyId)
+    })
+
+    it('retorna 404 quando outro corretor da mesma imobiliária tenta editar o imóvel', async () => {
+      const response = await PATCH(
+        buildRequest(
+          'PATCH',
+          ownedByActorPropertyId,
+          { titulo: 'Tentativa indevida' },
+          otherAgentToken,
+        ),
+        context(ownedByActorPropertyId),
+      )
+
+      expect(response.status).toBe(404)
+    })
+
+    it('permite que o admin da imobiliária edite o imóvel de outro corretor', async () => {
+      const response = await PATCH(
+        buildRequest('PATCH', ownedByActorPropertyId, { titulo: 'Editado pelo admin' }, adminToken),
+        context(ownedByActorPropertyId),
+      )
+      const json = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(json.property.titulo).toBe('Editado pelo admin')
+    })
+
+    it('retorna 404 quando outro corretor da mesma imobiliária tenta publicar o imóvel', async () => {
+      const response = await publish(
+        buildRequest('POST', ownedByActorPropertyId, undefined, otherAgentToken),
+        context(ownedByActorPropertyId),
+      )
+
+      expect(response.status).toBe(404)
+    })
+
+    it('permite que o admin da imobiliária publique o imóvel de outro corretor', async () => {
+      const response = await publish(
+        buildRequest('POST', ownedByActorPropertyId, undefined, adminToken),
+        context(ownedByActorPropertyId),
+      )
+      const json = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(json.property.status).toBe('PUBLISHED')
+    })
+
+    it('retorna 404 quando outro corretor da mesma imobiliária tenta despublicar o imóvel', async () => {
+      const response = await unpublish(
+        buildRequest('POST', ownedByActorPropertyId, undefined, otherAgentToken),
+        context(ownedByActorPropertyId),
+      )
+
+      expect(response.status).toBe(404)
+    })
+
+    it('retorna 404 quando outro corretor da mesma imobiliária tenta excluir o imóvel', async () => {
+      const response = await DELETE(
+        buildRequest('DELETE', ownedByActorPropertyId, undefined, otherAgentToken),
+        context(ownedByActorPropertyId),
+      )
+
+      expect(response.status).toBe(404)
+    })
+
+    it('permite que o próprio corretor responsável exclua seu imóvel', async () => {
+      const response = await DELETE(
+        buildRequest('DELETE', ownedByActorPropertyId, undefined, actorToken),
+        context(ownedByActorPropertyId),
+      )
+      const json = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(json.property.status).toBe('INACTIVE')
+    })
   })
 })

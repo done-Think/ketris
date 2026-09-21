@@ -51,6 +51,13 @@ describe('toDashboardProperty', () => {
     expect(result.summary.bedrooms).toBe('3')
   })
 
+  it('carries the raw responsible user id and API status through for permission checks', () => {
+    const result = toDashboardProperty(baseProperty)
+
+    expect(result.responsibleUserId).toBe('user-1')
+    expect(result.apiStatus).toBe('PUBLISHED')
+  })
+
   it('formats a sale listing without a monthly suffix and sale-only pricing', () => {
     const result = toDashboardProperty({
       ...baseProperty,

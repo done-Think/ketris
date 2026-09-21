@@ -8,6 +8,9 @@
     },
     "create": {
       "metadataTitle": "Ketris | Publicar inmueble"
+    },
+    "edit": {
+      "metadataTitle": "Ketris | Editar Inmueble"
     }
   },
   "dashboard": {
@@ -76,6 +79,20 @@
       "media": "Medios",
       "values": "Valores",
       "history": "Historial"
+    },
+    "publish": "Publicar",
+    "delete": "Eliminar",
+    "publishSuccess": "Inmueble publicado correctamente.",
+    "publishError": "No fue posible publicar el inmueble. Inténtalo de nuevo.",
+    "unpublishSuccess": "Inmueble despublicado correctamente.",
+    "unpublishError": "No fue posible despublicar el inmueble. Inténtalo de nuevo.",
+    "deleteSuccess": "Inmueble eliminado correctamente.",
+    "deleteError": "No fue posible eliminar el inmueble. Inténtalo de nuevo.",
+    "deleteDialog": {
+      "title": "Eliminar inmueble",
+      "description": "¿Seguro que deseas eliminar \"{title}\"? Dejará de aparecer en los listados activos.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar"
     }
   },
   "create": {
@@ -147,5 +164,12 @@
     },
     "createSuccess": "Inmueble creado con éxito.",
     "createError": "No se pudo crear el inmueble. Inténtalo de nuevo."
+  },
+  "edit": {
+    "title": "Editar inmueble",
+    "mobileTitle": "Editar Inmueble",
+    "save": "Guardar cambios",
+    "updateSuccess": "Inmueble actualizado correctamente.",
+    "updateError": "No fue posible guardar los cambios. Inténtalo de nuevo."
   }
 }

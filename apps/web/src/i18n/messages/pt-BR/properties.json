@@ -8,6 +8,9 @@
     },
     "create": {
       "metadataTitle": "Ketris | Cadastrar Imóvel"
+    },
+    "edit": {
+      "metadataTitle": "Ketris | Editar Imóvel"
     }
   },
   "dashboard": {
@@ -76,6 +79,20 @@
       "media": "Mídia",
       "values": "Valores",
       "history": "Histórico"
+    },
+    "publish": "Publicar",
+    "delete": "Excluir",
+    "publishSuccess": "Imóvel publicado com sucesso.",
+    "publishError": "Não foi possível publicar o imóvel. Tente novamente.",
+    "unpublishSuccess": "Imóvel despublicado com sucesso.",
+    "unpublishError": "Não foi possível despublicar o imóvel. Tente novamente.",
+    "deleteSuccess": "Imóvel excluído com sucesso.",
+    "deleteError": "Não foi possível excluir o imóvel. Tente novamente.",
+    "deleteDialog": {
+      "title": "Excluir imóvel",
+      "description": "Tem certeza que deseja excluir \"{title}\"? O imóvel deixará de aparecer nas listagens ativas.",
+      "confirm": "Excluir",
+      "cancel": "Cancelar"
     }
   },
   "create": {
@@ -147,5 +164,12 @@
     },
     "createSuccess": "Imóvel cadastrado com sucesso.",
     "createError": "Não foi possível cadastrar o imóvel. Tente novamente."
+  },
+  "edit": {
+    "title": "Editar imóvel",
+    "mobileTitle": "Editar Imóvel",
+    "save": "Salvar alterações",
+    "updateSuccess": "Imóvel atualizado com sucesso.",
+    "updateError": "Não foi possível salvar as alterações. Tente novamente."
   }
 }
