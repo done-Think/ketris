@@ -4,6 +4,7 @@ import type {
   AgendaEventApi,
   CreateAgendaEventPayload,
   RescheduleAgendaEventPayload,
+  UpdateAgendaEventPayload,
 } from '../types/agenda-event'
 
 interface AgendaEventResponse {
@@ -25,6 +26,12 @@ export class AgendaService extends BaseService {
 
   create(payload: CreateAgendaEventPayload): Promise<AgendaEventApi> {
     return this.http.post<AgendaEventResponse>(this.path, payload).then((data) => data.event)
+  }
+
+  update(id: string, payload: UpdateAgendaEventPayload): Promise<AgendaEventApi> {
+    return this.http
+      .patch<AgendaEventResponse>(`${this.path}/${id}`, payload)
+      .then((data) => data.event)
   }
 
   reschedule(id: string, payload: RescheduleAgendaEventPayload): Promise<AgendaEventApi> {

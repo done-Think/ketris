@@ -12,8 +12,10 @@ import { useProperties } from '@modules/properties/hooks/use-properties'
 import { AgendaDashboardPage } from '../../components/AgendaDashboardPage'
 import {
   useAgendaEvents,
+  useCancelAgendaEvent,
   useCreateAgendaEvent,
   useRescheduleAgendaEvent,
+  useUpdateAgendaEvent,
 } from '../../hooks/use-agenda-events'
 import type { AgendaEventApi } from '../../types/agenda-event'
 
@@ -35,8 +37,10 @@ vi.mock('../../hooks/use-agenda-events', async (importOriginal) => {
   return {
     ...original,
     useAgendaEvents: vi.fn(),
+    useCancelAgendaEvent: vi.fn(),
     useCreateAgendaEvent: vi.fn(),
     useRescheduleAgendaEvent: vi.fn(),
+    useUpdateAgendaEvent: vi.fn(),
   }
 })
 
@@ -95,6 +99,22 @@ function mockRescheduleEvent(overrides: Record<string, unknown> = {}) {
   } as unknown as ReturnType<typeof useRescheduleAgendaEvent>)
 }
 
+function mockUpdateEvent(overrides: Record<string, unknown> = {}) {
+  vi.mocked(useUpdateAgendaEvent).mockReturnValue({
+    mutateAsync: vi.fn().mockResolvedValue(makeEvent()),
+    isPending: false,
+    ...overrides,
+  } as unknown as ReturnType<typeof useUpdateAgendaEvent>)
+}
+
+function mockCancelEvent(overrides: Record<string, unknown> = {}) {
+  vi.mocked(useCancelAgendaEvent).mockReturnValue({
+    mutateAsync: vi.fn().mockResolvedValue(makeEvent({ status: 'CANCELLED' })),
+    isPending: false,
+    ...overrides,
+  } as unknown as ReturnType<typeof useCancelAgendaEvent>)
+}
+
 function mockPropertiesQuery(overrides: Record<string, unknown> = {}) {
   vi.mocked(useProperties).mockReturnValue({
     data: [],
@@ -123,6 +143,8 @@ describe('AgendaDashboardPage', () => {
     mockEventsQuery()
     mockCreateEvent()
     mockRescheduleEvent()
+    mockUpdateEvent()
+    mockCancelEvent()
     mockPropertiesQuery()
   })
 
@@ -236,5 +258,66 @@ describe('AgendaDashboardPage', () => {
 
     expect(screen.getByText(/Reunião captação - /)).toBeVisible()
     expect(screen.queryByText(/Visita Jardim Paulista - /)).not.toBeInTheDocument()
+  })
+
+  it('edits an existing event through the detail dialog', async () => {
+    const rescheduleMutateAsync = vi.fn().mockResolvedValue(makeEvent())
+    const updateMutateAsync = vi.fn().mockResolvedValue(makeEvent({ title: 'Visita remarcada' }))
+    mockEventsQuery({ data: [makeEvent()] })
+    mockRescheduleEvent({ mutateAsync: rescheduleMutateAsync })
+    mockUpdateEvent({ mutateAsync: updateMutateAsync })
+    renderPage()
+
+    const [openEventButton] = screen.getAllByRole('button', {
+      name: 'Abrir Visita Jardim Paulista',
+    })
+    await userEvent.click(openEventButton)
+    await userEvent.click(await screen.findByRole('button', { name: 'Editar' }))
+
+    const titleField = screen.getByLabelText('Título')
+    await userEvent.clear(titleField)
+    await userEvent.type(titleField, 'Visita remarcada')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    await waitFor(() =>
+      expect(mocks.enqueueSnackbar).toHaveBeenCalledWith(
+        'Visita remarcada atualizado com sucesso.',
+        { variant: 'success' },
+      ),
+    )
+    expect(rescheduleMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ id: 'event-1' }))
+    expect(updateMutateAsync).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'event-1',
+        payload: expect.objectContaining({ title: 'Visita remarcada' }),
+      }),
+    )
+  })
+
+  it('deletes an event after confirming', async () => {
+    const cancelMutateAsync = vi.fn().mockResolvedValue(makeEvent({ status: 'CANCELLED' }))
+    mockEventsQuery({ data: [makeEvent()] })
+    mockCancelEvent({ mutateAsync: cancelMutateAsync })
+    renderPage()
+
+    const [openEventButton] = screen.getAllByRole('button', {
+      name: 'Abrir Visita Jardim Paulista',
+    })
+    await userEvent.click(openEventButton)
+    await userEvent.click(await screen.findByRole('button', { name: 'Excluir' }))
+
+    const dialogs = await screen.findAllByRole('dialog')
+    const confirmDialog = dialogs[dialogs.length - 1]
+    await userEvent.click(within(confirmDialog).getByRole('button', { name: 'Excluir' }))
+
+    await waitFor(() =>
+      expect(mocks.enqueueSnackbar).toHaveBeenCalledWith(
+        'Visita Jardim Paulista excluído da agenda.',
+        { variant: 'success' },
+      ),
+    )
+    expect(cancelMutateAsync).toHaveBeenCalledWith('event-1')
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   })
 })

@@ -72,6 +72,18 @@ describe('AgendaService', () => {
     })
   })
 
+  it('updates an event and unwraps the response', async () => {
+    http.patch.mockResolvedValueOnce({ event })
+
+    await expect(
+      service.update(event.id, { title: 'Visita remarcada', propertyId: 'prop-1' }),
+    ).resolves.toEqual(event)
+    expect(http.patch).toHaveBeenCalledWith(`/agenda/events/${event.id}`, {
+      title: 'Visita remarcada',
+      propertyId: 'prop-1',
+    })
+  })
+
   it('reschedules an event and unwraps the response', async () => {
     http.post.mockResolvedValueOnce({ event })
 

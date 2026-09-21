@@ -68,4 +68,29 @@ describe('toAgendaEvent', () => {
 
     expect(result.kind).toBeUndefined()
   })
+
+  it('resolves the property label and href from propertyId via the lookup map', () => {
+    const result = toAgendaEvent(
+      { ...baseApiEvent, propertyId: 'prop-1', propertyReference: null },
+      { 'prop-1': { id: 'prop-1', href: '/dashboard/properties/prop-1', label: 'Apto Jardins' } },
+    )
+
+    expect(result.property).toBe('Apto Jardins')
+    expect(result.propertyHref).toBe('/dashboard/properties/prop-1')
+    expect(result.propertyId).toBe('prop-1')
+  })
+
+  it('prefers the free-text reference over the resolved property label when both are set', () => {
+    const result = toAgendaEvent(
+      { ...baseApiEvent, propertyId: 'prop-1', propertyReference: 'Sala comercial centro' },
+      { 'prop-1': { id: 'prop-1', href: '/dashboard/properties/prop-1', label: 'Apto Jardins' } },
+    )
+
+    expect(result.property).toBe('Sala comercial centro')
+  })
+
+  it('exposes the raw API kind for editing, even when it collapses to the same display kind as another', () => {
+    expect(toAgendaEvent({ ...baseApiEvent, kind: 'OTHER' }).apiKind).toBe('OTHER')
+    expect(toAgendaEvent({ ...baseApiEvent, kind: 'VISIT' }).apiKind).toBe('VISIT')
+  })
 })

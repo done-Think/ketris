@@ -12,7 +12,6 @@
     "assignedEventTitle": "Novo compromisso atribuído",
     "assignedEventMessage": "{role} {name} marcou {title}",
     "defaultEventNotes": "Evento criado manualmente na agenda.",
-    "rescheduleSuccess": "{title} reagendado para {date} às {time}.",
     "createSuccess": "{title} adicionado à agenda.",
     "freeSlot": "Horário livre",
     "selectedDayLabel": "{day}, {date} de {month}",
@@ -21,7 +20,10 @@
       "colleague": "colega"
     },
     "createError": "Não foi possível criar o evento. Tente novamente.",
-    "rescheduleError": "Não foi possível reagendar o evento. Tente novamente."
+    "editSuccess": "{title} atualizado com sucesso.",
+    "editError": "Não foi possível salvar as alterações. Tente novamente.",
+    "deleteSuccess": "{title} excluído da agenda.",
+    "deleteError": "Não foi possível excluir o evento. Tente novamente."
   },
   "eventForm": {
     "eyebrow": "Novo ponto na agenda",
@@ -56,12 +58,17 @@
     "closeAriaLabel": "Fechar detalhes do evento",
     "notesTitle": "Observações",
     "createdBy": "Marcado por {role} {name}",
-    "rescheduleTitle": "Reagendar compromisso",
-    "fields": {
-      "newDate": "Nova data",
-      "newTime": "Novo horário"
-    },
-    "cancel": "Cancelar",
-    "submit": "Salvar reagendamento"
+    "noProperty": "Sem imóvel vinculado",
+    "editTitle": "Editar evento",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "save": "Salvar",
+    "cancelEdit": "Cancelar",
+    "deleteDialog": {
+      "title": "Excluir evento",
+      "description": "Tem certeza que deseja excluir \"{title}\"? Essa ação não pode ser desfeita.",
+      "confirm": "Excluir",
+      "cancel": "Cancelar"
+    }
   }
 }

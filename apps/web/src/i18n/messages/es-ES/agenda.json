@@ -12,7 +12,6 @@
     "assignedEventTitle": "Nuevo compromiso asignado",
     "assignedEventMessage": "{role} {name} agendó {title}",
     "defaultEventNotes": "Evento creado manualmente en la agenda.",
-    "rescheduleSuccess": "{title} reprogramado para {date} a las {time}.",
     "createSuccess": "{title} añadido a la agenda.",
     "freeSlot": "Horario libre",
     "selectedDayLabel": "{day}, {date} de {month}",
@@ -21,7 +20,10 @@
       "colleague": "colega"
     },
     "createError": "No se pudo crear el evento. Inténtalo de nuevo.",
-    "rescheduleError": "No se pudo reprogramar el evento. Inténtalo de nuevo."
+    "editSuccess": "{title} actualizado correctamente.",
+    "editError": "No fue posible guardar los cambios. Inténtalo de nuevo.",
+    "deleteSuccess": "{title} eliminado de la agenda.",
+    "deleteError": "No fue posible eliminar el evento. Inténtalo de nuevo."
   },
   "eventForm": {
     "eyebrow": "Nuevo punto en la agenda",
@@ -56,12 +58,17 @@
     "closeAriaLabel": "Cerrar detalles del evento",
     "notesTitle": "Observaciones",
     "createdBy": "Agendado por {role} {name}",
-    "rescheduleTitle": "Reprogramar compromiso",
-    "fields": {
-      "newDate": "Nueva fecha",
-      "newTime": "Nuevo horario"
-    },
-    "cancel": "Cancelar",
-    "submit": "Guardar reprogramación"
+    "noProperty": "Sin inmueble vinculado",
+    "editTitle": "Editar evento",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "save": "Guardar",
+    "cancelEdit": "Cancelar",
+    "deleteDialog": {
+      "title": "Eliminar evento",
+      "description": "¿Seguro que deseas eliminar \"{title}\"? Esta acción no se puede deshacer.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar"
+    }
   }
 }

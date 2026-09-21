@@ -1,7 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { agendaService } from '../services/agenda-service'
-import type { CreateAgendaEventPayload, RescheduleAgendaEventPayload } from '../types/agenda-event'
+import type {
+  CreateAgendaEventPayload,
+  RescheduleAgendaEventPayload,
+  UpdateAgendaEventPayload,
+} from '../types/agenda-event'
 
 export const agendaQueryKeys = {
   all: ['agenda'] as const,
@@ -38,6 +42,29 @@ export function useRescheduleAgendaEvent(tenantId: string) {
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: RescheduleAgendaEventPayload }) =>
       agendaService.reschedule(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: agendaQueryKeys.tenant(tenantId) })
+    },
+  })
+}
+
+export function useUpdateAgendaEvent(tenantId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: UpdateAgendaEventPayload }) =>
+      agendaService.update(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: agendaQueryKeys.tenant(tenantId) })
+    },
+  })
+}
+
+export function useCancelAgendaEvent(tenantId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => agendaService.cancel(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: agendaQueryKeys.tenant(tenantId) })
     },

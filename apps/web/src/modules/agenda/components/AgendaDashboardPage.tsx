@@ -14,8 +14,10 @@ import type { DashboardNotificationItem } from '@shared/types/dashboard-notifica
 import { agendaTimeSlots } from '../data/agenda-events'
 import {
   useAgendaEvents,
+  useCancelAgendaEvent,
   useCreateAgendaEvent,
   useRescheduleAgendaEvent,
+  useUpdateAgendaEvent,
 } from '../hooks/use-agenda-events'
 import { agendaOtherPropertyValue } from '../schemas/agenda-event-form-schema'
 import type {
@@ -23,7 +25,6 @@ import type {
   AgendaEventApiKind,
   AgendaEventFormValues,
   AgendaPropertyOption,
-  AgendaRescheduleFormValues,
 } from '../types/agenda-event'
 import { errorMessage } from '../utils/error-message'
 import { toAgendaEvent } from '../utils/map-agenda-event'
@@ -50,20 +51,7 @@ export function AgendaDashboardPage() {
   const [weekStartDate, setWeekStartDate] = useState(() => today)
   const agendaDays = useMemo(() => buildAgendaCalendarDays(weekStartDate), [weekStartDate])
 
-  const eventsQuery = useAgendaEvents(
-    tenantId,
-    today.toISOString(),
-    scheduleHorizonEnd.toISOString(),
-  )
-  const events = useMemo(
-    () =>
-      (eventsQuery.data ?? []).filter((event) => event.status !== 'CANCELLED').map(toAgendaEvent),
-    [eventsQuery.data],
-  )
-  const createAgendaEventMutation = useCreateAgendaEvent(tenantId)
-  const rescheduleAgendaEventMutation = useRescheduleAgendaEvent(tenantId)
   const propertiesQuery = useProperties()
-
   const propertyOptions = useMemo<AgendaPropertyOption[]>(
     () =>
       (propertiesQuery.data ?? []).map((property) => ({
@@ -75,12 +63,33 @@ export function AgendaDashboardPage() {
       })),
     [propertiesQuery.data],
   )
+  const propertiesById = useMemo<Record<string, AgendaPropertyOption>>(
+    () => Object.fromEntries(propertyOptions.map((option) => [option.id, option])),
+    [propertyOptions],
+  )
+
+  const eventsQuery = useAgendaEvents(
+    tenantId,
+    today.toISOString(),
+    scheduleHorizonEnd.toISOString(),
+  )
+  const events = useMemo(
+    () =>
+      (eventsQuery.data ?? [])
+        .filter((event) => event.status !== 'CANCELLED')
+        .map((event) => toAgendaEvent(event, propertiesById)),
+    [eventsQuery.data, propertiesById],
+  )
+  const createAgendaEventMutation = useCreateAgendaEvent(tenantId)
+  const updateAgendaEventMutation = useUpdateAgendaEvent(tenantId)
+  const rescheduleAgendaEventMutation = useRescheduleAgendaEvent(tenantId)
+  const cancelAgendaEventMutation = useCancelAgendaEvent(tenantId)
+
   const weekRange = getAgendaWeekRange(agendaDays)
   const notifications = useMemo(
     () => getAgendaNotifications({ events, t, today }),
     [events, t, today],
   )
-  const selectedEventDate = selectedEvent?.scheduledDate ?? ''
   const nextWeekStart = weekStartDate.add(agendaVisibleDayCount, 'day')
   const previousWeekStart = weekStartDate.subtract(agendaVisibleDayCount, 'day')
   const disablePreviousWeek = !previousWeekStart.isAfter(today.subtract(1, 'day'), 'day')
@@ -105,32 +114,6 @@ export function AgendaDashboardPage() {
 
     showScheduledWeek(dayjs(event.scheduledDate))
     setSelectedEvent(event)
-  }
-
-  const rescheduleSelectedEvent = async (values: AgendaRescheduleFormValues) => {
-    if (!selectedEvent) return
-
-    const nextDate = dayjs(values.scheduledDate)
-    const nextStart = dayjs(`${values.scheduledDate}T${values.scheduledTime}`)
-
-    try {
-      await rescheduleAgendaEventMutation.mutateAsync({
-        id: selectedEvent.id,
-        payload: { start: nextStart.toISOString() },
-      })
-      showScheduledWeek(nextDate)
-      enqueueSnackbar(
-        t('rescheduleSuccess', {
-          date: nextDate.format('DD/MM/YYYY'),
-          time: values.scheduledTime,
-          title: selectedEvent.title,
-        }),
-        { variant: 'success' },
-      )
-      closeEventDialog()
-    } catch (error) {
-      enqueueSnackbar(errorMessage(error, t('rescheduleError')), { variant: 'error' })
-    }
   }
 
   const createAgendaEvent = async (values: AgendaEventFormValues) => {
@@ -160,6 +143,55 @@ export function AgendaDashboardPage() {
     }
   }
 
+  const editAgendaEvent = async (values: AgendaEventFormValues): Promise<boolean> => {
+    if (!selectedEvent) return false
+
+    const scheduledDate = dayjs(values.scheduledDate)
+    const start = dayjs(`${values.scheduledDate}T${values.scheduledTime}`)
+    const useCustomProperty = values.propertyId === agendaOtherPropertyValue
+    const customProperty = values.customProperty.trim()
+
+    try {
+      await rescheduleAgendaEventMutation.mutateAsync({
+        id: selectedEvent.id,
+        payload: { start: start.toISOString(), durationMinutes: values.durationMinutes },
+      })
+      const updated = await updateAgendaEventMutation.mutateAsync({
+        id: selectedEvent.id,
+        payload: {
+          title: values.title,
+          kind: values.kind ? (values.kind as AgendaEventApiKind) : null,
+          ...(useCustomProperty
+            ? { propertyId: null, propertyReference: customProperty }
+            : { propertyId: values.propertyId, propertyReference: null }),
+          participantName: values.participant,
+          participantPhone: values.phone,
+          notes: values.notes.trim() || null,
+        },
+      })
+      setSelectedEvent(toAgendaEvent(updated, propertiesById))
+      showScheduledWeek(scheduledDate)
+      enqueueSnackbar(t('editSuccess', { title: values.title }), { variant: 'success' })
+      return true
+    } catch (error) {
+      enqueueSnackbar(errorMessage(error, t('editError')), { variant: 'error' })
+      return false
+    }
+  }
+
+  const deleteSelectedEvent = async (): Promise<boolean> => {
+    if (!selectedEvent) return false
+
+    try {
+      await cancelAgendaEventMutation.mutateAsync(selectedEvent.id)
+      enqueueSnackbar(t('deleteSuccess', { title: selectedEvent.title }), { variant: 'success' })
+      return true
+    } catch (error) {
+      enqueueSnackbar(errorMessage(error, t('deleteError')), { variant: 'error' })
+      return false
+    }
+  }
+
   return (
     <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
       <Stack spacing={2.4}>
@@ -184,12 +216,15 @@ export function AgendaDashboardPage() {
 
       <AgendaEventDetailDialog
         event={selectedEvent}
-        eventDate={selectedEventDate}
+        isDeleting={cancelAgendaEventMutation.isPending}
+        isSaving={updateAgendaEventMutation.isPending || rescheduleAgendaEventMutation.isPending}
         maxDate={scheduleHorizonEnd.format('YYYY-MM-DD')}
         minDate={today.format('YYYY-MM-DD')}
         onClose={closeEventDialog}
-        onReschedule={rescheduleSelectedEvent}
+        onDelete={deleteSelectedEvent}
+        onEdit={editAgendaEvent}
         open={Boolean(selectedEvent)}
+        propertyOptions={propertyOptions}
       />
 
       <AgendaEventFormDialog

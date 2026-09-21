@@ -12,7 +12,6 @@
     "assignedEventTitle": "New assigned appointment",
     "assignedEventMessage": "{role} {name} booked {title}",
     "defaultEventNotes": "Event created manually in the agenda.",
-    "rescheduleSuccess": "{title} rescheduled to {date} at {time}.",
     "createSuccess": "{title} added to the agenda.",
     "freeSlot": "Free slot",
     "selectedDayLabel": "{day}, {month} {date}",
@@ -21,7 +20,10 @@
       "colleague": "colleague"
     },
     "createError": "Could not create the event. Please try again.",
-    "rescheduleError": "Could not reschedule the event. Please try again."
+    "editSuccess": "{title} updated successfully.",
+    "editError": "Could not save the changes. Please try again.",
+    "deleteSuccess": "{title} removed from the schedule.",
+    "deleteError": "Could not delete the event. Please try again."
   },
   "eventForm": {
     "eyebrow": "New agenda entry",
@@ -56,12 +58,17 @@
     "closeAriaLabel": "Close event details",
     "notesTitle": "Notes",
     "createdBy": "Booked by {role} {name}",
-    "rescheduleTitle": "Reschedule appointment",
-    "fields": {
-      "newDate": "New date",
-      "newTime": "New time"
-    },
-    "cancel": "Cancel",
-    "submit": "Save rescheduling"
+    "noProperty": "No property linked",
+    "editTitle": "Edit event",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancelEdit": "Cancel",
+    "deleteDialog": {
+      "title": "Delete event",
+      "description": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    }
   }
 }

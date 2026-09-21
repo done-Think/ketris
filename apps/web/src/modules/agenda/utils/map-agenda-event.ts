@@ -1,6 +1,11 @@
 import dayjs from 'dayjs'
 
-import type { AgendaEvent, AgendaEventApi, AgendaEventTone } from '../types/agenda-event'
+import type {
+  AgendaEvent,
+  AgendaEventApi,
+  AgendaEventTone,
+  AgendaPropertyOption,
+} from '../types/agenda-event'
 
 const kindByApiKind: Record<
   NonNullable<AgendaEventApi['kind']>,
@@ -28,8 +33,12 @@ const statusByApiStatus: Record<AgendaEventApi['status'], AgendaEvent['status']>
   CANCELLED: 'Reagendar',
 }
 
-export function toAgendaEvent(api: AgendaEventApi): AgendaEvent {
+export function toAgendaEvent(
+  api: AgendaEventApi,
+  propertiesById: Record<string, AgendaPropertyOption> = {},
+): AgendaEvent {
   const start = dayjs(api.start)
+  const linkedProperty = api.propertyId ? propertiesById[api.propertyId] : undefined
 
   return {
     id: api.id,
@@ -37,8 +46,10 @@ export function toAgendaEvent(api: AgendaEventApi): AgendaEvent {
     time: start.format('HH:mm'),
     durationMinutes: dayjs(api.end).diff(start, 'minute'),
     title: api.title,
-    property: api.propertyReference ?? '',
-    propertyHref: '/dashboard/properties',
+    property: api.propertyReference ?? linkedProperty?.label ?? '',
+    propertyHref: linkedProperty?.href ?? '/dashboard/properties',
+    propertyId: api.propertyId,
+    apiKind: api.kind,
     participant: api.participantName,
     phone: api.participantPhone,
     notes: api.notes ?? '',
