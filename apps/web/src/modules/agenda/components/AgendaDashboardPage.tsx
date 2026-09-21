@@ -46,11 +46,15 @@ export function AgendaDashboardPage() {
   const [isEventFormOpen, setIsEventFormOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null)
   const today = useMemo(() => dayjs().locale('pt-br').startOf('day'), [])
-  const currentMonthEnd = useMemo(() => today.endOf('month'), [today])
+  const scheduleHorizonEnd = useMemo(() => today.add(6, 'month').endOf('month'), [today])
   const [weekStartDate, setWeekStartDate] = useState(() => today)
   const agendaDays = useMemo(() => buildAgendaCalendarDays(weekStartDate), [weekStartDate])
 
-  const eventsQuery = useAgendaEvents(tenantId, today.toISOString(), currentMonthEnd.toISOString())
+  const eventsQuery = useAgendaEvents(
+    tenantId,
+    today.toISOString(),
+    scheduleHorizonEnd.toISOString(),
+  )
   const events = useMemo(
     () =>
       (eventsQuery.data ?? []).filter((event) => event.status !== 'CANCELLED').map(toAgendaEvent),
@@ -80,7 +84,7 @@ export function AgendaDashboardPage() {
   const nextWeekStart = weekStartDate.add(agendaVisibleDayCount, 'day')
   const previousWeekStart = weekStartDate.subtract(agendaVisibleDayCount, 'day')
   const disablePreviousWeek = !previousWeekStart.isAfter(today.subtract(1, 'day'), 'day')
-  const disableNextWeek = nextWeekStart.isAfter(currentMonthEnd, 'day')
+  const disableNextWeek = nextWeekStart.isAfter(scheduleHorizonEnd, 'day')
 
   const closeEventDialog = () => setSelectedEvent(null)
   const showScheduledWeek = (date: dayjs.Dayjs) => {
@@ -181,7 +185,7 @@ export function AgendaDashboardPage() {
       <AgendaEventDetailDialog
         event={selectedEvent}
         eventDate={selectedEventDate}
-        maxDate={currentMonthEnd.format('YYYY-MM-DD')}
+        maxDate={scheduleHorizonEnd.format('YYYY-MM-DD')}
         minDate={today.format('YYYY-MM-DD')}
         onClose={closeEventDialog}
         onReschedule={rescheduleSelectedEvent}
@@ -189,7 +193,7 @@ export function AgendaDashboardPage() {
       />
 
       <AgendaEventFormDialog
-        maxDate={currentMonthEnd.format('YYYY-MM-DD')}
+        maxDate={scheduleHorizonEnd.format('YYYY-MM-DD')}
         minDate={today.format('YYYY-MM-DD')}
         onClose={() => setIsEventFormOpen(false)}
         onCreate={createAgendaEvent}
