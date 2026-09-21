@@ -2,12 +2,12 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import { DeactivatePropertyDialog } from '../../components/DeactivatePropertyDialog'
+import { DeletePropertyDialog } from '../../components/DeletePropertyDialog'
 
-describe('DeactivatePropertyDialog', () => {
+describe('DeletePropertyDialog', () => {
   it('renders the confirmation copy with the property title', () => {
     render(
-      <DeactivatePropertyDialog
+      <DeletePropertyDialog
         open
         isPending={false}
         title="Apartamento Jardins"
@@ -18,6 +18,7 @@ describe('DeactivatePropertyDialog', () => {
 
     expect(screen.getByRole('heading', { name: 'Excluir imóvel' })).toBeVisible()
     expect(screen.getByText(/Apartamento Jardins/)).toBeVisible()
+    expect(screen.getByText(/permanente/)).toBeVisible()
   })
 
   it('calls onConfirm and onClose from their respective buttons', async () => {
@@ -25,7 +26,7 @@ describe('DeactivatePropertyDialog', () => {
     const onConfirm = vi.fn()
     const onClose = vi.fn()
     render(
-      <DeactivatePropertyDialog
+      <DeletePropertyDialog
         open
         isPending={false}
         title="Apartamento Jardins"
@@ -43,7 +44,7 @@ describe('DeactivatePropertyDialog', () => {
 
   it('disables both actions while pending', () => {
     render(
-      <DeactivatePropertyDialog
+      <DeletePropertyDialog
         open
         isPending
         title="Apartamento Jardins"

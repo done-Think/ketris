@@ -241,7 +241,9 @@ model Oportunidade {
   updatedAt           DateTime           @updatedAt
 
   tenant     Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  imovel     Imovel                  @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  // Restrict (não Cascade): excluir um imóvel nunca pode apagar oportunidades de tabela junto —
+  // isso é decidido explicitamente pela camada de aplicação (ver PropertyRepository.hasLinkedRecords).
+  imovel     Imovel                  @relation(fields: [imovelId], references: [id], onDelete: Restrict)
   contrato   Contrato?
   contato    Contato?                @relation(fields: [contatoId], references: [id], onDelete: SetNull)
   atividades AtividadeOportunidade[]
@@ -341,7 +343,8 @@ model Contrato {
   updatedAt            DateTime       @updatedAt
 
   tenant             Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  imovel             Imovel          @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  // Restrict (não Cascade): um contrato nunca pode desaparecer junto com o imóvel excluído.
+  imovel             Imovel          @relation(fields: [imovelId], references: [id], onDelete: Restrict)
   oportunidadeOrigem Oportunidade    @relation(fields: [oportunidadeOrigemId], references: [id])
   partes             ParteContrato[]
   cobrancas          Cobranca[]

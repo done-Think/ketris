@@ -56,12 +56,12 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Rou
 export const DELETE = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
   const actor = await requireBearerAuth(request, authContainer.tokenService)
 
-  const property = await propertiesContainer.deactivatePropertyUseCase.execute({
+  await propertiesContainer.deletePropertyUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
     id: (await context.params).id,
     actorPapel: actor.papel as Papel,
   })
 
-  return NextResponse.json({ property }, { status: 200 })
+  return new NextResponse(null, { status: 204 })
 })

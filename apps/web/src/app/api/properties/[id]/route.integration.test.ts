@@ -14,6 +14,7 @@ describe('/api/properties/{id} (integração)', () => {
   const tokenService = new JoseTokenService()
   let tenantId: string
   let otherTenantId: string
+  let actorId: string
   let actorToken: string
   let otherAgentToken: string
   let adminToken: string
@@ -42,6 +43,7 @@ describe('/api/properties/{id} (integração)', () => {
         papel: 'AGENT',
       },
     })
+    actorId = actor.id
     actorToken = await tokenService.sign({
       id: actor.id,
       tenantId: actor.tenantId,
@@ -278,15 +280,53 @@ describe('/api/properties/{id} (integração)', () => {
     expect(json.property.publicadoEm).toBeNull()
   })
 
-  it('inativa imóvel pelo DELETE', async () => {
+  it('exclui o imóvel definitivamente pelo DELETE quando não há vínculos', async () => {
     const response = await DELETE(
       buildRequest('DELETE', incompletePropertyId),
       context(incompletePropertyId),
     )
+
+    expect(response.status).toBe(204)
+
+    const afterDelete = await prisma.imovel.findUnique({ where: { id: incompletePropertyId } })
+    expect(afterDelete).toBeNull()
+  })
+
+  it('bloqueia a exclusão quando o imóvel tem uma proposta vinculada', async () => {
+    const propertyWithOpportunity = await prisma.imovel.create({
+      data: {
+        tenantId,
+        responsavelId: actorId,
+        titulo: 'Imóvel com proposta',
+        finalidade: 'ALUGUEL',
+        tipo: 'apartamento',
+        valor: 2500,
+        status: 'DRAFT',
+      },
+    })
+    await prisma.oportunidade.create({
+      data: {
+        tenantId,
+        imovelId: propertyWithOpportunity.id,
+        interessadoNome: 'Interessado Teste',
+        interessadoEmail: 'interessado-teste@example.com',
+        valorProposto: 2500,
+      },
+    })
+
+    const response = await DELETE(
+      buildRequest('DELETE', propertyWithOpportunity.id),
+      context(propertyWithOpportunity.id),
+    )
     const json = await response.json()
 
-    expect(response.status).toBe(200)
-    expect(json.property.status).toBe('INACTIVE')
+    expect(response.status).toBe(409)
+    expect(json.error.code).toBe('PROPERTY_HAS_LINKED_RECORDS')
+
+    const stillExists = await prisma.imovel.findUnique({
+      where: { id: propertyWithOpportunity.id },
+    })
+    expect(stillExists).not.toBeNull()
   })
 
   describe('permissões: dono, admin da imobiliária e outro corretor', () => {
@@ -373,15 +413,16 @@ describe('/api/properties/{id} (integração)', () => {
       expect(response.status).toBe(404)
     })
 
-    it('permite que o próprio corretor responsável exclua seu imóvel', async () => {
+    it('permite que o próprio corretor responsável exclua seu imóvel definitivamente', async () => {
       const response = await DELETE(
         buildRequest('DELETE', ownedByActorPropertyId, undefined, actorToken),
         context(ownedByActorPropertyId),
       )
-      const json = await response.json()
 
-      expect(response.status).toBe(200)
-      expect(json.property.status).toBe('INACTIVE')
+      expect(response.status).toBe(204)
+
+      const afterDelete = await prisma.imovel.findUnique({ where: { id: ownedByActorPropertyId } })
+      expect(afterDelete).toBeNull()
     })
   })
 })

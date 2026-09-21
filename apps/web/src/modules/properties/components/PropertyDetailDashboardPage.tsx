@@ -11,7 +11,7 @@ import { useSnackbar } from 'notistack'
 import { useRouter } from '@/i18n/navigation'
 
 import {
-  useDeactivateProperty,
+  useDeleteProperty,
   useProperty,
   usePublishProperty,
   useUnpublishProperty,
@@ -22,7 +22,7 @@ import type {
 } from '../types/dashboard-property'
 import { errorMessage } from '../utils/error-message'
 import { toDashboardProperty } from '../utils/map-dashboard-property'
-import { DeactivatePropertyDialog } from './DeactivatePropertyDialog'
+import { DeletePropertyDialog } from './DeletePropertyDialog'
 import { PropertyDetailHeader } from './PropertyDetailHeader'
 import { PropertyDetailMainPanel } from './PropertyDetailMainPanel'
 import { PropertyDetailSidebar } from './PropertyDetailSidebar'
@@ -43,7 +43,7 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
   const propertyQuery = useProperty(propertyId)
   const publishProperty = usePublishProperty()
   const unpublishProperty = useUnpublishProperty()
-  const deactivateProperty = useDeactivateProperty()
+  const deleteProperty = useDeleteProperty()
 
   if (propertyQuery.isLoading) {
     return (
@@ -83,7 +83,7 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
 
   const handleDeleteConfirm = async () => {
     try {
-      await deactivateProperty.mutateAsync(propertyId)
+      await deleteProperty.mutateAsync(propertyId)
       setIsDeleteDialogOpen(false)
       enqueueSnackbar(t('deleteSuccess'), { variant: 'success' })
       router.push({ pathname: '/dashboard/properties' })
@@ -106,7 +106,7 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
             canManage={canManage}
             isPublishing={publishProperty.isPending}
             isUnpublishing={unpublishProperty.isPending}
-            isDeleting={deactivateProperty.isPending}
+            isDeleting={deleteProperty.isPending}
             onEdit={() =>
               router.push({
                 pathname: '/dashboard/properties/[id]/edit',
@@ -127,9 +127,9 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
         <PropertyDetailSidebar property={property} />
       </Stack>
 
-      <DeactivatePropertyDialog
+      <DeletePropertyDialog
         open={isDeleteDialogOpen}
-        isPending={deactivateProperty.isPending}
+        isPending={deleteProperty.isPending}
         title={property.title}
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={handleDeleteConfirm}

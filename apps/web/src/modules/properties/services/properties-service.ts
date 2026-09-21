@@ -226,10 +226,8 @@ export class PropertiesService extends BaseService {
       .then((data) => mapProperty(data.property))
   }
 
-  deactivate(id: string): Promise<Property> {
-    return this.http
-      .delete<PropertyResponse>(`${this.path}/${id}`)
-      .then((data) => mapProperty(data.property))
+  remove(id: string): Promise<void> {
+    return this.http.delete<void>(`${this.path}/${id}`)
   }
 }
 

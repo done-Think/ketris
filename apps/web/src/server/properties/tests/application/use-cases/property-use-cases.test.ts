@@ -2,13 +2,14 @@ import { describe, expect, it, vi } from 'vitest'
 
 import {
   ContractPropertyTransitionError,
+  PropertyHasLinkedRecordsError,
   PropertyNotFoundError,
   PropertyPublishValidationError,
 } from '../../../domain/errors'
 import type { Property } from '../../../domain/property.entity'
 import type { PropertyRepository } from '../../../application/ports/property-repository.port'
 import { CreatePropertyUseCase } from '../../../application/use-cases/create-property.use-case'
-import { DeactivatePropertyUseCase } from '../../../application/use-cases/deactivate-property.use-case'
+import { DeletePropertyUseCase } from '../../../application/use-cases/delete-property.use-case'
 import { GetPropertyUseCase } from '../../../application/use-cases/get-property.use-case'
 import { ListPropertiesUseCase } from '../../../application/use-cases/list-properties.use-case'
 import { PublishPropertyUseCase } from '../../../application/use-cases/publish-property.use-case'
@@ -74,6 +75,8 @@ function createRepository(overrides?: Partial<PropertyRepository>): PropertyRepo
       contractStatus: 'ATIVO',
       finalidade: 'ALUGUEL',
     }),
+    hasLinkedRecords: vi.fn().mockResolvedValue(false),
+    delete: vi.fn().mockResolvedValue(true),
     ...overrides,
   }
 }
@@ -405,48 +408,93 @@ describe('properties use cases', () => {
     expect(repository.setStatus).not.toHaveBeenCalled()
   })
 
-  it('bloqueia RENTER ao tentar desativar imóvel', async () => {
-    const repository = createRepository()
-    const useCase = new DeactivatePropertyUseCase(repository)
+  describe('DeletePropertyUseCase', () => {
+    it('bloqueia RENTER ao tentar excluir imóvel', async () => {
+      const repository = createRepository()
+      const useCase = new DeletePropertyUseCase(repository)
 
-    await expect(
-      useCase.execute({
-        actorTenantId: 'tenant-1',
-        actorId: 'renter-1',
-        id: 'property-1',
-        actorPapel: 'RENTER',
-      }),
-    ).rejects.toThrow('Locatários não podem gerenciar imóveis.')
-    expect(repository.setStatus).not.toHaveBeenCalled()
-  })
-
-  it('bloqueia com erro opaco um AGENT que tenta desativar imóvel de outro corretor', async () => {
-    const repository = createRepository()
-    const useCase = new DeactivatePropertyUseCase(repository)
-
-    await expect(
-      useCase.execute({
-        actorTenantId: 'tenant-1',
-        actorId: 'outro-agente',
-        id: 'property-1',
-        actorPapel: 'AGENT',
-      }),
-    ).rejects.toThrow(PropertyNotFoundError)
-    expect(repository.setStatus).not.toHaveBeenCalled()
-  })
-
-  it('permite que o próprio corretor responsável desative seu imóvel', async () => {
-    const repository = createRepository()
-    const useCase = new DeactivatePropertyUseCase(repository)
-
-    await useCase.execute({
-      actorTenantId: 'tenant-1',
-      actorId: 'user-1',
-      id: 'property-1',
-      actorPapel: 'AGENT',
+      await expect(
+        useCase.execute({
+          actorTenantId: 'tenant-1',
+          actorId: 'renter-1',
+          id: 'property-1',
+          actorPapel: 'RENTER',
+        }),
+      ).rejects.toThrow('Locatários não podem gerenciar imóveis.')
+      expect(repository.delete).not.toHaveBeenCalled()
     })
 
-    expect(repository.setStatus).toHaveBeenCalledWith('tenant-1', 'property-1', 'INACTIVE', null)
+    it('bloqueia com erro opaco um AGENT que tenta excluir imóvel de outro corretor', async () => {
+      const repository = createRepository()
+      const useCase = new DeletePropertyUseCase(repository)
+
+      await expect(
+        useCase.execute({
+          actorTenantId: 'tenant-1',
+          actorId: 'outro-agente',
+          id: 'property-1',
+          actorPapel: 'AGENT',
+        }),
+      ).rejects.toThrow(PropertyNotFoundError)
+      expect(repository.delete).not.toHaveBeenCalled()
+    })
+
+    it('permite que o próprio corretor responsável exclua seu imóvel sem vínculos', async () => {
+      const repository = createRepository()
+      const useCase = new DeletePropertyUseCase(repository)
+
+      await useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'user-1',
+        id: 'property-1',
+        actorPapel: 'AGENT',
+      })
+
+      expect(repository.delete).toHaveBeenCalledWith('tenant-1', 'property-1')
+    })
+
+    it('permite que o admin da imobiliária exclua um imóvel de outro corretor', async () => {
+      const repository = createRepository()
+      const useCase = new DeletePropertyUseCase(repository)
+
+      await useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'admin-1',
+        id: 'property-1',
+        actorPapel: 'ADMIN',
+      })
+
+      expect(repository.delete).toHaveBeenCalledWith('tenant-1', 'property-1')
+    })
+
+    it('bloqueia a exclusão quando o imóvel tem propostas ou contratos vinculados', async () => {
+      const repository = createRepository({ hasLinkedRecords: vi.fn().mockResolvedValue(true) })
+      const useCase = new DeletePropertyUseCase(repository)
+
+      await expect(
+        useCase.execute({
+          actorTenantId: 'tenant-1',
+          actorId: 'user-1',
+          id: 'property-1',
+          actorPapel: 'AGENT',
+        }),
+      ).rejects.toThrow(PropertyHasLinkedRecordsError)
+      expect(repository.delete).not.toHaveBeenCalled()
+    })
+
+    it('lança erro opaco quando o imóvel não existe no tenant do ator', async () => {
+      const repository = createRepository({ findByTenantAndId: vi.fn().mockResolvedValue(null) })
+      const useCase = new DeletePropertyUseCase(repository)
+
+      await expect(
+        useCase.execute({
+          actorTenantId: 'tenant-2',
+          actorId: 'user-1',
+          id: 'property-1',
+          actorPapel: 'ADMIN',
+        }),
+      ).rejects.toThrow(PropertyNotFoundError)
+    })
   })
 
   it('marca imóvel como alugado quando contrato ativo de aluguel é processado', async () => {

@@ -148,6 +148,30 @@ export class PrismaPropertyRepository implements PropertyRepository {
     })
   }
 
+  async hasLinkedRecords(tenantId: string, id: string): Promise<boolean> {
+    const [oportunidadesCount, contratosCount] = await Promise.all([
+      prisma.oportunidade.count({ where: { tenantId, imovelId: id } }),
+      prisma.contrato.count({ where: { tenantId, imovelId: id } }),
+    ])
+
+    return oportunidadesCount > 0 || contratosCount > 0
+  }
+
+  async delete(tenantId: string, id: string): Promise<boolean> {
+    const existingProperty = await prisma.imovel.findFirst({
+      where: { tenantId, id },
+      select: { id: true },
+    })
+
+    if (!existingProperty) {
+      return false
+    }
+
+    await prisma.imovel.delete({ where: { id } })
+
+    return true
+  }
+
   async findContractProperty(
     tenantId: string,
     contractId: string,

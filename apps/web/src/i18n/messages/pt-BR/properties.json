@@ -90,7 +90,7 @@
     "deleteError": "Não foi possível excluir o imóvel. Tente novamente.",
     "deleteDialog": {
       "title": "Excluir imóvel",
-      "description": "Tem certeza que deseja excluir \"{title}\"? O imóvel deixará de aparecer nas listagens ativas.",
+      "description": "Tem certeza que deseja excluir \"{title}\"? Essa ação é permanente e não pode ser desfeita. Se o imóvel tiver propostas ou contratos vinculados, a exclusão será bloqueada.",
       "confirm": "Excluir",
       "cancel": "Cancelar"
     }

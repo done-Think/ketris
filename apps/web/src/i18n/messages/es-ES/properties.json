@@ -90,7 +90,7 @@
     "deleteError": "No fue posible eliminar el inmueble. Inténtalo de nuevo.",
     "deleteDialog": {
       "title": "Eliminar inmueble",
-      "description": "¿Seguro que deseas eliminar \"{title}\"? Dejará de aparecer en los listados activos.",
+      "description": "¿Seguro que deseas eliminar \"{title}\"? Esta acción es permanente y no se puede deshacer. Si el inmueble tiene propuestas o contratos vinculados, la eliminación será bloqueada.",
       "confirm": "Eliminar",
       "cancel": "Cancelar"
     }

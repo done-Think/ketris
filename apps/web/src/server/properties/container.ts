@@ -1,5 +1,5 @@
 import { CreatePropertyUseCase } from './application/use-cases/create-property.use-case'
-import { DeactivatePropertyUseCase } from './application/use-cases/deactivate-property.use-case'
+import { DeletePropertyUseCase } from './application/use-cases/delete-property.use-case'
 import { GetPropertyUseCase } from './application/use-cases/get-property.use-case'
 import { ListPropertiesUseCase } from './application/use-cases/list-properties.use-case'
 import { PublishPropertyUseCase } from './application/use-cases/publish-property.use-case'
@@ -15,7 +15,7 @@ export const propertiesContainer = {
   listPropertiesUseCase: new ListPropertiesUseCase(propertyRepository),
   getPropertyUseCase: new GetPropertyUseCase(propertyRepository),
   updatePropertyUseCase: new UpdatePropertyUseCase(propertyRepository),
-  deactivatePropertyUseCase: new DeactivatePropertyUseCase(propertyRepository),
+  deletePropertyUseCase: new DeletePropertyUseCase(propertyRepository),
   publishPropertyUseCase: new PublishPropertyUseCase(propertyRepository),
   unpublishPropertyUseCase: new UnpublishPropertyUseCase(propertyRepository),
   transitionPropertyFromActiveContractUseCase: new TransitionPropertyFromActiveContractUseCase(

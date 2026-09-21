@@ -72,6 +72,8 @@ function createDeps(overrides?: {
     update: vi.fn(),
     setStatus: vi.fn(),
     findContractProperty: vi.fn(),
+    hasLinkedRecords: vi.fn(),
+    delete: vi.fn(),
   }
 
   return { agendaEventRepository, userRepository, propertyRepository }

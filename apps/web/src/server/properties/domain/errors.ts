@@ -32,3 +32,12 @@ export class ContractNotFoundError extends NotFoundError {
     super('Contrato não encontrado.')
   }
 }
+
+export class PropertyHasLinkedRecordsError extends AppError {
+  constructor() {
+    super('Não é possível excluir um imóvel com propostas ou contratos vinculados.', {
+      status: 409,
+      code: 'PROPERTY_HAS_LINKED_RECORDS',
+    })
+  }
+}

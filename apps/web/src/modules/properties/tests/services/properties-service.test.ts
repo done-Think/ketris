@@ -171,10 +171,10 @@ describe('PropertiesService', () => {
     expect(http.post).toHaveBeenCalledWith('/properties/property-1/unpublish')
   })
 
-  it('deactivates a property and unwraps the response', async () => {
-    http.delete.mockResolvedValueOnce({ property: apiProperty })
+  it('removes a property with no response body', async () => {
+    http.delete.mockResolvedValueOnce(undefined)
 
-    await expect(service.deactivate('property-1')).resolves.toEqual(mappedProperty)
+    await expect(service.remove('property-1')).resolves.toBeUndefined()
     expect(http.delete).toHaveBeenCalledWith('/properties/property-1')
   })
 })

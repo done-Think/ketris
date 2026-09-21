@@ -90,7 +90,7 @@
     "deleteError": "Could not delete the property. Please try again.",
     "deleteDialog": {
       "title": "Delete property",
-      "description": "Are you sure you want to delete \"{title}\"? It will no longer appear in active listings.",
+      "description": "Are you sure you want to delete \"{title}\"? This action is permanent and cannot be undone. If the property has linked proposals or contracts, deletion will be blocked.",
       "confirm": "Delete",
       "cancel": "Cancel"
     }
