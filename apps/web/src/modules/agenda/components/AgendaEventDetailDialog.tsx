@@ -20,7 +20,7 @@ import {
 } from '@mui/material'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useLocale, useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { Link } from '@/i18n/navigation'
@@ -212,16 +212,16 @@ export function AgendaEventDetailDialog({
 
           <DialogActions sx={{ px: { xs: 2, md: 2.8 }, pb: 2.5, pt: 0 }}>
             {mode === 'edit' ? (
-              <>
+              <Fragment key="edit-actions">
                 <Button type="button" variant="outlined" color="secondary" onClick={cancelEditing}>
                   {t('cancelEdit')}
                 </Button>
                 <Button type="submit" variant="contained" disabled={isSaving}>
                   {isSaving ? <CircularProgress size={20} /> : t('save')}
                 </Button>
-              </>
+              </Fragment>
             ) : (
-              <>
+              <Fragment key="view-actions">
                 <Button
                   type="button"
                   variant="outlined"
@@ -239,7 +239,7 @@ export function AgendaEventDetailDialog({
                 >
                   {t('edit')}
                 </Button>
-              </>
+              </Fragment>
             )}
           </DialogActions>
         </Box>

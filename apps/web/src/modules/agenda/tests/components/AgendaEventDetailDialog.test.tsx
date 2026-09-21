@@ -87,8 +87,8 @@ describe('AgendaEventDetailDialog', () => {
     expect(screen.queryByText('Sem imóvel vinculado')).not.toBeInTheDocument()
   })
 
-  it('switches to the edit form pre-filled with the event data when Editar is clicked', async () => {
-    renderDialog()
+  it('switches to the edit form pre-filled with the event data when Editar is clicked, without saving anything', async () => {
+    const { onEdit } = renderDialog()
 
     await userEvent.click(screen.getByRole('button', { name: 'Editar' }))
 
@@ -100,6 +100,7 @@ describe('AgendaEventDetailDialog', () => {
     expect(screen.getByLabelText('Duração')).toHaveValue(60)
     expect(screen.getByRole('button', { name: 'Salvar' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Cancelar' })).toBeVisible()
+    expect(onEdit).not.toHaveBeenCalled()
   })
 
   it('returns to the view mode without saving when Cancelar is clicked during edit', async () => {
