@@ -3,6 +3,9 @@
     "overview": {
       "metadataTitle": "Ketris | Dashboard"
     },
+    "agencyOverview": {
+      "metadataTitle": "Ketris | Visão Geral da Imobiliária"
+    },
     "agenda": {
       "metadataTitle": "Ketris | Agenda"
     },
@@ -99,6 +102,102 @@
         "inProgress": "Em andamento",
         "qualified": "Qualificado",
         "pending": "Pendente"
+      }
+    }
+  },
+  "agencyOverview": {
+    "agencyName": "Imobiliária Premium SP",
+    "title": "Visão Geral",
+    "subtitle": "Acompanhe movimentação, metas e performance consolidada da imobiliária.",
+    "month": "Setembro, 2024",
+    "report": "Relatório",
+    "navigation": {
+      "overview": "Visão Geral",
+      "team": "Equipe",
+      "portfolio": "Carteira",
+      "finance": "Financeiro",
+      "contracts": "Contratos"
+    },
+    "kpis": {
+      "portfolio": "Imóveis na carteira",
+      "activeBrokers": "Corretores ativos",
+      "receivedLeads": "Leads recebidos",
+      "revenue": "Faturamento",
+      "occupancy": "Tx ocupação"
+    },
+    "performance": {
+      "title": "Performance de Faturamento",
+      "subtitle": "Comparativo de receita vs meta mensal",
+      "revenue": "Receita",
+      "target": "Meta"
+    },
+    "topBrokers": {
+      "title": "Top Corretores",
+      "subtitle": "Destaques em volume de fechamento",
+      "sales": "{count} Vendas",
+      "details": {
+        "eyebrow": "Desempenho do corretor",
+        "summary": "{sales} vendas no periodo - {revenue} em receita",
+        "recentSales": "Ultimas vendas",
+        "openProfile": "Ver perfil publico",
+        "close": "Fechar"
+      }
+    },
+    "activity": {
+      "title": "Atividade Recente",
+      "closedSale": "{broker} fechou contrato de venda no {detail}",
+      "createdProperty": "{broker} cadastrou novo apartamento no {detail}",
+      "scheduledVisit": "{broker} agendou visita para amanhã na {detail}",
+      "receivedLead": "Novo lead recebido através do {detail}",
+      "signedRent": "Contrato de locação assinado para {detail}",
+      "details": {
+        "eyebrow": "Detalhe da atividade",
+        "close": "Fechar",
+        "fields": {
+          "broker": "Corretor",
+          "subject": "Assunto",
+          "status": "Status",
+          "nextStep": "Proximo passo",
+          "time": "Quando",
+          "summary": "Resumo"
+        },
+        "items": {
+          "contractSale": {
+            "title": "Contrato de venda fechado",
+            "description": "Marina concluiu a etapa comercial e o contrato entrou para conferencia operacional antes do faturamento.",
+            "subject": "Condominio Pinheiros",
+            "status": "Fechado",
+            "nextStep": "Validar documentacao e liberar registro financeiro."
+          },
+          "newProperty": {
+            "title": "Novo imovel cadastrado",
+            "description": "Thiago adicionou o apartamento ao portfolio e iniciou a conferencia das informacoes publicas.",
+            "subject": "Apartamento no Itaim Bibi",
+            "status": "Em revisao",
+            "nextStep": "Revisar midias, valores e disponibilidade."
+          },
+          "visitScheduled": {
+            "title": "Visita agendada",
+            "description": "Ana marcou a visita com cliente interessado e deixou o atendimento vinculado ao calendario da equipe.",
+            "subject": "Casa Jardins",
+            "status": "Agendada",
+            "nextStep": "Confirmar presenca do cliente ate o fim do dia."
+          },
+          "newLead": {
+            "title": "Lead recebido",
+            "description": "Um novo contato entrou pelo portal Ketris e aguarda qualificacao inicial da equipe comercial.",
+            "subject": "Portal Ketris",
+            "status": "Novo",
+            "nextStep": "Distribuir para um corretor disponivel."
+          },
+          "rentContract": {
+            "title": "Contrato de locacao assinado",
+            "description": "O contrato do Studio Moema foi assinado e ja pode seguir para arquivamento e acompanhamento financeiro.",
+            "subject": "Studio Moema",
+            "status": "Assinado",
+            "nextStep": "Anexar comprovantes e ativar recorrencia."
+          }
+        }
       }
     }
   },
