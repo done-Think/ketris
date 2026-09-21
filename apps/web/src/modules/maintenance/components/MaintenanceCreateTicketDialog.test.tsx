@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -45,14 +45,23 @@ describe('MaintenanceCreateTicketDialog', () => {
     await user.click(await screen.findByRole('option', { name: 'Hidráulica' }))
     await user.type(screen.getByLabelText('Título do Chamado'), 'Vazamento na cozinha')
     await user.type(screen.getByLabelText('Relato do Problema'), 'A pia está vazando.')
-    await user.click(screen.getByRole('button', { name: 'Criar Chamado' }))
+    // fireEvent (not userEvent) on purpose: userEvent's full pointer sequence triggers MUI's
+    // ripple effect, whose exit animation schedules a state update that fires after this test's
+    // rerender() calls below, outside act() — fireEvent.click skips mousedown/mouseup so no
+    // ripple ever starts.
+    fireEvent.click(screen.getByRole('button', { name: 'Criar Chamado' }))
 
-    expect(onCreate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        propertyId: 'apt-jardins-3q',
-        category: 'Hidráulica',
-        title: 'Vazamento na cozinha',
-      }),
+    // react-hook-form's handleSubmit resolves the zod validation asynchronously even for a
+    // synchronous schema, so onCreate only fires a microtask after this click — fireEvent.click
+    // (unlike userEvent.click) doesn't await that internally.
+    await waitFor(() =>
+      expect(onCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          propertyId: 'apt-jardins-3q',
+          category: 'Hidráulica',
+          title: 'Vazamento na cozinha',
+        }),
+      ),
     )
 
     rerender(<MaintenanceCreateTicketDialog open={false} onClose={vi.fn()} onCreate={onCreate} />)
