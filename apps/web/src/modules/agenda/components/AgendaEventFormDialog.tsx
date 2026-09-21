@@ -24,6 +24,7 @@ import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
 import {
   agendaEventFormSchema,
+  agendaEventKindOptions,
   agendaOtherPropertyValue,
 } from '../schemas/agenda-event-form-schema'
 import type { AgendaEventFormDialogProps, AgendaEventFormValues } from '../types/agenda-event'
@@ -48,6 +49,7 @@ export function AgendaEventFormDialog({
     defaultValues: {
       customProperty: '',
       durationMinutes: 60,
+      kind: '',
       notes: '',
       participant: '',
       phone: '',
@@ -67,6 +69,7 @@ export function AgendaEventFormDialog({
     reset({
       customProperty: '',
       durationMinutes: 60,
+      kind: '',
       notes: '',
       participant: '',
       phone: '',
@@ -109,6 +112,20 @@ export function AgendaEventFormDialog({
             >
               <Stack spacing={1.4}>
                 <RhfTextField control={control} name="title" label={t('fields.title')} fullWidth />
+                <RhfTextField
+                  control={control}
+                  name="kind"
+                  label={t('fields.kind')}
+                  select
+                  fullWidth
+                >
+                  <MenuItem value="">{t('fields.kindPlaceholder')}</MenuItem>
+                  {agendaEventKindOptions.map((kind) => (
+                    <MenuItem key={kind} value={kind}>
+                      {t(`kinds.${kind}`)}
+                    </MenuItem>
+                  ))}
+                </RhfTextField>
                 <RhfTextField
                   control={control}
                   name="propertyId"

@@ -5,12 +5,14 @@ import { useForm } from 'react-hook-form'
 import { Box } from '@mui/material'
 
 import { useRouter } from '@/i18n/navigation'
-import { dashboardProperties, propertyStatusFilters } from '../data/dashboard-properties'
+import { propertyStatusFilters } from '../data/dashboard-properties'
+import { useProperties } from '../hooks/use-properties'
 import type {
   DashboardProperty,
   DashboardPropertyFilterKey,
   PropertiesDashboardFiltersFormValues,
 } from '../types/dashboard-property'
+import { toDashboardProperty } from '../utils/map-dashboard-property'
 import { PropertiesDashboardHeader } from './PropertiesDashboardHeader'
 import { PropertiesTable } from './PropertiesTable'
 import { PropertyStatusFilters } from './PropertyStatusFilters'
@@ -33,6 +35,11 @@ function matchesSearchQuery(property: DashboardProperty, query: string) {
 
 export function PropertiesDashboardPage() {
   const router = useRouter()
+  const propertiesQuery = useProperties()
+  const properties = useMemo(
+    () => (propertiesQuery.data ?? []).map(toDashboardProperty),
+    [propertiesQuery.data],
+  )
   const { setValue, watch } = useForm<PropertiesDashboardFiltersFormValues>({
     defaultValues: {
       activeStatusFilter: 'Todos',
@@ -42,25 +49,25 @@ export function PropertiesDashboardPage() {
   const { activeStatusFilter, searchQuery } = watch()
   const filteredProperties = useMemo(
     () =>
-      dashboardProperties.filter(
+      properties.filter(
         (property) =>
           matchesStatusFilter(property, activeStatusFilter) &&
           matchesSearchQuery(property, searchQuery),
       ),
-    [activeStatusFilter, searchQuery],
+    [properties, activeStatusFilter, searchQuery],
   )
   const statusFilterCounts = useMemo(
     () =>
       propertyStatusFilters.reduce(
         (counts, filter) => ({
           ...counts,
-          [filter.label]: dashboardProperties.filter((property) =>
+          [filter.label]: properties.filter((property) =>
             matchesStatusFilter(property, filter.label),
           ).length,
         }),
         {} as Record<DashboardPropertyFilterKey, number>,
       ),
-    [],
+    [properties],
   )
 
   return (
@@ -85,7 +92,7 @@ export function PropertiesDashboardPage() {
         />
         <PropertiesTable
           properties={filteredProperties}
-          totalCount={dashboardProperties.length}
+          totalCount={properties.length}
           onPropertySelect={(propertyId) =>
             router.push({ pathname: '/dashboard/properties/[id]', params: { id: propertyId } })
           }

@@ -144,6 +144,8 @@
       "Publicar no marketplace após revisão": "Publish on the marketplace after review",
       "Permitir contato por WhatsApp": "Allow WhatsApp contact",
       "Destacar imóvel na listagem inicial": "Feature property in the initial listing"
-    }
+    },
+    "createSuccess": "Property created successfully.",
+    "createError": "Could not create the property. Please try again."
   }
 }

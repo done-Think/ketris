@@ -37,10 +37,20 @@
       "date": "Fecha",
       "time": "Horario",
       "duration": "Duración",
-      "notes": "Observaciones"
+      "notes": "Observaciones",
+      "kind": "Tipo de evento",
+      "kindPlaceholder": "Seleccionar (opcional)"
     },
     "cancel": "Cancelar",
-    "submit": "Crear evento"
+    "submit": "Crear evento",
+    "kinds": {
+      "VISIT": "Visita",
+      "FOLLOW_UP": "Seguimiento",
+      "MEETING": "Reunión",
+      "INSPECTION": "Inspección",
+      "SIGNATURE": "Firma",
+      "OTHER": "Otro"
+    }
   },
   "eventDetail": {
     "closeAriaLabel": "Cerrar detalles del evento",

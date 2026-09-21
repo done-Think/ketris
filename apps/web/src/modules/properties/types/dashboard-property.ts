@@ -118,6 +118,7 @@ export type CreatePropertyStepFieldsProps = {
 export type CreatePropertyActionsProps = {
   firstStep: boolean
   lastStep: boolean
+  isSubmitting: boolean
   onPreviousStep: () => void
   onNextStep: () => void
 }

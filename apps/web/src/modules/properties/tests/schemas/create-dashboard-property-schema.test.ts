@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   createDashboardPropertyDefaultValues,
   createDashboardPropertySchema,
-} from './create-dashboard-property-schema'
+} from '../../schemas/create-dashboard-property-schema'
 
 describe('createDashboardPropertySchema', () => {
   it('accepts the static dashboard form defaults', () => {

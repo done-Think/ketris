@@ -73,4 +73,42 @@ describe('AgendaEventFormDialog', () => {
       title: 'Visita apartamento',
     })
   })
+
+  it('submits the selected event kind through onCreate', async () => {
+    const onCreate = renderDialog()
+
+    await userEvent.type(screen.getByLabelText('Título'), 'Visita apartamento')
+    await userEvent.click(screen.getByLabelText('Tipo de evento'))
+    await userEvent.click(await screen.findByRole('option', { name: 'Visita' }))
+    await userEvent.click(screen.getByLabelText('Imóvel em questão'))
+    await userEvent.click(await screen.findByRole('option', { name: 'Apartamento Jardins' }))
+    await userEvent.type(screen.getByLabelText('Cliente'), 'Cliente Teste')
+    await userEvent.type(screen.getByLabelText('Telefone'), '11987654321')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Criar evento' }))
+
+    await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
+    expect(onCreate.mock.calls[0][0]).toMatchObject({ kind: 'VISIT' })
+  })
+
+  it('rejects a visit scheduled for less than 60 minutes', async () => {
+    const onCreate = renderDialog()
+
+    await userEvent.type(screen.getByLabelText('Título'), 'Visita rápida')
+    await userEvent.click(screen.getByLabelText('Tipo de evento'))
+    await userEvent.click(await screen.findByRole('option', { name: 'Visita' }))
+    await userEvent.click(screen.getByLabelText('Imóvel em questão'))
+    await userEvent.click(await screen.findByRole('option', { name: 'Apartamento Jardins' }))
+    await userEvent.type(screen.getByLabelText('Cliente'), 'Cliente Teste')
+    await userEvent.type(screen.getByLabelText('Telefone'), '11987654321')
+
+    const durationField = screen.getByLabelText('Duração')
+    await userEvent.clear(durationField)
+    await userEvent.type(durationField, '30')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Criar evento' }))
+
+    expect(await screen.findByText('Visitas devem ter duração mínima de 60 minutos')).toBeVisible()
+    expect(onCreate).not.toHaveBeenCalled()
+  })
 })

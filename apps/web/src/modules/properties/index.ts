@@ -1,4 +1,3 @@
-export * from './schemas/property-schema'
 export * from './schemas/create-dashboard-property-schema'
 export * from './types/property'
 export * from './types/dashboard-property'

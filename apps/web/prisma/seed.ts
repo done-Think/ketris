@@ -84,7 +84,10 @@ async function main() {
 
     await prisma.imovel.upsert({
       where: { id: `seed-imovel-${property.id}` },
-      update: {},
+      update: {
+        status: property.status ?? 'PUBLISHED',
+        publicadoEm: property.status === 'DRAFT' ? null : new Date(),
+      },
       create: {
         id: `seed-imovel-${property.id}`,
         tenantId: tenant.id,
@@ -98,8 +101,8 @@ async function main() {
         vagas: property.parking,
         areaM2: property.areaM2,
         valor: property.price,
-        status: 'PUBLISHED',
-        publicadoEm: new Date(),
+        status: property.status ?? 'PUBLISHED',
+        publicadoEm: property.status === 'DRAFT' ? null : new Date(),
         endereco: {
           create: {
             logradouro: `Rua ${property.neighborhood}`,
@@ -120,7 +123,7 @@ async function main() {
     })
   }
 
-  console.log(`Seed concluído — ${seedProperties.length} imóveis publicados`)
+  console.log(`Seed concluído — ${seedProperties.length} imóveis`)
 
   const contactByLegacyId = new Map<string, string>()
 

@@ -7,6 +7,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
 
+import { useProperties } from '@modules/properties/hooks/use-properties'
+
 import { AgendaDashboardPage } from '../../components/AgendaDashboardPage'
 import {
   useAgendaEvents,
@@ -37,6 +39,10 @@ vi.mock('../../hooks/use-agenda-events', async (importOriginal) => {
     useRescheduleAgendaEvent: vi.fn(),
   }
 })
+
+vi.mock('@modules/properties/hooks/use-properties', () => ({
+  useProperties: vi.fn(),
+}))
 
 const today = dayjs().format('YYYY-MM-DD')
 const twoDaysFromNow = dayjs().add(2, 'day').format('YYYY-MM-DD')
@@ -89,6 +95,15 @@ function mockRescheduleEvent(overrides: Record<string, unknown> = {}) {
   } as unknown as ReturnType<typeof useRescheduleAgendaEvent>)
 }
 
+function mockPropertiesQuery(overrides: Record<string, unknown> = {}) {
+  vi.mocked(useProperties).mockReturnValue({
+    data: [],
+    isLoading: false,
+    isError: false,
+    ...overrides,
+  } as unknown as ReturnType<typeof useProperties>)
+}
+
 function renderPage() {
   return render(
     <ThemeProvider theme={theme}>
@@ -108,6 +123,7 @@ describe('AgendaDashboardPage', () => {
     mockEventsQuery()
     mockCreateEvent()
     mockRescheduleEvent()
+    mockPropertiesQuery()
   })
 
   it('renders the header and today events on the calendar', () => {

@@ -10,6 +10,7 @@ import type { CreatePropertyActionsProps } from '../types/dashboard-property'
 export function CreatePropertyActions({
   firstStep,
   lastStep,
+  isSubmitting,
   onPreviousStep,
   onNextStep,
 }: CreatePropertyActionsProps) {
@@ -54,6 +55,7 @@ export function CreatePropertyActions({
         variant="contained"
         endIcon={!lastStep ? <ChevronRightRoundedIcon sx={{ fontSize: iconSize.sm }} /> : null}
         onClick={lastStep ? undefined : onNextStep}
+        disabled={lastStep && isSubmitting}
         sx={{
           flex: { xs: 1, md: 'initial' },
           minHeight: { xs: 44, md: 40 },

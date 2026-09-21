@@ -144,6 +144,8 @@
       "Publicar no marketplace após revisão": "Publicar en el marketplace tras revisión",
       "Permitir contato por WhatsApp": "Permitir contacto por WhatsApp",
       "Destacar imóvel na listagem inicial": "Destacar inmueble en la lista inicial"
-    }
+    },
+    "createSuccess": "Inmueble creado con éxito.",
+    "createError": "No se pudo crear el inmueble. Inténtalo de nuevo."
   }
 }

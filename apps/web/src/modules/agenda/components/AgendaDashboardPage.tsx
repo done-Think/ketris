@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 import { useSnackbar } from 'notistack'
 
-import { dashboardProperties } from '@modules/properties/data/dashboard-properties'
+import { useProperties } from '@modules/properties/hooks/use-properties'
 import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
 
 import { agendaTimeSlots } from '../data/agenda-events'
@@ -20,6 +20,7 @@ import {
 import { agendaOtherPropertyValue } from '../schemas/agenda-event-form-schema'
 import type {
   AgendaEvent,
+  AgendaEventApiKind,
   AgendaEventFormValues,
   AgendaPropertyOption,
   AgendaRescheduleFormValues,
@@ -57,15 +58,18 @@ export function AgendaDashboardPage() {
   )
   const createAgendaEventMutation = useCreateAgendaEvent(tenantId)
   const rescheduleAgendaEventMutation = useRescheduleAgendaEvent(tenantId)
+  const propertiesQuery = useProperties()
 
   const propertyOptions = useMemo<AgendaPropertyOption[]>(
     () =>
-      dashboardProperties.map((property) => ({
+      (propertiesQuery.data ?? []).map((property) => ({
         href: `/dashboard/properties/${property.id}`,
         id: property.id,
-        label: `${property.title} - ${property.location}`,
+        label: property.address
+          ? `${property.title} - ${property.address.neighborhood}, ${property.address.city}`
+          : property.title,
       })),
-    [],
+    [propertiesQuery.data],
   )
   const weekRange = getAgendaWeekRange(agendaDays)
   const notifications = useMemo(
@@ -128,17 +132,16 @@ export function AgendaDashboardPage() {
   const createAgendaEvent = async (values: AgendaEventFormValues) => {
     const scheduledDate = dayjs(values.scheduledDate)
     const start = dayjs(`${values.scheduledDate}T${values.scheduledTime}`)
-    const selectedProperty = propertyOptions.find((property) => property.id === values.propertyId)
-    const customProperty = values.customProperty.trim()
     const useCustomProperty = values.propertyId === agendaOtherPropertyValue
-    const propertyReference = useCustomProperty
-      ? customProperty
-      : (selectedProperty?.label ?? customProperty)
+    const customProperty = values.customProperty.trim()
 
     try {
       await createAgendaEventMutation.mutateAsync({
         title: values.title,
-        propertyReference,
+        kind: values.kind ? (values.kind as AgendaEventApiKind) : undefined,
+        ...(useCustomProperty
+          ? { propertyReference: customProperty }
+          : { propertyId: values.propertyId }),
         start: start.toISOString(),
         durationMinutes: values.durationMinutes,
         participantName: values.participant,

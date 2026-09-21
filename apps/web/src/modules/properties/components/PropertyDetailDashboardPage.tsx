@@ -1,14 +1,15 @@
 'use client'
 
 import { notFound } from 'next/navigation'
-import { Box, Stack } from '@mui/material'
+import { Box, CircularProgress, Stack } from '@mui/material'
 import { useForm } from 'react-hook-form'
 
-import { getDashboardPropertyById } from '../data/dashboard-properties'
+import { useProperty } from '../hooks/use-properties'
 import type {
   PropertyDetailDashboardFormValues,
   PropertyDetailDashboardPageProps,
 } from '../types/dashboard-property'
+import { toDashboardProperty } from '../utils/map-dashboard-property'
 import { PropertyDetailHeader } from './PropertyDetailHeader'
 import { PropertyDetailMainPanel } from './PropertyDetailMainPanel'
 import { PropertyDetailSidebar } from './PropertyDetailSidebar'
@@ -21,9 +22,21 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
     },
   })
   const activeTab = watch('activeTab')
-  const property = getDashboardPropertyById(propertyId)
+  const propertyQuery = useProperty(propertyId)
 
-  if (!property) notFound()
+  if (propertyQuery.isLoading) {
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: '55vh' }}>
+        <CircularProgress size={30} />
+      </Stack>
+    )
+  }
+
+  if (propertyQuery.isError || !propertyQuery.data) {
+    notFound()
+  }
+
+  const property = toDashboardProperty(propertyQuery.data)
 
   return (
     <Box sx={{ width: '100%', px: { xs: 2, md: 4.8 }, py: { xs: 2.6, md: 5 } }}>

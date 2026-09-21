@@ -5,18 +5,52 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Box, Divider, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
+import { useSnackbar } from 'notistack'
 
+import { useRouter } from '@/i18n/navigation'
 import { alpha, radius, shadows, surface, zIndex } from '@shared/theme/tokens'
 
 import { createPropertySteps } from '../config/dashboard-property-ui'
+import { useCreateProperty } from '../hooks/use-properties'
 import {
   createDashboardPropertyDefaultValues,
   createDashboardPropertySchema,
 } from '../schemas/create-dashboard-property-schema'
 import type { CreateDashboardPropertyFormValues } from '../types/dashboard-property'
+import type { PropertyFormValues, PropertyPurpose } from '../types/property'
+import { errorMessage } from '../utils/error-message'
 import { CreatePropertyActions } from './CreatePropertyActions'
 import { CreatePropertyStepFields } from './CreatePropertyStepFields'
 import { CreatePropertyStepsNav } from './CreatePropertyStepsNav'
+
+function toPropertyPayload(values: CreateDashboardPropertyFormValues): PropertyFormValues {
+  const purpose: PropertyPurpose = values.purpose[0] === 'Venda' ? 'SALE' : 'RENT'
+
+  return {
+    title: values.title,
+    description: values.description,
+    purpose,
+    type: values.type,
+    bedrooms: values.bedrooms,
+    bathrooms: values.bathrooms,
+    parkingSpots: values.parkingSpaces,
+    areaM2: values.area,
+    price: values.mainValue,
+    condoFee: values.condominium,
+    propertyTax: values.iptu,
+    address: {
+      street: values.street,
+      number: values.number,
+      complement: null,
+      neighborhood: values.neighborhood,
+      city: values.city,
+      state: values.state,
+      zipCode: values.zipCode,
+      latitude: null,
+      longitude: null,
+    },
+  }
+}
 
 const mobileDashboardHeaderHeight = 64
 const mobileCreateHeaderHeight = 104
@@ -25,6 +59,9 @@ const mobileContentGap = 24
 
 export function CreatePropertyDashboardPage() {
   const t = useTranslations('properties.create')
+  const { enqueueSnackbar } = useSnackbar()
+  const router = useRouter()
+  const createProperty = useCreateProperty()
   const { control, handleSubmit, setValue, watch } = useForm<CreateDashboardPropertyFormValues>({
     defaultValues: createDashboardPropertyDefaultValues,
     resolver: zodResolver(createDashboardPropertySchema),
@@ -53,7 +90,15 @@ export function CreatePropertyDashboardPage() {
     setValue('maxVisitedStepIndex', Math.max(maxVisitedStepIndex, nextStepIndex))
   }
 
-  const handleStaticSubmit = () => undefined
+  const handleCreateSubmit = async (values: CreateDashboardPropertyFormValues) => {
+    try {
+      const property = await createProperty.mutateAsync(toPropertyPayload(values))
+      enqueueSnackbar(t('createSuccess'), { variant: 'success' })
+      router.push({ pathname: '/dashboard/properties/[id]', params: { id: property.id } })
+    } catch (error) {
+      enqueueSnackbar(errorMessage(error, t('createError')), { variant: 'error' })
+    }
+  }
 
   return (
     <Box
@@ -120,7 +165,7 @@ export function CreatePropertyDashboardPage() {
 
         <Box
           component="form"
-          onSubmit={handleSubmit(handleStaticSubmit)}
+          onSubmit={handleSubmit(handleCreateSubmit)}
           sx={{
             bgcolor: surface.paper,
             border: '1px solid',
@@ -154,6 +199,7 @@ export function CreatePropertyDashboardPage() {
           <CreatePropertyActions
             firstStep={firstStep}
             lastStep={lastStep}
+            isSubmitting={createProperty.isPending}
             onPreviousStep={goToPreviousStep}
             onNextStep={goToNextStep}
           />

@@ -262,7 +262,7 @@ export function CreatePropertyStepFields({
             ['bedrooms', 'bedrooms', 'number'],
             ['bathrooms', 'bathrooms', 'number'],
             ['parkingSpaces', 'parkingSpaces', 'number'],
-            ['area', 'area', 'text'],
+            ['area', 'area', 'number'],
           ].map(([name, label, type]) => (
             <Controller
               key={name}
@@ -390,11 +390,11 @@ export function CreatePropertyStepFields({
           }}
         >
           {[
-            ['mainValue', mainValueLabel],
-            ['condominium', 'condominium'],
-            ['iptu', 'iptu'],
-            ['negotiationTerm', negotiationTermLabel],
-          ].map(([name, label]) => (
+            ['mainValue', mainValueLabel, 'number'],
+            ['condominium', 'condominium', 'number'],
+            ['iptu', 'iptu', 'number'],
+            ['negotiationTerm', negotiationTermLabel, 'text'],
+          ].map(([name, label, type]) => (
             <Controller
               key={name}
               control={control}
@@ -403,6 +403,7 @@ export function CreatePropertyStepFields({
                 <TextField
                   {...field}
                   label={t(`fields.${label}`)}
+                  type={type}
                   error={Boolean(fieldState.error)}
                   helperText={fieldState.error?.message}
                 />
