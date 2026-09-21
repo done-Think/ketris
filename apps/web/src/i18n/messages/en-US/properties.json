@@ -152,11 +152,10 @@
       "Aceita pets": "Pet friendly",
       "Portaria 24h": "24h concierge"
     },
-    "mediaSlots": {
-      "Foto principal": "Main photo",
-      "Galeria": "Gallery",
-      "Planta baixa": "Floor plan"
-    },
+    "mediaDropzone": "Drag images here or click to select",
+    "mediaUploading": "Uploading...",
+    "mediaRemove": "Remove image",
+    "mediaUploadError": "Could not upload the image. Please try again.",
     "publishingOptions": {
       "Publicar no marketplace após revisão": "Publish on the marketplace after review",
       "Permitir contato por WhatsApp": "Allow WhatsApp contact",

@@ -27,7 +27,9 @@ export const createDashboardPropertySchema = z.object({
   parkingSpaces: numberField,
   area: z.coerce.number().positive('Informe a área útil'),
   features: z.array(z.string()).default([]),
-  mediaSlots: z.array(z.string()).default([]),
+  media: z
+    .array(z.object({ url: z.string(), type: z.string().optional(), order: z.number().optional() }))
+    .default([]),
   mainValue: z.coerce.number().positive('Informe o valor principal'),
   condominium: numberField,
   iptu: numberField,
@@ -54,7 +56,7 @@ export const createDashboardPropertyDefaultValues: CreateDashboardPropertyFormVa
   parkingSpaces: 2,
   area: 95,
   features: ['Mobiliado', 'Varanda gourmet', 'Portaria 24h'],
-  mediaSlots: ['Foto principal'],
+  media: [],
   mainValue: 6500,
   condominium: 1200,
   iptu: 380,

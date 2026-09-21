@@ -41,3 +41,9 @@ export class PropertyHasLinkedRecordsError extends AppError {
     })
   }
 }
+
+export class PropertyMediaValidationError extends AppError {
+  constructor(message: string) {
+    super(message, { status: 400, code: 'PROPERTY_MEDIA_VALIDATION_ERROR' })
+  }
+}

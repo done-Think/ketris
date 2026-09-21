@@ -27,5 +27,6 @@ export function toPropertyPayload(values: CreateDashboardPropertyFormValues): Pr
       latitude: null,
       longitude: null,
     },
+    media: values.media,
   }
 }

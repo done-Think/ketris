@@ -152,11 +152,10 @@
       "Aceita pets": "Aceita pets",
       "Portaria 24h": "Portaria 24h"
     },
-    "mediaSlots": {
-      "Foto principal": "Foto principal",
-      "Galeria": "Galeria",
-      "Planta baixa": "Planta baixa"
-    },
+    "mediaDropzone": "Arraste imagens aqui ou clique para selecionar",
+    "mediaUploading": "Enviando...",
+    "mediaRemove": "Remover imagem",
+    "mediaUploadError": "Não foi possível enviar a imagem. Tente novamente.",
     "publishingOptions": {
       "Publicar no marketplace após revisão": "Publicar no marketplace após revisão",
       "Permitir contato por WhatsApp": "Permitir contato por WhatsApp",

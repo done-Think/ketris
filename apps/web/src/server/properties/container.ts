@@ -6,9 +6,12 @@ import { PublishPropertyUseCase } from './application/use-cases/publish-property
 import { TransitionPropertyFromActiveContractUseCase } from './application/use-cases/transition-property-from-active-contract.use-case'
 import { UnpublishPropertyUseCase } from './application/use-cases/unpublish-property.use-case'
 import { UpdatePropertyUseCase } from './application/use-cases/update-property.use-case'
+import { UploadPropertyMediaUseCase } from './application/use-cases/upload-property-media.use-case'
 import { PrismaPropertyRepository } from './infrastructure/prisma-property.repository'
+import { S3PropertyMediaStorage } from './infrastructure/s3-property-media-storage'
 
 const propertyRepository = new PrismaPropertyRepository()
+const propertyMediaStorage = new S3PropertyMediaStorage()
 
 export const propertiesContainer = {
   createPropertyUseCase: new CreatePropertyUseCase(propertyRepository),
@@ -21,4 +24,5 @@ export const propertiesContainer = {
   transitionPropertyFromActiveContractUseCase: new TransitionPropertyFromActiveContractUseCase(
     propertyRepository,
   ),
+  uploadPropertyMediaUseCase: new UploadPropertyMediaUseCase(propertyMediaStorage),
 }

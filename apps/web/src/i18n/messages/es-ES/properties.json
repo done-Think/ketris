@@ -152,11 +152,10 @@
       "Aceita pets": "Acepta mascotas",
       "Portaria 24h": "Conserjería 24h"
     },
-    "mediaSlots": {
-      "Foto principal": "Foto principal",
-      "Galeria": "Galería",
-      "Planta baixa": "Plano"
-    },
+    "mediaDropzone": "Arrastra imágenes aquí o haz clic para seleccionar",
+    "mediaUploading": "Enviando...",
+    "mediaRemove": "Eliminar imagen",
+    "mediaUploadError": "No se pudo enviar la imagen. Inténtalo de nuevo.",
     "publishingOptions": {
       "Publicar no marketplace após revisão": "Publicar en el marketplace tras revisión",
       "Permitir contato por WhatsApp": "Permitir contacto por WhatsApp",

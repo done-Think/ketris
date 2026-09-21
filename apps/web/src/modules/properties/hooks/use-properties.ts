@@ -79,3 +79,9 @@ export function useDeleteProperty() {
     },
   })
 }
+
+export function useUploadPropertyMedia() {
+  return useMutation({
+    mutationFn: (file: File) => propertiesService.uploadMedia(file),
+  })
+}

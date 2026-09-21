@@ -32,7 +32,7 @@ export function buildEditPropertyFormValues(property: Property): CreateDashboard
     parkingSpaces: property.characteristics.parkingSpots ?? 0,
     area: property.characteristics.areaM2 ?? 0,
     features: [],
-    mediaSlots: [],
+    media: property.media.map((item) => ({ url: item.url, type: item.type, order: item.order })),
     mainValue: property.values.price,
     condominium: property.values.condoFee ?? 0,
     iptu: property.values.propertyTax ?? 0,

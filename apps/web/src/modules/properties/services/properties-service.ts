@@ -61,6 +61,13 @@ interface PropertiesResponse {
   properties: ApiProperty[]
 }
 
+interface UploadPropertyMediaResponse {
+  media: {
+    url: string
+    contentType: string
+  }
+}
+
 function toApiPurpose(purpose: PropertyPurpose): 'ALUGUEL' | 'VENDA' {
   return purpose === 'RENT' ? 'ALUGUEL' : 'VENDA'
 }
@@ -228,6 +235,20 @@ export class PropertiesService extends BaseService {
 
   remove(id: string): Promise<void> {
     return this.http.delete<void>(`${this.path}/${id}`)
+  }
+
+  uploadMedia(file: File): Promise<PropertyMediaInput> {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    return this.http
+      .post<UploadPropertyMediaResponse>(`${this.path}/media`, formData, {
+        // O client tem `Content-Type: application/json` fixo como default (ver HttpClient). Um
+        // valor explícito aqui travaria em texto puro sem o boundary do multipart — precisa
+        // remover o header pra o próprio browser gerar o `multipart/form-data; boundary=...`.
+        headers: { 'Content-Type': undefined },
+      })
+      .then((data) => ({ url: data.media.url, type: 'foto' }))
   }
 }
 
