@@ -52,6 +52,12 @@ export function CreatePropertyActions({
         {t('back')}
       </Button>
       <Button
+        // A key própria (não só `type` dinâmico) força o React a desmontar/remontar em vez de
+        // mutar o atributo `type` do <button> existente no meio do próprio evento de clique —
+        // sem isso, um clique em "Próximo" no penúltimo passo pode virar submit nativo antes do
+        // navegador terminar de processar esse mesmo clique (mesma causa raiz já corrigida em
+        // AgendaEventDetailDialog e CreateLeadDialog).
+        key={lastStep ? 'submit' : 'next'}
         type={lastStep ? 'submit' : 'button'}
         variant="contained"
         endIcon={!lastStep ? <ChevronRightRoundedIcon sx={{ fontSize: iconSize.sm }} /> : null}
