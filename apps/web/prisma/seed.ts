@@ -36,7 +36,7 @@ async function main() {
   const senhaHash = await bcrypt.hash('trocar-em-desenvolvimento', SALT_ROUNDS)
 
   await prisma.usuario.upsert({
-    where: { tenantId_email: { tenantId: tenant.id, email: 'admin@ketris.dev' } },
+    where: { email: 'admin@ketris.dev' },
     update: {},
     create: {
       tenantId: tenant.id,
@@ -49,13 +49,21 @@ async function main() {
 
   console.log(`Seed concluído — tenant "${tenant.slug}" com usuário admin@ketris.dev`)
 
+  const renterTenant = await prisma.tenant.upsert({
+    where: { slug: 'locatarios' },
+    update: {},
+    create: { nome: 'Locatários Ketris', slug: 'locatarios' },
+  })
+
+  console.log(`Seed concluído — tenant compartilhado "${renterTenant.slug}"`)
+
   const brokerByEmail = new Map<string, string>()
 
   for (const property of seedProperties) {
     if (brokerByEmail.has(property.broker.email)) continue
 
     const broker = await prisma.usuario.upsert({
-      where: { tenantId_email: { tenantId: tenant.id, email: property.broker.email } },
+      where: { email: property.broker.email },
       update: { avatarUrl: property.broker.avatarUrl },
       create: {
         tenantId: tenant.id,
@@ -76,7 +84,10 @@ async function main() {
 
     await prisma.imovel.upsert({
       where: { id: `seed-imovel-${property.id}` },
-      update: {},
+      update: {
+        status: property.status ?? 'PUBLISHED',
+        publicadoEm: property.status === 'DRAFT' ? null : new Date(),
+      },
       create: {
         id: `seed-imovel-${property.id}`,
         tenantId: tenant.id,
@@ -90,8 +101,8 @@ async function main() {
         vagas: property.parking,
         areaM2: property.areaM2,
         valor: property.price,
-        status: 'PUBLISHED',
-        publicadoEm: new Date(),
+        status: property.status ?? 'PUBLISHED',
+        publicadoEm: property.status === 'DRAFT' ? null : new Date(),
         endereco: {
           create: {
             logradouro: `Rua ${property.neighborhood}`,
@@ -112,7 +123,7 @@ async function main() {
     })
   }
 
-  console.log(`Seed concluído — ${seedProperties.length} imóveis publicados`)
+  console.log(`Seed concluído — ${seedProperties.length} imóveis`)
 
   const contactByLegacyId = new Map<string, string>()
 

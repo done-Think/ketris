@@ -12,7 +12,6 @@
     "assignedEventTitle": "Nuevo compromiso asignado",
     "assignedEventMessage": "{role} {name} agendó {title}",
     "defaultEventNotes": "Evento creado manualmente en la agenda.",
-    "rescheduleSuccess": "{title} reprogramado para {date} a las {time}.",
     "createSuccess": "{title} añadido a la agenda.",
     "freeSlot": "Horario libre",
     "selectedDayLabel": "{day}, {date} de {month}",
@@ -20,43 +19,11 @@
       "agency": "inmobiliaria",
       "colleague": "colega"
     },
-    "sampleEvents": {
-      "jardimVisit": {
-        "title": "Visita Jardim Paulista",
-        "property": "Apartamento Jardim Paulista",
-        "notes": "Cliente quiere validar la luminosidad de la sala."
-      },
-      "proposalReturn": {
-        "title": "Retorno de propuesta",
-        "property": "Penthouse Itaim",
-        "notes": "Revisar contraoferta y plazo de firma."
-      },
-      "intakeMeeting": {
-        "title": "Reunión de captación",
-        "property": "Casa Alto Pinheiros",
-        "notes": "Alinear expectativa de precio y documentación inicial."
-      },
-      "entryInspection": {
-        "title": "Inspección de entrada",
-        "property": "Studio Pinheiros",
-        "notes": "Revisar pintura, llaves y checklist de entrega."
-      },
-      "financingFollowUp": {
-        "title": "Seguimiento de financiación",
-        "property": "Apt Jardins 3q",
-        "notes": "Confirmar respuesta del banco sobre la carta de crédito."
-      },
-      "digitalSignature": {
-        "title": "Firma digital",
-        "property": "Contrato Studio Pinheiros",
-        "notes": "Acompañar envío y confirmación de las firmas."
-      },
-      "digitalVisit": {
-        "title": "Visita digital",
-        "property": "Apartamento Jardim Paulista",
-        "notes": "Enviar enlace de la llamada y confirmar conexión del cliente."
-      }
-    }
+    "createError": "No se pudo crear el evento. Inténtalo de nuevo.",
+    "editSuccess": "{title} actualizado correctamente.",
+    "editError": "No fue posible guardar los cambios. Inténtalo de nuevo.",
+    "deleteSuccess": "{title} eliminado de la agenda.",
+    "deleteError": "No fue posible eliminar el evento. Inténtalo de nuevo."
   },
   "eventForm": {
     "eyebrow": "Nuevo punto en la agenda",
@@ -67,26 +34,41 @@
       "property": "Inmueble en cuestión",
       "otherProperty": "Otro",
       "customProperty": "Inmueble o referencia",
-      "participant": "Persona",
+      "participant": "Cliente",
       "phone": "Teléfono",
       "date": "Fecha",
       "time": "Horario",
       "duration": "Duración",
-      "notes": "Observaciones"
+      "notes": "Observaciones",
+      "kind": "Tipo de evento",
+      "kindPlaceholder": "Seleccionar (opcional)"
     },
     "cancel": "Cancelar",
-    "submit": "Crear evento"
+    "submit": "Crear evento",
+    "kinds": {
+      "VISIT": "Visita",
+      "FOLLOW_UP": "Seguimiento",
+      "MEETING": "Reunión",
+      "INSPECTION": "Inspección",
+      "SIGNATURE": "Firma",
+      "OTHER": "Otro"
+    }
   },
   "eventDetail": {
     "closeAriaLabel": "Cerrar detalles del evento",
     "notesTitle": "Observaciones",
     "createdBy": "Agendado por {role} {name}",
-    "rescheduleTitle": "Reprogramar compromiso",
-    "fields": {
-      "newDate": "Nueva fecha",
-      "newTime": "Nuevo horario"
-    },
-    "cancel": "Cancelar",
-    "submit": "Guardar reprogramación"
+    "noProperty": "Sin inmueble vinculado",
+    "editTitle": "Editar evento",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "save": "Guardar",
+    "cancelEdit": "Cancelar",
+    "deleteDialog": {
+      "title": "Eliminar evento",
+      "description": "¿Seguro que deseas eliminar \"{title}\"? Esta acción no se puede deshacer.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar"
+    }
   }
 }

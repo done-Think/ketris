@@ -24,6 +24,7 @@ const users: User[] = [
     senhaHash: 'h',
     papel: 'ADMIN',
     ativo: true,
+    vinculoAprovadoEm: new Date(),
   },
   {
     id: 'u2',
@@ -33,6 +34,7 @@ const users: User[] = [
     senhaHash: 'h',
     papel: 'AGENT',
     ativo: true,
+    vinculoAprovadoEm: new Date(),
   },
 ]
 
@@ -42,15 +44,16 @@ function createDeps(overrides?: { findById?: TenantRepository['findById'] }) {
     findById: overrides?.findById ?? vi.fn().mockResolvedValue(tenant),
     findMany: vi.fn(),
     create: vi.fn(),
+    searchByName: vi.fn(),
   }
   const userRepository: UserRepository = {
     findById: vi.fn(),
     findByEmail: vi.fn(),
-    findByEmailAndTenant: vi.fn(),
     findManyByTenant: vi.fn().mockResolvedValue(users),
     create: vi.fn(),
     update: vi.fn(),
     deactivate: vi.fn(),
+    approveMembership: vi.fn(),
   }
 
   return { tenantRepository, userRepository }

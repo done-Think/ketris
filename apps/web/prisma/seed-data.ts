@@ -13,6 +13,7 @@ export interface SeedProperty {
   description: string
   category: string
   purpose: 'ALUGUEL' | 'VENDA'
+  status?: 'DRAFT' | 'PUBLISHED' | 'RENTED' | 'SOLD' | 'INACTIVE'
   price: number
   bedrooms: number
   bathrooms: number
@@ -67,6 +68,7 @@ export const seedProperties: SeedProperty[] = [
       'Studio mobiliado, com marcenaria planejada, cozinha integrada e ótima entrada de luz natural. Localização próxima a restaurantes, metrô e serviços essenciais.',
     category: 'studio',
     purpose: 'ALUGUEL',
+    status: 'RENTED',
     price: 2900,
     bedrooms: 1,
     bathrooms: 1,
@@ -97,6 +99,7 @@ export const seedProperties: SeedProperty[] = [
       'Cobertura tríplex com área externa privativa, piscina, espaço gourmet e vista aberta. Planta generosa para receber com conforto em uma das regiões mais desejadas da cidade.',
     category: 'cobertura',
     purpose: 'ALUGUEL',
+    status: 'DRAFT',
     price: 12500,
     bedrooms: 4,
     bathrooms: 5,
@@ -127,6 +130,7 @@ export const seedProperties: SeedProperty[] = [
       'Apartamento garden com área externa privativa, ambientes integrados e reforma recente. Uma opção equilibrada para quem quer morar perto de serviços, restaurantes e áreas verdes.',
     category: 'apartamento',
     purpose: 'ALUGUEL',
+    status: 'INACTIVE',
     price: 6200,
     bedrooms: 2,
     bathrooms: 2,
@@ -247,6 +251,7 @@ export const seedProperties: SeedProperty[] = [
       'Apartamento reformado para venda, com marcenaria planejada, varanda integrada e planta bem distribuída em endereço valorizado dos Jardins.',
     category: 'apartamento',
     purpose: 'VENDA',
+    status: 'SOLD',
     price: 1420000,
     bedrooms: 3,
     bathrooms: 3,
@@ -337,6 +342,7 @@ export const seedProperties: SeedProperty[] = [
       'Casa térrea com ambientes integrados, quintal arborizado e edícula preparada para escritório, ideal para famílias que procuram espaço sem sair da cidade.',
     category: 'casa',
     purpose: 'VENDA',
+    status: 'DRAFT',
     price: 1980000,
     bedrooms: 4,
     bathrooms: 4,

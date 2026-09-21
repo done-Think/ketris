@@ -8,6 +8,9 @@
     },
     "create": {
       "metadataTitle": "Ketris | Publicar inmueble"
+    },
+    "edit": {
+      "metadataTitle": "Ketris | Editar Inmueble"
     }
   },
   "dashboard": {
@@ -24,8 +27,8 @@
       "broker": "Corredor",
       "updated": "Actualizado",
       "actions": "Acciones",
-      "editAriaLabel": "Editar {title}",
       "viewAriaLabel": "Ver {title}",
+      "moreActionsAriaLabel": "Más acciones de {title}",
       "noRows": "No se encontraron inmuebles",
       "totalRows": "Total de filas:",
       "rowsPerPage": "Filas por página",
@@ -76,6 +79,20 @@
       "media": "Medios",
       "values": "Valores",
       "history": "Historial"
+    },
+    "publish": "Publicar",
+    "delete": "Eliminar",
+    "publishSuccess": "Inmueble publicado correctamente.",
+    "publishError": "No fue posible publicar el inmueble. Inténtalo de nuevo.",
+    "unpublishSuccess": "Inmueble despublicado correctamente.",
+    "unpublishError": "No fue posible despublicar el inmueble. Inténtalo de nuevo.",
+    "deleteSuccess": "Inmueble eliminado correctamente.",
+    "deleteError": "No fue posible eliminar el inmueble. Inténtalo de nuevo.",
+    "deleteDialog": {
+      "title": "Eliminar inmueble",
+      "description": "¿Seguro que deseas eliminar \"{title}\"? Esta acción es permanente y no se puede deshacer. Si el inmueble tiene propuestas o contratos vinculados, la eliminación será bloqueada.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar"
     }
   },
   "create": {
@@ -135,15 +152,23 @@
       "Aceita pets": "Acepta mascotas",
       "Portaria 24h": "Conserjería 24h"
     },
-    "mediaSlots": {
-      "Foto principal": "Foto principal",
-      "Galeria": "Galería",
-      "Planta baixa": "Plano"
-    },
+    "mediaDropzone": "Arrastra imágenes aquí o haz clic para seleccionar",
+    "mediaUploading": "Enviando...",
+    "mediaRemove": "Eliminar imagen",
+    "mediaUploadError": "No se pudo enviar la imagen. Inténtalo de nuevo.",
     "publishingOptions": {
       "Publicar no marketplace após revisão": "Publicar en el marketplace tras revisión",
       "Permitir contato por WhatsApp": "Permitir contacto por WhatsApp",
       "Destacar imóvel na listagem inicial": "Destacar inmueble en la lista inicial"
-    }
+    },
+    "createSuccess": "Inmueble creado con éxito.",
+    "createError": "No se pudo crear el inmueble. Inténtalo de nuevo."
+  },
+  "edit": {
+    "title": "Editar inmueble",
+    "mobileTitle": "Editar Inmueble",
+    "save": "Guardar cambios",
+    "updateSuccess": "Inmueble actualizado correctamente.",
+    "updateError": "No fue posible guardar los cambios. Inténtalo de nuevo."
   }
 }

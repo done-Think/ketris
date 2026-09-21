@@ -12,7 +12,6 @@
     "assignedEventTitle": "New assigned appointment",
     "assignedEventMessage": "{role} {name} booked {title}",
     "defaultEventNotes": "Event created manually in the agenda.",
-    "rescheduleSuccess": "{title} rescheduled to {date} at {time}.",
     "createSuccess": "{title} added to the agenda.",
     "freeSlot": "Free slot",
     "selectedDayLabel": "{day}, {month} {date}",
@@ -20,43 +19,11 @@
       "agency": "agency",
       "colleague": "colleague"
     },
-    "sampleEvents": {
-      "jardimVisit": {
-        "title": "Jardim Paulista visit",
-        "property": "Jardim Paulista apartment",
-        "notes": "Client wants to check the living room natural light."
-      },
-      "proposalReturn": {
-        "title": "Proposal follow-up",
-        "property": "Itaim penthouse",
-        "notes": "Review counteroffer and signature timeline."
-      },
-      "intakeMeeting": {
-        "title": "Intake meeting",
-        "property": "Alto Pinheiros house",
-        "notes": "Align price expectations and initial documentation."
-      },
-      "entryInspection": {
-        "title": "Move-in inspection",
-        "property": "Pinheiros studio",
-        "notes": "Check painting, keys, and delivery checklist."
-      },
-      "financingFollowUp": {
-        "title": "Financing follow-up",
-        "property": "Jardins 3-bed apt",
-        "notes": "Confirm bank response about the credit letter."
-      },
-      "digitalSignature": {
-        "title": "Digital signature",
-        "property": "Pinheiros studio contract",
-        "notes": "Track delivery and confirmation of signatures."
-      },
-      "digitalVisit": {
-        "title": "Digital visit",
-        "property": "Jardim Paulista apartment",
-        "notes": "Send call link and confirm the client's connection."
-      }
-    }
+    "createError": "Could not create the event. Please try again.",
+    "editSuccess": "{title} updated successfully.",
+    "editError": "Could not save the changes. Please try again.",
+    "deleteSuccess": "{title} removed from the schedule.",
+    "deleteError": "Could not delete the event. Please try again."
   },
   "eventForm": {
     "eyebrow": "New agenda entry",
@@ -67,26 +34,41 @@
       "property": "Property in question",
       "otherProperty": "Other",
       "customProperty": "Property or reference",
-      "participant": "Person",
+      "participant": "Client",
       "phone": "Phone",
       "date": "Date",
       "time": "Time",
       "duration": "Duration",
-      "notes": "Notes"
+      "notes": "Notes",
+      "kind": "Event type",
+      "kindPlaceholder": "Select (optional)"
     },
     "cancel": "Cancel",
-    "submit": "Create event"
+    "submit": "Create event",
+    "kinds": {
+      "VISIT": "Visit",
+      "FOLLOW_UP": "Follow-up",
+      "MEETING": "Meeting",
+      "INSPECTION": "Inspection",
+      "SIGNATURE": "Signature",
+      "OTHER": "Other"
+    }
   },
   "eventDetail": {
     "closeAriaLabel": "Close event details",
     "notesTitle": "Notes",
     "createdBy": "Booked by {role} {name}",
-    "rescheduleTitle": "Reschedule appointment",
-    "fields": {
-      "newDate": "New date",
-      "newTime": "New time"
-    },
-    "cancel": "Cancel",
-    "submit": "Save rescheduling"
+    "noProperty": "No property linked",
+    "editTitle": "Edit event",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancelEdit": "Cancel",
+    "deleteDialog": {
+      "title": "Delete event",
+      "description": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    }
   }
 }

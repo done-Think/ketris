@@ -55,8 +55,6 @@ export const createPropertyFeatureOptions = [
   'Portaria 24h',
 ]
 
-export const createPropertyMediaSlots = ['Foto principal', 'Galeria', 'Planta baixa']
-
 export const createPropertyPublishingOptions = [
   'Publicar no marketplace após revisão',
   'Permitir contato por WhatsApp',
