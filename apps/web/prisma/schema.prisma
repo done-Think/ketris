@@ -28,6 +28,7 @@ model Tenant {
   usuarios      Usuario[]
   imoveis       Imovel[]
   oportunidades Oportunidade[]
+  leads         Lead[]
   contratos     Contrato[]
   cobrancas     Cobranca[]
   contatos      Contato[]
@@ -61,6 +62,7 @@ model Usuario {
   refreshTokens            RefreshToken[]
   eventosAgendaResponsavel EventoAgenda[] @relation("EventoAgendaResponsavel")
   eventosAgendaCriados     EventoAgenda[] @relation("EventoAgendaCriadoPor")
+  leadsResponsavel         Lead[]         @relation("LeadResponsavel")
 
   @@index([tenantId])
   @@map("usuarios")
@@ -247,6 +249,7 @@ model Oportunidade {
   contrato   Contrato?
   contato    Contato?                @relation(fields: [contatoId], references: [id], onDelete: SetNull)
   atividades AtividadeOportunidade[]
+  lead       Lead?
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -254,6 +257,40 @@ model Oportunidade {
   @@index([imovelId])
   @@index([contatoId])
   @@map("oportunidades")
+}
+
+enum EstagioLead {
+  NOVO
+  EM_CONTATO
+  VISITA_MARCADA
+  PROPOSTA
+}
+
+// Contato bruto, ainda não qualificado com um imóvel específico nem valor proposto — por isso não
+// é uma Oportunidade ainda. Vira uma quando o corretor converte (ver ConvertLeadToOpportunityUseCase).
+model Lead {
+  id             String      @id @default(cuid())
+  tenantId       String
+  responsavelId  String
+  nome           String
+  telefone       String
+  email          String?
+  interesse      String
+  orcamento      String
+  origem         String
+  estagio        EstagioLead @default(NOVO)
+  observacoes    String?
+  oportunidadeId String?     @unique
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  responsavel  Usuario       @relation("LeadResponsavel", fields: [responsavelId], references: [id])
+  oportunidade Oportunidade? @relation(fields: [oportunidadeId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tenantId, estagio])
+  @@map("leads")
 }
 
 // ---------------------------------------------------------------------------
