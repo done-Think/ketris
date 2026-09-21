@@ -9,6 +9,7 @@ import {
   Button,
   Chip,
   InputAdornment,
+  Menu,
   MenuItem,
   Select,
   Stack,
@@ -18,21 +19,19 @@ import {
 import { DataGrid } from '@mui/x-data-grid'
 import type { GridColDef } from '@mui/x-data-grid'
 import { useMemo, useState } from 'react'
-import { useTranslations } from 'next-intl'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
-import {
-  platformTenantMetrics,
-  platformTenants,
-  platformTenantTotal,
-} from '../data/platform-tenants-fixtures'
+import { platformTenantMetrics, platformTenants } from '../data/platform-tenants-fixtures'
 import type {
   PlatformTenant,
   PlatformTenantPlan,
   PlatformTenantStatus,
 } from '../types/platform-tenant'
 import { platformTenantGridSx } from './platform-tenant-table.styles'
+import { PlatformTenantEditDialog } from './PlatformTenantEditDialog'
+import { usePlatformGridLocale } from '../hooks/use-platform-grid-locale'
 
 const pageSize = 6
 
@@ -61,14 +60,22 @@ const metricBadgeStyles: Record<'total' | PlatformTenantPlan, { bgcolor: string;
 
 export function PlatformTenantsPage() {
   const t = useTranslations('platform.tenants')
+  const format = useFormatter()
+  const gridLocale = usePlatformGridLocale()
+  const [tenants, setTenants] = useState(platformTenants)
+  const [editingTenant, setEditingTenant] = useState<PlatformTenant | null>(null)
+  const [actionMenu, setActionMenu] = useState<{
+    anchor: HTMLElement
+    tenant: PlatformTenant
+  } | null>(null)
   const [query, setQuery] = useState('')
   const [plan, setPlan] = useState<PlanFilter>('all')
-  const [status, setStatus] = useState<StatusFilter>('active')
+  const [status, setStatus] = useState<StatusFilter>('all')
   const [page, setPage] = useState(1)
 
   const filteredTenants = useMemo(
     () =>
-      platformTenants.filter((tenant) => {
+      tenants.filter((tenant) => {
         const matchesQuery = tenant.name
           .toLocaleLowerCase()
           .includes(query.trim().toLocaleLowerCase())
@@ -77,12 +84,10 @@ export function PlatformTenantsPage() {
 
         return matchesQuery && matchesPlan && matchesStatus
       }),
-    [plan, query, status],
+    [tenants, plan, query, status],
   )
   const currentPage = Math.min(page, Math.max(1, Math.ceil(filteredTenants.length / pageSize)))
-  const visibleTenants = filteredTenants.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-  const initialFixtureView = !query && plan === 'all' && status === 'active'
-  const totalLabel = initialFixtureView ? platformTenantTotal : filteredTenants.length
+  const tenantGridHeight = 108 + Math.max(1, Math.min(pageSize, filteredTenants.length)) * 52
 
   const resetPage = () => setPage(1)
   const columns: GridColDef<PlatformTenant>[] = [
@@ -154,6 +159,7 @@ export function PlatformTenantsPage() {
     },
     {
       field: 'mrr',
+      type: 'number',
       headerName: t('columns.mrr'),
       align: 'center',
       headerAlign: 'center',
@@ -173,7 +179,11 @@ export function PlatformTenantsPage() {
             width: '100%',
           }}
         >
-          {row.mrr}
+          {format.number(row.mrr, {
+            style: 'currency',
+            currency: 'BRL',
+            maximumFractionDigits: 0,
+          })}
         </Typography>
       ),
     },
@@ -194,6 +204,18 @@ export function PlatformTenantsPage() {
     },
     {
       field: 'createdAt',
+      type: 'date',
+      valueGetter: (_, row) => {
+        const [day, month, year] = row.createdAt.split('/').map(Number)
+        return new Date(Date.UTC(year, month - 1, day))
+      },
+      valueFormatter: (value: Date) =>
+        format.dateTime(value, {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          timeZone: 'UTC',
+        }),
       headerName: t('columns.createdAt'),
       align: 'center',
       headerAlign: 'center',
@@ -217,14 +239,24 @@ export function PlatformTenantsPage() {
         >
           <Button
             aria-label={t('editAction', { name: row.name })}
-            onClick={(event) => event.stopPropagation()}
+            onClick={(event) => {
+              event.stopPropagation()
+              setEditingTenant(row)
+            }}
             sx={gridActionButtonSx}
           >
             <EditOutlinedIcon sx={{ fontSize: 19 }} />
           </Button>
           <Button
+            id={`tenant-actions-${row.id}`}
             aria-label={t('moreActions', { name: row.name })}
-            onClick={(event) => event.stopPropagation()}
+            aria-haspopup="menu"
+            aria-expanded={actionMenu?.tenant.id === row.id ? true : undefined}
+            aria-controls={actionMenu?.tenant.id === row.id ? 'tenant-actions-menu' : undefined}
+            onClick={(event) => {
+              event.stopPropagation()
+              setActionMenu({ anchor: event.currentTarget, tenant: row })
+            }}
             sx={gridActionButtonSx}
           >
             <MoreHorizRoundedIcon sx={{ fontSize: 20 }} />
@@ -235,29 +267,39 @@ export function PlatformTenantsPage() {
   ]
 
   return (
-    <Box sx={{ maxWidth: 1680, mx: 'auto', px: { xs: 1.5, sm: 3, lg: 4 }, py: { xs: 2.5, md: 4 } }}>
+    <Box sx={{ maxWidth: 1680, mx: 'auto', px: { xs: 2, md: 3, lg: 4 }, py: { xs: 2, md: 4 } }}>
       <Stack
         direction={{ xs: 'column', xl: 'row' }}
         justifyContent="space-between"
-        spacing={2.25}
-        sx={{ mb: 3 }}
+        spacing={{ xs: 2, md: 2.25 }}
+        sx={{
+          mb: 3,
+          pb: { xs: 2, md: 0 },
+          borderBottom: { xs: '1px solid', md: 0 },
+          borderColor: alpha.graphite[8],
+        }}
       >
         <Typography
           component="h1"
           sx={{
             color: brand.graphite[500],
-            fontSize: { xs: 28, md: 34 },
-            fontWeight: 900,
+            fontFamily: { xs: 'var(--font-space-grotesk), system-ui, sans-serif', md: 'inherit' },
+            fontSize: { xs: 26, md: 34 },
+            fontWeight: { xs: 700, md: 900 },
             letterSpacing: -0.55,
-            lineHeight: 1.1,
+            lineHeight: { xs: 1.15, md: 1.1 },
           }}
         >
           {t('title')}
         </Typography>
         <Stack
-          direction={{ xs: 'column', sm: 'row' }}
+          direction={{ xs: 'column', md: 'row' }}
           spacing={1.25}
-          sx={{ width: { xs: '100%', xl: 'auto' } }}
+          sx={{
+            width: { xs: '100%', xl: 'auto' },
+            flexWrap: 'wrap',
+            rowGap: { xs: 0, md: 1.25 },
+          }}
         >
           <TextField
             value={query}
@@ -267,13 +309,15 @@ export function PlatformTenantsPage() {
             }}
             placeholder={t('searchPlaceholder')}
             hiddenLabel
-            inputProps={{ 'aria-label': t('searchLabel') }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchRoundedIcon sx={{ color: brand.neutral[500], fontSize: 19 }} />
-                </InputAdornment>
-              ),
+            slotProps={{
+              htmlInput: { 'aria-label': t('searchLabel') },
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchRoundedIcon sx={{ color: brand.neutral[500], fontSize: 19 }} />
+                  </InputAdornment>
+                ),
+              },
             }}
             sx={searchSx}
           />
@@ -326,26 +370,42 @@ export function PlatformTenantsPage() {
             xs: 'repeat(2, minmax(0, 1fr))',
             lg: 'repeat(4, minmax(0, 1fr))',
           },
-          gap: 1.75,
+          gap: { xs: 1.5, md: 1.75 },
           mb: 3,
         }}
       >
         {platformTenantMetrics.map((metric) => (
           <Box key={metric.id} sx={metricCardSx}>
-            <Typography sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 800 }}>
+            <Typography
+              sx={{
+                color: brand.neutral[500],
+                fontSize: { xs: 12, md: 13 },
+                fontWeight: 800,
+                textTransform: { xs: 'uppercase', md: 'none' },
+              }}
+            >
               {t(`metrics.${metric.id}`)}
             </Typography>
             <Stack
-              direction="row"
-              alignItems="center"
+              direction={{ xs: 'column', md: 'row' }}
+              alignItems={{ xs: 'flex-start', md: 'center' }}
               justifyContent="space-between"
-              sx={{ mt: 1.1 }}
+              sx={{ mt: { xs: 0.75, md: 1.1 }, gap: { xs: 0.75, md: 0 } }}
             >
-              <Typography sx={{ color: brand.graphite[500], fontSize: 28, fontWeight: 900 }}>
-                {metric.value}
+              <Typography
+                sx={{
+                  color: brand.graphite[500],
+                  fontSize: { xs: 26, md: 28 },
+                  fontWeight: 900,
+                  lineHeight: { xs: 1.15, md: 'inherit' },
+                }}
+              >
+                {metric.id === 'total'
+                  ? tenants.length
+                  : tenants.filter((tenant) => tenant.plan === metric.id).length}
               </Typography>
               <Box component="span" sx={{ ...activeBadgeSx, ...metricBadgeStyles[metric.id] }}>
-                {t('activeBadge')}
+                {t('metricBadge')}
               </Box>
             </Stack>
           </Box>
@@ -353,38 +413,74 @@ export function PlatformTenantsPage() {
       </Box>
 
       <Box component="section" aria-label={t('tableLabel')} sx={tablePanelSx}>
-        <DataGrid
-          rows={visibleTenants}
-          columns={columns}
-          autoHeight
-          rowHeight={52}
-          pagination
-          paginationMode="server"
-          rowCount={filteredTenants.length}
-          pageSizeOptions={[pageSize]}
-          paginationModel={{ page: currentPage - 1, pageSize }}
-          onPaginationModelChange={(model) => setPage(model.page + 1)}
-          disableRowSelectionOnClick
-          disableColumnMenu
-          localeText={{
-            noRowsLabel: t('empty'),
-            MuiTablePagination: {
-              labelRowsPerPage: '',
-              labelDisplayedRows: ({ from, to }) =>
-                t('summary', { start: from, end: to, total: totalLabel }),
-            },
-          }}
-          sx={tenantsGridSx}
-        />
+        <Box sx={{ height: tenantGridHeight }}>
+          <DataGrid
+            rows={filteredTenants}
+            columns={columns}
+            rowHeight={52}
+            pagination
+            pageSizeOptions={[pageSize]}
+            paginationModel={{ page: currentPage - 1, pageSize }}
+            onPaginationModelChange={(model) => setPage(model.page + 1)}
+            onSortModelChange={resetPage}
+            disableRowSelectionOnClick
+            disableColumnMenu
+            localeText={{
+              ...gridLocale,
+              noRowsLabel: t('empty'),
+              MuiTablePagination: {
+                ...gridLocale.MuiTablePagination,
+                labelRowsPerPage: '',
+                labelDisplayedRows: ({ from, to }) =>
+                  t('summary', { start: from, end: to, total: filteredTenants.length }),
+              },
+            }}
+            sx={tenantsGridSx}
+          />
+        </Box>
       </Box>
+      <Menu
+        id="tenant-actions-menu"
+        anchorEl={actionMenu?.anchor}
+        open={Boolean(actionMenu)}
+        onClose={() => setActionMenu(null)}
+        slotProps={{
+          list: {
+            'aria-labelledby': actionMenu ? `tenant-actions-${actionMenu.tenant.id}` : undefined,
+          },
+        }}
+      >
+        <MenuItem
+          onClick={() => {
+            if (actionMenu) setEditingTenant(actionMenu.tenant)
+            setActionMenu(null)
+          }}
+        >
+          {t('edit')}
+        </MenuItem>
+      </Menu>
+      {editingTenant && (
+        <PlatformTenantEditDialog
+          key={editingTenant.id}
+          tenant={editingTenant}
+          onClose={() => setEditingTenant(null)}
+          onSave={(updated) => {
+            setTenants((current) =>
+              current.map((tenant) => (tenant.id === updated.id ? updated : tenant)),
+            )
+            setEditingTenant(null)
+            resetPage()
+          }}
+        />
+      )}
     </Box>
   )
 }
 
 const searchSx = {
-  width: { xs: '100%', sm: 'auto' },
+  width: { xs: '100%', md: 'auto' },
   minWidth: { sm: 260 },
-  flex: { xs: 1, xl: 'initial' },
+  flex: { xs: 'none', md: 1, xl: 'initial' },
   '& .MuiOutlinedInput-root': {
     bgcolor: surface.paper,
     borderRadius: `${radius.sm}px`,
@@ -393,10 +489,10 @@ const searchSx = {
   },
 }
 const filterSx = {
-  width: { xs: '100%', sm: 'auto' },
+  width: { xs: '100%', md: 'auto' },
   minWidth: { sm: 145 },
   bgcolor: surface.paper,
-  borderRadius: `${radius.sm}px`,
+  borderRadius: { xs: `${radius.full}px`, md: `${radius.sm}px` },
   fontSize: 14,
   fontWeight: 600,
   height: 44,
@@ -421,7 +517,7 @@ const newTenantButtonSx = {
   fontSize: 14,
   fontWeight: 800,
   height: 44,
-  width: { xs: '100%', sm: 'auto' },
+  width: { xs: '100%', md: 'auto' },
   px: 2.25,
   textTransform: 'none',
   whiteSpace: 'nowrap',
@@ -430,12 +526,12 @@ const newTenantButtonSx = {
 const metricCardSx = {
   bgcolor: surface.paper,
   border: '1px solid',
-  borderColor: alpha.graphite[8],
-  borderRadius: `${radius.md}px`,
-  boxShadow: shadows.crmCardCompact,
-  minHeight: 106,
+  borderColor: { xs: alpha.graphite[6], md: alpha.graphite[8] },
+  borderRadius: { xs: `${radius.sm}px`, md: `${radius.md}px` },
+  boxShadow: { xs: shadows.propertyCard, md: shadows.crmCardCompact },
+  minHeight: { xs: 120, md: 106 },
   px: 2,
-  py: 1.75,
+  py: { xs: 2, md: 1.75 },
 }
 const activeBadgeSx = {
   bgcolor: brand.neutral[100],
@@ -443,31 +539,31 @@ const activeBadgeSx = {
   color: brand.graphite[500],
   fontSize: 12,
   fontWeight: 800,
-  px: 1.1,
-  py: 0.55,
+  px: { xs: 0.75, md: 1.1 },
+  py: { xs: 0.25, md: 0.55 },
 }
 const tablePanelSx = {
   bgcolor: surface.paper,
   border: '1px solid',
-  borderColor: alpha.graphite[8],
-  borderRadius: `${radius.md}px`,
-  boxShadow: shadows.crmCard,
+  borderColor: { xs: alpha.graphite[6], md: alpha.graphite[8] },
+  borderRadius: { xs: `${radius.sm}px`, md: `${radius.md}px` },
+  boxShadow: { xs: shadows.crmCardCompact, md: shadows.crmCard },
   overflow: 'hidden',
-  p: { xs: 1.75, md: 2.75 },
+  p: { xs: 1, md: 2.75 },
   minWidth: 0,
   width: '100%',
 }
 const chipSx = {
   borderRadius: `${radius.full}px`,
-  fontSize: 10,
+  fontSize: { xs: 12, md: 10 },
   fontWeight: 800,
-  height: 22,
+  height: { xs: 26, md: 22 },
 }
 const gridActionButtonSx = {
   color: brand.neutral[500],
-  minWidth: 36,
-  width: 36,
-  height: 36,
+  minWidth: { xs: 42, md: 36 },
+  width: { xs: 42, md: 36 },
+  height: { xs: 42, md: 36 },
   p: 0,
   borderRadius: `${radius.sm}px`,
   '&:hover': { bgcolor: alpha.magenta[6], color: brand.magenta[500] },

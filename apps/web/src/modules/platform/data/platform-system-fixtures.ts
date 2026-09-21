@@ -5,12 +5,15 @@ import type {
   PlatformHealthMetric,
 } from '../types/platform-system'
 
+/** Demonstration-only snapshots; no remote monitoring. */
 export const platformHealthMetrics: readonly PlatformHealthMetric[] = [
-  { id: 'gateway', value: '99.9%', status: 'healthy', tone: 'success' },
-  { id: 'database', value: '45ms', status: 'stable', tone: 'success' },
-  { id: 'storage', value: '78%', status: 'limited', tone: 'warning' },
-  { id: 'queue', value: '234', status: 'processing', tone: 'success' },
+  { id: 'gateway', value: 0.999, format: 'percent', status: 'healthy', tone: 'success' },
+  { id: 'database', value: 45, format: 'milliseconds', status: 'stable', tone: 'success' },
+  { id: 'storage', value: 0.78, format: 'percent', status: 'limited', tone: 'warning' },
+  { id: 'queue', value: 234, format: 'number', status: 'processing', tone: 'success' },
 ]
+
+export const networkAverageRequestsPerMinute = 14_800
 
 export const networkTraffic: readonly NetworkTrafficPoint[] = [
   ['00:00', 8],
@@ -47,36 +50,36 @@ export const clusterLogs: readonly ClusterLogEntry[] = [
     time: '14:32:01',
     level: 'INFO',
     service: 'auth-service',
-    message: "Autenticação bem-sucedida para o tenant 'Silva & Associados'",
+    message: 'authentication',
   },
   {
     time: '14:31:55',
     level: 'WARN',
     service: 'api-gateway',
-    message: 'Requisição rejeitada devido a limite de taxa excedido no plano Starter',
+    message: 'rateLimit',
   },
   {
     time: '14:31:48',
     level: 'ERROR',
     service: 'billing-worker',
-    message: 'Falha na sincronização de pagamento recorrente (Gateway de faturamento)',
+    message: 'payment',
   },
   {
     time: '14:30:22',
     level: 'INFO',
     service: 'importer',
-    message: 'Processamento concluído de 140 registros de imóveis via planilha',
+    message: 'import',
   },
   {
     time: '14:28:10',
     level: 'INFO',
     service: 'sync-service',
-    message: 'Backup programado efetuado com sucesso no cluster secundário',
+    message: 'backup',
   },
   {
     time: '14:27:01',
     level: 'ERROR',
     service: 'api-gateway',
-    message: 'Erro crítico de conexão perdida na réplica de leitura de dados',
+    message: 'connection',
   },
 ]

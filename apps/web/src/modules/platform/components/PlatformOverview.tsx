@@ -17,6 +17,7 @@ import { PlatformGrowthChart } from './PlatformGrowthChart'
 import { PlatformMetricCards } from './PlatformMetricCards'
 import { RecentTenantsTable } from './RecentTenantsTable'
 import { PlatformSystemAlerts } from './PlatformSystemAlerts'
+import { TenantsList } from './TenantsList'
 
 export function PlatformOverview() {
   const t = useTranslations('platform.overview')
@@ -86,6 +87,15 @@ export function PlatformOverview() {
       </Box>
       <Box sx={{ mt: 3 }}>
         <RecentTenantsTable tenants={recentTenants} />
+      </Box>
+      <Box component="section" aria-labelledby="registered-tenants-title" sx={{ mt: 3 }}>
+        <Typography
+          id="registered-tenants-title"
+          sx={{ color: brand.graphite[500], fontSize: 17, fontWeight: 900, mb: 2 }}
+        >
+          {t('registeredTenants')}
+        </Typography>
+        <TenantsList />
       </Box>
     </Box>
   )

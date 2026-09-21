@@ -3,12 +3,13 @@
 import { Box, Chip, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import type { GridColDef } from '@mui/x-data-grid'
-import { useTranslations } from 'next-intl'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { RecentTenant } from '../types/platform-overview'
 import { platformTenantGridSx } from './platform-tenant-table.styles'
+import { usePlatformGridLocale } from '../hooks/use-platform-grid-locale'
 
 const planSx = {
   enterprise: { bgcolor: '#FCE3F1', color: brand.magenta[600] },
@@ -24,6 +25,8 @@ const statusSx = {
 
 export function RecentTenantsTable({ tenants }: { tenants: readonly RecentTenant[] }) {
   const t = useTranslations('platform.overview.recentTenants')
+  const gridLocale = usePlatformGridLocale()
+  const format = useFormatter()
   const columns: GridColDef<RecentTenant>[] = [
     {
       field: 'name',
@@ -72,6 +75,13 @@ export function RecentTenantsTable({ tenants }: { tenants: readonly RecentTenant
     },
     {
       field: 'registeredAt',
+      valueFormatter: (value: string) =>
+        format.dateTime(new Date(`${value}T00:00:00Z`), {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          timeZone: 'UTC',
+        }),
       headerName: t('columns.registeredAt'),
       align: 'center',
       headerAlign: 'center',
@@ -115,16 +125,19 @@ export function RecentTenantsTable({ tenants }: { tenants: readonly RecentTenant
       >
         {t('title')}
       </Typography>
-      <DataGrid
-        rows={tenants}
-        columns={columns}
-        autoHeight
-        rowHeight={52}
-        hideFooter
-        disableRowSelectionOnClick
-        disableColumnMenu
-        sx={platformTenantGridSx}
-      />
+      <Box sx={{ height: 56 + tenants.length * 52 }}>
+        <DataGrid
+          aria-label={t('tableLabel')}
+          localeText={gridLocale}
+          rows={tenants}
+          columns={columns}
+          rowHeight={52}
+          hideFooter
+          disableRowSelectionOnClick
+          disableColumnMenu
+          sx={platformTenantGridSx}
+        />
+      </Box>
     </Box>
   )
 }

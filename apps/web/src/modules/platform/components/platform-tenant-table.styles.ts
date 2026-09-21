@@ -17,7 +17,6 @@ export const platformTenantGridSx = {
     display: 'flex',
     fontSize: 13.5,
     fontWeight: 600,
-    outline: 'none',
     py: 0,
   },
   '& .MuiDataGrid-cellContent': {
@@ -26,9 +25,9 @@ export const platformTenantGridSx = {
     height: '100%',
   },
   '& .MuiDataGrid-row:hover': { bgcolor: brand.neutral[50] },
-  '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': { outline: 'none' },
-  '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': {
-    outline: 'none',
+  '& .MuiDataGrid-cell:focus-within, & .MuiDataGrid-columnHeader:focus-within': {
+    outline: `2px solid ${brand.magenta[500]}`,
+    outlineOffset: -2,
   },
   '& .MuiDataGrid-virtualScroller': { overflowX: 'auto' },
 }

@@ -4,8 +4,8 @@ import { BarChart } from '@mui/x-charts/BarChart'
 import { LineChart } from '@mui/x-charts/LineChart'
 import { Box, Button, Chip, Stack, Switch, Typography, useMediaQuery } from '@mui/material'
 import type { Theme } from '@mui/material/styles'
-import { useState } from 'react'
-import { useTranslations } from 'next-intl'
+import { useEffect, useState } from 'react'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
@@ -13,6 +13,7 @@ import {
   clusterLogs,
   errorNotifications,
   networkTraffic,
+  networkAverageRequestsPerMinute,
   platformHealthMetrics,
 } from '../data/platform-system-fixtures'
 import type { ClusterLogLevel } from '../types/platform-system'
@@ -25,9 +26,15 @@ const logTone: Record<ClusterLogLevel, { bgcolor: string; color: string }> = {
 
 export function PlatformSystemPage() {
   const t = useTranslations('platform.system')
+  const format = useFormatter()
   const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'))
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [logs, setLogs] = useState(clusterLogs)
+  useEffect(() => {
+    if (!autoRefresh) return
+    const interval = window.setInterval(() => setLogs([...clusterLogs]), 5000)
+    return () => window.clearInterval(interval)
+  }, [autoRefresh])
   const chartHeight = isMobile ? 230 : 190
 
   return (
@@ -49,7 +56,7 @@ export function PlatformSystemPage() {
           <Switch
             checked={autoRefresh}
             onChange={(event) => setAutoRefresh(event.target.checked)}
-            inputProps={{ 'aria-label': t('autoRefresh') }}
+            slotProps={{ input: { 'aria-label': t('autoRefresh') } }}
             size="small"
           />
         </Stack>
@@ -87,7 +94,7 @@ export function PlatformSystemPage() {
                 mt: 1.1,
               }}
             >
-              {metric.value}
+              {formatHealthMetric(metric, format.number)}
             </Typography>
             <Chip
               label={t(`metrics.${metric.id}.status`)}
@@ -127,7 +134,14 @@ export function PlatformSystemPage() {
                 {t('networkTitle')}
               </Typography>
             </Box>
-            <Typography sx={helperSx}>{t('networkAverage')}</Typography>
+            <Typography sx={helperSx}>
+              {t('networkAverage', {
+                value: format.number(networkAverageRequestsPerMinute, {
+                  notation: 'compact',
+                  maximumFractionDigits: 1,
+                }),
+              })}
+            </Typography>
           </Stack>
           <LineChart
             dataset={[...networkTraffic]}
@@ -182,7 +196,11 @@ export function PlatformSystemPage() {
                 {t('errorsTitle')}
               </Typography>
             </Box>
-            <Typography sx={helperSx}>{t('errorsTotal')}</Typography>
+            <Typography sx={helperSx}>
+              {t('errorsTotal', {
+                count: errorNotifications.reduce((sum, point) => sum + point.count, 0),
+              })}
+            </Typography>
           </Stack>
           <BarChart
             dataset={[...errorNotifications]}
@@ -221,7 +239,7 @@ export function PlatformSystemPage() {
             onClick={() => setLogs([])}
             sx={{
               color: brand.graphite[500],
-              borderColor: alpha.graphite[12],
+              borderColor: alpha.graphite[10],
               fontSize: 12,
               minHeight: 40,
               textTransform: 'none',
@@ -265,12 +283,12 @@ export function PlatformSystemPage() {
                   <Chip
                     label={log.level}
                     size="small"
-                    sx={{ ...statusChipSx, ...logTone[log.level], width: 46 }}
+                    sx={{ ...statusChipSx, ...logTone[log.level], minWidth: 58, flexShrink: 0 }}
                   />
                   <Box sx={{ ...serviceSx }}>{log.service}</Box>
                 </Stack>
                 <Typography sx={{ color: brand.graphite[500], fontSize: 12.5, minWidth: 0 }}>
-                  {log.message}
+                  {t(`logMessages.${log.message}`)}
                 </Typography>
               </Stack>
             ))}
@@ -279,6 +297,21 @@ export function PlatformSystemPage() {
       </Box>
     </Box>
   )
+}
+
+function formatHealthMetric(
+  metric: (typeof platformHealthMetrics)[number],
+  number: ReturnType<typeof useFormatter>['number'],
+) {
+  if (metric.format === 'percent') {
+    return number(metric.value, { style: 'percent', maximumFractionDigits: 1 })
+  }
+
+  if (metric.format === 'milliseconds') {
+    return number(metric.value, { style: 'unit', unit: 'millisecond', unitDisplay: 'narrow' })
+  }
+
+  return number(metric.value)
 }
 
 const panelSx = {
@@ -308,7 +341,7 @@ const cardTitleSx = {
 const helperSx = { color: brand.neutral[500], fontSize: 11.5, mt: 1.1 }
 const statusChipSx = {
   borderRadius: `${radius.sm}px`,
-  fontSize: 10.5,
+  fontSize: 11,
   fontWeight: 800,
   height: 20,
   '& .MuiChip-label': { px: 0.9 },
@@ -325,7 +358,7 @@ const serviceSx = {
   borderRadius: `${radius.sm}px`,
   color: brand.graphite[500],
   fontFamily: 'monospace',
-  fontSize: 10.5,
+  fontSize: 11,
   fontWeight: 700,
   px: 1,
   py: 0.3,

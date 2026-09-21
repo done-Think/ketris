@@ -1,7 +1,7 @@
 'use client'
 
 import { Box, Typography } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
@@ -9,6 +9,7 @@ import type { PlatformMetric } from '../types/platform-overview'
 
 export function PlatformMetricCards({ metrics }: { metrics: readonly PlatformMetric[] }) {
   const t = useTranslations('platform.overview.metrics')
+  const format = useFormatter()
 
   return (
     <Box
@@ -40,7 +41,7 @@ export function PlatformMetricCards({ metrics }: { metrics: readonly PlatformMet
           <Typography
             sx={{
               color: brand.neutral[500],
-              fontSize: 10,
+              fontSize: 11,
               fontWeight: 800,
               letterSpacing: 0.25,
               textTransform: 'uppercase',
@@ -48,7 +49,9 @@ export function PlatformMetricCards({ metrics }: { metrics: readonly PlatformMet
           >
             {t(`${metric.id}.label`)}
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.9, mt: 0.9 }}>
+          <Box
+            sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 0.9, mt: 0.9 }}
+          >
             <Typography
               sx={{
                 color: brand.graphite[500],
@@ -58,18 +61,18 @@ export function PlatformMetricCards({ metrics }: { metrics: readonly PlatformMet
                 whiteSpace: 'nowrap',
               }}
             >
-              {metric.value}
+              {formatMetricValue(metric, format.number)}
             </Typography>
             {metric.indicator && (
               <Typography
                 sx={{
                   color: metric.tone === 'success' ? brand.semantic.success : brand.neutral[500],
-                  fontSize: 10,
+                  fontSize: 11,
                   fontWeight: 800,
                   whiteSpace: 'nowrap',
                 }}
               >
-                {metric.indicator}
+                {t(`indicators.${metric.indicator}`)}
               </Typography>
             )}
           </Box>
@@ -77,4 +80,25 @@ export function PlatformMetricCards({ metrics }: { metrics: readonly PlatformMet
       ))}
     </Box>
   )
+}
+
+function formatMetricValue(
+  metric: PlatformMetric,
+  number: ReturnType<typeof useFormatter>['number'],
+) {
+  switch (metric.format) {
+    case 'compactNumber':
+      return number(metric.value, { notation: 'compact', maximumFractionDigits: 1 })
+    case 'compactCurrency':
+      return number(metric.value, {
+        notation: 'compact',
+        maximumFractionDigits: 1,
+        style: 'currency',
+        currency: 'BRL',
+      })
+    case 'percent':
+      return number(metric.value, { style: 'percent', maximumFractionDigits: 2 })
+    default:
+      return number(metric.value)
+  }
 }

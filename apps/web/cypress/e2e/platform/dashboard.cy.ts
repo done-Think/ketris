@@ -18,17 +18,17 @@ describe('Plataforma — sessão e visão cross-tenant (UI)', () => {
   })
 
   it('redireciona para /platform/login quando um visitante deslogado tenta acessar a área protegida', () => {
-    cy.visit('/platform')
-    cy.location('pathname').should('eq', '/platform/login')
+    cy.visit('/pt/platform')
+    cy.location('pathname').should('eq', '/pt/platform/login')
   })
 
   it('permite que um administrador da plataforma entre e veja o overview', () => {
-    cy.visit('/platform/login')
+    cy.visit('/pt/platform/login')
     cy.get('input[name="email"]').type(adminEmail)
     cy.get('input[name="password"]').type(adminPassword)
     cy.get('button[type="submit"]').click()
 
-    cy.location('pathname').should('eq', '/platform')
+    cy.location('pathname').should('eq', '/pt/platform')
     cy.contains('Visão geral da plataforma').should('be.visible')
     cy.contains('Tendências de crescimento').should('be.visible')
     cy.contains('Alertas do sistema').should('be.visible')
@@ -36,10 +36,14 @@ describe('Plataforma — sessão e visão cross-tenant (UI)', () => {
     cy.get('a[aria-current="page"]').contains('Visão geral').should('be.visible')
 
     cy.contains('a', 'Tenants').click()
-    cy.location('pathname').should('eq', '/platform/tenants')
+    cy.location('pathname').should('eq', '/pt/platform/tenants')
     cy.contains('h1', 'Tenants').should('be.visible')
 
-    cy.visit('/platform/admins/new')
+    cy.contains('a', 'Sistema').click()
+    cy.location('pathname').should('eq', '/pt/platform/system')
+    cy.contains('h1', 'Saúde do Sistema').should('be.visible')
+    cy.contains('a', 'Usuários').click()
+    cy.location('pathname').should('eq', '/pt/platform/admins/new')
 
     const socioEmail = `e2e-platform-socio-${Date.now()}@ketris.dev`
 
@@ -56,20 +60,20 @@ describe('Plataforma — sessão e visão cross-tenant (UI)', () => {
     const tenantSlug = `e2e-platform-tenant-${Date.now()}`
     const tenantAdminEmail = `e2e-platform-tenant-admin-${Date.now()}@ketris.dev`
 
-    cy.visit('/platform/login')
+    cy.visit('/pt/platform/login')
     cy.get('input[name="email"]').type(adminEmail)
     cy.get('input[name="password"]').type(adminPassword)
     cy.get('button[type="submit"]').click()
-    cy.location('pathname').should('eq', '/platform')
+    cy.location('pathname').should('eq', '/pt/platform')
 
-    cy.visit('/platform/tenants/new')
+    cy.visit('/pt/platform/tenants/new')
 
     cy.get('input[name="nome"]').type('Imobiliária E2E')
     cy.get('input[name="slug"]').type(tenantSlug)
     cy.get('button[type="submit"]').click()
 
     cy.location('pathname')
-      .should('match', /^\/platform\/tenants\/.+/)
+      .should('match', /^\/pt\/platform\/tenants\/.+/)
       .then((pathname) => {
         tenantId = pathname.split('/').pop() as string
       })

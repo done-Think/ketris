@@ -41,6 +41,7 @@
   "overview": {
     "title": "Platform Overview",
     "production": "Production",
+    "registeredTenants": "Registered agencies",
     "liveUtc": "Live UTC: {value}",
     "navigation": {
       "ariaLabel": "Platform navigation",
@@ -54,15 +55,33 @@
       "finance": "Finance",
       "system": "System",
       "logs": "Logs",
-      "online": "Online"
+      "online": "Online",
+      "demoNotice": "Demonstration data. This is not live monitoring."
     },
     "metrics": {
-      "tenants": { "label": "Agencies" },
-      "brokers": { "label": "Brokers" },
-      "properties": { "label": "Properties" },
-      "mrr": { "label": "MRR" },
-      "churn": { "label": "Churn" },
-      "uptime": { "label": "Platform uptime" }
+      "tenants": {
+        "label": "Agencies"
+      },
+      "brokers": {
+        "label": "Brokers"
+      },
+      "properties": {
+        "label": "Properties"
+      },
+      "mrr": {
+        "label": "MRR"
+      },
+      "churn": {
+        "label": "Churn"
+      },
+      "uptime": {
+        "label": "Platform uptime"
+      },
+      "indicators": {
+        "growth": "+15%",
+        "stable": "Stable",
+        "normal": "Normal"
+      }
     },
     "growth": {
       "title": "Growth Trends (12 Months)",
@@ -101,7 +120,9 @@
       "tenant-registration": {
         "title": "New tenant registration",
         "description": "Vanguard Hub completed basic setup."
-      }
+      },
+      "minutesAgo": "{count} min ago",
+      "hoursAgo": "{count} h ago"
     },
     "recentTenants": {
       "title": "Recent tenants",
@@ -118,7 +139,11 @@
         "proGrowth": "Pro Growth",
         "starterPack": "Starter Pack"
       },
-      "statuses": { "active": "Active", "provisioning": "Provisioning", "suspended": "Suspended" }
+      "statuses": {
+        "active": "Active",
+        "provisioning": "Provisioning",
+        "suspended": "Suspended"
+      }
     }
   },
   "tenant": {
@@ -135,7 +160,12 @@
     "statusFilterLabel": "Filter by status",
     "newTenant": "New Tenant",
     "activeBadge": "Active",
-    "metrics": { "total": "Total", "starter": "Starter", "pro": "Pro", "enterprise": "Enterprise" },
+    "metrics": {
+      "total": "Total",
+      "starter": "Starter",
+      "pro": "Pro",
+      "enterprise": "Enterprise"
+    },
     "tableLabel": "Tenants table",
     "columns": {
       "name": "Name",
@@ -147,7 +177,12 @@
       "createdAt": "Created",
       "actions": "Actions"
     },
-    "plans": { "all": "All", "starter": "Starter", "pro": "Pro", "enterprise": "Enterprise" },
+    "plans": {
+      "all": "All",
+      "starter": "Starter",
+      "pro": "Pro",
+      "enterprise": "Enterprise"
+    },
     "statuses": {
       "all": "All",
       "active": "Active",
@@ -161,25 +196,52 @@
     "next": "Next",
     "empty": "No tenants found.",
     "editAction": "Edit {name}",
-    "moreActions": "More actions for {name}"
+    "moreActions": "More actions for {name}",
+    "edit": "Edit",
+    "editTitle": "Edit demo tenant",
+    "editDescription": "Changes are local and will be discarded when you reload the page.",
+    "save": "Save",
+    "cancel": "Cancel",
+    "nameRequired": "Enter a name.",
+    "metricBadge": "Tenants"
   },
   "system": {
     "title": "System Health",
     "autoRefresh": "Auto-refresh (5s)",
     "networkEyebrow": "NETWORK TRAFFIC",
     "networkTitle": "Request Volume (24h)",
-    "networkAverage": "Average: 14.8k req/min",
+    "networkAverage": "Average: {value} req/min",
     "errorsEyebrow": "ERROR NOTIFICATIONS",
     "errorsTitle": "Error Occurrences (12h)",
-    "errorsTotal": "Total: 172 failures",
+    "errorsTotal": "Total: {count} failures",
     "logsTitle": "Recent Cluster Activity (Log Console)",
     "clearConsole": "Clear Console",
     "emptyConsole": "Console cleared.",
     "metrics": {
-      "gateway": { "label": "API Gateway", "status": "Healthy" },
-      "database": { "label": "Database", "status": "Stable Latency" },
-      "storage": { "label": "Storage", "status": "Limited Space" },
-      "queue": { "label": "Task Queue", "status": "Processing" }
+      "gateway": {
+        "label": "API Gateway",
+        "status": "Healthy"
+      },
+      "database": {
+        "label": "Database",
+        "status": "Stable Latency"
+      },
+      "storage": {
+        "label": "Storage",
+        "status": "Limited Space"
+      },
+      "queue": {
+        "label": "Task Queue",
+        "status": "Processing"
+      }
+    },
+    "logMessages": {
+      "authentication": "Successful authentication for tenant 'Silva & Associados'",
+      "rateLimit": "Request rejected because the Starter plan rate limit was exceeded",
+      "payment": "Recurring payment synchronization failed (Billing gateway)",
+      "import": "Completed processing of 140 property records from a spreadsheet",
+      "backup": "Scheduled backup completed successfully on the secondary cluster",
+      "connection": "Critical connection error on the data read replica"
     }
   },
   "newAdmin": {
@@ -205,5 +267,11 @@
     "createTenantAdminSubmit": "Create agency administrator",
     "createTenantAdminError": "Could not create the agency administrator. Try again.",
     "createTenantAdminSuccess": "Administrator {email} created successfully."
+  },
+  "table": {
+    "first": "First page",
+    "last": "Last page",
+    "next": "Next page",
+    "previous": "Previous page"
   }
 }

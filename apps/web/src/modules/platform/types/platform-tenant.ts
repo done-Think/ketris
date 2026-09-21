@@ -8,7 +8,7 @@ export interface PlatformTenant {
   plan: PlatformTenantPlan
   brokers: number
   properties: number
-  mrr: string
+  mrr: number
   status: PlatformTenantStatus
   createdAt: string
 }
@@ -16,4 +16,10 @@ export interface PlatformTenant {
 export interface PlatformTenantMetric {
   id: PlatformTenantPlan | 'total'
   value: string
+}
+
+export interface PlatformTenantEditDialogProps {
+  tenant: PlatformTenant
+  onClose: () => void
+  onSave: (tenant: PlatformTenant) => void
 }

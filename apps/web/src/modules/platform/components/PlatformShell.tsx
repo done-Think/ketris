@@ -16,21 +16,22 @@ import { useTranslations } from 'next-intl'
 
 import { Link, usePathname } from '@/i18n/navigation'
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
+import { DashboardNotificationsButton } from '@shared/components/layout'
 import { AppLogo } from '@shared/components/ui'
-import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
 const sidebarWidth = 200
 
 type NavigationItem = {
   label: 'overview' | 'tenants' | 'users' | 'plans' | 'finance' | 'system' | 'logs'
   icon: SvgIconComponent
-  href?: '/platform' | '/platform/tenants' | '/platform/system'
+  href?: '/platform' | '/platform/tenants' | '/platform/system' | '/platform/admins/new'
 }
 
 const navigationItems: readonly NavigationItem[] = [
   { label: 'overview', icon: HomeOutlinedIcon, href: '/platform' },
   { label: 'tenants', icon: ApartmentOutlinedIcon, href: '/platform/tenants' },
-  { label: 'users', icon: PeopleOutlineIcon },
+  { label: 'users', icon: PeopleOutlineIcon, href: '/platform/admins/new' },
   { label: 'plans', icon: SellOutlinedIcon },
   { label: 'finance', icon: AccountBalanceWalletOutlinedIcon },
   { label: 'system', icon: SettingsOutlinedIcon, href: '/platform/system' },
@@ -64,6 +65,7 @@ export function PlatformShell({ children }: { children: ReactNode }) {
             lineHeight: 1,
             px: 0.7,
             py: 0.45,
+            whiteSpace: 'nowrap',
           }}
         >
           {t('admin')}
@@ -81,7 +83,9 @@ export function PlatformShell({ children }: { children: ReactNode }) {
 
       <Stack component="nav" spacing={0.55} aria-label={t('ariaLabel')}>
         {navigationItems.map(({ label, icon: Icon, href }) => {
-          const active = href === pathname
+          const active =
+            href === pathname ||
+            (href === '/platform/tenants' && pathname.startsWith('/platform/tenants/'))
           const content = (
             <>
               <Icon sx={{ fontSize: iconSize.lg }} />
@@ -159,49 +163,64 @@ export function PlatformShell({ children }: { children: ReactNode }) {
         component="header"
         direction="row"
         alignItems="center"
+        justifyContent="space-between"
         sx={{
           display: { xs: 'flex', md: 'none' },
           position: 'fixed',
           inset: '0 0 auto 0',
           zIndex: 20,
-          height: 68,
+          height: 64,
+          minHeight: 64,
+          maxHeight: 64,
+          overflow: 'hidden',
           px: 2,
-          bgcolor: brand.graphite[800],
-          color: surface.lightText,
+          bgcolor: surface.paper,
+          color: brand.graphite[500],
+          boxShadow: shadows.crmMobileHeader,
         }}
       >
-        <Tooltip title={t('openNavigation')}>
-          <IconButton
-            aria-label={t('openNavigation')}
-            onClick={() => setMobileOpen(true)}
-            sx={{ color: 'inherit' }}
-          >
-            <MenuRoundedIcon />
-          </IconButton>
-        </Tooltip>
-        <AppLogo src={ketrisLogoFooter} variant="transparent" width={76} sx={{ mb: 0, ml: 1 }} />
-        <Typography
+        <AppLogo
+          src={ketrisLogoFooter}
+          variant="transparent"
+          width={42}
           sx={{
-            bgcolor: brand.magenta[500],
-            borderRadius: `${radius.sm}px`,
-            fontSize: 10,
-            fontWeight: 900,
-            lineHeight: 1,
-            ml: 'auto',
-            px: 0.65,
-            py: 0.45,
+            height: 42,
+            overflow: 'hidden',
+            '& img': {
+              width: 112,
+              maxWidth: 'none',
+            },
           }}
-        >
-          {t('admin')}
-        </Typography>
+        />
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <DashboardNotificationsButton notifications={[]} />
+          <Tooltip title={t('openNavigation')}>
+            <IconButton
+              aria-label={t('openNavigation')}
+              onClick={() => setMobileOpen(true)}
+              sx={{
+                width: 42,
+                height: 42,
+                border: '1px solid',
+                borderColor: alpha.graphite[8],
+                borderRadius: `${radius.sm}px`,
+                color: brand.graphite[500],
+              }}
+            >
+              <MenuRoundedIcon sx={{ fontSize: iconSize.xl }} />
+            </IconButton>
+          </Tooltip>
+        </Stack>
       </Stack>
       <Drawer
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
         ModalProps={{ keepMounted: true }}
-        PaperProps={{
-          sx: { width: 'min(280px, calc(100vw - 48px))', border: 0 },
-          'aria-label': t('ariaLabel'),
+        slotProps={{
+          paper: {
+            sx: { width: 'min(280px, calc(100vw - 48px))', border: 0 },
+            'aria-label': t('ariaLabel'),
+          },
         }}
       >
         {sidebar(true)}
@@ -211,10 +230,27 @@ export function PlatformShell({ children }: { children: ReactNode }) {
         sx={{
           width: { xs: '100%', md: `calc(100% - ${sidebarWidth}px)` },
           ml: { md: `${sidebarWidth}px` },
-          pt: { xs: '68px', md: 0 },
+          pt: { xs: '64px', md: 0 },
           minWidth: 0,
+          '& :focus-visible, & .Mui-focusVisible': {
+            outline: `2px solid ${brand.magenta[500]}`,
+            outlineOffset: 2,
+          },
         }}
       >
+        {['/platform', '/platform/tenants', '/platform/system'].includes(pathname) && (
+          <Typography
+            sx={{
+              px: { xs: 2, md: 3, lg: 4 },
+              pt: { xs: 1.5, md: 1 },
+              fontSize: 12,
+              lineHeight: { xs: 1.4, md: 'inherit' },
+              color: brand.neutral[500],
+            }}
+          >
+            {t('demoNotice')}
+          </Typography>
+        )}
         {children}
       </Box>
     </Box>
@@ -233,6 +269,7 @@ function navItemSx(active: boolean) {
     minHeight: 42,
     px: 1,
     textDecoration: 'none',
+    '&:focus-visible': { outline: `2px solid ${brand.magenta[300]}`, outlineOffset: 2 },
     '&:hover': active ? { bgcolor: 'rgba(243, 2, 116, 0.25)' } : undefined,
   }
 }

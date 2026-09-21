@@ -63,7 +63,9 @@ export function PlatformSystemAlerts({ alerts }: { alerts: readonly PlatformAler
                 {t(`${alert.id}.title`)}
               </Typography>
               <Typography sx={{ color: brand.neutral[500], fontSize: 10.5, whiteSpace: 'nowrap' }}>
-                {alert.time}
+                {alert.elapsedMinutes < 60
+                  ? t('minutesAgo', { count: alert.elapsedMinutes })
+                  : t('hoursAgo', { count: alert.elapsedMinutes / 60 })}
               </Typography>
             </Stack>
             <Typography sx={{ color: brand.neutral[500], fontSize: 11, lineHeight: 1.4, mt: 0.45 }}>

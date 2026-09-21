@@ -7,12 +7,12 @@ import type {
 
 /** Demonstration-only content for the Platform Overview. */
 export const platformMetrics: readonly PlatformMetric[] = [
-  { id: 'tenants', value: '45' },
-  { id: 'brokers', value: '680' },
-  { id: 'properties', value: '12.4k' },
-  { id: 'mrr', value: 'R$ 89.6k', indicator: '+15%', tone: 'success' },
-  { id: 'churn', value: '2.1%', indicator: 'Stable', tone: 'success' },
-  { id: 'uptime', value: '99.97%', indicator: 'Normal', tone: 'success' },
+  { id: 'tenants', value: 45, format: 'number' },
+  { id: 'brokers', value: 680, format: 'number' },
+  { id: 'properties', value: 12_400, format: 'compactNumber' },
+  { id: 'mrr', value: 89_600, format: 'compactCurrency', indicator: 'growth', tone: 'success' },
+  { id: 'churn', value: 0.021, format: 'percent', indicator: 'stable', tone: 'success' },
+  { id: 'uptime', value: 0.9997, format: 'percent', indicator: 'normal', tone: 'success' },
 ]
 
 export const growthTrend: readonly GrowthTrendPoint[] = [
@@ -31,10 +31,10 @@ export const growthTrend: readonly GrowthTrendPoint[] = [
 ]
 
 export const platformAlerts: readonly PlatformAlert[] = [
-  { id: 'backup', time: '2m ago', tone: 'error' },
-  { id: 'cpu', time: '15m ago', tone: 'warning' },
-  { id: 'ssl', time: '1h ago', tone: 'info' },
-  { id: 'tenant-registration', time: '3h ago', tone: 'info' },
+  { id: 'backup', elapsedMinutes: 2, tone: 'error' },
+  { id: 'cpu', elapsedMinutes: 15, tone: 'warning' },
+  { id: 'ssl', elapsedMinutes: 60, tone: 'info' },
+  { id: 'tenant-registration', elapsedMinutes: 180, tone: 'info' },
 ]
 
 export const recentTenants: readonly RecentTenant[] = [
