@@ -159,6 +159,7 @@
       "eyebrow": "New sales contact",
       "title": "Register lead",
       "success": "Lead registered successfully.",
+      "error": "Could not register the lead. Please try again.",
       "steps": {
         "contact": "Contact",
         "interest": "Interest",
@@ -171,8 +172,6 @@
         "interest": "Property or interest",
         "budget": "Budget",
         "source": "Source",
-        "broker": "Responsible broker",
-        "stage": "Initial status",
         "notes": "Notes"
       },
       "sources": {
@@ -195,8 +194,7 @@
         "emailInvalid": "Enter a valid email",
         "interestRequired": "Enter the property or interest",
         "budgetRequired": "Enter the budget",
-        "sourceRequired": "Enter the source",
-        "brokerRequired": "Enter the responsible broker"
+        "sourceRequired": "Enter the source"
       }
     },
     "filters": {
@@ -217,13 +215,27 @@
     },
     "contact": {
       "eyebrow": "Lead contact",
+      "stageLabel": "Stage",
       "phoneLabel": "Phone",
       "call": "Call",
       "whatsApp": "WhatsApp",
       "cancel": "Close",
       "close": "Close lead contact",
       "emailLabel": "Email",
-      "email": "Email"
+      "email": "Email",
+      "convert": "Convert to opportunity",
+      "alreadyConverted": "Already converted"
+    },
+    "convert": {
+      "eyebrow": "Convert lead",
+      "title": "Convert {name} to opportunity",
+      "close": "Close lead conversion",
+      "proposedValue": "Proposed value",
+      "proposedValueInvalid": "Enter a valid value",
+      "cancel": "Cancel",
+      "confirm": "Convert",
+      "success": "Lead converted to opportunity.",
+      "error": "Could not convert the lead. Please try again."
     },
     "pagination": {
       "pageAriaLabel": "Go to page {page}"

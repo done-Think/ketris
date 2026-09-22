@@ -8,6 +8,9 @@
     },
     "create": {
       "metadataTitle": "Ketris | Cadastrar Imóvel"
+    },
+    "edit": {
+      "metadataTitle": "Ketris | Editar Imóvel"
     }
   },
   "dashboard": {
@@ -24,8 +27,8 @@
       "broker": "Corretor",
       "updated": "Atualizado",
       "actions": "Ações",
-      "editAriaLabel": "Editar {title}",
       "viewAriaLabel": "Visualizar {title}",
+      "moreActionsAriaLabel": "Mais ações de {title}",
       "noRows": "Nenhum imóvel encontrado",
       "totalRows": "Total de linhas:",
       "rowsPerPage": "Linhas por página",
@@ -76,6 +79,20 @@
       "media": "Mídia",
       "values": "Valores",
       "history": "Histórico"
+    },
+    "publish": "Publicar",
+    "delete": "Excluir",
+    "publishSuccess": "Imóvel publicado com sucesso.",
+    "publishError": "Não foi possível publicar o imóvel. Tente novamente.",
+    "unpublishSuccess": "Imóvel despublicado com sucesso.",
+    "unpublishError": "Não foi possível despublicar o imóvel. Tente novamente.",
+    "deleteSuccess": "Imóvel excluído com sucesso.",
+    "deleteError": "Não foi possível excluir o imóvel. Tente novamente.",
+    "deleteDialog": {
+      "title": "Excluir imóvel",
+      "description": "Tem certeza que deseja excluir \"{title}\"? Essa ação é permanente e não pode ser desfeita. Se o imóvel tiver propostas ou contratos vinculados, a exclusão será bloqueada.",
+      "confirm": "Excluir",
+      "cancel": "Cancelar"
     }
   },
   "create": {
@@ -135,15 +152,23 @@
       "Aceita pets": "Aceita pets",
       "Portaria 24h": "Portaria 24h"
     },
-    "mediaSlots": {
-      "Foto principal": "Foto principal",
-      "Galeria": "Galeria",
-      "Planta baixa": "Planta baixa"
-    },
+    "mediaDropzone": "Arraste imagens aqui ou clique para selecionar",
+    "mediaUploading": "Enviando...",
+    "mediaRemove": "Remover imagem",
+    "mediaUploadError": "Não foi possível enviar a imagem. Tente novamente.",
     "publishingOptions": {
       "Publicar no marketplace após revisão": "Publicar no marketplace após revisão",
       "Permitir contato por WhatsApp": "Permitir contato por WhatsApp",
       "Destacar imóvel na listagem inicial": "Destacar imóvel na listagem inicial"
-    }
+    },
+    "createSuccess": "Imóvel cadastrado com sucesso.",
+    "createError": "Não foi possível cadastrar o imóvel. Tente novamente."
+  },
+  "edit": {
+    "title": "Editar imóvel",
+    "mobileTitle": "Editar Imóvel",
+    "save": "Salvar alterações",
+    "updateSuccess": "Imóvel atualizado com sucesso.",
+    "updateError": "Não foi possível salvar as alterações. Tente novamente."
   }
 }

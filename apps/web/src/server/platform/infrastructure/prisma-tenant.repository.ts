@@ -43,4 +43,17 @@ export class PrismaTenantRepository implements TenantRepository {
 
     return toDomainTenantSummary(tenant)
   }
+
+  async searchByName(query: string, excludeSlugs: string[]): Promise<TenantSummary[]> {
+    const tenants = await prisma.tenant.findMany({
+      where: {
+        nome: { contains: query, mode: 'insensitive' },
+        slug: { notIn: excludeSlugs },
+      },
+      orderBy: { nome: 'asc' },
+      take: 20,
+    })
+
+    return tenants.map(toDomainTenantSummary)
+  }
 }

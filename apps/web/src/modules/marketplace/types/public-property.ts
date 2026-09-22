@@ -26,6 +26,35 @@ export interface ListPropertiesResponse {
   properties: PublicPropertySummary[]
 }
 
+export interface PublicPropertyAddress {
+  street: string
+  number: string
+  complement: string | null
+  neighborhood: string
+  city: string
+  state: string
+  zipCode: string
+  latitude: number | null
+  longitude: number | null
+}
+
+export interface PublicPropertyMedia {
+  id: string
+  url: string
+  type: string
+  order: number
+}
+
+export interface PublicPropertyDetail extends PublicPropertySummary {
+  description: string | null
+  address: PublicPropertyAddress | null
+  media: PublicPropertyMedia[]
+}
+
+export interface PropertyDetailResponse {
+  property: PublicPropertyDetail
+}
+
 export type PropertySortOption = 'recent' | 'priceAsc' | 'priceDesc'
 
 export interface SearchPropertiesFilters {

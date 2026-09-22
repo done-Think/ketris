@@ -46,6 +46,9 @@ export const crmQueryKeys = {
     [...crmQueryKeys.propertyTenant(tenantId), 'detail'] as const,
   propertyDetail: (tenantId: string, propertyId: string) =>
     [...crmQueryKeys.propertyDetails(tenantId), propertyId] as const,
+  leads: () => [...crmQueryKeys.all, 'leads'] as const,
+  leadsTenant: (tenantId: string) => [...crmQueryKeys.leads(), tenantId] as const,
+  leadsList: (tenantId: string) => [...crmQueryKeys.leadsTenant(tenantId), 'list'] as const,
 }
 
 export function useOpportunities(

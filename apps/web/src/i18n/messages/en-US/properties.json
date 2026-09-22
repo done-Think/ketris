@@ -8,6 +8,9 @@
     },
     "create": {
       "metadataTitle": "Ketris | List Property"
+    },
+    "edit": {
+      "metadataTitle": "Ketris | Edit Property"
     }
   },
   "dashboard": {
@@ -24,8 +27,8 @@
       "broker": "Broker",
       "updated": "Updated",
       "actions": "Actions",
-      "editAriaLabel": "Edit {title}",
       "viewAriaLabel": "View {title}",
+      "moreActionsAriaLabel": "More actions for {title}",
       "noRows": "No properties found",
       "totalRows": "Total rows:",
       "rowsPerPage": "Rows per page",
@@ -76,6 +79,20 @@
       "media": "Media",
       "values": "Values",
       "history": "History"
+    },
+    "publish": "Publish",
+    "delete": "Delete",
+    "publishSuccess": "Property published successfully.",
+    "publishError": "Could not publish the property. Please try again.",
+    "unpublishSuccess": "Property unpublished successfully.",
+    "unpublishError": "Could not unpublish the property. Please try again.",
+    "deleteSuccess": "Property deleted successfully.",
+    "deleteError": "Could not delete the property. Please try again.",
+    "deleteDialog": {
+      "title": "Delete property",
+      "description": "Are you sure you want to delete \"{title}\"? This action is permanent and cannot be undone. If the property has linked proposals or contracts, deletion will be blocked.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
     }
   },
   "create": {
@@ -135,15 +152,23 @@
       "Aceita pets": "Pet friendly",
       "Portaria 24h": "24h concierge"
     },
-    "mediaSlots": {
-      "Foto principal": "Main photo",
-      "Galeria": "Gallery",
-      "Planta baixa": "Floor plan"
-    },
+    "mediaDropzone": "Drag images here or click to select",
+    "mediaUploading": "Uploading...",
+    "mediaRemove": "Remove image",
+    "mediaUploadError": "Could not upload the image. Please try again.",
     "publishingOptions": {
       "Publicar no marketplace após revisão": "Publish on the marketplace after review",
       "Permitir contato por WhatsApp": "Allow WhatsApp contact",
       "Destacar imóvel na listagem inicial": "Feature property in the initial listing"
-    }
+    },
+    "createSuccess": "Property created successfully.",
+    "createError": "Could not create the property. Please try again."
+  },
+  "edit": {
+    "title": "Edit property",
+    "mobileTitle": "Edit Property",
+    "save": "Save changes",
+    "updateSuccess": "Property updated successfully.",
+    "updateError": "Could not save the changes. Please try again."
   }
 }

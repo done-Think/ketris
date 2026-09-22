@@ -13,21 +13,22 @@ const owner: User = {
   senhaHash: 'hash-fake',
   papel: 'OWNER',
   ativo: true,
+  vinculoAprovadoEm: new Date(),
 }
 
 function createDeps(overrides?: {
   findById?: UserRepository['findById']
-  findByEmailAndTenant?: UserRepository['findByEmailAndTenant']
+  findByEmail?: UserRepository['findByEmail']
   update?: UserRepository['update']
 }) {
   const userRepository: UserRepository = {
     findById: overrides?.findById ?? vi.fn().mockResolvedValue(owner),
-    findByEmail: vi.fn(),
-    findByEmailAndTenant: overrides?.findByEmailAndTenant ?? vi.fn().mockResolvedValue(null),
+    findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(null),
     findManyByTenant: vi.fn(),
     create: vi.fn(),
     update: overrides?.update ?? vi.fn().mockResolvedValue({ ...owner, nome: 'Atualizado' }),
     deactivate: vi.fn(),
+    approveMembership: vi.fn(),
   }
 
   return { userRepository }
@@ -77,9 +78,9 @@ describe('UpdateUserUseCase', () => {
     ).rejects.toThrow(UserNotFoundError)
   })
 
-  it('lança EmailAlreadyInUseError quando o novo e-mail já pertence a outro usuário do tenant', async () => {
+  it('lança EmailAlreadyInUseError quando o novo e-mail já pertence a outro usuário (em qualquer tenant)', async () => {
     const deps = createDeps({
-      findByEmailAndTenant: vi.fn().mockResolvedValue({ ...owner, id: 'outro-id' }),
+      findByEmail: vi.fn().mockResolvedValue({ ...owner, id: 'outro-id' }),
     })
     const useCase = new UpdateUserUseCase(deps.userRepository)
 
@@ -105,6 +106,6 @@ describe('UpdateUserUseCase', () => {
       email: owner.email,
     })
 
-    expect(deps.userRepository.findByEmailAndTenant).not.toHaveBeenCalled()
+    expect(deps.userRepository.findByEmail).not.toHaveBeenCalled()
   })
 })

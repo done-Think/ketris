@@ -12,7 +12,6 @@ const validLeadValues = {
   interest: 'Apartamento 3 quartos nos Jardins',
   budget: 'R$ 4.5M',
   source: 'Marketplace',
-  broker: 'Marina Costa',
 }
 
 describe('createLeadSchema', () => {
@@ -41,10 +40,6 @@ describe('createLeadSchema', () => {
         phone: '',
       }).success,
     ).toBe(false)
-  })
-
-  it('rejects an unsupported lead stage', () => {
-    expect(schema.safeParse({ ...validLeadValues, stage: 'Fechado' }).success).toBe(false)
   })
 
   it('routes each validation message through the translator with the right key', () => {

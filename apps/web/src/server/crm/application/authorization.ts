@@ -1,6 +1,6 @@
 import type { Papel } from '@server/auth/domain/user.entity'
 
-import { ContactNotFoundError, OpportunityNotFoundError } from '../domain/errors'
+import { ContactNotFoundError, LeadNotFoundError, OpportunityNotFoundError } from '../domain/errors'
 import type { OpportunityRepository } from './ports/opportunity-repository.port'
 import type { PropertyLookupPort } from './ports/property-lookup.port'
 
@@ -16,7 +16,8 @@ export async function assertAgentOwnsProperty(
   actorId: string,
   actorPapel: Papel,
 ): Promise<void> {
-  if (actorPapel !== 'AGENT') return
+  if (actorPapel === 'ADMIN' || actorPapel === 'OWNER') return
+  if (actorPapel !== 'AGENT') throw new OpportunityNotFoundError()
 
   const responsavelId = await propertyLookup.findResponsavelId(tenantId, propertyId)
 
@@ -31,9 +32,22 @@ export async function assertAgentOwnsContact(
   actorId: string,
   actorPapel: Papel,
 ): Promise<void> {
-  if (actorPapel !== 'AGENT') return
+  if (actorPapel === 'ADMIN' || actorPapel === 'OWNER') return
+  if (actorPapel !== 'AGENT') throw new ContactNotFoundError()
 
   const hasAccess = await opportunityRepository.existsForAgent(tenantId, contactId, actorId)
 
   if (!hasAccess) throw new ContactNotFoundError()
+}
+
+/**
+ * ADMIN/OWNER manage every lead in their tenant. An AGENT only manages the leads they're
+ * `responsavelId` for. Everyone else gets the same opaque not-found used for cross-tenant access.
+ * Mirrors `assertPropertyAccess` in `@server/properties/application/authorization`.
+ */
+export function assertLeadAccess(responsavelId: string, actorId: string, actorPapel: Papel): void {
+  if (actorPapel === 'ADMIN' || actorPapel === 'OWNER') return
+  if (actorPapel === 'AGENT' && responsavelId === actorId) return
+
+  throw new LeadNotFoundError()
 }

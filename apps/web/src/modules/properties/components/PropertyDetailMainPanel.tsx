@@ -32,19 +32,21 @@ export function PropertyDetailMainPanel({ property, activeTab }: PropertyDetailM
   if (activeTab === 'data') {
     return (
       <>
-        <Box
-          component="img"
-          src={property.heroImageUrl}
-          alt=""
-          sx={{
-            display: 'block',
-            width: '100%',
-            height: { xs: 260, md: 430 },
-            objectFit: 'cover',
-            borderRadius: `${radius.md}px`,
-            mb: 3.2,
-          }}
-        />
+        {property.heroImageUrl ? (
+          <Box
+            component="img"
+            src={property.heroImageUrl}
+            alt=""
+            sx={{
+              display: 'block',
+              width: '100%',
+              height: { xs: 260, md: 430 },
+              objectFit: 'cover',
+              borderRadius: `${radius.md}px`,
+              mb: 3.2,
+            }}
+          />
+        ) : null}
 
         <Box
           sx={{
