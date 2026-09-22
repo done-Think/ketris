@@ -15,6 +15,9 @@
     "leads": {
       "metadataTitle": "Ketris | Leads"
     },
+    "team": {
+      "metadataTitle": "Ketris | Team"
+    },
     "proposals": {
       "metadataTitle": "Ketris | Proposals"
     }
@@ -201,6 +204,50 @@
       "clientLabel": "Client",
       "amountLabel": "Amount",
       "receiptsTitle": "Receipts"
+    }
+  },
+  "team": {
+    "title": "Broker Team",
+    "subtitle": "Track sales, follow-ups, and monthly goal progress by representative.",
+    "searchPlaceholder": "Search broker...",
+    "inviteBroker": "Invite broker",
+    "moreOptions": "More options",
+    "viewProfileAriaLabel": "View {name}'s profile",
+    "goalProgress": "Goal progress",
+    "returns": "{count} follow-ups",
+    "empty": "No broker found.",
+    "kpis": {
+      "activeBrokers": "Active brokers",
+      "properties": "Properties",
+      "monthlySales": "Monthly sales",
+      "averageGoal": "Average goal",
+      "activeBrokersHelper": "+2 in onboarding",
+      "propertiesHelper": "Active portfolio",
+      "monthlySalesHelper": "Monthly output",
+      "averageGoalHelper": "Consolidated goal"
+    },
+    "metrics": {
+      "properties": "Properties",
+      "leads": "Leads",
+      "monthlySales": "Sales/mo"
+    },
+    "statuses": {
+      "ahead": "Ahead of goal",
+      "onTrack": "On track",
+      "attention": "Needs attention"
+    },
+    "menu": {
+      "performance": "View performance",
+      "editGoal": "Edit monthly goal",
+      "transferPortfolio": "Transfer leads/properties",
+      "scheduleOneOnOne": "Schedule 1:1",
+      "deactivate": "Pause/deactivate broker",
+      "feedback": "{action} for {name}"
+    },
+    "actions": {
+      "message": "Send message",
+      "email": "Send email",
+      "call": "Call"
     }
   },
   "proposals": {

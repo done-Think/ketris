@@ -60,6 +60,7 @@ export const routing = defineRouting({
     '/dashboard/proposals': '/dashboard/proposals',
     '/dashboard/public-profile': '/dashboard/public-profile',
     '/dashboard/public-profile/agency': '/dashboard/public-profile/agency',
+    '/dashboard/team': '/dashboard/team',
     '/platform': '/platform',
     '/platform/admins/new': '/platform/admins/new',
     '/platform/login': '/platform/login',
