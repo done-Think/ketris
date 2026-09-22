@@ -157,6 +157,7 @@
       "eyebrow": "Novo contato comercial",
       "title": "Registrar lead",
       "success": "Lead registrado com sucesso.",
+      "error": "Não foi possível registrar o lead. Tente novamente.",
       "steps": {
         "contact": "Contato",
         "interest": "Interesse",
@@ -169,8 +170,6 @@
         "interest": "Imóvel ou interesse",
         "budget": "Orçamento",
         "source": "Origem",
-        "broker": "Corretor responsável",
-        "stage": "Status inicial",
         "notes": "Observações"
       },
       "sources": {
@@ -193,8 +192,7 @@
         "emailInvalid": "Informe um e-mail válido",
         "interestRequired": "Informe o imóvel ou interesse",
         "budgetRequired": "Informe o orçamento",
-        "sourceRequired": "Informe a origem",
-        "brokerRequired": "Informe o corretor responsável"
+        "sourceRequired": "Informe a origem"
       }
     },
     "filters": {
@@ -215,13 +213,27 @@
     },
     "contact": {
       "eyebrow": "Contato do lead",
+      "stageLabel": "Estágio",
       "phoneLabel": "Telefone",
       "call": "Ligar",
       "whatsApp": "WhatsApp",
       "cancel": "Fechar",
       "close": "Fechar contato do lead",
       "emailLabel": "E-mail",
-      "email": "E-mail"
+      "email": "E-mail",
+      "convert": "Converter em oportunidade",
+      "alreadyConverted": "Já convertido"
+    },
+    "convert": {
+      "eyebrow": "Converter lead",
+      "title": "Converter {name} em oportunidade",
+      "close": "Fechar conversão de lead",
+      "proposedValue": "Valor proposto",
+      "proposedValueInvalid": "Informe um valor válido",
+      "cancel": "Cancelar",
+      "confirm": "Converter",
+      "success": "Lead convertido em oportunidade.",
+      "error": "Não foi possível converter o lead. Tente novamente."
     },
     "pagination": {
       "pageAriaLabel": "Ir para a página {page}"

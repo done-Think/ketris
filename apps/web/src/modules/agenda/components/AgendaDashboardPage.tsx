@@ -3,21 +3,31 @@
 import { Box, Stack } from '@mui/material'
 import dayjs from 'dayjs'
 import 'dayjs/locale/pt-br'
+import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 import { useSnackbar } from 'notistack'
 
-import { dashboardProperties } from '@modules/properties/data/dashboard-properties'
+import { useProperties } from '@modules/properties/hooks/use-properties'
 import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
 
-import { agendaTimeSlots, getAgendaEvents } from '../data/agenda-events'
+import { agendaTimeSlots } from '../data/agenda-events'
+import {
+  useAgendaEvents,
+  useCancelAgendaEvent,
+  useCreateAgendaEvent,
+  useRescheduleAgendaEvent,
+  useUpdateAgendaEvent,
+} from '../hooks/use-agenda-events'
 import { agendaOtherPropertyValue } from '../schemas/agenda-event-form-schema'
 import type {
   AgendaEvent,
+  AgendaEventApiKind,
   AgendaEventFormValues,
   AgendaPropertyOption,
-  AgendaRescheduleFormValues,
 } from '../types/agenda-event'
+import { errorMessage } from '../utils/error-message'
+import { toAgendaEvent } from '../utils/map-agenda-event'
 import { AgendaDashboardHeader } from './agenda-dashboard/AgendaDashboardHeader'
 import { AgendaWeekCalendar } from './agenda-dashboard/AgendaWeekCalendar'
 import {
@@ -32,33 +42,58 @@ import { AgendaEventFormDialog } from './AgendaEventFormDialog'
 export function AgendaDashboardPage() {
   const t = useTranslations('agenda.dashboard')
   const { enqueueSnackbar } = useSnackbar()
-  const initialEvents = useMemo(() => getAgendaEvents(t), [t])
-  const [events, setEvents] = useState<AgendaEvent[]>(initialEvents)
+  const { data: session } = useSession()
+  const tenantId = session?.tenantId ?? ''
   const [isEventFormOpen, setIsEventFormOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null)
   const today = useMemo(() => dayjs().locale('pt-br').startOf('day'), [])
-  const currentMonthEnd = useMemo(() => today.endOf('month'), [today])
+  const scheduleHorizonEnd = useMemo(() => today.add(6, 'month').endOf('month'), [today])
   const [weekStartDate, setWeekStartDate] = useState(() => today)
   const agendaDays = useMemo(() => buildAgendaCalendarDays(weekStartDate), [weekStartDate])
+
+  const propertiesQuery = useProperties()
   const propertyOptions = useMemo<AgendaPropertyOption[]>(
     () =>
-      dashboardProperties.map((property) => ({
+      (propertiesQuery.data ?? []).map((property) => ({
         href: `/dashboard/properties/${property.id}`,
         id: property.id,
-        label: `${property.title} - ${property.location}`,
+        label: property.address
+          ? `${property.title} - ${property.address.neighborhood}, ${property.address.city}`
+          : property.title,
       })),
-    [],
+    [propertiesQuery.data],
   )
+  const propertiesById = useMemo<Record<string, AgendaPropertyOption>>(
+    () => Object.fromEntries(propertyOptions.map((option) => [option.id, option])),
+    [propertyOptions],
+  )
+
+  const eventsQuery = useAgendaEvents(
+    tenantId,
+    today.toISOString(),
+    scheduleHorizonEnd.toISOString(),
+  )
+  const events = useMemo(
+    () =>
+      (eventsQuery.data ?? [])
+        .filter((event) => event.status !== 'CANCELLED')
+        .map((event) => toAgendaEvent(event, propertiesById)),
+    [eventsQuery.data, propertiesById],
+  )
+  const createAgendaEventMutation = useCreateAgendaEvent(tenantId)
+  const updateAgendaEventMutation = useUpdateAgendaEvent(tenantId)
+  const rescheduleAgendaEventMutation = useRescheduleAgendaEvent(tenantId)
+  const cancelAgendaEventMutation = useCancelAgendaEvent(tenantId)
+
   const weekRange = getAgendaWeekRange(agendaDays)
   const notifications = useMemo(
     () => getAgendaNotifications({ events, t, today }),
     [events, t, today],
   )
-  const selectedEventDate = selectedEvent?.scheduledDate ?? ''
   const nextWeekStart = weekStartDate.add(agendaVisibleDayCount, 'day')
   const previousWeekStart = weekStartDate.subtract(agendaVisibleDayCount, 'day')
   const disablePreviousWeek = !previousWeekStart.isAfter(today.subtract(1, 'day'), 'day')
-  const disableNextWeek = nextWeekStart.isAfter(currentMonthEnd, 'day')
+  const disableNextWeek = nextWeekStart.isAfter(scheduleHorizonEnd, 'day')
 
   const closeEventDialog = () => setSelectedEvent(null)
   const showScheduledWeek = (date: dayjs.Dayjs) => {
@@ -81,65 +116,80 @@ export function AgendaDashboardPage() {
     setSelectedEvent(event)
   }
 
-  const rescheduleSelectedEvent = (values: AgendaRescheduleFormValues) => {
-    if (!selectedEvent) return
+  const createAgendaEvent = async (values: AgendaEventFormValues) => {
+    const scheduledDate = dayjs(values.scheduledDate)
+    const start = dayjs(`${values.scheduledDate}T${values.scheduledTime}`)
+    const useCustomProperty = values.propertyId === agendaOtherPropertyValue
+    const customProperty = values.customProperty.trim()
 
-    const nextDate = dayjs(values.scheduledDate)
-
-    setEvents((currentEvents) =>
-      currentEvents.map((event) =>
-        event.id === selectedEvent.id
-          ? {
-              ...event,
-              scheduledDate: values.scheduledDate,
-              time: values.scheduledTime,
-              status: 'Confirmada',
-            }
-          : event,
-      ),
-    )
-    showScheduledWeek(nextDate)
-    enqueueSnackbar(
-      t('rescheduleSuccess', {
-        date: nextDate.format('DD/MM/YYYY'),
-        time: values.scheduledTime,
-        title: selectedEvent.title,
-      }),
-      { variant: 'success' },
-    )
-    closeEventDialog()
+    try {
+      await createAgendaEventMutation.mutateAsync({
+        title: values.title,
+        kind: values.kind ? (values.kind as AgendaEventApiKind) : undefined,
+        ...(useCustomProperty
+          ? { propertyReference: customProperty }
+          : { propertyId: values.propertyId }),
+        start: start.toISOString(),
+        durationMinutes: values.durationMinutes,
+        participantName: values.participant,
+        participantPhone: values.phone,
+        notes: values.notes.trim() || t('defaultEventNotes'),
+      })
+      showScheduledWeek(scheduledDate)
+      setIsEventFormOpen(false)
+      enqueueSnackbar(t('createSuccess', { title: values.title }), { variant: 'success' })
+    } catch (error) {
+      enqueueSnackbar(errorMessage(error, t('createError')), { variant: 'error' })
+    }
   }
 
-  const createAgendaEvent = (values: AgendaEventFormValues) => {
-    const scheduledDate = dayjs(values.scheduledDate)
-    const selectedProperty = propertyOptions.find((property) => property.id === values.propertyId)
-    const customProperty = values.customProperty.trim()
-    const useCustomProperty = values.propertyId === agendaOtherPropertyValue
-    const propertyLabel = useCustomProperty
-      ? customProperty
-      : (selectedProperty?.label ?? customProperty)
-    const propertyHref = useCustomProperty
-      ? '/dashboard/properties'
-      : (selectedProperty?.href ?? '/dashboard/properties')
-    const nextEvent: AgendaEvent = {
-      id: `agenda-${Date.now()}`,
-      scheduledDate: values.scheduledDate,
-      time: values.scheduledTime,
-      durationMinutes: values.durationMinutes,
-      title: values.title,
-      property: propertyLabel,
-      propertyHref,
-      participant: values.participant,
-      phone: values.phone,
-      notes: values.notes.trim() || t('defaultEventNotes'),
-      status: 'Confirmada',
-      tone: 'primary',
-    }
+  const editAgendaEvent = async (values: AgendaEventFormValues): Promise<boolean> => {
+    if (!selectedEvent) return false
 
-    setEvents((currentEvents) => [...currentEvents, nextEvent])
-    showScheduledWeek(scheduledDate)
-    setIsEventFormOpen(false)
-    enqueueSnackbar(t('createSuccess', { title: values.title }), { variant: 'success' })
+    const scheduledDate = dayjs(values.scheduledDate)
+    const start = dayjs(`${values.scheduledDate}T${values.scheduledTime}`)
+    const useCustomProperty = values.propertyId === agendaOtherPropertyValue
+    const customProperty = values.customProperty.trim()
+
+    try {
+      await rescheduleAgendaEventMutation.mutateAsync({
+        id: selectedEvent.id,
+        payload: { start: start.toISOString(), durationMinutes: values.durationMinutes },
+      })
+      const updated = await updateAgendaEventMutation.mutateAsync({
+        id: selectedEvent.id,
+        payload: {
+          title: values.title,
+          kind: values.kind ? (values.kind as AgendaEventApiKind) : null,
+          ...(useCustomProperty
+            ? { propertyId: null, propertyReference: customProperty }
+            : { propertyId: values.propertyId, propertyReference: null }),
+          participantName: values.participant,
+          participantPhone: values.phone,
+          notes: values.notes.trim() || null,
+        },
+      })
+      setSelectedEvent(toAgendaEvent(updated, propertiesById))
+      showScheduledWeek(scheduledDate)
+      enqueueSnackbar(t('editSuccess', { title: values.title }), { variant: 'success' })
+      return true
+    } catch (error) {
+      enqueueSnackbar(errorMessage(error, t('editError')), { variant: 'error' })
+      return false
+    }
+  }
+
+  const deleteSelectedEvent = async (): Promise<boolean> => {
+    if (!selectedEvent) return false
+
+    try {
+      await cancelAgendaEventMutation.mutateAsync(selectedEvent.id)
+      enqueueSnackbar(t('deleteSuccess', { title: selectedEvent.title }), { variant: 'success' })
+      return true
+    } catch (error) {
+      enqueueSnackbar(errorMessage(error, t('deleteError')), { variant: 'error' })
+      return false
+    }
   }
 
   return (
@@ -166,16 +216,19 @@ export function AgendaDashboardPage() {
 
       <AgendaEventDetailDialog
         event={selectedEvent}
-        eventDate={selectedEventDate}
-        maxDate={currentMonthEnd.format('YYYY-MM-DD')}
+        isDeleting={cancelAgendaEventMutation.isPending}
+        isSaving={updateAgendaEventMutation.isPending || rescheduleAgendaEventMutation.isPending}
+        maxDate={scheduleHorizonEnd.format('YYYY-MM-DD')}
         minDate={today.format('YYYY-MM-DD')}
         onClose={closeEventDialog}
-        onReschedule={rescheduleSelectedEvent}
+        onDelete={deleteSelectedEvent}
+        onEdit={editAgendaEvent}
         open={Boolean(selectedEvent)}
+        propertyOptions={propertyOptions}
       />
 
       <AgendaEventFormDialog
-        maxDate={currentMonthEnd.format('YYYY-MM-DD')}
+        maxDate={scheduleHorizonEnd.format('YYYY-MM-DD')}
         minDate={today.format('YYYY-MM-DD')}
         onClose={() => setIsEventFormOpen(false)}
         onCreate={createAgendaEvent}

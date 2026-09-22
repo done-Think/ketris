@@ -1,32 +1,33 @@
 'use client'
 
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
-import { Box, Chip, IconButton, Stack, Typography } from '@mui/material'
+import { Box, Chip, Stack, Typography } from '@mui/material'
 import type { GridColDef, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid'
 import { DataGrid } from '@mui/x-data-grid'
 import { useTranslations } from 'next-intl'
 
-import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { dashboardPropertyStatusStyles } from '../config/dashboard-property-ui'
 import type { DashboardProperty, PropertiesTableProps } from '../types/dashboard-property'
+import { PropertyRowActions } from './PropertyRowActions'
 
 function PropertyIdentityCell({ row }: GridRenderCellParams<DashboardProperty>) {
   return (
     <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0, height: '100%' }}>
-      <Box
-        component="img"
-        src={row.imageUrl}
-        alt=""
-        sx={{
-          width: 56,
-          height: 56,
-          borderRadius: `${radius.sm}px`,
-          objectFit: 'cover',
-          flexShrink: 0,
-        }}
-      />
+      {row.imageUrl ? (
+        <Box
+          component="img"
+          src={row.imageUrl}
+          alt=""
+          sx={{
+            width: 56,
+            height: 56,
+            borderRadius: `${radius.sm}px`,
+            objectFit: 'cover',
+            flexShrink: 0,
+          }}
+        />
+      ) : null}
       <Box sx={{ minWidth: 0 }}>
         <Typography noWrap sx={{ fontSize: 15, fontWeight: 900 }}>
           {row.title}
@@ -94,60 +95,11 @@ export function PropertiesTable({
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
-      width: 112,
+      width: 96,
       align: 'right',
       headerAlign: 'right',
       renderCell: ({ row }) => (
-        <Stack
-          direction="row"
-          spacing={0.8}
-          sx={{
-            width: '100%',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            height: '100%',
-          }}
-        >
-          <IconButton
-            aria-label={t('editAriaLabel', { title: row.title })}
-            onClick={(event) => event.stopPropagation()}
-            sx={{
-              width: 36,
-              height: 36,
-              border: '1px solid',
-              borderColor: 'divider',
-              color: 'text.secondary',
-              '&:hover': {
-                borderColor: 'primary.main',
-                color: 'primary.main',
-                bgcolor: alpha.magenta[6],
-              },
-            }}
-          >
-            <EditOutlinedIcon sx={{ fontSize: iconSize.md }} />
-          </IconButton>
-          <IconButton
-            aria-label={t('viewAriaLabel', { title: row.title })}
-            onClick={(event) => {
-              event.stopPropagation()
-              onPropertySelect(row.id)
-            }}
-            sx={{
-              width: 36,
-              height: 36,
-              border: '1px solid',
-              borderColor: 'divider',
-              color: 'text.secondary',
-              '&:hover': {
-                borderColor: 'primary.main',
-                color: 'primary.main',
-                bgcolor: alpha.magenta[6],
-              },
-            }}
-          >
-            <VisibilityOutlinedIcon sx={{ fontSize: iconSize.md }} />
-          </IconButton>
-        </Stack>
+        <PropertyRowActions property={row} onView={() => onPropertySelect(row.id)} />
       ),
     },
   ]

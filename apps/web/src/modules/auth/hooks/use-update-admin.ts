@@ -4,7 +4,7 @@ import { adminService } from '../services/admin-service'
 
 interface UpdateAdminInput {
   id: string
-  nome?: string
+  name?: string
   email?: string
 }
 

@@ -1,4 +1,5 @@
 import type { ApiContact, ApiContactListItem } from './contact'
+import type { Lead } from './lead'
 import type { Opportunity, OpportunityActivityRecord } from './opportunity'
 import type { PublicPropertyDetail, PublicPropertySummary } from './property'
 
@@ -37,4 +38,17 @@ export interface ListContactsResponse {
 
 export interface ContactResponse {
   contact: ApiContact
+}
+
+export interface ListLeadsResponse {
+  leads: Lead[]
+}
+
+export interface LeadResponse {
+  lead: Lead
+}
+
+export interface ConvertLeadResponse {
+  lead: Lead
+  opportunityId: string
 }

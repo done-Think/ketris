@@ -17,8 +17,6 @@ export function createLeadSchema(t: SchemaMessageTranslator) {
     interest: z.string().trim().min(3, t('interestRequired')),
     budget: z.string().trim().min(2, t('budgetRequired')),
     source: z.string().trim().min(2, t('sourceRequired')),
-    broker: z.string().trim().min(2, t('brokerRequired')),
-    stage: z.enum(['Novo', 'Em contato', 'Visita marcada', 'Proposta']),
     notes: z.string().trim(),
   })
 }
@@ -32,7 +30,5 @@ export const createLeadDefaultValues = {
   interest: '',
   budget: '',
   source: 'Marketplace',
-  broker: 'Marina Costa',
-  stage: 'Novo',
   notes: '',
 } satisfies z.infer<ReturnType<typeof createLeadSchema>>

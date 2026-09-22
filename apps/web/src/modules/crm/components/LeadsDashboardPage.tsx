@@ -2,14 +2,17 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { Box, Paper, Stack, Typography } from '@mui/material'
+import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 
 import { brand, radius, shadows, surface } from '@shared/theme/tokens'
 
-import type { DashboardLead, LeadFilter } from '../types/lead'
+import { useLeads, useUpdateLeadStage } from '../hooks/use-leads'
+import type { DashboardLead, LeadApiStage, LeadFilter } from '../types/lead'
+import { toDashboardLead } from '../utils/map-dashboard-lead'
 import { filterLeads, leadsDefaultPageSize, paginateLeads } from '../utils/leads'
-import { useLeadsStore } from '../stores/leads-store'
+import { ConvertLeadDialog } from './ConvertLeadDialog'
 import { CreateLeadDialog } from './CreateLeadDialog'
 import { LeadContactDialog } from './LeadContactDialog'
 import { LeadsCards } from './leads-list/LeadsCards'
@@ -23,12 +26,21 @@ const leadsBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-s
 export function LeadsDashboardPage() {
   const t = useTranslations('crm.leads')
   const searchParams = useSearchParams()
-  const leads = useLeadsStore((state) => state.leads)
+  const { data: session } = useSession()
+  const tenantId = session?.tenantId ?? ''
+  const leadsQuery = useLeads(tenantId)
+  const updateLeadStage = useUpdateLeadStage(tenantId)
+  const leads = useMemo(() => (leadsQuery.data ?? []).map(toDashboardLead), [leadsQuery.data])
   const [search, setSearch] = useState('')
   const [activeFilter, setActiveFilter] = useState<LeadFilter>('Todos')
   const [page, setPage] = useState(1)
   const [isCreateLeadDialogOpen, setIsCreateLeadDialogOpen] = useState(false)
   const [selectedContactLead, setSelectedContactLead] = useState<DashboardLead | null>(null)
+  const [convertLead, setConvertLead] = useState<DashboardLead | null>(null)
+
+  function handleStageChange(leadId: string, stage: LeadApiStage) {
+    updateLeadStage.mutate({ leadId, stage })
+  }
 
   const filteredLeads = useMemo(
     () => filterLeads(leads, search, activeFilter),
@@ -125,6 +137,16 @@ export function LeadsDashboardPage() {
         lead={selectedContactLead}
         open={Boolean(selectedContactLead)}
         onClose={() => setSelectedContactLead(null)}
+        onStageChange={handleStageChange}
+        onConvertRequest={(lead) => {
+          setSelectedContactLead(null)
+          setConvertLead(lead)
+        }}
+      />
+      <ConvertLeadDialog
+        lead={convertLead}
+        open={Boolean(convertLead)}
+        onClose={() => setConvertLead(null)}
       />
     </Box>
   )

@@ -28,9 +28,11 @@ model Tenant {
   usuarios      Usuario[]
   imoveis       Imovel[]
   oportunidades Oportunidade[]
+  leads         Lead[]
   contratos     Contrato[]
   cobrancas     Cobranca[]
   contatos      Contato[]
+  eventosAgenda EventoAgenda[]
 
   @@map("tenants")
 }
@@ -39,25 +41,29 @@ enum PapelUsuario {
   ADMIN
   OWNER
   AGENT
+  RENTER
 }
 
 model Usuario {
-  id        String       @id @default(cuid())
-  tenantId  String
-  nome      String
-  email     String
-  senhaHash String
-  avatarUrl String?
-  papel     PapelUsuario @default(AGENT)
-  ativo     Boolean      @default(true)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id                String       @id @default(cuid())
+  tenantId          String
+  nome              String
+  email             String       @unique
+  senhaHash         String
+  avatarUrl         String?
+  papel             PapelUsuario @default(AGENT)
+  ativo             Boolean      @default(true)
+  vinculoAprovadoEm DateTime?    @default(now())
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 
-  tenant             Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  imoveisResponsavel Imovel[]       @relation("ImovelResponsavel")
-  refreshTokens      RefreshToken[]
+  tenant                   Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  imoveisResponsavel       Imovel[]       @relation("ImovelResponsavel")
+  refreshTokens            RefreshToken[]
+  eventosAgendaResponsavel EventoAgenda[] @relation("EventoAgendaResponsavel")
+  eventosAgendaCriados     EventoAgenda[] @relation("EventoAgendaCriadoPor")
+  leadsResponsavel         Lead[]         @relation("LeadResponsavel")
 
-  @@unique([tenantId, email])
   @@index([tenantId])
   @@map("usuarios")
 }
@@ -157,6 +163,7 @@ model Imovel {
   midias        Midia[]
   oportunidades Oportunidade[]
   contratos     Contrato[]
+  eventosAgenda EventoAgenda[]
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -236,10 +243,13 @@ model Oportunidade {
   updatedAt           DateTime           @updatedAt
 
   tenant     Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  imovel     Imovel                  @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  // Restrict (não Cascade): excluir um imóvel nunca pode apagar oportunidades de tabela junto —
+  // isso é decidido explicitamente pela camada de aplicação (ver PropertyRepository.hasLinkedRecords).
+  imovel     Imovel                  @relation(fields: [imovelId], references: [id], onDelete: Restrict)
   contrato   Contrato?
   contato    Contato?                @relation(fields: [contatoId], references: [id], onDelete: SetNull)
   atividades AtividadeOportunidade[]
+  lead       Lead?
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -247,6 +257,40 @@ model Oportunidade {
   @@index([imovelId])
   @@index([contatoId])
   @@map("oportunidades")
+}
+
+enum EstagioLead {
+  NOVO
+  EM_CONTATO
+  VISITA_MARCADA
+  PROPOSTA
+}
+
+// Contato bruto, ainda não qualificado com um imóvel específico nem valor proposto — por isso não
+// é uma Oportunidade ainda. Vira uma quando o corretor converte (ver ConvertLeadToOpportunityUseCase).
+model Lead {
+  id             String      @id @default(cuid())
+  tenantId       String
+  responsavelId  String
+  nome           String
+  telefone       String
+  email          String?
+  interesse      String
+  orcamento      String
+  origem         String
+  estagio        EstagioLead @default(NOVO)
+  observacoes    String?
+  oportunidadeId String?     @unique
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  responsavel  Usuario       @relation("LeadResponsavel", fields: [responsavelId], references: [id])
+  oportunidade Oportunidade? @relation(fields: [oportunidadeId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tenantId, estagio])
+  @@map("leads")
 }
 
 // ---------------------------------------------------------------------------
@@ -336,7 +380,8 @@ model Contrato {
   updatedAt            DateTime       @updatedAt
 
   tenant             Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  imovel             Imovel          @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  // Restrict (não Cascade): um contrato nunca pode desaparecer junto com o imóvel excluído.
+  imovel             Imovel          @relation(fields: [imovelId], references: [id], onDelete: Restrict)
   oportunidadeOrigem Oportunidade    @relation(fields: [oportunidadeOrigemId], references: [id])
   partes             ParteContrato[]
   cobrancas          Cobranca[]
@@ -382,6 +427,56 @@ model Assinatura {
   parteContrato ParteContrato @relation(fields: [parteContratoId], references: [id], onDelete: Cascade)
 
   @@map("assinaturas")
+}
+
+// ---------------------------------------------------------------------------
+// Evento de agenda (módulo `agenda`)
+// ---------------------------------------------------------------------------
+
+enum StatusEventoAgenda {
+  CONFIRMED
+  PENDING
+  RESCHEDULE
+  CANCELLED
+}
+
+enum TipoEventoAgenda {
+  VISIT
+  FOLLOW_UP
+  MEETING
+  INSPECTION
+  SIGNATURE
+  OTHER
+}
+
+model EventoAgenda {
+  id                    String             @id @default(cuid())
+  tenantId              String
+  responsavelId         String
+  criadoPorId           String?
+  imovelId              String?
+  referenciaImovelLivre String?
+  titulo                String
+  tipo                  TipoEventoAgenda?
+  status                StatusEventoAgenda @default(CONFIRMED)
+  inicio                DateTime
+  fim                   DateTime
+  participanteNome      String
+  participanteTelefone  String
+  notas                 String?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  responsavel Usuario  @relation("EventoAgendaResponsavel", fields: [responsavelId], references: [id], onDelete: Cascade)
+  criadoPor   Usuario? @relation("EventoAgendaCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  imovel      Imovel?  @relation(fields: [imovelId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tenantId, inicio])
+  @@index([responsavelId])
+  @@index([imovelId])
+  @@map("eventos_agenda")
 }
 
 // ---------------------------------------------------------------------------

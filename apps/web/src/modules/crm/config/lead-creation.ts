@@ -9,7 +9,7 @@ export const createLeadSteps: CreateLeadStep[] = [
   {
     key: 'interest',
     labelKey: 'interest',
-    fields: ['interest', 'budget', 'source', 'broker', 'stage'],
+    fields: ['interest', 'budget', 'source'],
   },
   {
     key: 'review',

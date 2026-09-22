@@ -2,7 +2,7 @@ import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 
 import { authContainer } from '@server/auth/container'
-import { InvalidCredentialsError } from '@server/auth/domain/errors'
+import { AccountDeactivatedError, InvalidCredentialsError } from '@server/auth/domain/errors'
 import { platformContainer } from '@server/platform/container'
 import { InvalidPlatformCredentialsError } from '@server/platform/domain/errors'
 
@@ -40,8 +40,44 @@ export const authOptions: NextAuthOptions = {
             papel: user.papel,
           }
         } catch (error) {
-          if (error instanceof InvalidCredentialsError) return null
+          if (
+            error instanceof InvalidCredentialsError ||
+            error instanceof AccountDeactivatedError
+          ) {
+            return null
+          }
           throw error
+        }
+      },
+    }),
+    CredentialsProvider({
+      id: 'token-session',
+      name: 'token-session',
+      credentials: {
+        accessToken: { type: 'text' },
+        refreshToken: { type: 'text' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.accessToken || !credentials?.refreshToken) return null
+
+        try {
+          const payload = await authContainer.tokenService.verify(credentials.accessToken)
+          const user = await authContainer.userRepository.findById(payload.sub)
+
+          if (!user || !user.ativo) return null
+
+          return {
+            id: user.id,
+            name: user.nome,
+            email: user.email,
+            accessToken: credentials.accessToken,
+            refreshToken: credentials.refreshToken,
+            scope: 'tenant',
+            tenantId: user.tenantId,
+            papel: user.papel,
+          }
+        } catch {
+          return null
         }
       },
     }),
