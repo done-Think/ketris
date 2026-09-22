@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
-import type { Papel } from '@server/auth/domain/user.entity'
+import { toAuthenticatedUserResponse, type Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { updateAdminRequestSchema } from '@server/auth/schemas/update-admin.schema'
 import { parseJsonBody, withErrorHandling } from '@server/shared/http'
@@ -20,7 +20,7 @@ export const GET = withErrorHandling(async (request: NextRequest, context: Route
     adminId: (await context.params).id,
   })
 
-  return NextResponse.json({ admin }, { status: 200 })
+  return NextResponse.json({ admin: toAuthenticatedUserResponse(admin) }, { status: 200 })
 })
 
 export const PATCH = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
@@ -31,11 +31,11 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Rou
     actorTenantId: actor.tenantId,
     actorPapel: actor.papel as Papel,
     adminId: (await context.params).id,
-    nome: body.nome,
+    nome: body.name,
     email: body.email,
   })
 
-  return NextResponse.json({ admin }, { status: 200 })
+  return NextResponse.json({ admin: toAuthenticatedUserResponse(admin) }, { status: 200 })
 })
 
 export const DELETE = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
@@ -48,5 +48,5 @@ export const DELETE = withErrorHandling(async (request: NextRequest, context: Ro
     adminId: (await context.params).id,
   })
 
-  return NextResponse.json({ admin }, { status: 200 })
+  return NextResponse.json({ admin: toAuthenticatedUserResponse(admin) }, { status: 200 })
 })

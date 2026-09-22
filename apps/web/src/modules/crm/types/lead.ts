@@ -5,6 +5,44 @@ import type { createLeadSchema } from '../schemas/create-lead-schema'
 
 export type LeadStage = 'Novo' | 'Em contato' | 'Visita marcada' | 'Proposta'
 
+export type LeadApiStage = 'NOVO' | 'EM_CONTATO' | 'VISITA_MARCADA' | 'PROPOSTA'
+
+export interface Lead {
+  id: string
+  tenantId: string
+  responsavelId: string
+  name: string
+  phone: string
+  email: string | null
+  interest: string
+  budget: string
+  source: string
+  stage: LeadApiStage
+  notes: string | null
+  opportunityId: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateLeadPayload {
+  name: string
+  phone: string
+  email?: string | null
+  interest: string
+  budget: string
+  source: string
+  notes?: string | null
+}
+
+export interface UpdateLeadStagePayload {
+  stage: LeadApiStage
+}
+
+export interface ConvertLeadPayload {
+  propertyId: string
+  proposedValue: number
+}
+
 export type LeadFilter = 'Todos' | LeadStage
 
 export type LeadTableSortField = 'name' | 'interest' | 'budget' | 'stage' | 'source' | 'lastContact'
@@ -31,6 +69,7 @@ export type DashboardLead = {
   source: string
   broker: string
   stage: LeadStage
+  opportunityId: string | null
 }
 
 export type LeadStageStyle = {
@@ -126,11 +165,6 @@ export type LeadStageOption = {
   labelKey: LeadStageLabelKey
 }
 
-export type LeadsStoreState = {
-  leads: DashboardLead[]
-  addLead: (values: CreateLeadFormValues, lastContactLabel: string) => DashboardLead
-}
-
 export type CreateLeadDialogProps = {
   onClose: () => void
   open: boolean
@@ -150,6 +184,14 @@ export type CreateLeadReviewStepProps = {
 }
 
 export type LeadContactDialogProps = {
+  lead: DashboardLead | null
+  onClose: () => void
+  open: boolean
+  onStageChange: (leadId: string, stage: LeadApiStage) => void
+  onConvertRequest: (lead: DashboardLead) => void
+}
+
+export type ConvertLeadDialogProps = {
   lead: DashboardLead | null
   onClose: () => void
   open: boolean

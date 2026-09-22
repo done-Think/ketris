@@ -10,25 +10,34 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  MenuItem,
   Stack,
   Typography,
 } from '@mui/material'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
 import { useEffect } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 
-import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
-import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import { brand, iconSize } from '@shared/theme/tokens'
 
-import {
-  agendaEventFormSchema,
-  agendaOtherPropertyValue,
-} from '../schemas/agenda-event-form-schema'
+import { agendaEventFormSchema } from '../schemas/agenda-event-form-schema'
 import type { AgendaEventFormDialogProps, AgendaEventFormValues } from '../types/agenda-event'
+import { AgendaEventFormFields } from './AgendaEventFormFields'
 
-const phoneMask = [{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }]
+function buildDefaultValues(minDate: string): AgendaEventFormValues {
+  return {
+    customProperty: '',
+    durationMinutes: 60,
+    kind: '',
+    notes: '',
+    participant: '',
+    phone: '',
+    propertyId: '',
+    scheduledDate: minDate,
+    scheduledTime: '09:00',
+    title: '',
+  }
+}
 
 export function AgendaEventFormDialog({
   maxDate,
@@ -39,37 +48,20 @@ export function AgendaEventFormDialog({
   propertyOptions,
 }: AgendaEventFormDialogProps) {
   const t = useTranslations('agenda.eventForm')
-  const { control, handleSubmit, reset } = useForm<AgendaEventFormValues>({
-    defaultValues: {
-      customProperty: '',
-      durationMinutes: 60,
-      notes: '',
-      participant: '',
-      phone: '',
-      propertyId: '',
-      scheduledDate: minDate,
-      scheduledTime: '09:00',
-      title: '',
-    },
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = useForm<AgendaEventFormValues>({
+    defaultValues: buildDefaultValues(minDate),
     resolver: zodResolver(agendaEventFormSchema),
   })
-  const selectedPropertyId = useWatch({ control, name: 'propertyId' })
-  const showCustomPropertyField = selectedPropertyId === agendaOtherPropertyValue
 
   useEffect(() => {
     if (!open) return
 
-    reset({
-      customProperty: '',
-      durationMinutes: 60,
-      notes: '',
-      participant: '',
-      phone: '',
-      propertyId: '',
-      scheduledDate: minDate,
-      scheduledTime: '09:00',
-      title: '',
-    })
+    reset(buildDefaultValues(minDate))
   }, [minDate, open, reset])
 
   return (
@@ -92,115 +84,24 @@ export function AgendaEventFormDialog({
         </DialogTitle>
 
         <DialogContent sx={{ px: { xs: 2, md: 2.8 }, pb: 2 }}>
-          <Stack spacing={1.6}>
-            <Box
-              sx={{
-                border: '1px solid',
-                borderColor: alpha.graphite[8],
-                borderRadius: `${radius.sm}px`,
-                bgcolor: surface.app,
-                p: 1.6,
-              }}
-            >
-              <Stack spacing={1.4}>
-                <RhfTextField control={control} name="title" label={t('fields.title')} fullWidth />
-                <RhfTextField
-                  control={control}
-                  name="propertyId"
-                  label={t('fields.property')}
-                  select
-                  fullWidth
-                >
-                  {propertyOptions.map((property) => (
-                    <MenuItem key={property.id} value={property.id}>
-                      {property.label}
-                    </MenuItem>
-                  ))}
-                  <MenuItem value={agendaOtherPropertyValue}>{t('fields.otherProperty')}</MenuItem>
-                </RhfTextField>
-                {showCustomPropertyField ? (
-                  <RhfTextField
-                    control={control}
-                    name="customProperty"
-                    label={t('fields.customProperty')}
-                    fullWidth
-                  />
-                ) : null}
-              </Stack>
-            </Box>
-
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                gap: 1.4,
-              }}
-            >
-              <RhfTextField
-                control={control}
-                name="participant"
-                label={t('fields.participant')}
-                fullWidth
-              />
-              <RhfMaskedTextField
-                control={control}
-                name="phone"
-                label={t('fields.phone')}
-                mask={phoneMask}
-                fullWidth
-              />
-            </Box>
-
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', sm: '1fr 150px 150px' },
-                gap: 1.4,
-              }}
-            >
-              <RhfTextField
-                control={control}
-                name="scheduledDate"
-                label={t('fields.date')}
-                type="date"
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                inputProps={{ max: maxDate, min: minDate }}
-              />
-              <RhfTextField
-                control={control}
-                name="scheduledTime"
-                label={t('fields.time')}
-                type="time"
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-              />
-              <RhfTextField
-                control={control}
-                name="durationMinutes"
-                label={t('fields.duration')}
-                type="number"
-                fullWidth
-                inputProps={{ min: 15, step: 15 }}
-              />
-            </Box>
-
-            <RhfTextField
-              control={control}
-              name="notes"
-              label={t('fields.notes')}
-              minRows={3}
-              multiline
-              fullWidth
-            />
-          </Stack>
+          <AgendaEventFormFields
+            control={control}
+            maxDate={maxDate}
+            minDate={minDate}
+            propertyOptions={propertyOptions}
+          />
         </DialogContent>
 
         <DialogActions sx={{ px: { xs: 2, md: 2.8 }, pb: 2.5, pt: 0 }}>
           <Button type="button" variant="outlined" color="secondary" onClick={onClose}>
             {t('cancel')}
           </Button>
-          <Button type="submit" variant="contained" startIcon={<AddRoundedIcon />}>
+          <Button
+            type="submit"
+            variant="contained"
+            startIcon={<AddRoundedIcon />}
+            disabled={isSubmitting}
+          >
             {t('submit')}
           </Button>
         </DialogActions>

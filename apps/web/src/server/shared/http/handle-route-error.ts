@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 
 import { AppError } from '@server/shared/errors'
 
@@ -20,6 +21,7 @@ export function handleRouteError(error: unknown): NextResponse {
   }
 
   console.error('[BFF] erro não mapeado:', error)
+  Sentry.captureException(error)
 
   return NextResponse.json(
     { error: { code: 'INTERNAL_ERROR', message: 'Erro interno. Tente novamente.' } },

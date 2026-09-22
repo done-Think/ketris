@@ -19,7 +19,10 @@ export const propertyAddressInputSchema = z
 
 export const propertyMediaInputSchema = z
   .object({
-    url: z.string().trim().url(),
+    // Não é `.url()` de propósito: aponta pra rota própria de proxy do S3
+    // (`/api/properties/media/[...key]`, ver S3PropertyMediaStorage), um caminho relativo — nunca
+    // uma URL absoluta do bucket, que é privado.
+    url: z.string().trim().min(1),
     tipo: z.string().trim().min(1).optional(),
     ordem: z.number().int().nonnegative().optional(),
   })

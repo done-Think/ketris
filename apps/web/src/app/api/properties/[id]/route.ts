@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
+import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { propertiesContainer } from '@server/properties/container'
 import { updatePropertyRequestSchema } from '@server/properties/schemas/property-input.schema'
@@ -16,6 +17,8 @@ export const GET = withErrorHandling(async (request: NextRequest, context: Route
 
   const property = await propertiesContainer.getPropertyUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorId: actor.sub,
+    actorPapel: actor.papel as Papel,
     id: (await context.params).id,
   })
 
@@ -28,7 +31,9 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Rou
 
   const property = await propertiesContainer.updatePropertyUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorId: actor.sub,
     id: (await context.params).id,
+    actorPapel: actor.papel as Papel,
     ...body,
     endereco: body.endereco
       ? {
@@ -51,10 +56,12 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Rou
 export const DELETE = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
   const actor = await requireBearerAuth(request, authContainer.tokenService)
 
-  const property = await propertiesContainer.deactivatePropertyUseCase.execute({
+  await propertiesContainer.deletePropertyUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorId: actor.sub,
     id: (await context.params).id,
+    actorPapel: actor.papel as Papel,
   })
 
-  return NextResponse.json({ property }, { status: 200 })
+  return new NextResponse(null, { status: 204 })
 })
