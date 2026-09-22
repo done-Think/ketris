@@ -3,11 +3,6 @@ import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 
 import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
-// Server Component chamando o container do backend direto (sem passar por um round-trip HTTP pra
-// si mesmo): `generateMetadata` e o corpo da página precisam do mesmo imóvel, então o fetch é
-// memoizado por requisição via `cache()`. Único lugar do app que faz isso — todo o resto do
-// frontend (inclusive o restante deste módulo) fala com o backend só via HttpClient/serviço, mas
-// aqui os dados de SEO (title/description) têm que estar prontos no HTML do servidor.
 import { marketplaceContainer } from '@server/marketplace/container'
 import { PropertyNotFoundError } from '@server/marketplace/domain/errors'
 import { PropertyDetailPage } from '@modules/marketplace/components/PropertyDetailPage'
