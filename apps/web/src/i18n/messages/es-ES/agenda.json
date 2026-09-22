@@ -9,6 +9,7 @@
     "openEventAriaLabel": "Abrir {title}",
     "todayVisitTitle": "Visita programada para hoy",
     "todayVisitMessage": "{time} - {participant} en {property}",
+    "propertyNotInformed": "inmueble no informado",
     "assignedEventTitle": "Nuevo compromiso asignado",
     "assignedEventMessage": "{role} {name} agendó {title}",
     "defaultEventNotes": "Evento creado manualmente en la agenda.",

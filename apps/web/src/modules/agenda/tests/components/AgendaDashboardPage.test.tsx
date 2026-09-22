@@ -48,6 +48,10 @@ vi.mock('@modules/properties/hooks/use-properties', () => ({
   useProperties: vi.fn(),
 }))
 
+vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
+  useDashboardAgendaNotifications: () => [],
+}))
+
 const today = dayjs().format('YYYY-MM-DD')
 const twoDaysFromNow = dayjs().add(2, 'day').format('YYYY-MM-DD')
 
