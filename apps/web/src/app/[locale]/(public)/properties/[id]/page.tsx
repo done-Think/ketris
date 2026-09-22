@@ -1,9 +1,16 @@
+import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 
 import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
+// Server Component chamando o container do backend direto (sem passar por um round-trip HTTP pra
+// si mesmo): `generateMetadata` e o corpo da página precisam do mesmo imóvel, então o fetch é
+// memoizado por requisição via `cache()`. Único lugar do app que faz isso — todo o resto do
+// frontend (inclusive o restante deste módulo) fala com o backend só via HttpClient/serviço, mas
+// aqui os dados de SEO (title/description) têm que estar prontos no HTML do servidor.
+import { marketplaceContainer } from '@server/marketplace/container'
+import { PropertyNotFoundError } from '@server/marketplace/domain/errors'
 import { PropertyDetailPage } from '@modules/marketplace/components/PropertyDetailPage'
-import { getPropertyDetailById } from '@modules/marketplace/data/property-details'
 import type {
   PropertyBreadcrumbOriginType,
   PropertyBreadcrumbPurpose,
@@ -14,6 +21,21 @@ import {
   getInternalMarketplaceHref,
   isSafeMarketplaceOriginHref,
 } from '@modules/marketplace/utils/property-links'
+import { mapDetailToMarketplacePropertyDetail } from '@modules/marketplace/utils/property-detail-adapter'
+
+const getProperty = cache(async (id: string) => {
+  try {
+    const property = await marketplaceContainer.getPropertyUseCase.execute({ propertyId: id })
+    return mapDetailToMarketplacePropertyDetail({
+      ...property,
+      publishedAt: property.publishedAt?.toISOString() ?? null,
+    })
+  } catch (error) {
+    if (error instanceof PropertyNotFoundError) return null
+
+    throw error
+  }
+})
 
 export async function generateMetadata({
   params,
@@ -23,7 +45,7 @@ export async function generateMetadata({
     locale,
     namespace: 'marketplace.metadata.details',
   })
-  const property = getPropertyDetailById(id)
+  const property = await getProperty(id)
 
   if (!property) return { title: t('notFoundTitle') }
 
@@ -64,7 +86,7 @@ export default async function PropertyPage({
 }: LocaleRoutePageProps<{ id: string }, PropertyPageSearchParams>) {
   const { id } = await params
   const resolvedSearchParams = await searchParams
-  const property = getPropertyDetailById(id)
+  const property = await getProperty(id)
 
   if (!property) notFound()
 
