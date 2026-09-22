@@ -9,6 +9,7 @@
     "openEventAriaLabel": "Open {title}",
     "todayVisitTitle": "Visit scheduled for today",
     "todayVisitMessage": "{time} - {participant} at {property}",
+    "propertyNotInformed": "property not informed",
     "assignedEventTitle": "New assigned appointment",
     "assignedEventMessage": "{role} {name} booked {title}",
     "defaultEventNotes": "Event created manually in the agenda.",
