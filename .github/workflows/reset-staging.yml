@@ -1,0 +1,40 @@
+name: Reset staging database (destrutivo)
+
+# Disparo manual apenas — nunca automático. Apaga TODOS os dados do RDS de staging, reaplica
+# as migrations do zero e roda o seed do branch selecionado na tela de disparo. Use antes de
+# mesclar uma alteração no seed.ts que reorganiza dados já existentes (evita upsert em cima de
+# uma estrutura antiga incompatível).
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Digite RESET para confirmar — isso apaga todos os dados do banco de staging'
+        required: true
+
+jobs:
+  reset:
+    if: github.event.inputs.confirm == 'RESET'
+    runs-on: ubuntu-latest
+    environment: staging
+
+    env:
+      DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+      PLATFORM_ADMIN_NAME: ${{ secrets.PLATFORM_ADMIN_NAME }}
+      PLATFORM_ADMIN_EMAIL: ${{ secrets.PLATFORM_ADMIN_EMAIL }}
+      PLATFORM_ADMIN_PASSWORD: ${{ secrets.PLATFORM_ADMIN_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Reseta o schema (apaga TODOS os dados atuais e reaplica as migrations)
+        run: npm exec -w @ketris/web -- prisma migrate reset --force --skip-seed
+
+      - name: Roda o seed do branch selecionado na tela de disparo
+        run: npm run db:seed -w @ketris/web
