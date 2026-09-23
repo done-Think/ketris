@@ -135,6 +135,7 @@ export type ContractsSummaryCardsProps = {
 
 export type ContractsFiltersProps = {
   control: Control<ContractsFiltersFormValues>
+  filterCounts: Record<ContractFilterTab['label'], number>
   setValue: UseFormSetValue<ContractsFiltersFormValues>
 }
 

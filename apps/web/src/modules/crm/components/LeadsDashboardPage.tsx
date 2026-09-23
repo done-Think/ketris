@@ -7,8 +7,9 @@ import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 
 import { DashboardTablePagination } from '@shared/components/layout'
-import { brand, radius, shadows, surface } from '@shared/theme/tokens'
+import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
 
+import { leadListFixtures } from '../fixtures/lead-list-fixtures'
 import { useLeads, useUpdateLeadStage } from '../hooks/use-leads'
 import type {
   DashboardLead,
@@ -36,7 +37,14 @@ export function LeadsDashboardPage() {
   const tenantId = session?.tenantId ?? ''
   const leadsQuery = useLeads(tenantId)
   const updateLeadStage = useUpdateLeadStage(tenantId)
-  const leads = useMemo(() => (leadsQuery.data ?? []).map(toDashboardLead), [leadsQuery.data])
+  const fixtureMode =
+    process.env.NODE_ENV !== 'production' &&
+    !leadsQuery.isLoading &&
+    (leadsQuery.isError || (leadsQuery.data ?? []).length === 0)
+  const leads = useMemo(
+    () => (fixtureMode ? leadListFixtures : (leadsQuery.data ?? []).map(toDashboardLead)),
+    [fixtureMode, leadsQuery.data],
+  )
   const [search, setSearch] = useState('')
   const [activeFilter, setActiveFilter] = useState<LeadFilter>('Todos')
   const [sort, setSort] = useState<LeadTableSortState>(null)
@@ -102,7 +110,7 @@ export function LeadsDashboardPage() {
         },
       }}
     >
-      <Stack spacing={2.2}>
+      <Stack spacing={2}>
         <LeadsHeader
           search={search}
           onSearchChange={handleSearchChange}
@@ -122,10 +130,10 @@ export function LeadsDashboardPage() {
             flexDirection: 'column',
             minHeight: { xs: 420, md: 360 },
             overflow: 'hidden',
-            borderColor: brand.neutral[100],
-            borderRadius: `${radius.lg}px`,
+            borderColor: alpha.graphite[6],
+            borderRadius: `${radius.sm}px`,
             bgcolor: surface.paper,
-            boxShadow: shadows.crmListPanel,
+            boxShadow: shadows.propertyCard,
           }}
         >
           {leadsPage.items.length > 0 ? (

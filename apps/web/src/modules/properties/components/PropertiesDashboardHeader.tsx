@@ -1,10 +1,10 @@
-import { Box, Button, Stack } from '@mui/material'
+import { Box, Button, InputAdornment, Stack, TextField } from '@mui/material'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { useTranslations } from 'next-intl'
 
 import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/components/layout'
-import { brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { PropertiesDashboardHeaderProps } from '../types/dashboard-property'
 
@@ -16,53 +16,49 @@ export function PropertiesDashboardHeader({
   const t = useTranslations('properties.dashboard')
 
   const actions = (
-    <Stack direction="row" spacing={1.2}>
+    <Stack
+      direction={{ xs: 'column', sm: 'row' }}
+      spacing={1.2}
+      sx={{ width: { xs: '100%', md: 'auto' }, alignItems: { xs: 'stretch', sm: 'center' } }}
+    >
       <Box
         sx={{
-          position: 'relative',
-          width: { xs: '100%', sm: 360 },
+          width: { xs: '100%', sm: 280 },
           flex: { xs: 1, sm: 'initial' },
         }}
       >
-        <SearchRoundedIcon
-          sx={{
-            position: 'absolute',
-            left: 11,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: brand.neutral[500],
-            fontSize: iconSize.sm,
-            pointerEvents: 'none',
-          }}
-        />
-        <Box
-          component="input"
+        <TextField
           placeholder={t('searchPlaceholder')}
           aria-label={t('searchAriaLabel')}
           value={searchQuery}
           onChange={(event) => onSearchQueryChange(event.target.value)}
+          size="small"
           sx={{
             width: '100%',
-            height: 36,
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: `${radius.sm}px`,
-            bgcolor: surface.paper,
-            color: 'text.primary',
-            pl: 4,
-            pr: 1.2,
-            font: 'inherit',
-            fontSize: 14,
-            fontWeight: 700,
-            outline: 0,
-            '&::placeholder': { color: brand.neutral[400] },
-            '&:focus': { borderColor: 'primary.main' },
+            '& .MuiInputBase-root': {
+              height: 36,
+              borderRadius: `${radius.sm}px`,
+              bgcolor: surface.paper,
+              color: brand.graphite[500],
+              fontSize: 14,
+              fontWeight: 700,
+            },
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: alpha.graphite[8],
+            },
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchRoundedIcon sx={{ color: brand.neutral[400], fontSize: 18 }} />
+              </InputAdornment>
+            ),
           }}
         />
       </Box>
       <Button
         variant="contained"
-        startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.lg }} />}
+        startIcon={<AddRoundedIcon sx={{ fontSize: 18 }} />}
         onClick={onCreateProperty}
         sx={{
           borderRadius: `${radius.sm}px`,

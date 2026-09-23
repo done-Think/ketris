@@ -111,10 +111,10 @@ export function ContactsList({
           mt: 2.25,
           overflow: 'hidden',
           flexDirection: 'column',
-          borderColor: brand.neutral[100],
-          borderRadius: `${radius.lg}px`,
+          borderColor: alpha.graphite[6],
+          borderRadius: `${radius.sm}px`,
           bgcolor: surface.paper,
-          boxShadow: shadows.crmListPanel,
+          boxShadow: shadows.propertyCard,
         }}
       >
         {filteredContacts.length > 0 ? (
@@ -139,7 +139,7 @@ export function ContactsList({
           </>
         ) : (
           <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 240, px: 2 }}>
-            <Typography sx={{ color: 'text.secondary', fontSize: 12.5 }}>{t('empty')}</Typography>
+            <Typography sx={{ color: 'text.secondary', fontSize: 16.5 }}>{t('empty')}</Typography>
           </Stack>
         )}
 
@@ -180,11 +180,11 @@ function ContactsTypeFilters({
           width: '100%',
           mt: 2,
           '& .MuiOutlinedInput-root': {
-            minHeight: 46,
+            minHeight: 50,
             borderRadius: `${radius.sm}px`,
             bgcolor: surface.paper,
             color: brand.graphite[500],
-            fontSize: 14,
+            fontSize: 18,
             fontWeight: 800,
             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
               borderColor: 'transparent',
@@ -227,7 +227,7 @@ function ContactsTypeFilters({
               key={filter.label}
               value={filter.label}
               sx={{
-                minHeight: 42,
+                minHeight: 46,
                 bgcolor: active ? alpha.magenta[8] : 'transparent',
                 '&:hover': { bgcolor: alpha.magenta[8] },
               }}
@@ -260,11 +260,11 @@ function ContactsTypeFilters({
               aria-pressed={active}
               onClick={() => onFilterChange(filter.label)}
               sx={{
-                minHeight: 38,
+                minHeight: 42,
                 borderRadius: `${radius.full}px`,
                 px: 1.8,
                 gap: 0.6,
-                fontSize: 13,
+                fontSize: 17,
                 fontWeight: 900,
                 boxShadow: 'none',
                 '&:hover': { boxShadow: 'none' },
@@ -275,14 +275,14 @@ function ContactsTypeFilters({
                 component="span"
                 sx={{
                   display: 'grid',
-                  minWidth: 20,
-                  height: 20,
+                  minWidth: 24,
+                  height: 24,
                   placeItems: 'center',
                   px: 0.5,
                   borderRadius: `${radius.full}px`,
                   bgcolor: active ? alpha.white[8] : alpha.graphite[6],
                   color: active ? surface.lightText : brand.neutral[500],
-                  fontSize: 10.5,
+                  fontSize: 14.5,
                   fontWeight: 800,
                 }}
               >
@@ -312,14 +312,14 @@ function ContactFilterLabel({
         component="span"
         sx={{
           display: 'grid',
-          minWidth: 22,
-          height: 22,
+          minWidth: 26,
+          height: 26,
           placeItems: 'center',
           px: 0.6,
           borderRadius: `${radius.full}px`,
           bgcolor: active ? brand.magenta[500] : alpha.graphite[6],
           color: active ? surface.lightText : brand.neutral[500],
-          fontSize: 11,
+          fontSize: 15,
           fontWeight: 900,
         }}
       >

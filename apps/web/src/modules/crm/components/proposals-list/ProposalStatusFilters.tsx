@@ -31,7 +31,7 @@ export function ProposalStatusFilters({
             borderRadius: `${radius.sm}px`,
             bgcolor: surface.paper,
             color: brand.graphite[500],
-            fontSize: 14,
+            fontSize: 17,
             fontWeight: 800,
             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
               borderColor: 'transparent',
@@ -94,7 +94,7 @@ export function ProposalStatusFilters({
         role="group"
         aria-label="Filtrar propostas por status"
         direction="row"
-        spacing={0.75}
+        spacing={0.8}
         sx={{
           display: { xs: 'none', sm: 'flex' },
           mt: 2,
@@ -116,19 +116,20 @@ export function ProposalStatusFilters({
               onClick={() => onStatusChange(id)}
               sx={{
                 minWidth: 0,
-                height: 30,
-                px: 1.4,
+                minHeight: 42,
+                px: 1.8,
                 flexShrink: 0,
-                gap: 0.75,
+                gap: 0.6,
                 borderRadius: `${radius.full}px`,
                 bgcolor: active ? brand.magenta[500] : brand.neutral[50],
                 color: active ? surface.lightText : brand.graphite[500],
-                fontSize: 11.5,
-                fontWeight: active ? 700 : 500,
-                lineHeight: 1,
+                fontSize: 17,
+                fontWeight: 900,
                 whiteSpace: 'nowrap',
+                boxShadow: 'none',
                 '&:hover': {
                   bgcolor: active ? brand.magenta[600] : brand.neutral[100],
+                  boxShadow: 'none',
                 },
               }}
             >
@@ -137,15 +138,15 @@ export function ProposalStatusFilters({
                 component="span"
                 sx={{
                   display: 'grid',
-                  minWidth: 18,
-                  height: 18,
+                  minWidth: 24,
+                  height: 24,
                   placeItems: 'center',
                   px: 0.5,
                   borderRadius: `${radius.full}px`,
                   bgcolor: active ? alpha.white[8] : alpha.graphite[6],
                   color: active ? surface.lightText : brand.neutral[500],
-                  fontSize: 10,
-                  fontWeight: 700,
+                  fontSize: 14.5,
+                  fontWeight: 800,
                 }}
               >
                 {count}
@@ -181,7 +182,7 @@ function FilterOptionLabel({
           borderRadius: `${radius.full}px`,
           bgcolor: active ? brand.magenta[500] : alpha.graphite[6],
           color: active ? surface.lightText : brand.neutral[500],
-          fontSize: 11,
+          fontSize: 14,
           fontWeight: 900,
         }}
       >
