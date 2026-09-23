@@ -34,7 +34,7 @@ jobs:
       - run: npm ci
 
       - name: Reseta o schema (apaga TODOS os dados atuais e reaplica as migrations)
-        run: npm exec -w @ketris/web -- prisma migrate reset --force --skip-seed
+        run: npm exec -w @ketris/web -- prisma migrate reset --force
 
       - name: Roda o seed do branch selecionado na tela de disparo
         run: npm run db:seed -w @ketris/web
