@@ -9,7 +9,6 @@ import { surface } from '@shared/theme/tokens'
 import { getBrokerProfileTheme } from '../config/broker-profile-themes'
 import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { BrokerPublicProfilePageProps } from '../types/broker'
-import { formatRating } from '../utils/format-rating'
 import { buildProfileListings } from '../utils/profile-listings'
 import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 import { MarketplaceHeader } from './MarketplaceHeader'
@@ -22,10 +21,7 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
   const t = useTranslations('marketplace')
   const { footerColumns, legalLinks } = useMarketplaceNavigation()
   const theme = getBrokerProfileTheme(broker.id)
-  const representedListings = buildProfileListings(broker.highlightedListings, {
-    brokerName: broker.name,
-    coverage: broker.neighborhoods,
-  })
+  const representedListings = buildProfileListings(broker.highlightedListings)
 
   return (
     <Box sx={{ bgcolor: surface.app, minHeight: '100vh', overflowX: 'clip' }}>
@@ -52,8 +48,6 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
             <PublicProfileMetrics
               accentColor={theme.accent}
               metrics={[
-                { label: t('publicProfile.metrics.rating'), value: formatRating(broker.rating) },
-                { label: t('publicProfile.metrics.responseTime'), value: broker.responseTime },
                 { label: t('publicProfile.metrics.active'), value: broker.activeListings },
                 { label: t('publicProfile.metrics.closed'), value: broker.dealsClosed },
               ]}
@@ -66,10 +60,12 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
             href={broker.href}
             sourceType="broker"
             linkDescription={t('publicProfile.sidebar.brokerLinkDescription')}
-            phone={broker.phone}
+            phone={broker.phone ?? ''}
             email={broker.email}
             facts={[
-              { label: t('publicProfile.facts.availability'), value: broker.availability },
+              ...(broker.availability
+                ? [{ label: t('publicProfile.facts.availability'), value: broker.availability }]
+                : []),
               {
                 label: t('publicProfile.facts.neighborhoods'),
                 value: broker.neighborhoods.join(', '),

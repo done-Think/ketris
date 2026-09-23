@@ -1,39 +1,44 @@
 import type { ViewMode } from './search'
 
-export type AgencySegment = 'Residencial' | 'Comercial' | 'Alto padrão' | 'Administração'
+export type AgencyProfileStatus = 'DRAFT' | 'PUBLISHED'
+
+export type AgencyTeamHighlight = {
+  usuarioId: string
+  name: string
+  avatarUrl: string | null
+}
 
 export type AgencyProfile = {
   id: string
   name: string
-  legalCreci: string
+  legalCreci: string | null
   logoInitials: string
   brand: {
-    eyebrow: string
-    title: string
-    primaryColor: string
-    secondaryColor: string
-    backgroundColor: string
+    primaryColor: string | null
+    secondaryColor: string | null
+    backgroundColor: string | null
   }
-  headquarters: string
+  headquarters: string | null
+  address: string | null
   coverage: string[]
-  segments: AgencySegment[]
+  segments: string[]
   activeListings: number
   brokersCount: number
-  responseTime: string
-  yearsInMarket: number
   dealsClosed: number
-  rating: number
-  phone: string
-  email: string
-  address: string
-  summary: string
+  responseTime: string | null
+  yearsInMarket: number | null
+  rating: number | null
+  phone: string | null
+  email: string | null
+  summary: string | null
   href: string
-  teamHighlights: string[]
+  teamHighlights: AgencyTeamHighlight[]
   featuredListings: Array<{
     title: string
     location: string
     price: string
     href: string
+    image?: string
   }>
 }
 

@@ -1,47 +1,33 @@
 import { z } from 'zod'
 
-import type {
-  AgencyPublicProfileEditorFormValues,
-  AgencyPublicProfileSectionKey,
-  AgencyPublicProfileSectionSlotKey,
-} from '../types/agency-public-profile-editor'
+const hexColorSchema = z
+  .string()
+  .regex(/^#[0-9A-Fa-f]{6}$/, 'Informe uma cor hexadecimal válida')
+  .or(z.literal(''))
 
-export const agencyPublicProfileSectionKeys = [
-  'brand',
-  'metrics',
-  'contact',
-  'team',
-  'listings',
-] as const satisfies AgencyPublicProfileSectionKey[]
+const optionalUrlSchema = z.string().url('Informe uma URL válida').or(z.literal(''))
 
-export const agencyPublicProfileSectionSlotKeys = [
-  ...agencyPublicProfileSectionKeys,
-  'none',
-] as const satisfies AgencyPublicProfileSectionSlotKey[]
-
-const hexColorSchema = z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Informe uma cor hexadecimal válida')
-const urlSchema = z.string().url('Informe uma URL válida')
+export const agencyTeamMemberFieldSchema = z.object({
+  usuarioId: z.string(),
+  name: z.string(),
+})
 
 export const agencyPublicProfileEditorSchema = z.object({
   displayName: z.string().min(2, 'Informe o nome da imobiliária'),
-  headline: z.string().min(4, 'Informe uma chamada institucional'),
-  summary: z.string().min(20, 'Informe um resumo mais completo'),
-  legalCreci: z.string().min(4, 'Informe o CRECI da imobiliária'),
-  headquarters: z.string().min(4, 'Informe a sede da imobiliária'),
-  address: z.string().min(8, 'Informe o endereço'),
-  coverage: z.string().min(4, 'Informe a cobertura de bairros'),
-  segments: z.string().min(4, 'Informe os segmentos de atuação'),
-  primaryColor: hexColorSchema,
-  accentColor: hexColorSchema,
+  headline: z.string(),
+  summary: z.string(),
+  legalCreci: z.string(),
+  headquarters: z.string(),
+  address: z.string(),
+  phone: z.string(),
+  email: z.string().email('Informe um e-mail válido').or(z.literal('')),
+  coverage: z.string(),
+  segments: z.string(),
+  yearsInMarket: z.string(),
   backgroundColor: hexColorSchema,
-  logoUrl: urlSchema,
-  bannerUrl: urlSchema,
-  sectionOrder: z
-    .array(z.enum(agencyPublicProfileSectionSlotKeys))
-    .length(agencyPublicProfileSectionKeys.length)
-    .refine((sections) => {
-      const selectedSections = sections.filter((section) => section !== 'none')
+  logoUrl: optionalUrlSchema,
+  bannerUrl: optionalUrlSchema,
+  team: z.array(agencyTeamMemberFieldSchema).max(6, 'Selecione no máximo 6 corretores'),
+})
 
-      return new Set(selectedSections).size === selectedSections.length
-    }, 'Cada seção selecionada deve aparecer uma única vez'),
-}) satisfies z.ZodType<AgencyPublicProfileEditorFormValues>
+export type AgencyPublicProfileEditorFormValues = z.infer<typeof agencyPublicProfileEditorSchema>

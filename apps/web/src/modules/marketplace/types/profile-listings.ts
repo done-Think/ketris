@@ -5,16 +5,14 @@ export type ProfileListingSource = {
   location: string
   price: string
   href: string
+  image?: string
 }
 
 export type ProfileListingOptions = {
-  brokerName?: string
-  coverage?: string[]
   limit?: number
 }
 
 export type PublicProfileListing = ProfileListingSource & {
-  image?: string
   details: PropertyCardData['details']
   category?: string
 }

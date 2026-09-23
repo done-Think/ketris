@@ -10,6 +10,7 @@ import type { BrokerCardProps } from '../../types/broker'
 
 const broker: BrokerCardProps = {
   id: 'marina-costa',
+  agencyName: 'Imobiliária Horizonte',
   name: 'Marina Costa',
   creci: 'CRECI 123456-F',
   avatar:
@@ -18,8 +19,8 @@ const broker: BrokerCardProps = {
   specialties: ['Aluguel', 'Alto padrão'],
   neighborhoods: ['Jardins', 'Itaim Bibi'],
   activeListings: 42,
-  responseTime: '15 min',
-  rating: 5,
+  responseTime: null,
+  rating: null,
   dealsClosed: 128,
   phone: '(11) 99822-1104',
   email: 'marina@ketris.com.br',
@@ -52,12 +53,6 @@ function renderBrokerCard() {
 }
 
 describe('BrokerCard', () => {
-  it('formats whole ratings with one decimal place', () => {
-    renderBrokerCard()
-
-    expect(screen.getByText('5.0')).toBeInTheDocument()
-  })
-
   it('keeps the whole broker card linked while preserving featured listing links', () => {
     renderBrokerCard()
 

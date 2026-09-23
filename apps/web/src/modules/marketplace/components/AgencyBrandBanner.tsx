@@ -1,6 +1,6 @@
 import { Box, Typography } from '@mui/material'
 
-import { alpha, radius } from '@shared/theme/tokens'
+import { radius } from '@shared/theme/tokens'
 
 import type { AgencyBrandBannerProps } from '../types/agency'
 
@@ -9,7 +9,7 @@ export function AgencyBrandBanner({ agency, size }: AgencyBrandBannerProps) {
 
   return (
     <Box
-      aria-label={`${agency.name}, ${agency.legalCreci}`}
+      aria-label={agency.legalCreci ? `${agency.name}, ${agency.legalCreci}` : agency.name}
       sx={{
         width: '100%',
         minWidth: 0,
@@ -88,26 +88,13 @@ export function AgencyBrandBanner({ agency, size }: AgencyBrandBannerProps) {
         <Typography
           noWrap
           sx={{
-            color: agency.brand.secondaryColor,
-            fontSize: compact ? 11 : { xs: 17, md: 23 },
-            fontStyle: 'italic',
-            fontWeight: 900,
-            lineHeight: 1,
-            textShadow: `0 1px 0 ${alpha.white[72]}`,
-          }}
-        >
-          {agency.brand.eyebrow}
-        </Typography>
-        <Typography
-          noWrap
-          sx={{
             color: agency.brand.primaryColor,
             fontSize: compact ? 20 : { xs: 34, md: 54 },
             fontWeight: 900,
             lineHeight: 0.95,
           }}
         >
-          {agency.brand.title}
+          {agency.name}
         </Typography>
         <Typography
           noWrap

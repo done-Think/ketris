@@ -54,7 +54,7 @@ export function AgencyProfileHero({ agency }: AgencyProfileHeroProps) {
           {agency.name}
         </Typography>
         <Typography sx={{ color: 'text.secondary', fontSize: 14, fontWeight: 500, mb: 2 }}>
-          {agency.legalCreci} / {agency.headquarters}
+          {[agency.legalCreci, agency.headquarters].filter(Boolean).join(' / ')}
         </Typography>
         <Typography sx={{ color: 'text.secondary', maxWidth: 860 }}>{agency.summary}</Typography>
       </Box>

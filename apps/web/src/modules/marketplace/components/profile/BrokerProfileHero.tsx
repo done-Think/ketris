@@ -1,12 +1,10 @@
 'use client'
 
 import { Avatar, Box, Chip, Stack, Typography } from '@mui/material'
-import StarRoundedIcon from '@mui/icons-material/StarRounded'
 
-import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { BrokerProfileHeroProps } from '../../types/broker'
-import { formatRating } from '../../utils/format-rating'
 
 export function BrokerProfileHero({ broker, theme }: BrokerProfileHeroProps) {
   return (
@@ -58,7 +56,7 @@ export function BrokerProfileHero({ broker, theme }: BrokerProfileHeroProps) {
         }}
       >
         <Avatar
-          src={broker.avatar}
+          src={broker.avatar ?? undefined}
           alt={broker.name}
           sx={{
             width: { xs: 86, md: 118 },
@@ -78,16 +76,6 @@ export function BrokerProfileHero({ broker, theme }: BrokerProfileHeroProps) {
                 fontWeight: 700,
               }}
             />
-            <Chip
-              icon={<StarRoundedIcon sx={{ fontSize: iconSize.xs }} />}
-              label={formatRating(broker.rating)}
-              size="small"
-              sx={{
-                borderRadius: `${radius.sm}px`,
-                bgcolor: surface.paper,
-                fontWeight: 700,
-              }}
-            />
           </Stack>
           <Typography
             component="h1"
@@ -103,7 +91,7 @@ export function BrokerProfileHero({ broker, theme }: BrokerProfileHeroProps) {
             {broker.name}
           </Typography>
           <Typography sx={{ color: 'text.secondary', fontSize: 14, fontWeight: 500 }}>
-            {broker.creci} / {broker.region}
+            {[broker.creci, broker.region].filter(Boolean).join(' / ')}
           </Typography>
         </Box>
       </Box>

@@ -3,7 +3,6 @@
 import { type MouseEvent, useRef } from 'react'
 import { Avatar, Box, Card, CardContent, Chip, Divider, Stack, Typography } from '@mui/material'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import StarRoundedIcon from '@mui/icons-material/StarRounded'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
@@ -18,7 +17,6 @@ import {
 } from '@shared/theme/tokens'
 
 import type { BrokerCardProps } from '../types/broker'
-import { formatRating } from '../utils/format-rating'
 import { buildPublicProfileHref } from '../utils/property-links'
 import { buildProfileListings } from '../utils/profile-listings'
 import { DirectoryCardMetrics } from './directory/DirectoryCardMetrics'
@@ -95,7 +93,7 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
         <Box sx={{ minWidth: 0 }}>
           <Stack direction="row" spacing={isListView ? 2.2 : 1.6} alignItems="flex-start">
             <Avatar
-              src={brokerCardProps.avatar}
+              src={brokerCardProps.avatar ?? undefined}
               alt={brokerCardProps.name}
               sx={{
                 width: isListView ? { xs: 68, md: 86 } : 58,
@@ -119,12 +117,6 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
                     {brokerCardProps.creci}
                   </Typography>
                 </Box>
-                <Stack direction="row" alignItems="center" spacing={0.35}>
-                  <StarRoundedIcon sx={{ color: 'primary.main', fontSize: iconSize.sm }} />
-                  <Typography sx={{ fontSize: 13, fontWeight: 900 }}>
-                    {formatRating(brokerCardProps.rating)}
-                  </Typography>
-                </Stack>
               </Stack>
 
               <Typography sx={{ color: 'text.secondary', ...componentText.cardMeta, mt: 1 }}>
@@ -168,12 +160,11 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
             gridTemplateColumns={{ xs: '1fr', sm: '2fr 0.85fr 0.85fr' }}
             labelFontWeight={800}
             metrics={[
-              { label: t('region'), value: brokerCardProps.region, showTooltip: true },
+              { label: t('region'), value: brokerCardProps.region ?? '', showTooltip: true },
               {
                 label: t('properties'),
                 value: t('activeProperties', { count: brokerCardProps.activeListings }),
               },
-              { label: t('response'), value: brokerCardProps.responseTime },
             ]}
             valueFontWeight={900}
           />
