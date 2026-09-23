@@ -11,7 +11,7 @@ describe('Autenticação', () => {
 
   databaseTest('entra com o usuário de desenvolvimento e abre o dashboard', () => {
     cy.visit('/login')
-    cy.get('input[name="email"]').type('admin@ketris.dev')
+    cy.get('input[name="email"]').type('imobiliariahorizonte@ketris.com.br')
     cy.get('input[name="password"]').type('trocar-em-desenvolvimento')
     cy.contains('button', 'Entrar').click()
     cy.url().should('include', '/dashboard')
