@@ -29,7 +29,11 @@ export const seedTenants: SeedTenant[] = [
     corPrimaria: '#F30274',
     corSecundaria: '#212631',
     members: [
-      { name: 'Admin Ketris', email: 'imobiliariahorizonte@ketris.com.br', role: 'ADMIN' },
+      {
+        name: 'Imobiliária Horizonte',
+        email: 'imobiliariahorizonte@ketris.com.br',
+        role: 'ADMIN',
+      },
       {
         name: 'Camila Rocha',
         email: 'camila@ketris.com.br',
