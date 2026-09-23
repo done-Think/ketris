@@ -13,7 +13,7 @@ function isLocalDashboardPreview(host: string | null) {
   return process.env.NODE_ENV === 'development' && /^localhost(?::\d+)?$/.test(host ?? '')
 }
 
-export default async function MaintenancePreviewLayout({
+export default async function ChargesPreviewLayout({
   children,
   params,
 }: {
@@ -25,10 +25,7 @@ export default async function MaintenancePreviewLayout({
 
   if (!allowLocalDashboardPreview) {
     const session = await getServerSession(authOptions)
-
-    if (!session || session.scope !== 'tenant') {
-      redirect(getLocalizedPathname('/login', locale))
-    }
+    if (!session || session.scope !== 'tenant') redirect(getLocalizedPathname('/login', locale))
   }
 
   return (
