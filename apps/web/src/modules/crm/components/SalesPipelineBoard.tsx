@@ -169,8 +169,7 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
     <Box
       sx={{
         minHeight: '100vh',
-        px: { xs: 2, md: 3.6 },
-        py: { xs: 2.4, md: 4.2 },
+        p: 3.5,
         bgcolor: surface.app,
         overflow: 'hidden',
         fontFamily: pipelineBodyFontFamily,

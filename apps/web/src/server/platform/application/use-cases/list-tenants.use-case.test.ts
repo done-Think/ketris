@@ -16,6 +16,7 @@ describe('ListTenantsUseCase', () => {
       findById: vi.fn(),
       findMany: vi.fn().mockResolvedValue(tenants),
       create: vi.fn(),
+      searchByName: vi.fn(),
     }
     const useCase = new ListTenantsUseCase(tenantRepository)
 

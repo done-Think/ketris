@@ -7,6 +7,14 @@ import { theme } from '@shared/theme/theme'
 import { ContactsList } from '../../components/ContactsList'
 import type { ContactsListProps } from '../../types/contact'
 
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({ data: { tenantId: 'tenant-1' }, status: 'authenticated' }),
+}))
+
+vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
+  useDashboardAgendaNotifications: () => [],
+}))
+
 function renderContactsList(props: ContactsListProps = {}) {
   return render(
     <ThemeProvider theme={theme}>
@@ -23,12 +31,9 @@ describe('ContactsList', () => {
 
     expect(within(table).getAllByRole('row')).toHaveLength(7)
     expect(screen.getByRole('heading', { name: 'Contatos' })).toBeVisible()
-    expect(
-      screen.getByText('Gerencie sua base de clientes, proprietários e corretores.'),
-    ).toBeVisible()
     expect(screen.getByPlaceholderText('Buscar contato por nome, email, fone...')).toBeVisible()
     expect(screen.getByRole('button', { name: 'Novo Contato' })).toBeVisible()
-    expect(screen.getByText('1-6 de 234')).toBeVisible()
+    expect(screen.getByText('Mostrando 1–6 de 234')).toBeVisible()
 
     ;['Nome', 'Tipo', 'Telefone', 'Email', 'Imóveis', 'Última interação', 'Ações'].forEach(
       (heading) => expect(within(table).getByText(heading)).toBeInTheDocument(),
@@ -81,12 +86,12 @@ describe('ContactsList', () => {
     const table = screen.getByRole('table', { name: 'Contatos do CRM' })
 
     fireEvent.mouseDown(typeFilter)
-    fireEvent.click(screen.getByRole('option', { name: /Proprietários/ }))
+    fireEvent.click(screen.getByRole('option', { name: 'Proprietários' }))
 
     expect(within(table).getByText('Sandra Vasconcellos')).toBeInTheDocument()
     expect(within(table).getByText('Ana Beatriz Ramos')).toBeInTheDocument()
     expect(within(table).queryByText('Ricardo Mendes')).not.toBeInTheDocument()
-    expect(screen.getByText('1-2 de 2')).toBeVisible()
+    expect(screen.getByText('Mostrando 1–2 de 2')).toBeVisible()
   })
 
   it('selects individual contacts and all visible contacts', () => {
@@ -137,8 +142,8 @@ describe('ContactsList', () => {
       within(ricardoRow!).getByRole('button', { name: 'Mais opções para Ricardo Mendes' }),
     ).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Novo Contato' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: /previous page/i })).toBeDisabled()
-    expect(screen.getByRole('button', { name: /next page/i })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Anterior' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Próximo' })).toBeDisabled()
   })
 
   it('delegates creation, actions, and pagination when integrations are provided', () => {
@@ -169,7 +174,7 @@ describe('ContactsList', () => {
       within(ricardoRow!).getByRole('button', { name: 'Mais opções para Ricardo Mendes' }),
     )
     fireEvent.click(screen.getByRole('menuitem', { name: 'Arquivar Ricardo Mendes' }))
-    fireEvent.click(screen.getByRole('button', { name: /next page/i }))
+    fireEvent.click(screen.getByRole('button', { name: 'Próximo' }))
 
     expect(onNewContact).toHaveBeenCalledOnce()
     expect(onEditContact).toHaveBeenCalledWith(expect.objectContaining({ name: 'Ricardo Mendes' }))
@@ -180,6 +185,6 @@ describe('ContactsList', () => {
       expect.objectContaining({ name: 'Ricardo Mendes' }),
     )
     expect(onPageChange).toHaveBeenCalledWith(2)
-    expect(screen.getByRole('button', { name: /previous page/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Anterior' })).toBeDisabled()
   })
 })

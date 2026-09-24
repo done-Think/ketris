@@ -28,6 +28,14 @@ import {
   respondOpportunityRequestSchema,
   respondOpportunityResponseSchema,
 } from './schemas/respond-opportunity.schema'
+import {
+  convertLeadRequestSchema,
+  convertLeadResponseSchema,
+  createLeadRequestSchema,
+  leadResponseSchema,
+  listLeadsResponseSchema,
+  patchLeadRequestSchema,
+} from './schemas/lead.schema'
 
 const opportunityIdParamsSchema = z.object({
   id: z.string().openapi({
@@ -38,6 +46,10 @@ const opportunityIdParamsSchema = z.object({
 
 const contactIdParamsSchema = z.object({
   id: z.string().openapi({ description: 'ID do contato.', example: 'clx1y2z3a0000abcd1234efgh' }),
+})
+
+const leadIdParamsSchema = z.object({
+  id: z.string().openapi({ description: 'ID do lead.', example: 'clx1y2z3a0000abcd1234efgh' }),
 })
 
 export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
@@ -480,6 +492,162 @@ export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
       },
       404: {
         description: 'Contato não encontrado neste tenant.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'get',
+    path: '/crm/leads',
+    tags: ['CRM'],
+    summary: 'Lista os leads do tenant autenticado',
+    description:
+      'Requer autenticação (Bearer). Um lead é um contato bruto, ainda sem imóvel específico nem ' +
+      'valor proposto — antes de virar uma Oportunidade formal. Quando o ator tem papel AGENT, a ' +
+      'listagem é restrita aos leads dos quais o ator é responsável; ADMIN e OWNER veem todo o tenant.',
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: 'Lista de leads do tenant.',
+        content: { 'application/json': { schema: listLeadsResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'post',
+    path: '/crm/leads',
+    tags: ['CRM'],
+    summary: 'Cria um lead no tenant autenticado',
+    description:
+      'Requer autenticação (Bearer). O ator autenticado vira o responsável pelo lead. Locatários ' +
+      '(RENTER) não podem criar leads (403).',
+    security: [{ bearerAuth: [] }],
+    request: { body: { content: { 'application/json': { schema: createLeadRequestSchema } } } },
+    responses: {
+      201: {
+        description: 'Lead criado, em estágio NOVO.',
+        content: { 'application/json': { schema: leadResponseSchema } },
+      },
+      400: {
+        description: 'Corpo da requisição inválido (falha de validação Zod).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Ator com papel RENTER tentando criar um lead.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'get',
+    path: '/crm/leads/{id}',
+    tags: ['CRM'],
+    summary: 'Consulta um lead do tenant autenticado',
+    description:
+      'Requer autenticação (Bearer). Um ator AGENT recebe 404 opaco para um lead do qual não é ' +
+      'responsável — mesma regra de `properties`.',
+    security: [{ bearerAuth: [] }],
+    request: { params: leadIdParamsSchema },
+    responses: {
+      200: {
+        description: 'Lead encontrado.',
+        content: { 'application/json': { schema: leadResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      404: {
+        description: 'Lead não encontrado neste tenant.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'patch',
+    path: '/crm/leads/{id}',
+    tags: ['CRM'],
+    summary: 'Atualiza o estágio ou as observações de um lead',
+    description:
+      'Requer autenticação (Bearer). Atualiza apenas os campos informados (`stage` e/ou `notes`); ' +
+      'ao menos um deve ser enviado.',
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: leadIdParamsSchema,
+      body: { content: { 'application/json': { schema: patchLeadRequestSchema } } },
+    },
+    responses: {
+      200: {
+        description: 'Lead atualizado.',
+        content: { 'application/json': { schema: leadResponseSchema } },
+      },
+      400: {
+        description: 'Corpo da requisição inválido (falha de validação Zod).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      404: {
+        description: 'Lead não encontrado neste tenant.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'post',
+    path: '/crm/leads/{id}/convert',
+    tags: ['CRM'],
+    summary: 'Converte um lead numa Oportunidade formal',
+    description:
+      'Requer autenticação (Bearer). Cria uma Oportunidade em RASCUNHO a partir do lead (nome/e-mail/' +
+      'telefone e observações são copiados), vinculando o imóvel e o valor informados — os dois dados ' +
+      'que um lead ainda não tem. O lead passa para o estágio PROPOSTA e fica vinculado à oportunidade ' +
+      'criada; não pode ser convertido de novo (409). `propertyId` precisa pertencer ao tenant do ator ' +
+      '(404 caso contrário); um AGENT só pode converter usando um imóvel do qual é responsável (403).',
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: leadIdParamsSchema,
+      body: { content: { 'application/json': { schema: convertLeadRequestSchema } } },
+    },
+    responses: {
+      200: {
+        description: 'Lead convertido — retorna o lead atualizado e o id da nova oportunidade.',
+        content: { 'application/json': { schema: convertLeadResponseSchema } },
+      },
+      400: {
+        description: 'Corpo da requisição inválido (falha de validação Zod).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description:
+          'Ator com papel AGENT tentando converter usando um imóvel do qual não é responsável.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      404: {
+        description: 'Lead ou imóvel não encontrado neste tenant.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      409: {
+        description: 'O lead já foi convertido em oportunidade.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },

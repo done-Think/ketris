@@ -97,6 +97,7 @@ export interface PropertyListFilters {
   tenantId: string
   status?: PropertyStatus
   finalidade?: PropertyPurpose
+  responsavelId?: string
 }
 
 export interface ActiveContractProperty {

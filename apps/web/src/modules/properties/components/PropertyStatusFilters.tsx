@@ -94,6 +94,9 @@ export function PropertyStatusFilters({
       </TextField>
 
       <Stack
+        component="div"
+        role="group"
+        aria-label={t('filterAriaLabel')}
         direction="row"
         spacing={0.8}
         useFlexGap
@@ -107,6 +110,7 @@ export function PropertyStatusFilters({
             <Chip
               key={filter.label}
               clickable
+              aria-pressed={active}
               label={`${t(filter.label)} ${statusFilterCounts[filter.label]}`}
               onClick={() => onStatusFilterChange(filter.label)}
               sx={{

@@ -13,8 +13,12 @@ describe('/api/properties (integração)', () => {
   let tenantId: string
   let otherTenantId: string
   let actorToken: string
+  let renterToken: string
+  let otherAgentToken: string
+  let adminToken: string
   let createdPropertyId: string
   let otherTenantPropertyId: string
+  let otherAgentPropertyId: string
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
@@ -43,6 +47,26 @@ describe('/api/properties (integração)', () => {
       email: actor.email,
       papel: actor.papel,
       ativo: actor.ativo,
+      vinculoAprovadoEm: actor.vinculoAprovadoEm,
+    })
+
+    const renter = await prisma.usuario.create({
+      data: {
+        tenantId,
+        nome: 'Locatário Teste',
+        email: `locatario-${randomUUID()}@ketris.dev`,
+        senhaHash: 'hash-fake',
+        papel: 'RENTER',
+      },
+    })
+    renterToken = await tokenService.sign({
+      id: renter.id,
+      tenantId: renter.tenantId,
+      nome: renter.nome,
+      email: renter.email,
+      papel: renter.papel,
+      ativo: renter.ativo,
+      vinculoAprovadoEm: renter.vinculoAprovadoEm,
     })
 
     const otherActor = await prisma.usuario.create({
@@ -66,6 +90,56 @@ describe('/api/properties (integração)', () => {
       },
     })
     otherTenantPropertyId = otherProperty.id
+
+    const otherAgentSameTenant = await prisma.usuario.create({
+      data: {
+        tenantId,
+        nome: 'Outro Corretor da Mesma Imobiliária',
+        email: `outro-corretor-${randomUUID()}@ketris.dev`,
+        senhaHash: 'hash-fake',
+        papel: 'AGENT',
+      },
+    })
+    otherAgentToken = await tokenService.sign({
+      id: otherAgentSameTenant.id,
+      tenantId: otherAgentSameTenant.tenantId,
+      nome: otherAgentSameTenant.nome,
+      email: otherAgentSameTenant.email,
+      papel: otherAgentSameTenant.papel,
+      ativo: otherAgentSameTenant.ativo,
+      vinculoAprovadoEm: otherAgentSameTenant.vinculoAprovadoEm,
+    })
+    const otherAgentProperty = await prisma.imovel.create({
+      data: {
+        tenantId,
+        responsavelId: otherAgentSameTenant.id,
+        titulo: 'Imóvel de outro corretor da mesma imobiliária',
+        finalidade: 'ALUGUEL',
+        tipo: 'apartamento',
+        valor: 2200,
+        status: 'DRAFT',
+      },
+    })
+    otherAgentPropertyId = otherAgentProperty.id
+
+    const admin = await prisma.usuario.create({
+      data: {
+        tenantId,
+        nome: 'Admin da Imobiliária',
+        email: `admin-imobiliaria-${randomUUID()}@ketris.dev`,
+        senhaHash: 'hash-fake',
+        papel: 'ADMIN',
+      },
+    })
+    adminToken = await tokenService.sign({
+      id: admin.id,
+      tenantId: admin.tenantId,
+      nome: admin.nome,
+      email: admin.email,
+      papel: admin.papel,
+      ativo: admin.ativo,
+      vinculoAprovadoEm: admin.vinculoAprovadoEm,
+    })
   })
 
   afterAll(async () => {
@@ -138,9 +212,55 @@ describe('/api/properties (integração)', () => {
     expect(ids).not.toContain(otherTenantPropertyId)
   })
 
+  it('um corretor não vê imóveis de outro corretor da mesma imobiliária na listagem', async () => {
+    const response = await GET(buildRequest('GET', undefined, actorToken))
+    const json = await response.json()
+
+    const ids = json.properties.map((property: { id: string }) => property.id)
+    expect(ids).toContain(createdPropertyId)
+    expect(ids).not.toContain(otherAgentPropertyId)
+  })
+
+  it('o admin da imobiliária vê imóveis de todos os corretores do tenant', async () => {
+    const response = await GET(buildRequest('GET', undefined, adminToken))
+    const json = await response.json()
+
+    const ids = json.properties.map((property: { id: string }) => property.id)
+    expect(ids).toContain(createdPropertyId)
+    expect(ids).toContain(otherAgentPropertyId)
+  })
+
+  it('cada corretor vê apenas o próprio imóvel na listagem', async () => {
+    const response = await GET(buildRequest('GET', undefined, otherAgentToken))
+    const json = await response.json()
+
+    const ids = json.properties.map((property: { id: string }) => property.id)
+    expect(ids).toContain(otherAgentPropertyId)
+    expect(ids).not.toContain(createdPropertyId)
+  })
+
   it('retorna 401 sem Authorization header', async () => {
     const response = await GET(buildRequest('GET'))
 
     expect(response.status).toBe(401)
+  })
+
+  it('retorna 403 quando um RENTER tenta criar imóvel', async () => {
+    const response = await POST(
+      buildRequest(
+        'POST',
+        {
+          titulo: 'Tentativa de locatário',
+          finalidade: 'ALUGUEL',
+          tipo: 'apartamento',
+          valor: 1000,
+        },
+        renterToken,
+      ),
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(403)
+    expect(json.error.code).toBe('FORBIDDEN')
   })
 })

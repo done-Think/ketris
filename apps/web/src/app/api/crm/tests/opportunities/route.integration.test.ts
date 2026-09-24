@@ -50,6 +50,7 @@ describe('/api/crm/opportunities (integração)', () => {
       email: actor.email,
       papel: actor.papel,
       ativo: actor.ativo,
+      vinculoAprovadoEm: actor.vinculoAprovadoEm,
     })
 
     const responsavel = await prisma.usuario.create({
@@ -321,6 +322,7 @@ describe('/api/crm/opportunities (integração)', () => {
         email: agentA.email,
         papel: agentA.papel,
         ativo: agentA.ativo,
+        vinculoAprovadoEm: agentA.vinculoAprovadoEm,
       })
 
       const agentB = await prisma.usuario.create({
@@ -339,6 +341,7 @@ describe('/api/crm/opportunities (integração)', () => {
         email: agentB.email,
         papel: agentB.papel,
         ativo: agentB.ativo,
+        vinculoAprovadoEm: agentB.vinculoAprovadoEm,
       })
 
       const imovelAgentA = await prisma.imovel.create({

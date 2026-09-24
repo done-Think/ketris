@@ -37,5 +37,10 @@
     "proposals": "Propuestas",
     "maintenance": "Mantenimiento",
     "finance": "Finanzas"
+  },
+  "roleGuard": {
+    "loadingSession": "Cargando sesión",
+    "restrictedTitle": "Acceso restringido",
+    "restrictedDescription": "No tienes permiso para ver esta página. Redirigiendo al panel."
   }
 }

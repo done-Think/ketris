@@ -1,3 +1,7 @@
+import { ForbiddenError } from '@server/shared/errors'
+
+import type { Papel } from '@server/auth/domain/user.entity'
+
 import type { PropertyRepository } from '../ports/property-repository.port'
 import type { NewProperty } from '../../domain/property.entity'
 
@@ -8,8 +12,13 @@ export class CreatePropertyUseCase {
     input: Omit<NewProperty, 'tenantId' | 'responsavelId'> & {
       actorTenantId: string
       actorUserId: string
+      actorPapel: Papel
     },
   ) {
+    if (input.actorPapel === 'RENTER') {
+      throw new ForbiddenError('Locatários não podem gerenciar imóveis.')
+    }
+
     return this.propertyRepository.create({
       tenantId: input.actorTenantId,
       responsavelId: input.actorUserId,

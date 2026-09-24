@@ -1,3 +1,8 @@
+import { ForbiddenError } from '@server/shared/errors'
+
+import type { Papel } from '@server/auth/domain/user.entity'
+
+import { assertPropertyAccess } from '../authorization'
 import { PropertyNotFoundError, PropertyPublishValidationError } from '../../domain/errors'
 import type { Property } from '../../domain/property.entity'
 import type { PropertyRepository } from '../ports/property-repository.port'
@@ -5,12 +10,24 @@ import type { PropertyRepository } from '../ports/property-repository.port'
 export class PublishPropertyUseCase {
   constructor(private readonly propertyRepository: PropertyRepository) {}
 
-  async execute(input: { actorTenantId: string; id: string; publishedAt?: Date }) {
+  async execute(input: {
+    actorTenantId: string
+    actorId: string
+    id: string
+    publishedAt?: Date
+    actorPapel: Papel
+  }) {
+    if (input.actorPapel === 'RENTER') {
+      throw new ForbiddenError('Locatários não podem gerenciar imóveis.')
+    }
+
     const property = await this.propertyRepository.findByTenantAndId(input.actorTenantId, input.id)
 
     if (!property) {
       throw new PropertyNotFoundError()
     }
+
+    assertPropertyAccess(property.responsavelId, input.actorId, input.actorPapel)
 
     const missingFields = getPublishMissingFields(property)
 

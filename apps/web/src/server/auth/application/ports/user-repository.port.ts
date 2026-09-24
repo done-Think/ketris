@@ -6,20 +6,22 @@ export interface NewUser {
   email: string
   senhaHash: string
   papel: Papel
+  vinculoAprovadoEm?: Date | null
 }
 
 export interface UserUpdate {
   nome?: string
   email?: string
   papel?: Papel
+  senhaHash?: string
 }
 
 export interface UserRepository {
   findById(id: string): Promise<User | null>
   findByEmail(email: string): Promise<User | null>
-  findByEmailAndTenant(tenantId: string, email: string): Promise<User | null>
   findManyByTenant(tenantId: string): Promise<User[]>
   create(user: NewUser): Promise<User>
   update(id: string, changes: UserUpdate): Promise<User>
   deactivate(id: string): Promise<User>
+  approveMembership(id: string): Promise<User>
 }
