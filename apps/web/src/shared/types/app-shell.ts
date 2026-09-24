@@ -12,6 +12,7 @@ export type AppShellNavHref =
   | '/dashboard/properties'
   | '/dashboard/contracts'
   | '/dashboard/public-profile'
+  | '/dashboard/public-profile/agency'
   | '/dashboard/agenda'
   | '/dashboard/finance'
   | '/dashboard/maintenance'

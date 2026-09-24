@@ -94,34 +94,36 @@ describe('AppShell navigation per papel', () => {
     vi.mocked(usePathname).mockReturnValue('/crm')
   })
 
-  it('ADMIN vê todos os itens, incluindo Dashboard, Perfil Público e Financeiro', () => {
+  it('ADMIN vê Dashboard, Perfil da Imobiliária e Financeiro, mas não o Perfil Público do corretor', () => {
     mockSession({ papel: 'ADMIN' })
 
     renderShell()
 
     expect(screen.getAllByText('Dashboard').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('Perfil Público').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Perfil da Imobiliária').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Financeiro').length).toBeGreaterThan(0)
+    expect(screen.queryAllByText('Perfil Público')).toHaveLength(0)
   })
 
-  it('OWNER também vê todos os itens', () => {
+  it('OWNER também vê Dashboard, Perfil da Imobiliária e Financeiro', () => {
     mockSession({ papel: 'OWNER' })
 
     renderShell()
 
     expect(screen.getAllByText('Dashboard').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('Perfil Público').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Perfil da Imobiliária').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Financeiro').length).toBeGreaterThan(0)
   })
 
-  it('AGENT não vê Dashboard, Perfil Público nem Financeiro, mas vê Pipeline e Contatos', () => {
+  it('AGENT não vê Dashboard, Perfil da Imobiliária nem Financeiro, mas vê Perfil Público, Pipeline e Contatos', () => {
     mockSession({ papel: 'AGENT' })
 
     renderShell()
 
     expect(screen.queryAllByText('Dashboard')).toHaveLength(0)
-    expect(screen.queryAllByText('Perfil Público')).toHaveLength(0)
+    expect(screen.queryAllByText('Perfil da Imobiliária')).toHaveLength(0)
     expect(screen.queryAllByText('Financeiro')).toHaveLength(0)
+    expect(screen.getAllByText('Perfil Público').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Pipeline').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Contatos').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Meus Imóveis').length).toBeGreaterThan(0)

@@ -59,6 +59,12 @@ const navigationItems: readonly AppShellNavItem[] = [
     labelKey: 'publicProfile',
     href: '/dashboard/public-profile',
     icon: PaletteOutlinedIcon,
+    roles: ['AGENT'],
+  },
+  {
+    labelKey: 'agencyPublicProfile',
+    href: '/dashboard/public-profile/agency',
+    icon: PaletteOutlinedIcon,
     roles: ['ADMIN', 'OWNER'],
   },
   { labelKey: 'agenda', href: '/dashboard/agenda', icon: CalendarTodayOutlinedIcon },
