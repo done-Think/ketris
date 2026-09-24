@@ -23,6 +23,7 @@ export function toDashboardLead(lead: Lead): DashboardLead {
     phone: lead.phone,
     email: lead.email ?? '',
     lastContact: formatLeadRelativeDate(lead.updatedAt),
+    lastContactAt: lead.updatedAt,
     interest: lead.interest,
     source: lead.source,
     // Broker name resolution is blocked by an admin-only route today — same simplification already

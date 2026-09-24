@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 
 import { useRouter } from '@/i18n/navigation'
+import { DashboardTablePagination } from '@shared/components/layout'
 import { brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { salesPipelineStages, visibleSalesPipelineStatuses } from '../config/sales-pipeline-stages'
@@ -43,7 +44,6 @@ import {
 import { CreateOpportunityDialog } from './opportunity-detail/CreateOpportunityDialog'
 import { ProposalKpiCards } from './proposals-list/ProposalKpiCards'
 import { ProposalMobileCards } from './proposals-list/ProposalMobileCards'
-import { ProposalPagination } from './proposals-list/ProposalPagination'
 import { ProposalStatusFilters } from './proposals-list/ProposalStatusFilters'
 import { ProposalsTable } from './proposals-list/ProposalsTable'
 import { PipelineStageColumn } from './sales-pipeline-board/PipelineStageColumn'
@@ -72,6 +72,7 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
   const [viewMode, setViewMode] = useState<SalesPipelineViewMode>('kanban')
   const [proposalStatus, setProposalStatus] = useState<ProposalManagementFilterId>('all')
   const [proposalPageIndex, setProposalPageIndex] = useState(1)
+  const [proposalRowsPerPage, setProposalRowsPerPage] = useState(proposalManagementDefaultPageSize)
   const { enqueueSnackbar } = useSnackbar()
 
   const opportunitiesQuery = useOpportunities(tenantId)
@@ -148,9 +149,9 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
         search,
         status: proposalStatus,
         page: proposalPageIndex,
-        pageSize: proposalManagementDefaultPageSize,
+        pageSize: proposalRowsPerPage,
       }),
-    [proposalItems, proposalPageIndex, proposalStatus, search],
+    [proposalItems, proposalPageIndex, proposalRowsPerPage, proposalStatus, search],
   )
 
   function goToOpportunity(proposal: ProposalManagementListItem) {
@@ -168,7 +169,7 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
     <Box
       sx={{
         minHeight: '100vh',
-        p: { xs: 2, sm: 3, lg: 3.5 },
+        p: 3.5,
         bgcolor: surface.app,
         overflow: 'hidden',
         fontFamily: pipelineBodyFontFamily,
@@ -325,12 +326,15 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
               </Stack>
             )}
 
-            <ProposalPagination
+            <DashboardTablePagination
+              count={proposalPageResult.totalCount}
               page={proposalPageResult.page}
-              pageCount={proposalPageResult.pageCount}
-              visibleCount={proposalPageResult.items.length}
-              totalCount={proposalPageResult.totalCount}
+              rowsPerPage={proposalRowsPerPage}
               onPageChange={setProposalPageIndex}
+              onRowsPerPageChange={(nextRowsPerPage) => {
+                setProposalRowsPerPage(nextRowsPerPage)
+                setProposalPageIndex(1)
+              }}
             />
           </Paper>
         </Box>
