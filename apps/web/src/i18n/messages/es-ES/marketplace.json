@@ -216,6 +216,7 @@
       "availability": "Disponibilidad",
       "commaSeparatedHint": "Separa varios valores con una coma.",
       "appearance": "Apariencia",
+      "images": "Imágenes",
       "primaryColor": "Color principal",
       "secondaryColor": "Color secundario",
       "backgroundColor": "Fondo del perfil",
@@ -252,6 +253,7 @@
       "yearsInMarket": "Años de mercado",
       "commaSeparatedHint": "Separa varios valores con una coma.",
       "appearance": "Apariencia",
+      "images": "Imágenes",
       "backgroundColor": "Fondo de la marca",
       "logoUrl": "URL del logo",
       "bannerUrl": "URL del banner",
@@ -353,5 +355,13 @@
       "team": "Equipo",
       "rating": "Nota"
     }
+  },
+  "mediaUpload": {
+    "dropzone": "Arrastra la imagen aquí o haz clic para seleccionar",
+    "dragActive": "Suelta la imagen aquí",
+    "uploading": "Enviando...",
+    "remove": "Eliminar imagen",
+    "hint": "JPG, PNG o WEBP.",
+    "uploadError": "No se pudo enviar la imagen. Inténtalo de nuevo."
   }
 }

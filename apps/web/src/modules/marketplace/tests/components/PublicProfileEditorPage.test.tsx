@@ -30,6 +30,10 @@ vi.mock('../../hooks/use-tenant-agents', () => ({
   useTenantAgents: () => ({ data: [] }),
 }))
 
+vi.mock('../../hooks/use-profile-media', () => ({
+  useUploadProfileMedia: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}))
+
 function renderWithTheme(component: ReactElement) {
   render(<ThemeProvider theme={theme}>{component}</ThemeProvider>)
 }

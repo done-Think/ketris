@@ -34,6 +34,7 @@ import {
 import type { AgencyProfile } from '../types/agency'
 import type { PublicAgencyProfile } from '../types/public-agency-profile'
 import { editorPanelSx } from './public-profile-editor/public-profile-editor-shared'
+import { SingleImageUploadField } from './public-profile-editor/SingleImageUploadField'
 import { AgencyPublicProfilePage } from './AgencyPublicProfilePage'
 
 const emptyValues: AgencyPublicProfileEditorFormValues = {
@@ -280,12 +281,33 @@ export function AgencyPublicProfileEditorPage() {
               label={t('fields.backgroundColor')}
               type="color"
             />
-            <RhfTextField control={control} name="logoUrl" label={t('fields.logoUrl')} />
-            <RhfTextField
+          </Box>
+        </Box>
+
+        <Box sx={editorPanelSx}>
+          <Typography variant="h5" sx={{ mb: 2 }}>
+            {t('fields.images')}
+          </Typography>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+              gap: 2,
+            }}
+          >
+            <SingleImageUploadField
+              control={control}
+              name="logoUrl"
+              label={t('fields.logoUrl')}
+              target="agency-logo"
+              variant="avatar"
+            />
+            <SingleImageUploadField
               control={control}
               name="bannerUrl"
               label={t('fields.bannerUrl')}
-              sx={{ gridColumn: { sm: '1 / -1' } }}
+              target="agency-banner"
+              variant="banner"
             />
           </Box>
         </Box>

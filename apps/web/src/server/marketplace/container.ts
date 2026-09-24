@@ -13,15 +13,18 @@ import { SaveBrokerProfileUseCase } from './application/use-cases/save-broker-pr
 import { SubmitInquiryUseCase } from './application/use-cases/submit-inquiry.use-case'
 import { UnpublishAgencyProfileUseCase } from './application/use-cases/unpublish-agency-profile.use-case'
 import { UnpublishBrokerProfileUseCase } from './application/use-cases/unpublish-broker-profile.use-case'
+import { UploadProfileMediaUseCase } from './application/use-cases/upload-profile-media.use-case'
 import { PrismaAgencyProfileRepository } from './infrastructure/prisma-agency-profile.repository'
 import { PrismaBrokerProfileRepository } from './infrastructure/prisma-broker-profile.repository'
 import { PrismaInquiryRepository } from './infrastructure/prisma-inquiry.repository'
 import { PrismaPublicPropertyRepository } from './infrastructure/prisma-public-property.repository'
+import { S3ProfileMediaStorage } from './infrastructure/s3-profile-media-storage'
 
 const propertyRepository = new PrismaPublicPropertyRepository()
 const inquiryRepository = new PrismaInquiryRepository()
 const brokerProfileRepository = new PrismaBrokerProfileRepository()
 const agencyProfileRepository = new PrismaAgencyProfileRepository()
+const profileMediaStorage = new S3ProfileMediaStorage()
 
 export const marketplaceContainer = {
   searchPropertiesUseCase: new SearchPropertiesUseCase(propertyRepository),
@@ -41,4 +44,6 @@ export const marketplaceContainer = {
   saveAgencyProfileUseCase: new SaveAgencyProfileUseCase(agencyProfileRepository),
   publishAgencyProfileUseCase: new PublishAgencyProfileUseCase(agencyProfileRepository),
   unpublishAgencyProfileUseCase: new UnpublishAgencyProfileUseCase(agencyProfileRepository),
+
+  uploadProfileMediaUseCase: new UploadProfileMediaUseCase(profileMediaStorage),
 }

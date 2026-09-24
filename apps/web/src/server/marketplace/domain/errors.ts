@@ -35,3 +35,9 @@ export class ProfilePublishValidationError extends AppError {
     })
   }
 }
+
+export class ProfileMediaValidationError extends AppError {
+  constructor(message: string) {
+    super(message, { status: 400, code: 'PROFILE_MEDIA_VALIDATION_ERROR' })
+  }
+}

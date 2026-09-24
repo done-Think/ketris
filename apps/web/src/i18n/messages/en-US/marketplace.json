@@ -216,6 +216,7 @@
       "availability": "Availability",
       "commaSeparatedHint": "Separate multiple values with a comma.",
       "appearance": "Appearance",
+      "images": "Images",
       "primaryColor": "Primary color",
       "secondaryColor": "Secondary color",
       "backgroundColor": "Profile background",
@@ -252,6 +253,7 @@
       "yearsInMarket": "Years in market",
       "commaSeparatedHint": "Separate multiple values with a comma.",
       "appearance": "Appearance",
+      "images": "Images",
       "backgroundColor": "Brand background",
       "logoUrl": "Logo URL",
       "bannerUrl": "Banner URL",
@@ -353,5 +355,13 @@
       "team": "Team",
       "rating": "Rating"
     }
+  },
+  "mediaUpload": {
+    "dropzone": "Drag an image here or click to select",
+    "dragActive": "Drop the image here",
+    "uploading": "Uploading...",
+    "remove": "Remove image",
+    "hint": "JPG, PNG or WEBP.",
+    "uploadError": "Could not upload the image. Try again."
   }
 }

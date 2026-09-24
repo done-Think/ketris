@@ -24,6 +24,7 @@ import {
 import type { BrokerProfile } from '../types/broker'
 import type { PublicBrokerProfile } from '../types/public-broker-profile'
 import { editorPanelSx } from './public-profile-editor/public-profile-editor-shared'
+import { SingleImageUploadField } from './public-profile-editor/SingleImageUploadField'
 import { BrokerPublicProfilePage } from './BrokerPublicProfilePage'
 
 const emptyValues: PublicProfileEditorFormValues = {
@@ -259,17 +260,33 @@ export function PublicProfileEditorPage() {
               label={t('fields.backgroundColor')}
               type="color"
             />
-            <RhfTextField
+          </Box>
+        </Box>
+
+        <Box sx={editorPanelSx}>
+          <Typography variant="h5" sx={{ mb: 2 }}>
+            {t('fields.images')}
+          </Typography>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+              gap: 2,
+            }}
+          >
+            <SingleImageUploadField
               control={control}
               name="avatarUrl"
               label={t('fields.photoUrl')}
-              sx={{ gridColumn: { sm: '1 / -1' } }}
+              target="broker-avatar"
+              variant="avatar"
             />
-            <RhfTextField
+            <SingleImageUploadField
               control={control}
               name="bannerUrl"
               label={t('fields.bannerUrl')}
-              sx={{ gridColumn: { sm: '1 / -1' } }}
+              target="broker-banner"
+              variant="banner"
             />
           </Box>
         </Box>
