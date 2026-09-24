@@ -2,9 +2,19 @@ import { z } from 'zod'
 
 export const agendaOtherPropertyValue = 'other'
 
+export const agendaEventKindOptions = [
+  'VISIT',
+  'FOLLOW_UP',
+  'MEETING',
+  'INSPECTION',
+  'SIGNATURE',
+  'OTHER',
+] as const
+
 export const agendaEventFormSchema = z
   .object({
     customProperty: z.string(),
+    kind: z.enum(agendaEventKindOptions).optional().or(z.literal('')),
     durationMinutes: z.coerce.number().min(15, 'Informe ao menos 15 minutos'),
     notes: z.string(),
     participant: z.string().min(2, 'Informe o nome da pessoa'),

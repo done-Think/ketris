@@ -20,10 +20,11 @@ import { useEffect } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
 import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
-import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import { brand, iconSize } from '@shared/theme/tokens'
 
 import {
   agendaEventFormSchema,
+  agendaEventKindOptions,
   agendaOtherPropertyValue,
 } from '../schemas/agenda-event-form-schema'
 import type { AgendaEventFormDialogProps, AgendaEventFormValues } from '../types/agenda-event'
@@ -42,6 +43,7 @@ export function AgendaEventFormDialog({
   const { control, handleSubmit, reset } = useForm<AgendaEventFormValues>({
     defaultValues: {
       customProperty: '',
+      kind: '',
       durationMinutes: 60,
       notes: '',
       participant: '',
@@ -61,6 +63,7 @@ export function AgendaEventFormDialog({
 
     reset({
       customProperty: '',
+      kind: '',
       durationMinutes: 60,
       notes: '',
       participant: '',
@@ -73,7 +76,13 @@ export function AgendaEventFormDialog({
   }, [minDate, open, reset])
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      PaperProps={{ sx: { minHeight: { sm: 640 } } }}
+    >
       <Box component="form" onSubmit={handleSubmit(onCreate)}>
         <DialogTitle sx={{ px: { xs: 2, md: 2.8 }, pb: 1.4, pt: 2.4 }}>
           <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
@@ -91,44 +100,43 @@ export function AgendaEventFormDialog({
           </Stack>
         </DialogTitle>
 
-        <DialogContent sx={{ px: { xs: 2, md: 2.8 }, pb: 2 }}>
-          <Stack spacing={1.6}>
-            <Box
-              sx={{
-                border: '1px solid',
-                borderColor: alpha.graphite[8],
-                borderRadius: `${radius.sm}px`,
-                bgcolor: surface.app,
-                p: 1.6,
-              }}
-            >
-              <Stack spacing={1.4}>
-                <RhfTextField control={control} name="title" label={t('fields.title')} fullWidth />
+        <DialogContent
+          sx={{ mt: 1.6, overflow: 'visible', px: { xs: 2, md: 2.8 }, pb: 2, pt: 2.4 }}
+        >
+          <Stack spacing={1.6} sx={{ pt: 1 }}>
+            <Stack spacing={1.4}>
+              <RhfTextField control={control} name="title" label={t('fields.title')} fullWidth />
+              <RhfTextField control={control} name="kind" label={t('fields.kind')} select fullWidth>
+                <MenuItem value="">{t('fields.kindPlaceholder')}</MenuItem>
+                {agendaEventKindOptions.map((kind) => (
+                  <MenuItem key={kind} value={kind}>
+                    {t(`kinds.${kind}`)}
+                  </MenuItem>
+                ))}
+              </RhfTextField>
+              <RhfTextField
+                control={control}
+                name="propertyId"
+                label={t('fields.property')}
+                select
+                fullWidth
+              >
+                {propertyOptions.map((property) => (
+                  <MenuItem key={property.id} value={property.id}>
+                    {property.label}
+                  </MenuItem>
+                ))}
+                <MenuItem value={agendaOtherPropertyValue}>{t('fields.otherProperty')}</MenuItem>
+              </RhfTextField>
+              {showCustomPropertyField ? (
                 <RhfTextField
                   control={control}
-                  name="propertyId"
-                  label={t('fields.property')}
-                  select
+                  name="customProperty"
+                  label={t('fields.customProperty')}
                   fullWidth
-                >
-                  {propertyOptions.map((property) => (
-                    <MenuItem key={property.id} value={property.id}>
-                      {property.label}
-                    </MenuItem>
-                  ))}
-                  <MenuItem value={agendaOtherPropertyValue}>{t('fields.otherProperty')}</MenuItem>
-                </RhfTextField>
-                {showCustomPropertyField ? (
-                  <RhfTextField
-                    control={control}
-                    name="customProperty"
-                    label={t('fields.customProperty')}
-                    fullWidth
-                  />
-                ) : null}
-              </Stack>
-            </Box>
-
+                />
+              ) : null}
+            </Stack>
             <Box
               sx={{
                 display: 'grid',
@@ -154,7 +162,7 @@ export function AgendaEventFormDialog({
             <Box
               sx={{
                 display: 'grid',
-                gridTemplateColumns: { xs: '1fr', sm: '1fr 150px 150px' },
+                gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr 1fr' },
                 gap: 1.4,
               }}
             >

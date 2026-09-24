@@ -18,10 +18,20 @@
     "selectedDayLabel": "{day}, {month} {date}"
   },
   "eventForm": {
+    "kinds": {
+      "VISIT": "Visit",
+      "FOLLOW_UP": "Follow-up",
+      "MEETING": "Meeting",
+      "INSPECTION": "Inspection",
+      "SIGNATURE": "Signature",
+      "OTHER": "Other"
+    },
     "eyebrow": "New agenda entry",
     "title": "Add event",
     "closeAriaLabel": "Close new event",
     "fields": {
+      "kind": "Event type",
+      "kindPlaceholder": "Select a type",
       "title": "Title",
       "property": "Property in question",
       "otherProperty": "Other",
