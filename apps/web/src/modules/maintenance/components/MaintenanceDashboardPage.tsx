@@ -218,7 +218,7 @@ export function MaintenanceDashboardPage() {
   }
 
   return (
-    <Box sx={{ width: '100%', px: { xs: 2, md: 2.5 }, py: { xs: 2.4, md: 3.2 } }}>
+    <Box sx={{ width: '100%', p: 3.5 }}>
       <Stack spacing={{ xs: 2, md: 2.7 }}>
         <Stack
           direction={{ xs: 'column', lg: 'row' }}
