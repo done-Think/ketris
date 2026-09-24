@@ -7,7 +7,12 @@ import { theme } from '@shared/theme/theme'
 import { AgencyHighlightedTeam } from '../../components/profile/AgencyHighlightedTeam'
 import type { AgencyTeamHighlight } from '../../types/agency'
 
-const brand = { primaryColor: '#F30274', secondaryColor: '#212631', backgroundColor: '#FFFFFF' }
+const brand = {
+  primaryColor: '#F30274',
+  secondaryColor: '#212631',
+  backgroundColor: '#FFFFFF',
+  logoUrl: null,
+}
 const team: AgencyTeamHighlight[] = [
   { usuarioId: 'marina-costa', name: 'Marina Costa', avatarUrl: null },
   { usuarioId: 'juliana-mendes', name: 'Juliana Mendes', avatarUrl: null },

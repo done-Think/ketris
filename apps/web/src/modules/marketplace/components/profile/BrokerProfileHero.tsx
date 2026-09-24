@@ -1,12 +1,13 @@
 'use client'
 
-import { Avatar, Box, Chip, Stack, Typography } from '@mui/material'
+import { Avatar, Box, Typography } from '@mui/material'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
+import { defaultBrokerHeadline, defaultProfileCoverImage } from '../../config/profile-defaults'
 import type { BrokerProfileHeroProps } from '../../types/broker'
 
-export function BrokerProfileHero({ broker, theme }: BrokerProfileHeroProps) {
+export function BrokerProfileHero({ broker }: BrokerProfileHeroProps) {
   return (
     <Box
       sx={{
@@ -22,7 +23,7 @@ export function BrokerProfileHero({ broker, theme }: BrokerProfileHeroProps) {
       <Box
         sx={{
           minHeight: { xs: 170, md: 260 },
-          backgroundImage: `linear-gradient(90deg, ${brand.graphite[900]}, ${alpha.graphite[18]}), url("${theme.cover}")`,
+          backgroundImage: `linear-gradient(90deg, ${brand.graphite[900]}, ${alpha.graphite[18]}), url("${broker.bannerUrl ?? defaultProfileCoverImage}")`,
           backgroundPosition: 'center',
           backgroundSize: 'cover',
           display: 'grid',
@@ -40,7 +41,7 @@ export function BrokerProfileHero({ broker, theme }: BrokerProfileHeroProps) {
               letterSpacing: 0,
             }}
           >
-            {theme.signature}
+            {broker.headline ?? defaultBrokerHeadline}
           </Typography>
         </Box>
       </Box>
@@ -51,7 +52,7 @@ export function BrokerProfileHero({ broker, theme }: BrokerProfileHeroProps) {
           gridTemplateColumns: { xs: '1fr', md: 'auto minmax(0, 1fr)' },
           gap: { xs: 2, md: 2.5 },
           alignItems: 'center',
-          bgcolor: theme.tone,
+          bgcolor: broker.backgroundColor ?? surface.app,
           p: { xs: 2, md: 3 },
         }}
       >
@@ -65,18 +66,6 @@ export function BrokerProfileHero({ broker, theme }: BrokerProfileHeroProps) {
           }}
         />
         <Box sx={{ minWidth: 0 }}>
-          <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 1 }}>
-            <Chip
-              label={theme.label}
-              size="small"
-              sx={{
-                borderRadius: `${radius.sm}px`,
-                bgcolor: surface.paper,
-                color: theme.accent,
-                fontWeight: 700,
-              }}
-            />
-          </Stack>
           <Typography
             component="h1"
             sx={{
@@ -97,52 +86,7 @@ export function BrokerProfileHero({ broker, theme }: BrokerProfileHeroProps) {
       </Box>
 
       <Box sx={{ p: { xs: 2, md: 3 } }}>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) 280px' },
-            gap: { xs: 2, md: 3 },
-            alignItems: 'start',
-          }}
-        >
-          <Box>
-            <Typography sx={{ color: 'text.secondary', maxWidth: 760, mb: 2 }}>
-              {broker.bio}
-            </Typography>
-            <Typography sx={{ color: 'text.secondary', maxWidth: 760, fontWeight: 500 }}>
-              {theme.summary}
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.app,
-              p: 1.5,
-            }}
-          >
-            <Typography sx={{ fontSize: 12, fontWeight: 700, mb: 1.2 }}>
-              Modo de trabalho
-            </Typography>
-            <Stack spacing={0.8}>
-              {theme.method.map((item) => (
-                <Stack key={item} direction="row" spacing={0.8} alignItems="center">
-                  <Box
-                    sx={{
-                      width: 7,
-                      height: 7,
-                      borderRadius: radius.full,
-                      bgcolor: theme.accent,
-                      flex: '0 0 auto',
-                    }}
-                  />
-                  <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>{item}</Typography>
-                </Stack>
-              ))}
-            </Stack>
-          </Box>
-        </Box>
+        <Typography sx={{ color: 'text.secondary', maxWidth: 760 }}>{broker.bio}</Typography>
       </Box>
     </Box>
   )

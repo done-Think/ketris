@@ -11,12 +11,15 @@ export type AgencyTeamHighlight = {
 export type AgencyProfile = {
   id: string
   name: string
+  headline: string | null
   legalCreci: string | null
   logoInitials: string
+  bannerUrl: string | null
   brand: {
     primaryColor: string | null
     secondaryColor: string | null
     backgroundColor: string | null
+    logoUrl: string | null
   }
   headquarters: string | null
   address: string | null

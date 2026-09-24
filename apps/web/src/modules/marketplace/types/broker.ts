@@ -7,8 +7,12 @@ export type BrokerProfile = {
   agencyName: string
   email: string
   name: string
+  headline: string | null
   creci: string | null
   avatar: string | null
+  bannerUrl: string | null
+  primaryColor: string | null
+  backgroundColor: string | null
   region: string | null
   specialties: string[]
   neighborhoods: string[]
@@ -38,17 +42,6 @@ export type BrokerPublicProfilePageProps = {
   broker: BrokerProfile
 }
 
-export type BrokerProfileTheme = {
-  label: string
-  tone: string
-  accent: string
-  cover: string
-  signature: string
-  summary: string
-  method: string[]
-}
-
 export type BrokerProfileHeroProps = {
   broker: BrokerProfile
-  theme: BrokerProfileTheme
 }

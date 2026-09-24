@@ -12,9 +12,13 @@ const broker: BrokerCardProps = {
   id: 'marina-costa',
   agencyName: 'Imobiliária Horizonte',
   name: 'Marina Costa',
+  headline: null,
   creci: 'CRECI 123456-F',
   avatar:
     'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=80',
+  bannerUrl: null,
+  primaryColor: null,
+  backgroundColor: null,
   region: 'Jardins, São Paulo',
   specialties: ['Aluguel', 'Alto padrão'],
   neighborhoods: ['Jardins', 'Itaim Bibi'],

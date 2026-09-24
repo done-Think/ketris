@@ -99,8 +99,12 @@ function toPreviewProfile(
     agencyName: profile?.agencyName ?? '',
     email: profile?.email ?? '',
     name: values.displayName || 'Seu nome',
+    headline: values.headline || null,
     creci: values.creci || null,
     avatar: values.avatarUrl || null,
+    bannerUrl: values.bannerUrl || null,
+    primaryColor: values.primaryColor || null,
+    backgroundColor: values.backgroundColor || null,
     region: values.region || null,
     specialties: splitList(values.specialties),
     neighborhoods: splitList(values.neighborhoods),
@@ -192,6 +196,12 @@ export function PublicProfileEditorPage() {
               gap: 1.6,
             }}
           >
+            <RhfTextField
+              control={control}
+              name="headline"
+              label={t('fields.headline')}
+              sx={{ gridColumn: { md: '1 / -1' } }}
+            />
             <RhfTextField control={control} name="displayName" label={t('fields.displayName')} />
             <RhfTextField control={control} name="creci" label={t('fields.creci')} />
             <RhfTextField control={control} name="phone" label={t('fields.phone')} />
@@ -253,6 +263,12 @@ export function PublicProfileEditorPage() {
               control={control}
               name="avatarUrl"
               label={t('fields.photoUrl')}
+              sx={{ gridColumn: { sm: '1 / -1' } }}
+            />
+            <RhfTextField
+              control={control}
+              name="bannerUrl"
+              label={t('fields.bannerUrl')}
               sx={{ gridColumn: { sm: '1 / -1' } }}
             />
           </Box>

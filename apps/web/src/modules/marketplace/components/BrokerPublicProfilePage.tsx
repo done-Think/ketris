@@ -4,9 +4,8 @@ import { Box, Container } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { SiteFooter } from '@shared/components/layout'
-import { surface } from '@shared/theme/tokens'
+import { brand, surface } from '@shared/theme/tokens'
 
-import { getBrokerProfileTheme } from '../config/broker-profile-themes'
 import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { BrokerPublicProfilePageProps } from '../types/broker'
 import { buildProfileListings } from '../utils/profile-listings'
@@ -20,7 +19,7 @@ import { PublicProfileSidebar } from './profile/PublicProfileSidebar'
 export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps) {
   const t = useTranslations('marketplace')
   const { footerColumns, legalLinks } = useMarketplaceNavigation()
-  const theme = getBrokerProfileTheme(broker.id)
+  const accentColor = broker.primaryColor ?? brand.magenta[500]
   const representedListings = buildProfileListings(broker.highlightedListings)
 
   return (
@@ -44,9 +43,9 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
           }}
         >
           <Box sx={{ minWidth: 0 }}>
-            <BrokerProfileHero broker={broker} theme={theme} />
+            <BrokerProfileHero broker={broker} />
             <PublicProfileMetrics
-              accentColor={theme.accent}
+              accentColor={accentColor}
               metrics={[
                 { label: t('publicProfile.metrics.active'), value: broker.activeListings },
                 { label: t('publicProfile.metrics.closed'), value: broker.dealsClosed },
@@ -55,8 +54,8 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
           </Box>
 
           <PublicProfileSidebar
-            accentColor={theme.accent}
-            hoverColor={theme.tone}
+            accentColor={accentColor}
+            hoverColor={broker.backgroundColor ?? surface.app}
             href={broker.href}
             sourceType="broker"
             linkDescription={t('publicProfile.sidebar.brokerLinkDescription')}
@@ -77,7 +76,7 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
 
           <Box sx={{ gridColumn: { lg: '1 / -1' } }}>
             <PublicProfileListings
-              accentColor={theme.accent}
+              accentColor={accentColor}
               listings={representedListings}
               source={{ href: broker.href, name: broker.name, type: 'broker' }}
             />

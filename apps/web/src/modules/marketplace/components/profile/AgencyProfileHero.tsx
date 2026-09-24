@@ -2,8 +2,9 @@
 
 import { Box, Chip, Stack, Typography } from '@mui/material'
 
-import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
+import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
+import { defaultAgencyHeadline, defaultProfileCoverImage } from '../../config/profile-defaults'
 import type { AgencyProfileHeroProps } from '../../types/agency'
 import { AgencyBrandBanner } from '../AgencyBrandBanner'
 
@@ -20,6 +21,30 @@ export function AgencyProfileHero({ agency }: AgencyProfileHeroProps) {
         mb: 2.5,
       }}
     >
+      <Box
+        sx={{
+          minHeight: { xs: 130, md: 180 },
+          backgroundImage: `linear-gradient(90deg, ${brand.graphite[900]}, ${alpha.graphite[18]}), url("${agency.bannerUrl ?? defaultProfileCoverImage}")`,
+          backgroundPosition: 'center',
+          backgroundSize: 'cover',
+          display: 'grid',
+          alignItems: 'end',
+          p: { xs: 2, md: 3 },
+        }}
+      >
+        <Typography
+          sx={{
+            color: surface.lightText,
+            fontSize: { xs: 18, md: 26 },
+            fontWeight: 700,
+            lineHeight: 1.15,
+            maxWidth: 720,
+          }}
+        >
+          {agency.headline ?? defaultAgencyHeadline}
+        </Typography>
+      </Box>
+
       <Box sx={{ bgcolor: agency.brand.backgroundColor, p: { xs: 2, md: 3 } }}>
         <AgencyBrandBanner agency={agency} size="hero" />
       </Box>

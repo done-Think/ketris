@@ -1,11 +1,12 @@
-import { Box, Typography } from '@mui/material'
+import { Avatar, Box, Typography } from '@mui/material'
 
-import { radius } from '@shared/theme/tokens'
+import { radius, shadows } from '@shared/theme/tokens'
 
 import type { AgencyBrandBannerProps } from '../types/agency'
 
 export function AgencyBrandBanner({ agency, size }: AgencyBrandBannerProps) {
   const compact = size === 'compact'
+  const logoUrl = agency.brand.logoUrl
 
   return (
     <Box
@@ -26,40 +27,58 @@ export function AgencyBrandBanner({ agency, size }: AgencyBrandBannerProps) {
         py: compact ? 0.8 : 2,
       }}
     >
-      <Box
-        aria-hidden="true"
-        sx={{
-          position: 'absolute',
-          width: compact ? 44 : { xs: 66, md: 92 },
-          height: compact ? 46 : { xs: 76, md: 108 },
-          left: compact ? 12 : { xs: 18, md: 28 },
-          top: '50%',
-          transform: 'translateY(-50%)',
-          '&::before': {
-            content: '""',
+      {logoUrl ? (
+        <Avatar
+          variant="rounded"
+          src={logoUrl}
+          alt={agency.name}
+          sx={{
             position: 'absolute',
-            left: compact ? 8 : { xs: 11, md: 15 },
-            top: compact ? 5 : { xs: 8, md: 12 },
-            width: compact ? 29 : { xs: 44, md: 60 },
-            height: compact ? 29 : { xs: 44, md: 60 },
-            borderLeft: `${compact ? 7 : 11}px solid ${agency.brand.primaryColor}`,
-            borderTop: `${compact ? 7 : 11}px solid ${agency.brand.primaryColor}`,
-            transform: 'rotate(-45deg)',
-            transformOrigin: 'center',
-          },
-          '&::after': {
-            content: '""',
+            width: compact ? 44 : { xs: 66, md: 92 },
+            height: compact ? 46 : { xs: 76, md: 108 },
+            left: compact ? 12 : { xs: 18, md: 28 },
+            top: '50%',
+            transform: 'translateY(-50%)',
+            borderRadius: `${radius.sm}px`,
+            boxShadow: shadows.propertyCard,
+          }}
+        />
+      ) : (
+        <Box
+          aria-hidden="true"
+          sx={{
             position: 'absolute',
-            right: compact ? 2 : { xs: 0, md: 2 },
-            top: compact ? 13 : { xs: 22, md: 31 },
-            width: compact ? 25 : { xs: 38, md: 50 },
-            height: compact ? 14 : { xs: 22, md: 28 },
-            bgcolor: agency.brand.primaryColor,
-            transform: 'skewX(35deg)',
-            opacity: 0.96,
-          },
-        }}
-      />
+            width: compact ? 44 : { xs: 66, md: 92 },
+            height: compact ? 46 : { xs: 76, md: 108 },
+            left: compact ? 12 : { xs: 18, md: 28 },
+            top: '50%',
+            transform: 'translateY(-50%)',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              left: compact ? 8 : { xs: 11, md: 15 },
+              top: compact ? 5 : { xs: 8, md: 12 },
+              width: compact ? 29 : { xs: 44, md: 60 },
+              height: compact ? 29 : { xs: 44, md: 60 },
+              borderLeft: `${compact ? 7 : 11}px solid ${agency.brand.primaryColor}`,
+              borderTop: `${compact ? 7 : 11}px solid ${agency.brand.primaryColor}`,
+              transform: 'rotate(-45deg)',
+              transformOrigin: 'center',
+            },
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              right: compact ? 2 : { xs: 0, md: 2 },
+              top: compact ? 13 : { xs: 22, md: 31 },
+              width: compact ? 25 : { xs: 38, md: 50 },
+              height: compact ? 14 : { xs: 22, md: 28 },
+              bgcolor: agency.brand.primaryColor,
+              transform: 'skewX(35deg)',
+              opacity: 0.96,
+            },
+          }}
+        />
+      )}
       <Box
         aria-hidden="true"
         sx={{

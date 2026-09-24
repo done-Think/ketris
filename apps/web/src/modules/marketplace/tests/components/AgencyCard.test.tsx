@@ -10,12 +10,15 @@ import type { AgencyCardProps } from '../../types/agency'
 const agency: AgencyCardProps = {
   id: 'alameda-prime',
   name: 'Alameda Prime Imóveis',
+  headline: null,
   legalCreci: 'CRECI J-38210',
   logoInitials: 'AP',
+  bannerUrl: null,
   brand: {
     primaryColor: '#F30274',
     secondaryColor: '#212631',
     backgroundColor: '#FFFFFF',
+    logoUrl: null,
   },
   headquarters: 'Jardins, São Paulo',
   coverage: ['Jardins', 'Itaim Bibi'],

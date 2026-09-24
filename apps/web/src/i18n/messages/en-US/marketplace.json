@@ -205,6 +205,7 @@
     "publishError": "Could not update the profile's publication status.",
     "fields": {
       "mainInfo": "Main information",
+      "headline": "Banner headline",
       "displayName": "Display name",
       "bio": "Bio",
       "creci": "License number",
@@ -218,7 +219,8 @@
       "primaryColor": "Primary color",
       "secondaryColor": "Secondary color",
       "backgroundColor": "Profile background",
-      "photoUrl": "Photo URL"
+      "photoUrl": "Photo URL",
+      "bannerUrl": "Banner URL"
     },
     "actions": {
       "preview": "Preview",
@@ -237,6 +239,7 @@
     "publishError": "Could not update the profile's publication status.",
     "fields": {
       "mainInfo": "Main information",
+      "headline": "Banner headline",
       "displayName": "Agency name",
       "summary": "Summary",
       "legalCreci": "License number",
@@ -251,6 +254,7 @@
       "appearance": "Appearance",
       "backgroundColor": "Brand background",
       "logoUrl": "Logo URL",
+      "bannerUrl": "Banner URL",
       "team": "Featured team",
       "teamPicker": "Featured brokers",
       "teamPickerPlaceholder": "Select up to 6 brokers"

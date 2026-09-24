@@ -113,12 +113,15 @@ function toPreviewProfile(
   return {
     id: profile?.id ?? 'preview',
     name: values.displayName || 'Sua imobiliária',
+    headline: values.headline || null,
     legalCreci: values.legalCreci || null,
     logoInitials: (values.displayName || '?').slice(0, 2).toUpperCase(),
+    bannerUrl: values.bannerUrl || null,
     brand: {
       primaryColor: profile?.primaryColor ?? null,
       secondaryColor: profile?.secondaryColor ?? null,
       backgroundColor: values.backgroundColor || null,
+      logoUrl: values.logoUrl || null,
     },
     headquarters: values.headquarters || null,
     address: values.address || null,
@@ -220,6 +223,12 @@ export function AgencyPublicProfileEditorPage() {
               gap: 1.6,
             }}
           >
+            <RhfTextField
+              control={control}
+              name="headline"
+              label={t('fields.headline')}
+              sx={{ gridColumn: { md: '1 / -1' } }}
+            />
             <RhfTextField control={control} name="displayName" label={t('fields.displayName')} />
             <RhfTextField control={control} name="legalCreci" label={t('fields.legalCreci')} />
             <RhfTextField control={control} name="headquarters" label={t('fields.headquarters')} />
@@ -272,6 +281,12 @@ export function AgencyPublicProfileEditorPage() {
               type="color"
             />
             <RhfTextField control={control} name="logoUrl" label={t('fields.logoUrl')} />
+            <RhfTextField
+              control={control}
+              name="bannerUrl"
+              label={t('fields.bannerUrl')}
+              sx={{ gridColumn: { sm: '1 / -1' } }}
+            />
           </Box>
         </Box>
 

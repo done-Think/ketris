@@ -205,6 +205,7 @@
     "publishError": "No fue posible actualizar la publicación del perfil.",
     "fields": {
       "mainInfo": "Información principal",
+      "headline": "Titular del banner",
       "displayName": "Nombre mostrado",
       "bio": "Biografía",
       "creci": "Matrícula profesional",
@@ -218,7 +219,8 @@
       "primaryColor": "Color principal",
       "secondaryColor": "Color secundario",
       "backgroundColor": "Fondo del perfil",
-      "photoUrl": "URL de la foto"
+      "photoUrl": "URL de la foto",
+      "bannerUrl": "URL del banner"
     },
     "actions": {
       "preview": "Vista previa",
@@ -237,6 +239,7 @@
     "publishError": "No fue posible actualizar la publicación del perfil.",
     "fields": {
       "mainInfo": "Información principal",
+      "headline": "Titular del banner",
       "displayName": "Nombre de la inmobiliaria",
       "summary": "Resumen",
       "legalCreci": "Matrícula profesional",
@@ -251,6 +254,7 @@
       "appearance": "Apariencia",
       "backgroundColor": "Fondo de la marca",
       "logoUrl": "URL del logo",
+      "bannerUrl": "URL del banner",
       "team": "Equipo destacado",
       "teamPicker": "Corredores destacados",
       "teamPickerPlaceholder": "Selecciona hasta 6 corredores"

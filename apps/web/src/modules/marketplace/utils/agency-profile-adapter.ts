@@ -30,12 +30,15 @@ export function toAgencyProfile(profile: PublicAgencyProfile): AgencyProfile {
   return {
     id: profile.id,
     name: profile.displayName,
+    headline: profile.headline,
     legalCreci: profile.legalCreci,
     logoInitials: buildLogoInitials(profile.displayName),
+    bannerUrl: profile.bannerUrl,
     brand: {
       primaryColor: profile.primaryColor,
       secondaryColor: profile.secondaryColor,
       backgroundColor: profile.backgroundColor,
+      logoUrl: profile.logoUrl,
     },
     headquarters: profile.headquarters,
     address: profile.address,

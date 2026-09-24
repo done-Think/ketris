@@ -205,6 +205,7 @@
     "publishError": "Não foi possível atualizar a publicação do perfil.",
     "fields": {
       "mainInfo": "Informações principais",
+      "headline": "Chamada do banner",
       "displayName": "Nome exibido",
       "bio": "Biografia",
       "creci": "CRECI",
@@ -218,7 +219,8 @@
       "primaryColor": "Cor principal",
       "secondaryColor": "Cor secundária",
       "backgroundColor": "Fundo do perfil",
-      "photoUrl": "URL da foto"
+      "photoUrl": "URL da foto",
+      "bannerUrl": "URL do banner"
     },
     "actions": {
       "preview": "Visualizar",
@@ -237,6 +239,7 @@
     "publishError": "Não foi possível atualizar a publicação do perfil.",
     "fields": {
       "mainInfo": "Informações principais",
+      "headline": "Chamada do banner",
       "displayName": "Nome da imobiliária",
       "summary": "Resumo",
       "legalCreci": "CRECI",
@@ -251,6 +254,7 @@
       "appearance": "Aparência",
       "backgroundColor": "Fundo da marca",
       "logoUrl": "URL do logo",
+      "bannerUrl": "URL do banner",
       "team": "Equipe em destaque",
       "teamPicker": "Corretores em destaque",
       "teamPickerPlaceholder": "Selecione até 6 corretores"
