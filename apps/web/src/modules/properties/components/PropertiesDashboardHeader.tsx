@@ -47,7 +47,7 @@ export function PropertiesDashboardHeader({
           onChange={(event) => onSearchQueryChange(event.target.value)}
           sx={{
             width: '100%',
-            height: 36,
+            height: { xs: 40, sm: 32 },
             border: '1px solid',
             borderColor: 'divider',
             borderRadius: `${radius.sm}px`,
@@ -56,8 +56,7 @@ export function PropertiesDashboardHeader({
             pl: 4,
             pr: 1.2,
             font: 'inherit',
-            fontSize: 14,
-            fontWeight: 700,
+            fontSize: 12,
             outline: 0,
             '&::placeholder': { color: brand.neutral[400] },
             '&:focus': { borderColor: 'primary.main' },
@@ -66,15 +65,15 @@ export function PropertiesDashboardHeader({
       </Box>
       <Button
         variant="contained"
-        startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.lg }} />}
+        startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
         onClick={onCreateProperty}
         sx={{
           borderRadius: `${radius.sm}px`,
           boxShadow: shadows.none,
-          minHeight: 36,
-          px: 2,
-          fontSize: 14,
-          fontWeight: 800,
+          height: { xs: 40, sm: 32 },
+          px: 1.5,
+          fontSize: 12,
+          fontWeight: 700,
           textTransform: 'none',
           whiteSpace: 'nowrap',
         }}

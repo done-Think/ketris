@@ -155,15 +155,17 @@ export function BrokerTeamDashboardPage() {
                 sx={{
                   width: { xs: '100%', sm: 300 },
                   '& .MuiOutlinedInput-root': {
+                    height: { xs: 40, sm: 32 },
                     bgcolor: surface.paper,
                     borderRadius: `${radius.sm}px`,
+                    fontSize: 12,
                   },
                 }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
                       <SearchRoundedIcon
-                        sx={{ color: brand.neutral[400], fontSize: iconSize.md }}
+                        sx={{ color: brand.neutral[400], fontSize: iconSize.sm }}
                       />
                     </InputAdornment>
                   ),
@@ -174,9 +176,11 @@ export function BrokerTeamDashboardPage() {
                 variant="contained"
                 startIcon={<PersonAddAlt1OutlinedIcon sx={{ fontSize: iconSize.sm }} />}
                 sx={{
-                  minHeight: 40,
+                  height: { xs: 40, sm: 32 },
+                  px: 1.5,
                   borderRadius: `${radius.sm}px`,
-                  fontWeight: 900,
+                  fontSize: 12,
+                  fontWeight: 700,
                   whiteSpace: 'nowrap',
                 }}
               >

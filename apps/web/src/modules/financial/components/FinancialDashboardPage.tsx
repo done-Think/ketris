@@ -25,7 +25,13 @@ export async function FinancialDashboardPage() {
         type="button"
         variant="outlined"
         endIcon={<KeyboardArrowDownRoundedIcon sx={{ fontSize: iconSize.sm }} />}
-        sx={{ borderRadius: `${radius.sm}px`, fontWeight: 900, minHeight: 40 }}
+        sx={{
+          borderRadius: `${radius.sm}px`,
+          fontSize: 12,
+          fontWeight: 500,
+          height: { xs: 40, sm: 32 },
+          px: 1.25,
+        }}
       >
         {t('selectedMonth')}
       </Button>
@@ -33,7 +39,13 @@ export async function FinancialDashboardPage() {
         type="button"
         variant="outlined"
         startIcon={<FileDownloadOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-        sx={{ borderRadius: `${radius.sm}px`, fontWeight: 900, minHeight: 40 }}
+        sx={{
+          borderRadius: `${radius.sm}px`,
+          fontSize: 12,
+          fontWeight: 500,
+          height: { xs: 40, sm: 32 },
+          px: 1.25,
+        }}
       >
         {t('export')}
       </Button>
