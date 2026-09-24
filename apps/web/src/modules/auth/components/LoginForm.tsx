@@ -15,7 +15,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { Link } from '@/i18n/navigation'
@@ -46,6 +46,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
   const t = useTranslations('auth.login')
   const [showPassword, setShowPassword] = useState(false)
   const { error, login } = useLogin(callbackUrl)
+  const hasAttemptedLocalAutoLogin = useRef(false)
   const {
     control,
     handleSubmit,
@@ -57,6 +58,18 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
       password: '',
     },
   })
+
+  useEffect(() => {
+    const email = process.env.NEXT_PUBLIC_LOCAL_DEMO_EMAIL
+    const password = process.env.NEXT_PUBLIC_LOCAL_DEMO_PASSWORD
+    const isLocalDevelopment =
+      process.env.NODE_ENV === 'development' && window.location.hostname === 'localhost'
+
+    if (!isLocalDevelopment || !email || !password || hasAttemptedLocalAutoLogin.current) return
+
+    hasAttemptedLocalAutoLogin.current = true
+    void login({ email, password })
+  }, [login])
 
   return (
     <Box>

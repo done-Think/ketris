@@ -73,7 +73,13 @@ export function AgendaEventFormDialog({
   }, [minDate, open, reset])
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      PaperProps={{ sx: { minHeight: { sm: 640 } } }}
+    >
       <Box component="form" onSubmit={handleSubmit(onCreate)}>
         <DialogTitle sx={{ px: { xs: 2, md: 2.8 }, pb: 1.4, pt: 2.4 }}>
           <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
@@ -91,7 +97,9 @@ export function AgendaEventFormDialog({
           </Stack>
         </DialogTitle>
 
-        <DialogContent sx={{ px: { xs: 2, md: 2.8 }, pb: 2 }}>
+        <DialogContent
+          sx={{ mt: 1.6, overflow: 'visible', px: { xs: 2, md: 2.8 }, pb: 2, pt: 2.4 }}
+        >
           <Stack spacing={1.6}>
             <Box
               sx={{
