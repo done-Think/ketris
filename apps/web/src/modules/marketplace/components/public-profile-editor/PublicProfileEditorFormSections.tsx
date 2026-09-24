@@ -353,14 +353,34 @@ export function PublicProfileEditorActions({ onPreview }: PublicProfileEditorAct
   const t = useTranslations('marketplace.profileEditor')
 
   return (
-    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+    <Stack
+      direction={{ xs: 'column', sm: 'row' }}
+      spacing={1.2}
+      sx={{ width: { xs: '100%', sm: 'auto' }, alignItems: { xs: 'stretch', sm: 'center' } }}
+    >
       <Button
         type="button"
         variant="outlined"
         color="secondary"
         startIcon={<VisibilityOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
         onClick={onPreview}
-        sx={{ minHeight: 44, borderRadius: `${radius.sm}px`, flex: 1 }}
+        sx={{
+          minHeight: 36,
+          borderRadius: `${radius.sm}px`,
+          px: 2,
+          minWidth: { sm: 136 },
+          borderColor: alpha.graphite[8],
+          boxShadow: 'none',
+          fontSize: 14,
+          fontWeight: 800,
+          textTransform: 'none',
+          whiteSpace: 'nowrap',
+          '&:hover': {
+            borderColor: alpha.graphite[18],
+            bgcolor: surface.paper,
+            boxShadow: 'none',
+          },
+        }}
       >
         {t('preview')}
       </Button>
@@ -368,7 +388,20 @@ export function PublicProfileEditorActions({ onPreview }: PublicProfileEditorAct
         type="submit"
         variant="contained"
         startIcon={<SaveOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-        sx={{ minHeight: 44, borderRadius: `${radius.sm}px`, flex: 1 }}
+        sx={{
+          minHeight: 36,
+          borderRadius: `${radius.sm}px`,
+          px: 2,
+          minWidth: { sm: 136 },
+          boxShadow: 'none',
+          fontSize: 14,
+          fontWeight: 800,
+          textTransform: 'none',
+          whiteSpace: 'nowrap',
+          '&:hover': {
+            boxShadow: 'none',
+          },
+        }}
       >
         {t('save')}
       </Button>
