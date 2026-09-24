@@ -719,7 +719,7 @@ function MaintenanceStatusFilters({
               <Button
                 key={filter.value}
                 type="button"
-                variant={active ? 'contained' : 'outlined'}
+                variant="contained"
                 aria-pressed={active}
                 onClick={() => onChange(filter.value)}
                 sx={{
@@ -729,8 +729,13 @@ function MaintenanceStatusFilters({
                   gap: 0.6,
                   fontSize: 17,
                   fontWeight: 900,
+                  bgcolor: active ? 'primary.main' : alpha.graphite[6],
+                  color: active ? surface.lightText : brand.graphite[500],
                   boxShadow: 'none',
-                  '&:hover': { boxShadow: 'none' },
+                  '&:hover': {
+                    bgcolor: active ? 'primary.main' : alpha.graphite[10],
+                    boxShadow: 'none',
+                  },
                 }}
               >
                 {t(`filters.${filter.value}`)}
