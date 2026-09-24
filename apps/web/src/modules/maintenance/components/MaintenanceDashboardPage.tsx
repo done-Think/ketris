@@ -373,8 +373,16 @@ export function MaintenanceDashboardPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {pagedTickets.map((ticket) => (
-                <TableRow key={ticket.id} sx={{ '&:last-child td': { borderBottom: 0 } }}>
+              {pagedTickets.map((ticket, index) => (
+                <TableRow
+                  key={ticket.id}
+                  sx={{
+                    bgcolor: index % 2 === 1 ? surface.app : surface.paper,
+                    transition: 'background-color 160ms ease',
+                    '&:hover': { bgcolor: alpha.graphite[6] },
+                    '&:last-child td': { borderBottom: 0 },
+                  }}
+                >
                   <TableCell sx={{ ...bodyCellSx, color: 'primary.main', fontWeight: 900 }}>
                     {ticket.id}
                   </TableCell>

@@ -11,7 +11,7 @@ import {
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { brand, surface } from '@shared/theme/tokens'
+import { alpha, brand, surface } from '@shared/theme/tokens'
 
 import type { LeadsTableProps } from '../../types/lead'
 import { LeadAvatar } from './LeadAvatar'
@@ -82,14 +82,14 @@ export function LeadsTable({ leads, onContactLead }: LeadsTableProps) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {leads.map((lead) => (
+          {leads.map((lead, index) => (
             <TableRow
               key={lead.id}
               sx={{
                 height: 60,
-                bgcolor: surface.paper,
+                bgcolor: index % 2 === 1 ? surface.app : surface.paper,
                 transition: 'background-color 160ms ease',
-                '&:hover': { bgcolor: brand.neutral[50] },
+                '&:hover': { bgcolor: alpha.graphite[6] },
               }}
             >
               <TableCell>

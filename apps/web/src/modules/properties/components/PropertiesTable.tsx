@@ -132,6 +132,9 @@ export function PropertiesTable({
               t('displayedRows', { from, to, count: totalCount }),
           },
         }}
+        getRowClassName={({ indexRelativeToCurrentPage }) =>
+          indexRelativeToCurrentPage % 2 === 1 ? 'properties-row-alt' : 'properties-row-base'
+        }
         onRowClick={(params: GridRowParams<DashboardProperty>) => onPropertySelect(params.row.id)}
         sx={{
           border: 0,
@@ -150,8 +153,17 @@ export function PropertiesTable({
           '& .MuiDataGrid-row': {
             cursor: 'pointer',
           },
+          '& .MuiDataGrid-row.properties-row-base': {
+            bgcolor: surface.paper,
+          },
+          '& .MuiDataGrid-row.properties-row-alt': {
+            bgcolor: surface.app,
+          },
           '& .MuiDataGrid-row:hover': {
-            bgcolor: brand.neutral[50],
+            bgcolor: `${alpha.graphite[6]} !important`,
+          },
+          '& .MuiDataGrid-footerContainer': {
+            borderColor: brand.neutral[100],
           },
         }}
       />
