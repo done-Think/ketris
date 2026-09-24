@@ -37,5 +37,10 @@
     "proposals": "Proposals",
     "maintenance": "Maintenance",
     "finance": "Finance"
+  },
+  "roleGuard": {
+    "loadingSession": "Loading session",
+    "restrictedTitle": "Restricted access",
+    "restrictedDescription": "You don't have permission to view this page. Redirecting to the dashboard."
   }
 }
