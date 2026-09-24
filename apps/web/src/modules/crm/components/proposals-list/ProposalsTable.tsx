@@ -71,12 +71,12 @@ export function ProposalsTable({
           </TableRow>
         </TableHead>
         <TableBody>
-          {proposals.map((proposal) => (
+          {proposals.map((proposal, index) => (
             <TableRow
               key={proposal.id}
               sx={{
                 height: 55,
-                bgcolor: surface.paper,
+                bgcolor: index % 2 === 1 ? surface.app : surface.paper,
                 transition: 'background-color 160ms ease',
                 '&:hover': { bgcolor: alpha.graphite[6] },
               }}
