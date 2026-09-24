@@ -179,57 +179,84 @@ export function PublicProfileEditorPage() {
       <Box
         component="form"
         onSubmit={handleSubmit(onSubmit)}
-        sx={{ display: 'flex', flexDirection: 'column', gap: 2.2, maxWidth: 620 }}
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2.2, maxWidth: 920 }}
       >
-        <Stack spacing={2} sx={editorPanelSx}>
-          <RhfTextField control={control} name="displayName" label={t('fields.displayName')} />
-          <RhfTextField
-            control={control}
-            name="bio"
-            label={t('fields.bio')}
-            multiline
-            minRows={3}
-          />
-          <RhfTextField control={control} name="creci" label={t('fields.creci')} />
-          <RhfTextField control={control} name="phone" label={t('fields.phone')} />
-          <RhfTextField control={control} name="region" label={t('fields.region')} />
-          <RhfTextField
-            control={control}
-            name="neighborhoods"
-            label={t('fields.neighborhoods')}
-            helperText={t('fields.commaSeparatedHint')}
-          />
-          <RhfTextField
-            control={control}
-            name="specialties"
-            label={t('fields.specialties')}
-            helperText={t('fields.commaSeparatedHint')}
-          />
-          <RhfTextField control={control} name="availability" label={t('fields.availability')} />
-        </Stack>
+        <Box sx={editorPanelSx}>
+          <Typography variant="h5" sx={{ mb: 2 }}>
+            {t('fields.mainInfo')}
+          </Typography>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+              gap: 1.6,
+            }}
+          >
+            <RhfTextField control={control} name="displayName" label={t('fields.displayName')} />
+            <RhfTextField control={control} name="creci" label={t('fields.creci')} />
+            <RhfTextField control={control} name="phone" label={t('fields.phone')} />
+            <RhfTextField control={control} name="region" label={t('fields.region')} />
+            <RhfTextField
+              control={control}
+              name="neighborhoods"
+              label={t('fields.neighborhoods')}
+              helperText={t('fields.commaSeparatedHint')}
+            />
+            <RhfTextField
+              control={control}
+              name="specialties"
+              label={t('fields.specialties')}
+              helperText={t('fields.commaSeparatedHint')}
+            />
+            <RhfTextField control={control} name="availability" label={t('fields.availability')} />
+            <RhfTextField
+              control={control}
+              name="bio"
+              label={t('fields.bio')}
+              multiline
+              minRows={3}
+              sx={{ gridColumn: { md: '1 / -1' } }}
+            />
+          </Box>
+        </Box>
 
-        <Stack spacing={2} sx={editorPanelSx}>
-          <Typography sx={{ fontWeight: 800 }}>{t('fields.appearance')}</Typography>
-          <RhfTextField
-            control={control}
-            name="primaryColor"
-            label={t('fields.primaryColor')}
-            type="color"
-          />
-          <RhfTextField
-            control={control}
-            name="secondaryColor"
-            label={t('fields.secondaryColor')}
-            type="color"
-          />
-          <RhfTextField
-            control={control}
-            name="backgroundColor"
-            label={t('fields.backgroundColor')}
-            type="color"
-          />
-          <RhfTextField control={control} name="avatarUrl" label={t('fields.photoUrl')} />
-        </Stack>
+        <Box sx={editorPanelSx}>
+          <Typography variant="h5" sx={{ mb: 2 }}>
+            {t('fields.appearance')}
+          </Typography>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' },
+              gap: 1.6,
+            }}
+          >
+            <RhfTextField
+              control={control}
+              name="primaryColor"
+              label={t('fields.primaryColor')}
+              type="color"
+            />
+            <RhfTextField
+              control={control}
+              name="secondaryColor"
+              label={t('fields.secondaryColor')}
+              type="color"
+            />
+            <RhfTextField
+              control={control}
+              name="backgroundColor"
+              label={t('fields.backgroundColor')}
+              type="color"
+            />
+            <RhfTextField
+              control={control}
+              name="avatarUrl"
+              label={t('fields.photoUrl')}
+              sx={{ gridColumn: { sm: '1 / -1' } }}
+            />
+          </Box>
+        </Box>
 
         <Stack direction="row" spacing={1.4} flexWrap="wrap" useFlexGap>
           <Button

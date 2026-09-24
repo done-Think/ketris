@@ -204,6 +204,7 @@
     "unpublishSuccess": "Perfil despublicado.",
     "publishError": "Não foi possível atualizar a publicação do perfil.",
     "fields": {
+      "mainInfo": "Informações principais",
       "displayName": "Nome exibido",
       "bio": "Biografia",
       "creci": "CRECI",
@@ -235,6 +236,7 @@
     "unpublishSuccess": "Perfil despublicado.",
     "publishError": "Não foi possível atualizar a publicação do perfil.",
     "fields": {
+      "mainInfo": "Informações principais",
       "displayName": "Nome da imobiliária",
       "summary": "Resumo",
       "legalCreci": "CRECI",

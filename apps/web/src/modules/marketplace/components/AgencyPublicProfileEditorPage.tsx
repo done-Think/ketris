@@ -207,50 +207,78 @@ export function AgencyPublicProfileEditorPage() {
       <Box
         component="form"
         onSubmit={handleSubmit(onSubmit)}
-        sx={{ display: 'flex', flexDirection: 'column', gap: 2.2, maxWidth: 620 }}
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2.2, maxWidth: 920 }}
       >
-        <Stack spacing={2} sx={editorPanelSx}>
-          <RhfTextField control={control} name="displayName" label={t('fields.displayName')} />
-          <RhfTextField
-            control={control}
-            name="summary"
-            label={t('fields.summary')}
-            multiline
-            minRows={3}
-          />
-          <RhfTextField control={control} name="legalCreci" label={t('fields.legalCreci')} />
-          <RhfTextField control={control} name="headquarters" label={t('fields.headquarters')} />
-          <RhfTextField control={control} name="address" label={t('fields.address')} />
-          <RhfTextField control={control} name="phone" label={t('fields.phone')} />
-          <RhfTextField control={control} name="email" label={t('fields.email')} />
-          <RhfTextField
-            control={control}
-            name="coverage"
-            label={t('fields.coverage')}
-            helperText={t('fields.commaSeparatedHint')}
-          />
-          <RhfTextField
-            control={control}
-            name="segments"
-            label={t('fields.segments')}
-            helperText={t('fields.commaSeparatedHint')}
-          />
-          <RhfTextField control={control} name="yearsInMarket" label={t('fields.yearsInMarket')} />
-        </Stack>
+        <Box sx={editorPanelSx}>
+          <Typography variant="h5" sx={{ mb: 2 }}>
+            {t('fields.mainInfo')}
+          </Typography>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+              gap: 1.6,
+            }}
+          >
+            <RhfTextField control={control} name="displayName" label={t('fields.displayName')} />
+            <RhfTextField control={control} name="legalCreci" label={t('fields.legalCreci')} />
+            <RhfTextField control={control} name="headquarters" label={t('fields.headquarters')} />
+            <RhfTextField control={control} name="address" label={t('fields.address')} />
+            <RhfTextField control={control} name="phone" label={t('fields.phone')} />
+            <RhfTextField control={control} name="email" label={t('fields.email')} />
+            <RhfTextField
+              control={control}
+              name="coverage"
+              label={t('fields.coverage')}
+              helperText={t('fields.commaSeparatedHint')}
+            />
+            <RhfTextField
+              control={control}
+              name="segments"
+              label={t('fields.segments')}
+              helperText={t('fields.commaSeparatedHint')}
+            />
+            <RhfTextField
+              control={control}
+              name="yearsInMarket"
+              label={t('fields.yearsInMarket')}
+            />
+            <RhfTextField
+              control={control}
+              name="summary"
+              label={t('fields.summary')}
+              multiline
+              minRows={3}
+              sx={{ gridColumn: { md: '1 / -1' } }}
+            />
+          </Box>
+        </Box>
 
-        <Stack spacing={2} sx={editorPanelSx}>
-          <Typography sx={{ fontWeight: 800 }}>{t('fields.appearance')}</Typography>
-          <RhfTextField
-            control={control}
-            name="backgroundColor"
-            label={t('fields.backgroundColor')}
-            type="color"
-          />
-          <RhfTextField control={control} name="logoUrl" label={t('fields.logoUrl')} />
-        </Stack>
+        <Box sx={editorPanelSx}>
+          <Typography variant="h5" sx={{ mb: 2 }}>
+            {t('fields.appearance')}
+          </Typography>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
+              gap: 1.6,
+            }}
+          >
+            <RhfTextField
+              control={control}
+              name="backgroundColor"
+              label={t('fields.backgroundColor')}
+              type="color"
+            />
+            <RhfTextField control={control} name="logoUrl" label={t('fields.logoUrl')} />
+          </Box>
+        </Box>
 
-        <Stack spacing={2} sx={editorPanelSx}>
-          <Typography sx={{ fontWeight: 800 }}>{t('fields.team')}</Typography>
+        <Box sx={editorPanelSx}>
+          <Typography variant="h5" sx={{ mb: 2 }}>
+            {t('fields.team')}
+          </Typography>
           <Controller
             control={control}
             name="team"
@@ -280,7 +308,7 @@ export function AgencyPublicProfileEditorPage() {
               />
             )}
           />
-        </Stack>
+        </Box>
 
         <Stack direction="row" spacing={1.4} flexWrap="wrap" useFlexGap>
           <Button
