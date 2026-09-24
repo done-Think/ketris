@@ -1,9 +1,10 @@
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
-import { Box, Button, InputAdornment, MenuItem, Stack, TextField, Typography } from '@mui/material'
+import { Box, Button, InputAdornment, MenuItem, Stack, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/components/layout'
+import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { contactFilters } from '../../config/contact-filters'
 import type { ContactsHeaderProps } from '../../types/contact'
@@ -17,142 +18,112 @@ export function ContactsHeader({
 }: ContactsHeaderProps) {
   const t = useTranslations('crm.contacts')
 
-  return (
+  const actions = (
     <Stack
-      component="header"
-      direction={{ xs: 'column', lg: 'row' }}
-      alignItems={{ xs: 'stretch', lg: 'center' }}
-      justifyContent="space-between"
-      gap={1.5}
-      sx={{
-        pb: 1.75,
-        borderBottom: '1px solid',
-        borderColor: 'divider',
-      }}
+      direction={{ xs: 'column', sm: 'row' }}
+      spacing={1.2}
+      sx={{ width: { xs: '100%', md: 'auto' }, alignItems: { xs: 'stretch', sm: 'center' } }}
     >
-      <Typography
-        component="h1"
+      <TextField
+        value={search}
+        onChange={(event) => onSearchChange(event.target.value)}
+        placeholder={t('searchPlaceholder')}
+        size="small"
         sx={{
-          flexShrink: 0,
-          fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
-          fontSize: { xs: 26, sm: 30 },
-          fontWeight: 700,
-          lineHeight: 1.15,
-          letterSpacing: '-0.02em',
+          width: { xs: '100%', sm: 268 },
+          '& .MuiInputBase-root': {
+            height: 36,
+            borderRadius: `${radius.sm}px`,
+            bgcolor: surface.paper,
+            color: brand.graphite[500],
+            fontSize: 14,
+            fontWeight: 700,
+          },
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: alpha.graphite[8],
+          },
+        }}
+        slotProps={{
+          htmlInput: { 'aria-label': t('searchAriaLabel') },
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchRoundedIcon sx={{ color: brand.neutral[400], fontSize: iconSize.md }} />
+              </InputAdornment>
+            ),
+          },
+        }}
+      />
+
+      <TextField
+        select
+        size="small"
+        value={activeFilter}
+        onChange={(event) => onFilterChange(event.target.value as typeof activeFilter)}
+        sx={{
+          width: { xs: '100%', sm: 190 },
+          '& .MuiInputBase-root': {
+            height: 36,
+            borderRadius: `${radius.sm}px`,
+            bgcolor: surface.paper,
+            color: brand.graphite[500],
+            fontSize: 14,
+            fontWeight: 700,
+          },
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: alpha.graphite[8],
+          },
+        }}
+        SelectProps={{
+          inputProps: { 'aria-label': t('filterAriaLabel') },
         }}
       >
-        {t('title')}
-      </Typography>
+        {contactFilters.map(({ label, labelKey }) => {
+          return (
+            <MenuItem key={label} value={label}>
+              {t(`filters.${labelKey}`)}
+            </MenuItem>
+          )
+        })}
+      </TextField>
 
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        alignItems={{ sm: 'center' }}
-        justifyContent={{ sm: 'flex-end' }}
-        gap={1.25}
-        sx={{ minWidth: 0, flexWrap: { sm: 'wrap', lg: 'nowrap' } }}
+      <Button
+        type="button"
+        variant="contained"
+        startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.lg }} />}
+        disabled={!onNewContact}
+        onClick={onNewContact}
+        sx={{
+          borderRadius: `${radius.sm}px`,
+          boxShadow: shadows.none,
+          minHeight: 36,
+          px: 2,
+          fontSize: 14,
+          fontWeight: 800,
+          textTransform: 'none',
+          whiteSpace: 'nowrap',
+          '&.Mui-disabled': {
+            bgcolor: brand.magenta[500],
+            color: surface.lightText,
+            opacity: 1,
+          },
+        }}
       >
-        <TextField
-          value={search}
-          onChange={(event) => onSearchChange(event.target.value)}
-          placeholder={t('searchPlaceholder')}
-          size="small"
-          sx={{
-            width: { xs: '100%', sm: 268 },
-            '& .MuiOutlinedInput-root': {
-              height: 32,
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.paper,
-              fontSize: 11.5,
-              '& fieldset': { borderColor: brand.neutral[100] },
-              '&:hover fieldset': { borderColor: brand.neutral[200] },
-            },
-            '& .MuiInputBase-input::placeholder': {
-              color: brand.neutral[400],
-              opacity: 1,
-            },
-          }}
-          slotProps={{
-            htmlInput: { 'aria-label': t('searchAriaLabel') },
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchRoundedIcon sx={{ color: brand.neutral[400], fontSize: iconSize.sm }} />
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
+        {t('newContact')}
+      </Button>
 
-        <TextField
-          select
-          size="small"
-          value={activeFilter}
-          onChange={(event) => onFilterChange(event.target.value as typeof activeFilter)}
-          sx={{
-            width: { xs: '100%', sm: 190 },
-            '& .MuiOutlinedInput-root': {
-              minHeight: 32,
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.paper,
-              color: brand.graphite[500],
-              fontSize: 11.5,
-              fontWeight: 700,
-              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'transparent',
-                borderWidth: 0,
-              },
-            },
-            '& .MuiOutlinedInput-notchedOutline': {
-              borderColor: 'transparent',
-              borderWidth: 0,
-            },
-            '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
-              borderColor: 'transparent',
-            },
-          }}
-          SelectProps={{
-            inputProps: { 'aria-label': t('filterAriaLabel') },
-          }}
-        >
-          {contactFilters.map(({ label, labelKey }) => {
-            return (
-              <MenuItem key={label} value={label}>
-                {t(`filters.${labelKey}`)}
-              </MenuItem>
-            )
-          })}
-        </TextField>
-
-        <Box sx={{ display: 'inline-flex' }}>
-          <Button
-            type="button"
-            variant="contained"
-            startIcon={<AddRoundedIcon />}
-            disabled={!onNewContact}
-            onClick={onNewContact}
-            sx={{
-              width: { sm: 126 },
-              minWidth: { sm: 126 },
-              height: 32,
-              px: 1.5,
-              flexShrink: 0,
-              borderRadius: `${radius.sm}px`,
-              fontSize: 11.5,
-              fontWeight: 700,
-              whiteSpace: 'nowrap',
-              '& .MuiButton-startIcon': { ml: 0, mr: 0.625 },
-              '& .MuiSvgIcon-root': { fontSize: iconSize.sm },
-              '&.Mui-disabled': {
-                bgcolor: brand.magenta[500],
-                color: surface.lightText,
-                opacity: 1,
-              },
-            }}
-          >
-            {t('newContact')}
-          </Button>
-        </Box>
-      </Stack>
+      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+        <DashboardNotificationsButton />
+      </Box>
     </Stack>
+  )
+
+  return (
+    <DashboardPageHeader
+      title={t('title')}
+      subtitle={t('subtitle')}
+      actions={actions}
+      sx={{ mb: 2.2 }}
+    />
   )
 }

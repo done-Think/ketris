@@ -67,6 +67,7 @@
   },
   "contacts": {
     "title": "Contacts",
+    "subtitle": "Manage owners, brokers and renters",
     "searchPlaceholder": "Search contact by name, email, phone...",
     "searchAriaLabel": "Search contacts",
     "filterAriaLabel": "Filter contacts by type",

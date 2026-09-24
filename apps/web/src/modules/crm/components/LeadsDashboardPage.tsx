@@ -100,6 +100,9 @@ export function LeadsDashboardPage() {
         '& .MuiTypography-root, & .MuiButton-root, & .MuiInputBase-root, & .MuiTableCell-root': {
           fontFamily: leadsBodyFontFamily,
         },
+        '& h1.MuiTypography-root': {
+          fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
+        },
       }}
     >
       <Stack spacing={2.2}>

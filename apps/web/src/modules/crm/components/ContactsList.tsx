@@ -89,6 +89,9 @@ export function ContactsList({
         '& .MuiTypography-root, & .MuiButton-root, & .MuiInputBase-root, & .MuiTableCell-root': {
           fontFamily: contactsBodyFontFamily,
         },
+        '& h1.MuiTypography-root': {
+          fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
+        },
       }}
     >
       <GlobalStyles styles={{ '.tsqd-parent-container': { display: 'none' } }} />

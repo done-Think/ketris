@@ -67,6 +67,7 @@
   },
   "contacts": {
     "title": "Contactos",
+    "subtitle": "Gestiona propietarios, corredores e inquilinos",
     "searchPlaceholder": "Buscar contacto por nombre, email, teléfono...",
     "searchAriaLabel": "Buscar contactos",
     "filterAriaLabel": "Filtrar contactos por tipo",

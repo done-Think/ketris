@@ -16,7 +16,11 @@ export function PropertiesDashboardHeader({
   const t = useTranslations('properties.dashboard')
 
   const actions = (
-    <Stack direction="row" spacing={1.2}>
+    <Stack
+      direction={{ xs: 'column', sm: 'row' }}
+      spacing={1.2}
+      sx={{ width: { xs: '100%', md: 'auto' }, alignItems: { xs: 'stretch', sm: 'center' } }}
+    >
       <Box
         sx={{
           position: 'relative',

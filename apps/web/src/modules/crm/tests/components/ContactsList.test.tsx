@@ -7,6 +7,14 @@ import { theme } from '@shared/theme/theme'
 import { ContactsList } from '../../components/ContactsList'
 import type { ContactsListProps } from '../../types/contact'
 
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({ data: { tenantId: 'tenant-1' }, status: 'authenticated' }),
+}))
+
+vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
+  useDashboardAgendaNotifications: () => [],
+}))
+
 function renderContactsList(props: ContactsListProps = {}) {
   return render(
     <ThemeProvider theme={theme}>
