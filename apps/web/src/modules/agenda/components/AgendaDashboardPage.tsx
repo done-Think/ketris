@@ -121,6 +121,7 @@ export function AgendaDashboardPage() {
       ? '/dashboard/properties'
       : (selectedProperty?.href ?? '/dashboard/properties')
     const nextEvent: AgendaEvent = {
+      kind: values.kind,
       id: `agenda-${Date.now()}`,
       scheduledDate: values.scheduledDate,
       time: values.scheduledTime,

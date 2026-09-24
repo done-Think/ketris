@@ -13,6 +13,7 @@ export type AgendaEventTone = 'primary' | 'info' | 'warning'
 export type AgendaEventCreatorRole = 'Colega' | 'Imobiliária'
 
 export type AgendaEvent = {
+  kind?: AgendaEventFormValues['kind']
   id: string
   scheduledDate: string
   time: string

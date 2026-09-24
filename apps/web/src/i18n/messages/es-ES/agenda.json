@@ -18,10 +18,20 @@
     "selectedDayLabel": "{day}, {date} de {month}"
   },
   "eventForm": {
+    "kinds": {
+      "VISIT": "Visita",
+      "FOLLOW_UP": "Seguimiento",
+      "MEETING": "Reunión",
+      "INSPECTION": "Inspección",
+      "SIGNATURE": "Firma",
+      "OTHER": "Otro"
+    },
     "eyebrow": "Nuevo punto en la agenda",
     "title": "Agregar evento",
     "closeAriaLabel": "Cerrar nuevo evento",
     "fields": {
+      "kind": "Tipo de evento",
+      "kindPlaceholder": "Selecciona el tipo",
       "title": "Título",
       "property": "Inmueble en cuestión",
       "otherProperty": "Otro",
