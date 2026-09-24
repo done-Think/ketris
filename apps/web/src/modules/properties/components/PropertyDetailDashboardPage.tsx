@@ -94,7 +94,7 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
   }
 
   return (
-    <Box sx={{ width: '100%', px: { xs: 2, md: 4.8 }, py: { xs: 2.6, md: 5 } }}>
+    <Box sx={{ width: '100%', p: 3.5 }}>
       <Stack
         direction={{ xs: 'column', lg: 'row' }}
         spacing={{ xs: 3, lg: 3.6 }}

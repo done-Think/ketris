@@ -1,5 +1,6 @@
 import { createLocalizedMetadata } from '@/i18n/metadata'
 import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
+import { RoleGuard } from '@shared/components/layout'
 import { BrokerTeamDashboardPage } from '@modules/team'
 
 export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
@@ -9,5 +10,9 @@ export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
 }
 
 export default function DashboardTeamPage() {
-  return <BrokerTeamDashboardPage />
+  return (
+    <RoleGuard allowedRoles={['ADMIN', 'OWNER']}>
+      <BrokerTeamDashboardPage />
+    </RoleGuard>
+  )
 }
