@@ -12,6 +12,10 @@ import { MaintenanceDashboardPage } from './MaintenanceDashboardPage'
 import { MaintenanceTicketDetailPage } from './MaintenanceTicketDetailPage'
 import { getMaintenanceTicketDetail } from '../data/maintenance-ticket-detail'
 
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({ data: { tenantId: 'tenant-1' }, status: 'authenticated' }),
+}))
+
 vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))

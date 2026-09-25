@@ -94,6 +94,9 @@ export function PropertyStatusFilters({
       </TextField>
 
       <Stack
+        component="div"
+        role="group"
+        aria-label={t('filterAriaLabel')}
         direction="row"
         spacing={0.8}
         useFlexGap

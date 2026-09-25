@@ -93,16 +93,16 @@ export function AgendaDashboardHeader({
       </Tooltip>
       <Button
         variant="contained"
-        startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.lg }} />}
+        startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
         onClick={onNewEvent}
         sx={{
           display: { xs: 'none', md: 'inline-flex' },
           borderRadius: `${radius.sm}px`,
           boxShadow: shadows.none,
-          minHeight: 36,
-          px: 2,
-          fontSize: 14,
-          fontWeight: 800,
+          height: 32,
+          px: 1.5,
+          fontSize: 12,
+          fontWeight: 700,
           textTransform: 'none',
           whiteSpace: 'nowrap',
         }}

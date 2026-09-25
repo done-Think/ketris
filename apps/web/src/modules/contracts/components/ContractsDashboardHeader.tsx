@@ -32,12 +32,11 @@ export function ContractsDashboardHeader({
             sx={{
               width: { xs: '100%', sm: 280 },
               '& .MuiInputBase-root': {
-                height: 36,
+                height: { xs: 40, sm: 32 },
                 borderRadius: `${radius.sm}px`,
                 bgcolor: surface.paper,
                 color: brand.graphite[500],
-                fontSize: 14,
-                fontWeight: 700,
+                fontSize: 12,
               },
               '& .MuiOutlinedInput-notchedOutline': {
                 borderColor: alpha.graphite[8],
@@ -46,7 +45,7 @@ export function ContractsDashboardHeader({
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchRoundedIcon sx={{ color: brand.neutral[400], fontSize: 18 }} />
+                  <SearchRoundedIcon sx={{ color: brand.neutral[400], fontSize: 16 }} />
                 </InputAdornment>
               ),
             }}
@@ -55,15 +54,15 @@ export function ContractsDashboardHeader({
       />
       <Button
         variant="contained"
-        startIcon={<AddRoundedIcon sx={{ fontSize: 18 }} />}
+        startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
         onClick={onCreateContract}
         sx={{
           borderRadius: `${radius.sm}px`,
           boxShadow: shadows.none,
-          minHeight: 36,
-          px: 2,
-          fontSize: 14,
-          fontWeight: 800,
+          height: { xs: 40, sm: 32 },
+          px: 1.5,
+          fontSize: 12,
+          fontWeight: 700,
           textTransform: 'none',
           whiteSpace: 'nowrap',
         }}

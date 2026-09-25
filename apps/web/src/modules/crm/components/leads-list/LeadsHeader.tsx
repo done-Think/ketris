@@ -4,7 +4,7 @@ import { Box, Button, InputAdornment, Stack, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/components/layout'
-import { brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { LeadsHeaderProps } from '../../types/lead'
 
@@ -15,7 +15,7 @@ export function LeadsHeader({ search, onSearchChange, onNewLead }: LeadsHeaderPr
     <Stack
       direction={{ xs: 'column', sm: 'row' }}
       spacing={1.2}
-      sx={{ width: { xs: '100%', lg: 'auto' }, alignItems: { sm: 'center' } }}
+      sx={{ width: { xs: '100%', md: 'auto' }, alignItems: { xs: 'stretch', sm: 'center' } }}
     >
       <TextField
         value={search}
@@ -24,13 +24,15 @@ export function LeadsHeader({ search, onSearchChange, onNewLead }: LeadsHeaderPr
         size="small"
         sx={{
           width: { xs: '100%', sm: 280 },
-          '& .MuiOutlinedInput-root': {
-            height: 36,
-            bgcolor: surface.paper,
+          '& .MuiInputBase-root': {
+            height: { xs: 40, sm: 32 },
             borderRadius: `${radius.sm}px`,
-            fontSize: 14,
-            '& fieldset': { borderColor: brand.neutral[100] },
-            '&:hover fieldset': { borderColor: brand.neutral[200] },
+            bgcolor: surface.paper,
+            color: brand.graphite[500],
+            fontSize: 12,
+          },
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: alpha.graphite[8],
           },
         }}
         slotProps={{
@@ -38,7 +40,7 @@ export function LeadsHeader({ search, onSearchChange, onNewLead }: LeadsHeaderPr
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <SearchRoundedIcon sx={{ color: brand.neutral[400], fontSize: iconSize.md }} />
+                <SearchRoundedIcon sx={{ color: brand.neutral[400], fontSize: iconSize.sm }} />
               </InputAdornment>
             ),
           },
@@ -51,12 +53,13 @@ export function LeadsHeader({ search, onSearchChange, onNewLead }: LeadsHeaderPr
         disabled={!onNewLead}
         onClick={onNewLead}
         sx={{
-          minHeight: 36,
-          px: 2,
           borderRadius: `${radius.sm}px`,
           boxShadow: shadows.none,
-          fontSize: 14,
-          fontWeight: 800,
+          height: { xs: 40, sm: 32 },
+          px: 1.5,
+          fontSize: 12,
+          fontWeight: 700,
+          textTransform: 'none',
           whiteSpace: 'nowrap',
           '&.Mui-disabled': {
             bgcolor: brand.magenta[500],
@@ -73,5 +76,12 @@ export function LeadsHeader({ search, onSearchChange, onNewLead }: LeadsHeaderPr
     </Stack>
   )
 
-  return <DashboardPageHeader title={t('title')} subtitle={t('subtitle')} actions={actions} />
+  return (
+    <DashboardPageHeader
+      title={t('title')}
+      subtitle={t('subtitle')}
+      actions={actions}
+      sx={{ mb: 2.2 }}
+    />
+  )
 }

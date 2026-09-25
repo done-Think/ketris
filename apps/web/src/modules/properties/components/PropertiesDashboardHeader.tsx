@@ -63,10 +63,10 @@ export function PropertiesDashboardHeader({
         sx={{
           borderRadius: `${radius.sm}px`,
           boxShadow: shadows.none,
-          minHeight: 36,
-          px: 2,
-          fontSize: 14,
-          fontWeight: 800,
+          height: { xs: 40, sm: 32 },
+          px: 1.5,
+          fontSize: 12,
+          fontWeight: 700,
           textTransform: 'none',
           whiteSpace: 'nowrap',
         }}
