@@ -106,7 +106,7 @@ describe('ContactsPage', () => {
 
     expect(screen.getAllByText(contactListFixtures[0].name).length).toBeGreaterThan(0)
     expect(
-      screen.getByText(`1-${contactListFixtures.length} de ${contactsFixtureTotal}`),
+      screen.getByText(`Mostrando 1\u2013${contactListFixtures.length} de ${contactsFixtureTotal}`),
     ).toBeVisible()
     screen
       .getAllByRole('button', { name: `Editar ${contactListFixtures[0].name}` })
