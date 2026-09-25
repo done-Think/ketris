@@ -94,6 +94,9 @@ export function PropertyStatusFilters({
       </TextField>
 
       <Stack
+        component="div"
+        role="group"
+        aria-label={t('filterAriaLabel')}
         direction="row"
         spacing={0.8}
         useFlexGap
@@ -111,11 +114,11 @@ export function PropertyStatusFilters({
               aria-pressed={active}
               onClick={() => onStatusFilterChange(filter.label)}
               sx={{
-                minHeight: 42,
+                minHeight: 38,
                 borderRadius: `${radius.full}px`,
                 px: 1.8,
                 gap: 0.6,
-                fontSize: 17,
+                fontSize: 13,
                 fontWeight: 900,
                 boxShadow: 'none',
                 transition: motion.transition.bordered,
@@ -127,14 +130,14 @@ export function PropertyStatusFilters({
                 component="span"
                 sx={{
                   display: 'grid',
-                  minWidth: 24,
-                  height: 24,
+                  minWidth: 20,
+                  height: 20,
                   placeItems: 'center',
                   px: 0.5,
                   borderRadius: `${radius.full}px`,
                   bgcolor: active ? alpha.white[8] : alpha.graphite[6],
                   color: active ? surface.lightText : brand.neutral[500],
-                  fontSize: 14.5,
+                  fontSize: 10.5,
                   fontWeight: 800,
                 }}
               >

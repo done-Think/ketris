@@ -35,6 +35,7 @@
       "displayedRows": "{from}-{to} of {count}"
     },
     "filters": {
+      "filterAriaLabel": "Filter properties by status",
       "Todos": "All",
       "Disponível": "Available",
       "Alugado": "Rented",

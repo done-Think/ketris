@@ -148,7 +148,7 @@ export function ContractsDashboardPage() {
   }
 
   return (
-    <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
+    <Box sx={{ width: '100%', p: 3.5 }}>
       <Stack
         spacing={2}
         sx={{

@@ -65,6 +65,7 @@ export type DashboardLead = {
   phone: string
   email: string
   lastContact: string
+  lastContactAt: string
   interest: string
   source: string
   broker: string
@@ -128,15 +129,6 @@ export type LeadsTableProps = LeadsCollectionActions & {
 
 export type LeadsCardsProps = LeadsCollectionActions & {
   leads: readonly DashboardLead[]
-}
-
-export type LeadsPaginationFooterProps = {
-  firstVisible: number
-  lastVisible: number
-  resultTotal: number
-  page: number
-  pageCount: number
-  onPageChange?: (page: number) => void
 }
 
 export type CreateLeadFormValues = z.infer<ReturnType<typeof createLeadSchema>>

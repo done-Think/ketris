@@ -42,6 +42,10 @@ vi.mock('../../hooks/use-contacts', () => ({
   useArchiveContact: mocks.useArchiveContact,
 }))
 
+vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
+  useDashboardAgendaNotifications: () => [],
+}))
+
 const contact: ApiContactListItem = {
   id: 'contact-1',
   tenantId: 'tenant-1',
@@ -102,7 +106,7 @@ describe('ContactsPage', () => {
 
     expect(screen.getAllByText(contactListFixtures[0].name).length).toBeGreaterThan(0)
     expect(
-      screen.getByText(`1-${contactListFixtures.length} de ${contactsFixtureTotal}`),
+      screen.getByText(`Mostrando 1–${contactListFixtures.length} de ${contactsFixtureTotal}`),
     ).toBeVisible()
     screen
       .getAllByRole('button', { name: `Editar ${contactListFixtures[0].name}` })

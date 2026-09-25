@@ -69,12 +69,17 @@ function makeLead(index: number, overrides: Partial<Lead> = {}): Lead {
 }
 
 const leadFixtures: Lead[] = [
-  makeLead(1, { name: 'João Silva', email: 'joao.silva@email.com', stage: 'NOVO' }),
-  makeLead(2, { name: 'Maria Fernandes', stage: 'EM_CONTATO' }),
-  makeLead(3, { name: 'Rafael Lima', stage: 'VISITA_MARCADA' }),
-  makeLead(4, { name: 'Carla Rocha', stage: 'PROPOSTA' }),
-  makeLead(5, { name: 'Guilherme Santos', stage: 'NOVO' }),
-  makeLead(6, { name: 'Patrícia Lima', stage: 'EM_CONTATO' }),
+  makeLead(1, {
+    name: 'João Silva',
+    email: 'joao.silva@email.com',
+    stage: 'NOVO',
+    budget: 'R$ 1M',
+  }),
+  makeLead(2, { name: 'Maria Fernandes', stage: 'EM_CONTATO', budget: 'R$ 300K' }),
+  makeLead(3, { name: 'Rafael Lima', stage: 'VISITA_MARCADA', budget: 'R$ 800K' }),
+  makeLead(4, { name: 'Carla Rocha', stage: 'PROPOSTA', budget: 'R$ 1.5M' }),
+  makeLead(5, { name: 'Guilherme Santos', stage: 'NOVO', budget: 'R$ 2M' }),
+  makeLead(6, { name: 'Patrícia Lima', stage: 'EM_CONTATO', budget: 'R$ 500K' }),
 ]
 
 function mockLeadsQuery(overrides: Record<string, unknown> = {}) {

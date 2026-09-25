@@ -97,7 +97,9 @@ export type ContactsCardsProps = Omit<ContactsTableProps, 'onToggleAll'>
 
 export type ContactsHeaderProps = {
   search: string
+  activeFilter: ContactFilter
   onSearchChange: (search: string) => void
+  onFilterChange: (filter: ContactFilter) => void
   onNewContact?: () => void
 }
 

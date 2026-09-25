@@ -7,7 +7,7 @@ import { Box, Button, Menu, MenuItem, Stack } from '@mui/material'
 import dayjs, { type Dayjs } from 'dayjs'
 
 import { DashboardNotificationsButton } from '@shared/components/layout'
-import { brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import { iconSize, radius, shadows } from '@shared/theme/tokens'
 
 export interface FinancialDashboardHeaderActionsProps {
   exportLabel: string
@@ -51,10 +51,10 @@ export function FinancialDashboardHeaderActions({
         endIcon={<KeyboardArrowDownRoundedIcon sx={{ fontSize: iconSize.sm }} />}
         sx={{
           borderRadius: `${radius.sm}px`,
-          fontSize: 14,
-          fontWeight: 800,
-          minHeight: 36,
-          px: 2,
+          fontSize: 12,
+          fontWeight: 500,
+          height: { xs: 40, sm: 32 },
+          px: 1.25,
           whiteSpace: 'nowrap',
         }}
       >
@@ -99,22 +99,15 @@ export function FinancialDashboardHeaderActions({
       </Menu>
       <Button
         type="button"
-        variant="contained"
+        variant="outlined"
         startIcon={<FileDownloadOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
         sx={{
           borderRadius: `${radius.sm}px`,
-          bgcolor: brand.magenta[500],
-          boxShadow: shadows.none,
-          color: surface.lightText,
-          fontSize: 14,
-          fontWeight: 800,
-          minHeight: 36,
-          px: 2,
+          fontSize: 12,
+          fontWeight: 500,
+          height: { xs: 40, sm: 32 },
+          px: 1.25,
           whiteSpace: 'nowrap',
-          '&:hover': {
-            bgcolor: brand.magenta[600],
-            boxShadow: shadows.none,
-          },
         }}
       >
         {exportLabel}

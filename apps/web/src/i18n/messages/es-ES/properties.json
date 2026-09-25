@@ -35,6 +35,7 @@
       "displayedRows": "{from}-{to} de {count}"
     },
     "filters": {
+      "filterAriaLabel": "Filtrar propiedades por estado",
       "Todos": "Todos",
       "Disponível": "Disponible",
       "Alugado": "Alquilado",

@@ -68,7 +68,7 @@
   },
   "contacts": {
     "title": "Contatos",
-    "subtitle": "Gerencie sua base de clientes, proprietários e corretores.",
+    "subtitle": "Gerencie proprietários, corretores e locatários",
     "searchPlaceholder": "Buscar contato por nome, email, fone...",
     "searchAriaLabel": "Buscar contatos",
     "filterAriaLabel": "Filtrar contatos por tipo",

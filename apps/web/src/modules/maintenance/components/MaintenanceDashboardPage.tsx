@@ -240,7 +240,7 @@ export function MaintenanceDashboardPage() {
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <SearchRoundedIcon sx={{ fontSize: 18, color: brand.neutral[400] }} />
+                <SearchRoundedIcon sx={{ fontSize: 16, color: brand.neutral[400] }} />
               </InputAdornment>
             ),
           },
@@ -272,16 +272,16 @@ export function MaintenanceDashboardPage() {
       </TextField>
       <Button
         variant="outlined"
-        startIcon={<FilterListRoundedIcon sx={{ fontSize: 17 }} />}
+        startIcon={<FilterListRoundedIcon sx={{ fontSize: 16 }} />}
         onClick={() => setIsFiltersDialogOpen(true)}
         aria-label={t('filterDialog.open')}
         sx={{
           display: { xs: 'inline-flex', md: 'none' },
-          minHeight: 36,
-          px: 2,
+          height: { xs: 40, sm: 32 },
+          px: 1.5,
           borderRadius: `${radius.sm}px`,
-          fontSize: 14,
-          fontWeight: 800,
+          fontSize: 12,
+          fontWeight: 700,
           whiteSpace: 'nowrap',
         }}
       >
@@ -289,15 +289,15 @@ export function MaintenanceDashboardPage() {
       </Button>
       <Button
         variant="contained"
-        startIcon={<AddRoundedIcon sx={{ fontSize: 17 }} />}
+        startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
         onClick={() => setIsCreateDialogOpen(true)}
         sx={{
-          minHeight: 36,
-          px: 2,
+          height: { xs: 40, sm: 32 },
+          px: 1.5,
           borderRadius: `${radius.sm}px`,
           boxShadow: shadows.none,
-          fontSize: 14,
-          fontWeight: 800,
+          fontSize: 12,
+          fontWeight: 700,
           whiteSpace: 'nowrap',
         }}
       >
@@ -310,8 +310,8 @@ export function MaintenanceDashboardPage() {
   )
 
   return (
-    <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
-      <Stack spacing={2}>
+    <Box sx={{ width: '100%', p: 3.5 }}>
+      <Stack spacing={{ xs: 2, md: 2.7 }}>
         <DashboardPageHeader title={t('title')} subtitle={t('subtitle')} actions={headerActions} />
         <MaintenanceStatusFilters
           activeFilter={activeFilter}
@@ -572,10 +572,10 @@ const maintenanceProperties = [
 const compactFieldSx = {
   width: { xs: '100%', sm: 200 },
   '& .MuiInputBase-root': {
-    height: 36,
+    height: { xs: 40, sm: 32 },
     borderRadius: `${radius.sm}px`,
     bgcolor: surface.paper,
-    fontSize: 14,
+    fontSize: 12,
     color: brand.neutral[600],
   },
   '& .MuiOutlinedInput-notchedOutline': { borderColor: alpha.graphite[8] },
