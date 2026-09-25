@@ -36,7 +36,8 @@
     "agenda": "Agenda",
     "proposals": "Propuestas",
     "maintenance": "Mantenimiento",
-    "finance": "Finanzas"
+    "finance": "Finanzas",
+    "charges": "Cobros"
   },
   "roleGuard": {
     "loadingSession": "Cargando sesión",

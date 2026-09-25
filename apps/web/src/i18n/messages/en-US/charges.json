@@ -1,0 +1,136 @@
+{
+  "metadata": {
+    "title": "Ketris | Charges",
+    "description": "Manage receivables and payables.",
+    "metadataTitle": "Ketris | Charges",
+    "metadataDescription": "Manage receivables and payables."
+  },
+  "title": "Charges",
+  "subtitle": "Manage receivables and payables",
+  "searchPlaceholder": "Search tenant or property...",
+  "newCharge": "New charge",
+  "tabs": { "receivable": "Receivable", "payable": "Payable" },
+  "kpis": {
+    "receivable": "Receivable this month",
+    "overdue": "Overdue",
+    "defaultRate": "Default rate"
+  },
+  "statuses": {
+    "all": "All",
+    "pending": "Pending",
+    "overdue": "Overdue",
+    "paid": "Paid",
+    "scheduled": "Scheduled",
+    "cancelled": "Cancelled"
+  },
+  "table": {
+    "code": "Charge",
+    "tenant": "Tenant",
+    "property": "Property",
+    "amount": "Amount",
+    "dueDate": "Due date",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "actions": { "edit": "Edit", "archive": "Archive" },
+  "feedback": {
+    "updated": "Charge updated locally",
+    "archived": "Charge archived locally"
+  },
+  "pagination": { "summary": "Showing {from}-{to} of {total} charges" },
+  "createDialog": {
+    "title": "New charge",
+    "close": "Close",
+    "cancel": "Cancel",
+    "submit": "Create charge",
+    "success": "Charge created locally",
+    "fields": {
+      "tenant": "Tenant",
+      "property": "Property",
+      "amount": "Amount",
+      "dueDate": "Due date",
+      "direction": "Type",
+      "status": "Status"
+    },
+    "directions": { "receivable": "Receivable", "payable": "Payable" },
+    "statuses": { "pending": "Pending", "scheduled": "Scheduled" }
+  },
+  "editDialog": {
+    "paymentHint": "To mark as paid, register the payment in the details page.",
+    "title": "Edit charge",
+    "close": "Close",
+    "cancel": "Cancel",
+    "save": "Save changes",
+    "fields": {
+      "tenant": "Tenant",
+      "property": "Property",
+      "amount": "Amount",
+      "dueDate": "Due date",
+      "direction": "Type",
+      "status": "Status"
+    }
+  },
+  "archiveDialog": {
+    "title": "Archive charge?",
+    "description": "The charge will be removed from the demonstration list.",
+    "cancel": "Cancel",
+    "confirm": "Archive"
+  },
+  "detailsDialog": {
+    "title": "Charge details",
+    "close": "Close"
+  },
+  "details": {
+    "missing": "Charge not found or archived in this demo session.",
+    "noReceipt": "This charge has no receipt.",
+    "demoDocument": "Demonstration document — not valid for payment.",
+    "closeDocument": "Close document",
+    "back": "Back to charges",
+    "summary": "Rent — March 2025",
+    "duplicate": "Issue duplicate",
+    "duplicateSuccess": "Demonstration duplicate prepared locally",
+    "registerPayment": "Register payment",
+    "paymentSuccess": "Payment registered locally",
+    "detailsTitle": "Charge details",
+    "receiptTitle": "Receipt",
+    "linkingTitle": "Linking",
+    "historyTitle": "History",
+    "receivable": "Monthly rent",
+    "payable": "Payment",
+    "notPaid": "Not paid",
+    "notAvailable": "—",
+    "fields": {
+      "type": "Type",
+      "competence": "Competence",
+      "amount": "Amount",
+      "dueDate": "Due date",
+      "payment": "Payment",
+      "method": "Method",
+      "fees": "Fees/Interest"
+    },
+    "receiptFile": "pix_receipt_040325.pdf",
+    "receiptMeta": "Uploaded on 03/04/2025 at 14:15 · 142 KB",
+    "viewReceipt": "View receipt",
+    "receiptPreview": "Demonstration receipt preview available locally.",
+    "contract": "CONTRACT",
+    "property": "PROPERTY",
+    "tenant": "TENANT",
+    "address": "1420 Alameda Lorena - Jardins, São Paulo - SP",
+    "contact": "bruno.oliveira@email.com",
+    "history": {
+      "updated": "Charge updated",
+      "generated": "Charge generated",
+      "generatedDate": "02/25/2025 at 09:00",
+      "issued": "Bill issued",
+      "issuedDate": "02/25/2025 at 09:30",
+      "received": "Payment received"
+    },
+    "paymentDialog": {
+      "title": "Register payment",
+      "date": "Payment date",
+      "method": "Payment method",
+      "cancel": "Cancel",
+      "confirm": "Confirm payment"
+    }
+  }
+}
