@@ -50,6 +50,8 @@ export const routing = defineRouting({
     '/dashboard/contracts/[id]': '/dashboard/contracts/[id]',
     '/dashboard/contracts/new': '/dashboard/contracts/new',
     '/dashboard/finance': '/dashboard/finance',
+    '/dashboard/finance/charges': '/dashboard/finance/charges',
+    '/dashboard/finance/charges/[id]': '/dashboard/finance/charges/[id]',
     '/dashboard/maintenance': '/dashboard/maintenance',
     '/dashboard/leads': '/dashboard/leads',
     '/dashboard/maintenance/[id]': '/dashboard/maintenance/[id]',
