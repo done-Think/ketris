@@ -707,8 +707,10 @@ function MaintenanceStatusFilters({
           role="group"
           aria-label={t('filterDialog.title')}
           direction="row"
-          spacing={1}
-          sx={{ display: { xs: 'none', md: 'flex' }, flexWrap: 'wrap', rowGap: 1 }}
+          spacing={0.8}
+          useFlexGap
+          flexWrap="wrap"
+          sx={{ display: { xs: 'none', md: 'flex' } }}
         >
           {maintenanceFilters.map((filter) => {
             const active = activeFilter === filter.value
@@ -721,12 +723,14 @@ function MaintenanceStatusFilters({
                 aria-pressed={active}
                 onClick={() => onChange(filter.value)}
                 sx={{
-                  minHeight: 34,
+                  minHeight: 42,
                   borderRadius: `${radius.full}px`,
                   px: 1.8,
                   gap: 0.6,
-                  fontSize: 12,
+                  fontSize: 17,
                   fontWeight: 900,
+                  boxShadow: 'none',
+                  '&:hover': { boxShadow: 'none' },
                 }}
               >
                 {t(`filters.${filter.value}`)}
@@ -734,15 +738,15 @@ function MaintenanceStatusFilters({
                   component="span"
                   sx={{
                     display: 'grid',
-                    minWidth: 20,
-                    height: 20,
+                    minWidth: 24,
+                    height: 24,
                     placeItems: 'center',
                     px: 0.5,
                     borderRadius: `${radius.full}px`,
                     bgcolor: active ? alpha.white[8] : alpha.graphite[6],
                     color: active ? surface.lightText : brand.neutral[500],
-                    fontSize: 10.5,
-                    fontWeight: 700,
+                    fontSize: 14.5,
+                    fontWeight: 800,
                   }}
                 >
                   {getFilterCount(filter)}
@@ -772,14 +776,14 @@ function MaintenanceFilterOptionLabel({
         component="span"
         sx={{
           display: 'grid',
-          minWidth: 22,
-          height: 22,
+          minWidth: 26,
+          height: 26,
           placeItems: 'center',
           px: 0.6,
           borderRadius: `${radius.full}px`,
           bgcolor: active ? brand.magenta[500] : alpha.graphite[6],
           color: active ? surface.lightText : brand.neutral[500],
-          fontSize: 11,
+          fontSize: 15,
           fontWeight: 900,
         }}
       >

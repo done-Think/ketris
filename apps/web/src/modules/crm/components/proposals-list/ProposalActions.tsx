@@ -13,8 +13,8 @@ export function ProposalActions({
   onOpenMoreOptions,
 }: ProposalActionsProps) {
   const buttonSx = {
-    width: 28,
-    height: 28,
+    width: 32,
+    height: 32,
     border: '1px solid',
     borderColor: brand.neutral[100],
     borderRadius: `${radius.sm}px`,

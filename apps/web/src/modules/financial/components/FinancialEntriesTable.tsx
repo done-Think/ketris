@@ -19,18 +19,24 @@ function FinancialStatusCell({
   const status = financialStatusStyles[row.status]
 
   return (
-    <Chip
-      label={label}
-      size="small"
+    <Box
       sx={{
-        width: 'fit-content',
-        bgcolor: status.bgcolor,
-        color: status.color,
-        borderRadius: `${radius.full}px`,
-        fontSize: 10,
-        fontWeight: 900,
+        transform: 'translateX(20px)',
       }}
-    />
+    >
+      <Chip
+        label={label}
+        size="small"
+        sx={{
+          width: 'fit-content',
+          bgcolor: status.bgcolor,
+          color: status.color,
+          borderRadius: `${radius.full}px`,
+          fontSize: 10,
+          fontWeight: 900,
+        }}
+      />
+    </Box>
   )
 }
 
@@ -69,16 +75,30 @@ export function FinancialEntriesTable({ entries }: FinancialEntriesTableProps) {
       headerName: t('amount'),
       flex: 0.8,
       minWidth: 130,
+      align: 'center',
+      headerAlign: 'center',
       renderCell: ({ row }) => (
-        <Typography
+        <Box
           sx={{
-            color: row.amountValue >= 0 ? brand.semantic.success : brand.semantic.error,
-            fontSize: 13,
-            fontWeight: 900,
+            display: 'flex',
+            width: '100%',
+            height: '100%',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          {formatCurrency(row.amountValue)}
-        </Typography>
+          <Typography
+            sx={{
+              color: row.amountValue >= 0 ? brand.semantic.success : brand.semantic.error,
+              fontSize: 13,
+              fontWeight: 900,
+              lineHeight: 1,
+              textAlign: 'center',
+            }}
+          >
+            {formatCurrency(row.amountValue)}
+          </Typography>
+        </Box>
       ),
     },
     {
@@ -86,6 +106,8 @@ export function FinancialEntriesTable({ entries }: FinancialEntriesTableProps) {
       headerName: t('status'),
       flex: 0.7,
       minWidth: 120,
+      cellClassName: 'financial-status-cell',
+      headerClassName: 'financial-status-header',
       renderCell: (params) => (
         <FinancialStatusCell {...params} label={statusT(params.row.status)} />
       ),
@@ -132,6 +154,9 @@ export function FinancialEntriesTable({ entries }: FinancialEntriesTableProps) {
           },
           '& .MuiDataGrid-columnSeparator': {
             display: 'none',
+          },
+          '& .financial-status-header .MuiDataGrid-columnHeaderTitleContainer': {
+            transform: 'translateX(20px)',
           },
           '& .MuiDataGrid-cell': {
             borderBottom: 0,

@@ -13,11 +13,11 @@ export function ProposalStatusChip({ status }: ProposalStatusChipProps) {
       label={presentation.label}
       size="small"
       sx={{
-        height: 22,
+        height: 24,
         borderRadius: `${radius.full}px`,
         bgcolor: presentation.backgroundColor,
         color: presentation.color,
-        fontSize: 10.5,
+        fontSize: 14,
         fontWeight: 700,
         '& .MuiChip-label': { px: 1.125 },
       }}

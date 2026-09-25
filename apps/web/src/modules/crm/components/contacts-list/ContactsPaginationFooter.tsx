@@ -25,13 +25,13 @@ export function ContactsPaginationFooter({
       spacing={2}
       sx={{
         mt: 'auto',
-        minHeight: 52,
+        minHeight: 56,
         px: 2,
         borderTop: 1,
         borderColor: 'divider',
       }}
     >
-      <Typography color="text.secondary" sx={{ fontSize: 11.5 }}>
+      <Typography color="text.secondary" sx={{ fontSize: 15.5 }}>
         {t('resultsRange', { first: firstVisible, last: lastVisible, total: resultTotal })}
       </Typography>
       <Stack direction="row" spacing={0.75}>
@@ -58,13 +58,13 @@ export function ContactsPaginationFooter({
             onClick={onClick}
             sx={{
               minWidth: 62,
-              height: 24,
+              height: 28,
               px: 1,
               borderColor: brand.neutral[100],
               borderRadius: `${radius.sm}px`,
               bgcolor: surface.paper,
               color: brand.neutral[500],
-              fontSize: 10.5,
+              fontSize: 14.5,
               fontWeight: 500,
               '&:hover': { borderColor: brand.neutral[200], bgcolor: surface.paper },
               '&.Mui-disabled': {

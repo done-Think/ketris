@@ -54,8 +54,10 @@ export function LeadsStatusFilters({
         role="group"
         aria-label={t('filterAriaLabel')}
         direction="row"
-        spacing={1}
-        sx={{ display: { xs: 'none', sm: 'flex' }, flexWrap: 'wrap', rowGap: 1 }}
+        spacing={0.8}
+        useFlexGap
+        flexWrap="wrap"
+        sx={{ display: { xs: 'none', sm: 'flex' }, mb: -0.25 }}
       >
         {leadFilters.map(({ label, labelKey }) => {
           const active = label === activeFilter
@@ -69,11 +71,11 @@ export function LeadsStatusFilters({
               aria-pressed={active}
               onClick={() => onFilterChange(label)}
               sx={{
-                minHeight: 34,
+                minHeight: 42,
                 borderRadius: `${radius.full}px`,
                 px: 1.8,
                 gap: 0.6,
-                fontSize: 12,
+                fontSize: 17,
                 fontWeight: 900,
               }}
             >
@@ -82,15 +84,15 @@ export function LeadsStatusFilters({
                 component="span"
                 sx={{
                   display: 'grid',
-                  minWidth: 20,
-                  height: 20,
+                  minWidth: 24,
+                  height: 24,
                   placeItems: 'center',
                   px: 0.5,
                   borderRadius: `${radius.full}px`,
                   bgcolor: active ? alpha.white[8] : alpha.graphite[6],
                   color: active ? surface.lightText : brand.neutral[500],
-                  fontSize: 10.5,
-                  fontWeight: 700,
+                  fontSize: 14.5,
+                  fontWeight: 800,
                 }}
               >
                 {count}
@@ -111,7 +113,7 @@ const selectSx = {
     borderRadius: `${radius.sm}px`,
     bgcolor: surface.paper,
     color: brand.graphite[500],
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: 800,
     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
       borderColor: 'transparent',
@@ -144,7 +146,7 @@ const menuProps = {
 
 function menuItemSx(active: boolean) {
   return {
-    minHeight: 42,
+    minHeight: 46,
     bgcolor: active ? alpha.magenta[8] : 'transparent',
     '&:hover': {
       bgcolor: alpha.magenta[8],
@@ -168,14 +170,14 @@ function FilterOptionLabel({
         component="span"
         sx={{
           display: 'grid',
-          minWidth: 22,
-          height: 22,
+          minWidth: 26,
+          height: 26,
           placeItems: 'center',
           px: 0.6,
           borderRadius: `${radius.full}px`,
           bgcolor: active ? brand.magenta[500] : alpha.graphite[6],
           color: active ? surface.lightText : brand.neutral[500],
-          fontSize: 11,
+          fontSize: 15,
           fontWeight: 900,
         }}
       >
