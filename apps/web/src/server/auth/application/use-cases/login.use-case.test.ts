@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { InvalidCredentialsError } from '../../domain/errors'
+import {
+  AccountDeactivatedError,
+  InvalidCredentialsError,
+  MembershipPendingApprovalError,
+} from '../../domain/errors'
 import type { User } from '../../domain/user.entity'
 import type { PasswordHasher } from '../ports/password-hasher.port'
 import type { RefreshTokenRepository } from '../ports/refresh-token-repository.port'
@@ -16,6 +20,7 @@ const user: User = {
   senhaHash: 'hash-fake',
   papel: 'AGENT',
   ativo: true,
+  vinculoAprovadoEm: new Date(),
 }
 
 function createDeps(overrides?: {
@@ -25,11 +30,11 @@ function createDeps(overrides?: {
   const userRepository: UserRepository = {
     findById: vi.fn().mockResolvedValue(user),
     findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(user),
-    findByEmailAndTenant: vi.fn().mockResolvedValue(user),
     findManyByTenant: vi.fn(),
     create: vi.fn().mockResolvedValue(user),
     update: vi.fn(),
     deactivate: vi.fn(),
+    approveMembership: vi.fn(),
   }
   const passwordHasher: PasswordHasher = {
     compare: overrides?.compare ?? vi.fn().mockResolvedValue(true),
@@ -75,6 +80,7 @@ describe('LoginUseCase', () => {
       email: user.email,
       papel: user.papel,
       ativo: user.ativo,
+      vinculoAprovadoEm: user.vinculoAprovadoEm,
     })
     expect(result.user).not.toHaveProperty('senhaHash')
     expect(deps.tokenService.sign).toHaveBeenCalledWith(result.user)
@@ -116,17 +122,64 @@ describe('LoginUseCase', () => {
     expect(deps.refreshTokenRepository.create).not.toHaveBeenCalled()
   })
 
-  it('lança InvalidCredentialsError quando o usuário está desativado (ativo: false)', async () => {
+  it('lança AccountDeactivatedError quando o usuário está desativado (ativo: false), mas só após confirmar a senha', async () => {
     const deps = createDeps({
       findByEmail: vi.fn().mockResolvedValue({ ...user, ativo: false }),
     })
     const useCase = buildUseCase(deps)
 
     await expect(useCase.execute({ email: user.email, password: 'senha-correta' })).rejects.toThrow(
+      AccountDeactivatedError,
+    )
+    expect(deps.passwordHasher.compare).toHaveBeenCalled()
+    expect(deps.tokenService.sign).not.toHaveBeenCalled()
+  })
+
+  it('lança InvalidCredentialsError (não AccountDeactivatedError) quando a senha está errada numa conta desativada', async () => {
+    const deps = createDeps({
+      findByEmail: vi.fn().mockResolvedValue({ ...user, ativo: false }),
+      compare: vi.fn().mockResolvedValue(false),
+    })
+    const useCase = buildUseCase(deps)
+
+    await expect(useCase.execute({ email: user.email, password: 'senha-errada' })).rejects.toThrow(
       InvalidCredentialsError,
     )
-    expect(deps.passwordHasher.compare).not.toHaveBeenCalled()
+  })
+
+  it('lança MembershipPendingApprovalError quando um AGENT ainda não foi aprovado pelo tenant', async () => {
+    const deps = createDeps({
+      findByEmail: vi.fn().mockResolvedValue({ ...user, vinculoAprovadoEm: null }),
+    })
+    const useCase = buildUseCase(deps)
+
+    await expect(useCase.execute({ email: user.email, password: 'senha-correta' })).rejects.toThrow(
+      MembershipPendingApprovalError,
+    )
     expect(deps.tokenService.sign).not.toHaveBeenCalled()
+  })
+
+  it('lança InvalidCredentialsError (não MembershipPendingApprovalError) quando a senha está errada num AGENT pendente', async () => {
+    const deps = createDeps({
+      findByEmail: vi.fn().mockResolvedValue({ ...user, vinculoAprovadoEm: null }),
+      compare: vi.fn().mockResolvedValue(false),
+    })
+    const useCase = buildUseCase(deps)
+
+    await expect(useCase.execute({ email: user.email, password: 'senha-errada' })).rejects.toThrow(
+      InvalidCredentialsError,
+    )
+  })
+
+  it('não bloqueia ADMIN/OWNER sem vinculoAprovadoEm (a checagem só se aplica a AGENT)', async () => {
+    const deps = createDeps({
+      findByEmail: vi.fn().mockResolvedValue({ ...user, papel: 'ADMIN', vinculoAprovadoEm: null }),
+    })
+    const useCase = buildUseCase(deps)
+
+    const result = await useCase.execute({ email: user.email, password: 'senha-correta' })
+
+    expect(result.accessToken).toBe('jwt-fake')
   })
 
   it('não vaza qual campo (e-mail ou senha) estava errado — mesma mensagem em ambos os casos', async () => {

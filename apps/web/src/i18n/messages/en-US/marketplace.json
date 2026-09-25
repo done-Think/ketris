@@ -16,7 +16,12 @@
       "es": "Spanish",
       "ptBR": "Portuguese"
     },
-    "role": "Partner broker",
+    "roles": {
+      "ADMIN": "Administrator",
+      "OWNER": "Owner",
+      "AGENT": "Partner broker",
+      "RENTER": "Renter"
+    },
     "actions": {
       "settings": "Settings",
       "signOut": "Sign out",

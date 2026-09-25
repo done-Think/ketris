@@ -5,15 +5,20 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Box, Divider, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
+import { useSnackbar } from 'notistack'
 
+import { useRouter } from '@/i18n/navigation'
 import { alpha, radius, shadows, surface, zIndex } from '@shared/theme/tokens'
 
 import { createPropertySteps } from '../config/dashboard-property-ui'
+import { useCreateProperty } from '../hooks/use-properties'
 import {
   createDashboardPropertyDefaultValues,
   createDashboardPropertySchema,
 } from '../schemas/create-dashboard-property-schema'
 import type { CreateDashboardPropertyFormValues } from '../types/dashboard-property'
+import { errorMessage } from '../utils/error-message'
+import { toPropertyPayload } from '../utils/to-property-payload'
 import { CreatePropertyActions } from './CreatePropertyActions'
 import { CreatePropertyStepFields } from './CreatePropertyStepFields'
 import { CreatePropertyStepsNav } from './CreatePropertyStepsNav'
@@ -25,6 +30,9 @@ const mobileContentGap = 24
 
 export function CreatePropertyDashboardPage() {
   const t = useTranslations('properties.create')
+  const { enqueueSnackbar } = useSnackbar()
+  const router = useRouter()
+  const createProperty = useCreateProperty()
   const { control, handleSubmit, setValue, watch } = useForm<CreateDashboardPropertyFormValues>({
     defaultValues: createDashboardPropertyDefaultValues,
     resolver: zodResolver(createDashboardPropertySchema),
@@ -53,15 +61,27 @@ export function CreatePropertyDashboardPage() {
     setValue('maxVisitedStepIndex', Math.max(maxVisitedStepIndex, nextStepIndex))
   }
 
-  const handleStaticSubmit = () => undefined
+  const handleCreateSubmit = async (values: CreateDashboardPropertyFormValues) => {
+    try {
+      const property = await createProperty.mutateAsync(toPropertyPayload(values))
+      enqueueSnackbar(t('createSuccess'), { variant: 'success' })
+      router.push({ pathname: '/dashboard/properties/[id]', params: { id: property.id } })
+    } catch (error) {
+      enqueueSnackbar(errorMessage(error, t('createError')), { variant: 'error' })
+    }
+  }
 
   return (
     <Box
       sx={{
         width: '100%',
-        px: { xs: 1.6, md: 4.8 },
-        pt: { xs: `${mobileCreateHeaderHeight}px`, md: 4.2 },
-        pb: { xs: 10.5, md: 4.2 },
+        // md usa padding uniforme de 28px (mesmo padrão das outras páginas do dashboard); xs
+        // mantém os próprios valores porque reservam espaço real pro header fixo mobile
+        // (mobileCreateHeaderHeight) e pra barra de ações fixa no rodapé (mobileActionsHeight) —
+        // não é uma escolha de espaçamento, é estrutural.
+        px: { xs: 1.6, md: 3.5 },
+        pt: { xs: `${mobileCreateHeaderHeight}px`, md: 3.5 },
+        pb: { xs: 10.5, md: 3.5 },
       }}
     >
       <Box sx={{ width: '100%', maxWidth: { xs: 440, md: 'none' }, mx: { xs: 'auto', md: 0 } }}>
@@ -120,7 +140,7 @@ export function CreatePropertyDashboardPage() {
 
         <Box
           component="form"
-          onSubmit={handleSubmit(handleStaticSubmit)}
+          onSubmit={handleSubmit(handleCreateSubmit)}
           sx={{
             bgcolor: surface.paper,
             border: '1px solid',
@@ -154,6 +174,7 @@ export function CreatePropertyDashboardPage() {
           <CreatePropertyActions
             firstStep={firstStep}
             lastStep={lastStep}
+            isSubmitting={createProperty.isPending}
             onPreviousStep={goToPreviousStep}
             onNextStep={goToNextStep}
           />

@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   getMaintenanceTickets,
@@ -11,6 +11,14 @@ import type { MaintenanceTicket } from '../types/maintenance'
 import { MaintenanceDashboardPage } from './MaintenanceDashboardPage'
 import { MaintenanceTicketDetailPage } from './MaintenanceTicketDetailPage'
 import { getMaintenanceTicketDetail } from '../data/maintenance-ticket-detail'
+
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({ data: { tenantId: 'tenant-1' }, status: 'authenticated' }),
+}))
+
+vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
+  useDashboardAgendaNotifications: () => [],
+}))
 
 describe('MaintenanceDashboardPage', () => {
   beforeEach(() => setMaintenanceTickets(maintenanceTickets))
@@ -111,7 +119,8 @@ describe('MaintenanceDashboardPage', () => {
     const dialog = screen.getByRole('dialog', { name: 'Filtros' })
     expect(dialog).toBeVisible()
 
-    await user.click(within(dialog).getByRole('button', { name: 'Urgente 3' }))
+    await user.click(within(dialog).getByRole('combobox', { name: 'Filtros' }))
+    await user.click(await screen.findByRole('option', { name: /^Urgente/ }))
 
     expect(screen.getByText('#MNT-2025-0089')).toBeVisible()
     expect(screen.queryByText('#MNT-2025-0088')).not.toBeInTheDocument()
@@ -132,11 +141,11 @@ describe('MaintenanceDashboardPage', () => {
     render(<MaintenanceDashboardPage />)
 
     expect(screen.queryByText('#MNT-2025-0083')).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: '2' }))
+    await user.click(screen.getByRole('button', { name: /next page/i }))
 
     expect(screen.getByText('#MNT-2025-0083')).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Anterior' })).toBeEnabled()
-    expect(screen.getByRole('button', { name: 'Próximo' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /previous page/i })).toBeEnabled()
+    expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled()
   })
 
   it('saves edits to the selected ticket', async () => {

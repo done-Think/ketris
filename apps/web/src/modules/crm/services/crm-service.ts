@@ -8,6 +8,12 @@ import type {
   UpdateContactPayload,
 } from '../types/contact'
 import type {
+  ConvertLeadPayload,
+  CreateLeadPayload,
+  Lead,
+  UpdateLeadStagePayload,
+} from '../types/lead'
+import type {
   CreateOpportunityPayload,
   Opportunity,
   OpportunityFilters,
@@ -22,8 +28,11 @@ import type {
 import type {
   ActivityResponse,
   ContactResponse,
+  ConvertLeadResponse,
+  LeadResponse,
   ListActivitiesResponse,
   ListContactsResponse,
+  ListLeadsResponse,
   ListOpportunitiesResponse,
   ListPropertiesResponse,
   OpportunityResponse,
@@ -34,6 +43,7 @@ import type {
 export class CrmService extends BaseService {
   private readonly path = '/crm/opportunities'
   private readonly contactsPath = '/crm/contacts'
+  private readonly leadsPath = '/crm/leads'
 
   list(filters: OpportunityFilters = {}): Promise<Opportunity[]> {
     const params = {
@@ -128,6 +138,24 @@ export class CrmService extends BaseService {
     return this.http
       .delete<ContactResponse>(`${this.contactsPath}/${id}`)
       .then((data) => data.contact)
+  }
+
+  listLeads(): Promise<Lead[]> {
+    return this.http.get<ListLeadsResponse>(this.leadsPath).then((data) => data.leads)
+  }
+
+  createLead(payload: CreateLeadPayload): Promise<Lead> {
+    return this.http.post<LeadResponse>(this.leadsPath, payload).then((data) => data.lead)
+  }
+
+  updateLeadStage(id: string, payload: UpdateLeadStagePayload): Promise<Lead> {
+    return this.http
+      .patch<LeadResponse>(`${this.leadsPath}/${id}`, payload)
+      .then((data) => data.lead)
+  }
+
+  convertLead(id: string, payload: ConvertLeadPayload): Promise<ConvertLeadResponse> {
+    return this.http.post<ConvertLeadResponse>(`${this.leadsPath}/${id}/convert`, payload)
   }
 }
 

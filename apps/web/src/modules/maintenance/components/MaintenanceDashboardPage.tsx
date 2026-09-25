@@ -39,6 +39,11 @@ import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
 import {
+  DashboardNotificationsButton,
+  DashboardPageHeader,
+  DashboardTablePagination,
+} from '@shared/components/layout'
+import {
   maintenanceFilters,
   getMaintenanceTickets,
   maintenanceMetrics,
@@ -68,7 +73,7 @@ const priorityColors: Record<MaintenancePriority, string> = {
   normal: brand.neutral[400],
 }
 
-const ticketsPerPage = 6
+const ticketsPerPage = 5
 
 export function MaintenanceDashboardPage() {
   const t = useTranslations('dashboard.maintenance')
@@ -76,6 +81,7 @@ export function MaintenanceDashboardPage() {
   const [search, setSearch] = useState('')
   const [propertyFilter, setPropertyFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
+  const [rowsPerPage, setRowsPerPage] = useState(ticketsPerPage)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false)
   const [editingTicket, setEditingTicket] = useState<MaintenanceTicket | null>(null)
@@ -103,13 +109,11 @@ export function MaintenanceDashboardPage() {
       }),
     [activeFilter, propertyFilter, search, tickets],
   )
-  const totalPages = Math.max(1, Math.ceil(filteredTickets.length / ticketsPerPage))
+  const totalPages = Math.max(1, Math.ceil(filteredTickets.length / rowsPerPage))
   const pagedTickets = filteredTickets.slice(
-    (currentPage - 1) * ticketsPerPage,
-    currentPage * ticketsPerPage,
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage,
   )
-  const showingFrom = filteredTickets.length === 0 ? 0 : (currentPage - 1) * ticketsPerPage + 1
-  const showingTo = Math.min(currentPage * ticketsPerPage, filteredTickets.length)
 
   useEffect(() => {
     setCurrentPage((page) => Math.min(page, totalPages))
@@ -217,108 +221,98 @@ export function MaintenanceDashboardPage() {
     setDeletingTicket(null)
   }
 
-  return (
-    <Box sx={{ width: '100%', px: { xs: 2, md: 2.5 }, py: { xs: 2.4, md: 3.2 } }}>
-      <Stack spacing={{ xs: 2, md: 2.7 }}>
-        <Stack
-          direction={{ xs: 'column', lg: 'row' }}
-          justifyContent="space-between"
-          spacing={2}
-          alignItems={{ lg: 'center' }}
-        >
-          <Box>
-            <Typography
-              variant="h3"
-              sx={{ fontSize: { xs: 25, md: 29 }, fontWeight: 800, color: brand.graphite[500] }}
-            >
-              {t('title')}
-            </Typography>
-            <Typography sx={{ mt: 0.45, color: 'text.secondary', fontSize: 14, fontWeight: 600 }}>
-              {t('subtitle')}
-            </Typography>
-          </Box>
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={1}
-            sx={{ width: { xs: '100%', lg: 'auto' } }}
-          >
-            <TextField
-              value={search}
-              onChange={(event) => {
-                setSearch(event.target.value)
-                setCurrentPage(1)
-              }}
-              placeholder={t('search')}
-              size="small"
-              sx={compactFieldSx}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchRoundedIcon sx={{ fontSize: 18, color: brand.neutral[400] }} />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
-            <TextField
-              select
-              value={propertyFilter}
-              onChange={(event) => handlePropertyFilterChange(event.target.value)}
-              size="small"
-              sx={{
-                ...compactFieldSx,
-                width: { xs: '100%', sm: 180 },
-                display: { xs: 'none', md: 'block' },
-                '& .MuiSelect-select': { pr: 4.5 },
-              }}
-            >
-              <MenuItem value="all">
-                <Stack direction="row" spacing={0.7} alignItems="center">
-                  <ApartmentOutlinedIcon sx={{ fontSize: 17 }} />
-                  <span>{t('allProperties')}</span>
-                </Stack>
-              </MenuItem>
-              {maintenanceProperties.map((property) => (
-                <MenuItem key={property.id} value={property.label}>
-                  {property.label}
-                </MenuItem>
-              ))}
-            </TextField>
-            <Button
-              variant="outlined"
-              startIcon={<FilterListRoundedIcon sx={{ fontSize: 17 }} />}
-              onClick={() => setIsFiltersDialogOpen(true)}
-              aria-label={t('filterDialog.open')}
-              sx={{
-                display: { xs: 'inline-flex', md: 'none' },
-                minHeight: 36,
-                px: 2,
-                borderRadius: `${radius.sm}px`,
-                fontSize: 13,
-                fontWeight: 800,
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {t('filterDialog.open')}
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<AddRoundedIcon sx={{ fontSize: 17 }} />}
-              onClick={() => setIsCreateDialogOpen(true)}
-              sx={{
-                minHeight: 36,
-                px: 2,
-                borderRadius: `${radius.sm}px`,
-                fontSize: 13,
-                fontWeight: 800,
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {t('newTicket')}
-            </Button>
+  const headerActions = (
+    <Stack
+      direction={{ xs: 'column', sm: 'row' }}
+      spacing={1.2}
+      sx={{ width: { xs: '100%', lg: 'auto' }, alignItems: { sm: 'center' } }}
+    >
+      <TextField
+        value={search}
+        onChange={(event) => {
+          setSearch(event.target.value)
+          setCurrentPage(1)
+        }}
+        placeholder={t('search')}
+        size="small"
+        sx={compactFieldSx}
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchRoundedIcon sx={{ fontSize: 16, color: brand.neutral[400] }} />
+              </InputAdornment>
+            ),
+          },
+        }}
+      />
+      <TextField
+        select
+        value={propertyFilter}
+        onChange={(event) => handlePropertyFilterChange(event.target.value)}
+        size="small"
+        sx={{
+          ...compactFieldSx,
+          width: { xs: '100%', sm: 180 },
+          display: { xs: 'none', md: 'block' },
+          '& .MuiSelect-select': { pr: 4.5 },
+        }}
+      >
+        <MenuItem value="all">
+          <Stack direction="row" spacing={0.7} alignItems="center">
+            <ApartmentOutlinedIcon sx={{ fontSize: 17 }} />
+            <span>{t('allProperties')}</span>
           </Stack>
-        </Stack>
+        </MenuItem>
+        {maintenanceProperties.map((property) => (
+          <MenuItem key={property.id} value={property.label}>
+            {property.label}
+          </MenuItem>
+        ))}
+      </TextField>
+      <Button
+        variant="outlined"
+        startIcon={<FilterListRoundedIcon sx={{ fontSize: 16 }} />}
+        onClick={() => setIsFiltersDialogOpen(true)}
+        aria-label={t('filterDialog.open')}
+        sx={{
+          display: { xs: 'inline-flex', md: 'none' },
+          height: { xs: 40, sm: 32 },
+          px: 1.5,
+          borderRadius: `${radius.sm}px`,
+          fontSize: 12,
+          fontWeight: 700,
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {t('filterDialog.open')}
+      </Button>
+      <Button
+        variant="contained"
+        startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
+        onClick={() => setIsCreateDialogOpen(true)}
+        sx={{
+          height: { xs: 40, sm: 32 },
+          px: 1.5,
+          borderRadius: `${radius.sm}px`,
+          boxShadow: shadows.none,
+          fontSize: 12,
+          fontWeight: 700,
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {t('newTicket')}
+      </Button>
+      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+        <DashboardNotificationsButton />
+      </Box>
+    </Stack>
+  )
+
+  return (
+    <Box sx={{ width: '100%', p: 3.5 }}>
+      <Stack spacing={{ xs: 2, md: 2.7 }}>
+        <DashboardPageHeader title={t('title')} subtitle={t('subtitle')} actions={headerActions} />
         <MaintenanceStatusFilters
           activeFilter={activeFilter}
           getFilterCount={getFilterCount}
@@ -328,8 +322,11 @@ export function MaintenanceDashboardPage() {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' },
-            gap: 1.8,
+            gridTemplateColumns: {
+              xs: 'repeat(3, minmax(0, 1fr))',
+              sm: 'repeat(3, minmax(0, 1fr))',
+            },
+            gap: { xs: 0.8, sm: 1.8 },
           }}
         >
           {maintenanceMetrics.map((metric) => (
@@ -454,57 +451,16 @@ export function MaintenanceDashboardPage() {
               )}
             </TableBody>
           </Table>
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            alignItems={{ sm: 'center' }}
-            justifyContent="space-between"
-            spacing={1}
-            sx={{ px: 1.75, py: 1.25, borderTop: '1px solid', borderColor: brand.neutral[100] }}
-          >
-            <Typography sx={{ fontSize: 13, color: brand.neutral[600], fontWeight: 700 }}>
-              {t('showing', {
-                from: showingFrom,
-                to: showingTo,
-                total: filteredTickets.length,
-              })}
-            </Typography>
-            <Stack direction="row" spacing={0.5}>
-              <Button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((page) => page - 1)}
-                sx={paginationButtonSx}
-              >
-                {t('pagination.previous')}
-              </Button>
-              {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
-                <Button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  sx={{
-                    minWidth: 28,
-                    height: 28,
-                    px: 1.05,
-                    borderRadius: `${radius.sm}px`,
-                    border: page === currentPage ? 0 : '1px solid',
-                    borderColor: brand.neutral[100],
-                    bgcolor: page === currentPage ? 'primary.main' : surface.paper,
-                    color: page === currentPage ? surface.paper : brand.neutral[600],
-                    fontSize: 12,
-                    fontWeight: 800,
-                  }}
-                >
-                  {page}
-                </Button>
-              ))}
-              <Button
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((page) => page + 1)}
-                sx={paginationButtonSx}
-              >
-                {t('pagination.next')}
-              </Button>
-            </Stack>
-          </Stack>
+          <DashboardTablePagination
+            count={filteredTickets.length}
+            page={currentPage}
+            rowsPerPage={rowsPerPage}
+            onPageChange={setCurrentPage}
+            onRowsPerPageChange={(nextRowsPerPage) => {
+              setRowsPerPage(nextRowsPerPage)
+              setCurrentPage(1)
+            }}
+          />
         </TableContainer>
       </Stack>
       <MaintenanceCreateTicketDialog
@@ -616,10 +572,10 @@ const maintenanceProperties = [
 const compactFieldSx = {
   width: { xs: '100%', sm: 200 },
   '& .MuiInputBase-root': {
-    height: 36,
+    height: { xs: 40, sm: 32 },
     borderRadius: `${radius.sm}px`,
     bgcolor: surface.paper,
-    fontSize: 13,
+    fontSize: 12,
     color: brand.neutral[600],
   },
   '& .MuiOutlinedInput-notchedOutline': { borderColor: alpha.graphite[8] },
@@ -647,17 +603,6 @@ const bodyCellSx = {
   fontWeight: 700,
   whiteSpace: 'nowrap',
 } as const
-const paginationButtonSx = {
-  height: 28,
-  px: 1.05,
-  borderRadius: `${radius.sm}px`,
-  border: '1px solid',
-  borderColor: brand.neutral[100],
-  color: brand.neutral[600],
-  fontSize: 12,
-  fontWeight: 800,
-} as const
-
 function MaintenanceStatusFilters({
   activeFilter,
   direction = 'row',
@@ -672,44 +617,175 @@ function MaintenanceStatusFilters({
   onChange: (value: MaintenanceFilter['value']) => void
 }) {
   const t = useTranslations('dashboard.maintenance')
+  const activeOption =
+    maintenanceFilters.find((filter) => filter.value === activeFilter) ?? maintenanceFilters[0]
+  const isColumn = direction === 'column'
 
   return (
-    <Stack
-      direction={direction}
-      spacing={0.8}
-      sx={{
-        display: isDesktop ? { xs: 'none', md: 'flex' } : 'flex',
-        overflowX: direction === 'row' ? 'auto' : 'visible',
-        pb: direction === 'row' ? 0.2 : 0,
-      }}
-    >
-      {maintenanceFilters.map((filter) => (
-        <Button
-          key={filter.value}
-          aria-pressed={activeFilter === filter.value}
-          onClick={() => onChange(filter.value)}
-          sx={{
-            justifyContent: direction === 'column' ? 'space-between' : 'center',
-            minWidth: direction === 'row' ? 'max-content' : undefined,
-            minHeight: 30,
-            px: 1.55,
-            py: 0,
-            borderRadius: `${radius.full}px`,
-            border: '1px solid',
-            borderColor: activeFilter === filter.value ? 'primary.main' : brand.neutral[100],
-            bgcolor: activeFilter === filter.value ? 'primary.main' : surface.paper,
-            color: activeFilter === filter.value ? surface.paper : brand.neutral[600],
-            fontSize: 12,
-            fontWeight: 700,
-          }}
+    <>
+      <TextField
+        select
+        size="small"
+        value={activeFilter}
+        onChange={(event) => onChange(event.target.value as MaintenanceFilter['value'])}
+        sx={{
+          display: isDesktop ? { xs: 'flex', md: 'none' } : 'flex',
+          width: isColumn ? '100%' : { xs: '100%', sm: 160 },
+          '& .MuiOutlinedInput-root': {
+            minHeight: 46,
+            borderRadius: `${radius.sm}px`,
+            bgcolor: surface.paper,
+            color: brand.graphite[500],
+            fontSize: 14,
+            fontWeight: 800,
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'transparent',
+              borderWidth: 0,
+            },
+          },
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'transparent',
+            borderWidth: 0,
+          },
+          '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'transparent',
+          },
+          '& .MuiSelect-select': {
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.8,
+          },
+        }}
+        SelectProps={{
+          inputProps: { 'aria-label': t('filterDialog.title') },
+          renderValue: () => (
+            <MaintenanceFilterOptionLabel
+              active
+              count={getFilterCount(activeOption)}
+              label={t(`filters.${activeOption.value}`)}
+            />
+          ),
+          MenuProps: {
+            PaperProps: {
+              sx: {
+                mt: 0.6,
+                borderRadius: `${radius.sm}px`,
+                boxShadow: shadows.popover,
+              },
+            },
+          },
+        }}
+      >
+        {maintenanceFilters.map((filter) => {
+          const active = activeFilter === filter.value
+
+          return (
+            <MenuItem
+              key={filter.value}
+              value={filter.value}
+              sx={{
+                minHeight: 42,
+                bgcolor: active ? alpha.magenta[8] : 'transparent',
+                '&:hover': {
+                  bgcolor: alpha.magenta[8],
+                },
+              }}
+            >
+              <MaintenanceFilterOptionLabel
+                active={active}
+                count={getFilterCount(filter)}
+                label={t(`filters.${filter.value}`)}
+              />
+            </MenuItem>
+          )
+        })}
+      </TextField>
+
+      {isDesktop ? (
+        <Stack
+          component="div"
+          role="group"
+          aria-label={t('filterDialog.title')}
+          direction="row"
+          spacing={1}
+          sx={{ display: { xs: 'none', md: 'flex' }, flexWrap: 'wrap', rowGap: 1 }}
         >
-          {t(`filters.${filter.value}`)}
-          <Box component="span" sx={{ ml: 0.8, fontSize: 11, fontWeight: 800 }}>
-            {getFilterCount(filter)}
-          </Box>
-        </Button>
-      ))}
-    </Stack>
+          {maintenanceFilters.map((filter) => {
+            const active = activeFilter === filter.value
+
+            return (
+              <Button
+                key={filter.value}
+                type="button"
+                variant={active ? 'contained' : 'outlined'}
+                aria-pressed={active}
+                onClick={() => onChange(filter.value)}
+                sx={{
+                  minHeight: 34,
+                  borderRadius: `${radius.full}px`,
+                  px: 1.8,
+                  gap: 0.6,
+                  fontSize: 12,
+                  fontWeight: 900,
+                }}
+              >
+                {t(`filters.${filter.value}`)}
+                <Box
+                  component="span"
+                  sx={{
+                    display: 'grid',
+                    minWidth: 20,
+                    height: 20,
+                    placeItems: 'center',
+                    px: 0.5,
+                    borderRadius: `${radius.full}px`,
+                    bgcolor: active ? alpha.white[8] : alpha.graphite[6],
+                    color: active ? surface.lightText : brand.neutral[500],
+                    fontSize: 10.5,
+                    fontWeight: 700,
+                  }}
+                >
+                  {getFilterCount(filter)}
+                </Box>
+              </Button>
+            )
+          })}
+        </Stack>
+      ) : null}
+    </>
+  )
+}
+
+function MaintenanceFilterOptionLabel({
+  active,
+  count,
+  label,
+}: {
+  active: boolean
+  count: number
+  label: string
+}) {
+  return (
+    <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+      <Box component="span">{label}</Box>
+      <Box
+        component="span"
+        sx={{
+          display: 'grid',
+          minWidth: 22,
+          height: 22,
+          placeItems: 'center',
+          px: 0.6,
+          borderRadius: `${radius.full}px`,
+          bgcolor: active ? brand.magenta[500] : alpha.graphite[6],
+          color: active ? surface.lightText : brand.neutral[500],
+          fontSize: 11,
+          fontWeight: 900,
+        }}
+      >
+        {count}
+      </Box>
+    </Box>
   )
 }
 
@@ -730,13 +806,15 @@ function MetricCard({
         : { Icon: AccessTimeOutlinedIcon, bg: '#FFF5D8', color: '#D98900' }
   return (
     <Stack
-      direction="row"
-      alignItems="center"
-      spacing={1.3}
+      direction={{ xs: 'column', sm: 'row' }}
+      alignItems={{ xs: 'flex-start', sm: 'center' }}
+      spacing={{ xs: 0.5, sm: 1.3 }}
       sx={{
-        minHeight: 78,
-        px: 2.1,
-        py: 1.5,
+        minWidth: 0,
+        minHeight: { xs: 84, sm: 78 },
+        overflow: 'hidden',
+        px: { xs: 1.2, sm: 2.1 },
+        py: { xs: 1.3, sm: 1.5 },
         bgcolor: surface.paper,
         borderRadius: `${radius.sm}px`,
         boxShadow: shadows.crmCardCompact,
@@ -747,7 +825,7 @@ function MetricCard({
           width: 42,
           height: 42,
           borderRadius: '50%',
-          display: 'grid',
+          display: { xs: 'none', sm: 'grid' },
           placeItems: 'center',
           bgcolor: config.bg,
           color: config.color,
@@ -755,12 +833,28 @@ function MetricCard({
       >
         <config.Icon sx={{ fontSize: 22 }} />
       </Box>
-      <Box>
-        <Typography sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 900 }}>
+      <Box sx={{ width: '100%', minWidth: 0, overflow: 'hidden' }}>
+        <Typography
+          noWrap
+          sx={{
+            width: '100%',
+            minWidth: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            color: brand.neutral[500],
+            fontSize: { xs: 10, sm: 12 },
+            fontWeight: 900,
+          }}
+        >
           {label}
         </Typography>
         <Typography
-          sx={{ color: brand.graphite[500], fontSize: 30, lineHeight: 1.1, fontWeight: 900 }}
+          sx={{
+            color: brand.graphite[500],
+            fontSize: { xs: 24, sm: 30 },
+            lineHeight: 1.1,
+            fontWeight: 900,
+          }}
         >
           {value}
         </Typography>

@@ -7,27 +7,31 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   Typography,
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { brand, surface } from '@shared/theme/tokens'
 
-import type { LeadsTableProps } from '../../types/lead'
+import type { LeadTableSortField, LeadsTableProps } from '../../types/lead'
 import { LeadAvatar } from './LeadAvatar'
 import { LeadStatusChip } from './LeadStatusChip'
 
-const leadTableColumnKeys = [
-  'name',
-  'interest',
-  'budget',
-  'status',
-  'source',
-  'lastContact',
-  'actions',
-] as const
+const leadTableColumns: {
+  key: 'name' | 'interest' | 'budget' | 'status' | 'source' | 'lastContact' | 'actions'
+  sortField?: LeadTableSortField
+}[] = [
+  { key: 'name', sortField: 'name' },
+  { key: 'interest', sortField: 'interest' },
+  { key: 'budget', sortField: 'budget' },
+  { key: 'status', sortField: 'stage' },
+  { key: 'source', sortField: 'source' },
+  { key: 'lastContact', sortField: 'lastContact' },
+  { key: 'actions' },
+]
 
-export function LeadsTable({ leads, onContactLead }: LeadsTableProps) {
+export function LeadsTable({ leads, sort, onContactLead, onSortChange }: LeadsTableProps) {
   const t = useTranslations('crm.leads')
 
   return (
@@ -50,6 +54,17 @@ export function LeadsTable({ leads, onContactLead }: LeadsTableProps) {
             textTransform: 'uppercase',
             whiteSpace: 'nowrap',
           },
+          '& .MuiTableSortLabel-root': {
+            color: 'inherit',
+            font: 'inherit',
+            textTransform: 'inherit',
+          },
+          '& .MuiTableSortLabel-root:hover, & .MuiTableSortLabel-root.Mui-active': {
+            color: brand.neutral[500],
+          },
+          '& .MuiTableSortLabel-icon': {
+            color: `${brand.neutral[500]} !important`,
+          },
           '& .MuiTableBody-root .MuiTableCell-root': {
             px: 1.25,
             py: 0,
@@ -70,13 +85,24 @@ export function LeadsTable({ leads, onContactLead }: LeadsTableProps) {
         </colgroup>
         <TableHead>
           <TableRow sx={{ height: 40, bgcolor: surface.app }}>
-            {leadTableColumnKeys.map((columnKey) => (
+            {leadTableColumns.map(({ key, sortField }) => (
               <TableCell
-                key={columnKey}
+                key={key}
                 scope="col"
-                align={columnKey === 'actions' ? 'right' : 'left'}
+                align={key === 'actions' ? 'right' : 'left'}
+                sortDirection={sortField && sort?.field === sortField ? sort.direction : false}
               >
-                {t(`tableColumns.${columnKey}`)}
+                {sortField ? (
+                  <TableSortLabel
+                    active={sort?.field === sortField}
+                    direction={sort?.field === sortField ? sort.direction : 'asc'}
+                    onClick={() => onSortChange(sortField)}
+                  >
+                    {t(`tableColumns.${key}`)}
+                  </TableSortLabel>
+                ) : (
+                  t(`tableColumns.${key}`)
+                )}
               </TableCell>
             ))}
           </TableRow>

@@ -16,7 +16,12 @@
       "es": "Español",
       "ptBR": "Portugués"
     },
-    "role": "Corredor asociado",
+    "roles": {
+      "ADMIN": "Administrador",
+      "OWNER": "Propietario",
+      "AGENT": "Corredor asociado",
+      "RENTER": "Inquilino"
+    },
     "actions": {
       "settings": "Configuración",
       "signOut": "Salir",

@@ -39,12 +39,12 @@ export function EditAdminForm({ adminId }: EditAdminFormProps) {
     formState: { isSubmitting },
   } = useForm<UpdateAdminFormValues>({
     resolver: zodResolver(updateAdminSchema),
-    defaultValues: { nome: '', email: '' },
+    defaultValues: { name: '', email: '' },
   })
 
   useEffect(() => {
     if (admin) {
-      reset({ nome: admin.nome, email: admin.email })
+      reset({ name: admin.name, email: admin.email })
     }
   }, [admin, reset])
 
@@ -71,7 +71,7 @@ export function EditAdminForm({ adminId }: EditAdminFormProps) {
 
   return (
     <Stack component="form" onSubmit={handleSubmit(onSubmit)} spacing={2.5} sx={{ maxWidth: 420 }}>
-      <RhfTextField control={control} name="nome" label={t('fields.name')} fullWidth />
+      <RhfTextField control={control} name="name" label={t('fields.name')} fullWidth />
       <RhfTextField
         control={control}
         name="email"

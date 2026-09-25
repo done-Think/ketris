@@ -37,6 +37,10 @@ vi.mock('../../hooks/use-contacts', () => ({
   useArchiveContact: mocks.useArchiveContact,
 }))
 
+vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
+  useDashboardAgendaNotifications: () => [],
+}))
+
 const contact: ApiContactListItem = {
   id: 'contact-1',
   tenantId: 'tenant-1',

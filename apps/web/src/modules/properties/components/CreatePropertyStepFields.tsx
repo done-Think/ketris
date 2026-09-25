@@ -10,22 +10,21 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import CameraAltOutlinedIcon from '@mui/icons-material/CameraAltOutlined'
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
 import RadioButtonCheckedRoundedIcon from '@mui/icons-material/RadioButtonCheckedRounded'
 import RadioButtonUncheckedRoundedIcon from '@mui/icons-material/RadioButtonUncheckedRounded'
 import { useTranslations } from 'next-intl'
 
-import { alpha, brand, iconSize, motion, radius, surface } from '@shared/theme/tokens'
+import { brand, iconSize, motion, radius, surface } from '@shared/theme/tokens'
 
 import {
   createPropertyFeatureOptions,
-  createPropertyMediaSlots,
   createPropertyPublishingOptions,
   createPropertyPurposeOptions,
   createPropertyTypeOptions,
 } from '../config/dashboard-property-ui'
 import type { CreatePropertyStepFieldsProps } from '../types/dashboard-property'
+import { PropertyMediaUploadField } from './PropertyMediaUploadField'
 
 export function CreatePropertyStepFields({
   control,
@@ -262,7 +261,7 @@ export function CreatePropertyStepFields({
             ['bedrooms', 'bedrooms', 'number'],
             ['bathrooms', 'bathrooms', 'number'],
             ['parkingSpaces', 'parkingSpaces', 'number'],
-            ['area', 'area', 'text'],
+            ['area', 'area', 'number'],
           ].map(([name, label, type]) => (
             <Controller
               key={name}
@@ -321,65 +320,7 @@ export function CreatePropertyStepFields({
         </Box>
       ) : null}
 
-      {activeStepKey === 'media' ? (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
-            gap: 2,
-          }}
-        >
-          {createPropertyMediaSlots.map((label) => (
-            <Controller
-              key={label}
-              control={control}
-              name="mediaSlots"
-              render={({ field }) => {
-                const active = field.value.includes(label)
-
-                return (
-                  <Box
-                    component="button"
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => {
-                      field.onChange(
-                        active
-                          ? field.value.filter((item) => item !== label)
-                          : [...field.value, label],
-                      )
-                    }}
-                    sx={{
-                      minHeight: 150,
-                      border: '1px dashed',
-                      borderColor: active ? 'primary.main' : 'divider',
-                      borderRadius: `${radius.sm}px`,
-                      bgcolor: active ? alpha.magenta[6] : surface.paper,
-                      display: 'grid',
-                      placeItems: 'center',
-                      px: 2,
-                      textAlign: 'center',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <Stack spacing={0.8} alignItems="center">
-                      <CameraAltOutlinedIcon
-                        sx={{
-                          color: active ? brand.magenta[500] : brand.neutral[500],
-                          fontSize: iconSize.xl,
-                        }}
-                      />
-                      <Typography sx={{ color: brand.neutral[500], fontWeight: 900 }}>
-                        {t(`mediaSlots.${label}`)}
-                      </Typography>
-                    </Stack>
-                  </Box>
-                )
-              }}
-            />
-          ))}
-        </Box>
-      ) : null}
+      {activeStepKey === 'media' ? <PropertyMediaUploadField control={control} /> : null}
 
       {activeStepKey === 'values' ? (
         <Box
@@ -390,11 +331,11 @@ export function CreatePropertyStepFields({
           }}
         >
           {[
-            ['mainValue', mainValueLabel],
-            ['condominium', 'condominium'],
-            ['iptu', 'iptu'],
-            ['negotiationTerm', negotiationTermLabel],
-          ].map(([name, label]) => (
+            ['mainValue', mainValueLabel, 'number'],
+            ['condominium', 'condominium', 'number'],
+            ['iptu', 'iptu', 'number'],
+            ['negotiationTerm', negotiationTermLabel, 'text'],
+          ].map(([name, label, type]) => (
             <Controller
               key={name}
               control={control}
@@ -403,6 +344,7 @@ export function CreatePropertyStepFields({
                 <TextField
                   {...field}
                   label={t(`fields.${label}`)}
+                  type={type}
                   error={Boolean(fieldState.error)}
                   helperText={fieldState.error?.message}
                 />

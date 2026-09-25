@@ -21,6 +21,14 @@ vi.mock('@mui/x-charts/LineChart', () => ({
 
 vi.mock('../../hooks/use-tenants', () => ({ useTenants }))
 
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({ data: { tenantId: 'tenant-1' }, status: 'authenticated' }),
+}))
+
+vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
+  useDashboardAgendaNotifications: () => [],
+}))
+
 vi.mock('@/i18n/navigation', async () => {
   const React = await import('react')
 

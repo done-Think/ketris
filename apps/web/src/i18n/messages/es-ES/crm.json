@@ -26,6 +26,7 @@
   },
   "pipeline": {
     "title": "Pipeline de ventas",
+    "subtitle": "Acompaña oportunidades, etapas y negociaciones en curso.",
     "proposalsTitle": "Propuestas",
     "searchPlaceholder": "Buscar oportunidad...",
     "searchAriaLabel": "Buscar oportunidad",
@@ -67,6 +68,7 @@
   },
   "contacts": {
     "title": "Contactos",
+    "subtitle": "Gestiona propietarios, corredores e inquilinos",
     "searchPlaceholder": "Buscar contacto por nombre, email, teléfono...",
     "searchAriaLabel": "Buscar contactos",
     "filterAriaLabel": "Filtrar contactos por tipo",
@@ -157,6 +159,7 @@
       "eyebrow": "Nuevo contacto comercial",
       "title": "Registrar lead",
       "success": "Lead registrado correctamente.",
+      "error": "No se pudo registrar el lead. Inténtalo de nuevo.",
       "steps": {
         "contact": "Contacto",
         "interest": "Interés",
@@ -169,8 +172,6 @@
         "interest": "Inmueble o interés",
         "budget": "Presupuesto",
         "source": "Origen",
-        "broker": "Corredor responsable",
-        "stage": "Status inicial",
         "notes": "Observaciones"
       },
       "sources": {
@@ -193,8 +194,7 @@
         "emailInvalid": "Indica un correo válido",
         "interestRequired": "Indica el inmueble o interés",
         "budgetRequired": "Indica el presupuesto",
-        "sourceRequired": "Indica el origen",
-        "brokerRequired": "Indica el corredor responsable"
+        "sourceRequired": "Indica el origen"
       }
     },
     "filters": {
@@ -215,13 +215,27 @@
     },
     "contact": {
       "eyebrow": "Contacto del lead",
+      "stageLabel": "Etapa",
       "phoneLabel": "Teléfono",
       "call": "Llamar",
       "whatsApp": "WhatsApp",
       "cancel": "Cerrar",
       "close": "Cerrar contacto del lead",
       "emailLabel": "Email",
-      "email": "Email"
+      "email": "Email",
+      "convert": "Convertir en oportunidad",
+      "alreadyConverted": "Ya convertido"
+    },
+    "convert": {
+      "eyebrow": "Convertir lead",
+      "title": "Convertir a {name} en oportunidad",
+      "close": "Cerrar conversión de lead",
+      "proposedValue": "Valor propuesto",
+      "proposedValueInvalid": "Indica un valor válido",
+      "cancel": "Cancelar",
+      "confirm": "Convertir",
+      "success": "Lead convertido en oportunidad.",
+      "error": "No se pudo convertir el lead. Inténtalo de nuevo."
     },
     "pagination": {
       "pageAriaLabel": "Ir a la página {page}"

@@ -5,9 +5,10 @@ import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneR
 import PersonAddAlt1RoundedIcon from '@mui/icons-material/PersonAddAlt1Rounded'
 import { Badge, Box, Divider, IconButton, Popover, Stack, Tooltip, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import { useRouter } from '@/i18n/navigation'
+import { useDashboardAgendaNotifications } from '@shared/hooks/use-dashboard-agenda-notifications'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 import type {
   DashboardNotificationItem,
@@ -19,52 +20,14 @@ const notificationKindIcons = {
   assignedEvent: PersonAddAlt1RoundedIcon,
 }
 
-function useDefaultDashboardNotifications() {
-  const t = useTranslations('dashboard.notificationsCenter.defaultItems')
-
-  return useMemo<DashboardNotificationItem[]>(
-    () => [
-      {
-        href: { pathname: '/dashboard/agenda', query: { eventId: 'agenda-001' } },
-        id: 'today-visit',
-        kind: 'todayVisit',
-        title: t('todayVisit.title'),
-        message: t('todayVisit.message'),
-      },
-      {
-        href: { pathname: '/dashboard/agenda', query: { eventId: 'agenda-003' } },
-        id: 'agency-assigned',
-        kind: 'assignedEvent',
-        title: t('agencyAssigned.title'),
-        message: t('agencyAssigned.message'),
-      },
-      {
-        href: { pathname: '/dashboard/leads', query: { leadId: 'lead-004' } },
-        id: 'broker-assigned',
-        kind: 'assignedEvent',
-        title: t('brokerAssigned.title'),
-        message: t('brokerAssigned.message'),
-      },
-      {
-        href: { pathname: '/dashboard/proposals', query: { proposalId: 'proposal-002' } },
-        id: 'proposal-return',
-        kind: 'todayVisit',
-        title: t('proposalReturn.title'),
-        message: t('proposalReturn.message'),
-      },
-    ],
-    [t],
-  )
-}
-
 export function DashboardNotificationsButton({
   notifications,
   onNotificationSelect,
 }: DashboardNotificationsButtonProps) {
   const router = useRouter()
   const t = useTranslations('dashboard.notificationsCenter')
-  const defaultNotifications = useDefaultDashboardNotifications()
-  const notificationItems = notifications ?? defaultNotifications
+  const agendaNotifications = useDashboardAgendaNotifications()
+  const notificationItems = notifications ?? agendaNotifications
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
   const isOpen = Boolean(anchorEl)
 

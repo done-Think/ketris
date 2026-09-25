@@ -15,6 +15,9 @@
     "leads": {
       "metadataTitle": "Ketris | Leads"
     },
+    "team": {
+      "metadataTitle": "Ketris | Equipo"
+    },
     "proposals": {
       "metadataTitle": "Ketris | Propuestas"
     }
@@ -24,25 +27,7 @@
     "ariaLabel": "Abrir notificaciones del dashboard",
     "title": "Alertas del dashboard",
     "subtitle": "Visitas de hoy y compromisos asignados",
-    "empty": "No hay alertas para mostrar.",
-    "defaultItems": {
-      "todayVisit": {
-        "title": "Visita programada para hoy",
-        "message": "10:30 - Marina Costa en Apt Jardins 3q"
-      },
-      "agencyAssigned": {
-        "title": "Nuevo compromiso asignado",
-        "message": "Inmobiliaria Ketris programó retorno con Bruno Oliveira"
-      },
-      "brokerAssigned": {
-        "title": "Lead compartido",
-        "message": "Ana Silva asignó atención de propuesta"
-      },
-      "proposalReturn": {
-        "title": "Retorno pendiente",
-        "message": "16:00 - Revisar contraoferta de Juliana Mendes"
-      }
-    }
+    "empty": "No hay alertas para mostrar."
   },
   "overview": {
     "title": "Dashboard",
@@ -219,6 +204,50 @@
       "clientLabel": "Cliente",
       "amountLabel": "Valor",
       "receiptsTitle": "Comprobantes"
+    }
+  },
+  "team": {
+    "title": "Equipo de corredores",
+    "subtitle": "Acompaña ventas, retornos y progreso de la meta mensual por representante.",
+    "searchPlaceholder": "Buscar corredor...",
+    "inviteBroker": "Invitar corredor",
+    "moreOptions": "Más opciones",
+    "viewProfileAriaLabel": "Ver perfil de {name}",
+    "goalProgress": "Progreso de la meta",
+    "returns": "{count} retornos",
+    "empty": "No se encontró ningún corredor.",
+    "kpis": {
+      "activeBrokers": "Corredores activos",
+      "properties": "Inmuebles",
+      "monthlySales": "Ventas del mes",
+      "averageGoal": "Meta promedio",
+      "activeBrokersHelper": "+2 en onboarding",
+      "propertiesHelper": "Cartera activa",
+      "monthlySalesHelper": "Producción mensual",
+      "averageGoalHelper": "Meta consolidada"
+    },
+    "metrics": {
+      "properties": "Inmuebles",
+      "leads": "Leads",
+      "monthlySales": "Ventas/mes"
+    },
+    "statuses": {
+      "ahead": "Sobre la meta",
+      "onTrack": "En ritmo",
+      "attention": "Requiere atención"
+    },
+    "menu": {
+      "performance": "Ver desempeño",
+      "editGoal": "Editar meta mensual",
+      "transferPortfolio": "Transferir leads/inmuebles",
+      "scheduleOneOnOne": "Agendar 1:1",
+      "deactivate": "Pausar/desactivar corredor",
+      "feedback": "{action} de {name}"
+    },
+    "actions": {
+      "message": "Enviar mensaje",
+      "email": "Enviar e-mail",
+      "call": "Llamar"
     }
   },
   "proposals": {

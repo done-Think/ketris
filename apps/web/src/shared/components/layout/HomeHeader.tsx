@@ -45,8 +45,9 @@ export function HomeHeader({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const closeMobileMenu = () => setIsMobileMenuOpen(false)
   const t = useTranslations('marketplace.header')
-  const { status } = useSession()
+  const { data: session, status } = useSession()
   const announcePropertyHref = status === 'authenticated' ? '/dashboard/properties' : '/login'
+  const canAnnounceProperty = session?.papel !== 'RENTER'
 
   return (
     <Box
@@ -66,7 +67,7 @@ export function HomeHeader({
           sx={{
             minHeight: 60,
             display: 'grid',
-            gridTemplateColumns: { xs: 'auto 1fr', md: '1fr auto 1fr' },
+            gridTemplateColumns: { xs: 'auto 1fr', md: 'auto minmax(0, 1fr) auto' },
             alignItems: 'center',
             gap: 2,
           }}
@@ -82,8 +83,8 @@ export function HomeHeader({
             component="nav"
             direction="row"
             alignItems="center"
-            spacing={{ xs: 2, md: 4 }}
-            sx={{ display: { xs: 'none', md: 'flex' }, justifySelf: 'center' }}
+            spacing={{ xs: 2, md: 2.5, lg: 4 }}
+            sx={{ display: { xs: 'none', md: 'flex' }, justifySelf: 'center', minWidth: 0 }}
           >
             {navigationItems.map((item) => (
               <MuiLink
@@ -121,32 +122,41 @@ export function HomeHeader({
             ))}
           </Stack>
 
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ justifySelf: 'end' }}>
-            <Button
-              component={Link}
-              href={announcePropertyHref}
-              variant="outlined"
-              color="secondary"
-              size="small"
-              sx={{
-                borderColor: 'divider',
-                color: 'text.primary',
-                borderRadius: `${radius.sm}px`,
-                display: { xs: 'none', md: 'inline-flex' },
-                minHeight: 42,
-                px: 2,
-                ...componentText.headerCta,
-                transition: motion.transition.bordered,
-                '&:hover': {
-                  bgcolor: 'transparent',
-                  borderColor: surface.darkText,
-                  color: surface.darkText,
-                  transform: 'translateY(-1px)',
-                },
-              }}
-            >
-              {t('announceProperty')}
-            </Button>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+            sx={{ justifySelf: 'end', flexShrink: 0 }}
+          >
+            {canAnnounceProperty ? (
+              <Button
+                component={Link}
+                href={announcePropertyHref}
+                variant="outlined"
+                color="secondary"
+                size="small"
+                sx={{
+                  borderColor: 'divider',
+                  color: 'text.primary',
+                  borderRadius: `${radius.sm}px`,
+                  display: { xs: 'none', md: 'inline-flex' },
+                  minHeight: 42,
+                  minWidth: 138,
+                  px: 2,
+                  whiteSpace: 'nowrap',
+                  ...componentText.headerCta,
+                  transition: motion.transition.bordered,
+                  '&:hover': {
+                    bgcolor: 'transparent',
+                    borderColor: surface.darkText,
+                    color: surface.darkText,
+                    transform: 'translateY(-1px)',
+                  },
+                }}
+              >
+                {t('announceProperty')}
+              </Button>
+            ) : null}
             <IconButton aria-label={t('notifications')} size="small" sx={{ width: 42, height: 42 }}>
               <NotificationsNoneOutlinedIcon sx={{ fontSize: iconSize.xl }} />
             </IconButton>
@@ -267,23 +277,27 @@ export function HomeHeader({
             ))}
           </Stack>
 
-          <Divider />
+          {canAnnounceProperty ? (
+            <>
+              <Divider />
 
-          <Button
-            component={Link}
-            href={announcePropertyHref}
-            variant="contained"
-            color="primary"
-            onClick={closeMobileMenu}
-            fullWidth
-            sx={{
-              minHeight: 44,
-              borderRadius: `${radius.sm}px`,
-              ...componentText.headerCta,
-            }}
-          >
-            {t('announceProperty')}
-          </Button>
+              <Button
+                component={Link}
+                href={announcePropertyHref}
+                variant="contained"
+                color="primary"
+                onClick={closeMobileMenu}
+                fullWidth
+                sx={{
+                  minHeight: 44,
+                  borderRadius: `${radius.sm}px`,
+                  ...componentText.headerCta,
+                }}
+              >
+                {t('announceProperty')}
+              </Button>
+            </>
+          ) : null}
         </Stack>
       </Drawer>
     </Box>

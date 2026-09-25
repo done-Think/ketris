@@ -12,6 +12,7 @@
   },
   "dashboardHeader": {
     "title": "Contracts",
+    "subtitle": "Manage contracts, due dates, and signatures in progress.",
     "searchPlaceholder": "Search contracts...",
     "newContract": "New Contract"
   },
