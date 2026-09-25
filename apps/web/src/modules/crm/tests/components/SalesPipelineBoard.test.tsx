@@ -38,6 +38,10 @@ vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
 }))
 
+vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
+  useDashboardAgendaNotifications: () => [],
+}))
+
 vi.mock('../../hooks/use-opportunities', async (importOriginal) => {
   const original = await importOriginal<typeof import('../../hooks/use-opportunities')>()
 

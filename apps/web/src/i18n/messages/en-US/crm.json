@@ -26,6 +26,7 @@
   },
   "pipeline": {
     "title": "Sales Pipeline",
+    "subtitle": "Track opportunities, stages, and ongoing negotiations.",
     "proposalsTitle": "Proposals",
     "searchPlaceholder": "Search opportunity...",
     "searchAriaLabel": "Search opportunity",
