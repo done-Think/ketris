@@ -85,7 +85,14 @@ export function PublicProfileEditorPage() {
           title={t('title')}
           subtitle={t('subtitle')}
           actions={
-            <Stack direction="row" spacing={1.2} alignItems="center">
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={1.2}
+              sx={{
+                width: { xs: '100%', md: 'auto' },
+                alignItems: { xs: 'stretch', sm: 'center' },
+              }}
+            >
               {isSubmitSuccessful ? (
                 <Stack
                   direction="row"
@@ -99,6 +106,7 @@ export function PublicProfileEditorPage() {
                   </Typography>
                 </Stack>
               ) : null}
+              <PublicProfileEditorActions onPreview={() => setIsPreviewOpen(true)} />
               <Box sx={{ display: { xs: 'none', md: 'block' } }}>
                 <DashboardNotificationsButton />
               </Box>
@@ -131,7 +139,6 @@ export function PublicProfileEditorPage() {
             <PublicProfileMainFields control={control} />
           </Box>
           <Stack spacing={2} sx={{ gridArea: 'settings' }}>
-            <PublicProfileEditorActions onPreview={() => setIsPreviewOpen(true)} />
             <PublicProfileAppearanceFields control={control} />
             <PublicProfileImageFields
               control={control}

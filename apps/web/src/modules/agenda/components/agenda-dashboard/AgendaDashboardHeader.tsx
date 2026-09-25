@@ -6,8 +6,12 @@ import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
 import { Box, Button, IconButton, Stack, Tooltip, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/components/layout'
-import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import {
+  DashboardNotificationsButton,
+  DashboardPageHeader,
+  dashboardHeaderActionButtonSx,
+} from '@shared/components/layout'
+import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
 import type { AgendaDashboardHeaderProps } from '../../types/agenda-event'
 
@@ -96,15 +100,8 @@ export function AgendaDashboardHeader({
         startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
         onClick={onNewEvent}
         sx={{
+          ...dashboardHeaderActionButtonSx,
           display: { xs: 'none', md: 'inline-flex' },
-          borderRadius: `${radius.sm}px`,
-          boxShadow: shadows.none,
-          height: 32,
-          px: 1.5,
-          fontSize: 12,
-          fontWeight: 700,
-          textTransform: 'none',
-          whiteSpace: 'nowrap',
         }}
       >
         {t('newEvent')}

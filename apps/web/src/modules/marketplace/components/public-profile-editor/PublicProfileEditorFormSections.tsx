@@ -7,6 +7,7 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import { useTranslations } from 'next-intl'
 
 import { RhfTextField } from '@shared/components/form'
+import { dashboardHeaderActionButtonSx } from '@shared/components/layout'
 import { alpha, iconSize, motion, radius, surface } from '@shared/theme/tokens'
 
 import type {
@@ -353,14 +354,26 @@ export function PublicProfileEditorActions({ onPreview }: PublicProfileEditorAct
   const t = useTranslations('marketplace.profileEditor')
 
   return (
-    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+    <Stack
+      direction={{ xs: 'column', sm: 'row' }}
+      spacing={1.2}
+      sx={{ width: { xs: '100%', sm: 'auto' }, alignItems: { xs: 'stretch', sm: 'center' } }}
+    >
       <Button
         type="button"
         variant="outlined"
         color="secondary"
         startIcon={<VisibilityOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
         onClick={onPreview}
-        sx={{ minHeight: 44, borderRadius: `${radius.sm}px`, flex: 1 }}
+        sx={{
+          ...dashboardHeaderActionButtonSx,
+          borderColor: alpha.graphite[8],
+          '&:hover': {
+            borderColor: alpha.graphite[18],
+            bgcolor: surface.paper,
+            boxShadow: 'none',
+          },
+        }}
       >
         {t('preview')}
       </Button>
@@ -368,7 +381,9 @@ export function PublicProfileEditorActions({ onPreview }: PublicProfileEditorAct
         type="submit"
         variant="contained"
         startIcon={<SaveOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-        sx={{ minHeight: 44, borderRadius: `${radius.sm}px`, flex: 1 }}
+        sx={{
+          ...dashboardHeaderActionButtonSx,
+        }}
       >
         {t('save')}
       </Button>
