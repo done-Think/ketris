@@ -137,6 +137,7 @@ function ContractActionsCell({ contract, onContractAction }: ContractActionsCell
         height: '100%',
         justifyContent: 'flex-end',
         alignItems: 'center',
+        transform: 'translateX(-40px)',
       }}
     >
       <Tooltip title={t('actionsTooltip')}>
@@ -283,6 +284,8 @@ export function ContractsTable({
       width: 104,
       align: 'right',
       headerAlign: 'right',
+      cellClassName: 'contracts-actions-column',
+      headerClassName: 'contracts-actions-column',
       renderCell: ({ row }) => (
         <ContractActionsCell contract={row} onContractAction={onContractAction} />
       ),
@@ -350,6 +353,9 @@ export function ContractsTable({
           },
           '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': {
             outline: 'none',
+          },
+          '& .contracts-actions-column .MuiDataGrid-columnHeaderTitleContainer': {
+            transform: 'translateX(-40px)',
           },
           '& .MuiDataGrid-row': {
             bgcolor: surface.paper,

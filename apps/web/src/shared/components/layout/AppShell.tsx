@@ -45,6 +45,12 @@ const navigationItems: readonly AppShellNavItem[] = [
     icon: BarChartOutlinedIcon,
     roles: ['ADMIN', 'OWNER'],
   },
+  {
+    labelKey: 'agencyOverview',
+    href: '/dashboard/agency-overview',
+    icon: InsertChartOutlinedRoundedIcon,
+    roles: ['ADMIN', 'OWNER'],
+  },
   { labelKey: 'pipeline', href: '/crm', icon: ViewKanbanOutlinedIcon },
   { labelKey: 'contacts', href: '/crm/contacts', icon: PeopleOutlineIcon },
   { labelKey: 'leads', href: '/dashboard/leads', icon: PeopleAltOutlinedIcon },

@@ -52,9 +52,9 @@ export function OpportunityCard({
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        height: isCompact ? 124 : undefined,
-        minHeight: isCompact ? 124 : 140,
-        p: isCompact ? 1.75 : 2,
+        height: isCompact ? 148 : undefined,
+        minHeight: isCompact ? 148 : 164,
+        p: isCompact ? 2 : 2.25,
         border: '1px solid',
         borderColor: isCompact ? 'transparent' : 'divider',
         borderRadius: isCompact ? `${radius.md}px` : 1.5,
@@ -76,7 +76,7 @@ export function OpportunityCard({
       <Typography
         noWrap
         sx={{
-          fontSize: isCompact ? 12.5 : 14,
+          fontSize: isCompact ? 16.5 : 18,
           fontWeight: 700,
           lineHeight: isCompact ? 1.3 : 1.4,
         }}
@@ -89,7 +89,7 @@ export function OpportunityCard({
         sx={{
           mt: 0.25,
           color: 'text.secondary',
-          fontSize: isCompact ? 10.5 : 11.5,
+          fontSize: isCompact ? 14.5 : 15.5,
           lineHeight: isCompact ? 1.35 : 1.45,
         }}
       >
@@ -101,7 +101,7 @@ export function OpportunityCard({
         sx={{
           display: isCompact ? 'none' : 'block',
           color: 'text.secondary',
-          fontSize: 11,
+          fontSize: 15,
           lineHeight: 1.4,
         }}
       >
@@ -113,7 +113,7 @@ export function OpportunityCard({
         sx={{
           mt: isCompact ? 0.75 : 1,
           color: 'primary.main',
-          fontSize: isCompact ? 13 : 14,
+          fontSize: isCompact ? 17 : 18,
           fontWeight: 800,
           lineHeight: isCompact ? 1.35 : 1.4,
         }}
@@ -139,14 +139,14 @@ export function OpportunityCard({
             height: isCompact ? 20 : 24,
             bgcolor: stage.softColor,
             color: stage.color,
-            fontSize: isCompact ? 8 : 9,
+            fontSize: isCompact ? 12 : 13,
           }}
         >
           {getInitials(opportunity.leadName)}
         </Avatar>
         <Stack direction="row" alignItems="center" spacing={0.4} sx={{ minWidth: 0 }}>
           <AccessTimeRoundedIcon
-            sx={{ display: isCompact ? 'none' : 'block', color: 'text.disabled', fontSize: 12 }}
+            sx={{ display: isCompact ? 'none' : 'block', color: 'text.disabled', fontSize: 16 }}
           />
           <Typography
             noWrap
@@ -156,7 +156,7 @@ export function OpportunityCard({
               borderRadius: isCompact ? '4px' : 0,
               bgcolor: isCompact ? 'grey.100' : 'transparent',
               color: 'text.secondary',
-              fontSize: isCompact ? 10 : 10.5,
+              fontSize: isCompact ? 14 : 14.5,
               lineHeight: isCompact ? 1.2 : 'normal',
             }}
           >

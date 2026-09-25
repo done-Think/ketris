@@ -112,7 +112,7 @@ export function PropertyRowActions({ property, onView }: PropertyRowActionsProps
     <Stack
       direction="row"
       spacing={0.8}
-      sx={{ width: '100%', justifyContent: 'flex-end', alignItems: 'center', height: '100%' }}
+      sx={{ width: '100%', justifyContent: 'center', alignItems: 'center', height: '100%' }}
     >
       <IconButton
         aria-label={t('viewAriaLabel', { title: property.title })}
