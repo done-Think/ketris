@@ -15,6 +15,8 @@ export interface WizardStepsNavProps<TStep extends WizardStepsNavStep> {
   activeStepIndex: number
   /** Highest index the user may jump to. Defaults to `activeStepIndex` (strictly-linear wizard). */
   reachableUpToIndex?: number
+  /** Highest step index rendered as completed. Defaults to the step before the active one. */
+  completedUpToIndex?: number
   ariaLabel: string
   getStepLabel: (step: TStep, index: number) => string
   onStepSelect: (stepIndex: number) => void
@@ -37,6 +39,7 @@ export function WizardStepsNav<TStep extends WizardStepsNavStep>({
   steps,
   activeStepIndex,
   reachableUpToIndex = activeStepIndex,
+  completedUpToIndex,
   ariaLabel,
   getStepLabel,
   onStepSelect,
@@ -61,11 +64,12 @@ export function WizardStepsNav<TStep extends WizardStepsNavStep>({
       {steps.map((step, index) => {
         const active = index === activeStepIndex
         const reachable = index <= reachableUpToIndex
-        const filled = fillActiveStep ? reachable : index < activeStepIndex
+        const completed = index <= (completedUpToIndex ?? activeStepIndex - 1)
+        const filled = fillActiveStep ? reachable : completed
         const connectorFilled = fillActiveStep
           ? index < reachableUpToIndex
-          : index < activeStepIndex
-        const showCheck = filled && !(fillActiveStep && active)
+          : index <= (completedUpToIndex ?? activeStepIndex - 1)
+        const showCheck = filled && !active
 
         return (
           <Stack

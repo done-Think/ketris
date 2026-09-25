@@ -1,4 +1,4 @@
-import { Box, MenuItem, TextField } from '@mui/material'
+import { Box, Button, MenuItem, Stack, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
@@ -16,42 +16,96 @@ export function LeadsStatusFilters({
   const activeCount = getLeadFilterCount(leads, activeFilter)
 
   return (
-    <TextField
-      select
-      size="small"
-      value={activeFilter}
-      onChange={(event) => onFilterChange(event.target.value as typeof activeFilter)}
-      sx={selectSx}
-      SelectProps={{
-        inputProps: { 'aria-label': t('filterAriaLabel') },
-        renderValue: () => (
-          <FilterOptionLabel
-            label={t(
-              `filters.${leadFilters.find((filter) => filter.label === activeFilter)?.labelKey ?? 'all'}`,
-            )}
-            count={activeCount}
-            active
-          />
-        ),
-        MenuProps: menuProps,
-      }}
-    >
-      {leadFilters.map(({ label, labelKey }) => {
-        const active = label === activeFilter
-        const count = getLeadFilterCount(leads, label)
+    <>
+      <TextField
+        select
+        size="small"
+        value={activeFilter}
+        onChange={(event) => onFilterChange(event.target.value as typeof activeFilter)}
+        sx={selectSx}
+        SelectProps={{
+          inputProps: { 'aria-label': t('filterAriaLabel') },
+          renderValue: () => (
+            <FilterOptionLabel
+              label={t(
+                `filters.${leadFilters.find((filter) => filter.label === activeFilter)?.labelKey ?? 'all'}`,
+              )}
+              count={activeCount}
+              active
+            />
+          ),
+          MenuProps: menuProps,
+        }}
+      >
+        {leadFilters.map(({ label, labelKey }) => {
+          const active = label === activeFilter
+          const count = getLeadFilterCount(leads, label)
 
-        return (
-          <MenuItem key={label} value={label} sx={menuItemSx(active)}>
-            <FilterOptionLabel label={t(`filters.${labelKey}`)} count={count} active={active} />
-          </MenuItem>
-        )
-      })}
-    </TextField>
+          return (
+            <MenuItem key={label} value={label} sx={menuItemSx(active)}>
+              <FilterOptionLabel label={t(`filters.${labelKey}`)} count={count} active={active} />
+            </MenuItem>
+          )
+        })}
+      </TextField>
+
+      <Stack
+        component="div"
+        role="group"
+        aria-label={t('filterAriaLabel')}
+        direction="row"
+        spacing={1}
+        sx={{ display: { xs: 'none', sm: 'flex' }, flexWrap: 'wrap', rowGap: 1 }}
+      >
+        {leadFilters.map(({ label, labelKey }) => {
+          const active = label === activeFilter
+          const count = getLeadFilterCount(leads, label)
+
+          return (
+            <Button
+              key={label}
+              type="button"
+              variant={active ? 'contained' : 'outlined'}
+              aria-pressed={active}
+              onClick={() => onFilterChange(label)}
+              sx={{
+                minHeight: 34,
+                borderRadius: `${radius.full}px`,
+                px: 1.8,
+                gap: 0.6,
+                fontSize: 12,
+                fontWeight: 900,
+              }}
+            >
+              {t(`filters.${labelKey}`)}
+              <Box
+                component="span"
+                sx={{
+                  display: 'grid',
+                  minWidth: 20,
+                  height: 20,
+                  placeItems: 'center',
+                  px: 0.5,
+                  borderRadius: `${radius.full}px`,
+                  bgcolor: active ? alpha.white[8] : alpha.graphite[6],
+                  color: active ? surface.lightText : brand.neutral[500],
+                  fontSize: 10.5,
+                  fontWeight: 700,
+                }}
+              >
+                {count}
+              </Box>
+            </Button>
+          )
+        })}
+      </Stack>
+    </>
   )
 }
 
 const selectSx = {
-  width: { xs: '100%', sm: 250 },
+  width: { xs: '100%', sm: 160 },
+  display: { xs: 'block', sm: 'none' },
   '& .MuiOutlinedInput-root': {
     minHeight: 46,
     borderRadius: `${radius.sm}px`,

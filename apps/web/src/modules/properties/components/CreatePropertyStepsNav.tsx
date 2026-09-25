@@ -17,6 +17,7 @@ export function CreatePropertyStepsNav({
       steps={createPropertySteps}
       activeStepIndex={activeStepIndex}
       reachableUpToIndex={maxVisitedStepIndex}
+      completedUpToIndex={maxVisitedStepIndex - 1}
       ariaLabel={t('ariaLabel')}
       getStepLabel={(step) => t(step.key)}
       onStepSelect={onStepSelect}

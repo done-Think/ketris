@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   getMaintenanceTickets,
@@ -11,6 +11,14 @@ import type { MaintenanceTicket } from '../types/maintenance'
 import { MaintenanceDashboardPage } from './MaintenanceDashboardPage'
 import { MaintenanceTicketDetailPage } from './MaintenanceTicketDetailPage'
 import { getMaintenanceTicketDetail } from '../data/maintenance-ticket-detail'
+
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({ data: { tenantId: 'tenant-1' }, status: 'authenticated' }),
+}))
+
+vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
+  useDashboardAgendaNotifications: () => [],
+}))
 
 describe('MaintenanceDashboardPage', () => {
   beforeEach(() => setMaintenanceTickets(maintenanceTickets))
