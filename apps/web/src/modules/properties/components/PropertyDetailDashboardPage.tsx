@@ -10,6 +10,7 @@ import { useSnackbar } from 'notistack'
 
 import { useRouter } from '@/i18n/navigation'
 
+import { getDashboardPropertyById } from '../data/dashboard-properties'
 import {
   useDeleteProperty,
   useProperty,
@@ -44,8 +45,13 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
   const publishProperty = usePublishProperty()
   const unpublishProperty = useUnpublishProperty()
   const deleteProperty = useDeleteProperty()
+  const canUseFixtures = process.env.NODE_ENV !== 'production'
+  const fixtureProperty =
+    canUseFixtures && (propertyQuery.isError || !propertyQuery.data)
+      ? getDashboardPropertyById(propertyId)
+      : null
 
-  if (propertyQuery.isLoading) {
+  if (propertyQuery.isLoading && !fixtureProperty) {
     return (
       <Stack alignItems="center" justifyContent="center" sx={{ minHeight: '55vh' }}>
         <CircularProgress size={30} />
@@ -53,11 +59,12 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
     )
   }
 
-  if (propertyQuery.isError || !propertyQuery.data) {
+  if (!fixtureProperty && propertyQuery.isError) {
     notFound()
   }
 
-  const property = toDashboardProperty(propertyQuery.data)
+  const property =
+    fixtureProperty ?? (propertyQuery.data ? toDashboardProperty(propertyQuery.data) : notFound())
   const canManage =
     session?.papel === 'ADMIN' ||
     session?.papel === 'OWNER' ||

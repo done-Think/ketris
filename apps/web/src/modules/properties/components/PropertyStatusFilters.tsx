@@ -1,4 +1,4 @@
-import { Box, Chip, MenuItem, Stack, TextField } from '@mui/material'
+import { Box, Button, MenuItem, Stack, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { alpha, brand, motion, radius, shadows, surface } from '@shared/theme/tokens'
@@ -107,28 +107,48 @@ export function PropertyStatusFilters({
           const active = filter.label === activeStatusFilter
 
           return (
-            <Chip
+            <Button
               key={filter.label}
-              clickable
+              type="button"
+              variant="contained"
               aria-pressed={active}
-              label={`${t(filter.label)} ${statusFilterCounts[filter.label]}`}
               onClick={() => onStatusFilterChange(filter.label)}
               sx={{
-                height: 38,
+                minHeight: 42,
                 borderRadius: `${radius.full}px`,
-                bgcolor: active ? 'primary.main' : surface.paper,
-                border: '1px solid',
-                borderColor: active ? 'primary.main' : 'divider',
-                color: active ? surface.lightText : 'text.primary',
-                fontSize: 14.5,
+                px: 1.8,
+                gap: 0.6,
+                fontSize: 17,
                 fontWeight: 900,
+                bgcolor: active ? 'primary.main' : alpha.graphite[6],
+                color: active ? surface.lightText : brand.graphite[500],
+                boxShadow: 'none',
                 transition: motion.transition.bordered,
                 '&:hover': {
-                  bgcolor: active ? 'primary.dark' : alpha.magenta[6],
-                  borderColor: active ? 'primary.dark' : 'primary.main',
+                  bgcolor: active ? 'primary.main' : alpha.graphite[10],
+                  boxShadow: 'none',
                 },
               }}
-            />
+            >
+              {t(filter.label)}
+              <Box
+                component="span"
+                sx={{
+                  display: 'grid',
+                  minWidth: 24,
+                  height: 24,
+                  placeItems: 'center',
+                  px: 0.5,
+                  borderRadius: `${radius.full}px`,
+                  bgcolor: active ? alpha.white[8] : alpha.graphite[6],
+                  color: active ? surface.lightText : brand.neutral[500],
+                  fontSize: 14.5,
+                  fontWeight: 800,
+                }}
+              >
+                {statusFilterCounts[filter.label]}
+              </Box>
+            </Button>
           )
         })}
       </Stack>
@@ -152,14 +172,14 @@ function FilterOptionLabel({
         component="span"
         sx={{
           display: 'grid',
-          minWidth: 22,
-          height: 22,
+          minWidth: 26,
+          height: 26,
           placeItems: 'center',
           px: 0.6,
           borderRadius: `${radius.full}px`,
           bgcolor: active ? brand.magenta[500] : alpha.graphite[6],
           color: active ? surface.lightText : brand.neutral[500],
-          fontSize: 11,
+          fontSize: 15,
           fontWeight: 900,
         }}
       >

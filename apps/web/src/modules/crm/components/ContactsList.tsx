@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { Box, GlobalStyles, Paper, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { brand, radius, shadows, surface } from '@shared/theme/tokens'
+import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { contactFilters } from '../config/contact-filters'
 import { contactListFixtures, contactsFixtureTotal } from '../fixtures/contact-list-fixtures'
@@ -110,10 +110,10 @@ export function ContactsList({
           mt: 2.25,
           overflow: 'hidden',
           flexDirection: 'column',
-          borderColor: brand.neutral[100],
-          borderRadius: `${radius.lg}px`,
+          borderColor: alpha.graphite[6],
+          borderRadius: `${radius.sm}px`,
           bgcolor: surface.paper,
-          boxShadow: shadows.crmListPanel,
+          boxShadow: shadows.propertyCard,
         }}
       >
         {filteredContacts.length > 0 ? (
@@ -138,7 +138,7 @@ export function ContactsList({
           </>
         ) : (
           <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 240, px: 2 }}>
-            <Typography sx={{ color: 'text.secondary', fontSize: 12.5 }}>{t('empty')}</Typography>
+            <Typography sx={{ color: 'text.secondary', fontSize: 16.5 }}>{t('empty')}</Typography>
           </Stack>
         )}
 

@@ -1,10 +1,7 @@
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
-import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
-import { Box, Button, Stack } from '@mui/material'
+import { Box, Stack } from '@mui/material'
 import { getTranslations } from 'next-intl/server'
 
-import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/components/layout'
-import { iconSize, radius } from '@shared/theme/tokens'
+import { DashboardPageHeader } from '@shared/components/layout'
 
 import {
   financialEntries,
@@ -12,6 +9,7 @@ import {
   monthlyFinancialMovement,
   upcomingDues,
 } from '../data/financial-entries'
+import { FinancialDashboardHeaderActions } from './FinancialDashboardHeaderActions'
 import { FinancialEntriesTable } from './FinancialEntriesTable'
 import { FinancialKpiCards } from './FinancialKpiCards'
 import { FinancialMovementChart } from './FinancialMovementChart'
@@ -19,46 +17,15 @@ import { FinancialUpcomingDueList } from './FinancialUpcomingDueList'
 
 export async function FinancialDashboardPage() {
   const t = await getTranslations('dashboard.finance')
-  const actions = (
-    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2}>
-      <Button
-        type="button"
-        variant="outlined"
-        endIcon={<KeyboardArrowDownRoundedIcon sx={{ fontSize: iconSize.sm }} />}
-        sx={{
-          borderRadius: `${radius.sm}px`,
-          fontSize: 12,
-          fontWeight: 500,
-          height: { xs: 40, sm: 32 },
-          px: 1.25,
-        }}
-      >
-        {t('selectedMonth')}
-      </Button>
-      <Button
-        type="button"
-        variant="outlined"
-        startIcon={<FileDownloadOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-        sx={{
-          borderRadius: `${radius.sm}px`,
-          fontSize: 12,
-          fontWeight: 500,
-          height: { xs: 40, sm: 32 },
-          px: 1.25,
-        }}
-      >
-        {t('export')}
-      </Button>
-      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-        <DashboardNotificationsButton />
-      </Box>
-    </Stack>
-  )
 
   return (
     <Box sx={{ width: '100%', p: 3.5 }}>
       <Stack spacing={2.4}>
-        <DashboardPageHeader title={t('title')} subtitle={t('subtitle')} actions={actions} />
+        <DashboardPageHeader
+          title={t('title')}
+          subtitle={t('subtitle')}
+          actions={<FinancialDashboardHeaderActions exportLabel={t('export')} />}
+        />
 
         <FinancialKpiCards kpis={financialKpis} />
         <Box
