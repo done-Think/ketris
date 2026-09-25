@@ -42,6 +42,7 @@ import {
   DashboardNotificationsButton,
   DashboardPageHeader,
   DashboardTablePagination,
+  dashboardHeaderActionButtonSx,
 } from '@shared/components/layout'
 import {
   maintenanceFilters,
@@ -291,15 +292,7 @@ export function MaintenanceDashboardPage() {
         variant="contained"
         startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
         onClick={() => setIsCreateDialogOpen(true)}
-        sx={{
-          height: { xs: 40, sm: 32 },
-          px: 1.5,
-          borderRadius: `${radius.sm}px`,
-          boxShadow: shadows.none,
-          fontSize: 12,
-          fontWeight: 700,
-          whiteSpace: 'nowrap',
-        }}
+        sx={dashboardHeaderActionButtonSx}
       >
         {t('newTicket')}
       </Button>

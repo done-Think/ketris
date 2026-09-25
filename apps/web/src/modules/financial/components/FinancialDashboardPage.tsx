@@ -3,8 +3,12 @@ import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownR
 import { Box, Button, Stack } from '@mui/material'
 import { getTranslations } from 'next-intl/server'
 
-import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/components/layout'
-import { iconSize, radius } from '@shared/theme/tokens'
+import {
+  DashboardNotificationsButton,
+  DashboardPageHeader,
+  dashboardHeaderActionButtonSx,
+} from '@shared/components/layout'
+import { iconSize } from '@shared/theme/tokens'
 
 import {
   financialEntries,
@@ -25,13 +29,7 @@ export async function FinancialDashboardPage() {
         type="button"
         variant="outlined"
         endIcon={<KeyboardArrowDownRoundedIcon sx={{ fontSize: iconSize.sm }} />}
-        sx={{
-          borderRadius: `${radius.sm}px`,
-          fontSize: 12,
-          fontWeight: 500,
-          height: { xs: 40, sm: 32 },
-          px: 1.25,
-        }}
+        sx={dashboardHeaderActionButtonSx}
       >
         {t('selectedMonth')}
       </Button>
@@ -39,13 +37,7 @@ export async function FinancialDashboardPage() {
         type="button"
         variant="outlined"
         startIcon={<FileDownloadOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-        sx={{
-          borderRadius: `${radius.sm}px`,
-          fontSize: 12,
-          fontWeight: 500,
-          height: { xs: 40, sm: 32 },
-          px: 1.25,
-        }}
+        sx={dashboardHeaderActionButtonSx}
       >
         {t('export')}
       </Button>

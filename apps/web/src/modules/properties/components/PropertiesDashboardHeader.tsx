@@ -3,8 +3,12 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { useTranslations } from 'next-intl'
 
-import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/components/layout'
-import { brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import {
+  DashboardNotificationsButton,
+  DashboardPageHeader,
+  dashboardHeaderActionButtonSx,
+} from '@shared/components/layout'
+import { brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
 import type { PropertiesDashboardHeaderProps } from '../types/dashboard-property'
 
@@ -67,16 +71,7 @@ export function PropertiesDashboardHeader({
         variant="contained"
         startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
         onClick={onCreateProperty}
-        sx={{
-          borderRadius: `${radius.sm}px`,
-          boxShadow: shadows.none,
-          height: { xs: 40, sm: 32 },
-          px: 1.5,
-          fontSize: 12,
-          fontWeight: 700,
-          textTransform: 'none',
-          whiteSpace: 'nowrap',
-        }}
+        sx={dashboardHeaderActionButtonSx}
       >
         {t('create')}
       </Button>

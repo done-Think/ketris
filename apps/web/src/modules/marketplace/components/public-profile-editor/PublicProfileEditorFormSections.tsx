@@ -7,6 +7,7 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import { useTranslations } from 'next-intl'
 
 import { RhfTextField } from '@shared/components/form'
+import { dashboardHeaderActionButtonSx } from '@shared/components/layout'
 import { alpha, iconSize, motion, radius, surface } from '@shared/theme/tokens'
 
 import type {
@@ -365,16 +366,8 @@ export function PublicProfileEditorActions({ onPreview }: PublicProfileEditorAct
         startIcon={<VisibilityOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
         onClick={onPreview}
         sx={{
-          minHeight: 36,
-          borderRadius: `${radius.sm}px`,
-          px: 2,
-          minWidth: { sm: 136 },
+          ...dashboardHeaderActionButtonSx,
           borderColor: alpha.graphite[8],
-          boxShadow: 'none',
-          fontSize: 14,
-          fontWeight: 800,
-          textTransform: 'none',
-          whiteSpace: 'nowrap',
           '&:hover': {
             borderColor: alpha.graphite[18],
             bgcolor: surface.paper,
@@ -389,18 +382,7 @@ export function PublicProfileEditorActions({ onPreview }: PublicProfileEditorAct
         variant="contained"
         startIcon={<SaveOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
         sx={{
-          minHeight: 36,
-          borderRadius: `${radius.sm}px`,
-          px: 2,
-          minWidth: { sm: 136 },
-          boxShadow: 'none',
-          fontSize: 14,
-          fontWeight: 800,
-          textTransform: 'none',
-          whiteSpace: 'nowrap',
-          '&:hover': {
-            boxShadow: 'none',
-          },
+          ...dashboardHeaderActionButtonSx,
         }}
       >
         {t('save')}
