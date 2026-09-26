@@ -7,7 +7,8 @@ import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 
 import { useRouter } from '@/i18n/navigation'
-import { brand, radius, shadows, surface } from '@shared/theme/tokens'
+import { DashboardTablePagination } from '@shared/components/layout'
+import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { salesPipelineStages, visibleSalesPipelineStatuses } from '../config/sales-pipeline-stages'
 import { salesPipelineFixtures } from '../fixtures/sales-pipeline-fixtures'
@@ -43,13 +44,13 @@ import {
 import { CreateOpportunityDialog } from './opportunity-detail/CreateOpportunityDialog'
 import { ProposalKpiCards } from './proposals-list/ProposalKpiCards'
 import { ProposalMobileCards } from './proposals-list/ProposalMobileCards'
-import { ProposalPagination } from './proposals-list/ProposalPagination'
 import { ProposalStatusFilters } from './proposals-list/ProposalStatusFilters'
 import { ProposalsTable } from './proposals-list/ProposalsTable'
 import { PipelineStageColumn } from './sales-pipeline-board/PipelineStageColumn'
 import { SalesPipelineToolbar } from './sales-pipeline-board/SalesPipelineToolbar'
 
 const pipelineBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
+const pipelineViewModeStorageKey = 'ketris.crm.pipeline.viewMode'
 const fixtureOpportunities = salesPipelineFixtures.map((fixture) => fixture.opportunity)
 const fixtureProperties = salesPipelineFixtures.map((fixture) => fixture.property)
 const fixtureStageByOpportunityId = new Map(
@@ -59,24 +60,51 @@ const fixturePresentationByOpportunityId = new Map(
   salesPipelineFixtures.map((fixture) => [fixture.opportunity.id, fixture.presentation]),
 )
 
+function isSalesPipelineViewMode(value: string | null): value is SalesPipelineViewMode {
+  return value === 'kanban' || value === 'list'
+}
+
+function getInitialPipelineViewMode(): SalesPipelineViewMode {
+  if (typeof window === 'undefined') return 'kanban'
+
+  try {
+    const storedViewMode = window.localStorage.getItem(pipelineViewModeStorageKey)
+
+    return isSalesPipelineViewMode(storedViewMode) ? storedViewMode : 'kanban'
+  } catch {
+    return 'kanban'
+  }
+}
+
 export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps) {
   const t = useTranslations('crm.pipeline')
   const router = useRouter()
   const { data: session, status: sessionStatus } = useSession()
-  const fixtureMode = preview && process.env.NODE_ENV !== 'production'
-  const tenantId = fixtureMode ? '' : (session?.tenantId ?? '')
+  const canUseFixtures = process.env.NODE_ENV !== 'production'
+  const explicitPreviewMode = preview && canUseFixtures
+  const tenantId = explicitPreviewMode ? '' : (session?.tenantId ?? '')
   const [search, setSearch] = useState('')
   const [selectedStageId, setSelectedStageId] = useState<SalesPipelineStageId | null>(null)
   const [filterAnchor, setFilterAnchor] = useState<HTMLElement | null>(null)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [viewMode, setViewMode] = useState<SalesPipelineViewMode>('kanban')
+  const [viewMode, setViewMode] = useState<SalesPipelineViewMode>(getInitialPipelineViewMode)
   const [proposalStatus, setProposalStatus] = useState<ProposalManagementFilterId>('all')
   const [proposalPageIndex, setProposalPageIndex] = useState(1)
+  const [proposalRowsPerPage, setProposalRowsPerPage] = useState(proposalManagementDefaultPageSize)
   const { enqueueSnackbar } = useSnackbar()
 
   const opportunitiesQuery = useOpportunities(tenantId)
   const propertiesQuery = useCrmProperties(tenantId)
   const createOpportunity = useCreateOpportunity(tenantId)
+  const fixtureMode =
+    explicitPreviewMode ||
+    (canUseFixtures &&
+      sessionStatus !== 'loading' &&
+      !opportunitiesQuery.isLoading &&
+      !propertiesQuery.isLoading &&
+      (opportunitiesQuery.isError ||
+        propertiesQuery.isError ||
+        (opportunitiesQuery.data ?? []).length === 0))
 
   async function handleCreateOpportunity(values: CreateOpportunityFormValues) {
     try {
@@ -148,13 +176,23 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
         search,
         status: proposalStatus,
         page: proposalPageIndex,
-        pageSize: proposalManagementDefaultPageSize,
+        pageSize: proposalRowsPerPage,
       }),
-    [proposalItems, proposalPageIndex, proposalStatus, search],
+    [proposalItems, proposalPageIndex, proposalRowsPerPage, proposalStatus, search],
   )
 
   function goToOpportunity(proposal: ProposalManagementListItem) {
     router.push({ pathname: '/crm/opportunities/[id]', params: { id: proposal.id } })
+  }
+
+  function handleViewModeChange(nextViewMode: SalesPipelineViewMode) {
+    setViewMode(nextViewMode)
+
+    try {
+      window.localStorage.setItem(pipelineViewModeStorageKey, nextViewMode)
+    } catch {
+      // A preferência é opcional; se o storage estiver indisponível, mantém só no estado atual.
+    }
   }
 
   const selectedStage = selectedStageId
@@ -168,7 +206,7 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
     <Box
       sx={{
         minHeight: '100vh',
-        p: { xs: 2, sm: 3, lg: 3.5 },
+        p: 3.5,
         bgcolor: surface.app,
         overflow: 'hidden',
         fontFamily: pipelineBodyFontFamily,
@@ -194,7 +232,7 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
           setFilterAnchor(null)
         }}
         onNewOpportunity={() => !fixtureMode && setIsCreateOpen(true)}
-        onViewModeChange={setViewMode}
+        onViewModeChange={handleViewModeChange}
       />
 
       {!fixtureMode ? (
@@ -300,10 +338,10 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
               minHeight: { xs: 520, md: 408 },
               mt: 2,
               overflow: 'hidden',
-              borderColor: brand.neutral[100],
-              borderRadius: `${radius.md}px`,
+              borderColor: alpha.graphite[6],
+              borderRadius: `${radius.sm}px`,
               bgcolor: surface.paper,
-              boxShadow: shadows.crmListPanel,
+              boxShadow: shadows.propertyCard,
             }}
           >
             {proposalPageResult.items.length > 0 ? (
@@ -319,18 +357,21 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
               </>
             ) : (
               <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 240, px: 2 }}>
-                <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
+                <Typography sx={{ color: 'text.secondary', fontSize: 15.5 }}>
                   {t('noResults')}
                 </Typography>
               </Stack>
             )}
 
-            <ProposalPagination
+            <DashboardTablePagination
+              count={proposalPageResult.totalCount}
               page={proposalPageResult.page}
-              pageCount={proposalPageResult.pageCount}
-              visibleCount={proposalPageResult.items.length}
-              totalCount={proposalPageResult.totalCount}
+              rowsPerPage={proposalRowsPerPage}
               onPageChange={setProposalPageIndex}
+              onRowsPerPageChange={(nextRowsPerPage) => {
+                setProposalRowsPerPage(nextRowsPerPage)
+                setProposalPageIndex(1)
+              }}
             />
           </Paper>
         </Box>

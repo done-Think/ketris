@@ -9,6 +9,10 @@
   "actions": {
     "backHome": "Voltar ao início"
   },
+  "dashboardPagination": {
+    "rowsPerPage": "Linhas por página",
+    "displayedRows": "{from}-{to} de {count}"
+  },
   "errors": {
     "backHome": "Voltar ao início",
     "notFound": "Página não encontrada.",
@@ -22,6 +26,7 @@
     "defaultUserContext": "Painel administrativo",
     "backToMarketplace": "Voltar para o marketplace",
     "dashboard": "Dashboard",
+    "agencyOverview": "Visão Geral Imob.",
     "pipeline": "Pipeline",
     "contacts": "Contatos",
     "leads": "Leads",
@@ -33,6 +38,12 @@
     "agenda": "Agenda",
     "proposals": "Propostas",
     "maintenance": "Chamados",
-    "finance": "Financeiro"
+    "finance": "Financeiro",
+    "charges": "Cobranças"
+  },
+  "roleGuard": {
+    "loadingSession": "Carregando sessão",
+    "restrictedTitle": "Acesso restrito",
+    "restrictedDescription": "Você não tem permissão para ver esta página. Redirecionando para o painel."
   }
 }

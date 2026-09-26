@@ -132,7 +132,13 @@ export function SiteFooter({ columns, legalLinks }: SiteFooterProps) {
           </Box>
         </Box>
 
-        <Divider sx={{ borderColor: alpha.white[8] }} />
+        <Divider
+          sx={{
+            borderColor: alpha.white[8],
+            width: '100vw',
+            ml: 'calc(50% - 50vw)',
+          }}
+        />
 
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
@@ -143,9 +149,19 @@ export function SiteFooter({ columns, legalLinks }: SiteFooterProps) {
         >
           <Typography sx={{ color: alpha.white[50], ...componentText.footerLegal }}>
             © 2026{' '}
-            <Box component="strong" sx={componentText.footerBrand}>
+            <MuiLink
+              href="https://www.donethink.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              underline="none"
+              sx={{
+                ...componentText.footerBrand,
+                color: 'inherit',
+                '&:hover': { color: surface.lightText },
+              }}
+            >
               doneThink
-            </Box>{' '}
+            </MuiLink>{' '}
             {t('rights')}
           </Typography>
           <Stack direction="row" spacing={3}>

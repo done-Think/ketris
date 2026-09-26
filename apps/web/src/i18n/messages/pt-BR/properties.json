@@ -35,6 +35,7 @@
       "displayedRows": "{from}-{to} de {count}"
     },
     "filters": {
+      "filterAriaLabel": "Filtrar imóveis por status",
       "Todos": "Todos",
       "Disponível": "Disponível",
       "Alugado": "Alugado",
