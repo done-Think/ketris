@@ -1,10 +1,14 @@
-import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined'
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 import { Box, Button, Stack } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/components/layout'
-import { brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import {
+  DashboardMonthSelector,
+  DashboardNotificationsButton,
+  DashboardPageHeader,
+  dashboardHeaderActionButtonSx,
+} from '@shared/components/layout'
+import { iconSize, surface } from '@shared/theme/tokens'
 
 import { AgencyOverviewKpiGrid } from './AgencyOverviewKpiGrid'
 import { AgencyRecentActivityPanel } from './AgencyRecentActivityPanel'
@@ -19,33 +23,12 @@ export function AgencyOverviewPage() {
       spacing={1.2}
       sx={{ width: { xs: '100%', md: 'auto' }, alignItems: { sm: 'center' } }}
     >
-      <Button
-        type="button"
-        variant="outlined"
-        startIcon={<CalendarTodayOutlinedIcon sx={{ color: brand.neutral[500], fontSize: 18 }} />}
-        sx={{
-          minHeight: 36,
-          borderRadius: `${radius.sm}px`,
-          boxShadow: shadows.none,
-          fontSize: 14,
-          fontWeight: 800,
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {t('month')}
-      </Button>
+      <DashboardMonthSelector />
       <Button
         type="button"
         variant="contained"
         startIcon={<FileDownloadOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-        sx={{
-          minHeight: 36,
-          borderRadius: `${radius.sm}px`,
-          boxShadow: shadows.none,
-          fontSize: 14,
-          fontWeight: 800,
-          whiteSpace: 'nowrap',
-        }}
+        sx={dashboardHeaderActionButtonSx}
       >
         {t('report')}
       </Button>
