@@ -9,6 +9,10 @@
   "actions": {
     "backHome": "Back to home"
   },
+  "dashboardPagination": {
+    "rowsPerPage": "Rows per page",
+    "displayedRows": "{from}-{to} of {count}"
+  },
   "errors": {
     "backHome": "Back home",
     "notFound": "Page not found.",
@@ -22,6 +26,7 @@
     "defaultUserContext": "Admin dashboard",
     "backToMarketplace": "Back to marketplace",
     "dashboard": "Dashboard",
+    "agencyOverview": "Agency Overview",
     "pipeline": "Pipeline",
     "contacts": "Contacts",
     "leads": "Leads",
@@ -29,9 +34,16 @@
     "properties": "My Properties",
     "contracts": "Contracts",
     "publicProfile": "Public Profile",
+    "agencyPublicProfile": "Agency Profile",
     "agenda": "Schedule",
     "proposals": "Proposals",
     "maintenance": "Maintenance",
-    "finance": "Finance"
+    "finance": "Finance",
+    "charges": "Charges"
+  },
+  "roleGuard": {
+    "loadingSession": "Loading session",
+    "restrictedTitle": "Restricted access",
+    "restrictedDescription": "You don't have permission to view this page. Redirecting to the dashboard."
   }
 }

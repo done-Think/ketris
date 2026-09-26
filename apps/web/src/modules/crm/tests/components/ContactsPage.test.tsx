@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { theme } from '@shared/theme/theme'
 
 import { ContactsPage } from '../../components/ContactsPage'
+import { contactListFixtures, contactsFixtureTotal } from '../../fixtures/contact-list-fixtures'
 import type { ApiContactListItem } from '../../types/contact'
 
 const mocks = vi.hoisted(() => ({
@@ -26,6 +27,10 @@ vi.mock('next-auth/react', () => ({
   }),
 }))
 
+vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
+  useDashboardAgendaNotifications: () => [],
+}))
+
 vi.mock('notistack', () => ({
   useSnackbar: () => ({ enqueueSnackbar: mocks.enqueueSnackbar }),
 }))
@@ -35,6 +40,10 @@ vi.mock('../../hooks/use-contacts', () => ({
   useCreateContact: mocks.useCreateContact,
   useUpdateContact: mocks.useUpdateContact,
   useArchiveContact: mocks.useArchiveContact,
+}))
+
+vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
+  useDashboardAgendaNotifications: () => [],
 }))
 
 const contact: ApiContactListItem = {
@@ -88,6 +97,20 @@ describe('ContactsPage', () => {
     expect(row).not.toBeNull()
     expect(within(row!).getByText('Locatário')).toBeInTheDocument()
     expect(within(row!).getByText('(11) 98722-1200')).toBeInTheDocument()
+  })
+
+  it('uses local fixtures when the authenticated tenant has no contacts in non-production', () => {
+    mocks.useContacts.mockReturnValue({ data: [], isLoading: false, isError: false })
+
+    renderContactsPage()
+
+    expect(screen.getAllByText(contactListFixtures[0].name).length).toBeGreaterThan(0)
+    expect(
+      screen.getByText(`Mostrando 1–${contactListFixtures.length} de ${contactsFixtureTotal}`),
+    ).toBeVisible()
+    screen
+      .getAllByRole('button', { name: `Editar ${contactListFixtures[0].name}` })
+      .forEach((button) => expect(button).toBeDisabled())
   })
 
   it('opens the create dialog and saves a new contact', async () => {

@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  Box,
   Card,
   CircularProgress,
   Stack,
@@ -45,14 +46,16 @@ export function TenantsList() {
           </TableHead>
           <TableBody>
             {tenants.map((tenant) => (
-              <TableRow
-                key={tenant.id}
-                hover
-                component={Link}
-                href={{ pathname: '/platform/tenants/[id]', params: { id: tenant.id } }}
-                sx={{ textDecoration: 'none', cursor: 'pointer' }}
-              >
-                <TableCell>{tenant.nome}</TableCell>
+              <TableRow key={tenant.id} hover>
+                <TableCell>
+                  <Box
+                    component={Link}
+                    href={{ pathname: '/platform/tenants/[id]', params: { id: tenant.id } }}
+                    sx={{ color: 'inherit', display: 'inline-block', textDecoration: 'none' }}
+                  >
+                    {tenant.nome}
+                  </Box>
+                </TableCell>
                 <TableCell>{tenant.slug}</TableCell>
                 <TableCell>{format.dateTime(new Date(tenant.createdAt))}</TableCell>
               </TableRow>

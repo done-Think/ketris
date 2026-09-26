@@ -114,7 +114,7 @@
   },
   "footer": {
     "description": "Tecnología y simplificación de punta a punta para el mercado inmobiliario corporativo y residencial.",
-    "rights": "Todos los derechos reservados.",
+    "rights": "Tecnologias Ltda. Todos los derechos reservados.",
     "columns": {
       "company": "Empresa",
       "forYou": "Para ti",
@@ -197,157 +197,76 @@
   },
   "profileEditor": {
     "title": "Editar perfil",
-    "subtitle": "Ajusta contenido, apariencia e imágenes mostradas a visitantes.",
-    "validatedDraft": "Borrador validado",
-    "mainContent": "Contenido principal",
-    "appearance": "Apariencia",
-    "images": "Imágenes",
-    "team": "Equipo",
-    "teamDescription": "Agrega miembros destacados y el enlace a cada perfil público.",
-    "addMember": "Agregar miembro",
-    "removeMember": "Eliminar",
-    "memberTitle": "Miembro {index}",
-    "emptyMembers": "No hay miembros agregados.",
-    "dropImage": "Suelta la imagen aquí",
-    "uploadHelper": "JPG, PNG o WEBP. También puedes mantener solo el enlace de arriba.",
-    "photoPreview": "Vista previa de la foto",
-    "bannerPreview": "Vista previa del banner",
-    "preview": "Vista previa",
-    "configurableProfile": "Perfil público configurable",
-    "newMember": "Nuevo miembro",
-    "dropToMove": "Suelta para mover",
-    "preparing": "Preparando...",
-    "positionLabel": "Posición {position}: {label}",
-    "position": "Posición {position}",
-    "profileOrder": "Orden del perfil",
-    "previewDialog": {
-      "title": "Vista previa del perfil",
-      "close": "Cerrar vista previa"
-    },
-    "sections": {
-      "none": {
-        "label": "Ninguna",
-        "description": "No mostrar sección en esta posición."
-      },
-      "hero": {
-        "label": "Presentación",
-        "description": "Banner, foto, nombre y llamada principal."
-      },
-      "metrics": {
-        "label": "Indicadores",
-        "description": "Nota, tiempo medio, activos y negociaciones."
-      },
-      "team": {
-        "label": "Equipo",
-        "description": "Corredores o personas destacadas en el perfil."
-      },
-      "listings": {
-        "label": "Inmuebles",
-        "description": "Cards de inmuebles representados."
-      },
-      "contact": {
-        "label": "Contacto",
-        "description": "Enlace público, teléfono, email y datos rápidos."
-      }
-    },
-    "contactActions": {
-      "call": "Llamar",
-      "email": "Email",
-      "openPublicLink": "Abrir enlace público"
-    },
+    "subtitle": "Ajusta la información mostrada a los visitantes en tu perfil público.",
+    "saveSuccess": "Perfil guardado con éxito.",
+    "saveError": "No fue posible guardar el perfil.",
+    "publishSuccess": "Perfil publicado con éxito.",
+    "unpublishSuccess": "Perfil despublicado.",
+    "publishError": "No fue posible actualizar la publicación del perfil.",
     "fields": {
+      "mainInfo": "Información principal",
+      "headline": "Titular del banner",
       "displayName": "Nombre mostrado",
-      "headline": "Llamada del banner",
-      "summary": "Resumen",
+      "bio": "Biografía",
+      "creci": "Matrícula profesional",
+      "phone": "Teléfono",
+      "region": "Región de actuación",
+      "neighborhoods": "Barrios de actuación",
+      "specialties": "Especialidades",
+      "availability": "Disponibilidad",
+      "commaSeparatedHint": "Separa varios valores con una coma.",
+      "appearance": "Apariencia",
+      "images": "Imágenes",
       "primaryColor": "Color principal",
-      "accentColor": "Color destacado",
+      "secondaryColor": "Color secundario",
       "backgroundColor": "Fondo del perfil",
       "photoUrl": "URL de la foto",
-      "bannerUrl": "URL del banner",
-      "uploadPhoto": "Subir foto de perfil",
-      "uploadBanner": "Subir banner",
-      "name": "Nombre",
-      "role": "Función",
-      "profileUrl": "Enlace del perfil"
+      "bannerUrl": "URL del banner"
     },
-    "save": "Guardar"
+    "actions": {
+      "preview": "Vista previa",
+      "save": "Guardar",
+      "publish": "Publicar",
+      "unpublish": "Despublicar"
+    }
   },
   "agencyProfileEditor": {
     "title": "Editar perfil de la inmobiliaria",
-    "subtitle": "Ajusta marca, contenido e imágenes mostradas a visitantes.",
-    "validatedDraft": "Borrador validado",
-    "mainContent": "Contenido principal",
-    "appearance": "Apariencia",
-    "brandImages": "Imágenes de la marca",
-    "dropImage": "Suelta la imagen aquí",
-    "uploadHelper": "JPG, PNG o WEBP. También puedes mantener solo el enlace de arriba.",
-    "logoPreview": "Vista previa del logo",
-    "bannerPreview": "Vista previa del banner",
-    "preview": "Vista previa",
-    "dropToMove": "Suelta para mover",
-    "preparing": "Preparando...",
-    "positionLabel": "Posición {position}: {label}",
-    "position": "Posición {position}",
-    "profileOrder": "Orden del perfil",
-    "previewDialog": {
-      "title": "Vista previa del perfil de la inmobiliaria",
-      "close": "Cerrar vista previa"
-    },
-    "sections": {
-      "none": {
-        "label": "Ninguna",
-        "description": "No mostrar sección en esta posición."
-      },
-      "brand": {
-        "label": "Marca",
-        "description": "Logo, banner, nombre y llamada institucional."
-      },
-      "metrics": {
-        "label": "Indicadores",
-        "description": "Inmuebles, equipo, años de mercado y nota."
-      },
-      "contact": {
-        "label": "Contacto",
-        "description": "Enlace público, teléfono, email y datos rápidos."
-      },
-      "team": {
-        "label": "Equipo",
-        "description": "Corredores destacados en la inmobiliaria."
-      },
-      "listings": {
-        "label": "Inmuebles",
-        "description": "Cards de inmuebles representados."
-      }
-    },
-    "metrics": {
-      "properties": "Inmuebles",
-      "team": "Equipo",
-      "years": "Años",
-      "rating": "Nota"
-    },
-    "contactActions": {
-      "call": "Llamar",
-      "email": "Email",
-      "openPublicLink": "Abrir enlace público"
-    },
+    "subtitle": "Ajusta marca, contacto y equipo destacado mostrados a visitantes.",
+    "saveSuccess": "Perfil guardado con éxito.",
+    "saveError": "No fue posible guardar el perfil.",
+    "publishSuccess": "Perfil publicado con éxito.",
+    "unpublishSuccess": "Perfil despublicado.",
+    "publishError": "No fue posible actualizar la publicación del perfil.",
     "fields": {
+      "mainInfo": "Información principal",
+      "headline": "Titular del banner",
       "displayName": "Nombre de la inmobiliaria",
-      "headline": "Llamada institucional",
-      "legalCreci": "CRECI",
+      "summary": "Resumen",
+      "legalCreci": "Matrícula profesional",
       "headquarters": "Sede",
       "address": "Dirección",
+      "phone": "Teléfono",
+      "email": "Email",
       "coverage": "Cobertura",
       "segments": "Segmentos",
-      "summary": "Resumen",
-      "primaryColor": "Color principal",
-      "accentColor": "Color destacado",
+      "yearsInMarket": "Años de mercado",
+      "commaSeparatedHint": "Separa varios valores con una coma.",
+      "appearance": "Apariencia",
+      "images": "Imágenes",
       "backgroundColor": "Fondo de la marca",
       "logoUrl": "URL del logo",
       "bannerUrl": "URL del banner",
-      "uploadLogo": "Subir logo",
-      "uploadBanner": "Subir banner"
+      "team": "Equipo destacado",
+      "teamPicker": "Corredores destacados",
+      "teamPickerPlaceholder": "Selecciona hasta 6 corredores"
     },
-    "save": "Guardar"
+    "actions": {
+      "preview": "Vista previa",
+      "save": "Guardar",
+      "publish": "Publicar",
+      "unpublish": "Despublicar"
+    }
   },
   "searchResults": {
     "toolbar": {
@@ -436,5 +355,13 @@
       "team": "Equipo",
       "rating": "Nota"
     }
+  },
+  "mediaUpload": {
+    "dropzone": "Arrastra la imagen aquí o haz clic para seleccionar",
+    "dragActive": "Suelta la imagen aquí",
+    "uploading": "Enviando...",
+    "remove": "Eliminar imagen",
+    "hint": "JPG, PNG o WEBP.",
+    "uploadError": "No se pudo enviar la imagen. Inténtalo de nuevo."
   }
 }

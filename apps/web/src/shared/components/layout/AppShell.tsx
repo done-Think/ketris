@@ -6,6 +6,7 @@ import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import InsertChartOutlinedRoundedIcon from '@mui/icons-material/InsertChartOutlinedRounded'
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined'
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
@@ -44,6 +45,12 @@ const navigationItems: readonly AppShellNavItem[] = [
     icon: BarChartOutlinedIcon,
     roles: ['ADMIN', 'OWNER'],
   },
+  {
+    labelKey: 'agencyOverview',
+    href: '/dashboard/agency-overview',
+    icon: InsertChartOutlinedRoundedIcon,
+    roles: ['ADMIN', 'OWNER'],
+  },
   { labelKey: 'pipeline', href: '/crm', icon: ViewKanbanOutlinedIcon },
   { labelKey: 'contacts', href: '/crm/contacts', icon: PeopleOutlineIcon },
   { labelKey: 'leads', href: '/dashboard/leads', icon: PeopleAltOutlinedIcon },
@@ -58,6 +65,12 @@ const navigationItems: readonly AppShellNavItem[] = [
   {
     labelKey: 'publicProfile',
     href: '/dashboard/public-profile',
+    icon: PaletteOutlinedIcon,
+    roles: ['AGENT'],
+  },
+  {
+    labelKey: 'agencyPublicProfile',
+    href: '/dashboard/public-profile/agency',
     icon: PaletteOutlinedIcon,
     roles: ['ADMIN', 'OWNER'],
   },
@@ -74,27 +87,31 @@ const navigationItems: readonly AppShellNavItem[] = [
     icon: InsertChartOutlinedRoundedIcon,
     roles: ['ADMIN', 'OWNER'],
   },
+  {
+    labelKey: 'charges',
+    href: '/dashboard/finance/charges',
+    icon: ReceiptLongOutlinedIcon,
+    roles: ['ADMIN', 'OWNER'],
+  },
 ]
 
-export function AppShell({ children, allowLocalMaintenancePreview = false }: AppShellProps) {
+export function AppShell({ children, allowLocalDashboardPreview = false }: AppShellProps) {
   const t = useTranslations('common.appShell')
   const pathname = usePathname()
   const { data: session, status } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
   const isPublicCrmRoute = pathname === '/crm' || pathname === '/crm/contacts'
-  const isMaintenanceRoute =
-    pathname === '/dashboard/maintenance' || pathname.startsWith('/dashboard/maintenance/')
-  const isLocalMaintenancePreview = allowLocalMaintenancePreview && isMaintenanceRoute
+  const isLocalDashboardPreview = allowLocalDashboardPreview
   const userName = session?.user?.name ?? t('defaultUserName')
   const userContext = session?.user?.email ?? t('defaultUserContext')
   const userInitials = useMemo(() => getInitials(userName), [userName])
   const visibleItems = useMemo(() => {
-    if (isLocalMaintenancePreview) return navigationItems
+    if (isLocalDashboardPreview) return navigationItems
 
     return navigationItems.filter(
       (item) => !item.roles || (session?.papel && item.roles.includes(session.papel)),
     )
-  }, [isLocalMaintenancePreview, session])
+  }, [isLocalDashboardPreview, session])
   // Rotas como /crm e /dashboard são prefixo de várias outras entradas do menu (ex.:
   // /dashboard/finance). O item ativo deve ser o de prefixo mais específico que bate com a
   // rota atual, e não todo item cujo prefixo é um match parcial.
@@ -333,7 +350,7 @@ export function AppShell({ children, allowLocalMaintenancePreview = false }: App
           pt: { xs: '64px', md: 0 },
         }}
       >
-        {isPublicCrmRoute || isLocalMaintenancePreview ? (
+        {isPublicCrmRoute || isLocalDashboardPreview ? (
           children
         ) : (
           <CrmAccessBoundary>{children}</CrmAccessBoundary>

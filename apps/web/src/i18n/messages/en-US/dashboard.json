@@ -3,6 +3,9 @@
     "overview": {
       "metadataTitle": "Ketris | Dashboard"
     },
+    "agencyOverview": {
+      "metadataTitle": "Ketris | Agency Overview"
+    },
     "agenda": {
       "metadataTitle": "Ketris | Schedule"
     },
@@ -81,6 +84,102 @@
         "inProgress": "In progress",
         "qualified": "Qualified",
         "pending": "Pending"
+      }
+    }
+  },
+  "agencyOverview": {
+    "agencyName": "Premium Real Estate SP",
+    "title": "Overview",
+    "subtitle": "Track activity, goals, and consolidated agency performance.",
+    "month": "September, 2024",
+    "report": "Report",
+    "navigation": {
+      "overview": "Overview",
+      "team": "Team",
+      "portfolio": "Portfolio",
+      "finance": "Finance",
+      "contracts": "Contracts"
+    },
+    "kpis": {
+      "portfolio": "Portfolio listings",
+      "activeBrokers": "Active brokers",
+      "receivedLeads": "Received leads",
+      "revenue": "Revenue",
+      "occupancy": "Occupancy rate"
+    },
+    "performance": {
+      "title": "Revenue Performance",
+      "subtitle": "Revenue compared with monthly target",
+      "revenue": "Revenue",
+      "target": "Target"
+    },
+    "topBrokers": {
+      "title": "Top Brokers",
+      "subtitle": "Highlights by closed volume",
+      "sales": "{count} Sales",
+      "details": {
+        "eyebrow": "Broker performance",
+        "summary": "{sales} sales in the period - {revenue} in revenue",
+        "recentSales": "Latest sales",
+        "openProfile": "View public profile",
+        "close": "Close"
+      }
+    },
+    "activity": {
+      "title": "Recent Activity",
+      "closedSale": "{broker} closed a sale contract at {detail}",
+      "createdProperty": "{broker} listed a new apartment in {detail}",
+      "scheduledVisit": "{broker} scheduled a visit for tomorrow at {detail}",
+      "receivedLead": "New lead received through {detail}",
+      "signedRent": "Rental contract signed for {detail}",
+      "details": {
+        "eyebrow": "Activity detail",
+        "close": "Close",
+        "fields": {
+          "broker": "Broker",
+          "subject": "Subject",
+          "status": "Status",
+          "nextStep": "Next step",
+          "time": "When",
+          "summary": "Summary"
+        },
+        "items": {
+          "contractSale": {
+            "title": "Sale contract closed",
+            "description": "Marina completed the commercial step and the contract moved to operational review before revenue entry.",
+            "subject": "Condominio Pinheiros",
+            "status": "Closed",
+            "nextStep": "Validate documents and release the financial record."
+          },
+          "newProperty": {
+            "title": "New property listed",
+            "description": "Thiago added the apartment to the portfolio and started reviewing the public information.",
+            "subject": "Apartment in Itaim Bibi",
+            "status": "In review",
+            "nextStep": "Review media, prices, and availability."
+          },
+          "visitScheduled": {
+            "title": "Visit scheduled",
+            "description": "Ana scheduled the visit with an interested client and linked the service to the team calendar.",
+            "subject": "Casa Jardins",
+            "status": "Scheduled",
+            "nextStep": "Confirm client attendance by the end of the day."
+          },
+          "newLead": {
+            "title": "Lead received",
+            "description": "A new contact came through the Ketris portal and is waiting for the commercial team to qualify it.",
+            "subject": "Ketris portal",
+            "status": "New",
+            "nextStep": "Assign it to an available broker."
+          },
+          "rentContract": {
+            "title": "Rental contract signed",
+            "description": "The Studio Moema contract was signed and can move to archiving and financial tracking.",
+            "subject": "Studio Moema",
+            "status": "Signed",
+            "nextStep": "Attach receipts and activate recurrence."
+          }
+        }
       }
     }
   },

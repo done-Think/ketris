@@ -6,6 +6,9 @@
     "dashboard": {
       "metadataTitle": "Ketris | Platform Agencies"
     },
+    "tenants": {
+      "metadataTitle": "Ketris | Platform Tenants"
+    },
     "tenant": {
       "metadataTitle": "Ketris | Platform Agency"
     },
@@ -14,6 +17,9 @@
     },
     "newAdmin": {
       "metadataTitle": "Ketris | Platform Admins"
+    },
+    "system": {
+      "metadataTitle": "Ketris | System Health"
     }
   },
   "login": {
@@ -32,11 +38,211 @@
     "empty": "No agencies registered yet.",
     "createdAt": "Created at"
   },
+  "overview": {
+    "title": "Platform Overview",
+    "production": "Production",
+    "registeredTenants": "Registered agencies",
+    "liveUtc": "Live UTC: {value}",
+    "navigation": {
+      "ariaLabel": "Platform navigation",
+      "openNavigation": "Open platform navigation",
+      "closeNavigation": "Close platform navigation",
+      "admin": "SUPER ADMIN",
+      "overview": "Overview",
+      "tenants": "Tenants",
+      "users": "Users",
+      "plans": "Plans",
+      "finance": "Finance",
+      "system": "System",
+      "logs": "Logs",
+      "online": "Online",
+      "demoNotice": "Demonstration data. This is not live monitoring."
+    },
+    "metrics": {
+      "tenants": {
+        "label": "Agencies"
+      },
+      "brokers": {
+        "label": "Brokers"
+      },
+      "properties": {
+        "label": "Properties"
+      },
+      "mrr": {
+        "label": "MRR"
+      },
+      "churn": {
+        "label": "Churn"
+      },
+      "uptime": {
+        "label": "Platform uptime"
+      },
+      "indicators": {
+        "growth": "+15%",
+        "stable": "Stable",
+        "normal": "Normal"
+      }
+    },
+    "growth": {
+      "title": "Growth Trends (12 Months)",
+      "tenants": "Tenants",
+      "contracts": "Contracts"
+    },
+    "months": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
+    },
+    "alerts": {
+      "title": "System alerts",
+      "active": "{count} active",
+      "backup": {
+        "title": "Automated backup failed",
+        "description": "S3-us-east-1 write error. A second attempt is scheduled."
+      },
+      "cpu": {
+        "title": "High CPU consumption",
+        "description": "Node-worker-02 is operating at 92% capacity."
+      },
+      "ssl": {
+        "title": "SSL renewed",
+        "description": "The gateway-api certificate was renewed successfully."
+      },
+      "tenant-registration": {
+        "title": "New tenant registration",
+        "description": "Vanguard Hub completed basic setup."
+      },
+      "minutesAgo": "{count} min ago",
+      "hoursAgo": "{count} h ago"
+    },
+    "recentTenants": {
+      "title": "Recent tenants",
+      "tableLabel": "Recent tenants table",
+      "columns": {
+        "name": "Name / Agency",
+        "plan": "Plan",
+        "brokers": "Brokers",
+        "registeredAt": "Registered",
+        "status": "Status"
+      },
+      "plans": {
+        "enterprise": "Enterprise",
+        "proGrowth": "Pro Growth",
+        "starterPack": "Starter Pack"
+      },
+      "statuses": {
+        "active": "Active",
+        "provisioning": "Provisioning",
+        "suspended": "Suspended"
+      }
+    }
+  },
   "tenant": {
     "usersTitle": "Agency users",
     "newAdmin": "New administrator",
     "usersLoadError": "Could not load users.",
     "emptyUsers": "No users registered yet."
+  },
+  "tenants": {
+    "title": "Tenants",
+    "searchLabel": "Search tenants",
+    "searchPlaceholder": "Search tenants...",
+    "planFilterLabel": "Filter by plan",
+    "statusFilterLabel": "Filter by status",
+    "newTenant": "New Tenant",
+    "activeBadge": "Active",
+    "metrics": {
+      "total": "Total",
+      "starter": "Starter",
+      "pro": "Pro",
+      "enterprise": "Enterprise"
+    },
+    "tableLabel": "Tenants table",
+    "columns": {
+      "name": "Name",
+      "plan": "Plan",
+      "brokers": "Brokers",
+      "properties": "Properties",
+      "mrr": "MRR",
+      "status": "Status",
+      "createdAt": "Created",
+      "actions": "Actions"
+    },
+    "plans": {
+      "all": "All",
+      "starter": "Starter",
+      "pro": "Pro",
+      "enterprise": "Enterprise"
+    },
+    "statuses": {
+      "all": "All",
+      "active": "Active",
+      "trial": "Trial",
+      "suspended": "Suspended"
+    },
+    "planFilterValue": "Plan: {value}",
+    "statusFilterValue": "Status: {value}",
+    "summary": "Showing {start}–{end} of {total} tenants",
+    "previous": "Previous",
+    "next": "Next",
+    "empty": "No tenants found.",
+    "editAction": "Edit {name}",
+    "moreActions": "More actions for {name}",
+    "edit": "Edit",
+    "editTitle": "Edit demo tenant",
+    "editDescription": "Changes are local and will be discarded when you reload the page.",
+    "save": "Save",
+    "cancel": "Cancel",
+    "nameRequired": "Enter a name.",
+    "metricBadge": "Tenants"
+  },
+  "system": {
+    "title": "System Health",
+    "autoRefresh": "Auto-refresh (5s)",
+    "networkEyebrow": "NETWORK TRAFFIC",
+    "networkTitle": "Request Volume (24h)",
+    "networkAverage": "Average: {value} req/min",
+    "errorsEyebrow": "ERROR NOTIFICATIONS",
+    "errorsTitle": "Error Occurrences (12h)",
+    "errorsTotal": "Total: {count} failures",
+    "logsTitle": "Recent Cluster Activity (Log Console)",
+    "clearConsole": "Clear Console",
+    "emptyConsole": "Console cleared.",
+    "metrics": {
+      "gateway": {
+        "label": "API Gateway",
+        "status": "Healthy"
+      },
+      "database": {
+        "label": "Database",
+        "status": "Stable Latency"
+      },
+      "storage": {
+        "label": "Storage",
+        "status": "Limited Space"
+      },
+      "queue": {
+        "label": "Task Queue",
+        "status": "Processing"
+      }
+    },
+    "logMessages": {
+      "authentication": "Successful authentication for tenant 'Silva & Associados'",
+      "rateLimit": "Request rejected because the Starter plan rate limit was exceeded",
+      "payment": "Recurring payment synchronization failed (Billing gateway)",
+      "import": "Completed processing of 140 property records from a spreadsheet",
+      "backup": "Scheduled backup completed successfully on the secondary cluster",
+      "connection": "Critical connection error on the data read replica"
+    }
   },
   "newAdmin": {
     "title": "New platform administrator"
@@ -61,5 +267,11 @@
     "createTenantAdminSubmit": "Create agency administrator",
     "createTenantAdminError": "Could not create the agency administrator. Try again.",
     "createTenantAdminSuccess": "Administrator {email} created successfully."
+  },
+  "table": {
+    "first": "First page",
+    "last": "Last page",
+    "next": "Next page",
+    "previous": "Previous page"
   }
 }

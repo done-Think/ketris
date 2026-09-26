@@ -9,7 +9,7 @@ import type { LocaleRouteParams } from '@/i18n/types/route.types'
 import { authOptions } from '@shared/lib/auth/auth-options'
 import { AppShell } from '@shared/components/layout/AppShell'
 
-function isLocalMaintenancePreview(host: string | null) {
+function isLocalDashboardPreview(host: string | null) {
   return process.env.NODE_ENV === 'development' && /^localhost(?::\d+)?$/.test(host ?? '')
 }
 
@@ -21,9 +21,9 @@ export default async function MaintenancePreviewLayout({
   params: Promise<LocaleRouteParams>
 }) {
   const [{ locale }, requestHeaders] = await Promise.all([params, headers()])
-  const allowLocalMaintenancePreview = isLocalMaintenancePreview(requestHeaders.get('host'))
+  const allowLocalDashboardPreview = isLocalDashboardPreview(requestHeaders.get('host'))
 
-  if (!allowLocalMaintenancePreview) {
+  if (!allowLocalDashboardPreview) {
     const session = await getServerSession(authOptions)
 
     if (!session || session.scope !== 'tenant') {
@@ -32,7 +32,7 @@ export default async function MaintenancePreviewLayout({
   }
 
   return (
-    <AppShell allowLocalMaintenancePreview={allowLocalMaintenancePreview}>
+    <AppShell allowLocalDashboardPreview={allowLocalDashboardPreview}>
       <Box sx={{ minHeight: '100vh' }}>{children}</Box>
     </AppShell>
   )

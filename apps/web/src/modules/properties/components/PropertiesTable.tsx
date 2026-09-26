@@ -47,18 +47,29 @@ function PropertyStatusCell({
   const status = dashboardPropertyStatusStyles[row.status]
 
   return (
-    <Chip
-      label={label}
-      size="small"
+    <Box
       sx={{
-        height: 30,
-        borderRadius: `${radius.full}px`,
-        bgcolor: status.bgcolor,
-        color: status.color,
-        fontSize: 13,
-        fontWeight: 900,
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transform: 'translateX(-70px)',
       }}
-    />
+    >
+      <Chip
+        label={label}
+        size="small"
+        sx={{
+          height: 30,
+          borderRadius: `${radius.full}px`,
+          bgcolor: status.bgcolor,
+          color: status.color,
+          fontSize: 13,
+          fontWeight: 900,
+        }}
+      />
+    </Box>
   )
 }
 
@@ -75,20 +86,29 @@ export function PropertiesTable({
       headerName: t('property'),
       flex: 2.2,
       minWidth: 360,
+      resizable: false,
       sortable: true,
       renderCell: (params) => <PropertyIdentityCell {...params} />,
     },
-    { field: 'type', headerName: t('type'), flex: 0.9, minWidth: 130 },
-    { field: 'price', headerName: t('price'), flex: 1, minWidth: 150 },
+    { field: 'type', headerName: t('type'), flex: 0.9, minWidth: 130, resizable: false },
+    { field: 'price', headerName: t('price'), flex: 1, minWidth: 150, resizable: false },
     {
       field: 'status',
       headerName: t('status'),
       flex: 0.8,
       minWidth: 130,
+      resizable: false,
+      cellClassName: 'properties-status-cell',
       renderCell: (params) => <PropertyStatusCell {...params} label={filterT(params.row.status)} />,
     },
-    { field: 'broker', headerName: t('broker'), flex: 1, minWidth: 160 },
-    { field: 'updatedAt', headerName: t('updated'), flex: 0.9, minWidth: 140 },
+    { field: 'broker', headerName: t('broker'), flex: 1, minWidth: 160, resizable: false },
+    {
+      field: 'updatedAt',
+      headerName: t('updated'),
+      flex: 0.9,
+      minWidth: 140,
+      resizable: false,
+    },
     {
       field: 'actions',
       headerName: t('actions'),
@@ -96,8 +116,9 @@ export function PropertiesTable({
       filterable: false,
       disableColumnMenu: true,
       width: 96,
-      align: 'right',
-      headerAlign: 'right',
+      align: 'center',
+      headerAlign: 'center',
+      resizable: false,
       renderCell: ({ row }) => (
         <PropertyRowActions property={row} onView={() => onPropertySelect(row.id)} />
       ),
@@ -120,6 +141,8 @@ export function PropertiesTable({
         rows={properties}
         columns={columns}
         rowHeight={82}
+        disableColumnMenu
+        disableColumnResize
         disableRowSelectionOnClick
         pageSizeOptions={[5, 10, 25]}
         initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
@@ -143,8 +166,20 @@ export function PropertiesTable({
             fontWeight: 900,
             textTransform: 'uppercase',
           },
+          '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': {
+            outline: 'none',
+          },
+          '& .MuiDataGrid-columnSeparator': {
+            display: 'none',
+          },
+          '& .properties-status-cell': {
+            overflow: 'visible',
+          },
           '& .MuiDataGrid-cell': {
             borderColor: 'divider',
+            outline: 'none',
+          },
+          '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': {
             outline: 'none',
           },
           '& .MuiDataGrid-row': {

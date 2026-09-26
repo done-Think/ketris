@@ -4,12 +4,10 @@ import { Box, Container } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { SiteFooter } from '@shared/components/layout'
-import { surface } from '@shared/theme/tokens'
+import { brand, surface } from '@shared/theme/tokens'
 
-import { getBrokerProfileTheme } from '../config/broker-profile-themes'
 import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { BrokerPublicProfilePageProps } from '../types/broker'
-import { formatRating } from '../utils/format-rating'
 import { buildProfileListings } from '../utils/profile-listings'
 import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 import { MarketplaceHeader } from './MarketplaceHeader'
@@ -21,11 +19,8 @@ import { PublicProfileSidebar } from './profile/PublicProfileSidebar'
 export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps) {
   const t = useTranslations('marketplace')
   const { footerColumns, legalLinks } = useMarketplaceNavigation()
-  const theme = getBrokerProfileTheme(broker.id)
-  const representedListings = buildProfileListings(broker.highlightedListings, {
-    brokerName: broker.name,
-    coverage: broker.neighborhoods,
-  })
+  const accentColor = broker.primaryColor ?? brand.magenta[500]
+  const representedListings = buildProfileListings(broker.highlightedListings)
 
   return (
     <Box sx={{ bgcolor: surface.app, minHeight: '100vh', overflowX: 'clip' }}>
@@ -48,12 +43,10 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
           }}
         >
           <Box sx={{ minWidth: 0 }}>
-            <BrokerProfileHero broker={broker} theme={theme} />
+            <BrokerProfileHero broker={broker} />
             <PublicProfileMetrics
-              accentColor={theme.accent}
+              accentColor={accentColor}
               metrics={[
-                { label: t('publicProfile.metrics.rating'), value: formatRating(broker.rating) },
-                { label: t('publicProfile.metrics.responseTime'), value: broker.responseTime },
                 { label: t('publicProfile.metrics.active'), value: broker.activeListings },
                 { label: t('publicProfile.metrics.closed'), value: broker.dealsClosed },
               ]}
@@ -61,15 +54,17 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
           </Box>
 
           <PublicProfileSidebar
-            accentColor={theme.accent}
-            hoverColor={theme.tone}
+            accentColor={accentColor}
+            hoverColor={broker.backgroundColor ?? surface.app}
             href={broker.href}
             sourceType="broker"
             linkDescription={t('publicProfile.sidebar.brokerLinkDescription')}
-            phone={broker.phone}
+            phone={broker.phone ?? ''}
             email={broker.email}
             facts={[
-              { label: t('publicProfile.facts.availability'), value: broker.availability },
+              ...(broker.availability
+                ? [{ label: t('publicProfile.facts.availability'), value: broker.availability }]
+                : []),
               {
                 label: t('publicProfile.facts.neighborhoods'),
                 value: broker.neighborhoods.join(', '),
@@ -81,7 +76,7 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
 
           <Box sx={{ gridColumn: { lg: '1 / -1' } }}>
             <PublicProfileListings
-              accentColor={theme.accent}
+              accentColor={accentColor}
               listings={representedListings}
               source={{ href: broker.href, name: broker.name, type: 'broker' }}
             />

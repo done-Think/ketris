@@ -5,18 +5,24 @@ import { describe, expect, it } from 'vitest'
 import { theme } from '@shared/theme/theme'
 
 import { AgencyHighlightedTeam } from '../../components/profile/AgencyHighlightedTeam'
-import { agencies } from '../../data/agencies'
-import { getBrokersByNames } from '../../data/brokers'
+import type { AgencyTeamHighlight } from '../../types/agency'
 
-const agency = agencies[0]
+const brand = {
+  primaryColor: '#F30274',
+  secondaryColor: '#212631',
+  backgroundColor: '#FFFFFF',
+  logoUrl: null,
+}
+const team: AgencyTeamHighlight[] = [
+  { usuarioId: 'marina-costa', name: 'Marina Costa', avatarUrl: null },
+  { usuarioId: 'juliana-mendes', name: 'Juliana Mendes', avatarUrl: null },
+  { usuarioId: 'bianca-azevedo', name: 'Bianca Azevedo', avatarUrl: null },
+]
 
 function renderAgencyHighlightedTeam() {
   render(
     <ThemeProvider theme={theme}>
-      <AgencyHighlightedTeam
-        brand={agency.brand}
-        brokers={getBrokersByNames(agency.teamHighlights)}
-      />
+      <AgencyHighlightedTeam brand={brand} team={team} />
     </ThemeProvider>,
   )
 }

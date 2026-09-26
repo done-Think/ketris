@@ -33,6 +33,7 @@ model Tenant {
   cobrancas     Cobranca[]
   contatos      Contato[]
   eventosAgenda EventoAgenda[]
+  perfilPublico PerfilPublicoImobiliaria?
 
   @@map("tenants")
 }
@@ -57,12 +58,14 @@ model Usuario {
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 
-  tenant                   Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  imoveisResponsavel       Imovel[]       @relation("ImovelResponsavel")
+  tenant                   Tenant                             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  imoveisResponsavel       Imovel[]                           @relation("ImovelResponsavel")
   refreshTokens            RefreshToken[]
-  eventosAgendaResponsavel EventoAgenda[] @relation("EventoAgendaResponsavel")
-  eventosAgendaCriados     EventoAgenda[] @relation("EventoAgendaCriadoPor")
-  leadsResponsavel         Lead[]         @relation("LeadResponsavel")
+  eventosAgendaResponsavel EventoAgenda[]                     @relation("EventoAgendaResponsavel")
+  eventosAgendaCriados     EventoAgenda[]                     @relation("EventoAgendaCriadoPor")
+  leadsResponsavel         Lead[]                             @relation("LeadResponsavel")
+  perfilPublico            PerfilPublicoCorretor?
+  destaquesRecebidos       PerfilPublicoImobiliariaDestaque[]
 
   @@index([tenantId])
   @@map("usuarios")
@@ -200,6 +203,90 @@ model Midia {
 
   @@index([imovelId])
   @@map("midias")
+}
+
+// ---------------------------------------------------------------------------
+// Perfil Público (módulo `marketplace`) — página pública de corretor/imobiliária,
+// editada pelo próprio usuário/tenant no dashboard. Sem registro = não aparece no
+// diretório público (ver PerfilPublicoStatus).
+// ---------------------------------------------------------------------------
+
+enum PerfilPublicoStatus {
+  DRAFT     @map("RASCUNHO")
+  PUBLISHED @map("PUBLICADO")
+
+  @@map("PerfilPublicoStatus")
+}
+
+model PerfilPublicoCorretor {
+  id              String              @id @default(cuid())
+  usuarioId       String              @unique
+  displayName     String
+  headline        String?
+  bio             String?
+  creci           String?
+  telefone        String?
+  regiao          String?
+  bairros         String[]            @default([])
+  especialidades  String[]            @default([])
+  disponibilidade String?
+  corPrimaria     String?
+  corSecundaria   String?
+  corFundo        String?
+  avatarUrl       String?
+  bannerUrl       String?
+  status          PerfilPublicoStatus @default(DRAFT)
+  publicadoEm     DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("perfis_publicos_corretor")
+}
+
+model PerfilPublicoImobiliaria {
+  id            String              @id @default(cuid())
+  tenantId      String              @unique
+  displayName   String
+  headline      String?
+  resumo        String?
+  legalCreci    String?
+  sede          String?
+  endereco      String?
+  telefone      String?
+  email         String?
+  cobertura     String[]            @default([])
+  segmentos     String[]            @default([])
+  anosDeMercado Int?
+  corFundo      String?
+  logoUrl       String?
+  bannerUrl     String?
+  status        PerfilPublicoStatus @default(DRAFT)
+  publicadoEm   DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  tenant    Tenant                             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  destaques PerfilPublicoImobiliariaDestaque[]
+
+  @@map("perfis_publicos_imobiliaria")
+}
+
+// Equipe em destaque na página pública da imobiliária — vínculo real por usuário
+// (antes era texto livre casado por nome, no mock de frontend).
+model PerfilPublicoImobiliariaDestaque {
+  id        String @id @default(cuid())
+  perfilId  String
+  usuarioId String
+  ordem     Int    @default(0)
+
+  perfil  PerfilPublicoImobiliaria @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+  usuario Usuario                  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([perfilId, usuarioId])
+  @@index([usuarioId])
+  @@map("perfis_publicos_imobiliaria_destaques")
 }
 
 // ---------------------------------------------------------------------------

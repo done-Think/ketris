@@ -1,5 +1,5 @@
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 
@@ -10,6 +10,28 @@ import { PublicProfileEditorPage } from '../../components/PublicProfileEditorPag
 
 vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
+}))
+
+vi.mock('../../hooks/use-broker-profile', () => ({
+  useOwnBrokerProfile: () => ({ data: null }),
+  useSaveBrokerProfile: () => ({ mutate: vi.fn(), isPending: false }),
+  usePublishBrokerProfile: () => ({ mutate: vi.fn(), isPending: false }),
+  useUnpublishBrokerProfile: () => ({ mutate: vi.fn(), isPending: false }),
+}))
+
+vi.mock('../../hooks/use-agency-profile', () => ({
+  useOwnAgencyProfile: () => ({ data: null }),
+  useSaveAgencyProfile: () => ({ mutate: vi.fn(), isPending: false }),
+  usePublishAgencyProfile: () => ({ mutate: vi.fn(), isPending: false }),
+  useUnpublishAgencyProfile: () => ({ mutate: vi.fn(), isPending: false }),
+}))
+
+vi.mock('../../hooks/use-tenant-agents', () => ({
+  useTenantAgents: () => ({ data: [] }),
+}))
+
+vi.mock('../../hooks/use-profile-media', () => ({
+  useUploadProfileMedia: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 
 function renderWithTheme(component: ReactElement) {
@@ -39,9 +61,12 @@ describe('PublicProfileEditorPage', () => {
     expect(screen.getByRole('heading', { name: 'Editar Perfil' })).toBeVisible()
     expect(screen.getByLabelText('Nome exibido')).toBeVisible()
     expect(screen.getByLabelText('Cor principal')).toBeVisible()
+    expect(screen.getByLabelText('CRECI')).toBeVisible()
     expect(screen.queryByText('Demonstrativo')).not.toBeInTheDocument()
     expect(screen.queryByText('Ordem do perfil')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Salvar rascunho' })).not.toBeInTheDocument()
+    // Sem perfil salvo ainda (mock retorna null) — publicar/despublicar não aparece.
+    expect(screen.queryByRole('button', { name: 'Publicar' })).not.toBeInTheDocument()
 
     const previewButton = screen.getByRole('button', { name: 'Visualizar' })
     const saveButton = screen.getByRole('button', { name: 'Salvar' })
@@ -51,29 +76,13 @@ describe('PublicProfileEditorPage', () => {
     expect(previewButton.compareDocumentPosition(saveButton)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
   })
 
-  it('manages highlighted team members in the broker editor form', () => {
-    renderWithTheme(<PublicProfileEditorPage />)
-
-    expect(screen.getByRole('heading', { name: 'Equipe' })).toBeVisible()
-    expect(screen.getAllByDisplayValue('Marina Costa')).toHaveLength(2)
-
-    fireEvent.click(screen.getByRole('button', { name: 'Adicionar membro' }))
-
-    expect(screen.getByText('Membro 4')).toBeVisible()
-
-    const removeButtons = screen.getAllByRole('button', { name: 'Remover' })
-
-    fireEvent.click(removeButtons[3])
-
-    expect(screen.queryByText('Membro 4')).not.toBeInTheDocument()
-  })
-
   it('renders the agency editor with agency-specific controls', () => {
     renderWithTheme(<AgencyPublicProfileEditorPage />)
 
     expect(screen.getByRole('heading', { name: 'Editar Perfil da Imobiliária' })).toBeVisible()
     expect(screen.getByLabelText('Nome da imobiliária')).toBeVisible()
     expect(screen.getByLabelText('CRECI')).toBeVisible()
+    expect(screen.getByLabelText('Corretores em destaque')).toBeVisible()
     expect(screen.queryByText('Demonstrativo')).not.toBeInTheDocument()
     expect(screen.queryByText('Ordem do perfil')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Salvar rascunho' })).not.toBeInTheDocument()

@@ -292,7 +292,7 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
   if (!contract) notFound()
 
   return (
-    <Box sx={{ width: '100%', px: { xs: 2, md: 4.8 }, py: { xs: 2.6, md: 3.2 } }}>
+    <Box sx={{ width: '100%', p: 3.5 }}>
       <Box sx={{ width: '100%' }}>
         <Stack
           direction="row"

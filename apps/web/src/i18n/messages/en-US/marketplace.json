@@ -114,7 +114,7 @@
   },
   "footer": {
     "description": "End-to-end technology and simplification for corporate and residential real estate.",
-    "rights": "All rights reserved.",
+    "rights": "Tecnologias Ltda. All rights reserved.",
     "columns": {
       "company": "Company",
       "forYou": "For you",
@@ -197,157 +197,76 @@
   },
   "profileEditor": {
     "title": "Edit Profile",
-    "subtitle": "Adjust content, appearance and images shown to visitors.",
-    "validatedDraft": "Draft validated",
-    "mainContent": "Main content",
-    "appearance": "Appearance",
-    "images": "Images",
-    "team": "Team",
-    "teamDescription": "Add highlighted members and the link to each public profile.",
-    "addMember": "Add member",
-    "removeMember": "Remove",
-    "memberTitle": "Member {index}",
-    "emptyMembers": "No members added.",
-    "dropImage": "Drop the image here",
-    "uploadHelper": "JPG, PNG or WEBP. You can also keep only the link above.",
-    "photoPreview": "Photo preview",
-    "bannerPreview": "Banner preview",
-    "preview": "Preview",
-    "configurableProfile": "Configurable public profile",
-    "newMember": "New member",
-    "dropToMove": "Drop to move",
-    "preparing": "Preparing...",
-    "positionLabel": "Position {position}: {label}",
-    "position": "Position {position}",
-    "profileOrder": "Profile order",
-    "previewDialog": {
-      "title": "Profile preview",
-      "close": "Close preview"
-    },
-    "sections": {
-      "none": {
-        "label": "None",
-        "description": "Do not show a section in this position."
-      },
-      "hero": {
-        "label": "Presentation",
-        "description": "Banner, photo, name, and main headline."
-      },
-      "metrics": {
-        "label": "Indicators",
-        "description": "Rating, average response, active listings, and deals."
-      },
-      "team": {
-        "label": "Team",
-        "description": "Brokers or people highlighted in the profile."
-      },
-      "listings": {
-        "label": "Listings",
-        "description": "Cards for represented properties."
-      },
-      "contact": {
-        "label": "Contact",
-        "description": "Public link, phone, email, and quick facts."
-      }
-    },
-    "contactActions": {
-      "call": "Call",
-      "email": "Email",
-      "openPublicLink": "Open public link"
-    },
+    "subtitle": "Adjust the information shown to visitors on your public profile.",
+    "saveSuccess": "Profile saved successfully.",
+    "saveError": "Could not save the profile.",
+    "publishSuccess": "Profile published successfully.",
+    "unpublishSuccess": "Profile unpublished.",
+    "publishError": "Could not update the profile's publication status.",
     "fields": {
-      "displayName": "Display name",
+      "mainInfo": "Main information",
       "headline": "Banner headline",
-      "summary": "Summary",
+      "displayName": "Display name",
+      "bio": "Bio",
+      "creci": "License number",
+      "phone": "Phone",
+      "region": "Service area",
+      "neighborhoods": "Neighborhoods served",
+      "specialties": "Specialties",
+      "availability": "Availability",
+      "commaSeparatedHint": "Separate multiple values with a comma.",
+      "appearance": "Appearance",
+      "images": "Images",
       "primaryColor": "Primary color",
-      "accentColor": "Accent color",
+      "secondaryColor": "Secondary color",
       "backgroundColor": "Profile background",
       "photoUrl": "Photo URL",
-      "bannerUrl": "Banner URL",
-      "uploadPhoto": "Upload profile photo",
-      "uploadBanner": "Upload banner",
-      "name": "Name",
-      "role": "Role",
-      "profileUrl": "Profile link"
+      "bannerUrl": "Banner URL"
     },
-    "save": "Save"
+    "actions": {
+      "preview": "Preview",
+      "save": "Save",
+      "publish": "Publish",
+      "unpublish": "Unpublish"
+    }
   },
   "agencyProfileEditor": {
     "title": "Edit Agency Profile",
-    "subtitle": "Adjust brand, content and images shown to visitors.",
-    "validatedDraft": "Draft validated",
-    "mainContent": "Main content",
-    "appearance": "Appearance",
-    "brandImages": "Brand images",
-    "dropImage": "Drop the image here",
-    "uploadHelper": "JPG, PNG or WEBP. You can also keep only the link above.",
-    "logoPreview": "Logo preview",
-    "bannerPreview": "Banner preview",
-    "preview": "Preview",
-    "dropToMove": "Drop to move",
-    "preparing": "Preparing...",
-    "positionLabel": "Position {position}: {label}",
-    "position": "Position {position}",
-    "profileOrder": "Profile order",
-    "previewDialog": {
-      "title": "Agency profile preview",
-      "close": "Close preview"
-    },
-    "sections": {
-      "none": {
-        "label": "None",
-        "description": "Do not show a section in this position."
-      },
-      "brand": {
-        "label": "Brand",
-        "description": "Logo, banner, name, and institutional headline."
-      },
-      "metrics": {
-        "label": "Indicators",
-        "description": "Properties, team, years in market, and rating."
-      },
-      "contact": {
-        "label": "Contact",
-        "description": "Public link, phone, email, and quick facts."
-      },
-      "team": {
-        "label": "Team",
-        "description": "Featured brokers in the agency."
-      },
-      "listings": {
-        "label": "Listings",
-        "description": "Cards for represented properties."
-      }
-    },
-    "metrics": {
-      "properties": "Properties",
-      "team": "Team",
-      "years": "Years",
-      "rating": "Rating"
-    },
-    "contactActions": {
-      "call": "Call",
-      "email": "Email",
-      "openPublicLink": "Open public link"
-    },
+    "subtitle": "Adjust brand, contact and featured team shown to visitors.",
+    "saveSuccess": "Profile saved successfully.",
+    "saveError": "Could not save the profile.",
+    "publishSuccess": "Profile published successfully.",
+    "unpublishSuccess": "Profile unpublished.",
+    "publishError": "Could not update the profile's publication status.",
     "fields": {
+      "mainInfo": "Main information",
+      "headline": "Banner headline",
       "displayName": "Agency name",
-      "headline": "Institutional headline",
-      "legalCreci": "CRECI",
+      "summary": "Summary",
+      "legalCreci": "License number",
       "headquarters": "Headquarters",
       "address": "Address",
+      "phone": "Phone",
+      "email": "Email",
       "coverage": "Coverage",
       "segments": "Segments",
-      "summary": "Summary",
-      "primaryColor": "Primary color",
-      "accentColor": "Accent color",
+      "yearsInMarket": "Years in market",
+      "commaSeparatedHint": "Separate multiple values with a comma.",
+      "appearance": "Appearance",
+      "images": "Images",
       "backgroundColor": "Brand background",
       "logoUrl": "Logo URL",
       "bannerUrl": "Banner URL",
-      "uploadLogo": "Upload logo",
-      "uploadBanner": "Upload banner"
+      "team": "Featured team",
+      "teamPicker": "Featured brokers",
+      "teamPickerPlaceholder": "Select up to 6 brokers"
     },
-    "save": "Save"
+    "actions": {
+      "preview": "Preview",
+      "save": "Save",
+      "publish": "Publish",
+      "unpublish": "Unpublish"
+    }
   },
   "searchResults": {
     "toolbar": {
@@ -436,5 +355,13 @@
       "team": "Team",
       "rating": "Rating"
     }
+  },
+  "mediaUpload": {
+    "dropzone": "Drag an image here or click to select",
+    "dragActive": "Drop the image here",
+    "uploading": "Uploading...",
+    "remove": "Remove image",
+    "hint": "JPG, PNG or WEBP.",
+    "uploadError": "Could not upload the image. Try again."
   }
 }
