@@ -4,8 +4,12 @@ import { Box, Button, InputAdornment, Stack, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { Controller } from 'react-hook-form'
 
-import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/components/layout'
-import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
+import {
+  DashboardNotificationsButton,
+  DashboardPageHeader,
+  dashboardHeaderActionButtonSx,
+} from '@shared/components/layout'
+import { alpha, brand, radius, surface } from '@shared/theme/tokens'
 
 import type { ContractsDashboardPageHeaderProps } from '../types/contract'
 
@@ -56,16 +60,7 @@ export function ContractsDashboardHeader({
         variant="contained"
         startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
         onClick={onCreateContract}
-        sx={{
-          borderRadius: `${radius.sm}px`,
-          boxShadow: shadows.none,
-          height: { xs: 40, sm: 32 },
-          px: 1.5,
-          fontSize: 12,
-          fontWeight: 700,
-          textTransform: 'none',
-          whiteSpace: 'nowrap',
-        }}
+        sx={dashboardHeaderActionButtonSx}
       >
         {t('newContract')}
       </Button>

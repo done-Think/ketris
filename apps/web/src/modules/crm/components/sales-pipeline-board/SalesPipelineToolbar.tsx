@@ -18,8 +18,12 @@ import {
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/components/layout'
-import { brand, radius, shadows } from '@shared/theme/tokens'
+import {
+  DashboardNotificationsButton,
+  DashboardPageHeader,
+  dashboardHeaderActionButtonSx,
+} from '@shared/components/layout'
+import { brand, radius } from '@shared/theme/tokens'
 
 import { salesPipelineStages } from '../../config/sales-pipeline-stages'
 import type { SalesPipelineToolbarProps, SalesPipelineViewMode } from '../../types/sales-pipeline'
@@ -172,19 +176,7 @@ export function SalesPipelineToolbar({
         variant="contained"
         startIcon={<AddRoundedIcon />}
         onClick={onNewOpportunity}
-        sx={{
-          width: { sm: 166 },
-          minWidth: { sm: 166 },
-          height: 36,
-          px: 2,
-          borderRadius: `${radius.sm}px`,
-          boxShadow: shadows.none,
-          fontSize: 14,
-          fontWeight: 800,
-          whiteSpace: 'nowrap',
-          '& .MuiButton-startIcon': { ml: 0, mr: 0.75 },
-          '& .MuiSvgIcon-root': { fontSize: 16 },
-        }}
+        sx={dashboardHeaderActionButtonSx}
       >
         {t('newOpportunity')}
       </Button>
