@@ -3,13 +3,13 @@ import { BaseService } from '@shared/lib/api/base-service'
 import type { AdminUser } from '../types/admin'
 
 interface CreateAdminPayload {
-  nome: string
+  name: string
   email: string
   password: string
 }
 
 interface UpdateAdminPayload {
-  nome?: string
+  name?: string
   email?: string
 }
 

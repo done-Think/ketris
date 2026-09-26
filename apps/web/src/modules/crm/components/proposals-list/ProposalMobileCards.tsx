@@ -21,7 +21,7 @@ export function ProposalMobileCards({
         <Stack key={proposal.id} spacing={1.5} sx={{ p: 2 }}>
           <Stack direction="row" alignItems="center" justifyContent="space-between" gap={1.5}>
             <Stack direction="row" alignItems="center" spacing={1} minWidth={0}>
-              <Typography noWrap sx={{ fontSize: 13, fontWeight: 800 }}>
+              <Typography noWrap sx={{ fontSize: 16, fontWeight: 800 }}>
                 {proposal.reference}
               </Typography>
               <ProposalStatusChip status={proposal.status} />
@@ -44,17 +44,17 @@ export function ProposalMobileCards({
               <Typography
                 sx={{
                   color: brand.neutral[500],
-                  fontSize: 10,
+                  fontSize: 14,
                   fontWeight: 700,
                   textTransform: 'uppercase',
                 }}
               >
                 Lead
               </Typography>
-              <Typography noWrap sx={{ fontSize: 13, fontWeight: 700 }}>
+              <Typography noWrap sx={{ fontSize: 16, fontWeight: 700 }}>
                 {proposal.lead.name}
               </Typography>
-              <Typography noWrap sx={{ color: 'text.secondary', fontSize: 11 }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontSize: 15 }}>
                 {proposal.lead.email}
               </Typography>
             </Stack>
@@ -63,17 +63,17 @@ export function ProposalMobileCards({
               <Typography
                 sx={{
                   color: brand.neutral[500],
-                  fontSize: 10,
+                  fontSize: 14,
                   fontWeight: 700,
                   textTransform: 'uppercase',
                 }}
               >
                 Imóvel
               </Typography>
-              <Typography noWrap sx={{ fontSize: 13, fontWeight: 700 }}>
+              <Typography noWrap sx={{ fontSize: 16, fontWeight: 700 }}>
                 {proposal.property.title}
               </Typography>
-              <Typography noWrap sx={{ color: 'text.secondary', fontSize: 11 }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontSize: 15 }}>
                 {proposal.property.address}
               </Typography>
             </Stack>
@@ -84,18 +84,16 @@ export function ProposalMobileCards({
               <Typography
                 sx={{
                   color: brand.neutral[500],
-                  fontSize: 10,
+                  fontSize: 14,
                   fontWeight: 700,
                   textTransform: 'uppercase',
                 }}
               >
                 Valor
               </Typography>
-              <Typography sx={{ fontSize: 13.5, fontWeight: 800 }}>
-                {proposal.valueLabel}
-              </Typography>
+              <Typography sx={{ fontSize: 17, fontWeight: 800 }}>{proposal.valueLabel}</Typography>
             </Stack>
-            <Typography sx={{ color: 'text.secondary', fontSize: 11.5 }}>
+            <Typography sx={{ color: 'text.secondary', fontSize: 15.5 }}>
               Criada em {proposal.createdLabel}
             </Typography>
           </Stack>

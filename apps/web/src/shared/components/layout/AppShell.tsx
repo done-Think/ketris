@@ -6,13 +6,14 @@ import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import InsertChartOutlinedRoundedIcon from '@mui/icons-material/InsertChartOutlinedRounded'
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined'
+import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline'
 import ViewKanbanOutlinedIcon from '@mui/icons-material/ViewKanbanOutlined'
-import type { SvgIconComponent } from '@mui/icons-material'
 import {
   Avatar,
   Box,
@@ -27,45 +28,38 @@ import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
 import { Link, usePathname } from '@/i18n/navigation'
-import type { Papel } from '@server/auth/domain/user.entity'
 import { CrmAccessBoundary } from '@modules/crm/components/CrmAccessBoundary'
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import type { AppShellNavItem, AppShellProps } from '@shared/types/app-shell'
 import { getInitials } from '@shared/utils/get-initials'
 import { DashboardNotificationsButton } from './DashboardNotificationsButton'
 
 const sidebarWidth = 200
 
-type NavHref =
-  | '/dashboard'
-  | '/crm'
-  | '/crm/contacts'
-  | '/dashboard/leads'
-  | '/dashboard/properties'
-  | '/dashboard/contracts'
-  | '/dashboard/public-profile'
-  | '/dashboard/agenda'
-  | '/dashboard/finance'
-
-interface NavItem {
-  labelKey: string
-  href: NavHref
-  icon: SvgIconComponent
-  /** Omitted = visible to every tenant role (ADMIN, OWNER, AGENT). */
-  roles?: readonly Papel[]
-}
-
-const navigationItems: readonly NavItem[] = [
+const navigationItems: readonly AppShellNavItem[] = [
   {
     labelKey: 'dashboard',
     href: '/dashboard',
     icon: BarChartOutlinedIcon,
     roles: ['ADMIN', 'OWNER'],
   },
+  {
+    labelKey: 'agencyOverview',
+    href: '/dashboard/agency-overview',
+    icon: InsertChartOutlinedRoundedIcon,
+    roles: ['ADMIN', 'OWNER'],
+  },
   { labelKey: 'pipeline', href: '/crm', icon: ViewKanbanOutlinedIcon },
   { labelKey: 'contacts', href: '/crm/contacts', icon: PeopleOutlineIcon },
   { labelKey: 'leads', href: '/dashboard/leads', icon: PeopleAltOutlinedIcon },
+  {
+    labelKey: 'team',
+    href: '/dashboard/team',
+    icon: PeopleAltOutlinedIcon,
+    roles: ['ADMIN', 'OWNER'],
+  },
   { labelKey: 'properties', href: '/dashboard/properties', icon: HomeWorkOutlinedIcon },
   { labelKey: 'contracts', href: '/dashboard/contracts', icon: DescriptionOutlinedIcon },
   {
@@ -76,33 +70,42 @@ const navigationItems: readonly NavItem[] = [
   },
   { labelKey: 'agenda', href: '/dashboard/agenda', icon: CalendarTodayOutlinedIcon },
   {
+    labelKey: 'maintenance',
+    href: '/dashboard/maintenance',
+    icon: BuildOutlinedIcon,
+    roles: ['ADMIN', 'OWNER'],
+  },
+  {
     labelKey: 'finance',
     href: '/dashboard/finance',
     icon: InsertChartOutlinedRoundedIcon,
     roles: ['ADMIN', 'OWNER'],
   },
+  {
+    labelKey: 'charges',
+    href: '/dashboard/finance/charges',
+    icon: ReceiptLongOutlinedIcon,
+    roles: ['ADMIN', 'OWNER'],
+  },
 ]
 
-export interface AppShellProps {
-  children: React.ReactNode
-}
-
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children, allowLocalDashboardPreview = false }: AppShellProps) {
   const t = useTranslations('common.appShell')
   const pathname = usePathname()
   const { data: session, status } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
   const isPublicCrmRoute = pathname === '/crm' || pathname === '/crm/contacts'
+  const isLocalDashboardPreview = allowLocalDashboardPreview
   const userName = session?.user?.name ?? t('defaultUserName')
   const userContext = session?.user?.email ?? t('defaultUserContext')
   const userInitials = useMemo(() => getInitials(userName), [userName])
-  const visibleItems = useMemo(
-    () =>
-      navigationItems.filter(
-        (item) => !item.roles || (session?.papel && item.roles.includes(session.papel)),
-      ),
-    [session],
-  )
+  const visibleItems = useMemo(() => {
+    if (isLocalDashboardPreview) return navigationItems
+
+    return navigationItems.filter(
+      (item) => !item.roles || (session?.papel && item.roles.includes(session.papel)),
+    )
+  }, [isLocalDashboardPreview, session])
   // Rotas como /crm e /dashboard são prefixo de várias outras entradas do menu (ex.:
   // /dashboard/finance). O item ativo deve ser o de prefixo mais específico que bate com a
   // rota atual, e não todo item cujo prefixo é um match parcial.
@@ -185,7 +188,10 @@ export function AppShell({ children }: AppShellProps) {
                   }}
                 >
                   <Icon
-                    sx={{ fontSize: iconSize.sm, color: active ? 'primary.main' : 'inherit' }}
+                    sx={{
+                      fontSize: iconSize.sm,
+                      color: active ? 'primary.main' : 'inherit',
+                    }}
                   />
                   <Typography
                     sx={{
@@ -212,7 +218,13 @@ export function AppShell({ children }: AppShellProps) {
         <Avatar
           src={session?.user?.image ?? undefined}
           alt={userName}
-          sx={{ width: 38, height: 38, bgcolor: 'primary.main', fontSize: 13, fontWeight: 800 }}
+          sx={{
+            width: 38,
+            height: 38,
+            bgcolor: 'primary.main',
+            fontSize: 11,
+            fontWeight: 800,
+          }}
         >
           {userInitials}
         </Avatar>
@@ -323,13 +335,20 @@ export function AppShell({ children }: AppShellProps) {
       <Box
         component="main"
         sx={{
-          width: { xs: '100%', md: `calc(100% - ${sidebarWidth}px)` },
+          width: {
+            xs: '100%',
+            md: `calc(100% - ${sidebarWidth}px)`,
+          },
           minWidth: 0,
           ml: { md: `${sidebarWidth}px` },
           pt: { xs: '64px', md: 0 },
         }}
       >
-        {isPublicCrmRoute ? children : <CrmAccessBoundary>{children}</CrmAccessBoundary>}
+        {isPublicCrmRoute || isLocalDashboardPreview ? (
+          children
+        ) : (
+          <CrmAccessBoundary>{children}</CrmAccessBoundary>
+        )}
       </Box>
     </Box>
   )

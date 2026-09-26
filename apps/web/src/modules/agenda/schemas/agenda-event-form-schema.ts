@@ -14,8 +14,8 @@ export const agendaEventKindOptions = [
 export const agendaEventFormSchema = z
   .object({
     customProperty: z.string(),
-    kind: z.enum(agendaEventKindOptions).optional().or(z.literal('')),
     durationMinutes: z.coerce.number().min(15, 'Informe ao menos 15 minutos'),
+    kind: z.enum(agendaEventKindOptions).optional().or(z.literal('')),
     notes: z.string(),
     participant: z.string().min(2, 'Informe o nome da pessoa'),
     phone: z.string().min(14, 'Informe um telefone válido'),
@@ -25,13 +25,19 @@ export const agendaEventFormSchema = z
     title: z.string().min(3, 'Informe o título do evento'),
   })
   .superRefine((values, context) => {
-    if (values.propertyId !== agendaOtherPropertyValue) return
-
-    if (values.customProperty.trim().length < 3) {
+    if (values.propertyId === agendaOtherPropertyValue && values.customProperty.trim().length < 3) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Informe o imóvel ou referência',
         path: ['customProperty'],
+      })
+    }
+
+    if (values.kind === 'VISIT' && values.durationMinutes < 60) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Visitas devem ter duração mínima de 60 minutos',
+        path: ['durationMinutes'],
       })
     }
   })

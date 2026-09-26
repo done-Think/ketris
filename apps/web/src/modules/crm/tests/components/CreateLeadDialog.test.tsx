@@ -1,13 +1,23 @@
 import { ThemeProvider } from '@mui/material'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
 
 import { CreateLeadDialog } from '../../components/CreateLeadDialog'
-import { leadFixtures } from '../../fixtures/lead-fixtures'
-import { useLeadsStore } from '../../stores/leads-store'
+import { useCreateLead } from '../../hooks/use-leads'
+
+vi.mock('next-auth/react', () => ({
+  useSession: vi.fn(),
+}))
+
+vi.mock('../../hooks/use-leads', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../../hooks/use-leads')>()
+
+  return { ...original, useCreateLead: vi.fn() }
+})
 
 const mocks = vi.hoisted(() => ({
   enqueueSnackbar: vi.fn(),
@@ -16,6 +26,14 @@ const mocks = vi.hoisted(() => ({
 vi.mock('notistack', () => ({
   useSnackbar: () => ({ enqueueSnackbar: mocks.enqueueSnackbar }),
 }))
+
+function mockCreateLead(overrides: Record<string, unknown> = {}) {
+  vi.mocked(useCreateLead).mockReturnValue({
+    mutate: vi.fn((_payload, options) => options?.onSuccess?.()),
+    isPending: false,
+    ...overrides,
+  } as unknown as ReturnType<typeof useCreateLead>)
+}
 
 function renderDialog(onClose = vi.fn()) {
   return render(
@@ -28,19 +46,22 @@ function renderDialog(onClose = vi.fn()) {
 async function fillContactStep(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText('Nome'), 'Beatriz Nunes')
   await user.type(screen.getByLabelText('Telefone'), '11988887777')
-  await user.type(screen.getByLabelText('E-mail'), 'beatriz@example.com')
+  await user.type(screen.getByLabelText(/E-mail/), 'beatriz@example.com')
 }
 
 async function fillInterestStep(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText('Imóvel ou interesse'), 'Studio Pinheiros')
   await user.type(screen.getByLabelText('Orçamento'), 'R$ 3.200')
-  await user.type(screen.getByLabelText('Corretor responsável'), 'Ana Paula')
 }
 
 describe('CreateLeadDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    useLeadsStore.setState({ leads: [...leadFixtures] })
+    vi.mocked(useSession).mockReturnValue({
+      data: { tenantId: 'tenant-1' },
+      status: 'authenticated',
+    } as unknown as ReturnType<typeof useSession>)
+    mockCreateLead()
   })
 
   it('renders the create lead title and the first step fields', () => {
@@ -49,7 +70,7 @@ describe('CreateLeadDialog', () => {
     expect(screen.getByText('Registrar lead')).toBeVisible()
     expect(screen.getByLabelText('Nome')).toBeVisible()
     expect(screen.getByLabelText('Telefone')).toBeVisible()
-    expect(screen.getByLabelText('E-mail')).toBeVisible()
+    expect(screen.getByLabelText(/E-mail/)).toBeVisible()
   })
 
   it('blocks advancing to the next step when required fields are missing', async () => {
@@ -59,6 +80,7 @@ describe('CreateLeadDialog', () => {
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
 
     expect(await screen.findByText('Informe o nome do lead')).toBeVisible()
+    expect(screen.getByText('Informe um e-mail válido')).toBeVisible()
     expect(screen.queryByLabelText('Imóvel ou interesse')).not.toBeInTheDocument()
   })
 
@@ -90,7 +112,8 @@ describe('CreateLeadDialog', () => {
   it('creates the lead, notifies success and closes the dialog on submit', async () => {
     const user = userEvent.setup()
     const onClose = vi.fn()
-    const initialCount = useLeadsStore.getState().leads.length
+    const mutate = vi.fn((_payload, options) => options?.onSuccess?.())
+    mockCreateLead({ mutate })
     renderDialog(onClose)
 
     await fillContactStep(user)
@@ -99,14 +122,15 @@ describe('CreateLeadDialog', () => {
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
     await user.click(screen.getByRole('button', { name: 'Criar lead' }))
 
-    const leads = useLeadsStore.getState().leads
-    expect(leads).toHaveLength(initialCount + 1)
-    expect(leads[0]).toMatchObject({
-      name: 'Beatriz Nunes',
-      phone: '(11) 98888-7777',
-      email: 'beatriz@example.com',
-      interest: 'Studio Pinheiros',
-    })
+    expect(mutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Beatriz Nunes',
+        phone: '(11) 98888-7777',
+        email: 'beatriz@example.com',
+        interest: 'Studio Pinheiros',
+      }),
+      expect.anything(),
+    )
     expect(mocks.enqueueSnackbar).toHaveBeenCalledWith(
       'Lead registrado com sucesso.',
       expect.objectContaining({ variant: 'success' }),
@@ -114,16 +138,36 @@ describe('CreateLeadDialog', () => {
     expect(onClose).toHaveBeenCalledOnce()
   })
 
+  it('shows an error message and keeps the dialog open when creation fails', async () => {
+    const user = userEvent.setup()
+    const onClose = vi.fn()
+    mockCreateLead({ mutate: vi.fn((_payload, options) => options?.onError?.(new Error('boom'))) })
+    renderDialog(onClose)
+
+    await fillContactStep(user)
+    await user.click(screen.getByRole('button', { name: 'Próximo' }))
+    await fillInterestStep(user)
+    await user.click(screen.getByRole('button', { name: 'Próximo' }))
+    await user.click(screen.getByRole('button', { name: 'Criar lead' }))
+
+    expect(mocks.enqueueSnackbar).toHaveBeenCalledWith(
+      'Não foi possível registrar o lead. Tente novamente.',
+      expect.objectContaining({ variant: 'error' }),
+    )
+    expect(onClose).not.toHaveBeenCalled()
+  })
+
   it('calls onClose without creating a lead when cancelled', async () => {
     const user = userEvent.setup()
     const onClose = vi.fn()
-    const initialCount = useLeadsStore.getState().leads.length
+    const mutate = vi.fn()
+    mockCreateLead({ mutate })
     renderDialog(onClose)
 
     await fillContactStep(user)
     await user.click(screen.getByRole('button', { name: 'Cancelar' }))
 
     expect(onClose).toHaveBeenCalledOnce()
-    expect(useLeadsStore.getState().leads).toHaveLength(initialCount)
+    expect(mutate).not.toHaveBeenCalled()
   })
 })

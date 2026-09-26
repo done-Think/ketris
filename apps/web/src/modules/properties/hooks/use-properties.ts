@@ -67,3 +67,21 @@ export function useUnpublishProperty() {
     },
   })
 }
+
+export function useDeleteProperty() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => propertiesService.remove(id),
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: propertyQueryKeys.all })
+      queryClient.removeQueries({ queryKey: propertyQueryKeys.detail(id) })
+    },
+  })
+}
+
+export function useUploadPropertyMedia() {
+  return useMutation({
+    mutationFn: (file: File) => propertiesService.uploadMedia(file),
+  })
+}

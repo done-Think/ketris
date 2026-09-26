@@ -9,6 +9,10 @@
   "actions": {
     "backHome": "Volver al inicio"
   },
+  "dashboardPagination": {
+    "rowsPerPage": "Filas por página",
+    "displayedRows": "{from}-{to} de {count}"
+  },
   "errors": {
     "backHome": "Volver al inicio",
     "notFound": "Página no encontrada.",
@@ -22,13 +26,23 @@
     "defaultUserContext": "Panel administrativo",
     "backToMarketplace": "Volver al marketplace",
     "dashboard": "Dashboard",
+    "agencyOverview": "Visión Inmob.",
     "pipeline": "Pipeline",
     "contacts": "Contactos",
     "leads": "Leads",
+    "team": "Equipo",
     "properties": "Mis inmuebles",
     "contracts": "Contratos",
     "publicProfile": "Perfil público",
     "agenda": "Agenda",
-    "finance": "Finanzas"
+    "proposals": "Propuestas",
+    "maintenance": "Mantenimiento",
+    "finance": "Finanzas",
+    "charges": "Cobros"
+  },
+  "roleGuard": {
+    "loadingSession": "Cargando sesión",
+    "restrictedTitle": "Acceso restringido",
+    "restrictedDescription": "No tienes permiso para ver esta página. Redirigiendo al panel."
   }
 }

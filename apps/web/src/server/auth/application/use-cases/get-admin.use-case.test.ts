@@ -13,6 +13,7 @@ function buildUser(overrides: Partial<User> = {}): User {
     senhaHash: 'hash',
     papel: 'ADMIN',
     ativo: true,
+    vinculoAprovadoEm: new Date(),
     ...overrides,
   }
 }
@@ -79,6 +80,7 @@ describe('GetAdminUseCase', () => {
       email: 'admin@ketris.dev',
       papel: 'ADMIN',
       ativo: true,
+      vinculoAprovadoEm: expect.any(Date),
     })
   })
 })

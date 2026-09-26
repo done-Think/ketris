@@ -27,6 +27,10 @@ vi.mock('next-auth/react', () => ({
   signOut: vi.fn().mockResolvedValue(undefined),
 }))
 
+vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
+  useDashboardAgendaNotifications: () => [],
+}))
+
 function mockSession(overrides?: Partial<{ papel: 'ADMIN' | 'OWNER' | 'AGENT' }>) {
   vi.mocked(useSession).mockReturnValue({
     data: { user: { name: 'Ana' }, papel: overrides?.papel ?? 'ADMIN' },

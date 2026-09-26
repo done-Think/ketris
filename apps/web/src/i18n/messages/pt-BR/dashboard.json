@@ -3,27 +3,26 @@
     "overview": {
       "metadataTitle": "Ketris | Dashboard"
     },
+    "agencyOverview": {
+      "metadataTitle": "Ketris | Visão Geral da Imobiliária"
+    },
     "agenda": {
       "metadataTitle": "Ketris | Agenda"
     },
     "finance": {
       "metadataTitle": "Ketris | Financeiro"
     },
+    "maintenance": {
+      "metadataTitle": "Ketris | Chamados de Manuten\u00e7\u00e3o"
+    },
     "leads": {
       "metadataTitle": "Ketris | Leads"
     },
+    "team": {
+      "metadataTitle": "Ketris | Equipe"
+    },
     "proposals": {
       "metadataTitle": "Ketris | Propostas"
-    }
-  },
-  "agenda": {
-    "title": "Agenda",
-    "subtitle": "Compromissos comerciais, visitas e retornos.",
-    "freeSlot": "Horário livre",
-    "statuses": {
-      "Confirmada": "Confirmada",
-      "Pendente": "Pendente",
-      "Reagendar": "Reagendar"
     }
   },
   "notificationsCenter": {
@@ -31,25 +30,7 @@
     "ariaLabel": "Abrir notificações do dashboard",
     "title": "Alertas do dashboard",
     "subtitle": "Visitas de hoje e compromissos atribuídos",
-    "empty": "Nenhum alerta para exibir.",
-    "defaultItems": {
-      "todayVisit": {
-        "title": "Visita marcada para hoje",
-        "message": "10:30 - Marina Costa em Apt Jardins 3q"
-      },
-      "agencyAssigned": {
-        "title": "Novo compromisso atribuído",
-        "message": "Imobiliária Ketris marcou retorno com Bruno Oliveira"
-      },
-      "brokerAssigned": {
-        "title": "Lead compartilhado",
-        "message": "Colega Ana Silva atribuiu atendimento de proposta"
-      },
-      "proposalReturn": {
-        "title": "Retorno pendente",
-        "message": "16:00 - Revisar contraproposta de Juliana Mendes"
-      }
-    }
+    "empty": "Nenhum alerta para exibir."
   },
   "overview": {
     "title": "Dashboard",
@@ -106,6 +87,171 @@
       }
     }
   },
+  "agencyOverview": {
+    "agencyName": "Imobiliária Premium SP",
+    "title": "Visão Geral",
+    "subtitle": "Acompanhe movimentação, metas e performance consolidada da imobiliária.",
+    "month": "Setembro, 2024",
+    "report": "Relatório",
+    "navigation": {
+      "overview": "Visão Geral",
+      "team": "Equipe",
+      "portfolio": "Carteira",
+      "finance": "Financeiro",
+      "contracts": "Contratos"
+    },
+    "kpis": {
+      "portfolio": "Imóveis na carteira",
+      "activeBrokers": "Corretores ativos",
+      "receivedLeads": "Leads recebidos",
+      "revenue": "Faturamento",
+      "occupancy": "Tx ocupação"
+    },
+    "performance": {
+      "title": "Performance de Faturamento",
+      "subtitle": "Comparativo de receita vs meta mensal",
+      "revenue": "Receita",
+      "target": "Meta"
+    },
+    "topBrokers": {
+      "title": "Top Corretores",
+      "subtitle": "Destaques em volume de fechamento",
+      "sales": "{count} Vendas",
+      "details": {
+        "eyebrow": "Desempenho do corretor",
+        "summary": "{sales} vendas no periodo - {revenue} em receita",
+        "recentSales": "Ultimas vendas",
+        "openProfile": "Ver perfil publico",
+        "close": "Fechar"
+      }
+    },
+    "activity": {
+      "title": "Atividade Recente",
+      "closedSale": "{broker} fechou contrato de venda no {detail}",
+      "createdProperty": "{broker} cadastrou novo apartamento no {detail}",
+      "scheduledVisit": "{broker} agendou visita para amanhã na {detail}",
+      "receivedLead": "Novo lead recebido através do {detail}",
+      "signedRent": "Contrato de locação assinado para {detail}",
+      "details": {
+        "eyebrow": "Detalhe da atividade",
+        "close": "Fechar",
+        "fields": {
+          "broker": "Corretor",
+          "subject": "Assunto",
+          "status": "Status",
+          "nextStep": "Proximo passo",
+          "time": "Quando",
+          "summary": "Resumo"
+        },
+        "items": {
+          "contractSale": {
+            "title": "Contrato de venda fechado",
+            "description": "Marina concluiu a etapa comercial e o contrato entrou para conferencia operacional antes do faturamento.",
+            "subject": "Condominio Pinheiros",
+            "status": "Fechado",
+            "nextStep": "Validar documentacao e liberar registro financeiro."
+          },
+          "newProperty": {
+            "title": "Novo imovel cadastrado",
+            "description": "Thiago adicionou o apartamento ao portfolio e iniciou a conferencia das informacoes publicas.",
+            "subject": "Apartamento no Itaim Bibi",
+            "status": "Em revisao",
+            "nextStep": "Revisar midias, valores e disponibilidade."
+          },
+          "visitScheduled": {
+            "title": "Visita agendada",
+            "description": "Ana marcou a visita com cliente interessado e deixou o atendimento vinculado ao calendario da equipe.",
+            "subject": "Casa Jardins",
+            "status": "Agendada",
+            "nextStep": "Confirmar presenca do cliente ate o fim do dia."
+          },
+          "newLead": {
+            "title": "Lead recebido",
+            "description": "Um novo contato entrou pelo portal Ketris e aguarda qualificacao inicial da equipe comercial.",
+            "subject": "Portal Ketris",
+            "status": "Novo",
+            "nextStep": "Distribuir para um corretor disponivel."
+          },
+          "rentContract": {
+            "title": "Contrato de locacao assinado",
+            "description": "O contrato do Studio Moema foi assinado e ja pode seguir para arquivamento e acompanhamento financeiro.",
+            "subject": "Studio Moema",
+            "status": "Assinado",
+            "nextStep": "Anexar comprovantes e ativar recorrencia."
+          }
+        }
+      }
+    }
+  },
+  "maintenance": {
+    "title": "Chamados de Manuten\u00e7\u00e3o",
+    "subtitle": "Acompanhe solicita\u00e7\u00f5es de reparo e manuten\u00e7\u00e3o",
+    "search": "Buscar chamado...",
+    "allProperties": "Todos os Im\u00f3veis",
+    "newTicket": "Novo Chamado",
+    "filterDialog": {
+      "open": "Filtros",
+      "title": "Filtros",
+      "close": "Fechar filtros",
+      "property": "Imóvel"
+    },
+    "filters": {
+      "all": "Todos",
+      "open": "Aberto",
+      "inProgress": "Em andamento",
+      "urgent": "Urgente",
+      "resolved": "Resolvido",
+      "closed": "Fechado"
+    },
+    "metrics": {
+      "open": "Abertos",
+      "urgent": "Urgentes",
+      "averageResolution": "Tempo m\u00e9dio resolu\u00e7\u00e3o"
+    },
+    "columns": {
+      "ticket": "Chamado",
+      "property": "Im\u00f3vel",
+      "category": "Categoria",
+      "priority": "Prioridade",
+      "tenant": "Locat\u00e1rio",
+      "openedAt": "Aberto em",
+      "status": "Status",
+      "actions": "A\u00e7\u00f5es"
+    },
+    "priorities": { "urgent": "Urgente", "high": "Alta", "normal": "Normal" },
+    "statuses": {
+      "inProgress": "Em andamento",
+      "open": "Aberto",
+      "resolved": "Resolvido",
+      "closed": "Fechado"
+    },
+    "viewTicket": "Visualizar chamado {ticket}",
+    "showing": "Mostrando {from}-{to} de {total} chamados",
+    "createDialog": {
+      "title": "Novo Chamado",
+      "editTitle": "Editar Chamado",
+      "close": "Fechar",
+      "cancel": "Cancelar",
+      "submit": "Criar Chamado",
+      "save": "Salvar Alterações",
+      "fields": {
+        "property": "Imóvel",
+        "category": "Categoria",
+        "priority": "Prioridade",
+        "title": "Título do Chamado",
+        "description": "Relato do Problema",
+        "descriptionPlaceholder": "Descreva o problema..."
+      }
+    },
+    "actions": {
+      "menu": "Ações do chamado {ticket}",
+      "edit": "Editar chamado",
+      "delete": "Excluir chamado",
+      "deleteTitle": "Excluir chamado?",
+      "deleteDescription": "Deseja realmente excluir este chamado? Esta ação não poderá ser desfeita."
+    },
+    "pagination": { "previous": "Anterior", "next": "Pr\u00f3ximo" }
+  },
   "finance": {
     "title": "Financeiro",
     "subtitle": "Movimentação financeira mensal e registros de venda/comissão.",
@@ -157,6 +303,50 @@
       "clientLabel": "Cliente",
       "amountLabel": "Valor",
       "receiptsTitle": "Comprovantes"
+    }
+  },
+  "team": {
+    "title": "Equipe de Corretores",
+    "subtitle": "Acompanhe vendas, retornos e progresso da meta mensal por representante.",
+    "searchPlaceholder": "Buscar corretor...",
+    "inviteBroker": "Convidar corretor",
+    "moreOptions": "Mais opções",
+    "viewProfileAriaLabel": "Ver perfil de {name}",
+    "goalProgress": "Progresso da meta",
+    "returns": "{count} retornos",
+    "empty": "Nenhum corretor encontrado.",
+    "kpis": {
+      "activeBrokers": "Corretores ativos",
+      "properties": "Imóveis",
+      "monthlySales": "Vendas no mês",
+      "averageGoal": "Meta média",
+      "activeBrokersHelper": "+2 em onboarding",
+      "propertiesHelper": "Carteira ativa",
+      "monthlySalesHelper": "Produção mensal",
+      "averageGoalHelper": "Meta consolidada"
+    },
+    "metrics": {
+      "properties": "Imóveis",
+      "leads": "Leads",
+      "monthlySales": "Vendas/mês"
+    },
+    "statuses": {
+      "ahead": "Acima da meta",
+      "onTrack": "No ritmo",
+      "attention": "Pede atenção"
+    },
+    "menu": {
+      "performance": "Ver desempenho",
+      "editGoal": "Editar meta mensal",
+      "transferPortfolio": "Transferir leads/imóveis",
+      "scheduleOneOnOne": "Agendar 1:1",
+      "deactivate": "Pausar/desativar corretor",
+      "feedback": "{action} de {name}"
+    },
+    "actions": {
+      "message": "Enviar mensagem",
+      "email": "Enviar e-mail",
+      "call": "Ligar"
     }
   },
   "proposals": {

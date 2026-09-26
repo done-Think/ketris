@@ -14,17 +14,18 @@ const agent: User = {
   senhaHash: 'hash-fake',
   papel: 'AGENT',
   ativo: true,
+  vinculoAprovadoEm: new Date(),
 }
 
 function createDeps(overrides?: { findById?: UserRepository['findById'] }) {
   const userRepository: UserRepository = {
     findById: overrides?.findById ?? vi.fn().mockResolvedValue(agent),
     findByEmail: vi.fn(),
-    findByEmailAndTenant: vi.fn(),
     findManyByTenant: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     deactivate: vi.fn().mockResolvedValue({ ...agent, ativo: false }),
+    approveMembership: vi.fn(),
   }
   const refreshTokenRepository: RefreshTokenRepository = {
     create: vi.fn(),

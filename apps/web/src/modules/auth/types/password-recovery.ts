@@ -1,9 +1,15 @@
 import type { FormEventHandler } from 'react'
 import type { Control } from 'react-hook-form'
 
-import type { PasswordRecoveryFormValues } from '../schemas/password-recovery-schema'
+import type {
+  PasswordRecoveryFormValues,
+  PasswordResetFormValues,
+} from '../schemas/password-recovery-schema'
 
-export type { PasswordRecoveryFormValues } from '../schemas/password-recovery-schema'
+export type {
+  PasswordRecoveryFormValues,
+  PasswordResetFormValues,
+} from '../schemas/password-recovery-schema'
 
 export type PasswordRecoveryFormProps = {
   control: Control<PasswordRecoveryFormValues>
@@ -11,7 +17,10 @@ export type PasswordRecoveryFormProps = {
   onSubmit: FormEventHandler<HTMLFormElement>
 }
 
-export type PasswordRecoveryConfirmationProps = {
+export type PasswordResetFormProps = {
+  control: Control<PasswordResetFormValues>
+  isSubmitting: boolean
+  onSubmit: FormEventHandler<HTMLFormElement>
   onResend: () => void
 }
 

@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
+import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { propertiesContainer } from '@server/properties/container'
 import {
@@ -27,6 +28,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   const properties = await propertiesContainer.listPropertiesUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorId: actor.sub,
+    actorPapel: actor.papel as Papel,
     status: parsed.data.status,
     finalidade: parsed.data.finalidade,
   })
@@ -41,6 +44,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const property = await propertiesContainer.createPropertyUseCase.execute({
     actorTenantId: actor.tenantId,
     actorUserId: actor.sub,
+    actorPapel: actor.papel as Papel,
     titulo: body.titulo,
     descricao: body.descricao ?? null,
     finalidade: body.finalidade,

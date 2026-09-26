@@ -36,10 +36,10 @@ export function ContactsCards({
             />
             <ContactAvatar contact={contact} />
             <Box sx={{ minWidth: 0, flex: 1 }}>
-              <Typography noWrap sx={{ fontSize: 13, fontWeight: 700 }}>
+              <Typography noWrap sx={{ fontSize: 17, fontWeight: 700 }}>
                 {contact.name}
               </Typography>
-              <Typography noWrap sx={{ color: 'text.secondary', fontSize: 11 }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontSize: 15 }}>
                 {contact.email}
               </Typography>
             </Box>
@@ -53,14 +53,14 @@ export function ContactsCards({
 
           <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
             <ContactTypeChip type={contact.type} />
-            <Typography sx={{ color: 'text.secondary', fontSize: 11 }}>
+            <Typography sx={{ color: 'text.secondary', fontSize: 15 }}>
               {contact.lastInteraction}
             </Typography>
           </Stack>
 
           <Stack direction="row" justifyContent="space-between" spacing={2}>
-            <Typography sx={{ fontSize: 11.5 }}>{contact.phone}</Typography>
-            <Typography sx={{ fontSize: 11.5, fontWeight: 600 }}>
+            <Typography sx={{ fontSize: 15.5 }}>{contact.phone}</Typography>
+            <Typography sx={{ fontSize: 15.5, fontWeight: 600 }}>
               {t('propertyCount', { count: contact.propertyCount })}
             </Typography>
           </Stack>

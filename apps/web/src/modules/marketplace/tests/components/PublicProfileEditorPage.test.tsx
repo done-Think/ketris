@@ -8,6 +8,10 @@ import { theme } from '@shared/theme/theme'
 import { AgencyPublicProfileEditorPage } from '../../components/AgencyPublicProfileEditorPage'
 import { PublicProfileEditorPage } from '../../components/PublicProfileEditorPage'
 
+vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
+  useDashboardAgendaNotifications: () => [],
+}))
+
 function renderWithTheme(component: ReactElement) {
   render(<ThemeProvider theme={theme}>{component}</ThemeProvider>)
 }

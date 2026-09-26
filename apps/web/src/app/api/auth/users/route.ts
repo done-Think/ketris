@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
-import type { Papel } from '@server/auth/domain/user.entity'
+import { toAuthenticatedUserResponse, type Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { createUserRequestSchema } from '@server/auth/schemas/create-user.schema'
 import { parseJsonBody, withErrorHandling } from '@server/shared/http'
@@ -14,13 +14,13 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const user = await authContainer.createUserUseCase.execute({
     actorTenantId: actor.tenantId,
     actorPapel: actor.papel as Papel,
-    nome: body.nome,
+    nome: body.name,
     email: body.email,
     password: body.password,
-    papel: body.papel,
+    papel: body.role,
   })
 
-  return NextResponse.json({ user }, { status: 201 })
+  return NextResponse.json({ user: toAuthenticatedUserResponse(user) }, { status: 201 })
 })
 
 export const GET = withErrorHandling(async (request: NextRequest) => {
@@ -31,5 +31,5 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     actorPapel: actor.papel as Papel,
   })
 
-  return NextResponse.json({ users }, { status: 200 })
+  return NextResponse.json({ users: users.map(toAuthenticatedUserResponse) }, { status: 200 })
 })

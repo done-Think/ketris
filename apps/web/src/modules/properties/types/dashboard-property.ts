@@ -3,6 +3,7 @@ import type { Control } from 'react-hook-form'
 import type { z } from 'zod'
 
 import type { createDashboardPropertySchema } from '../schemas/create-dashboard-property-schema'
+import type { PropertyStatus as ApiPropertyStatus } from './property'
 
 export type DashboardPropertyStatus =
   'Disponível' | 'Alugado' | 'Ativo' | 'Em análise' | 'Vencendo' | 'Inativo'
@@ -32,6 +33,8 @@ export type PropertyDetailDashboardFormValues = {
 
 export type DashboardProperty = {
   id: string
+  responsibleUserId: string
+  apiStatus: ApiPropertyStatus
   title: string
   address: string
   location: string
@@ -82,6 +85,10 @@ export type PropertyDetailDashboardPageProps = {
   propertyId: string
 }
 
+export type EditPropertyDashboardPageProps = {
+  propertyId: string
+}
+
 export type PropertyNavigationHandler = (propertyId: string) => void
 
 export type PropertiesDashboardHeaderProps = {
@@ -118,12 +125,22 @@ export type CreatePropertyStepFieldsProps = {
 export type CreatePropertyActionsProps = {
   firstStep: boolean
   lastStep: boolean
+  isSubmitting: boolean
   onPreviousStep: () => void
   onNextStep: () => void
+  submitLabel?: string
 }
 
 export type PropertyDetailHeaderProps = {
   property: DashboardProperty
+  canManage: boolean
+  isPublishing: boolean
+  isUnpublishing: boolean
+  isDeleting: boolean
+  onEdit: () => void
+  onPublish: () => void
+  onUnpublish: () => void
+  onDeleteRequest: () => void
 }
 
 export type PropertyDetailTabsProps = {

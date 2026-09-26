@@ -19,4 +19,6 @@ export interface PropertyRepository {
     publishedAt: Date | null,
   ): Promise<Property | null>
   findContractProperty(tenantId: string, contractId: string): Promise<ActiveContractProperty | null>
+  hasLinkedRecords(tenantId: string, id: string): Promise<boolean>
+  delete(tenantId: string, id: string): Promise<boolean>
 }

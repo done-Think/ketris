@@ -135,6 +135,7 @@ export type ContractsSummaryCardsProps = {
 
 export type ContractsFiltersProps = {
   control: Control<ContractsFiltersFormValues>
+  filterCounts: Record<ContractFilterTab['label'], number>
   setValue: UseFormSetValue<ContractsFiltersFormValues>
 }
 
@@ -207,6 +208,14 @@ export type ContractFieldConfig = {
   /** Translates an option's internal value into display text. Falls back to the raw value. */
   getOptionLabel?: (option: string) => string
   multiline?: boolean
+}
+
+export type ContractFieldMeta = {
+  name: CreateContractFieldName
+  labelKey: string
+  mask?: string
+  options?: string[]
+  optionsNamespace?: string
 }
 
 export type ContractStepsNavProps = {

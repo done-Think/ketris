@@ -14,6 +14,7 @@ const admin: User = {
   senhaHash: 'hash-fake',
   papel: 'ADMIN',
   ativo: true,
+  vinculoAprovadoEm: new Date(),
 }
 
 const createdUser: User = {
@@ -24,20 +25,21 @@ const createdUser: User = {
   senhaHash: 'hash-novo',
   papel: 'AGENT',
   ativo: true,
+  vinculoAprovadoEm: new Date(),
 }
 
 function createDeps(overrides?: {
-  findByEmailAndTenant?: UserRepository['findByEmailAndTenant']
+  findByEmail?: UserRepository['findByEmail']
   create?: UserRepository['create']
 }) {
   const userRepository: UserRepository = {
     findById: vi.fn(),
-    findByEmail: vi.fn(),
-    findByEmailAndTenant: overrides?.findByEmailAndTenant ?? vi.fn().mockResolvedValue(null),
+    findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(null),
     findManyByTenant: vi.fn(),
     create: overrides?.create ?? vi.fn().mockResolvedValue(createdUser),
     update: vi.fn(),
     deactivate: vi.fn(),
+    approveMembership: vi.fn(),
   }
   const passwordHasher: PasswordHasher = {
     compare: vi.fn(),
@@ -68,6 +70,7 @@ describe('CreateUserUseCase', () => {
       email: createdUser.email,
       papel: createdUser.papel,
       ativo: createdUser.ativo,
+      vinculoAprovadoEm: createdUser.vinculoAprovadoEm,
     })
     expect(result).not.toHaveProperty('senhaHash')
     expect(deps.passwordHasher.hash).toHaveBeenCalledWith('senha-longa-123')
@@ -97,8 +100,8 @@ describe('CreateUserUseCase', () => {
     expect(deps.userRepository.create).not.toHaveBeenCalled()
   })
 
-  it('lança EmailAlreadyInUseError quando já existe usuário com o e-mail no tenant', async () => {
-    const deps = createDeps({ findByEmailAndTenant: vi.fn().mockResolvedValue(admin) })
+  it('lança EmailAlreadyInUseError quando já existe usuário com o e-mail em qualquer tenant', async () => {
+    const deps = createDeps({ findByEmail: vi.fn().mockResolvedValue(admin) })
     const useCase = new CreateUserUseCase(deps.userRepository, deps.passwordHasher)
 
     await expect(
@@ -114,7 +117,7 @@ describe('CreateUserUseCase', () => {
     expect(deps.userRepository.create).not.toHaveBeenCalled()
   })
 
-  it('checa duplicidade só dentro do tenant do ator (findByEmailAndTenant, não findByEmail global)', async () => {
+  it('checa duplicidade globalmente (e-mail é único no sistema todo, não só por tenant)', async () => {
     const deps = createDeps()
     const useCase = new CreateUserUseCase(deps.userRepository, deps.passwordHasher)
 
@@ -127,10 +130,6 @@ describe('CreateUserUseCase', () => {
       papel: 'AGENT',
     })
 
-    expect(deps.userRepository.findByEmailAndTenant).toHaveBeenCalledWith(
-      'tenant-1',
-      'ana@ketris.dev',
-    )
-    expect(deps.userRepository.findByEmail).not.toHaveBeenCalled()
+    expect(deps.userRepository.findByEmail).toHaveBeenCalledWith('ana@ketris.dev')
   })
 })

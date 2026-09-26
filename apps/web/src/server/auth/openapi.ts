@@ -10,6 +10,7 @@ import {
   refreshTokenRequestSchema,
   refreshTokenResponseSchema,
 } from './schemas/refresh-token.schema'
+import { resetPasswordRequestSchema } from './schemas/reset-password.schema'
 import { updateUserRequestSchema, updateUserResponseSchema } from './schemas/update-user.schema'
 import { authenticatedUserSchema } from './schemas/user.schema'
 
@@ -243,6 +244,68 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
       },
       404: {
         description: 'Usuário não encontrado neste tenant.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'patch',
+    path: '/auth/users/{id}/approve',
+    tags: ['Auth'],
+    summary: 'Aprova o vínculo pendente de um usuário (proprietário ou agente) com o tenant',
+    description:
+      'Requer papel ADMIN. Usada para aprovar um corretor que se autocadastrou pedindo para ' +
+      'entrar num tenant existente — ele não consegue logar até esse vínculo ser aprovado. ' +
+      'Idempotente: aprovar um vínculo já aprovado apenas retorna o usuário sem erro.',
+    security: [{ bearerAuth: [] }],
+    request: { params: userIdParamsSchema },
+    responses: {
+      200: {
+        description: 'Vínculo aprovado (ou já estava aprovado).',
+        content: { 'application/json': { schema: updateUserResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Autenticado, mas sem papel ADMIN.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      404: {
+        description: 'Usuário não encontrado neste tenant.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'post',
+    path: '/auth/reset-password',
+    tags: ['Auth'],
+    summary: 'Redefine a senha de um usuário a partir do fluxo de recuperação por e-mail',
+    description:
+      'Rota pública. Não exige autenticação: o e-mail identifica a conta. Após a troca, todos os ' +
+      'refresh tokens ativos do usuário são revogados. E-mail desconhecido retorna 204 do mesmo jeito ' +
+      '(mesma postura anti-enumeração do login). Esta rota não recebe nem valida nenhum código de ' +
+      'verificação — isso é responsabilidade de uma rota de validação separada, ainda não implementada ' +
+      '(depende do domínio do AWS SES, ainda em sandbox). ATENÇÃO — débito temporário e aceito: ' +
+      'enquanto essa rota de validação não existir, o frontend não bloqueia de fato o avanço até aqui ' +
+      'por um código real, então qualquer requisição válida com um e-mail existente troca a senha. ' +
+      'Isso precisa ser corrigido (validação real do código antes de permitir chamar esta rota) antes ' +
+      'de qualquer exposição fora de ambiente local.',
+    request: {
+      body: {
+        content: { 'application/json': { schema: resetPasswordRequestSchema } },
+      },
+    },
+    responses: {
+      204: {
+        description: 'Senha redefinida (ou e-mail desconhecido — resposta idêntica).',
+      },
+      400: {
+        description: 'Corpo da requisição inválido (falha de validação Zod).',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },

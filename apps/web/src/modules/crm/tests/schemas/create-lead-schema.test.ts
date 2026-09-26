@@ -12,7 +12,6 @@ const validLeadValues = {
   interest: 'Apartamento 3 quartos nos Jardins',
   budget: 'R$ 4.5M',
   source: 'Marketplace',
-  broker: 'Marina Costa',
 }
 
 describe('createLeadSchema', () => {
@@ -20,8 +19,15 @@ describe('createLeadSchema', () => {
     expect(schema.safeParse(validLeadValues).success).toBe(true)
   })
 
-  it('accepts an empty optional email', () => {
-    expect(schema.safeParse({ ...validLeadValues, email: '' }).success).toBe(true)
+  it('rejects an empty email', () => {
+    expect(schema.safeParse({ ...validLeadValues, email: '' }).success).toBe(false)
+  })
+
+  it('rejects an invalid email', () => {
+    const result = schema.safeParse({ ...validLeadValues, email: 'email-invalido' })
+
+    expect(result.success).toBe(false)
+    expect(result.success ? undefined : result.error.issues[0]?.message).toBe('emailInvalid')
   })
 
   it('rejects missing required contact and interest data', () => {
@@ -34,10 +40,6 @@ describe('createLeadSchema', () => {
         phone: '',
       }).success,
     ).toBe(false)
-  })
-
-  it('rejects an unsupported lead stage', () => {
-    expect(schema.safeParse({ ...validLeadValues, stage: 'Fechado' }).success).toBe(false)
   })
 
   it('routes each validation message through the translator with the right key', () => {

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 
 import type { LocaleRouteParams } from '@/i18n/types/route.types'
+import { PlatformShell } from '@modules/platform'
 import { requirePlatformSession } from '@shared/lib/auth/require-platform-session'
 
 export default async function PlatformLayout({
@@ -14,5 +15,5 @@ export default async function PlatformLayout({
 
   await requirePlatformSession(locale)
 
-  return children
+  return <PlatformShell>{children}</PlatformShell>
 }

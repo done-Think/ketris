@@ -36,10 +36,10 @@ export function ProposalsTable({
             px: 1.25,
             py: 0,
             color: brand.neutral[500],
-            fontSize: 10.5,
-            fontWeight: 800,
-            lineHeight: 1.3,
-            letterSpacing: '0.06em',
+            fontSize: 14,
+            fontWeight: 700,
+            lineHeight: 1.2,
+            letterSpacing: '0.01em',
             textTransform: 'uppercase',
             whiteSpace: 'nowrap',
           },
@@ -47,8 +47,8 @@ export function ProposalsTable({
             px: 1.25,
             py: 0,
             color: brand.graphite[500],
-            fontSize: 12.5,
-            lineHeight: 1.35,
+            fontSize: 15.5,
+            lineHeight: 1.3,
           },
           '& .MuiTableHead-root .MuiTableCell-root:last-of-type, & .MuiTableBody-root .MuiTableCell-root:last-of-type':
             {
@@ -62,10 +62,19 @@ export function ProposalsTable({
           ))}
         </colgroup>
         <TableHead>
-          <TableRow sx={{ height: 40, bgcolor: surface.app }}>
+          <TableRow sx={{ height: 44, bgcolor: surface.app }}>
             {['Proposta', 'Lead', 'Imóvel', 'Valor', 'Status', 'Criada', 'Ações'].map((label) => (
               <TableCell key={label} scope="col" align={label === 'Ações' ? 'right' : 'left'}>
-                {label}
+                {label.endsWith('es') ? (
+                  <Box
+                    component="span"
+                    sx={{ display: 'inline-block', transform: 'translateX(-45px)' }}
+                  >
+                    {label}
+                  </Box>
+                ) : (
+                  label
+                )}
               </TableCell>
             ))}
           </TableRow>
@@ -75,56 +84,60 @@ export function ProposalsTable({
             <TableRow
               key={proposal.id}
               sx={{
-                height: 55,
+                height: 58,
                 bgcolor: surface.paper,
                 transition: 'background-color 160ms ease',
                 '&:hover': { bgcolor: alpha.graphite[6] },
               }}
             >
               <TableCell>
-                <Typography noWrap sx={{ fontSize: 12.5, fontWeight: 800 }}>
+                <Typography noWrap sx={{ fontSize: 15.5, fontWeight: 800 }}>
                   {proposal.reference}
                 </Typography>
               </TableCell>
               <TableCell>
                 <Stack spacing={0.125} minWidth={0}>
-                  <Typography noWrap sx={{ fontSize: 12.5, fontWeight: 600 }}>
+                  <Typography noWrap sx={{ fontSize: 15.5, fontWeight: 600 }}>
                     {proposal.lead.name}
                   </Typography>
-                  <Typography noWrap sx={{ color: 'text.disabled', fontSize: 10.5 }}>
+                  <Typography noWrap sx={{ color: 'text.disabled', fontSize: 14 }}>
                     {proposal.lead.email}
                   </Typography>
                 </Stack>
               </TableCell>
               <TableCell>
                 <Stack spacing={0.125} minWidth={0}>
-                  <Typography noWrap sx={{ fontSize: 12.5, fontWeight: 600 }}>
+                  <Typography noWrap sx={{ fontSize: 15.5, fontWeight: 600 }}>
                     {proposal.property.title}
                   </Typography>
-                  <Typography noWrap sx={{ color: 'text.disabled', fontSize: 10.5 }}>
+                  <Typography noWrap sx={{ color: 'text.disabled', fontSize: 14 }}>
                     {proposal.property.address}
                   </Typography>
                 </Stack>
               </TableCell>
               <TableCell>
-                <Typography noWrap sx={{ fontSize: 12.5, fontWeight: 800 }}>
+                <Typography noWrap sx={{ fontSize: 15.5, fontWeight: 800 }}>
                   {proposal.valueLabel}
                 </Typography>
               </TableCell>
               <TableCell>
-                <ProposalStatusChip status={proposal.status} />
+                <Box sx={{ transform: 'translateX(-10px)' }}>
+                  <ProposalStatusChip status={proposal.status} />
+                </Box>
               </TableCell>
               <TableCell>
-                <Typography noWrap sx={{ color: 'text.secondary', fontSize: 12 }}>
+                <Typography noWrap sx={{ color: 'text.secondary', fontSize: 15.5 }}>
                   {proposal.createdLabel}
                 </Typography>
               </TableCell>
               <TableCell align="right">
-                <ProposalActions
-                  proposal={proposal}
-                  onViewProposal={onViewProposal}
-                  onOpenMoreOptions={onOpenMoreOptions}
-                />
+                <Box sx={{ transform: 'translateX(-30px)' }}>
+                  <ProposalActions
+                    proposal={proposal}
+                    onViewProposal={onViewProposal}
+                    onOpenMoreOptions={onOpenMoreOptions}
+                  />
+                </Box>
               </TableCell>
             </TableRow>
           ))}

@@ -1,19 +1,25 @@
 import { AddOpportunityNoteUseCase } from './application/use-cases/add-opportunity-note.use-case'
 import { ArchiveContactUseCase } from './application/use-cases/archive-contact.use-case'
 import { ArchiveOpportunityUseCase } from './application/use-cases/archive-opportunity.use-case'
+import { ConvertLeadToOpportunityUseCase } from './application/use-cases/convert-lead-to-opportunity.use-case'
 import { CreateContactUseCase } from './application/use-cases/create-contact.use-case'
+import { CreateLeadUseCase } from './application/use-cases/create-lead.use-case'
 import { CreateOpportunityUseCase } from './application/use-cases/create-opportunity.use-case'
 import { DeleteOpportunityUseCase } from './application/use-cases/delete-opportunity.use-case'
 import { GetContactUseCase } from './application/use-cases/get-contact.use-case'
+import { GetLeadUseCase } from './application/use-cases/get-lead.use-case'
 import { GetOpportunityUseCase } from './application/use-cases/get-opportunity.use-case'
 import { ListContactsUseCase } from './application/use-cases/list-contacts.use-case'
+import { ListLeadsUseCase } from './application/use-cases/list-leads.use-case'
 import { ListOpportunitiesUseCase } from './application/use-cases/list-opportunities.use-case'
 import { ListOpportunityActivitiesUseCase } from './application/use-cases/list-opportunity-activities.use-case'
 import { RespondToOpportunityUseCase } from './application/use-cases/respond-to-opportunity.use-case'
 import { UpdateContactUseCase } from './application/use-cases/update-contact.use-case'
+import { UpdateLeadUseCase } from './application/use-cases/update-lead.use-case'
 import { UpdateOpportunityUseCase } from './application/use-cases/update-opportunity.use-case'
 import { PrismaActivityRepository } from './infrastructure/prisma-activity.repository'
 import { PrismaContactRepository } from './infrastructure/prisma-contact.repository'
+import { PrismaLeadRepository } from './infrastructure/prisma-lead.repository'
 import { PrismaOpportunityRepository } from './infrastructure/prisma-opportunity.repository'
 import { PrismaPropertyLookupRepository } from './infrastructure/prisma-property-lookup.repository'
 
@@ -21,6 +27,7 @@ const opportunityRepository = new PrismaOpportunityRepository()
 const contactRepository = new PrismaContactRepository()
 const activityRepository = new PrismaActivityRepository()
 const propertyLookup = new PrismaPropertyLookupRepository()
+const leadRepository = new PrismaLeadRepository()
 
 export const crmContainer = {
   listOpportunitiesUseCase: new ListOpportunitiesUseCase(opportunityRepository),
@@ -60,4 +67,14 @@ export const crmContainer = {
   createContactUseCase: new CreateContactUseCase(contactRepository),
   updateContactUseCase: new UpdateContactUseCase(contactRepository, opportunityRepository),
   archiveContactUseCase: new ArchiveContactUseCase(contactRepository, opportunityRepository),
+
+  createLeadUseCase: new CreateLeadUseCase(leadRepository),
+  listLeadsUseCase: new ListLeadsUseCase(leadRepository),
+  getLeadUseCase: new GetLeadUseCase(leadRepository),
+  updateLeadUseCase: new UpdateLeadUseCase(leadRepository),
+  convertLeadToOpportunityUseCase: new ConvertLeadToOpportunityUseCase(
+    leadRepository,
+    opportunityRepository,
+    propertyLookup,
+  ),
 }

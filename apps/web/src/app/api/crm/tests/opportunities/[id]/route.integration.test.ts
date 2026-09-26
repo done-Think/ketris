@@ -44,6 +44,7 @@ describe('/api/crm/opportunities/[id] (integração)', () => {
       email: actor.email,
       papel: actor.papel,
       ativo: actor.ativo,
+      vinculoAprovadoEm: actor.vinculoAprovadoEm,
     })
 
     const responsavel = await prisma.usuario.create({

@@ -1,6 +1,8 @@
-import { Box, Button, Chip, Stack, Typography } from '@mui/material'
+import { Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material'
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined'
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
+import PublishOutlinedIcon from '@mui/icons-material/PublishOutlined'
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
 import { useTranslations } from 'next-intl'
 
@@ -12,11 +14,22 @@ import { useContractsStore } from '@modules/contracts/stores/contracts-store'
 import { dashboardPropertyStatusStyles } from '../config/dashboard-property-ui'
 import type { PropertyDetailHeaderProps } from '../types/dashboard-property'
 
-export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
+export function PropertyDetailHeader({
+  property,
+  canManage,
+  isPublishing,
+  isUnpublishing,
+  isDeleting,
+  onEdit,
+  onPublish,
+  onUnpublish,
+  onDeleteRequest,
+}: PropertyDetailHeaderProps) {
   const router = useRouter()
   const t = useTranslations('properties.detail')
   const statusT = useTranslations('properties.dashboard.filters')
   const status = dashboardPropertyStatusStyles[property.status]
+  const isPublished = property.apiStatus === 'PUBLISHED'
   // Derived from the contracts store (instead of a manually-synced `activeContractId` field on the
   // property) so it can never drift: a property is only ever linked to a contract that actually
   // references it, and a newly created contract shows up here immediately.
@@ -56,61 +69,91 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
         </Typography>
       </Box>
 
-      <Stack direction="row" alignItems="flex-start" spacing={1.2}>
-        <Button
-          variant="outlined"
-          color="secondary"
-          startIcon={<EditOutlinedIcon />}
-          sx={{
-            height: 46,
-            px: 2.2,
-            borderRadius: `${radius.sm}px`,
-            bgcolor: surface.paper,
-            fontSize: 15,
-            fontWeight: 900,
-          }}
-        >
-          {t('edit')}
-        </Button>
-        <Stack spacing={1.1}>
+      {canManage ? (
+        <Stack direction="row" alignItems="flex-start" spacing={1.2}>
           <Button
-            variant="contained"
-            startIcon={<VisibilityOffOutlinedIcon />}
+            variant="outlined"
+            color="error"
+            startIcon={<DeleteOutlineRoundedIcon />}
+            onClick={onDeleteRequest}
+            disabled={isDeleting}
             sx={{
               height: 46,
-              px: 2.4,
+              px: 2.2,
               borderRadius: `${radius.sm}px`,
+              bgcolor: surface.paper,
               fontSize: 15,
               fontWeight: 900,
             }}
           >
-            {t('unpublish')}
+            {t('delete')}
           </Button>
-          {activeContract ? (
+          <Button
+            variant="outlined"
+            color="secondary"
+            startIcon={<EditOutlinedIcon />}
+            onClick={onEdit}
+            sx={{
+              height: 46,
+              px: 2.2,
+              borderRadius: `${radius.sm}px`,
+              bgcolor: surface.paper,
+              fontSize: 15,
+              fontWeight: 900,
+            }}
+          >
+            {t('edit')}
+          </Button>
+          <Stack spacing={1.1}>
             <Button
-              onClick={() =>
-                router.push({
-                  pathname: '/dashboard/contracts/[id]',
-                  params: { id: activeContract.id },
-                })
+              variant="contained"
+              startIcon={
+                isPublishing || isUnpublishing ? (
+                  <CircularProgress size={16} color="inherit" />
+                ) : isPublished ? (
+                  <VisibilityOffOutlinedIcon />
+                ) : (
+                  <PublishOutlinedIcon />
+                )
               }
-              variant="outlined"
-              color="secondary"
-              startIcon={<ArticleOutlinedIcon />}
+              onClick={isPublished ? onUnpublish : onPublish}
+              disabled={isPublishing || isUnpublishing}
               sx={{
                 height: 46,
                 px: 2.4,
                 borderRadius: `${radius.sm}px`,
-                bgcolor: surface.paper,
                 fontSize: 15,
                 fontWeight: 900,
               }}
             >
-              {t('activeContract')}
+              {isPublished ? t('unpublish') : t('publish')}
             </Button>
-          ) : null}
+            {activeContract ? (
+              <Button
+                onClick={() =>
+                  router.push({
+                    pathname: '/dashboard/contracts/[id]',
+                    params: { id: activeContract.id },
+                  })
+                }
+                variant="outlined"
+                color="secondary"
+                startIcon={<ArticleOutlinedIcon />}
+                sx={{
+                  height: 46,
+                  px: 2.4,
+                  borderRadius: `${radius.sm}px`,
+                  bgcolor: surface.paper,
+                  fontSize: 15,
+                  fontWeight: 900,
+                }}
+              >
+                {t('activeContract')}
+              </Button>
+            ) : null}
+          </Stack>
         </Stack>
-      </Stack>
+      ) : null}
     </Stack>
   )
 }

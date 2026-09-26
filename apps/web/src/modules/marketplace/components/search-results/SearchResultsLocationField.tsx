@@ -7,10 +7,7 @@ import { useTranslations } from 'next-intl'
 
 import { iconSize, radius, surface } from '@shared/theme/tokens'
 
-type SearchResultsLocationFieldProps = {
-  locationQuery: string
-  setLocationQuery: (value: string) => void
-}
+import type { SearchResultsLocationFieldProps } from '../../types/search'
 
 export function SearchResultsLocationField({
   locationQuery,
