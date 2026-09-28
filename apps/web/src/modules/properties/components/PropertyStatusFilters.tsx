@@ -1,7 +1,7 @@
 import { Box, Button, MenuItem, Stack, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { alpha, brand, motion, radius, shadows, surface } from '@shared/theme/tokens'
+import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { propertyStatusFilters } from '../data/dashboard-properties'
 import type { PropertyStatusFiltersProps } from '../types/dashboard-property'
@@ -29,7 +29,7 @@ export function PropertyStatusFilters({
             borderRadius: `${radius.sm}px`,
             bgcolor: surface.paper,
             color: brand.graphite[500],
-            fontSize: 14,
+            fontSize: 18,
             fontWeight: 800,
             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
               borderColor: 'transparent',
@@ -76,7 +76,7 @@ export function PropertyStatusFilters({
               key={filter.label}
               value={filter.label}
               sx={{
-                minHeight: 42,
+                minHeight: 46,
                 bgcolor: active ? alpha.magenta[8] : 'transparent',
                 '&:hover': {
                   bgcolor: alpha.magenta[8],
@@ -101,7 +101,7 @@ export function PropertyStatusFilters({
         spacing={0.8}
         useFlexGap
         flexWrap="wrap"
-        sx={{ display: { xs: 'none', sm: 'flex' }, mb: 1.8 }}
+        sx={{ display: { xs: 'none', sm: 'flex' }, mb: -0.25 }}
       >
         {propertyStatusFilters.map((filter) => {
           const active = filter.label === activeStatusFilter
@@ -114,16 +114,15 @@ export function PropertyStatusFilters({
               aria-pressed={active}
               onClick={() => onStatusFilterChange(filter.label)}
               sx={{
-                minHeight: 38,
+                minHeight: 42,
                 borderRadius: `${radius.full}px`,
                 px: 1.8,
                 gap: 0.6,
-                fontSize: 13,
+                fontSize: 17,
                 fontWeight: 900,
                 bgcolor: active ? 'primary.main' : alpha.graphite[6],
                 color: active ? surface.lightText : brand.graphite[500],
                 boxShadow: 'none',
-                transition: motion.transition.bordered,
                 '&:hover': {
                   bgcolor: active ? 'primary.main' : alpha.graphite[10],
                   boxShadow: 'none',
@@ -135,14 +134,14 @@ export function PropertyStatusFilters({
                 component="span"
                 sx={{
                   display: 'grid',
-                  minWidth: 20,
-                  height: 20,
+                  minWidth: 24,
+                  height: 24,
                   placeItems: 'center',
                   px: 0.5,
                   borderRadius: `${radius.full}px`,
                   bgcolor: active ? alpha.white[8] : alpha.graphite[6],
                   color: active ? surface.lightText : brand.neutral[500],
-                  fontSize: 10.5,
+                  fontSize: 14.5,
                   fontWeight: 800,
                 }}
               >

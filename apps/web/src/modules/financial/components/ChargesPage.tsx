@@ -136,7 +136,7 @@ export function ChargesPage() {
   }
   return (
     <Box sx={{ width: '100%', p: 3.5 }}>
-      <Stack spacing={{ xs: 2, md: 2.7 }}>
+      <Stack spacing={2}>
         <DashboardPageHeader
           title={t('title')}
           subtitle={t('subtitle')}
@@ -200,7 +200,6 @@ export function ChargesPage() {
           justifyContent="space-between"
           alignItems={{ xs: 'stretch', md: 'center' }}
           spacing={1.2}
-          sx={{ mt: { xs: '14px !important', md: '14px !important' } }}
         >
           <Stack
             component="div"
