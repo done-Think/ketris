@@ -54,7 +54,7 @@ import { ArchiveChargeDialog } from './ArchiveChargeDialog'
 import { CreateChargeDialog } from './CreateChargeDialog'
 import { EditChargeDialog } from './EditChargeDialog'
 
-const defaultRowsPerPage = 5
+const defaultRowsPerPage = 6
 const statusKeys: Array<'all' | ChargeStatus> = ['all', 'pending', 'overdue', 'paid', 'scheduled']
 
 function currency(value: number, locale: string) {
@@ -371,6 +371,7 @@ export function ChargesPage() {
             count={visible.length}
             page={currentPage}
             rowsPerPage={rowsPerPage}
+            rowsPerPageOptions={[6, 10, 25]}
             onPageChange={setPage}
             onRowsPerPageChange={(nextRowsPerPage) => {
               setRowsPerPage(nextRowsPerPage)

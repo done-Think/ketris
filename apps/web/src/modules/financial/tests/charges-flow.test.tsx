@@ -20,6 +20,7 @@ vi.mock('next-intl', async () => {
   const actual = await vi.importActual<typeof import('next-intl')>('next-intl')
   const { default: charges } = await import('@/i18n/messages/pt-BR/charges.json')
   const { default: dashboard } = await import('@/i18n/messages/pt-BR/dashboard.json')
+  const { default: common } = await import('@/i18n/messages/pt-BR/common.json')
   return {
     ...actual,
     useLocale: () => 'pt-BR',
@@ -31,8 +32,14 @@ vi.mock('next-intl', async () => {
         | 'charges.createDialog'
         | 'charges.editDialog'
         | 'charges.archiveDialog'
-        | 'dashboard.notificationsCenter',
-    ) => actual.createTranslator({ locale: 'pt-BR', messages: { charges, dashboard }, namespace }),
+        | 'dashboard.notificationsCenter'
+        | 'common.dashboardPagination',
+    ) =>
+      actual.createTranslator({
+        locale: 'pt-BR',
+        messages: { charges, dashboard, common },
+        namespace,
+      }),
   }
 })
 
@@ -48,7 +55,7 @@ describe('charges interactions', () => {
     const user = userEvent.setup()
     render(wrap(<ChargesPage />))
     expect(screen.getAllByRole('row')).toHaveLength(7)
-    await user.click(screen.getByRole('button', { name: /page 2/i }))
+    await user.click(screen.getByRole('button', { name: /next page/i }))
     expect(screen.getByText('Lucas Almeida')).toBeVisible()
     await user.click(screen.getByRole('button', { name: 'Pendente 2' }))
     expect(screen.getAllByRole('row')).toHaveLength(3)
