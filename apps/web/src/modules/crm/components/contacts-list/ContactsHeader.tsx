@@ -3,8 +3,12 @@ import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { Box, Button, InputAdornment, MenuItem, Stack, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/components/layout'
-import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import {
+  DashboardNotificationsButton,
+  DashboardPageHeader,
+  dashboardHeaderActionButtonSx,
+} from '@shared/components/layout'
+import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
 import { contactFilters } from '../../config/contact-filters'
 import type { ContactsHeaderProps } from '../../types/contact'
@@ -92,14 +96,7 @@ export function ContactsHeader({
         disabled={!onNewContact}
         onClick={onNewContact}
         sx={{
-          borderRadius: `${radius.sm}px`,
-          boxShadow: shadows.none,
-          height: { xs: 40, sm: 32 },
-          px: 1.5,
-          fontSize: 12,
-          fontWeight: 700,
-          textTransform: 'none',
-          whiteSpace: 'nowrap',
+          ...dashboardHeaderActionButtonSx,
           '&.Mui-disabled': {
             bgcolor: brand.magenta[500],
             color: surface.lightText,

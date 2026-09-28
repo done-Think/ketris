@@ -6,7 +6,10 @@ import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownR
 import { Box, Button, Menu, MenuItem, Stack } from '@mui/material'
 import dayjs, { type Dayjs } from 'dayjs'
 
-import { DashboardNotificationsButton } from '@shared/components/layout'
+import {
+  DashboardNotificationsButton,
+  dashboardHeaderActionButtonSx,
+} from '@shared/components/layout'
 import { iconSize, radius, shadows } from '@shared/theme/tokens'
 
 export interface FinancialDashboardHeaderActionsProps {
@@ -49,14 +52,7 @@ export function FinancialDashboardHeaderActions({
         aria-expanded={Boolean(monthAnchor)}
         onClick={handleMonthButtonClick}
         endIcon={<KeyboardArrowDownRoundedIcon sx={{ fontSize: iconSize.sm }} />}
-        sx={{
-          borderRadius: `${radius.sm}px`,
-          fontSize: 12,
-          fontWeight: 500,
-          height: { xs: 40, sm: 32 },
-          px: 1.25,
-          whiteSpace: 'nowrap',
-        }}
+        sx={dashboardHeaderActionButtonSx}
       >
         {formatMonthLabel(selectedMonth)}
       </Button>
@@ -101,14 +97,7 @@ export function FinancialDashboardHeaderActions({
         type="button"
         variant="outlined"
         startIcon={<FileDownloadOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-        sx={{
-          borderRadius: `${radius.sm}px`,
-          fontSize: 12,
-          fontWeight: 500,
-          height: { xs: 40, sm: 32 },
-          px: 1.25,
-          whiteSpace: 'nowrap',
-        }}
+        sx={dashboardHeaderActionButtonSx}
       >
         {exportLabel}
       </Button>
