@@ -58,7 +58,7 @@ export function ContractsFilters({ control, filterCounts, setValue }: ContractsF
           <Button
             key={tab.label}
             type="button"
-            variant={active ? 'contained' : 'outlined'}
+            variant="contained"
             onClick={() => {
               setValue('status', tab.status, { shouldDirty: true })
               setValue('period', tab.period, { shouldDirty: true })
@@ -73,9 +73,12 @@ export function ContractsFilters({ control, filterCounts, setValue }: ContractsF
               gap: 0.6,
               fontSize: 17,
               fontWeight: 900,
+              bgcolor: active ? 'primary.main' : alpha.graphite[6],
+              color: active ? surface.lightText : brand.graphite[500],
               textTransform: 'none',
               transition: motion.transition.bordered,
               '&:hover': {
+                bgcolor: active ? 'primary.main' : alpha.graphite[10],
                 boxShadow: 'none',
               },
             }}

@@ -198,6 +198,7 @@
   "profileEditor": {
     "title": "Editar Perfil",
     "subtitle": "Ajuste as informações exibidas para visitantes no seu perfil público.",
+    "validatedDraft": "Rascunho validado",
     "saveSuccess": "Perfil salvo com sucesso.",
     "saveError": "Não foi possível salvar o perfil.",
     "publishSuccess": "Perfil publicado com sucesso.",

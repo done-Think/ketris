@@ -42,6 +42,7 @@ import {
   DashboardNotificationsButton,
   DashboardPageHeader,
   DashboardTablePagination,
+  dashboardHeaderActionButtonSx,
 } from '@shared/components/layout'
 import {
   maintenanceFilters,
@@ -291,15 +292,7 @@ export function MaintenanceDashboardPage() {
         variant="contained"
         startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
         onClick={() => setIsCreateDialogOpen(true)}
-        sx={{
-          height: { xs: 40, sm: 32 },
-          px: 1.5,
-          borderRadius: `${radius.sm}px`,
-          boxShadow: shadows.none,
-          fontSize: 12,
-          fontWeight: 700,
-          whiteSpace: 'nowrap',
-        }}
+        sx={dashboardHeaderActionButtonSx}
       >
         {t('newTicket')}
       </Button>
@@ -370,8 +363,16 @@ export function MaintenanceDashboardPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {pagedTickets.map((ticket) => (
-                <TableRow key={ticket.id} sx={{ '&:last-child td': { borderBottom: 0 } }}>
+              {pagedTickets.map((ticket, index) => (
+                <TableRow
+                  key={ticket.id}
+                  sx={{
+                    bgcolor: index % 2 === 1 ? surface.app : surface.paper,
+                    transition: 'background-color 160ms ease',
+                    '&:hover': { bgcolor: alpha.graphite[6] },
+                    '&:last-child td': { borderBottom: 0 },
+                  }}
+                >
                   <TableCell sx={{ ...bodyCellSx, color: 'primary.main', fontWeight: 900 }}>
                     {ticket.id}
                   </TableCell>
@@ -719,7 +720,7 @@ function MaintenanceStatusFilters({
               <Button
                 key={filter.value}
                 type="button"
-                variant={active ? 'contained' : 'outlined'}
+                variant="contained"
                 aria-pressed={active}
                 onClick={() => onChange(filter.value)}
                 sx={{
@@ -729,8 +730,13 @@ function MaintenanceStatusFilters({
                   gap: 0.6,
                   fontSize: 17,
                   fontWeight: 900,
+                  bgcolor: active ? 'primary.main' : alpha.graphite[6],
+                  color: active ? surface.lightText : brand.graphite[500],
                   boxShadow: 'none',
-                  '&:hover': { boxShadow: 'none' },
+                  '&:hover': {
+                    bgcolor: active ? 'primary.main' : alpha.graphite[10],
+                    boxShadow: 'none',
+                  },
                 }}
               >
                 {t(`filters.${filter.value}`)}

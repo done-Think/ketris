@@ -198,6 +198,7 @@
   "profileEditor": {
     "title": "Edit Profile",
     "subtitle": "Adjust the information shown to visitors on your public profile.",
+    "validatedDraft": "Draft validated",
     "saveSuccess": "Profile saved successfully.",
     "saveError": "Could not save the profile.",
     "publishSuccess": "Profile published successfully.",

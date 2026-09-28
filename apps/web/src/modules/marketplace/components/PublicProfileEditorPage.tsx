@@ -3,13 +3,20 @@
 import { useEffect, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Box, Button, Dialog, DialogContent, Stack, Typography } from '@mui/material'
+import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded'
+import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 import { useForm } from 'react-hook-form'
 
 import { RhfTextField } from '@shared/components/form'
-import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/components/layout'
+import {
+  DashboardNotificationsButton,
+  DashboardPageHeader,
+  dashboardHeaderActionButtonSx,
+} from '@shared/components/layout'
+import { alpha, brand, iconSize, surface } from '@shared/theme/tokens'
 
 import {
   useOwnBrokerProfile,
@@ -135,7 +142,13 @@ export function PublicProfileEditorPage() {
   const publishProfile = usePublishBrokerProfile()
   const unpublishProfile = useUnpublishBrokerProfile()
 
-  const { control, handleSubmit, reset, watch } = useForm<PublicProfileEditorFormValues>({
+  const {
+    control,
+    formState: { isSubmitSuccessful },
+    handleSubmit,
+    reset,
+    watch,
+  } = useForm<PublicProfileEditorFormValues>({
     defaultValues: emptyValues,
     resolver: zodResolver(publicProfileEditorSchema),
   })
@@ -174,14 +187,81 @@ export function PublicProfileEditorPage() {
         title={t('title')}
         subtitle={t('subtitle')}
         actions={
-          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-            <DashboardNotificationsButton />
-          </Box>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.2}
+            sx={{
+              width: { xs: '100%', md: 'auto' },
+              alignItems: { xs: 'stretch', sm: 'center' },
+            }}
+          >
+            {isSubmitSuccessful ? (
+              <Stack
+                direction="row"
+                spacing={0.8}
+                alignItems="center"
+                sx={{ color: brand.semantic.success }}
+              >
+                <CheckCircleOutlineRoundedIcon sx={{ fontSize: iconSize.md }} />
+                <Typography sx={{ fontSize: 13, fontWeight: 800 }}>
+                  {t('validatedDraft')}
+                </Typography>
+              </Stack>
+            ) : null}
+            <Button
+              type="button"
+              variant="outlined"
+              color="secondary"
+              startIcon={<VisibilityOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+              onClick={() => setIsPreviewOpen(true)}
+              sx={{
+                ...dashboardHeaderActionButtonSx,
+                borderColor: alpha.graphite[8],
+                '&:hover': {
+                  borderColor: alpha.graphite[18],
+                  bgcolor: surface.paper,
+                  boxShadow: 'none',
+                },
+              }}
+            >
+              {t('actions.preview')}
+            </Button>
+            <Button
+              type="submit"
+              form="broker-public-profile-editor-form"
+              variant="contained"
+              startIcon={<SaveOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+              disabled={saveProfile.isPending}
+              sx={dashboardHeaderActionButtonSx}
+            >
+              {t('actions.save')}
+            </Button>
+            {profile ? (
+              <Button
+                type="button"
+                variant="outlined"
+                color={profile.status === 'PUBLISHED' ? 'error' : 'success'}
+                onClick={handlePublishToggle}
+                disabled={publishProfile.isPending || unpublishProfile.isPending}
+                sx={dashboardHeaderActionButtonSx}
+              >
+                {profile.status === 'PUBLISHED' ? t('actions.unpublish') : t('actions.publish')}
+              </Button>
+            ) : null}
+            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+              <DashboardNotificationsButton />
+            </Box>
+          </Stack>
         }
         sx={{ mb: 2.6 }}
       />
 
-      <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ width: '100%' }}>
+      <Box
+        id="broker-public-profile-editor-form"
+        component="form"
+        onSubmit={handleSubmit(onSubmit)}
+        sx={{ width: '100%' }}
+      >
         <Box
           sx={{
             display: 'grid',
@@ -248,38 +328,6 @@ export function PublicProfileEditorPage() {
           </Box>
 
           <Stack spacing={2}>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-              <Button
-                type="button"
-                variant="outlined"
-                startIcon={<VisibilityOutlinedIcon />}
-                onClick={() => setIsPreviewOpen(true)}
-                sx={{ flex: 1 }}
-              >
-                {t('actions.preview')}
-              </Button>
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={saveProfile.isPending}
-                sx={{ flex: 1 }}
-              >
-                {t('actions.save')}
-              </Button>
-              {profile ? (
-                <Button
-                  type="button"
-                  variant="outlined"
-                  color={profile.status === 'PUBLISHED' ? 'error' : 'success'}
-                  onClick={handlePublishToggle}
-                  disabled={publishProfile.isPending || unpublishProfile.isPending}
-                  sx={{ flex: 1 }}
-                >
-                  {profile.status === 'PUBLISHED' ? t('actions.unpublish') : t('actions.publish')}
-                </Button>
-              ) : null}
-            </Stack>
-
             <Box sx={editorPanelSx}>
               <Typography variant="h5" sx={{ mb: 2 }}>
                 {t('fields.appearance')}
