@@ -15,6 +15,7 @@ export type AppShellNavHref =
   | '/dashboard/public-profile'
   | '/dashboard/agenda'
   | '/dashboard/finance'
+  | '/dashboard/finance/charges'
   | '/dashboard/maintenance'
 
 export type AppShellNavItem = {
@@ -26,5 +27,5 @@ export type AppShellNavItem = {
 
 export type AppShellProps = {
   children: ReactNode
-  allowLocalMaintenancePreview?: boolean
+  allowLocalDashboardPreview?: boolean
 }
