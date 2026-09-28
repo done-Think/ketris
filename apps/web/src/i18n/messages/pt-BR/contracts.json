@@ -12,6 +12,7 @@
   },
   "dashboardHeader": {
     "title": "Contratos",
+    "subtitle": "Gerencie contratos, vencimentos e assinaturas em andamento.",
     "searchPlaceholder": "Buscar contratos...",
     "newContract": "Novo Contrato"
   },

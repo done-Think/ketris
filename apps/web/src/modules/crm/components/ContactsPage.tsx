@@ -11,6 +11,7 @@ import {
   useCreateContact,
   useUpdateContact,
 } from '../hooks/use-contacts'
+import { contactListFixtures, contactsFixtureTotal } from '../fixtures/contact-list-fixtures'
 import type { ContactFormValues } from '../schemas/contact-schema'
 import type { ApiContactListItem, ContactListItem } from '../types/contact'
 import { mapContactToListItem } from '../utils/contact-adapter'
@@ -35,7 +36,12 @@ export function ContactsPage() {
   const [archivingContact, setArchivingContact] = useState<ApiContactListItem | null>(null)
 
   const apiContacts = contactsQuery.data ?? []
-  const contacts = apiContacts.map(mapContactToListItem)
+  const fixtureMode =
+    process.env.NODE_ENV !== 'production' &&
+    !contactsQuery.isLoading &&
+    (contactsQuery.isError || apiContacts.length === 0)
+  const contacts = fixtureMode ? contactListFixtures : apiContacts.map(mapContactToListItem)
+  const totalCount = fixtureMode ? contactsFixtureTotal : contacts.length
 
   function findRawContact(item: ContactListItem): ApiContactListItem | undefined {
     return apiContacts.find((contact) => contact.id === item.id)
@@ -110,10 +116,10 @@ export function ContactsPage() {
     <>
       <ContactsList
         contacts={contacts}
-        totalCount={contacts.length}
+        totalCount={totalCount}
         onNewContact={openCreateDialog}
-        onEditContact={openEditDialog}
-        onOpenMoreOptions={openArchiveDialog}
+        onEditContact={fixtureMode ? undefined : openEditDialog}
+        onOpenMoreOptions={fixtureMode ? undefined : openArchiveDialog}
       />
 
       <ContactFormDialog

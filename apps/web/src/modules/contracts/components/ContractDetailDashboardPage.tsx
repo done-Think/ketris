@@ -76,24 +76,29 @@ function ContractHeader({ contract }: { contract: ContractListItem }) {
       sx={{ mb: 2.8 }}
     >
       <Box sx={{ minWidth: 0 }}>
-        <Stack direction="row" alignItems="center" spacing={1.6} sx={{ mb: 0.8 }}>
-          <Chip
-            label={contract.status}
-            sx={{
-              height: 28,
-              borderRadius: `${radius.sm}px`,
-              bgcolor: statusStyle.bgcolor,
-              color: statusStyle.color,
-              fontSize: 13,
-              fontWeight: 900,
-            }}
-          />
+        <Stack
+          direction="row"
+          alignItems="center"
+          spacing={1.6}
+          sx={{ flexWrap: 'wrap', rowGap: 1, mb: 0.8 }}
+        >
           <Typography
             variant="h1"
             sx={{ color: brand.graphite[500], fontSize: { xs: 30, md: 36 }, fontWeight: 900 }}
           >
             Contrato {formatContractCode(contract.code)}
           </Typography>
+          <Chip
+            label={contract.status}
+            sx={{
+              height: { xs: 38, md: 44 },
+              borderRadius: `${radius.sm}px`,
+              bgcolor: statusStyle.bgcolor,
+              color: statusStyle.color,
+              fontSize: { xs: 30, md: 36 },
+              fontWeight: 900,
+            }}
+          />
         </Stack>
       </Box>
 
@@ -292,7 +297,7 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
   if (!contract) notFound()
 
   return (
-    <Box sx={{ width: '100%', px: { xs: 2, md: 4.8 }, py: { xs: 2.6, md: 3.2 } }}>
+    <Box sx={{ width: '100%', p: 3.5 }}>
       <Box sx={{ width: '100%' }}>
         <Stack
           direction="row"

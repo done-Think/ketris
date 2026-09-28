@@ -216,38 +216,36 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', pb: 2, '& h1, & h2': { letterSpacing: '0 !important' } }}>
-      <Box sx={{ p: { xs: 2, sm: 2.5, lg: 3.5 }, pb: { xs: 2, lg: 3 } }}>
-        <OpportunityDetailHeader opportunity={opportunity} stage={stage} property={property} />
+    <Box sx={{ minHeight: '100vh', p: 3.5, '& h1, & h2': { letterSpacing: '0 !important' } }}>
+      <OpportunityDetailHeader opportunity={opportunity} stage={stage} property={property} />
 
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: 'minmax(0, 1fr)',
-              lg: 'minmax(0, 58fr) minmax(320px, 42fr)',
-            },
-            gap: 2,
-            alignItems: 'start',
-          }}
-        >
-          <Stack spacing={2} minWidth={0}>
-            <OpportunityContactPanel opportunity={opportunity} />
-            <OpportunityPropertyPanel
-              opportunity={opportunity}
-              property={property}
-              propertyLocation={propertyLocation}
-              isLoading={propertyQuery.isLoading}
-              isError={propertyQuery.isError}
-              onRetry={() => propertyQuery.refetch()}
-            />
-          </Stack>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: 'minmax(0, 1fr)',
+            lg: 'minmax(0, 58fr) minmax(320px, 42fr)',
+          },
+          gap: 2,
+          alignItems: 'start',
+        }}
+      >
+        <Stack spacing={2} minWidth={0}>
+          <OpportunityContactPanel opportunity={opportunity} />
+          <OpportunityPropertyPanel
+            opportunity={opportunity}
+            property={property}
+            propertyLocation={propertyLocation}
+            isLoading={propertyQuery.isLoading}
+            isError={propertyQuery.isError}
+            onRetry={() => propertyQuery.refetch()}
+          />
+        </Stack>
 
-          <Stack spacing={2} minWidth={0}>
-            <OpportunityActivitiesPanel activities={activities} />
-            <OpportunityNextActionsPanel />
-          </Stack>
-        </Box>
+        <Stack spacing={2} minWidth={0}>
+          <OpportunityActivitiesPanel activities={activities} />
+          <OpportunityNextActionsPanel />
+        </Stack>
       </Box>
 
       <OpportunityActionsFooter

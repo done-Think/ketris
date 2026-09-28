@@ -36,11 +36,11 @@ export function ContactTypeChip({ type }: ContactTypeChipProps) {
       label={t(contactTypeLabelKeys[type])}
       size="small"
       sx={{
-        height: 20,
+        height: 24,
         borderRadius: `${radius.full}px`,
         bgcolor: presentation.backgroundColor,
         color: presentation.color,
-        fontSize: 10,
+        fontSize: 14,
         fontWeight: 600,
         '& .MuiChip-label': { px: 1 },
       }}

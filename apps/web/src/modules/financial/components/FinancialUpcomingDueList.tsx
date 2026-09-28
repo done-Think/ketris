@@ -70,9 +70,12 @@ export function FinancialUpcomingDueList({ items }: FinancialUpcomingDueListProp
                 bgcolor: surface.app,
                 borderRadius: `${radius.sm}px`,
                 display: 'grid',
-                gridTemplateColumns: 'minmax(0, 1fr) auto auto auto',
+                gridTemplateColumns: {
+                  xs: 'minmax(0, 1fr) 74px 42px 66px',
+                  sm: 'minmax(0, 1fr) 92px 48px 76px',
+                },
                 alignItems: 'center',
-                columnGap: 1.2,
+                columnGap: { xs: 0.6, sm: 1.2 },
                 justifyItems: 'stretch',
                 px: 1.2,
                 py: 1,
@@ -107,16 +110,34 @@ export function FinancialUpcomingDueList({ items }: FinancialUpcomingDueListProp
                   {item.client}
                 </Typography>
               </Box>
-              <Typography sx={{ color: brand.graphite[500], fontSize: 12, fontWeight: 900 }}>
+              <Typography
+                noWrap
+                sx={{
+                  color: brand.graphite[500],
+                  fontSize: 12,
+                  fontWeight: 900,
+                  justifySelf: 'end',
+                }}
+              >
                 {formatCurrency(item.amountValue)}
               </Typography>
-              <Typography sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 700 }}>
+              <Typography
+                noWrap
+                sx={{
+                  color: brand.neutral[500],
+                  fontSize: 11,
+                  fontWeight: 700,
+                  justifySelf: 'center',
+                }}
+              >
                 {item.dueDate}
               </Typography>
               <Chip
                 label={statusT(item.status)}
                 size="small"
                 sx={{
+                  justifySelf: 'end',
+                  minWidth: { xs: 62, sm: 72 },
                   bgcolor: status.bgcolor,
                   color: status.color,
                   borderRadius: `${radius.full}px`,
