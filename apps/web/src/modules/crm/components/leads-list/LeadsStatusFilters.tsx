@@ -67,7 +67,7 @@ export function LeadsStatusFilters({
             <Button
               key={label}
               type="button"
-              variant={active ? 'contained' : 'outlined'}
+              variant="contained"
               aria-pressed={active}
               onClick={() => onFilterChange(label)}
               sx={{
@@ -77,6 +77,13 @@ export function LeadsStatusFilters({
                 gap: 0.6,
                 fontSize: 17,
                 fontWeight: 900,
+                bgcolor: active ? 'primary.main' : alpha.graphite[6],
+                color: active ? surface.lightText : brand.graphite[500],
+                boxShadow: 'none',
+                '&:hover': {
+                  bgcolor: active ? 'primary.main' : alpha.graphite[10],
+                  boxShadow: 'none',
+                },
               }}
             >
               {t(`filters.${labelKey}`)}
