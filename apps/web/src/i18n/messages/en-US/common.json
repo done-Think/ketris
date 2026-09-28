@@ -18,6 +18,8 @@
   "appShell": {
     "ariaLabel": "Main navigation",
     "openNavigation": "Open navigation",
+    "collapseNavigation": "Collapse navigation",
+    "expandNavigation": "Expand navigation",
     "defaultUserName": "Ketris Team",
     "defaultUserContext": "Admin dashboard",
     "backToMarketplace": "Back to marketplace",
@@ -32,6 +34,19 @@
     "agenda": "Schedule",
     "proposals": "Proposals",
     "maintenance": "Maintenance",
-    "finance": "Finance"
+    "finance": "Finance",
+    "editProfile": "Edit profile",
+    "collapseMenu": "Collapse menu",
+    "profileEditor": {
+      "title": "Edit profile",
+      "changePhoto": "Change photo",
+      "name": "Name",
+      "email": "Email",
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "success": "Profile updated successfully.",
+      "saveError": "Could not save the changes. Try again.",
+      "avatarFormatError": "Use a JPG, PNG, or WEBP image."
+    }
   }
 }
