@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { Roboto } from 'next/font/google'
+import { Roboto, Space_Grotesk } from 'next/font/google'
 import { locale as getRootLocale } from 'next/root-params'
 import { getMessages, getTranslations } from 'next-intl/server'
 import 'maplibre-gl/dist/maplibre-gl.css'
@@ -16,6 +16,15 @@ import type { LocaleLayoutProps } from '@/i18n/types/route.types'
 const roboto = Roboto({
   subsets: ['latin'],
   variable: '--font-primary',
+  display: 'swap',
+})
+
+// Usada só nos títulos padronizados do dashboard (DashboardPageHeader) — referenciada como
+// `var(--font-space-grotesk)` há tempo, mas a variável nunca tinha sido carregada de fato, então
+// todo h1 do dashboard caía silenciosamente no fallback (Roboto).
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-space-grotesk',
   display: 'swap',
 })
 
@@ -48,7 +57,10 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   const messages = await getMessages({ locale })
 
   return (
-    <html lang={await getValidatedRootLocale()} className={roboto.variable}>
+    <html
+      lang={await getValidatedRootLocale()}
+      className={`${roboto.variable} ${spaceGrotesk.variable}`}
+    >
       {/* Extensões de browser (ColorZilla, Grammarly, etc.) injetam atributos no body
           antes da hidratação. Suprime só os atributos/texto DESTE elemento — divergências
           nos filhos continuam sendo reportadas. */}

@@ -7,8 +7,8 @@ export function DashboardPageHeader({ actions, subtitle, sx, title }: DashboardP
   return (
     <Stack
       component="header"
-      direction={{ xs: 'column', lg: 'row' }}
-      alignItems={{ xs: 'stretch', lg: 'flex-start' }}
+      direction={{ xs: 'column', md: 'row' }}
+      alignItems={{ xs: 'stretch', md: 'flex-start' }}
       justifyContent="space-between"
       spacing={1.6}
       sx={[
@@ -16,7 +16,7 @@ export function DashboardPageHeader({ actions, subtitle, sx, title }: DashboardP
         ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
       ]}
     >
-      <Box sx={{ minWidth: 0 }}>
+      <Box sx={{ minWidth: 0, flex: 1 }}>
         <Typography
           component="h1"
           sx={{
@@ -36,7 +36,9 @@ export function DashboardPageHeader({ actions, subtitle, sx, title }: DashboardP
         ) : null}
       </Box>
 
-      {actions ? <Box sx={{ width: { xs: '100%', lg: 'auto' } }}>{actions}</Box> : null}
+      {actions ? (
+        <Box sx={{ flexShrink: 0, width: { xs: '100%', md: 'auto' } }}>{actions}</Box>
+      ) : null}
     </Stack>
   )
 }

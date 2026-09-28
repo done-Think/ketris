@@ -137,6 +137,16 @@ export function buildTheme(override: TenantThemeOverride = {}): Theme {
           },
         },
       },
+      MuiModal: {
+        defaultProps: {
+          disableScrollLock: true,
+        },
+      },
+      MuiPopover: {
+        defaultProps: {
+          disableScrollLock: true,
+        },
+      },
     },
   })
 }

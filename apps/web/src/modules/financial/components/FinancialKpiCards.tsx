@@ -15,8 +15,11 @@ export function FinancialKpiCards({ kpis }: FinancialKpiCardsProps) {
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', xl: 'repeat(4, 1fr)' },
-        gap: 1.8,
+        gridTemplateColumns: {
+          xs: 'repeat(2, minmax(0, 1fr))',
+          md: 'repeat(4, minmax(0, 1fr))',
+        },
+        gap: { xs: 0.8, sm: 1.4, xl: 1.8 },
       }}
     >
       {kpis.map((kpi) => {
@@ -31,18 +34,29 @@ export function FinancialKpiCards({ kpis }: FinancialKpiCardsProps) {
               borderColor: alpha.graphite[6],
               borderRadius: `${radius.sm}px`,
               boxShadow: shadows.crmCard,
-              minHeight: 132,
-              p: 2,
+              minHeight: { xs: 116, sm: 132 },
+              minWidth: 0,
+              overflow: 'hidden',
+              p: { xs: 1.4, sm: 2 },
             }}
           >
-            <Stack spacing={1.2}>
-              <Typography sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 800 }}>
+            <Stack spacing={{ xs: 0.8, sm: 1.2 }} sx={{ minWidth: 0 }}>
+              <Typography
+                noWrap
+                sx={{ color: brand.neutral[500], fontSize: { xs: 11, sm: 13 }, fontWeight: 800 }}
+              >
                 {t(kpi.labelKey)}
               </Typography>
-              <Typography sx={{ color: brand.graphite[500], fontSize: 28, fontWeight: 900 }}>
+              <Typography
+                noWrap
+                sx={{ color: brand.graphite[500], fontSize: { xs: 23, sm: 28 }, fontWeight: 900 }}
+              >
                 {kpi.value}
               </Typography>
-              <Typography sx={{ color: tone.color, fontSize: 12, fontWeight: 900 }}>
+              <Typography
+                noWrap
+                sx={{ color: tone.color, fontSize: { xs: 11, sm: 12 }, fontWeight: 900 }}
+              >
                 {kpi.helper}
               </Typography>
             </Stack>

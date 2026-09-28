@@ -81,13 +81,14 @@ export function ContactsList({
     <Box
       sx={{
         minHeight: '100vh',
-        px: { xs: 2, sm: 3, lg: 3.5 },
-        pt: { xs: 2, sm: 3, lg: 3.5 },
-        pb: { xs: 2, sm: 2.5, lg: 2.5 },
+        p: 3.5,
         bgcolor: surface.app,
         fontFamily: contactsBodyFontFamily,
         '& .MuiTypography-root, & .MuiButton-root, & .MuiInputBase-root, & .MuiTableCell-root': {
           fontFamily: contactsBodyFontFamily,
+        },
+        '& h1.MuiTypography-root': {
+          fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
         },
       }}
     >

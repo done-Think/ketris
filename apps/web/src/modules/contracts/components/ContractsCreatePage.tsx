@@ -116,8 +116,7 @@ export function ContractsCreatePage() {
     <Box
       sx={{
         width: '100%',
-        px: { xs: 2, md: 4.8, xl: 6.4 },
-        py: { xs: 2.8, md: 4.2 },
+        p: 3.5,
       }}
     >
       <Box sx={{ width: '100%', maxWidth: 1540, mx: 'auto' }}>

@@ -5,6 +5,7 @@ import type { Papel } from '@server/auth/domain/user.entity'
 
 export type AppShellNavHref =
   | '/dashboard'
+  | '/dashboard/agency-overview'
   | '/crm'
   | '/crm/contacts'
   | '/dashboard/leads'
@@ -14,6 +15,7 @@ export type AppShellNavHref =
   | '/dashboard/public-profile'
   | '/dashboard/agenda'
   | '/dashboard/finance'
+  | '/dashboard/finance/charges'
   | '/dashboard/maintenance'
 
 export type AppShellNavItem = {
@@ -25,5 +27,5 @@ export type AppShellNavItem = {
 
 export type AppShellProps = {
   children: ReactNode
-  allowLocalMaintenancePreview?: boolean
+  allowLocalDashboardPreview?: boolean
 }
