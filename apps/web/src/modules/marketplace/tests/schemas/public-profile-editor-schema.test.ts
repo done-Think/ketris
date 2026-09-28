@@ -1,46 +1,63 @@
 import { describe, expect, it } from 'vitest'
 
-import { publicProfileEditorDefaultValues } from '../../data/public-profile-editor'
 import { publicProfileEditorSchema } from '../../schemas/public-profile-editor-schema'
 
+const validDraft = {
+  displayName: 'Marina Costa',
+  headline: '',
+  bio: 'Corretora há 10 anos, focada em alto padrão.',
+  creci: '12345-F',
+  phone: '(11) 90000-0000',
+  region: 'Jardins, São Paulo',
+  neighborhoods: 'Jardins, Itaim Bibi',
+  specialties: 'Alto padrão, Aluguel',
+  availability: 'Segunda a sexta, 9h às 18h',
+  primaryColor: '#F30274',
+  secondaryColor: '#212631',
+  backgroundColor: '#FFFFFF',
+  avatarUrl: '',
+  bannerUrl: '',
+}
+
 describe('publicProfileEditorSchema', () => {
-  it('accepts the default broker public profile draft', () => {
-    expect(publicProfileEditorSchema.safeParse(publicProfileEditorDefaultValues).success).toBe(true)
+  it('aceita um rascunho válido', () => {
+    expect(publicProfileEditorSchema.safeParse(validDraft).success).toBe(true)
   })
 
-  it('rejects duplicated visible sections and invalid colors', () => {
+  it('aceita campos opcionais em branco', () => {
     const result = publicProfileEditorSchema.safeParse({
-      ...publicProfileEditorDefaultValues,
-      primaryColor: 'magenta',
-      sectionOrder: ['hero', 'hero', 'metrics', 'contact', 'listings'],
+      ...validDraft,
+      headline: '',
+      bio: '',
+      creci: '',
+      phone: '',
+      region: '',
+      neighborhoods: '',
+      specialties: '',
+      availability: '',
+      primaryColor: '',
+      secondaryColor: '',
+      backgroundColor: '',
     })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('rejeita nome exibido vazio', () => {
+    const result = publicProfileEditorSchema.safeParse({ ...validDraft, displayName: '' })
 
     expect(result.success).toBe(false)
   })
 
-  it('rejects incomplete or excessive team members', () => {
-    const incompleteResult = publicProfileEditorSchema.safeParse({
-      ...publicProfileEditorDefaultValues,
-      teamMembers: [
-        {
-          name: '',
-          role: '',
-          avatarUrl: 'not-a-url',
-          profileUrl: '',
-        },
-      ],
-    })
-    const excessiveResult = publicProfileEditorSchema.safeParse({
-      ...publicProfileEditorDefaultValues,
-      teamMembers: Array.from({ length: 7 }, (_, index) => ({
-        name: `Membro ${index + 1}`,
-        role: 'Corretor',
-        avatarUrl: 'https://example.com/avatar.jpg',
-        profileUrl: `/brokers/membro-${index + 1}`,
-      })),
-    })
+  it('rejeita cor em formato inválido', () => {
+    const result = publicProfileEditorSchema.safeParse({ ...validDraft, primaryColor: 'magenta' })
 
-    expect(incompleteResult.success).toBe(false)
-    expect(excessiveResult.success).toBe(false)
+    expect(result.success).toBe(false)
+  })
+
+  it('rejeita URL inválida para avatar/banner', () => {
+    const result = publicProfileEditorSchema.safeParse({ ...validDraft, avatarUrl: 'not-a-url' })
+
+    expect(result.success).toBe(false)
   })
 })

@@ -16,7 +16,6 @@ import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded'
 import {
   Avatar,
   Box,
-  Button,
   ButtonBase,
   Chip,
   IconButton,
@@ -38,9 +37,9 @@ import { useForm, useWatch } from 'react-hook-form'
 import { useRouter } from '@/i18n/navigation'
 import { RhfTextField } from '@shared/components/form'
 import {
+  DashboardHeaderActionButton,
   DashboardNotificationsButton,
   DashboardPageHeader,
-  dashboardHeaderActionButtonSx,
 } from '@shared/components/layout'
 import {
   alpha,
@@ -175,14 +174,11 @@ export function BrokerTeamDashboardPage() {
                   ),
                 }}
               />
-              <Button
-                type="button"
-                variant="contained"
+              <DashboardHeaderActionButton
                 startIcon={<PersonAddAlt1OutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-                sx={dashboardHeaderActionButtonSx}
               >
                 {t('inviteBroker')}
-              </Button>
+              </DashboardHeaderActionButton>
               <Box sx={{ display: { xs: 'none', md: 'block' } }}>
                 <DashboardNotificationsButton />
               </Box>

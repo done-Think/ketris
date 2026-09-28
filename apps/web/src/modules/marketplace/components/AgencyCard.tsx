@@ -5,14 +5,12 @@ import { Box, Card, CardContent, Chip, Divider, Stack, Typography } from '@mui/m
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
-import StarRoundedIcon from '@mui/icons-material/StarRounded'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
 import { alpha, componentText, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
 
 import type { AgencyCardProps } from '../types/agency'
-import { formatRating } from '../utils/format-rating'
 import { buildPublicProfileHref } from '../utils/property-links'
 import { buildProfileListings } from '../utils/profile-listings'
 import { AgencyBrandBanner } from './AgencyBrandBanner'
@@ -94,7 +92,7 @@ export function AgencyCard(agency: AgencyCardProps) {
 
           <Typography sx={{ ...componentText.cardTitle, mb: 0.4 }}>{agency.name}</Typography>
           <Typography sx={{ color: 'text.secondary', ...componentText.cardBroker }}>
-            {agency.legalCreci} / {agency.headquarters}
+            {[agency.legalCreci, agency.headquarters].filter(Boolean).join(' / ')}
           </Typography>
           {isListView ? (
             <Typography
@@ -129,12 +127,11 @@ export function AgencyCard(agency: AgencyCardProps) {
           </Stack>
 
           <DirectoryCardMetrics
-            gridTemplateColumns="repeat(3, minmax(0, 1fr))"
+            gridTemplateColumns="repeat(2, minmax(0, 1fr))"
             labelFontWeight={700}
             metrics={[
               { label: t('properties'), value: agency.activeListings, icon: ApartmentOutlinedIcon },
               { label: t('team'), value: agency.brokersCount, icon: GroupsOutlinedIcon },
-              { label: t('rating'), value: formatRating(agency.rating), icon: StarRoundedIcon },
             ]}
             valueFontWeight={700}
           />
@@ -142,9 +139,9 @@ export function AgencyCard(agency: AgencyCardProps) {
 
         {isListView ? (
           <ProfileListingPreviewSection
-            accentColor={agency.brand.primaryColor}
-            backgroundColor={agency.brand.backgroundColor}
-            hoverBorderColor={agency.brand.primaryColor}
+            accentColor={agency.brand.primaryColor ?? ''}
+            backgroundColor={agency.brand.backgroundColor ?? ''}
+            hoverBorderColor={agency.brand.primaryColor ?? ''}
             listings={featuredListings}
             sideBorderBreakpoint="lg"
           />

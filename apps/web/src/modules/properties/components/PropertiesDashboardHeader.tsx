@@ -1,12 +1,12 @@
-import { Box, Button, InputAdornment, Stack, TextField } from '@mui/material'
+import { Box, InputAdornment, Stack, TextField } from '@mui/material'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { useTranslations } from 'next-intl'
 
 import {
+  DashboardHeaderActionButton,
   DashboardNotificationsButton,
   DashboardPageHeader,
-  dashboardHeaderActionButtonSx,
 } from '@shared/components/layout'
 import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
@@ -59,14 +59,12 @@ export function PropertiesDashboardHeader({
           }}
         />
       </Box>
-      <Button
-        variant="contained"
+      <DashboardHeaderActionButton
         startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
         onClick={onCreateProperty}
-        sx={dashboardHeaderActionButtonSx}
       >
         {t('create')}
-      </Button>
+      </DashboardHeaderActionButton>
       <Box sx={{ display: { xs: 'none', md: 'block' } }}>
         <DashboardNotificationsButton />
       </Box>

@@ -1,19 +1,32 @@
+import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 
-import { locales } from '@/i18n/routing'
 import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
+import { marketplaceContainer } from '@server/marketplace/container'
+import { AgencyProfileNotFoundError } from '@server/marketplace/domain/errors'
 import { AgencyPublicProfilePage } from '@modules/marketplace'
-import { agencies, getAgencyById } from '@modules/marketplace/data/agencies'
+import { toAgencyProfile } from '@modules/marketplace/utils/agency-profile-adapter'
 
-export function generateStaticParams() {
-  return locales.flatMap((locale) => agencies.map((agency) => ({ locale, id: agency.id })))
-}
+const getAgency = cache(async (id: string) => {
+  try {
+    const profile = await marketplaceContainer.getAgencyProfileUseCase.execute({ id })
+
+    return toAgencyProfile({
+      ...profile,
+      publishedAt: profile.publishedAt?.toISOString() ?? null,
+    })
+  } catch (error) {
+    if (error instanceof AgencyProfileNotFoundError) return null
+
+    throw error
+  }
+})
 
 export async function generateMetadata({ params }: LocaleRoutePageProps<{ id: string }>) {
   const { id, locale } = await params
   const t = await getTranslations({ locale, namespace: 'marketplace.metadata' })
-  const agency = getAgencyById(id)
+  const agency = await getAgency(id)
 
   if (!agency) {
     return {
@@ -25,15 +38,15 @@ export async function generateMetadata({ params }: LocaleRoutePageProps<{ id: st
     title: `Ketris | ${agency.name}`,
     description: t('details.agencyDescription', {
       name: agency.name,
-      creci: agency.legalCreci,
-      headquarters: agency.headquarters,
+      creci: agency.legalCreci ?? '',
+      headquarters: agency.headquarters ?? '',
     }),
   }
 }
 
 export default async function AgencyPage({ params }: LocaleRoutePageProps<{ id: string }>) {
   const { id } = await params
-  const agency = getAgencyById(id)
+  const agency = await getAgency(id)
 
   if (!agency) notFound()
 

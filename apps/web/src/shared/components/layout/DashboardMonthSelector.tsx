@@ -2,13 +2,13 @@
 
 import { useMemo, useState, type MouseEvent } from 'react'
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
-import { Button, Menu, MenuItem } from '@mui/material'
+import { Menu, MenuItem } from '@mui/material'
 import dayjs, { type Dayjs } from 'dayjs'
 import 'dayjs/locale/pt-br'
 
 import { iconSize, radius, shadows } from '@shared/theme/tokens'
 
-import { dashboardHeaderActionButtonSx } from './dashboard-header-actions'
+import { DashboardHeaderActionButton } from './DashboardHeaderActionButton'
 
 function formatMonthLabel(month: Dayjs) {
   const label = month.locale('pt-br').format('MMMM YYYY')
@@ -33,17 +33,15 @@ export function DashboardMonthSelector() {
 
   return (
     <>
-      <Button
-        type="button"
+      <DashboardHeaderActionButton
         variant="outlined"
         aria-haspopup="menu"
         aria-expanded={Boolean(monthAnchor)}
         onClick={handleMonthButtonClick}
         endIcon={<KeyboardArrowDownRoundedIcon sx={{ fontSize: iconSize.sm }} />}
-        sx={dashboardHeaderActionButtonSx}
       >
         {formatMonthLabel(selectedMonth)}
-      </Button>
+      </DashboardHeaderActionButton>
       <Menu
         anchorEl={monthAnchor}
         open={Boolean(monthAnchor)}

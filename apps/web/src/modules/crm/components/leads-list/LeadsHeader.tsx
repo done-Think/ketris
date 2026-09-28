@@ -1,12 +1,12 @@
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
-import { Box, Button, InputAdornment, Stack, TextField } from '@mui/material'
+import { Box, InputAdornment, Stack, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import {
+  DashboardHeaderActionButton,
   DashboardNotificationsButton,
   DashboardPageHeader,
-  dashboardHeaderActionButtonSx,
 } from '@shared/components/layout'
 import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
@@ -50,14 +50,11 @@ export function LeadsHeader({ search, onSearchChange, onNewLead }: LeadsHeaderPr
           },
         }}
       />
-      <Button
-        type="button"
-        variant="contained"
+      <DashboardHeaderActionButton
         startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
         disabled={!onNewLead}
         onClick={onNewLead}
         sx={{
-          ...dashboardHeaderActionButtonSx,
           '&.Mui-disabled': {
             bgcolor: brand.magenta[500],
             color: surface.lightText,
@@ -66,7 +63,7 @@ export function LeadsHeader({ search, onSearchChange, onNewLead }: LeadsHeaderPr
         }}
       >
         {t('newLead')}
-      </Button>
+      </DashboardHeaderActionButton>
       <Box sx={{ display: { xs: 'none', md: 'block' } }}>
         <DashboardNotificationsButton />
       </Box>
