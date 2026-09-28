@@ -89,6 +89,14 @@ describe('MarketplaceHeader', () => {
 
     expect(screen.getByText('Maria Silva')).toBeInTheDocument()
     expect(screen.getByText('maria@example.com')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /suporte/i })).toHaveAttribute(
+      'href',
+      '/dashboard/maintenance',
+    )
+    expect(screen.getByRole('link', { name: /configurações/i })).toHaveAttribute(
+      'href',
+      '/dashboard/public-profile',
+    )
   })
 
   it('RENTER: não mostra o botão de anunciar imóvel', () => {

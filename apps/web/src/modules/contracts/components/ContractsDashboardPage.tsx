@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Box } from '@mui/material'
+import { Box, Stack } from '@mui/material'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import { useSnackbar } from 'notistack'
@@ -12,6 +12,7 @@ import { useRouter } from '@/i18n/navigation'
 
 import {
   contractActionMockContents,
+  contractFilterTabs,
   contractMetrics,
   contractPeriodOptions,
 } from '../config/contract-ui'
@@ -105,6 +106,21 @@ export function ContractsDashboardPage() {
       ),
     [contracts, searchQuery, status, type, period],
   )
+  const filterCounts = useMemo(
+    () =>
+      contractFilterTabs.reduce(
+        (counts, tab) => ({
+          ...counts,
+          [tab.label]: contracts.filter(
+            (contract) =>
+              (tab.status === 'Todos' || contract.status === tab.status) &&
+              matchesPeriodFilter(contract, tab.period),
+          ).length,
+        }),
+        {} as Record<(typeof contractFilterTabs)[number]['label'], number>,
+      ),
+    [contracts],
+  )
   const createContract = () => router.push('/dashboard/contracts/new')
   const openContractDetail = (contract: ContractListItem) => {
     router.push({ pathname: '/dashboard/contracts/[id]', params: { id: contract.id } })
@@ -133,16 +149,15 @@ export function ContractsDashboardPage() {
 
   return (
     <Box sx={{ width: '100%', p: 3.5 }}>
-      <Box
+      <Stack
+        spacing={2}
         sx={{
           width: '100%',
           minHeight: { md: 'calc(100vh - 68px)' },
-          display: 'flex',
-          flexDirection: 'column',
         }}
       >
         <ContractsDashboardHeader control={control} onCreateContract={createContract} />
-        <ContractsFilters control={control} setValue={setValue} />
+        <ContractsFilters control={control} filterCounts={filterCounts} setValue={setValue} />
         <ContractsSummaryCards metrics={contractMetrics} />
 
         {filteredContracts.length > 0 ? (
@@ -162,7 +177,7 @@ export function ContractsDashboardPage() {
           onClose={closeContractActionDialog}
           onConfirm={confirmContractAction}
         />
-      </Box>
+      </Stack>
     </Box>
   )
 }

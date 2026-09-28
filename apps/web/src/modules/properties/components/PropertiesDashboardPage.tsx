@@ -2,10 +2,10 @@
 
 import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
-import { Box } from '@mui/material'
+import { Box, Stack } from '@mui/material'
 
 import { useRouter } from '@/i18n/navigation'
-import { propertyStatusFilters } from '../data/dashboard-properties'
+import { dashboardProperties, propertyStatusFilters } from '../data/dashboard-properties'
 import { useProperties } from '../hooks/use-properties'
 import type {
   DashboardProperty,
@@ -36,9 +36,15 @@ function matchesSearchQuery(property: DashboardProperty, query: string) {
 export function PropertiesDashboardPage() {
   const router = useRouter()
   const propertiesQuery = useProperties()
+  const canUseFixtures = process.env.NODE_ENV !== 'production'
+  const fixtureMode =
+    canUseFixtures &&
+    !propertiesQuery.isLoading &&
+    (propertiesQuery.isError || (propertiesQuery.data ?? []).length === 0)
   const properties = useMemo(
-    () => (propertiesQuery.data ?? []).map(toDashboardProperty),
-    [propertiesQuery.data],
+    () =>
+      fixtureMode ? dashboardProperties : (propertiesQuery.data ?? []).map(toDashboardProperty),
+    [fixtureMode, propertiesQuery.data],
   )
   const { setValue, watch } = useForm<PropertiesDashboardFiltersFormValues>({
     defaultValues: {
@@ -72,12 +78,11 @@ export function PropertiesDashboardPage() {
 
   return (
     <Box sx={{ width: '100%', p: 3.5 }}>
-      <Box
+      <Stack
+        spacing={2}
         sx={{
           width: '100%',
           minHeight: { md: 'calc(100vh - 68px)' },
-          display: 'flex',
-          flexDirection: 'column',
         }}
       >
         <PropertiesDashboardHeader
@@ -97,7 +102,7 @@ export function PropertiesDashboardPage() {
             router.push({ pathname: '/dashboard/properties/[id]', params: { id: propertyId } })
           }
         />
-      </Box>
+      </Stack>
     </Box>
   )
 }

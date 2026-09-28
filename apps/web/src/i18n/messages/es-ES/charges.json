@@ -1,0 +1,136 @@
+{
+  "metadata": {
+    "title": "Ketris | Cobros",
+    "description": "Gestiona cobros por recibir y pagar.",
+    "metadataTitle": "Ketris | Cobros",
+    "metadataDescription": "Gestiona cobros por recibir y pagar."
+  },
+  "title": "Cobros",
+  "subtitle": "Gestiona cobros por recibir y pagar",
+  "searchPlaceholder": "Buscar inquilino o inmueble...",
+  "newCharge": "Nuevo cobro",
+  "tabs": { "receivable": "Por recibir", "payable": "Por pagar" },
+  "kpis": {
+    "receivable": "Por recibir este mes",
+    "overdue": "Vencidos",
+    "defaultRate": "Tasa de morosidad"
+  },
+  "statuses": {
+    "all": "Todas",
+    "pending": "Pendiente",
+    "overdue": "Vencido",
+    "paid": "Pagado",
+    "scheduled": "Programado",
+    "cancelled": "Cancelado"
+  },
+  "table": {
+    "code": "Cobro",
+    "tenant": "Inquilino",
+    "property": "Inmueble",
+    "amount": "Valor",
+    "dueDate": "Vencimiento",
+    "status": "Estado",
+    "actions": "Acciones"
+  },
+  "actions": { "edit": "Editar", "archive": "Archivar" },
+  "feedback": {
+    "updated": "Cobro actualizado localmente",
+    "archived": "Cobro archivado localmente"
+  },
+  "pagination": { "summary": "Mostrando {from}-{to} de {total} cobros" },
+  "createDialog": {
+    "title": "Nuevo cobro",
+    "close": "Cerrar",
+    "cancel": "Cancelar",
+    "submit": "Crear cobro",
+    "success": "Cobro creado localmente",
+    "fields": {
+      "tenant": "Inquilino",
+      "property": "Inmueble",
+      "amount": "Valor",
+      "dueDate": "Vencimiento",
+      "direction": "Tipo",
+      "status": "Estado"
+    },
+    "directions": { "receivable": "Por recibir", "payable": "Por pagar" },
+    "statuses": { "pending": "Pendiente", "scheduled": "Programado" }
+  },
+  "editDialog": {
+    "paymentHint": "Para marcar como pagado, registra el pago en los detalles.",
+    "title": "Editar cobro",
+    "close": "Cerrar",
+    "cancel": "Cancelar",
+    "save": "Guardar cambios",
+    "fields": {
+      "tenant": "Inquilino",
+      "property": "Inmueble",
+      "amount": "Valor",
+      "dueDate": "Vencimiento",
+      "direction": "Tipo",
+      "status": "Estado"
+    }
+  },
+  "archiveDialog": {
+    "title": "¿Archivar cobro?",
+    "description": "El cobro se eliminará de la lista demostrativa.",
+    "cancel": "Cancelar",
+    "confirm": "Archivar"
+  },
+  "detailsDialog": {
+    "title": "Detalles del cobro",
+    "close": "Cerrar"
+  },
+  "details": {
+    "missing": "Cobro no encontrado o archivado en esta sesión demostrativa.",
+    "noReceipt": "Este cobro no tiene comprobante.",
+    "demoDocument": "Documento demostrativo — no válido para pago.",
+    "closeDocument": "Cerrar documento",
+    "back": "Volver a cobros",
+    "summary": "Alquiler — Marzo 2025",
+    "duplicate": "Emitir duplicado",
+    "duplicateSuccess": "Duplicado demostrativo preparado localmente",
+    "registerPayment": "Registrar pago",
+    "paymentSuccess": "Pago registrado localmente",
+    "detailsTitle": "Detalles del cobro",
+    "receiptTitle": "Comprobante",
+    "linkingTitle": "Vinculación",
+    "historyTitle": "Historial",
+    "receivable": "Alquiler mensual",
+    "payable": "Pago",
+    "notPaid": "No pagado",
+    "notAvailable": "—",
+    "fields": {
+      "type": "Tipo",
+      "competence": "Competencia",
+      "amount": "Valor",
+      "dueDate": "Vencimiento",
+      "payment": "Pago",
+      "method": "Forma",
+      "fees": "Multa/Intereses"
+    },
+    "receiptFile": "comprobante_pix_040325.pdf",
+    "receiptMeta": "Enviado el 04/03/2025 a las 14:15 · 142 KB",
+    "viewReceipt": "Ver comprobante",
+    "receiptPreview": "Vista previa demostrativa disponible localmente.",
+    "contract": "CONTRATO",
+    "property": "INMUEBLE",
+    "tenant": "INQUILINO",
+    "address": "Alameda Lorena, 1420 - Jardins, São Paulo - SP",
+    "contact": "bruno.oliveira@email.com",
+    "history": {
+      "updated": "Cobro actualizado",
+      "generated": "Cobro generado",
+      "generatedDate": "25/02/2025 a las 09:00",
+      "issued": "Boleto emitido",
+      "issuedDate": "25/02/2025 a las 09:30",
+      "received": "Pago recibido"
+    },
+    "paymentDialog": {
+      "title": "Registrar pago",
+      "date": "Fecha de pago",
+      "method": "Forma de pago",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar pago"
+    }
+  }
+}

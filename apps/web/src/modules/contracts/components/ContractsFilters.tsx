@@ -1,13 +1,13 @@
-import { Box, Button, FormControl, MenuItem, Select, TextField } from '@mui/material'
+import { Box, Button, FormControl, MenuItem, Select, Stack, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { useWatch } from 'react-hook-form'
 
-import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
+import { alpha, brand, motion, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { contractFilterTabs, contractTypeFilterOptions } from '../config/contract-ui'
 import type { ContractsFiltersFormValues, ContractsFiltersProps } from '../types/contract'
 
-export function ContractsFilters({ control, setValue }: ContractsFiltersProps) {
+export function ContractsFilters({ control, filterCounts, setValue }: ContractsFiltersProps) {
   const t = useTranslations('contracts.filters.tabs')
   const tType = useTranslations('contracts.filters.typeFilter')
   const status = useWatch({ control, name: 'status' })
@@ -18,13 +18,15 @@ export function ContractsFilters({ control, setValue }: ContractsFiltersProps) {
     contractFilterTabs[0].label
 
   return (
-    <Box
+    <Stack
+      direction="row"
+      spacing={0.8}
+      useFlexGap
+      flexWrap="wrap"
       sx={{
         display: 'flex',
-        flexWrap: 'wrap',
         alignItems: 'center',
-        gap: 1,
-        mb: 2.4,
+        mb: 1.8,
       }}
     >
       <TextField
@@ -56,7 +58,7 @@ export function ContractsFilters({ control, setValue }: ContractsFiltersProps) {
           <Button
             key={tab.label}
             type="button"
-            variant={active ? 'contained' : 'outlined'}
+            variant="contained"
             onClick={() => {
               setValue('status', tab.status, { shouldDirty: true })
               setValue('period', tab.period, { shouldDirty: true })
@@ -64,25 +66,41 @@ export function ContractsFilters({ control, setValue }: ContractsFiltersProps) {
             }}
             sx={{
               display: { xs: 'none', sm: 'inline-flex' },
-              minHeight: 36,
+              minHeight: 42,
               borderRadius: `${radius.full}px`,
-              borderColor: active ? brand.magenta[500] : alpha.graphite[8],
-              bgcolor: active ? brand.magenta[500] : surface.paper,
-              boxShadow: shadows.none,
-              color: active ? surface.lightText : brand.neutral[500],
-              px: 2.1,
-              py: 0.5,
-              fontSize: 14,
+              boxShadow: 'none',
+              px: 1.8,
+              gap: 0.6,
+              fontSize: 17,
               fontWeight: 900,
+              bgcolor: active ? 'primary.main' : alpha.graphite[6],
+              color: active ? surface.lightText : brand.graphite[500],
               textTransform: 'none',
+              transition: motion.transition.bordered,
               '&:hover': {
-                borderColor: brand.magenta[500],
-                bgcolor: active ? brand.magenta[500] : alpha.magenta[6],
-                color: active ? surface.lightText : brand.magenta[500],
+                bgcolor: active ? 'primary.main' : alpha.graphite[10],
+                boxShadow: 'none',
               },
             }}
           >
             {t(tab.label)}
+            <Box
+              component="span"
+              sx={{
+                display: 'grid',
+                minWidth: 24,
+                height: 24,
+                placeItems: 'center',
+                px: 0.5,
+                borderRadius: `${radius.full}px`,
+                bgcolor: active ? alpha.white[8] : alpha.graphite[6],
+                color: active ? surface.lightText : brand.neutral[500],
+                fontSize: 14.5,
+                fontWeight: 800,
+              }}
+            >
+              {filterCounts[tab.label]}
+            </Box>
           </Button>
         )
       })}
@@ -122,11 +140,11 @@ export function ContractsFilters({ control, setValue }: ContractsFiltersProps) {
             })
           }
           sx={{
-            height: 36,
+            height: 42,
             borderRadius: `${radius.full}px`,
             bgcolor: surface.paper,
-            fontSize: 14,
-            fontWeight: 800,
+            fontSize: 17,
+            fontWeight: 900,
             '& .MuiOutlinedInput-notchedOutline': { borderColor: alpha.graphite[8] },
           }}
         >
@@ -137,7 +155,7 @@ export function ContractsFilters({ control, setValue }: ContractsFiltersProps) {
           ))}
         </Select>
       </FormControl>
-    </Box>
+    </Stack>
   )
 }
 

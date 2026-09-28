@@ -33,6 +33,7 @@ const fixtureSummary: Record<SalesPipelineStageId, { count: number; total: numbe
   negotiation: { count: 2, total: 29500 },
   closed: { count: 2, total: 13000 },
 }
+const pipelineViewModeStorageKey = 'ketris.crm.pipeline.viewMode'
 
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
@@ -163,6 +164,7 @@ describe('SalesPipelineBoard', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    window.localStorage.removeItem(pipelineViewModeStorageKey)
     vi.mocked(useSession).mockReturnValue({
       data: { tenantId: 'tenant-1' },
       status: 'authenticated',
@@ -196,15 +198,29 @@ describe('SalesPipelineBoard', () => {
       expect(stageTypography).toEqual(typography[0])
     }
     expect(typography[0]).toMatchObject({
-      fontSize: '10.5px',
+      fontSize: '14.5px',
       fontWeight: '700',
-      lineHeight: '14px',
+      lineHeight: '18px',
       textTransform: 'uppercase',
     })
     expect(typography[0]?.fontFamily).toContain('var(--font-inter)')
   })
 
-  it('renders the structured fixtures only when the non-production preview is explicit', () => {
+  it('restores and saves the selected pipeline view mode preference', async () => {
+    const user = userEvent.setup()
+    window.localStorage.setItem(pipelineViewModeStorageKey, 'list')
+
+    renderPipeline({ preview: true })
+
+    expect(screen.getByRole('table', { name: 'Propostas do CRM' })).toBeVisible()
+
+    await user.click(screen.getByRole('button', { name: 'Ver em quadro' }))
+
+    expect(window.localStorage.getItem(pipelineViewModeStorageKey)).toBe('kanban')
+    expect(screen.getByRole('region', { name: 'Prospecção' })).toBeVisible()
+  })
+
+  it('renders the structured fixtures in non-production preview mode', () => {
     vi.mocked(useSession).mockReturnValue({
       data: null,
       status: 'unauthenticated',
@@ -316,7 +332,7 @@ describe('SalesPipelineBoard', () => {
     const prospectingTotals = within(prospecting).getByRole('group', {
       name: 'Total projetado de Prospecção',
     })
-    expect(screen.getByText('Letícia Ramos')).toBeVisible()
+    expect(screen.getByRole('link', { name: /Let.*cia Ramos/ })).toBeVisible()
     expect(screen.queryByText('Carlos Eduardo')).not.toBeInTheDocument()
     expect(within(prospecting).getByText('1')).toBeVisible()
     expect(
@@ -340,16 +356,15 @@ describe('SalesPipelineBoard', () => {
     expect(screen.queryByText('Bruno Campina')).not.toBeInTheDocument()
   })
 
-  it('preserves the real empty state for an authenticated tenant instead of using fixtures', () => {
+  it('uses local fixtures for an authenticated tenant with no CRM data in non-production', () => {
     renderPipeline()
 
-    expect(screen.getAllByText('Sem oportunidades nesta etapa.')).toHaveLength(5)
-    for (const fixture of salesPipelineFixtures) {
-      expect(screen.queryByText(fixture.opportunity.leadName)).not.toBeInTheDocument()
-    }
+    expect(screen.getByText('Carlos Eduardo')).toBeVisible()
+    expect(screen.getByRole('link', { name: /Let.*cia Ramos/ })).toBeVisible()
+    expect(screen.queryByText('Sem oportunidades nesta etapa.')).not.toBeInTheDocument()
   })
 
-  it('keeps the public development pipeline empty when preview was not requested', () => {
+  it('uses local fixtures for the public development pipeline when preview was not requested', () => {
     vi.mocked(useSession).mockReturnValue({
       data: null,
       status: 'unauthenticated',
@@ -358,8 +373,9 @@ describe('SalesPipelineBoard', () => {
 
     renderPipeline()
 
-    expect(screen.getAllByText('Sem oportunidades nesta etapa.')).toHaveLength(5)
-    expect(screen.queryByText('Carlos Eduardo')).not.toBeInTheDocument()
+    expect(screen.getByText('Carlos Eduardo')).toBeVisible()
+    expect(screen.getByRole('link', { name: /Let.*cia Ramos/ })).toBeVisible()
+    expect(screen.queryByText('Sem oportunidades nesta etapa.')).not.toBeInTheDocument()
   })
 
   it('keeps fixtures disabled in production even without an authenticated session', () => {
@@ -520,6 +536,8 @@ describe('SalesPipelineBoard', () => {
 
   it('opens the create opportunity dialog from the toolbar button', async () => {
     const user = userEvent.setup()
+    mockOpportunitiesQuery({ data: [makeOpportunity(1, 'RASCUNHO')] })
+    mockPropertiesQuery({ data: [makeProperty(1)] })
     renderPipeline()
 
     await user.click(screen.getByRole('button', { name: 'Nova Oportunidade' }))
@@ -528,6 +546,7 @@ describe('SalesPipelineBoard', () => {
   })
 
   it('shows the API error and retries the opportunities query', () => {
+    vi.stubEnv('NODE_ENV', 'production')
     const refetch = vi.fn()
     mockOpportunitiesQuery({ isError: true, refetch })
     renderPipeline()
@@ -540,6 +559,7 @@ describe('SalesPipelineBoard', () => {
   })
 
   it('does not render misleading cards or totals when properties fail', () => {
+    vi.stubEnv('NODE_ENV', 'production')
     const refetch = vi.fn()
     mockOpportunitiesQuery({ data: [makeOpportunity(1, 'RASCUNHO')] })
     mockPropertiesQuery({ isError: true, refetch })

@@ -57,7 +57,7 @@ function makeLead(index: number, overrides: Partial<Lead> = {}): Lead {
     phone: `(11) 9000${index}-000${index}`,
     email: `lead${index}@email.com`,
     interest: `Interesse ${index}`,
-    budget: 'R$ 1M',
+    budget: index === 2 ? 'R$ 850K' : `R$ ${index}M`,
     source: 'Marketplace',
     stage: 'NOVO',
     notes: null,

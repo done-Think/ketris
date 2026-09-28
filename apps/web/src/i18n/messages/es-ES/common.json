@@ -26,6 +26,7 @@
     "defaultUserContext": "Panel administrativo",
     "backToMarketplace": "Volver al marketplace",
     "dashboard": "Dashboard",
+    "agencyOverview": "Visión Inmob.",
     "pipeline": "Pipeline",
     "contacts": "Contactos",
     "leads": "Leads",
@@ -36,7 +37,8 @@
     "agenda": "Agenda",
     "proposals": "Propuestas",
     "maintenance": "Mantenimiento",
-    "finance": "Finanzas"
+    "finance": "Finanzas",
+    "charges": "Cobros"
   },
   "roleGuard": {
     "loadingSession": "Cargando sesión",
