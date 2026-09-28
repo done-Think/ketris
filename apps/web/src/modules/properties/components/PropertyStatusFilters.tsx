@@ -110,7 +110,7 @@ export function PropertyStatusFilters({
             <Button
               key={filter.label}
               type="button"
-              variant={active ? 'contained' : 'outlined'}
+              variant="contained"
               aria-pressed={active}
               onClick={() => onStatusFilterChange(filter.label)}
               sx={{
@@ -120,9 +120,14 @@ export function PropertyStatusFilters({
                 gap: 0.6,
                 fontSize: 13,
                 fontWeight: 900,
+                bgcolor: active ? 'primary.main' : alpha.graphite[6],
+                color: active ? surface.lightText : brand.graphite[500],
                 boxShadow: 'none',
                 transition: motion.transition.bordered,
-                '&:hover': { boxShadow: 'none' },
+                '&:hover': {
+                  bgcolor: active ? 'primary.main' : alpha.graphite[10],
+                  boxShadow: 'none',
+                },
               }}
             >
               {t(filter.label)}
