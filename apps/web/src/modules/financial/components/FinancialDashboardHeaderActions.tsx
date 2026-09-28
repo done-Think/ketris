@@ -1,12 +1,12 @@
 'use client'
 
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
-import { Box, Button, Stack } from '@mui/material'
+import { Box, Stack } from '@mui/material'
 
 import {
+  DashboardHeaderActionButton,
   DashboardMonthSelector,
   DashboardNotificationsButton,
-  dashboardHeaderActionButtonSx,
 } from '@shared/components/layout'
 import { iconSize } from '@shared/theme/tokens'
 
@@ -24,14 +24,11 @@ export function FinancialDashboardHeaderActions({
       sx={{ width: { xs: '100%', md: 'auto' }, alignItems: { xs: 'stretch', sm: 'center' } }}
     >
       <DashboardMonthSelector />
-      <Button
-        type="button"
-        variant="contained"
+      <DashboardHeaderActionButton
         startIcon={<FileDownloadOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-        sx={dashboardHeaderActionButtonSx}
       >
         {exportLabel}
-      </Button>
+      </DashboardHeaderActionButton>
       <Box sx={{ display: { xs: 'none', md: 'block' } }}>
         <DashboardNotificationsButton />
       </Box>

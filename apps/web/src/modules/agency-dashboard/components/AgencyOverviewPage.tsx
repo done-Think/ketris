@@ -1,12 +1,12 @@
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
-import { Box, Button, Stack } from '@mui/material'
+import { Box, Stack } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import {
+  DashboardHeaderActionButton,
   DashboardMonthSelector,
   DashboardNotificationsButton,
   DashboardPageHeader,
-  dashboardHeaderActionButtonSx,
 } from '@shared/components/layout'
 import { iconSize, surface } from '@shared/theme/tokens'
 
@@ -24,14 +24,11 @@ export function AgencyOverviewPage() {
       sx={{ width: { xs: '100%', md: 'auto' }, alignItems: { sm: 'center' } }}
     >
       <DashboardMonthSelector />
-      <Button
-        type="button"
-        variant="contained"
+      <DashboardHeaderActionButton
         startIcon={<FileDownloadOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-        sx={dashboardHeaderActionButtonSx}
       >
         {t('report')}
-      </Button>
+      </DashboardHeaderActionButton>
       <Box sx={{ display: { xs: 'none', md: 'block' } }}>
         <DashboardNotificationsButton />
       </Box>

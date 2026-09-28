@@ -8,7 +8,7 @@ import { componentText, motion, radius, shadows, surface } from '@shared/theme/t
 import type { AgencyHighlightedTeamProps } from '../../types/agency-highlighted-team'
 import { buildPublicProfileHref } from '../../utils/property-links'
 
-export function AgencyHighlightedTeam({ brand, brokers }: AgencyHighlightedTeamProps) {
+export function AgencyHighlightedTeam({ brand, team }: AgencyHighlightedTeamProps) {
   return (
     <Box
       sx={{
@@ -30,12 +30,12 @@ export function AgencyHighlightedTeam({ brand, brokers }: AgencyHighlightedTeamP
           gap: 1.2,
         }}
       >
-        {brokers.map((broker) => (
+        {team.map((member) => (
           <Box
-            key={broker.href}
+            key={member.usuarioId}
             component={Link}
-            href={buildPublicProfileHref(broker.href, 'broker')}
-            aria-label={`Ver perfil de ${broker.name}`}
+            href={buildPublicProfileHref(`/brokers/${member.usuarioId}`, 'broker')}
+            aria-label={`Ver perfil de ${member.name}`}
             sx={{
               alignItems: 'center',
               border: '1px solid',
@@ -61,8 +61,8 @@ export function AgencyHighlightedTeam({ brand, brokers }: AgencyHighlightedTeamP
             }}
           >
             <Avatar
-              src={broker.avatar}
-              alt={broker.name}
+              src={member.avatarUrl ?? undefined}
+              alt={member.name}
               sx={{ width: 42, height: 42, flexShrink: 0 }}
             />
             <Box sx={{ minWidth: 0 }}>
@@ -73,17 +73,7 @@ export function AgencyHighlightedTeam({ brand, brokers }: AgencyHighlightedTeamP
                   ...componentText.profileTeamName,
                 }}
               >
-                {broker.name}
-              </Typography>
-              <Typography
-                noWrap
-                sx={{
-                  color: 'text.secondary',
-                  ...componentText.profileTeamRegion,
-                  mt: 0.2,
-                }}
-              >
-                {broker.region}
+                {member.name}
               </Typography>
             </Box>
           </Box>

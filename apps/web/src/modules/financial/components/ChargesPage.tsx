@@ -15,7 +15,7 @@ import {
   InputAdornment,
   Menu,
   MenuItem,
-  Pagination,
+  Paper,
   Stack,
   Tab,
   Table,
@@ -34,9 +34,11 @@ import { useTranslations, useLocale } from 'next-intl'
 
 import { useRouter } from '@/i18n/navigation'
 import {
+  DashboardHeaderActionButton,
   DashboardNotificationsButton,
   DashboardPageHeader,
-  dashboardHeaderActionButtonSx,
+  DashboardStatusFilterButton,
+  DashboardTablePagination,
 } from '@shared/components/layout'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 import { getMonthlyReceivable, useChargesStore } from '../stores/charges-store'
@@ -52,7 +54,7 @@ import { ArchiveChargeDialog } from './ArchiveChargeDialog'
 import { CreateChargeDialog } from './CreateChargeDialog'
 import { EditChargeDialog } from './EditChargeDialog'
 
-const pageSize = 6
+const defaultRowsPerPage = 6
 const statusKeys: Array<'all' | ChargeStatus> = ['all', 'pending', 'overdue', 'paid', 'scheduled']
 
 function currency(value: number, locale: string) {
@@ -73,6 +75,7 @@ export function ChargesPage() {
   const [status, setStatus] = useState<'all' | ChargeStatus>('all')
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
+  const [rowsPerPage, setRowsPerPage] = useState(defaultRowsPerPage)
   const [createOpen, setCreateOpen] = useState(false)
   const [editingChargeId, setEditingChargeId] = useState<string | null>(null)
   const [archivingChargeId, setArchivingChargeId] = useState<string | null>(null)
@@ -91,9 +94,9 @@ export function ChargesPage() {
       ),
     [charges, direction, locale, normalized, status],
   )
-  const pageCount = Math.max(1, Math.ceil(visible.length / pageSize))
+  const pageCount = Math.max(1, Math.ceil(visible.length / rowsPerPage))
   const currentPage = Math.min(page, pageCount)
-  const rows = visible.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  const rows = visible.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)
   const editingCharge = charges.find((charge) => charge.id === editingChargeId) ?? null
   const receivables = charges.filter((charge) => charge.direction === 'receivable')
   const due = getMonthlyReceivable(charges)
@@ -170,25 +173,25 @@ export function ChargesPage() {
                 }}
                 sx={{
                   width: { xs: '100%', sm: 250 },
-                  '& .MuiOutlinedInput-root': {
-                    bgcolor: surface.paper,
+                  '& .MuiInputBase-root': {
+                    height: { xs: 40, sm: 32 },
                     borderRadius: `${radius.sm}px`,
-                    height: 36,
-                    fontSize: 14,
-                    fontWeight: 600,
+                    bgcolor: surface.paper,
+                    color: brand.graphite[500],
+                    fontSize: 12,
                   },
-                  '& .MuiInputBase-input': { py: 0 },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: alpha.graphite[8],
+                  },
                   '& .MuiInputAdornment-root .MuiSvgIcon-root': { fontSize: iconSize.sm },
                 }}
               />
-              <Button
-                variant="contained"
+              <DashboardHeaderActionButton
                 startIcon={<AddRoundedIcon />}
                 onClick={() => setCreateOpen(true)}
-                sx={dashboardHeaderActionButtonSx}
               >
                 {t('newCharge')}
-              </Button>
+              </DashboardHeaderActionButton>
               <Box sx={{ display: { xs: 'none', md: 'block' } }}>
                 <DashboardNotificationsButton />
               </Box>
@@ -221,53 +224,14 @@ export function ChargesPage() {
                   charge.direction === direction && (item === 'all' || charge.status === item),
               ).length
               return (
-                <Button
+                <DashboardStatusFilterButton
                   key={item}
-                  type="button"
-                  variant="text"
-                  aria-pressed={active}
+                  active={active}
+                  count={count}
                   onClick={() => selectStatus(item)}
-                  sx={{
-                    minWidth: 0,
-                    minHeight: 42,
-                    px: 1.8,
-                    flexShrink: 0,
-                    gap: 0.6,
-                    border: 0,
-                    borderRadius: `${radius.full}px`,
-                    bgcolor: active ? brand.magenta[500] : brand.neutral[50],
-                    color: active ? surface.lightText : brand.graphite[500],
-                    fontSize: 17,
-                    fontWeight: 900,
-                    textTransform: 'none',
-                    whiteSpace: 'nowrap',
-                    boxShadow: 'none',
-                    '&:hover': {
-                      bgcolor: active ? brand.magenta[600] : brand.neutral[100],
-                      border: 0,
-                      boxShadow: 'none',
-                    },
-                  }}
                 >
                   {t(`statuses.${item}`)}
-                  <Box
-                    component="span"
-                    sx={{
-                      display: 'grid',
-                      minWidth: 24,
-                      height: 24,
-                      placeItems: 'center',
-                      px: 0.5,
-                      borderRadius: `${radius.full}px`,
-                      bgcolor: active ? alpha.white[8] : alpha.graphite[6],
-                      color: active ? surface.lightText : brand.neutral[500],
-                      fontSize: 14.5,
-                      fontWeight: 800,
-                    }}
-                  >
-                    {count}
-                  </Box>
-                </Button>
+                </DashboardStatusFilterButton>
               )
             })}
           </Stack>
@@ -327,13 +291,16 @@ export function ChargesPage() {
             tone="warning"
           />
         </Box>
-        <Box
+        <Paper
+          variant="outlined"
           sx={{
-            bgcolor: surface.paper,
-            borderRadius: `${radius.md}px`,
-            boxShadow: shadows.crmCardCompact,
+            display: 'flex',
+            flexDirection: 'column',
             overflow: 'hidden',
-            p: { xs: 1, md: 2 },
+            borderColor: alpha.graphite[6],
+            borderRadius: `${radius.sm}px`,
+            bgcolor: surface.paper,
+            boxShadow: shadows.propertyCard,
           }}
         >
           <TableContainer sx={{ overflowX: 'auto' }}>
@@ -342,33 +309,29 @@ export function ChargesPage() {
               sx={{
                 width: '100%',
                 minWidth: 840,
-                '& .MuiTableCell-head': {
-                  bgcolor: brand.neutral[50],
+                '& .MuiTableCell-root': { borderColor: 'divider' },
+                '& .MuiTableHead-root .MuiTableCell-root': {
+                  px: 1.5,
+                  py: 0,
                   color: brand.neutral[500],
-                  fontSize: 10.5,
-                  fontWeight: 900,
-                  letterSpacing: '.06em',
+                  fontSize: 14,
+                  fontWeight: 700,
+                  lineHeight: 1.2,
+                  letterSpacing: '0.01em',
                   textTransform: 'uppercase',
-                  textAlign: 'left',
-                  borderBottom: '1px solid',
-                  borderColor: alpha.graphite[6],
-                  px: 1.5,
-                  py: 1.35,
+                  whiteSpace: 'nowrap',
                 },
-                '& .MuiTableCell-head:last-child': { textAlign: 'center' },
-                '& .MuiTableCell-body': {
-                  borderColor: alpha.graphite[6],
+                '& .MuiTableHead-root .MuiTableCell-root:last-of-type': { textAlign: 'center' },
+                '& .MuiTableBody-root .MuiTableCell-root': {
                   px: 1.5,
-                  py: 1.2,
-                  fontSize: 13,
-                  color: brand.graphite[500],
+                  py: 0,
+                  fontSize: 15.5,
+                  lineHeight: 1.3,
                 },
-                '& .MuiTableRow-root:last-child .MuiTableCell-body': { borderBottom: 0 },
-                '& .MuiTableBody-root .MuiTableRow-root:hover': { bgcolor: brand.neutral[50] },
               }}
             >
               <TableHead>
-                <TableRow>
+                <TableRow sx={{ height: 44, bgcolor: surface.app }}>
                   {['code', 'tenant', 'property', 'amount', 'dueDate', 'status', 'actions'].map(
                     (key) => (
                       <TableCell key={key}>{t(`table.${key}`)}</TableCell>
@@ -377,11 +340,12 @@ export function ChargesPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {rows.map((charge) => (
+                {rows.map((charge, index) => (
                   <ChargeRow
                     key={charge.id}
                     charge={charge}
                     locale={locale}
+                    zebra={index % 2 === 1}
                     labels={{
                       actions: t('table.actions'),
                       view: t('detailsDialog.title'),
@@ -402,29 +366,19 @@ export function ChargesPage() {
               </TableBody>
             </Table>
           </TableContainer>
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            alignItems="center"
-            justifyContent="space-between"
-            spacing={1}
-            sx={{ pt: 1.5, px: { xs: 0.5, md: 0 }, pb: 0 }}
-          >
-            <Typography sx={{ color: brand.neutral[500], fontSize: 12 }}>
-              {t('pagination.summary', {
-                from: visible.length ? (currentPage - 1) * pageSize + 1 : 0,
-                to: Math.min(currentPage * pageSize, visible.length),
-                total: visible.length,
-              })}
-            </Typography>
-            <Pagination
-              count={pageCount}
-              page={currentPage}
-              onChange={(_, next) => setPage(next)}
-              color="primary"
-              size="small"
-            />
-          </Stack>
-        </Box>
+
+          <DashboardTablePagination
+            count={visible.length}
+            page={currentPage}
+            rowsPerPage={rowsPerPage}
+            rowsPerPageOptions={[6, 10, 25]}
+            onPageChange={setPage}
+            onRowsPerPageChange={(nextRowsPerPage) => {
+              setRowsPerPage(nextRowsPerPage)
+              setPage(1)
+            }}
+          />
+        </Paper>
       </Stack>
       <CreateChargeDialog
         open={createOpen}
@@ -499,6 +453,7 @@ function Metric({
 function ChargeRow({
   charge,
   locale,
+  zebra,
   labels,
   onEdit,
   onArchive,
@@ -506,6 +461,7 @@ function ChargeRow({
 }: {
   charge: Charge
   locale: string
+  zebra: boolean
   labels: Record<string, string>
   onEdit: () => void
   onArchive: () => void
@@ -514,41 +470,50 @@ function ChargeRow({
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const style = statusColors[charge.status]
   return (
-    <TableRow>
+    <TableRow
+      sx={{
+        height: 58,
+        bgcolor: zebra ? surface.app : surface.paper,
+        '&:hover': { bgcolor: alpha.graphite[6] },
+      }}
+    >
       <TableCell>
         <Button
           aria-label={`${labels.view} ${charge.code}`}
           onClick={onView}
           variant="text"
-          sx={{ minWidth: 0, p: 0, color: brand.graphite[500], fontSize: 13, fontWeight: 900 }}
+          sx={{ minWidth: 0, p: 0, color: brand.graphite[500], fontSize: 15.5, fontWeight: 900 }}
         >
           {charge.code}
         </Button>
       </TableCell>
       <TableCell>{charge.tenant}</TableCell>
       <TableCell>
-        <Typography sx={{ color: brand.neutral[500], fontSize: 13 }}>{charge.property}</Typography>
+        <Typography noWrap sx={{ color: 'text.secondary', fontSize: 14 }}>
+          {charge.property}
+        </Typography>
       </TableCell>
       <TableCell>
-        <Typography sx={{ fontWeight: 800, fontSize: 13 }}>
+        <Typography sx={{ fontWeight: 800, fontSize: 15.5 }}>
           {currency(charge.amount, locale)}
         </Typography>
       </TableCell>
       <TableCell>
-        {new Intl.DateTimeFormat(locale).format(new Date(`${charge.dueDate}T12:00:00`))}
+        <Typography sx={{ color: 'text.secondary', fontSize: 15.5 }}>
+          {new Intl.DateTimeFormat(locale).format(new Date(`${charge.dueDate}T12:00:00`))}
+        </Typography>
       </TableCell>
       <TableCell>
         <Chip
           label={labels.status}
           size="small"
           sx={{
-            height: 21,
+            height: 30,
             bgcolor: style.bg,
             color: style.color,
             borderRadius: `${radius.full}px`,
-            fontWeight: 800,
-            fontSize: 10,
-            '& .MuiChip-label': { px: 1 },
+            fontWeight: 900,
+            fontSize: 13,
           }}
         />
       </TableCell>

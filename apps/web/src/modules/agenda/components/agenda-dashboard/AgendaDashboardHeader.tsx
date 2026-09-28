@@ -3,13 +3,13 @@
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded'
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
-import { Box, Button, IconButton, Stack, Tooltip, Typography } from '@mui/material'
+import { Box, IconButton, Stack, Tooltip, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import {
+  DashboardHeaderActionButton,
   DashboardNotificationsButton,
   DashboardPageHeader,
-  dashboardHeaderActionButtonSx,
 } from '@shared/components/layout'
 import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
@@ -95,17 +95,13 @@ export function AgendaDashboardHeader({
           <AddRoundedIcon sx={{ fontSize: iconSize.xl }} />
         </IconButton>
       </Tooltip>
-      <Button
-        variant="contained"
+      <DashboardHeaderActionButton
         startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
         onClick={onNewEvent}
-        sx={{
-          ...dashboardHeaderActionButtonSx,
-          display: { xs: 'none', md: 'inline-flex' },
-        }}
+        sx={{ display: { xs: 'none', md: 'inline-flex' } }}
       >
         {t('newEvent')}
-      </Button>
+      </DashboardHeaderActionButton>
       <Box sx={{ display: { xs: 'none', md: 'block' } }}>
         <DashboardNotificationsButton
           notifications={notifications}
