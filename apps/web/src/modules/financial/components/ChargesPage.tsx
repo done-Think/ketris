@@ -33,6 +33,11 @@ import { useSnackbar } from 'notistack'
 import { useTranslations, useLocale } from 'next-intl'
 
 import { useRouter } from '@/i18n/navigation'
+import {
+  DashboardNotificationsButton,
+  DashboardPageHeader,
+  dashboardHeaderActionButtonSx,
+} from '@shared/components/layout'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 import { getMonthlyReceivable, useChargesStore } from '../stores/charges-store'
 import { chargeStatusColors as statusColors } from './charge-status-colors'
@@ -130,89 +135,169 @@ export function ChargesPage() {
     enqueueSnackbar(t('feedback.archived'), { variant: 'success' })
   }
   return (
-    <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 3 } }}>
-      <Stack spacing={{ xs: 2, md: 2.1 }}>
+    <Box sx={{ width: '100%', p: 3.5 }}>
+      <Stack spacing={{ xs: 2, md: 2.7 }}>
+        <DashboardPageHeader
+          title={t('title')}
+          subtitle={t('subtitle')}
+          sx={{ pb: 1.75, borderBottom: '1px solid', borderColor: 'divider' }}
+          actions={
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={1.2}
+              sx={{
+                width: { xs: '100%', md: 'auto' },
+                alignItems: { xs: 'stretch', sm: 'center' },
+              }}
+            >
+              <TextField
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value)
+                  setPage(1)
+                }}
+                placeholder={t('searchPlaceholder')}
+                size="small"
+                slotProps={{
+                  htmlInput: { 'aria-label': t('searchPlaceholder') },
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchRoundedIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+                sx={{
+                  width: { xs: '100%', sm: 250 },
+                  '& .MuiOutlinedInput-root': {
+                    bgcolor: surface.paper,
+                    borderRadius: `${radius.sm}px`,
+                    height: 36,
+                    fontSize: 14,
+                    fontWeight: 600,
+                  },
+                  '& .MuiInputBase-input': { py: 0 },
+                  '& .MuiInputAdornment-root .MuiSvgIcon-root': { fontSize: iconSize.sm },
+                }}
+              />
+              <Button
+                variant="contained"
+                startIcon={<AddRoundedIcon />}
+                onClick={() => setCreateOpen(true)}
+                sx={dashboardHeaderActionButtonSx}
+              >
+                {t('newCharge')}
+              </Button>
+              <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                <DashboardNotificationsButton />
+              </Box>
+            </Stack>
+          }
+        />
         <Stack
           direction={{ xs: 'column', md: 'row' }}
           justifyContent="space-between"
           alignItems={{ xs: 'stretch', md: 'center' }}
-          spacing={1.4}
+          spacing={1.2}
+          sx={{ mt: { xs: '14px !important', md: '14px !important' } }}
         >
-          <Box>
-            <Typography
-              variant="h3"
-              sx={{ fontSize: { xs: 24, md: 27 }, fontWeight: 900, color: brand.graphite[500] }}
-            >
-              {t('title')}
-            </Typography>
-            <Typography sx={{ color: brand.neutral[500], fontSize: 12.5, mt: 0.15 }}>
-              {t('subtitle')}
-            </Typography>
-          </Box>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2}>
-            <TextField
-              value={query}
-              onChange={(event) => {
-                setQuery(event.target.value)
-                setPage(1)
-              }}
-              placeholder={t('searchPlaceholder')}
-              size="small"
-              slotProps={{
-                htmlInput: { 'aria-label': t('searchPlaceholder') },
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchRoundedIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              sx={{
-                width: { xs: '100%', sm: 250 },
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: surface.paper,
-                  borderRadius: `${radius.sm}px`,
-                  fontSize: 12,
-                  height: 36,
-                },
-              }}
-            />
-            <Button
-              variant="contained"
-              startIcon={<AddRoundedIcon />}
-              onClick={() => setCreateOpen(true)}
-              sx={{ minHeight: 36, px: 1.8, fontSize: 12, whiteSpace: 'nowrap' }}
-            >
-              {t('newCharge')}
-            </Button>
+          <Stack
+            component="div"
+            role="group"
+            aria-label="Filtrar cobrancas por status"
+            direction="row"
+            spacing={0.8}
+            useFlexGap
+            flexWrap="wrap"
+            sx={{
+              minWidth: 0,
+            }}
+          >
+            {statusKeys.map((item) => {
+              const active = status === item
+              const count = charges.filter(
+                (charge) =>
+                  charge.direction === direction && (item === 'all' || charge.status === item),
+              ).length
+              return (
+                <Button
+                  key={item}
+                  type="button"
+                  variant="text"
+                  aria-pressed={active}
+                  onClick={() => selectStatus(item)}
+                  sx={{
+                    minWidth: 0,
+                    minHeight: 42,
+                    px: 1.8,
+                    flexShrink: 0,
+                    gap: 0.6,
+                    border: 0,
+                    borderRadius: `${radius.full}px`,
+                    bgcolor: active ? brand.magenta[500] : brand.neutral[50],
+                    color: active ? surface.lightText : brand.graphite[500],
+                    fontSize: 17,
+                    fontWeight: 900,
+                    textTransform: 'none',
+                    whiteSpace: 'nowrap',
+                    boxShadow: 'none',
+                    '&:hover': {
+                      bgcolor: active ? brand.magenta[600] : brand.neutral[100],
+                      border: 0,
+                      boxShadow: 'none',
+                    },
+                  }}
+                >
+                  {t(`statuses.${item}`)}
+                  <Box
+                    component="span"
+                    sx={{
+                      display: 'grid',
+                      minWidth: 24,
+                      height: 24,
+                      placeItems: 'center',
+                      px: 0.5,
+                      borderRadius: `${radius.full}px`,
+                      bgcolor: active ? alpha.white[8] : alpha.graphite[6],
+                      color: active ? surface.lightText : brand.neutral[500],
+                      fontSize: 14.5,
+                      fontWeight: 800,
+                    }}
+                  >
+                    {count}
+                  </Box>
+                </Button>
+              )
+            })}
           </Stack>
-        </Stack>
-        <Tabs
-          value={direction}
-          onChange={changeDirection}
-          sx={{
-            borderBottom: '1px solid',
-            borderColor: 'divider',
-            minHeight: 36,
-            '& .MuiTab-root': {
+          <Tabs
+            value={direction}
+            onChange={changeDirection}
+            sx={{
               minHeight: 36,
-              px: 0,
-              mr: { xs: 0, sm: 2.7 },
-              flex: { xs: 1, sm: 'initial' },
-              whiteSpace: 'nowrap',
-              textTransform: 'none',
-              color: brand.neutral[500],
-              fontSize: 12,
-              fontWeight: 700,
-            },
-            '& .Mui-selected': { color: 'primary.main' },
-            '& .MuiTabs-indicator': { height: 2 },
-          }}
-        >
-          <Tab value="receivable" label={t('tabs.receivable')} />
-          <Tab value="payable" label={t('tabs.payable')} />
-        </Tabs>
+              alignSelf: { xs: 'stretch', md: 'flex-end' },
+              '& .MuiTabs-flexContainer': {
+                justifyContent: { xs: 'stretch', md: 'flex-end' },
+              },
+              '& .MuiTab-root': {
+                minHeight: 36,
+                px: { xs: 0, sm: 2 },
+                flex: { xs: 1, md: 'initial' },
+                whiteSpace: 'nowrap',
+                textTransform: 'none',
+                color: brand.neutral[500],
+                fontSize: 12,
+                fontWeight: 700,
+              },
+              '& .Mui-selected': { color: 'primary.main' },
+              '& .MuiTabs-indicator': { height: 2 },
+            }}
+          >
+            <Tab value="receivable" label={t('tabs.receivable')} />
+            <Tab value="payable" label={t('tabs.payable')} />
+          </Tabs>
+        </Stack>
         <Box
           sx={{
             display: 'grid',
@@ -242,31 +327,6 @@ export function ChargesPage() {
             tone="warning"
           />
         </Box>
-        <Stack direction="row" spacing={0.9} useFlexGap flexWrap="wrap">
-          {statusKeys.map((item) => {
-            const count = charges.filter(
-              (charge) =>
-                charge.direction === direction && (item === 'all' || charge.status === item),
-            ).length
-            return (
-              <Chip
-                key={item}
-                label={`${t(`statuses.${item}`)} ${count}`}
-                onClick={() => selectStatus(item)}
-                color={status === item ? 'primary' : 'default'}
-                size="small"
-                sx={{
-                  height: 26,
-                  borderRadius: `${radius.full}px`,
-                  fontSize: 11,
-                  fontWeight: 800,
-                  bgcolor: status === item ? undefined : brand.neutral[100],
-                  '& .MuiChip-label': { px: 1.2 },
-                }}
-              />
-            )
-          })}
-        </Stack>
         <Box
           sx={{
             bgcolor: surface.paper,

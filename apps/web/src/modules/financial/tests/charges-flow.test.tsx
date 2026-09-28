@@ -10,9 +10,16 @@ import { useChargesStore } from '../stores/charges-store'
 const { push } = vi.hoisted(() => ({ push: vi.fn() }))
 vi.mock('@/i18n/navigation', () => ({ useRouter: () => ({ push }) }))
 vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar: vi.fn() }) }))
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({ data: { tenantId: 'tenant-1' }, status: 'authenticated' }),
+}))
+vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
+  useDashboardAgendaNotifications: () => [],
+}))
 vi.mock('next-intl', async () => {
   const actual = await vi.importActual<typeof import('next-intl')>('next-intl')
   const { default: charges } = await import('@/i18n/messages/pt-BR/charges.json')
+  const { default: dashboard } = await import('@/i18n/messages/pt-BR/dashboard.json')
   return {
     ...actual,
     useLocale: () => 'pt-BR',
@@ -23,8 +30,9 @@ vi.mock('next-intl', async () => {
         | 'charges.statuses'
         | 'charges.createDialog'
         | 'charges.editDialog'
-        | 'charges.archiveDialog',
-    ) => actual.createTranslator({ locale: 'pt-BR', messages: { charges }, namespace }),
+        | 'charges.archiveDialog'
+        | 'dashboard.notificationsCenter',
+    ) => actual.createTranslator({ locale: 'pt-BR', messages: { charges, dashboard }, namespace }),
   }
 })
 

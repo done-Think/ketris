@@ -1,5 +1,6 @@
 export { AppShell } from './AppShell'
 export { DashboardPageHeader } from './DashboardPageHeader'
+export { DashboardMonthSelector } from './DashboardMonthSelector'
 export { DashboardTablePagination } from './DashboardTablePagination'
 export { DashboardNotificationsButton } from './DashboardNotificationsButton'
 export { dashboardHeaderActionButtonSx } from './dashboard-header-actions'
