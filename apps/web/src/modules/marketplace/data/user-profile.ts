@@ -6,8 +6,8 @@ import SwapHorizOutlinedIcon from '@mui/icons-material/SwapHorizOutlined'
 import type { ProfileAction } from '../types/user-profile'
 
 export const profileActions: ProfileAction[] = [
-  { labelKey: 'support', icon: SupportAgentOutlinedIcon, href: '/login' },
-  { labelKey: 'settings', icon: SettingsOutlinedIcon, href: '/login' },
+  { labelKey: 'support', icon: SupportAgentOutlinedIcon, href: '/dashboard/maintenance' },
+  { labelKey: 'settings', icon: SettingsOutlinedIcon, href: '/dashboard/public-profile' },
   { labelKey: 'switchMode', icon: SwapHorizOutlinedIcon, href: '/properties' },
   { labelKey: 'signOut', icon: LogoutOutlinedIcon, tone: 'danger' },
 ]
