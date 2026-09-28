@@ -1,13 +1,13 @@
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
-import { Box, Button, InputAdornment, Stack, TextField } from '@mui/material'
+import { Box, InputAdornment, Stack, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { Controller } from 'react-hook-form'
 
 import {
+  DashboardHeaderActionButton,
   DashboardNotificationsButton,
   DashboardPageHeader,
-  dashboardHeaderActionButtonSx,
 } from '@shared/components/layout'
 import { alpha, brand, radius, surface } from '@shared/theme/tokens'
 
@@ -56,14 +56,12 @@ export function ContractsDashboardHeader({
           />
         )}
       />
-      <Button
-        variant="contained"
+      <DashboardHeaderActionButton
         startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
         onClick={onCreateContract}
-        sx={dashboardHeaderActionButtonSx}
       >
         {t('newContract')}
-      </Button>
+      </DashboardHeaderActionButton>
       <Box sx={{ display: { xs: 'none', md: 'block' } }}>
         <DashboardNotificationsButton />
       </Box>

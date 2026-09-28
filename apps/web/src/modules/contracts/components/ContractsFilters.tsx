@@ -1,7 +1,8 @@
-import { Box, Button, FormControl, MenuItem, Select, Stack, TextField } from '@mui/material'
+import { MenuItem, Stack, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { useWatch } from 'react-hook-form'
 
+import { DashboardStatusFilterButton } from '@shared/components/layout'
 import { alpha, brand, motion, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { contractFilterTabs, contractTypeFilterOptions } from '../config/contract-ui'
@@ -55,10 +56,10 @@ export function ContractsFilters({ control, filterCounts, setValue }: ContractsF
         const active = tab.status === status && tab.period === period
 
         return (
-          <Button
+          <DashboardStatusFilterButton
             key={tab.label}
-            type="button"
-            variant="contained"
+            active={active}
+            count={filterCounts[tab.label]}
             onClick={() => {
               setValue('status', tab.status, { shouldDirty: true })
               setValue('period', tab.period, { shouldDirty: true })
@@ -66,42 +67,11 @@ export function ContractsFilters({ control, filterCounts, setValue }: ContractsF
             }}
             sx={{
               display: { xs: 'none', sm: 'inline-flex' },
-              minHeight: 42,
-              borderRadius: `${radius.full}px`,
-              boxShadow: 'none',
-              px: 1.8,
-              gap: 0.6,
-              fontSize: 17,
-              fontWeight: 900,
-              bgcolor: active ? 'primary.main' : alpha.graphite[6],
-              color: active ? surface.lightText : brand.graphite[500],
-              textTransform: 'none',
               transition: motion.transition.bordered,
-              '&:hover': {
-                bgcolor: active ? 'primary.main' : alpha.graphite[10],
-                boxShadow: 'none',
-              },
             }}
           >
             {t(tab.label)}
-            <Box
-              component="span"
-              sx={{
-                display: 'grid',
-                minWidth: 24,
-                height: 24,
-                placeItems: 'center',
-                px: 0.5,
-                borderRadius: `${radius.full}px`,
-                bgcolor: active ? alpha.white[8] : alpha.graphite[6],
-                color: active ? surface.lightText : brand.neutral[500],
-                fontSize: 14.5,
-                fontWeight: 800,
-              }}
-            >
-              {filterCounts[tab.label]}
-            </Box>
-          </Button>
+          </DashboardStatusFilterButton>
         )
       })}
 
@@ -114,7 +84,20 @@ export function ContractsFilters({ control, filterCounts, setValue }: ContractsF
             shouldDirty: true,
           })
         }
-        sx={{ ...dashboardFilterSelectSx, ml: { sm: 'auto' } }}
+        sx={{
+          width: { xs: '100%', sm: 180 },
+          ml: { sm: 'auto' },
+          '& .MuiInputBase-root': {
+            height: { xs: 40, sm: 32 },
+            borderRadius: `${radius.sm}px`,
+            bgcolor: surface.paper,
+            color: brand.graphite[500],
+            fontSize: 12,
+          },
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: alpha.graphite[8],
+          },
+        }}
         SelectProps={{
           inputProps: { 'aria-label': tType('label') },
         }}
@@ -125,36 +108,6 @@ export function ContractsFilters({ control, filterCounts, setValue }: ContractsF
           </MenuItem>
         ))}
       </TextField>
-
-      <FormControl
-        size="small"
-        sx={{ display: { xs: 'none', sm: 'block' }, minWidth: 168, ml: 'auto' }}
-      >
-        <Select
-          aria-label={tType('label')}
-          displayEmpty
-          value={type}
-          onChange={(event) =>
-            setValue('type', event.target.value as ContractsFiltersFormValues['type'], {
-              shouldDirty: true,
-            })
-          }
-          sx={{
-            height: 42,
-            borderRadius: `${radius.full}px`,
-            bgcolor: surface.paper,
-            fontSize: 17,
-            fontWeight: 900,
-            '& .MuiOutlinedInput-notchedOutline': { borderColor: alpha.graphite[8] },
-          }}
-        >
-          {contractTypeFilterOptions.map((option) => (
-            <MenuItem key={option} value={option}>
-              {tType(option)}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
     </Stack>
   )
 }

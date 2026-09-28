@@ -39,10 +39,11 @@ import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
 import {
+  DashboardHeaderActionButton,
   DashboardNotificationsButton,
   DashboardPageHeader,
+  DashboardStatusFilterButton,
   DashboardTablePagination,
-  dashboardHeaderActionButtonSx,
 } from '@shared/components/layout'
 import {
   maintenanceFilters,
@@ -288,14 +289,12 @@ export function MaintenanceDashboardPage() {
       >
         {t('filterDialog.open')}
       </Button>
-      <Button
-        variant="contained"
+      <DashboardHeaderActionButton
         startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
         onClick={() => setIsCreateDialogOpen(true)}
-        sx={dashboardHeaderActionButtonSx}
       >
         {t('newTicket')}
-      </Button>
+      </DashboardHeaderActionButton>
       <Box sx={{ display: { xs: 'none', md: 'block' } }}>
         <DashboardNotificationsButton />
       </Box>
@@ -717,47 +716,14 @@ function MaintenanceStatusFilters({
             const active = activeFilter === filter.value
 
             return (
-              <Button
+              <DashboardStatusFilterButton
                 key={filter.value}
-                type="button"
-                variant="contained"
-                aria-pressed={active}
+                active={active}
+                count={getFilterCount(filter)}
                 onClick={() => onChange(filter.value)}
-                sx={{
-                  minHeight: 42,
-                  borderRadius: `${radius.full}px`,
-                  px: 1.8,
-                  gap: 0.6,
-                  fontSize: 17,
-                  fontWeight: 900,
-                  bgcolor: active ? 'primary.main' : alpha.graphite[6],
-                  color: active ? surface.lightText : brand.graphite[500],
-                  boxShadow: 'none',
-                  '&:hover': {
-                    bgcolor: active ? 'primary.main' : alpha.graphite[10],
-                    boxShadow: 'none',
-                  },
-                }}
               >
                 {t(`filters.${filter.value}`)}
-                <Box
-                  component="span"
-                  sx={{
-                    display: 'grid',
-                    minWidth: 24,
-                    height: 24,
-                    placeItems: 'center',
-                    px: 0.5,
-                    borderRadius: `${radius.full}px`,
-                    bgcolor: active ? alpha.white[8] : alpha.graphite[6],
-                    color: active ? surface.lightText : brand.neutral[500],
-                    fontSize: 14.5,
-                    fontWeight: 800,
-                  }}
-                >
-                  {getFilterCount(filter)}
-                </Box>
-              </Button>
+              </DashboardStatusFilterButton>
             )
           })}
         </Stack>

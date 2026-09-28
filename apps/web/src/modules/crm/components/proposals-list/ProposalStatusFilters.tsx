@@ -1,5 +1,6 @@
-import { Box, Button, MenuItem, Stack, TextField } from '@mui/material'
+import { Box, MenuItem, Stack, TextField } from '@mui/material'
 
+import { DashboardStatusFilterButton } from '@shared/components/layout'
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { proposalStatusFilters } from '../../config/proposal-statuses'
@@ -108,50 +109,14 @@ export function ProposalStatusFilters({
           const count = id === 'all' ? summary.totalCount : summary.statusCounts[id]
 
           return (
-            <Button
+            <DashboardStatusFilterButton
               key={id}
-              type="button"
-              variant="text"
-              aria-pressed={active}
+              active={active}
+              count={count}
               onClick={() => onStatusChange(id)}
-              sx={{
-                minWidth: 0,
-                minHeight: 42,
-                px: 1.8,
-                flexShrink: 0,
-                gap: 0.6,
-                borderRadius: `${radius.full}px`,
-                bgcolor: active ? brand.magenta[500] : brand.neutral[50],
-                color: active ? surface.lightText : brand.graphite[500],
-                fontSize: 17,
-                fontWeight: 900,
-                whiteSpace: 'nowrap',
-                boxShadow: 'none',
-                '&:hover': {
-                  bgcolor: active ? brand.magenta[600] : brand.neutral[100],
-                  boxShadow: 'none',
-                },
-              }}
             >
               {label}
-              <Box
-                component="span"
-                sx={{
-                  display: 'grid',
-                  minWidth: 24,
-                  height: 24,
-                  placeItems: 'center',
-                  px: 0.5,
-                  borderRadius: `${radius.full}px`,
-                  bgcolor: active ? alpha.white[8] : alpha.graphite[6],
-                  color: active ? surface.lightText : brand.neutral[500],
-                  fontSize: 14.5,
-                  fontWeight: 800,
-                }}
-              >
-                {count}
-              </Box>
-            </Button>
+            </DashboardStatusFilterButton>
           )
         })}
       </Stack>

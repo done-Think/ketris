@@ -19,11 +19,12 @@ import {
 import { useTranslations } from 'next-intl'
 
 import {
+  DashboardHeaderActionButton,
   DashboardNotificationsButton,
   DashboardPageHeader,
-  dashboardHeaderActionButtonSx,
+  dashboardHeaderFilterButtonSx,
 } from '@shared/components/layout'
-import { brand, radius } from '@shared/theme/tokens'
+import { alpha, brand, radius, surface } from '@shared/theme/tokens'
 
 import { salesPipelineStages } from '../../config/sales-pipeline-stages'
 import type { SalesPipelineToolbarProps, SalesPipelineViewMode } from '../../types/sales-pipeline'
@@ -98,13 +99,15 @@ export function SalesPipelineToolbar({
         }}
         sx={{
           width: { xs: '100%', sm: 224 },
-          '& .MuiOutlinedInput-root': {
-            height: 36,
+          '& .MuiInputBase-root': {
+            height: { xs: 40, sm: 32 },
             borderRadius: `${radius.sm}px`,
-            bgcolor: 'background.paper',
-            fontSize: 14,
-            '& fieldset': { borderColor: brand.neutral[100] },
-            '&:hover fieldset': { borderColor: brand.neutral[200] },
+            bgcolor: surface.paper,
+            color: brand.graphite[500],
+            fontSize: 12,
+          },
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: alpha.graphite[8],
           },
           '& .MuiInputBase-input::placeholder': {
             color: brand.neutral[400],
@@ -124,23 +127,10 @@ export function SalesPipelineToolbar({
             aria-haspopup="menu"
             aria-expanded={Boolean(filterAnchor)}
             sx={{
-              width: { sm: 160 },
-              minWidth: { sm: 160 },
+              ...dashboardHeaderFilterButtonSx,
+              width: { xs: '100%', sm: 'auto' },
+              minWidth: { sm: 148 },
               flexShrink: 0,
-              height: 36,
-              px: 1.5,
-              justifyContent: 'space-between',
-              borderColor: brand.neutral[100],
-              borderRadius: `${radius.full}px`,
-              bgcolor: 'background.paper',
-              color: 'text.secondary',
-              fontSize: 14,
-              fontWeight: 800,
-              whiteSpace: 'nowrap',
-              '&:hover': { borderColor: brand.neutral[200], bgcolor: 'background.paper' },
-              '& .MuiButton-startIcon': { ml: 0, mr: 0.75 },
-              '& .MuiButton-endIcon': { ml: 0.75, mr: 0 },
-              '& .MuiSvgIcon-root': { fontSize: 16 },
             }}
           >
             {selectedStage ? t(`stages.${selectedStage.labelKey}`) : t('filterByStage')}
@@ -172,14 +162,9 @@ export function SalesPipelineToolbar({
         </>
       ) : null}
 
-      <Button
-        variant="contained"
-        startIcon={<AddRoundedIcon />}
-        onClick={onNewOpportunity}
-        sx={dashboardHeaderActionButtonSx}
-      >
+      <DashboardHeaderActionButton startIcon={<AddRoundedIcon />} onClick={onNewOpportunity}>
         {t('newOpportunity')}
-      </Button>
+      </DashboardHeaderActionButton>
 
       <Box sx={{ display: { xs: 'none', md: 'block' } }}>
         <DashboardNotificationsButton />

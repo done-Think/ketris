@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Box, Button, Dialog, DialogContent, Stack, Typography } from '@mui/material'
+import { Box, Dialog, DialogContent, Stack, Typography } from '@mui/material'
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded'
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
@@ -12,9 +12,9 @@ import { useForm } from 'react-hook-form'
 
 import { RhfTextField } from '@shared/components/form'
 import {
+  DashboardHeaderActionButton,
   DashboardNotificationsButton,
   DashboardPageHeader,
-  dashboardHeaderActionButtonSx,
 } from '@shared/components/layout'
 import { alpha, brand, iconSize, surface } from '@shared/theme/tokens'
 
@@ -208,14 +208,12 @@ export function PublicProfileEditorPage() {
                 </Typography>
               </Stack>
             ) : null}
-            <Button
-              type="button"
+            <DashboardHeaderActionButton
               variant="outlined"
               color="secondary"
               startIcon={<VisibilityOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
               onClick={() => setIsPreviewOpen(true)}
               sx={{
-                ...dashboardHeaderActionButtonSx,
                 borderColor: alpha.graphite[8],
                 '&:hover': {
                   borderColor: alpha.graphite[18],
@@ -225,28 +223,24 @@ export function PublicProfileEditorPage() {
               }}
             >
               {t('actions.preview')}
-            </Button>
-            <Button
+            </DashboardHeaderActionButton>
+            <DashboardHeaderActionButton
               type="submit"
               form="broker-public-profile-editor-form"
-              variant="contained"
               startIcon={<SaveOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
               disabled={saveProfile.isPending}
-              sx={dashboardHeaderActionButtonSx}
             >
               {t('actions.save')}
-            </Button>
+            </DashboardHeaderActionButton>
             {profile ? (
-              <Button
-                type="button"
+              <DashboardHeaderActionButton
                 variant="outlined"
                 color={profile.status === 'PUBLISHED' ? 'error' : 'success'}
                 onClick={handlePublishToggle}
                 disabled={publishProfile.isPending || unpublishProfile.isPending}
-                sx={dashboardHeaderActionButtonSx}
               >
                 {profile.status === 'PUBLISHED' ? t('actions.unpublish') : t('actions.publish')}
-              </Button>
+              </DashboardHeaderActionButton>
             ) : null}
             <Box sx={{ display: { xs: 'none', md: 'block' } }}>
               <DashboardNotificationsButton />
