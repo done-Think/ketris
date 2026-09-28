@@ -11,6 +11,8 @@ export type AgendaEventTone = 'primary' | 'info' | 'warning'
 
 export type AgendaEventCreatorRole = 'colleague' | 'agency'
 
+export type AgendaEventVisualKind = 'followUp' | 'inspection' | 'meeting' | 'signature' | 'visit'
+
 export type AgendaEvent = {
   id: string
   scheduledDate: string
@@ -26,7 +28,7 @@ export type AgendaEvent = {
   notes: string
   status: AgendaEventStatus
   tone: AgendaEventTone
-  kind?: 'followUp' | 'inspection' | 'meeting' | 'signature' | 'visit'
+  kind?: AgendaEventVisualKind
   createdBy?: string
   createdByRole?: AgendaEventCreatorRole
 }
