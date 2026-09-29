@@ -45,20 +45,32 @@ export function ContactsTable({
             px: 1,
             py: 0,
             color: brand.neutral[500],
-            fontSize: 10,
+            fontSize: 14,
             fontWeight: 700,
             lineHeight: 1.2,
             letterSpacing: '0.01em',
+            textAlign: 'center',
             textTransform: 'uppercase',
             whiteSpace: 'nowrap',
           },
+          '& .MuiTableHead-root .MuiTableCell-root:nth-of-type(2), & .MuiTableHead-root .MuiTableCell-root:nth-of-type(5)':
+            {
+              textAlign: 'left',
+            },
+          '& .MuiTableHead-root .MuiTableCell-root:nth-of-type(5), & .MuiTableBody-root .MuiTableCell-root:nth-of-type(5)':
+            {
+              pl: '104px',
+            },
           '& .MuiTableBody-root .MuiTableCell-root': {
             px: 1,
             py: 0,
             color: brand.graphite[500],
-            fontSize: 11.5,
+            fontSize: 15.5,
             lineHeight: 1.3,
             whiteSpace: 'nowrap',
+          },
+          '& .MuiTableBody-root .MuiTableCell-root:nth-of-type(5)': {
+            textAlign: 'left',
           },
         }}
       >
@@ -73,7 +85,7 @@ export function ContactsTable({
           <col style={{ width: '7%' }} />
         </colgroup>
         <TableHead>
-          <TableRow sx={{ height: 36, bgcolor: surface.app }}>
+          <TableRow sx={{ height: 44, bgcolor: surface.app }}>
             <TableCell padding="checkbox" align="center">
               <Checkbox
                 size="small"
@@ -102,8 +114,9 @@ export function ContactsTable({
               <TableCell
                 key={key}
                 scope="col"
-                align={key === 'actions' ? 'right' : 'left'}
-                sx={key === 'actions' ? { px: '2px !important' } : undefined}
+                sx={{
+                  ...(key === 'actions' ? { px: '2px !important' } : {}),
+                }}
               >
                 {label}
               </TableCell>
@@ -119,7 +132,7 @@ export function ContactsTable({
                 key={contact.id}
                 selected={selected}
                 sx={{
-                  height: 50,
+                  height: 58,
                   bgcolor: index % 2 === 1 ? surface.app : surface.paper,
                   '&.Mui-selected, &.Mui-selected:hover': { bgcolor: alpha.magenta[6] },
                   '&:hover': { bgcolor: alpha.graphite[6] },
@@ -145,19 +158,21 @@ export function ContactsTable({
                 <TableCell>
                   <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
                     <ContactAvatar contact={contact} />
-                    <Typography noWrap sx={{ fontSize: 12, fontWeight: 650 }}>
+                    <Typography noWrap sx={{ fontSize: 16, fontWeight: 650 }}>
                       {contact.name}
                     </Typography>
                   </Stack>
                 </TableCell>
-                <TableCell>
+                <TableCell align="center">
                   <ContactTypeChip type={contact.type} />
                 </TableCell>
-                <TableCell>{contact.phone}</TableCell>
+                <TableCell align="center">{contact.phone}</TableCell>
                 <TableCell>{contact.email}</TableCell>
                 <TableCell align="center">{contact.propertyCount}</TableCell>
-                <TableCell sx={{ color: 'text.secondary' }}>{contact.lastInteraction}</TableCell>
-                <TableCell align="right" sx={{ px: '2px !important' }}>
+                <TableCell align="center" sx={{ color: 'text.secondary' }}>
+                  {contact.lastInteraction}
+                </TableCell>
+                <TableCell align="center" sx={{ px: '2px !important' }}>
                   <ContactActions
                     contact={contact}
                     onEditContact={onEditContact}

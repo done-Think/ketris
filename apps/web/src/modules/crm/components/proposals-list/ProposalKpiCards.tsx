@@ -37,8 +37,8 @@ export function ProposalKpiCards({ summary }: ProposalKpiCardsProps) {
       aria-label="Indicadores de propostas"
       sx={{
         display: 'grid',
-        gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' },
-        gap: 1.5,
+        gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+        gap: { xs: 0.8, md: 1.5 },
         mt: 2,
       }}
     >
@@ -48,11 +48,14 @@ export function ProposalKpiCards({ summary }: ProposalKpiCardsProps) {
           variant="outlined"
           sx={{
             display: 'flex',
-            minHeight: 80,
-            alignItems: 'center',
-            gap: 1.5,
-            px: 2,
-            py: 1.5,
+            minWidth: 0,
+            minHeight: { xs: 84, md: 88 },
+            alignItems: { xs: 'flex-start', md: 'center' },
+            flexDirection: { xs: 'column', md: 'row' },
+            gap: { xs: 0.7, md: 1.5 },
+            overflow: 'hidden',
+            px: { xs: 1.2, md: 2 },
+            py: { xs: 1.2, md: 1.5 },
             borderColor: brand.neutral[100],
             borderRadius: `${radius.md}px`,
             bgcolor: surface.paper,
@@ -62,7 +65,7 @@ export function ProposalKpiCards({ summary }: ProposalKpiCardsProps) {
           <Box
             aria-hidden="true"
             sx={{
-              display: 'grid',
+              display: { xs: 'none', md: 'grid' },
               width: 40,
               height: 40,
               flexShrink: 0,
@@ -74,11 +77,37 @@ export function ProposalKpiCards({ summary }: ProposalKpiCardsProps) {
           >
             <Icon sx={{ fontSize: iconSize.xl }} />
           </Box>
-          <Stack spacing={0.125} minWidth={0}>
-            <Typography sx={{ color: 'text.secondary', fontSize: 11.5, lineHeight: 1.35 }}>
+          <Stack spacing={{ xs: 0.5, md: 0.125 }} sx={{ width: '100%', minWidth: 0 }}>
+            <Typography
+              noWrap
+              sx={{
+                color: 'text.secondary',
+                width: '100%',
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                fontSize: { xs: 10, md: 15 },
+                fontWeight: { xs: 900, md: 400 },
+                lineHeight: { xs: 1.2, md: 1.35 },
+                textTransform: { xs: 'uppercase', md: 'none' },
+              }}
+            >
               {label}
             </Typography>
-            <Typography sx={{ fontSize: 20, fontWeight: 800, lineHeight: 1.2 }}>{value}</Typography>
+            <Typography
+              noWrap
+              sx={{
+                width: '100%',
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                fontSize: { xs: 20, md: 24 },
+                fontWeight: 800,
+                lineHeight: 1.2,
+              }}
+            >
+              {value}
+            </Typography>
           </Stack>
         </Paper>
       ))}

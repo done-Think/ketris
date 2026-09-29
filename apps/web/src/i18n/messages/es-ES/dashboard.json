@@ -3,6 +3,9 @@
     "overview": {
       "metadataTitle": "Ketris | Dashboard"
     },
+    "agencyOverview": {
+      "metadataTitle": "Ketris | Visión General de la Inmobiliaria"
+    },
     "agenda": {
       "metadataTitle": "Ketris | Agenda"
     },
@@ -81,6 +84,102 @@
         "inProgress": "En progreso",
         "qualified": "Calificado",
         "pending": "Pendiente"
+      }
+    }
+  },
+  "agencyOverview": {
+    "agencyName": "Inmobiliaria Premium SP",
+    "title": "Visión General",
+    "subtitle": "Acompaña movimientos, metas y performance consolidada de la inmobiliaria.",
+    "month": "Septiembre, 2024",
+    "report": "Informe",
+    "navigation": {
+      "overview": "Visión General",
+      "team": "Equipo",
+      "portfolio": "Cartera",
+      "finance": "Financiero",
+      "contracts": "Contratos"
+    },
+    "kpis": {
+      "portfolio": "Inmuebles en cartera",
+      "activeBrokers": "Agentes activos",
+      "receivedLeads": "Leads recibidos",
+      "revenue": "Facturación",
+      "occupancy": "Tasa ocupación"
+    },
+    "performance": {
+      "title": "Performance de Facturación",
+      "subtitle": "Comparativo de ingresos vs meta mensual",
+      "revenue": "Ingresos",
+      "target": "Meta"
+    },
+    "topBrokers": {
+      "title": "Top Agentes",
+      "subtitle": "Destacados por volumen de cierres",
+      "sales": "{count} Ventas",
+      "details": {
+        "eyebrow": "Desempeno del agente",
+        "summary": "{sales} ventas en el periodo - {revenue} en ingresos",
+        "recentSales": "Ultimas ventas",
+        "openProfile": "Ver perfil publico",
+        "close": "Cerrar"
+      }
+    },
+    "activity": {
+      "title": "Actividad Reciente",
+      "closedSale": "{broker} cerró contrato de venta en {detail}",
+      "createdProperty": "{broker} registró un nuevo apartamento en {detail}",
+      "scheduledVisit": "{broker} agendó una visita para mañana en {detail}",
+      "receivedLead": "Nuevo lead recibido a través de {detail}",
+      "signedRent": "Contrato de alquiler firmado para {detail}",
+      "details": {
+        "eyebrow": "Detalle de actividad",
+        "close": "Cerrar",
+        "fields": {
+          "broker": "Agente",
+          "subject": "Asunto",
+          "status": "Estado",
+          "nextStep": "Proximo paso",
+          "time": "Cuando",
+          "summary": "Resumen"
+        },
+        "items": {
+          "contractSale": {
+            "title": "Contrato de venta cerrado",
+            "description": "Marina completo la etapa comercial y el contrato paso a revision operativa antes del registro financiero.",
+            "subject": "Condominio Pinheiros",
+            "status": "Cerrado",
+            "nextStep": "Validar documentacion y liberar el registro financiero."
+          },
+          "newProperty": {
+            "title": "Nuevo inmueble registrado",
+            "description": "Thiago agrego el apartamento al portafolio e inicio la revision de la informacion publica.",
+            "subject": "Apartamento en Itaim Bibi",
+            "status": "En revision",
+            "nextStep": "Revisar medios, valores y disponibilidad."
+          },
+          "visitScheduled": {
+            "title": "Visita agendada",
+            "description": "Ana programo la visita con un cliente interesado y vinculo la atencion al calendario del equipo.",
+            "subject": "Casa Jardins",
+            "status": "Agendada",
+            "nextStep": "Confirmar presencia del cliente antes del fin del dia."
+          },
+          "newLead": {
+            "title": "Lead recibido",
+            "description": "Un nuevo contacto entro por el portal Ketris y espera calificacion inicial del equipo comercial.",
+            "subject": "Portal Ketris",
+            "status": "Nuevo",
+            "nextStep": "Asignarlo a un agente disponible."
+          },
+          "rentContract": {
+            "title": "Contrato de alquiler firmado",
+            "description": "El contrato de Studio Moema fue firmado y puede seguir a archivo y seguimiento financiero.",
+            "subject": "Studio Moema",
+            "status": "Firmado",
+            "nextStep": "Adjuntar comprobantes y activar recurrencia."
+          }
+        }
       }
     }
   },

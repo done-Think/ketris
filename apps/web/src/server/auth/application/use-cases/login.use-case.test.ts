@@ -78,6 +78,7 @@ describe('LoginUseCase', () => {
       tenantId: user.tenantId,
       nome: user.nome,
       email: user.email,
+      avatarUrl: null,
       papel: user.papel,
       ativo: user.ativo,
       vinculoAprovadoEm: user.vinculoAprovadoEm,

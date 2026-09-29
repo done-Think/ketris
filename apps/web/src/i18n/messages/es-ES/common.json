@@ -9,6 +9,10 @@
   "actions": {
     "backHome": "Volver al inicio"
   },
+  "dashboardPagination": {
+    "rowsPerPage": "Filas por página",
+    "displayedRows": "{from}-{to} de {count}"
+  },
   "errors": {
     "backHome": "Volver al inicio",
     "notFound": "Página no encontrada.",
@@ -24,6 +28,7 @@
     "defaultUserContext": "Panel administrativo",
     "backToMarketplace": "Volver al marketplace",
     "dashboard": "Dashboard",
+    "agencyOverview": "Visión Inmob.",
     "pipeline": "Pipeline",
     "contacts": "Contactos",
     "leads": "Leads",
@@ -31,6 +36,7 @@
     "properties": "Mis inmuebles",
     "contracts": "Contratos",
     "publicProfile": "Perfil público",
+    "agencyPublicProfile": "Perfil de la inmobiliaria",
     "agenda": "Agenda",
     "proposals": "Propuestas",
     "maintenance": "Mantenimiento",
@@ -47,6 +53,12 @@
       "success": "Perfil actualizado correctamente.",
       "saveError": "No se pudieron guardar los cambios. Inténtalo de nuevo.",
       "avatarFormatError": "Usa una imagen JPG, PNG o WEBP."
-    }
+    },
+    "charges": "Cobros"
+  },
+  "roleGuard": {
+    "loadingSession": "Cargando sesión",
+    "restrictedTitle": "Acceso restringido",
+    "restrictedDescription": "No tienes permiso para ver esta página. Redirigiendo al panel."
   }
 }

@@ -6,6 +6,7 @@ import type { Control } from 'react-hook-form'
 import { useWatch } from 'react-hook-form'
 
 import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
+
 import {
   agendaEventKindOptions,
   agendaOtherPropertyValue,

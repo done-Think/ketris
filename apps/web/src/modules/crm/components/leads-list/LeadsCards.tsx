@@ -33,10 +33,10 @@ export function LeadsCards({ leads, onContactLead }: LeadsCardsProps) {
               <Stack direction="row" alignItems="center" spacing={1.1} sx={{ minWidth: 0 }}>
                 <LeadAvatar lead={lead} />
                 <Box sx={{ minWidth: 0 }}>
-                  <Typography noWrap sx={{ fontSize: 13.5, fontWeight: 800 }}>
+                  <Typography noWrap sx={{ fontSize: 17, fontWeight: 800 }}>
                     {lead.name}
                   </Typography>
-                  <Typography noWrap sx={{ color: 'text.secondary', fontSize: 11.5 }}>
+                  <Typography noWrap sx={{ color: 'text.secondary', fontSize: 15 }}>
                     {lead.source}
                   </Typography>
                 </Box>
@@ -45,24 +45,24 @@ export function LeadsCards({ leads, onContactLead }: LeadsCardsProps) {
             </Stack>
 
             <Box>
-              <Typography sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 700 }}>
+              <Typography sx={{ color: brand.neutral[500], fontSize: 15, fontWeight: 700 }}>
                 {t('tableColumns.interest')}
               </Typography>
-              <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{lead.interest}</Typography>
+              <Typography sx={{ fontSize: 17, fontWeight: 700 }}>{lead.interest}</Typography>
             </Box>
 
             <Stack direction="row" justifyContent="space-between" spacing={1.2}>
               <Box>
-                <Typography sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 700 }}>
+                <Typography sx={{ color: brand.neutral[500], fontSize: 15, fontWeight: 700 }}>
                   {t('tableColumns.budget')}
                 </Typography>
-                <Typography sx={{ fontSize: 13, fontWeight: 800 }}>{lead.budget}</Typography>
+                <Typography sx={{ fontSize: 17, fontWeight: 800 }}>{lead.budget}</Typography>
               </Box>
               <Box sx={{ textAlign: 'right' }}>
-                <Typography sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 700 }}>
+                <Typography sx={{ color: brand.neutral[500], fontSize: 15, fontWeight: 700 }}>
                   {t('tableColumns.lastContact')}
                 </Typography>
-                <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{lead.lastContact}</Typography>
+                <Typography sx={{ fontSize: 17, fontWeight: 700 }}>{lead.lastContact}</Typography>
               </Box>
             </Stack>
 
@@ -72,7 +72,7 @@ export function LeadsCards({ leads, onContactLead }: LeadsCardsProps) {
               fullWidth
               disabled={!onContactLead}
               onClick={() => onContactLead?.(lead)}
-              sx={{ borderRadius: `${radius.sm}px`, fontWeight: 800 }}
+              sx={{ borderRadius: `${radius.sm}px`, fontSize: 16, fontWeight: 800 }}
             >
               {t('contactAction')}
             </Button>

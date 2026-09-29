@@ -44,6 +44,7 @@ describe('ListAdminsUseCase', () => {
         tenantId: 't1',
         nome: 'Usuário',
         email: 'user@ketris.dev',
+        avatarUrl: null,
         papel: 'ADMIN',
         ativo: true,
         vinculoAprovadoEm: expect.any(Date),

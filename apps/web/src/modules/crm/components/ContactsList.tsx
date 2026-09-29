@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { Box, GlobalStyles, Paper, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { brand, radius, shadows, surface } from '@shared/theme/tokens'
+import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { contactFilters } from '../config/contact-filters'
 import { contactListFixtures, contactsFixtureTotal } from '../fixtures/contact-list-fixtures'
@@ -81,13 +81,14 @@ export function ContactsList({
     <Box
       sx={{
         minHeight: '100vh',
-        px: { xs: 2, sm: 3, lg: 3.5 },
-        pt: { xs: 2, sm: 3, lg: 3.5 },
-        pb: { xs: 2, sm: 2.5, lg: 2.5 },
+        p: 3.5,
         bgcolor: surface.app,
         fontFamily: contactsBodyFontFamily,
         '& .MuiTypography-root, & .MuiButton-root, & .MuiInputBase-root, & .MuiTableCell-root': {
           fontFamily: contactsBodyFontFamily,
+        },
+        '& h1.MuiTypography-root': {
+          fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
         },
       }}
     >

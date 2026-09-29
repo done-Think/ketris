@@ -75,9 +75,13 @@ export function CreatePropertyDashboardPage() {
     <Box
       sx={{
         width: '100%',
-        px: { xs: 1.6, md: 4.8 },
-        pt: { xs: `${mobileCreateHeaderHeight}px`, md: 4.2 },
-        pb: { xs: 10.5, md: 4.2 },
+        // md usa padding uniforme de 28px (mesmo padrão das outras páginas do dashboard); xs
+        // mantém os próprios valores porque reservam espaço real pro header fixo mobile
+        // (mobileCreateHeaderHeight) e pra barra de ações fixa no rodapé (mobileActionsHeight) —
+        // não é uma escolha de espaçamento, é estrutural.
+        px: { xs: 1.6, md: 3.5 },
+        pt: { xs: `${mobileCreateHeaderHeight}px`, md: 3.5 },
+        pb: { xs: 10.5, md: 3.5 },
       }}
     >
       <Box sx={{ width: '100%', maxWidth: { xs: 440, md: 'none' }, mx: { xs: 'auto', md: 0 } }}>

@@ -51,7 +51,7 @@ export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) 
 
   if (!ticket) {
     return (
-      <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 3.2 } }}>
+      <Box sx={{ width: '100%', p: 3.5 }}>
         <Stack spacing={2} alignItems="flex-start">
           <Typography sx={{ color: brand.graphite[500], fontSize: 24, fontWeight: 900 }}>
             Chamado não encontrado
@@ -66,7 +66,7 @@ export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) 
 
   const detail = getMaintenanceTicketDetail(ticket)
   return (
-    <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 3.2 } }}>
+    <Box sx={{ width: '100%', p: 3.5 }}>
       <Stack spacing={2.2} sx={{ width: '100%' }}>
         <Box
           component={Link}

@@ -45,6 +45,15 @@ export interface ConvertLeadPayload {
 
 export type LeadFilter = 'Todos' | LeadStage
 
+export type LeadTableSortField = 'name' | 'interest' | 'budget' | 'stage' | 'source' | 'lastContact'
+
+export type LeadTableSortDirection = 'asc' | 'desc'
+
+export type LeadTableSortState = {
+  direction: LeadTableSortDirection
+  field: LeadTableSortField
+} | null
+
 export type LeadFilterKey = 'all' | 'new' | 'contacted' | 'visitScheduled' | 'proposal'
 
 export type LeadStageLabelKey = Exclude<LeadFilterKey, 'all'>
@@ -56,6 +65,7 @@ export type DashboardLead = {
   phone: string
   email: string
   lastContact: string
+  lastContactAt: string
   interest: string
   source: string
   broker: string
@@ -113,17 +123,12 @@ export type LeadsCollectionActions = {
 
 export type LeadsTableProps = LeadsCollectionActions & {
   leads: readonly DashboardLead[]
+  onSortChange: (field: LeadTableSortField) => void
+  sort: LeadTableSortState
 }
 
-export type LeadsCardsProps = LeadsTableProps
-
-export type LeadsPaginationFooterProps = {
-  firstVisible: number
-  lastVisible: number
-  resultTotal: number
-  page: number
-  pageCount: number
-  onPageChange?: (page: number) => void
+export type LeadsCardsProps = LeadsCollectionActions & {
+  leads: readonly DashboardLead[]
 }
 
 export type CreateLeadFormValues = z.infer<ReturnType<typeof createLeadSchema>>

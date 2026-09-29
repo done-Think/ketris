@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Button, Stack, Typography } from '@mui/material'
@@ -20,6 +20,7 @@ export function PlatformSignInForm() {
   const formsT = useTranslations('platform.forms')
   const router = useRouter()
   const [formError, setFormError] = useState<string | null>(null)
+  const hasAttemptedLocalAutoLogin = useRef(false)
 
   const {
     control,
@@ -55,6 +56,18 @@ export function PlatformSignInForm() {
     router.push('/platform')
     router.refresh()
   }
+
+  useEffect(() => {
+    const email = process.env.NEXT_PUBLIC_LOCAL_PLATFORM_EMAIL
+    const password = process.env.NEXT_PUBLIC_LOCAL_PLATFORM_PASSWORD
+    const isLocalDevelopment =
+      process.env.NODE_ENV === 'development' && window.location.hostname === 'localhost'
+
+    if (!isLocalDevelopment || !email || !password || hasAttemptedLocalAutoLogin.current) return
+
+    hasAttemptedLocalAutoLogin.current = true
+    void onSubmit({ email, password })
+  }, [onSubmit])
 
   return (
     <Stack component="form" onSubmit={handleSubmit(onSubmit)} spacing={2.5}>

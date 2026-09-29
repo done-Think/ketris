@@ -16,6 +16,7 @@ const lead: DashboardLead = {
   phone: '(11) 99984-3021',
   email: 'joao.silva@email.com',
   lastContact: 'Há 30 min',
+  lastContactAt: '2026-09-01T09:30:00.000Z',
   interest: 'Apartamento 3 quartos nos Jardins',
   source: 'Marketplace',
   broker: 'Roberto Souza',
