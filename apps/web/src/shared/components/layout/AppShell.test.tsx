@@ -54,10 +54,10 @@ function mockUnauthenticatedSession() {
   } as unknown as ReturnType<typeof useSession>)
 }
 
-function renderShell(props?: { allowLocalDashboardPreview?: boolean }) {
+function renderShell() {
   return render(
     <ThemeProvider theme={theme}>
-      <AppShell allowLocalDashboardPreview={props?.allowLocalDashboardPreview}>
+      <AppShell>
         <div>Conteúdo da rota</div>
       </AppShell>
     </ThemeProvider>,
@@ -136,19 +136,6 @@ describe('AppShell navigation per papel', () => {
     expect(screen.getAllByText('Meus Imóveis').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Contratos').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Agenda').length).toBeGreaterThan(0)
-  })
-  it('keeps role-filtered navigation during local preview when a session exists', () => {
-    mockSession({ papel: 'ADMIN' })
-
-    renderShell({ allowLocalDashboardPreview: true })
-
-    const links = screen.getAllByRole('link')
-    const hrefs = links.map((link) => link.getAttribute('href'))
-
-    expect(hrefs).toContain('/dashboard/public-profile/agency')
-    expect(hrefs).not.toContain('/dashboard/public-profile')
-    expect(hrefs).toContain('/dashboard/maintenance')
-    expect(hrefs).toContain('/dashboard/finance/charges')
   })
 })
 
