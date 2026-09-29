@@ -115,7 +115,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   const userContext = session?.user?.email ?? t('defaultUserContext')
   const userInitials = useMemo(() => getInitials(userName), [userName])
   const visibleItems = useMemo(() => {
-    if (isLocalDashboardPreview) return navigationItems
+    if (isLocalDashboardPreview && !session?.papel) return navigationItems
 
     return navigationItems.filter(
       (item) => !item.roles || (session?.papel && item.roles.includes(session.papel)),
