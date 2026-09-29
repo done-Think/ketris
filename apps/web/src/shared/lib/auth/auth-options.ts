@@ -33,6 +33,7 @@ export const authOptions: NextAuthOptions = {
             id: user.id,
             name: user.nome,
             email: user.email,
+            image: user.avatarUrl ?? undefined,
             accessToken,
             refreshToken,
             scope: 'tenant',
@@ -70,6 +71,7 @@ export const authOptions: NextAuthOptions = {
             id: user.id,
             name: user.nome,
             email: user.email,
+            image: user.avatarUrl ?? undefined,
             accessToken: credentials.accessToken,
             refreshToken: credentials.refreshToken,
             scope: 'tenant',
@@ -124,9 +126,18 @@ export const authOptions: NextAuthOptions = {
         return token
       }
 
-      if (trigger === 'update' && session?.accessToken && session?.refreshToken) {
-        token.accessToken = session.accessToken
-        token.refreshToken = session.refreshToken
+      if (trigger === 'update') {
+        if (session?.accessToken && session?.refreshToken) {
+          token.accessToken = session.accessToken
+          token.refreshToken = session.refreshToken
+        }
+
+        if (session?.user) {
+          token.name = session.user.name
+          token.email = session.user.email
+          token.picture = session.user.image
+        }
+
         return token
       }
 
@@ -153,6 +164,9 @@ export const authOptions: NextAuthOptions = {
       session.papel = token.papel
       if (session.user && token.sub) {
         session.user.id = token.sub
+        session.user.name = token.name
+        session.user.email = token.email
+        session.user.image = token.picture
       }
       return session
     },

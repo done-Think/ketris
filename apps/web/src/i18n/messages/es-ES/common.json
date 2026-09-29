@@ -22,6 +22,8 @@
   "appShell": {
     "ariaLabel": "Navegación principal",
     "openNavigation": "Abrir navegación",
+    "collapseNavigation": "Contraer navegación",
+    "expandNavigation": "Expandir navegación",
     "defaultUserName": "Equipo Ketris",
     "defaultUserContext": "Panel administrativo",
     "backToMarketplace": "Volver al marketplace",
@@ -39,6 +41,19 @@
     "proposals": "Propuestas",
     "maintenance": "Mantenimiento",
     "finance": "Finanzas",
+    "editProfile": "Editar perfil",
+    "collapseMenu": "Contraer menú",
+    "profileEditor": {
+      "title": "Editar perfil",
+      "changePhoto": "Cambiar foto",
+      "name": "Nombre",
+      "email": "Correo electrónico",
+      "cancel": "Cancelar",
+      "save": "Guardar cambios",
+      "success": "Perfil actualizado correctamente.",
+      "saveError": "No se pudieron guardar los cambios. Inténtalo de nuevo.",
+      "avatarFormatError": "Usa una imagen JPG, PNG o WEBP."
+    },
     "charges": "Cobros"
   },
   "roleGuard": {

@@ -10,6 +10,7 @@ function toDomainUser(usuario: {
   nome: string
   email: string
   senhaHash: string
+  avatarUrl: string | null
   papel: User['papel']
   ativo: boolean
   vinculoAprovadoEm: Date | null
@@ -20,6 +21,7 @@ function toDomainUser(usuario: {
     nome: usuario.nome,
     email: usuario.email,
     senhaHash: usuario.senhaHash,
+    avatarUrl: usuario.avatarUrl,
     papel: usuario.papel,
     ativo: usuario.ativo,
     vinculoAprovadoEm: usuario.vinculoAprovadoEm,
@@ -71,6 +73,7 @@ export class PrismaUserRepository implements UserRepository {
       data: {
         nome: changes.nome,
         email: changes.email ? normalizeEmail(changes.email) : undefined,
+        avatarUrl: changes.avatarUrl,
         papel: changes.papel,
         senhaHash: changes.senhaHash,
       },

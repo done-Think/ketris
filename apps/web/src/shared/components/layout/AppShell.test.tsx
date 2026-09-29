@@ -1,10 +1,12 @@
 import { ThemeProvider } from '@mui/material'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { usePathname } from '@/i18n/navigation'
 import { theme } from '@shared/theme/theme'
+import { useSidebarPreferencesStore } from '@shared/stores/sidebar-preferences-store'
 
 import { AppShell } from './AppShell'
 
@@ -33,7 +35,12 @@ vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
 
 function mockSession(overrides?: Partial<{ papel: 'ADMIN' | 'OWNER' | 'AGENT' }>) {
   vi.mocked(useSession).mockReturnValue({
-    data: { user: { name: 'Ana' }, papel: overrides?.papel ?? 'ADMIN' },
+    data: {
+      user: { name: 'Ana' },
+      scope: 'tenant',
+      tenantId: 't1',
+      papel: overrides?.papel ?? 'ADMIN',
+    },
     status: 'authenticated',
     update: vi.fn(),
   } as unknown as ReturnType<typeof useSession>)
@@ -215,5 +222,39 @@ describe('AppShell navigation while the session is loading', () => {
     expect(screen.queryByText('Pipeline')).not.toBeInTheDocument()
     expect(screen.queryByText('Dashboard')).not.toBeInTheDocument()
     expect(screen.queryByText('Financeiro')).not.toBeInTheDocument()
+  })
+})
+
+describe('AppShell collapsible desktop navigation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    useSidebarPreferencesStore.getState().setCollapsed(false)
+    vi.mocked(usePathname).mockReturnValue('/dashboard/agenda')
+    mockSession({ papel: 'ADMIN' })
+  })
+
+  it('keeps the active navigation item while toggling the desktop sidebar', async () => {
+    const user = userEvent.setup()
+
+    const { unmount } = renderShell()
+
+    await user.click(screen.getByRole('button', { name: 'Recolher navegação' }))
+
+    expect(screen.getByRole('button', { name: 'Expandir navegação' })).toBeVisible()
+    expect(
+      screen
+        .getAllByRole('link', { name: 'Agenda' })
+        .some((link) => link.getAttribute('aria-current') === 'page'),
+    ).toBe(true)
+    expect(localStorage.getItem('ketris-sidebar-preferences')).toContain('"isCollapsed":true')
+
+    unmount()
+    renderShell()
+
+    expect(screen.getByRole('button', { name: 'Expandir navegação' })).toBeVisible()
+
+    await user.click(screen.getByRole('button', { name: 'Expandir navegação' }))
+
+    expect(screen.getAllByText('Agenda').length).toBeGreaterThan(0)
   })
 })

@@ -12,6 +12,7 @@ export interface NewUser {
 export interface UserUpdate {
   nome?: string
   email?: string
+  avatarUrl?: string | null
   papel?: Papel
   senhaHash?: string
 }

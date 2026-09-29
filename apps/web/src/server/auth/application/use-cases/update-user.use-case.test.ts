@@ -41,6 +41,7 @@ describe('UpdateUserUseCase', () => {
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorId: 'admin-1',
       actorPapel: 'ADMIN',
       userId: owner.id,
       nome: 'Atualizado',
@@ -50,6 +51,34 @@ describe('UpdateUserUseCase', () => {
     expect(deps.userRepository.update).toHaveBeenCalledWith(owner.id, {
       nome: 'Atualizado',
       email: undefined,
+      avatarUrl: undefined,
+      papel: undefined,
+    })
+  })
+
+  it('permite que um ADMIN atualize o próprio perfil sem alterar o papel', async () => {
+    const admin: User = { ...owner, id: 'admin-1', papel: 'ADMIN' }
+    const deps = createDeps({
+      findById: vi.fn().mockResolvedValue(admin),
+      update: vi.fn().mockResolvedValue({ ...admin, nome: 'Admin atualizado' }),
+    })
+    const useCase = new UpdateUserUseCase(deps.userRepository)
+
+    await expect(
+      useCase.execute({
+        actorId: admin.id,
+        actorTenantId: admin.tenantId,
+        actorPapel: admin.papel,
+        userId: admin.id,
+        nome: 'Admin atualizado',
+        avatarUrl: 'https://cdn.ketris.dev/avatar.webp',
+      }),
+    ).resolves.toMatchObject({ nome: 'Admin atualizado' })
+
+    expect(deps.userRepository.update).toHaveBeenCalledWith(admin.id, {
+      nome: 'Admin atualizado',
+      email: undefined,
+      avatarUrl: 'https://cdn.ketris.dev/avatar.webp',
       papel: undefined,
     })
   })
@@ -61,6 +90,7 @@ describe('UpdateUserUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
+        actorId: 'agent-1',
         actorPapel: 'AGENT',
         userId: owner.id,
         nome: 'X',
@@ -74,7 +104,13 @@ describe('UpdateUserUseCase', () => {
     const useCase = new UpdateUserUseCase(deps.userRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'ADMIN', userId: 'x', nome: 'X' }),
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'admin-1',
+        actorPapel: 'ADMIN',
+        userId: 'x',
+        nome: 'X',
+      }),
     ).rejects.toThrow(UserNotFoundError)
   })
 
@@ -87,6 +123,7 @@ describe('UpdateUserUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
+        actorId: 'admin-1',
         actorPapel: 'ADMIN',
         userId: owner.id,
         email: 'em-uso@ketris.dev',
@@ -101,6 +138,7 @@ describe('UpdateUserUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorId: 'admin-1',
       actorPapel: 'ADMIN',
       userId: owner.id,
       email: owner.email,
