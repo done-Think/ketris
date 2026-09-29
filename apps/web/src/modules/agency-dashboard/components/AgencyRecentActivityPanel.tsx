@@ -11,8 +11,11 @@ import { useState } from 'react'
 import { DashboardPanel } from '@modules/dashboard/components/DashboardPanel'
 import { alpha, brand, iconSize, motion, radius } from '@shared/theme/tokens'
 
-import { agencyRecentActivities } from '../data/agency-overview'
-import type { AgencyActivity, AgencyActivityTone } from '../types/agency-overview'
+import type {
+  AgencyActivity,
+  AgencyActivityTone,
+  AgencyRecentActivityPanelProps,
+} from '../types/agency-overview'
 import { AgencyActivityDetailDialog } from './AgencyActivityDetailDialog'
 
 const activityIcon = {
@@ -22,7 +25,7 @@ const activityIcon = {
   lead: PersonAddAlt1OutlinedIcon,
 } satisfies Record<AgencyActivityTone, typeof DescriptionOutlinedIcon>
 
-export function AgencyRecentActivityPanel() {
+export function AgencyRecentActivityPanel({ activities }: AgencyRecentActivityPanelProps) {
   const t = useTranslations('dashboard.agencyOverview.activity')
   const [selectedActivity, setSelectedActivity] = useState<AgencyActivity | null>(null)
 
@@ -35,7 +38,7 @@ export function AgencyRecentActivityPanel() {
           </Typography>
 
           <Stack>
-            {agencyRecentActivities.map((activity) => {
+            {activities.map((activity) => {
               const Icon = activityIcon[activity.tone]
 
               return (
@@ -86,15 +89,17 @@ export function AgencyRecentActivityPanel() {
                       <Typography
                         sx={{ color: brand.graphite[500], fontSize: 12.5, fontWeight: 900 }}
                       >
-                        {t(activity.actionKey, {
-                          broker: activity.broker,
-                          detail: activity.detail,
-                        })}
+                        {activity.broker
+                          ? t(`messages.${activity.tone}`, {
+                              broker: activity.broker,
+                              detail: activity.detail,
+                            })
+                          : t(`messagesNoBroker.${activity.tone}`, { detail: activity.detail })}
                       </Typography>
                       <Typography
                         sx={{ color: brand.neutral[400], fontSize: 10.5, fontWeight: 700 }}
                       >
-                        {activity.timeAgo}
+                        {activity.occurredAtLabel}
                       </Typography>
                     </Box>
                   </Stack>

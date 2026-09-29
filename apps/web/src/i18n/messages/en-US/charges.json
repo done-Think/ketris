@@ -34,8 +34,10 @@
   },
   "actions": { "edit": "Edit", "archive": "Archive" },
   "feedback": {
-    "updated": "Charge updated locally",
-    "archived": "Charge archived locally"
+    "updated": "Charge updated",
+    "updateError": "Could not update the charge.",
+    "archived": "Charge archived",
+    "archiveError": "Could not archive the charge."
   },
   "pagination": { "summary": "Showing {from}-{to} of {total} charges" },
   "createDialog": {
@@ -43,10 +45,10 @@
     "close": "Close",
     "cancel": "Cancel",
     "submit": "Create charge",
-    "success": "Charge created locally",
+    "success": "Charge created",
+    "error": "Could not create the charge.",
     "fields": {
-      "tenant": "Tenant",
-      "property": "Property",
+      "description": "Description",
       "amount": "Amount",
       "dueDate": "Due date",
       "direction": "Type",
@@ -62,8 +64,7 @@
     "cancel": "Cancel",
     "save": "Save changes",
     "fields": {
-      "tenant": "Tenant",
-      "property": "Property",
+      "description": "Description",
       "amount": "Amount",
       "dueDate": "Due date",
       "direction": "Type",
@@ -72,7 +73,7 @@
   },
   "archiveDialog": {
     "title": "Archive charge?",
-    "description": "The charge will be removed from the demonstration list.",
+    "description": "The charge will be marked as cancelled.",
     "cancel": "Cancel",
     "confirm": "Archive"
   },
@@ -81,7 +82,7 @@
     "close": "Close"
   },
   "details": {
-    "missing": "Charge not found or archived in this demo session.",
+    "missing": "Charge not found.",
     "noReceipt": "This charge has no receipt.",
     "demoDocument": "Demonstration document — not valid for payment.",
     "closeDocument": "Close document",
@@ -90,7 +91,8 @@
     "duplicate": "Issue duplicate",
     "duplicateSuccess": "Demonstration duplicate prepared locally",
     "registerPayment": "Register payment",
-    "paymentSuccess": "Payment registered locally",
+    "paymentSuccess": "Payment registered",
+    "paymentError": "Could not register the payment.",
     "detailsTitle": "Charge details",
     "receiptTitle": "Receipt",
     "linkingTitle": "Linking",

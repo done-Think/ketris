@@ -13,6 +13,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
+import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 import { useForm } from 'react-hook-form'
@@ -27,20 +28,21 @@ import {
 } from '../schemas/create-contract-schema'
 import { useCreateContract } from '../hooks/use-contracts'
 import type { CreateContractFieldName, CreateContractFormValues } from '../types/contract'
+import { errorMessage } from '../utils/error-message'
 import { ContractActions } from './ContractActions'
 import {
   ContractStepFields,
   conditionsStepFieldNames,
+  opportunityStepFieldNames,
   partiesStepFieldNames,
-  propertyStepFieldNames,
 } from './ContractStepFields'
 import { ContractStepsNav } from './ContractStepsNav'
 
 // Derived from the same field metadata each step actually renders (see ContractStepFields.tsx) —
 // a field added to a step's FieldGrid is automatically required here too, nothing to keep in sync.
 const stepValidationFields: Record<number, CreateContractFieldName[]> = {
-  0: partiesStepFieldNames,
-  1: propertyStepFieldNames,
+  0: opportunityStepFieldNames,
+  1: partiesStepFieldNames,
   2: conditionsStepFieldNames,
   3: [],
 }
@@ -48,8 +50,10 @@ const stepValidationFields: Record<number, CreateContractFieldName[]> = {
 export function ContractsCreatePage() {
   const t = useTranslations('contracts.wizard')
   const router = useRouter()
+  const { data: session } = useSession()
+  const tenantId = session?.tenantId ?? ''
   const { enqueueSnackbar } = useSnackbar()
-  const addContract = useCreateContract()
+  const createContractMutation = useCreateContract(tenantId)
   const [discardDialogOpen, setDiscardDialogOpen] = useState(false)
   const {
     control,
@@ -70,11 +74,15 @@ export function ContractsCreatePage() {
   const activeStep = createContractSteps[activeStepIndex]
   const firstStep = activeStepIndex === 0
   const lastStep = activeStepIndex === createContractSteps.length - 1
-  const createContract = (formValues: CreateContractFormValues) => {
-    const contract = addContract(formValues)
+  const createContract = async (formValues: CreateContractFormValues) => {
+    try {
+      const contract = await createContractMutation.mutateAsync(formValues)
 
-    enqueueSnackbar(t('successMessage', { code: contract.code }), { variant: 'success' })
-    router.push('/dashboard/contracts')
+      enqueueSnackbar(t('successMessage', { code: contract.code }), { variant: 'success' })
+      router.push('/dashboard/contracts')
+    } catch (error) {
+      enqueueSnackbar(errorMessage(error, t('errorMessage')), { variant: 'error' })
+    }
   }
 
   const goToPreviousStep = () => {
@@ -175,6 +183,7 @@ export function ContractsCreatePage() {
 
         <ContractActions
           lastStep={lastStep}
+          isSubmitting={createContractMutation.isPending}
           onPreviousStep={goToPreviousStep}
           onNextStep={goToNextStep}
         />

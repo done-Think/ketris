@@ -3,18 +3,38 @@
 import { useState } from 'react'
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
 import AttachFileRoundedIcon from '@mui/icons-material/AttachFileRounded'
-import CallOutlinedIcon from '@mui/icons-material/CallOutlined'
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
 import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined'
-import { Avatar, Box, Button, Chip, Divider, Stack, TextField, Typography } from '@mui/material'
+import {
+  Avatar,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Divider,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
+import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
+import { useSnackbar } from 'notistack'
 
 import { Link } from '@/i18n/navigation'
+import { formatDate } from '@shared/lib/utils/format'
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
-import { getMaintenanceTicketDetail } from '../data/maintenance-ticket-detail'
-import { getMaintenanceTickets } from '../data/maintenance-tickets'
+import {
+  useAddMaintenanceTicketNote,
+  useMaintenanceTicket,
+  useResolveMaintenanceTicket,
+} from '../hooks/use-maintenance'
 import type { MaintenancePriority, MaintenanceStatus } from '../types/maintenance'
+import { errorMessage } from '../utils/error-message'
+import {
+  mapMaintenancePriorityFromApi,
+  mapMaintenanceStatusFromApi,
+} from '../utils/maintenance-adapter'
 
 const statusStyles: Record<MaintenanceStatus, { bgcolor: string; color: string }> = {
   inProgress: { bgcolor: '#FFF2CC', color: '#D98900' },
@@ -44,27 +64,84 @@ const labelSx = {
   textTransform: 'uppercase',
 } as const
 
+function getInitials(name: string | null): string {
+  if (!name) return '?'
+  return name
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+}
+
 export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) {
   const t = useTranslations('dashboard.maintenance')
+  const detailT = useTranslations('dashboard.maintenance.detail')
+  const { enqueueSnackbar } = useSnackbar()
+  const { data: session } = useSession()
+  const tenantId = session?.tenantId
   const [message, setMessage] = useState('')
-  const ticket = getMaintenanceTickets().find((currentTicket) => currentTicket.id === ticketId)
+
+  const ticketQuery = useMaintenanceTicket(tenantId, ticketId)
+  const resolveMutation = useResolveMaintenanceTicket(tenantId, ticketId)
+  const addNoteMutation = useAddMaintenanceTicketNote(tenantId, ticketId)
+
+  const ticket = ticketQuery.data
+
+  async function handleResolve() {
+    try {
+      await resolveMutation.mutateAsync()
+      enqueueSnackbar(t('notifications.resolveSuccess'), { variant: 'success' })
+    } catch (error) {
+      enqueueSnackbar(errorMessage(error, t('notifications.resolveError')), { variant: 'error' })
+    }
+  }
+
+  async function handleSendMessage() {
+    const trimmedMessage = message.trim()
+    if (!trimmedMessage) return
+
+    try {
+      await addNoteMutation.mutateAsync(trimmedMessage)
+      enqueueSnackbar(t('notifications.noteSuccess'), { variant: 'success' })
+      setMessage('')
+    } catch (error) {
+      enqueueSnackbar(errorMessage(error, t('notifications.noteError')), { variant: 'error' })
+    }
+  }
+
+  if (ticketQuery.isLoading) {
+    return (
+      <Box sx={{ width: '100%', p: 3.5 }}>
+        <Typography sx={{ color: brand.neutral[500], fontSize: 14, fontWeight: 700 }}>
+          {detailT('loading')}
+        </Typography>
+      </Box>
+    )
+  }
 
   if (!ticket) {
     return (
       <Box sx={{ width: '100%', p: 3.5 }}>
         <Stack spacing={2} alignItems="flex-start">
           <Typography sx={{ color: brand.graphite[500], fontSize: 24, fontWeight: 900 }}>
-            Chamado não encontrado
+            {detailT('notFound.title')}
           </Typography>
           <Button component={Link} href="/dashboard/maintenance" variant="outlined">
-            Voltar para chamados
+            {detailT('notFound.action')}
           </Button>
         </Stack>
       </Box>
     )
   }
 
-  const detail = getMaintenanceTicketDetail(ticket)
+  const status = mapMaintenanceStatusFromApi(ticket.status)
+  const priority = mapMaintenancePriorityFromApi(ticket.priority)
+  const isResolved = ticket.status === 'RESOLVIDO' || ticket.status === 'FECHADO'
+  const sortedActivities = [...ticket.activities].sort((a, b) =>
+    a.createdAt.localeCompare(b.createdAt),
+  )
+
   return (
     <Box sx={{ width: '100%', p: 3.5 }}>
       <Stack spacing={2.2} sx={{ width: '100%' }}>
@@ -83,7 +160,7 @@ export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) 
           }}
         >
           <ArrowBackRoundedIcon sx={{ fontSize: 15 }} />
-          Voltar para chamados
+          {detailT('back')}
         </Box>
         <Stack
           direction={{ xs: 'column', lg: 'row' }}
@@ -95,20 +172,20 @@ export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) 
             <Typography
               sx={{ color: brand.graphite[500], fontSize: { xs: 21, md: 24 }, fontWeight: 900 }}
             >
-              {detail.code}
+              {ticket.id}
             </Typography>
             <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: brand.neutral[500] }} />
             <Typography
               sx={{ color: brand.graphite[500], fontSize: { xs: 18, md: 20 }, fontWeight: 900 }}
             >
-              {detail.title}
+              {ticket.title}
             </Typography>
             <Chip
-              label={t(`statuses.${detail.status}`)}
+              label={t(`statuses.${status}`)}
               size="small"
               sx={{
                 height: 21,
-                ...statusStyles[detail.status],
+                ...statusStyles[status],
                 fontSize: 10,
                 fontWeight: 900,
               }}
@@ -119,11 +196,11 @@ export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) 
                   width: 6,
                   height: 6,
                   borderRadius: '50%',
-                  bgcolor: priorityColors[detail.priority],
+                  bgcolor: priorityColors[priority],
                 }}
               />
               <Typography sx={{ fontSize: 11, fontWeight: 800 }}>
-                {t(`priorities.${detail.priority}`)}
+                {t(`priorities.${priority}`)}
               </Typography>
             </Stack>
           </Stack>
@@ -132,11 +209,24 @@ export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) 
               variant="outlined"
               startIcon={<PersonAddAltOutlinedIcon />}
               sx={secondaryButtonSx}
+              disabled
             >
-              Atribuir prestador
+              {detailT('actions.assignProvider')}
             </Button>
-            <Button variant="contained" startIcon={<CheckRoundedIcon />} sx={primaryButtonSx}>
-              Marcar resolvido
+            <Button
+              variant="contained"
+              startIcon={
+                resolveMutation.isPending ? (
+                  <CircularProgress size={16} color="inherit" />
+                ) : (
+                  <CheckRoundedIcon />
+                )
+              }
+              sx={primaryButtonSx}
+              onClick={handleResolve}
+              disabled={isResolved || resolveMutation.isPending}
+            >
+              {detailT('actions.resolve')}
             </Button>
           </Stack>
         </Stack>
@@ -149,7 +239,7 @@ export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) 
         >
           <Stack spacing={2}>
             <Box sx={cardSx}>
-              <Typography sx={cardTitleSx}>Descrição do Chamado</Typography>
+              <Typography sx={cardTitleSx}>{detailT('descriptionCard.title')}</Typography>
               <Box
                 sx={{
                   display: 'grid',
@@ -159,10 +249,10 @@ export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) 
                 }}
               >
                 {[
-                  ['Imóvel', detail.property],
-                  ['Categoria', detail.category],
-                  ['Aberto por', detail.openedBy],
-                  ['Data de abertura', detail.openedAt],
+                  [t('columns.property'), ticket.propertyTitle],
+                  [t('columns.category'), ticket.category],
+                  [detailT('descriptionCard.openedBy'), ticket.openedByName],
+                  [t('columns.openedAt'), formatDate(ticket.createdAt)],
                 ].map(([label, value]) => (
                   <Box key={label}>
                     <Typography sx={labelSx}>{label}</Typography>
@@ -175,103 +265,113 @@ export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) 
                 ))}
               </Box>
               <Divider sx={{ my: 1.8 }} />
-              <Typography sx={labelSx}>Relato do problema</Typography>
+              <Typography sx={labelSx}>{detailT('descriptionCard.report')}</Typography>
               <Typography
                 sx={{ mt: 0.7, color: brand.neutral[600], fontSize: 13, lineHeight: 1.5 }}
               >
-                {detail.description}
+                {ticket.description}
               </Typography>
             </Box>
             <Box sx={cardSx}>
-              <Typography sx={cardTitleSx}>Fotos Anexadas</Typography>
-              <Stack direction="row" spacing={1.4} sx={{ mt: 1.4 }}>
-                {detail.photos.map(({ name, src, position }) => (
-                  <Box
-                    key={name}
-                    sx={{
-                      position: 'relative',
-                      width: { xs: '50%', sm: 160 },
-                      height: 105,
-                      borderRadius: `${radius.sm}px`,
-                      overflow: 'hidden',
-                      backgroundImage: `url(${src})`,
-                      backgroundPosition: position === 'left' ? 'left center' : 'right center',
-                      backgroundSize: '200% 100%',
-                    }}
-                  >
+              <Typography sx={cardTitleSx}>{detailT('photos.title')}</Typography>
+              {ticket.attachments.length > 0 ? (
+                <Stack direction="row" spacing={1.4} flexWrap="wrap" useFlexGap sx={{ mt: 1.4 }}>
+                  {ticket.attachments.map((attachment) => (
                     <Box
+                      key={attachment.id}
                       sx={{
-                        position: 'absolute',
-                        inset: 'auto 0 0',
-                        px: 0.8,
-                        py: 0.35,
-                        bgcolor: 'rgba(13,15,20,.62)',
-                        color: surface.lightText,
-                        fontSize: 10,
+                        position: 'relative',
+                        width: { xs: '50%', sm: 160 },
+                        height: 105,
+                        borderRadius: `${radius.sm}px`,
+                        overflow: 'hidden',
+                        backgroundImage: `url(${attachment.url})`,
+                        backgroundPosition: 'center',
+                        backgroundSize: 'cover',
                       }}
                     >
-                      {name}
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          inset: 'auto 0 0',
+                          px: 0.8,
+                          py: 0.35,
+                          bgcolor: 'rgba(13,15,20,.62)',
+                          color: surface.lightText,
+                          fontSize: 10,
+                        }}
+                      >
+                        {attachment.name}
+                      </Box>
                     </Box>
-                  </Box>
-                ))}
-              </Stack>
+                  ))}
+                </Stack>
+              ) : (
+                <Typography sx={{ mt: 1.4, color: brand.neutral[400], fontSize: 12 }}>
+                  {detailT('photos.empty')}
+                </Typography>
+              )}
             </Box>
             <Box sx={cardSx}>
-              <Typography sx={cardTitleSx}>Linha do Tempo e Atualizações</Typography>
-              <Stack spacing={1.7} sx={{ mt: 1.7 }}>
-                {detail.timeline.map((entry) => (
-                  <Stack key={entry.timestamp} direction="row" spacing={1.2}>
-                    <Avatar
-                      sx={{
-                        width: 34,
-                        height: 34,
-                        bgcolor: brand.graphite[400],
-                        fontSize: 11,
-                        fontWeight: 900,
-                      }}
-                    >
-                      {entry.name
-                        .split(' ')
-                        .map((part) => part[0])
-                        .join('')
-                        .slice(0, 2)}
-                    </Avatar>
-                    <Box>
-                      <Stack
-                        direction="row"
-                        flexWrap="wrap"
-                        spacing={0.75}
-                        useFlexGap
-                        alignItems="baseline"
+              <Typography sx={cardTitleSx}>{detailT('timeline.title')}</Typography>
+              {sortedActivities.length > 0 ? (
+                <Stack spacing={1.7} sx={{ mt: 1.7 }}>
+                  {sortedActivities.map((activity) => (
+                    <Stack key={activity.id} direction="row" spacing={1.2}>
+                      <Avatar
+                        sx={{
+                          width: 34,
+                          height: 34,
+                          bgcolor: brand.graphite[400],
+                          fontSize: 11,
+                          fontWeight: 900,
+                        }}
                       >
-                        <Typography
-                          sx={{ fontSize: 12, color: brand.graphite[500], fontWeight: 900 }}
+                        {getInitials(activity.authorName)}
+                      </Avatar>
+                      <Box>
+                        <Stack
+                          direction="row"
+                          flexWrap="wrap"
+                          spacing={0.75}
+                          useFlexGap
+                          alignItems="baseline"
                         >
-                          {entry.name}
+                          <Typography
+                            sx={{ fontSize: 12, color: brand.graphite[500], fontWeight: 900 }}
+                          >
+                            {activity.authorName ?? detailT('timeline.systemAuthor')}
+                          </Typography>
+                          <Typography sx={{ fontSize: 10.5, color: brand.neutral[400] }}>
+                            • {formatDate(activity.createdAt, 'DD/MM/YYYY HH:mm')}
+                          </Typography>
+                        </Stack>
+                        <Typography
+                          sx={{
+                            mt: 0.45,
+                            color: brand.neutral[600],
+                            fontSize: 12,
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          {activity.message}
                         </Typography>
-                        <Typography sx={{ fontSize: 10.5, color: brand.neutral[400] }}>
-                          ({entry.role})
-                        </Typography>
-                        <Typography sx={{ fontSize: 10.5, color: brand.neutral[400] }}>
-                          • {entry.timestamp}
-                        </Typography>
-                      </Stack>
-                      <Typography
-                        sx={{ mt: 0.45, color: brand.neutral[600], fontSize: 12, lineHeight: 1.5 }}
-                      >
-                        {entry.message}
-                      </Typography>
-                    </Box>
-                  </Stack>
-                ))}
-              </Stack>
+                      </Box>
+                    </Stack>
+                  ))}
+                </Stack>
+              ) : (
+                <Typography sx={{ mt: 1.7, color: brand.neutral[400], fontSize: 12 }}>
+                  {detailT('timeline.empty')}
+                </Typography>
+              )}
               <Divider sx={{ my: 1.7 }} />
               <TextField
                 value={message}
                 onChange={(event) => setMessage(event.target.value)}
                 multiline
                 minRows={4}
-                placeholder="Escreva uma mensagem ou atualização sobre o chamado..."
+                placeholder={detailT('timeline.placeholder')}
                 fullWidth
                 sx={{
                   '& .MuiInputBase-root': { bgcolor: surface.app, fontSize: 12, lineHeight: 1.5 },
@@ -283,67 +383,40 @@ export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) 
                   variant="outlined"
                   startIcon={<AttachFileRoundedIcon />}
                   sx={secondaryButtonSx}
+                  disabled
                 >
-                  Anexar arquivos
+                  {detailT('actions.attachFiles')}
                 </Button>
-                <Button variant="contained" disabled={!message.trim()} sx={primaryButtonSx}>
-                  Enviar Mensagem
+                <Button
+                  variant="contained"
+                  disabled={!message.trim() || addNoteMutation.isPending}
+                  sx={primaryButtonSx}
+                  onClick={handleSendMessage}
+                >
+                  {detailT('actions.sendMessage')}
                 </Button>
               </Stack>
             </Box>
           </Stack>
           <Stack spacing={2}>
             <Box sx={cardSx}>
-              <Typography sx={cardTitleSx}>Responsáveis</Typography>
-              <Stack divider={<Divider flexItem />} sx={{ mt: 1 }}>
-                {detail.responsibles.map((person) => (
-                  <Stack
-                    key={person.name}
-                    direction="row"
-                    alignItems="center"
-                    spacing={1.1}
-                    sx={{ py: 1 }}
-                  >
-                    <Avatar
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        bgcolor: brand.graphite[400],
-                        fontSize: 11,
-                        fontWeight: 900,
-                      }}
-                    >
-                      {person.initials}
-                    </Avatar>
-                    <Box sx={{ minWidth: 0 }}>
-                      <Typography
-                        sx={{ fontSize: 12, fontWeight: 900, color: brand.graphite[500] }}
-                      >
-                        {person.name}
-                      </Typography>
-                      <Typography sx={{ fontSize: 10.5, color: brand.neutral[400] }}>
-                        {person.role}
-                      </Typography>
-                    </Box>
-                    <CallOutlinedIcon
-                      sx={{ ml: 'auto', color: brand.neutral[600], fontSize: 16 }}
-                    />
-                  </Stack>
-                ))}
-              </Stack>
-            </Box>
-            <Box sx={cardSx}>
-              <Typography sx={cardTitleSx}>Informações Gerais</Typography>
+              <Typography sx={cardTitleSx}>{detailT('info.title')}</Typography>
               <Stack spacing={1.1} sx={{ mt: 1.6 }}>
                 {[
                   [
-                    'Data abertura',
-                    detail.openedTime
-                      ? `${detail.openedAt} às ${detail.openedTime}`
-                      : detail.openedAt,
+                    t('columns.openedAt'),
+                    detailT('info.dateTime', {
+                      date: formatDate(ticket.createdAt),
+                      time: formatDate(ticket.createdAt, 'HH:mm'),
+                    }),
                   ],
-                  ['Última atualização', detail.lastUpdated],
-                  ['SLA estimado', detail.estimatedSla],
+                  [
+                    detailT('info.lastUpdated'),
+                    detailT('info.dateTime', {
+                      date: formatDate(ticket.updatedAt),
+                      time: formatDate(ticket.updatedAt, 'HH:mm'),
+                    }),
+                  ],
                 ].map(([label, value]) => (
                   <Stack key={label} direction="row" justifyContent="space-between" spacing={1}>
                     <Typography sx={{ fontSize: 11, color: brand.neutral[500] }}>

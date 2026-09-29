@@ -34,8 +34,10 @@
   },
   "actions": { "edit": "Editar", "archive": "Arquivar" },
   "feedback": {
-    "updated": "Cobrança atualizada localmente",
-    "archived": "Cobrança arquivada localmente"
+    "updated": "Cobrança atualizada",
+    "updateError": "Não foi possível atualizar a cobrança.",
+    "archived": "Cobrança arquivada",
+    "archiveError": "Não foi possível arquivar a cobrança."
   },
   "pagination": { "summary": "Mostrando {from}-{to} de {total} cobranças" },
   "createDialog": {
@@ -43,10 +45,10 @@
     "close": "Fechar",
     "cancel": "Cancelar",
     "submit": "Criar cobrança",
-    "success": "Cobrança criada localmente",
+    "success": "Cobrança criada",
+    "error": "Não foi possível criar a cobrança.",
     "fields": {
-      "tenant": "Locatário",
-      "property": "Imóvel",
+      "description": "Descrição",
       "amount": "Valor",
       "dueDate": "Vencimento",
       "direction": "Tipo",
@@ -62,8 +64,7 @@
     "cancel": "Cancelar",
     "save": "Salvar alterações",
     "fields": {
-      "tenant": "Locatário",
-      "property": "Imóvel",
+      "description": "Descrição",
       "amount": "Valor",
       "dueDate": "Vencimento",
       "direction": "Tipo",
@@ -72,7 +73,7 @@
   },
   "archiveDialog": {
     "title": "Arquivar cobrança?",
-    "description": "A cobrança será removida da lista demonstrativa.",
+    "description": "A cobrança será marcada como cancelada.",
     "cancel": "Cancelar",
     "confirm": "Arquivar"
   },
@@ -81,7 +82,7 @@
     "close": "Fechar"
   },
   "details": {
-    "missing": "Cobrança não encontrada ou arquivada nesta sessão demonstrativa.",
+    "missing": "Cobrança não encontrada.",
     "noReceipt": "Esta cobrança não possui comprovante.",
     "demoDocument": "Documento demonstrativo — sem validade para pagamento.",
     "closeDocument": "Fechar documento",
@@ -90,7 +91,8 @@
     "duplicate": "Emitir 2ª via",
     "duplicateSuccess": "Segunda via demonstrativa preparada localmente",
     "registerPayment": "Registrar pagamento",
-    "paymentSuccess": "Pagamento registrado localmente",
+    "paymentSuccess": "Pagamento registrado",
+    "paymentError": "Não foi possível registrar o pagamento.",
     "detailsTitle": "Detalhes da Cobrança",
     "receiptTitle": "Comprovante",
     "linkingTitle": "Vinculação",

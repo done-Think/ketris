@@ -25,8 +25,7 @@ import { createChargeSchema } from '../schemas/create-charge-schema'
 import type { CreateChargeFormValues } from '../types/charge'
 
 const defaultValues: CreateChargeFormValues = {
-  tenant: '',
-  property: '',
+  description: '',
   amount: 0,
   dueDate: '',
   direction: 'receivable',
@@ -90,16 +89,11 @@ export function CreateChargeDialog({
           >
             <RhfTextField
               control={control}
-              name="tenant"
-              label={t('fields.tenant')}
+              name="description"
+              label={t('fields.description')}
               autoFocus
               fullWidth
-            />
-            <RhfTextField
-              control={control}
-              name="property"
-              label={t('fields.property')}
-              fullWidth
+              sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}
             />
             <RhfTextField
               control={control}

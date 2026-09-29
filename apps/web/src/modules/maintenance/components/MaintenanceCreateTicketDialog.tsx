@@ -22,6 +22,8 @@ import { useForm } from 'react-hook-form'
 import { RhfTextField } from '@shared/components/form'
 import { iconSize, brand, radius } from '@shared/theme/tokens'
 
+import { useProperties } from '@modules/properties/hooks/use-properties'
+
 import { maintenanceTicketSchema } from '../schemas/maintenance-ticket-schema'
 import type { MaintenanceCreateTicketFormValues } from '../types/maintenance'
 
@@ -32,13 +34,6 @@ const defaultValues: MaintenanceCreateTicketFormValues = {
   title: '',
   description: '',
 }
-
-const propertyOptions = [
-  { id: 'apt-jardins-3q', label: 'Apt Jardins 3q' },
-  { id: 'studio-pinheiros', label: 'Studio Pinheiros' },
-  { id: 'casa-vila-madalena', label: 'Casa Vila Madalena' },
-  { id: 'cobertura-moema', label: 'Cobertura Moema' },
-] as const
 
 const categoryOptions = ['Hidráulica', 'Elétrica', 'Estrutural', 'Pintura'] as const
 
@@ -59,6 +54,8 @@ export function MaintenanceCreateTicketDialog({
 }: MaintenanceCreateTicketDialogProps) {
   const t = useTranslations('dashboard.maintenance.createDialog')
   const maintenanceT = useTranslations('dashboard.maintenance')
+  const { data: properties } = useProperties()
+  const propertyOptions = properties ?? []
   const { control, handleSubmit, reset } = useForm<MaintenanceCreateTicketFormValues>({
     defaultValues,
     resolver: zodResolver(maintenanceTicketSchema),
@@ -123,7 +120,7 @@ export function MaintenanceCreateTicketDialog({
             >
               {propertyOptions.map((property) => (
                 <MenuItem key={property.id} value={property.id}>
-                  {property.label}
+                  {property.title}
                 </MenuItem>
               ))}
             </RhfTextField>

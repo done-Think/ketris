@@ -1,12 +1,33 @@
 import { ThemeProvider } from '@mui/material'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useSession } from 'next-auth/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
 
+import { useContracts } from '@modules/contracts/hooks/use-contracts'
+
 import { PropertyDetailHeader } from '../../components/PropertyDetailHeader'
 import type { DashboardProperty } from '../../types/dashboard-property'
+
+vi.mock('next-auth/react', () => ({
+  useSession: vi.fn(),
+}))
+
+vi.mock('@modules/contracts/hooks/use-contracts', () => ({
+  useContracts: vi.fn(),
+}))
+
+vi.mocked(useSession).mockReturnValue({
+  data: { user: { name: 'Ana' }, tenantId: 'tenant-1' },
+  status: 'authenticated',
+  update: vi.fn(),
+} as unknown as ReturnType<typeof useSession>)
+
+vi.mocked(useContracts).mockReturnValue({
+  data: { items: [], totalCount: 0 },
+} as unknown as ReturnType<typeof useContracts>)
 
 const baseProperty: DashboardProperty = {
   id: 'property-1',

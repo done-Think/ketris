@@ -64,6 +64,7 @@ describe('POST /api/auth/login (integração)', () => {
       tenantId,
       name: 'Login Teste',
       email,
+      avatarUrl: null,
       role: 'ADMIN',
       active: true,
       pendingApproval: false,

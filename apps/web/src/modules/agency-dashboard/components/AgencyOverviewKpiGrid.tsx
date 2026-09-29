@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 import { DashboardPanel } from '@modules/dashboard/components/DashboardPanel'
 import { brand } from '@shared/theme/tokens'
 
-import { agencyOverviewKpis } from '../data/agency-overview'
+import type { AgencyOverviewKpiGridProps } from '../types/agency-overview'
 
 const helperColor = {
   neutral: brand.neutral[500],
@@ -14,7 +14,7 @@ const helperColor = {
   warning: brand.semantic.warning,
 }
 
-export function AgencyOverviewKpiGrid() {
+export function AgencyOverviewKpiGrid({ kpis }: AgencyOverviewKpiGridProps) {
   const t = useTranslations('dashboard.agencyOverview.kpis')
 
   return (
@@ -28,7 +28,7 @@ export function AgencyOverviewKpiGrid() {
         gap: { xs: 1.2, md: 1.6 },
       }}
     >
-      {agencyOverviewKpis.map((kpi) => (
+      {kpis.map((kpi) => (
         <DashboardPanel key={kpi.id}>
           <Box
             sx={{
@@ -65,17 +65,19 @@ export function AgencyOverviewKpiGrid() {
               >
                 {kpi.value}
               </Typography>
-              <Typography
-                noWrap
-                sx={{
-                  color: helperColor[kpi.tone],
-                  fontSize: { xs: 10.5, md: 11 },
-                  fontWeight: 900,
-                  lineHeight: 1.25,
-                }}
-              >
-                {kpi.helper}
-              </Typography>
+              {kpi.helper ? (
+                <Typography
+                  noWrap
+                  sx={{
+                    color: helperColor[kpi.tone],
+                    fontSize: { xs: 10.5, md: 11 },
+                    fontWeight: 900,
+                    lineHeight: 1.25,
+                  }}
+                >
+                  {kpi.helper}
+                </Typography>
+              ) : null}
             </Stack>
             {typeof kpi.progress === 'number' ? (
               <Box sx={{ position: 'relative', flexShrink: 0, width: 46, height: 46 }}>

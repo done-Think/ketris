@@ -42,8 +42,7 @@ export function EditChargeDialog({
   useEffect(() => {
     if (charge) {
       reset({
-        tenant: charge.tenant,
-        property: charge.property,
+        description: charge.description ?? '',
         amount: charge.amount,
         dueDate: charge.dueDate,
         direction: charge.direction,
@@ -95,16 +94,11 @@ export function EditChargeDialog({
           >
             <RhfTextField
               control={control}
-              name="tenant"
-              label={t('fields.tenant')}
+              name="description"
+              label={t('fields.description')}
               autoFocus
               fullWidth
-            />
-            <RhfTextField
-              control={control}
-              name="property"
-              label={t('fields.property')}
-              fullWidth
+              sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}
             />
             <RhfTextField
               control={control}
@@ -144,7 +138,7 @@ export function EditChargeDialog({
                 <MenuItem
                   key={status}
                   value={status}
-                  disabled={status === 'paid' && !charge.payment}
+                  disabled={status === 'paid' && charge.status !== 'paid'}
                 >
                   {commonT(`statuses.${status}`)}
                 </MenuItem>

@@ -32,7 +32,10 @@ export function AgencyBrokerDetailDialog({ broker, onClose }: AgencyBrokerDetail
       <DialogTitle sx={{ px: { xs: 2, md: 2.8 }, pb: 1.2, pt: 2.4 }}>
         <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
           <Stack direction="row" spacing={1.4} sx={{ alignItems: 'center', minWidth: 0 }}>
-            <Avatar src={broker.avatarUrl} sx={{ width: 44, height: 44, fontSize: 14 }}>
+            <Avatar
+              src={broker.avatarUrl ?? undefined}
+              sx={{ width: 44, height: 44, fontSize: 14 }}
+            >
               {getInitials(broker.name)}
             </Avatar>
             <Box sx={{ minWidth: 0 }}>
@@ -98,7 +101,7 @@ export function AgencyBrokerDetailDialog({ broker, onClose }: AgencyBrokerDetail
                     {sale.property}
                   </Typography>
                   <Typography sx={{ color: brand.neutral[500], fontSize: 11.5, fontWeight: 700 }}>
-                    {sale.location} - {sale.closedAt}
+                    {sale.location ? `${sale.location} - ${sale.closedAt}` : sale.closedAt}
                   </Typography>
                 </Box>
                 <Typography

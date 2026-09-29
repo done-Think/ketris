@@ -40,9 +40,9 @@
       "label": "Expiring in 30d",
       "caption": "Need follow-up"
     },
-    "Inadimplentes": {
-      "label": "Delinquent",
-      "caption": "With outstanding balances"
+    "Total": {
+      "label": "Total contracts",
+      "caption": "Across every status"
     }
   },
   "table": {
@@ -92,18 +92,33 @@
     "title": "Generate Contract",
     "stepsAriaLabel": "Contract steps",
     "steps": {
+      "opportunity": "Opportunity",
       "parties": "Parties",
-      "property": "Property",
       "conditions": "Conditions",
       "review": "Review"
     },
     "stepFormTitleReview": "Contract Review",
     "stepFormTitle": "Contract {step}",
-    "successMessage": "{code} added for review.",
+    "successMessage": "{code} created, awaiting signatures.",
+    "errorMessage": "Could not create the contract.",
     "actions": {
       "back": "Back",
       "next": "Next step",
       "generate": "Generate contract"
+    },
+    "opportunity": {
+      "title": "Source opportunity",
+      "picker": {
+        "label": "Select an accepted opportunity",
+        "helperText": "Only accepted opportunities without a contract show up here.",
+        "noOptions": "No accepted opportunities available."
+      },
+      "summary": {
+        "property": "Property",
+        "address": "Address",
+        "lead": "Interested party",
+        "amount": "Proposed value"
+      }
     },
     "parties": {
       "ownerTitle": "Landlord (Owner)",
@@ -117,38 +132,10 @@
         "phone": "Phone"
       }
     },
-    "property": {
-      "title": "Property details",
-      "fields": {
-        "propertyTitle": "Property",
-        "propertyType": "Type",
-        "propertyAddress": "Address",
-        "propertyZipCode": "ZIP code",
-        "propertyCity": "City",
-        "propertyState": "State",
-        "propertyRegistration": "Registration",
-        "propertyArea": "Usable area"
-      },
-      "typeOptions": {
-        "Apartamento": "Apartment",
-        "Casa": "House",
-        "Studio": "Studio",
-        "Cobertura": "Penthouse",
-        "Sala comercial": "Commercial unit"
-      },
-      "picker": {
-        "label": "Select a listed property",
-        "helperText": "Choose an existing property to auto-fill its details.",
-        "noOptions": "No properties found."
-      }
-    },
     "conditions": {
       "title": "Commercial conditions",
       "fields": {
         "contractType": "Contract type",
-        "monthlyRent": "Rent amount",
-        "condominiumFee": "HOA fee",
-        "iptu": "Property tax",
         "dueDay": "Due day",
         "guaranteeType": "Guarantee",
         "startDate": "Start",
@@ -157,25 +144,24 @@
         "notes": "Notes"
       },
       "contractTypeOptions": {
-        "Locação residencial": "Residential lease",
-        "Locação comercial": "Commercial lease",
-        "Temporada": "Short-term"
+        "RESIDENCIAL": "Residential",
+        "COMERCIAL": "Commercial",
+        "TEMPORADA": "Short-term"
       },
       "guaranteeTypeOptions": {
-        "Fiador": "Guarantor",
-        "Caução": "Security deposit",
-        "Seguro fiança": "Lease insurance",
-        "Título de capitalização": "Savings bond"
+        "FIADOR": "Guarantor",
+        "CAUCAO": "Security deposit",
+        "SEGURO_FIANCA": "Lease insurance",
+        "TITULO_CAPITALIZACAO": "Savings bond"
       },
       "adjustmentIndexOptions": {
         "IPCA": "IPCA",
-        "IGP-M": "IGP-M",
+        "IGPM": "IGP-M",
         "INPC": "INPC"
       }
     },
     "review": {
       "partiesTitle": "Parties",
-      "propertyTitle": "Property",
       "conditionsTitle": "Conditions",
       "termTitle": "Term",
       "labels": {
@@ -185,12 +171,7 @@
         "tenantCpf": "Tenant's ID",
         "guarantor": "Guarantor",
         "guarantorCpf": "Guarantor's ID",
-        "property": "Property",
-        "type": "Type",
-        "address": "Address",
-        "cityState": "City/State",
         "contract": "Contract",
-        "rent": "Rent",
         "dueDay": "Due date",
         "dueDayValue": "Day {day}",
         "guarantee": "Guarantee",

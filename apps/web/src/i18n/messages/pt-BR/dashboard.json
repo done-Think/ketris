@@ -36,16 +36,19 @@
     "title": "Dashboard",
     "notifications": "Notificações",
     "performanceTitle": "Desempenho 6 meses",
-    "performanceTarget": "Meta: {value}%",
+    "metrics": {
+      "leadsActive": { "label": "Leads ativos", "caption": "{count} hoje" },
+      "visitsMonth": { "label": "Visitas mês", "caption": "{count} hoje" },
+      "proposals": { "label": "Propostas", "caption": "{count} aguardando resposta" },
+      "revenue": { "label": "Faturamento", "caption": "{amount} em atraso" }
+    },
     "activityDetail": {
       "close": "Fechar",
-      "openGps": "Abrir no GPS",
-      "openGpsAriaLabel": "Abrir {address} no GPS",
       "meetingTime": "Horário de encontro",
       "location": "Local",
       "client": "Cliente",
-      "owner": "Proprietário",
       "notes": "Observações",
+      "noNotes": "Sem observações registradas.",
       "visitProperty": "Imóvel da visita"
     },
     "leadDetails": {
@@ -53,26 +56,18 @@
       "close": "Fechar",
       "client": "Cliente",
       "interest": "Interesse",
+      "budget": "Orçamento",
       "origin": "Origem",
-      "desiredRegions": "Regiões de busca",
-      "cancel": "Cancelar",
-      "edit": "Editar",
-      "save": "Salvar",
-      "fields": {
-        "reportedNeed": "O que relatou",
-        "lookingFor": "O que procura",
-        "budgetRange": "Base de valores",
-        "downPayment": "Valor de entrada",
-        "financingStatus": "Financiamento",
-        "timeline": "Prazo de decisão",
-        "notes": "Observações para atendimento"
-      }
+      "notes": "Observações",
+      "noNotes": "Sem observações registradas."
     },
     "recentLeads": {
       "title": "Leads recentes",
+      "empty": "Nenhum lead recente encontrado.",
       "columns": {
         "name": "Nome",
         "interest": "Interesse",
+        "budget": "Orçamento",
         "status": "Status",
         "origin": "Origem",
         "actions": "Ações"
@@ -85,6 +80,10 @@
         "qualified": "Qualificado",
         "pending": "Pendente"
       }
+    },
+    "upcomingActivities": {
+      "title": "Próximas atividades",
+      "empty": "Nenhuma atividade agendada para este mês."
     }
   },
   "agencyOverview": {
@@ -109,9 +108,8 @@
     },
     "performance": {
       "title": "Performance de Faturamento",
-      "subtitle": "Comparativo de receita vs meta mensal",
-      "revenue": "Receita",
-      "target": "Meta"
+      "subtitle": "Receita mensal recebida pela imobiliária",
+      "revenue": "Receita"
     },
     "topBrokers": {
       "title": "Top Corretores",
@@ -127,58 +125,31 @@
     },
     "activity": {
       "title": "Atividade Recente",
-      "closedSale": "{broker} fechou contrato de venda no {detail}",
-      "createdProperty": "{broker} cadastrou novo apartamento no {detail}",
-      "scheduledVisit": "{broker} agendou visita para amanhã na {detail}",
-      "receivedLead": "Novo lead recebido através do {detail}",
-      "signedRent": "Contrato de locação assinado para {detail}",
+      "messages": {
+        "contract": "{broker} ativou um contrato para {detail}",
+        "property": "{broker} cadastrou o imóvel {detail}",
+        "visit": "{broker} agendou {detail}",
+        "lead": "{broker} recebeu o lead {detail}"
+      },
+      "messagesNoBroker": {
+        "contract": "Contrato ativado para {detail}",
+        "property": "Novo imóvel cadastrado: {detail}",
+        "visit": "Visita agendada: {detail}",
+        "lead": "Novo lead recebido: {detail}"
+      },
       "details": {
         "eyebrow": "Detalhe da atividade",
         "close": "Fechar",
         "fields": {
           "broker": "Corretor",
           "subject": "Assunto",
-          "status": "Status",
-          "nextStep": "Proximo passo",
-          "time": "Quando",
-          "summary": "Resumo"
+          "time": "Quando"
         },
-        "items": {
-          "contractSale": {
-            "title": "Contrato de venda fechado",
-            "description": "Marina concluiu a etapa comercial e o contrato entrou para conferencia operacional antes do faturamento.",
-            "subject": "Condominio Pinheiros",
-            "status": "Fechado",
-            "nextStep": "Validar documentacao e liberar registro financeiro."
-          },
-          "newProperty": {
-            "title": "Novo imovel cadastrado",
-            "description": "Thiago adicionou o apartamento ao portfolio e iniciou a conferencia das informacoes publicas.",
-            "subject": "Apartamento no Itaim Bibi",
-            "status": "Em revisao",
-            "nextStep": "Revisar midias, valores e disponibilidade."
-          },
-          "visitScheduled": {
-            "title": "Visita agendada",
-            "description": "Ana marcou a visita com cliente interessado e deixou o atendimento vinculado ao calendario da equipe.",
-            "subject": "Casa Jardins",
-            "status": "Agendada",
-            "nextStep": "Confirmar presenca do cliente ate o fim do dia."
-          },
-          "newLead": {
-            "title": "Lead recebido",
-            "description": "Um novo contato entrou pelo portal Ketris e aguarda qualificacao inicial da equipe comercial.",
-            "subject": "Portal Ketris",
-            "status": "Novo",
-            "nextStep": "Distribuir para um corretor disponivel."
-          },
-          "rentContract": {
-            "title": "Contrato de locacao assinado",
-            "description": "O contrato do Studio Moema foi assinado e ja pode seguir para arquivamento e acompanhamento financeiro.",
-            "subject": "Studio Moema",
-            "status": "Assinado",
-            "nextStep": "Anexar comprovantes e ativar recorrencia."
-          }
+        "tones": {
+          "contract": "Contrato",
+          "property": "Imóvel",
+          "visit": "Visita",
+          "lead": "Lead"
         }
       }
     }
@@ -206,7 +177,8 @@
     "metrics": {
       "open": "Abertos",
       "urgent": "Urgentes",
-      "averageResolution": "Tempo m\u00e9dio resolu\u00e7\u00e3o"
+      "averageResolution": "Tempo m\u00e9dio resolu\u00e7\u00e3o",
+      "averageResolutionUnit": "{days} dias"
     },
     "columns": {
       "ticket": "Chamado",
@@ -250,7 +222,53 @@
       "deleteTitle": "Excluir chamado?",
       "deleteDescription": "Deseja realmente excluir este chamado? Esta ação não poderá ser desfeita."
     },
-    "pagination": { "previous": "Anterior", "next": "Pr\u00f3ximo" }
+    "pagination": { "previous": "Anterior", "next": "Pr\u00f3ximo" },
+    "notifications": {
+      "createSuccess": "Chamado criado com sucesso.",
+      "createError": "N\u00e3o foi poss\u00edvel criar o chamado.",
+      "updateSuccess": "Chamado atualizado com sucesso.",
+      "updateError": "N\u00e3o foi poss\u00edvel salvar as altera\u00e7\u00f5es.",
+      "deleteSuccess": "Chamado exclu\u00eddo com sucesso.",
+      "deleteError": "N\u00e3o foi poss\u00edvel excluir o chamado.",
+      "resolveSuccess": "Chamado marcado como resolvido.",
+      "resolveError": "N\u00e3o foi poss\u00edvel marcar o chamado como resolvido.",
+      "noteSuccess": "Mensagem enviada.",
+      "noteError": "N\u00e3o foi poss\u00edvel enviar a mensagem."
+    },
+    "detail": {
+      "back": "Voltar para chamados",
+      "loading": "Carregando chamado...",
+      "notFound": {
+        "title": "Chamado n\u00e3o encontrado",
+        "action": "Voltar para chamados"
+      },
+      "actions": {
+        "assignProvider": "Atribuir prestador",
+        "resolve": "Marcar resolvido",
+        "attachFiles": "Anexar arquivos",
+        "sendMessage": "Enviar Mensagem"
+      },
+      "descriptionCard": {
+        "title": "Descri\u00e7\u00e3o do Chamado",
+        "openedBy": "Aberto por",
+        "report": "Relato do problema"
+      },
+      "photos": {
+        "title": "Fotos Anexadas",
+        "empty": "Nenhuma foto anexada a este chamado."
+      },
+      "timeline": {
+        "title": "Linha do Tempo e Atualiza\u00e7\u00f5es",
+        "empty": "Nenhuma atualiza\u00e7\u00e3o registrada ainda.",
+        "placeholder": "Escreva uma mensagem ou atualiza\u00e7\u00e3o sobre o chamado...",
+        "systemAuthor": "Sistema"
+      },
+      "info": {
+        "title": "Informa\u00e7\u00f5es Gerais",
+        "lastUpdated": "\u00daltima atualiza\u00e7\u00e3o",
+        "dateTime": "{date} \u00e0s {time}"
+      }
+    }
   },
   "finance": {
     "title": "Financeiro",
@@ -285,10 +303,9 @@
     "revenue": "Faturamento",
     "upcomingDuesTitle": "Próximos vencimentos",
     "kpis": {
-      "monthlyRevenue": "Receita mensal",
       "receivable": "A receber",
       "delinquency": "Inadimplência",
-      "occupancyRate": "Taxa ocupação"
+      "defaultRate": "Taxa de inadimplência"
     },
     "history": {
       "eyebrow": "Histórico financeiro",
@@ -351,28 +368,6 @@
   },
   "proposals": {
     "title": "Propostas",
-    "subtitle": "Negociações em andamento e valores de referência.",
-    "columns": {
-      "client": "Cliente",
-      "property": "Imóvel",
-      "value": "Proposta",
-      "ownerExpectation": "Expectativa",
-      "status": "Status"
-    },
-    "detail": {
-      "eyebrow": "Detalhe da proposta",
-      "close": "Fechar proposta",
-      "value": "Valor proposto",
-      "ownerExpectation": "Expectativa do proprietário",
-      "currentStatus": "Status atual",
-      "status": "Alterar status",
-      "cancel": "Cancelar",
-      "saveStatus": "Salvar status"
-    },
-    "statuses": {
-      "underReview": "Em análise",
-      "counteroffer": "Contraproposta",
-      "approved": "Aprovada"
-    }
+    "subtitle": "Negociações em andamento e valores de referência."
   }
 }

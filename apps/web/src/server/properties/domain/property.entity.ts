@@ -103,6 +103,13 @@ export interface PropertyListFilters {
 export interface ActiveContractProperty {
   contractId: string
   propertyId: string
-  contractStatus: 'RASCUNHO' | 'AGUARDANDO_ASSINATURA' | 'ATIVO'
+  contractStatus:
+    | 'RASCUNHO'
+    | 'EM_REVISAO'
+    | 'AGUARDANDO_ASSINATURA'
+    | 'ASSINADO'
+    | 'ATIVO'
+    | 'ENCERRADO'
+    | 'CANCELADO'
   finalidade: PropertyPurpose
 }

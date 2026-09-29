@@ -8,11 +8,10 @@ import { DashboardPanel } from '@modules/dashboard/components/DashboardPanel'
 import { alpha, brand, motion, radius } from '@shared/theme/tokens'
 import { getInitials } from '@shared/utils/get-initials'
 
-import { agencyTopBrokers } from '../data/agency-overview'
-import type { AgencyTopBroker } from '../types/agency-overview'
+import type { AgencyTopBroker, AgencyTopBrokersPanelProps } from '../types/agency-overview'
 import { AgencyBrokerDetailDialog } from './AgencyBrokerDetailDialog'
 
-export function AgencyTopBrokersPanel() {
+export function AgencyTopBrokersPanel({ topBrokers }: AgencyTopBrokersPanelProps) {
   const t = useTranslations('dashboard.agencyOverview.topBrokers')
   const [selectedBroker, setSelectedBroker] = useState<AgencyTopBroker | null>(null)
 
@@ -28,7 +27,7 @@ export function AgencyTopBrokersPanel() {
           </Typography>
 
           <Stack spacing={0.65}>
-            {agencyTopBrokers.map((broker, index) => {
+            {topBrokers.map((broker, index) => {
               const highlighted = index === 0
 
               return (
@@ -76,7 +75,10 @@ export function AgencyTopBrokersPanel() {
                     >
                       {index + 1}
                     </Box>
-                    <Avatar src={broker.avatarUrl} sx={{ width: 28, height: 28, fontSize: 10 }}>
+                    <Avatar
+                      src={broker.avatarUrl ?? undefined}
+                      sx={{ width: 28, height: 28, fontSize: 10 }}
+                    >
                       {getInitials(broker.name)}
                     </Avatar>
                     <Box sx={{ minWidth: 0, flex: 1 }}>

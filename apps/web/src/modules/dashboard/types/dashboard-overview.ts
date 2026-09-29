@@ -1,10 +1,25 @@
 import type { ReactNode } from 'react'
 
+export type DashboardMetricTone = 'success' | 'danger'
+
 export type DashboardMetric = {
   label: string
   value: string
-  caption: string
-  tone?: 'success' | 'danger'
+  caption?: string
+  tone?: DashboardMetricTone
+}
+
+export type DashboardMetricGridProps = {
+  metrics: DashboardMetric[]
+}
+
+export type DashboardPerformancePoint = {
+  month: string
+  value: number
+}
+
+export type DashboardPerformanceChartProps = {
+  data: DashboardPerformancePoint[]
 }
 
 export type DashboardActivityAccent = 'magenta' | 'info' | 'warning'
@@ -14,39 +29,12 @@ export type DashboardUpcomingActivity = {
   time: string
   title: string
   contact: string
+  phone: string
   accent: DashboardActivityAccent
-  type: 'visit' | 'meeting' | 'follow-up'
-  client: {
-    name: string
-    phone: string
-  }
-  location: {
-    name: string
-    address: string
-    latitude: number
-    longitude: number
-    directionsUrl: string
-  }
   meetingTime: string
   notes: string
-  property?: {
-    title: string
-    imageUrl: string
-    address: string
-    price: string
-    area: string
-    bedrooms: string
-    summary: string
-    owner: {
-      name: string
-      phone: string
-    }
-  }
-}
-
-export type DashboardPerformancePoint = {
-  month: string
-  value: number
+  propertyId: string | null
+  propertyReference: string | null
 }
 
 export type DashboardRecentLeadStatus = 'new' | 'inProgress' | 'qualified' | 'pending'
@@ -61,15 +49,9 @@ export type DashboardRecentLead = {
   name: string
   phone: string
   interest: string
+  budget: string
+  source: string
   status: DashboardRecentLeadStatus
-  origin: string
-  reportedNeed: string
-  lookingFor: string
-  budgetRange: string
-  downPayment: string
-  financingStatus: string
-  desiredRegions: string[]
-  timeline: string
   notes: string
 }
 
@@ -85,13 +67,13 @@ export type ContactInfoCardProps = {
 
 export type ActivityDetailModalProps = {
   activity: DashboardUpcomingActivity | null
+  tenantId: string | null | undefined
   onClose: () => void
 }
 
 export type LeadDetailsModalProps = {
   lead: DashboardRecentLead | null
   onClose: () => void
-  onLeadUpdate: (leadId: string, values: DashboardLeadDetailsFormValues) => void
 }
 
 export type LeadBriefingItemProps = {
@@ -105,21 +87,6 @@ export type RecentLeadsTableProps = {
 }
 
 export type UpcomingActivitiesPanelProps = {
+  activities: DashboardUpcomingActivity[]
   onActivitySelect: (activity: DashboardUpcomingActivity) => void
-}
-
-export type DashboardLeadDetailsFormValues = Pick<
-  DashboardRecentLead,
-  | 'reportedNeed'
-  | 'lookingFor'
-  | 'budgetRange'
-  | 'downPayment'
-  | 'financingStatus'
-  | 'timeline'
-  | 'notes'
->
-
-export type DashboardStoreState = {
-  leads: DashboardRecentLead[]
-  updateLeadDetails: (leadId: string, values: DashboardLeadDetailsFormValues) => void
 }

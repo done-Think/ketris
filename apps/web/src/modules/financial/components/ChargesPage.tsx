@@ -31,6 +31,7 @@ import {
 } from '@mui/material'
 import { useSnackbar } from 'notistack'
 import { useTranslations, useLocale } from 'next-intl'
+import { useSession } from 'next-auth/react'
 
 import { useRouter } from '@/i18n/navigation'
 import {
@@ -41,7 +42,10 @@ import {
   DashboardTablePagination,
 } from '@shared/components/layout'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
-import { getMonthlyReceivable, useChargesStore } from '../stores/charges-store'
+import { formatCurrency } from '@shared/lib/utils/format'
+import { useCharges, useCreateCharge, useUpdateCharge } from '../hooks/use-financial'
+import { getMonthlyReceivable, mapChargeListItemFromApi } from '../utils/charge-adapter'
+import { errorMessage } from '../utils/error-message'
 import { chargeStatusColors as statusColors } from './charge-status-colors'
 import type {
   Charge,
@@ -57,20 +61,19 @@ import { EditChargeDialog } from './EditChargeDialog'
 const defaultRowsPerPage = 6
 const statusKeys: Array<'all' | ChargeStatus> = ['all', 'pending', 'overdue', 'paid', 'scheduled']
 
-function currency(value: number, locale: string) {
-  return new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL' }).format(value)
-}
-
 export function ChargesPage() {
   const t = useTranslations('charges')
   const locale = useLocale()
   const { enqueueSnackbar } = useSnackbar()
-  const {
-    charges,
-    addCharge: createCharge,
-    updateCharge: saveCharge,
-    archiveCharge: removeCharge,
-  } = useChargesStore()
+  const { data: session } = useSession()
+  const tenantId = session?.tenantId ?? ''
+  const chargesQuery = useCharges(tenantId, { pageSize: 500 })
+  const charges = useMemo(
+    () => (chargesQuery.data?.items ?? []).map(mapChargeListItemFromApi),
+    [chargesQuery.data],
+  )
+  const createChargeMutation = useCreateCharge(tenantId)
+  const updateChargeMutation = useUpdateCharge(tenantId)
   const [direction, setDirection] = useState<ChargeDirection>('receivable')
   const [status, setStatus] = useState<'all' | ChargeStatus>('all')
   const [query, setQuery] = useState('')
@@ -118,24 +121,59 @@ export function ChargesPage() {
     }
   }
   const addCharge = (values: CreateChargeFormValues) => {
-    createCharge(values)
-    setQuery('')
-    setDirection(values.direction)
-    setStatus('all')
-    setPage(1)
-    setCreateOpen(false)
-    enqueueSnackbar(t('createDialog.success'), { variant: 'success' })
+    createChargeMutation.mutate(values, {
+      onSuccess: () => {
+        setQuery('')
+        setDirection(values.direction)
+        setStatus('all')
+        setPage(1)
+        setCreateOpen(false)
+        enqueueSnackbar(t('createDialog.success'), { variant: 'success' })
+      },
+      onError: (error) => {
+        enqueueSnackbar(errorMessage(error, t('createDialog.error')), { variant: 'error' })
+      },
+    })
   }
   const updateCharge = (id: string, values: UpdateChargeFormValues) => {
-    saveCharge(id, values)
-    setEditingChargeId(null)
-    enqueueSnackbar(t('feedback.updated'), { variant: 'success' })
+    updateChargeMutation.mutate(
+      { id, values },
+      {
+        onSuccess: () => {
+          setEditingChargeId(null)
+          enqueueSnackbar(t('feedback.updated'), { variant: 'success' })
+        },
+        onError: (error) => {
+          enqueueSnackbar(errorMessage(error, t('feedback.updateError')), { variant: 'error' })
+        },
+      },
+    )
   }
   const archiveCharge = () => {
     if (!archivingChargeId) return
-    removeCharge(archivingChargeId)
-    setArchivingChargeId(null)
-    enqueueSnackbar(t('feedback.archived'), { variant: 'success' })
+    const charge = charges.find((item) => item.id === archivingChargeId)
+    if (!charge) return
+    updateChargeMutation.mutate(
+      {
+        id: charge.id,
+        values: {
+          description: charge.description ?? '',
+          amount: charge.amount,
+          dueDate: charge.dueDate,
+          direction: charge.direction,
+          status: 'cancelled',
+        },
+      },
+      {
+        onSuccess: () => {
+          setArchivingChargeId(null)
+          enqueueSnackbar(t('feedback.archived'), { variant: 'success' })
+        },
+        onError: (error) => {
+          enqueueSnackbar(errorMessage(error, t('feedback.archiveError')), { variant: 'error' })
+        },
+      },
+    )
   }
   return (
     <Box sx={{ width: '100%', p: 3.5 }}>
@@ -274,13 +312,13 @@ export function ChargesPage() {
         >
           <Metric
             label={t('kpis.receivable')}
-            value={currency(due, locale)}
+            value={formatCurrency(due)}
             icon={<TrendingUpRoundedIcon />}
             tone="success"
           />
           <Metric
             label={t('kpis.overdue')}
-            value={currency(overdue, locale)}
+            value={formatCurrency(overdue)}
             icon={<TrendingDownRoundedIcon />}
             tone="error"
           />
@@ -495,7 +533,7 @@ function ChargeRow({
       </TableCell>
       <TableCell>
         <Typography sx={{ fontWeight: 800, fontSize: 15.5 }}>
-          {currency(charge.amount, locale)}
+          {formatCurrency(charge.amount)}
         </Typography>
       </TableCell>
       <TableCell>

@@ -1,20 +1,46 @@
 import { describe, expect, it } from 'vitest'
 
-import { createContractDefaultValues, createContractSchema } from './create-contract-schema'
+import { createContractSchema } from './create-contract-schema'
+
+const validValues = {
+  activeStepIndex: 0,
+  maxStepIndex: 0,
+  opportunityId: 'opportunity-1',
+  ownerName: 'Carlos Eduardo Mendes',
+  ownerCpf: '529.982.247-25',
+  ownerEmail: 'carlos@example.com',
+  ownerPhone: '(11) 99999-9999',
+  tenantName: 'Bruno Oliveira',
+  tenantCpf: '987.654.321-00',
+  tenantEmail: 'bruno@example.com',
+  tenantPhone: '(11) 99999-9999',
+  hasGuarantor: false,
+  guarantorName: '',
+  guarantorCpf: '',
+  guarantorEmail: '',
+  guarantorPhone: '',
+  contractType: 'RESIDENCIAL',
+  dueDay: '05',
+  startDate: '01/09/2026',
+  endDate: '31/08/2029',
+  guaranteeType: 'CAUCAO',
+  adjustmentIndex: 'IPCA',
+  notes: '',
+}
 
 describe('createContractSchema', () => {
-  it('accepts the contract creation defaults', () => {
-    const result = createContractSchema.safeParse(createContractDefaultValues)
+  it('accepts a fully filled, valid contract', () => {
+    const result = createContractSchema.safeParse(validValues)
 
     expect(result.success).toBe(true)
   })
 
-  it('rejects missing required parties and property fields', () => {
+  it('rejects missing opportunity and parties fields', () => {
     const result = createContractSchema.safeParse({
-      ...createContractDefaultValues,
+      ...validValues,
+      opportunityId: '',
       ownerName: '',
       tenantEmail: 'email-invalido',
-      propertyAddress: '',
     })
 
     expect(result.success).toBe(false)
@@ -22,8 +48,8 @@ describe('createContractSchema', () => {
 
   it('rejects missing contract condition fields', () => {
     const result = createContractSchema.safeParse({
-      ...createContractDefaultValues,
-      monthlyRent: '',
+      ...validValues,
+      dueDay: '',
       startDate: '',
       guaranteeType: '',
     })
@@ -33,7 +59,7 @@ describe('createContractSchema', () => {
 
   it('requires guarantor fields when guarantor registration is enabled', () => {
     const result = createContractSchema.safeParse({
-      ...createContractDefaultValues,
+      ...validValues,
       hasGuarantor: true,
       guarantorName: '',
       guarantorCpf: '',
@@ -44,11 +70,11 @@ describe('createContractSchema', () => {
     expect(result.success).toBe(false)
   })
 
-  it('requires guarantor fields when guaranteeType is Fiador even without hasGuarantor', () => {
+  it('requires guarantor fields when guaranteeType is FIADOR even without hasGuarantor', () => {
     const result = createContractSchema.safeParse({
-      ...createContractDefaultValues,
+      ...validValues,
       hasGuarantor: false,
-      guaranteeType: 'Fiador',
+      guaranteeType: 'FIADOR',
       guarantorName: '',
       guarantorCpf: '',
       guarantorEmail: '',
@@ -58,15 +84,29 @@ describe('createContractSchema', () => {
     expect(result.success).toBe(false)
   })
 
-  it('does not require guarantor fields when guaranteeType is not Fiador', () => {
+  it('does not require guarantor fields when guaranteeType is not FIADOR', () => {
     const result = createContractSchema.safeParse({
-      ...createContractDefaultValues,
+      ...validValues,
       hasGuarantor: false,
-      guaranteeType: 'Caução',
+      guaranteeType: 'CAUCAO',
       guarantorName: '',
       guarantorCpf: '',
       guarantorEmail: '',
       guarantorPhone: '',
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('accepts a filled guarantor when guaranteeType is FIADOR', () => {
+    const result = createContractSchema.safeParse({
+      ...validValues,
+      hasGuarantor: true,
+      guaranteeType: 'FIADOR',
+      guarantorName: 'Fernanda Lima',
+      guarantorCpf: '456.789.123-64',
+      guarantorEmail: 'fernanda@example.com',
+      guarantorPhone: '(11) 99999-9999',
     })
 
     expect(result.success).toBe(true)
