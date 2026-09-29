@@ -90,6 +90,7 @@ describe('POST /api/auth/admins (integração)', () => {
       tenantId,
       name: 'Novo Admin',
       email,
+      avatarUrl: null,
       role: 'ADMIN',
       active: true,
       pendingApproval: false,
