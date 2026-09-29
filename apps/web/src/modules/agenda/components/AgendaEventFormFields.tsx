@@ -33,7 +33,7 @@ export function AgendaEventFormFields({
   const showCustomPropertyField = selectedPropertyId === agendaOtherPropertyValue
 
   return (
-    <Stack spacing={1.6}>
+    <Stack spacing={1.6} sx={{ pt: 1 }}>
       <Stack spacing={1.4}>
         <RhfTextField control={control} name="title" label={t('fields.title')} fullWidth />
         <RhfTextField control={control} name="kind" label={t('fields.kind')} select fullWidth>
@@ -93,7 +93,7 @@ export function AgendaEventFormFields({
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: '1fr 150px 150px' },
+          gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr 1fr' },
           gap: 1.4,
         }}
       >

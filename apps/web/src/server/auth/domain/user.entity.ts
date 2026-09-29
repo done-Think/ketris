@@ -8,6 +8,7 @@ export interface User {
   nome: string
   email: string
   senhaHash: string
+  avatarUrl?: string | null
   papel: Papel
   ativo: boolean
   vinculoAprovadoEm: Date | null
@@ -21,6 +22,7 @@ export function toAuthenticatedUser(user: User): AuthenticatedUser {
     tenantId: user.tenantId,
     nome: user.nome,
     email: user.email,
+    avatarUrl: user.avatarUrl ?? null,
     papel: user.papel,
     ativo: user.ativo,
     vinculoAprovadoEm: user.vinculoAprovadoEm,
@@ -32,6 +34,7 @@ export type AuthenticatedUserResponse = {
   tenantId: string
   name: string
   email: string
+  avatarUrl: string | null
   role: Papel
   active: boolean
   pendingApproval: boolean
@@ -43,6 +46,7 @@ export function toAuthenticatedUserResponse(user: AuthenticatedUser): Authentica
     tenantId: user.tenantId,
     name: user.nome,
     email: user.email,
+    avatarUrl: user.avatarUrl ?? null,
     role: user.papel,
     active: user.ativo,
     pendingApproval: user.vinculoAprovadoEm === null,

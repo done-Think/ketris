@@ -68,6 +68,7 @@ describe('CreateUserUseCase', () => {
       tenantId: createdUser.tenantId,
       nome: createdUser.nome,
       email: createdUser.email,
+      avatarUrl: null,
       papel: createdUser.papel,
       ativo: createdUser.ativo,
       vinculoAprovadoEm: createdUser.vinculoAprovadoEm,

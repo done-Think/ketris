@@ -10,6 +10,20 @@ interface ApproveMembershipResponse {
   user: TenantUser
 }
 
+interface UpdateUserResponse {
+  user: TenantUser
+}
+
+interface UploadAvatarResponse {
+  media: { url: string }
+}
+
+export type UpdateCurrentUserPayload = {
+  name: string
+  email: string
+  avatarUrl?: string | null
+}
+
 class UserService extends BaseService {
   private readonly path = '/auth/users'
 
@@ -21,6 +35,23 @@ class UserService extends BaseService {
     return this.http
       .patch<ApproveMembershipResponse>(`${this.path}/${id}/approve`)
       .then((data) => data.user)
+  }
+
+  update(id: string, payload: UpdateCurrentUserPayload): Promise<TenantUser> {
+    return this.http
+      .patch<UpdateUserResponse>(`${this.path}/${id}`, payload)
+      .then((data) => data.user)
+  }
+
+  uploadAvatar(file: File): Promise<string> {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    return this.http
+      .post<UploadAvatarResponse>('/properties/media', formData, {
+        headers: { 'Content-Type': undefined },
+      })
+      .then((data) => data.media.url)
   }
 }
 

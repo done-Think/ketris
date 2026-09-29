@@ -7,10 +7,15 @@ export const updateUserRequestSchema = z
   .object({
     name: z.string().min(1, 'Nome é obrigatório.').optional(),
     email: z.string().email('E-mail inválido.').optional(),
+    avatarUrl: z.string().min(1).nullable().optional(),
     role: nonAdminPapelSchema.optional(),
   })
   .refine(
-    (data) => data.name !== undefined || data.email !== undefined || data.role !== undefined,
+    (data) =>
+      data.name !== undefined ||
+      data.email !== undefined ||
+      data.avatarUrl !== undefined ||
+      data.role !== undefined,
     {
       message: 'Informe ao menos um campo para atualizar.',
     },

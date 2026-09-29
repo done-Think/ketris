@@ -28,11 +28,13 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Rou
   const body = await parseJsonBody(request, updateUserRequestSchema)
 
   const user = await authContainer.updateUserUseCase.execute({
+    actorId: actor.sub,
     actorTenantId: actor.tenantId,
     actorPapel: actor.papel as Papel,
     userId: (await context.params).id,
     nome: body.name,
     email: body.email,
+    avatarUrl: body.avatarUrl,
     papel: body.role,
   })
 

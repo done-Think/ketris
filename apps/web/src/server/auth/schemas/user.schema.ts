@@ -11,6 +11,7 @@ export const authenticatedUserSchema = z
     tenantId: z.string(),
     nome: z.string(),
     email: z.string().email(),
+    avatarUrl: z.string().min(1).nullable(),
     papel: papelSchema,
     ativo: z.boolean(),
   })
@@ -22,6 +23,7 @@ export const authenticatedUserResponseSchema = z
     tenantId: z.string(),
     name: z.string(),
     email: z.string().email(),
+    avatarUrl: z.string().min(1).nullable(),
     role: papelSchema,
     active: z.boolean(),
     pendingApproval: z.boolean(),
