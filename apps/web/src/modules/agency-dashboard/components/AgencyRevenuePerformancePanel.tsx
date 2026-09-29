@@ -5,13 +5,16 @@ import { LineChart } from '@mui/x-charts/LineChart'
 import { useTranslations } from 'next-intl'
 
 import { DashboardPanel } from '@modules/dashboard/components/DashboardPanel'
+import { formatCurrency } from '@shared/lib/utils/format'
 import { alpha, brand } from '@shared/theme/tokens'
 
-import { agencyRevenuePerformance } from '../data/agency-overview'
+import type { AgencyRevenuePerformancePanelProps } from '../types/agency-overview'
 
-export function AgencyRevenuePerformancePanel() {
+export function AgencyRevenuePerformancePanel({
+  revenuePoints,
+}: AgencyRevenuePerformancePanelProps) {
   const t = useTranslations('dashboard.agencyOverview.performance')
-  const chartDataset = [...agencyRevenuePerformance]
+  const chartDataset = [...revenuePoints]
 
   return (
     <DashboardPanel>
@@ -32,7 +35,6 @@ export function AgencyRevenuePerformancePanel() {
           </Box>
           <Stack direction="row" spacing={1.4} sx={{ color: brand.neutral[500], fontSize: 11 }}>
             <LegendDot color={brand.magenta[500]} label={t('revenue')} />
-            <LegendDot color={brand.graphite[500]} label={t('target')} />
           </Stack>
         </Stack>
 
@@ -40,7 +42,6 @@ export function AgencyRevenuePerformancePanel() {
           <LineChart
             dataset={chartDataset}
             xAxis={[{ scaleType: 'point', dataKey: 'month' }]}
-            yAxis={[{ min: 60 }]}
             series={[
               {
                 dataKey: 'revenue',
@@ -49,15 +50,7 @@ export function AgencyRevenuePerformancePanel() {
                 curve: 'linear',
                 showMark: false,
                 area: true,
-                valueFormatter: (value) => `R$ ${value ?? 0}k`,
-              },
-              {
-                dataKey: 'target',
-                label: t('target'),
-                color: brand.graphite[500],
-                curve: 'linear',
-                showMark: false,
-                valueFormatter: (value) => `R$ ${value ?? 0}k`,
+                valueFormatter: (value) => formatCurrency(value ?? 0),
               },
             ]}
             height={270}
@@ -68,9 +61,6 @@ export function AgencyRevenuePerformancePanel() {
               '& .MuiAreaElement-root': {
                 fill: brand.magenta[500],
                 fillOpacity: 0.08,
-              },
-              '& .MuiLineElement-root:nth-of-type(2)': {
-                strokeDasharray: '4 4',
               },
               '& .MuiChartsAxis-line, & .MuiChartsAxis-tick': {
                 stroke: 'transparent',

@@ -1,5 +1,9 @@
+'use client'
+
+import { useMemo } from 'react'
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 import { Box, Stack } from '@mui/material'
+import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
 import {
@@ -10,6 +14,8 @@ import {
 } from '@shared/components/layout'
 import { iconSize, surface } from '@shared/theme/tokens'
 
+import { useAgencyOverview } from '../hooks/use-agency-dashboard'
+import { mapAgencyOverviewToUi } from '../utils/agency-overview-adapter'
 import { AgencyOverviewKpiGrid } from './AgencyOverviewKpiGrid'
 import { AgencyRecentActivityPanel } from './AgencyRecentActivityPanel'
 import { AgencyRevenuePerformancePanel } from './AgencyRevenuePerformancePanel'
@@ -17,6 +23,14 @@ import { AgencyTopBrokersPanel } from './AgencyTopBrokersPanel'
 
 export function AgencyOverviewPage() {
   const t = useTranslations('dashboard.agencyOverview')
+  const { data: session } = useSession()
+  const tenantId = session?.tenantId
+  const overviewQuery = useAgencyOverview(tenantId)
+  const overview = useMemo(
+    () => (overviewQuery.data ? mapAgencyOverviewToUi(overviewQuery.data) : null),
+    [overviewQuery.data],
+  )
+
   const actions = (
     <Stack
       direction={{ xs: 'column', sm: 'row' }}
@@ -41,7 +55,7 @@ export function AgencyOverviewPage() {
     >
       <Stack spacing={2.4}>
         <DashboardPageHeader title={t('title')} subtitle={t('subtitle')} actions={actions} />
-        <AgencyOverviewKpiGrid />
+        <AgencyOverviewKpiGrid kpis={overview?.kpis ?? []} />
 
         <Box
           sx={{
@@ -51,11 +65,11 @@ export function AgencyOverviewPage() {
             alignItems: 'stretch',
           }}
         >
-          <AgencyRevenuePerformancePanel />
-          <AgencyTopBrokersPanel />
+          <AgencyRevenuePerformancePanel revenuePoints={overview?.revenuePoints ?? []} />
+          <AgencyTopBrokersPanel topBrokers={overview?.topBrokers ?? []} />
         </Box>
 
-        <AgencyRecentActivityPanel />
+        <AgencyRecentActivityPanel activities={overview?.activities ?? []} />
       </Stack>
     </Box>
   )

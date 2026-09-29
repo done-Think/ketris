@@ -10,6 +10,7 @@ import {
   Box,
   Button,
   Chip,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -18,6 +19,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
+import { useSession } from 'next-auth/react'
 import { useSnackbar } from 'notistack'
 import { useTranslations, useLocale } from 'next-intl'
 import { useForm } from 'react-hook-form'
@@ -25,15 +27,14 @@ import { useForm } from 'react-hook-form'
 import { useRouter } from '@/i18n/navigation'
 import { RhfTextField } from '@shared/components/form'
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
+import { formatCurrency } from '@shared/lib/utils/format'
 import { registerPaymentSchema } from '../schemas/register-payment-schema'
 import type { Charge, PaymentFormValues } from '../types/charge'
-import { useChargesStore } from '../stores/charges-store'
+import { useCharge, useRegisterChargePayment } from '../hooks/use-financial'
+import { mapChargeFromApi } from '../utils/charge-adapter'
+import { errorMessage } from '../utils/error-message'
 import { chargeStatusColors as statusColors } from './charge-status-colors'
 import { ChargeDocumentDialog } from './ChargeDocumentDialog'
-
-function formatCurrency(value: number, locale: string) {
-  return new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL' }).format(value)
-}
 
 function DetailCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -55,26 +56,40 @@ function DetailCard({ title, children }: { title: string; children: React.ReactN
 }
 
 export function ChargeDetailsPage({ chargeId }: { chargeId: string }) {
-  const charge = useChargesStore((state) => state.charges.find((item) => item.id === chargeId))
+  const { data: session } = useSession()
+  const tenantId = session?.tenantId ?? ''
   const t = useTranslations('charges.details')
   const router = useRouter()
-  if (!charge)
+  const chargeQuery = useCharge(tenantId, chargeId)
+
+  if (chargeQuery.isLoading) {
+    return (
+      <Stack alignItems="center" sx={{ p: 6 }}>
+        <CircularProgress />
+      </Stack>
+    )
+  }
+
+  if (!chargeQuery.data)
     return (
       <Stack spacing={2} sx={{ p: 3 }}>
         <Typography>{t('missing')}</Typography>
         <Button onClick={() => router.push('/dashboard/finance/charges')}>{t('back')}</Button>
       </Stack>
     )
-  return <ChargeDetailsContent key={charge.id} charge={charge} />
+
+  const charge = mapChargeFromApi(chargeQuery.data)
+
+  return <ChargeDetailsContent key={charge.id} charge={charge} tenantId={tenantId} />
 }
 
-function ChargeDetailsContent({ charge }: { charge: Charge }) {
+function ChargeDetailsContent({ charge, tenantId }: { charge: Charge; tenantId: string }) {
   const t = useTranslations('charges.details')
   const statusT = useTranslations('charges.statuses')
   const locale = useLocale()
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
-  const registerPayment = useChargesStore((state) => state.registerPayment)
+  const registerChargePayment = useRegisterChargePayment(tenantId, charge.id)
   const status = charge.status
   const paymentDate = charge.payment?.paymentDate
   const [paymentOpen, setPaymentOpen] = useState(false)
@@ -94,7 +109,7 @@ function ChargeDetailsContent({ charge }: { charge: Charge }) {
         new Date(`${charge.competence}-01T12:00:00`),
       ),
     ],
-    [t('fields.amount'), formatCurrency(charge.amount, locale)],
+    [t('fields.amount'), formatCurrency(charge.amount)],
     [t('fields.dueDate'), dueDate],
     [
       t('fields.payment'),
@@ -103,17 +118,23 @@ function ChargeDetailsContent({ charge }: { charge: Charge }) {
         : t('notPaid'),
     ],
     [t('fields.method'), charge.payment?.paymentMethod ?? t('notAvailable')],
-    [t('fields.fees'), formatCurrency(0, locale)],
+    [t('fields.fees'), formatCurrency(0)],
   ]
   const history = [...charge.history].reverse().map((event) => ({
     title: t(`history.${event.type}`),
     date: new Intl.DateTimeFormat(locale).format(new Date(`${event.date}T12:00:00`)),
   }))
   const submitPayment = (values: PaymentFormValues) => {
-    registerPayment(charge.id, values)
-    setPaymentOpen(false)
-    reset(values)
-    enqueueSnackbar(t('paymentSuccess'), { variant: 'success' })
+    registerChargePayment.mutate(values, {
+      onSuccess: () => {
+        setPaymentOpen(false)
+        reset(values)
+        enqueueSnackbar(t('paymentSuccess'), { variant: 'success' })
+      },
+      onError: (error) => {
+        enqueueSnackbar(errorMessage(error, t('paymentError')), { variant: 'error' })
+      },
+    })
   }
 
   return (

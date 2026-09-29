@@ -14,7 +14,15 @@ export type AgencyOverviewKpi = {
 export type AgencyRevenuePoint = {
   month: string
   revenue: number
-  target: number
+}
+
+export type AgencyBrokerRecentSale = {
+  id: string
+  propertyId: string
+  property: string
+  location: string | null
+  value: string
+  closedAt: string
 }
 
 export type AgencyTopBroker = {
@@ -23,17 +31,8 @@ export type AgencyTopBroker = {
   profileId: string
   sales: number
   revenue: string
-  avatarUrl?: string
+  avatarUrl?: string | null
   recentSales: readonly AgencyBrokerRecentSale[]
-}
-
-export type AgencyBrokerRecentSale = {
-  id: string
-  propertyId: string
-  property: string
-  location: string
-  value: string
-  closedAt: string
 }
 
 export type AgencyBrokerDetailDialogProps = {
@@ -43,16 +42,11 @@ export type AgencyBrokerDetailDialogProps = {
 
 export type AgencyActivityTone = 'contract' | 'property' | 'visit' | 'lead'
 
-export type AgencyActivityDetailKey =
-  'contractSale' | 'newProperty' | 'visitScheduled' | 'newLead' | 'rentContract'
-
 export type AgencyActivity = {
   id: string
   broker: string
-  actionKey: string
   detail: string
-  detailKey: AgencyActivityDetailKey
-  timeAgo: string
+  occurredAtLabel: string
   tone: AgencyActivityTone
 }
 
@@ -70,4 +64,20 @@ export type AgencySidebarNavItem = {
   id: string
   labelKey: string
   icon: SvgIconComponent
+}
+
+export type AgencyOverviewKpiGridProps = {
+  kpis: readonly AgencyOverviewKpi[]
+}
+
+export type AgencyRevenuePerformancePanelProps = {
+  revenuePoints: readonly AgencyRevenuePoint[]
+}
+
+export type AgencyTopBrokersPanelProps = {
+  topBrokers: readonly AgencyTopBroker[]
+}
+
+export type AgencyRecentActivityPanelProps = {
+  activities: readonly AgencyActivity[]
 }

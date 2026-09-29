@@ -9,6 +9,7 @@ import {
   Divider,
 } from '@mui/material'
 import { useLocale, useTranslations } from 'next-intl'
+import { formatCurrency } from '@shared/lib/utils/format'
 import type { Charge } from '../types/charge'
 
 export function ChargeDocumentDialog({
@@ -38,10 +39,7 @@ export function ChargeDocumentDialog({
         new Date(`${charge.competence}-01T12:00:00`),
       ),
     ],
-    [
-      t('fields.amount'),
-      new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL' }).format(charge.amount),
-    ],
+    [t('fields.amount'), formatCurrency(charge.amount)],
     [t('fields.dueDate'), date(charge.dueDate)],
     ...(kind === 'receipt' && charge.payment
       ? [

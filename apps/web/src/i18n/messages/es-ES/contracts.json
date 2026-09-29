@@ -40,9 +40,9 @@
       "label": "Vencen en 30d",
       "caption": "Requieren seguimiento"
     },
-    "Inadimplentes": {
-      "label": "Morosos",
-      "caption": "Con pendencias financieras"
+    "Total": {
+      "label": "Total de contratos",
+      "caption": "En todos los estados"
     }
   },
   "table": {
@@ -92,18 +92,33 @@
     "title": "Generar Contrato",
     "stepsAriaLabel": "Etapas del contrato",
     "steps": {
+      "opportunity": "Oportunidad",
       "parties": "Partes",
-      "property": "Inmueble",
       "conditions": "Condiciones",
       "review": "Revisión"
     },
     "stepFormTitleReview": "Revisión del Contrato",
     "stepFormTitle": "{step} del Contrato",
-    "successMessage": "{code} añadido en revisión.",
+    "successMessage": "{code} creado, a la espera de firmas.",
+    "errorMessage": "No se pudo crear el contrato.",
     "actions": {
       "back": "Volver",
       "next": "Siguiente paso",
       "generate": "Generar contrato"
+    },
+    "opportunity": {
+      "title": "Oportunidad de origen",
+      "picker": {
+        "label": "Seleccionar oportunidad aceptada",
+        "helperText": "Solo aparecen aquí las oportunidades aceptadas sin contrato.",
+        "noOptions": "No hay oportunidades aceptadas disponibles."
+      },
+      "summary": {
+        "property": "Inmueble",
+        "address": "Dirección",
+        "lead": "Interesado",
+        "amount": "Valor propuesto"
+      }
     },
     "parties": {
       "ownerTitle": "Arrendador (Propietario)",
@@ -117,38 +132,10 @@
         "phone": "Teléfono"
       }
     },
-    "property": {
-      "title": "Datos del inmueble",
-      "fields": {
-        "propertyTitle": "Inmueble",
-        "propertyType": "Tipo",
-        "propertyAddress": "Dirección",
-        "propertyZipCode": "Código postal",
-        "propertyCity": "Ciudad",
-        "propertyState": "Provincia",
-        "propertyRegistration": "Matrícula",
-        "propertyArea": "Área útil"
-      },
-      "typeOptions": {
-        "Apartamento": "Apartamento",
-        "Casa": "Casa",
-        "Studio": "Estudio",
-        "Cobertura": "Ático",
-        "Sala comercial": "Local comercial"
-      },
-      "picker": {
-        "label": "Seleccionar inmueble registrado",
-        "helperText": "Elige un inmueble ya registrado para completar los datos automáticamente.",
-        "noOptions": "No se encontraron inmuebles."
-      }
-    },
     "conditions": {
       "title": "Condiciones comerciales",
       "fields": {
         "contractType": "Tipo de contrato",
-        "monthlyRent": "Valor del alquiler",
-        "condominiumFee": "Comunidad",
-        "iptu": "Impuesto predial",
         "dueDay": "Vencimiento",
         "guaranteeType": "Garantía",
         "startDate": "Inicio",
@@ -157,25 +144,24 @@
         "notes": "Observaciones"
       },
       "contractTypeOptions": {
-        "Locação residencial": "Alquiler residencial",
-        "Locação comercial": "Alquiler comercial",
-        "Temporada": "Temporada"
+        "RESIDENCIAL": "Alquiler residencial",
+        "COMERCIAL": "Alquiler comercial",
+        "TEMPORADA": "Temporada"
       },
       "guaranteeTypeOptions": {
-        "Fiador": "Fiador",
-        "Caução": "Depósito de garantía",
-        "Seguro fiança": "Seguro de alquiler",
-        "Título de capitalização": "Título de capitalización"
+        "FIADOR": "Fiador",
+        "CAUCAO": "Depósito de garantía",
+        "SEGURO_FIANCA": "Seguro de alquiler",
+        "TITULO_CAPITALIZACAO": "Título de capitalización"
       },
       "adjustmentIndexOptions": {
         "IPCA": "IPCA",
-        "IGP-M": "IGP-M",
+        "IGPM": "IGP-M",
         "INPC": "INPC"
       }
     },
     "review": {
       "partiesTitle": "Partes",
-      "propertyTitle": "Inmueble",
       "conditionsTitle": "Condiciones",
       "termTitle": "Vigencia",
       "labels": {
@@ -185,12 +171,7 @@
         "tenantCpf": "Documento del inquilino",
         "guarantor": "Fiador",
         "guarantorCpf": "Documento del fiador",
-        "property": "Inmueble",
-        "type": "Tipo",
-        "address": "Dirección",
-        "cityState": "Ciudad/Provincia",
         "contract": "Contrato",
-        "rent": "Alquiler",
         "dueDay": "Vencimiento",
         "dueDayValue": "Día {day}",
         "guarantee": "Garantía",

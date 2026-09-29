@@ -9,7 +9,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   IconButton,
   Stack,
   Typography,
@@ -28,12 +27,9 @@ export function AgencyActivityDetailDialog({ activity, onClose }: AgencyActivity
 
   if (!activity) return null
 
-  const detailBase = `details.items.${activity.detailKey}`
   const fields: AgencyActivityDetailField[] = [
-    { label: t('details.fields.subject'), value: t(`${detailBase}.subject`) },
-    { label: t('details.fields.status'), value: t(`${detailBase}.status`) },
-    { label: t('details.fields.nextStep'), value: t(`${detailBase}.nextStep`) },
-    { label: t('details.fields.time'), value: activity.timeAgo },
+    { label: t('details.fields.subject'), value: activity.detail },
+    { label: t('details.fields.time'), value: activity.occurredAtLabel },
   ]
 
   if (activity.broker) {
@@ -54,7 +50,7 @@ export function AgencyActivityDetailDialog({ activity, onClose }: AgencyActivity
                 {t('details.eyebrow')}
               </Typography>
               <Typography sx={{ color: brand.graphite[500], fontSize: 20, fontWeight: 900 }}>
-                {t(`${detailBase}.title`)}
+                {activity.detail}
               </Typography>
             </Stack>
             <IconButton aria-label={t('details.close')} onClick={onClose} size="small">
@@ -63,7 +59,7 @@ export function AgencyActivityDetailDialog({ activity, onClose }: AgencyActivity
           </Stack>
 
           <Chip
-            label={t(`${detailBase}.status`)}
+            label={t(`details.tones.${activity.tone}`)}
             size="small"
             sx={{
               alignSelf: 'flex-start',
@@ -77,50 +73,33 @@ export function AgencyActivityDetailDialog({ activity, onClose }: AgencyActivity
       </DialogTitle>
 
       <DialogContent sx={{ bgcolor: surface.paper, px: { xs: 2, md: 2.8 }, pb: 2.2 }}>
-        <Stack spacing={1.8}>
-          <Typography sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 700 }}>
-            {t(`${detailBase}.description`)}
-          </Typography>
-
+        <Box
+          sx={{
+            border: '1px solid',
+            borderColor: alpha.graphite[8],
+            borderRadius: `${radius.sm}px`,
+            p: 2,
+          }}
+        >
           <Box
             sx={{
-              border: '1px solid',
-              borderColor: alpha.graphite[8],
-              borderRadius: `${radius.sm}px`,
-              p: 2,
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
+              gap: 1.4,
             }}
           >
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
-                gap: 1.4,
-              }}
-            >
-              {fields.map((field) => (
-                <Stack key={field.label} spacing={0.3} sx={{ minWidth: 0 }}>
-                  <Typography sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 900 }}>
-                    {field.label}
-                  </Typography>
-                  <Typography sx={{ color: brand.graphite[500], fontSize: 13, fontWeight: 800 }}>
-                    {field.value}
-                  </Typography>
-                </Stack>
-              ))}
-            </Box>
-
-            <Divider sx={{ my: 1.6 }} />
-
-            <Stack spacing={0.4}>
-              <Typography sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 900 }}>
-                {t('details.fields.summary')}
-              </Typography>
-              <Typography sx={{ color: brand.graphite[500], fontSize: 13, fontWeight: 800 }}>
-                {t(activity.actionKey, { broker: activity.broker, detail: activity.detail })}
-              </Typography>
-            </Stack>
+            {fields.map((field) => (
+              <Stack key={field.label} spacing={0.3} sx={{ minWidth: 0 }}>
+                <Typography sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 900 }}>
+                  {field.label}
+                </Typography>
+                <Typography sx={{ color: brand.graphite[500], fontSize: 13, fontWeight: 800 }}>
+                  {field.value}
+                </Typography>
+              </Stack>
+            ))}
           </Box>
-        </Stack>
+        </Box>
       </DialogContent>
 
       <DialogActions sx={{ px: { xs: 2, md: 2.8 }, pb: 2.6, pt: 0 }}>

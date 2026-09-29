@@ -36,16 +36,19 @@
     "title": "Dashboard",
     "notifications": "Notifications",
     "performanceTitle": "6-month performance",
-    "performanceTarget": "Target: {value}%",
+    "metrics": {
+      "leadsActive": { "label": "Active leads", "caption": "{count} today" },
+      "visitsMonth": { "label": "Visits this month", "caption": "{count} today" },
+      "proposals": { "label": "Proposals", "caption": "{count} awaiting response" },
+      "revenue": { "label": "Revenue", "caption": "{amount} overdue" }
+    },
     "activityDetail": {
       "close": "Close",
-      "openGps": "Open in GPS",
-      "openGpsAriaLabel": "Open {address} in GPS",
       "meetingTime": "Meeting time",
       "location": "Location",
       "client": "Client",
-      "owner": "Owner",
       "notes": "Notes",
+      "noNotes": "No notes recorded.",
       "visitProperty": "Visit property"
     },
     "leadDetails": {
@@ -53,26 +56,18 @@
       "close": "Close",
       "client": "Client",
       "interest": "Interest",
+      "budget": "Budget",
       "origin": "Source",
-      "desiredRegions": "Search regions",
-      "cancel": "Cancel",
-      "edit": "Edit",
-      "save": "Save",
-      "fields": {
-        "reportedNeed": "Reported need",
-        "lookingFor": "Looking for",
-        "budgetRange": "Budget range",
-        "downPayment": "Down payment",
-        "financingStatus": "Financing",
-        "timeline": "Decision timeline",
-        "notes": "Service notes"
-      }
+      "notes": "Notes",
+      "noNotes": "No notes recorded."
     },
     "recentLeads": {
       "title": "Recent leads",
+      "empty": "No recent leads found.",
       "columns": {
         "name": "Name",
         "interest": "Interest",
+        "budget": "Budget",
         "status": "Status",
         "origin": "Source",
         "actions": "Actions"
@@ -85,6 +80,10 @@
         "qualified": "Qualified",
         "pending": "Pending"
       }
+    },
+    "upcomingActivities": {
+      "title": "Upcoming activities",
+      "empty": "No activities scheduled for this month."
     }
   },
   "agencyOverview": {
@@ -109,9 +108,8 @@
     },
     "performance": {
       "title": "Revenue Performance",
-      "subtitle": "Revenue compared with monthly target",
-      "revenue": "Revenue",
-      "target": "Target"
+      "subtitle": "Monthly revenue received by the agency",
+      "revenue": "Revenue"
     },
     "topBrokers": {
       "title": "Top Brokers",
@@ -127,58 +125,31 @@
     },
     "activity": {
       "title": "Recent Activity",
-      "closedSale": "{broker} closed a sale contract at {detail}",
-      "createdProperty": "{broker} listed a new apartment in {detail}",
-      "scheduledVisit": "{broker} scheduled a visit for tomorrow at {detail}",
-      "receivedLead": "New lead received through {detail}",
-      "signedRent": "Rental contract signed for {detail}",
+      "messages": {
+        "contract": "{broker} activated a contract for {detail}",
+        "property": "{broker} listed the property {detail}",
+        "visit": "{broker} scheduled {detail}",
+        "lead": "{broker} received the lead {detail}"
+      },
+      "messagesNoBroker": {
+        "contract": "Contract activated for {detail}",
+        "property": "New property listed: {detail}",
+        "visit": "Visit scheduled: {detail}",
+        "lead": "New lead received: {detail}"
+      },
       "details": {
         "eyebrow": "Activity detail",
         "close": "Close",
         "fields": {
           "broker": "Broker",
           "subject": "Subject",
-          "status": "Status",
-          "nextStep": "Next step",
-          "time": "When",
-          "summary": "Summary"
+          "time": "When"
         },
-        "items": {
-          "contractSale": {
-            "title": "Sale contract closed",
-            "description": "Marina completed the commercial step and the contract moved to operational review before revenue entry.",
-            "subject": "Condominio Pinheiros",
-            "status": "Closed",
-            "nextStep": "Validate documents and release the financial record."
-          },
-          "newProperty": {
-            "title": "New property listed",
-            "description": "Thiago added the apartment to the portfolio and started reviewing the public information.",
-            "subject": "Apartment in Itaim Bibi",
-            "status": "In review",
-            "nextStep": "Review media, prices, and availability."
-          },
-          "visitScheduled": {
-            "title": "Visit scheduled",
-            "description": "Ana scheduled the visit with an interested client and linked the service to the team calendar.",
-            "subject": "Casa Jardins",
-            "status": "Scheduled",
-            "nextStep": "Confirm client attendance by the end of the day."
-          },
-          "newLead": {
-            "title": "Lead received",
-            "description": "A new contact came through the Ketris portal and is waiting for the commercial team to qualify it.",
-            "subject": "Ketris portal",
-            "status": "New",
-            "nextStep": "Assign it to an available broker."
-          },
-          "rentContract": {
-            "title": "Rental contract signed",
-            "description": "The Studio Moema contract was signed and can move to archiving and financial tracking.",
-            "subject": "Studio Moema",
-            "status": "Signed",
-            "nextStep": "Attach receipts and activate recurrence."
-          }
+        "tones": {
+          "contract": "Contract",
+          "property": "Property",
+          "visit": "Visit",
+          "lead": "Lead"
         }
       }
     }
@@ -206,7 +177,8 @@
     "metrics": {
       "open": "Open",
       "urgent": "Urgent",
-      "averageResolution": "Average resolution time"
+      "averageResolution": "Average resolution time",
+      "averageResolutionUnit": "{days} days"
     },
     "columns": {
       "ticket": "Ticket",
@@ -250,7 +222,53 @@
       "deleteTitle": "Delete ticket?",
       "deleteDescription": "Do you really want to delete this ticket? This action cannot be undone."
     },
-    "pagination": { "previous": "Previous", "next": "Next" }
+    "pagination": { "previous": "Previous", "next": "Next" },
+    "notifications": {
+      "createSuccess": "Ticket created successfully.",
+      "createError": "Could not create the ticket.",
+      "updateSuccess": "Ticket updated successfully.",
+      "updateError": "Could not save the changes.",
+      "deleteSuccess": "Ticket deleted successfully.",
+      "deleteError": "Could not delete the ticket.",
+      "resolveSuccess": "Ticket marked as resolved.",
+      "resolveError": "Could not mark the ticket as resolved.",
+      "noteSuccess": "Message sent.",
+      "noteError": "Could not send the message."
+    },
+    "detail": {
+      "back": "Back to tickets",
+      "loading": "Loading ticket...",
+      "notFound": {
+        "title": "Ticket not found",
+        "action": "Back to tickets"
+      },
+      "actions": {
+        "assignProvider": "Assign provider",
+        "resolve": "Mark as resolved",
+        "attachFiles": "Attach files",
+        "sendMessage": "Send message"
+      },
+      "descriptionCard": {
+        "title": "Ticket description",
+        "openedBy": "Opened by",
+        "report": "Problem report"
+      },
+      "photos": {
+        "title": "Attached photos",
+        "empty": "No photos attached to this ticket."
+      },
+      "timeline": {
+        "title": "Timeline and updates",
+        "empty": "No updates recorded yet.",
+        "placeholder": "Write a message or update about the ticket...",
+        "systemAuthor": "System"
+      },
+      "info": {
+        "title": "General information",
+        "lastUpdated": "Last updated",
+        "dateTime": "{date} at {time}"
+      }
+    }
   },
   "finance": {
     "title": "Finance",
@@ -285,10 +303,9 @@
     "revenue": "Revenue",
     "upcomingDuesTitle": "Upcoming dues",
     "kpis": {
-      "monthlyRevenue": "Monthly revenue",
       "receivable": "Receivable",
       "delinquency": "Delinquency",
-      "occupancyRate": "Occupancy rate"
+      "defaultRate": "Default rate"
     },
     "history": {
       "eyebrow": "Financial history",
@@ -351,28 +368,6 @@
   },
   "proposals": {
     "title": "Proposals",
-    "subtitle": "Ongoing negotiations and reference values.",
-    "columns": {
-      "client": "Client",
-      "property": "Property",
-      "value": "Proposal",
-      "ownerExpectation": "Expectation",
-      "status": "Status"
-    },
-    "detail": {
-      "eyebrow": "Proposal detail",
-      "close": "Close proposal",
-      "value": "Proposed value",
-      "ownerExpectation": "Owner expectation",
-      "currentStatus": "Current status",
-      "status": "Change status",
-      "cancel": "Cancel",
-      "saveStatus": "Save status"
-    },
-    "statuses": {
-      "underReview": "Under review",
-      "counteroffer": "Counteroffer",
-      "approved": "Approved"
-    }
+    "subtitle": "Ongoing negotiations and reference values."
   }
 }

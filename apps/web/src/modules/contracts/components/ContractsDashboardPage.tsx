@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Box, Stack } from '@mui/material'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
+import { useSession } from 'next-auth/react'
 import { useSnackbar } from 'notistack'
 import { useForm, useWatch } from 'react-hook-form'
 
@@ -13,7 +14,6 @@ import { useRouter } from '@/i18n/navigation'
 import {
   contractActionMockContents,
   contractFilterTabs,
-  contractMetrics,
   contractPeriodOptions,
 } from '../config/contract-ui'
 import {
@@ -24,9 +24,11 @@ import { useContracts } from '../hooks/use-contracts'
 import type {
   ContractActionDialogState,
   ContractListItem,
+  ContractMetric,
   ContractsFiltersFormValues,
   ContractTableAction,
 } from '../types/contract'
+import { mapContractListItemFromApi } from '../utils/contract-adapter'
 import { ContractActionDialog } from './ContractActionDialog'
 import { ContractsDashboardHeader } from './ContractsDashboardHeader'
 import { ContractsEmptyState } from './ContractsEmptyState'
@@ -83,12 +85,18 @@ function matchesContractsFilters(contract: ContractListItem, filters: ContractsF
 
 export function ContractsDashboardPage() {
   const router = useRouter()
+  const { data: session } = useSession()
+  const tenantId = session?.tenantId ?? ''
   const { enqueueSnackbar } = useSnackbar()
   const [actionDialog, setActionDialog] = useState<ContractActionDialogState>({
     contract: null,
     action: null,
   })
-  const contracts = useContracts()
+  const contractsQuery = useContracts(tenantId, { pageSize: 500 })
+  const contracts = useMemo(
+    () => (contractsQuery.data?.items ?? []).map(mapContractListItemFromApi),
+    [contractsQuery.data],
+  )
   const { control, setValue } = useForm<ContractsFiltersFormValues>({
     defaultValues: contractsFiltersDefaultValues,
     resolver: zodResolver(contractsFiltersSchema),
@@ -121,6 +129,18 @@ export function ContractsDashboardPage() {
       ),
     [contracts],
   )
+  const summaryMetrics = useMemo<ContractMetric[]>(() => {
+    const activeCount = contracts.filter((contract) => contract.status === 'Ativo').length
+    const expiringCount = contracts.filter((contract) =>
+      matchesPeriodFilter(contract, 'Vencem em 90 dias'),
+    ).length
+
+    return [
+      { label: 'Ativos', value: String(activeCount), caption: '', tone: 'success' },
+      { label: 'Vencendo em 30d', value: String(expiringCount), caption: '', tone: 'warning' },
+      { label: 'Total', value: String(contracts.length), caption: '', tone: 'primary' },
+    ]
+  }, [contracts])
   const createContract = () => router.push('/dashboard/contracts/new')
   const openContractDetail = (contract: ContractListItem) => {
     router.push({ pathname: '/dashboard/contracts/[id]', params: { id: contract.id } })
@@ -158,18 +178,18 @@ export function ContractsDashboardPage() {
       >
         <ContractsDashboardHeader control={control} onCreateContract={createContract} />
         <ContractsFilters control={control} filterCounts={filterCounts} setValue={setValue} />
-        <ContractsSummaryCards metrics={contractMetrics} />
+        <ContractsSummaryCards metrics={summaryMetrics} />
 
-        {filteredContracts.length > 0 ? (
+        {!contractsQuery.isLoading && filteredContracts.length > 0 ? (
           <ContractsTable
             contracts={filteredContracts}
             totalCount={contracts.length}
             onContractAction={handleContractAction}
             onContractSelect={openContractDetail}
           />
-        ) : (
+        ) : !contractsQuery.isLoading ? (
           <ContractsEmptyState onCreateContract={createContract} />
-        )}
+        ) : null}
 
         <ContractActionDialog
           contract={actionDialog.contract}

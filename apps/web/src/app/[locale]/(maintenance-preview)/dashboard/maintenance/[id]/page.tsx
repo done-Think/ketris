@@ -7,5 +7,5 @@ export default async function DashboardMaintenanceTicketPage({
 }) {
   const { id } = await params
 
-  return <MaintenanceTicketDetailPage ticketId={`#${id}`} />
+  return <MaintenanceTicketDetailPage ticketId={id} />
 }

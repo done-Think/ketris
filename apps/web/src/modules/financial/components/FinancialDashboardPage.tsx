@@ -1,22 +1,44 @@
+'use client'
+
+import { useMemo } from 'react'
 import { Box, Stack } from '@mui/material'
-import { getTranslations } from 'next-intl/server'
+import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 
 import { DashboardPageHeader } from '@shared/components/layout'
 
+import { useCharges, useFinancialSummary } from '../hooks/use-financial'
 import {
-  financialEntries,
-  financialKpis,
-  monthlyFinancialMovement,
-  upcomingDues,
-} from '../data/financial-entries'
+  mapChargeListItemToFinancialEntry,
+  mapFinancialSummaryToKpis,
+  mapMonthlySeriesToMovement,
+  mapUpcomingChargesToDues,
+} from '../utils/financial-summary-adapter'
 import { FinancialDashboardHeaderActions } from './FinancialDashboardHeaderActions'
 import { FinancialEntriesTable } from './FinancialEntriesTable'
 import { FinancialKpiCards } from './FinancialKpiCards'
 import { FinancialMovementChart } from './FinancialMovementChart'
 import { FinancialUpcomingDueList } from './FinancialUpcomingDueList'
 
-export async function FinancialDashboardPage() {
-  const t = await getTranslations('dashboard.finance')
+export function FinancialDashboardPage() {
+  const t = useTranslations('dashboard.finance')
+  const { data: session } = useSession()
+  const tenantId = session?.tenantId ?? ''
+  const summaryQuery = useFinancialSummary(tenantId)
+  const chargesQuery = useCharges(tenantId, { pageSize: 8 })
+  const kpis = useMemo(() => mapFinancialSummaryToKpis(summaryQuery.data), [summaryQuery.data])
+  const movement = useMemo(
+    () => mapMonthlySeriesToMovement(summaryQuery.data?.monthlySeries ?? []),
+    [summaryQuery.data],
+  )
+  const upcomingDues = useMemo(
+    () => mapUpcomingChargesToDues(summaryQuery.data?.upcomingDues ?? []),
+    [summaryQuery.data],
+  )
+  const entries = useMemo(
+    () => (chargesQuery.data?.items ?? []).map(mapChargeListItemToFinancialEntry),
+    [chargesQuery.data],
+  )
 
   return (
     <Box sx={{ width: '100%', p: 3.5 }}>
@@ -27,7 +49,7 @@ export async function FinancialDashboardPage() {
           actions={<FinancialDashboardHeaderActions exportLabel={t('export')} />}
         />
 
-        <FinancialKpiCards kpis={financialKpis} />
+        <FinancialKpiCards kpis={kpis} />
         <Box
           sx={{
             display: 'grid',
@@ -36,10 +58,10 @@ export async function FinancialDashboardPage() {
             alignItems: 'stretch',
           }}
         >
-          <FinancialMovementChart movement={monthlyFinancialMovement} />
+          <FinancialMovementChart movement={movement} />
           <FinancialUpcomingDueList items={upcomingDues} />
         </Box>
-        <FinancialEntriesTable entries={financialEntries} />
+        <FinancialEntriesTable entries={entries} />
       </Stack>
     </Box>
   )

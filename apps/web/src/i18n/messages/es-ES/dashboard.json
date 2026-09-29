@@ -36,16 +36,19 @@
     "title": "Dashboard",
     "notifications": "Notificaciones",
     "performanceTitle": "Desempeño de 6 meses",
-    "performanceTarget": "Meta: {value}%",
+    "metrics": {
+      "leadsActive": { "label": "Leads activos", "caption": "{count} hoy" },
+      "visitsMonth": { "label": "Visitas del mes", "caption": "{count} hoy" },
+      "proposals": { "label": "Propuestas", "caption": "{count} esperando respuesta" },
+      "revenue": { "label": "Facturación", "caption": "{amount} en mora" }
+    },
     "activityDetail": {
       "close": "Cerrar",
-      "openGps": "Abrir en GPS",
-      "openGpsAriaLabel": "Abrir {address} en GPS",
       "meetingTime": "Horario de encuentro",
       "location": "Ubicación",
       "client": "Cliente",
-      "owner": "Propietario",
       "notes": "Observaciones",
+      "noNotes": "Sin observaciones registradas.",
       "visitProperty": "Inmueble de la visita"
     },
     "leadDetails": {
@@ -53,26 +56,18 @@
       "close": "Cerrar",
       "client": "Cliente",
       "interest": "Interés",
+      "budget": "Presupuesto",
       "origin": "Origen",
-      "desiredRegions": "Regiones de búsqueda",
-      "cancel": "Cancelar",
-      "edit": "Editar",
-      "save": "Guardar",
-      "fields": {
-        "reportedNeed": "Qué relató",
-        "lookingFor": "Qué busca",
-        "budgetRange": "Base de valores",
-        "downPayment": "Valor de entrada",
-        "financingStatus": "Financiación",
-        "timeline": "Plazo de decisión",
-        "notes": "Observaciones para atención"
-      }
+      "notes": "Observaciones",
+      "noNotes": "Sin observaciones registradas."
     },
     "recentLeads": {
       "title": "Leads recientes",
+      "empty": "No se encontraron leads recientes.",
       "columns": {
         "name": "Nombre",
         "interest": "Interés",
+        "budget": "Presupuesto",
         "status": "Estado",
         "origin": "Origen",
         "actions": "Acciones"
@@ -85,6 +80,10 @@
         "qualified": "Calificado",
         "pending": "Pendiente"
       }
+    },
+    "upcomingActivities": {
+      "title": "Próximas actividades",
+      "empty": "No hay actividades programadas para este mes."
     }
   },
   "agencyOverview": {
@@ -109,9 +108,8 @@
     },
     "performance": {
       "title": "Performance de Facturación",
-      "subtitle": "Comparativo de ingresos vs meta mensual",
-      "revenue": "Ingresos",
-      "target": "Meta"
+      "subtitle": "Ingresos mensuales recibidos por la inmobiliaria",
+      "revenue": "Ingresos"
     },
     "topBrokers": {
       "title": "Top Agentes",
@@ -127,58 +125,31 @@
     },
     "activity": {
       "title": "Actividad Reciente",
-      "closedSale": "{broker} cerró contrato de venta en {detail}",
-      "createdProperty": "{broker} registró un nuevo apartamento en {detail}",
-      "scheduledVisit": "{broker} agendó una visita para mañana en {detail}",
-      "receivedLead": "Nuevo lead recibido a través de {detail}",
-      "signedRent": "Contrato de alquiler firmado para {detail}",
+      "messages": {
+        "contract": "{broker} activó un contrato para {detail}",
+        "property": "{broker} registró el inmueble {detail}",
+        "visit": "{broker} agendó {detail}",
+        "lead": "{broker} recibió el lead {detail}"
+      },
+      "messagesNoBroker": {
+        "contract": "Contrato activado para {detail}",
+        "property": "Nuevo inmueble registrado: {detail}",
+        "visit": "Visita agendada: {detail}",
+        "lead": "Nuevo lead recibido: {detail}"
+      },
       "details": {
         "eyebrow": "Detalle de actividad",
         "close": "Cerrar",
         "fields": {
           "broker": "Agente",
           "subject": "Asunto",
-          "status": "Estado",
-          "nextStep": "Proximo paso",
-          "time": "Cuando",
-          "summary": "Resumen"
+          "time": "Cuando"
         },
-        "items": {
-          "contractSale": {
-            "title": "Contrato de venta cerrado",
-            "description": "Marina completo la etapa comercial y el contrato paso a revision operativa antes del registro financiero.",
-            "subject": "Condominio Pinheiros",
-            "status": "Cerrado",
-            "nextStep": "Validar documentacion y liberar el registro financiero."
-          },
-          "newProperty": {
-            "title": "Nuevo inmueble registrado",
-            "description": "Thiago agrego el apartamento al portafolio e inicio la revision de la informacion publica.",
-            "subject": "Apartamento en Itaim Bibi",
-            "status": "En revision",
-            "nextStep": "Revisar medios, valores y disponibilidad."
-          },
-          "visitScheduled": {
-            "title": "Visita agendada",
-            "description": "Ana programo la visita con un cliente interesado y vinculo la atencion al calendario del equipo.",
-            "subject": "Casa Jardins",
-            "status": "Agendada",
-            "nextStep": "Confirmar presencia del cliente antes del fin del dia."
-          },
-          "newLead": {
-            "title": "Lead recibido",
-            "description": "Un nuevo contacto entro por el portal Ketris y espera calificacion inicial del equipo comercial.",
-            "subject": "Portal Ketris",
-            "status": "Nuevo",
-            "nextStep": "Asignarlo a un agente disponible."
-          },
-          "rentContract": {
-            "title": "Contrato de alquiler firmado",
-            "description": "El contrato de Studio Moema fue firmado y puede seguir a archivo y seguimiento financiero.",
-            "subject": "Studio Moema",
-            "status": "Firmado",
-            "nextStep": "Adjuntar comprobantes y activar recurrencia."
-          }
+        "tones": {
+          "contract": "Contrato",
+          "property": "Inmueble",
+          "visit": "Visita",
+          "lead": "Lead"
         }
       }
     }
@@ -206,7 +177,8 @@
     "metrics": {
       "open": "Abiertos",
       "urgent": "Urgentes",
-      "averageResolution": "Tiempo medio de resoluci\u00f3n"
+      "averageResolution": "Tiempo medio de resoluci\u00f3n",
+      "averageResolutionUnit": "{days} d\u00edas"
     },
     "columns": {
       "ticket": "Solicitud",
@@ -250,7 +222,53 @@
       "deleteTitle": "¿Eliminar solicitud?",
       "deleteDescription": "¿Realmente desea eliminar esta solicitud? Esta acción no se puede deshacer."
     },
-    "pagination": { "previous": "Anterior", "next": "Siguiente" }
+    "pagination": { "previous": "Anterior", "next": "Siguiente" },
+    "notifications": {
+      "createSuccess": "Solicitud creada con éxito.",
+      "createError": "No fue posible crear la solicitud.",
+      "updateSuccess": "Solicitud actualizada con éxito.",
+      "updateError": "No fue posible guardar los cambios.",
+      "deleteSuccess": "Solicitud eliminada con éxito.",
+      "deleteError": "No fue posible eliminar la solicitud.",
+      "resolveSuccess": "Solicitud marcada como resuelta.",
+      "resolveError": "No fue posible marcar la solicitud como resuelta.",
+      "noteSuccess": "Mensaje enviado.",
+      "noteError": "No fue posible enviar el mensaje."
+    },
+    "detail": {
+      "back": "Volver a las solicitudes",
+      "loading": "Cargando solicitud...",
+      "notFound": {
+        "title": "Solicitud no encontrada",
+        "action": "Volver a las solicitudes"
+      },
+      "actions": {
+        "assignProvider": "Asignar proveedor",
+        "resolve": "Marcar como resuelto",
+        "attachFiles": "Adjuntar archivos",
+        "sendMessage": "Enviar mensaje"
+      },
+      "descriptionCard": {
+        "title": "Descripción de la solicitud",
+        "openedBy": "Abierto por",
+        "report": "Relato del problema"
+      },
+      "photos": {
+        "title": "Fotos adjuntas",
+        "empty": "Ninguna foto adjunta a esta solicitud."
+      },
+      "timeline": {
+        "title": "Línea de tiempo y actualizaciones",
+        "empty": "Aún no hay actualizaciones registradas.",
+        "placeholder": "Escriba un mensaje o actualización sobre la solicitud...",
+        "systemAuthor": "Sistema"
+      },
+      "info": {
+        "title": "Información general",
+        "lastUpdated": "Última actualización",
+        "dateTime": "{date} a las {time}"
+      }
+    }
   },
   "finance": {
     "title": "Finanzas",
@@ -285,10 +303,9 @@
     "revenue": "Facturación",
     "upcomingDuesTitle": "Próximos vencimientos",
     "kpis": {
-      "monthlyRevenue": "Ingresos mensuales",
       "receivable": "Por cobrar",
       "delinquency": "Morosidad",
-      "occupancyRate": "Tasa de ocupación"
+      "defaultRate": "Tasa de morosidad"
     },
     "history": {
       "eyebrow": "Historial financiero",
@@ -351,28 +368,6 @@
   },
   "proposals": {
     "title": "Propuestas",
-    "subtitle": "Negociaciones en curso y valores de referencia.",
-    "columns": {
-      "client": "Cliente",
-      "property": "Inmueble",
-      "value": "Propuesta",
-      "ownerExpectation": "Expectativa",
-      "status": "Estado"
-    },
-    "detail": {
-      "eyebrow": "Detalle de la propuesta",
-      "close": "Cerrar propuesta",
-      "value": "Valor propuesto",
-      "ownerExpectation": "Expectativa del propietario",
-      "currentStatus": "Estado actual",
-      "status": "Cambiar estado",
-      "cancel": "Cancelar",
-      "saveStatus": "Guardar estado"
-    },
-    "statuses": {
-      "underReview": "En revisión",
-      "counteroffer": "Contraoferta",
-      "approved": "Aprobada"
-    }
+    "subtitle": "Negociaciones en curso y valores de referencia."
   }
 }

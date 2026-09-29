@@ -4,9 +4,20 @@ import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined'
 import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined'
-import { Box, Button, Chip, IconButton, Link as MuiLink, Stack, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  IconButton,
+  Link as MuiLink,
+  Stack,
+  Typography,
+} from '@mui/material'
 import type { SxProps, Theme } from '@mui/material/styles'
 import { notFound } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+import { useSnackbar } from 'notistack'
 import type { ReactNode } from 'react'
 
 import { Link } from '@/i18n/navigation'
@@ -20,14 +31,18 @@ import {
   surface,
 } from '@shared/theme/tokens'
 
+import { useCrmProperty } from '@modules/crm/hooks/use-opportunities'
+
 import { contractStatusStyles } from '../config/contract-ui'
-import { useContractsStore } from '../stores/contracts-store'
+import { useContract, useSignContractParty } from '../hooks/use-contracts'
 import type {
   ContractDetailDashboardPageProps,
   ContractDocumentItem,
   ContractListItem,
-  ContractPaymentHistoryItem,
 } from '../types/contract'
+import type { ApiContractParty } from '../types/service'
+import { mapContractFromApi } from '../utils/contract-adapter'
+import { errorMessage } from '../utils/error-message'
 
 function DetailPanel({
   title,
@@ -182,68 +197,6 @@ function ContractInfoPanel({ contract }: { contract: ContractListItem }) {
   )
 }
 
-function PaymentStatusChip({ status }: { status: ContractPaymentHistoryItem['status'] }) {
-  const isPaid = status === 'Pago'
-
-  return (
-    <Chip
-      label={status}
-      size="small"
-      sx={{
-        height: 24,
-        minWidth: 70,
-        borderRadius: `${radius.sm}px`,
-        bgcolor: isPaid ? supportColor.successSoft : supportColor.warningSoft,
-        color: isPaid ? brand.semantic.success : brand.semantic.warning,
-        fontSize: 12,
-        fontWeight: 900,
-      }}
-    />
-  )
-}
-
-function PaymentHistoryPanel({ payments }: { payments: ContractPaymentHistoryItem[] }) {
-  return (
-    <DetailPanel title="Historico de Pagamentos" sx={{ flex: 1.1 }}>
-      <Stack sx={{ flex: 1, justifyContent: 'space-between' }}>
-        {payments.map((payment) => (
-          <Stack
-            key={payment.period}
-            direction="row"
-            alignItems="center"
-            spacing={1.5}
-            sx={{
-              minHeight: { xs: 44, md: 53 },
-              borderBottom: '1px solid',
-              borderColor: alpha.graphite[8],
-              '&:last-child': { borderBottom: 0 },
-            }}
-          >
-            <Typography sx={{ flex: 1, color: brand.graphite[500], fontSize: 14, fontWeight: 900 }}>
-              {payment.period}
-            </Typography>
-            <Typography sx={{ color: brand.neutral[500], fontSize: 14, fontWeight: 800 }}>
-              {payment.amount}
-            </Typography>
-            <PaymentStatusChip status={payment.status} />
-            <Typography
-              sx={{
-                width: 42,
-                color: brand.neutral[400],
-                fontSize: 12,
-                fontWeight: 700,
-                textAlign: 'right',
-              }}
-            >
-              {payment.date}
-            </Typography>
-          </Stack>
-        ))}
-      </Stack>
-    </DetailPanel>
-  )
-}
-
 function DocumentsPanel({ documents }: { documents: ContractDocumentItem[] }) {
   return (
     <DetailPanel title="Documentos" sx={{ flex: 1 }}>
@@ -289,12 +242,129 @@ function DocumentsPanel({ documents }: { documents: ContractDocumentItem[] }) {
   )
 }
 
-export function ContractDetailDashboardPage({ contractId }: ContractDetailDashboardPageProps) {
-  const contract = useContractsStore((state) =>
-    state.contracts.find((item) => item.id === contractId),
-  )
+const partyRoleLabels: Record<ApiContractParty['role'], string> = {
+  LOCADOR: 'Locador',
+  LOCATARIO: 'Locatário',
+  FIADOR: 'Fiador',
+}
 
-  if (!contract) notFound()
+function PartiesPanel({
+  parties,
+  isSigning,
+  onSign,
+}: {
+  parties: ApiContractParty[]
+  isSigning: boolean
+  onSign: (partyId: string) => void
+}) {
+  return (
+    <DetailPanel title="Partes e Assinaturas" sx={{ flex: 1 }}>
+      <Stack spacing={1.6}>
+        {parties.map((party) => {
+          const isSigned = party.signatureStatus === 'ASSINADA'
+
+          return (
+            <Stack
+              key={party.id}
+              direction="row"
+              alignItems="center"
+              spacing={1.3}
+              sx={{
+                minHeight: 58,
+                borderRadius: `${radius.sm}px`,
+                bgcolor: surface.app,
+                px: 1.6,
+              }}
+            >
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography
+                  noWrap
+                  sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 900 }}
+                >
+                  {party.name}
+                </Typography>
+                <Typography
+                  noWrap
+                  sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 700 }}
+                >
+                  {partyRoleLabels[party.role]}
+                </Typography>
+              </Box>
+              {isSigned ? (
+                <Chip
+                  label="Assinado"
+                  size="small"
+                  sx={{
+                    height: 26,
+                    borderRadius: `${radius.sm}px`,
+                    bgcolor: supportColor.successSoft,
+                    color: brand.semantic.success,
+                    fontSize: 11,
+                    fontWeight: 900,
+                  }}
+                />
+              ) : (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={isSigning}
+                  onClick={() => onSign(party.id)}
+                  sx={{ borderRadius: `${radius.sm}px`, fontSize: 11, fontWeight: 900 }}
+                >
+                  Marcar como assinado
+                </Button>
+              )}
+            </Stack>
+          )
+        })}
+      </Stack>
+    </DetailPanel>
+  )
+}
+
+export function ContractDetailDashboardPage({ contractId }: ContractDetailDashboardPageProps) {
+  const { data: session } = useSession()
+  const tenantId = session?.tenantId ?? ''
+  const { enqueueSnackbar } = useSnackbar()
+  const contractQuery = useContract(tenantId, contractId)
+  const propertyQuery = useCrmProperty(tenantId, contractQuery.data?.propertyId)
+  const signContractParty = useSignContractParty(tenantId, contractId)
+
+  if (contractQuery.isLoading || propertyQuery.isLoading) {
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: '60vh' }}>
+        <CircularProgress />
+      </Stack>
+    )
+  }
+
+  if (contractQuery.isError || !contractQuery.data) notFound()
+
+  const property = propertyQuery.data
+    ? {
+        title: propertyQuery.data.title,
+        address: propertyQuery.data.address
+          ? [
+              propertyQuery.data.address.street,
+              propertyQuery.data.address.neighborhood,
+              propertyQuery.data.address.city,
+            ]
+              .filter(Boolean)
+              .join(', ')
+          : '',
+      }
+    : undefined
+  const contract = mapContractFromApi(contractQuery.data, property)
+
+  function handleSign(partyId: string) {
+    signContractParty.mutate(partyId, {
+      onError: (error) => {
+        enqueueSnackbar(errorMessage(error, 'Não foi possível registrar a assinatura.'), {
+          variant: 'error',
+        })
+      },
+    })
+  }
 
   return (
     <Box sx={{ width: '100%', p: 3.5 }}>
@@ -348,7 +418,11 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
           </Stack>
 
           <Stack spacing={3} sx={{ flex: 1, minWidth: 0 }}>
-            <PaymentHistoryPanel payments={contract.paymentHistory} />
+            <PartiesPanel
+              parties={contractQuery.data.parties}
+              isSigning={signContractParty.isPending}
+              onSign={handleSign}
+            />
             <DocumentsPanel documents={contract.documents} />
           </Stack>
         </Stack>

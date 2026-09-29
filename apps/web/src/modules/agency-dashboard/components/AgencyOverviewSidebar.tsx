@@ -1,12 +1,25 @@
 'use client'
 
+import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
+import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined'
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
+import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
+import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined'
 import { Avatar, Box, IconButton, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
-import { agencyOverviewNavItems } from '../data/agency-overview'
+import type { AgencySidebarNavItem } from '../types/agency-overview'
+
+const agencyOverviewNavItems: readonly AgencySidebarNavItem[] = [
+  { id: 'overview', labelKey: 'overview', icon: BarChartOutlinedIcon },
+  { id: 'team', labelKey: 'team', icon: GroupsOutlinedIcon },
+  { id: 'portfolio', labelKey: 'portfolio', icon: ApartmentOutlinedIcon },
+  { id: 'finance', labelKey: 'finance', icon: PaidOutlinedIcon },
+  { id: 'contracts', labelKey: 'contracts', icon: DescriptionOutlinedIcon },
+]
 
 export function AgencyOverviewSidebar() {
   const t = useTranslations('dashboard.agencyOverview')
