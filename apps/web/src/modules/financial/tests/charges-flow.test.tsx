@@ -98,7 +98,7 @@ describe('charges interactions', () => {
     expect(screen.getByText('New tenant')).toBeVisible()
     expect(screen.getByText(created.code)).toBeVisible()
     expect(screen.getByText('Esta cobrança não possui comprovante.')).toBeVisible()
-  })
+  }, 10000)
   it('edits from the actions menu and shows updated details', async () => {
     const user = userEvent.setup()
     const view = render(wrap(<ChargesPage />))

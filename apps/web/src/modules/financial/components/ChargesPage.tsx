@@ -143,7 +143,7 @@ export function ChargesPage() {
         <DashboardPageHeader
           title={t('title')}
           subtitle={t('subtitle')}
-          sx={{ pb: 1.75, borderBottom: '1px solid', borderColor: 'divider' }}
+          sx={{ mb: 1.85, pb: 1.75, borderBottom: '1px solid', borderColor: 'divider' }}
           actions={
             <Stack
               direction={{ xs: 'column', sm: 'row' }}

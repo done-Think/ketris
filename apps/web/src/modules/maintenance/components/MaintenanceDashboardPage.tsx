@@ -303,8 +303,13 @@ export function MaintenanceDashboardPage() {
 
   return (
     <Box sx={{ width: '100%', p: 3.5 }}>
-      <Stack spacing={{ xs: 2, md: 2.7 }}>
-        <DashboardPageHeader title={t('title')} subtitle={t('subtitle')} actions={headerActions} />
+      <Stack spacing={2}>
+        <DashboardPageHeader
+          title={t('title')}
+          subtitle={t('subtitle')}
+          actions={headerActions}
+          sx={{ mb: 2.2 }}
+        />
         <MaintenanceStatusFilters
           activeFilter={activeFilter}
           getFilterCount={getFilterCount}
@@ -636,7 +641,7 @@ function MaintenanceStatusFilters({
             borderRadius: `${radius.sm}px`,
             bgcolor: surface.paper,
             color: brand.graphite[500],
-            fontSize: 14,
+            fontSize: 18,
             fontWeight: 800,
             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
               borderColor: 'transparent',
@@ -684,7 +689,7 @@ function MaintenanceStatusFilters({
               key={filter.value}
               value={filter.value}
               sx={{
-                minHeight: 42,
+                minHeight: 46,
                 bgcolor: active ? alpha.magenta[8] : 'transparent',
                 '&:hover': {
                   bgcolor: alpha.magenta[8],
@@ -710,7 +715,7 @@ function MaintenanceStatusFilters({
           spacing={0.8}
           useFlexGap
           flexWrap="wrap"
-          sx={{ display: { xs: 'none', md: 'flex' } }}
+          sx={{ display: { xs: 'none', md: 'flex' }, mb: -0.25 }}
         >
           {maintenanceFilters.map((filter) => {
             const active = activeFilter === filter.value
