@@ -91,6 +91,7 @@ describe('POST /api/auth/admins (integração)', () => {
       name: 'Novo Admin',
       email,
       role: 'ADMIN',
+      avatarUrl: null,
       active: true,
       pendingApproval: false,
     })
