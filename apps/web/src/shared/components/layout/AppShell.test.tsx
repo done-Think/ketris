@@ -5,17 +5,25 @@ import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { usePathname } from '@/i18n/navigation'
+import { clearClientSession } from '@shared/lib/auth/clear-client-session'
 import { theme } from '@shared/theme/theme'
 import { useSidebarPreferencesStore } from '@shared/stores/sidebar-preferences-store'
 
 import { AppShell } from './AppShell'
+
+const { routerMock } = vi.hoisted(() => ({
+  routerMock: {
+    replace: vi.fn(),
+    refresh: vi.fn(),
+  },
+}))
 
 vi.mock('@/i18n/navigation', async () => {
   const React = await import('react')
 
   return {
     usePathname: vi.fn(),
-    useRouter: vi.fn(() => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn() })),
+    useRouter: vi.fn(() => routerMock),
     Link: React.forwardRef<HTMLAnchorElement, React.AnchorHTMLAttributes<HTMLAnchorElement>>(
       function MockLocalizedLink({ href = '', ...props }, ref) {
         return React.createElement('a', { ...props, href, ref })
@@ -24,9 +32,17 @@ vi.mock('@/i18n/navigation', async () => {
   }
 })
 
+vi.mock('next/navigation', () => ({
+  useRouter: vi.fn(() => routerMock),
+}))
+
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
   signOut: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock('@shared/lib/auth/clear-client-session', () => ({
+  clearClientSession: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
@@ -256,5 +272,25 @@ describe('AppShell collapsible desktop navigation', () => {
     await user.click(screen.getByRole('button', { name: 'Expandir navegação' }))
 
     expect(screen.getAllByText('Agenda').length).toBeGreaterThan(0)
+  })
+})
+
+describe('AppShell marketplace logout shortcut', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(usePathname).mockReturnValue('/dashboard/properties')
+    mockSession({ papel: 'ADMIN' })
+  })
+
+  it('clears the session before returning to the public marketplace', async () => {
+    const user = userEvent.setup()
+
+    renderShell()
+
+    await user.click(screen.getAllByRole('button', { name: /sair e voltar/i })[0])
+
+    expect(clearClientSession).toHaveBeenCalledOnce()
+    expect(routerMock.replace).toHaveBeenCalledWith('/pt')
+    expect(routerMock.refresh).toHaveBeenCalledOnce()
   })
 })
