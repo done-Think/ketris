@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  createEditOpportunityFormSchema,
   createOpportunityFormSchema,
+  createUpdateOpportunitySchema,
   opportunityFiltersSchema,
   opportunityStatusSchema,
-  updateOpportunitySchema,
 } from '../../schemas/opportunity-schema'
+
+const updateOpportunitySchema = createUpdateOpportunitySchema((key) => key)
+const opportunityFormSchema = createOpportunityFormSchema((key) => key)
+const editOpportunityFormSchema = createEditOpportunityFormSchema((key) => key)
 
 describe('opportunity schemas', () => {
   it.each(['RASCUNHO', 'ENVIADA', 'EM_NEGOCIACAO', 'ACEITA', 'RECUSADA'])(
@@ -32,7 +37,7 @@ describe('opportunity schemas', () => {
 
   it('accepts a complete manual creation form', () => {
     expect(
-      createOpportunityFormSchema.safeParse({
+      opportunityFormSchema.safeParse({
         propertyId: 'property-1',
         leadName: 'Maria Silva',
         leadEmail: 'maria@example.com',
@@ -46,7 +51,7 @@ describe('opportunity schemas', () => {
 
   it('rejects a manual creation form without a selected property', () => {
     expect(
-      createOpportunityFormSchema.safeParse({
+      opportunityFormSchema.safeParse({
         propertyId: '',
         leadName: 'Maria Silva',
         leadEmail: 'maria@example.com',
@@ -60,7 +65,7 @@ describe('opportunity schemas', () => {
 
   it('rejects a non-positive proposed value', () => {
     expect(
-      createOpportunityFormSchema.safeParse({
+      opportunityFormSchema.safeParse({
         propertyId: 'property-1',
         leadName: 'Maria Silva',
         leadEmail: 'maria@example.com',
@@ -70,5 +75,55 @@ describe('opportunity schemas', () => {
         status: 'RASCUNHO',
       }).success,
     ).toBe(false)
+  })
+
+  it('accepts a complete opportunity edit form', () => {
+    expect(
+      editOpportunityFormSchema.safeParse({
+        leadName: 'Maria Silva',
+        leadEmail: 'maria@example.com',
+        leadPhone: '',
+        proposedValue: '2500',
+        contractTermMonths: '',
+        desiredStartDate: '',
+        guaranteeType: 'NENHUMA',
+        specialConditions: '',
+        notes: '',
+      }).success,
+    ).toBe(true)
+  })
+
+  it('rejects an invalid contract term on the edit form', () => {
+    expect(
+      editOpportunityFormSchema.safeParse({
+        leadName: 'Maria Silva',
+        leadEmail: 'maria@example.com',
+        leadPhone: '',
+        proposedValue: '2500',
+        contractTermMonths: '-3',
+        desiredStartDate: '',
+        guaranteeType: 'NENHUMA',
+        specialConditions: '',
+        notes: '',
+      }).success,
+    ).toBe(false)
+  })
+
+  it('routes each validation message through the translator with the right key', () => {
+    const translated = createOpportunityFormSchema((key) => `translated:${key}`)
+    const result = translated.safeParse({
+      propertyId: '',
+      leadName: 'Maria Silva',
+      leadEmail: 'maria@example.com',
+      leadPhone: '',
+      proposedValue: '2500',
+      notes: '',
+      status: 'RASCUNHO',
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.success ? undefined : result.error.issues[0]?.message).toBe(
+      'translated:propertyRequired',
+    )
   })
 })

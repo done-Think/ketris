@@ -1,13 +1,8 @@
-import type { ReactNode } from 'react'
 import { Container, Stack } from '@mui/material'
 
 import { SectionHeader } from '@shared/components/ui'
 
-type PlatformPageLayoutProps = {
-  title: string
-  action?: ReactNode
-  children: ReactNode
-}
+import type { PlatformPageLayoutProps } from '../types/platform-shell'
 
 export function PlatformPageLayout({ title, action, children }: PlatformPageLayoutProps) {
   return (

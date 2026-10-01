@@ -5,7 +5,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useProperties } from '@modules/properties/hooks/use-properties'
 
 import { MaintenanceCreateTicketDialog } from '../../components/MaintenanceCreateTicketDialog'
-import { maintenanceTicketSchema } from '../../schemas/maintenance-ticket-schema'
+import { createMaintenanceTicketSchema } from '../../schemas/maintenance-ticket-schema'
+
+const maintenanceTicketSchema = createMaintenanceTicketSchema((key) => key)
 
 vi.mock('@modules/properties/hooks/use-properties', () => ({
   useProperties: vi.fn(),

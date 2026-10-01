@@ -10,3 +10,37 @@ export interface TenantUser {
   active: boolean
   pendingApproval: boolean
 }
+
+export interface ListUsersResponse {
+  users: TenantUser[]
+}
+
+export interface ApproveMembershipResponse {
+  user: TenantUser
+}
+
+export interface UpdateUserResponse {
+  user: TenantUser
+}
+
+export interface UploadAvatarResponse {
+  media: { url: string }
+}
+
+export type UpdateCurrentUserPayload = {
+  name: string
+  email: string
+  avatarUrl?: string | null
+}
+
+export type EditCurrentUserProfileDialogProps = {
+  open: boolean
+  user: {
+    id: string
+    name: string
+    email: string
+    avatarUrl?: string | null
+  }
+  onClose: () => void
+  onUpdated: (user: TenantUser) => Promise<void>
+}

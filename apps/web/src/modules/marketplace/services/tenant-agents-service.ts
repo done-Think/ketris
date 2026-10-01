@@ -1,21 +1,15 @@
-import { httpClient } from '@shared/lib/api/http-client'
+import { BaseService } from '@shared/lib/api/base-service'
 
-// Busca direto em /auth/users (sem importar o módulo auth — Princípio I) só pra montar a lista
-// de corretores do próprio tenant que podem ser destacados no perfil público da imobiliária.
-export interface TenantAgent {
-  id: string
-  name: string
-  email: string
-  role: string
-  active: boolean
+import type { ListTenantUsersResponse, TenantAgent } from '../types/tenant-agent'
+
+export class TenantAgentsService extends BaseService {
+  private readonly path = '/auth/users'
+
+  list(): Promise<TenantAgent[]> {
+    return this.http
+      .get<ListTenantUsersResponse>(this.path)
+      .then((data) => data.users.filter((user) => user.role === 'AGENT' && user.active))
+  }
 }
 
-interface ListTenantUsersResponse {
-  users: TenantAgent[]
-}
-
-export function listTenantAgents(): Promise<TenantAgent[]> {
-  return httpClient
-    .get<ListTenantUsersResponse>('/auth/users')
-    .then((data) => data.users.filter((user) => user.role === 'AGENT' && user.active))
-}
+export const tenantAgentsService = new TenantAgentsService()

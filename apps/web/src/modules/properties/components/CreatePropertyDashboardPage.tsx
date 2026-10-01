@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Box, Divider, Typography } from '@mui/material'
@@ -33,9 +33,13 @@ export function CreatePropertyDashboardPage() {
   const { enqueueSnackbar } = useSnackbar()
   const router = useRouter()
   const createProperty = useCreateProperty()
+  const propertySchema = useMemo(
+    () => createDashboardPropertySchema((key) => t(`errors.${key}`)),
+    [t],
+  )
   const { control, handleSubmit, setValue, watch } = useForm<CreateDashboardPropertyFormValues>({
     defaultValues: createDashboardPropertyDefaultValues,
-    resolver: zodResolver(createDashboardPropertySchema),
+    resolver: zodResolver(propertySchema),
   })
   const activeStepIndex = watch('activeStepIndex')
   const maxVisitedStepIndex = watch('maxVisitedStepIndex')
@@ -75,10 +79,6 @@ export function CreatePropertyDashboardPage() {
     <Box
       sx={{
         width: '100%',
-        // md usa padding uniforme de 28px (mesmo padrão das outras páginas do dashboard); xs
-        // mantém os próprios valores porque reservam espaço real pro header fixo mobile
-        // (mobileCreateHeaderHeight) e pra barra de ações fixa no rodapé (mobileActionsHeight) —
-        // não é uma escolha de espaçamento, é estrutural.
         px: { xs: 1.6, md: 3.5 },
         pt: { xs: `${mobileCreateHeaderHeight}px`, md: 3.5 },
         pb: { xs: 10.5, md: 3.5 },

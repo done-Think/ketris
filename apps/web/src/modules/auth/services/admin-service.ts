@@ -1,37 +1,15 @@
 import { BaseService } from '@shared/lib/api/base-service'
 
-import type { AdminUser } from '../types/admin'
-
-interface CreateAdminPayload {
-  name: string
-  email: string
-  password: string
-}
-
-interface UpdateAdminPayload {
-  name?: string
-  email?: string
-}
-
-interface CreateAdminResponse {
-  user: AdminUser
-}
-
-interface ListAdminsResponse {
-  admins: AdminUser[]
-}
-
-interface GetAdminResponse {
-  admin: AdminUser
-}
-
-interface UpdateAdminResponse {
-  admin: AdminUser
-}
-
-interface DeactivateAdminResponse {
-  admin: AdminUser
-}
+import type {
+  AdminUser,
+  CreateAdminPayload,
+  CreateAdminResponse,
+  DeactivateAdminResponse,
+  GetAdminResponse,
+  ListAdminsResponse,
+  UpdateAdminPayload,
+  UpdateAdminResponse,
+} from '../types/admin'
 
 class AdminService extends BaseService {
   private readonly path = '/auth/admins'

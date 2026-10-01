@@ -15,5 +15,4 @@ export async function register() {
   console.log(`   - Docs (Swagger):      ${appUrl}/api/docs`)
 }
 
-// Captura erros não tratados de requisições no servidor (requer @sentry/nextjs >= 8.28.0).
 export const onRequestError = Sentry.captureRequestError

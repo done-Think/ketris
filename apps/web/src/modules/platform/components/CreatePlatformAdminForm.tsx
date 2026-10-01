@@ -1,13 +1,14 @@
 'use client'
 
+import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Button, Stack } from '@mui/material'
 import { useSnackbar } from 'notistack'
-import axios from 'axios'
 import { useTranslations } from 'next-intl'
 
 import { RhfTextField } from '@shared/components/form'
+import { extractErrorMessage } from '@shared/utils/error-message'
 
 import {
   createPlatformAdminSchema,
@@ -15,18 +16,11 @@ import {
 } from '../schemas/create-platform-admin-schema'
 import { useCreatePlatformAdmin } from '../hooks/use-create-platform-admin'
 
-function extractErrorMessage(error: unknown, fallback: string): string {
-  if (axios.isAxiosError(error)) {
-    const message = error.response?.data?.error?.message
-    if (typeof message === 'string') return message
-  }
-  return fallback
-}
-
 export function CreatePlatformAdminForm() {
   const t = useTranslations('platform.forms')
   const { enqueueSnackbar } = useSnackbar()
   const createPlatformAdmin = useCreatePlatformAdmin()
+  const schema = useMemo(() => createPlatformAdminSchema((key) => t(`errors.${key}`)), [t])
 
   const {
     control,
@@ -34,7 +28,7 @@ export function CreatePlatformAdminForm() {
     reset,
     formState: { isSubmitting },
   } = useForm<CreatePlatformAdminFormValues>({
-    resolver: zodResolver(createPlatformAdminSchema),
+    resolver: zodResolver(schema),
     defaultValues: { nome: '', email: '', password: '', confirmarSenha: '' },
   })
 

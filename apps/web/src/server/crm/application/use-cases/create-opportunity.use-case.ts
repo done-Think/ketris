@@ -25,15 +25,6 @@ export interface CreateOpportunityInput {
 
 export type CreateOpportunityOutput = Opportunity
 
-/**
- * Manual opportunity creation by the broker — e.g. a lead received by phone/WhatsApp, outside the
- * marketplace's public form (that other path is `SubmitInquiryUseCase`, in
- * `src/server/marketplace/`, unauthenticated and with no tenant known a priori).
- *
- * Two ownership checks are mandatory, not just for form's sake: `propertyId` and `contactId` (when
- * given) must belong to the actor's tenant — without this an authenticated actor could attach an
- * opportunity to a property or contact from ANOTHER tenant, breaking multi-tenant isolation.
- */
 export class CreateOpportunityUseCase {
   constructor(
     private readonly opportunityRepository: OpportunityRepository,

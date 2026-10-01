@@ -1,22 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import type { FormEventHandler } from 'react'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import { Box, Button, IconButton, InputAdornment, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
-import type { Control } from 'react-hook-form'
 
 import { RhfTextField } from '@shared/components/form'
 import { brand, componentText, radius } from '@shared/theme/tokens'
 
 import { AuthFormField } from './AuthFormField'
 import { authPrimaryButtonSx, authTextFieldSx } from './auth-form.styles'
-import type { PasswordResetFormValues } from '../schemas/password-recovery-schema'
-
-type PasswordFieldName = 'password' | 'passwordConfirmation'
+import type { NewPasswordStepProps, PasswordFieldName } from '../types/password-recovery'
 
 const newPasswordTextFieldSx = {
   ...authTextFieldSx,
@@ -29,12 +25,6 @@ const newPasswordTextFieldSx = {
     py: { xs: 1, md: 1.5 },
   },
 } as const
-
-export interface NewPasswordStepProps {
-  control: Control<PasswordResetFormValues>
-  isSubmitting: boolean
-  onSubmit: FormEventHandler<HTMLFormElement>
-}
 
 export function NewPasswordStep({ control, isSubmitting, onSubmit }: NewPasswordStepProps) {
   const t = useTranslations('auth.passwordRecovery')

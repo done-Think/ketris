@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { registrationDetailsSchema } from '../../schemas/registration-details-schema'
+import { createRegistrationDetailsSchema } from '../../schemas/registration-details-schema'
+
+const registrationDetailsSchema = createRegistrationDetailsSchema((key) => key)
 
 const validDetails = {
   profile: 'proprietario' as const,
@@ -25,7 +27,7 @@ describe('registrationDetailsSchema', () => {
 
     expect(result.success).toBe(false)
     if (!result.success) {
-      expect(result.error.flatten().fieldErrors.creci).toContain('Informe seu CRECI')
+      expect(result.error.flatten().fieldErrors.creci).toContain('creciRequired')
     }
   })
 
@@ -63,12 +65,18 @@ describe('registrationDetailsSchema', () => {
 
     expect(result.success).toBe(false)
     if (!result.success) {
-      expect(result.error.flatten().fieldErrors.passwordConfirmation).toContain(
-        'As senhas não coincidem',
-      )
-      expect(result.error.flatten().fieldErrors.acceptTerms).toContain(
-        'Aceite os termos para continuar',
-      )
+      expect(result.error.flatten().fieldErrors.passwordConfirmation).toContain('passwordMismatch')
+      expect(result.error.flatten().fieldErrors.acceptTerms).toContain('acceptTermsRequired')
     }
+  })
+
+  it('routes each validation message through the translator with the right key', () => {
+    const translated = createRegistrationDetailsSchema((key) => `translated:${key}`)
+    const result = translated.safeParse({ ...validDetails, fullName: '' })
+
+    expect(result.success).toBe(false)
+    expect(result.success ? undefined : result.error.issues[0]?.message).toBe(
+      'translated:fullNameRequired',
+    )
   })
 })

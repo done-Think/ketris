@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { Box, GlobalStyles, Paper, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
+import { brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { contactFilters } from '../config/contact-filters'
 import { contactListFixtures, contactsFixtureTotal } from '../fixtures/contact-list-fixtures'

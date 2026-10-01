@@ -9,9 +9,8 @@ import SellOutlinedIcon from '@mui/icons-material/SellOutlined'
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined'
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import ShowChartOutlinedIcon from '@mui/icons-material/ShowChartOutlined'
-import type { SvgIconComponent } from '@mui/icons-material'
 import { Box, Drawer, IconButton, Stack, Tooltip, Typography } from '@mui/material'
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { Link, usePathname } from '@/i18n/navigation'
@@ -20,13 +19,9 @@ import { DashboardNotificationsButton } from '@shared/components/layout'
 import { AppLogo } from '@shared/components/ui'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
-const sidebarWidth = 200
+import type { NavigationItem, PlatformShellProps } from '../types/platform-shell'
 
-type NavigationItem = {
-  label: 'overview' | 'tenants' | 'users' | 'plans' | 'finance' | 'system' | 'logs'
-  icon: SvgIconComponent
-  href?: '/platform' | '/platform/tenants' | '/platform/system' | '/platform/admins/new'
-}
+const sidebarWidth = 200
 
 const navigationItems: readonly NavigationItem[] = [
   { label: 'overview', icon: HomeOutlinedIcon, href: '/platform' },
@@ -38,7 +33,7 @@ const navigationItems: readonly NavigationItem[] = [
   { label: 'logs', icon: ShowChartOutlinedIcon },
 ]
 
-export function PlatformShell({ children }: { children: ReactNode }) {
+export function PlatformShell({ children }: PlatformShellProps) {
   const t = useTranslations('platform.overview.navigation')
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)

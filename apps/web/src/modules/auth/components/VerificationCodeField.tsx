@@ -4,17 +4,13 @@ import { useRef } from 'react'
 import type { ClipboardEvent, KeyboardEvent } from 'react'
 import { Box, Typography } from '@mui/material'
 import { alpha as muiAlpha } from '@mui/material/styles'
-import { Controller, type Control, type FieldValues, type Path } from 'react-hook-form'
+import { Controller, type FieldValues } from 'react-hook-form'
 
 import { brand, radius, surface } from '@shared/theme/tokens'
 
-const CODE_LENGTH = 6
+import type { VerificationCodeFieldProps } from '../types/verification-code'
 
-export interface VerificationCodeFieldProps<TFieldValues extends FieldValues> {
-  control: Control<TFieldValues>
-  name: Path<TFieldValues>
-  label: string
-}
+const CODE_LENGTH = 6
 
 export function VerificationCodeField<TFieldValues extends FieldValues>({
   control,

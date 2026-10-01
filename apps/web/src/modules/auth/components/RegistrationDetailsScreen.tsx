@@ -14,11 +14,7 @@ import { RegistrationDetailsForm } from './RegistrationDetailsForm'
 import { authRoutes } from '../config/auth-routes'
 import { useRegister } from '../hooks/use-register'
 import type { RegistrationDetailsFormValues } from '../schemas/registration-details-schema'
-import type { RegistrationProfileId } from '../types/registration'
-
-export interface RegistrationDetailsScreenProps {
-  profile: RegistrationProfileId
-}
+import type { RegistrationDetailsScreenProps } from '../types/registration'
 
 export function RegistrationDetailsScreen({ profile }: RegistrationDetailsScreenProps) {
   const t = useTranslations('auth.registerDetails')

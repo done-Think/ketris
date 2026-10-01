@@ -1,8 +1,13 @@
 import type { MouseEvent } from 'react'
 
-import type { Opportunity, OpportunityEditFormValues, OpportunityStatus } from './opportunity'
+import type {
+  CreateOpportunityFormValues,
+  Opportunity,
+  OpportunityEditFormValues,
+  OpportunityStatus,
+} from './opportunity'
 import type { OpportunityStage } from './opportunity-stage'
-import type { PublicPropertyDetail } from './property'
+import type { PublicPropertyDetail, PublicPropertySummary } from './property'
 
 export type OpportunityDetailProps = {
   opportunityId: string
@@ -83,4 +88,20 @@ export type ArchiveOpportunityDialogProps = {
   isPending: boolean
   onClose: () => void
   onConfirm: () => void
+}
+
+export type CreateOpportunityDialogProps = {
+  open: boolean
+  tenantId: string
+  isPending: boolean
+  onClose: () => void
+  onSave: (values: CreateOpportunityFormValues) => void
+}
+
+export type PropertyAutocompleteProps = {
+  tenantId: string
+  value: PublicPropertySummary | null
+  onChange: (property: PublicPropertySummary | null) => void
+  error?: boolean
+  helperText?: string
 }

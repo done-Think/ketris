@@ -17,10 +17,7 @@ import { useTranslations } from 'next-intl'
 import { radius, shadows } from '@shared/theme/tokens'
 
 import { useTenantUsers } from '../hooks/use-tenant-users'
-
-type TenantUsersListProps = {
-  tenantId: string
-}
+import type { TenantUsersListProps } from '../types/tenant'
 
 export function TenantUsersList({ tenantId }: TenantUsersListProps) {
   const t = useTranslations('platform.tenant')

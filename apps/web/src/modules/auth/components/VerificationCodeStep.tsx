@@ -4,19 +4,13 @@ import { useEffect } from 'react'
 import MarkEmailReadOutlinedIcon from '@mui/icons-material/MarkEmailReadOutlined'
 import { Box, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
-import { useWatch, type Control } from 'react-hook-form'
+import { useWatch } from 'react-hook-form'
 
 import { brand, componentText, radius } from '@shared/theme/tokens'
 
 import { ResendCountdownButton } from './ResendCountdownButton'
 import { VerificationCodeField } from './VerificationCodeField'
-import type { PasswordResetFormValues } from '../schemas/password-recovery-schema'
-
-export interface VerificationCodeStepProps {
-  control: Control<PasswordResetFormValues>
-  onCodeComplete: () => void
-  onResend: () => void
-}
+import type { VerificationCodeStepProps } from '../types/password-recovery'
 
 export function VerificationCodeStep({
   control,

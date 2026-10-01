@@ -1,3 +1,7 @@
 import { z } from 'zod'
 
-export const chargeDateSchema = z.string().date()
+export type SchemaMessageTranslator = (key: string) => string
+
+export function createChargeDateSchema(t: SchemaMessageTranslator) {
+  return z.string().date(t('dateInvalid'))
+}

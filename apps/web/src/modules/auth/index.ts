@@ -13,13 +13,13 @@ export { RegistrationShell } from './components/RegistrationShell'
 export { isRegistrationProfileId } from './config/registration-profiles'
 export type { RegistrationProfile, RegistrationProfileId } from './types/registration'
 export { authRoutes } from './config/auth-routes'
-export { loginSchema, type LoginFormValues } from './schemas/login-schema'
+export { createLoginSchema, type LoginFormValues } from './schemas/login-schema'
 export {
-  passwordRecoverySchema,
+  createPasswordRecoverySchema,
   type PasswordRecoveryFormValues,
 } from './schemas/password-recovery-schema'
 export {
-  registrationDetailsSchema,
+  createRegistrationDetailsSchema,
   type RegistrationDetailsFormValues,
 } from './schemas/registration-details-schema'
 export * from './schemas/sign-in-schema'

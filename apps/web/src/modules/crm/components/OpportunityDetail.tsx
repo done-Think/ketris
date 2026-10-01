@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react'
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
 import { Alert, Box, Button, Stack } from '@mui/material'
-import axios from 'axios'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
@@ -25,6 +24,7 @@ import type {
   OpportunityActivitiesPanelProps,
   OpportunityDetailProps,
 } from '../types/opportunity-detail'
+import { errorMessage } from '../utils/error-message'
 import { ArchiveOpportunityDialog } from './opportunity-detail/ArchiveOpportunityDialog'
 import { DetailLoading } from './opportunity-detail/DetailLoading'
 import { EditOpportunityDialog } from './opportunity-detail/EditOpportunityDialog'
@@ -36,15 +36,6 @@ import { OpportunityNextActionsPanel } from './opportunity-detail/OpportunityNex
 import { OpportunityPropertyPanel } from './opportunity-detail/OpportunityPropertyPanel'
 import { OpportunityStageMenu } from './opportunity-detail/OpportunityStageMenu'
 import { StatusChangeDialog } from './opportunity-detail/StatusChangeDialog'
-
-function errorMessage(error: unknown, fallback: string): string {
-  if (axios.isAxiosError(error)) {
-    const message = error.response?.data?.error?.message
-    if (typeof message === 'string') return message
-  }
-
-  return fallback
-}
 
 function toDateInput(value: string | null): string {
   return value ? value.slice(0, 10) : ''

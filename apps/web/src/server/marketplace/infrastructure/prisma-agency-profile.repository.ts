@@ -163,8 +163,6 @@ export class PrismaAgencyProfileRepository implements AgencyProfileRepository {
   }
 
   async save(tenantId: string, draft: AgencyProfileDraft): Promise<AgencyProfile> {
-    // Só aceita destacar usuários que realmente pertencem a este tenant — nunca confia
-    // cegamente nos ids recebidos do cliente.
     const validUsuarioIds =
       draft.team.length > 0
         ? new Set(

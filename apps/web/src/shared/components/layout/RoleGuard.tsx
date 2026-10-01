@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect } from 'react'
-import type { ReactNode } from 'react'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import { Box, CircularProgress, Stack, Typography } from '@mui/material'
 import { useSession } from 'next-auth/react'
@@ -10,15 +9,8 @@ import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 import { alpha, radius } from '@shared/theme/tokens'
 import type { Papel } from '@server/auth/domain/user.entity'
+import type { RoleGuardProps } from '@shared/types/role-guard'
 
-export type RoleGuardProps = {
-  allowedRoles: readonly Papel[]
-  children: ReactNode
-}
-
-// Complementa o CrmAccessBoundary (que só barra sessão inválida/RENTER pra toda a área do
-// dashboard): aqui a checagem é por página — o item de menu em AppShell.tsx só controla o que
-// aparece na sidebar, nunca impediu alguém de acessar a rota digitando a URL direto.
 export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
   const t = useTranslations('common.roleGuard')
   const router = useRouter()

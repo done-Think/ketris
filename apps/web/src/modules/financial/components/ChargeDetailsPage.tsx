@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded'
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
@@ -28,7 +28,7 @@ import { useRouter } from '@/i18n/navigation'
 import { RhfTextField } from '@shared/components/form'
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 import { formatCurrency } from '@shared/lib/utils/format'
-import { registerPaymentSchema } from '../schemas/register-payment-schema'
+import { createRegisterPaymentSchema } from '../schemas/register-payment-schema'
 import type { Charge, PaymentFormValues } from '../types/charge'
 import { useCharge, useRegisterChargePayment } from '../hooks/use-financial'
 import { mapChargeFromApi } from '../utils/charge-adapter'
@@ -95,6 +95,10 @@ function ChargeDetailsContent({ charge, tenantId }: { charge: Charge; tenantId: 
   const [paymentOpen, setPaymentOpen] = useState(false)
   const [receiptOpen, setReceiptOpen] = useState(false)
   const [duplicateOpen, setDuplicateOpen] = useState(false)
+  const registerPaymentSchema = useMemo(
+    () => createRegisterPaymentSchema((key) => t(`errors.${key}`)),
+    [t],
+  )
   const { control, handleSubmit, reset } = useForm<PaymentFormValues>({
     defaultValues: { paymentDate: '', paymentMethod: '' },
     resolver: zodResolver(registerPaymentSchema),

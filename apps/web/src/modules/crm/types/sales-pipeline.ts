@@ -1,5 +1,11 @@
 import type { OpportunityCardProps } from './opportunity-card'
 import type { Opportunity, OpportunityStatus } from './opportunity'
+import type {
+  ProposalManagementFilterId,
+  ProposalManagementListItem,
+  ProposalManagementPage,
+  ProposalManagementSummary,
+} from './proposal-management'
 import type { PublicPropertySummary } from './property'
 
 export type SalesPipelineStageId =
@@ -75,4 +81,25 @@ export type SalesPipelineFixtureInput = {
   value: number
   daysAgo: number
   indicator: SalesPipelinePreviewIndicator
+}
+
+export type SalesPipelineKanbanViewProps = {
+  visibleOpportunities: readonly Opportunity[]
+  fixtureMode: boolean
+  fixtureStageByOpportunityId: ReadonlyMap<string, SalesPipelineStageId>
+  propertiesById: ReadonlyMap<string, PublicPropertySummary>
+  presentationByOpportunityId: ReadonlyMap<string, OpportunityCardProps['presentation']>
+  isPipelineLoading: boolean
+  hasPipelineError: boolean
+}
+
+export type SalesPipelineListViewProps = {
+  proposalStatus: ProposalManagementFilterId
+  proposalSummary: ProposalManagementSummary
+  onStatusChange: (status: ProposalManagementFilterId) => void
+  proposalPageResult: ProposalManagementPage
+  proposalRowsPerPage: number
+  onPageChange: (page: number) => void
+  onRowsPerPageChange: (rowsPerPage: number) => void
+  onViewProposal: (proposal: ProposalManagementListItem) => void
 }

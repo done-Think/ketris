@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Button,
@@ -15,7 +16,10 @@ import {
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslations } from 'next-intl'
 
-import { editDemoTenantSchema, type EditDemoTenantValues } from '../schemas/edit-demo-tenant-schema'
+import {
+  createEditDemoTenantSchema,
+  type EditDemoTenantValues,
+} from '../schemas/edit-demo-tenant-schema'
 import type { PlatformTenantEditDialogProps } from '../types/platform-tenant'
 
 export function PlatformTenantEditDialog({
@@ -24,6 +28,10 @@ export function PlatformTenantEditDialog({
   onSave,
 }: PlatformTenantEditDialogProps) {
   const t = useTranslations('platform.tenants')
+  const editDemoTenantSchema = useMemo(
+    () => createEditDemoTenantSchema((key) => t(`errors.${key}`)),
+    [t],
+  )
   const {
     control,
     register,
@@ -61,7 +69,7 @@ export function PlatformTenantEditDialog({
             {...nameField}
             inputRef={nameRef}
             error={Boolean(errors.name)}
-            helperText={errors.name ? t('nameRequired') : undefined}
+            helperText={errors.name?.message}
           />
           <Controller
             name="plan"

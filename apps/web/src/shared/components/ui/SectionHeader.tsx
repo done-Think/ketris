@@ -1,12 +1,7 @@
 import { Stack, Typography } from '@mui/material'
-import type { ReactNode } from 'react'
 
 import { componentText } from '@shared/theme/tokens'
-
-type SectionHeaderProps = {
-  title: string
-  action?: ReactNode
-}
+import type { SectionHeaderProps } from '@shared/types/section-header'
 
 export function SectionHeader({ title, action }: SectionHeaderProps) {
   return (

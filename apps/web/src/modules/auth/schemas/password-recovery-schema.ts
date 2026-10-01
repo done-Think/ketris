@@ -1,25 +1,31 @@
 import { z } from 'zod'
 
-import { emailSchema } from '@shared/schemas/email-schema'
+import { createEmailSchema, type SchemaMessageTranslator } from '@shared/schemas/email-schema'
 
-export const passwordRecoverySchema = z.object({
-  email: emailSchema,
-})
-
-export type PasswordRecoveryFormValues = z.infer<typeof passwordRecoverySchema>
-
-export const verificationCodeSchema = z.object({
-  code: z.string().regex(/^\d{6}$/, 'Informe o código de 6 dígitos'),
-})
-
-export const passwordResetSchema = verificationCodeSchema
-  .extend({
-    password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres'),
-    passwordConfirmation: z.string().min(1, 'Confirme a nova senha'),
+export function createPasswordRecoverySchema(t: SchemaMessageTranslator) {
+  return z.object({
+    email: createEmailSchema(t),
   })
-  .refine((data) => data.password === data.passwordConfirmation, {
-    message: 'As senhas não coincidem',
-    path: ['passwordConfirmation'],
-  })
+}
 
-export type PasswordResetFormValues = z.infer<typeof passwordResetSchema>
+export type PasswordRecoveryFormValues = z.infer<ReturnType<typeof createPasswordRecoverySchema>>
+
+export function createVerificationCodeSchema(t: SchemaMessageTranslator) {
+  return z.object({
+    code: z.string().regex(/^\d{6}$/, t('codeInvalid')),
+  })
+}
+
+export function createPasswordResetSchema(t: SchemaMessageTranslator) {
+  return createVerificationCodeSchema(t)
+    .extend({
+      password: z.string().min(8, t('passwordTooShort')),
+      passwordConfirmation: z.string().min(1, t('passwordConfirmationRequired')),
+    })
+    .refine((data) => data.password === data.passwordConfirmation, {
+      message: t('passwordMismatch'),
+      path: ['passwordConfirmation'],
+    })
+}
+
+export type PasswordResetFormValues = z.infer<ReturnType<typeof createPasswordResetSchema>>

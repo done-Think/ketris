@@ -10,7 +10,6 @@ export interface PropertySearchFilters {
   purpose?: PropertyPurpose
   propertyType?: string
   city?: string
-  /** Free-text match across neighborhood and city, unlike `city`'s exact match. */
   location?: string
   minPrice?: number
   maxPrice?: number

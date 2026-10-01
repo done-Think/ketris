@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Button, Stack, Typography } from '@mui/material'
@@ -11,7 +11,7 @@ import { useRouter } from '@/i18n/navigation'
 import { RhfTextField } from '@shared/components/form'
 
 import {
-  platformSignInSchema,
+  createPlatformSignInSchema,
   type PlatformSignInFormValues,
 } from '../schemas/platform-sign-in-schema'
 
@@ -21,6 +21,10 @@ export function PlatformSignInForm() {
   const router = useRouter()
   const [formError, setFormError] = useState<string | null>(null)
   const hasAttemptedLocalAutoLogin = useRef(false)
+  const platformSignInSchema = useMemo(
+    () => createPlatformSignInSchema((key) => t(`errors.${key}`)),
+    [t],
+  )
 
   const {
     control,

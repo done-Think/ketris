@@ -20,7 +20,9 @@ export type CreatePropertyPurpose = 'Aluguel' | 'Venda'
 
 export type DashboardActivityTone = 'success' | 'accent' | 'info' | 'warning' | 'neutral' | 'error'
 
-export type CreateDashboardPropertyFormValues = z.infer<typeof createDashboardPropertySchema>
+export type CreateDashboardPropertyFormValues = z.infer<
+  ReturnType<typeof createDashboardPropertySchema>
+>
 
 export type PropertiesDashboardFiltersFormValues = {
   activeStatusFilter: DashboardPropertyFilterKey
@@ -122,6 +124,28 @@ export type CreatePropertyStepFieldsProps = {
   propertyPurpose: CreatePropertyPurpose[]
 }
 
+export type CreatePropertyBasicStepFieldsProps = {
+  control: Control<CreateDashboardPropertyFormValues>
+}
+
+export type CreatePropertyAddressStepFieldsProps = {
+  control: Control<CreateDashboardPropertyFormValues>
+}
+
+export type CreatePropertyFeaturesStepFieldsProps = {
+  control: Control<CreateDashboardPropertyFormValues>
+}
+
+export type CreatePropertyValuesStepFieldsProps = {
+  control: Control<CreateDashboardPropertyFormValues>
+  mainValueLabel: 'rentValue' | 'saleValue' | 'referenceValue'
+  negotiationTermLabel: 'securityDeposit' | 'commission' | 'commercialTerms'
+}
+
+export type CreatePropertyPublishingStepFieldsProps = {
+  control: Control<CreateDashboardPropertyFormValues>
+}
+
 export type CreatePropertyActionsProps = {
   firstStep: boolean
   lastStep: boolean
@@ -160,4 +184,17 @@ export type PropertyDetailSidebarProps = {
 export type PropertyDetailPanelProps = {
   title: string
   children: ReactNode
+}
+
+export type DeletePropertyDialogProps = {
+  open: boolean
+  isPending: boolean
+  title: string
+  onClose: () => void
+  onConfirm: () => void
+}
+
+export type PropertyRowActionsProps = {
+  property: DashboardProperty
+  onView: () => void
 }

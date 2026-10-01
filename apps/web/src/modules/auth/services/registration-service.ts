@@ -1,9 +1,6 @@
 import { BaseService } from '@shared/lib/api/base-service'
 
-export interface AgencySearchResult {
-  id: string
-  name: string
-}
+import type { AgencySearchResult } from '../types/registration'
 
 interface SearchAgenciesResponse {
   tenants: AgencySearchResult[]

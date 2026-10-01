@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { contactFormSchema, contactTypeSchema } from '../../schemas/contact-schema'
+import { contactTypeSchema, createContactFormSchema } from '../../schemas/contact-schema'
+
+const schema = createContactFormSchema((key) => key)
 
 describe('contact schemas', () => {
   it.each(['PROPRIETARIO', 'LOCATARIO', 'CORRETOR'])('accepts the supported type %s', (type) => {
@@ -12,7 +14,7 @@ describe('contact schemas', () => {
   })
 
   it('accepts a complete form', () => {
-    const result = contactFormSchema.safeParse({
+    const result = schema.safeParse({
       name: 'Maria Silva',
       email: 'maria@example.com',
       phone: '(11) 90000-0000',
@@ -25,7 +27,7 @@ describe('contact schemas', () => {
 
   it('rejects a missing name', () => {
     expect(
-      contactFormSchema.safeParse({
+      schema.safeParse({
         name: '   ',
         email: 'maria@example.com',
         phone: '',
@@ -36,14 +38,31 @@ describe('contact schemas', () => {
   })
 
   it('rejects an invalid email', () => {
-    expect(
-      contactFormSchema.safeParse({
-        name: 'Maria Silva',
-        email: 'not-an-email',
-        phone: '',
-        type: 'LOCATARIO',
-        notes: '',
-      }).success,
-    ).toBe(false)
+    const result = schema.safeParse({
+      name: 'Maria Silva',
+      email: 'not-an-email',
+      phone: '',
+      type: 'LOCATARIO',
+      notes: '',
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.success ? undefined : result.error.issues[0]?.message).toBe('emailInvalid')
+  })
+
+  it('routes each validation message through the translator with the right key', () => {
+    const translated = createContactFormSchema((key) => `translated:${key}`)
+    const result = translated.safeParse({
+      name: '',
+      email: 'maria@example.com',
+      phone: '',
+      type: 'LOCATARIO',
+      notes: '',
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.success ? undefined : result.error.issues[0]?.message).toBe(
+      'translated:nameRequired',
+    )
   })
 })

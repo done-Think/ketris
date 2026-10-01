@@ -28,7 +28,12 @@
     "genericError": "Could not sign in. Check the email and password.",
     "forbiddenError": "Access restricted to platform administrators.",
     "submit": "Sign in",
-    "restrictedAccess": "Access restricted to Ketris global administration."
+    "restrictedAccess": "Access restricted to Ketris global administration.",
+    "errors": {
+      "emailRequired": "Enter your email",
+      "emailInvalid": "Enter a valid email",
+      "passwordRequired": "Enter your password"
+    }
   },
   "dashboard": {
     "title": "Agencies",
@@ -202,8 +207,10 @@
     "editDescription": "Changes are local and will be discarded when you reload the page.",
     "save": "Save",
     "cancel": "Cancel",
-    "nameRequired": "Enter a name.",
-    "metricBadge": "Tenants"
+    "metricBadge": "Tenants",
+    "errors": {
+      "nameRequired": "Enter a name."
+    }
   },
   "system": {
     "title": "System Health",
@@ -266,7 +273,17 @@
     "createPlatformAdminSuccess": "Platform administrator {email} created successfully.",
     "createTenantAdminSubmit": "Create agency administrator",
     "createTenantAdminError": "Could not create the agency administrator. Try again.",
-    "createTenantAdminSuccess": "Administrator {email} created successfully."
+    "createTenantAdminSuccess": "Administrator {email} created successfully.",
+    "errors": {
+      "nameRequired": "Enter the name",
+      "emailRequired": "Enter the email",
+      "emailInvalid": "Invalid email",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordConfirmationRequired": "Confirm the password",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "slugRequired": "Enter the slug",
+      "slugInvalid": "Use only lowercase letters, numbers, and hyphens"
+    }
   },
   "table": {
     "first": "First page",

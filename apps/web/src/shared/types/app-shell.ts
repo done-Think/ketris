@@ -30,3 +30,19 @@ export type AppShellProps = {
   children: ReactNode
   allowLocalDashboardPreview?: boolean
 }
+
+export type AppShellSidebarProps = {
+  collapsed: boolean
+  showCollapseControl: boolean
+  isLoading: boolean
+  visibleItems: readonly AppShellNavItem[]
+  activeTargetPath: string | null
+  userName: string
+  userContext: string
+  userInitials: string
+  userImage?: string
+  canEditProfile: boolean
+  onNavItemClick: () => void
+  onEditProfile: () => void
+  onToggleCollapsed: () => void
+}

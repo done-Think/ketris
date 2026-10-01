@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Box,
@@ -38,8 +38,6 @@ import {
 } from './ContractStepFields'
 import { ContractStepsNav } from './ContractStepsNav'
 
-// Derived from the same field metadata each step actually renders (see ContractStepFields.tsx) —
-// a field added to a step's FieldGrid is automatically required here too, nothing to keep in sync.
 const stepValidationFields: Record<number, CreateContractFieldName[]> = {
   0: opportunityStepFieldNames,
   1: partiesStepFieldNames,
@@ -55,6 +53,7 @@ export function ContractsCreatePage() {
   const { enqueueSnackbar } = useSnackbar()
   const createContractMutation = useCreateContract(tenantId)
   const [discardDialogOpen, setDiscardDialogOpen] = useState(false)
+  const contractSchema = useMemo(() => createContractSchema((key) => t(`errors.${key}`)), [t])
   const {
     control,
     formState: { isDirty },
@@ -64,7 +63,7 @@ export function ContractsCreatePage() {
     watch,
   } = useForm<CreateContractFormValues>({
     defaultValues: createContractDefaultValues,
-    resolver: zodResolver(createContractSchema),
+    resolver: zodResolver(contractSchema),
     mode: 'onBlur',
   })
 

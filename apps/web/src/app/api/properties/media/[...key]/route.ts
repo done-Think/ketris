@@ -9,11 +9,6 @@ interface RouteContext {
   params: Promise<{ key: string[] }>
 }
 
-// Sem `requireBearerAuth` de propósito: um <img src> não consegue mandar o header Authorization,
-// e o bucket é privado (sem CORS/policy pública, ver infra/terraform/s3.tf), então essa rota é o
-// único jeito de servir a mídia. A chave do objeto inclui um UUID aleatório (ver
-// S3PropertyMediaStorage), então não dá pra enumerar/adivinhar — a mesma lógica de "link não
-// listado" que protege um objeto público de verdade.
 export const GET = withErrorHandling(async (_request: NextRequest, context: RouteContext) => {
   const { key } = await context.params
   const objectKey = key.join('/')

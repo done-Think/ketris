@@ -29,14 +29,9 @@ import {
   usePublishProperty,
   useUnpublishProperty,
 } from '../hooks/use-properties'
-import type { DashboardProperty } from '../types/dashboard-property'
+import type { PropertyRowActionsProps } from '../types/dashboard-property'
 import { errorMessage } from '../utils/error-message'
 import { DeletePropertyDialog } from './DeletePropertyDialog'
-
-export interface PropertyRowActionsProps {
-  property: DashboardProperty
-  onView: () => void
-}
 
 const rowActionButtonSx: SxProps<Theme> = {
   width: 36,
