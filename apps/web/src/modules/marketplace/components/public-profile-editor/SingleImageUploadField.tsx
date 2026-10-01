@@ -5,30 +5,19 @@ import { useDropzone } from 'react-dropzone'
 import { Avatar, Box, CircularProgress, IconButton, Stack, Typography } from '@mui/material'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined'
-import {
-  Controller,
-  type FieldPath,
-  type FieldValues,
-  type UseControllerProps,
-} from 'react-hook-form'
+import { Controller, type FieldPath, type FieldValues } from 'react-hook-form'
 import { useSnackbar } from 'notistack'
 import { useTranslations } from 'next-intl'
 
 import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
 import { useUploadProfileMedia } from '../../hooks/use-profile-media'
-import type { ProfileMediaTarget } from '../../services/profile-media-service'
+import type {
+  ImageDropzoneProps,
+  SingleImageUploadFieldProps,
+} from '../../types/single-image-upload-field'
 
 const ACCEPTED_TYPES = { 'image/jpeg': [], 'image/png': [], 'image/webp': [] }
-
-type SingleImageUploadFieldProps<
-  TFieldValues extends FieldValues,
-  TName extends FieldPath<TFieldValues>,
-> = UseControllerProps<TFieldValues, TName> & {
-  target: ProfileMediaTarget
-  label: string
-  variant?: 'avatar' | 'banner'
-}
 
 export function SingleImageUploadField<
   TFieldValues extends FieldValues,
@@ -39,6 +28,7 @@ export function SingleImageUploadField<
   target,
   label,
   variant = 'banner',
+  disabled = false,
 }: SingleImageUploadFieldProps<TFieldValues, TName>) {
   const t = useTranslations('marketplace.mediaUpload')
   const { enqueueSnackbar } = useSnackbar()
@@ -48,7 +38,7 @@ export function SingleImageUploadField<
     <Controller
       control={control}
       name={name}
-      render={({ field }) => {
+      render={({ field, fieldState }) => {
         const value = typeof field.value === 'string' ? field.value : ''
 
         async function handleDrop(files: File[]) {
@@ -71,6 +61,8 @@ export function SingleImageUploadField<
             value={value}
             isUploading={isPending}
             variant={variant}
+            disabled={disabled}
+            error={fieldState.error?.message}
             onDrop={handleDrop}
             onRemove={() => field.onChange('')}
           />
@@ -85,22 +77,18 @@ function ImageDropzone({
   value,
   isUploading,
   variant,
+  disabled,
+  error,
   onDrop,
   onRemove,
-}: {
-  label: string
-  value: string
-  isUploading: boolean
-  variant: 'avatar' | 'banner'
-  onDrop: (files: File[]) => void
-  onRemove: () => void
-}) {
+}: ImageDropzoneProps) {
   const t = useTranslations('marketplace.mediaUpload')
   const handleDrop = useCallback((acceptedFiles: File[]) => onDrop(acceptedFiles), [onDrop])
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: handleDrop,
     accept: ACCEPTED_TYPES,
     multiple: false,
+    disabled,
   })
 
   return (
@@ -134,7 +122,7 @@ function ImageDropzone({
             flex: 1,
             minHeight: 58,
             border: '1px dashed',
-            borderColor: isDragActive ? 'primary.main' : 'divider',
+            borderColor: error ? 'error.main' : isDragActive ? 'primary.main' : 'divider',
             borderRadius: `${radius.sm}px`,
             bgcolor: isDragActive ? alpha.magenta[6] : surface.app,
             display: 'grid',
@@ -142,7 +130,8 @@ function ImageDropzone({
             px: 1.4,
             py: 1,
             textAlign: 'center',
-            cursor: 'pointer',
+            cursor: disabled ? 'not-allowed' : 'pointer',
+            opacity: disabled ? 0.6 : 1,
           }}
         >
           <input {...getInputProps()} aria-label={label} />
@@ -159,12 +148,14 @@ function ImageDropzone({
         </Box>
 
         {value ? (
-          <IconButton aria-label={t('remove')} onClick={onRemove} size="small">
+          <IconButton aria-label={t('remove')} onClick={onRemove} size="small" disabled={disabled}>
             <CloseRoundedIcon sx={{ fontSize: iconSize.sm }} />
           </IconButton>
         ) : null}
       </Stack>
-      <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>{t('hint')}</Typography>
+      <Typography sx={{ fontSize: 11, color: error ? 'error.main' : 'text.secondary' }}>
+        {error ?? t('hint')}
+      </Typography>
     </Stack>
   )
 }

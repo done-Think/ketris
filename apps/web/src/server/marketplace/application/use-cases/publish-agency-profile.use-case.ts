@@ -16,6 +16,17 @@ function getPublishMissingFields(profile: AgencyProfile): string[] {
   if (!profile.displayName.trim()) missingFields.push('displayName')
   if (!profile.phone?.trim() && !profile.email?.trim()) missingFields.push('phone_ou_email')
   if (!profile.summary?.trim()) missingFields.push('summary')
+  if (!profile.legalCreci?.trim()) missingFields.push('legalCreci')
+  if (!profile.headline?.trim()) missingFields.push('headline')
+  if (!profile.headquarters?.trim()) missingFields.push('headquarters')
+  if (!profile.address?.trim()) missingFields.push('address')
+  if (!profile.coverage.length) missingFields.push('coverage')
+  if (!profile.segments.length) missingFields.push('segments')
+  if (profile.yearsInMarket === null) missingFields.push('yearsInMarket')
+  if (!profile.backgroundColor?.trim()) missingFields.push('backgroundColor')
+  if (!profile.logoUrl?.trim()) missingFields.push('logoUrl')
+  if (!profile.bannerUrl?.trim()) missingFields.push('bannerUrl')
+  if (!profile.team.length) missingFields.push('team')
 
   return missingFields
 }

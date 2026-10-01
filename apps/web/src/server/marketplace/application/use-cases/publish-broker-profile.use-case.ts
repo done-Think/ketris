@@ -16,6 +16,17 @@ function getPublishMissingFields(profile: BrokerProfile): string[] {
   if (!profile.displayName.trim()) missingFields.push('displayName')
   if (!profile.phone?.trim()) missingFields.push('phone')
   if (!profile.bio?.trim()) missingFields.push('bio')
+  if (!profile.creci?.trim()) missingFields.push('creci')
+  if (!profile.availability?.trim()) missingFields.push('availability')
+  if (!profile.headline?.trim()) missingFields.push('headline')
+  if (!profile.region?.trim()) missingFields.push('region')
+  if (!profile.neighborhoods.length) missingFields.push('neighborhoods')
+  if (!profile.specialties.length) missingFields.push('specialties')
+  if (!profile.primaryColor?.trim()) missingFields.push('primaryColor')
+  if (!profile.secondaryColor?.trim()) missingFields.push('secondaryColor')
+  if (!profile.backgroundColor?.trim()) missingFields.push('backgroundColor')
+  if (!profile.avatarUrl?.trim()) missingFields.push('avatarUrl')
+  if (!profile.bannerUrl?.trim()) missingFields.push('bannerUrl')
 
   return missingFields
 }

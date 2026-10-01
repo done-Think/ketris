@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Autocomplete,
@@ -28,129 +28,18 @@ import {
 } from '../hooks/use-agency-profile'
 import { useTenantAgents } from '../hooks/use-tenant-agents'
 import {
-  agencyPublicProfileEditorSchema,
+  createAgencyPublicProfileEditorSchema,
   type AgencyPublicProfileEditorFormValues,
 } from '../schemas/agency-public-profile-editor-schema'
-import type { AgencyProfile } from '../types/agency'
-import type { PublicAgencyProfile } from '../types/public-agency-profile'
+import {
+  emptyValues,
+  toDraft,
+  toFormValues,
+  toPreviewProfile,
+} from '../utils/agency-public-profile-editor-adapter'
 import { editorPanelSx } from './public-profile-editor/public-profile-editor-shared'
 import { SingleImageUploadField } from './public-profile-editor/SingleImageUploadField'
 import { AgencyPublicProfilePage } from './AgencyPublicProfilePage'
-
-const emptyValues: AgencyPublicProfileEditorFormValues = {
-  displayName: '',
-  headline: '',
-  summary: '',
-  legalCreci: '',
-  headquarters: '',
-  address: '',
-  phone: '',
-  email: '',
-  coverage: '',
-  segments: '',
-  yearsInMarket: '',
-  backgroundColor: '',
-  logoUrl: '',
-  bannerUrl: '',
-  team: [],
-}
-
-function splitList(value: string): string[] {
-  return value
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean)
-}
-
-function toDraft(values: AgencyPublicProfileEditorFormValues) {
-  return {
-    displayName: values.displayName,
-    headline: values.headline || null,
-    summary: values.summary || null,
-    legalCreci: values.legalCreci || null,
-    headquarters: values.headquarters || null,
-    address: values.address || null,
-    phone: values.phone || null,
-    email: values.email || null,
-    coverage: splitList(values.coverage),
-    segments: splitList(values.segments),
-    yearsInMarket: values.yearsInMarket ? Number(values.yearsInMarket) : null,
-    backgroundColor: values.backgroundColor || null,
-    logoUrl: values.logoUrl || null,
-    bannerUrl: values.bannerUrl || null,
-    team: values.team.map((member, index) => ({ usuarioId: member.usuarioId, order: index })),
-  }
-}
-
-function toFormValues(profile: PublicAgencyProfile | null): AgencyPublicProfileEditorFormValues {
-  if (!profile) return emptyValues
-
-  return {
-    displayName: profile.displayName,
-    headline: profile.headline ?? '',
-    summary: profile.summary ?? '',
-    legalCreci: profile.legalCreci ?? '',
-    headquarters: profile.headquarters ?? '',
-    address: profile.address ?? '',
-    phone: profile.phone ?? '',
-    email: profile.email ?? '',
-    coverage: profile.coverage.join(', '),
-    segments: profile.segments.join(', '),
-    yearsInMarket: profile.yearsInMarket ? String(profile.yearsInMarket) : '',
-    backgroundColor: profile.backgroundColor ?? '',
-    logoUrl: profile.logoUrl ?? '',
-    bannerUrl: profile.bannerUrl ?? '',
-    team: profile.team
-      .slice()
-      .sort((first, second) => first.order - second.order)
-      .map((member) => ({ usuarioId: member.usuarioId, name: member.name })),
-  }
-}
-
-function toPreviewProfile(
-  values: AgencyPublicProfileEditorFormValues,
-  profile: PublicAgencyProfile | null,
-): AgencyProfile {
-  return {
-    id: profile?.id ?? 'preview',
-    name: values.displayName || 'Sua imobiliária',
-    headline: values.headline || null,
-    legalCreci: values.legalCreci || null,
-    logoInitials: (values.displayName || '?').slice(0, 2).toUpperCase(),
-    bannerUrl: values.bannerUrl || null,
-    brand: {
-      primaryColor: profile?.primaryColor ?? null,
-      secondaryColor: profile?.secondaryColor ?? null,
-      backgroundColor: values.backgroundColor || null,
-      logoUrl: values.logoUrl || null,
-    },
-    headquarters: values.headquarters || null,
-    address: values.address || null,
-    coverage: splitList(values.coverage),
-    segments: splitList(values.segments),
-    activeListings: profile?.stats.activeListings ?? 0,
-    brokersCount: profile?.stats.brokersCount ?? 0,
-    dealsClosed: profile?.stats.dealsClosed ?? 0,
-    responseTime: null,
-    yearsInMarket: values.yearsInMarket ? Number(values.yearsInMarket) : null,
-    rating: null,
-    phone: values.phone || null,
-    email: values.email || null,
-    summary: values.summary || null,
-    href: profile ? `/agencies/${profile.id}` : '',
-    teamHighlights: values.team.map((member) => ({
-      usuarioId: member.usuarioId,
-      name: member.name,
-      avatarUrl: null,
-    })),
-    featuredListings: (profile?.featuredListings ?? []).map((listing) => ({
-      title: listing.title,
-      location: [listing.neighborhood, listing.city].filter(Boolean).join(', '),
-      price: String(listing.price),
-      href: `/properties/${listing.id}`,
-    })),
-  }
-}
 
 export function AgencyPublicProfileEditorPage() {
   const t = useTranslations('marketplace.agencyProfileEditor')
@@ -162,10 +51,23 @@ export function AgencyPublicProfileEditorPage() {
   const publishProfile = usePublishAgencyProfile()
   const unpublishProfile = useUnpublishAgencyProfile()
 
-  const { control, handleSubmit, reset, watch } = useForm<AgencyPublicProfileEditorFormValues>({
-    defaultValues: emptyValues,
-    resolver: zodResolver(agencyPublicProfileEditorSchema),
-  })
+  const [isEditing, setIsEditing] = useState(false)
+  const agencyPublicProfileEditorSchema = useMemo(
+    () => createAgencyPublicProfileEditorSchema((key) => t(`errors.${key}`)),
+    [t],
+  )
+  const publishRequiredFieldsSchema = useMemo(
+    () =>
+      createAgencyPublicProfileEditorSchema((key) => t(`errors.${key}`), {
+        requirePublishFields: true,
+      }),
+    [t],
+  )
+  const { control, handleSubmit, reset, setError, watch } =
+    useForm<AgencyPublicProfileEditorFormValues>({
+      defaultValues: emptyValues,
+      resolver: zodResolver(agencyPublicProfileEditorSchema),
+    })
 
   useEffect(() => {
     reset(toFormValues(profile ?? null))
@@ -175,24 +77,59 @@ export function AgencyPublicProfileEditorPage() {
 
   function onSubmit(values: AgencyPublicProfileEditorFormValues) {
     saveProfile.mutate(toDraft(values), {
-      onSuccess: () => enqueueSnackbar(t('saveSuccess'), { variant: 'success' }),
+      onSuccess: () => {
+        enqueueSnackbar(t('saveSuccess'), { variant: 'success' })
+        setIsEditing(false)
+      },
       onError: () => enqueueSnackbar(t('saveError'), { variant: 'error' }),
     })
   }
 
-  function handlePublishToggle() {
-    if (profile?.status === 'PUBLISHED') {
-      unpublishProfile.mutate(undefined, {
-        onSuccess: () => enqueueSnackbar(t('unpublishSuccess'), { variant: 'success' }),
-        onError: () => enqueueSnackbar(t('publishError'), { variant: 'error' }),
-      })
+  function handleUnpublish() {
+    unpublishProfile.mutate(undefined, {
+      onSuccess: () => enqueueSnackbar(t('unpublishSuccess'), { variant: 'success' }),
+      onError: () => enqueueSnackbar(t('publishError'), { variant: 'error' }),
+    })
+  }
+
+  const handlePublish = handleSubmit((values) => {
+    const publishCheck = publishRequiredFieldsSchema.safeParse(values)
+
+    if (!publishCheck.success) {
+      setIsEditing(true)
+
+      for (const issue of publishCheck.error.issues) {
+        const field = issue.path[0]
+
+        if (typeof field === 'string') {
+          setError(field as keyof AgencyPublicProfileEditorFormValues, { message: issue.message })
+        }
+      }
+
       return
     }
 
-    publishProfile.mutate(undefined, {
-      onSuccess: () => enqueueSnackbar(t('publishSuccess'), { variant: 'success' }),
-      onError: () => enqueueSnackbar(t('publishError'), { variant: 'error' }),
+    saveProfile.mutate(toDraft(values), {
+      onSuccess: () => {
+        publishProfile.mutate(undefined, {
+          onSuccess: () => {
+            enqueueSnackbar(t('publishSuccess'), { variant: 'success' })
+            setIsEditing(false)
+          },
+          onError: () => enqueueSnackbar(t('publishError'), { variant: 'error' }),
+        })
+      },
+      onError: () => enqueueSnackbar(t('saveError'), { variant: 'error' }),
     })
+  })
+
+  function handlePublishToggle() {
+    if (profile?.status === 'PUBLISHED') {
+      handleUnpublish()
+      return
+    }
+
+    void handlePublish()
   }
 
   return (
@@ -208,7 +145,7 @@ export function AgencyPublicProfileEditorPage() {
         sx={{ mb: 2.6 }}
       />
 
-      <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ width: '100%' }}>
+      <Box component="form" noValidate onSubmit={handleSubmit(onSubmit)} sx={{ width: '100%' }}>
         <Box
           sx={{
             display: 'grid',
@@ -234,34 +171,64 @@ export function AgencyPublicProfileEditorPage() {
                 control={control}
                 name="headline"
                 label={t('fields.headline')}
+                disabled={!isEditing}
                 sx={{ gridColumn: { md: '1 / -1' } }}
               />
-              <RhfTextField control={control} name="displayName" label={t('fields.displayName')} />
-              <RhfTextField control={control} name="legalCreci" label={t('fields.legalCreci')} />
+              <RhfTextField
+                control={control}
+                name="displayName"
+                label={t('fields.displayName')}
+                disabled={!isEditing}
+              />
+              <RhfTextField
+                control={control}
+                name="legalCreci"
+                label={t('fields.legalCreci')}
+                disabled={!isEditing}
+              />
               <RhfTextField
                 control={control}
                 name="headquarters"
                 label={t('fields.headquarters')}
+                disabled={!isEditing}
               />
-              <RhfTextField control={control} name="address" label={t('fields.address')} />
-              <RhfTextField control={control} name="phone" label={t('fields.phone')} />
-              <RhfTextField control={control} name="email" label={t('fields.email')} />
+              <RhfTextField
+                control={control}
+                name="address"
+                label={t('fields.address')}
+                disabled={!isEditing}
+              />
+              <RhfTextField
+                control={control}
+                name="phone"
+                label={t('fields.phone')}
+                disabled={!isEditing}
+              />
+              <RhfTextField
+                control={control}
+                name="email"
+                label={t('fields.email')}
+                disabled={!isEditing}
+              />
               <RhfTextField
                 control={control}
                 name="coverage"
                 label={t('fields.coverage')}
                 helperText={t('fields.commaSeparatedHint')}
+                disabled={!isEditing}
               />
               <RhfTextField
                 control={control}
                 name="segments"
                 label={t('fields.segments')}
                 helperText={t('fields.commaSeparatedHint')}
+                disabled={!isEditing}
               />
               <RhfTextField
                 control={control}
                 name="yearsInMarket"
                 label={t('fields.yearsInMarket')}
+                disabled={!isEditing}
               />
               <RhfTextField
                 control={control}
@@ -270,6 +237,7 @@ export function AgencyPublicProfileEditorPage() {
                 multiline
                 minRows={6}
                 fullWidth
+                disabled={!isEditing}
                 sx={{
                   gridColumn: { md: '1 / -1' },
                   '& .MuiInputBase-root': { alignItems: 'flex-start', height: { xl: '100%' } },
@@ -290,14 +258,27 @@ export function AgencyPublicProfileEditorPage() {
               >
                 {t('actions.preview')}
               </Button>
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={saveProfile.isPending}
-                sx={{ flex: 1 }}
-              >
-                {t('actions.save')}
-              </Button>
+              {isEditing ? (
+                <Button
+                  key="save-button"
+                  type="submit"
+                  variant="contained"
+                  disabled={saveProfile.isPending}
+                  sx={{ flex: 1 }}
+                >
+                  {t('actions.save')}
+                </Button>
+              ) : (
+                <Button
+                  key="edit-button"
+                  type="button"
+                  variant="contained"
+                  onClick={() => setIsEditing(true)}
+                  sx={{ flex: 1 }}
+                >
+                  {t('actions.edit')}
+                </Button>
+              )}
               {profile ? (
                 <Button
                   type="button"
@@ -328,6 +309,7 @@ export function AgencyPublicProfileEditorPage() {
                   name="backgroundColor"
                   label={t('fields.backgroundColor')}
                   type="color"
+                  disabled={!isEditing}
                 />
               </Box>
             </Box>
@@ -350,6 +332,7 @@ export function AgencyPublicProfileEditorPage() {
                   label={t('fields.logoUrl')}
                   target="agency-logo"
                   variant="avatar"
+                  disabled={!isEditing}
                 />
                 <SingleImageUploadField
                   control={control}
@@ -357,6 +340,7 @@ export function AgencyPublicProfileEditorPage() {
                   label={t('fields.bannerUrl')}
                   target="agency-banner"
                   variant="banner"
+                  disabled={!isEditing}
                 />
               </Box>
             </Box>
@@ -369,9 +353,10 @@ export function AgencyPublicProfileEditorPage() {
             <Controller
               control={control}
               name="team"
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <Autocomplete
                   multiple
+                  disabled={!isEditing}
                   options={tenantAgents ?? []}
                   value={(tenantAgents ?? []).filter((agent) =>
                     field.value.some((member) => member.usuarioId === agent.id),
@@ -390,6 +375,8 @@ export function AgencyPublicProfileEditorPage() {
                       {...params}
                       label={t('fields.teamPicker')}
                       placeholder={t('fields.teamPickerPlaceholder')}
+                      error={Boolean(fieldState.error)}
+                      helperText={fieldState.error?.message}
                     />
                   )}
                 />
