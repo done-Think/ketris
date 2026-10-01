@@ -267,27 +267,26 @@ export function PlatformTenantsPage() {
   ]
 
   return (
-    <Box sx={{ maxWidth: 1680, mx: 'auto', px: { xs: 2, md: 3, lg: 4 }, py: { xs: 2, md: 4 } }}>
+    <Box sx={{ width: '100%', p: 3.5 }}>
       <Stack
-        direction={{ xs: 'column', xl: 'row' }}
+        direction={{ xs: 'column', md: 'row' }}
         justifyContent="space-between"
-        spacing={{ xs: 2, md: 2.25 }}
+        spacing={1.6}
         sx={{
-          mb: 3,
-          pb: { xs: 2, md: 0 },
-          borderBottom: { xs: '1px solid', md: 0 },
-          borderColor: alpha.graphite[8],
+          pb: 1.75,
+          mb: 2.4,
+          borderBottom: '1px solid',
+          borderColor: 'divider',
         }}
       >
         <Typography
           component="h1"
           sx={{
             color: brand.graphite[500],
-            fontFamily: { xs: 'var(--font-space-grotesk), system-ui, sans-serif', md: 'inherit' },
-            fontSize: { xs: 26, md: 34 },
-            fontWeight: { xs: 700, md: 900 },
-            letterSpacing: -0.55,
-            lineHeight: { xs: 1.15, md: 1.1 },
+            fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
+            fontSize: { xs: 26, sm: 30 },
+            fontWeight: 700,
+            lineHeight: 1.15,
           }}
         >
           {t('title')}
@@ -296,7 +295,7 @@ export function PlatformTenantsPage() {
           direction={{ xs: 'column', md: 'row' }}
           spacing={1.25}
           sx={{
-            width: { xs: '100%', xl: 'auto' },
+            width: { xs: '100%', md: 'auto' },
             flexWrap: 'wrap',
             rowGap: { xs: 0, md: 1.25 },
           }}
@@ -484,8 +483,8 @@ const searchSx = {
   '& .MuiOutlinedInput-root': {
     bgcolor: surface.paper,
     borderRadius: `${radius.sm}px`,
-    fontSize: 14,
-    height: 44,
+    fontSize: 12,
+    height: { xs: 40, sm: 32 },
   },
 }
 const filterSx = {
@@ -493,14 +492,14 @@ const filterSx = {
   minWidth: { sm: 145 },
   bgcolor: surface.paper,
   borderRadius: { xs: `${radius.full}px`, md: `${radius.sm}px` },
-  fontSize: 14,
+  fontSize: 12,
   fontWeight: 600,
-  height: 44,
+  height: { xs: 40, sm: 32 },
   '& .MuiSelect-select': {
     alignItems: 'center',
     boxSizing: 'border-box',
     display: 'flex',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 600,
     height: '100%',
     lineHeight: 1.4,
@@ -514,9 +513,9 @@ const newTenantButtonSx = {
   bgcolor: brand.magenta[500],
   borderRadius: `${radius.sm}px`,
   boxShadow: 'none',
-  fontSize: 14,
+  fontSize: 12,
   fontWeight: 800,
-  height: 44,
+  height: { xs: 40, sm: 32 },
   width: { xs: '100%', md: 'auto' },
   px: 2.25,
   textTransform: 'none',
@@ -526,9 +525,9 @@ const newTenantButtonSx = {
 const metricCardSx = {
   bgcolor: surface.paper,
   border: '1px solid',
-  borderColor: { xs: alpha.graphite[6], md: alpha.graphite[8] },
-  borderRadius: { xs: `${radius.sm}px`, md: `${radius.md}px` },
-  boxShadow: { xs: shadows.propertyCard, md: shadows.crmCardCompact },
+  borderColor: alpha.graphite[6],
+  borderRadius: `${radius.sm}px`,
+  boxShadow: shadows.propertyCard,
   minHeight: { xs: 120, md: 106 },
   px: 2,
   py: { xs: 2, md: 1.75 },
@@ -545,9 +544,9 @@ const activeBadgeSx = {
 const tablePanelSx = {
   bgcolor: surface.paper,
   border: '1px solid',
-  borderColor: { xs: alpha.graphite[6], md: alpha.graphite[8] },
-  borderRadius: { xs: `${radius.sm}px`, md: `${radius.md}px` },
-  boxShadow: { xs: shadows.crmCardCompact, md: shadows.crmCard },
+  borderColor: alpha.graphite[6],
+  borderRadius: `${radius.sm}px`,
+  boxShadow: shadows.propertyCard,
   overflow: 'hidden',
   p: { xs: 1, md: 2.75 },
   minWidth: 0,

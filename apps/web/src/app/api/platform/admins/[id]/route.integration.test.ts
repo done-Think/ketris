@@ -97,6 +97,16 @@ describe('/api/platform/admins/[id] (integração)', () => {
     expect(json.admin.ativo).toBe(false)
   })
 
+  it('PATCH reativa o alvo quando autenticado', async () => {
+    const response = await PATCH(buildRequest('PATCH', { ativo: true }, actorToken), {
+      params: Promise.resolve({ id: targetId }),
+    })
+    const json = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(json.admin.ativo).toBe(true)
+  })
+
   it('DELETE retorna 400 quando o ator tenta se autodesativar', async () => {
     const response = await DELETE(buildRequest('DELETE', undefined, actorToken), {
       params: Promise.resolve({ id: actorId }),

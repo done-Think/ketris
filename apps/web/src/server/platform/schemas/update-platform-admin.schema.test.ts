@@ -13,6 +13,14 @@ describe('updatePlatformAdminRequestSchema', () => {
     )
   })
 
+  it('aceita quando apenas função é informada', () => {
+    expect(updatePlatformAdminRequestSchema.safeParse({ role: 'ADMIN_AGENT' }).success).toBe(true)
+  })
+
+  it('aceita quando apenas status é informado', () => {
+    expect(updatePlatformAdminRequestSchema.safeParse({ ativo: true }).success).toBe(true)
+  })
+
   it('rejeita corpo vazio (nenhum campo informado)', () => {
     expect(updatePlatformAdminRequestSchema.safeParse({}).success).toBe(false)
   })

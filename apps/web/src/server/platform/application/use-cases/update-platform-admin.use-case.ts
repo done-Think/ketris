@@ -5,6 +5,7 @@ import {
 import {
   toAuthenticatedPlatformAdmin,
   type AuthenticatedPlatformAdmin,
+  type PlatformAdminRole,
 } from '../../domain/platform-admin.entity'
 import type { PlatformAdminRepository } from '../ports/platform-admin-repository.port'
 
@@ -12,6 +13,8 @@ export interface UpdatePlatformAdminInput {
   platformAdminId: string
   nome?: string
   email?: string
+  role?: PlatformAdminRole
+  ativo?: boolean
 }
 
 export type UpdatePlatformAdminOutput = AuthenticatedPlatformAdmin
@@ -37,6 +40,8 @@ export class UpdatePlatformAdminUseCase {
     const updated = await this.platformAdminRepository.update(input.platformAdminId, {
       nome: input.nome,
       email: input.email,
+      role: input.role,
+      ativo: input.ativo,
     })
 
     return toAuthenticatedPlatformAdmin(updated)
