@@ -11,7 +11,7 @@ export interface PlatformAdminUpdate {
   nome?: string
   email?: string
   role?: PlatformAdminRole
-  ativo?: boolean
+  ativo?: true
 }
 
 export interface PlatformAdminRepository {

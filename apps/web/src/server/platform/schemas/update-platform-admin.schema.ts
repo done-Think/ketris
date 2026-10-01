@@ -8,7 +8,7 @@ export const updatePlatformAdminRequestSchema = z
     nome: z.string().min(1, 'Nome é obrigatório.').optional(),
     email: z.string().email('E-mail inválido.').optional(),
     role: z.enum(['ADMIN', 'ADMIN_AGENT', 'AGENT']).optional(),
-    ativo: z.boolean().optional(),
+    ativo: z.literal(true).optional(),
   })
   .refine(
     (data) =>

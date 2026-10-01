@@ -14,7 +14,7 @@ export interface UpdatePlatformAdminInput {
   nome?: string
   email?: string
   role?: PlatformAdminRole
-  ativo?: boolean
+  ativo?: true
 }
 
 export type UpdatePlatformAdminOutput = AuthenticatedPlatformAdmin

@@ -27,6 +27,7 @@ describe('/api/platform/admins/[id] (integração)', () => {
       id: actor.id,
       nome: actor.nome,
       email: actor.email,
+      role: 'ADMIN',
       ativo: true,
     })
 
@@ -105,6 +106,14 @@ describe('/api/platform/admins/[id] (integração)', () => {
 
     expect(response.status).toBe(200)
     expect(json.admin.ativo).toBe(true)
+  })
+
+  it('PATCH não permite desativar o alvo', async () => {
+    const response = await PATCH(buildRequest('PATCH', { ativo: false }, actorToken), {
+      params: Promise.resolve({ id: targetId }),
+    })
+
+    expect(response.status).toBe(400)
   })
 
   it('DELETE retorna 400 quando o ator tenta se autodesativar', async () => {

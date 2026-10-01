@@ -33,6 +33,7 @@ import {
 } from '@mui/material'
 import { useMemo, useState, type ReactNode } from 'react'
 import { useTranslations } from 'next-intl'
+import { useSnackbar } from 'notistack'
 
 import {
   DashboardHeaderActionButton,
@@ -52,6 +53,7 @@ const defaultPageSize = 10
 
 export function PlatformAdminsPage() {
   const t = useTranslations('platform.admins')
+  const { enqueueSnackbar } = useSnackbar()
   const adminsQuery = usePlatformAdmins()
   const deactivateAdmin = useDeactivatePlatformAdmin()
   const activateAdmin = useActivatePlatformAdmin()
@@ -107,16 +109,27 @@ export function PlatformAdminsPage() {
   async function requestActivation() {
     if (!selectedAdmin) return
 
-    await activateAdmin.mutateAsync(selectedAdmin.id)
-    setSelectedAdmin(null)
-    closeMenu()
+    try {
+      await activateAdmin.mutateAsync(selectedAdmin.id)
+      enqueueSnackbar(t('updateSuccess'), { variant: 'success' })
+      setSelectedAdmin(null)
+      closeMenu()
+    } catch {
+      enqueueSnackbar(t('updateError'), { variant: 'error' })
+    }
   }
 
   async function confirmDeactivation() {
     if (!selectedAdmin) return
-    await deactivateAdmin.mutateAsync(selectedAdmin.id)
-    setSelectedAdmin(null)
-    closeMenu()
+
+    try {
+      await deactivateAdmin.mutateAsync(selectedAdmin.id)
+      enqueueSnackbar(t('updateSuccess'), { variant: 'success' })
+      setSelectedAdmin(null)
+      closeMenu()
+    } catch {
+      enqueueSnackbar(t('updateError'), { variant: 'error' })
+    }
   }
 
   return (

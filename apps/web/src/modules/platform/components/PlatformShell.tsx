@@ -199,10 +199,10 @@ export function PlatformShell({ children }: { children: ReactNode }) {
             alignSelf: collapsed ? 'center' : 'stretch',
             justifyContent: collapsed ? 'center' : 'flex-start',
             minWidth: collapsed ? 44 : 0,
+            ...marketplaceActionSx,
             minHeight: 40,
             mb: 1.5,
             px: collapsed ? 0 : 1.5,
-            ...marketplaceActionSx,
             '& .MuiButton-startIcon': { ml: 0, mr: collapsed ? 0 : 0.75 },
           }}
         >
