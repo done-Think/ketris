@@ -15,16 +15,19 @@ import {
 } from '@mui/material'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { brand, iconSize } from '@shared/theme/tokens'
 
-import { agendaEventFormSchema } from '../schemas/agenda-event-form-schema'
+import { buildAgendaEventFormSchema } from '../schemas/agenda-event-form-schema'
 import type { AgendaEventFormDialogProps, AgendaEventFormValues } from '../types/agenda-event'
+import { computeEarliestSchedulableSlot } from '../utils/scheduling-window'
 import { AgendaEventFormFields } from './AgendaEventFormFields'
 
-function buildDefaultValues(minDate: string): AgendaEventFormValues {
+function buildDefaultValues(): AgendaEventFormValues {
+  const earliestSlot = computeEarliestSchedulableSlot()
+
   return {
     customProperty: '',
     durationMinutes: 60,
@@ -33,8 +36,8 @@ function buildDefaultValues(minDate: string): AgendaEventFormValues {
     participant: '',
     phone: '',
     propertyId: '',
-    scheduledDate: minDate,
-    scheduledTime: '09:00',
+    scheduledDate: earliestSlot.format('YYYY-MM-DD'),
+    scheduledTime: earliestSlot.format('HH:mm'),
     title: '',
   }
 }
@@ -48,21 +51,25 @@ export function AgendaEventFormDialog({
   propertyOptions,
 }: AgendaEventFormDialogProps) {
   const t = useTranslations('agenda.eventForm')
+  const agendaEventFormSchema = useMemo(
+    () => buildAgendaEventFormSchema((key) => t(`errors.${key}`)),
+    [t],
+  )
   const {
     control,
     handleSubmit,
     reset,
     formState: { isSubmitting },
   } = useForm<AgendaEventFormValues>({
-    defaultValues: buildDefaultValues(minDate),
+    defaultValues: buildDefaultValues(),
     resolver: zodResolver(agendaEventFormSchema),
   })
 
   useEffect(() => {
     if (!open) return
 
-    reset(buildDefaultValues(minDate))
-  }, [minDate, open, reset])
+    reset(buildDefaultValues())
+  }, [open, reset])
 
   return (
     <Dialog
@@ -72,7 +79,7 @@ export function AgendaEventFormDialog({
       maxWidth="sm"
       PaperProps={{ sx: { minHeight: { sm: 640 } } }}
     >
-      <Box component="form" onSubmit={handleSubmit(onCreate)}>
+      <Box component="form" noValidate onSubmit={handleSubmit(onCreate)}>
         <DialogTitle sx={{ px: { xs: 2, md: 2.8 }, pb: 1.4, pt: 2.4 }}>
           <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
             <Box sx={{ minWidth: 0 }}>

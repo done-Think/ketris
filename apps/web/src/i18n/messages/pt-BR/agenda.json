@@ -63,6 +63,19 @@
       "INSPECTION": "Vistoria",
       "SIGNATURE": "Assinatura",
       "OTHER": "Outro"
+    },
+    "errors": {
+      "durationTooShort": "Informe ao menos 15 minutos",
+      "participantRequired": "Informe o nome da pessoa",
+      "phoneInvalid": "Informe um telefone válido",
+      "propertyRequired": "Selecione o imóvel",
+      "dateRequired": "Informe a data",
+      "timeRequired": "Informe o horário",
+      "titleRequired": "Informe o título do evento",
+      "customPropertyRequired": "Informe o imóvel ou referência",
+      "visitMinimumDuration": "Visitas devem ter duração mínima de 60 minutos",
+      "minimumAdvanceNotice": "Agende com pelo menos 3 horas de antecedência",
+      "outsideBusinessHours": "Agende dentro do horário comercial (08:00–18:00)"
     }
   },
   "eventDetail": {
@@ -80,6 +93,19 @@
       "description": "Tem certeza que deseja excluir \"{title}\"? Essa ação não pode ser desfeita.",
       "confirm": "Excluir",
       "cancel": "Cancelar"
+    },
+    "errors": {
+      "durationTooShort": "Informe ao menos 15 minutos",
+      "participantRequired": "Informe o nome da pessoa",
+      "phoneInvalid": "Informe um telefone válido",
+      "propertyRequired": "Selecione o imóvel",
+      "dateRequired": "Informe a data",
+      "timeRequired": "Informe o horário",
+      "titleRequired": "Informe o título do evento",
+      "customPropertyRequired": "Informe o imóvel ou referência",
+      "visitMinimumDuration": "Visitas devem ter duração mínima de 60 minutos",
+      "minimumAdvanceNotice": "Agende com pelo menos 3 horas de antecedência",
+      "outsideBusinessHours": "Agende dentro do horário comercial (08:00–18:00)"
     }
   }
 }

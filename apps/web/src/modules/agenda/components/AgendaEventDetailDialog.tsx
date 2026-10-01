@@ -20,7 +20,7 @@ import {
 } from '@mui/material'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useLocale, useTranslations } from 'next-intl'
-import { Fragment, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { Link } from '@/i18n/navigation'
@@ -29,7 +29,7 @@ import type { LocalizedHref } from '@shared/types/localized-href'
 
 import {
   agendaOtherPropertyValue,
-  agendaEventFormSchema,
+  buildAgendaEventFormSchema,
 } from '../schemas/agenda-event-form-schema'
 import type {
   AgendaEvent,
@@ -73,9 +73,17 @@ export function AgendaEventDetailDialog({
   const agendaT = useTranslations('agenda.dashboard')
   const [mode, setMode] = useState<'view' | 'edit'>('view')
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const editFormSchema = useMemo(
+    () =>
+      buildAgendaEventFormSchema((key) => t(`errors.${key}`), {
+        unchangedScheduleDate: event?.scheduledDate,
+        unchangedScheduleTime: event?.time,
+      }),
+    [event?.scheduledDate, event?.time, t],
+  )
   const { control, handleSubmit, reset } = useForm<AgendaEventFormValues>({
     defaultValues: event ? buildEditFormValues(event) : undefined,
-    resolver: zodResolver(agendaEventFormSchema),
+    resolver: zodResolver(editFormSchema),
   })
 
   const closeDialog = () => {
@@ -112,7 +120,7 @@ export function AgendaEventDetailDialog({
   return (
     <>
       <Dialog open={open} onClose={closeDialog} fullWidth maxWidth="sm">
-        <Box component="form" onSubmit={handleSubmit(submitEdit)}>
+        <Box component="form" noValidate onSubmit={handleSubmit(submitEdit)}>
           <DialogTitle sx={{ px: { xs: 2, md: 2.8 }, pb: 1.4, pt: 2.4 }}>
             <Stack
               direction="row"

@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   AgendaEventConflictError,
   AgendaEventNotFoundError,
+  AgendaMinimumAdvanceNoticeError,
+  AgendaOutsideBusinessHoursError,
   AgendaVisitMinimumDurationError,
 } from '../../../domain/errors'
 import type { AgendaEvent } from '../../../domain/agenda-event.entity'
@@ -54,7 +56,7 @@ describe('RescheduleAgendaEventUseCase', () => {
   it('mantém a duração original quando durationMinutes não é informado', async () => {
     const deps = createDeps()
     const useCase = new RescheduleAgendaEventUseCase(deps.agendaEventRepository)
-    const novoInicio = new Date('2026-10-02T10:00:00.000Z')
+    const novoInicio = new Date('2026-10-02T13:00:00.000Z')
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
@@ -65,14 +67,14 @@ describe('RescheduleAgendaEventUseCase', () => {
 
     expect(deps.agendaEventRepository.reschedule).toHaveBeenCalledWith('tenant-1', 'event-1', {
       inicio: novoInicio,
-      fim: new Date('2026-10-02T11:00:00.000Z'),
+      fim: new Date('2026-10-02T14:00:00.000Z'),
     })
   })
 
   it('usa a nova duração quando informada', async () => {
     const deps = createDeps()
     const useCase = new RescheduleAgendaEventUseCase(deps.agendaEventRepository)
-    const novoInicio = new Date('2026-10-02T10:00:00.000Z')
+    const novoInicio = new Date('2026-10-02T13:00:00.000Z')
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
@@ -84,7 +86,7 @@ describe('RescheduleAgendaEventUseCase', () => {
 
     expect(deps.agendaEventRepository.reschedule).toHaveBeenCalledWith('tenant-1', 'event-1', {
       inicio: novoInicio,
-      fim: new Date('2026-10-02T10:30:00.000Z'),
+      fim: new Date('2026-10-02T13:30:00.000Z'),
     })
   })
 
@@ -126,7 +128,7 @@ describe('RescheduleAgendaEventUseCase', () => {
         actorTenantId: 'tenant-1',
         actorPapel: 'AGENT',
         id: 'event-1',
-        inicio: new Date(),
+        inicio: new Date('2026-10-02T13:00:00.000Z'),
         durationMinutes: 30,
       }),
     ).rejects.toThrow(AgendaEventNotFoundError)
@@ -141,7 +143,7 @@ describe('RescheduleAgendaEventUseCase', () => {
         actorTenantId: 'tenant-1',
         actorPapel: 'AGENT',
         id: 'event-1',
-        inicio: new Date('2026-10-02T10:00:00.000Z'),
+        inicio: new Date('2026-10-02T13:00:00.000Z'),
       }),
     ).rejects.toThrow(AgendaEventConflictError)
     expect(deps.agendaEventRepository.reschedule).not.toHaveBeenCalled()
@@ -150,7 +152,7 @@ describe('RescheduleAgendaEventUseCase', () => {
   it('exclui o próprio evento da checagem de conflito', async () => {
     const deps = createDeps()
     const useCase = new RescheduleAgendaEventUseCase(deps.agendaEventRepository)
-    const novoInicio = new Date('2026-10-02T10:00:00.000Z')
+    const novoInicio = new Date('2026-10-02T13:00:00.000Z')
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
@@ -163,9 +165,57 @@ describe('RescheduleAgendaEventUseCase', () => {
       'tenant-1',
       'agent-1',
       novoInicio,
-      new Date('2026-10-02T11:00:00.000Z'),
+      new Date('2026-10-02T14:00:00.000Z'),
       'event-1',
     )
+  })
+
+  it('lança AgendaOutsideBusinessHoursError ao reagendar para fora do horário comercial', async () => {
+    const deps = createDeps()
+    const useCase = new RescheduleAgendaEventUseCase(deps.agendaEventRepository)
+
+    await expect(
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorPapel: 'AGENT',
+        id: 'event-1',
+        inicio: new Date('2026-10-02T22:00:00.000Z'),
+      }),
+    ).rejects.toThrow(AgendaOutsideBusinessHoursError)
+    expect(deps.agendaEventRepository.reschedule).not.toHaveBeenCalled()
+  })
+
+  it('lança AgendaMinimumAdvanceNoticeError ao reagendar para menos de 3 horas no futuro', async () => {
+    const deps = createDeps()
+    const useCase = new RescheduleAgendaEventUseCase(deps.agendaEventRepository)
+
+    await expect(
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorPapel: 'AGENT',
+        id: 'event-1',
+        inicio: new Date(Date.now() + 60 * 60_000),
+      }),
+    ).rejects.toThrow(AgendaMinimumAdvanceNoticeError)
+    expect(deps.agendaEventRepository.reschedule).not.toHaveBeenCalled()
+  })
+
+  it('não reaplica a checagem de janela quando o horário permanece o mesmo', async () => {
+    const deps = createDeps()
+    const useCase = new RescheduleAgendaEventUseCase(deps.agendaEventRepository)
+
+    await useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorPapel: 'AGENT',
+      id: 'event-1',
+      inicio: existingEvent.inicio,
+      durationMinutes: 90,
+    })
+
+    expect(deps.agendaEventRepository.reschedule).toHaveBeenCalledWith('tenant-1', 'event-1', {
+      inicio: existingEvent.inicio,
+      fim: new Date(existingEvent.inicio.getTime() + 90 * 60_000),
+    })
   })
 
   it('lança AgendaVisitMinimumDurationError ao reagendar uma VISIT para menos de 60min', async () => {
@@ -192,7 +242,7 @@ describe('RescheduleAgendaEventUseCase', () => {
       actorTenantId: 'tenant-1',
       actorPapel: 'AGENT',
       id: 'visit-1',
-      inicio: new Date('2026-10-02T10:00:00.000Z'),
+      inicio: new Date('2026-10-02T13:00:00.000Z'),
     })
 
     expect(deps.agendaEventRepository.reschedule).toHaveBeenCalled()

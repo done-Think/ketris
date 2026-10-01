@@ -155,7 +155,7 @@ describe('/api/agenda/events (integração)', () => {
       buildRequest('POST', 'http://localhost/api/agenda/events', {
         title: 'Reunião externa',
         propertyReference: 'Escritório do cliente',
-        start: '2026-10-06T10:00:00.000Z',
+        start: '2026-10-06T13:00:00.000Z',
         durationMinutes: 30,
         participantName: 'Marcos Lima',
         participantPhone: '(11) 98731-4402',
@@ -172,7 +172,7 @@ describe('/api/agenda/events (integração)', () => {
     const response = await POST(
       buildRequest('POST', 'http://localhost/api/agenda/events', {
         title: 'Evento sem imóvel',
-        start: '2026-10-06T10:00:00.000Z',
+        start: '2026-10-06T13:00:00.000Z',
         durationMinutes: 30,
         participantName: 'Marcos Lima',
         participantPhone: '(11) 98731-4402',
@@ -187,7 +187,7 @@ describe('/api/agenda/events (integração)', () => {
       buildRequest('POST', 'http://localhost/api/agenda/events', {
         title: 'Tentativa cross-tenant',
         propertyId: otherTenantPropertyId,
-        start: '2026-10-06T10:00:00.000Z',
+        start: '2026-10-06T13:00:00.000Z',
         durationMinutes: 30,
         participantName: 'Marcos Lima',
         participantPhone: '(11) 98731-4402',
@@ -242,7 +242,7 @@ describe('/api/agenda/events (integração)', () => {
         {
           title: 'Tentativa de locatário',
           propertyId,
-          start: '2026-10-06T10:00:00.000Z',
+          start: '2026-10-06T13:00:00.000Z',
           durationMinutes: 30,
           participantName: 'Locatário X',
           participantPhone: '11999990000',
