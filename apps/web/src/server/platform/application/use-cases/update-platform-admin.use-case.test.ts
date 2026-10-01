@@ -13,6 +13,7 @@ const admin: PlatformAdmin = {
   nome: 'Dono Ketris',
   email: 'dono@ketris.dev',
   senhaHash: 'hash-fake',
+  role: 'ADMIN',
   ativo: true,
 }
 
@@ -43,6 +44,22 @@ describe('UpdatePlatformAdminUseCase', () => {
     expect(deps.platformAdminRepository.update).toHaveBeenCalledWith(admin.id, {
       nome: 'Novo Nome',
       email: undefined,
+      role: undefined,
+      ativo: undefined,
+    })
+  })
+
+  it('reativa um platform admin inativo', async () => {
+    const deps = createDeps()
+    const useCase = new UpdatePlatformAdminUseCase(deps.platformAdminRepository)
+
+    await useCase.execute({ platformAdminId: admin.id, ativo: true })
+
+    expect(deps.platformAdminRepository.update).toHaveBeenCalledWith(admin.id, {
+      nome: undefined,
+      email: undefined,
+      role: undefined,
+      ativo: true,
     })
   })
 

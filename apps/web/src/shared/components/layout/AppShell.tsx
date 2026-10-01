@@ -44,6 +44,18 @@ import { DashboardNotificationsButton } from './DashboardNotificationsButton'
 const sidebarExpandedWidth = 240
 const sidebarCollapsedWidth = 72
 
+const marketplaceActionSx = {
+  minHeight: 32,
+  px: 1,
+  color: alpha.white[62],
+  fontSize: 11,
+  fontWeight: 600,
+  lineHeight: '16px',
+  textTransform: 'none',
+  '& .MuiButton-startIcon': { mr: 0.75 },
+  '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
+} as const
+
 const navigationItems: readonly AppShellNavItem[] = [
   {
     labelKey: 'dashboard',
@@ -154,113 +166,32 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
     })
   }
 
-  const renderSidebar = (collapsed = false, showCollapseControl = true) => {
-    const width = collapsed ? sidebarCollapsedWidth : sidebarExpandedWidth
-
-    return (
+  const renderSidebar = (collapsed = false, showCollapseControl = true) => (
+    <Stack
+      component="aside"
+      sx={{
+        width: collapsed ? sidebarCollapsedWidth : sidebarExpandedWidth,
+        height: '100%',
+        bgcolor: brand.graphite[600],
+        color: surface.lightText,
+        overflowX: 'hidden',
+        px: collapsed ? 1 : 2,
+        py: 2.5,
+        transition: 'width 180ms ease, padding 180ms ease',
+      }}
+    >
       <Stack
-        component="aside"
-        sx={{
-          width,
-          height: '100%',
-          bgcolor: brand.graphite[600],
-          color: surface.lightText,
-          overflowX: 'hidden',
-          px: collapsed ? 1 : 2,
-          py: 2.5,
-          transition: 'width 180ms ease, padding 180ms ease',
-        }}
+        alignItems="center"
+        justifyContent="center"
+        sx={{ height: collapsed ? 84 : 48, mb: 1.5, position: 'relative' }}
       >
         <AppLogo
           src={collapsed ? '/ketris-tab-icon.png' : ketrisLogoFooter}
           width={collapsed ? 40 : 120}
-          sx={{ alignSelf: 'center', mb: 1.5 }}
+          sx={{ left: '50%', position: 'absolute', top: 0, transform: 'translateX(-50%)' }}
         />
-
-        <Stack
-          component="nav"
-          spacing={0.5}
-          aria-label={t('ariaLabel')}
-          sx={{ mx: collapsed ? 0 : -0.5 }}
-        >
-          {status === 'loading'
-            ? navigationItems.map((item) => (
-                <Skeleton
-                  key={item.labelKey}
-                  variant="rounded"
-                  height={44}
-                  sx={{
-                    alignSelf: collapsed ? 'center' : 'stretch',
-                    bgcolor: alpha.white[8],
-                    borderRadius: `${radius.sm}px`,
-                    width: collapsed ? 44 : '100%',
-                  }}
-                />
-              ))
-            : visibleItems.map(({ labelKey, href, icon: Icon }) => {
-                const targetPath = href.split('?')[0]
-                const active = targetPath === activeTargetPath
-
-                return (
-                  <Box
-                    key={labelKey}
-                    component={Link}
-                    href={href}
-                    onClick={() => setMobileOpen(false)}
-                    aria-current={active ? 'page' : undefined}
-                    aria-label={collapsed ? t(labelKey) : undefined}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: collapsed ? 'center' : 'flex-start',
-                      gap: 1.5,
-                      minHeight: 44,
-                      px: collapsed ? 0 : 1.5,
-                      width: collapsed ? 44 : '100%',
-                      alignSelf: collapsed ? 'center' : 'stretch',
-                      borderLeft: '3px solid',
-                      borderColor: active ? 'primary.main' : 'transparent',
-                      borderRadius: `${radius.sm}px`,
-                      bgcolor: active ? alpha.white[8] : 'transparent',
-                      color: active ? surface.lightText : alpha.white[62],
-                      textDecoration: 'none',
-                      transition: 'background-color 160ms ease, color 160ms ease',
-                      '&:hover': {
-                        bgcolor: alpha.white[8],
-                        color: surface.lightText,
-                      },
-                    }}
-                  >
-                    <Icon
-                      sx={{
-                        fontSize: iconSize.md,
-                        color: active ? 'primary.main' : 'inherit',
-                      }}
-                    />
-                    <Typography
-                      sx={{
-                        display: collapsed ? 'none' : 'block',
-                        fontFamily: 'var(--font-inter), system-ui, -apple-system, sans-serif',
-                        fontSize: 14,
-                        fontWeight: active ? 600 : 500,
-                        lineHeight: '20px',
-                        letterSpacing: 0,
-                      }}
-                    >
-                      {t(labelKey)}
-                    </Typography>
-                  </Box>
-                )
-              })}
-        </Stack>
-
-        <Box sx={{ flexGrow: 1, minHeight: 2 }} />
-
         {showCollapseControl ? (
-          <Tooltip
-            title={collapsed ? t('expandNavigation') : t('collapseNavigation')}
-            placement="right"
-          >
+          <Tooltip title={collapsed ? t('expandNavigation') : t('collapseMenu')} placement="right">
             <Button
               aria-label={collapsed ? t('expandNavigation') : t('collapseNavigation')}
               onClick={toggleSidebarCollapsed}
@@ -274,88 +205,169 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
                 />
               }
               sx={{
-                alignSelf: collapsed ? 'center' : 'stretch',
-                justifyContent: collapsed ? 'center' : 'flex-start',
-                minWidth: collapsed ? 44 : 0,
-                minHeight: 44,
-                mb: 1.5,
-                px: collapsed ? 0 : 1.5,
+                position: 'absolute',
+                right: collapsed ? '50%' : 0,
+                top: collapsed ? 44 : 2,
+                transform: collapsed ? 'translateX(50%)' : 'none',
+                minWidth: 36,
+                minHeight: 36,
+                px: 0,
                 color: alpha.white[62],
-                fontSize: 13,
-                fontWeight: 600,
-                textTransform: 'none',
-                '& .MuiButton-startIcon': { ml: 0, mr: collapsed ? 0 : 1.25 },
+                '& .MuiButton-startIcon': { m: 0 },
                 '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
               }}
-            >
-              {collapsed ? null : t('collapseMenu')}
-            </Button>
+            />
           </Tooltip>
         ) : null}
+      </Stack>
 
-        <Stack
-          direction={collapsed ? 'column' : 'row'}
-          spacing={1.3}
-          alignItems="center"
-          sx={{ mt: 'auto', pt: 2, borderTop: '1px solid', borderColor: alpha.white[8] }}
+      <Stack
+        component="nav"
+        spacing={0.5}
+        aria-label={t('ariaLabel')}
+        sx={{ mx: collapsed ? 0 : -0.5 }}
+      >
+        {status === 'loading'
+          ? navigationItems.map((item) => (
+              <Skeleton
+                key={item.labelKey}
+                variant="rounded"
+                height={44}
+                sx={{
+                  alignSelf: collapsed ? 'center' : 'stretch',
+                  bgcolor: alpha.white[8],
+                  borderRadius: `${radius.sm}px`,
+                  width: collapsed ? 44 : '100%',
+                }}
+              />
+            ))
+          : visibleItems.map(({ labelKey, href, icon: Icon }) => {
+              const targetPath = href.split('?')[0]
+              const active = targetPath === activeTargetPath
+
+              return (
+                <Box
+                  key={labelKey}
+                  component={Link}
+                  href={href}
+                  onClick={() => setMobileOpen(false)}
+                  aria-current={active ? 'page' : undefined}
+                  aria-label={collapsed ? t(labelKey) : undefined}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: collapsed ? 'center' : 'flex-start',
+                    gap: 1.5,
+                    minHeight: 44,
+                    px: collapsed ? 0 : 1.5,
+                    width: collapsed ? 44 : '100%',
+                    alignSelf: collapsed ? 'center' : 'stretch',
+                    borderLeft: '3px solid',
+                    borderColor: active ? 'primary.main' : 'transparent',
+                    borderRadius: `${radius.sm}px`,
+                    bgcolor: active ? alpha.white[8] : 'transparent',
+                    color: active ? surface.lightText : alpha.white[62],
+                    textDecoration: 'none',
+                    transition: 'background-color 160ms ease, color 160ms ease',
+                    '&:hover': {
+                      bgcolor: alpha.white[8],
+                      color: surface.lightText,
+                    },
+                  }}
+                >
+                  <Icon
+                    sx={{
+                      fontSize: iconSize.md,
+                      color: active ? 'primary.main' : 'inherit',
+                    }}
+                  />
+                  <Typography
+                    sx={{
+                      display: collapsed ? 'none' : 'block',
+                      fontFamily: 'var(--font-inter), system-ui, -apple-system, sans-serif',
+                      fontSize: 14,
+                      fontWeight: active ? 600 : 500,
+                      lineHeight: '20px',
+                      letterSpacing: 0,
+                    }}
+                  >
+                    {t(labelKey)}
+                  </Typography>
+                </Box>
+              )
+            })}
+      </Stack>
+
+      <Box sx={{ flexGrow: 1, minHeight: 2 }} />
+
+      <Tooltip title={t('backToMarketplace')} placement="right">
+        <Button
+          component={Link}
+          href="/"
+          aria-label={t('backToMarketplace')}
+          startIcon={<LogoutOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+          sx={{
+            alignSelf: collapsed ? 'center' : 'stretch',
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            minWidth: collapsed ? 44 : 0,
+            ...marketplaceActionSx,
+            minHeight: 40,
+            mb: 1.5,
+            px: collapsed ? 0 : 1.5,
+            '& .MuiButton-startIcon': { ml: 0, mr: collapsed ? 0 : 0.75 },
+          }}
         >
-          <ButtonBase
-            aria-label={t('editProfile')}
-            onClick={() => setProfileEditorOpen(true)}
-            disabled={!session?.user?.id}
+          {collapsed ? null : t('backToMarketplace')}
+        </Button>
+      </Tooltip>
+
+      <Stack
+        direction={collapsed ? 'column' : 'row'}
+        spacing={1.3}
+        alignItems="center"
+        sx={{ mt: 'auto', pt: 2, borderTop: '1px solid', borderColor: alpha.white[8] }}
+      >
+        <ButtonBase
+          aria-label={t('editProfile')}
+          onClick={() => setProfileEditorOpen(true)}
+          disabled={!session?.user?.id}
+          sx={{
+            display: 'flex',
+            flexGrow: collapsed ? 0 : 1,
+            alignItems: 'center',
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            gap: 1.3,
+            minWidth: 0,
+            borderRadius: `${radius.sm}px`,
+            p: 0.5,
+            '&:hover': { bgcolor: alpha.white[8] },
+          }}
+        >
+          <Avatar
+            src={session?.user?.image ?? undefined}
+            alt={userName}
             sx={{
-              display: 'flex',
-              flexGrow: collapsed ? 0 : 1,
-              alignItems: 'center',
-              justifyContent: collapsed ? 'center' : 'flex-start',
-              gap: 1.3,
-              minWidth: 0,
-              borderRadius: `${radius.sm}px`,
-              p: 0.5,
-              '&:hover': { bgcolor: alpha.white[8] },
+              width: 38,
+              height: 38,
+              bgcolor: 'primary.main',
+              fontSize: 11,
+              fontWeight: 800,
             }}
           >
-            <Avatar
-              src={session?.user?.image ?? undefined}
-              alt={userName}
-              sx={{
-                width: 38,
-                height: 38,
-                bgcolor: 'primary.main',
-                fontSize: 11,
-                fontWeight: 800,
-              }}
-            >
-              {userInitials}
-            </Avatar>
-            <Box sx={{ display: collapsed ? 'none' : 'block', minWidth: 0, textAlign: 'left' }}>
-              <Typography noWrap sx={{ fontSize: 13, fontWeight: 800 }}>
-                {userName}
-              </Typography>
-              <Typography noWrap sx={{ color: alpha.white[56], fontSize: 10.5 }}>
-                {userContext}
-              </Typography>
-            </Box>
-          </ButtonBase>
-          <Tooltip title={t('backToMarketplace')}>
-            <IconButton
-              component={Link}
-              href="/"
-              aria-label={t('backToMarketplace')}
-              sx={{
-                width: 32,
-                height: 32,
-                color: alpha.white[62],
-                '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
-              }}
-            >
-              <LogoutOutlinedIcon sx={{ fontSize: iconSize.sm }} />
-            </IconButton>
-          </Tooltip>
-        </Stack>
+            {userInitials}
+          </Avatar>
+          <Box sx={{ display: collapsed ? 'none' : 'block', minWidth: 0, textAlign: 'left' }}>
+            <Typography noWrap sx={{ fontSize: 13, fontWeight: 800 }}>
+              {userName}
+            </Typography>
+            <Typography noWrap sx={{ color: alpha.white[56], fontSize: 10.5 }}>
+              {userContext}
+            </Typography>
+          </Box>
+        </ButtonBase>
       </Stack>
-    )
-  }
+    </Stack>
+  )
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: surface.app }}>
