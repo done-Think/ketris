@@ -216,56 +216,65 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
             : visibleItems.map(({ labelKey, href, icon: Icon }) => {
                 const targetPath = href.split('?')[0]
                 const active = targetPath === activeTargetPath
+                const label = t(labelKey)
 
                 return (
-                  <Box
+                  <Tooltip
                     key={labelKey}
-                    component={Link}
-                    href={href}
-                    onClick={() => setMobileOpen(false)}
-                    aria-current={active ? 'page' : undefined}
-                    aria-label={collapsed ? t(labelKey) : undefined}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: collapsed ? 'center' : 'flex-start',
-                      gap: 1.5,
-                      minHeight: 44,
-                      px: collapsed ? 0 : 1.5,
-                      width: collapsed ? 44 : '100%',
-                      alignSelf: collapsed ? 'center' : 'stretch',
-                      borderLeft: '3px solid',
-                      borderColor: active ? 'primary.main' : 'transparent',
-                      borderRadius: `${radius.sm}px`,
-                      bgcolor: active ? alpha.white[8] : 'transparent',
-                      color: active ? surface.lightText : alpha.white[62],
-                      textDecoration: 'none',
-                      transition: 'background-color 160ms ease, color 160ms ease',
-                      '&:hover': {
-                        bgcolor: alpha.white[8],
-                        color: surface.lightText,
-                      },
-                    }}
+                    title={collapsed ? label : ''}
+                    placement="right"
+                    disableHoverListener={!collapsed}
+                    disableFocusListener={!collapsed}
+                    disableTouchListener={!collapsed}
                   >
-                    <Icon
+                    <Box
+                      component={Link}
+                      href={href}
+                      onClick={() => setMobileOpen(false)}
+                      aria-current={active ? 'page' : undefined}
+                      aria-label={collapsed ? label : undefined}
                       sx={{
-                        fontSize: iconSize.md,
-                        color: active ? 'primary.main' : 'inherit',
-                      }}
-                    />
-                    <Typography
-                      sx={{
-                        display: collapsed ? 'none' : 'block',
-                        fontFamily: 'var(--font-inter), system-ui, -apple-system, sans-serif',
-                        fontSize: 14,
-                        fontWeight: active ? 600 : 500,
-                        lineHeight: '20px',
-                        letterSpacing: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: collapsed ? 'center' : 'flex-start',
+                        gap: 1.5,
+                        minHeight: 44,
+                        px: collapsed ? 0 : 1.5,
+                        width: collapsed ? 44 : '100%',
+                        alignSelf: collapsed ? 'center' : 'stretch',
+                        borderLeft: '3px solid',
+                        borderColor: active ? 'primary.main' : 'transparent',
+                        borderRadius: `${radius.sm}px`,
+                        bgcolor: active ? alpha.white[8] : 'transparent',
+                        color: active ? surface.lightText : alpha.white[62],
+                        textDecoration: 'none',
+                        transition: 'background-color 160ms ease, color 160ms ease',
+                        '&:hover': {
+                          bgcolor: alpha.white[8],
+                          color: surface.lightText,
+                        },
                       }}
                     >
-                      {t(labelKey)}
-                    </Typography>
-                  </Box>
+                      <Icon
+                        sx={{
+                          fontSize: iconSize.md,
+                          color: active ? 'primary.main' : 'inherit',
+                        }}
+                      />
+                      <Typography
+                        sx={{
+                          display: collapsed ? 'none' : 'block',
+                          fontFamily: 'var(--font-inter), system-ui, -apple-system, sans-serif',
+                          fontSize: 14,
+                          fontWeight: active ? 600 : 500,
+                          lineHeight: '20px',
+                          letterSpacing: 0,
+                        }}
+                      >
+                        {label}
+                      </Typography>
+                    </Box>
+                  </Tooltip>
                 )
               })}
         </Stack>

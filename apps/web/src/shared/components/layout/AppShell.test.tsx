@@ -273,6 +273,17 @@ describe('AppShell collapsible desktop navigation', () => {
 
     expect(screen.getAllByText('Agenda').length).toBeGreaterThan(0)
   })
+
+  it('shows translated tooltips for collapsed navigation icons', async () => {
+    const user = userEvent.setup()
+
+    renderShell()
+
+    await user.click(screen.getByRole('button', { name: /recolher navega/i }))
+    await user.hover(screen.getByRole('link', { name: /meus im/i }))
+
+    expect(await screen.findByRole('tooltip', { name: /meus im/i })).toBeVisible()
+  })
 })
 
 describe('AppShell marketplace logout shortcut', () => {
