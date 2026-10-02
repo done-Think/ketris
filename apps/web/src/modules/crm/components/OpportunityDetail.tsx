@@ -24,6 +24,7 @@ import type {
 import type {
   OpportunityActivitiesPanelProps,
   OpportunityDetailProps,
+  OpportunityNextAction,
 } from '../types/opportunity-detail'
 import { ArchiveOpportunityDialog } from './opportunity-detail/ArchiveOpportunityDialog'
 import { DetailLoading } from './opportunity-detail/DetailLoading'
@@ -66,6 +67,10 @@ function buildEditValues(opportunity: Opportunity): OpportunityEditFormValues {
   }
 }
 
+function addDays(days: number): string {
+  return new Date(Date.now() + days * 86_400_000).toISOString()
+}
+
 export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
   const t = useTranslations('crm.opportunityDetail')
   const pipelineT = useTranslations('crm.pipeline')
@@ -88,6 +93,30 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
 
     const items = [
       {
+        key: 'proposal-sent',
+        title: t('proposalSentActivityTitle'),
+        detail: t('proposalSentActivityDetail'),
+        occurredAt: addDays(-1),
+      },
+      {
+        key: 'follow-up',
+        title: t('followUpActivityTitle'),
+        detail: t('followUpActivityDetail'),
+        occurredAt: addDays(-2),
+      },
+      {
+        key: 'property-linked',
+        title: t('propertyLinkedActivityTitle'),
+        detail: t('propertyLinkedActivityDetail'),
+        occurredAt: addDays(-3),
+      },
+      {
+        key: 'documents-requested',
+        title: t('documentsRequestedActivityTitle'),
+        detail: t('documentsRequestedActivityDetail'),
+        occurredAt: addDays(-4),
+      },
+      {
         key: 'created',
         title: t('createdActivityTitle'),
         detail: t('createdActivityDetail'),
@@ -108,6 +137,110 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
 
     return items
   }, [opportunity, pipelineT, t])
+
+  const nextActions = useMemo<OpportunityNextAction[]>(() => {
+    if (!opportunity) return []
+
+    if (opportunity.status === 'RASCUNHO') {
+      return [
+        {
+          key: 'complete-draft',
+          title: t('nextActions.completeDraft.title'),
+          detail: t('nextActions.completeDraft.detail'),
+          dueAt: addDays(1),
+          tone: 'warning',
+        },
+        {
+          key: 'send-proposal',
+          title: t('nextActions.sendProposal.title'),
+          detail: t('nextActions.sendProposal.detail'),
+          dueAt: addDays(2),
+          tone: 'info',
+        },
+      ]
+    }
+
+    if (opportunity.status === 'ENVIADA') {
+      return [
+        {
+          key: 'proposal-follow-up',
+          title: t('nextActions.proposalFollowUp.title'),
+          detail: t('nextActions.proposalFollowUp.detail'),
+          dueAt: addDays(1),
+          tone: 'warning',
+        },
+        {
+          key: 'validate-documents',
+          title: t('nextActions.validateDocuments.title'),
+          detail: t('nextActions.validateDocuments.detail'),
+          dueAt: addDays(2),
+          tone: 'info',
+        },
+        {
+          key: 'schedule-visit',
+          title: t('nextActions.scheduleVisit.title'),
+          detail: t('nextActions.scheduleVisit.detail'),
+          dueAt: addDays(3),
+          tone: 'info',
+        },
+        {
+          key: 'align-owner-feedback',
+          title: t('nextActions.alignOwnerFeedback.title'),
+          detail: t('nextActions.alignOwnerFeedback.detail'),
+          dueAt: addDays(4),
+          tone: 'info',
+        },
+      ]
+    }
+
+    if (opportunity.status === 'EM_NEGOCIACAO') {
+      return [
+        {
+          key: 'review-counteroffer',
+          title: t('nextActions.reviewCounteroffer.title'),
+          detail: t('nextActions.reviewCounteroffer.detail'),
+          dueAt: addDays(1),
+          tone: 'warning',
+        },
+        {
+          key: 'align-terms',
+          title: t('nextActions.alignTerms.title'),
+          detail: t('nextActions.alignTerms.detail'),
+          dueAt: addDays(2),
+          tone: 'info',
+        },
+      ]
+    }
+
+    if (opportunity.status === 'ACEITA') {
+      return [
+        {
+          key: 'prepare-contract',
+          title: t('nextActions.prepareContract.title'),
+          detail: t('nextActions.prepareContract.detail'),
+          dueAt: addDays(1),
+          tone: 'success',
+        },
+        {
+          key: 'confirm-signature',
+          title: t('nextActions.confirmSignature.title'),
+          detail: t('nextActions.confirmSignature.detail'),
+          dueAt: addDays(3),
+          tone: 'info',
+        },
+      ]
+    }
+
+    return [
+      {
+        key: 'register-loss-reason',
+        title: t('nextActions.registerLossReason.title'),
+        detail: t('nextActions.registerLossReason.detail'),
+        dueAt: addDays(1),
+        tone: 'warning',
+      },
+    ]
+  }, [opportunity, t])
 
   if (opportunityQuery.isLoading) return <DetailLoading />
 
@@ -216,21 +349,30 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', p: 3.5, '& h1, & h2': { letterSpacing: '0 !important' } }}>
-      <OpportunityDetailHeader opportunity={opportunity} stage={stage} property={property} />
+    <Box
+      sx={{
+        display: 'flex',
+        minHeight: '100vh',
+        flexDirection: 'column',
+        p: 3.5,
+        '& h1, & h2': { letterSpacing: '0 !important' },
+      }}
+    >
+      <OpportunityDetailHeader opportunity={opportunity} stage={stage} />
 
       <Box
         sx={{
           display: 'grid',
           gridTemplateColumns: {
             xs: 'minmax(0, 1fr)',
-            lg: 'minmax(0, 58fr) minmax(320px, 42fr)',
+            lg: 'repeat(3, minmax(0, 1fr))',
           },
           gap: 2,
-          alignItems: 'start',
+          alignItems: 'stretch',
+          flex: { lg: 1 },
         }}
       >
-        <Stack spacing={2} minWidth={0}>
+        <Stack spacing={2} minWidth={0} sx={{ height: '100%' }}>
           <OpportunityContactPanel opportunity={opportunity} />
           <OpportunityPropertyPanel
             opportunity={opportunity}
@@ -242,20 +384,25 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
           />
         </Stack>
 
-        <Stack spacing={2} minWidth={0}>
+        <Stack spacing={2} minWidth={0} sx={{ height: '100%' }}>
+          <OpportunityNextActionsPanel actions={nextActions} />
+        </Stack>
+
+        <Stack spacing={2} minWidth={0} sx={{ height: { lg: '100%' } }}>
           <OpportunityActivitiesPanel activities={activities} />
-          <OpportunityNextActionsPanel />
         </Stack>
       </Box>
 
-      <OpportunityActionsFooter
-        opportunity={opportunity}
-        isMutating={isMutating}
-        onStageMenuOpen={(event) => setStageMenuAnchor(event.currentTarget)}
-        onDiscardLead={() => setNextStatus('RECUSADA')}
-        onEdit={openEditDialog}
-        onArchive={() => setArchiveOpen(true)}
-      />
+      <Box sx={{ mt: 'auto', pt: 2 }}>
+        <OpportunityActionsFooter
+          opportunity={opportunity}
+          isMutating={isMutating}
+          onStageMenuOpen={(event) => setStageMenuAnchor(event.currentTarget)}
+          onDiscardLead={() => setNextStatus('RECUSADA')}
+          onEdit={openEditDialog}
+          onArchive={() => setArchiveOpen(true)}
+        />
+      </Box>
 
       <OpportunityStageMenu
         anchorEl={stageMenuAnchor}

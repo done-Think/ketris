@@ -25,7 +25,6 @@ export type OpportunityStagePresentation = OpportunityStage
 export type OpportunityDetailHeaderProps = {
   opportunity: Opportunity
   stage: OpportunityStagePresentation
-  property?: PublicPropertyDetail
 }
 
 export type OpportunityContactPanelProps = {
@@ -43,6 +42,18 @@ export type OpportunityPropertyPanelProps = {
 
 export type OpportunityActivitiesPanelProps = {
   activities: OpportunityActivity[]
+}
+
+export type OpportunityNextAction = {
+  key: string
+  title: string
+  detail: string
+  dueAt: string
+  tone: 'info' | 'warning' | 'success'
+}
+
+export type OpportunityNextActionsPanelProps = {
+  actions: OpportunityNextAction[]
 }
 
 export type OpportunityActionsFooterProps = {
