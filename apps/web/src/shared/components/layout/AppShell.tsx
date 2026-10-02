@@ -28,13 +28,16 @@ import {
   Typography,
 } from '@mui/material'
 import { useSession } from 'next-auth/react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import { useRouter } from 'next/navigation'
 
+import { getLocalizedPathname } from '@/i18n/locale-prefix'
 import { Link, usePathname } from '@/i18n/navigation'
 import { CrmAccessBoundary } from '@modules/crm/components/CrmAccessBoundary'
 import { EditCurrentUserProfileDialog } from '@modules/auth/components/EditCurrentUserProfileDialog'
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
+import { clearClientSession } from '@shared/lib/auth/clear-client-session'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 import type { AppShellNavItem, AppShellProps } from '@shared/types/app-shell'
 import { getInitials } from '@shared/utils/get-initials'
@@ -43,18 +46,6 @@ import { DashboardNotificationsButton } from './DashboardNotificationsButton'
 
 const sidebarExpandedWidth = 240
 const sidebarCollapsedWidth = 72
-
-const marketplaceActionSx = {
-  minHeight: 32,
-  px: 1,
-  color: alpha.white[62],
-  fontSize: 11,
-  fontWeight: 600,
-  lineHeight: '16px',
-  textTransform: 'none',
-  '& .MuiButton-startIcon': { mr: 0.75 },
-  '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
-} as const
 
 const navigationItems: readonly AppShellNavItem[] = [
   {
@@ -115,10 +106,13 @@ const navigationItems: readonly AppShellNavItem[] = [
 
 export function AppShell({ children, allowLocalDashboardPreview = false }: AppShellProps) {
   const t = useTranslations('common.appShell')
+  const locale = useLocale()
   const pathname = usePathname()
+  const router = useRouter()
   const { data: session, status, update } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [profileEditorOpen, setProfileEditorOpen] = useState(false)
+  const [isSigningOut, setIsSigningOut] = useState(false)
   const sidebarCollapsed = useSidebarPreferencesStore((state) => state.isCollapsed)
   const toggleSidebarCollapsed = useSidebarPreferencesStore((state) => state.toggleCollapsed)
   const isPublicCrmRoute = pathname === '/crm' || pathname === '/crm/contacts'
@@ -164,6 +158,16 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
         image: updatedUser.avatarUrl ?? undefined,
       },
     })
+  }
+
+  async function handleLogoutToMarketplace() {
+    if (isSigningOut) return
+
+    setIsSigningOut(true)
+    setMobileOpen(false)
+    await clearClientSession()
+    router.replace(getLocalizedPathname('/', locale))
+    router.refresh()
   }
 
   const renderSidebar = (collapsed = false, showCollapseControl = true) => (
@@ -246,80 +250,61 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
               const active = targetPath === activeTargetPath
 
               return (
-                <Box
+                <Tooltip
                   key={labelKey}
-                  component={Link}
-                  href={href}
-                  onClick={() => setMobileOpen(false)}
-                  aria-current={active ? 'page' : undefined}
-                  aria-label={collapsed ? t(labelKey) : undefined}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: collapsed ? 'center' : 'flex-start',
-                    gap: 1.5,
-                    minHeight: 44,
-                    px: collapsed ? 0 : 1.5,
-                    width: collapsed ? 44 : '100%',
-                    alignSelf: collapsed ? 'center' : 'stretch',
-                    borderLeft: '3px solid',
-                    borderColor: active ? 'primary.main' : 'transparent',
-                    borderRadius: `${radius.sm}px`,
-                    bgcolor: active ? alpha.white[8] : 'transparent',
-                    color: active ? surface.lightText : alpha.white[62],
-                    textDecoration: 'none',
-                    transition: 'background-color 160ms ease, color 160ms ease',
-                    '&:hover': {
-                      bgcolor: alpha.white[8],
-                      color: surface.lightText,
-                    },
-                  }}
+                  title={collapsed ? t(labelKey) : ''}
+                  placement="right"
+                  disableHoverListener={!collapsed}
+                  disableFocusListener={!collapsed}
+                  disableTouchListener={!collapsed}
                 >
-                  <Icon
+                  <Box
+                    component={Link}
+                    href={href}
+                    onClick={() => setMobileOpen(false)}
+                    aria-current={active ? 'page' : undefined}
+                    aria-label={collapsed ? t(labelKey) : undefined}
                     sx={{
-                      fontSize: iconSize.md,
-                      color: active ? 'primary.main' : 'inherit',
-                    }}
-                  />
-                  <Typography
-                    sx={{
-                      display: collapsed ? 'none' : 'block',
-                      fontFamily: 'var(--font-inter), system-ui, -apple-system, sans-serif',
-                      fontSize: 14,
-                      fontWeight: active ? 600 : 500,
-                      lineHeight: '20px',
-                      letterSpacing: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: collapsed ? 'center' : 'flex-start',
+                      gap: 1.5,
+                      minHeight: 44,
+                      px: collapsed ? 0 : 1.5,
+                      width: collapsed ? 44 : '100%',
+                      alignSelf: collapsed ? 'center' : 'stretch',
+                      borderLeft: '3px solid',
+                      borderColor: active ? 'primary.main' : 'transparent',
+                      borderRadius: `${radius.sm}px`,
+                      bgcolor: active ? alpha.white[8] : 'transparent',
+                      color: active ? surface.lightText : alpha.white[62],
+                      textDecoration: 'none',
+                      transition: 'background-color 160ms ease, color 160ms ease',
+                      '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
                     }}
                   >
-                    {t(labelKey)}
-                  </Typography>
-                </Box>
+                    <Icon
+                      sx={{ fontSize: iconSize.md, color: active ? 'primary.main' : 'inherit' }}
+                    />
+                    <Typography
+                      sx={{
+                        display: collapsed ? 'none' : 'block',
+                        fontFamily: 'var(--font-inter), system-ui, -apple-system, sans-serif',
+                        fontSize: 14,
+                        fontWeight: active ? 600 : 500,
+                        lineHeight: '20px',
+                        letterSpacing: 0,
+                      }}
+                    >
+                      {t(labelKey)}
+                    </Typography>
+                  </Box>
+                </Tooltip>
               )
             })}
       </Stack>
 
       <Box sx={{ flexGrow: 1, minHeight: 2 }} />
-
-      <Tooltip title={t('backToMarketplace')} placement="right">
-        <Button
-          component={Link}
-          href="/"
-          aria-label={t('backToMarketplace')}
-          startIcon={<LogoutOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-          sx={{
-            alignSelf: collapsed ? 'center' : 'stretch',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            minWidth: collapsed ? 44 : 0,
-            ...marketplaceActionSx,
-            minHeight: 40,
-            mb: 1.5,
-            px: collapsed ? 0 : 1.5,
-            '& .MuiButton-startIcon': { ml: 0, mr: collapsed ? 0 : 0.75 },
-          }}
-        >
-          {collapsed ? null : t('backToMarketplace')}
-        </Button>
-      </Tooltip>
 
       <Stack
         direction={collapsed ? 'column' : 'row'}
@@ -365,6 +350,21 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
             </Typography>
           </Box>
         </ButtonBase>
+        <Tooltip title={t('logoutToMarketplace')}>
+          <IconButton
+            aria-label={t('logoutToMarketplace')}
+            disabled={isSigningOut}
+            onClick={handleLogoutToMarketplace}
+            sx={{
+              width: 32,
+              height: 32,
+              color: alpha.white[62],
+              '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
+            }}
+          >
+            <LogoutOutlinedIcon sx={{ fontSize: iconSize.sm }} />
+          </IconButton>
+        </Tooltip>
       </Stack>
     </Stack>
   )
@@ -473,7 +473,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           pt: { xs: '64px', md: 0 },
         }}
       >
-        {isPublicCrmRoute || isLocalDashboardPreview ? (
+        {isSigningOut || isPublicCrmRoute || isLocalDashboardPreview ? (
           children
         ) : (
           <CrmAccessBoundary>{children}</CrmAccessBoundary>
