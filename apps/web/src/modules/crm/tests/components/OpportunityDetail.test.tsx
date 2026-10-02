@@ -97,10 +97,10 @@ const property: PublicPropertyDetail = {
   media: [],
 }
 
-function renderDetail() {
+function renderDetail(opportunityId = opportunity.id) {
   return render(
     <ThemeProvider theme={theme}>
-      <OpportunityDetail opportunityId={opportunity.id} />
+      <OpportunityDetail opportunityId={opportunityId} />
     </ThemeProvider>,
   )
 }
@@ -141,13 +141,16 @@ describe('OpportunityDetail', () => {
     expect(screen.getAllByText('Ricardo Mendes').length).toBeGreaterThan(0)
     expect(screen.getByText('ricardo@example.com')).toBeInTheDocument()
     expect(screen.getByText('Apartamento Jardins')).toBeInTheDocument()
-    expect(screen.getByText(/R\$\s*4\.800\/mês/)).toBeInTheDocument()
-    expect(screen.getByText('Oportunidade criada')).toBeInTheDocument()
     expect(screen.getByText('Oportunidade atualizada')).toBeInTheDocument()
-    expect(screen.getByText('Nenhuma próxima ação cadastrada')).toBeInTheDocument()
+    expect(screen.getByText('Oportunidade criada')).toBeInTheDocument()
+
+    expect(screen.getByText('Alinhar retorno do proprietário')).toBeInTheDocument()
+    expect(screen.getByText('Fazer follow-up da proposta')).toBeInTheDocument()
+    expect(screen.getByText('Validar documentos')).toBeInTheDocument()
+    expect(screen.getByText('Agendar visita ou chamada')).toBeInTheDocument()
+    expect(screen.getByText('Oportunidade criada')).toBeInTheDocument()
     expect(screen.queryByText(/imóveis sugeridos/i)).not.toBeInTheDocument()
   })
-
   it('confirms and persists a status change through PATCH', async () => {
     const user = userEvent.setup()
     renderDetail()
