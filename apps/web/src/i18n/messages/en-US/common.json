@@ -26,7 +26,7 @@
     "expandNavigation": "Expand navigation",
     "defaultUserName": "Ketris Team",
     "defaultUserContext": "Admin dashboard",
-    "backToMarketplace": "Back to marketplace",
+    "logoutToMarketplace": "Sign out and return to marketplace",
     "dashboard": "Dashboard",
     "agencyOverview": "Agency Overview",
     "pipeline": "Pipeline",

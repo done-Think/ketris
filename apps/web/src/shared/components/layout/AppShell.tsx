@@ -4,13 +4,16 @@ import { useMemo, useState } from 'react'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import { Box, Drawer, IconButton, Stack, Tooltip } from '@mui/material'
 import { useSession } from 'next-auth/react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import { useRouter } from 'next/navigation'
 
+import { getLocalizedPathname } from '@/i18n/locale-prefix'
 import { usePathname } from '@/i18n/navigation'
 import { CrmAccessBoundary } from '@modules/crm/components/CrmAccessBoundary'
 import { EditCurrentUserProfileDialog } from '@modules/auth/components/EditCurrentUserProfileDialog'
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
+import { clearClientSession } from '@shared/lib/auth/clear-client-session'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 import type { AppShellProps } from '@shared/types/app-shell'
 import { getInitials } from '@shared/utils/get-initials'
@@ -21,10 +24,13 @@ import { DashboardNotificationsButton } from './DashboardNotificationsButton'
 
 export function AppShell({ children, allowLocalDashboardPreview = false }: AppShellProps) {
   const t = useTranslations('common.appShell')
+  const locale = useLocale()
   const pathname = usePathname()
+  const router = useRouter()
   const { data: session, status, update } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [profileEditorOpen, setProfileEditorOpen] = useState(false)
+  const [isSigningOut, setIsSigningOut] = useState(false)
   const sidebarCollapsed = useSidebarPreferencesStore((state) => state.isCollapsed)
   const toggleSidebarCollapsed = useSidebarPreferencesStore((state) => state.toggleCollapsed)
   const isPublicCrmRoute = pathname === '/crm' || pathname === '/crm/contacts'
@@ -69,6 +75,16 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
     })
   }
 
+  async function handleLogoutToMarketplace() {
+    if (isSigningOut) return
+
+    setIsSigningOut(true)
+    setMobileOpen(false)
+    await clearClientSession()
+    router.replace(getLocalizedPathname('/', locale))
+    router.refresh()
+  }
+
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: surface.app }}>
       <Box
@@ -92,9 +108,11 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           userInitials={userInitials}
           userImage={session?.user?.image ?? undefined}
           canEditProfile={!!session?.user?.id}
+          isSigningOut={isSigningOut}
           onNavItemClick={() => setMobileOpen(false)}
           onEditProfile={() => setProfileEditorOpen(true)}
           onToggleCollapsed={toggleSidebarCollapsed}
+          onLogoutToMarketplace={handleLogoutToMarketplace}
         />
       </Box>
 
@@ -168,9 +186,11 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           userInitials={userInitials}
           userImage={session?.user?.image ?? undefined}
           canEditProfile={!!session?.user?.id}
+          isSigningOut={isSigningOut}
           onNavItemClick={() => setMobileOpen(false)}
           onEditProfile={() => setProfileEditorOpen(true)}
           onToggleCollapsed={toggleSidebarCollapsed}
+          onLogoutToMarketplace={handleLogoutToMarketplace}
         />
       </Drawer>
 
@@ -201,7 +221,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           pt: { xs: '64px', md: 0 },
         }}
       >
-        {isPublicCrmRoute || isLocalDashboardPreview ? (
+        {isSigningOut || isPublicCrmRoute || isLocalDashboardPreview ? (
           children
         ) : (
           <CrmAccessBoundary>{children}</CrmAccessBoundary>

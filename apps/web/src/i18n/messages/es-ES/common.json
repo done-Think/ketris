@@ -26,7 +26,7 @@
     "expandNavigation": "Expandir navegación",
     "defaultUserName": "Equipo Ketris",
     "defaultUserContext": "Panel administrativo",
-    "backToMarketplace": "Volver al marketplace",
+    "logoutToMarketplace": "Cerrar sesión y volver al marketplace",
     "dashboard": "Dashboard",
     "agencyOverview": "Visión Inmob.",
     "pipeline": "Pipeline",
