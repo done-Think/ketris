@@ -22,6 +22,7 @@ const commonDetailsFields = {
   acceptTerms: z.boolean().refine((accepted) => accepted, {
     message: 'Aceite os termos para continuar',
   }),
+  companyName: z.string().trim().optional(),
 }
 
 export const registrationDetailsSchema = z
@@ -30,6 +31,7 @@ export const registrationDetailsSchema = z
       ...commonDetailsFields,
       profile: z.literal('corretor'),
       creci: z.string().trim().min(1, 'Informe seu CRECI'),
+      agencyId: z.string().min(1).optional(),
     }),
     z.object({
       ...commonDetailsFields,

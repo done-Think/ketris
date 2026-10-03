@@ -10,9 +10,9 @@ import { OpportunityCard } from '../OpportunityCard'
 const pipelineBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
 const pipelineStageLabelSx = {
   fontFamily: pipelineBodyFontFamily,
-  fontSize: 10.5,
+  fontSize: 14.5,
   fontWeight: 700,
-  lineHeight: '14px',
+  lineHeight: '18px',
   letterSpacing: 0,
   fontSynthesis: 'none',
   textTransform: 'uppercase',
@@ -46,7 +46,7 @@ export function PipelineStageColumn({
         direction="row"
         alignItems="center"
         sx={{
-          minHeight: 32,
+          minHeight: 38,
           pb: 0.75,
           borderBottom: '1px solid',
           borderColor: 'divider',
@@ -71,14 +71,14 @@ export function PipelineStageColumn({
           sx={{
             display: 'inline-grid',
             placeItems: 'center',
-            minWidth: 20,
-            height: 18,
+            minWidth: 24,
+            height: 22,
             ml: 'auto',
             px: 0.625,
             borderRadius: `${radius.full}px`,
             bgcolor: stage.softColor,
             color: stage.color,
-            fontSize: 10.5,
+            fontSize: 14.5,
             fontWeight: 700,
           }}
         >
@@ -122,7 +122,7 @@ export function PipelineStageColumn({
               textAlign: 'center',
             }}
           >
-            <Typography color="text.secondary" sx={{ fontSize: 11.5 }}>
+            <Typography color="text.secondary" sx={{ fontSize: 15.5 }}>
               {t('emptyStage')}
             </Typography>
           </Stack>
@@ -142,7 +142,7 @@ export function PipelineStageColumn({
         <Typography
           sx={{
             color: 'text.disabled',
-            fontSize: 9,
+            fontSize: 13,
             fontWeight: 700,
             lineHeight: 1.2,
             letterSpacing: '0.01em',
@@ -154,7 +154,7 @@ export function PipelineStageColumn({
         {isPipelineLoading ? (
           <Skeleton width={92} />
         ) : projectedTotals.length === 0 ? (
-          <Typography sx={{ mt: 0.25, fontSize: 13, fontWeight: 800, lineHeight: 1.3 }}>
+          <Typography sx={{ mt: 0.25, fontSize: 17, fontWeight: 800, lineHeight: 1.3 }}>
             {formatCurrency(0)}
           </Typography>
         ) : (
@@ -168,11 +168,11 @@ export function PipelineStageColumn({
                 gap={1}
               >
                 {projectedTotals.length > 1 ? (
-                  <Typography sx={{ color: 'text.secondary', fontSize: 9.5, lineHeight: 1.2 }}>
+                  <Typography sx={{ color: 'text.secondary', fontSize: 13.5, lineHeight: 1.2 }}>
                     {t(`totalLabels.${total.labelKey}`)}
                   </Typography>
                 ) : null}
-                <Typography sx={{ fontSize: 13, fontWeight: 800, lineHeight: 1.3 }}>
+                <Typography sx={{ fontSize: 17, fontWeight: 800, lineHeight: 1.3 }}>
                   {total.value}
                 </Typography>
               </Stack>

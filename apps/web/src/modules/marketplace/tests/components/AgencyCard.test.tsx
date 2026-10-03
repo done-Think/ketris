@@ -10,14 +10,15 @@ import type { AgencyCardProps } from '../../types/agency'
 const agency: AgencyCardProps = {
   id: 'alameda-prime',
   name: 'Alameda Prime Imóveis',
+  headline: null,
   legalCreci: 'CRECI J-38210',
   logoInitials: 'AP',
+  bannerUrl: null,
   brand: {
-    eyebrow: 'Imobiliária',
-    title: 'ALAMEDA PRIME',
     primaryColor: '#F30274',
     secondaryColor: '#212631',
     backgroundColor: '#FFFFFF',
+    logoUrl: null,
   },
   headquarters: 'Jardins, São Paulo',
   coverage: ['Jardins', 'Itaim Bibi'],
@@ -27,13 +28,16 @@ const agency: AgencyCardProps = {
   responseTime: '11 min',
   yearsInMarket: 14,
   dealsClosed: 420,
-  rating: 5,
+  rating: null,
   phone: '(11) 3042-9000',
   email: 'parcerias@alamedaprime.com.br',
   address: 'Alameda Santos, 1320 - Jardins',
   summary: 'Operação focada em imóveis residenciais de alto padrão nos Jardins.',
   href: '/agencies/alameda-prime',
-  teamHighlights: ['Marina Costa', 'Juliana Mendes'],
+  teamHighlights: [
+    { usuarioId: 'marina-costa', name: 'Marina Costa', avatarUrl: null },
+    { usuarioId: 'juliana-mendes', name: 'Juliana Mendes', avatarUrl: null },
+  ],
   featuredListings: [
     {
       title: 'Apartamento pronto para morar perto da Oscar Freire',
@@ -60,12 +64,6 @@ function renderAgencyCard() {
 }
 
 describe('AgencyCard', () => {
-  it('formats whole ratings with one decimal place', () => {
-    renderAgencyCard()
-
-    expect(screen.getByText('5.0')).toBeInTheDocument()
-  })
-
   it('keeps the whole agency card linked while preserving featured listing links', () => {
     renderAgencyCard()
 
@@ -76,7 +74,7 @@ describe('AgencyCard', () => {
 
     expect(profileLink).toHaveAttribute('href', '/imobiliarias/alameda-prime')
 
-    fireEvent.click(screen.getByText('Alameda Prime Imóveis'))
+    fireEvent.click(screen.getAllByText('Alameda Prime Imóveis')[0])
 
     expect(profileClick).toHaveBeenCalledTimes(1)
 

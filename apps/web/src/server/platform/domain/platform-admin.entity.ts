@@ -1,8 +1,11 @@
+export type PlatformAdminRole = 'ADMIN' | 'ADMIN_AGENT' | 'AGENT'
+
 export interface PlatformAdmin {
   id: string
   nome: string
   email: string
   senhaHash: string
+  role: PlatformAdminRole
   ativo: boolean
 }
 
@@ -13,6 +16,7 @@ export function toAuthenticatedPlatformAdmin(admin: PlatformAdmin): Authenticate
     id: admin.id,
     nome: admin.nome,
     email: admin.email,
+    role: admin.role,
     ativo: admin.ativo,
   }
 }

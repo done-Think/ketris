@@ -1,28 +1,81 @@
-import type { z } from 'zod'
+export type PropertyPurpose = 'RENT' | 'SALE'
 
-import type {
-  propertyAddressSchema,
-  propertyMediaSchema,
-  propertySchema,
-  propertyStatusEnum,
-  propertyValuesSchema,
-} from '../schemas/property-schema'
+export type PropertyStatus = 'DRAFT' | 'PUBLISHED' | 'RENTED' | 'SOLD' | 'INACTIVE'
 
-export type PropertyFormValues = z.infer<typeof propertySchema>
-export type PropertyAddress = z.infer<typeof propertyAddressSchema>
-export type PropertyMedia = z.infer<typeof propertyMediaSchema>
-export type PropertyStatus = z.infer<typeof propertyStatusEnum>
-export type PropertyValues = z.infer<typeof propertyValuesSchema>
+export interface PropertyAddress {
+  street: string
+  number: string
+  complement: string | null
+  neighborhood: string
+  city: string
+  state: string
+  zipCode: string
+  latitude: number | null
+  longitude: number | null
+}
 
-export interface Property extends PropertyFormValues {
+export interface PropertyMedia {
+  id: string
+  url: string
+  type: string
+  order: number
+  createdAt: string
+}
+
+export interface PropertyMediaInput {
+  url: string
+  type?: string
+  order?: number
+}
+
+export interface PropertyValues {
+  price: number
+  condoFee: number | null
+  propertyTax: number | null
+}
+
+export interface PropertyCharacteristics {
+  bedrooms: number | null
+  bathrooms: number | null
+  parkingSpots: number | null
+  areaM2: number | null
+}
+
+export interface Property {
   id: string
   tenantId: string
+  responsibleUserId: string
+  title: string
+  description: string | null
+  purpose: PropertyPurpose
+  type: string
   status: PropertyStatus
-  address: string | PropertyAddress
-  values?: PropertyValues
-  media: PropertyMedia[]
-  features: string[]
-  responsibleUserId?: string
+  publishedAt: string | null
   createdAt: string
   updatedAt: string
+  address: PropertyAddress | null
+  media: PropertyMedia[]
+  values: PropertyValues
+  characteristics: PropertyCharacteristics
+}
+
+export interface PropertyFormValues {
+  title: string
+  description?: string | null
+  purpose: PropertyPurpose
+  type: string
+  bedrooms?: number | null
+  bathrooms?: number | null
+  parkingSpots?: number | null
+  areaM2?: number | null
+  price: number
+  condoFee?: number | null
+  propertyTax?: number | null
+  address?: PropertyAddress
+  media?: PropertyMediaInput[]
+}
+
+export interface PropertyListFilters {
+  status?: PropertyStatus
+  purpose?: PropertyPurpose
 }

@@ -6,10 +6,11 @@ import { useTranslations } from 'next-intl'
 import { SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
-import { brokers } from '../data/brokers'
+import { useBrokerProfiles } from '../hooks/use-broker-profile'
 import { useDirectoryList } from '../hooks/use-directory-list'
 import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { BrokerProfile } from '../types/broker'
+import { toBrokerProfile } from '../utils/broker-profile-adapter'
 import { useViewModePreference } from '../hooks/use-view-mode-preference'
 import { BrokerCard } from './BrokerCard'
 import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
@@ -32,6 +33,8 @@ export function BrokersPage() {
   const directoryT = useTranslations('marketplace.directory.brokers')
   const { footerColumns, legalLinks } = useMarketplaceNavigation()
   const { setViewMode, viewMode } = useViewModePreference('brokers')
+  const { data: brokerProfiles } = useBrokerProfiles()
+  const brokers = (brokerProfiles ?? []).map(toBrokerProfile)
   const {
     filteredItems: filteredBrokers,
     hasMoreItems: hasMoreBrokers,

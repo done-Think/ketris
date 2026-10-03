@@ -135,6 +135,7 @@ export type ContractsSummaryCardsProps = {
 
 export type ContractsFiltersProps = {
   control: Control<ContractsFiltersFormValues>
+  filterCounts: Record<ContractFilterTab['label'], number>
   setValue: UseFormSetValue<ContractsFiltersFormValues>
 }
 
@@ -183,12 +184,18 @@ export type ContractsEmptyStateProps = {
   onCreateContract: () => void
 }
 
-export type ContractsStoreState = {
-  contracts: ContractListItem[]
-  addContract: (values: CreateContractFormValues) => ContractListItem
+export type EligibleContractOpportunity = {
+  id: string
+  leadName: string
+  leadEmail: string
+  leadPhone: string | null
+  propertyId: string
+  propertyTitle: string
+  propertyAddress: string
+  amountLabel: string
 }
 
-export type CreateContractStepKey = 'parties' | 'property' | 'conditions' | 'review'
+export type CreateContractStepKey = 'opportunity' | 'parties' | 'conditions' | 'review'
 
 export type CreateContractStep = {
   key: CreateContractStepKey
@@ -209,6 +216,14 @@ export type ContractFieldConfig = {
   multiline?: boolean
 }
 
+export type ContractFieldMeta = {
+  name: CreateContractFieldName
+  labelKey: string
+  mask?: string
+  options?: string[]
+  optionsNamespace?: string
+}
+
 export type ContractStepsNavProps = {
   activeStepIndex: number
   maxStepIndex: number
@@ -224,7 +239,7 @@ export type ContractStepFieldsProps = {
 
 export type ContractStepControlProps = Pick<ContractStepFieldsProps, 'control'>
 
-export type ContractPropertyStepProps = Pick<
+export type ContractOpportunityStepProps = Pick<
   ContractStepFieldsProps,
   'control' | 'setValue' | 'values'
 >
@@ -264,6 +279,7 @@ export type ContractReviewPanelProps = {
 
 export type ContractActionsProps = {
   lastStep: boolean
+  isSubmitting: boolean
   onPreviousStep: () => void
   onNextStep: () => void
 }

@@ -2,41 +2,38 @@ import { describe, expect, it } from 'vitest'
 
 import { buildProfileListings } from './profile-listings'
 
-const marinaListing = {
-  title: 'Apartamento espaçoso com vista para o parque',
-  location: 'Jardins',
-  price: 'R$ 4.800 / mês',
-  href: '/properties/apartamento-jardins',
+const camilaListing = {
+  title: 'Sala comercial na Paulista',
+  location: 'Bela Vista',
+  price: 'R$ 8.500 / mês',
+  href: '/properties/sala-comercial-paulista',
+  image: 'https://cdn.ketris.com.br/sala-comercial-paulista.jpg',
 }
 
 describe('profile listings utils', () => {
-  it('keeps the provided listings first and fills the configured limit without duplicates', () => {
-    const listings = buildProfileListings([marinaListing], {
-      brokerName: 'Marina Costa',
-      coverage: ['Jardins'],
-      limit: 6,
-    })
+  it('only returns the listings actually provided, never padding with unrelated data', () => {
+    const listings = buildProfileListings([camilaListing])
 
-    expect(listings).toHaveLength(6)
+    expect(listings).toHaveLength(1)
     expect(listings[0]).toMatchObject({
-      href: marinaListing.href,
-      title: marinaListing.title,
-      category: 'Apartamento',
+      href: camilaListing.href,
+      title: camilaListing.title,
+      image: camilaListing.image,
+      details: [],
     })
-    expect(new Set(listings.map((listing) => listing.href)).size).toBe(listings.length)
   })
 
-  it('matches additional listings by broker name and coverage before fallback entries', () => {
-    const listings = buildProfileListings([], {
-      brokerName: 'Marina Costa',
-      coverage: ['Jardins'],
-      limit: 3,
-    })
+  it('returns an empty list when there are no real listings', () => {
+    expect(buildProfileListings([])).toEqual([])
+  })
 
-    expect(listings.map((listing) => listing.href)).toEqual([
-      '/properties/apartamento-jardins',
-      '/properties/apartamento-garden-remodelado',
-      '/properties/loft-industrial-mobiliado',
-    ])
+  it('respects the configured limit', () => {
+    const listings = buildProfileListings(
+      [camilaListing, { ...camilaListing, href: '/properties/outra' }],
+      { limit: 1 },
+    )
+
+    expect(listings).toHaveLength(1)
+    expect(listings[0].href).toBe(camilaListing.href)
   })
 })

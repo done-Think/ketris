@@ -33,13 +33,13 @@ export function CreateAdminForm() {
     formState: { isSubmitting },
   } = useForm<CreateAdminFormValues>({
     resolver: zodResolver(createAdminSchema),
-    defaultValues: { nome: '', email: '', password: '', confirmarSenha: '' },
+    defaultValues: { name: '', email: '', password: '', confirmPassword: '' },
   })
 
   async function onSubmit(values: CreateAdminFormValues) {
     try {
       const admin = await createAdmin.mutateAsync({
-        nome: values.nome,
+        name: values.name,
         email: values.email,
         password: values.password,
       })
@@ -52,7 +52,7 @@ export function CreateAdminForm() {
 
   return (
     <Stack component="form" onSubmit={handleSubmit(onSubmit)} spacing={2.5}>
-      <RhfTextField control={control} name="nome" label={t('fields.name')} fullWidth autoFocus />
+      <RhfTextField control={control} name="name" label={t('fields.name')} fullWidth autoFocus />
       <RhfTextField
         control={control}
         name="email"
@@ -71,7 +71,7 @@ export function CreateAdminForm() {
       />
       <RhfTextField
         control={control}
-        name="confirmarSenha"
+        name="confirmPassword"
         label={t('fields.passwordConfirmation')}
         type="password"
         autoComplete="new-password"

@@ -37,6 +37,8 @@ export const dashboardProperties: DashboardProperty[] = [
     purpose: 'Aluguel',
     price: 'R$ 6.500/mês',
     status: 'Alugado',
+    responsibleUserId: 'mock-user-id',
+    apiStatus: 'RENTED',
     broker: 'Roberto Souza',
     updatedAt: 'Há 2 horas',
     imageUrl:
@@ -95,6 +97,8 @@ export const dashboardProperties: DashboardProperty[] = [
     purpose: 'Aluguel',
     price: 'R$ 3.200/mês',
     status: 'Alugado',
+    responsibleUserId: 'mock-user-id',
+    apiStatus: 'RENTED',
     broker: 'Ana Paula',
     updatedAt: 'Há 1 dia',
     imageUrl:
@@ -150,6 +154,8 @@ export const dashboardProperties: DashboardProperty[] = [
     purpose: 'Venda',
     price: 'R$ 4.500.000',
     status: 'Ativo',
+    responsibleUserId: 'mock-user-id',
+    apiStatus: 'SOLD',
     broker: 'Roberto Souza',
     updatedAt: 'Há 3 dias',
     imageUrl:
@@ -205,6 +211,8 @@ export const dashboardProperties: DashboardProperty[] = [
     purpose: 'Venda',
     price: 'R$ 3.800.000',
     status: 'Em análise',
+    responsibleUserId: 'mock-user-id',
+    apiStatus: 'DRAFT',
     broker: 'Marcos Lima',
     updatedAt: 'Há 5 dias',
     imageUrl:
@@ -259,6 +267,8 @@ export const dashboardProperties: DashboardProperty[] = [
     purpose: 'Aluguel',
     price: 'R$ 2.400/mês',
     status: 'Vencendo',
+    responsibleUserId: 'mock-user-id',
+    apiStatus: 'PUBLISHED',
     broker: 'Ana Paula',
     updatedAt: 'Há 1 semana',
     imageUrl:
@@ -313,6 +323,8 @@ export const dashboardProperties: DashboardProperty[] = [
     purpose: 'Aluguel',
     price: 'R$ 4.800/mês',
     status: 'Inativo',
+    responsibleUserId: 'mock-user-id',
+    apiStatus: 'INACTIVE',
     broker: 'Clara G.',
     updatedAt: 'Há 2 semanas',
     imageUrl:

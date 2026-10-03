@@ -9,48 +9,37 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { Controller } from 'react-hook-form'
 
 import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
+import { formatCurrency } from '@shared/lib/utils/format'
 import { alpha, brand, radius } from '@shared/theme/tokens'
 
-import { dashboardProperties } from '@modules/properties/data/dashboard-properties'
-import type { DashboardProperty } from '@modules/properties/types/dashboard-property'
+import { useCrmProperties, useOpportunities } from '@modules/crm/hooks/use-opportunities'
 
+import { useContracts } from '../hooks/use-contracts'
 import type {
   ContractFieldConfig,
   ContractFieldGridProps,
+  ContractFieldMeta,
   ContractFieldProps,
+  ContractOpportunityStepProps,
   ContractPartiesStepProps,
-  ContractPropertyStepProps,
   ContractReviewItemProps,
   ContractReviewPanelProps,
   ContractSectionTitleProps,
   ContractStepControlProps,
   ContractStepFieldsProps,
   ContractStepReviewProps,
-  CreateContractFieldName,
+  EligibleContractOpportunity,
 } from '../types/contract'
 import { contractTextFieldSx } from './contract-form.styles'
 
-const propertyTypeOptions = ['Apartamento', 'Casa', 'Studio', 'Cobertura', 'Sala comercial']
-const contractTypeOptions = ['Locação residencial', 'Locação comercial', 'Temporada']
-const guaranteeTypeOptions = ['Fiador', 'Caução', 'Seguro fiança', 'Título de capitalização']
-const adjustmentIndexOptions = ['IPCA', 'IGP-M', 'INPC']
-
-/**
- * Field-shape metadata, without labels (labels need `t()`, resolved when rendering). Each step's
- * rendered fields AND its wizard-validation field-name list (see `*StepFieldNames` below) are both
- * derived from these arrays, so a field added here can't silently be missing from validation.
- */
-type ContractFieldMeta = {
-  name: CreateContractFieldName
-  labelKey: string
-  mask?: string
-  options?: string[]
-  optionsNamespace?: string
-}
+const contractTypeOptions = ['RESIDENCIAL', 'COMERCIAL', 'TEMPORADA']
+const guaranteeTypeOptions = ['FIADOR', 'CAUCAO', 'SEGURO_FIANCA', 'TITULO_CAPITALIZACAO']
+const adjustmentIndexOptions = ['IPCA', 'IGPM', 'INPC']
 
 function toFieldConfig(
   meta: ContractFieldMeta,
@@ -85,26 +74,7 @@ export const partiesStepFieldNames = [
   ...makePartyFieldsMeta('guarantor').map((field) => field.name),
 ]
 
-const propertyStepFieldsMeta: ContractFieldMeta[] = [
-  { name: 'propertyTitle', labelKey: 'propertyTitle' },
-  {
-    name: 'propertyType',
-    labelKey: 'propertyType',
-    options: propertyTypeOptions,
-    optionsNamespace: 'typeOptions',
-  },
-  { name: 'propertyAddress', labelKey: 'propertyAddress' },
-  { name: 'propertyZipCode', labelKey: 'propertyZipCode', mask: '00000-000' },
-  { name: 'propertyCity', labelKey: 'propertyCity' },
-  { name: 'propertyState', labelKey: 'propertyState', mask: 'aa' },
-  { name: 'propertyRegistration', labelKey: 'propertyRegistration' },
-  { name: 'propertyArea', labelKey: 'propertyArea' },
-]
-
-export const propertyStepFieldNames = [
-  'propertyId' as const,
-  ...propertyStepFieldsMeta.map((field) => field.name),
-]
+export const opportunityStepFieldNames = ['opportunityId' as const]
 
 const conditionsStepFieldsMeta: ContractFieldMeta[] = [
   {
@@ -113,9 +83,6 @@ const conditionsStepFieldsMeta: ContractFieldMeta[] = [
     options: contractTypeOptions,
     optionsNamespace: 'contractTypeOptions',
   },
-  { name: 'monthlyRent', labelKey: 'monthlyRent' },
-  { name: 'condominiumFee', labelKey: 'condominiumFee' },
-  { name: 'iptu', labelKey: 'iptu' },
   { name: 'dueDay', labelKey: 'dueDay', mask: '00' },
   {
     name: 'guaranteeType',
@@ -229,13 +196,13 @@ function PartiesStep({ control, setValue, values }: ContractPartiesStepProps) {
   const ownerFields = makePartyFieldsMeta('owner').map((field) => toFieldConfig(field, t))
   const tenantFields = makePartyFieldsMeta('tenant').map((field) => toFieldConfig(field, t))
   const guarantorFields = makePartyFieldsMeta('guarantor').map((field) => toFieldConfig(field, t))
-  // Either signal reveals the section: the explicit flag, or "Fiador" picked directly as the
+  // Either signal reveals the section: the explicit flag, or "FIADOR" picked directly as the
   // guarantee type in the Conditions step — kept in sync with the schema's superRefine trigger.
-  const hasActiveGuarantor = values.hasGuarantor || values.guaranteeType === 'Fiador'
+  const hasActiveGuarantor = values.hasGuarantor || values.guaranteeType === 'FIADOR'
 
   const addGuarantor = () => {
     setValue('hasGuarantor', true, { shouldDirty: true })
-    setValue('guaranteeType', 'Fiador', { shouldDirty: true })
+    setValue('guaranteeType', 'FIADOR', { shouldDirty: true })
   }
 
   return (
@@ -295,30 +262,62 @@ function PartiesStep({ control, setValue, values }: ContractPartiesStepProps) {
   )
 }
 
-function derivePropertyCity(location: string): string {
-  const parts = location.split(',')
-  return parts.length > 1 ? parts[parts.length - 1].trim() : location.trim()
+function formatPropertyAddress(property: { neighborhood: string | null; city: string | null }) {
+  return [property.neighborhood, property.city].filter(Boolean).join(', ')
 }
 
-function PropertyStep({ control, setValue, values }: ContractPropertyStepProps) {
-  const t = useTranslations('contracts.wizard.property')
-  const selectedProperty =
-    dashboardProperties.find((property) => property.id === values.propertyId) ?? null
+function OpportunityStep({ control, setValue, values }: ContractOpportunityStepProps) {
+  const t = useTranslations('contracts.wizard.opportunity')
+  const { data: session } = useSession()
+  const tenantId = session?.tenantId ?? ''
 
-  const applyProperty = (property: DashboardProperty | null) => {
-    if (!property) {
-      setValue('propertyId', '', { shouldDirty: true })
-      return
-    }
+  const acceptedOpportunitiesQuery = useOpportunities(tenantId, { status: 'ACEITA' })
+  const contractsQuery = useContracts(tenantId)
+  const propertiesQuery = useCrmProperties(tenantId)
 
-    setValue('propertyId', property.id, { shouldDirty: true })
-    setValue('propertyTitle', property.title, { shouldDirty: true })
-    setValue('propertyAddress', property.address, { shouldDirty: true })
-    setValue('propertyCity', derivePropertyCity(property.location), { shouldDirty: true })
-    if (propertyTypeOptions.includes(property.type)) {
-      setValue('propertyType', property.type, { shouldDirty: true })
+  const contractedOpportunityIds = new Set(
+    (contractsQuery.data?.items ?? []).map((item) => item.opportunityId),
+  )
+  const propertiesById = new Map(
+    (propertiesQuery.data ?? []).map((property) => [property.id, property]),
+  )
+
+  const eligibleOpportunities: EligibleContractOpportunity[] = (
+    acceptedOpportunitiesQuery.data ?? []
+  )
+    .filter((opportunity) => !contractedOpportunityIds.has(opportunity.id))
+    .map((opportunity) => {
+      const property = propertiesById.get(opportunity.propertyId)
+
+      return {
+        id: opportunity.id,
+        leadName: opportunity.leadName,
+        leadEmail: opportunity.leadEmail,
+        leadPhone: opportunity.leadPhone,
+        propertyId: opportunity.propertyId,
+        propertyTitle: property?.title ?? opportunity.propertyId,
+        propertyAddress: property ? formatPropertyAddress(property) : '',
+        amountLabel: formatCurrency(opportunity.proposedValue),
+      }
+    })
+
+  const selectedOpportunity =
+    eligibleOpportunities.find((opportunity) => opportunity.id === values.opportunityId) ?? null
+
+  const applyOpportunity = (opportunity: EligibleContractOpportunity | null) => {
+    setValue('opportunityId', opportunity?.id ?? '', { shouldDirty: true })
+
+    if (opportunity) {
+      setValue('tenantName', opportunity.leadName, { shouldDirty: true })
+      setValue('tenantEmail', opportunity.leadEmail, { shouldDirty: true })
+      if (opportunity.leadPhone) {
+        setValue('tenantPhone', opportunity.leadPhone, { shouldDirty: true })
+      }
     }
   }
+
+  const isLoading =
+    acceptedOpportunitiesQuery.isLoading || contractsQuery.isLoading || propertiesQuery.isLoading
 
   return (
     <Stack spacing={3}>
@@ -326,20 +325,22 @@ function PropertyStep({ control, setValue, values }: ContractPropertyStepProps) 
         <SectionTitle>{t('title')}</SectionTitle>
         <Controller
           control={control}
-          name="propertyId"
+          name="opportunityId"
           render={({ field, fieldState }) => (
             <Autocomplete
-              options={dashboardProperties}
-              getOptionLabel={(property) => `${property.title} — ${property.location}`}
+              options={eligibleOpportunities}
+              getOptionLabel={(opportunity) =>
+                `${opportunity.leadName} — ${opportunity.propertyTitle}`
+              }
               isOptionEqualToValue={(option, selected) => option.id === selected.id}
-              value={selectedProperty}
+              value={selectedOpportunity}
+              loading={isLoading}
               noOptionsText={t('picker.noOptions')}
-              onChange={(_event, property) => {
-                field.onChange(property?.id ?? '')
-                applyProperty(property)
+              onChange={(_event, opportunity) => {
+                field.onChange(opportunity?.id ?? '')
+                applyOpportunity(opportunity)
               }}
               onBlur={field.onBlur}
-              sx={{ mb: 2.2 }}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -353,10 +354,26 @@ function PropertyStep({ control, setValue, values }: ContractPropertyStepProps) 
             />
           )}
         />
-        <FieldGrid
-          control={control}
-          fields={propertyStepFieldsMeta.map((field) => toFieldConfig(field, t))}
-        />
+
+        {selectedOpportunity ? (
+          <Box
+            sx={{
+              mt: 2.4,
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+              gap: 1.8,
+              border: '1px solid',
+              borderColor: alpha.graphite[8],
+              borderRadius: `${radius.sm}px`,
+              p: { xs: 2, md: 2.4 },
+            }}
+          >
+            <ReviewItem label={t('summary.property')} value={selectedOpportunity.propertyTitle} />
+            <ReviewItem label={t('summary.address')} value={selectedOpportunity.propertyAddress} />
+            <ReviewItem label={t('summary.lead')} value={selectedOpportunity.leadName} />
+            <ReviewItem label={t('summary.amount')} value={selectedOpportunity.amountLabel} />
+          </Box>
+        ) : null}
       </Box>
     </Stack>
   )
@@ -422,7 +439,8 @@ function ReviewPanel({ title, items }: ContractReviewPanelProps) {
 
 function ReviewStep({ values }: ContractStepReviewProps) {
   const t = useTranslations('contracts.wizard.review')
-  const hasActiveGuarantor = values.hasGuarantor || values.guaranteeType === 'Fiador'
+  const tConditions = useTranslations('contracts.wizard.conditions')
+  const hasActiveGuarantor = values.hasGuarantor || values.guaranteeType === 'FIADOR'
 
   const partiesItems = [
     { label: t('labels.owner'), value: values.ownerName },
@@ -447,21 +465,20 @@ function ReviewStep({ values }: ContractStepReviewProps) {
     >
       <ReviewPanel title={t('partiesTitle')} items={partiesItems} />
       <ReviewPanel
-        title={t('propertyTitle')}
-        items={[
-          { label: t('labels.property'), value: values.propertyTitle },
-          { label: t('labels.type'), value: values.propertyType },
-          { label: t('labels.address'), value: values.propertyAddress },
-          { label: t('labels.cityState'), value: `${values.propertyCity}/${values.propertyState}` },
-        ]}
-      />
-      <ReviewPanel
         title={t('conditionsTitle')}
         items={[
-          { label: t('labels.contract'), value: values.contractType },
-          { label: t('labels.rent'), value: values.monthlyRent },
-          { label: t('labels.dueDay'), value: t('labels.dueDayValue', { day: values.dueDay }) },
-          { label: t('labels.guarantee'), value: values.guaranteeType },
+          {
+            label: t('labels.contract'),
+            value: tConditions(`contractTypeOptions.${values.contractType}`),
+          },
+          {
+            label: t('labels.dueDay'),
+            value: t('labels.dueDayValue', { day: values.dueDay }),
+          },
+          {
+            label: t('labels.guarantee'),
+            value: tConditions(`guaranteeTypeOptions.${values.guaranteeType}`),
+          },
         ]}
       />
       <ReviewPanel
@@ -469,7 +486,10 @@ function ReviewStep({ values }: ContractStepReviewProps) {
         items={[
           { label: t('labels.start'), value: values.startDate },
           { label: t('labels.end'), value: values.endDate },
-          { label: t('labels.adjustment'), value: values.adjustmentIndex },
+          {
+            label: t('labels.adjustment'),
+            value: tConditions(`adjustmentIndexOptions.${values.adjustmentIndex}`),
+          },
           { label: t('labels.notes'), value: values.notes },
         ]}
       />
@@ -483,8 +503,8 @@ export function ContractStepFields({
   setValue,
   values,
 }: ContractStepFieldsProps) {
-  if (activeStepKey === 'property') {
-    return <PropertyStep control={control} setValue={setValue} values={values} />
+  if (activeStepKey === 'opportunity') {
+    return <OpportunityStep control={control} setValue={setValue} values={values} />
   }
   if (activeStepKey === 'conditions') return <ConditionsStep control={control} />
   if (activeStepKey === 'review') return <ReviewStep values={values} />

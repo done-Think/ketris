@@ -25,26 +25,28 @@ const createdAdmin: User = {
   senhaHash: 'hash-novo',
   papel: 'ADMIN',
   ativo: true,
+  vinculoAprovadoEm: new Date(),
 }
 
 function createDeps(overrides?: {
   findById?: TenantRepository['findById']
-  findByEmailAndTenant?: UserRepository['findByEmailAndTenant']
+  findByEmail?: UserRepository['findByEmail']
 }) {
   const tenantRepository: TenantRepository = {
     findBySlug: vi.fn(),
     findById: overrides?.findById ?? vi.fn().mockResolvedValue(tenant),
     findMany: vi.fn(),
     create: vi.fn(),
+    searchByName: vi.fn(),
   }
   const userRepository: UserRepository = {
     findById: vi.fn(),
-    findByEmail: vi.fn(),
-    findByEmailAndTenant: overrides?.findByEmailAndTenant ?? vi.fn().mockResolvedValue(null),
+    findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(null),
     findManyByTenant: vi.fn(),
     create: vi.fn().mockResolvedValue(createdAdmin),
     update: vi.fn(),
     deactivate: vi.fn(),
+    approveMembership: vi.fn(),
   }
   const passwordHasher: PasswordHasher = {
     compare: vi.fn(),
@@ -99,8 +101,8 @@ describe('CreateTenantAdminUseCase', () => {
     expect(deps.userRepository.create).not.toHaveBeenCalled()
   })
 
-  it('lança EmailAlreadyInUseError quando o e-mail já existe nesse tenant', async () => {
-    const deps = createDeps({ findByEmailAndTenant: vi.fn().mockResolvedValue(createdAdmin) })
+  it('lança EmailAlreadyInUseError quando o e-mail já existe em qualquer tenant', async () => {
+    const deps = createDeps({ findByEmail: vi.fn().mockResolvedValue(createdAdmin) })
     const useCase = new CreateTenantAdminUseCase(
       deps.tenantRepository,
       deps.userRepository,

@@ -1,10 +1,12 @@
 import { BaseService } from '@shared/lib/api/base-service'
 
-import type { PublicPropertySummary, SearchPropertiesFilters } from '../types/public-property'
-
-interface ListPropertiesResponse {
-  properties: PublicPropertySummary[]
-}
+import type {
+  ListPropertiesResponse,
+  PropertyDetailResponse,
+  PublicPropertyDetail,
+  PublicPropertySummary,
+  SearchPropertiesFilters,
+} from '../types/public-property'
 
 export class MarketplaceService extends BaseService {
   private readonly propertiesPath = '/marketplace/properties'
@@ -24,6 +26,12 @@ export class MarketplaceService extends BaseService {
     return this.http
       .get<ListPropertiesResponse>(this.propertiesPath, { params })
       .then((data) => data.properties)
+  }
+
+  getById(id: string): Promise<PublicPropertyDetail> {
+    return this.http
+      .get<PropertyDetailResponse>(`${this.propertiesPath}/${id}`)
+      .then((data) => data.property)
   }
 }
 

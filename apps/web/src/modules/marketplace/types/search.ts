@@ -40,6 +40,8 @@ export type SortOption = 'relevancia' | 'menor-preco' | 'maior-preco'
 
 export type ViewMode = 'grid' | 'list'
 
+export type SearchResultsViewModeScope = 'rent' | 'buy' | 'brokers' | 'agencies'
+
 export type QuickFilterKey = 'type' | 'price' | 'bedrooms' | 'area' | 'more'
 
 export type SearchResultsPageProps = {
@@ -59,6 +61,8 @@ export type SearchResultsFiltersProps = {
   setLocationQuery: (value: string) => void
 }
 
+export type SearchResultsLocationFieldProps = SearchResultsFiltersProps
+
 export type SearchResultsFilterButtonProps = {
   areaFilterIndex: number
   bedroomFilterIndex: number
@@ -69,6 +73,25 @@ export type SearchResultsFilterButtonProps = {
   onlyWithParking: boolean
   priceFilterIndex: number
   propertyTypeFilter: string
+  setAreaFilterIndex: (index: number) => void
+  setBedroomFilterIndex: (index: number) => void
+  setCustomMaxPrice: (value: string) => void
+  setCustomMinArea: (value: string) => void
+  setOnlyWithParking: (value: boolean) => void
+  setPriceFilterIndex: (index: number) => void
+  setPropertyTypeFilter: (value: string) => void
+}
+
+export type SearchResultsFilterMenuProps = {
+  areaFilterIndex: number
+  bedroomFilterIndex: number
+  customMaxPrice: string
+  customMinArea: string
+  filterKey: QuickFilterKey
+  onlyWithParking: boolean
+  priceFilterIndex: number
+  propertyTypeFilter: string
+  setActiveQuickFilter: (filterKey: QuickFilterKey | null) => void
   setAreaFilterIndex: (index: number) => void
   setBedroomFilterIndex: (index: number) => void
   setCustomMaxPrice: (value: string) => void
@@ -103,6 +126,14 @@ export type SearchResultsMapPanelProps = {
   selectedPropertyId: string
   setSelectedPropertyId: (propertyId: string) => void
   searchQuery?: string
+}
+
+export type SearchResultsListProps = {
+  properties: SearchResultProperty[]
+  isLoading?: boolean
+  selectedPropertyId: string
+  setSelectedPropertyId: (propertyId: string) => void
+  viewMode: ViewMode
 }
 
 export type SearchResultsToolbarProps = {

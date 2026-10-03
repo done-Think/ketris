@@ -2,7 +2,7 @@ import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 
 import { authContainer } from '@server/auth/container'
-import { InvalidCredentialsError } from '@server/auth/domain/errors'
+import { AccountDeactivatedError, InvalidCredentialsError } from '@server/auth/domain/errors'
 import { platformContainer } from '@server/platform/container'
 import { InvalidPlatformCredentialsError } from '@server/platform/domain/errors'
 
@@ -33,6 +33,7 @@ export const authOptions: NextAuthOptions = {
             id: user.id,
             name: user.nome,
             email: user.email,
+            image: user.avatarUrl ?? undefined,
             accessToken,
             refreshToken,
             scope: 'tenant',
@@ -40,8 +41,45 @@ export const authOptions: NextAuthOptions = {
             papel: user.papel,
           }
         } catch (error) {
-          if (error instanceof InvalidCredentialsError) return null
+          if (
+            error instanceof InvalidCredentialsError ||
+            error instanceof AccountDeactivatedError
+          ) {
+            return null
+          }
           throw error
+        }
+      },
+    }),
+    CredentialsProvider({
+      id: 'token-session',
+      name: 'token-session',
+      credentials: {
+        accessToken: { type: 'text' },
+        refreshToken: { type: 'text' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.accessToken || !credentials?.refreshToken) return null
+
+        try {
+          const payload = await authContainer.tokenService.verify(credentials.accessToken)
+          const user = await authContainer.userRepository.findById(payload.sub)
+
+          if (!user || !user.ativo) return null
+
+          return {
+            id: user.id,
+            name: user.nome,
+            email: user.email,
+            image: user.avatarUrl ?? undefined,
+            accessToken: credentials.accessToken,
+            refreshToken: credentials.refreshToken,
+            scope: 'tenant',
+            tenantId: user.tenantId,
+            papel: user.papel,
+          }
+        } catch {
+          return null
         }
       },
     }),
@@ -88,9 +126,18 @@ export const authOptions: NextAuthOptions = {
         return token
       }
 
-      if (trigger === 'update' && session?.accessToken && session?.refreshToken) {
-        token.accessToken = session.accessToken
-        token.refreshToken = session.refreshToken
+      if (trigger === 'update') {
+        if (session?.accessToken && session?.refreshToken) {
+          token.accessToken = session.accessToken
+          token.refreshToken = session.refreshToken
+        }
+
+        if (session?.user) {
+          token.name = session.user.name
+          token.email = session.user.email
+          token.picture = session.user.image
+        }
+
         return token
       }
 
@@ -117,6 +164,9 @@ export const authOptions: NextAuthOptions = {
       session.papel = token.papel
       if (session.user && token.sub) {
         session.user.id = token.sub
+        session.user.name = token.name
+        session.user.email = token.email
+        session.user.image = token.picture
       }
       return session
     },

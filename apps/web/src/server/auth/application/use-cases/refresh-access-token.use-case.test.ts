@@ -19,6 +19,7 @@ const user: User = {
   senhaHash: 'hash-fake',
   papel: 'AGENT',
   ativo: true,
+  vinculoAprovadoEm: new Date(),
 }
 
 const stored: StoredRefreshToken = { id: 'rt-1', userId: user.id, tenantId: user.tenantId }
@@ -30,11 +31,11 @@ function createDeps(overrides?: {
   const userRepository: UserRepository = {
     findById: overrides?.findById ?? vi.fn().mockResolvedValue(user),
     findByEmail: vi.fn(),
-    findByEmailAndTenant: vi.fn(),
     findManyByTenant: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     deactivate: vi.fn(),
+    approveMembership: vi.fn(),
   }
   const tokenService: TokenService = {
     sign: vi.fn().mockResolvedValue('jwt-novo'),

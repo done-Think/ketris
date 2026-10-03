@@ -1,3 +1,4 @@
+import { ApproveUserMembershipUseCase } from './application/use-cases/approve-user-membership.use-case'
 import { CreateAdminUseCase } from './application/use-cases/create-admin.use-case'
 import { CreateUserUseCase } from './application/use-cases/create-user.use-case'
 import { DeactivateAdminUseCase } from './application/use-cases/deactivate-admin.use-case'
@@ -7,7 +8,9 @@ import { GetUserUseCase } from './application/use-cases/get-user.use-case'
 import { ListAdminsUseCase } from './application/use-cases/list-admins.use-case'
 import { ListUsersUseCase } from './application/use-cases/list-users.use-case'
 import { LoginUseCase } from './application/use-cases/login.use-case'
+import { LogoutUseCase } from './application/use-cases/logout.use-case'
 import { RefreshAccessTokenUseCase } from './application/use-cases/refresh-access-token.use-case'
+import { ResetPasswordUseCase } from './application/use-cases/reset-password.use-case'
 import { UpdateAdminUseCase } from './application/use-cases/update-admin.use-case'
 import { UpdateUserUseCase } from './application/use-cases/update-user.use-case'
 import { BcryptPasswordHasher } from './infrastructure/bcrypt-password-hasher'
@@ -35,6 +38,7 @@ export const authContainer = {
   getUserUseCase: new GetUserUseCase(userRepository),
   updateUserUseCase: new UpdateUserUseCase(userRepository),
   deactivateUserUseCase: new DeactivateUserUseCase(userRepository, refreshTokenRepository),
+  approveUserMembershipUseCase: new ApproveUserMembershipUseCase(userRepository),
   listAdminsUseCase: new ListAdminsUseCase(userRepository),
   getAdminUseCase: new GetAdminUseCase(userRepository),
   updateAdminUseCase: new UpdateAdminUseCase(userRepository),
@@ -42,6 +46,12 @@ export const authContainer = {
   refreshAccessTokenUseCase: new RefreshAccessTokenUseCase(
     userRepository,
     tokenService,
+    refreshTokenRepository,
+  ),
+  logoutUseCase: new LogoutUseCase(refreshTokenRepository),
+  resetPasswordUseCase: new ResetPasswordUseCase(
+    userRepository,
+    passwordHasher,
     refreshTokenRepository,
   ),
 }

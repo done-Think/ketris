@@ -1,64 +1,55 @@
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
-import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
-import { Box, Button, Stack, Typography } from '@mui/material'
-import { getTranslations } from 'next-intl/server'
+'use client'
 
-import { DashboardNotificationsButton } from '@shared/components/layout'
-import { iconSize, radius } from '@shared/theme/tokens'
+import { useMemo } from 'react'
+import { Box, Stack } from '@mui/material'
+import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 
+import { DashboardPageHeader } from '@shared/components/layout'
+
+import { useCharges, useFinancialSummary } from '../hooks/use-financial'
 import {
-  financialEntries,
-  financialKpis,
-  monthlyFinancialMovement,
-  upcomingDues,
-} from '../data/financial-entries'
+  mapChargeListItemToFinancialEntry,
+  mapFinancialSummaryToKpis,
+  mapMonthlySeriesToMovement,
+  mapUpcomingChargesToDues,
+} from '../utils/financial-summary-adapter'
+import { FinancialDashboardHeaderActions } from './FinancialDashboardHeaderActions'
 import { FinancialEntriesTable } from './FinancialEntriesTable'
 import { FinancialKpiCards } from './FinancialKpiCards'
 import { FinancialMovementChart } from './FinancialMovementChart'
 import { FinancialUpcomingDueList } from './FinancialUpcomingDueList'
 
-export async function FinancialDashboardPage() {
-  const t = await getTranslations('dashboard.finance')
+export function FinancialDashboardPage() {
+  const t = useTranslations('dashboard.finance')
+  const { data: session } = useSession()
+  const tenantId = session?.tenantId ?? ''
+  const summaryQuery = useFinancialSummary(tenantId)
+  const chargesQuery = useCharges(tenantId, { pageSize: 8 })
+  const kpis = useMemo(() => mapFinancialSummaryToKpis(summaryQuery.data), [summaryQuery.data])
+  const movement = useMemo(
+    () => mapMonthlySeriesToMovement(summaryQuery.data?.monthlySeries ?? []),
+    [summaryQuery.data],
+  )
+  const upcomingDues = useMemo(
+    () => mapUpcomingChargesToDues(summaryQuery.data?.upcomingDues ?? []),
+    [summaryQuery.data],
+  )
+  const entries = useMemo(
+    () => (chargesQuery.data?.items ?? []).map(mapChargeListItemToFinancialEntry),
+    [chargesQuery.data],
+  )
 
   return (
-    <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
+    <Box sx={{ width: '100%', p: 3.5 }}>
       <Stack spacing={2.4}>
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          alignItems={{ xs: 'stretch', md: 'flex-start' }}
-          justifyContent="space-between"
-          spacing={1.6}
-        >
-          <Box>
-            <Typography variant="h3" sx={{ fontSize: { xs: 20, md: 24 }, fontWeight: 800 }}>
-              {t('title')}
-            </Typography>
-          </Box>
+        <DashboardPageHeader
+          title={t('title')}
+          subtitle={t('subtitle')}
+          actions={<FinancialDashboardHeaderActions exportLabel={t('export')} />}
+        />
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2}>
-            <Button
-              type="button"
-              variant="outlined"
-              endIcon={<KeyboardArrowDownRoundedIcon sx={{ fontSize: iconSize.sm }} />}
-              sx={{ borderRadius: `${radius.sm}px`, fontWeight: 900, minHeight: 40 }}
-            >
-              {t('selectedMonth')}
-            </Button>
-            <Button
-              type="button"
-              variant="outlined"
-              startIcon={<FileDownloadOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-              sx={{ borderRadius: `${radius.sm}px`, fontWeight: 900, minHeight: 40 }}
-            >
-              {t('export')}
-            </Button>
-            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-              <DashboardNotificationsButton />
-            </Box>
-          </Stack>
-        </Stack>
-
-        <FinancialKpiCards kpis={financialKpis} />
+        <FinancialKpiCards kpis={kpis} />
         <Box
           sx={{
             display: 'grid',
@@ -67,10 +58,10 @@ export async function FinancialDashboardPage() {
             alignItems: 'stretch',
           }}
         >
-          <FinancialMovementChart movement={monthlyFinancialMovement} />
+          <FinancialMovementChart movement={movement} />
           <FinancialUpcomingDueList items={upcomingDues} />
         </Box>
-        <FinancialEntriesTable entries={financialEntries} />
+        <FinancialEntriesTable entries={entries} />
       </Stack>
     </Box>
   )

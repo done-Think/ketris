@@ -9,6 +9,10 @@
   "actions": {
     "backHome": "Volver al inicio"
   },
+  "dashboardPagination": {
+    "rowsPerPage": "Filas por página",
+    "displayedRows": "{from}-{to} de {count}"
+  },
   "errors": {
     "backHome": "Volver al inicio",
     "notFound": "Página no encontrada.",
@@ -18,17 +22,65 @@
   "appShell": {
     "ariaLabel": "Navegación principal",
     "openNavigation": "Abrir navegación",
+    "collapseNavigation": "Contraer navegación",
+    "expandNavigation": "Expandir navegación",
     "defaultUserName": "Equipo Ketris",
     "defaultUserContext": "Panel administrativo",
     "backToMarketplace": "Volver al marketplace",
+    "logoutToMarketplace": "Cerrar sesión y volver al marketplace",
     "dashboard": "Dashboard",
+    "agencyOverview": "Visión Inmob.",
     "pipeline": "Pipeline",
     "contacts": "Contactos",
     "leads": "Leads",
+    "team": "Equipo",
     "properties": "Mis inmuebles",
     "contracts": "Contratos",
     "publicProfile": "Perfil público",
+    "agencyPublicProfile": "Perfil de la inmobiliaria",
     "agenda": "Agenda",
-    "finance": "Finanzas"
+    "proposals": "Propuestas",
+    "maintenance": "Mantenimiento",
+    "finance": "Finanzas",
+    "editProfile": "Editar perfil",
+    "collapseMenu": "Contraer menú",
+    "profileEditor": {
+      "title": "Editar perfil",
+      "changePhoto": "Cambiar foto",
+      "name": "Nombre",
+      "email": "Correo electrónico",
+      "cancel": "Cancelar",
+      "save": "Guardar cambios",
+      "success": "Perfil actualizado correctamente.",
+      "saveError": "No se pudieron guardar los cambios. Inténtalo de nuevo.",
+      "avatarFormatError": "Usa una imagen JPG, PNG o WEBP."
+    },
+    "charges": "Cobros"
+  },
+  "profilePage": {
+    "title": "Perfil",
+    "subtitle": "Gestiona tus datos personales y la información de acceso.",
+    "personalData": "Datos personales",
+    "changePhoto": "Cambiar foto",
+    "name": "Nombre",
+    "phone": "Teléfono",
+    "email": "Correo electrónico",
+    "cancel": "Cancelar",
+    "save": "Guardar cambios",
+    "security": "Seguridad",
+    "securityDescription": "Cambia tu contraseña de acceso.",
+    "newPassword": "Nueva contraseña",
+    "confirmPassword": "Confirmar nueva contraseña",
+    "changePassword": "Cambiar contraseña",
+    "profileSuccess": "Perfil actualizado correctamente.",
+    "profileError": "No se pudieron guardar los cambios. Inténtalo de nuevo.",
+    "passwordSuccess": "Contraseña cambiada correctamente.",
+    "passwordError": "No se pudo cambiar la contraseña. Inténtalo de nuevo.",
+    "avatarFormatError": "Usa una imagen JPG, PNG o WEBP."
+  },
+  "roleGuard": {
+    "loadingSession": "Cargando sesión",
+    "restrictedTitle": "Acceso restringido",
+    "restrictedDescription": "No tienes permiso para ver esta página. Redirigiendo al panel."
   }
 }

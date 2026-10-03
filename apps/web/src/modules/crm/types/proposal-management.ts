@@ -100,11 +100,3 @@ export type ProposalsTableProps = ProposalCollectionActions & {
 }
 
 export type ProposalMobileCardsProps = ProposalsTableProps
-
-export type ProposalPaginationProps = {
-  page: number
-  pageCount: number
-  visibleCount: number
-  totalCount: number
-  onPageChange?: (page: number) => void
-}

@@ -5,7 +5,7 @@ export interface TenantSummary {
   createdAt: string
 }
 
-export type TenantUserPapel = 'ADMIN' | 'OWNER' | 'AGENT'
+export type TenantUserPapel = 'ADMIN' | 'OWNER' | 'AGENT' | 'RENTER'
 
 export interface TenantUser {
   id: string

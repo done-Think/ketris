@@ -4,13 +4,14 @@ import type { z } from 'zod'
 import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
 
 import type { agendaEventFormSchema } from '../schemas/agenda-event-form-schema'
-import type { agendaRescheduleSchema } from '../schemas/agenda-reschedule-schema'
 
 export type AgendaEventStatus = 'Confirmada' | 'Pendente' | 'Reagendar'
 
 export type AgendaEventTone = 'primary' | 'info' | 'warning'
 
-export type AgendaEventCreatorRole = 'Colega' | 'Imobiliária'
+export type AgendaEventCreatorRole = 'colleague' | 'agency'
+
+export type AgendaEventVisualKind = 'followUp' | 'inspection' | 'meeting' | 'signature' | 'visit'
 
 export type AgendaEvent = {
   id: string
@@ -20,11 +21,14 @@ export type AgendaEvent = {
   title: string
   property: string
   propertyHref: string
+  propertyId: string | null
+  apiKind: AgendaEventApiKind | null
   participant: string
   phone: string
   notes: string
   status: AgendaEventStatus
   tone: AgendaEventTone
+  kind?: AgendaEventVisualKind
   createdBy?: string
   createdByRole?: AgendaEventCreatorRole
 }
@@ -69,19 +73,21 @@ export type AgendaPropertyOption = {
   label: string
 }
 
-export type AgendaRescheduleFormValues = z.infer<typeof agendaRescheduleSchema>
-
 export type AgendaEventDetailDialogProps = {
   event: AgendaEvent | null
-  eventDate: string
+  isDeleting: boolean
+  isSaving: boolean
   maxDate: string
   minDate: string
   open: boolean
   onClose: () => void
-  onReschedule: (values: AgendaRescheduleFormValues) => void
+  onDelete: () => Promise<boolean>
+  onEdit: (values: AgendaEventFormValues) => Promise<boolean>
+  propertyOptions: AgendaPropertyOption[]
 }
 
 export type AgendaEventFormDialogProps = {
+  initialValues?: Partial<AgendaEventFormValues>
   maxDate: string
   minDate: string
   onClose: () => void
@@ -112,4 +118,57 @@ export type AgendaBuildNotificationsOptions = {
   events: AgendaEvent[]
   t: (key: string, values?: Record<string, string | number>) => string
   today: Dayjs
+}
+
+export type AgendaEventApiStatus = 'CONFIRMED' | 'PENDING' | 'RESCHEDULE' | 'CANCELLED'
+
+export type AgendaEventApiKind =
+  'VISIT' | 'FOLLOW_UP' | 'MEETING' | 'INSPECTION' | 'SIGNATURE' | 'OTHER'
+
+export interface AgendaEventApi {
+  id: string
+  tenantId: string
+  responsibleId: string
+  createdById: string | null
+  propertyId: string | null
+  propertyReference: string | null
+  title: string
+  kind: AgendaEventApiKind | null
+  status: AgendaEventApiStatus
+  start: string
+  end: string
+  participantName: string
+  participantPhone: string
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateAgendaEventPayload {
+  responsibleId?: string
+  propertyId?: string
+  propertyReference?: string
+  title: string
+  kind?: AgendaEventApiKind
+  start: string
+  durationMinutes: number
+  participantName: string
+  participantPhone: string
+  notes?: string
+}
+
+export interface RescheduleAgendaEventPayload {
+  start: string
+  durationMinutes?: number
+}
+
+export interface UpdateAgendaEventPayload {
+  title?: string
+  kind?: AgendaEventApiKind | null
+  status?: AgendaEventApiStatus
+  propertyId?: string | null
+  propertyReference?: string | null
+  participantName?: string
+  participantPhone?: string
+  notes?: string | null
 }

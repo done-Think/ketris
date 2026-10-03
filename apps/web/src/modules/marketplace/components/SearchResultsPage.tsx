@@ -3,9 +3,11 @@
 import { Alert, Box, Button } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
+import { SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
 import { getMarketplaceNavigationItemIdByPurpose } from '../config/navigation'
+import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import { useSearchResults } from '../hooks/use-search-results'
 import type { SearchResultsPageProps } from '../types/search'
 import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
@@ -22,6 +24,7 @@ import { SearchResultsToolbar } from './search-results/SearchResultsToolbar'
 export function SearchResultsPage({ initialLocation = '', purpose }: SearchResultsPageProps) {
   const t = useTranslations('marketplace')
   const errorT = useTranslations('marketplace.searchResults.error')
+  const { footerColumns, legalLinks } = useMarketplaceNavigation()
   const results = useSearchResults({ purpose, initialLocation })
   const activeItemId = getMarketplaceNavigationItemIdByPurpose(purpose)
   const purposeLabel = purpose === 'comprar' ? t('navigation.buy') : t('navigation.rent')
@@ -117,6 +120,8 @@ export function SearchResultsPage({ initialLocation = '', purpose }: SearchResul
           searchQuery={results.locationQuery}
         />
       </Box>
+
+      <SiteFooter columns={footerColumns} legalLinks={legalLinks} />
     </Box>
   )
 }

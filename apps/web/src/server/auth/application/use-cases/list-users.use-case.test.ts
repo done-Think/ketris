@@ -12,6 +12,7 @@ const admin: User = {
   senhaHash: 'hash-fake',
   papel: 'ADMIN',
   ativo: true,
+  vinculoAprovadoEm: new Date(),
 }
 
 const owner: User = {
@@ -22,6 +23,7 @@ const owner: User = {
   senhaHash: 'hash-fake',
   papel: 'OWNER',
   ativo: true,
+  vinculoAprovadoEm: new Date(),
 }
 
 const agent: User = {
@@ -32,17 +34,18 @@ const agent: User = {
   senhaHash: 'hash-fake',
   papel: 'AGENT',
   ativo: false,
+  vinculoAprovadoEm: new Date(),
 }
 
 function createDeps(findManyByTenant?: UserRepository['findManyByTenant']) {
   const userRepository: UserRepository = {
     findById: vi.fn(),
     findByEmail: vi.fn(),
-    findByEmailAndTenant: vi.fn(),
     findManyByTenant: findManyByTenant ?? vi.fn().mockResolvedValue([admin, owner, agent]),
     create: vi.fn(),
     update: vi.fn(),
     deactivate: vi.fn(),
+    approveMembership: vi.fn(),
   }
 
   return { userRepository }

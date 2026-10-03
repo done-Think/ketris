@@ -6,6 +6,9 @@
     "dashboard": {
       "metadataTitle": "Ketris | Imobiliárias Plataforma"
     },
+    "tenants": {
+      "metadataTitle": "Ketris | Tenants da Plataforma"
+    },
     "tenant": {
       "metadataTitle": "Ketris | Imobiliária Plataforma"
     },
@@ -14,6 +17,9 @@
     },
     "newAdmin": {
       "metadataTitle": "Ketris | Administradores da plataforma"
+    },
+    "system": {
+      "metadataTitle": "Ketris | Saúde do Sistema"
     }
   },
   "login": {
@@ -32,23 +38,282 @@
     "empty": "Nenhuma imobiliária cadastrada ainda.",
     "createdAt": "Criada em"
   },
+  "overview": {
+    "title": "Visão geral da plataforma",
+    "production": "Produção",
+    "registeredTenants": "Imobiliárias cadastradas",
+    "liveUtc": "UTC ao vivo: {value}",
+    "navigation": {
+      "ariaLabel": "Navegação da plataforma",
+      "openNavigation": "Abrir navegação da plataforma",
+      "closeNavigation": "Fechar navegação da plataforma",
+      "collapseNavigation": "Recolher navegação",
+      "expandNavigation": "Expandir navegação",
+      "collapseMenu": "Recolher menu",
+      "admin": "SUPER ADMIN",
+      "overview": "Visão geral",
+      "tenants": "Tenants",
+      "users": "Usuários",
+      "plans": "Planos",
+      "finance": "Financeiro",
+      "system": "Sistema",
+      "logs": "Logs",
+      "online": "Online",
+      "demoNotice": "Dados demonstrativos. Não representa monitoramento real."
+    },
+    "metrics": {
+      "tenants": {
+        "label": "Imobiliárias"
+      },
+      "brokers": {
+        "label": "Corretores"
+      },
+      "properties": {
+        "label": "Imóveis"
+      },
+      "mrr": {
+        "label": "MRR"
+      },
+      "churn": {
+        "label": "Churn"
+      },
+      "uptime": {
+        "label": "Uptime da plataforma"
+      },
+      "indicators": {
+        "growth": "+15%",
+        "stable": "Estável",
+        "normal": "Normal"
+      }
+    },
+    "growth": {
+      "title": "Tendências de crescimento (12 meses)",
+      "tenants": "Tenants",
+      "contracts": "Contratos"
+    },
+    "months": {
+      "jan": "Jan",
+      "feb": "Fev",
+      "mar": "Mar",
+      "apr": "Abr",
+      "may": "Mai",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Ago",
+      "sep": "Set",
+      "oct": "Out",
+      "nov": "Nov",
+      "dec": "Dez"
+    },
+    "alerts": {
+      "title": "Alertas do sistema",
+      "active": "{count} ativos",
+      "backup": {
+        "title": "Backup automatizado falhou",
+        "description": "Erro de gravação S3-us-east-1. Segunda tentativa agendada."
+      },
+      "cpu": {
+        "title": "Consumo alto de CPU",
+        "description": "Node-worker-02 operando em 92% da capacidade."
+      },
+      "ssl": {
+        "title": "SSL renovado",
+        "description": "Certificado de gateway-api renovado com sucesso."
+      },
+      "tenant-registration": {
+        "title": "Novo registro de tenant",
+        "description": "Imobiliária \"Vanguard Hub\" concluiu setup básico."
+      },
+      "minutesAgo": "há {count} min",
+      "hoursAgo": "há {count} h"
+    },
+    "recentTenants": {
+      "title": "Tenants recentes",
+      "tableLabel": "Tabela de tenants recentes",
+      "columns": {
+        "name": "Nome / Imobiliária",
+        "plan": "Plano",
+        "brokers": "Corretores",
+        "registeredAt": "Cadastro",
+        "status": "Status"
+      },
+      "plans": {
+        "enterprise": "Enterprise",
+        "proGrowth": "Pro Growth",
+        "starterPack": "Starter Pack"
+      },
+      "statuses": {
+        "active": "Ativo",
+        "provisioning": "Provisionando",
+        "suspended": "Suspenso"
+      }
+    }
+  },
   "tenant": {
     "usersTitle": "Usuários da imobiliária",
     "newAdmin": "Novo administrador",
     "usersLoadError": "Não foi possível carregar os usuários.",
     "emptyUsers": "Nenhum usuário cadastrado ainda."
   },
+  "tenants": {
+    "title": "Tenants",
+    "searchLabel": "Buscar tenant",
+    "searchPlaceholder": "Buscar tenant...",
+    "planFilterLabel": "Filtrar por plano",
+    "statusFilterLabel": "Filtrar por status",
+    "newTenant": "Novo Tenant",
+    "activeBadge": "Ativos",
+    "metrics": {
+      "total": "Total",
+      "starter": "Starter",
+      "pro": "Pro",
+      "enterprise": "Enterprise"
+    },
+    "tableLabel": "Tabela de tenants",
+    "columns": {
+      "name": "Nome",
+      "plan": "Plano",
+      "brokers": "Corretores",
+      "properties": "Imóveis",
+      "mrr": "MRR",
+      "status": "Status",
+      "createdAt": "Criação",
+      "actions": "Ações"
+    },
+    "plans": {
+      "all": "Todos",
+      "starter": "Starter",
+      "pro": "Pro",
+      "enterprise": "Enterprise"
+    },
+    "statuses": {
+      "all": "Todos",
+      "active": "Ativos",
+      "trial": "Trial",
+      "suspended": "Suspenso"
+    },
+    "planFilterValue": "Plano: {value}",
+    "statusFilterValue": "Status: {value}",
+    "summary": "Mostrando {start}–{end} de {total} tenants",
+    "previous": "Anterior",
+    "next": "Próximo",
+    "empty": "Nenhum tenant encontrado.",
+    "editAction": "Editar {name}",
+    "moreActions": "Mais ações para {name}",
+    "edit": "Editar",
+    "editTitle": "Editar tenant demonstrativo",
+    "editDescription": "As alterações são locais e serão descartadas ao recarregar a página.",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "nameRequired": "Informe o nome.",
+    "metricBadge": "Tenants"
+  },
+  "system": {
+    "title": "Saúde do Sistema",
+    "autoRefresh": "Atualização automática (5s)",
+    "networkEyebrow": "TRÁFEGO DE REDE",
+    "networkTitle": "Volume de Requisições (24h)",
+    "networkAverage": "Média: {value} req/min",
+    "errorsEyebrow": "NOTIFICAÇÕES DE ERRO",
+    "errorsTitle": "Ocorrência de Erros (12h)",
+    "errorsTotal": "Total: {count} falhas",
+    "logsTitle": "Atividades Recentes do Cluster (Console de Logs)",
+    "clearConsole": "Limpar Console",
+    "emptyConsole": "Console limpo.",
+    "metrics": {
+      "gateway": {
+        "label": "API Gateway",
+        "status": "Saudável"
+      },
+      "database": {
+        "label": "Banco de Dados",
+        "status": "Latência Estável"
+      },
+      "storage": {
+        "label": "Armazenamento",
+        "status": "Espaço Limitado"
+      },
+      "queue": {
+        "label": "Fila de Tarefas",
+        "status": "Processando"
+      }
+    },
+    "logMessages": {
+      "authentication": "Autenticação bem-sucedida para o tenant 'Silva & Associados'",
+      "rateLimit": "Requisição rejeitada devido a limite de taxa excedido no plano Starter",
+      "payment": "Falha na sincronização de pagamento recorrente (Gateway de faturamento)",
+      "import": "Processamento concluído de 140 registros de imóveis via planilha",
+      "backup": "Backup programado efetuado com sucesso no cluster secundário",
+      "connection": "Erro crítico de conexão perdida na réplica de leitura de dados"
+    }
+  },
   "newAdmin": {
     "title": "Novo administrador da plataforma"
+  },
+  "admins": {
+    "title": "Usuários",
+    "subtitle": "Administradores da plataforma. Gerencie os usuários que possuem acesso ao painel administrativo da Ketris.",
+    "newAdmin": "Novo administrador",
+    "createTitle": "Novo administrador da plataforma",
+    "createDescription": "Cadastre um usuário com acesso ao painel administrativo da Ketris.",
+    "closeCreateDialog": "Fechar modal de novo administrador",
+    "searchPlaceholder": "Buscar por nome ou e-mail",
+    "statusFilter": "Todos os status",
+    "roleFilter": "Todas as funções",
+    "allStatuses": "Todos os status",
+    "allRoles": "Todas as funções",
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "administrator": "Administrador",
+    "roles": {
+      "ADMIN": "Admin",
+      "ADMIN_AGENT": "Admin + Agent",
+      "AGENT": "Agent"
+    },
+    "name": "Nome",
+    "email": "E-mail",
+    "role": "Função",
+    "unavailable": "Não disponível",
+    "loadError": "Não foi possível carregar os administradores.",
+    "emptyTitle": "Nenhum administrador",
+    "emptyDescription": "Ainda não existem administradores cadastrados na plataforma.",
+    "noResultsTitle": "Nenhum usuário encontrado",
+    "noResultsDescription": "Não encontramos administradores que correspondam aos filtros selecionados.",
+    "clearFilters": "Limpar filtros",
+    "editUnavailable": "Editar (em breve)",
+    "passwordUnavailable": "Alterar senha (em breve)",
+    "deactivate": "Desativar",
+    "activate": "Ativar",
+    "editRegistration": "Alterar cadastro",
+    "editTitle": "Alterar cadastro",
+    "closeEditDialog": "Fechar modal de alteração de cadastro",
+    "save": "Salvar",
+    "updateSuccess": "Cadastro atualizado com sucesso.",
+    "updateError": "Não foi possível atualizar o cadastro.",
+    "deactivateTitle": "Desativar administrador?",
+    "deactivateDescription": "{name} perderá o acesso ao painel administrativo da plataforma.",
+    "cancel": "Cancelar",
+    "actionsFor": "Ações para {name}",
+    "columns": {
+      "admin": "Administrador",
+      "email": "E-mail",
+      "role": "Função",
+      "status": "Status",
+      "lastAccess": "Último acesso",
+      "createdAt": "Criado em",
+      "actions": "Ações"
+    }
   },
   "forms": {
     "name": "Nome",
     "email": "E-mail",
     "password": "Senha",
     "passwordConfirmation": "Confirmar senha",
+    "cancel": "Cancelar",
     "slug": "Slug",
     "slugHelper": "Identificador único, ex.: imobiliaria-exemplo",
     "role": "Papel",
+    "administrator": "Administrador",
     "status": "Status",
     "active": "Ativo",
     "inactive": "Inativo",
@@ -61,5 +326,11 @@
     "createTenantAdminSubmit": "Criar administrador da imobiliária",
     "createTenantAdminError": "Não foi possível criar o administrador da imobiliária. Tente novamente.",
     "createTenantAdminSuccess": "Administrador {email} criado com sucesso."
+  },
+  "table": {
+    "first": "Primeira página",
+    "last": "Última página",
+    "next": "Próxima página",
+    "previous": "Página anterior"
   }
 }

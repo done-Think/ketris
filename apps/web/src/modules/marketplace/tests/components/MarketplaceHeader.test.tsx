@@ -1,16 +1,25 @@
 import { ThemeProvider } from '@mui/material'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { signOut, useSession } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
+import { clearClientSession } from '@shared/lib/auth/clear-client-session'
 
 import { MarketplaceHeader } from '../../components/MarketplaceHeader'
 
+const routerMock = {
+  replace: vi.fn(),
+  refresh: vi.fn(),
+}
+
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
-  signOut: vi.fn(),
+}))
+
+vi.mock('@shared/lib/auth/clear-client-session', () => ({
+  clearClientSession: vi.fn().mockResolvedValue(undefined),
 }))
 
 // LanguageSelector usa next/navigation direto (não o wrapper @/i18n/navigation, já mockado
@@ -18,6 +27,7 @@ vi.mock('next-auth/react', () => ({
 vi.mock('next/navigation', () => ({
   usePathname: () => '/',
   useSearchParams: () => new URLSearchParams(),
+  useRouter: () => routerMock,
 }))
 
 function renderMarketplaceHeader() {
@@ -79,6 +89,25 @@ describe('MarketplaceHeader', () => {
 
     expect(screen.getByText('Maria Silva')).toBeInTheDocument()
     expect(screen.getByText('maria@example.com')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /suporte/i })).toHaveAttribute(
+      'href',
+      '/dashboard/maintenance',
+    )
+    expect(screen.getByRole('link', { name: /configurações/i })).toHaveAttribute(
+      'href',
+      '/dashboard/public-profile',
+    )
+  })
+
+  it('RENTER: não mostra o botão de anunciar imóvel', () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: { user: { name: 'Maria Locatária', email: 'maria@example.com' }, papel: 'RENTER' },
+      status: 'authenticated',
+    } as unknown as ReturnType<typeof useSession>)
+
+    renderMarketplaceHeader()
+
+    expect(screen.queryByRole('link', { name: 'Anunciar Imóvel' })).not.toBeInTheDocument()
   })
 
   it('com sessão: clicar em "Sair" chama signOut()', async () => {
@@ -93,6 +122,8 @@ describe('MarketplaceHeader', () => {
     await user.click(screen.getByRole('button', { name: 'Abrir perfil' }))
     await user.click(screen.getByRole('button', { name: /sair/i }))
 
-    expect(signOut).toHaveBeenCalledOnce()
+    expect(clearClientSession).toHaveBeenCalledOnce()
+    expect(routerMock.replace).toHaveBeenCalledWith('/pt')
+    expect(routerMock.refresh).toHaveBeenCalledOnce()
   })
 })

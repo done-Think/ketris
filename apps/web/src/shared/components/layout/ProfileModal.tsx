@@ -127,7 +127,7 @@ export function ProfileModal({
                 {userProfile.name}
               </Typography>
               <Typography noWrap sx={{ color: 'text.secondary', ...componentText.modalSubtitle }}>
-                {t('role')}
+                {userProfile.role ? t(`roles.${userProfile.role}`) : null}
               </Typography>
             </Box>
           </Stack>

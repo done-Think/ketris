@@ -14,6 +14,7 @@ const admin: PlatformAdmin = {
   nome: 'Dono Ketris',
   email: 'dono@ketris.dev',
   senhaHash: 'hash-fake',
+  role: 'ADMIN',
   ativo: true,
 }
 
@@ -70,6 +71,7 @@ describe('LoginPlatformAdminUseCase', () => {
       id: admin.id,
       nome: admin.nome,
       email: admin.email,
+      role: admin.role,
       ativo: admin.ativo,
     })
     expect(result.admin).not.toHaveProperty('senhaHash')

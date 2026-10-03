@@ -10,8 +10,10 @@ import type { CreatePropertyActionsProps } from '../types/dashboard-property'
 export function CreatePropertyActions({
   firstStep,
   lastStep,
+  isSubmitting,
   onPreviousStep,
   onNextStep,
+  submitLabel,
 }: CreatePropertyActionsProps) {
   const t = useTranslations('properties.create')
 
@@ -50,10 +52,17 @@ export function CreatePropertyActions({
         {t('back')}
       </Button>
       <Button
+        // A key própria (não só `type` dinâmico) força o React a desmontar/remontar em vez de
+        // mutar o atributo `type` do <button> existente no meio do próprio evento de clique —
+        // sem isso, um clique em "Próximo" no penúltimo passo pode virar submit nativo antes do
+        // navegador terminar de processar esse mesmo clique (mesma causa raiz já corrigida em
+        // AgendaEventDetailDialog e CreateLeadDialog).
+        key={lastStep ? 'submit' : 'next'}
         type={lastStep ? 'submit' : 'button'}
         variant="contained"
         endIcon={!lastStep ? <ChevronRightRoundedIcon sx={{ fontSize: iconSize.sm }} /> : null}
         onClick={lastStep ? undefined : onNextStep}
+        disabled={lastStep && isSubmitting}
         sx={{
           flex: { xs: 1, md: 'initial' },
           minHeight: { xs: 44, md: 40 },
@@ -62,7 +71,7 @@ export function CreatePropertyActions({
           fontWeight: 900,
         }}
       >
-        {lastStep ? t('publish') : t('next')}
+        {lastStep ? (submitLabel ?? t('publish')) : t('next')}
       </Button>
     </Stack>
   )

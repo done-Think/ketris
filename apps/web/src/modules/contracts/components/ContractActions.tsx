@@ -1,11 +1,16 @@
-import { Button, Stack } from '@mui/material'
+import { Button, CircularProgress, Stack } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { brand, radius, shadows } from '@shared/theme/tokens'
 
 import type { ContractActionsProps } from '../types/contract'
 
-export function ContractActions({ lastStep, onPreviousStep, onNextStep }: ContractActionsProps) {
+export function ContractActions({
+  lastStep,
+  isSubmitting,
+  onPreviousStep,
+  onNextStep,
+}: ContractActionsProps) {
   const t = useTranslations('contracts.wizard.actions')
 
   return (
@@ -35,6 +40,8 @@ export function ContractActions({ lastStep, onPreviousStep, onNextStep }: Contra
       <Button
         variant="contained"
         onClick={onNextStep}
+        disabled={lastStep && isSubmitting}
+        startIcon={lastStep && isSubmitting ? <CircularProgress size={16} color="inherit" /> : null}
         sx={{
           borderRadius: `${radius.sm}px`,
           boxShadow: shadows.none,

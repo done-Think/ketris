@@ -13,6 +13,7 @@ function buildUser(overrides: Partial<User> = {}): User {
     senhaHash: 'hash',
     papel: 'ADMIN',
     ativo: true,
+    vinculoAprovadoEm: new Date(),
     ...overrides,
   }
 }
@@ -43,8 +44,10 @@ describe('ListAdminsUseCase', () => {
         tenantId: 't1',
         nome: 'Usuário',
         email: 'user@ketris.dev',
+        avatarUrl: null,
         papel: 'ADMIN',
         ativo: true,
+        vinculoAprovadoEm: expect.any(Date),
       },
     ])
     expect(userRepository.findManyByTenant).toHaveBeenCalledWith('t1')

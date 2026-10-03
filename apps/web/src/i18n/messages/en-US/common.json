@@ -9,6 +9,10 @@
   "actions": {
     "backHome": "Back to home"
   },
+  "dashboardPagination": {
+    "rowsPerPage": "Rows per page",
+    "displayedRows": "{from}-{to} of {count}"
+  },
   "errors": {
     "backHome": "Back home",
     "notFound": "Page not found.",
@@ -18,17 +22,65 @@
   "appShell": {
     "ariaLabel": "Main navigation",
     "openNavigation": "Open navigation",
+    "collapseNavigation": "Collapse navigation",
+    "expandNavigation": "Expand navigation",
     "defaultUserName": "Ketris Team",
     "defaultUserContext": "Admin dashboard",
     "backToMarketplace": "Back to marketplace",
+    "logoutToMarketplace": "Sign out and return to marketplace",
     "dashboard": "Dashboard",
+    "agencyOverview": "Agency Overview",
     "pipeline": "Pipeline",
     "contacts": "Contacts",
     "leads": "Leads",
+    "team": "Team",
     "properties": "My Properties",
     "contracts": "Contracts",
     "publicProfile": "Public Profile",
+    "agencyPublicProfile": "Agency Profile",
     "agenda": "Schedule",
-    "finance": "Finance"
+    "proposals": "Proposals",
+    "maintenance": "Maintenance",
+    "finance": "Finance",
+    "editProfile": "Edit profile",
+    "collapseMenu": "Collapse menu",
+    "profileEditor": {
+      "title": "Edit profile",
+      "changePhoto": "Change photo",
+      "name": "Name",
+      "email": "Email",
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "success": "Profile updated successfully.",
+      "saveError": "Could not save the changes. Try again.",
+      "avatarFormatError": "Use a JPG, PNG, or WEBP image."
+    },
+    "charges": "Charges"
+  },
+  "profilePage": {
+    "title": "Profile",
+    "subtitle": "Manage your personal details and access information.",
+    "personalData": "Personal details",
+    "changePhoto": "Change photo",
+    "name": "Name",
+    "phone": "Phone",
+    "email": "Email",
+    "cancel": "Cancel",
+    "save": "Save changes",
+    "security": "Security",
+    "securityDescription": "Change your access password.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "changePassword": "Change password",
+    "profileSuccess": "Profile updated successfully.",
+    "profileError": "Could not save the changes. Try again.",
+    "passwordSuccess": "Password changed successfully.",
+    "passwordError": "Could not change the password. Try again.",
+    "avatarFormatError": "Use a JPG, PNG, or WEBP image."
+  },
+  "roleGuard": {
+    "loadingSession": "Loading session",
+    "restrictedTitle": "Restricted access",
+    "restrictedDescription": "You don't have permission to view this page. Redirecting to the dashboard."
   }
 }

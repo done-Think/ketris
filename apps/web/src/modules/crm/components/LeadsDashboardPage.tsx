@@ -2,19 +2,29 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { Box, Paper, Stack, Typography } from '@mui/material'
+import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 
-import { brand, radius, shadows, surface } from '@shared/theme/tokens'
+import { DashboardTablePagination } from '@shared/components/layout'
+import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
 
-import type { DashboardLead, LeadFilter } from '../types/lead'
-import { filterLeads, leadsDefaultPageSize, paginateLeads } from '../utils/leads'
-import { useLeadsStore } from '../stores/leads-store'
+import { leadListFixtures } from '../fixtures/lead-list-fixtures'
+import { useLeads, useUpdateLeadStage } from '../hooks/use-leads'
+import type {
+  DashboardLead,
+  LeadApiStage,
+  LeadFilter,
+  LeadTableSortField,
+  LeadTableSortState,
+} from '../types/lead'
+import { toDashboardLead } from '../utils/map-dashboard-lead'
+import { filterLeads, leadsDefaultPageSize, paginateLeads, sortLeads } from '../utils/leads'
+import { ConvertLeadDialog } from './ConvertLeadDialog'
 import { CreateLeadDialog } from './CreateLeadDialog'
 import { LeadContactDialog } from './LeadContactDialog'
 import { LeadsCards } from './leads-list/LeadsCards'
 import { LeadsHeader } from './leads-list/LeadsHeader'
-import { LeadsPaginationFooter } from './leads-list/LeadsPaginationFooter'
 import { LeadsStatusFilters } from './leads-list/LeadsStatusFilters'
 import { LeadsTable } from './leads-list/LeadsTable'
 
@@ -23,20 +33,39 @@ const leadsBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-s
 export function LeadsDashboardPage() {
   const t = useTranslations('crm.leads')
   const searchParams = useSearchParams()
-  const leads = useLeadsStore((state) => state.leads)
+  const { data: session } = useSession()
+  const tenantId = session?.tenantId ?? ''
+  const leadsQuery = useLeads(tenantId)
+  const updateLeadStage = useUpdateLeadStage(tenantId)
+  const fixtureMode =
+    process.env.NODE_ENV !== 'production' &&
+    !leadsQuery.isLoading &&
+    (leadsQuery.isError || (leadsQuery.data ?? []).length === 0)
+  const leads = useMemo(
+    () => (fixtureMode ? leadListFixtures : (leadsQuery.data ?? []).map(toDashboardLead)),
+    [fixtureMode, leadsQuery.data],
+  )
   const [search, setSearch] = useState('')
   const [activeFilter, setActiveFilter] = useState<LeadFilter>('Todos')
+  const [sort, setSort] = useState<LeadTableSortState>(null)
   const [page, setPage] = useState(1)
+  const [rowsPerPage, setRowsPerPage] = useState(leadsDefaultPageSize)
   const [isCreateLeadDialogOpen, setIsCreateLeadDialogOpen] = useState(false)
   const [selectedContactLead, setSelectedContactLead] = useState<DashboardLead | null>(null)
+  const [convertLead, setConvertLead] = useState<DashboardLead | null>(null)
+
+  function handleStageChange(leadId: string, stage: LeadApiStage) {
+    updateLeadStage.mutate({ leadId, stage })
+  }
 
   const filteredLeads = useMemo(
     () => filterLeads(leads, search, activeFilter),
     [search, activeFilter, leads],
   )
+  const sortedLeads = useMemo(() => sortLeads(filteredLeads, sort), [filteredLeads, sort])
   const leadsPage = useMemo(
-    () => paginateLeads(filteredLeads, page, leadsDefaultPageSize),
-    [filteredLeads, page],
+    () => paginateLeads(sortedLeads, page, rowsPerPage),
+    [sortedLeads, page, rowsPerPage],
   )
 
   function handleSearchChange(value: string) {
@@ -49,8 +78,20 @@ export function LeadsDashboardPage() {
     setPage(1)
   }
 
+  function handleSortChange(field: LeadTableSortField) {
+    setSort((currentSort) => {
+      if (currentSort?.field !== field) return { field, direction: 'asc' }
+
+      return {
+        field,
+        direction: currentSort.direction === 'asc' ? 'desc' : 'asc',
+      }
+    })
+    setPage(1)
+  }
+
   useEffect(() => {
-    const leadId = searchParams.get('leadId')
+    const leadId = searchParams?.get('leadId')
     const lead = leads.find((currentLead) => currentLead.id === leadId)
     if (!lead) return
 
@@ -61,15 +102,17 @@ export function LeadsDashboardPage() {
     <Box
       sx={{
         width: '100%',
-        px: { xs: 2, md: 3.6 },
-        py: { xs: 2.4, md: 4.2 },
+        p: 3.5,
         fontFamily: leadsBodyFontFamily,
         '& .MuiTypography-root, & .MuiButton-root, & .MuiInputBase-root, & .MuiTableCell-root': {
           fontFamily: leadsBodyFontFamily,
         },
+        '& h1.MuiTypography-root': {
+          fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
+        },
       }}
     >
-      <Stack spacing={2.2}>
+      <Stack spacing={2}>
         <LeadsHeader
           search={search}
           onSearchChange={handleSearchChange}
@@ -89,15 +132,20 @@ export function LeadsDashboardPage() {
             flexDirection: 'column',
             minHeight: { xs: 420, md: 360 },
             overflow: 'hidden',
-            borderColor: brand.neutral[100],
-            borderRadius: `${radius.lg}px`,
+            borderColor: alpha.graphite[6],
+            borderRadius: `${radius.sm}px`,
             bgcolor: surface.paper,
-            boxShadow: shadows.crmListPanel,
+            boxShadow: shadows.propertyCard,
           }}
         >
           {leadsPage.items.length > 0 ? (
             <>
-              <LeadsTable leads={leadsPage.items} onContactLead={setSelectedContactLead} />
+              <LeadsTable
+                leads={leadsPage.items}
+                sort={sort}
+                onContactLead={setSelectedContactLead}
+                onSortChange={handleSortChange}
+              />
               <LeadsCards leads={leadsPage.items} onContactLead={setSelectedContactLead} />
             </>
           ) : (
@@ -106,13 +154,15 @@ export function LeadsDashboardPage() {
             </Stack>
           )}
 
-          <LeadsPaginationFooter
-            firstVisible={leadsPage.firstItem}
-            lastVisible={leadsPage.lastItem}
-            resultTotal={leadsPage.totalCount}
+          <DashboardTablePagination
+            count={leadsPage.totalCount}
             page={leadsPage.page}
-            pageCount={leadsPage.pageCount}
+            rowsPerPage={rowsPerPage}
             onPageChange={setPage}
+            onRowsPerPageChange={(nextRowsPerPage) => {
+              setRowsPerPage(nextRowsPerPage)
+              setPage(1)
+            }}
           />
         </Paper>
       </Stack>
@@ -125,6 +175,16 @@ export function LeadsDashboardPage() {
         lead={selectedContactLead}
         open={Boolean(selectedContactLead)}
         onClose={() => setSelectedContactLead(null)}
+        onStageChange={handleStageChange}
+        onConvertRequest={(lead) => {
+          setSelectedContactLead(null)
+          setConvertLead(lead)
+        }}
+      />
+      <ConvertLeadDialog
+        lead={convertLead}
+        open={Boolean(convertLead)}
+        onClose={() => setConvertLead(null)}
       />
     </Box>
   )
