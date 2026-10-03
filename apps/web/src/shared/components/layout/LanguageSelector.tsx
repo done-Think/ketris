@@ -12,9 +12,6 @@ import type { AppLocale } from '@/i18n/types/locale.types'
 import { alpha, componentText, radius, shadows } from '@shared/theme/tokens'
 import type { LanguageOption, LanguageSelectorProps } from '@shared/types/language-selector'
 
-// useSearchParams() exige um boundary de Suspense para não travar a pré-renderização estática
-// (next build faz bail-out com "missing-suspense-with-csr-bailout" sem isso) — só descoberto
-// agora porque este componente nunca tinha sido de fato renderizado num build de produção antes.
 export function LanguageSelector(props: LanguageSelectorProps) {
   return (
     <Suspense fallback={null}>

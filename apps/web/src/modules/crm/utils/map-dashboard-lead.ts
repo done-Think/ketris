@@ -26,8 +26,6 @@ export function toDashboardLead(lead: Lead): DashboardLead {
     lastContactAt: lead.updatedAt,
     interest: lead.interest,
     source: lead.source,
-    // Broker name resolution is blocked by an admin-only route today — same simplification already
-    // accepted for properties (ver map-dashboard-property.ts).
     broker: '',
     stage: stageByApiStage[lead.stage],
     opportunityId: lead.opportunityId,

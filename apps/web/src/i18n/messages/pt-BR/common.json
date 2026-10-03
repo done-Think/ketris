@@ -26,7 +26,6 @@
     "expandNavigation": "Expandir navegação",
     "defaultUserName": "Equipe Ketris",
     "defaultUserContext": "Painel administrativo",
-    "backToMarketplace": "Voltar para o marketplace",
     "logoutToMarketplace": "Sair e voltar para o marketplace",
     "dashboard": "Dashboard",
     "agencyOverview": "Visão Geral Imob.",
@@ -53,7 +52,11 @@
       "save": "Salvar alterações",
       "success": "Perfil atualizado com sucesso.",
       "saveError": "Não foi possível salvar as alterações. Tente novamente.",
-      "avatarFormatError": "Use uma imagem JPG, PNG ou WEBP."
+      "avatarFormatError": "Use uma imagem JPG, PNG ou WEBP.",
+      "errors": {
+        "nameRequired": "Informe seu nome.",
+        "emailInvalid": "Informe um e-mail válido."
+      }
     },
     "charges": "Cobranças"
   },

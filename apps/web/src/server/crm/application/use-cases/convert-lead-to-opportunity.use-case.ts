@@ -24,11 +24,6 @@ export interface ConvertLeadToOpportunityOutput {
   opportunity: Opportunity
 }
 
-/**
- * Turns a Lead (raw, unqualified contact) into a formal Opportunity once the broker has settled on
- * a specific property and a proposed value — the two things a Lead deliberately doesn't carry yet.
- * The Lead survives, marked PROPOSTA and linked to the new Opportunity, so its history isn't lost.
- */
 export class ConvertLeadToOpportunityUseCase {
   constructor(
     private readonly leadRepository: LeadRepository,

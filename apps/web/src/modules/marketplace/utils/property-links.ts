@@ -25,11 +25,6 @@ function getHrefLastSegment(href: string) {
   return href.split('?')[0].split('/').filter(Boolean).at(-1) ?? ''
 }
 
-/**
- * Um href só vira rota de detalhe quando aponta para `/properties/<id>`. Parte dos
- * dados de destaque traz `/properties` puro, e tratar isso como id produziria
- * `/imoveis/properties` — uma 404. Nesses casos o destino correto é a listagem.
- */
 export function getPropertyDetailId(href: string): string | null {
   if (!href.startsWith(`${propertyListingPathname}/`)) return null
 

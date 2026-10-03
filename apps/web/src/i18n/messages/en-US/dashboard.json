@@ -213,6 +213,13 @@
         "title": "Ticket title",
         "description": "Problem description",
         "descriptionPlaceholder": "Describe the problem..."
+      },
+      "errors": {
+        "propertyRequired": "Select the property",
+        "categoryRequired": "Select the category",
+        "priorityRequired": "Select the priority",
+        "titleRequired": "Enter the ticket title",
+        "descriptionRequired": "Describe the problem"
       }
     },
     "actions": {

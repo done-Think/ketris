@@ -7,24 +7,7 @@ import { signIn } from 'next-auth/react'
 
 import { getLocalizedPathname } from '@/i18n/locale-prefix'
 import type { RegistrationDetailsFormValues } from '../schemas/registration-details-schema'
-
-interface RegisterErrorBody {
-  error?: { code?: string }
-}
-
-interface RegisteredBody {
-  outcome: 'REGISTERED'
-  user: { role: string }
-  accessToken: string
-  refreshToken: string
-}
-
-interface PendingApprovalBody {
-  outcome: 'PENDING_APPROVAL'
-  email: string
-}
-
-type RegisterResponseBody = RegisteredBody | PendingApprovalBody
+import type { RegisterErrorBody, RegisterResponseBody } from '../types/registration'
 
 export function useRegister() {
   const t = useTranslations('auth.registerDetails')

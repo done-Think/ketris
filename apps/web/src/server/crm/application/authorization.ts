@@ -4,11 +4,6 @@ import { ContactNotFoundError, LeadNotFoundError, OpportunityNotFoundError } fro
 import type { OpportunityRepository } from './ports/opportunity-repository.port'
 import type { PropertyLookupPort } from './ports/property-lookup.port'
 
-/**
- * AGENT actors only reach opportunities tied to properties they're `responsavelId` for.
- * ADMIN/OWNER are unrestricted. Throws the same opaque not-found used for cross-tenant access,
- * so an AGENT can't distinguish "doesn't exist" from "isn't yours".
- */
 export async function assertAgentOwnsProperty(
   propertyLookup: PropertyLookupPort,
   tenantId: string,
@@ -24,7 +19,6 @@ export async function assertAgentOwnsProperty(
   if (responsavelId !== actorId) throw new OpportunityNotFoundError()
 }
 
-/** Same rule as above, applied to contacts (reachable only through an owned opportunity). */
 export async function assertAgentOwnsContact(
   opportunityRepository: OpportunityRepository,
   tenantId: string,
@@ -40,11 +34,6 @@ export async function assertAgentOwnsContact(
   if (!hasAccess) throw new ContactNotFoundError()
 }
 
-/**
- * ADMIN/OWNER manage every lead in their tenant. An AGENT only manages the leads they're
- * `responsavelId` for. Everyone else gets the same opaque not-found used for cross-tenant access.
- * Mirrors `assertPropertyAccess` in `@server/properties/application/authorization`.
- */
 export function assertLeadAccess(responsavelId: string, actorId: string, actorPapel: Papel): void {
   if (actorPapel === 'ADMIN' || actorPapel === 'OWNER') return
   if (actorPapel === 'AGENT' && responsavelId === actorId) return

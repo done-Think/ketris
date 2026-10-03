@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { useTranslations } from 'next-intl'
 
 import { priceLimit, searchOptions } from '../config/search-filters'
-import { marketplaceSearchFormSchema } from '../schemas/marketplace-search-schema'
+import { createMarketplaceSearchFormSchema } from '../schemas/marketplace-search-schema'
 import type {
   MarketplaceSearchFormValues,
   PriceRange,
@@ -18,6 +18,11 @@ import { buildSearchHref, formatSearchCurrency, normalizeSearchText } from '../u
 
 export function useMarketplaceSearch() {
   const tPropertyTypes = useTranslations('marketplace.home.search.propertyTypes')
+  const tErrors = useTranslations('marketplace.home.search.errors')
+  const marketplaceSearchFormSchema = useMemo(
+    () => createMarketplaceSearchFormSchema((key) => tErrors(key)),
+    [tErrors],
+  )
   const { getValues, setValue, watch } = useForm<MarketplaceSearchFormValues>({
     defaultValues: {
       activeSearchMenu: null,
@@ -51,10 +56,6 @@ export function useMarketplaceSearch() {
     (key: SearchFilterKey, value: string) => {
       setValue('selectedSearch', { ...getValues('selectedSearch'), [key]: value })
       if (key !== 'priceRange') {
-        // `searchDraft` é o texto digitado para filtrar as opções, não o valor escolhido.
-        // Gravar `value` aqui exibia a chave de tradução crua (ex.: "apartment") no campo
-        // e fazia o filtro comparar chaves contra rótulos traduzidos, zerando o resultado.
-        // A escolha já vive em `selectedSearch`, que é de onde o chip e a URL a leem.
         setValue('searchDraft', { ...getValues('searchDraft'), [key]: '' })
       }
       closeSearchMenu()

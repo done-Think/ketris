@@ -1,36 +1,26 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Button, CircularProgress, Stack } from '@mui/material'
 import { useSnackbar } from 'notistack'
-import axios from 'axios'
 import { useTranslations } from 'next-intl'
 
 import { RhfTextField } from '@shared/components/form'
+import { extractErrorMessage } from '@shared/utils/error-message'
 
-import { updateAdminSchema, type UpdateAdminFormValues } from '../schemas/update-admin-schema'
+import { createUpdateAdminSchema, type UpdateAdminFormValues } from '../schemas/update-admin-schema'
 import { useAdmin } from '../hooks/use-admin'
 import { useUpdateAdmin } from '../hooks/use-update-admin'
-
-function extractErrorMessage(error: unknown, fallback: string): string {
-  if (axios.isAxiosError(error)) {
-    const message = error.response?.data?.error?.message
-    if (typeof message === 'string') return message
-  }
-  return fallback
-}
-
-type EditAdminFormProps = {
-  adminId: string
-}
+import type { EditAdminFormProps } from '../types/admin'
 
 export function EditAdminForm({ adminId }: EditAdminFormProps) {
   const t = useTranslations('auth.backoffice')
   const { enqueueSnackbar } = useSnackbar()
   const { data: admin, isLoading, isError } = useAdmin(adminId)
   const updateAdmin = useUpdateAdmin()
+  const updateAdminSchema = useMemo(() => createUpdateAdminSchema((key) => t(`errors.${key}`)), [t])
 
   const {
     control,

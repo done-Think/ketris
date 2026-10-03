@@ -32,7 +32,6 @@ export class UpdateChargeUseCase {
     }
 
     const hasRegisteredPayment = existing.paidAt !== null
-    // Status only becomes PAGA through the dedicated "register payment" flow, never via edit.
     const finalStatus =
       input.status === 'PAGA' && !hasRegisteredPayment ? existing.status : input.status
     const keepsPayment = finalStatus === 'PAGA'

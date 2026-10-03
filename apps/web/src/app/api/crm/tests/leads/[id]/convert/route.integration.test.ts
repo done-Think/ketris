@@ -11,6 +11,7 @@ import { POST } from '../../../../leads/[id]/convert/route'
 describe('/api/crm/leads/[id]/convert (integração)', () => {
   const tokenService = new JoseTokenService()
   let tenantId: string
+  let otherTenantId: string
   let agentToken: string
   let agentId: string
   let otherAgentToken: string
@@ -27,6 +28,7 @@ describe('/api/crm/leads/[id]/convert (integração)', () => {
     const otherTenant = await prisma.tenant.create({
       data: { nome: 'Outra Imobiliária', slug: `crm-lead-convert-other-${randomUUID()}` },
     })
+    otherTenantId = otherTenant.id
 
     const agent = await prisma.usuario.create({
       data: {
@@ -120,7 +122,7 @@ describe('/api/crm/leads/[id]/convert (integração)', () => {
   })
 
   afterAll(async () => {
-    await prisma.tenant.deleteMany({ where: { id: { in: [tenantId] } } })
+    await prisma.tenant.deleteMany({ where: { id: { in: [tenantId, otherTenantId] } } })
     await prisma.$disconnect()
   })
 

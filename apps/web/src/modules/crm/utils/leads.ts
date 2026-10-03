@@ -29,10 +29,6 @@ export function getLeadFilterCount(leads: readonly DashboardLead[], filter: Lead
   return leads.filter((lead) => lead.stage === filter).length
 }
 
-// "R$ 500K" / "R$ 1.5M": abreviação, "." é ponto decimal. "R$ 1.850.000" / "Até R$ 8.000": formato
-// brasileiro por extenso, "." é separador de milhar e "," é decimal — os dois formatos convivem
-// no mesmo campo de texto livre (ver CreateLeadDialog), então o sufixo precisa ser detectado logo
-// após o número, não em qualquer lugar da string (evita falso positivo em algo como "/mês").
 function parseBudgetValue(budget: string): number {
   const match = budget.match(/([\d.,]+)\s*(m|k)?/i)
 

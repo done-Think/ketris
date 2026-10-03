@@ -2,19 +2,19 @@ import type { z } from 'zod'
 
 import type {
   contractGuaranteeSchema,
+  createEditOpportunityFormSchema,
   createOpportunityFormSchema,
-  editOpportunityFormSchema,
+  createUpdateOpportunitySchema,
   opportunityFiltersSchema,
   opportunityStatusSchema,
-  updateOpportunitySchema,
 } from '../schemas/opportunity-schema'
 
 export type OpportunityStatus = z.infer<typeof opportunityStatusSchema>
 export type ContractGuarantee = z.infer<typeof contractGuaranteeSchema>
 export type OpportunityFilters = z.infer<typeof opportunityFiltersSchema>
-export type UpdateOpportunityPayload = z.infer<typeof updateOpportunitySchema>
-export type OpportunityEditFormValues = z.infer<typeof editOpportunityFormSchema>
-export type CreateOpportunityFormValues = z.infer<typeof createOpportunityFormSchema>
+export type UpdateOpportunityPayload = z.infer<ReturnType<typeof createUpdateOpportunitySchema>>
+export type OpportunityEditFormValues = z.infer<ReturnType<typeof createEditOpportunityFormSchema>>
+export type CreateOpportunityFormValues = z.infer<ReturnType<typeof createOpportunityFormSchema>>
 
 export interface Opportunity {
   id: string
@@ -41,7 +41,6 @@ export interface UpdateOpportunityInput {
   changes: UpdateOpportunityPayload
 }
 
-/** Manual opportunity creation — see POST /crm/opportunities and CreateOpportunityDialog. */
 export interface CreateOpportunityPayload {
   propertyId: string
   contactId?: string | null
@@ -53,7 +52,6 @@ export interface CreateOpportunityPayload {
   status?: Extract<OpportunityStatus, 'RASCUNHO' | 'ENVIADA'>
 }
 
-/** The broker's decision on a received proposal — see POST /crm/opportunities/{id}/respond. */
 export type OpportunityResponseAction = 'ACEITAR' | 'RECUSAR' | 'SOLICITAR_INFORMACOES'
 
 export interface RespondOpportunityPayload {

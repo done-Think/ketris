@@ -55,7 +55,12 @@
       "status": "Estado"
     },
     "directions": { "receivable": "Por recibir", "payable": "Por pagar" },
-    "statuses": { "pending": "Pendiente", "scheduled": "Programado" }
+    "statuses": { "pending": "Pendiente", "scheduled": "Programado" },
+    "errors": {
+      "descriptionRequired": "Indica la descripción",
+      "amountPositive": "El valor debe ser mayor que cero",
+      "dateInvalid": "Indica una fecha válida"
+    }
   },
   "editDialog": {
     "paymentHint": "Para marcar como pagado, registra el pago en los detalles.",
@@ -69,6 +74,11 @@
       "dueDate": "Vencimiento",
       "direction": "Tipo",
       "status": "Estado"
+    },
+    "errors": {
+      "descriptionRequired": "Indica la descripción",
+      "amountPositive": "El valor debe ser mayor que cero",
+      "dateInvalid": "Indica una fecha válida"
     }
   },
   "archiveDialog": {
@@ -133,6 +143,10 @@
       "method": "Forma de pago",
       "cancel": "Cancelar",
       "confirm": "Confirmar pago"
+    },
+    "errors": {
+      "dateInvalid": "Indica una fecha válida",
+      "paymentMethodRequired": "Indica la forma de pago"
     }
   }
 }

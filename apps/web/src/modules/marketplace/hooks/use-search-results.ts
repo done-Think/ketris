@@ -4,6 +4,7 @@ import { useEffect, useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
+import { useTranslations } from 'next-intl'
 
 import {
   areaFilterOptions,
@@ -13,7 +14,7 @@ import {
 import { defaultSearchResultsViewMode } from '../config/search-results-view-mode'
 import { propertyDetails } from '../data/property-details'
 import { marketplaceService } from '../services/marketplace-service'
-import { searchResultsFormSchema } from '../schemas/marketplace-search-schema'
+import { createSearchResultsFormSchema } from '../schemas/marketplace-search-schema'
 import type { PropertySortOption, PublicPropertyPurpose } from '../types/public-property'
 import type {
   SearchResultProperty,
@@ -110,6 +111,8 @@ function sortFixtureResults(properties: SearchResultProperty[], sortOption: Sort
 }
 
 export function useSearchResults({ purpose, initialLocation = '' }: SearchResultsPageProps) {
+  const t = useTranslations('marketplace.searchResults.errors')
+  const searchResultsFormSchema = useMemo(() => createSearchResultsFormSchema((key) => t(key)), [t])
   const { setValue, watch } = useForm<SearchResultsFormValues>({
     defaultValues: {
       selectedPropertyId: '',

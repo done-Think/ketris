@@ -63,6 +63,19 @@
       "INSPECTION": "Inspection",
       "SIGNATURE": "Signature",
       "OTHER": "Other"
+    },
+    "errors": {
+      "durationTooShort": "Enter at least 15 minutes",
+      "participantRequired": "Enter the person's name",
+      "phoneInvalid": "Enter a valid phone number",
+      "propertyRequired": "Select the property",
+      "dateRequired": "Enter the date",
+      "timeRequired": "Enter the time",
+      "titleRequired": "Enter the event title",
+      "customPropertyRequired": "Enter the property or reference",
+      "visitMinimumDuration": "Visits must last at least 60 minutes",
+      "minimumAdvanceNotice": "Schedule at least 3 hours in advance",
+      "outsideBusinessHours": "Schedule within business hours (08:00–18:00)"
     }
   },
   "eventDetail": {
@@ -80,6 +93,19 @@
       "description": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
       "confirm": "Delete",
       "cancel": "Cancel"
+    },
+    "errors": {
+      "durationTooShort": "Enter at least 15 minutes",
+      "participantRequired": "Enter the person's name",
+      "phoneInvalid": "Enter a valid phone number",
+      "propertyRequired": "Select the property",
+      "dateRequired": "Enter the date",
+      "timeRequired": "Enter the time",
+      "titleRequired": "Enter the event title",
+      "customPropertyRequired": "Enter the property or reference",
+      "visitMinimumDuration": "Visits must last at least 60 minutes",
+      "minimumAdvanceNotice": "Schedule at least 3 hours in advance",
+      "outsideBusinessHours": "Schedule within business hours (08:00–18:00)"
     }
   }
 }

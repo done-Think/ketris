@@ -28,7 +28,12 @@
     "genericError": "No fue posible iniciar sesión. Verifica el email y la contraseña.",
     "forbiddenError": "Acceso restringido a administradores de la plataforma.",
     "submit": "Entrar",
-    "restrictedAccess": "Acceso restringido a la administración general de Ketris."
+    "restrictedAccess": "Acceso restringido a la administración general de Ketris.",
+    "errors": {
+      "emailRequired": "Indica tu correo electrónico",
+      "emailInvalid": "Indica un correo electrónico válido",
+      "passwordRequired": "Indica tu contraseña"
+    }
   },
   "dashboard": {
     "title": "Inmobiliarias",
@@ -202,8 +207,10 @@
     "editDescription": "Los cambios son locales y se descartarán al recargar la página.",
     "save": "Guardar",
     "cancel": "Cancelar",
-    "nameRequired": "Introduce el nombre.",
-    "metricBadge": "Tenants"
+    "metricBadge": "Tenants",
+    "errors": {
+      "nameRequired": "Introduce el nombre."
+    }
   },
   "system": {
     "title": "Salud del Sistema",
@@ -266,7 +273,17 @@
     "createPlatformAdminSuccess": "Administrador de plataforma {email} creado con éxito.",
     "createTenantAdminSubmit": "Crear administrador de la inmobiliaria",
     "createTenantAdminError": "No fue posible crear el administrador de la inmobiliaria. Inténtalo de nuevo.",
-    "createTenantAdminSuccess": "Administrador {email} creado con éxito."
+    "createTenantAdminSuccess": "Administrador {email} creado con éxito.",
+    "errors": {
+      "nameRequired": "Introduce el nombre",
+      "emailRequired": "Introduce el correo electrónico",
+      "emailInvalid": "Correo electrónico inválido",
+      "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
+      "passwordConfirmationRequired": "Confirma la contraseña",
+      "passwordsDoNotMatch": "Las contraseñas no coinciden",
+      "slugRequired": "Introduce el slug",
+      "slugInvalid": "Usa solo letras minúsculas, números y guiones"
+    }
   },
   "table": {
     "first": "Primera página",

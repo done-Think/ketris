@@ -63,6 +63,19 @@
       "INSPECTION": "Inspección",
       "SIGNATURE": "Firma",
       "OTHER": "Otro"
+    },
+    "errors": {
+      "durationTooShort": "Indica al menos 15 minutos",
+      "participantRequired": "Indica el nombre de la persona",
+      "phoneInvalid": "Indica un teléfono válido",
+      "propertyRequired": "Selecciona el inmueble",
+      "dateRequired": "Indica la fecha",
+      "timeRequired": "Indica el horario",
+      "titleRequired": "Indica el título del evento",
+      "customPropertyRequired": "Indica el inmueble o referencia",
+      "visitMinimumDuration": "Las visitas deben durar al menos 60 minutos",
+      "minimumAdvanceNotice": "Agenda con al menos 3 horas de anticipación",
+      "outsideBusinessHours": "Agenda dentro del horario comercial (08:00–18:00)"
     }
   },
   "eventDetail": {
@@ -80,6 +93,19 @@
       "description": "¿Seguro que deseas eliminar \"{title}\"? Esta acción no se puede deshacer.",
       "confirm": "Eliminar",
       "cancel": "Cancelar"
+    },
+    "errors": {
+      "durationTooShort": "Indica al menos 15 minutos",
+      "participantRequired": "Indica el nombre de la persona",
+      "phoneInvalid": "Indica un teléfono válido",
+      "propertyRequired": "Selecciona el inmueble",
+      "dateRequired": "Indica la fecha",
+      "timeRequired": "Indica el horario",
+      "titleRequired": "Indica el título del evento",
+      "customPropertyRequired": "Indica el inmueble o referencia",
+      "visitMinimumDuration": "Las visitas deben durar al menos 60 minutos",
+      "minimumAdvanceNotice": "Agenda con al menos 3 horas de anticipación",
+      "outsideBusinessHours": "Agenda dentro del horario comercial (08:00–18:00)"
     }
   }
 }

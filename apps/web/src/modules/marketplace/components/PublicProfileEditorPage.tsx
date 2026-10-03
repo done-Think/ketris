@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Box, Dialog, DialogContent, Stack, Typography } from '@mui/material'
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded'
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
+import { Box, Dialog, DialogContent, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { RhfTextField } from '@shared/components/form'
@@ -25,113 +25,18 @@ import {
   useUnpublishBrokerProfile,
 } from '../hooks/use-broker-profile'
 import {
-  publicProfileEditorSchema,
+  createPublicProfileEditorSchema,
   type PublicProfileEditorFormValues,
 } from '../schemas/public-profile-editor-schema'
-import type { BrokerProfile } from '../types/broker'
-import type { PublicBrokerProfile } from '../types/public-broker-profile'
+import {
+  emptyValues,
+  toDraft,
+  toFormValues,
+  toPreviewProfile,
+} from '../utils/public-profile-editor-adapter'
+import { BrokerPublicProfilePage } from './BrokerPublicProfilePage'
 import { editorPanelSx } from './public-profile-editor/public-profile-editor-shared'
 import { SingleImageUploadField } from './public-profile-editor/SingleImageUploadField'
-import { BrokerPublicProfilePage } from './BrokerPublicProfilePage'
-
-const emptyValues: PublicProfileEditorFormValues = {
-  displayName: '',
-  headline: '',
-  bio: '',
-  creci: '',
-  phone: '',
-  region: '',
-  neighborhoods: '',
-  specialties: '',
-  availability: '',
-  primaryColor: '',
-  secondaryColor: '',
-  backgroundColor: '',
-  avatarUrl: '',
-  bannerUrl: '',
-}
-
-function splitList(value: string): string[] {
-  return value
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean)
-}
-
-function toDraft(values: PublicProfileEditorFormValues) {
-  return {
-    displayName: values.displayName,
-    headline: values.headline || null,
-    bio: values.bio || null,
-    creci: values.creci || null,
-    phone: values.phone || null,
-    region: values.region || null,
-    neighborhoods: splitList(values.neighborhoods),
-    specialties: splitList(values.specialties),
-    availability: values.availability || null,
-    primaryColor: values.primaryColor || null,
-    secondaryColor: values.secondaryColor || null,
-    backgroundColor: values.backgroundColor || null,
-    avatarUrl: values.avatarUrl || null,
-    bannerUrl: values.bannerUrl || null,
-  }
-}
-
-function toFormValues(profile: PublicBrokerProfile | null): PublicProfileEditorFormValues {
-  if (!profile) return emptyValues
-
-  return {
-    displayName: profile.displayName,
-    headline: profile.headline ?? '',
-    bio: profile.bio ?? '',
-    creci: profile.creci ?? '',
-    phone: profile.phone ?? '',
-    region: profile.region ?? '',
-    neighborhoods: profile.neighborhoods.join(', '),
-    specialties: profile.specialties.join(', '),
-    availability: profile.availability ?? '',
-    primaryColor: profile.primaryColor ?? '',
-    secondaryColor: profile.secondaryColor ?? '',
-    backgroundColor: profile.backgroundColor ?? '',
-    avatarUrl: profile.avatarUrl ?? '',
-    bannerUrl: profile.bannerUrl ?? '',
-  }
-}
-
-function toPreviewProfile(
-  values: PublicProfileEditorFormValues,
-  profile: PublicBrokerProfile | null,
-): BrokerProfile {
-  return {
-    id: profile?.id ?? 'preview',
-    agencyName: profile?.agencyName ?? '',
-    email: profile?.email ?? '',
-    name: values.displayName || 'Seu nome',
-    headline: values.headline || null,
-    creci: values.creci || null,
-    avatar: values.avatarUrl || null,
-    bannerUrl: values.bannerUrl || null,
-    primaryColor: values.primaryColor || null,
-    backgroundColor: values.backgroundColor || null,
-    region: values.region || null,
-    specialties: splitList(values.specialties),
-    neighborhoods: splitList(values.neighborhoods),
-    activeListings: profile?.stats.activeListings ?? 0,
-    dealsClosed: profile?.stats.dealsClosed ?? 0,
-    responseTime: null,
-    rating: null,
-    phone: values.phone || null,
-    availability: values.availability || null,
-    bio: values.bio || null,
-    href: profile ? `/brokers/${profile.id}` : '',
-    highlightedListings: (profile?.recentListings ?? []).map((listing) => ({
-      title: listing.title,
-      location: [listing.neighborhood, listing.city].filter(Boolean).join(', '),
-      price: String(listing.price),
-      href: `/properties/${listing.id}`,
-    })),
-  }
-}
 
 export function PublicProfileEditorPage() {
   const t = useTranslations('marketplace.profileEditor')
@@ -141,12 +46,23 @@ export function PublicProfileEditorPage() {
   const saveProfile = useSaveBrokerProfile()
   const publishProfile = usePublishBrokerProfile()
   const unpublishProfile = useUnpublishBrokerProfile()
+  const [isEditing, setIsEditing] = useState(false)
+  const publicProfileEditorSchema = useMemo(
+    () => createPublicProfileEditorSchema((key) => t(`errors.${key}`)),
+    [t],
+  )
+  const publishRequiredFieldsSchema = useMemo(
+    () =>
+      createPublicProfileEditorSchema((key) => t(`errors.${key}`), { requirePublishFields: true }),
+    [t],
+  )
 
   const {
     control,
     formState: { isSubmitSuccessful },
     handleSubmit,
     reset,
+    setError,
     watch,
   } = useForm<PublicProfileEditorFormValues>({
     defaultValues: emptyValues,
@@ -161,24 +77,59 @@ export function PublicProfileEditorPage() {
 
   function onSubmit(values: PublicProfileEditorFormValues) {
     saveProfile.mutate(toDraft(values), {
-      onSuccess: () => enqueueSnackbar(t('saveSuccess'), { variant: 'success' }),
+      onSuccess: () => {
+        enqueueSnackbar(t('saveSuccess'), { variant: 'success' })
+        setIsEditing(false)
+      },
       onError: () => enqueueSnackbar(t('saveError'), { variant: 'error' }),
     })
   }
 
-  function handlePublishToggle() {
-    if (profile?.status === 'PUBLISHED') {
-      unpublishProfile.mutate(undefined, {
-        onSuccess: () => enqueueSnackbar(t('unpublishSuccess'), { variant: 'success' }),
-        onError: () => enqueueSnackbar(t('publishError'), { variant: 'error' }),
-      })
+  function handleUnpublish() {
+    unpublishProfile.mutate(undefined, {
+      onSuccess: () => enqueueSnackbar(t('unpublishSuccess'), { variant: 'success' }),
+      onError: () => enqueueSnackbar(t('publishError'), { variant: 'error' }),
+    })
+  }
+
+  const handlePublish = handleSubmit((values) => {
+    const publishCheck = publishRequiredFieldsSchema.safeParse(values)
+
+    if (!publishCheck.success) {
+      setIsEditing(true)
+
+      for (const issue of publishCheck.error.issues) {
+        const field = issue.path[0]
+
+        if (typeof field === 'string') {
+          setError(field as keyof PublicProfileEditorFormValues, { message: issue.message })
+        }
+      }
+
       return
     }
 
-    publishProfile.mutate(undefined, {
-      onSuccess: () => enqueueSnackbar(t('publishSuccess'), { variant: 'success' }),
-      onError: () => enqueueSnackbar(t('publishError'), { variant: 'error' }),
+    saveProfile.mutate(toDraft(values), {
+      onSuccess: () => {
+        publishProfile.mutate(undefined, {
+          onSuccess: () => {
+            enqueueSnackbar(t('publishSuccess'), { variant: 'success' })
+            setIsEditing(false)
+          },
+          onError: () => enqueueSnackbar(t('publishError'), { variant: 'error' }),
+        })
+      },
+      onError: () => enqueueSnackbar(t('saveError'), { variant: 'error' }),
     })
+  })
+
+  function handlePublishToggle() {
+    if (profile?.status === 'PUBLISHED') {
+      handleUnpublish()
+      return
+    }
+
+    void handlePublish()
   }
 
   return (
@@ -224,14 +175,26 @@ export function PublicProfileEditorPage() {
             >
               {t('actions.preview')}
             </DashboardHeaderActionButton>
-            <DashboardHeaderActionButton
-              type="submit"
-              form="broker-public-profile-editor-form"
-              startIcon={<SaveOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-              disabled={saveProfile.isPending}
-            >
-              {t('actions.save')}
-            </DashboardHeaderActionButton>
+            {isEditing ? (
+              <DashboardHeaderActionButton
+                key="save-button"
+                type="submit"
+                form="broker-public-profile-editor-form"
+                startIcon={<SaveOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+                disabled={saveProfile.isPending}
+              >
+                {t('actions.save')}
+              </DashboardHeaderActionButton>
+            ) : (
+              <DashboardHeaderActionButton
+                key="edit-button"
+                type="button"
+                onClick={() => setIsEditing(true)}
+                startIcon={<SaveOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+              >
+                {t('actions.edit')}
+              </DashboardHeaderActionButton>
+            )}
             {profile ? (
               <DashboardHeaderActionButton
                 variant="outlined"
@@ -253,6 +216,7 @@ export function PublicProfileEditorPage() {
       <Box
         id="broker-public-profile-editor-form"
         component="form"
+        noValidate
         onSubmit={handleSubmit(onSubmit)}
         sx={{ width: '100%' }}
       >
@@ -282,28 +246,52 @@ export function PublicProfileEditorPage() {
                 control={control}
                 name="headline"
                 label={t('fields.headline')}
+                disabled={!isEditing}
                 sx={{ gridColumn: { md: '1 / -1' } }}
               />
-              <RhfTextField control={control} name="displayName" label={t('fields.displayName')} />
-              <RhfTextField control={control} name="creci" label={t('fields.creci')} />
-              <RhfTextField control={control} name="phone" label={t('fields.phone')} />
-              <RhfTextField control={control} name="region" label={t('fields.region')} />
+              <RhfTextField
+                control={control}
+                name="displayName"
+                label={t('fields.displayName')}
+                disabled={!isEditing}
+              />
+              <RhfTextField
+                control={control}
+                name="creci"
+                label={t('fields.creci')}
+                disabled={!isEditing}
+              />
+              <RhfTextField
+                control={control}
+                name="phone"
+                label={t('fields.phone')}
+                disabled={!isEditing}
+              />
+              <RhfTextField
+                control={control}
+                name="region"
+                label={t('fields.region')}
+                disabled={!isEditing}
+              />
               <RhfTextField
                 control={control}
                 name="neighborhoods"
                 label={t('fields.neighborhoods')}
                 helperText={t('fields.commaSeparatedHint')}
+                disabled={!isEditing}
               />
               <RhfTextField
                 control={control}
                 name="specialties"
                 label={t('fields.specialties')}
                 helperText={t('fields.commaSeparatedHint')}
+                disabled={!isEditing}
               />
               <RhfTextField
                 control={control}
                 name="availability"
                 label={t('fields.availability')}
+                disabled={!isEditing}
               />
               <RhfTextField
                 control={control}
@@ -312,6 +300,7 @@ export function PublicProfileEditorPage() {
                 multiline
                 minRows={6}
                 fullWidth
+                disabled={!isEditing}
                 sx={{
                   gridColumn: { md: '1 / -1' },
                   '& .MuiInputBase-root': { alignItems: 'flex-start', height: { xl: '100%' } },
@@ -338,18 +327,21 @@ export function PublicProfileEditorPage() {
                   name="primaryColor"
                   label={t('fields.primaryColor')}
                   type="color"
+                  disabled={!isEditing}
                 />
                 <RhfTextField
                   control={control}
                   name="secondaryColor"
                   label={t('fields.secondaryColor')}
                   type="color"
+                  disabled={!isEditing}
                 />
                 <RhfTextField
                   control={control}
                   name="backgroundColor"
                   label={t('fields.backgroundColor')}
                   type="color"
+                  disabled={!isEditing}
                 />
               </Box>
             </Box>
@@ -372,6 +364,7 @@ export function PublicProfileEditorPage() {
                   label={t('fields.photoUrl')}
                   target="broker-avatar"
                   variant="avatar"
+                  disabled={!isEditing}
                 />
                 <SingleImageUploadField
                   control={control}
@@ -379,6 +372,7 @@ export function PublicProfileEditorPage() {
                   label={t('fields.bannerUrl')}
                   target="broker-banner"
                   variant="banner"
+                  disabled={!isEditing}
                 />
               </Box>
             </Box>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import EditRoundedIcon from '@mui/icons-material/EditRounded'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -21,7 +21,7 @@ import { useForm } from 'react-hook-form'
 
 import { RhfTextField } from '@shared/components/form'
 import { brand, iconSize, radius } from '@shared/theme/tokens'
-import { updateChargeSchema } from '../schemas/update-charge-schema'
+import { createUpdateChargeSchema } from '../schemas/update-charge-schema'
 import type { Charge, UpdateChargeFormValues } from '../types/charge'
 
 export function EditChargeDialog({
@@ -35,6 +35,10 @@ export function EditChargeDialog({
 }) {
   const t = useTranslations('charges.editDialog')
   const commonT = useTranslations('charges')
+  const updateChargeSchema = useMemo(
+    () => createUpdateChargeSchema((key) => t(`errors.${key}`)),
+    [t],
+  )
   const { control, handleSubmit, reset } = useForm<UpdateChargeFormValues>({
     resolver: zodResolver(updateChargeSchema),
   })

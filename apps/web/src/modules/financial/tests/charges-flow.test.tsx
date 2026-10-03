@@ -281,7 +281,7 @@ describe('charges list', () => {
     render(wrap(<ChargesPage />))
     await user.click(screen.getByRole('button', { name: 'Nova Cobrança' }))
     await user.click(screen.getByRole('button', { name: 'Criar cobrança' }))
-    expect(await screen.findByText('Description is required')).toBeVisible()
+    expect(await screen.findByText('Informe a descrição')).toBeVisible()
     await user.type(screen.getByLabelText('Descrição'), 'Aluguel avulso')
     fireEvent.change(screen.getByLabelText('Valor'), { target: { value: '1250' } })
     fireEvent.change(screen.getByLabelText('Vencimento'), { target: { value: '2025-03-22' } })

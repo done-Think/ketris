@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, Stack } from '@mui/material'
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded'
@@ -8,7 +9,7 @@ import { useForm } from 'react-hook-form'
 
 import { alpha, iconSize, motion, radius, surface } from '@shared/theme/tokens'
 
-import { searchResultsFiltersDialogFormSchema } from '../../schemas/marketplace-search-schema'
+import { createSearchResultsFiltersDialogFormSchema } from '../../schemas/marketplace-search-schema'
 import type {
   SearchResultsFilterButtonProps,
   SearchResultsFiltersDialogFormValues,
@@ -28,6 +29,10 @@ export function SearchResultsFilters({
 
 export function SearchResultsFilterButton(props: SearchResultsFilterButtonProps) {
   const t = useTranslations('marketplace.searchResults.filters')
+  const searchResultsFiltersDialogFormSchema = useMemo(
+    () => createSearchResultsFiltersDialogFormSchema((key) => t(`errors.${key}`)),
+    [t],
+  )
   const { getValues, handleSubmit, setValue, watch } =
     useForm<SearchResultsFiltersDialogFormValues>({
       defaultValues: {

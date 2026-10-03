@@ -202,7 +202,7 @@ export type CreateContractStep = {
   label: string
 }
 
-export type CreateContractFormValues = z.infer<typeof createContractSchema>
+export type CreateContractFormValues = z.infer<ReturnType<typeof createContractSchema>>
 
 export type CreateContractFieldName = FieldPath<CreateContractFormValues>
 
@@ -211,7 +211,6 @@ export type ContractFieldConfig = {
   label: string
   mask?: string
   options?: string[]
-  /** Translates an option's internal value into display text. Falls back to the raw value. */
   getOptionLabel?: (option: string) => string
   multiline?: boolean
 }

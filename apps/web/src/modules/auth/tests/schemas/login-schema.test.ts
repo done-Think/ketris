@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { loginSchema } from '../../schemas/login-schema'
+import { createLoginSchema } from '../../schemas/login-schema'
+
+const schema = createLoginSchema((key) => key)
 
 describe('loginSchema', () => {
   it('normaliza o e-mail e aceita credenciais preenchidas', () => {
-    const result = loginSchema.parse({
+    const result = schema.parse({
       email: '  ADMIN@KETRIS.DEV ',
       password: 'senha-existente',
     })
@@ -16,8 +18,18 @@ describe('loginSchema', () => {
   })
 
   it('rejeita e-mail inválido e senha vazia', () => {
-    const result = loginSchema.safeParse({ email: 'invalido', password: '' })
+    const result = schema.safeParse({ email: 'invalido', password: '' })
 
     expect(result.success).toBe(false)
+  })
+
+  it('routes each validation message through the translator with the right key', () => {
+    const translated = createLoginSchema((key) => `translated:${key}`)
+    const result = translated.safeParse({ email: '', password: '' })
+
+    expect(result.success).toBe(false)
+    expect(result.success ? undefined : result.error.issues[0]?.message).toBe(
+      'translated:emailRequired',
+    )
   })
 })

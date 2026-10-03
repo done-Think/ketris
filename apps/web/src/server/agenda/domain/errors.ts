@@ -26,3 +26,21 @@ export class AgendaVisitMinimumDurationError extends AppError {
     })
   }
 }
+
+export class AgendaMinimumAdvanceNoticeError extends AppError {
+  constructor() {
+    super('Agende com pelo menos 3 horas de antecedência.', {
+      status: 400,
+      code: 'AGENDA_MINIMUM_ADVANCE_NOTICE',
+    })
+  }
+}
+
+export class AgendaOutsideBusinessHoursError extends AppError {
+  constructor() {
+    super('Agende dentro do horário comercial (08:00–18:00).', {
+      status: 400,
+      code: 'AGENDA_OUTSIDE_BUSINESS_HOURS',
+    })
+  }
+}

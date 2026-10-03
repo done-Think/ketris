@@ -5,12 +5,7 @@ import { Autocomplete, CircularProgress, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { useAgencySearch } from '../hooks/use-agency-search'
-import type { AgencySearchResult } from '../services/registration-service'
-
-export interface AgencyAutocompleteProps {
-  value: AgencySearchResult | null
-  onChange: (agency: AgencySearchResult | null) => void
-}
+import type { AgencyAutocompleteProps } from '../types/registration'
 
 export function AgencyAutocomplete({ value, onChange }: AgencyAutocompleteProps) {
   const t = useTranslations('auth.registerDetails')

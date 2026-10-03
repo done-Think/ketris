@@ -9,12 +9,7 @@ import {
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-export interface ArchiveContactDialogProps {
-  open: boolean
-  isPending: boolean
-  onClose: () => void
-  onConfirm: () => void
-}
+import type { ArchiveContactDialogProps } from '../../types/contact'
 
 export function ArchiveContactDialog({
   open,

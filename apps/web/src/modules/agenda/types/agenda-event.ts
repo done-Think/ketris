@@ -3,7 +3,7 @@ import type { z } from 'zod'
 
 import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
 
-import type { agendaEventFormSchema } from '../schemas/agenda-event-form-schema'
+import type { buildAgendaEventFormSchema } from '../schemas/agenda-event-form-schema'
 
 export type AgendaEventStatus = 'Confirmada' | 'Pendente' | 'Reagendar'
 
@@ -65,7 +65,7 @@ export type AgendaEventCardProps = {
   onSelect: (event: AgendaEvent) => void
 }
 
-export type AgendaEventFormValues = z.infer<typeof agendaEventFormSchema>
+export type AgendaEventFormValues = z.infer<ReturnType<typeof buildAgendaEventFormSchema>>
 
 export type AgendaPropertyOption = {
   href: string

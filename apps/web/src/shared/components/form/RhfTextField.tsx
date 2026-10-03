@@ -1,12 +1,12 @@
 'use client'
 
+import { TextField, type TextFieldProps } from '@mui/material'
 import {
   Controller,
   type FieldPath,
   type FieldValues,
   type UseControllerProps,
 } from 'react-hook-form'
-import { TextField, type TextFieldProps } from '@mui/material'
 
 type RhfTextFieldProps<
   TFieldValues extends FieldValues,
@@ -33,7 +33,6 @@ export function RhfTextField<
       name={name}
       rules={rules}
       shouldUnregister={shouldUnregister}
-      disabled={disabled}
       render={({ field, fieldState }) => (
         <TextField
           {...textFieldProps}

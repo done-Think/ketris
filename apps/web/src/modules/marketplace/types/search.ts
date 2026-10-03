@@ -5,9 +5,9 @@ import type { LocalizedHref } from '@shared/types/localized-href'
 import type { PropertyCardData } from '@shared/types'
 import type { searchOptions } from '../config/search-filters'
 import type {
-  marketplaceSearchFormSchema,
-  searchResultsFiltersDialogFormSchema,
-  searchResultsFormSchema,
+  createMarketplaceSearchFormSchema,
+  createSearchResultsFiltersDialogFormSchema,
+  createSearchResultsFormSchema,
 } from '../schemas/marketplace-search-schema'
 
 export type SearchFilterKey = keyof typeof searchOptions
@@ -21,19 +21,20 @@ export type SearchResultPurposeParam = 'rent' | 'buy'
 export type SearchResultProperty = PropertyCardData & {
   id: string
   purpose: SearchResultPurpose
-  // Sem coordenadas no contrato público hoje — ver utils/property-summary-adapter.ts.
   mapCenter?: {
     latitude: number
     longitude: number
   }
 }
 
-export type MarketplaceSearchFormValues = z.infer<typeof marketplaceSearchFormSchema>
+export type MarketplaceSearchFormValues = z.infer<
+  ReturnType<typeof createMarketplaceSearchFormSchema>
+>
 
-export type SearchResultsFormValues = z.infer<typeof searchResultsFormSchema>
+export type SearchResultsFormValues = z.infer<ReturnType<typeof createSearchResultsFormSchema>>
 
 export type SearchResultsFiltersDialogFormValues = z.infer<
-  typeof searchResultsFiltersDialogFormSchema
+  ReturnType<typeof createSearchResultsFiltersDialogFormSchema>
 >
 
 export type SortOption = 'relevancia' | 'menor-preco' | 'maior-preco'

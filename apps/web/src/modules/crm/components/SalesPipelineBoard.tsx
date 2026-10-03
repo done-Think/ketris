@@ -1,14 +1,13 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Alert, Box, Button, Paper, Stack, Typography } from '@mui/material'
+import { Alert, Box, Button } from '@mui/material'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 
 import { useRouter } from '@/i18n/navigation'
-import { DashboardTablePagination } from '@shared/components/layout'
-import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
+import { surface } from '@shared/theme/tokens'
 
 import { salesPipelineStages, visibleSalesPipelineStatuses } from '../config/sales-pipeline-stages'
 import { salesPipelineFixtures } from '../fixtures/sales-pipeline-fixtures'
@@ -24,11 +23,7 @@ import type {
   SalesPipelineViewMode,
 } from '../types/sales-pipeline'
 import { errorMessage } from '../utils/error-message'
-import {
-  getOpportunityStageId,
-  getProjectedTotals,
-  matchesSalesPipelineSearch,
-} from '../utils/sales-pipeline'
+import { getOpportunityStageId, matchesSalesPipelineSearch } from '../utils/sales-pipeline'
 import type {
   ProposalManagementFilterId,
   ProposalManagementListItem,
@@ -42,11 +37,8 @@ import {
   queryProposalManagementItems,
 } from '../utils/proposal-management'
 import { CreateOpportunityDialog } from './opportunity-detail/CreateOpportunityDialog'
-import { ProposalKpiCards } from './proposals-list/ProposalKpiCards'
-import { ProposalMobileCards } from './proposals-list/ProposalMobileCards'
-import { ProposalStatusFilters } from './proposals-list/ProposalStatusFilters'
-import { ProposalsTable } from './proposals-list/ProposalsTable'
-import { PipelineStageColumn } from './sales-pipeline-board/PipelineStageColumn'
+import { SalesPipelineKanbanView } from './SalesPipelineKanbanView'
+import { SalesPipelineListView } from './SalesPipelineListView'
 import { SalesPipelineToolbar } from './sales-pipeline-board/SalesPipelineToolbar'
 
 const pipelineBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
@@ -190,9 +182,7 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
 
     try {
       window.localStorage.setItem(pipelineViewModeStorageKey, nextViewMode)
-    } catch {
-      // A preferência é opcional; se o storage estiver indisponível, mantém só no estado atual.
-    }
+    } catch {}
   }
 
   const selectedStage = selectedStageId
@@ -265,116 +255,32 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
           {t('dataLoadError')}
         </Alert>
       ) : viewMode === 'kanban' ? (
-        <Box
-          aria-label={t('boardAriaLabel')}
-          sx={{
-            mt: { xs: 2.25, lg: 1.5 },
-            mx: { xs: -2, sm: -3, lg: -3.5 },
-            pl: { xs: 2, sm: 3, lg: 3.5 },
-            pr: { xs: 2, sm: 3, lg: 1.75 },
-            pb: 1,
-            overflowX: 'auto',
-            scrollSnapType: { xs: 'x proximity', lg: 'none' },
-            scrollbarWidth: 'thin',
-          }}
-        >
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: 'repeat(5, 264px)',
-                sm: 'repeat(5, 280px)',
-                lg: 'repeat(5, minmax(0, 1fr))',
-              },
-              gap: { xs: 2, lg: 1.75 },
-              minWidth: { xs: 'max-content', lg: 0 },
-            }}
-          >
-            {salesPipelineStages.map((stage) => {
-              const opportunities = visibleOpportunities.filter(
-                (opportunity) =>
-                  getOpportunityStageId(opportunity, fixtureMode, fixtureStageByOpportunityId) ===
-                  stage.id,
-              )
-              const projectedTotals = getProjectedTotals(
-                opportunities.filter((opportunity) => opportunity.status !== 'RECUSADA'),
-                propertiesById,
-              )
-
-              return (
-                <PipelineStageColumn
-                  key={stage.id}
-                  stage={stage}
-                  opportunities={opportunities}
-                  projectedTotals={projectedTotals}
-                  isPipelineLoading={isPipelineLoading}
-                  hasPipelineError={hasPipelineError}
-                  fixtureMode={fixtureMode}
-                  propertiesById={propertiesById}
-                  presentationByOpportunityId={fixturePresentationByOpportunityId}
-                />
-              )
-            })}
-          </Box>
-        </Box>
+        <SalesPipelineKanbanView
+          visibleOpportunities={visibleOpportunities}
+          fixtureMode={fixtureMode}
+          fixtureStageByOpportunityId={fixtureStageByOpportunityId}
+          propertiesById={propertiesById}
+          presentationByOpportunityId={fixturePresentationByOpportunityId}
+          isPipelineLoading={isPipelineLoading}
+          hasPipelineError={hasPipelineError}
+        />
       ) : (
-        <Box sx={{ mt: 2 }}>
-          <ProposalStatusFilters
-            activeStatus={proposalStatus}
-            summary={proposalSummary}
-            onStatusChange={(nextStatus) => {
-              setProposalStatus(nextStatus)
-              setProposalPageIndex(1)
-            }}
-          />
-
-          <ProposalKpiCards summary={proposalSummary} />
-
-          <Paper
-            variant="outlined"
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              minHeight: { xs: 520, md: 408 },
-              mt: 2,
-              overflow: 'hidden',
-              borderColor: alpha.graphite[6],
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.paper,
-              boxShadow: shadows.propertyCard,
-            }}
-          >
-            {proposalPageResult.items.length > 0 ? (
-              <>
-                <ProposalsTable
-                  proposals={proposalPageResult.items}
-                  onViewProposal={goToOpportunity}
-                />
-                <ProposalMobileCards
-                  proposals={proposalPageResult.items}
-                  onViewProposal={goToOpportunity}
-                />
-              </>
-            ) : (
-              <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 240, px: 2 }}>
-                <Typography sx={{ color: 'text.secondary', fontSize: 15.5 }}>
-                  {t('noResults')}
-                </Typography>
-              </Stack>
-            )}
-
-            <DashboardTablePagination
-              count={proposalPageResult.totalCount}
-              page={proposalPageResult.page}
-              rowsPerPage={proposalRowsPerPage}
-              onPageChange={setProposalPageIndex}
-              onRowsPerPageChange={(nextRowsPerPage) => {
-                setProposalRowsPerPage(nextRowsPerPage)
-                setProposalPageIndex(1)
-              }}
-            />
-          </Paper>
-        </Box>
+        <SalesPipelineListView
+          proposalStatus={proposalStatus}
+          proposalSummary={proposalSummary}
+          onStatusChange={(nextStatus) => {
+            setProposalStatus(nextStatus)
+            setProposalPageIndex(1)
+          }}
+          proposalPageResult={proposalPageResult}
+          proposalRowsPerPage={proposalRowsPerPage}
+          onPageChange={setProposalPageIndex}
+          onRowsPerPageChange={(nextRowsPerPage) => {
+            setProposalRowsPerPage(nextRowsPerPage)
+            setProposalPageIndex(1)
+          }}
+          onViewProposal={goToOpportunity}
+        />
       )}
     </Box>
   )

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { User } from '@server/auth/domain/user.entity'
 import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
@@ -6,7 +6,11 @@ import { PropertyNotFoundError } from '@server/properties/domain/errors'
 import type { Property } from '@server/properties/domain/property.entity'
 import type { PropertyRepository } from '@server/properties/application/ports/property-repository.port'
 
-import { AgendaEventConflictError, AgendaResponsibleNotFoundError } from '../../../domain/errors'
+import {
+  AgendaEventConflictError,
+  AgendaMinimumAdvanceNoticeError,
+  AgendaResponsibleNotFoundError,
+} from '../../../domain/errors'
 import type { AgendaEvent } from '../../../domain/agenda-event.entity'
 import type { AgendaEventRepository } from '../../../application/ports/agenda-event-repository.port'
 import { CreateAgendaEventUseCase } from '../../../application/use-cases/create-agenda-event.use-case'
@@ -22,6 +26,10 @@ const actor: User = {
   vinculoAprovadoEm: new Date(),
 }
 
+const PINNED_NOW = new Date('2030-01-15T12:00:00.000Z')
+const VALID_INICIO = new Date('2030-01-15T16:00:00.000Z')
+const VALID_FIM = new Date('2030-01-15T17:00:00.000Z')
+
 const createdEvent: AgendaEvent = {
   id: 'event-1',
   tenantId: 'tenant-1',
@@ -32,8 +40,8 @@ const createdEvent: AgendaEvent = {
   titulo: 'Visita ao imóvel',
   tipo: 'VISIT',
   status: 'CONFIRMED',
-  inicio: new Date('2026-10-01T13:00:00.000Z'),
-  fim: new Date('2026-10-01T14:00:00.000Z'),
+  inicio: VALID_INICIO,
+  fim: VALID_FIM,
   participanteNome: 'Ana',
   participanteTelefone: '(11) 99999-0000',
   notas: null,
@@ -80,6 +88,15 @@ function createDeps(overrides?: {
 }
 
 describe('CreateAgendaEventUseCase', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(PINNED_NOW)
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('cria o evento atribuído ao próprio ator quando responsibleId não é informado', async () => {
     const deps = createDeps()
     const useCase = new CreateAgendaEventUseCase(
@@ -94,7 +111,7 @@ describe('CreateAgendaEventUseCase', () => {
       actorPapel: 'AGENT',
       titulo: 'Visita ao imóvel',
       tipo: 'VISIT',
-      inicio: new Date('2026-10-01T13:00:00.000Z'),
+      inicio: VALID_INICIO,
       durationMinutes: 60,
       participanteNome: 'Ana',
       participanteTelefone: '(11) 99999-0000',
@@ -105,8 +122,8 @@ describe('CreateAgendaEventUseCase', () => {
         tenantId: 'tenant-1',
         responsavelId: 'agent-1',
         criadoPorId: 'agent-1',
-        inicio: new Date('2026-10-01T13:00:00.000Z'),
-        fim: new Date('2026-10-01T14:00:00.000Z'),
+        inicio: VALID_INICIO,
+        fim: VALID_FIM,
       }),
     )
     expect(deps.userRepository.findById).not.toHaveBeenCalled()
@@ -126,7 +143,7 @@ describe('CreateAgendaEventUseCase', () => {
         actorUserId: 'renter-1',
         actorPapel: 'RENTER',
         titulo: 'Visita',
-        inicio: new Date(),
+        inicio: VALID_INICIO,
         durationMinutes: 30,
         participanteNome: 'Ana',
         participanteTelefone: '11999990000',
@@ -150,7 +167,7 @@ describe('CreateAgendaEventUseCase', () => {
         actorPapel: 'AGENT',
         responsavelId: 'outro-agente',
         titulo: 'Visita',
-        inicio: new Date(),
+        inicio: VALID_INICIO,
         durationMinutes: 30,
         participanteNome: 'Ana',
         participanteTelefone: '11999990000',
@@ -174,12 +191,35 @@ describe('CreateAgendaEventUseCase', () => {
         actorPapel: 'AGENT',
         imovelId: 'inexistente',
         titulo: 'Visita',
-        inicio: new Date(),
+        inicio: VALID_INICIO,
         durationMinutes: 30,
         participanteNome: 'Ana',
         participanteTelefone: '11999990000',
       }),
     ).rejects.toThrow(PropertyNotFoundError)
+    expect(deps.agendaEventRepository.create).not.toHaveBeenCalled()
+  })
+
+  it('lança AgendaMinimumAdvanceNoticeError quando o horário é menos de 3 horas no futuro', async () => {
+    const deps = createDeps()
+    const useCase = new CreateAgendaEventUseCase(
+      deps.agendaEventRepository,
+      deps.userRepository,
+      deps.propertyRepository,
+    )
+
+    await expect(
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorUserId: 'agent-1',
+        actorPapel: 'AGENT',
+        titulo: 'Visita',
+        inicio: new Date(Date.now() + 60 * 60_000),
+        durationMinutes: 30,
+        participanteNome: 'Ana',
+        participanteTelefone: '11999990000',
+      }),
+    ).rejects.toThrow(AgendaMinimumAdvanceNoticeError)
     expect(deps.agendaEventRepository.create).not.toHaveBeenCalled()
   })
 
@@ -197,7 +237,7 @@ describe('CreateAgendaEventUseCase', () => {
         actorUserId: 'agent-1',
         actorPapel: 'AGENT',
         titulo: 'Visita',
-        inicio: new Date('2026-10-01T13:00:00.000Z'),
+        inicio: VALID_INICIO,
         durationMinutes: 30,
         participanteNome: 'Ana',
         participanteTelefone: '11999990000',

@@ -3,11 +3,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
-import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined'
-import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
-import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded'
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded'
@@ -33,7 +30,6 @@ import {
   TableHead,
   TableRow,
   TextField,
-  Typography,
 } from '@mui/material'
 import dayjs from 'dayjs'
 import { useSession } from 'next-auth/react'
@@ -45,7 +41,6 @@ import {
   DashboardHeaderActionButton,
   DashboardNotificationsButton,
   DashboardPageHeader,
-  DashboardStatusFilterButton,
   DashboardTablePagination,
 } from '@shared/components/layout'
 import { useProperties } from '@modules/properties/hooks/use-properties'
@@ -72,6 +67,8 @@ import {
 import { errorMessage } from '../utils/error-message'
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 import { MaintenanceCreateTicketDialog } from './MaintenanceCreateTicketDialog'
+import { MaintenanceStatusFilters } from './MaintenanceStatusFilters'
+import { MetricCard } from './MetricCard'
 
 const statusStyles: Record<MaintenanceStatus, { bgcolor: string; color: string }> = {
   inProgress: { bgcolor: '#FFF2CC', color: '#D98900' },
@@ -86,14 +83,6 @@ const priorityColors: Record<MaintenancePriority, string> = {
 }
 
 const ticketsPerPage = 5
-const maintenanceFilterValues: MaintenanceFilter['value'][] = [
-  'all',
-  'open',
-  'inProgress',
-  'urgent',
-  'resolved',
-  'closed',
-]
 
 export function MaintenanceDashboardPage() {
   const t = useTranslations('dashboard.maintenance')
@@ -622,236 +611,3 @@ const bodyCellSx = {
   fontWeight: 700,
   whiteSpace: 'nowrap',
 } as const
-function MaintenanceStatusFilters({
-  activeFilter,
-  direction = 'row',
-  getFilterCount,
-  isDesktop = false,
-  onChange,
-}: {
-  activeFilter: MaintenanceFilter['value']
-  direction?: 'row' | 'column'
-  getFilterCount: (value: MaintenanceFilter['value']) => number
-  isDesktop?: boolean
-  onChange: (value: MaintenanceFilter['value']) => void
-}) {
-  const t = useTranslations('dashboard.maintenance')
-  const isColumn = direction === 'column'
-
-  return (
-    <>
-      <TextField
-        select
-        size="small"
-        value={activeFilter}
-        onChange={(event) => onChange(event.target.value as MaintenanceFilter['value'])}
-        sx={{
-          display: isDesktop ? { xs: 'flex', md: 'none' } : 'flex',
-          width: isColumn ? '100%' : { xs: '100%', sm: 160 },
-          '& .MuiOutlinedInput-root': {
-            minHeight: 46,
-            borderRadius: `${radius.sm}px`,
-            bgcolor: surface.paper,
-            color: brand.graphite[500],
-            fontSize: 14,
-            fontWeight: 800,
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-              borderColor: 'transparent',
-              borderWidth: 0,
-            },
-          },
-          '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'transparent',
-            borderWidth: 0,
-          },
-          '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'transparent',
-          },
-          '& .MuiSelect-select': {
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.8,
-          },
-        }}
-        SelectProps={{
-          inputProps: { 'aria-label': t('filterDialog.title') },
-          renderValue: () => (
-            <MaintenanceFilterOptionLabel
-              active
-              count={getFilterCount(activeFilter)}
-              label={t(`filters.${activeFilter}`)}
-            />
-          ),
-          MenuProps: {
-            PaperProps: {
-              sx: {
-                mt: 0.6,
-                borderRadius: `${radius.sm}px`,
-                boxShadow: shadows.popover,
-              },
-            },
-          },
-        }}
-      >
-        {maintenanceFilterValues.map((value) => {
-          const active = activeFilter === value
-
-          return (
-            <MenuItem
-              key={value}
-              value={value}
-              sx={{
-                minHeight: 42,
-                bgcolor: active ? alpha.magenta[8] : 'transparent',
-                '&:hover': {
-                  bgcolor: alpha.magenta[8],
-                },
-              }}
-            >
-              <MaintenanceFilterOptionLabel
-                active={active}
-                count={getFilterCount(value)}
-                label={t(`filters.${value}`)}
-              />
-            </MenuItem>
-          )
-        })}
-      </TextField>
-
-      {isDesktop ? (
-        <Stack
-          component="div"
-          role="group"
-          aria-label={t('filterDialog.title')}
-          direction="row"
-          spacing={0.8}
-          useFlexGap
-          flexWrap="wrap"
-          sx={{ display: { xs: 'none', md: 'flex' } }}
-        >
-          {maintenanceFilterValues.map((value) => {
-            const active = activeFilter === value
-
-            return (
-              <DashboardStatusFilterButton
-                key={value}
-                active={active}
-                count={getFilterCount(value)}
-                onClick={() => onChange(value)}
-              >
-                {t(`filters.${value}`)}
-              </DashboardStatusFilterButton>
-            )
-          })}
-        </Stack>
-      ) : null}
-    </>
-  )
-}
-
-function MaintenanceFilterOptionLabel({
-  active,
-  count,
-  label,
-}: {
-  active: boolean
-  count: number
-  label: string
-}) {
-  return (
-    <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-      <Box component="span">{label}</Box>
-      <Box
-        component="span"
-        sx={{
-          display: 'grid',
-          minWidth: 26,
-          height: 26,
-          placeItems: 'center',
-          px: 0.6,
-          borderRadius: `${radius.full}px`,
-          bgcolor: active ? brand.magenta[500] : alpha.graphite[6],
-          color: active ? surface.lightText : brand.neutral[500],
-          fontSize: 15,
-          fontWeight: 900,
-        }}
-      >
-        {count}
-      </Box>
-    </Box>
-  )
-}
-
-function MetricCard({
-  label,
-  value,
-  tone,
-}: {
-  label: string
-  value: string
-  tone: 'open' | 'urgent' | 'averageResolution'
-}) {
-  const config =
-    tone === 'open'
-      ? { Icon: FolderOpenOutlinedIcon, bg: '#E5F3FF', color: '#2877E8' }
-      : tone === 'urgent'
-        ? { Icon: WarningAmberRoundedIcon, bg: '#FDEBEC', color: brand.semantic.error }
-        : { Icon: AccessTimeOutlinedIcon, bg: '#FFF5D8', color: '#D98900' }
-  return (
-    <Stack
-      direction={{ xs: 'column', sm: 'row' }}
-      alignItems={{ xs: 'flex-start', sm: 'center' }}
-      spacing={{ xs: 0.5, sm: 1.3 }}
-      sx={{
-        minWidth: 0,
-        minHeight: { xs: 84, sm: 78 },
-        overflow: 'hidden',
-        px: { xs: 1.2, sm: 2.1 },
-        py: { xs: 1.3, sm: 1.5 },
-        bgcolor: surface.paper,
-        borderRadius: `${radius.sm}px`,
-        boxShadow: shadows.crmCardCompact,
-      }}
-    >
-      <Box
-        sx={{
-          width: 42,
-          height: 42,
-          borderRadius: '50%',
-          display: { xs: 'none', sm: 'grid' },
-          placeItems: 'center',
-          bgcolor: config.bg,
-          color: config.color,
-        }}
-      >
-        <config.Icon sx={{ fontSize: 22 }} />
-      </Box>
-      <Box sx={{ width: '100%', minWidth: 0, overflow: 'hidden' }}>
-        <Typography
-          noWrap
-          sx={{
-            width: '100%',
-            minWidth: 0,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            color: brand.neutral[500],
-            fontSize: { xs: 10, sm: 12 },
-            fontWeight: 900,
-          }}
-        >
-          {label}
-        </Typography>
-        <Typography
-          sx={{
-            color: brand.graphite[500],
-            fontSize: { xs: 24, sm: 30 },
-            lineHeight: 1.1,
-            fontWeight: 900,
-          }}
-        >
-          {value}
-        </Typography>
-      </Box>
-    </Stack>
-  )
-}

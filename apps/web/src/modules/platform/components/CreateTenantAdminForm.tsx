@@ -1,36 +1,27 @@
 'use client'
 
+import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Button, Stack } from '@mui/material'
 import { useSnackbar } from 'notistack'
-import axios from 'axios'
 import { useTranslations } from 'next-intl'
 
 import { RhfTextField } from '@shared/components/form'
+import { extractErrorMessage } from '@shared/utils/error-message'
 
 import {
   createTenantAdminSchema,
   type CreateTenantAdminFormValues,
 } from '../schemas/create-tenant-admin-schema'
 import { useCreateTenantAdmin } from '../hooks/use-create-tenant-admin'
-
-function extractErrorMessage(error: unknown, fallback: string): string {
-  if (axios.isAxiosError(error)) {
-    const message = error.response?.data?.error?.message
-    if (typeof message === 'string') return message
-  }
-  return fallback
-}
-
-type CreateTenantAdminFormProps = {
-  tenantId: string
-}
+import type { CreateTenantAdminFormProps } from '../types/tenant'
 
 export function CreateTenantAdminForm({ tenantId }: CreateTenantAdminFormProps) {
   const t = useTranslations('platform.forms')
   const { enqueueSnackbar } = useSnackbar()
   const createTenantAdmin = useCreateTenantAdmin()
+  const schema = useMemo(() => createTenantAdminSchema((key) => t(`errors.${key}`)), [t])
 
   const {
     control,
@@ -38,7 +29,7 @@ export function CreateTenantAdminForm({ tenantId }: CreateTenantAdminFormProps) 
     reset,
     formState: { isSubmitting },
   } = useForm<CreateTenantAdminFormValues>({
-    resolver: zodResolver(createTenantAdminSchema),
+    resolver: zodResolver(schema),
     defaultValues: { nome: '', email: '', password: '', confirmarSenha: '' },
   })
 

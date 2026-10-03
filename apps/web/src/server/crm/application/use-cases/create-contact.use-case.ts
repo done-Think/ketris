@@ -15,7 +15,6 @@ export class CreateContactUseCase {
     const { actorTenantId, ...data } = input
     const email = data.email.trim().toLowerCase()
 
-    // O banco tem unique (tenantId, email); checar antes troca um 500 de constraint por um 409 claro.
     const existing = await this.contactRepository.findByEmail(actorTenantId, email)
 
     if (existing) throw new ContactEmailAlreadyExistsError()

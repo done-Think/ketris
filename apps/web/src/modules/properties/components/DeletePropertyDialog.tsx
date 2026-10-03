@@ -11,13 +11,7 @@ import {
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-export interface DeletePropertyDialogProps {
-  open: boolean
-  isPending: boolean
-  title: string
-  onClose: () => void
-  onConfirm: () => void
-}
+import type { DeletePropertyDialogProps } from '../types/dashboard-property'
 
 export function DeletePropertyDialog({
   open,

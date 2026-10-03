@@ -1,12 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 
 import { platformAdminService } from '../services/platform-admin-service'
-
-interface CreatePlatformAdminInput {
-  nome: string
-  email: string
-  password: string
-}
+import type { CreatePlatformAdminInput } from '../types/platform-admin'
 
 export function useCreatePlatformAdmin() {
   return useMutation({

@@ -1,10 +1,7 @@
 import { z } from 'zod'
 
-/**
- * Standard Brazilian CPF check-digit algorithm (two mod-11 digits over the first 9 digits).
- * Rejects the well-known invalid pattern of 11 repeated digits (e.g. "111.111.111-11"), which
- * always passes the checksum but is never a real CPF.
- */
+import type { SchemaMessageTranslator } from './email-schema'
+
 export function isValidCpf(value: string): boolean {
   const digits = value.replace(/\D/g, '')
   if (digits.length !== 11 || /^(\d)\1{10}$/.test(digits)) return false
@@ -29,8 +26,6 @@ export function isValidCpf(value: string): boolean {
   return digits === `${base}${firstCheckDigit}${secondCheckDigit}`
 }
 
-export const cpfSchema = z
-  .string()
-  .trim()
-  .min(1, 'Informe o CPF')
-  .refine(isValidCpf, 'Informe um CPF válido')
+export function createCpfSchema(t: SchemaMessageTranslator) {
+  return z.string().trim().min(1, t('cpfRequired')).refine(isValidCpf, t('cpfInvalid'))
+}

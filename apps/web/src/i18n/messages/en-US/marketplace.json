@@ -102,6 +102,11 @@
         "penthouses": "Penthouses",
         "farms": "Country homes and farms",
         "studios": "Studios"
+      },
+      "errors": {
+        "textTooLong": "Text is too long",
+        "optionRequired": "Select an option",
+        "priceInvalid": "Invalid price value"
       }
     },
     "featured": {
@@ -228,7 +233,26 @@
       "preview": "Preview",
       "save": "Save",
       "publish": "Publish",
-      "unpublish": "Unpublish"
+      "unpublish": "Unpublish",
+      "edit": "Edit"
+    },
+    "errors": {
+      "hexColorInvalid": "Enter a valid hex color",
+      "urlInvalid": "Enter a valid URL",
+      "displayNameRequired": "Enter the name shown on the profile",
+      "bioRequired": "Enter the bio",
+      "phoneRequired": "Enter the phone number",
+      "creciRequired": "Enter the CRECI license number",
+      "availabilityRequired": "Enter your availability",
+      "headlineRequired": "Enter the headline",
+      "regionRequired": "Enter the service region",
+      "neighborhoodsRequired": "Enter the neighborhoods you serve",
+      "specialtiesRequired": "Enter your specialties",
+      "primaryColorRequired": "Enter the primary color",
+      "secondaryColorRequired": "Enter the secondary color",
+      "backgroundColorRequired": "Enter the background color",
+      "avatarUrlRequired": "Upload a profile photo",
+      "bannerUrlRequired": "Upload a cover image"
     }
   },
   "agencyProfileEditor": {
@@ -266,7 +290,28 @@
       "preview": "Preview",
       "save": "Save",
       "publish": "Publish",
-      "unpublish": "Unpublish"
+      "unpublish": "Unpublish",
+      "edit": "Edit"
+    },
+    "errors": {
+      "hexColorInvalid": "Enter a valid hex color",
+      "urlInvalid": "Enter a valid URL",
+      "displayNameRequired": "Enter the agency name",
+      "emailInvalid": "Enter a valid email",
+      "teamTooLarge": "Select up to 6 brokers",
+      "summaryRequired": "Enter the agency summary",
+      "phoneOrEmailRequired": "Enter a contact phone or email",
+      "legalCreciRequired": "Enter the agency CRECI license number",
+      "headlineRequired": "Enter the headline",
+      "headquartersRequired": "Enter the headquarters",
+      "addressRequired": "Enter the address",
+      "coverageRequired": "Enter the coverage areas",
+      "segmentsRequired": "Enter the market segments",
+      "yearsInMarketRequired": "Enter the years in market",
+      "backgroundColorRequired": "Enter the background color",
+      "logoUrlRequired": "Upload the logo",
+      "bannerUrlRequired": "Upload a cover image",
+      "teamRequired": "Select at least one featured broker"
     }
   },
   "searchResults": {
@@ -322,7 +367,19 @@
         "area100Plus": "100m²+",
         "all": "All",
         "withParking": "With parking"
+      },
+      "errors": {
+        "textTooLong": "Text is too long",
+        "optionInvalid": "Invalid option",
+        "numbersOnly": "Numbers only",
+        "numberTooLong": "Value is too long"
       }
+    },
+    "errors": {
+      "textTooLong": "Text is too long",
+      "optionInvalid": "Invalid option",
+      "numbersOnly": "Numbers only",
+      "numberTooLong": "Value is too long"
     }
   },
   "directory": {
@@ -355,6 +412,10 @@
       "response": "Response",
       "team": "Team",
       "rating": "Rating"
+    },
+    "errors": {
+      "searchQueryTooLong": "Search is too long",
+      "visibleCountInvalid": "Invalid item count"
     }
   },
   "mediaUpload": {

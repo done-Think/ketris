@@ -5,16 +5,9 @@ import { Autocomplete, CircularProgress, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { useCrmProperties } from '../../hooks/use-opportunities'
+import type { PropertyAutocompleteProps } from '../../types/opportunity-detail'
 import type { PublicPropertySummary } from '../../types/property'
 import { formatCurrency, formatMonthlyCurrency } from '../../utils/formatters'
-
-export interface PropertyAutocompleteProps {
-  tenantId: string
-  value: PublicPropertySummary | null
-  onChange: (property: PublicPropertySummary | null) => void
-  error?: boolean
-  helperText?: string
-}
 
 function getOptionLabel(property: PublicPropertySummary): string {
   const location = [property.neighborhood, property.city].filter(Boolean).join(', ')

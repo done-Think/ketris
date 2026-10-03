@@ -5,7 +5,6 @@ import type {
   PlatformHealthMetric,
 } from '../types/platform-system'
 
-/** Demonstration-only snapshots; no remote monitoring. */
 export const platformHealthMetrics: readonly PlatformHealthMetric[] = [
   { id: 'gateway', value: 0.999, format: 'percent', status: 'healthy', tone: 'success' },
   { id: 'database', value: 45, format: 'milliseconds', status: 'stable', tone: 'success' },

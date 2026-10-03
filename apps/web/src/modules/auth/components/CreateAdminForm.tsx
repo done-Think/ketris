@@ -1,30 +1,24 @@
 'use client'
 
+import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Button, Stack, Typography } from '@mui/material'
 import { useSnackbar } from 'notistack'
-import axios from 'axios'
 import { useTranslations } from 'next-intl'
 
 import { RhfTextField } from '@shared/components/form'
 import { ActionTextLink } from '@shared/components/ui'
+import { extractErrorMessage } from '@shared/utils/error-message'
 
 import { createAdminSchema, type CreateAdminFormValues } from '../schemas/create-admin-schema'
 import { useCreateAdmin } from '../hooks/use-create-admin'
-
-function extractErrorMessage(error: unknown, fallback: string): string {
-  if (axios.isAxiosError(error)) {
-    const message = error.response?.data?.error?.message
-    if (typeof message === 'string') return message
-  }
-  return fallback
-}
 
 export function CreateAdminForm() {
   const t = useTranslations('auth.backoffice')
   const { enqueueSnackbar } = useSnackbar()
   const createAdmin = useCreateAdmin()
+  const adminSchema = useMemo(() => createAdminSchema((key) => t(`errors.${key}`)), [t])
 
   const {
     control,
@@ -32,7 +26,7 @@ export function CreateAdminForm() {
     reset,
     formState: { isSubmitting },
   } = useForm<CreateAdminFormValues>({
-    resolver: zodResolver(createAdminSchema),
+    resolver: zodResolver(adminSchema),
     defaultValues: { name: '', email: '', password: '', confirmPassword: '' },
   })
 

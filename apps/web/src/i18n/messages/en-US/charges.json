@@ -55,7 +55,12 @@
       "status": "Status"
     },
     "directions": { "receivable": "Receivable", "payable": "Payable" },
-    "statuses": { "pending": "Pending", "scheduled": "Scheduled" }
+    "statuses": { "pending": "Pending", "scheduled": "Scheduled" },
+    "errors": {
+      "descriptionRequired": "Enter the description",
+      "amountPositive": "Amount must be greater than zero",
+      "dateInvalid": "Enter a valid date"
+    }
   },
   "editDialog": {
     "paymentHint": "To mark as paid, register the payment in the details page.",
@@ -69,6 +74,11 @@
       "dueDate": "Due date",
       "direction": "Type",
       "status": "Status"
+    },
+    "errors": {
+      "descriptionRequired": "Enter the description",
+      "amountPositive": "Amount must be greater than zero",
+      "dateInvalid": "Enter a valid date"
     }
   },
   "archiveDialog": {
@@ -133,6 +143,10 @@
       "method": "Payment method",
       "cancel": "Cancel",
       "confirm": "Confirm payment"
+    },
+    "errors": {
+      "dateInvalid": "Enter a valid date",
+      "paymentMethodRequired": "Enter the payment method"
     }
   }
 }

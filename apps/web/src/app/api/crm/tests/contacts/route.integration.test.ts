@@ -28,8 +28,6 @@ describe('/api/crm/contacts (integração)', () => {
     })
     otherTenantId = other.id
 
-    // ADMIN aqui — testa o acesso irrestrito ao tenant. O escopo por AGENT (responsavelId do
-    // imóvel, propagado até o contato via oportunidade) tem sua própria suíte mais abaixo.
     const actor = await prisma.usuario.create({
       data: {
         tenantId,

@@ -102,6 +102,11 @@
         "penthouses": "Coberturas",
         "farms": "Chácaras e sítios",
         "studios": "Studios"
+      },
+      "errors": {
+        "textTooLong": "Texto muito longo",
+        "optionRequired": "Selecione uma opção",
+        "priceInvalid": "Valor de preço inválido"
       }
     },
     "featured": {
@@ -228,7 +233,26 @@
       "preview": "Visualizar",
       "save": "Salvar",
       "publish": "Publicar",
-      "unpublish": "Despublicar"
+      "unpublish": "Despublicar",
+      "edit": "Editar"
+    },
+    "errors": {
+      "hexColorInvalid": "Informe uma cor hexadecimal válida",
+      "urlInvalid": "Informe uma URL válida",
+      "displayNameRequired": "Informe o nome exibido no perfil",
+      "bioRequired": "Informe a biografia",
+      "phoneRequired": "Informe o telefone",
+      "creciRequired": "Informe o CRECI",
+      "availabilityRequired": "Informe a disponibilidade",
+      "headlineRequired": "Informe o título de destaque",
+      "regionRequired": "Informe a região de atuação",
+      "neighborhoodsRequired": "Informe os bairros de atuação",
+      "specialtiesRequired": "Informe as especialidades",
+      "primaryColorRequired": "Informe a cor principal",
+      "secondaryColorRequired": "Informe a cor secundária",
+      "backgroundColorRequired": "Informe a cor de fundo",
+      "avatarUrlRequired": "Envie uma foto de perfil",
+      "bannerUrlRequired": "Envie uma imagem de capa"
     }
   },
   "agencyProfileEditor": {
@@ -266,7 +290,28 @@
       "preview": "Visualizar",
       "save": "Salvar",
       "publish": "Publicar",
-      "unpublish": "Despublicar"
+      "unpublish": "Despublicar",
+      "edit": "Editar"
+    },
+    "errors": {
+      "hexColorInvalid": "Informe uma cor hexadecimal válida",
+      "urlInvalid": "Informe uma URL válida",
+      "displayNameRequired": "Informe o nome da imobiliária",
+      "emailInvalid": "Informe um e-mail válido",
+      "teamTooLarge": "Selecione no máximo 6 corretores",
+      "summaryRequired": "Informe a descrição da imobiliária",
+      "phoneOrEmailRequired": "Informe um telefone ou e-mail de contato",
+      "legalCreciRequired": "Informe o CRECI da imobiliária",
+      "headlineRequired": "Informe o título de destaque",
+      "headquartersRequired": "Informe a sede",
+      "addressRequired": "Informe o endereço",
+      "coverageRequired": "Informe as áreas de cobertura",
+      "segmentsRequired": "Informe os segmentos de atuação",
+      "yearsInMarketRequired": "Informe os anos de mercado",
+      "backgroundColorRequired": "Informe a cor de fundo",
+      "logoUrlRequired": "Envie o logotipo",
+      "bannerUrlRequired": "Envie uma imagem de capa",
+      "teamRequired": "Selecione ao menos um corretor em destaque"
     }
   },
   "searchResults": {
@@ -322,7 +367,19 @@
         "area100Plus": "100m²+",
         "all": "Todos",
         "withParking": "Com vaga"
+      },
+      "errors": {
+        "textTooLong": "Texto muito longo",
+        "optionInvalid": "Opção inválida",
+        "numbersOnly": "Use apenas números",
+        "numberTooLong": "Valor muito longo"
       }
+    },
+    "errors": {
+      "textTooLong": "Texto muito longo",
+      "optionInvalid": "Opção inválida",
+      "numbersOnly": "Use apenas números",
+      "numberTooLong": "Valor muito longo"
     }
   },
   "directory": {
@@ -355,6 +412,10 @@
       "response": "Resposta",
       "team": "Equipe",
       "rating": "Nota"
+    },
+    "errors": {
+      "searchQueryTooLong": "Busca muito longa",
+      "visibleCountInvalid": "Quantidade inválida"
     }
   },
   "mediaUpload": {

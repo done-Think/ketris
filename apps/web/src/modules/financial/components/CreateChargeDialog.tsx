@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -42,9 +42,10 @@ export function CreateChargeDialog({
   onCreate: (values: CreateChargeFormValues) => void
 }) {
   const t = useTranslations('charges.createDialog')
+  const chargeSchema = useMemo(() => createChargeSchema((key) => t(`errors.${key}`)), [t])
   const { control, handleSubmit, reset } = useForm<CreateChargeFormValues>({
     defaultValues,
-    resolver: zodResolver(createChargeSchema),
+    resolver: zodResolver(chargeSchema),
   })
   useEffect(() => {
     if (open) reset(defaultValues)

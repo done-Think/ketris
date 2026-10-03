@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { crmService } from '../services/crm-service'
-import type { ContactFilters, UpdateContactPayload } from '../types/contact'
+import type { ContactFilters, UpdateContactInput } from '../types/contact'
 
 function normalizeFilters(filters: ContactFilters) {
   return {
@@ -55,11 +55,6 @@ export function useCreateContact(tenantId: string) {
       queryClient.invalidateQueries({ queryKey: crmContactQueryKeys.lists(tenantId) })
     },
   })
-}
-
-export interface UpdateContactInput {
-  id: string
-  changes: UpdateContactPayload
 }
 
 export function useUpdateContact(tenantId: string) {

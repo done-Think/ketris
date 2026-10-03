@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useId, useState, type ChangeEvent } from 'react'
+import { useEffect, useId, useMemo, useState, type ChangeEvent } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import PhotoCameraOutlinedIcon from '@mui/icons-material/PhotoCameraOutlined'
 import {
@@ -24,23 +24,11 @@ import { radius } from '@shared/theme/tokens'
 import { getInitials } from '@shared/utils/get-initials'
 
 import {
-  updateCurrentUserProfileSchema,
+  createUpdateCurrentUserProfileSchema,
   type UpdateCurrentUserProfileValues,
 } from '../schemas/update-current-user-profile-schema'
 import { userService } from '../services/user-service'
-import type { TenantUser } from '../types/user'
-
-type EditCurrentUserProfileDialogProps = {
-  open: boolean
-  user: {
-    id: string
-    name: string
-    email: string
-    avatarUrl?: string | null
-  }
-  onClose: () => void
-  onUpdated: (user: TenantUser) => Promise<void>
-}
+import type { EditCurrentUserProfileDialogProps } from '../types/user'
 
 export function EditCurrentUserProfileDialog({
   open,
@@ -54,6 +42,10 @@ export function EditCurrentUserProfileDialog({
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const updateCurrentUserProfileSchema = useMemo(
+    () => createUpdateCurrentUserProfileSchema((key) => t(`errors.${key}`)),
+    [t],
+  )
   const {
     control,
     handleSubmit,

@@ -1,6 +1,7 @@
 'use client'
 
 import { Box, MenuItem, Stack } from '@mui/material'
+import dayjs from 'dayjs'
 import { useTranslations } from 'next-intl'
 import type { Control } from 'react-hook-form'
 import { useWatch } from 'react-hook-form'
@@ -12,6 +13,24 @@ import {
   agendaOtherPropertyValue,
 } from '../schemas/agenda-event-form-schema'
 import type { AgendaEventFormValues, AgendaPropertyOption } from '../types/agenda-event'
+import {
+  AGENDA_BUSINESS_HOURS_END,
+  AGENDA_BUSINESS_HOURS_START,
+  computeEarliestSchedulableSlot,
+} from '../utils/scheduling-window'
+
+const businessHoursStart = `${String(AGENDA_BUSINESS_HOURS_START).padStart(2, '0')}:00`
+const businessHoursEnd = `${String(AGENDA_BUSINESS_HOURS_END).padStart(2, '0')}:00`
+
+function getMinTimeForDate(scheduledDate: string): string {
+  if (!dayjs(scheduledDate, 'YYYY-MM-DD', true).isValid()) return businessHoursStart
+
+  const earliestSlot = computeEarliestSchedulableSlot()
+  if (scheduledDate !== earliestSlot.format('YYYY-MM-DD')) return businessHoursStart
+
+  const earliestTime = earliestSlot.format('HH:mm')
+  return earliestTime > businessHoursStart ? earliestTime : businessHoursStart
+}
 
 const phoneMask = [{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }]
 
@@ -30,7 +49,9 @@ export function AgendaEventFormFields({
 }: AgendaEventFormFieldsProps) {
   const t = useTranslations('agenda.eventForm')
   const selectedPropertyId = useWatch({ control, name: 'propertyId' })
+  const selectedDate = useWatch({ control, name: 'scheduledDate' })
   const showCustomPropertyField = selectedPropertyId === agendaOtherPropertyValue
+  const minTime = getMinTimeForDate(selectedDate)
 
   return (
     <Stack spacing={1.6} sx={{ pt: 1 }}>
@@ -113,6 +134,7 @@ export function AgendaEventFormFields({
           type="time"
           fullWidth
           InputLabelProps={{ shrink: true }}
+          inputProps={{ min: minTime, max: businessHoursEnd, step: 900 }}
         />
         <RhfTextField
           control={control}

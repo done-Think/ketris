@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Link as MuiLink } from '@mui/material'
 import { useTranslations } from 'next-intl'
@@ -16,7 +16,10 @@ import { PasswordRecoveryForm } from './PasswordRecoveryForm'
 import { VerificationCodeStep } from './VerificationCodeStep'
 import { authRoutes } from '../config/auth-routes'
 import { usePasswordReset } from '../hooks/use-password-reset'
-import { passwordRecoverySchema, passwordResetSchema } from '../schemas/password-recovery-schema'
+import {
+  createPasswordRecoverySchema,
+  createPasswordResetSchema,
+} from '../schemas/password-recovery-schema'
 import type {
   PasswordRecoveryFormValues,
   PasswordResetFormValues,
@@ -29,6 +32,15 @@ export function PasswordRecoveryScreen() {
   const [step, setStep] = useState<RecoveryStep>('request')
   const [email, setEmail] = useState('')
   const { error, resetPassword } = usePasswordReset()
+  const errorTranslator = useMemo(() => (key: string) => t(`errors.${key}`), [t])
+  const passwordRecoverySchema = useMemo(
+    () => createPasswordRecoverySchema(errorTranslator),
+    [errorTranslator],
+  )
+  const passwordResetSchema = useMemo(
+    () => createPasswordResetSchema(errorTranslator),
+    [errorTranslator],
+  )
 
   const requestForm = useForm<PasswordRecoveryFormValues>({
     resolver: zodResolver(passwordRecoverySchema),

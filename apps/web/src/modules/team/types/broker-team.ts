@@ -29,3 +29,15 @@ export type BrokerTeamFiltersFormValues = {
 
 export type BrokerTeamMenuAction =
   'performance' | 'editGoal' | 'transferPortfolio' | 'scheduleOneOnOne' | 'deactivate'
+
+export type BrokerTeamMenu = {
+  anchorEl: HTMLElement
+  broker: BrokerTeamMember
+}
+
+export type BrokerTeamCardProps = {
+  broker: BrokerTeamMember
+  isMenuOpen: boolean
+  onOpenProfile: (broker: BrokerTeamMember) => void
+  onOpenMenu: (anchorEl: HTMLElement, broker: BrokerTeamMember) => void
+}

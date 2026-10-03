@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Box,
@@ -18,7 +18,7 @@ import {
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslations } from 'next-intl'
 
-import { editOpportunityFormSchema } from '../../schemas/opportunity-schema'
+import { createEditOpportunityFormSchema } from '../../schemas/opportunity-schema'
 import type { Opportunity, OpportunityEditFormValues } from '../../types/opportunity'
 import type { EditOpportunityDialogProps } from '../../types/opportunity-detail'
 
@@ -42,6 +42,10 @@ export function EditOpportunityDialog({
   onSave,
 }: EditOpportunityDialogProps) {
   const t = useTranslations('crm.opportunityDetail')
+  const editOpportunityFormSchema = useMemo(
+    () => createEditOpportunityFormSchema((key) => t(`errors.${key}`)),
+    [t],
+  )
   const {
     control,
     handleSubmit,

@@ -26,7 +26,6 @@
     "expandNavigation": "Expand navigation",
     "defaultUserName": "Ketris Team",
     "defaultUserContext": "Admin dashboard",
-    "backToMarketplace": "Back to marketplace",
     "logoutToMarketplace": "Sign out and return to marketplace",
     "dashboard": "Dashboard",
     "agencyOverview": "Agency Overview",
@@ -53,7 +52,11 @@
       "save": "Save changes",
       "success": "Profile updated successfully.",
       "saveError": "Could not save the changes. Try again.",
-      "avatarFormatError": "Use a JPG, PNG, or WEBP image."
+      "avatarFormatError": "Use a JPG, PNG, or WEBP image.",
+      "errors": {
+        "nameRequired": "Enter your name.",
+        "emailInvalid": "Enter a valid email."
+      }
     },
     "charges": "Charges"
   },

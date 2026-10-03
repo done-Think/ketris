@@ -163,7 +163,23 @@
       "Destacar imóvel na listagem inicial": "Feature property in the initial listing"
     },
     "createSuccess": "Property created successfully.",
-    "createError": "Could not create the property. Please try again."
+    "createError": "Could not create the property. Please try again.",
+    "errors": {
+      "propertyTypeRequired": "Select the property type",
+      "purposeRequired": "Select at least one purpose",
+      "titleRequired": "Enter the listing title",
+      "descriptionRequired": "Enter a more complete description",
+      "streetRequired": "Enter the address",
+      "numberRequired": "Enter the number",
+      "neighborhoodRequired": "Enter the neighborhood",
+      "cityRequired": "Enter the city",
+      "stateRequired": "Enter the state",
+      "zipCodeRequired": "Enter the ZIP code",
+      "numberInvalid": "Enter a valid value",
+      "areaRequired": "Enter the usable area",
+      "mainValueRequired": "Enter the main value",
+      "negotiationTermRequired": "Enter the commercial terms"
+    }
   },
   "edit": {
     "title": "Edit property",
