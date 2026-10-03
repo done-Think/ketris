@@ -88,12 +88,9 @@ export type ContactTypeChipProps = {
 
 export type ContactsTableProps = {
   contacts: readonly ContactListItem[]
-  selectedIds: ReadonlySet<string>
-  onToggleContact: (contactId: string) => void
-  onToggleAll: () => void
 } & Pick<ContactsListProps, 'onEditContact' | 'onOpenInteractions' | 'onOpenMoreOptions'>
 
-export type ContactsCardsProps = Omit<ContactsTableProps, 'onToggleAll'>
+export type ContactsCardsProps = ContactsTableProps
 
 export type ContactsHeaderProps = {
   search: string

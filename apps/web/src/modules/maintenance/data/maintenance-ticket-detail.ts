@@ -1,4 +1,4 @@
-rode import type { MaintenanceTicket, MaintenanceTicketDetail } from '../types/maintenance'
+import type { MaintenanceTicket, MaintenanceTicketDetail } from '../types/maintenance'
 
 export const maintenanceTicketDetail: MaintenanceTicketDetail = {
   code: '#MNT-2025-0089',
