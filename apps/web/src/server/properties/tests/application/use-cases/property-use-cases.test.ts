@@ -51,6 +51,7 @@ const property: Property = {
   ],
   valores: {
     valor: 2500,
+    valorAluguel: null,
     condominio: 400,
     iptu: 100,
   },

@@ -1,7 +1,7 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
-export const propertyPurposeSchema = z.enum(['ALUGUEL', 'VENDA'])
+export const propertyPurposeSchema = z.enum(['ALUGUEL', 'VENDA', 'AMBOS'])
 
 export const publicPropertySummarySchema = z
   .object({

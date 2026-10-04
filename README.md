@@ -46,7 +46,7 @@ não `.env.local`) e ajuste se necessário.
 ```bash
 nvm use
 npm install
-docker compose up -d          # sobe o Postgres local (postgres:16-alpine, porta 55432 no host)
+docker compose up -d          # sobe o Postgres local (postgres:16-alpine, porta 55532 no host)
 npm run db:migrate            # aplica o schema Prisma no banco
 npm run db:seed               # cria várias imobiliárias, corretores, proprietários, construtoras e locatários (imobiliariahorizonte@ketris.com.br)
 npm run dev
@@ -54,8 +54,8 @@ npm run dev
 
 Web: http://localhost:3000
 
-Usamos a porta 55432 no host (em vez da 5432 padrão) porque é comum ter outros projetos locais com
-Postgres/PgBouncer já ocupando 5432/5433 — 55432 dificilmente colide com algo. Se mesmo assim colidir,
+Usamos a porta 55532 no host (em vez da 5432 padrão) porque é comum ter outros projetos locais com
+Postgres/PgBouncer já ocupando 5432/5433. Se mesmo assim colidir,
 troque o mapeamento em `docker-compose.yml` e ajuste `DATABASE_URL` no `.env` de acordo.
 
 Para parar o banco: `docker compose down` (mantém os dados) ou `docker compose down -v` (apaga tudo).

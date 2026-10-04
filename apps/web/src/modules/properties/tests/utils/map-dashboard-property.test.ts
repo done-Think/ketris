@@ -35,7 +35,7 @@ const baseProperty: Property = {
       createdAt: '2026-08-01T10:00:00.000Z',
     },
   ],
-  values: { price: 6500, condoFee: 1200, propertyTax: 380 },
+  values: { price: 6500, rentalPrice: null, condoFee: 1200, propertyTax: 380 },
   characteristics: { bedrooms: 3, bathrooms: 2, parkingSpots: 2, areaM2: 95 },
 }
 
@@ -92,7 +92,7 @@ describe('toDashboardProperty', () => {
   it('falls back to placeholders when characteristics/values are null', () => {
     const result = toDashboardProperty({
       ...baseProperty,
-      values: { price: 6500, condoFee: null, propertyTax: null },
+      values: { price: 6500, rentalPrice: null, condoFee: null, propertyTax: null },
       characteristics: { bedrooms: null, bathrooms: null, parkingSpots: null, areaM2: null },
     })
 
