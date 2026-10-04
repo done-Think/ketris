@@ -35,8 +35,6 @@ export const saveAgencyProfileRequestSchema = z
   })
   .openapi('SaveAgencyProfileRequest')
 
-export type SaveAgencyProfileRequestDTO = z.infer<typeof saveAgencyProfileRequestSchema>
-
 export const agencyListingSummarySchema = z
   .object({
     id: z.string(),

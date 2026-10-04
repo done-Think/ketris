@@ -5,41 +5,13 @@ import type {
   BrokerListingSummary,
   BrokerProfile,
   BrokerProfileDraft,
-} from '../domain/broker-profile.entity'
-
-type DecimalLike = { toNumber(): number }
+} from '../types/broker-profile'
+import type { DecimalLike, UsuarioWithPerfilRow } from '../types/prisma-broker-profile-repository'
 
 const usuarioWithPerfilInclude = {
   tenant: { select: { nome: true } },
   perfilPublico: true,
 } as const
-
-type UsuarioWithPerfilRow = {
-  id: string
-  tenantId: string
-  nome: string
-  email: string
-  avatarUrl: string | null
-  tenant: { nome: string }
-  perfilPublico: {
-    displayName: string
-    headline: string | null
-    bio: string | null
-    creci: string | null
-    telefone: string | null
-    regiao: string | null
-    bairros: string[]
-    especialidades: string[]
-    disponibilidade: string | null
-    corPrimaria: string | null
-    corSecundaria: string | null
-    corFundo: string | null
-    avatarUrl: string | null
-    bannerUrl: string | null
-    status: 'DRAFT' | 'PUBLISHED'
-    publicadoEm: Date | null
-  } | null
-}
 
 async function buildStats(usuarioId: string) {
   const [activeListings, dealsClosed] = await Promise.all([

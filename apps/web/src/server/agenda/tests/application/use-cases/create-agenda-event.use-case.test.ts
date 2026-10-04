@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { User } from '@server/auth/domain/user.entity'
 import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
 import { PropertyNotFoundError } from '@server/properties/domain/errors'
-import type { Property } from '@server/properties/domain/property.entity'
+import type { Property } from '@server/properties/types/property'
 import type { PropertyRepository } from '@server/properties/application/ports/property-repository.port'
 
 import { AgendaEventConflictError, AgendaResponsibleNotFoundError } from '../../../domain/errors'

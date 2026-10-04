@@ -2,7 +2,7 @@ import type { Papel } from '@server/auth/domain/user.entity'
 
 import { assertBrokerProfileAccess } from '../authorization'
 import { BrokerProfileNotFoundError, ProfilePublishValidationError } from '../../domain/errors'
-import type { BrokerProfile } from '../../domain/broker-profile.entity'
+import type { BrokerProfile } from '../../types/broker-profile'
 import type { BrokerProfileRepository } from '../ports/broker-profile-repository.port'
 
 export interface PublishBrokerProfileInput {
