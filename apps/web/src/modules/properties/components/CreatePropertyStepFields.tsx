@@ -33,12 +33,8 @@ export function CreatePropertyStepFields({
   const t = useTranslations('properties.create')
   const hasRentPurpose = propertyPurpose.includes('Aluguel')
   const hasSalePurpose = propertyPurpose.includes('Venda')
-  const mainValueLabel =
-    hasRentPurpose && !hasSalePurpose
-      ? 'rentValue'
-      : hasSalePurpose && !hasRentPurpose
-        ? 'saleValue'
-        : 'referenceValue'
+  const hasDualPurpose = hasRentPurpose && hasSalePurpose
+  const mainValueLabel = hasRentPurpose && !hasSalePurpose ? 'rentValue' : 'saleValue'
   const negotiationTermLabel =
     hasRentPurpose && !hasSalePurpose
       ? 'securityDeposit'
@@ -330,7 +326,8 @@ export function CreatePropertyStepFields({
           }}
         >
           {[
-            ['mainValue', mainValueLabel, 'number'],
+            ['mainValue', hasDualPurpose ? 'referenceValue' : mainValueLabel, 'number'],
+            ...(hasDualPurpose ? ([['rentalValue', 'rentValue', 'number']] as const) : []),
             ['condominium', 'condominium', 'number'],
             ['iptu', 'iptu', 'number'],
             ['negotiationTerm', negotiationTermLabel, 'text'],
@@ -338,7 +335,9 @@ export function CreatePropertyStepFields({
             <Controller
               key={name}
               control={control}
-              name={name as 'mainValue' | 'condominium' | 'iptu' | 'negotiationTerm'}
+              name={
+                name as 'mainValue' | 'rentalValue' | 'condominium' | 'iptu' | 'negotiationTerm'
+              }
               render={({ field, fieldState }) => (
                 <TextField
                   {...field}

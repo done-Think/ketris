@@ -1,4 +1,4 @@
-export type PropertyPurpose = 'RENT' | 'SALE'
+export type PropertyPurpose = 'RENT' | 'SALE' | 'BOTH'
 
 export type PropertyStatus = 'DRAFT' | 'PUBLISHED' | 'RENTED' | 'SOLD' | 'INACTIVE'
 
@@ -30,6 +30,7 @@ export interface PropertyMediaInput {
 
 export interface PropertyValues {
   price: number
+  rentalPrice: number | null
   condoFee: number | null
   propertyTax: number | null
 }
@@ -69,6 +70,7 @@ export interface PropertyFormValues {
   parkingSpots?: number | null
   areaM2?: number | null
   price: number
+  rentalPrice?: number | null
   condoFee?: number | null
   propertyTax?: number | null
   address?: PropertyAddress

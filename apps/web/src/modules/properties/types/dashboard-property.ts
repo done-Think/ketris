@@ -107,6 +107,7 @@ export type PropertiesTableProps = {
   properties: DashboardProperty[]
   totalCount: number
   onPropertySelect: PropertyNavigationHandler
+  onCreateProperty: () => void
 }
 
 export type CreatePropertyStepsNavProps = {

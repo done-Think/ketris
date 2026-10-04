@@ -54,6 +54,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     vagas: body.vagas ?? null,
     areaM2: body.areaM2 ?? null,
     valor: body.valor,
+    valorAluguel: body.valorAluguel ?? null,
     condominio: body.condominio ?? null,
     iptu: body.iptu ?? null,
     endereco: body.endereco

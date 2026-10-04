@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import { defineConfig } from 'prisma/config'
 
-const placeholderDatabaseUrl = 'postgresql://ketris:ketris@localhost:55432/ketris'
+const placeholderDatabaseUrl = 'postgresql://ketris:ketris@localhost:55532/ketris'
 const databaseUrl =
   process.env.DATABASE_URL ||
   process.env.POSTGRES_PRISMA_URL ||

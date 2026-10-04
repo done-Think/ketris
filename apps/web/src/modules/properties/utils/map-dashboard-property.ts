@@ -26,6 +26,11 @@ function formatValueOrPlaceholder(value: number | null, suffix = ''): string {
 
 export function toDashboardProperty(property: Property): DashboardProperty {
   const isRent = property.purpose === 'RENT'
+  const isDualPurpose = property.purpose === 'BOTH'
+  const formattedSalePrice = formatPropertyCurrency(property.values.price)
+  const formattedRentPrice = property.values.rentalPrice
+    ? `${formatPropertyCurrency(property.values.rentalPrice)}/mês`
+    : 'Não anunciado'
   const addressLine = property.address
     ? `${property.address.street}, ${property.address.number}`
     : 'Endereço não informado'
@@ -42,8 +47,10 @@ export function toDashboardProperty(property: Property): DashboardProperty {
     address: addressLine,
     location: locationLine,
     type: property.type,
-    purpose: isRent ? 'Aluguel' : 'Venda',
-    price: `${formatPropertyCurrency(property.values.price)}${isRent ? '/mês' : ''}`,
+    purpose: isDualPurpose ? 'Venda' : isRent ? 'Aluguel' : 'Venda',
+    price: isDualPurpose
+      ? `${formattedSalePrice} · ${formattedRentPrice}`
+      : `${formattedSalePrice}${isRent ? '/mês' : ''}`,
     status: statusByApiStatus[property.status],
     broker: '',
     updatedAt: formatPropertyRelativeDate(property.updatedAt, true),
@@ -63,8 +70,12 @@ export function toDashboardProperty(property: Property): DashboardProperty {
       iptu: formatValueOrPlaceholder(property.values.propertyTax, '/mês'),
     },
     pricing: {
-      rent: isRent ? `${formatPropertyCurrency(property.values.price)}/mês` : 'Não anunciado',
-      sale: isRent ? 'Não anunciado' : formatPropertyCurrency(property.values.price),
+      rent: isRent
+        ? `${formattedSalePrice}/mês`
+        : isDualPurpose
+          ? formattedRentPrice
+          : 'Não anunciado',
+      sale: isRent ? 'Não anunciado' : formattedSalePrice,
       condominium: formatValueOrPlaceholder(property.values.condoFee),
       iptu: formatValueOrPlaceholder(property.values.propertyTax, '/mês'),
       administrationFee: 'Não informado',

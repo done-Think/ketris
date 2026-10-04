@@ -37,7 +37,7 @@ const apiProperty = {
       createdAt: '2026-08-01T10:00:00.000Z',
     },
   ],
-  valores: { valor: 6500, condominio: 1200, iptu: 380 },
+  valores: { valor: 6500, valorAluguel: null, condominio: 1200, iptu: 380 },
   caracteristicas: { quartos: 3, banheiros: 2, vagas: 2, areaM2: 95 },
 }
 
@@ -73,7 +73,7 @@ const mappedProperty: Property = {
       createdAt: '2026-08-01T10:00:00.000Z',
     },
   ],
-  values: { price: 6500, condoFee: 1200, propertyTax: 380 },
+  values: { price: 6500, rentalPrice: null, condoFee: 1200, propertyTax: 380 },
   characteristics: { bedrooms: 3, bathrooms: 2, parkingSpots: 2, areaM2: 95 },
 }
 
@@ -128,6 +128,7 @@ describe('PropertiesService', () => {
       parkingSpots: 2,
       areaM2: 95,
       price: 6500,
+      rentalPrice: null,
       condoFee: 1200,
       propertyTax: 380,
     }
@@ -143,6 +144,7 @@ describe('PropertiesService', () => {
       vagas: 2,
       areaM2: 95,
       valor: 6500,
+      valorAluguel: null,
       condominio: 1200,
       iptu: 380,
       endereco: undefined,

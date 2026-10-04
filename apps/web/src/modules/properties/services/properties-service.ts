@@ -36,7 +36,7 @@ interface ApiProperty {
   responsavelId: string
   titulo: string
   descricao: string | null
-  finalidade: 'ALUGUEL' | 'VENDA'
+  finalidade: 'ALUGUEL' | 'VENDA' | 'AMBOS'
   tipo: string
   status: PropertyStatus
   publicadoEm: string | null
@@ -44,7 +44,12 @@ interface ApiProperty {
   updatedAt: string
   endereco: ApiPropertyAddress | null
   midias: ApiPropertyMedia[]
-  valores: { valor: number; condominio: number | null; iptu: number | null }
+  valores: {
+    valor: number
+    valorAluguel: number | null
+    condominio: number | null
+    iptu: number | null
+  }
   caracteristicas: {
     quartos: number | null
     banheiros: number | null
@@ -68,11 +73,15 @@ interface UploadPropertyMediaResponse {
   }
 }
 
-function toApiPurpose(purpose: PropertyPurpose): 'ALUGUEL' | 'VENDA' {
+function toApiPurpose(purpose: PropertyPurpose): 'ALUGUEL' | 'VENDA' | 'AMBOS' {
+  if (purpose === 'BOTH') return 'AMBOS'
+
   return purpose === 'RENT' ? 'ALUGUEL' : 'VENDA'
 }
 
-function fromApiPurpose(purpose: 'ALUGUEL' | 'VENDA'): PropertyPurpose {
+function fromApiPurpose(purpose: 'ALUGUEL' | 'VENDA' | 'AMBOS'): PropertyPurpose {
+  if (purpose === 'AMBOS') return 'BOTH'
+
   return purpose === 'ALUGUEL' ? 'RENT' : 'SALE'
 }
 
@@ -139,6 +148,7 @@ function mapProperty(api: ApiProperty): Property {
     media: fromApiMedia(api.midias),
     values: {
       price: api.valores.valor,
+      rentalPrice: api.valores.valorAluguel,
       condoFee: api.valores.condominio,
       propertyTax: api.valores.iptu,
     },
@@ -162,6 +172,7 @@ function toCreatePayload(values: PropertyFormValues) {
     vagas: values.parkingSpots ?? null,
     areaM2: values.areaM2 ?? null,
     valor: values.price,
+    valorAluguel: values.rentalPrice ?? null,
     condominio: values.condoFee ?? null,
     iptu: values.propertyTax ?? null,
     endereco: values.address ? toApiAddress(values.address) : undefined,
@@ -181,6 +192,7 @@ function toUpdatePayload(payload: Partial<PropertyFormValues>) {
   if (payload.parkingSpots !== undefined) body.vagas = payload.parkingSpots
   if (payload.areaM2 !== undefined) body.areaM2 = payload.areaM2
   if (payload.price !== undefined) body.valor = payload.price
+  if (payload.rentalPrice !== undefined) body.valorAluguel = payload.rentalPrice
   if (payload.condoFee !== undefined) body.condominio = payload.condoFee
   if (payload.propertyTax !== undefined) body.iptu = payload.propertyTax
   if (payload.address !== undefined) body.endereco = toApiAddress(payload.address)
