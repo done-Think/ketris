@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const publicPropertyPurposeSchema = z.enum(['ALUGUEL', 'VENDA'])
+export const publicPropertyPurposeSchema = z.enum(['ALUGUEL', 'VENDA', 'AMBOS'])
 
 export const publicPropertySearchFiltersSchema = z.object({
   purpose: publicPropertyPurposeSchema.optional(),

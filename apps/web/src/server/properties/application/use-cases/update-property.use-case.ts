@@ -40,6 +40,7 @@ export class UpdatePropertyUseCase {
       vagas: input.vagas,
       areaM2: input.areaM2,
       valor: input.valor,
+      valorAluguel: input.valorAluguel,
       condominio: input.condominio,
       iptu: input.iptu,
       endereco: input.endereco,

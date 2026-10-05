@@ -1,4 +1,4 @@
-export type PropertyPurpose = 'ALUGUEL' | 'VENDA'
+export type PropertyPurpose = 'ALUGUEL' | 'VENDA' | 'AMBOS'
 
 export interface PropertyAddress {
   street: string

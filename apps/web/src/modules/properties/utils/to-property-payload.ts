@@ -2,7 +2,10 @@ import type { CreateDashboardPropertyFormValues } from '../types/dashboard-prope
 import type { PropertyFormValues, PropertyPurpose } from '../types/property'
 
 export function toPropertyPayload(values: CreateDashboardPropertyFormValues): PropertyFormValues {
-  const purpose: PropertyPurpose = values.purpose[0] === 'Venda' ? 'SALE' : 'RENT'
+  const hasRentPurpose = values.purpose.includes('Aluguel')
+  const hasSalePurpose = values.purpose.includes('Venda')
+  const purpose: PropertyPurpose =
+    hasRentPurpose && hasSalePurpose ? 'BOTH' : hasSalePurpose ? 'SALE' : 'RENT'
 
   return {
     title: values.title,
@@ -14,6 +17,7 @@ export function toPropertyPayload(values: CreateDashboardPropertyFormValues): Pr
     parkingSpots: values.parkingSpaces,
     areaM2: values.area,
     price: values.mainValue,
+    rentalPrice: purpose === 'BOTH' ? values.rentalValue : null,
     condoFee: values.condominium,
     propertyTax: values.iptu,
     address: {

@@ -136,6 +136,7 @@ model PlatformAdminRefreshToken {
 enum FinalidadeImovel {
   ALUGUEL
   VENDA
+  AMBOS
 }
 
 enum StatusImovel {
@@ -161,6 +162,7 @@ model Imovel {
   vagas         Int?
   areaM2        Decimal?         @db.Decimal(10, 2)
   valor         Decimal          @db.Decimal(12, 2)
+  valorAluguel  Decimal?         @db.Decimal(12, 2)
   condominio    Decimal?         @db.Decimal(10, 2)
   iptu          Decimal?         @db.Decimal(10, 2)
   status        StatusImovel     @default(DRAFT)
@@ -168,7 +170,7 @@ model Imovel {
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
-  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   responsavel        Usuario             @relation("ImovelResponsavel", fields: [responsavelId], references: [id])
   endereco           Endereco?
   midias             Midia[]

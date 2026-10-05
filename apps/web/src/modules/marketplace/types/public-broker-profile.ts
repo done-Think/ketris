@@ -1,7 +1,7 @@
 export interface PublicBrokerListingSummary {
   id: string
   title: string
-  purpose: 'ALUGUEL' | 'VENDA'
+  purpose: 'ALUGUEL' | 'VENDA' | 'AMBOS'
   price: number
   neighborhood: string | null
   city: string | null

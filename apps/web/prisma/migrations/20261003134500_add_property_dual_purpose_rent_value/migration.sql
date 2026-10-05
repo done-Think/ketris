@@ -1,0 +1,3 @@
+ALTER TYPE "FinalidadeImovel" ADD VALUE IF NOT EXISTS 'AMBOS';
+
+ALTER TABLE "imoveis" ADD COLUMN "valorAluguel" DECIMAL(12, 2);

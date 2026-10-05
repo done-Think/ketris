@@ -37,10 +37,7 @@ export function PropertiesDashboardPage() {
   const router = useRouter()
   const propertiesQuery = useProperties()
   const canUseFixtures = process.env.NODE_ENV !== 'production'
-  const fixtureMode =
-    canUseFixtures &&
-    !propertiesQuery.isLoading &&
-    (propertiesQuery.isError || (propertiesQuery.data ?? []).length === 0)
+  const fixtureMode = canUseFixtures && !propertiesQuery.isLoading && propertiesQuery.isError
   const properties = useMemo(
     () =>
       fixtureMode ? dashboardProperties : (propertiesQuery.data ?? []).map(toDashboardProperty),
@@ -98,6 +95,7 @@ export function PropertiesDashboardPage() {
         <PropertiesTable
           properties={filteredProperties}
           totalCount={properties.length}
+          onCreateProperty={() => router.push('/dashboard/properties/new')}
           onPropertySelect={(propertyId) =>
             router.push({ pathname: '/dashboard/properties/[id]', params: { id: propertyId } })
           }

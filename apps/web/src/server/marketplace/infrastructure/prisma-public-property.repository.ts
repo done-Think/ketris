@@ -126,7 +126,9 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
   async search(filters: PropertySearchFilters): Promise<PublishedPropertySummary[]> {
     const where: Prisma.ImovelWhereInput = { status: 'PUBLISHED' }
 
-    if (filters.purpose) where.finalidade = filters.purpose
+    if (filters.purpose) {
+      where.finalidade = filters.purpose === 'AMBOS' ? 'AMBOS' : { in: [filters.purpose, 'AMBOS'] }
+    }
     if (filters.propertyType) where.tipo = { equals: filters.propertyType, mode: 'insensitive' }
     if (filters.minBedrooms !== undefined) where.quartos = { gte: filters.minBedrooms }
     if (filters.minArea !== undefined) where.areaM2 = { gte: filters.minArea }
