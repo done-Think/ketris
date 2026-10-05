@@ -34,7 +34,6 @@ import { useRouter } from 'next/navigation'
 import { getLocalizedPathname } from '@/i18n/locale-prefix'
 import { Link, usePathname } from '@/i18n/navigation'
 import { CrmAccessBoundary } from '@modules/crm/components/CrmAccessBoundary'
-import { EditCurrentUserProfileDialog } from '@modules/auth/components/EditCurrentUserProfileDialog'
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
@@ -46,6 +45,18 @@ import { DashboardNotificationsButton } from './DashboardNotificationsButton'
 
 const sidebarExpandedWidth = 240
 const sidebarCollapsedWidth = 72
+
+const marketplaceActionSx = {
+  minHeight: 32,
+  px: 1,
+  color: alpha.white[62],
+  fontSize: 11,
+  fontWeight: 600,
+  lineHeight: '16px',
+  textTransform: 'none',
+  '& .MuiButton-startIcon': { mr: 0.75 },
+  '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
+} as const
 
 const navigationItems: readonly AppShellNavItem[] = [
   {
@@ -109,14 +120,15 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   const locale = useLocale()
   const pathname = usePathname()
   const router = useRouter()
-  const { data: session, status, update } = useSession()
+  const { data: session, status } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [profileEditorOpen, setProfileEditorOpen] = useState(false)
   const [isSigningOut, setIsSigningOut] = useState(false)
   const sidebarCollapsed = useSidebarPreferencesStore((state) => state.isCollapsed)
   const toggleSidebarCollapsed = useSidebarPreferencesStore((state) => state.toggleCollapsed)
   const isPublicCrmRoute = pathname === '/crm' || pathname === '/crm/contacts'
   const isLocalDashboardPreview = allowLocalDashboardPreview
+  const isPersonalProfileRoute =
+    pathname === '/dashboard/profile' || pathname.startsWith('/dashboard/profile/')
   const userName = session?.user?.name ?? t('defaultUserName')
   const userContext = session?.user?.email ?? t('defaultUserContext')
   const userInitials = useMemo(() => getInitials(userName), [userName])
@@ -131,6 +143,8 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   // /dashboard/finance). O item ativo deve ser o de prefixo mais específico que bate com a
   // rota atual, e não todo item cujo prefixo é um match parcial.
   const activeTargetPath = useMemo(() => {
+    if (isPersonalProfileRoute) return null
+
     let bestMatch: string | null = null
 
     for (const item of visibleItems) {
@@ -143,22 +157,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
     }
 
     return bestMatch
-  }, [pathname, visibleItems])
-
-  async function handleProfileUpdated(updatedUser: {
-    name: string
-    email: string
-    avatarUrl?: string | null
-  }) {
-    await update({
-      user: {
-        ...session?.user,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        image: updatedUser.avatarUrl ?? undefined,
-      },
-    })
-  }
+  }, [isPersonalProfileRoute, pathname, visibleItems])
 
   async function handleLogoutToMarketplace() {
     if (isSigningOut) return
@@ -187,11 +186,49 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           transition: 'width 180ms ease, padding 180ms ease',
         }}
       >
-        <AppLogo
-          src={collapsed ? '/ketris-tab-icon.png' : ketrisLogoFooter}
-          width={collapsed ? 40 : 120}
-          sx={{ alignSelf: 'center', mb: 1.5 }}
-        />
+        <Stack
+          alignItems="center"
+          justifyContent="center"
+          sx={{ height: collapsed ? 84 : 48, mb: 1.5, position: 'relative' }}
+        >
+          <AppLogo
+            src={collapsed ? '/ketris-tab-icon.png' : ketrisLogoFooter}
+            width={collapsed ? 40 : 120}
+            sx={{ left: '50%', position: 'absolute', top: 0, transform: 'translateX(-50%)' }}
+          />
+          {showCollapseControl ? (
+            <Tooltip
+              title={collapsed ? t('expandNavigation') : t('collapseMenu')}
+              placement="right"
+            >
+              <Button
+                aria-label={collapsed ? t('expandNavigation') : t('collapseNavigation')}
+                onClick={toggleSidebarCollapsed}
+                startIcon={
+                  <KeyboardDoubleArrowLeftRoundedIcon
+                    sx={{
+                      fontSize: iconSize.md,
+                      transform: collapsed ? 'rotate(180deg)' : 'none',
+                      transition: 'transform 180ms ease',
+                    }}
+                  />
+                }
+                sx={{
+                  position: 'absolute',
+                  right: collapsed ? '50%' : 0,
+                  top: collapsed ? 44 : 2,
+                  transform: collapsed ? 'translateX(50%)' : 'none',
+                  minWidth: 36,
+                  minHeight: 36,
+                  px: 0,
+                  color: alpha.white[62],
+                  '& .MuiButton-startIcon': { m: 0 },
+                  '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
+                }}
+              />
+            </Tooltip>
+          ) : null}
+        </Stack>
 
         <Stack
           component="nav"
@@ -281,42 +318,26 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
 
         <Box sx={{ flexGrow: 1, minHeight: 2 }} />
 
-        {showCollapseControl ? (
-          <Tooltip
-            title={collapsed ? t('expandNavigation') : t('collapseNavigation')}
-            placement="right"
+        <Tooltip title={t('logoutToMarketplace')} placement="right">
+          <Button
+            onClick={handleLogoutToMarketplace}
+            disabled={isSigningOut}
+            aria-label={t('logoutToMarketplace')}
+            startIcon={<LogoutOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+            sx={{
+              alignSelf: collapsed ? 'center' : 'stretch',
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              minWidth: collapsed ? 44 : 0,
+              ...marketplaceActionSx,
+              minHeight: 40,
+              mb: 1.5,
+              px: collapsed ? 0 : 1.5,
+              '& .MuiButton-startIcon': { ml: 0, mr: collapsed ? 0 : 0.75 },
+            }}
           >
-            <Button
-              aria-label={collapsed ? t('expandNavigation') : t('collapseNavigation')}
-              onClick={toggleSidebarCollapsed}
-              startIcon={
-                <KeyboardDoubleArrowLeftRoundedIcon
-                  sx={{
-                    fontSize: iconSize.md,
-                    transform: collapsed ? 'rotate(180deg)' : 'none',
-                    transition: 'transform 180ms ease',
-                  }}
-                />
-              }
-              sx={{
-                alignSelf: collapsed ? 'center' : 'stretch',
-                justifyContent: collapsed ? 'center' : 'flex-start',
-                minWidth: collapsed ? 44 : 0,
-                minHeight: 44,
-                mb: 1.5,
-                px: collapsed ? 0 : 1.5,
-                color: alpha.white[62],
-                fontSize: 13,
-                fontWeight: 600,
-                textTransform: 'none',
-                '& .MuiButton-startIcon': { ml: 0, mr: collapsed ? 0 : 1.25 },
-                '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
-              }}
-            >
-              {collapsed ? null : t('collapseMenu')}
-            </Button>
-          </Tooltip>
-        ) : null}
+            {collapsed ? null : t('logoutToMarketplace')}
+          </Button>
+        </Tooltip>
 
         <Stack
           direction={collapsed ? 'column' : 'row'}
@@ -326,7 +347,11 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
         >
           <ButtonBase
             aria-label={t('editProfile')}
-            onClick={() => setProfileEditorOpen(true)}
+            aria-current={isPersonalProfileRoute ? 'page' : undefined}
+            onClick={() => {
+              setMobileOpen(false)
+              router.push(getLocalizedPathname('/dashboard/profile', locale))
+            }}
             disabled={!session?.user?.id}
             sx={{
               display: 'flex',
@@ -337,6 +362,8 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
               minWidth: 0,
               borderRadius: `${radius.sm}px`,
               p: 0.5,
+              bgcolor: isPersonalProfileRoute ? alpha.white[8] : 'transparent',
+              color: isPersonalProfileRoute ? surface.lightText : 'inherit',
               '&:hover': { bgcolor: alpha.white[8] },
             }}
           >
@@ -362,21 +389,6 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
               </Typography>
             </Box>
           </ButtonBase>
-          <Tooltip title={t('logoutToMarketplace')}>
-            <IconButton
-              aria-label={t('logoutToMarketplace')}
-              disabled={isSigningOut}
-              onClick={handleLogoutToMarketplace}
-              sx={{
-                width: 32,
-                height: 32,
-                color: alpha.white[62],
-                '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
-              }}
-            >
-              <LogoutOutlinedIcon sx={{ fontSize: iconSize.sm }} />
-            </IconButton>
-          </Tooltip>
         </Stack>
       </Stack>
     )
@@ -458,20 +470,6 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
       >
         {renderSidebar(false, false)}
       </Drawer>
-
-      {profileEditorOpen && session?.user?.id ? (
-        <EditCurrentUserProfileDialog
-          open={profileEditorOpen}
-          user={{
-            id: session.user.id,
-            name: userName,
-            email: session.user.email ?? '',
-            avatarUrl: session.user.image ?? null,
-          }}
-          onClose={() => setProfileEditorOpen(false)}
-          onUpdated={handleProfileUpdated}
-        />
-      ) : null}
 
       <Box
         component="main"

@@ -1,14 +1,17 @@
-import type { PlatformAdmin } from '../../domain/platform-admin.entity'
+import type { PlatformAdmin, PlatformAdminRole } from '../../domain/platform-admin.entity'
 
 export interface NewPlatformAdmin {
   nome: string
   email: string
   senhaHash: string
+  role: PlatformAdminRole
 }
 
 export interface PlatformAdminUpdate {
   nome?: string
   email?: string
+  role?: PlatformAdminRole
+  ativo?: true
 }
 
 export interface PlatformAdminRepository {

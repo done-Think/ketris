@@ -20,7 +20,7 @@ export function PlatformMetricCards({ metrics }: { metrics: readonly PlatformMet
           md: 'repeat(3, minmax(0, 1fr))',
           lg: 'repeat(6, minmax(0, 1fr))',
         },
-        gap: 1.75,
+        gap: { xs: 1.2, md: 1.6 },
       }}
     >
       {metrics.map((metric) => (
@@ -28,21 +28,19 @@ export function PlatformMetricCards({ metrics }: { metrics: readonly PlatformMet
           key={metric.id}
           sx={{
             minWidth: 0,
-            minHeight: 104,
             bgcolor: surface.paper,
             border: '1px solid',
-            borderColor: alpha.graphite[8],
-            borderRadius: `${radius.md}px`,
-            boxShadow: shadows.crmCardCompact,
-            px: 2,
-            py: 1.75,
+            borderColor: alpha.graphite[6],
+            borderRadius: `${radius.sm}px`,
+            boxShadow: shadows.propertyCard,
+            p: { xs: 1.45, md: 2.2 },
           }}
         >
           <Typography
             sx={{
               color: brand.neutral[500],
-              fontSize: 11,
-              fontWeight: 800,
+              fontSize: { xs: 10.5, md: 11 },
+              fontWeight: 900,
               letterSpacing: 0.25,
               textTransform: 'uppercase',
             }}
@@ -50,14 +48,14 @@ export function PlatformMetricCards({ metrics }: { metrics: readonly PlatformMet
             {t(`${metric.id}.label`)}
           </Typography>
           <Box
-            sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 0.9, mt: 0.9 }}
+            sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 0.9, mt: 0.7 }}
           >
             <Typography
               sx={{
                 color: brand.graphite[500],
-                fontSize: 23,
+                fontSize: { xs: 22, sm: 28 },
                 fontWeight: 900,
-                letterSpacing: -0.3,
+                lineHeight: 1.12,
                 whiteSpace: 'nowrap',
               }}
             >
