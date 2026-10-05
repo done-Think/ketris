@@ -57,6 +57,27 @@
     },
     "charges": "Cobros"
   },
+  "profilePage": {
+    "title": "Perfil",
+    "subtitle": "Gestiona tus datos personales y la información de acceso.",
+    "personalData": "Datos personales",
+    "changePhoto": "Cambiar foto",
+    "name": "Nombre",
+    "phone": "Teléfono",
+    "email": "Correo electrónico",
+    "cancel": "Cancelar",
+    "save": "Guardar cambios",
+    "security": "Seguridad",
+    "securityDescription": "Cambia tu contraseña de acceso.",
+    "newPassword": "Nueva contraseña",
+    "confirmPassword": "Confirmar nueva contraseña",
+    "changePassword": "Cambiar contraseña",
+    "profileSuccess": "Perfil actualizado correctamente.",
+    "profileError": "No se pudieron guardar los cambios. Inténtalo de nuevo.",
+    "passwordSuccess": "Contraseña cambiada correctamente.",
+    "passwordError": "No se pudo cambiar la contraseña. Inténtalo de nuevo.",
+    "avatarFormatError": "Usa una imagen JPG, PNG o WEBP."
+  },
   "roleGuard": {
     "loadingSession": "Cargando sesión",
     "restrictedTitle": "Acceso restringido",

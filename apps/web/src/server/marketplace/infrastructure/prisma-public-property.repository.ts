@@ -7,7 +7,6 @@ import type {
   PublicPropertyRepository,
 } from '../application/ports/public-property-repository.port'
 import type {
-  PropertyPurpose,
   PropertyMedia,
   PublishedPropertyDetail,
   PublishedPropertySummary,
@@ -105,9 +104,6 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
       where.endereco = { is: { cidade: { equals: filters.city, mode: 'insensitive' } } }
     }
 
-    // `location` is a free-text match across bairro/cidade combined — distinct from `city`'s
-    // exact match. Matches how the home search's location field works: a substring against
-    // "Bairro, Cidade" rather than a strict city filter.
     if (filters.location) {
       where.endereco = {
         is: {

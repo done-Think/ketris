@@ -34,7 +34,6 @@ import { useRouter } from 'next/navigation'
 import { getLocalizedPathname } from '@/i18n/locale-prefix'
 import { Link, usePathname } from '@/i18n/navigation'
 import { CrmAccessBoundary } from '@modules/crm/components/CrmAccessBoundary'
-import { EditCurrentUserProfileDialog } from '@modules/auth/components/EditCurrentUserProfileDialog'
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
@@ -121,14 +120,15 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   const locale = useLocale()
   const pathname = usePathname()
   const router = useRouter()
-  const { data: session, status, update } = useSession()
+  const { data: session, status } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [profileEditorOpen, setProfileEditorOpen] = useState(false)
   const [isSigningOut, setIsSigningOut] = useState(false)
   const sidebarCollapsed = useSidebarPreferencesStore((state) => state.isCollapsed)
   const toggleSidebarCollapsed = useSidebarPreferencesStore((state) => state.toggleCollapsed)
   const isPublicCrmRoute = pathname === '/crm' || pathname === '/crm/contacts'
   const isLocalDashboardPreview = allowLocalDashboardPreview
+  const isPersonalProfileRoute =
+    pathname === '/dashboard/profile' || pathname.startsWith('/dashboard/profile/')
   const userName = session?.user?.name ?? t('defaultUserName')
   const userContext = session?.user?.email ?? t('defaultUserContext')
   const userInitials = useMemo(() => getInitials(userName), [userName])
@@ -143,6 +143,8 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   // /dashboard/finance). O item ativo deve ser o de prefixo mais específico que bate com a
   // rota atual, e não todo item cujo prefixo é um match parcial.
   const activeTargetPath = useMemo(() => {
+    if (isPersonalProfileRoute) return null
+
     let bestMatch: string | null = null
 
     for (const item of visibleItems) {
@@ -155,22 +157,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
     }
 
     return bestMatch
-  }, [pathname, visibleItems])
-
-  async function handleProfileUpdated(updatedUser: {
-    name: string
-    email: string
-    avatarUrl?: string | null
-  }) {
-    await update({
-      user: {
-        ...session?.user,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        image: updatedUser.avatarUrl ?? undefined,
-      },
-    })
-  }
+  }, [isPersonalProfileRoute, pathname, visibleItems])
 
   async function handleLogoutToMarketplace() {
     if (isSigningOut) return
@@ -360,7 +347,11 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
         >
           <ButtonBase
             aria-label={t('editProfile')}
-            onClick={() => setProfileEditorOpen(true)}
+            aria-current={isPersonalProfileRoute ? 'page' : undefined}
+            onClick={() => {
+              setMobileOpen(false)
+              router.push(getLocalizedPathname('/dashboard/profile', locale))
+            }}
             disabled={!session?.user?.id}
             sx={{
               display: 'flex',
@@ -371,6 +362,8 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
               minWidth: 0,
               borderRadius: `${radius.sm}px`,
               p: 0.5,
+              bgcolor: isPersonalProfileRoute ? alpha.white[8] : 'transparent',
+              color: isPersonalProfileRoute ? surface.lightText : 'inherit',
               '&:hover': { bgcolor: alpha.white[8] },
             }}
           >
@@ -477,20 +470,6 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
       >
         {renderSidebar(false, false)}
       </Drawer>
-
-      {profileEditorOpen && session?.user?.id ? (
-        <EditCurrentUserProfileDialog
-          open={profileEditorOpen}
-          user={{
-            id: session.user.id,
-            name: userName,
-            email: session.user.email ?? '',
-            avatarUrl: session.user.image ?? null,
-          }}
-          onClose={() => setProfileEditorOpen(false)}
-          onUpdated={handleProfileUpdated}
-        />
-      ) : null}
 
       <Box
         component="main"
