@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
@@ -9,14 +9,15 @@ import { getLocalizedPathname } from '@/i18n/locale-prefix'
 import { HomeHeader, ProfileModal } from '@shared/components/layout'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
 
-import { profileActions } from '../data/user-profile'
+import { guestProfileActions, profileActions } from '../data/user-profile'
 import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { MarketplaceHeaderProps } from '../types/marketplace-header'
 
 export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const profileButtonRef = useRef<HTMLButtonElement | null>(null)
+  const profileButtonRef = useRef<HTMLButtonElement>(null)
   const tProfileActions = useTranslations('marketplace.profile.actions')
+  const tProfile = useTranslations('marketplace.profile')
   const locale = useLocale()
   const router = useRouter()
   const { data: session, status } = useSession()
@@ -35,22 +36,29 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
           role: session.papel,
         }
       : undefined
+  const isGuest = status === 'unauthenticated'
+  const menuProfile =
+    userProfile ??
+    (isGuest
+      ? {
+          name: tProfile('guestName'),
+          email: '',
+        }
+      : undefined)
 
-  const translatedProfileActions = useMemo(
-    () =>
-      profileActions.map((action) => ({
-        ...action,
-        label: tProfileActions(action.labelKey),
-        onClick:
-          action.labelKey === 'signOut'
-            ? async () => {
-                await clearClientSession()
-                router.replace(getLocalizedPathname('/', locale))
-                router.refresh()
-              }
-            : undefined,
-      })),
-    [locale, router, tProfileActions],
+  const translatedProfileActions = (userProfile ? profileActions : guestProfileActions).map(
+    (action) => ({
+      ...action,
+      label: tProfileActions(action.labelKey),
+      onClick:
+        action.labelKey === 'signOut'
+          ? async () => {
+              await clearClientSession()
+              router.replace(getLocalizedPathname('/', locale))
+              router.refresh()
+            }
+          : undefined,
+    }),
   )
 
   return (
@@ -58,17 +66,19 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
       <HomeHeader
         navigationItems={navigationItems}
         profileButtonRef={profileButtonRef}
-        userProfile={userProfile}
-        onToggleProfile={userProfile ? () => setIsProfileOpen((current) => !current) : undefined}
+        userProfile={menuProfile}
+        onToggleProfile={menuProfile ? () => setIsProfileOpen((current) => !current) : undefined}
         isSessionLoading={status === 'loading'}
+        showSignIn={isGuest}
+        showLanguageSelector={isGuest}
       />
 
-      {userProfile ? (
+      {menuProfile ? (
         <ProfileModal
           open={isProfileOpen}
           anchorRef={profileButtonRef}
           actions={translatedProfileActions}
-          userProfile={userProfile}
+          userProfile={menuProfile}
           onClose={() => setIsProfileOpen(false)}
         />
       ) : null}

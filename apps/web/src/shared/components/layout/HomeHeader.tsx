@@ -13,7 +13,9 @@ import {
   Stack,
 } from '@mui/material'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
+import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded'
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
@@ -41,11 +43,14 @@ export function HomeHeader({
   userProfile,
   onToggleProfile,
   isSessionLoading = false,
+  showSignIn = false,
+  showLanguageSelector = false,
 }: HomeHeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const closeMobileMenu = () => setIsMobileMenuOpen(false)
   const t = useTranslations('marketplace.header')
   const { data: session, status } = useSession()
+  const showNotifications = status === 'authenticated'
   const announcePropertyHref = status === 'authenticated' ? '/dashboard/properties' : '/login'
   const canAnnounceProperty = session?.papel !== 'RENTER'
 
@@ -125,7 +130,7 @@ export function HomeHeader({
           <Stack
             direction="row"
             alignItems="center"
-            spacing={1}
+            spacing={{ xs: 0.5, md: 1 }}
             sx={{ justifySelf: 'end', flexShrink: 0 }}
           >
             {canAnnounceProperty ? (
@@ -157,10 +162,77 @@ export function HomeHeader({
                 {t('announceProperty')}
               </Button>
             ) : null}
-            <IconButton aria-label={t('notifications')} size="small" sx={{ width: 42, height: 42 }}>
-              <NotificationsNoneOutlinedIcon sx={{ fontSize: iconSize.xl }} />
-            </IconButton>
-            {userProfile && profileButtonRef && onToggleProfile ? (
+            {canAnnounceProperty && showNotifications ? (
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{
+                  display: { xs: 'none', md: 'block' },
+                  height: 24,
+                  alignSelf: 'center',
+                  borderColor: 'divider',
+                }}
+              />
+            ) : null}
+            {showNotifications ? (
+              <IconButton
+                aria-label={t('notifications')}
+                size="small"
+                sx={{ width: 42, height: 42 }}
+              >
+                <NotificationsNoneOutlinedIcon sx={{ fontSize: iconSize.xl }} />
+              </IconButton>
+            ) : null}
+            {showSignIn ? (
+              <>
+                <Divider
+                  orientation="vertical"
+                  flexItem
+                  sx={{
+                    display: { xs: 'none', md: 'block' },
+                    height: 24,
+                    alignSelf: 'center',
+                    borderColor: 'divider',
+                  }}
+                />
+                <Button
+                  component={Link}
+                  href="/login"
+                  aria-label={t('signIn')}
+                  startIcon={<LoginOutlinedIcon fontSize="small" />}
+                  size="small"
+                  sx={{
+                    minWidth: { xs: 42, sm: 'auto' },
+                    minHeight: 42,
+                    px: { xs: 1, sm: 1.25 },
+                    color: 'text.primary',
+                    borderRadius: `${radius.sm}px`,
+                    ...componentText.headerCta,
+                    '& .MuiButton-startIcon': { m: { xs: 0, sm: undefined } },
+                    '&:hover': {
+                      bgcolor: alpha.magenta[8],
+                      color: 'primary.main',
+                    },
+                  }}
+                >
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                    {t('signIn')}
+                  </Box>
+                </Button>
+              </>
+            ) : null}
+            {userProfile && profileButtonRef && onToggleProfile && showSignIn ? (
+              <IconButton
+                aria-label={t('openProfile')}
+                aria-haspopup="dialog"
+                ref={profileButtonRef}
+                onClick={onToggleProfile}
+                size="small"
+                sx={{ width: 42, height: 42, color: 'text.secondary' }}
+              >
+                <MoreVertRoundedIcon sx={{ fontSize: iconSize.xl }} />
+              </IconButton>
+            ) : userProfile && profileButtonRef && onToggleProfile ? (
               <Box
                 component="button"
                 type="button"
@@ -197,9 +269,14 @@ export function HomeHeader({
               </Box>
             ) : isSessionLoading ? (
               <Box sx={{ width: 48, height: 42 }} />
-            ) : (
+            ) : !showLanguageSelector ? (
               <LanguageSelector variant="header" />
-            )}
+            ) : null}
+            {!isSessionLoading && showLanguageSelector ? (
+              <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+                <LanguageSelector variant="header" />
+              </Box>
+            ) : null}
             <IconButton
               aria-label={t('openMenu')}
               aria-controls="home-mobile-menu"

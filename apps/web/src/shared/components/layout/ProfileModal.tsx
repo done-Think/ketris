@@ -136,26 +136,28 @@ export function ProfileModal({
           </IconButton>
         </Stack>
 
-        <Box
-          sx={{
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: `${radius.sm}px`,
-            bgcolor: surface.app,
-            px: 1.5,
-            py: 1.2,
-            mb: 2,
-          }}
-        >
-          {userProfile.company ? (
-            <Typography sx={{ color: 'text.secondary', ...componentText.modalEyebrow }}>
-              {userProfile.company}
+        {userProfile.company || userProfile.email ? (
+          <Box
+            sx={{
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: `${radius.sm}px`,
+              bgcolor: surface.app,
+              px: 1.5,
+              py: 1.2,
+              mb: 2,
+            }}
+          >
+            {userProfile.company ? (
+              <Typography sx={{ color: 'text.secondary', ...componentText.modalEyebrow }}>
+                {userProfile.company}
+              </Typography>
+            ) : null}
+            <Typography sx={{ color: 'text.primary', ...componentText.modalSubtitle }}>
+              {userProfile.email}
             </Typography>
-          ) : null}
-          <Typography sx={{ color: 'text.primary', ...componentText.modalSubtitle }}>
-            {userProfile.email}
-          </Typography>
-        </Box>
+          </Box>
+        ) : null}
 
         <Divider sx={{ mb: 1 }} />
 

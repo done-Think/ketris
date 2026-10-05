@@ -4,10 +4,12 @@
     "closeMenu": "Close menu",
     "mainMenu": "Main menu",
     "notifications": "notifications",
+    "signIn": "Sign in",
     "openMenu": "Open menu",
     "openProfile": "Open profile"
   },
   "profile": {
+    "guestName": "Guest",
     "dialogLabel": "User profile",
     "closeProfile": "Close profile",
     "language": "Language",
@@ -23,6 +25,7 @@
       "RENTER": "Renter"
     },
     "actions": {
+      "accessAdmin": "Access admin",
       "settings": "Settings",
       "signOut": "Sign out",
       "support": "Support",

@@ -14,7 +14,7 @@ export type HomeHeaderUserProfile = {
 
 export type HomeHeaderProps = {
   navigationItems: ReadonlyArray<HomeHeaderNavigationItem>
-  profileButtonRef?: RefObject<HTMLButtonElement | null>
+  profileButtonRef?: RefObject<HTMLButtonElement>
   userProfile?: HomeHeaderUserProfile
   onToggleProfile?: () => void
   /**
@@ -23,4 +23,6 @@ export type HomeHeaderProps = {
    * qual dos dois é o estado real.
    */
   isSessionLoading?: boolean
+  showSignIn?: boolean
+  showLanguageSelector?: boolean
 }
