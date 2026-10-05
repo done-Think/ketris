@@ -33,6 +33,7 @@ export const searchResultsFormSchema = z.object({
   onlyWithParking: z.boolean(),
   sortOption: z.enum(['relevancia', 'menor-preco', 'maior-preco']),
   viewMode: z.enum(searchResultsViewModes),
+  currentPage: z.number().int().min(1),
 })
 
 export const searchResultsFiltersDialogFormSchema = z.object({

@@ -145,6 +145,12 @@ export type SearchResultsToolbarProps = {
   viewMode: ViewMode
 }
 
+export type SearchResultsPaginationProps = {
+  currentPage: number
+  setCurrentPage: (page: number) => void
+  totalPages: number
+}
+
 export type SearchPropertyCardProps = {
   property: SearchResultProperty
   selected?: boolean

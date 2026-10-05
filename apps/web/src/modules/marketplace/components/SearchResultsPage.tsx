@@ -104,13 +104,17 @@ export function SearchResultsPage({ initialLocation = '', purpose }: SearchResul
             </Alert>
           ) : null}
           <SearchResultsList
-            properties={results.filteredResults}
+            properties={results.paginatedResults}
             isLoading={results.isLoading}
             selectedPropertyId={results.selectedPropertyId}
             setSelectedPropertyId={results.setSelectedPropertyId}
             viewMode={results.viewMode}
           />
-          <SearchResultsPagination />
+          <SearchResultsPagination
+            currentPage={results.currentPage}
+            setCurrentPage={results.setCurrentPage}
+            totalPages={results.totalPages}
+          />
         </Box>
 
         <SearchResultsMapPanel
