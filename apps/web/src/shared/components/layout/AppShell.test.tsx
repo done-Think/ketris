@@ -129,13 +129,16 @@ describe('AppShell navigation per papel', () => {
     expect(screen.queryAllByText('Perfil Público')).toHaveLength(0)
   })
 
-  it('não exibe Visão Geral Imob. na navegação', () => {
+  it('exibe Visão Geral Imob. na navegação para ADMIN', () => {
     mockSession({ papel: 'ADMIN' })
 
     renderShell()
 
-    expect(screen.queryByText('Visão Geral Imob.')).not.toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Visão Geral Imob.' })).not.toBeInTheDocument()
+    expect(screen.getAllByText('Visão Geral Imob.').length).toBeGreaterThan(0)
+    expect(screen.getByRole('link', { name: 'Visão Geral Imob.' })).toHaveAttribute(
+      'href',
+      '/dashboard/agency-overview',
+    )
   })
 
   it('OWNER também vê Dashboard, Perfil da Imobiliária e Financeiro', () => {

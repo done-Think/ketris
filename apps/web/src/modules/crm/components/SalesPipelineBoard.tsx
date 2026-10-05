@@ -11,18 +11,13 @@ import { DashboardTablePagination } from '@shared/components/layout'
 import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { salesPipelineStages, visibleSalesPipelineStatuses } from '../config/sales-pipeline-stages'
-import { salesPipelineFixtures } from '../fixtures/sales-pipeline-fixtures'
 import {
   useCreateOpportunity,
   useCrmProperties,
   useOpportunities,
 } from '../hooks/use-opportunities'
 import type { CreateOpportunityFormValues } from '../types/opportunity'
-import type {
-  SalesPipelineBoardProps,
-  SalesPipelineStageId,
-  SalesPipelineViewMode,
-} from '../types/sales-pipeline'
+import type { SalesPipelineStageId, SalesPipelineViewMode } from '../types/sales-pipeline'
 import { errorMessage } from '../utils/error-message'
 import {
   getOpportunityStageId,
@@ -51,14 +46,6 @@ import { SalesPipelineToolbar } from './sales-pipeline-board/SalesPipelineToolba
 
 const pipelineBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
 const pipelineViewModeStorageKey = 'ketris.crm.pipeline.viewMode'
-const fixtureOpportunities = salesPipelineFixtures.map((fixture) => fixture.opportunity)
-const fixtureProperties = salesPipelineFixtures.map((fixture) => fixture.property)
-const fixtureStageByOpportunityId = new Map(
-  salesPipelineFixtures.map((fixture) => [fixture.opportunity.id, fixture.stageId]),
-)
-const fixturePresentationByOpportunityId = new Map(
-  salesPipelineFixtures.map((fixture) => [fixture.opportunity.id, fixture.presentation]),
-)
 
 function isSalesPipelineViewMode(value: string | null): value is SalesPipelineViewMode {
   return value === 'kanban' || value === 'list'
@@ -76,13 +63,11 @@ function getInitialPipelineViewMode(): SalesPipelineViewMode {
   }
 }
 
-export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps) {
+export function SalesPipelineBoard() {
   const t = useTranslations('crm.pipeline')
   const router = useRouter()
   const { data: session, status: sessionStatus } = useSession()
-  const canUseFixtures = process.env.NODE_ENV !== 'production'
-  const explicitPreviewMode = preview && canUseFixtures
-  const tenantId = explicitPreviewMode ? '' : (session?.tenantId ?? '')
+  const tenantId = session?.tenantId ?? ''
   const [search, setSearch] = useState('')
   const [selectedStageId, setSelectedStageId] = useState<SalesPipelineStageId | null>(null)
   const [filterAnchor, setFilterAnchor] = useState<HTMLElement | null>(null)
@@ -96,15 +81,6 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
   const opportunitiesQuery = useOpportunities(tenantId)
   const propertiesQuery = useCrmProperties(tenantId)
   const createOpportunity = useCreateOpportunity(tenantId)
-  const fixtureMode =
-    explicitPreviewMode ||
-    (canUseFixtures &&
-      sessionStatus !== 'loading' &&
-      !opportunitiesQuery.isLoading &&
-      !propertiesQuery.isLoading &&
-      (opportunitiesQuery.isError ||
-        propertiesQuery.isError ||
-        (opportunitiesQuery.data ?? []).length === 0))
 
   async function handleCreateOpportunity(values: CreateOpportunityFormValues) {
     try {
@@ -125,24 +101,18 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
   }
 
   const propertiesById = useMemo(
-    () =>
-      new Map(
-        (fixtureMode ? fixtureProperties : (propertiesQuery.data ?? [])).map((property) => [
-          property.id,
-          property,
-        ]),
-      ),
-    [fixtureMode, propertiesQuery.data],
+    () => new Map((propertiesQuery.data ?? []).map((property) => [property.id, property])),
+    [propertiesQuery.data],
   )
 
   const normalizedSearch = search.trim().toLocaleLowerCase('pt-BR')
   const visibleOpportunities = useMemo(() => {
-    const opportunities = fixtureMode ? fixtureOpportunities : (opportunitiesQuery.data ?? [])
+    const opportunities = opportunitiesQuery.data ?? []
 
     return opportunities.filter((opportunity) => {
-      if (!fixtureMode && !visibleSalesPipelineStatuses.has(opportunity.status)) return false
+      if (!visibleSalesPipelineStatuses.has(opportunity.status)) return false
 
-      const stageId = getOpportunityStageId(opportunity, fixtureMode, fixtureStageByOpportunityId)
+      const stageId = getOpportunityStageId(opportunity)
       if (!stageId || (selectedStageId && stageId !== selectedStageId)) return false
 
       return matchesSalesPipelineSearch(
@@ -151,19 +121,17 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
         normalizedSearch,
       )
     })
-  }, [fixtureMode, normalizedSearch, opportunitiesQuery.data, propertiesById, selectedStageId])
+  }, [normalizedSearch, opportunitiesQuery.data, propertiesById, selectedStageId])
 
   const proposalItems = useMemo<readonly ProposalManagementListItem[]>(() => {
-    const opportunities = fixtureMode ? fixtureOpportunities : (opportunitiesQuery.data ?? [])
-
-    return opportunities.map((opportunity) =>
+    return (opportunitiesQuery.data ?? []).map((opportunity) =>
       mapOpportunityToProposalListItem(
         opportunity,
         propertiesById.get(opportunity.propertyId),
         opportunity.propertyId,
       ),
     )
-  }, [fixtureMode, opportunitiesQuery.data, propertiesById])
+  }, [opportunitiesQuery.data, propertiesById])
 
   const proposalSummary = useMemo(
     () => buildProposalManagementSummary(proposalItems),
@@ -199,8 +167,8 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
     ? salesPipelineStages.find((stage) => stage.id === selectedStageId)
     : null
   const isPipelineLoading =
-    !fixtureMode && (sessionStatus === 'loading' || opportunitiesQuery.isLoading)
-  const hasPipelineError = !fixtureMode && (opportunitiesQuery.isError || propertiesQuery.isError)
+    sessionStatus === 'loading' || opportunitiesQuery.isLoading || propertiesQuery.isLoading
+  const hasPipelineError = opportunitiesQuery.isError || propertiesQuery.isError
 
   return (
     <Box
@@ -231,19 +199,17 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
           setSelectedStageId(stageId)
           setFilterAnchor(null)
         }}
-        onNewOpportunity={() => !fixtureMode && setIsCreateOpen(true)}
+        onNewOpportunity={() => setIsCreateOpen(true)}
         onViewModeChange={handleViewModeChange}
       />
 
-      {!fixtureMode ? (
-        <CreateOpportunityDialog
-          open={isCreateOpen}
-          tenantId={tenantId}
-          isPending={createOpportunity.isPending}
-          onClose={() => setIsCreateOpen(false)}
-          onSave={handleCreateOpportunity}
-        />
-      ) : null}
+      <CreateOpportunityDialog
+        open={isCreateOpen}
+        tenantId={tenantId}
+        isPending={createOpportunity.isPending}
+        onClose={() => setIsCreateOpen(false)}
+        onSave={handleCreateOpportunity}
+      />
 
       {hasPipelineError ? (
         <Alert
@@ -292,9 +258,7 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
           >
             {salesPipelineStages.map((stage) => {
               const opportunities = visibleOpportunities.filter(
-                (opportunity) =>
-                  getOpportunityStageId(opportunity, fixtureMode, fixtureStageByOpportunityId) ===
-                  stage.id,
+                (opportunity) => getOpportunityStageId(opportunity) === stage.id,
               )
               const projectedTotals = getProjectedTotals(
                 opportunities.filter((opportunity) => opportunity.status !== 'RECUSADA'),
@@ -309,9 +273,7 @@ export function SalesPipelineBoard({ preview = false }: SalesPipelineBoardProps)
                   projectedTotals={projectedTotals}
                   isPipelineLoading={isPipelineLoading}
                   hasPipelineError={hasPipelineError}
-                  fixtureMode={fixtureMode}
                   propertiesById={propertiesById}
-                  presentationByOpportunityId={fixturePresentationByOpportunityId}
                 />
               )
             })}
