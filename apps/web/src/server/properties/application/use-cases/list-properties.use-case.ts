@@ -1,6 +1,6 @@
 import type { Papel } from '@server/auth/domain/user.entity'
 
-import type { PropertyListFilters } from '../../domain/property.entity'
+import type { PropertyListFilters } from '../../types/property'
 import type { PropertyRepository } from '../ports/property-repository.port'
 
 export class ListPropertiesUseCase {

@@ -1,11 +1,4 @@
-import type {
-  Endereco,
-  FinalidadeImovel,
-  Imovel,
-  Midia,
-  Prisma,
-  StatusImovel,
-} from '@prisma/client'
+import type { Endereco, FinalidadeImovel, Prisma, StatusImovel } from '@prisma/client'
 
 import { prisma } from '@server/db/prisma'
 
@@ -19,17 +12,8 @@ import type {
   PropertyListFilters,
   PropertyMediaInput,
   PropertyStatus,
-} from '../domain/property.entity'
-
-type PropertyRow = Imovel & {
-  endereco: Endereco | null
-  midias: Midia[]
-}
-
-type PropertyTransaction = Omit<
-  Prisma.TransactionClient,
-  '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
->
+} from '../types/property'
+import type { PropertyRow, PropertyTransaction } from '../types/prisma-property-repository'
 
 const propertyInclude = {
   endereco: true,

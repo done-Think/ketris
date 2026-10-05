@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { PropertyNotFoundError } from '../../domain/errors'
-import type { PublishedPropertyDetail } from '../../domain/property.entity'
+import type { PublishedPropertyDetail } from '../../types/property'
 import type { PublicPropertyRepository } from '../ports/public-property-repository.port'
 import { GetPropertyUseCase } from './get-property.use-case'
 

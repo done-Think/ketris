@@ -4,7 +4,7 @@ import type { Papel } from '@server/auth/domain/user.entity'
 
 import { assertPropertyAccess } from '../authorization'
 import { PropertyNotFoundError, PropertyPublishValidationError } from '../../domain/errors'
-import type { Property } from '../../domain/property.entity'
+import type { Property } from '../../types/property'
 import type { PropertyRepository } from '../ports/property-repository.port'
 
 export class PublishPropertyUseCase {

@@ -28,8 +28,6 @@ export const saveBrokerProfileRequestSchema = z
   })
   .openapi('SaveBrokerProfileRequest')
 
-export type SaveBrokerProfileRequestDTO = z.infer<typeof saveBrokerProfileRequestSchema>
-
 export const brokerListingSummarySchema = z
   .object({
     id: z.string(),

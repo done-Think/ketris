@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { PropertyNotFoundError } from '../../domain/errors'
 import type { CreatedInquiry } from '../../domain/inquiry.entity'
-import type { PublishedPropertyDetail } from '../../domain/property.entity'
+import type { PublishedPropertyDetail } from '../../types/property'
 import type { InquiryRepository } from '../ports/inquiry-repository.port'
 import type { PublicPropertyRepository } from '../ports/public-property-repository.port'
 import { SubmitInquiryUseCase } from './submit-inquiry.use-case'

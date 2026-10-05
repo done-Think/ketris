@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { BrokerProfileNotFoundError } from '../../domain/errors'
-import type { BrokerProfile } from '../../domain/broker-profile.entity'
+import type { BrokerProfile } from '../../types/broker-profile'
 import type { BrokerProfileRepository } from '../ports/broker-profile-repository.port'
 import { GetBrokerProfileUseCase } from './get-broker-profile.use-case'
 
