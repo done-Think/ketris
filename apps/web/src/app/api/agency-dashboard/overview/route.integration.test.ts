@@ -66,6 +66,11 @@ describe('/api/agency-dashboard/overview (integração)', () => {
 
     await createUserAndToken('AGENT', false)
 
+    const currentDate = new Date()
+    const currentYear = currentDate.getFullYear()
+    const currentMonth = currentDate.getMonth()
+    const currentMonthDate = (day: number) => new Date(currentYear, currentMonth, day)
+
     await prisma.imovel.create({
       data: {
         tenantId,
@@ -172,8 +177,8 @@ describe('/api/agency-dashboard/overview (integração)', () => {
           tipo: 'RESIDENCIAL',
           valor,
           diaVencimento: 5,
-          dataInicio: new Date('2026-09-01'),
-          dataFim: new Date('2027-09-01'),
+          dataInicio: currentMonthDate(1),
+          dataFim: new Date(currentYear + 1, currentMonth, 1),
           indiceReajuste: 'IGPM',
           tipoGarantia: 'CAUCAO',
           status: 'ATIVO',
@@ -185,11 +190,9 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     const contractWithAddress = await activateContract(
       propertyWithAddressId,
       3000,
-      new Date('2026-09-20'),
+      currentMonthDate(20),
     )
-    await activateContract(propertyWithoutAddressId, 2000, new Date('2026-09-10'))
-
-    const now = new Date()
+    await activateContract(propertyWithoutAddressId, 2000, currentMonthDate(10))
 
     await prisma.cobranca.create({
       data: {
@@ -198,7 +201,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
         codigo: `COB-${randomUUID()}`,
         tipo: 'A_RECEBER',
         valor: 1500,
-        vencimento: new Date(now.getFullYear(), now.getMonth(), 25),
+        vencimento: currentMonthDate(25),
         status: 'PENDENTE',
       },
     })

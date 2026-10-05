@@ -21,11 +21,6 @@ export function OpportunityActionsFooter({
       component="footer"
       elevation={0}
       sx={{
-        position: 'sticky',
-        bottom: 0,
-        zIndex: 5,
-        mx: { xs: 1, sm: 2.5, lg: 3.5 },
-        mt: 1,
         p: { xs: 1.4, sm: 1.7 },
         border: '1px solid',
         borderColor: 'divider',
@@ -55,6 +50,7 @@ export function OpportunityActionsFooter({
             </Button>
           )}
         </Stack>
+
         <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
           <Button startIcon={<EditOutlinedIcon />} disabled={isMutating} onClick={onEdit}>
             Editar dados

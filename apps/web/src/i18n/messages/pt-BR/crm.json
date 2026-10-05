@@ -246,14 +246,29 @@
     "breadcrumbAriaLabel": "Navegação estrutural",
     "pipelineLink": "Pipeline",
     "contactInterestTitle": "Informações de contato e interesse",
+    "leadSectionTitle": "Dados do lead",
+    "proposalSectionTitle": "Proposta e contrato",
+    "conditionsSectionTitle": "Condições e observações",
     "archive": "Arquivar oportunidade",
     "archiveTitle": "Arquivar oportunidade?",
     "archiveDescription": "A oportunidade deixará de aparecer no pipeline ativo, mas continuará armazenada no CRM.",
     "loadingAriaLabel": "Carregando oportunidade",
+    "activitiesTitle": "Atividades recentes",
+    "activitiesEmpty": "Nenhuma atividade recente cadastrada",
+    "activitiesViewMore": "Ver mais",
+    "activitiesViewLess": "Ver menos",
     "createdActivityTitle": "Oportunidade criada",
     "createdActivityDetail": "Registro incluído no pipeline.",
     "updatedActivityTitle": "Oportunidade atualizada",
     "updatedActivityDetail": "Etapa atual: {stage}.",
+    "proposalSentActivityTitle": "Proposta enviada",
+    "proposalSentActivityDetail": "Condições comerciais compartilhadas com o lead.",
+    "followUpActivityTitle": "Follow-up registrado",
+    "followUpActivityDetail": "Contato feito para confirmar interesse e próximos passos.",
+    "propertyLinkedActivityTitle": "Imóvel associado",
+    "propertyLinkedActivityDetail": "Oportunidade vinculada ao imóvel de interesse.",
+    "documentsRequestedActivityTitle": "Documentos solicitados",
+    "documentsRequestedActivityDetail": "Garantia, renda e dados cadastrais entraram em análise.",
     "loadError": "Não foi possível carregar esta oportunidade.",
     "backToPipeline": "Voltar ao pipeline",
     "movedSuccess": "Oportunidade movida para {stage}.",
@@ -284,6 +299,18 @@
       "specialConditionsHelper": "Separe as condições por vírgulas.",
       "notes": "Observações",
       "notInformed": "Não informado",
+      "currentStatus": "Etapa atual",
+      "createdAt": "Criado em",
+      "updatedAt": "Atualizado em",
+      "linkedContact": "Contato vinculado",
+      "linked": "Sim",
+      "notLinked": "Não",
+      "archiveStatus": "Arquivamento",
+      "active": "Ativa",
+      "archived": "Arquivada",
+      "reference": "Referência",
+      "specialConditionsCount": "Condições",
+      "conditionsCount": "{count, plural, =0 {Nenhuma} one {# condição} other {# condições}}",
       "months": "{count, plural, one {# mês} other {# meses}}",
       "property": "Imóvel",
       "status": "Status inicial"
@@ -301,9 +328,63 @@
       "createOpportunity": "Criar oportunidade"
     },
     "createTitle": "Nova oportunidade",
+    "nextActions": {
+      "title": "Próximas ações",
+      "empty": "Nenhuma próxima ação cadastrada",
+      "dueAt": "Prazo sugerido",
+      "viewMore": "Ver mais",
+      "viewLess": "Ver menos",
+      "completeDraft": {
+        "title": "Completar dados do pedido",
+        "detail": "Revise contato, valor pretendido e imóvel antes de enviar a proposta."
+      },
+      "sendProposal": {
+        "title": "Enviar proposta ao lead",
+        "detail": "Compartilhe a proposta formal e registre o primeiro retorno esperado."
+      },
+      "proposalFollowUp": {
+        "title": "Fazer follow-up da proposta",
+        "detail": "Confirmar recebimento, tirar dúvidas e medir intenção de avanço."
+      },
+      "validateDocuments": {
+        "title": "Validar documentos",
+        "detail": "Conferir garantia, renda e documentos pendentes para reduzir risco."
+      },
+      "scheduleVisit": {
+        "title": "Agendar visita ou chamada",
+        "detail": "Marcar o próximo contato com o lead e o corretor responsável."
+      },
+      "alignOwnerFeedback": {
+        "title": "Alinhar retorno do proprietário",
+        "detail": "Confirmar abertura para negociação e próximos limites da proposta."
+      },
+      "reviewCounteroffer": {
+        "title": "Revisar contraproposta",
+        "detail": "Consolidar pontos negociáveis e alinhar limite com o proprietário."
+      },
+      "alignTerms": {
+        "title": "Alinhar condições finais",
+        "detail": "Fechar prazo, garantia, entrada e condições especiais antes da decisão."
+      },
+      "prepareContract": {
+        "title": "Preparar contrato",
+        "detail": "Enviar dados aceitos para a etapa de contrato e assinatura."
+      },
+      "confirmSignature": {
+        "title": "Confirmar assinatura",
+        "detail": "Acompanhar assinatura das partes e próximos passos financeiros."
+      },
+      "registerLossReason": {
+        "title": "Registrar motivo da perda",
+        "detail": "Documentar objeção principal e decidir se o lead volta para nutrição."
+      }
+    },
     "statuses": {
       "RASCUNHO": "Rascunho",
-      "ENVIADA": "Enviada"
+      "ENVIADA": "Enviada",
+      "EM_NEGOCIACAO": "Em negociação",
+      "ACEITA": "Aceita",
+      "RECUSADA": "Recusada"
     },
     "noProperties": "Nenhum imóvel encontrado.",
     "loadingProperties": "Buscando imóveis..."

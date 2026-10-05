@@ -4,13 +4,7 @@ import type { PublicPropertySummary } from '../types/property'
 import type { SalesPipelineProjectedTotal, SalesPipelineStageId } from '../types/sales-pipeline'
 import { formatCurrency, formatMonthlyCurrency } from './formatters'
 
-export function getOpportunityStageId(
-  opportunity: Opportunity,
-  fixtureMode: boolean,
-  fixtureStageByOpportunityId: ReadonlyMap<string, SalesPipelineStageId>,
-): SalesPipelineStageId | undefined {
-  if (fixtureMode) return fixtureStageByOpportunityId.get(opportunity.id)
-
+export function getOpportunityStageId(opportunity: Opportunity): SalesPipelineStageId | undefined {
   return salesPipelineStages.find((stage) => stage.statuses.includes(opportunity.status))?.id
 }
 

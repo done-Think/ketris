@@ -65,10 +65,10 @@ function computeNextDueDate(dueDay: number, from: Date): Date {
   return candidate >= from ? candidate : clampToMonth(from.getFullYear(), from.getMonth() + 1)
 }
 
-async function generateContractCode(tenantId: string): Promise<string> {
+async function generateContractCode(): Promise<string> {
   const year = new Date().getFullYear()
   const count = await prisma.contrato.count({
-    where: { tenantId, codigo: { startsWith: `CTR-${year}-` } },
+    where: { codigo: { startsWith: `CTR-${year}-` } },
   })
 
   return `CTR-${year}-${String(count + 1).padStart(4, '0')}`
@@ -104,7 +104,7 @@ export class PrismaContractRepository implements ContractRepository {
       where: { tenantId: input.tenantId, id: input.opportunityId },
       select: { imovelId: true, valorProposto: true },
     })
-    const codigo = await generateContractCode(input.tenantId)
+    const codigo = await generateContractCode()
 
     const contrato = await prisma.contrato.create({
       data: {
@@ -250,7 +250,7 @@ export class PrismaContractRepository implements ContractRepository {
         })
         const chargeYear = new Date().getFullYear()
         const chargeCount = await tx.cobranca.count({
-          where: { tenantId, codigo: { startsWith: `COB-${chargeYear}-` } },
+          where: { codigo: { startsWith: `COB-${chargeYear}-` } },
         })
         await tx.cobranca.create({
           data: {

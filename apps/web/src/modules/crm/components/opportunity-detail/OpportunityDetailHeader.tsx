@@ -5,13 +5,8 @@ import { useTranslations } from 'next-intl'
 
 import { Link as LocalizedLink } from '@/i18n/navigation'
 import type { OpportunityDetailHeaderProps } from '../../types/opportunity-detail'
-import { formatCurrency, formatMonthlyCurrency } from '../../utils/formatters'
 
-export function OpportunityDetailHeader({
-  opportunity,
-  stage,
-  property,
-}: OpportunityDetailHeaderProps) {
+export function OpportunityDetailHeader({ opportunity, stage }: OpportunityDetailHeaderProps) {
   const t = useTranslations('crm.opportunityDetail')
   const pipelineT = useTranslations('crm.pipeline')
   const stageLabel = pipelineT(`stages.${stage.labelKey}`)
@@ -49,11 +44,6 @@ export function OpportunityDetailHeader({
             sx={{ bgcolor: stage.softColor, color: stage.color, fontWeight: 800 }}
           />
         </Stack>
-        <Typography sx={{ color: 'primary.main', fontSize: { xs: 24, md: 28 }, fontWeight: 900 }}>
-          {property?.purpose === 'ALUGUEL'
-            ? formatMonthlyCurrency(opportunity.proposedValue)
-            : formatCurrency(opportunity.proposedValue)}
-        </Typography>
       </Stack>
     </>
   )
