@@ -57,6 +57,27 @@
     },
     "charges": "Cobranças"
   },
+  "profilePage": {
+    "title": "Perfil",
+    "subtitle": "Gerencie seus dados pessoais e informações de acesso.",
+    "personalData": "Dados pessoais",
+    "changePhoto": "Alterar foto",
+    "name": "Nome",
+    "phone": "Telefone",
+    "email": "E-mail",
+    "cancel": "Cancelar",
+    "save": "Salvar alterações",
+    "security": "Segurança",
+    "securityDescription": "Altere sua senha de acesso.",
+    "newPassword": "Nova senha",
+    "confirmPassword": "Confirmar nova senha",
+    "changePassword": "Alterar senha",
+    "profileSuccess": "Perfil atualizado com sucesso.",
+    "profileError": "Não foi possível salvar as alterações. Tente novamente.",
+    "passwordSuccess": "Senha alterada com sucesso.",
+    "passwordError": "Não foi possível alterar a senha. Tente novamente.",
+    "avatarFormatError": "Use uma imagem JPG, PNG ou WEBP."
+  },
   "roleGuard": {
     "loadingSession": "Carregando sessão",
     "restrictedTitle": "Acesso restrito",

@@ -94,35 +94,10 @@ describe('ContactsList', () => {
     expect(screen.getByText('Mostrando 1–2 de 2')).toBeVisible()
   })
 
-  it('selects individual contacts and all visible contacts', () => {
+  it('does not render contact selection checkboxes', () => {
     renderContactsList()
 
-    const table = screen.getByRole('table', { name: 'Contatos do CRM' })
-    const selectAll = within(table).getByRole('checkbox', {
-      name: 'Selecionar todos os contatos visíveis',
-    })
-    const ricardo = within(table).getByRole('checkbox', { name: 'Selecionar Ricardo Mendes' })
-
-    fireEvent.click(ricardo)
-
-    expect(ricardo).toBeChecked()
-    expect(selectAll).toHaveAttribute('data-indeterminate', 'true')
-
-    fireEvent.click(selectAll)
-
-    ;[
-      'Ricardo Mendes',
-      'Sandra Vasconcellos',
-      'Heitor Prado',
-      'Letícia Ramos',
-      'Carlos Eduardo',
-      'Ana Beatriz Ramos',
-    ].forEach((name) => {
-      expect(within(table).getByRole('checkbox', { name: `Selecionar ${name}` })).toBeChecked()
-    })
-
-    fireEvent.click(selectAll)
-    expect(ricardo).not.toBeChecked()
+    expect(screen.queryAllByRole('checkbox')).toHaveLength(0)
   })
 
   it('renders exactly the three requested actions for each contact', () => {
