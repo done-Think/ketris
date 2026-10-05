@@ -4,10 +4,12 @@
     "closeMenu": "Cerrar menú",
     "mainMenu": "Menú principal",
     "notifications": "notificaciones",
+    "signIn": "Entrar",
     "openMenu": "Abrir menú",
     "openProfile": "Abrir perfil"
   },
   "profile": {
+    "guestName": "Visitante",
     "dialogLabel": "Perfil del usuario",
     "closeProfile": "Cerrar perfil",
     "language": "Idioma",
@@ -24,6 +26,7 @@
     },
     "actions": {
       "addBroker": "Registrar nuevo corredor",
+      "accessAdmin": "Acceder a administración",
       "becomeBroker": "Convertirme en corredor",
       "createAgency": "Crear inmobiliaria",
       "settings": "Configuración",

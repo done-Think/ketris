@@ -10,7 +10,7 @@ import { HomeHeader, ProfileModal } from '@shared/components/layout'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
 import type { LocalizedStringHref } from '@shared/types/localized-href'
 
-import { profileActions } from '../data/user-profile'
+import { guestProfileActions, profileActions } from '../data/user-profile'
 import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { MarketplaceHeaderProps } from '../types/marketplace-header'
 import type { ProfileActionTranslationKey } from '../types/user-profile'
@@ -38,8 +38,9 @@ function getSwitchModeAction(papel: string | undefined): {
 
 export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const profileButtonRef = useRef<HTMLButtonElement | null>(null)
+  const profileButtonRef = useRef<HTMLButtonElement>(null)
   const tProfileActions = useTranslations('marketplace.profile.actions')
+  const tProfile = useTranslations('marketplace.profile')
   const locale = useLocale()
   const router = useRouter()
   const { data: session, status } = useSession()
@@ -58,50 +59,63 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
           role: session.papel,
         }
       : undefined
-
-  const translatedProfileActions = useMemo(
-    () =>
-      profileActions.flatMap((action) => {
-        const switchModeAction =
-          action.labelKey === 'switchMode' ? getSwitchModeAction(session?.papel) : undefined
-
-        if (switchModeAction === null) return []
-
-        const labelKey = switchModeAction?.labelKey ?? action.labelKey
-
-        return {
-          ...action,
-          href: switchModeAction?.href ?? action.href,
-          label: tProfileActions(labelKey),
-          onClick:
-            action.labelKey === 'signOut'
-              ? async () => {
-                  await clearClientSession()
-                  router.replace(getLocalizedPathname('/', locale))
-                  router.refresh()
-                }
-              : undefined,
+  const isGuest = status === 'unauthenticated'
+  const menuProfile =
+    userProfile ??
+    (isGuest
+      ? {
+          name: tProfile('guestName'),
+          email: '',
         }
-      }),
-    [locale, router, session?.papel, tProfileActions],
-  )
+      : undefined)
+
+  const translatedProfileActions = useMemo(() => {
+    const actions = userProfile ? profileActions : guestProfileActions
+
+    return actions.flatMap((action) => {
+      const switchModeAction =
+        userProfile && action.labelKey === 'switchMode'
+          ? getSwitchModeAction(session?.papel)
+          : undefined
+
+      if (switchModeAction === null) return []
+
+      const labelKey = switchModeAction?.labelKey ?? action.labelKey
+
+      return {
+        ...action,
+        href: switchModeAction?.href ?? action.href,
+        label: tProfileActions(labelKey),
+        onClick:
+          action.labelKey === 'signOut'
+            ? async () => {
+                await clearClientSession()
+                router.replace(getLocalizedPathname('/', locale))
+                router.refresh()
+              }
+            : undefined,
+      }
+    })
+  }, [locale, router, session?.papel, tProfileActions, userProfile])
 
   return (
     <>
       <HomeHeader
         navigationItems={navigationItems}
         profileButtonRef={profileButtonRef}
-        userProfile={userProfile}
-        onToggleProfile={userProfile ? () => setIsProfileOpen((current) => !current) : undefined}
+        userProfile={menuProfile}
+        onToggleProfile={menuProfile ? () => setIsProfileOpen((current) => !current) : undefined}
         isSessionLoading={status === 'loading'}
+        showSignIn={isGuest}
+        showLanguageSelector={isGuest}
       />
 
-      {userProfile ? (
+      {menuProfile ? (
         <ProfileModal
           open={isProfileOpen}
           anchorRef={profileButtonRef}
           actions={translatedProfileActions}
-          userProfile={userProfile}
+          userProfile={menuProfile}
           onClose={() => setIsProfileOpen(false)}
         />
       ) : null}

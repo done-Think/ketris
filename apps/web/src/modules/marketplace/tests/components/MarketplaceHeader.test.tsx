@@ -43,7 +43,8 @@ describe('MarketplaceHeader', () => {
     vi.clearAllMocks()
   })
 
-  it('sem sessão: não mostra o avatar/perfil, mostra o seletor de idioma e leva ao login', () => {
+  it('sem sessão: mostra o menu de visitante com acesso aos fluxos existentes', async () => {
+    const user = userEvent.setup()
     vi.mocked(useSession).mockReturnValue({
       data: null,
       status: 'unauthenticated',
@@ -51,12 +52,28 @@ describe('MarketplaceHeader', () => {
 
     renderMarketplaceHeader()
 
-    expect(screen.queryByRole('button', { name: 'Abrir perfil' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Abrir perfil' })).toBeInTheDocument()
+    expect(screen.queryByText('V')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('notificações')).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Entrar' })).toHaveAttribute('href', '/login')
     expect(screen.getAllByText('BR')[0]).toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: 'Anunciar Imóvel' })[0]).toHaveAttribute(
       'href',
       '/login',
     )
+
+    await user.click(screen.getByRole('button', { name: 'Abrir perfil' }))
+
+    expect(screen.getAllByRole('link', { name: 'Entrar' })).toHaveLength(1)
+    expect(screen.getByRole('link', { name: 'Suporte' })).toHaveAttribute(
+      'href',
+      '/dashboard/maintenance',
+    )
+    expect(screen.getByRole('link', { name: 'Acessar admin' })).toHaveAttribute(
+      'href',
+      '/platform/login',
+    )
+    expect(screen.queryByRole('link', { name: 'Configurações' })).not.toBeInTheDocument()
   })
 
   it('enquanto a sessão carrega: não mostra nem o avatar nem o seletor de idioma (evita flash)', () => {
@@ -80,6 +97,9 @@ describe('MarketplaceHeader', () => {
 
     renderMarketplaceHeader()
 
+    expect(screen.queryByRole('link', { name: 'Entrar' })).not.toBeInTheDocument()
+    expect(screen.getByLabelText('notificações')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Abrir perfil' })).toHaveTextContent('MS')
     expect(screen.getAllByRole('link', { name: 'Anunciar Imóvel' })[0]).toHaveAttribute(
       'href',
       '/dashboard/properties',

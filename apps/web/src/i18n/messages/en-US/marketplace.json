@@ -4,10 +4,12 @@
     "closeMenu": "Close menu",
     "mainMenu": "Main menu",
     "notifications": "notifications",
+    "signIn": "Sign in",
     "openMenu": "Open menu",
     "openProfile": "Open profile"
   },
   "profile": {
+    "guestName": "Guest",
     "dialogLabel": "User profile",
     "closeProfile": "Close profile",
     "language": "Language",
@@ -24,6 +26,7 @@
     },
     "actions": {
       "addBroker": "Add new broker",
+      "accessAdmin": "Access admin",
       "becomeBroker": "Become a broker",
       "createAgency": "Create agency",
       "settings": "Settings",
