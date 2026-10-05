@@ -1,4 +1,4 @@
-import type { BrokerProfile, BrokerProfileDraft } from '../../domain/broker-profile.entity'
+import type { BrokerProfile, BrokerProfileDraft } from '../../types/broker-profile'
 
 export interface BrokerProfileRepository {
   findPublishedById(usuarioId: string): Promise<BrokerProfile | null>

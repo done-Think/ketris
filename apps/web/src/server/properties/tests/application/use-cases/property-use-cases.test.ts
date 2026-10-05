@@ -6,7 +6,7 @@ import {
   PropertyNotFoundError,
   PropertyPublishValidationError,
 } from '../../../domain/errors'
-import type { Property } from '../../../domain/property.entity'
+import type { Property } from '../../../types/property'
 import type { PropertyRepository } from '../../../application/ports/property-repository.port'
 import { CreatePropertyUseCase } from '../../../application/use-cases/create-property.use-case'
 import { DeletePropertyUseCase } from '../../../application/use-cases/delete-property.use-case'
@@ -51,6 +51,7 @@ const property: Property = {
   ],
   valores: {
     valor: 2500,
+    valorAluguel: null,
     condominio: 400,
     iptu: 100,
   },

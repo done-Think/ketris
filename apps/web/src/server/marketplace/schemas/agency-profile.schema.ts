@@ -35,13 +35,11 @@ export const saveAgencyProfileRequestSchema = z
   })
   .openapi('SaveAgencyProfileRequest')
 
-export type SaveAgencyProfileRequestDTO = z.infer<typeof saveAgencyProfileRequestSchema>
-
 export const agencyListingSummarySchema = z
   .object({
     id: z.string(),
     title: z.string(),
-    purpose: z.enum(['ALUGUEL', 'VENDA']),
+    purpose: z.enum(['ALUGUEL', 'VENDA', 'AMBOS']),
     price: z.number(),
     neighborhood: z.string().nullable(),
     city: z.string().nullable(),

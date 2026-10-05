@@ -47,7 +47,15 @@ async function main() {
     for (const member of seedTenant.members) {
       const user = await prisma.usuario.upsert({
         where: { email: member.email },
-        update: { tenantId: tenant.id, papel: member.role, avatarUrl: member.avatarUrl },
+        update: {
+          tenantId: tenant.id,
+          nome: member.name,
+          papel: member.role,
+          avatarUrl: member.avatarUrl,
+          senhaHash,
+          ativo: true,
+          vinculoAprovadoEm: new Date(),
+        },
         create: {
           tenantId: tenant.id,
           nome: member.name,

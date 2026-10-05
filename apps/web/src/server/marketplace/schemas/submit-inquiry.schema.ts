@@ -15,8 +15,6 @@ export const submitInquiryRequestSchema = z
   })
   .openapi('SubmitInquiryRequest')
 
-export type SubmitInquiryRequestDTO = z.infer<typeof submitInquiryRequestSchema>
-
 export const submitInquiryResponseSchema = z
   .object({
     inquiry: z.object({

@@ -1,7 +1,7 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
-export const propertyPurposeSchema = z.enum(['ALUGUEL', 'VENDA'])
+export const propertyPurposeSchema = z.enum(['ALUGUEL', 'VENDA', 'AMBOS'])
 
 export const propertyStatusSchema = z.enum(['DRAFT', 'PUBLISHED', 'RENTED', 'SOLD', 'INACTIVE'])
 
@@ -32,6 +32,7 @@ export const propertyMediaSchema = z
 export const propertyValuesSchema = z
   .object({
     valor: z.number(),
+    valorAluguel: z.number().nullable(),
     condominio: z.number().nullable(),
     iptu: z.number().nullable(),
   })

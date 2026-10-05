@@ -1,4 +1,6 @@
-export interface PublicBrokerListingSummary {
+export type BrokerProfileStatus = 'DRAFT' | 'PUBLISHED'
+
+export interface BrokerListingSummary {
   id: string
   title: string
   purpose: 'ALUGUEL' | 'VENDA' | 'AMBOS'
@@ -8,8 +10,14 @@ export interface PublicBrokerListingSummary {
   coverUrl: string | null
 }
 
-export interface PublicBrokerProfile {
+export interface BrokerProfileStats {
+  activeListings: number
+  dealsClosed: number
+}
+
+export interface BrokerProfile {
   id: string
+  tenantId: string
   agencyName: string
   email: string
   displayName: string
@@ -26,25 +34,15 @@ export interface PublicBrokerProfile {
   backgroundColor: string | null
   avatarUrl: string | null
   bannerUrl: string | null
-  status: 'DRAFT' | 'PUBLISHED'
-  publishedAt: string | null
-  stats: { activeListings: number; dealsClosed: number }
-  recentListings: PublicBrokerListingSummary[]
+  status: BrokerProfileStatus
+  publishedAt: Date | null
+  stats: BrokerProfileStats
+  recentListings: BrokerListingSummary[]
 }
 
-export interface ListBrokerProfilesResponse {
-  brokers: PublicBrokerProfile[]
-}
+export type PublicBrokerProfile = Omit<BrokerProfile, 'tenantId'>
 
-export interface BrokerProfileResponse {
-  broker: PublicBrokerProfile
-}
-
-export interface OwnBrokerProfileResponse {
-  profile: PublicBrokerProfile | null
-}
-
-export interface SaveBrokerProfileRequest {
+export interface BrokerProfileDraft {
   displayName: string
   headline: string | null
   bio: string | null

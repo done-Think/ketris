@@ -7,35 +7,52 @@ import type {
 
 const numberField = z.coerce.number().nonnegative('Informe um valor válido')
 
-export const createDashboardPropertySchema = z.object({
-  activeStepIndex: z.number().int().min(0).default(0),
-  maxVisitedStepIndex: z.number().int().min(0).default(0),
-  type: z.string().min(1, 'Selecione o tipo de imóvel'),
-  purpose: z
-    .array(z.enum(['Aluguel', 'Venda'] satisfies [CreatePropertyPurpose, CreatePropertyPurpose]))
-    .min(1, 'Selecione ao menos uma finalidade'),
-  title: z.string().min(3, 'Informe o título do anúncio'),
-  description: z.string().min(10, 'Informe uma descrição mais completa'),
-  street: z.string().min(3, 'Informe o endereço'),
-  number: z.string().min(1, 'Informe o número'),
-  neighborhood: z.string().min(2, 'Informe o bairro'),
-  city: z.string().min(2, 'Informe a cidade'),
-  state: z.string().length(2, 'Informe a UF'),
-  zipCode: z.string().min(8, 'Informe o CEP'),
-  bedrooms: numberField,
-  bathrooms: numberField,
-  parkingSpaces: numberField,
-  area: z.coerce.number().positive('Informe a área útil'),
-  features: z.array(z.string()).default([]),
-  media: z
-    .array(z.object({ url: z.string(), type: z.string().optional(), order: z.number().optional() }))
-    .default([]),
-  mainValue: z.coerce.number().positive('Informe o valor principal'),
-  condominium: numberField,
-  iptu: numberField,
-  negotiationTerm: z.string().min(1, 'Informe a condição comercial'),
-  publishingOptions: z.array(z.string()).default([]),
-})
+export const createDashboardPropertySchema = z
+  .object({
+    activeStepIndex: z.number().int().min(0).default(0),
+    maxVisitedStepIndex: z.number().int().min(0).default(0),
+    type: z.string().min(1, 'Selecione o tipo de imóvel'),
+    purpose: z
+      .array(z.enum(['Aluguel', 'Venda'] satisfies [CreatePropertyPurpose, CreatePropertyPurpose]))
+      .min(1, 'Selecione ao menos uma finalidade'),
+    title: z.string().min(3, 'Informe o título do anúncio'),
+    description: z.string().min(10, 'Informe uma descrição mais completa'),
+    street: z.string().min(3, 'Informe o endereço'),
+    number: z.string().min(1, 'Informe o número'),
+    neighborhood: z.string().min(2, 'Informe o bairro'),
+    city: z.string().min(2, 'Informe a cidade'),
+    state: z.string().length(2, 'Informe a UF'),
+    zipCode: z.string().min(8, 'Informe o CEP'),
+    bedrooms: numberField,
+    bathrooms: numberField,
+    parkingSpaces: numberField,
+    area: z.coerce.number().positive('Informe a área útil'),
+    features: z.array(z.string()).default([]),
+    media: z
+      .array(
+        z.object({ url: z.string(), type: z.string().optional(), order: z.number().optional() }),
+      )
+      .default([]),
+    mainValue: z.coerce.number().positive('Informe o valor principal'),
+    rentalValue: z.coerce.number().nonnegative('Informe um valor de aluguel válido').optional(),
+    condominium: numberField,
+    iptu: numberField,
+    negotiationTerm: z.string().min(1, 'Informe a condição comercial'),
+    publishingOptions: z.array(z.string()).default([]),
+  })
+  .superRefine((values, context) => {
+    if (
+      values.purpose.includes('Aluguel') &&
+      values.purpose.includes('Venda') &&
+      (!values.rentalValue || values.rentalValue <= 0)
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['rentalValue'],
+        message: 'Informe o valor do aluguel',
+      })
+    }
+  })
 
 export const createDashboardPropertyDefaultValues: CreateDashboardPropertyFormValues = {
   activeStepIndex: 0,
@@ -58,6 +75,7 @@ export const createDashboardPropertyDefaultValues: CreateDashboardPropertyFormVa
   features: ['Mobiliado', 'Varanda gourmet', 'Portaria 24h'],
   media: [],
   mainValue: 6500,
+  rentalValue: 0,
   condominium: 1200,
   iptu: 380,
   negotiationTerm: '3 aluguéis',

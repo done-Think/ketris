@@ -1,7 +1,7 @@
 import type { Papel } from '@server/auth/domain/user.entity'
 
 import { assertBrokerProfileAccess } from '../authorization'
-import type { BrokerProfile, BrokerProfileDraft } from '../../domain/broker-profile.entity'
+import type { BrokerProfile, BrokerProfileDraft } from '../../types/broker-profile'
 import type { BrokerProfileRepository } from '../ports/broker-profile-repository.port'
 
 export interface SaveBrokerProfileInput extends BrokerProfileDraft {
