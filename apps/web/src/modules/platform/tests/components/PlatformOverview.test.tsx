@@ -146,7 +146,7 @@ describe('PlatformShell', () => {
     expect(screen.getAllByRole('link', { name })[0]).toHaveAttribute('aria-current', 'page')
     expect(screen.getAllByRole('link', { name: 'Usuários' })[0]).toHaveAttribute(
       'href',
-      '/platform/admins/new',
+      '/platform/admins',
     )
     vi.mocked(usePathname).mockReturnValue('/platform')
   })

@@ -1,8 +1,8 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Alert, Button, Stack } from '@mui/material'
+import { Alert, Button, DialogActions, MenuItem, Stack, TextField } from '@mui/material'
 import { useSnackbar } from 'notistack'
 import axios from 'axios'
 import { useTranslations } from 'next-intl'
@@ -23,7 +23,12 @@ function extractErrorMessage(error: unknown, fallback: string): string {
   return fallback
 }
 
-export function CreatePlatformAdminForm() {
+type CreatePlatformAdminFormProps = {
+  onCancel?: () => void
+  onSuccess?: () => void
+}
+
+export function CreatePlatformAdminForm({ onCancel, onSuccess }: CreatePlatformAdminFormProps) {
   const t = useTranslations('platform.forms')
   const { enqueueSnackbar } = useSnackbar()
   const createPlatformAdmin = useCreatePlatformAdmin()
@@ -35,7 +40,7 @@ export function CreatePlatformAdminForm() {
     formState: { isSubmitting },
   } = useForm<CreatePlatformAdminFormValues>({
     resolver: zodResolver(createPlatformAdminSchema),
-    defaultValues: { nome: '', email: '', password: '', confirmarSenha: '' },
+    defaultValues: { nome: '', email: '', password: '', confirmarSenha: '', role: 'ADMIN' },
   })
 
   async function onSubmit(values: CreatePlatformAdminFormValues) {
@@ -44,11 +49,13 @@ export function CreatePlatformAdminForm() {
         nome: values.nome,
         email: values.email,
         password: values.password,
+        role: values.role,
       })
       enqueueSnackbar(t('createPlatformAdminSuccess', { email: admin.email }), {
         variant: 'success',
       })
       reset()
+      onSuccess?.()
     } catch (error) {
       enqueueSnackbar(extractErrorMessage(error, t('createPlatformAdminError')), {
         variant: 'error',
@@ -66,6 +73,24 @@ export function CreatePlatformAdminForm() {
         type="email"
         autoComplete="username"
         fullWidth
+      />
+      <Controller
+        control={control}
+        name="role"
+        render={({ field }) => (
+          <TextField
+            select
+            label={t('role')}
+            value={field.value}
+            onChange={field.onChange}
+            inputRef={field.ref}
+            fullWidth
+          >
+            <MenuItem value="ADMIN">Admin</MenuItem>
+            <MenuItem value="ADMIN_AGENT">Admin + Agent</MenuItem>
+            <MenuItem value="AGENT">Agent</MenuItem>
+          </TextField>
+        )}
       />
       <RhfTextField
         control={control}
@@ -90,9 +115,26 @@ export function CreatePlatformAdminForm() {
         </Alert>
       ) : null}
 
-      <Button type="submit" variant="contained" size="large" disabled={isSubmitting}>
-        {t('createPlatformAdminSubmit')}
-      </Button>
+      {onCancel ? (
+        <DialogActions sx={{ px: 0, pb: 0, pt: 0 }}>
+          <Button
+            type="button"
+            variant="outlined"
+            color="secondary"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            {t('cancel')}
+          </Button>
+          <Button type="submit" variant="contained" disabled={isSubmitting}>
+            {t('createPlatformAdminSubmit')}
+          </Button>
+        </DialogActions>
+      ) : (
+        <Button type="submit" variant="contained" size="large" disabled={isSubmitting}>
+          {t('createPlatformAdminSubmit')}
+        </Button>
+      )}
     </Stack>
   )
 }
