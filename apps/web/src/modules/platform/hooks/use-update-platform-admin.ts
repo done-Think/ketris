@@ -3,18 +3,19 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { platformAdminService } from '../services/platform-admin-service'
 import type { PlatformAdminRole } from '../types/platform-admin'
 
-interface CreatePlatformAdminInput {
+type UpdatePlatformAdminInput = {
+  id: string
   nome: string
   email: string
-  password: string
   role: PlatformAdminRole
 }
 
-export function useCreatePlatformAdmin() {
+export function useUpdatePlatformAdmin() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (payload: CreatePlatformAdminInput) => platformAdminService.create(payload),
+    mutationFn: ({ id, ...payload }: UpdatePlatformAdminInput) =>
+      platformAdminService.update(id, payload),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['platform-admins'] }),
   })
 }

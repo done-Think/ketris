@@ -11,6 +11,7 @@ const target: PlatformAdmin = {
   nome: 'Sócio Ketris',
   email: 'socio@ketris.dev',
   senhaHash: 'hash-fake',
+  role: 'ADMIN',
   ativo: true,
 }
 

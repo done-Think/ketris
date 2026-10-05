@@ -20,7 +20,10 @@ export function OpportunityPropertyPanel({
 
   return (
     <Paper component="section" elevation={0} sx={{ ...panelSx, p: { xs: 2, md: 2.5 } }}>
-      <Typography component="h2" sx={{ mb: 1.8, fontSize: 16, fontWeight: 800 }}>
+      <Typography
+        component="h2"
+        sx={{ mb: 1.35, fontSize: 16, fontWeight: 800, textAlign: 'center' }}
+      >
         {t('title')}
       </Typography>
       {isLoading ? (
@@ -70,18 +73,35 @@ export function OpportunityPropertyPanel({
               <HomeWorkOutlinedIcon />
             </Box>
           )}
-          <Stack minWidth={0} flex={1} justifyContent="center">
-            <Typography sx={{ fontSize: 14, fontWeight: 800 }}>{property.title}</Typography>
-            <Typography color="text.secondary" sx={{ mt: 0.2, fontSize: 11.5 }}>
-              {[
-                property.propertyType,
-                property.area ? `${property.area} m²` : null,
-                propertyLocation,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-            </Typography>
-            <Typography sx={{ mt: 0.5, fontSize: 13, fontWeight: 800 }}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            alignItems="flex-start"
+            justifyContent="space-between"
+            spacing={1.2}
+            minWidth={0}
+            flex={1}
+          >
+            <Box minWidth={0}>
+              <Typography sx={{ fontSize: 14, fontWeight: 800 }}>{property.title}</Typography>
+              <Typography color="text.secondary" sx={{ mt: 0.2, fontSize: 11.5 }}>
+                {[
+                  property.propertyType,
+                  property.area ? `${property.area} m²` : null,
+                  propertyLocation,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </Typography>
+            </Box>
+            <Typography
+              sx={{
+                color: 'primary.main',
+                fontSize: 18,
+                fontWeight: 900,
+                flexShrink: 0,
+                textAlign: { xs: 'left', sm: 'right' },
+              }}
+            >
               {formatCurrency(property.price)}
               {property.purpose === 'ALUGUEL' ? t('monthlySuffix') : ''}
             </Typography>

@@ -28,6 +28,8 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Rou
     platformAdminId: (await context.params).id,
     nome: body.nome,
     email: body.email,
+    role: body.role,
+    ativo: body.ativo,
   })
 
   return NextResponse.json({ admin }, { status: 200 })

@@ -24,9 +24,7 @@ export function PipelineStageColumn({
   projectedTotals,
   isPipelineLoading,
   hasPipelineError,
-  fixtureMode,
   propertiesById,
-  presentationByOpportunityId,
 }: PipelineStageColumnProps) {
   const t = useTranslations('crm.pipeline')
   const stageLabel = t(`stages.${stage.labelKey}`)
@@ -102,9 +100,6 @@ export function PipelineStageColumn({
                 opportunity={opportunity}
                 property={propertiesById.get(opportunity.propertyId)}
                 density="compact"
-                presentation={
-                  fixtureMode ? presentationByOpportunityId.get(opportunity.id) : undefined
-                }
               />
             ))}
 
