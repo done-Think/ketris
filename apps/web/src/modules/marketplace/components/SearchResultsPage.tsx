@@ -118,7 +118,7 @@ export function SearchResultsPage({ initialLocation = '', purpose }: SearchResul
         </Box>
 
         <SearchResultsMapPanel
-          properties={results.filteredResults}
+          properties={results.paginatedResults}
           selectedPropertyId={results.selectedPropertyId}
           setSelectedPropertyId={results.setSelectedPropertyId}
           searchQuery={results.locationQuery}
