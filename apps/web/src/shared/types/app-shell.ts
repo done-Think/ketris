@@ -5,6 +5,7 @@ import type { Papel } from '@server/auth/domain/user.entity'
 
 export type AppShellNavHref =
   | '/dashboard'
+  | '/dashboard/agency-overview'
   | '/crm'
   | '/crm/contacts'
   | '/dashboard/leads'
