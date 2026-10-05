@@ -1,4 +1,4 @@
-import type { PublishedPropertySummary } from '../../domain/property.entity'
+import type { PublishedPropertySummary } from '../../types/property'
 import type {
   PropertySearchFilters,
   PublicPropertyRepository,

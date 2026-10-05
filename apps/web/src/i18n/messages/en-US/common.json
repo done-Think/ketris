@@ -26,6 +26,7 @@
     "expandNavigation": "Expand navigation",
     "defaultUserName": "Ketris Team",
     "defaultUserContext": "Admin dashboard",
+    "backToMarketplace": "Back to marketplace",
     "logoutToMarketplace": "Sign out and return to marketplace",
     "dashboard": "Dashboard",
     "agencyOverview": "Agency Overview",
@@ -59,6 +60,36 @@
       }
     },
     "charges": "Charges"
+  },
+  "profilePage": {
+    "title": "Profile",
+    "subtitle": "Manage your personal details and access information.",
+    "personalData": "Personal details",
+    "changePhoto": "Change photo",
+    "name": "Name",
+    "phone": "Phone",
+    "email": "Email",
+    "cancel": "Cancel",
+    "save": "Save changes",
+    "security": "Security",
+    "securityDescription": "Change your access password.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "changePassword": "Change password",
+    "profileSuccess": "Profile updated successfully.",
+    "profileError": "Could not save the changes. Try again.",
+    "passwordSuccess": "Password changed successfully.",
+    "passwordError": "Could not change the password. Try again.",
+    "avatarFormatError": "Use a JPG, PNG, or WEBP image.",
+    "errors": {
+      "nameRequired": "Enter the name",
+      "emailInvalid": "Enter a valid email",
+      "phoneRequired": "Enter your phone number",
+      "phoneInvalid": "Enter a valid phone number",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordConfirmationRequired": "Confirm the new password",
+      "passwordMismatch": "Passwords do not match"
+    }
   },
   "roleGuard": {
     "loadingSession": "Loading session",

@@ -1,7 +1,10 @@
+export type PlatformAdminRole = 'ADMIN' | 'ADMIN_AGENT' | 'AGENT'
+
 export interface PlatformAdminAccount {
   id: string
   nome: string
   email: string
+  role: PlatformAdminRole
   ativo: boolean
 }
 
@@ -9,6 +12,13 @@ export interface CreatePlatformAdminPayload {
   nome: string
   email: string
   password: string
+  role: PlatformAdminRole
+}
+
+export interface UpdatePlatformAdminPayload {
+  nome: string
+  email: string
+  role: PlatformAdminRole
 }
 
 export interface PlatformAdminResponse {
@@ -23,4 +33,5 @@ export interface CreatePlatformAdminInput {
   nome: string
   email: string
   password: string
+  role: PlatformAdminRole
 }

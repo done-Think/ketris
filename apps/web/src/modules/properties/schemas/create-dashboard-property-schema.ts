@@ -10,37 +10,54 @@ export type SchemaMessageTranslator = (key: string) => string
 export function createDashboardPropertySchema(t: SchemaMessageTranslator) {
   const numberField = z.coerce.number().nonnegative(t('numberInvalid'))
 
-  return z.object({
-    activeStepIndex: z.number().int().min(0).default(0),
-    maxVisitedStepIndex: z.number().int().min(0).default(0),
-    type: z.string().min(1, t('propertyTypeRequired')),
-    purpose: z
-      .array(z.enum(['Aluguel', 'Venda'] satisfies [CreatePropertyPurpose, CreatePropertyPurpose]))
-      .min(1, t('purposeRequired')),
-    title: z.string().min(3, t('titleRequired')),
-    description: z.string().min(10, t('descriptionRequired')),
-    street: z.string().min(3, t('streetRequired')),
-    number: z.string().min(1, t('numberRequired')),
-    neighborhood: z.string().min(2, t('neighborhoodRequired')),
-    city: z.string().min(2, t('cityRequired')),
-    state: z.string().length(2, t('stateRequired')),
-    zipCode: z.string().min(8, t('zipCodeRequired')),
-    bedrooms: numberField,
-    bathrooms: numberField,
-    parkingSpaces: numberField,
-    area: z.coerce.number().positive(t('areaRequired')),
-    features: z.array(z.string()).default([]),
-    media: z
-      .array(
-        z.object({ url: z.string(), type: z.string().optional(), order: z.number().optional() }),
-      )
-      .default([]),
-    mainValue: z.coerce.number().positive(t('mainValueRequired')),
-    condominium: numberField,
-    iptu: numberField,
-    negotiationTerm: z.string().min(1, t('negotiationTermRequired')),
-    publishingOptions: z.array(z.string()).default([]),
-  })
+  return z
+    .object({
+      activeStepIndex: z.number().int().min(0).default(0),
+      maxVisitedStepIndex: z.number().int().min(0).default(0),
+      type: z.string().min(1, t('propertyTypeRequired')),
+      purpose: z
+        .array(
+          z.enum(['Aluguel', 'Venda'] satisfies [CreatePropertyPurpose, CreatePropertyPurpose]),
+        )
+        .min(1, t('purposeRequired')),
+      title: z.string().min(3, t('titleRequired')),
+      description: z.string().min(10, t('descriptionRequired')),
+      street: z.string().min(3, t('streetRequired')),
+      number: z.string().min(1, t('numberRequired')),
+      neighborhood: z.string().min(2, t('neighborhoodRequired')),
+      city: z.string().min(2, t('cityRequired')),
+      state: z.string().length(2, t('stateRequired')),
+      zipCode: z.string().min(8, t('zipCodeRequired')),
+      bedrooms: numberField,
+      bathrooms: numberField,
+      parkingSpaces: numberField,
+      area: z.coerce.number().positive(t('areaRequired')),
+      features: z.array(z.string()).default([]),
+      media: z
+        .array(
+          z.object({ url: z.string(), type: z.string().optional(), order: z.number().optional() }),
+        )
+        .default([]),
+      mainValue: z.coerce.number().positive(t('mainValueRequired')),
+      rentalValue: z.coerce.number().nonnegative(t('rentalValueInvalid')).optional(),
+      condominium: numberField,
+      iptu: numberField,
+      negotiationTerm: z.string().min(1, t('negotiationTermRequired')),
+      publishingOptions: z.array(z.string()).default([]),
+    })
+    .superRefine((values, context) => {
+      if (
+        values.purpose.includes('Aluguel') &&
+        values.purpose.includes('Venda') &&
+        (!values.rentalValue || values.rentalValue <= 0)
+      ) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['rentalValue'],
+          message: t('rentalValueRequired'),
+        })
+      }
+    })
 }
 
 export const createDashboardPropertyDefaultValues: CreateDashboardPropertyFormValues = {
@@ -64,6 +81,7 @@ export const createDashboardPropertyDefaultValues: CreateDashboardPropertyFormVa
   features: ['Mobiliado', 'Varanda gourmet', 'Portaria 24h'],
   media: [],
   mainValue: 6500,
+  rentalValue: 0,
   condominium: 1200,
   iptu: 380,
   negotiationTerm: '3 aluguéis',

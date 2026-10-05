@@ -1,11 +1,4 @@
-import type {
-  Endereco,
-  FinalidadeImovel,
-  Imovel,
-  Midia,
-  Prisma,
-  StatusImovel,
-} from '@prisma/client'
+import type { Endereco, FinalidadeImovel, Prisma, StatusImovel } from '@prisma/client'
 
 import { prisma } from '@server/db/prisma'
 
@@ -19,17 +12,8 @@ import type {
   PropertyListFilters,
   PropertyMediaInput,
   PropertyStatus,
-} from '../domain/property.entity'
-
-type PropertyRow = Imovel & {
-  endereco: Endereco | null
-  midias: Midia[]
-}
-
-type PropertyTransaction = Omit<
-  Prisma.TransactionClient,
-  '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
->
+} from '../types/property'
+import type { PropertyRow, PropertyTransaction } from '../types/prisma-property-repository'
 
 const propertyInclude = {
   endereco: true,
@@ -52,6 +36,7 @@ export class PrismaPropertyRepository implements PropertyRepository {
           vagas: property.vagas ?? null,
           areaM2: property.areaM2 ?? null,
           valor: property.valor,
+          valorAluguel: property.valorAluguel ?? null,
           condominio: property.condominio ?? null,
           iptu: property.iptu ?? null,
           status: 'DRAFT',
@@ -214,6 +199,7 @@ function toPropertyUpdateData(changes: PropertyChanges): Prisma.ImovelUpdateInpu
     vagas: changes.vagas,
     areaM2: changes.areaM2,
     valor: changes.valor,
+    valorAluguel: changes.valorAluguel,
     condominio: changes.condominio,
     iptu: changes.iptu,
   }
@@ -305,6 +291,7 @@ function mapProperty(property: PropertyRow): Property {
     })),
     valores: {
       valor: property.valor.toNumber(),
+      valorAluguel: property.valorAluguel?.toNumber() ?? null,
       condominio: property.condominio?.toNumber() ?? null,
       iptu: property.iptu?.toNumber() ?? null,
     },

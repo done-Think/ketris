@@ -42,6 +42,7 @@ export type AppShellSidebarProps = {
   userInitials: string
   userImage?: string
   canEditProfile: boolean
+  isPersonalProfileRoute: boolean
   isSigningOut: boolean
   onNavItemClick: () => void
   onEditProfile: () => void

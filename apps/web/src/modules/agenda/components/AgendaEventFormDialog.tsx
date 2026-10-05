@@ -43,6 +43,7 @@ function buildDefaultValues(): AgendaEventFormValues {
 }
 
 export function AgendaEventFormDialog({
+  initialValues,
   maxDate,
   minDate,
   onClose,
@@ -68,8 +69,8 @@ export function AgendaEventFormDialog({
   useEffect(() => {
     if (!open) return
 
-    reset(buildDefaultValues())
-  }, [open, reset])
+    reset({ ...buildDefaultValues(), ...initialValues })
+  }, [initialValues, open, reset])
 
   return (
     <Dialog

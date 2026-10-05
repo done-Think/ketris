@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { ForbiddenError } from '@server/shared/errors'
 
 import { AgencyProfileNotFoundError, ProfilePublishValidationError } from '../../../domain/errors'
-import type { AgencyProfile } from '../../../domain/agency-profile.entity'
+import type { AgencyProfile } from '../../../types/agency-profile'
 import type { AgencyProfileRepository } from '../../../application/ports/agency-profile-repository.port'
 import { PublishAgencyProfileUseCase } from '../../../application/use-cases/publish-agency-profile.use-case'
 

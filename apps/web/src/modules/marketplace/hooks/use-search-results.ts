@@ -46,6 +46,8 @@ const apiPurposeByPurpose: Record<SearchResultsPageProps['purpose'], PublicPrope
   comprar: 'VENDA',
 }
 
+const searchResultsPageSize = 10
+
 const sortByOption: Record<SortOption, PropertySortOption | undefined> = {
   relevancia: undefined,
   'menor-preco': 'priceAsc',
@@ -126,6 +128,7 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
       onlyWithParking: false,
       sortOption: 'relevancia',
       viewMode: defaultSearchResultsViewMode,
+      currentPage: 1,
     },
     resolver: zodResolver(searchResultsFormSchema),
   })
@@ -142,6 +145,7 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
     selectedPropertyId,
     sortOption,
     viewMode,
+    currentPage,
   } = watch()
 
   const priceFilter = priceFilterOptions[priceFilterIndex]
@@ -211,11 +215,25 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
     return (propertiesQuery.data ?? []).map((summary) => mapSummaryToSearchResult(summary, purpose))
   }, [fixtureMode, fixtureResults, propertiesQuery.data, purpose])
 
-  useEffect(() => {
-    if (filteredResults.some((property) => property.id === selectedPropertyId)) return
+  const totalPages = Math.max(1, Math.ceil(filteredResults.length / searchResultsPageSize))
+  const safeCurrentPage = Math.min(currentPage, totalPages)
+  const paginatedResults = useMemo(() => {
+    const startIndex = (safeCurrentPage - 1) * searchResultsPageSize
 
-    setValue('selectedPropertyId', filteredResults[0]?.id ?? '')
-  }, [filteredResults, selectedPropertyId, setValue])
+    return filteredResults.slice(startIndex, startIndex + searchResultsPageSize)
+  }, [filteredResults, safeCurrentPage])
+
+  useEffect(() => {
+    if (currentPage === safeCurrentPage) return
+
+    setValue('currentPage', safeCurrentPage)
+  }, [currentPage, safeCurrentPage, setValue])
+
+  useEffect(() => {
+    if (paginatedResults.some((property) => property.id === selectedPropertyId)) return
+
+    setValue('selectedPropertyId', paginatedResults[0]?.id ?? '')
+  }, [paginatedResults, selectedPropertyId, setValue])
 
   useEffect(() => {
     if (persistedViewMode.viewMode === viewMode) return
@@ -226,12 +244,16 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
   const clearPriceFilter = () => {
     setValue('customMaxPrice', '')
     setValue('priceFilterIndex', 0)
+    setValue('currentPage', 1)
   }
 
   const clearAreaFilter = () => {
     setValue('customMinArea', '')
     setValue('areaFilterIndex', 0)
+    setValue('currentPage', 1)
   }
+
+  const resetCurrentPage = () => setValue('currentPage', 1)
 
   return {
     areaFilter,
@@ -244,6 +266,7 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
     customMaxPrice,
     customMinArea,
     filteredResults,
+    currentPage: safeCurrentPage,
     isError: propertiesQuery.isError && !fixtureMode,
     isLoading: propertiesQuery.isLoading,
     locationQuery,
@@ -253,23 +276,53 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
     priceFilterIndex,
     priceFilterLabel,
     propertyTypeFilter,
+    paginatedResults,
     refetch: propertiesQuery.refetch,
     selectedPropertyId,
-    setAreaFilterIndex: (index: number) => setValue('areaFilterIndex', index),
-    setBedroomFilterIndex: (index: number) => setValue('bedroomFilterIndex', index),
-    setCustomMaxPrice: (value: string) => setValue('customMaxPrice', value),
-    setCustomMinArea: (value: string) => setValue('customMinArea', value),
-    setLocationQuery: (value: string) => setValue('locationQuery', value),
-    setOnlyWithParking: (value: boolean) => setValue('onlyWithParking', value),
-    setPriceFilterIndex: (index: number) => setValue('priceFilterIndex', index),
-    setPropertyTypeFilter: (value: string) => setValue('propertyTypeFilter', value),
+    setAreaFilterIndex: (index: number) => {
+      setValue('areaFilterIndex', index)
+      resetCurrentPage()
+    },
+    setBedroomFilterIndex: (index: number) => {
+      setValue('bedroomFilterIndex', index)
+      resetCurrentPage()
+    },
+    setCustomMaxPrice: (value: string) => {
+      setValue('customMaxPrice', value)
+      resetCurrentPage()
+    },
+    setCustomMinArea: (value: string) => {
+      setValue('customMinArea', value)
+      resetCurrentPage()
+    },
+    setLocationQuery: (value: string) => {
+      setValue('locationQuery', value)
+      resetCurrentPage()
+    },
+    setOnlyWithParking: (value: boolean) => {
+      setValue('onlyWithParking', value)
+      resetCurrentPage()
+    },
+    setPriceFilterIndex: (index: number) => {
+      setValue('priceFilterIndex', index)
+      resetCurrentPage()
+    },
+    setPropertyTypeFilter: (value: string) => {
+      setValue('propertyTypeFilter', value)
+      resetCurrentPage()
+    },
+    setCurrentPage: (page: number) => setValue('currentPage', page),
     setSelectedPropertyId: (propertyId: string) => setValue('selectedPropertyId', propertyId),
-    setSortOption: (option: SortOption) => setValue('sortOption', option),
+    setSortOption: (option: SortOption) => {
+      setValue('sortOption', option)
+      resetCurrentPage()
+    },
     setViewMode: (mode: ViewMode) => {
       persistedViewMode.setViewMode(mode)
       setValue('viewMode', mode)
     },
     sortOption,
+    totalPages,
     viewMode,
   }
 }

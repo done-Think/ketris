@@ -10,6 +10,7 @@ const admin: PlatformAdmin = {
   nome: 'Dono Ketris',
   email: 'dono@ketris.dev',
   senhaHash: 'hash-fake',
+  role: 'ADMIN',
   ativo: true,
 }
 

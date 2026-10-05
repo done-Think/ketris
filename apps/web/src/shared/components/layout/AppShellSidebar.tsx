@@ -37,6 +37,7 @@ export function AppShellSidebar({
   userInitials,
   userImage,
   canEditProfile,
+  isPersonalProfileRoute,
   isSigningOut,
   onNavItemClick,
   onEditProfile,
@@ -199,6 +200,7 @@ export function AppShellSidebar({
       >
         <ButtonBase
           aria-label={t('editProfile')}
+          aria-current={isPersonalProfileRoute ? 'page' : undefined}
           onClick={onEditProfile}
           disabled={!canEditProfile}
           sx={{
@@ -210,6 +212,8 @@ export function AppShellSidebar({
             minWidth: 0,
             borderRadius: `${radius.sm}px`,
             p: 0.5,
+            bgcolor: isPersonalProfileRoute ? alpha.white[8] : 'transparent',
+            color: isPersonalProfileRoute ? surface.lightText : 'inherit',
             '&:hover': { bgcolor: alpha.white[8] },
           }}
         >

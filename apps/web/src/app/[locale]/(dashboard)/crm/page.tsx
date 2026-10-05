@@ -8,10 +8,6 @@ export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
   return createLocalizedMetadata('crm.metadata.pipeline', locale)
 }
 
-export default async function CrmPipelinePage({
-  searchParams,
-}: LocaleRoutePageProps<Record<never, never>, { preview?: string | string[] }>) {
-  const resolvedSearchParams = await searchParams
-
-  return <SalesPipelineBoard preview={resolvedSearchParams?.preview === '1'} />
+export default async function CrmPipelinePage() {
+  return <SalesPipelineBoard />
 }

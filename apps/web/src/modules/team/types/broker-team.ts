@@ -1,3 +1,10 @@
+import type { z } from 'zod'
+
+import type { brokerGoalSchema, brokerTransferSchema } from '../schemas/broker-team-action-schemas'
+
+export type BrokerGoalFormValues = z.infer<typeof brokerGoalSchema>
+export type BrokerTransferFormValues = z.infer<typeof brokerTransferSchema>
+
 export type BrokerTeamStatus = 'ahead' | 'onTrack' | 'attention'
 
 export type BrokerTeamMember = {
@@ -9,8 +16,10 @@ export type BrokerTeamMember = {
   properties: number
   leads: number
   monthlySales: number
+  monthlyGoal: number
   returns: number
   goalProgress: number
+  active: boolean
   status: BrokerTeamStatus
   specialty: string
   responseTime: string

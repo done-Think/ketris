@@ -4,7 +4,7 @@ import type { Papel } from '@server/auth/domain/user.entity'
 
 import { assertPropertyAccess } from '../authorization'
 import { PropertyNotFoundError } from '../../domain/errors'
-import type { PropertyChanges } from '../../domain/property.entity'
+import type { PropertyChanges } from '../../types/property'
 import type { PropertyRepository } from '../ports/property-repository.port'
 
 export class UpdatePropertyUseCase {
@@ -40,6 +40,7 @@ export class UpdatePropertyUseCase {
       vagas: input.vagas,
       areaM2: input.areaM2,
       valor: input.valor,
+      valorAluguel: input.valorAluguel,
       condominio: input.condominio,
       iptu: input.iptu,
       endereco: input.endereco,

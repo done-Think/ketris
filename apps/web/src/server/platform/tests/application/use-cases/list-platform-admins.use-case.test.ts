@@ -5,8 +5,15 @@ import type { PlatformAdminRepository } from '../../../application/ports/platfor
 import { ListPlatformAdminsUseCase } from '../../../application/use-cases/list-platform-admins.use-case'
 
 const admins: PlatformAdmin[] = [
-  { id: 'p1', nome: 'Dono', email: 'dono@ketris.dev', senhaHash: 'h1', ativo: true },
-  { id: 'p2', nome: 'Sócio', email: 'socio@ketris.dev', senhaHash: 'h2', ativo: true },
+  { id: 'p1', nome: 'Dono', email: 'dono@ketris.dev', senhaHash: 'h1', role: 'ADMIN', ativo: true },
+  {
+    id: 'p2',
+    nome: 'Sócio',
+    email: 'socio@ketris.dev',
+    senhaHash: 'h2',
+    role: 'AGENT',
+    ativo: true,
+  },
 ]
 
 describe('ListPlatformAdminsUseCase', () => {

@@ -112,16 +112,22 @@ export function RecentTenantsTable({ tenants }: { tenants: readonly RecentTenant
       sx={{
         bgcolor: surface.paper,
         border: '1px solid',
-        borderColor: alpha.graphite[8],
-        borderRadius: `${radius.md}px`,
-        boxShadow: shadows.crmCard,
+        borderColor: alpha.graphite[6],
+        borderRadius: `${radius.sm}px`,
+        boxShadow: shadows.propertyCard,
         overflow: 'hidden',
-        p: { xs: 1.75, md: 2.75 },
+        p: { xs: 1.45, md: 2.2 },
       }}
     >
       <Typography
         id="recent-tenants-title"
-        sx={{ color: brand.graphite[500], fontSize: 17, fontWeight: 900, mb: 2 }}
+        sx={{
+          color: brand.neutral[500],
+          fontSize: 11,
+          fontWeight: 900,
+          mb: 2,
+          textTransform: 'uppercase',
+        }}
       >
         {t('title')}
       </Typography>

@@ -44,7 +44,9 @@ export function BrokerTeamCard({
   onOpenMenu,
 }: BrokerTeamCardProps) {
   const t = useTranslations('dashboard.team')
-  const presentation = statusPresentation[broker.status]
+  const presentation = broker.active
+    ? statusPresentation[broker.status]
+    : { color: brand.neutral[500], bgcolor: alpha.graphite[8] }
 
   return (
     <Paper
@@ -164,7 +166,7 @@ export function BrokerTeamCard({
           </Stack>
           <LinearProgress
             variant="determinate"
-            value={broker.goalProgress}
+            value={Math.min(100, broker.goalProgress)}
             sx={{
               height: 6,
               borderRadius: radius.full,
@@ -180,7 +182,7 @@ export function BrokerTeamCard({
         <Stack direction="row" spacing={1} sx={{ minWidth: 0 }}>
           <Chip
             icon={<TrendingUpRoundedIcon sx={{ fontSize: iconSize.xs }} />}
-            label={t(`statuses.${broker.status}`)}
+            label={broker.active ? t(`statuses.${broker.status}`) : t('dialogs.inactive')}
             sx={{
               flex: 1,
               minWidth: 0,

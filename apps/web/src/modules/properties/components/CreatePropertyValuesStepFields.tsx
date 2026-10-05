@@ -6,6 +6,7 @@ import type { CreatePropertyValuesStepFieldsProps } from '../types/dashboard-pro
 
 export function CreatePropertyValuesStepFields({
   control,
+  hasDualPurpose,
   mainValueLabel,
   negotiationTermLabel,
 }: CreatePropertyValuesStepFieldsProps) {
@@ -20,7 +21,8 @@ export function CreatePropertyValuesStepFields({
       }}
     >
       {[
-        ['mainValue', mainValueLabel, 'number'],
+        ['mainValue', hasDualPurpose ? 'referenceValue' : mainValueLabel, 'number'],
+        ...(hasDualPurpose ? ([['rentalValue', 'rentValue', 'number']] as const) : []),
         ['condominium', 'condominium', 'number'],
         ['iptu', 'iptu', 'number'],
         ['negotiationTerm', negotiationTermLabel, 'text'],
@@ -28,7 +30,7 @@ export function CreatePropertyValuesStepFields({
         <Controller
           key={name}
           control={control}
-          name={name as 'mainValue' | 'condominium' | 'iptu' | 'negotiationTerm'}
+          name={name as 'mainValue' | 'rentalValue' | 'condominium' | 'iptu' | 'negotiationTerm'}
           render={({ field, fieldState }) => (
             <TextField
               {...field}

@@ -1,5 +1,5 @@
 import { AgencyProfileNotFoundError } from '../../domain/errors'
-import type { AgencyProfile } from '../../domain/agency-profile.entity'
+import type { AgencyProfile } from '../../types/agency-profile'
 import type { AgencyProfileRepository } from '../ports/agency-profile-repository.port'
 
 export interface GetAgencyProfileInput {

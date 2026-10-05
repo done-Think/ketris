@@ -4,10 +4,12 @@
     "closeMenu": "Fechar menu",
     "mainMenu": "Menu principal",
     "notifications": "notificações",
+    "signIn": "Entrar",
     "openMenu": "Abrir menu",
     "openProfile": "Abrir perfil"
   },
   "profile": {
+    "guestName": "Visitante",
     "dialogLabel": "Perfil do usuário",
     "closeProfile": "Fechar perfil",
     "language": "Idioma",
@@ -23,6 +25,7 @@
       "RENTER": "Locatário"
     },
     "actions": {
+      "accessAdmin": "Acessar admin",
       "settings": "Configurações",
       "signOut": "Sair",
       "support": "Suporte",

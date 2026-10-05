@@ -44,6 +44,7 @@ export function createSearchResultsFormSchema(t: SchemaMessageTranslator) {
     onlyWithParking: z.boolean(),
     sortOption: z.enum(['relevancia', 'menor-preco', 'maior-preco']),
     viewMode: z.enum(searchResultsViewModes),
+    currentPage: z.number().int().min(1, t('optionInvalid')),
   })
 }
 

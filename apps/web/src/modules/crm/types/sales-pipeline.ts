@@ -1,4 +1,3 @@
-import type { OpportunityCardProps } from './opportunity-card'
 import type { Opportunity, OpportunityStatus } from './opportunity'
 import type {
   ProposalManagementFilterId,
@@ -26,10 +25,6 @@ export type SalesPipelineProjectedTotal = {
   value: string
 }
 
-export type SalesPipelineBoardProps = {
-  preview?: boolean
-}
-
 export type SalesPipelineViewMode = 'kanban' | 'list'
 
 export type SalesPipelineToolbarProps = {
@@ -52,43 +47,12 @@ export type PipelineStageColumnProps = {
   projectedTotals: readonly SalesPipelineProjectedTotal[]
   isPipelineLoading: boolean
   hasPipelineError: boolean
-  fixtureMode: boolean
   propertiesById: ReadonlyMap<string, PublicPropertySummary>
-  presentationByOpportunityId: ReadonlyMap<string, OpportunityCardProps['presentation']>
-}
-
-export type SalesPipelinePreviewIndicator = {
-  color: string
-  label: string
-}
-
-export type SalesPipelineFixture = {
-  stageId: SalesPipelineStageId
-  opportunity: Opportunity
-  property: PublicPropertySummary
-  presentation: {
-    indicatorColor: string
-    indicatorLabel: string
-    relativeDateLabel: string
-  }
-}
-
-export type SalesPipelineFixtureInput = {
-  slug: string
-  stageId: SalesPipelineStageId
-  name: string
-  propertyTitle: string
-  value: number
-  daysAgo: number
-  indicator: SalesPipelinePreviewIndicator
 }
 
 export type SalesPipelineKanbanViewProps = {
   visibleOpportunities: readonly Opportunity[]
-  fixtureMode: boolean
-  fixtureStageByOpportunityId: ReadonlyMap<string, SalesPipelineStageId>
   propertiesById: ReadonlyMap<string, PublicPropertySummary>
-  presentationByOpportunityId: ReadonlyMap<string, OpportunityCardProps['presentation']>
   isPipelineLoading: boolean
   hasPipelineError: boolean
 }

@@ -15,6 +15,7 @@ const { routerMock } = vi.hoisted(() => ({
   routerMock: {
     replace: vi.fn(),
     refresh: vi.fn(),
+    push: vi.fn(),
   },
 }))
 
@@ -52,7 +53,7 @@ vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
 function mockSession(overrides?: Partial<{ papel: 'ADMIN' | 'OWNER' | 'AGENT' }>) {
   vi.mocked(useSession).mockReturnValue({
     data: {
-      user: { name: 'Ana' },
+      user: { id: 'user-1', name: 'Ana', email: 'ana@example.com' },
       scope: 'tenant',
       tenantId: 't1',
       papel: overrides?.papel ?? 'ADMIN',
@@ -128,6 +129,18 @@ describe('AppShell navigation per papel', () => {
     expect(screen.queryAllByText('Perfil Público')).toHaveLength(0)
   })
 
+  it('exibe Visão Geral Imob. na navegação para ADMIN', () => {
+    mockSession({ papel: 'ADMIN' })
+
+    renderShell()
+
+    expect(screen.getAllByText('Visão Geral Imob.').length).toBeGreaterThan(0)
+    expect(screen.getByRole('link', { name: 'Visão Geral Imob.' })).toHaveAttribute(
+      'href',
+      '/dashboard/agency-overview',
+    )
+  })
+
   it('OWNER também vê Dashboard, Perfil da Imobiliária e Financeiro', () => {
     mockSession({ papel: 'OWNER' })
 
@@ -158,6 +171,7 @@ describe('AppShell navigation per papel', () => {
 describe('AppShell active nav item', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    useSidebarPreferencesStore.getState().setCollapsed(false)
     mockSession({ papel: 'ADMIN' })
   })
 
@@ -200,6 +214,56 @@ describe('AppShell active nav item', () => {
     renderShell()
 
     expect(activeLabels()).toEqual(['Contatos'])
+  })
+
+  it.each([
+    ['/dashboard/team' as const, 'Equipe'],
+    ['/dashboard/public-profile/agency' as const, 'Perfil da Imobiliária'],
+  ])('marca somente %s na navegação correspondente', (pathname, label) => {
+    vi.mocked(usePathname).mockReturnValue(pathname)
+
+    renderShell()
+
+    expect(activeLabels()).toEqual([label])
+    expect(screen.getAllByRole('button', { name: 'Editar perfil' })[0]).not.toHaveAttribute(
+      'aria-current',
+    )
+  })
+
+  it.each([false, true])(
+    'ativa só o bloco do usuário no perfil pessoal (recolhida: %s)',
+    (collapsed) => {
+      useSidebarPreferencesStore.getState().setCollapsed(collapsed)
+      vi.mocked(usePathname).mockReturnValue('/dashboard/profile')
+
+      renderShell()
+
+      expect(activeLabels()).toEqual([])
+      expect(screen.getAllByRole('button', { name: 'Editar perfil' })[0]).toHaveAttribute(
+        'aria-current',
+        'page',
+      )
+      expect(useSidebarPreferencesStore.getState().isCollapsed).toBe(collapsed)
+    },
+  )
+
+  it('remove o destaque do perfil ao voltar para o Dashboard', () => {
+    vi.mocked(usePathname).mockReturnValue('/dashboard/profile')
+    const { rerender } = renderShell()
+
+    vi.mocked(usePathname).mockReturnValue('/dashboard')
+    rerender(
+      <ThemeProvider theme={theme}>
+        <AppShell>
+          <div>Conteúdo da rota</div>
+        </AppShell>
+      </ThemeProvider>,
+    )
+
+    expect(activeLabels()).toEqual(['Dashboard'])
+    expect(screen.getAllByRole('button', { name: 'Editar perfil' })[0]).not.toHaveAttribute(
+      'aria-current',
+    )
   })
 })
 
@@ -281,6 +345,24 @@ describe('AppShell collapsible desktop navigation', () => {
     await user.hover(screen.getByRole('link', { name: /meus im/i }))
 
     expect(await screen.findByRole('tooltip', { name: /meus im/i })).toBeVisible()
+  })
+
+  it('opens the authenticated user profile from the expanded sidebar', async () => {
+    renderShell()
+
+    await userEvent.setup().click(screen.getAllByRole('button', { name: 'Editar perfil' })[0])
+
+    expect(routerMock.push).toHaveBeenCalledWith('/pt/dashboard/profile')
+  })
+
+  it('opens the same profile from the collapsed sidebar', async () => {
+    useSidebarPreferencesStore.getState().setCollapsed(true)
+    renderShell()
+
+    await userEvent.setup().click(screen.getAllByRole('button', { name: 'Editar perfil' })[0])
+
+    expect(routerMock.push).toHaveBeenCalledWith('/pt/dashboard/profile')
+    expect(useSidebarPreferencesStore.getState().isCollapsed).toBe(true)
   })
 })
 

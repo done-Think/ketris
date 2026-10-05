@@ -10,10 +10,7 @@ import { PipelineStageColumn } from './sales-pipeline-board/PipelineStageColumn'
 
 export function SalesPipelineKanbanView({
   visibleOpportunities,
-  fixtureMode,
-  fixtureStageByOpportunityId,
   propertiesById,
-  presentationByOpportunityId,
   isPipelineLoading,
   hasPipelineError,
 }: SalesPipelineKanbanViewProps) {
@@ -47,9 +44,7 @@ export function SalesPipelineKanbanView({
       >
         {salesPipelineStages.map((stage) => {
           const opportunities = visibleOpportunities.filter(
-            (opportunity) =>
-              getOpportunityStageId(opportunity, fixtureMode, fixtureStageByOpportunityId) ===
-              stage.id,
+            (opportunity) => getOpportunityStageId(opportunity) === stage.id,
           )
           const projectedTotals = getProjectedTotals(
             opportunities.filter((opportunity) => opportunity.status !== 'RECUSADA'),
@@ -64,9 +59,7 @@ export function SalesPipelineKanbanView({
               projectedTotals={projectedTotals}
               isPipelineLoading={isPipelineLoading}
               hasPipelineError={hasPipelineError}
-              fixtureMode={fixtureMode}
               propertiesById={propertiesById}
-              presentationByOpportunityId={presentationByOpportunityId}
             />
           )
         })}

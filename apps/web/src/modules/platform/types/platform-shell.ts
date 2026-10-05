@@ -4,7 +4,12 @@ import type { SvgIconComponent } from '@mui/icons-material'
 export type NavigationItem = {
   label: 'overview' | 'tenants' | 'users' | 'plans' | 'finance' | 'system' | 'logs'
   icon: SvgIconComponent
-  href?: '/platform' | '/platform/tenants' | '/platform/system' | '/platform/admins/new'
+  href?:
+    | '/platform'
+    | '/platform/tenants'
+    | '/platform/system'
+    | '/platform/admins'
+    | '/platform/admins/new'
 }
 
 export type PlatformShellProps = {

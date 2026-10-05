@@ -1,4 +1,4 @@
-export type PropertyPurpose = 'RENT' | 'SALE'
+export type PropertyPurpose = 'RENT' | 'SALE' | 'BOTH'
 
 export type PropertyStatus = 'DRAFT' | 'PUBLISHED' | 'RENTED' | 'SOLD' | 'INACTIVE'
 
@@ -30,6 +30,7 @@ export interface PropertyMediaInput {
 
 export interface PropertyValues {
   price: number
+  rentalPrice: number | null
   condoFee: number | null
   propertyTax: number | null
 }
@@ -69,6 +70,7 @@ export interface PropertyFormValues {
   parkingSpots?: number | null
   areaM2?: number | null
   price: number
+  rentalPrice?: number | null
   condoFee?: number | null
   propertyTax?: number | null
   address?: PropertyAddress
@@ -106,7 +108,7 @@ export interface ApiProperty {
   responsavelId: string
   titulo: string
   descricao: string | null
-  finalidade: 'ALUGUEL' | 'VENDA'
+  finalidade: 'ALUGUEL' | 'VENDA' | 'AMBOS'
   tipo: string
   status: PropertyStatus
   publicadoEm: string | null
@@ -114,7 +116,12 @@ export interface ApiProperty {
   updatedAt: string
   endereco: ApiPropertyAddress | null
   midias: ApiPropertyMedia[]
-  valores: { valor: number; condominio: number | null; iptu: number | null }
+  valores: {
+    valor: number
+    valorAluguel: number | null
+    condominio: number | null
+    iptu: number | null
+  }
   caracteristicas: {
     quartos: number | null
     banheiros: number | null

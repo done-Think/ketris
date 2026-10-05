@@ -1,4 +1,4 @@
-import type { AgencyProfile, AgencyProfileDraft } from '../../domain/agency-profile.entity'
+import type { AgencyProfile, AgencyProfileDraft } from '../../types/agency-profile'
 
 export interface AgencyProfileRepository {
   findPublishedById(tenantId: string): Promise<AgencyProfile | null>

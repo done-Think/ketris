@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 import type { SchemaMessageTranslator } from './opportunity-schema'
 
-export const publicPropertyPurposeSchema = z.enum(['ALUGUEL', 'VENDA'])
+export const publicPropertyPurposeSchema = z.enum(['ALUGUEL', 'VENDA', 'AMBOS'])
 
 export function createPublicPropertySearchFiltersSchema(t: SchemaMessageTranslator) {
   return z.object({

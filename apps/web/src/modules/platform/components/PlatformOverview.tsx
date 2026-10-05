@@ -25,28 +25,26 @@ export function PlatformOverview() {
   return (
     <Box
       sx={{
-        maxWidth: 1680,
-        mx: 'auto',
-        px: { xs: 1.5, sm: 3, lg: 4 },
-        py: { xs: 2.5, md: 4 },
+        width: '100%',
+        p: 3.5,
       }}
     >
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         alignItems={{ sm: 'center' }}
         justifyContent="space-between"
-        spacing={1.5}
-        sx={{ mb: 3 }}
+        spacing={1.6}
+        sx={{ pb: 1.75, mb: 2.4, borderBottom: '1px solid', borderColor: 'divider' }}
       >
         <Stack direction="row" alignItems="center" spacing={1.3}>
           <Typography
             component="h1"
             sx={{
               color: brand.graphite[500],
-              fontSize: { xs: 24, md: 30 },
+              fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
+              fontSize: { xs: 26, sm: 30 },
               lineHeight: 1.15,
-              fontWeight: 900,
-              letterSpacing: -0.45,
+              fontWeight: 700,
             }}
           >
             {t('title')}

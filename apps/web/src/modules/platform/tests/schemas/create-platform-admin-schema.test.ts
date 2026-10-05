@@ -11,6 +11,7 @@ describe('createPlatformAdminSchema', () => {
       email: 'socio@ketris.dev',
       password: 'senha-longa-123',
       confirmarSenha: 'senha-longa-123',
+      role: 'ADMIN',
     })
 
     expect(result.success).toBe(true)
@@ -22,6 +23,7 @@ describe('createPlatformAdminSchema', () => {
       email: 'socio@ketris.dev',
       password: 'senha-longa-123',
       confirmarSenha: 'outra-senha',
+      role: 'ADMIN_AGENT',
     })
 
     expect(result.success).toBe(false)
@@ -36,6 +38,7 @@ describe('createPlatformAdminSchema', () => {
       email: 'socio@ketris.dev',
       password: '123',
       confirmarSenha: '123',
+      role: 'AGENT',
     })
 
     expect(result.success).toBe(false)

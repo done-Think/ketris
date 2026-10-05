@@ -5,7 +5,7 @@ import type {
   PropertyChanges,
   PropertyListFilters,
   PropertyStatus,
-} from '../../domain/property.entity'
+} from '../../types/property'
 
 export interface PropertyRepository {
   create(property: NewProperty): Promise<Property>

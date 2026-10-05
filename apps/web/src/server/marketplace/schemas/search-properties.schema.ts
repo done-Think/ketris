@@ -24,8 +24,6 @@ export const searchPropertiesQuerySchema = z
   })
   .openapi('SearchPropertiesQuery')
 
-export type SearchPropertiesQueryDTO = z.infer<typeof searchPropertiesQuerySchema>
-
 export const searchPropertiesResponseSchema = z
   .object({
     properties: z.array(publicPropertySummarySchema),

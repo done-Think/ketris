@@ -1,4 +1,4 @@
-export type PublicPropertyPurpose = 'ALUGUEL' | 'VENDA'
+export type PublicPropertyPurpose = 'ALUGUEL' | 'VENDA' | 'AMBOS'
 
 export interface PublicPropertySummary {
   id: string

@@ -23,6 +23,8 @@
       "property": "Property",
       "type": "Type",
       "price": "Price",
+      "saleValue": "Sale",
+      "rentalValue": "Rent",
       "status": "Status",
       "broker": "Broker",
       "updated": "Updated",
@@ -30,6 +32,9 @@
       "viewAriaLabel": "View {title}",
       "moreActionsAriaLabel": "More actions for {title}",
       "noRows": "No properties found",
+      "emptyTitle": "No properties added",
+      "emptyDescription": "Add the first property to your portfolio here.",
+      "emptyAction": "New Property",
       "totalRows": "Total rows:",
       "rowsPerPage": "Rows per page",
       "displayedRows": "{from}-{to} of {count}"
@@ -119,7 +124,7 @@
       "area": "Usable area",
       "rentValue": "Rent value",
       "saleValue": "Sale value",
-      "referenceValue": "Reference value",
+      "referenceValue": "Property reference value",
       "condominium": "Condo fee",
       "iptu": "Monthly property tax",
       "securityDeposit": "Guarantee",
@@ -178,7 +183,9 @@
       "numberInvalid": "Enter a valid value",
       "areaRequired": "Enter the usable area",
       "mainValueRequired": "Enter the main value",
-      "negotiationTermRequired": "Enter the commercial terms"
+      "negotiationTermRequired": "Enter the commercial terms",
+      "rentalValueInvalid": "Enter a valid rental value",
+      "rentalValueRequired": "Enter the rental value"
     }
   },
   "edit": {

@@ -109,6 +109,7 @@ export type PropertiesTableProps = {
   properties: DashboardProperty[]
   totalCount: number
   onPropertySelect: PropertyNavigationHandler
+  onCreateProperty: () => void
 }
 
 export type CreatePropertyStepsNavProps = {
@@ -138,6 +139,7 @@ export type CreatePropertyFeaturesStepFieldsProps = {
 
 export type CreatePropertyValuesStepFieldsProps = {
   control: Control<CreateDashboardPropertyFormValues>
+  hasDualPurpose: boolean
   mainValueLabel: 'rentValue' | 'saleValue' | 'referenceValue'
   negotiationTermLabel: 'securityDeposit' | 'commission' | 'commercialTerms'
 }

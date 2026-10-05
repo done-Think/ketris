@@ -6,6 +6,7 @@ export const authenticatedPlatformAdminSchema = z
     id: z.string(),
     nome: z.string(),
     email: z.string().email(),
+    role: z.enum(['ADMIN', 'ADMIN_AGENT', 'AGENT']),
     ativo: z.boolean(),
   })
   .openapi('AuthenticatedPlatformAdmin')

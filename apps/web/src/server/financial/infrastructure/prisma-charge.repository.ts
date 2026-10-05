@@ -64,10 +64,10 @@ function toDomainCharge(cobranca: CobrancaWithRelations): Charge {
   }
 }
 
-async function generateChargeCode(tenantId: string): Promise<string> {
+async function generateChargeCode(): Promise<string> {
   const year = new Date().getFullYear()
   const count = await prisma.cobranca.count({
-    where: { tenantId, codigo: { startsWith: `COB-${year}-` } },
+    where: { codigo: { startsWith: `COB-${year}-` } },
   })
 
   return `COB-${year}-${String(count + 1).padStart(4, '0')}`
@@ -106,7 +106,7 @@ export class PrismaChargeRepository implements ChargeRepository {
   }
 
   async create(input: NewCharge): Promise<Charge> {
-    const codigo = await generateChargeCode(input.tenantId)
+    const codigo = await generateChargeCode()
 
     const cobranca = await prisma.cobranca.create({
       data: {

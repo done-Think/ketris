@@ -1,4 +1,4 @@
-export type PropertyPurpose = 'ALUGUEL' | 'VENDA'
+export type PropertyPurpose = 'ALUGUEL' | 'VENDA' | 'AMBOS'
 
 export type PropertyStatus = 'DRAFT' | 'PUBLISHED' | 'RENTED' | 'SOLD' | 'INACTIVE'
 
@@ -30,6 +30,7 @@ export interface PropertyMediaInput {
 
 export interface PropertyValues {
   valor: number
+  valorAluguel: number | null
   condominio: number | null
   iptu: number | null
 }
@@ -71,6 +72,7 @@ export interface NewProperty {
   vagas?: number | null
   areaM2?: number | null
   valor: number
+  valorAluguel?: number | null
   condominio?: number | null
   iptu?: number | null
   endereco?: PropertyAddress
@@ -87,6 +89,7 @@ export interface PropertyChanges {
   vagas?: number | null
   areaM2?: number | null
   valor?: number
+  valorAluguel?: number | null
   condominio?: number | null
   iptu?: number | null
   endereco?: PropertyAddress

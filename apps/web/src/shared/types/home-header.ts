@@ -14,8 +14,10 @@ export type HomeHeaderUserProfile = {
 
 export type HomeHeaderProps = {
   navigationItems: ReadonlyArray<HomeHeaderNavigationItem>
-  profileButtonRef?: RefObject<HTMLButtonElement | null>
+  profileButtonRef?: RefObject<HTMLButtonElement>
   userProfile?: HomeHeaderUserProfile
   onToggleProfile?: () => void
   isSessionLoading?: boolean
+  showSignIn?: boolean
+  showLanguageSelector?: boolean
 }

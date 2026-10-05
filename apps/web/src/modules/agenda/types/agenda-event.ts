@@ -87,6 +87,7 @@ export type AgendaEventDetailDialogProps = {
 }
 
 export type AgendaEventFormDialogProps = {
+  initialValues?: Partial<AgendaEventFormValues>
   maxDate: string
   minDate: string
   onClose: () => void

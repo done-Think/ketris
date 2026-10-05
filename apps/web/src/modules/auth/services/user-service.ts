@@ -38,6 +38,10 @@ class UserService extends BaseService {
       })
       .then((data) => data.media.url)
   }
+
+  changeOwnPassword(password: string): Promise<void> {
+    return this.http.post<void>('/auth/me/password', { password })
+  }
 }
 
 export const userService = new UserService()

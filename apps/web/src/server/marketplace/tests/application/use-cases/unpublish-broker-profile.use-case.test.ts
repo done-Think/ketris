@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { ForbiddenError } from '@server/shared/errors'
 
 import { BrokerProfileNotFoundError } from '../../../domain/errors'
-import type { BrokerProfile } from '../../../domain/broker-profile.entity'
+import type { BrokerProfile } from '../../../types/broker-profile'
 import type { BrokerProfileRepository } from '../../../application/ports/broker-profile-repository.port'
 import { UnpublishBrokerProfileUseCase } from '../../../application/use-cases/unpublish-broker-profile.use-case'
 

@@ -30,36 +30,12 @@ export function ContactsList({
   const t = useTranslations('crm.contacts')
   const [search, setSearch] = useState('')
   const [activeFilter, setActiveFilter] = useState<ContactFilter>('Todos')
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
 
   const filteredContacts = useMemo(() => {
     const selectedType =
       contactFilters.find((filter) => filter.label === activeFilter)?.type ?? null
     return filterContacts(contacts, search, selectedType)
   }, [activeFilter, contacts, search])
-
-  const toggleContact = (contactId: string) => {
-    setSelectedIds((current) => {
-      const next = new Set(current)
-      if (next.has(contactId)) next.delete(contactId)
-      else next.add(contactId)
-      return next
-    })
-  }
-
-  const toggleAllVisible = () => {
-    setSelectedIds((current) => {
-      const next = new Set(current)
-      const shouldSelectAll = filteredContacts.some((contact) => !next.has(contact.id))
-
-      filteredContacts.forEach((contact) => {
-        if (shouldSelectAll) next.add(contact.id)
-        else next.delete(contact.id)
-      })
-
-      return next
-    })
-  }
 
   const isDefaultView = activeFilter === 'Todos' && search.trim() === ''
   const resultTotal = isDefaultView ? totalCount : filteredContacts.length
@@ -120,17 +96,12 @@ export function ContactsList({
           <>
             <ContactsTable
               contacts={filteredContacts}
-              selectedIds={selectedIds}
-              onToggleContact={toggleContact}
-              onToggleAll={toggleAllVisible}
               onEditContact={onEditContact}
               onOpenInteractions={onOpenInteractions}
               onOpenMoreOptions={onOpenMoreOptions}
             />
             <ContactsCards
               contacts={filteredContacts}
-              selectedIds={selectedIds}
-              onToggleContact={toggleContact}
               onEditContact={onEditContact}
               onOpenInteractions={onOpenInteractions}
               onOpenMoreOptions={onOpenMoreOptions}

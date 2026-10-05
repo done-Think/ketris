@@ -2,7 +2,7 @@ import type {
   PropertyPurpose,
   PublishedPropertyDetail,
   PublishedPropertySummary,
-} from '../../domain/property.entity'
+} from '../../types/property'
 
 export type PropertySort = 'recent' | 'priceAsc' | 'priceDesc'
 

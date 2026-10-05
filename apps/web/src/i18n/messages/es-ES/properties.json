@@ -23,6 +23,8 @@
       "property": "Inmueble",
       "type": "Tipo",
       "price": "Precio",
+      "saleValue": "V. Venta",
+      "rentalValue": "V. Alquiler",
       "status": "Estado",
       "broker": "Corredor",
       "updated": "Actualizado",
@@ -30,6 +32,9 @@
       "viewAriaLabel": "Ver {title}",
       "moreActionsAriaLabel": "Más acciones de {title}",
       "noRows": "No se encontraron inmuebles",
+      "emptyTitle": "Ningún inmueble agregado",
+      "emptyDescription": "Agrega aquí el primer inmueble de tu cartera.",
+      "emptyAction": "Nuevo inmueble",
       "totalRows": "Total de filas:",
       "rowsPerPage": "Filas por página",
       "displayedRows": "{from}-{to} de {count}"
@@ -119,7 +124,7 @@
       "area": "Área útil",
       "rentValue": "Valor del alquiler",
       "saleValue": "Valor de venta",
-      "referenceValue": "Valor de referencia",
+      "referenceValue": "Valor de referencia del inmueble",
       "condominium": "Gastos comunes",
       "iptu": "Impuesto mensual",
       "securityDeposit": "Garantía",
@@ -178,7 +183,9 @@
       "numberInvalid": "Indica un valor válido",
       "areaRequired": "Indica el área útil",
       "mainValueRequired": "Indica el valor principal",
-      "negotiationTermRequired": "Indica la condición comercial"
+      "negotiationTermRequired": "Indica la condición comercial",
+      "rentalValueInvalid": "Indica un valor de alquiler válido",
+      "rentalValueRequired": "Indica el valor del alquiler"
     }
   },
   "edit": {

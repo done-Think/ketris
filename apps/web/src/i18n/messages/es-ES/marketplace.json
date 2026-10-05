@@ -4,10 +4,12 @@
     "closeMenu": "Cerrar menú",
     "mainMenu": "Menú principal",
     "notifications": "notificaciones",
+    "signIn": "Entrar",
     "openMenu": "Abrir menú",
     "openProfile": "Abrir perfil"
   },
   "profile": {
+    "guestName": "Visitante",
     "dialogLabel": "Perfil del usuario",
     "closeProfile": "Cerrar perfil",
     "language": "Idioma",
@@ -23,6 +25,7 @@
       "RENTER": "Inquilino"
     },
     "actions": {
+      "accessAdmin": "Acceder a administración",
       "settings": "Configuración",
       "signOut": "Salir",
       "support": "Soporte",

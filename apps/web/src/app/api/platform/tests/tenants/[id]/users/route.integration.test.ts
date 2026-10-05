@@ -27,6 +27,7 @@ describe('GET /api/platform/tenants/[id]/users (integração)', () => {
       id: actor.id,
       nome: actor.nome,
       email: actor.email,
+      role: 'ADMIN',
       ativo: true,
     })
 

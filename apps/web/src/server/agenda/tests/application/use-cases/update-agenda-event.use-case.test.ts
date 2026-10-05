@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { PropertyNotFoundError } from '@server/properties/domain/errors'
-import type { Property } from '@server/properties/domain/property.entity'
+import type { Property } from '@server/properties/types/property'
 import type { PropertyRepository } from '@server/properties/application/ports/property-repository.port'
 
 import { AgendaEventNotFoundError, AgendaVisitMinimumDurationError } from '../../../domain/errors'

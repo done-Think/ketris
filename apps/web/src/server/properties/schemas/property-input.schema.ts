@@ -39,6 +39,7 @@ export const createPropertyRequestSchema = z
     vagas: optionalNullableNonNegativeIntSchema,
     areaM2: optionalNullableNonNegativeNumberSchema,
     valor: z.number().positive(),
+    valorAluguel: optionalNullableNonNegativeNumberSchema,
     condominio: optionalNullableNonNegativeNumberSchema,
     iptu: optionalNullableNonNegativeNumberSchema,
     endereco: propertyAddressInputSchema.optional(),

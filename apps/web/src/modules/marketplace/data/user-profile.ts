@@ -1,3 +1,4 @@
+import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import SupportAgentOutlinedIcon from '@mui/icons-material/SupportAgentOutlined'
@@ -10,4 +11,10 @@ export const profileActions: ProfileAction[] = [
   { labelKey: 'settings', icon: SettingsOutlinedIcon, href: '/dashboard/public-profile' },
   { labelKey: 'switchMode', icon: SwapHorizOutlinedIcon, href: '/properties' },
   { labelKey: 'signOut', icon: LogoutOutlinedIcon, tone: 'danger' },
+]
+
+export const guestProfileActions: ProfileAction[] = [
+  { labelKey: 'support', icon: SupportAgentOutlinedIcon, href: '/dashboard/maintenance' },
+  { labelKey: 'accessAdmin', icon: AdminPanelSettingsOutlinedIcon, href: '/platform/login' },
+  { labelKey: 'switchMode', icon: SwapHorizOutlinedIcon, href: '/properties' },
 ]

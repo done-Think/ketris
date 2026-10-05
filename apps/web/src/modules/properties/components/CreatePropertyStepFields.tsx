@@ -18,12 +18,8 @@ export function CreatePropertyStepFields({
 }: CreatePropertyStepFieldsProps) {
   const hasRentPurpose = propertyPurpose.includes('Aluguel')
   const hasSalePurpose = propertyPurpose.includes('Venda')
-  const mainValueLabel =
-    hasRentPurpose && !hasSalePurpose
-      ? 'rentValue'
-      : hasSalePurpose && !hasRentPurpose
-        ? 'saleValue'
-        : 'referenceValue'
+  const hasDualPurpose = hasRentPurpose && hasSalePurpose
+  const mainValueLabel = hasRentPurpose && !hasSalePurpose ? 'rentValue' : 'saleValue'
   const negotiationTermLabel =
     hasRentPurpose && !hasSalePurpose
       ? 'securityDeposit'
@@ -56,6 +52,7 @@ export function CreatePropertyStepFields({
       {activeStepKey === 'values' ? (
         <CreatePropertyValuesStepFields
           control={control}
+          hasDualPurpose={hasDualPurpose}
           mainValueLabel={mainValueLabel}
           negotiationTermLabel={negotiationTermLabel}
         />

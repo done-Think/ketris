@@ -72,11 +72,17 @@ export function PlatformGrowthChart({ trend }: { trend: readonly GrowthTrendPoin
 const panelSx = {
   bgcolor: surface.paper,
   border: '1px solid',
-  borderColor: alpha.graphite[8],
-  borderRadius: `${radius.md}px`,
-  boxShadow: shadows.crmCard,
+  borderColor: alpha.graphite[6],
+  borderRadius: `${radius.sm}px`,
+  boxShadow: shadows.propertyCard,
   minWidth: 0,
   minHeight: { lg: 400 },
-  p: { xs: 2, md: 2.75 },
+  p: { xs: 2, md: 2.4 },
 }
-const titleSx = { color: brand.graphite[500], fontSize: 16, fontWeight: 900, mb: 1 }
+const titleSx = {
+  color: brand.neutral[500],
+  fontSize: 11,
+  fontWeight: 900,
+  mb: 1,
+  textTransform: 'uppercase',
+}

@@ -6,6 +6,8 @@ import type {
 import type { Property } from '../types/property'
 
 function toDashboardPurpose(purpose: Property['purpose']): CreatePropertyPurpose[] {
+  if (purpose === 'BOTH') return ['Aluguel', 'Venda']
+
   return purpose === 'SALE' ? ['Venda'] : ['Aluguel']
 }
 
@@ -34,6 +36,7 @@ export function buildEditPropertyFormValues(property: Property): CreateDashboard
     features: [],
     media: property.media.map((item) => ({ url: item.url, type: item.type, order: item.order })),
     mainValue: property.values.price,
+    rentalValue: property.values.rentalPrice ?? 0,
     condominium: property.values.condoFee ?? 0,
     iptu: property.values.propertyTax ?? 0,
     negotiationTerm: 'A combinar',

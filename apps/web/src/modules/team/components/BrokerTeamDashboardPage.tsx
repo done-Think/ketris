@@ -1,6 +1,8 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import dayjs from 'dayjs'
+import { useSession } from 'next-auth/react'
 import BarChartRoundedIcon from '@mui/icons-material/BarChartRounded'
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined'
 import PersonAddAlt1OutlinedIcon from '@mui/icons-material/PersonAddAlt1Outlined'
@@ -24,6 +26,10 @@ import { useSnackbar } from 'notistack'
 import { useForm, useWatch } from 'react-hook-form'
 
 import { useRouter } from '@/i18n/navigation'
+import { AgendaEventFormDialog } from '@modules/agenda/components/AgendaEventFormDialog'
+import { useCreateAgendaEvent } from '@modules/agenda/hooks/use-agenda-events'
+import { agendaOtherPropertyValue } from '@modules/agenda/schemas/agenda-event-form-schema'
+import type { AgendaEventFormValues } from '@modules/agenda/types/agenda-event'
 import { RhfTextField } from '@shared/components/form'
 import {
   DashboardHeaderActionButton,
@@ -32,16 +38,23 @@ import {
 } from '@shared/components/layout'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
-import { BrokerTeamCard } from './BrokerTeamCard'
 import { brokerTeamKpis, brokerTeamMembers } from '../data/broker-team'
+import {
+  BrokerDeactivateDialog,
+  BrokerGoalDialog,
+  BrokerPerformanceDialog,
+  BrokerTransferDialog,
+} from './BrokerTeamActionDialogs'
+import { BrokerTeamCard } from './BrokerTeamCard'
 import type {
+  BrokerTransferFormValues,
   BrokerTeamFiltersFormValues,
   BrokerTeamMember,
-  BrokerTeamMenu,
   BrokerTeamMenuAction,
 } from '../types/broker-team'
 
-const teamBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
+const teamBodyFontFamily =
+  'var(--font-primary), system-ui, -apple-system, BlinkMacSystemFont, sans-serif'
 
 const brokerMenuActions = [
   { id: 'performance', icon: BarChartRoundedIcon },
@@ -52,11 +65,7 @@ const brokerMenuActions = [
 ] as const satisfies readonly { id: BrokerTeamMenuAction; icon: typeof BarChartRoundedIcon }[]
 
 function normalizeSearchValue(value: string) {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLocaleLowerCase('pt-BR')
-    .trim()
+  return value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLocaleLowerCase('pt-BR').trim()
 }
 
 function matchesBrokerSearch(broker: BrokerTeamMember, searchQuery: string) {
@@ -72,7 +81,16 @@ export function BrokerTeamDashboardPage() {
   const router = useRouter()
   const t = useTranslations('dashboard.team')
   const { enqueueSnackbar } = useSnackbar()
-  const [brokerMenu, setBrokerMenu] = useState<BrokerTeamMenu | null>(null)
+  const { data: session } = useSession()
+  const createAgendaEvent = useCreateAgendaEvent(session?.tenantId ?? '')
+  const [brokers, setBrokers] = useState<BrokerTeamMember[]>(() => [...brokerTeamMembers])
+  const [action, setAction] = useState<{ type: BrokerTeamMenuAction; brokerId: string } | null>(
+    null,
+  )
+  const [brokerMenu, setBrokerMenu] = useState<{
+    anchorEl: HTMLElement
+    broker: BrokerTeamMember
+  } | null>(null)
   const { control } = useForm<BrokerTeamFiltersFormValues>({
     defaultValues: {
       searchQuery: '',
@@ -80,9 +98,27 @@ export function BrokerTeamDashboardPage() {
   })
   const searchQuery = useWatch({ control, name: 'searchQuery' })
   const filteredBrokers = useMemo(
-    () => brokerTeamMembers.filter((broker) => matchesBrokerSearch(broker, searchQuery)),
-    [searchQuery],
+    () => brokers.filter((broker) => matchesBrokerSearch(broker, searchQuery)),
+    [brokers, searchQuery],
   )
+  const selectedBroker = brokers.find((broker) => broker.id === action?.brokerId) ?? null
+  const today = dayjs().startOf('day')
+  const agendaInitialValues = useMemo<Partial<AgendaEventFormValues> | undefined>(() => {
+    if (action?.type !== 'scheduleOneOnOne' || !selectedBroker) return undefined
+    return {
+      title: t('dialogs.oneOnOneTitle', { name: selectedBroker.name }),
+      participant: selectedBroker.name,
+      kind: 'MEETING',
+      propertyId: agendaOtherPropertyValue,
+      customProperty: t('dialogs.internalMeeting'),
+    }
+  }, [action?.type, selectedBroker, t])
+  const kpiValues: Record<string, string> = {
+    'active-brokers': String(brokers.filter((broker) => broker.active).length),
+    properties: String(brokers.reduce((total, broker) => total + broker.properties, 0)),
+    'monthly-sales': String(brokers.reduce((total, broker) => total + broker.monthlySales, 0)),
+    'average-goal': `${Math.round(brokers.reduce((total, broker) => total + broker.goalProgress, 0) / brokers.length)}%`,
+  }
   const openBrokerProfile = (broker: BrokerTeamMember) => {
     router.push({ pathname: '/brokers/[id]', params: { id: broker.profileId } })
   }
@@ -94,15 +130,97 @@ export function BrokerTeamDashboardPage() {
   }
   const handleBrokerMenuAction = (action: BrokerTeamMenuAction) => {
     if (!brokerMenu) return
-
-    enqueueSnackbar(
-      t('menu.feedback', {
-        action: t(`menu.${action}`),
-        name: brokerMenu.broker.name,
-      }),
-      { variant: 'info' },
-    )
+    if (
+      action === 'deactivate' &&
+      !brokers.find((broker) => broker.id === brokerMenu.broker.id)?.active
+    ) {
+      setBrokers((current) =>
+        current.map((broker) =>
+          broker.id === brokerMenu.broker.id ? { ...broker, active: true } : broker,
+        ),
+      )
+      enqueueSnackbar(t('dialogs.activated'), { variant: 'success' })
+    } else {
+      setAction({ type: action, brokerId: brokerMenu.broker.id })
+    }
     closeBrokerMenu()
+  }
+  const saveGoal = (brokerId: string, monthlyGoal: number) => {
+    setBrokers((current) =>
+      current.map((broker) => {
+        if (broker.id !== brokerId) return broker
+        const goalProgress = Math.round((broker.monthlySales / monthlyGoal) * 100)
+        return {
+          ...broker,
+          monthlyGoal,
+          goalProgress,
+          status: goalProgress >= 90 ? 'ahead' : goalProgress >= 70 ? 'onTrack' : 'attention',
+        }
+      }),
+    )
+    setAction(null)
+    enqueueSnackbar(t('dialogs.goalSaved'), { variant: 'success' })
+  }
+  const transferPortfolio = (sourceId: string, values: BrokerTransferFormValues) => {
+    const source = brokers.find((broker) => broker.id === sourceId)
+    const destination = brokers.find(
+      (broker) => broker.id === values.destinationId && broker.active,
+    )
+    if (
+      !source ||
+      !destination ||
+      source.id === destination.id ||
+      (!values.leads && !values.properties)
+    ) {
+      enqueueSnackbar(t('dialogs.transferError'), { variant: 'error' })
+      return
+    }
+    setBrokers((current) =>
+      current.map((broker) => {
+        if (broker.id === sourceId)
+          return {
+            ...broker,
+            leads: values.leads ? 0 : broker.leads,
+            properties: values.properties ? 0 : broker.properties,
+          }
+        if (broker.id === destination.id)
+          return {
+            ...broker,
+            leads: broker.leads + (values.leads ? source.leads : 0),
+            properties: broker.properties + (values.properties ? source.properties : 0),
+          }
+        return broker
+      }),
+    )
+    setAction(null)
+    enqueueSnackbar(t('dialogs.transferred'), { variant: 'success' })
+  }
+  const deactivateBroker = (brokerId: string) => {
+    setBrokers((current) =>
+      current.map((broker) => (broker.id === brokerId ? { ...broker, active: false } : broker)),
+    )
+    setAction(null)
+    enqueueSnackbar(t('dialogs.deactivated'), { variant: 'success' })
+  }
+  const scheduleOneOnOne = async (values: AgendaEventFormValues) => {
+    try {
+      await createAgendaEvent.mutateAsync({
+        title: values.title,
+        kind: values.kind || undefined,
+        ...(values.propertyId === agendaOtherPropertyValue
+          ? { propertyReference: values.customProperty.trim() }
+          : { propertyId: values.propertyId }),
+        start: dayjs(`${values.scheduledDate}T${values.scheduledTime}`).toISOString(),
+        durationMinutes: values.durationMinutes,
+        participantName: values.participant,
+        participantPhone: values.phone,
+        notes: values.notes.trim(),
+      })
+      setAction(null)
+      enqueueSnackbar(t('dialogs.scheduled'), { variant: 'success' })
+    } catch {
+      enqueueSnackbar(t('dialogs.scheduleError'), { variant: 'error' })
+    }
   }
 
   return (
@@ -195,7 +313,7 @@ export function BrokerTeamDashboardPage() {
                     {t(`kpis.${kpi.labelKey}`)}
                   </Typography>
                   <Typography sx={{ color: brand.graphite[500], fontSize: 24, fontWeight: 900 }}>
-                    {kpi.value}
+                    {kpiValues[kpi.id] ?? kpi.value}
                   </Typography>
                   <Typography sx={{ color: brand.neutral[500], fontSize: 11.5 }}>
                     {t(`kpis.${kpi.helperKey}`)}
@@ -262,7 +380,13 @@ export function BrokerTeamDashboardPage() {
                     <Icon sx={{ fontSize: iconSize.md }} />
                   </ListItemIcon>
                   <ListItemText
-                    primary={t(`menu.${action.id}`)}
+                    primary={
+                      action.id === 'deactivate' &&
+                      brokerMenu &&
+                      !brokers.find((broker) => broker.id === brokerMenu.broker.id)?.active
+                        ? t('dialogs.activate')
+                        : t(`menu.${action.id}`)
+                    }
                     primaryTypographyProps={{
                       color: isDeactivateAction ? brand.semantic.error : brand.graphite[500],
                       fontSize: 13,
@@ -273,6 +397,36 @@ export function BrokerTeamDashboardPage() {
               )
             })}
           </Menu>
+
+          <BrokerPerformanceDialog
+            broker={action?.type === 'performance' ? selectedBroker : null}
+            onClose={() => setAction(null)}
+          />
+          <BrokerGoalDialog
+            broker={action?.type === 'editGoal' ? selectedBroker : null}
+            onClose={() => setAction(null)}
+            onSave={saveGoal}
+          />
+          <BrokerTransferDialog
+            broker={action?.type === 'transferPortfolio' ? selectedBroker : null}
+            brokers={brokers}
+            onClose={() => setAction(null)}
+            onTransfer={transferPortfolio}
+          />
+          <BrokerDeactivateDialog
+            broker={action?.type === 'deactivate' ? selectedBroker : null}
+            onClose={() => setAction(null)}
+            onConfirm={deactivateBroker}
+          />
+          <AgendaEventFormDialog
+            open={action?.type === 'scheduleOneOnOne'}
+            onClose={() => setAction(null)}
+            onCreate={scheduleOneOnOne}
+            initialValues={agendaInitialValues}
+            minDate={today.format('YYYY-MM-DD')}
+            maxDate={today.add(6, 'month').endOf('month').format('YYYY-MM-DD')}
+            propertyOptions={[]}
+          />
 
           {filteredBrokers.length === 0 ? (
             <Paper

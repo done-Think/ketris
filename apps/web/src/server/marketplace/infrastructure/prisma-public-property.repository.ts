@@ -7,60 +7,19 @@ import type {
   PublicPropertyRepository,
 } from '../application/ports/public-property-repository.port'
 import type {
-  PropertyPurpose,
   PropertyMedia,
   PublishedPropertyDetail,
   PublishedPropertySummary,
-} from '../domain/property.entity'
-
-type DecimalLike = { toNumber(): number }
+} from '../types/property'
+import type {
+  DecimalLike,
+  ImovelDetailRow,
+  ImovelSummaryRow,
+  MidiaRow,
+} from '../types/prisma-public-property-repository'
 
 function toNumber(value: DecimalLike | null): number | null {
   return value === null ? null : value.toNumber()
-}
-
-type EnderecoRow = {
-  logradouro: string
-  numero: string
-  complemento: string | null
-  bairro: string
-  cidade: string
-  estado: string
-  cep: string
-  latitude: DecimalLike | null
-  longitude: DecimalLike | null
-}
-
-type MidiaRow = { id: string; url: string; tipo: string; ordem: number }
-
-type ImovelSummaryRow = {
-  id: string
-  titulo: string
-  finalidade: PropertyPurpose
-  tipo: string
-  valor: DecimalLike
-  condominio: DecimalLike | null
-  iptu: DecimalLike | null
-  quartos: number | null
-  banheiros: number | null
-  vagas: number | null
-  areaM2: DecimalLike | null
-  publicadoEm: Date | null
-  endereco: {
-    cidade: string
-    bairro: string
-    latitude: DecimalLike | null
-    longitude: DecimalLike | null
-  } | null
-  responsavel: { nome: string; avatarUrl: string | null } | null
-  midias: { url: string }[]
-}
-
-type ImovelDetailRow = ImovelSummaryRow & {
-  tenantId: string
-  descricao: string | null
-  endereco: EnderecoRow | null
-  midias: MidiaRow[]
 }
 
 function toSummary(row: ImovelSummaryRow): PublishedPropertySummary {
@@ -126,7 +85,9 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
   async search(filters: PropertySearchFilters): Promise<PublishedPropertySummary[]> {
     const where: Prisma.ImovelWhereInput = { status: 'PUBLISHED' }
 
-    if (filters.purpose) where.finalidade = filters.purpose
+    if (filters.purpose) {
+      where.finalidade = filters.purpose === 'AMBOS' ? 'AMBOS' : { in: [filters.purpose, 'AMBOS'] }
+    }
     if (filters.propertyType) where.tipo = { equals: filters.propertyType, mode: 'insensitive' }
     if (filters.minBedrooms !== undefined) where.quartos = { gte: filters.minBedrooms }
     if (filters.minArea !== undefined) where.areaM2 = { gte: filters.minArea }

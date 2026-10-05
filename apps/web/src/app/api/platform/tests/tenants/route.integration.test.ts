@@ -28,6 +28,7 @@ describe('/api/platform/tenants (integração)', () => {
       id: actor.id,
       nome: actor.nome,
       email: actor.email,
+      role: 'ADMIN',
       ativo: true,
     })
 

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type { PublishedPropertySummary } from '../../../domain/property.entity'
+import type { PublishedPropertySummary } from '../../../types/property'
 import type { PublicPropertyRepository } from '../../../application/ports/public-property-repository.port'
 import { SearchPropertiesUseCase } from '../../../application/use-cases/search-properties.use-case'
 

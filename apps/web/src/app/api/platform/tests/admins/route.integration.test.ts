@@ -26,6 +26,7 @@ describe('/api/platform/admins (integração)', () => {
       id: actor.id,
       nome: actor.nome,
       email: actor.email,
+      role: 'ADMIN',
       ativo: true,
     })
   })
@@ -51,7 +52,11 @@ describe('/api/platform/admins (integração)', () => {
     const email = `novo-${randomUUID()}@ketris.dev`
 
     const response = await POST(
-      buildRequest('POST', { nome: 'Novo Admin', email, password: 'senha-longa-123' }, actorToken),
+      buildRequest(
+        'POST',
+        { nome: 'Novo Admin', email, password: 'senha-longa-123', role: 'ADMIN' },
+        actorToken,
+      ),
     )
     const json = await response.json()
 
