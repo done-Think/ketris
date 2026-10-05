@@ -23,4 +23,6 @@ export type HomeHeaderProps = {
    * qual dos dois é o estado real.
    */
   isSessionLoading?: boolean
+  showSignIn?: boolean
+  showLanguageSelector?: boolean
 }

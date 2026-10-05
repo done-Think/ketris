@@ -9,7 +9,7 @@ import { getLocalizedPathname } from '@/i18n/locale-prefix'
 import { HomeHeader, ProfileModal } from '@shared/components/layout'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
 
-import { profileActions } from '../data/user-profile'
+import { guestProfileActions, profileActions } from '../data/user-profile'
 import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { MarketplaceHeaderProps } from '../types/marketplace-header'
 
@@ -17,6 +17,7 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileButtonRef = useRef<HTMLButtonElement | null>(null)
   const tProfileActions = useTranslations('marketplace.profile.actions')
+  const tProfile = useTranslations('marketplace.profile')
   const locale = useLocale()
   const router = useRouter()
   const { data: session, status } = useSession()
@@ -35,10 +36,19 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
           role: session.papel,
         }
       : undefined
+  const isGuest = status === 'unauthenticated'
+  const menuProfile =
+    userProfile ??
+    (isGuest
+      ? {
+          name: tProfile('guestName'),
+          email: '',
+        }
+      : undefined)
 
   const translatedProfileActions = useMemo(
     () =>
-      profileActions.map((action) => ({
+      (userProfile ? profileActions : guestProfileActions).map((action) => ({
         ...action,
         label: tProfileActions(action.labelKey),
         onClick:
@@ -50,7 +60,7 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
               }
             : undefined,
       })),
-    [locale, router, tProfileActions],
+    [locale, router, tProfileActions, userProfile],
   )
 
   return (
@@ -58,17 +68,19 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
       <HomeHeader
         navigationItems={navigationItems}
         profileButtonRef={profileButtonRef}
-        userProfile={userProfile}
-        onToggleProfile={userProfile ? () => setIsProfileOpen((current) => !current) : undefined}
+        userProfile={menuProfile}
+        onToggleProfile={menuProfile ? () => setIsProfileOpen((current) => !current) : undefined}
         isSessionLoading={status === 'loading'}
+        showSignIn={isGuest}
+        showLanguageSelector={isGuest}
       />
 
-      {userProfile ? (
+      {menuProfile ? (
         <ProfileModal
           open={isProfileOpen}
           anchorRef={profileButtonRef}
           actions={translatedProfileActions}
-          userProfile={userProfile}
+          userProfile={menuProfile}
           onClose={() => setIsProfileOpen(false)}
         />
       ) : null}
