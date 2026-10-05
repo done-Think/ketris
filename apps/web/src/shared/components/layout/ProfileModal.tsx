@@ -176,9 +176,10 @@ export function ProfileModal({
                   action.onClick?.()
                   onClose()
                 }}
-                startIcon={<Icon fontSize="small" />}
+                startIcon={<Icon />}
                 fullWidth
                 sx={{
+                  alignItems: 'center',
                   justifyContent: 'flex-start',
                   minHeight: 42,
                   borderRadius: `${radius.sm}px`,
@@ -190,9 +191,33 @@ export function ProfileModal({
                     bgcolor: isDanger ? alpha.error[10] : alpha.magenta[8],
                     color: isDanger ? 'error.main' : 'primary.main',
                   },
+                  '& .MuiButton-startIcon': {
+                    alignItems: 'center',
+                    display: 'inline-flex',
+                    height: 20,
+                    justifyContent: 'center',
+                    ml: 0,
+                    mr: 1,
+                    width: 20,
+                  },
+                  '& .MuiButton-icon > *:nth-of-type(1)': {
+                    display: 'block',
+                    fontSize: 20,
+                  },
                 }}
               >
-                {action.label}
+                <Typography
+                  component="span"
+                  sx={{
+                    color: 'inherit',
+                    fontSize: 'inherit',
+                    fontWeight: 'inherit',
+                    lineHeight: '20px',
+                    transform: 'translateY(1px)',
+                  }}
+                >
+                  {action.label}
+                </Typography>
               </Button>
             )
           })}
