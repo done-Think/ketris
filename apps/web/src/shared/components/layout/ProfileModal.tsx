@@ -176,11 +176,11 @@ export function ProfileModal({
                   action.onClick?.()
                   onClose()
                 }}
+                startIcon={<Icon />}
                 fullWidth
                 sx={{
                   alignItems: 'center',
                   justifyContent: 'flex-start',
-                  gap: 1,
                   minHeight: 42,
                   borderRadius: `${radius.sm}px`,
                   color: isDanger ? 'error.main' : 'text.primary',
@@ -191,32 +191,33 @@ export function ProfileModal({
                     bgcolor: isDanger ? alpha.error[10] : alpha.magenta[8],
                     color: isDanger ? 'error.main' : 'primary.main',
                   },
-                }}
-              >
-                <Box
-                  component="span"
-                  sx={{
+                  '& .MuiButton-startIcon': {
                     alignItems: 'center',
                     display: 'inline-flex',
-                    flexShrink: 0,
                     height: 20,
                     justifyContent: 'center',
+                    ml: 0,
+                    mr: 1,
                     width: 20,
-                  }}
-                >
-                  <Icon sx={{ display: 'block', fontSize: 20 }} />
-                </Box>
-                <Box
+                  },
+                  '& .MuiButton-icon > *:nth-of-type(1)': {
+                    display: 'block',
+                    fontSize: 20,
+                  },
+                }}
+              >
+                <Typography
                   component="span"
                   sx={{
-                    alignItems: 'center',
-                    display: 'inline-flex',
+                    color: 'inherit',
+                    fontSize: 'inherit',
+                    fontWeight: 'inherit',
                     lineHeight: '20px',
-                    minHeight: 20,
+                    transform: 'translateY(1px)',
                   }}
                 >
                   {action.label}
-                </Box>
+                </Typography>
               </Button>
             )
           })}
