@@ -47,6 +47,18 @@ import { DashboardNotificationsButton } from './DashboardNotificationsButton'
 const sidebarExpandedWidth = 240
 const sidebarCollapsedWidth = 72
 
+const marketplaceActionSx = {
+  minHeight: 32,
+  px: 1,
+  color: alpha.white[62],
+  fontSize: 11,
+  fontWeight: 600,
+  lineHeight: '16px',
+  textTransform: 'none',
+  '& .MuiButton-startIcon': { mr: 0.75 },
+  '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
+} as const
+
 const navigationItems: readonly AppShellNavItem[] = [
   {
     labelKey: 'dashboard',
@@ -187,11 +199,49 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           transition: 'width 180ms ease, padding 180ms ease',
         }}
       >
-        <AppLogo
-          src={collapsed ? '/ketris-tab-icon.png' : ketrisLogoFooter}
-          width={collapsed ? 40 : 120}
-          sx={{ alignSelf: 'center', mb: 1.5 }}
-        />
+        <Stack
+          alignItems="center"
+          justifyContent="center"
+          sx={{ height: collapsed ? 84 : 48, mb: 1.5, position: 'relative' }}
+        >
+          <AppLogo
+            src={collapsed ? '/ketris-tab-icon.png' : ketrisLogoFooter}
+            width={collapsed ? 40 : 120}
+            sx={{ left: '50%', position: 'absolute', top: 0, transform: 'translateX(-50%)' }}
+          />
+          {showCollapseControl ? (
+            <Tooltip
+              title={collapsed ? t('expandNavigation') : t('collapseMenu')}
+              placement="right"
+            >
+              <Button
+                aria-label={collapsed ? t('expandNavigation') : t('collapseNavigation')}
+                onClick={toggleSidebarCollapsed}
+                startIcon={
+                  <KeyboardDoubleArrowLeftRoundedIcon
+                    sx={{
+                      fontSize: iconSize.md,
+                      transform: collapsed ? 'rotate(180deg)' : 'none',
+                      transition: 'transform 180ms ease',
+                    }}
+                  />
+                }
+                sx={{
+                  position: 'absolute',
+                  right: collapsed ? '50%' : 0,
+                  top: collapsed ? 44 : 2,
+                  transform: collapsed ? 'translateX(50%)' : 'none',
+                  minWidth: 36,
+                  minHeight: 36,
+                  px: 0,
+                  color: alpha.white[62],
+                  '& .MuiButton-startIcon': { m: 0 },
+                  '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
+                }}
+              />
+            </Tooltip>
+          ) : null}
+        </Stack>
 
         <Stack
           component="nav"
@@ -281,42 +331,26 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
 
         <Box sx={{ flexGrow: 1, minHeight: 2 }} />
 
-        {showCollapseControl ? (
-          <Tooltip
-            title={collapsed ? t('expandNavigation') : t('collapseNavigation')}
-            placement="right"
+        <Tooltip title={t('logoutToMarketplace')} placement="right">
+          <Button
+            onClick={handleLogoutToMarketplace}
+            disabled={isSigningOut}
+            aria-label={t('logoutToMarketplace')}
+            startIcon={<LogoutOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+            sx={{
+              alignSelf: collapsed ? 'center' : 'stretch',
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              minWidth: collapsed ? 44 : 0,
+              ...marketplaceActionSx,
+              minHeight: 40,
+              mb: 1.5,
+              px: collapsed ? 0 : 1.5,
+              '& .MuiButton-startIcon': { ml: 0, mr: collapsed ? 0 : 0.75 },
+            }}
           >
-            <Button
-              aria-label={collapsed ? t('expandNavigation') : t('collapseNavigation')}
-              onClick={toggleSidebarCollapsed}
-              startIcon={
-                <KeyboardDoubleArrowLeftRoundedIcon
-                  sx={{
-                    fontSize: iconSize.md,
-                    transform: collapsed ? 'rotate(180deg)' : 'none',
-                    transition: 'transform 180ms ease',
-                  }}
-                />
-              }
-              sx={{
-                alignSelf: collapsed ? 'center' : 'stretch',
-                justifyContent: collapsed ? 'center' : 'flex-start',
-                minWidth: collapsed ? 44 : 0,
-                minHeight: 44,
-                mb: 1.5,
-                px: collapsed ? 0 : 1.5,
-                color: alpha.white[62],
-                fontSize: 13,
-                fontWeight: 600,
-                textTransform: 'none',
-                '& .MuiButton-startIcon': { ml: 0, mr: collapsed ? 0 : 1.25 },
-                '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
-              }}
-            >
-              {collapsed ? null : t('collapseMenu')}
-            </Button>
-          </Tooltip>
-        ) : null}
+            {collapsed ? null : t('logoutToMarketplace')}
+          </Button>
+        </Tooltip>
 
         <Stack
           direction={collapsed ? 'column' : 'row'}
@@ -362,21 +396,6 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
               </Typography>
             </Box>
           </ButtonBase>
-          <Tooltip title={t('logoutToMarketplace')}>
-            <IconButton
-              aria-label={t('logoutToMarketplace')}
-              disabled={isSigningOut}
-              onClick={handleLogoutToMarketplace}
-              sx={{
-                width: 32,
-                height: 32,
-                color: alpha.white[62],
-                '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
-              }}
-            >
-              <LogoutOutlinedIcon sx={{ fontSize: iconSize.sm }} />
-            </IconButton>
-          </Tooltip>
         </Stack>
       </Stack>
     )

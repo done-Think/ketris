@@ -14,6 +14,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     nome: body.nome,
     email: body.email,
     password: body.password,
+    role: body.role,
   })
 
   return NextResponse.json({ admin }, { status: 201 })

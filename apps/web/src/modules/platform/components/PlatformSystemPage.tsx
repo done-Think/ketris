@@ -38,13 +38,13 @@ export function PlatformSystemPage() {
   const chartHeight = isMobile ? 230 : 190
 
   return (
-    <Box sx={{ maxWidth: 1680, mx: 'auto', px: { xs: 1.5, sm: 3, lg: 4 }, py: { xs: 2.5, md: 4 } }}>
+    <Box sx={{ width: '100%', p: 3.5 }}>
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         justifyContent="space-between"
         alignItems={{ xs: 'flex-start', sm: 'center' }}
-        spacing={1.25}
-        sx={{ mb: 3 }}
+        spacing={1.6}
+        sx={{ pb: 1.75, mb: 2.4, borderBottom: '1px solid', borderColor: 'divider' }}
       >
         <Typography component="h1" sx={headingSx}>
           {t('title')}
@@ -317,18 +317,18 @@ function formatHealthMetric(
 const panelSx = {
   bgcolor: surface.paper,
   border: '1px solid',
-  borderColor: alpha.graphite[8],
-  borderRadius: `${radius.md}px`,
-  boxShadow: shadows.crmCardCompact,
-  p: 2.25,
+  borderColor: alpha.graphite[6],
+  borderRadius: `${radius.sm}px`,
+  boxShadow: shadows.propertyCard,
+  p: { xs: 1.45, md: 2.2 },
   minWidth: 0,
 }
 const headingSx = {
   color: brand.graphite[500],
-  fontSize: { xs: 28, md: 34 },
-  fontWeight: 900,
-  letterSpacing: -0.55,
-  lineHeight: 1.1,
+  fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
+  fontSize: { xs: 26, sm: 30 },
+  fontWeight: 700,
+  lineHeight: 1.15,
 }
 const eyebrowSx = { color: brand.neutral[500], fontSize: 12, fontWeight: 800 }
 const cardTitleSx = {

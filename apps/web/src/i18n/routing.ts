@@ -65,6 +65,7 @@ export const routing = defineRouting({
     '/dashboard/public-profile/agency': '/dashboard/public-profile/agency',
     '/dashboard/team': '/dashboard/team',
     '/platform': '/platform',
+    '/platform/admins': '/platform/admins',
     '/platform/admins/new': '/platform/admins/new',
     '/platform/login': '/platform/login',
     '/platform/system': '/platform/system',

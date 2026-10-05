@@ -15,7 +15,7 @@ import {
 import { useFormatter, useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
-import { radius, shadows } from '@shared/theme/tokens'
+import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { useTenants } from '../hooks/use-tenants'
 
@@ -26,7 +26,15 @@ export function TenantsList() {
   const { data: tenants, isLoading, isError } = useTenants()
 
   return (
-    <Card sx={{ borderRadius: `${radius.lg}px`, boxShadow: shadows.popover }}>
+    <Card
+      variant="outlined"
+      sx={{
+        bgcolor: surface.paper,
+        borderColor: alpha.graphite[6],
+        borderRadius: `${radius.sm}px`,
+        boxShadow: shadows.propertyCard,
+      }}
+    >
       {isLoading ? (
         <Stack alignItems="center" sx={{ py: 6 }}>
           <CircularProgress size={28} />

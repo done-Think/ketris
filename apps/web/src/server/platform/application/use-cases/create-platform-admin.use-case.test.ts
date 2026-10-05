@@ -12,6 +12,7 @@ const existingAdmin: PlatformAdmin = {
   nome: 'Dono Ketris',
   email: 'dono@ketris.dev',
   senhaHash: 'hash-fake',
+  role: 'ADMIN',
   ativo: true,
 }
 
@@ -20,6 +21,7 @@ const createdAdmin: PlatformAdmin = {
   nome: 'Sócio Ketris',
   email: 'socio@ketris.dev',
   senhaHash: 'hash-novo',
+  role: 'ADMIN',
   ativo: true,
 }
 
@@ -52,6 +54,7 @@ describe('CreatePlatformAdminUseCase', () => {
       nome: 'Sócio Ketris',
       email: 'socio@ketris.dev',
       password: 'senha-longa-123',
+      role: 'ADMIN_AGENT',
     })
 
     expect(result).not.toHaveProperty('senhaHash')
@@ -59,6 +62,7 @@ describe('CreatePlatformAdminUseCase', () => {
       nome: 'Sócio Ketris',
       email: 'socio@ketris.dev',
       senhaHash: 'hash-novo',
+      role: 'ADMIN_AGENT',
     })
   })
 
@@ -70,7 +74,12 @@ describe('CreatePlatformAdminUseCase', () => {
     )
 
     await expect(
-      useCase.execute({ nome: 'X', email: existingAdmin.email, password: 'senha-longa-123' }),
+      useCase.execute({
+        nome: 'X',
+        email: existingAdmin.email,
+        password: 'senha-longa-123',
+        role: 'ADMIN',
+      }),
     ).rejects.toThrow(PlatformAdminEmailAlreadyInUseError)
     expect(deps.platformAdminRepository.create).not.toHaveBeenCalled()
   })

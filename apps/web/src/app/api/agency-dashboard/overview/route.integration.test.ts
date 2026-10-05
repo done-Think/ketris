@@ -189,6 +189,8 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     )
     await activateContract(propertyWithoutAddressId, 2000, new Date('2026-09-10'))
 
+    const now = new Date()
+
     await prisma.cobranca.create({
       data: {
         tenantId,
@@ -196,7 +198,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
         codigo: `COB-${randomUUID()}`,
         tipo: 'A_RECEBER',
         valor: 1500,
-        vencimento: new Date('2026-09-25'),
+        vencimento: new Date(now.getFullYear(), now.getMonth(), 25),
         status: 'PENDENTE',
       },
     })

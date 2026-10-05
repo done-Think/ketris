@@ -23,17 +23,22 @@ export function PlatformSystemAlerts({ alerts }: { alerts: readonly PlatformAler
       sx={{
         bgcolor: surface.paper,
         border: '1px solid',
-        borderColor: alpha.graphite[8],
-        borderRadius: `${radius.md}px`,
-        boxShadow: shadows.crmCard,
+        borderColor: alpha.graphite[6],
+        borderRadius: `${radius.sm}px`,
+        boxShadow: shadows.propertyCard,
         minHeight: { lg: 400 },
-        p: { xs: 2, md: 2.75 },
+        p: { xs: 2, md: 2.4 },
       }}
     >
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
         <Typography
           id="system-alerts-title"
-          sx={{ color: brand.graphite[500], fontSize: 16, fontWeight: 900 }}
+          sx={{
+            color: brand.neutral[500],
+            fontSize: 11,
+            fontWeight: 900,
+            textTransform: 'uppercase',
+          }}
         >
           {t('title')}
         </Typography>

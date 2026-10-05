@@ -94,11 +94,18 @@ model RefreshToken {
 // model desta seção: é o único papel que opera fora do boundary multi-tenant.
 // ---------------------------------------------------------------------------
 
+enum PlatformAdminRole {
+  ADMIN
+  ADMIN_AGENT
+  AGENT
+}
+
 model PlatformAdmin {
   id        String   @id @default(cuid())
   nome      String
   email     String   @unique
   senhaHash String
+  role      PlatformAdminRole @default(ADMIN)
   ativo     Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

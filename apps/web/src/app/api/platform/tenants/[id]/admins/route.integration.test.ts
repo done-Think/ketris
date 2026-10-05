@@ -27,6 +27,7 @@ describe('POST /api/platform/tenants/[id]/admins (integração)', () => {
       id: actor.id,
       nome: actor.nome,
       email: actor.email,
+      role: 'ADMIN',
       ativo: true,
     })
 
