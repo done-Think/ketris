@@ -28,13 +28,16 @@ import {
   Typography,
 } from '@mui/material'
 import { useSession } from 'next-auth/react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import { useRouter } from 'next/navigation'
 
+import { getLocalizedPathname } from '@/i18n/locale-prefix'
 import { Link, usePathname } from '@/i18n/navigation'
 import { CrmAccessBoundary } from '@modules/crm/components/CrmAccessBoundary'
 import { EditCurrentUserProfileDialog } from '@modules/auth/components/EditCurrentUserProfileDialog'
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
+import { clearClientSession } from '@shared/lib/auth/clear-client-session'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 import type { AppShellNavItem, AppShellProps } from '@shared/types/app-shell'
 import { getInitials } from '@shared/utils/get-initials'
@@ -115,10 +118,13 @@ const navigationItems: readonly AppShellNavItem[] = [
 
 export function AppShell({ children, allowLocalDashboardPreview = false }: AppShellProps) {
   const t = useTranslations('common.appShell')
+  const locale = useLocale()
   const pathname = usePathname()
+  const router = useRouter()
   const { data: session, status, update } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [profileEditorOpen, setProfileEditorOpen] = useState(false)
+  const [isSigningOut, setIsSigningOut] = useState(false)
   const sidebarCollapsed = useSidebarPreferencesStore((state) => state.isCollapsed)
   const toggleSidebarCollapsed = useSidebarPreferencesStore((state) => state.toggleCollapsed)
   const isPublicCrmRoute = pathname === '/crm' || pathname === '/crm/contacts'
@@ -166,208 +172,234 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
     })
   }
 
-  const renderSidebar = (collapsed = false, showCollapseControl = true) => (
-    <Stack
-      component="aside"
-      sx={{
-        width: collapsed ? sidebarCollapsedWidth : sidebarExpandedWidth,
-        height: '100%',
-        bgcolor: brand.graphite[600],
-        color: surface.lightText,
-        overflowX: 'hidden',
-        px: collapsed ? 1 : 2,
-        py: 2.5,
-        transition: 'width 180ms ease, padding 180ms ease',
-      }}
-    >
-      <Stack
-        alignItems="center"
-        justifyContent="center"
-        sx={{ height: collapsed ? 84 : 48, mb: 1.5, position: 'relative' }}
-      >
-        <AppLogo
-          src={collapsed ? '/ketris-tab-icon.png' : ketrisLogoFooter}
-          width={collapsed ? 40 : 120}
-          sx={{ left: '50%', position: 'absolute', top: 0, transform: 'translateX(-50%)' }}
-        />
-        {showCollapseControl ? (
-          <Tooltip title={collapsed ? t('expandNavigation') : t('collapseMenu')} placement="right">
-            <Button
-              aria-label={collapsed ? t('expandNavigation') : t('collapseNavigation')}
-              onClick={toggleSidebarCollapsed}
-              startIcon={
-                <KeyboardDoubleArrowLeftRoundedIcon
-                  sx={{
-                    fontSize: iconSize.md,
-                    transform: collapsed ? 'rotate(180deg)' : 'none',
-                    transition: 'transform 180ms ease',
-                  }}
-                />
-              }
-              sx={{
-                position: 'absolute',
-                right: collapsed ? '50%' : 0,
-                top: collapsed ? 44 : 2,
-                transform: collapsed ? 'translateX(50%)' : 'none',
-                minWidth: 36,
-                minHeight: 36,
-                px: 0,
-                color: alpha.white[62],
-                '& .MuiButton-startIcon': { m: 0 },
-                '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
-              }}
-            />
-          </Tooltip>
-        ) : null}
-      </Stack>
+  async function handleLogoutToMarketplace() {
+    if (isSigningOut) return
 
-      <Stack
-        component="nav"
-        spacing={0.5}
-        aria-label={t('ariaLabel')}
-        sx={{ mx: collapsed ? 0 : -0.5 }}
-      >
-        {status === 'loading'
-          ? navigationItems.map((item) => (
-              <Skeleton
-                key={item.labelKey}
-                variant="rounded"
-                height={44}
-                sx={{
-                  alignSelf: collapsed ? 'center' : 'stretch',
-                  bgcolor: alpha.white[8],
-                  borderRadius: `${radius.sm}px`,
-                  width: collapsed ? 44 : '100%',
-                }}
-              />
-            ))
-          : visibleItems.map(({ labelKey, href, icon: Icon }) => {
-              const targetPath = href.split('?')[0]
-              const active = targetPath === activeTargetPath
+    setIsSigningOut(true)
+    setMobileOpen(false)
+    await clearClientSession()
+    router.replace(getLocalizedPathname('/', locale))
+    router.refresh()
+  }
 
-              return (
-                <Box
-                  key={labelKey}
-                  component={Link}
-                  href={href}
-                  onClick={() => setMobileOpen(false)}
-                  aria-current={active ? 'page' : undefined}
-                  aria-label={collapsed ? t(labelKey) : undefined}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: collapsed ? 'center' : 'flex-start',
-                    gap: 1.5,
-                    minHeight: 44,
-                    px: collapsed ? 0 : 1.5,
-                    width: collapsed ? 44 : '100%',
-                    alignSelf: collapsed ? 'center' : 'stretch',
-                    borderLeft: '3px solid',
-                    borderColor: active ? 'primary.main' : 'transparent',
-                    borderRadius: `${radius.sm}px`,
-                    bgcolor: active ? alpha.white[8] : 'transparent',
-                    color: active ? surface.lightText : alpha.white[62],
-                    textDecoration: 'none',
-                    transition: 'background-color 160ms ease, color 160ms ease',
-                    '&:hover': {
-                      bgcolor: alpha.white[8],
-                      color: surface.lightText,
-                    },
-                  }}
-                >
-                  <Icon
+  const renderSidebar = (collapsed = false, showCollapseControl = true) => {
+    const width = collapsed ? sidebarCollapsedWidth : sidebarExpandedWidth
+
+    return (
+      <Stack
+        component="aside"
+        sx={{
+          width,
+          height: '100%',
+          bgcolor: brand.graphite[600],
+          color: surface.lightText,
+          overflowX: 'hidden',
+          px: collapsed ? 1 : 2,
+          py: 2.5,
+          transition: 'width 180ms ease, padding 180ms ease',
+        }}
+      >
+        <Stack
+          alignItems="center"
+          justifyContent="center"
+          sx={{ height: collapsed ? 84 : 48, mb: 1.5, position: 'relative' }}
+        >
+          <AppLogo
+            src={collapsed ? '/ketris-tab-icon.png' : ketrisLogoFooter}
+            width={collapsed ? 40 : 120}
+            sx={{ left: '50%', position: 'absolute', top: 0, transform: 'translateX(-50%)' }}
+          />
+          {showCollapseControl ? (
+            <Tooltip
+              title={collapsed ? t('expandNavigation') : t('collapseMenu')}
+              placement="right"
+            >
+              <Button
+                aria-label={collapsed ? t('expandNavigation') : t('collapseNavigation')}
+                onClick={toggleSidebarCollapsed}
+                startIcon={
+                  <KeyboardDoubleArrowLeftRoundedIcon
                     sx={{
                       fontSize: iconSize.md,
-                      color: active ? 'primary.main' : 'inherit',
+                      transform: collapsed ? 'rotate(180deg)' : 'none',
+                      transition: 'transform 180ms ease',
                     }}
                   />
-                  <Typography
-                    sx={{
-                      display: collapsed ? 'none' : 'block',
-                      fontFamily: 'var(--font-inter), system-ui, -apple-system, sans-serif',
-                      fontSize: 14,
-                      fontWeight: active ? 600 : 500,
-                      lineHeight: '20px',
-                      letterSpacing: 0,
-                    }}
+                }
+                sx={{
+                  position: 'absolute',
+                  right: collapsed ? '50%' : 0,
+                  top: collapsed ? 44 : 2,
+                  transform: collapsed ? 'translateX(50%)' : 'none',
+                  minWidth: 36,
+                  minHeight: 36,
+                  px: 0,
+                  color: alpha.white[62],
+                  '& .MuiButton-startIcon': { m: 0 },
+                  '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
+                }}
+              />
+            </Tooltip>
+          ) : null}
+        </Stack>
+
+        <Stack
+          component="nav"
+          spacing={0.5}
+          aria-label={t('ariaLabel')}
+          sx={{ mx: collapsed ? 0 : -0.5 }}
+        >
+          {status === 'loading'
+            ? navigationItems.map((item) => (
+                <Skeleton
+                  key={item.labelKey}
+                  variant="rounded"
+                  height={44}
+                  sx={{
+                    alignSelf: collapsed ? 'center' : 'stretch',
+                    bgcolor: alpha.white[8],
+                    borderRadius: `${radius.sm}px`,
+                    width: collapsed ? 44 : '100%',
+                  }}
+                />
+              ))
+            : visibleItems.map(({ labelKey, href, icon: Icon }) => {
+                const targetPath = href.split('?')[0]
+                const active = targetPath === activeTargetPath
+                const label = t(labelKey)
+
+                return (
+                  <Tooltip
+                    key={labelKey}
+                    title={collapsed ? label : ''}
+                    placement="right"
+                    disableHoverListener={!collapsed}
+                    disableFocusListener={!collapsed}
+                    disableTouchListener={!collapsed}
                   >
-                    {t(labelKey)}
-                  </Typography>
-                </Box>
-              )
-            })}
-      </Stack>
+                    <Box
+                      component={Link}
+                      href={href}
+                      onClick={() => setMobileOpen(false)}
+                      aria-current={active ? 'page' : undefined}
+                      aria-label={collapsed ? label : undefined}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: collapsed ? 'center' : 'flex-start',
+                        gap: 1.5,
+                        minHeight: 44,
+                        px: collapsed ? 0 : 1.5,
+                        width: collapsed ? 44 : '100%',
+                        alignSelf: collapsed ? 'center' : 'stretch',
+                        borderLeft: '3px solid',
+                        borderColor: active ? 'primary.main' : 'transparent',
+                        borderRadius: `${radius.sm}px`,
+                        bgcolor: active ? alpha.white[8] : 'transparent',
+                        color: active ? surface.lightText : alpha.white[62],
+                        textDecoration: 'none',
+                        transition: 'background-color 160ms ease, color 160ms ease',
+                        '&:hover': {
+                          bgcolor: alpha.white[8],
+                          color: surface.lightText,
+                        },
+                      }}
+                    >
+                      <Icon
+                        sx={{
+                          fontSize: iconSize.md,
+                          color: active ? 'primary.main' : 'inherit',
+                        }}
+                      />
+                      <Typography
+                        sx={{
+                          display: collapsed ? 'none' : 'block',
+                          fontFamily: 'var(--font-inter), system-ui, -apple-system, sans-serif',
+                          fontSize: 14,
+                          fontWeight: active ? 600 : 500,
+                          lineHeight: '20px',
+                          letterSpacing: 0,
+                        }}
+                      >
+                        {label}
+                      </Typography>
+                    </Box>
+                  </Tooltip>
+                )
+              })}
+        </Stack>
 
-      <Box sx={{ flexGrow: 1, minHeight: 2 }} />
+        <Box sx={{ flexGrow: 1, minHeight: 2 }} />
 
-      <Tooltip title={t('backToMarketplace')} placement="right">
-        <Button
-          component={Link}
-          href="/"
-          aria-label={t('backToMarketplace')}
-          startIcon={<LogoutOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-          sx={{
-            alignSelf: collapsed ? 'center' : 'stretch',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            minWidth: collapsed ? 44 : 0,
-            ...marketplaceActionSx,
-            minHeight: 40,
-            mb: 1.5,
-            px: collapsed ? 0 : 1.5,
-            '& .MuiButton-startIcon': { ml: 0, mr: collapsed ? 0 : 0.75 },
-          }}
-        >
-          {collapsed ? null : t('backToMarketplace')}
-        </Button>
-      </Tooltip>
-
-      <Stack
-        direction={collapsed ? 'column' : 'row'}
-        spacing={1.3}
-        alignItems="center"
-        sx={{ mt: 'auto', pt: 2, borderTop: '1px solid', borderColor: alpha.white[8] }}
-      >
-        <ButtonBase
-          aria-label={t('editProfile')}
-          onClick={() => setProfileEditorOpen(true)}
-          disabled={!session?.user?.id}
-          sx={{
-            display: 'flex',
-            flexGrow: collapsed ? 0 : 1,
-            alignItems: 'center',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            gap: 1.3,
-            minWidth: 0,
-            borderRadius: `${radius.sm}px`,
-            p: 0.5,
-            '&:hover': { bgcolor: alpha.white[8] },
-          }}
-        >
-          <Avatar
-            src={session?.user?.image ?? undefined}
-            alt={userName}
+        <Tooltip title={t('logoutToMarketplace')} placement="right">
+          <Button
+            onClick={handleLogoutToMarketplace}
+            disabled={isSigningOut}
+            aria-label={t('logoutToMarketplace')}
+            startIcon={<LogoutOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
             sx={{
-              width: 38,
-              height: 38,
-              bgcolor: 'primary.main',
-              fontSize: 11,
-              fontWeight: 800,
+              alignSelf: collapsed ? 'center' : 'stretch',
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              minWidth: collapsed ? 44 : 0,
+              ...marketplaceActionSx,
+              minHeight: 40,
+              mb: 1.5,
+              px: collapsed ? 0 : 1.5,
+              '& .MuiButton-startIcon': { ml: 0, mr: collapsed ? 0 : 0.75 },
             }}
           >
-            {userInitials}
-          </Avatar>
-          <Box sx={{ display: collapsed ? 'none' : 'block', minWidth: 0, textAlign: 'left' }}>
-            <Typography noWrap sx={{ fontSize: 13, fontWeight: 800 }}>
-              {userName}
-            </Typography>
-            <Typography noWrap sx={{ color: alpha.white[56], fontSize: 10.5 }}>
-              {userContext}
-            </Typography>
-          </Box>
-        </ButtonBase>
+            {collapsed ? null : t('logoutToMarketplace')}
+          </Button>
+        </Tooltip>
+
+        <Stack
+          direction={collapsed ? 'column' : 'row'}
+          spacing={1.3}
+          alignItems="center"
+          sx={{ mt: 'auto', pt: 2, borderTop: '1px solid', borderColor: alpha.white[8] }}
+        >
+          <ButtonBase
+            aria-label={t('editProfile')}
+            onClick={() => setProfileEditorOpen(true)}
+            disabled={!session?.user?.id}
+            sx={{
+              display: 'flex',
+              flexGrow: collapsed ? 0 : 1,
+              alignItems: 'center',
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              gap: 1.3,
+              minWidth: 0,
+              borderRadius: `${radius.sm}px`,
+              p: 0.5,
+              '&:hover': { bgcolor: alpha.white[8] },
+            }}
+          >
+            <Avatar
+              src={session?.user?.image ?? undefined}
+              alt={userName}
+              sx={{
+                width: 38,
+                height: 38,
+                bgcolor: 'primary.main',
+                fontSize: 11,
+                fontWeight: 800,
+              }}
+            >
+              {userInitials}
+            </Avatar>
+            <Box sx={{ display: collapsed ? 'none' : 'block', minWidth: 0, textAlign: 'left' }}>
+              <Typography noWrap sx={{ fontSize: 13, fontWeight: 800 }}>
+                {userName}
+              </Typography>
+              <Typography noWrap sx={{ color: alpha.white[56], fontSize: 10.5 }}>
+                {userContext}
+              </Typography>
+            </Box>
+          </ButtonBase>
+        </Stack>
       </Stack>
-    </Stack>
-  )
+    )
+  }
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: surface.app }}>
@@ -473,7 +505,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           pt: { xs: '64px', md: 0 },
         }}
       >
-        {isPublicCrmRoute || isLocalDashboardPreview ? (
+        {isSigningOut || isPublicCrmRoute || isLocalDashboardPreview ? (
           children
         ) : (
           <CrmAccessBoundary>{children}</CrmAccessBoundary>

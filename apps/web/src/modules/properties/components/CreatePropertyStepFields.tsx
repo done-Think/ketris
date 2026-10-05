@@ -11,8 +11,6 @@ import {
   Typography,
 } from '@mui/material'
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
-import RadioButtonCheckedRoundedIcon from '@mui/icons-material/RadioButtonCheckedRounded'
-import RadioButtonUncheckedRoundedIcon from '@mui/icons-material/RadioButtonUncheckedRounded'
 import { useTranslations } from 'next-intl'
 
 import { brand, iconSize, motion, radius, surface } from '@shared/theme/tokens'
@@ -103,74 +101,75 @@ export function CreatePropertyStepFields({
             </FormControl>
 
             <Box>
-              <Typography
-                sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 800, mb: 0.8 }}
-              >
-                {t('fields.purpose')}
-              </Typography>
-              <Controller
-                control={control}
-                name="purpose"
-                render={({ field }) => (
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: '1fr 1fr',
-                      gap: { xs: 0.8, md: 1 },
-                      width: { xs: '100%', md: '50%' },
-                    }}
-                  >
-                    {createPropertyPurposeOptions.map((purpose) => {
-                      const active = field.value.includes(purpose)
+              <Box sx={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
+                <Typography
+                  sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 800, mb: 0.8 }}
+                >
+                  {t('fields.purpose')}
+                </Typography>
+                <Controller
+                  control={control}
+                  name="purpose"
+                  render={({ field }) => (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        columnGap: '10px',
+                        rowGap: 0.8,
+                      }}
+                    >
+                      {createPropertyPurposeOptions.map((purpose) => {
+                        const active = field.value.includes(purpose)
 
-                      return (
-                        <FormControlLabel
-                          key={purpose}
-                          control={
-                            <Checkbox
-                              checked={active}
-                              checkedIcon={<RadioButtonCheckedRoundedIcon />}
-                              icon={<RadioButtonUncheckedRoundedIcon />}
-                              size="small"
-                              onChange={(event) => {
-                                field.onChange(
-                                  event.target.checked
-                                    ? [...field.value, purpose]
-                                    : field.value.filter((item) => item !== purpose),
-                                )
-                              }}
-                            />
-                          }
-                          label={t(`purposes.${purpose}`)}
-                          sx={{
-                            minHeight: 44,
-                            color: active ? 'primary.main' : 'text.secondary',
-                            mx: 0,
-                            px: 0,
-                            transition: motion.transition.interactive,
-                            '& .MuiCheckbox-root': {
-                              color: active ? 'primary.main' : brand.neutral[400],
-                              p: 0.6,
-                              mr: 0.6,
-                              '& .MuiSvgIcon-root': {
-                                fontSize: iconSize.md,
-                                borderRadius: radius.full,
+                        return (
+                          <FormControlLabel
+                            key={purpose}
+                            control={
+                              <Checkbox
+                                checked={active}
+                                size="small"
+                                onChange={(event) => {
+                                  field.onChange(
+                                    event.target.checked
+                                      ? [...field.value, purpose]
+                                      : field.value.filter((item) => item !== purpose),
+                                  )
+                                }}
+                              />
+                            }
+                            label={t(`purposes.${purpose}`)}
+                            sx={{
+                              minHeight: 44,
+                              color: active ? 'primary.main' : 'text.secondary',
+                              mx: 0,
+                              px: 0,
+                              transition: motion.transition.interactive,
+                              '& .MuiCheckbox-root': {
+                                color: active ? 'primary.main' : brand.neutral[400],
+                                p: 0.6,
+                                mr: 0.6,
+                                '& .MuiSvgIcon-root': {
+                                  fontSize: iconSize.md,
+                                },
                               },
-                            },
-                            '& .MuiFormControlLabel-label': {
-                              fontSize: 14,
-                              fontWeight: 900,
-                            },
-                            '&:hover': {
-                              color: 'primary.main',
-                            },
-                          }}
-                        />
-                      )
-                    })}
-                  </Box>
-                )}
-              />
+                              '& .MuiFormControlLabel-label': {
+                                fontSize: 14,
+                                fontWeight: 900,
+                                transform: 'translateY(1px)',
+                              },
+                              '&:hover': {
+                                color: 'primary.main',
+                              },
+                            }}
+                          />
+                        )
+                      })}
+                    </Box>
+                  )}
+                />
+              </Box>
             </Box>
           </Box>
 
