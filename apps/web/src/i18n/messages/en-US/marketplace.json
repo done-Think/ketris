@@ -23,6 +23,9 @@
       "RENTER": "Renter"
     },
     "actions": {
+      "addBroker": "Add new broker",
+      "becomeBroker": "Become a broker",
+      "createAgency": "Create agency",
       "settings": "Settings",
       "signOut": "Sign out",
       "support": "Support",

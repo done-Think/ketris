@@ -23,6 +23,9 @@
       "RENTER": "Inquilino"
     },
     "actions": {
+      "addBroker": "Registrar nuevo corredor",
+      "becomeBroker": "Convertirme en corredor",
+      "createAgency": "Crear inmobiliaria",
       "settings": "Configuración",
       "signOut": "Salir",
       "support": "Soporte",
