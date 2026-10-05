@@ -176,10 +176,11 @@ export function ProfileModal({
                   action.onClick?.()
                   onClose()
                 }}
-                startIcon={<Icon fontSize="small" />}
                 fullWidth
                 sx={{
+                  alignItems: 'center',
                   justifyContent: 'flex-start',
+                  gap: 1,
                   minHeight: 42,
                   borderRadius: `${radius.sm}px`,
                   color: isDanger ? 'error.main' : 'text.primary',
@@ -192,7 +193,30 @@ export function ProfileModal({
                   },
                 }}
               >
-                {action.label}
+                <Box
+                  component="span"
+                  sx={{
+                    alignItems: 'center',
+                    display: 'inline-flex',
+                    flexShrink: 0,
+                    height: 20,
+                    justifyContent: 'center',
+                    width: 20,
+                  }}
+                >
+                  <Icon sx={{ display: 'block', fontSize: 20 }} />
+                </Box>
+                <Box
+                  component="span"
+                  sx={{
+                    alignItems: 'center',
+                    display: 'inline-flex',
+                    lineHeight: '20px',
+                    minHeight: 20,
+                  }}
+                >
+                  {action.label}
+                </Box>
               </Button>
             )
           })}
