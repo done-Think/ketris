@@ -82,12 +82,12 @@
     "passwordError": "Não foi possível alterar a senha. Tente novamente.",
     "avatarFormatError": "Use uma imagem JPG, PNG ou WEBP.",
     "errors": {
-      "nameRequired": "Informe o nome",
-      "emailInvalid": "Informe um e-mail válido",
-      "phoneRequired": "Informe seu telefone",
-      "phoneInvalid": "Informe um telefone válido",
-      "passwordTooShort": "A senha deve ter pelo menos 8 caracteres",
-      "passwordConfirmationRequired": "Confirme a nova senha",
+      "nameRequired": "Informe seu nome.",
+      "emailInvalid": "Informe um e-mail válido.",
+      "phoneRequired": "Informe seu telefone.",
+      "phoneInvalid": "Informe um telefone válido.",
+      "passwordTooShort": "A senha deve ter pelo menos 8 caracteres.",
+      "passwordConfirmationRequired": "Confirme a nova senha.",
       "passwordMismatch": "As senhas não coincidem"
     }
   },
