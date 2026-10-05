@@ -198,6 +198,7 @@ export function HomeHeader({
                 <Button
                   component={Link}
                   href="/login"
+                  aria-label={t('signIn')}
                   startIcon={<LoginOutlinedIcon fontSize="small" />}
                   size="small"
                   sx={{

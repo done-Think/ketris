@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
@@ -15,7 +15,7 @@ import type { MarketplaceHeaderProps } from '../types/marketplace-header'
 
 export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const profileButtonRef = useRef<HTMLButtonElement | null>(null)
+  const profileButtonRef = useRef<HTMLButtonElement>(null)
   const tProfileActions = useTranslations('marketplace.profile.actions')
   const tProfile = useTranslations('marketplace.profile')
   const locale = useLocale()
@@ -46,21 +46,19 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
         }
       : undefined)
 
-  const translatedProfileActions = useMemo(
-    () =>
-      (userProfile ? profileActions : guestProfileActions).map((action) => ({
-        ...action,
-        label: tProfileActions(action.labelKey),
-        onClick:
-          action.labelKey === 'signOut'
-            ? async () => {
-                await clearClientSession()
-                router.replace(getLocalizedPathname('/', locale))
-                router.refresh()
-              }
-            : undefined,
-      })),
-    [locale, router, tProfileActions, userProfile],
+  const translatedProfileActions = (userProfile ? profileActions : guestProfileActions).map(
+    (action) => ({
+      ...action,
+      label: tProfileActions(action.labelKey),
+      onClick:
+        action.labelKey === 'signOut'
+          ? async () => {
+              await clearClientSession()
+              router.replace(getLocalizedPathname('/', locale))
+              router.refresh()
+            }
+          : undefined,
+    }),
   )
 
   return (
