@@ -117,7 +117,8 @@ describe('MarketplaceHeader', () => {
     )
   })
 
-  it('RENTER: não mostra o botão de anunciar imóvel', () => {
+  it('RENTER: não mostra o botão de anunciar imóvel e oferece tornar corretor', async () => {
+    const user = userEvent.setup()
     vi.mocked(useSession).mockReturnValue({
       data: { user: { name: 'Maria Locatária', email: 'maria@example.com' }, papel: 'RENTER' },
       status: 'authenticated',
@@ -126,6 +127,45 @@ describe('MarketplaceHeader', () => {
     renderMarketplaceHeader()
 
     expect(screen.queryByRole('link', { name: 'Anunciar Imóvel' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Abrir perfil' }))
+
+    expect(screen.getByRole('link', { name: 'Tornar corretor' })).toHaveAttribute(
+      'href',
+      '/register/details?profile=corretor',
+    )
+  })
+
+  it('AGENT: oferece criar imobiliária no menu de perfil', async () => {
+    const user = userEvent.setup()
+    vi.mocked(useSession).mockReturnValue({
+      data: { user: { name: 'Carlos Corretor', email: 'carlos@example.com' }, papel: 'AGENT' },
+      status: 'authenticated',
+    } as unknown as ReturnType<typeof useSession>)
+
+    renderMarketplaceHeader()
+
+    await user.click(screen.getByRole('button', { name: 'Abrir perfil' }))
+
+    expect(screen.getByRole('link', { name: 'Criar imobiliária' })).toHaveAttribute(
+      'href',
+      '/register/details?profile=imobiliaria',
+    )
+  })
+
+  it('ADMIN: nÃ£o mostra a aÃ§Ã£o de troca de modalidade no menu de perfil', async () => {
+    const user = userEvent.setup()
+    vi.mocked(useSession).mockReturnValue({
+      data: { user: { name: 'Ana Admin', email: 'ana@example.com' }, papel: 'ADMIN' },
+      status: 'authenticated',
+    } as unknown as ReturnType<typeof useSession>)
+
+    renderMarketplaceHeader()
+
+    await user.click(screen.getByRole('button', { name: 'Abrir perfil' }))
+
+    expect(screen.queryByRole('link', { name: 'Cadastrar novo corretor' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Trocar modalidade' })).not.toBeInTheDocument()
   })
 
   it('com sessão: clicar em "Sair" chama signOut()', async () => {
