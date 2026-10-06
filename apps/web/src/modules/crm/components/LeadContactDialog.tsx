@@ -58,40 +58,42 @@ export function LeadContactDialog({
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
       <DialogTitle sx={{ px: { xs: 2, md: 2.6 }, pb: 1, pt: 2.4 }}>
         <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
-          <Box sx={{ minWidth: 0 }}>
-            <Typography sx={{ color: brand.magenta[600], fontSize: 13, fontWeight: 900 }}>
-              {t('eyebrow')}
-            </Typography>
-            <Typography sx={{ color: brand.graphite[500], fontSize: 22, fontWeight: 900 }}>
-              {lead.name}
-            </Typography>
-          </Box>
+          <Stack spacing={1.4} sx={{ flex: 1, minWidth: 0 }}>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography sx={{ color: brand.magenta[600], fontSize: 13, fontWeight: 900 }}>
+                {t('eyebrow')}
+              </Typography>
+              <Typography sx={{ color: brand.graphite[500], fontSize: 22, fontWeight: 900 }}>
+                {lead.name}
+              </Typography>
+            </Box>
+            <TextField
+              select
+              fullWidth
+              label={t('stageLabel')}
+              value={lead.stage}
+              disabled={isConverted}
+              slotProps={{ inputLabel: { shrink: true } }}
+              onChange={(event) => {
+                const nextStage = event.target.value as (typeof leadStageOptions)[number]['value']
+                onStageChange(lead.id, apiStageByStage[nextStage])
+              }}
+            >
+              {leadStageOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {tFilters(option.labelKey)}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Stack>
           <IconButton aria-label={t('close')} onClick={onClose}>
             <CloseRoundedIcon sx={{ fontSize: iconSize.lg }} />
           </IconButton>
         </Stack>
       </DialogTitle>
 
-      <DialogContent sx={{ px: { xs: 2, md: 2.6 }, pb: 2 }}>
+      <DialogContent sx={{ px: { xs: 2, md: 2.6 }, pb: 2, pt: 1 }}>
         <Stack spacing={1.6}>
-          <TextField
-            select
-            fullWidth
-            label={t('stageLabel')}
-            value={lead.stage}
-            disabled={isConverted}
-            onChange={(event) => {
-              const nextStage = event.target.value as (typeof leadStageOptions)[number]['value']
-              onStageChange(lead.id, apiStageByStage[nextStage])
-            }}
-          >
-            {leadStageOptions.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {tFilters(option.labelKey)}
-              </MenuItem>
-            ))}
-          </TextField>
-
           <Box
             sx={{
               border: '1px solid',
