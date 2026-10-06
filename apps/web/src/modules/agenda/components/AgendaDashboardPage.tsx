@@ -2,9 +2,10 @@
 
 import { Box, Stack } from '@mui/material'
 import dayjs from 'dayjs'
+import 'dayjs/locale/es'
 import 'dayjs/locale/pt-br'
 import { useSession } from 'next-auth/react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 import { useSnackbar } from 'notistack'
 
@@ -41,15 +42,19 @@ import { AgendaEventFormDialog } from './AgendaEventFormDialog'
 
 export function AgendaDashboardPage() {
   const t = useTranslations('agenda.dashboard')
+  const locale = useLocale()
   const { enqueueSnackbar } = useSnackbar()
   const { data: session } = useSession()
   const tenantId = session?.tenantId ?? ''
   const [isEventFormOpen, setIsEventFormOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null)
-  const today = useMemo(() => dayjs().locale('pt-br').startOf('day'), [])
+  const today = useMemo(() => dayjs().startOf('day'), [])
   const scheduleHorizonEnd = useMemo(() => today.add(6, 'month').endOf('month'), [today])
   const [weekStartDate, setWeekStartDate] = useState(() => today)
-  const agendaDays = useMemo(() => buildAgendaCalendarDays(weekStartDate), [weekStartDate])
+  const agendaDays = useMemo(
+    () => buildAgendaCalendarDays(weekStartDate, locale),
+    [locale, weekStartDate],
+  )
 
   const propertiesQuery = useProperties()
   const propertyOptions = useMemo<AgendaPropertyOption[]>(

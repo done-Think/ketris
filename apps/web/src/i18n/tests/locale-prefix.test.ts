@@ -34,4 +34,14 @@ describe('locale-prefix', () => {
       '/es/inmobiliarias/lopes-prime',
     )
   })
+
+  it('switches translated dashboard routes while preserving the selected locale prefix', () => {
+    expect(getLocalizedPathname('/dashboard/agenda', 'en-US')).toBe('/en/dashboard/schedule')
+    expect(getLocalizedPathnameForLocale('/pt/dashboard/agenda', 'en-US')).toBe(
+      '/en/dashboard/schedule',
+    )
+    expect(getLocalizedPathnameForLocale('/en/dashboard/schedule', 'pt-BR')).toBe(
+      '/pt/dashboard/agenda',
+    )
+  })
 })
