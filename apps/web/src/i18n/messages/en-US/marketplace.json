@@ -25,7 +25,10 @@
       "RENTER": "Renter"
     },
     "actions": {
+      "addBroker": "Add new broker",
       "accessAdmin": "Access admin",
+      "becomeBroker": "Become a broker",
+      "createAgency": "Create agency",
       "settings": "Settings",
       "signOut": "Sign out",
       "support": "Support",

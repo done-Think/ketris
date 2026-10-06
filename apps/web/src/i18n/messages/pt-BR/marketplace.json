@@ -25,7 +25,10 @@
       "RENTER": "Locatário"
     },
     "actions": {
+      "addBroker": "Cadastrar novo corretor",
       "accessAdmin": "Acessar admin",
+      "becomeBroker": "Tornar corretor",
+      "createAgency": "Criar imobiliária",
       "settings": "Configurações",
       "signOut": "Sair",
       "support": "Suporte",
