@@ -21,7 +21,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     throw new UserNotFoundError()
   }
 
-  await authContainer.resetPasswordUseCase.execute({ email: user.email, password: body.password })
+  await authContainer.changeOwnPasswordUseCase.execute({ userId: user.id, password: body.password })
 
   return new NextResponse(null, { status: 204 })
 })

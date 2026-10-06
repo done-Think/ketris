@@ -2,17 +2,13 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
-import { resetPasswordRequestSchema } from '@server/auth/schemas/reset-password.schema'
+import { requestPasswordResetCodeSchema } from '@server/auth/schemas/password-reset-code.schema'
 import { parseJsonBody, withErrorHandling } from '@server/shared/http'
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
-  const body = await parseJsonBody(request, resetPasswordRequestSchema)
+  const body = await parseJsonBody(request, requestPasswordResetCodeSchema)
 
-  await authContainer.resetPasswordUseCase.execute({
-    email: body.email,
-    password: body.password,
-    resetToken: body.resetToken,
-  })
+  await authContainer.requestPasswordResetCodeUseCase.execute({ email: body.email })
 
   return new NextResponse(null, { status: 204 })
 })

@@ -5,9 +5,9 @@ import { UnauthorizedError } from '@server/shared/errors'
 
 import { POST } from './route'
 
-const { findById, resetPassword, requireAuth } = vi.hoisted(() => ({
+const { findById, changeOwnPassword, requireAuth } = vi.hoisted(() => ({
   findById: vi.fn(),
-  resetPassword: vi.fn().mockResolvedValue(undefined),
+  changeOwnPassword: vi.fn().mockResolvedValue(undefined),
   requireAuth: vi.fn(),
 }))
 
@@ -15,7 +15,7 @@ vi.mock('@server/auth/container', () => ({
   authContainer: {
     tokenService: {},
     userRepository: { findById },
-    resetPasswordUseCase: { execute: resetPassword },
+    changeOwnPasswordUseCase: { execute: changeOwnPassword },
   },
 }))
 vi.mock('@server/auth/require-bearer-auth', () => ({ requireBearerAuth: requireAuth }))
@@ -45,8 +45,8 @@ describe('POST /api/auth/me/password', () => {
 
     expect(response.status).toBe(204)
     expect(findById).toHaveBeenCalledWith('current-user')
-    expect(resetPassword).toHaveBeenCalledWith({
-      email: 'ana@example.com',
+    expect(changeOwnPassword).toHaveBeenCalledWith({
+      userId: 'current-user',
       password: 'nova-senha-123',
     })
   })
@@ -62,7 +62,7 @@ describe('POST /api/auth/me/password', () => {
     const response = await POST(request())
 
     expect(response.status).not.toBe(204)
-    expect(resetPassword).not.toHaveBeenCalled()
+    expect(changeOwnPassword).not.toHaveBeenCalled()
   })
 
   it('does not change a password when bearer authentication fails', async () => {
@@ -72,13 +72,13 @@ describe('POST /api/auth/me/password', () => {
 
     expect(response.status).not.toBe(204)
     expect(findById).not.toHaveBeenCalled()
-    expect(resetPassword).not.toHaveBeenCalled()
+    expect(changeOwnPassword).not.toHaveBeenCalled()
   })
 
   it('rejects passwords shorter than the existing eight-character rule', async () => {
     const response = await POST(request('short'))
 
     expect(response.status).not.toBe(204)
-    expect(resetPassword).not.toHaveBeenCalled()
+    expect(changeOwnPassword).not.toHaveBeenCalled()
   })
 })

@@ -53,3 +53,21 @@ export class CannotDeactivateSelfError extends AppError {
     })
   }
 }
+
+export class InvalidPasswordResetCodeError extends AppError {
+  constructor() {
+    super('Código de verificação inválido ou expirado.', {
+      status: 401,
+      code: 'INVALID_RESET_CODE',
+    })
+  }
+}
+
+export class InvalidPasswordResetTokenError extends AppError {
+  constructor() {
+    super('Sessão de redefinição de senha inválida ou expirada.', {
+      status: 401,
+      code: 'INVALID_RESET_TOKEN',
+    })
+  }
+}

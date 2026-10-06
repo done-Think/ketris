@@ -10,6 +10,11 @@ import {
   refreshTokenRequestSchema,
   refreshTokenResponseSchema,
 } from './schemas/refresh-token.schema'
+import {
+  requestPasswordResetCodeSchema,
+  verifyPasswordResetCodeResponseSchema,
+  verifyPasswordResetCodeSchema,
+} from './schemas/password-reset-code.schema'
 import { resetPasswordRequestSchema } from './schemas/reset-password.schema'
 import { updateUserRequestSchema, updateUserResponseSchema } from './schemas/update-user.schema'
 import { authenticatedUserSchema } from './schemas/user.schema'
@@ -282,19 +287,72 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
 
   registry.registerPath({
     method: 'post',
+    path: '/auth/password-reset-codes',
+    tags: ['Auth'],
+    summary: 'Envia por e-mail um código de 6 dígitos para iniciar a troca de senha',
+    description:
+      'Rota pública. E-mail desconhecido retorna 204 do mesmo jeito (mesma postura ' +
+      'anti-enumeração do login) — não envia e-mail, mas não revela se a conta existe. Qualquer ' +
+      'código anterior ainda ativo do mesmo usuário é invalidado antes de gerar um novo. O código ' +
+      'expira em 10 minutos.',
+    request: {
+      body: {
+        content: { 'application/json': { schema: requestPasswordResetCodeSchema } },
+      },
+    },
+    responses: {
+      204: {
+        description: 'Código enviado (ou e-mail desconhecido — resposta idêntica).',
+      },
+      400: {
+        description: 'Corpo da requisição inválido (falha de validação Zod).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'post',
+    path: '/auth/password-reset-codes/verify',
+    tags: ['Auth'],
+    summary: 'Valida o código de 6 dígitos e emite um token de prova para a troca de senha',
+    description:
+      'Rota pública. Até 5 tentativas por código; excedido isso (ou expirado), o código é ' +
+      'invalidado e é preciso pedir um novo via POST /auth/password-reset-codes. O ' +
+      '`resetToken` retornado é um JWT de curta duração (5 min) exigido por ' +
+      'POST /auth/reset-password — sem ele, a senha não é trocada.',
+    request: {
+      body: {
+        content: { 'application/json': { schema: verifyPasswordResetCodeSchema } },
+      },
+    },
+    responses: {
+      200: {
+        description: 'Código válido — token de prova emitido.',
+        content: { 'application/json': { schema: verifyPasswordResetCodeResponseSchema } },
+      },
+      400: {
+        description: 'Corpo da requisição inválido (falha de validação Zod).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Código inválido, expirado ou com tentativas excedidas.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'post',
     path: '/auth/reset-password',
     tags: ['Auth'],
     summary: 'Redefine a senha de um usuário a partir do fluxo de recuperação por e-mail',
     description:
-      'Rota pública. Não exige autenticação: o e-mail identifica a conta. Após a troca, todos os ' +
-      'refresh tokens ativos do usuário são revogados. E-mail desconhecido retorna 204 do mesmo jeito ' +
-      '(mesma postura anti-enumeração do login). Esta rota não recebe nem valida nenhum código de ' +
-      'verificação — isso é responsabilidade de uma rota de validação separada, ainda não implementada ' +
-      '(depende do domínio do AWS SES, ainda em sandbox). ATENÇÃO — débito temporário e aceito: ' +
-      'enquanto essa rota de validação não existir, o frontend não bloqueia de fato o avanço até aqui ' +
-      'por um código real, então qualquer requisição válida com um e-mail existente troca a senha. ' +
-      'Isso precisa ser corrigido (validação real do código antes de permitir chamar esta rota) antes ' +
-      'de qualquer exposição fora de ambiente local.',
+      'Rota pública. Não exige autenticação: o e-mail identifica a conta. Exige um `resetToken` ' +
+      'válido (emitido por POST /auth/password-reset-codes/verify, cujo `sub` precisa bater com ' +
+      'o usuário do e-mail informado) — sem ele, retorna 401 e a senha não é trocada. Após a troca, ' +
+      'todos os refresh tokens ativos do usuário são revogados. E-mail desconhecido retorna 204 do ' +
+      'mesmo jeito (mesma postura anti-enumeração do login).',
     request: {
       body: {
         content: { 'application/json': { schema: resetPasswordRequestSchema } },
@@ -306,6 +364,10 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
       },
       400: {
         description: 'Corpo da requisição inválido (falha de validação Zod).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Token de redefinição inválido, expirado, ou de outro usuário.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },

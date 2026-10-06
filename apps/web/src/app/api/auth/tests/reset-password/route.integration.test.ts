@@ -5,6 +5,7 @@ import { NextRequest } from 'next/server'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import { prisma } from '@server/db/prisma'
+import { JosePasswordResetTokenService } from '@server/auth/infrastructure/jose-password-reset-token.service'
 
 import { POST as login } from '../../login/route'
 import { POST as resetPassword } from '../../reset-password/route'
@@ -13,6 +14,7 @@ describe('POST /api/auth/reset-password (integração)', () => {
   const tenantSlug = `test-tenant-${randomUUID()}`
   const email = `reset-${randomUUID()}@ketris.dev`
   const oldPassword = 'senha-antiga-123'
+  const passwordResetTokenService = new JosePasswordResetTokenService()
   let tenantId: string
   let userId: string
 
@@ -59,10 +61,13 @@ describe('POST /api/auth/reset-password (integração)', () => {
       },
     })
 
+    const resetToken = await passwordResetTokenService.issue(userId)
+
     const response = await resetPassword(
       buildRequest('http://localhost/api/auth/reset-password', {
         email,
         password: newPassword,
+        resetToken,
       }),
     )
     expect(response.status).toBe(204)
@@ -92,6 +97,7 @@ describe('POST /api/auth/reset-password (integração)', () => {
       buildRequest('http://localhost/api/auth/reset-password', {
         email: 'nao-existe@ketris.dev',
         password: 'qualquer-senha-123',
+        resetToken: 'qualquer-coisa',
       }),
     )
 
@@ -103,11 +109,39 @@ describe('POST /api/auth/reset-password (integração)', () => {
       buildRequest('http://localhost/api/auth/reset-password', {
         email,
         password: '123',
+        resetToken: 'qualquer-coisa',
       }),
     )
     const json = await response.json()
 
     expect(response.status).toBe(400)
     expect(json.error.code).toBe('VALIDATION_ERROR')
+  })
+
+  it('retorna 401 quando o resetToken é inválido, ausente ou de outro usuário', async () => {
+    const outroUsuario = await prisma.usuario.create({
+      data: {
+        tenantId,
+        nome: 'Outro Usuário',
+        email: `reset-outro-${randomUUID()}@ketris.dev`,
+        senhaHash: await bcrypt.hash('senha-qualquer-123', 10),
+        papel: 'ADMIN',
+      },
+    })
+    const resetTokenDeOutroUsuario = await passwordResetTokenService.issue(outroUsuario.id)
+
+    const response = await resetPassword(
+      buildRequest('http://localhost/api/auth/reset-password', {
+        email,
+        password: 'senha-nova-789',
+        resetToken: resetTokenDeOutroUsuario,
+      }),
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(401)
+    expect(json.error.code).toBe('INVALID_RESET_TOKEN')
+
+    await prisma.usuario.delete({ where: { id: outroUsuario.id } })
   })
 })

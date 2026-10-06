@@ -16,6 +16,7 @@ export function VerificationCodeField<TFieldValues extends FieldValues>({
   control,
   name,
   label,
+  disabled,
 }: VerificationCodeFieldProps<TFieldValues>) {
   const inputRefs = useRef<Array<HTMLInputElement | null>>([])
 
@@ -111,6 +112,7 @@ export function VerificationCodeField<TFieldValues extends FieldValues>({
                   type="text"
                   inputMode="numeric"
                   maxLength={1}
+                  disabled={disabled}
                   autoComplete={index === 0 ? 'one-time-code' : 'off'}
                   aria-label={`${label} — dígito ${index + 1} de ${CODE_LENGTH}`}
                   value={digit}

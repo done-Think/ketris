@@ -28,6 +28,8 @@ const authPaths = new Set([
   '/api/platform/refresh',
   '/api/register',
   '/api/auth/reset-password',
+  '/api/auth/password-reset-codes',
+  '/api/auth/password-reset-codes/verify',
 ])
 
 export function proxy(request: NextRequest) {
