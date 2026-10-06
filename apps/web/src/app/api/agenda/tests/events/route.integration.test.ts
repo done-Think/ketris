@@ -132,7 +132,7 @@ describe('/api/agenda/events (integração)', () => {
         title: 'Visita ao apartamento',
         kind: 'VISIT',
         propertyId,
-        start: '2026-10-05T13:00:00.000Z',
+        start: '2030-01-15T16:00:00.000Z',
         durationMinutes: 60,
         participantName: 'Ana Nóbrega',
         participantPhone: '(11) 99842-2109',
@@ -146,8 +146,8 @@ describe('/api/agenda/events (integração)', () => {
     expect(json.event.createdById).toBe(actorId)
     expect(json.event.propertyId).toBe(propertyId)
     expect(json.event.status).toBe('CONFIRMED')
-    expect(json.event.start).toBe('2026-10-05T13:00:00.000Z')
-    expect(json.event.end).toBe('2026-10-05T14:00:00.000Z')
+    expect(json.event.start).toBe('2030-01-15T16:00:00.000Z')
+    expect(json.event.end).toBe('2030-01-15T17:00:00.000Z')
   })
 
   it('cria evento com referência livre de imóvel, sem propertyId', async () => {
@@ -155,7 +155,7 @@ describe('/api/agenda/events (integração)', () => {
       buildRequest('POST', 'http://localhost/api/agenda/events', {
         title: 'Reunião externa',
         propertyReference: 'Escritório do cliente',
-        start: '2026-10-06T10:00:00.000Z',
+        start: '2030-01-16T16:00:00.000Z',
         durationMinutes: 30,
         participantName: 'Marcos Lima',
         participantPhone: '(11) 98731-4402',
@@ -172,7 +172,7 @@ describe('/api/agenda/events (integração)', () => {
     const response = await POST(
       buildRequest('POST', 'http://localhost/api/agenda/events', {
         title: 'Evento sem imóvel',
-        start: '2026-10-06T10:00:00.000Z',
+        start: '2030-01-16T16:00:00.000Z',
         durationMinutes: 30,
         participantName: 'Marcos Lima',
         participantPhone: '(11) 98731-4402',
@@ -187,7 +187,7 @@ describe('/api/agenda/events (integração)', () => {
       buildRequest('POST', 'http://localhost/api/agenda/events', {
         title: 'Tentativa cross-tenant',
         propertyId: otherTenantPropertyId,
-        start: '2026-10-06T10:00:00.000Z',
+        start: '2030-01-16T16:00:00.000Z',
         durationMinutes: 30,
         participantName: 'Marcos Lima',
         participantPhone: '(11) 98731-4402',
@@ -205,7 +205,7 @@ describe('/api/agenda/events (integração)', () => {
         title: 'Visita rápida demais',
         kind: 'VISIT',
         propertyId,
-        start: '2026-10-06T15:00:00.000Z',
+        start: '2030-01-16T18:00:00.000Z',
         durationMinutes: 30,
         participantName: 'Marcos Lima',
         participantPhone: '(11) 98731-4402',
@@ -216,7 +216,7 @@ describe('/api/agenda/events (integração)', () => {
   })
 
   it('retorna 409 quando o responsável já tem um evento nesse horário', async () => {
-    const conflictingStart = '2026-10-05T13:30:00.000Z'
+    const conflictingStart = '2030-01-15T16:30:00.000Z'
 
     const response = await POST(
       buildRequest('POST', 'http://localhost/api/agenda/events', {
@@ -242,7 +242,7 @@ describe('/api/agenda/events (integração)', () => {
         {
           title: 'Tentativa de locatário',
           propertyId,
-          start: '2026-10-06T10:00:00.000Z',
+          start: '2030-01-16T16:00:00.000Z',
           durationMinutes: 30,
           participantName: 'Locatário X',
           participantPhone: '11999990000',
@@ -260,7 +260,7 @@ describe('/api/agenda/events (integração)', () => {
     const response = await GET(
       buildRequest(
         'GET',
-        'http://localhost/api/agenda/events?from=2026-10-05T00:00:00.000Z&to=2026-10-07T00:00:00.000Z',
+        'http://localhost/api/agenda/events?from=2030-01-15T00:00:00.000Z&to=2030-01-17T00:00:00.000Z',
       ),
     )
     const json = await response.json()
@@ -275,7 +275,7 @@ describe('/api/agenda/events (integração)', () => {
     const response = await GET(
       buildRequest(
         'GET',
-        'http://localhost/api/agenda/events?from=2026-11-01T00:00:00.000Z&to=2026-11-02T00:00:00.000Z',
+        'http://localhost/api/agenda/events?from=2030-02-01T00:00:00.000Z&to=2030-02-02T00:00:00.000Z',
       ),
     )
     const json = await response.json()
@@ -288,7 +288,7 @@ describe('/api/agenda/events (integração)', () => {
     const response = await GET(
       buildRequest(
         'GET',
-        'http://localhost/api/agenda/events?from=2026-10-07T00:00:00.000Z&to=2026-10-05T00:00:00.000Z',
+        'http://localhost/api/agenda/events?from=2030-01-17T00:00:00.000Z&to=2030-01-15T00:00:00.000Z',
       ),
     )
 
@@ -299,7 +299,7 @@ describe('/api/agenda/events (integração)', () => {
     const response = await GET(
       buildRequest(
         'GET',
-        'http://localhost/api/agenda/events?from=2026-10-05T00:00:00.000Z&to=2026-10-07T00:00:00.000Z',
+        'http://localhost/api/agenda/events?from=2030-01-15T00:00:00.000Z&to=2030-01-17T00:00:00.000Z',
         undefined,
         '',
       ),

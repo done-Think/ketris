@@ -1,27 +1,12 @@
 import { BaseService } from '@shared/lib/api/base-service'
 
-import type { PlatformAdminAccount, PlatformAdminRole } from '../types/platform-admin'
-
-interface CreatePlatformAdminPayload {
-  nome: string
-  email: string
-  password: string
-  role: PlatformAdminRole
-}
-
-interface UpdatePlatformAdminPayload {
-  nome: string
-  email: string
-  role: PlatformAdminRole
-}
-
-interface PlatformAdminResponse {
-  admin: PlatformAdminAccount
-}
-
-interface ListPlatformAdminsResponse {
-  admins: PlatformAdminAccount[]
-}
+import type {
+  CreatePlatformAdminPayload,
+  ListPlatformAdminsResponse,
+  PlatformAdminAccount,
+  PlatformAdminResponse,
+  UpdatePlatformAdminPayload,
+} from '../types/platform-admin'
 
 class PlatformAdminService extends BaseService {
   private readonly path = '/platform/admins'

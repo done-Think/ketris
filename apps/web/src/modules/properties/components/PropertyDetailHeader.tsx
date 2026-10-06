@@ -33,9 +33,6 @@ export function PropertyDetailHeader({
   const isPublished = property.apiStatus === 'PUBLISHED'
   const { data: session } = useSession()
   const isRented = property.status === 'Alugado'
-  // Queried by propertyId (instead of a manually-synced `activeContractId` field on the property)
-  // so it can never drift: a property is only ever linked to a contract that actually references
-  // it, and a newly created contract shows up here immediately.
   const activeContractQuery = useContracts(isRented ? session?.tenantId : undefined, {
     propertyId: property.id,
     status: 'ATIVO',

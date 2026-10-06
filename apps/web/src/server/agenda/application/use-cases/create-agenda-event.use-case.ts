@@ -5,6 +5,7 @@ import type { UserRepository } from '@server/auth/application/ports/user-reposit
 import { PropertyNotFoundError } from '@server/properties/domain/errors'
 import type { PropertyRepository } from '@server/properties/application/ports/property-repository.port'
 
+import { assertWithinAgendaSchedulingWindow } from '../../domain/agenda-scheduling-rules'
 import { AgendaEventConflictError, AgendaResponsibleNotFoundError } from '../../domain/errors'
 import type { AgendaEventKind } from '../../domain/agenda-event.entity'
 import type { AgendaEventRepository } from '../ports/agenda-event-repository.port'
@@ -36,6 +37,8 @@ export class CreateAgendaEventUseCase {
     if (input.actorPapel === 'RENTER') {
       throw new ForbiddenError('Locatários não podem gerenciar a agenda.')
     }
+
+    assertWithinAgendaSchedulingWindow(input.inicio)
 
     const responsavelId = input.responsavelId ?? input.actorUserId
 

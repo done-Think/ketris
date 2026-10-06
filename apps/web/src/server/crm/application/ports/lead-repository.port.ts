@@ -1,7 +1,6 @@
 import type { Lead, LeadUpdate, NewLead } from '../../domain/lead.entity'
 
 export interface LeadListFilters {
-  /** Set only when the actor is an AGENT — scopes results to leads they're responsible for. */
   responsavelId?: string
 }
 

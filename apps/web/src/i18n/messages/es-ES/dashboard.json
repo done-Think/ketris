@@ -213,6 +213,13 @@
         "title": "Título de la solicitud",
         "description": "Descripción del problema",
         "descriptionPlaceholder": "Describa el problema..."
+      },
+      "errors": {
+        "propertyRequired": "Selecciona el inmueble",
+        "categoryRequired": "Selecciona la categoría",
+        "priorityRequired": "Selecciona la prioridad",
+        "titleRequired": "Indica el título de la solicitud",
+        "descriptionRequired": "Describe el problema"
       }
     },
     "actions": {

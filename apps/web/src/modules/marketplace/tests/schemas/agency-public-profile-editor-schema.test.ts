@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { agencyPublicProfileEditorSchema } from '../../schemas/agency-public-profile-editor-schema'
+import { createAgencyPublicProfileEditorSchema } from '../../schemas/agency-public-profile-editor-schema'
+
+const agencyPublicProfileEditorSchema = createAgencyPublicProfileEditorSchema((key) => key)
 
 const validDraft = {
   displayName: 'Imobiliária Horizonte',
@@ -59,5 +61,15 @@ describe('agencyPublicProfileEditorSchema', () => {
     })
 
     expect(result.success).toBe(false)
+  })
+
+  it('routes each validation message through the translator with the right key', () => {
+    const translated = createAgencyPublicProfileEditorSchema((key) => `translated:${key}`)
+    const result = translated.safeParse({ ...validDraft, displayName: '' })
+
+    expect(result.success).toBe(false)
+    expect(result.success ? undefined : result.error.issues[0]?.message).toBe(
+      'translated:displayNameRequired',
+    )
   })
 })

@@ -168,7 +168,25 @@
       "Destacar imóvel na listagem inicial": "Destacar inmueble en la lista inicial"
     },
     "createSuccess": "Inmueble creado con éxito.",
-    "createError": "No se pudo crear el inmueble. Inténtalo de nuevo."
+    "createError": "No se pudo crear el inmueble. Inténtalo de nuevo.",
+    "errors": {
+      "propertyTypeRequired": "Selecciona el tipo de inmueble",
+      "purposeRequired": "Selecciona al menos una finalidad",
+      "titleRequired": "Indica el título del anuncio",
+      "descriptionRequired": "Indica una descripción más completa",
+      "streetRequired": "Indica la dirección",
+      "numberRequired": "Indica el número",
+      "neighborhoodRequired": "Indica el barrio",
+      "cityRequired": "Indica la ciudad",
+      "stateRequired": "Indica el estado",
+      "zipCodeRequired": "Indica el código postal",
+      "numberInvalid": "Indica un valor válido",
+      "areaRequired": "Indica el área útil",
+      "mainValueRequired": "Indica el valor principal",
+      "negotiationTermRequired": "Indica la condición comercial",
+      "rentalValueInvalid": "Indica un valor de alquiler válido",
+      "rentalValueRequired": "Indica el valor del alquiler"
+    }
   },
   "edit": {
     "title": "Editar inmueble",

@@ -129,6 +129,10 @@
         "cancel": "Cancelar",
         "save": "Salvar"
       },
+      "errors": {
+        "nameRequired": "Nome e obrigatorio.",
+        "emailInvalid": "E-mail invalido."
+      },
       "createSuccess": "Contato criado.",
       "updateSuccess": "Contato atualizado.",
       "saveError": "Não foi possível salvar o contato."
@@ -241,7 +245,32 @@
       "pageAriaLabel": "Ir para a página {page}"
     }
   },
+  "properties": {
+    "searchFilters": {
+      "errors": {
+        "propertyTypeInvalid": "Informe um tipo de imóvel válido.",
+        "cityInvalid": "Informe uma cidade válida.",
+        "minPriceInvalid": "O preço mínimo não pode ser negativo.",
+        "maxPriceInvalid": "O preço máximo não pode ser negativo.",
+        "minBedroomsInvalid": "O número mínimo de quartos não pode ser negativo.",
+        "searchTermInvalid": "Informe um termo de busca válido."
+      }
+    }
+  },
   "opportunityDetail": {
+    "errors": {
+      "nameRequired": "Nome e obrigatorio.",
+      "emailInvalid": "E-mail invalido.",
+      "phoneInvalid": "Telefone invalido.",
+      "propertyRequired": "Selecione um imóvel.",
+      "proposedValueRequired": "Valor proposto e obrigatorio.",
+      "proposedValuePositive": "Valor proposto deve ser positivo.",
+      "contractTermInvalid": "Prazo deve ser um numero inteiro positivo.",
+      "atLeastOneFieldRequired": "Informe ao menos um campo para atualizar.",
+      "desiredStartDateInvalid": "Data de início inválida.",
+      "specialConditionInvalid": "Condição especial inválida.",
+      "notesInvalid": "Observações inválidas."
+    },
     "editTitle": "Editar oportunidade",
     "breadcrumbAriaLabel": "Navegação estrutural",
     "pipelineLink": "Pipeline",

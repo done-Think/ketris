@@ -2,38 +2,9 @@
 
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
 import { Box, Stack, Typography } from '@mui/material'
-import type { SxProps, Theme } from '@mui/material'
 
 import { iconSize, motion, radius } from '@shared/theme/tokens'
-
-export interface WizardStepsNavStep {
-  key: string
-}
-
-export interface WizardStepsNavProps<TStep extends WizardStepsNavStep> {
-  steps: readonly TStep[]
-  activeStepIndex: number
-  /** Highest index the user may jump to. Defaults to `activeStepIndex` (strictly-linear wizard). */
-  reachableUpToIndex?: number
-  /** Highest step index rendered as completed. Defaults to the step before the active one. */
-  completedUpToIndex?: number
-  ariaLabel: string
-  getStepLabel: (step: TStep, index: number) => string
-  onStepSelect: (stepIndex: number) => void
-  gridTemplateColumns: string | Record<string, string>
-  /**
-   * `true`: the active step's circle fills in like a completed one (used while a step is being
-   * actively filled and any reachable step counts as "done enough"). `false` (default): only
-   * strictly-completed steps (before the active one) are filled.
-   */
-  fillActiveStep?: boolean
-  /**
-   * Replaces the full step grid with a compact dots + "current/total" bar below `md`. Meant for
-   * longer wizards (5+ steps) where the full grid gets cramped on narrow screens.
-   */
-  mobileProgressLabel?: (current: number, total: number) => string
-  sx?: SxProps<Theme>
-}
+import type { WizardStepsNavProps, WizardStepsNavStep } from '@shared/types/wizard-steps-nav'
 
 export function WizardStepsNav<TStep extends WizardStepsNavStep>({
   steps,

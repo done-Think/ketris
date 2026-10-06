@@ -29,9 +29,6 @@ export class S3PropertyMediaStorage implements PropertyMediaStoragePort {
       }),
     )
 
-    // O bucket é privado (sem CORS/policy pública, ver infra/terraform/s3.tf) — a URL devolvida
-    // aponta pra rota própria que faz proxy do objeto (GET /api/properties/media/[...key]), nunca
-    // pro S3 direto.
     return { url: `/api/properties/media/${key}`, contentType: input.contentType }
   }
 }

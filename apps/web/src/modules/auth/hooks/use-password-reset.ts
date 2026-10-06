@@ -3,14 +3,7 @@
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 
-interface ResetPasswordErrorBody {
-  error?: { code?: string }
-}
-
-export interface ResetPasswordInput {
-  email: string
-  password: string
-}
+import type { ResetPasswordErrorBody, ResetPasswordInput } from '../types/password-recovery'
 
 export function usePasswordReset() {
   const t = useTranslations('auth.passwordRecovery')

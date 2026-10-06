@@ -1,77 +1,21 @@
 import { BaseService } from '@shared/lib/api/base-service'
 
 import type {
+  ApiProperty,
+  ApiPropertyAddress,
+  ApiPropertyMedia,
   Property,
   PropertyAddress,
   PropertyFormValues,
   PropertyListFilters,
   PropertyMediaInput,
   PropertyPurpose,
-  PropertyStatus,
 } from '../types/property'
-
-interface ApiPropertyAddress {
-  logradouro: string
-  numero: string
-  complemento: string | null
-  bairro: string
-  cidade: string
-  estado: string
-  cep: string
-  latitude: number | null
-  longitude: number | null
-}
-
-interface ApiPropertyMedia {
-  id: string
-  url: string
-  tipo: string
-  ordem: number
-  createdAt: string
-}
-
-interface ApiProperty {
-  id: string
-  tenantId: string
-  responsavelId: string
-  titulo: string
-  descricao: string | null
-  finalidade: 'ALUGUEL' | 'VENDA' | 'AMBOS'
-  tipo: string
-  status: PropertyStatus
-  publicadoEm: string | null
-  createdAt: string
-  updatedAt: string
-  endereco: ApiPropertyAddress | null
-  midias: ApiPropertyMedia[]
-  valores: {
-    valor: number
-    valorAluguel: number | null
-    condominio: number | null
-    iptu: number | null
-  }
-  caracteristicas: {
-    quartos: number | null
-    banheiros: number | null
-    vagas: number | null
-    areaM2: number | null
-  }
-}
-
-interface PropertyResponse {
-  property: ApiProperty
-}
-
-interface PropertiesResponse {
-  properties: ApiProperty[]
-}
-
-interface UploadPropertyMediaResponse {
-  media: {
-    url: string
-    contentType: string
-  }
-}
+import type {
+  PropertiesResponse,
+  PropertyResponse,
+  UploadPropertyMediaResponse,
+} from '../types/service'
 
 function toApiPurpose(purpose: PropertyPurpose): 'ALUGUEL' | 'VENDA' | 'AMBOS' {
   if (purpose === 'BOTH') return 'AMBOS'
@@ -255,9 +199,6 @@ export class PropertiesService extends BaseService {
 
     return this.http
       .post<UploadPropertyMediaResponse>(`${this.path}/media`, formData, {
-        // O client tem `Content-Type: application/json` fixo como default (ver HttpClient). Um
-        // valor explícito aqui travaria em texto puro sem o boundary do multipart — precisa
-        // remover o header pra o próprio browser gerar o `multipart/form-data; boundary=...`.
         headers: { 'Content-Type': undefined },
       })
       .then((data) => ({ url: data.media.url, type: 'foto' }))

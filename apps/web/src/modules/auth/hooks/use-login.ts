@@ -7,10 +7,7 @@ import { signIn } from 'next-auth/react'
 
 import { getLocalizedPathname } from '@/i18n/locale-prefix'
 import type { LoginFormValues } from '../schemas/login-schema'
-
-interface LoginErrorBody {
-  error?: { code?: string }
-}
+import type { LoginErrorBody } from '../types/login'
 
 export function useLogin(callbackUrl: string) {
   const t = useTranslations('auth.login')

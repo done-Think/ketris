@@ -1,19 +1,11 @@
-import { Box, Button, type ButtonProps } from '@mui/material'
-import type { ReactNode } from 'react'
+import { Box, Button } from '@mui/material'
 
 import {
   dashboardStatusFilterButtonSx,
   dashboardStatusFilterCountSx,
   dashboardStatusFilterToneSx,
 } from './dashboard-header-actions'
-
-type DashboardStatusFilterButtonProps = {
-  active: boolean
-  count: number
-  children: ReactNode
-  onClick: () => void
-  sx?: ButtonProps['sx']
-}
+import type { DashboardStatusFilterButtonProps } from '@shared/types/dashboard-status-filter-button'
 
 export function DashboardStatusFilterButton({
   active,

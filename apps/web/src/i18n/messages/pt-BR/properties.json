@@ -168,7 +168,25 @@
       "Destacar imóvel na listagem inicial": "Destacar imóvel na listagem inicial"
     },
     "createSuccess": "Imóvel cadastrado com sucesso.",
-    "createError": "Não foi possível cadastrar o imóvel. Tente novamente."
+    "createError": "Não foi possível cadastrar o imóvel. Tente novamente.",
+    "errors": {
+      "propertyTypeRequired": "Selecione o tipo de imóvel",
+      "purposeRequired": "Selecione ao menos uma finalidade",
+      "titleRequired": "Informe o título do anúncio",
+      "descriptionRequired": "Informe uma descrição mais completa",
+      "streetRequired": "Informe o endereço",
+      "numberRequired": "Informe o número",
+      "neighborhoodRequired": "Informe o bairro",
+      "cityRequired": "Informe a cidade",
+      "stateRequired": "Informe a UF",
+      "zipCodeRequired": "Informe o CEP",
+      "numberInvalid": "Informe um valor válido",
+      "areaRequired": "Informe a área útil",
+      "mainValueRequired": "Informe o valor principal",
+      "negotiationTermRequired": "Informe a condição comercial",
+      "rentalValueInvalid": "Informe um valor de aluguel válido",
+      "rentalValueRequired": "Informe o valor do aluguel"
+    }
   },
   "edit": {
     "title": "Editar imóvel",

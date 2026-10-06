@@ -213,6 +213,13 @@
         "title": "Título do Chamado",
         "description": "Relato do Problema",
         "descriptionPlaceholder": "Descreva o problema..."
+      },
+      "errors": {
+        "propertyRequired": "Selecione o imóvel",
+        "categoryRequired": "Selecione a categoria",
+        "priorityRequired": "Selecione a prioridade",
+        "titleRequired": "Informe o título do chamado",
+        "descriptionRequired": "Descreva o problema"
       }
     },
     "actions": {

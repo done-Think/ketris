@@ -108,6 +108,11 @@
         "penthouses": "Áticos",
         "farms": "Fincas y casas de campo",
         "studios": "Studios"
+      },
+      "errors": {
+        "textTooLong": "Texto demasiado largo",
+        "optionRequired": "Selecciona una opción",
+        "priceInvalid": "Valor de precio inválido"
       }
     },
     "featured": {
@@ -234,7 +239,26 @@
       "preview": "Vista previa",
       "save": "Guardar",
       "publish": "Publicar",
-      "unpublish": "Despublicar"
+      "unpublish": "Despublicar",
+      "edit": "Editar"
+    },
+    "errors": {
+      "hexColorInvalid": "Introduce un color hexadecimal válido",
+      "urlInvalid": "Introduce una URL válida",
+      "displayNameRequired": "Introduce el nombre mostrado en el perfil",
+      "bioRequired": "Introduce la biografía",
+      "phoneRequired": "Introduce el teléfono",
+      "creciRequired": "Introduce el CRECI",
+      "availabilityRequired": "Introduce la disponibilidad",
+      "headlineRequired": "Introduce el título destacado",
+      "regionRequired": "Introduce la región de actuación",
+      "neighborhoodsRequired": "Introduce los barrios de actuación",
+      "specialtiesRequired": "Introduce las especialidades",
+      "primaryColorRequired": "Introduce el color principal",
+      "secondaryColorRequired": "Introduce el color secundario",
+      "backgroundColorRequired": "Introduce el color de fondo",
+      "avatarUrlRequired": "Sube una foto de perfil",
+      "bannerUrlRequired": "Sube una imagen de portada"
     }
   },
   "agencyProfileEditor": {
@@ -272,7 +296,28 @@
       "preview": "Vista previa",
       "save": "Guardar",
       "publish": "Publicar",
-      "unpublish": "Despublicar"
+      "unpublish": "Despublicar",
+      "edit": "Editar"
+    },
+    "errors": {
+      "hexColorInvalid": "Introduce un color hexadecimal válido",
+      "urlInvalid": "Introduce una URL válida",
+      "displayNameRequired": "Introduce el nombre de la inmobiliaria",
+      "emailInvalid": "Introduce un correo electrónico válido",
+      "teamTooLarge": "Selecciona hasta 6 corredores",
+      "summaryRequired": "Introduce la descripción de la inmobiliaria",
+      "phoneOrEmailRequired": "Introduce un teléfono o correo de contacto",
+      "legalCreciRequired": "Introduce el CRECI de la inmobiliaria",
+      "headlineRequired": "Introduce el título destacado",
+      "headquartersRequired": "Introduce la sede",
+      "addressRequired": "Introduce la dirección",
+      "coverageRequired": "Introduce las áreas de cobertura",
+      "segmentsRequired": "Introduce los segmentos de actuación",
+      "yearsInMarketRequired": "Introduce los años en el mercado",
+      "backgroundColorRequired": "Introduce el color de fondo",
+      "logoUrlRequired": "Sube el logotipo",
+      "bannerUrlRequired": "Sube una imagen de portada",
+      "teamRequired": "Selecciona al menos un corredor destacado"
     }
   },
   "searchResults": {
@@ -328,7 +373,19 @@
         "area100Plus": "100m²+",
         "all": "Todos",
         "withParking": "Con plaza"
+      },
+      "errors": {
+        "textTooLong": "Texto demasiado largo",
+        "optionInvalid": "Opción inválida",
+        "numbersOnly": "Solo números",
+        "numberTooLong": "Valor demasiado largo"
       }
+    },
+    "errors": {
+      "textTooLong": "Texto demasiado largo",
+      "optionInvalid": "Opción inválida",
+      "numbersOnly": "Solo números",
+      "numberTooLong": "Valor demasiado largo"
     }
   },
   "directory": {
@@ -361,6 +418,10 @@
       "response": "Respuesta",
       "team": "Equipo",
       "rating": "Nota"
+    },
+    "errors": {
+      "searchQueryTooLong": "La búsqueda es demasiado larga",
+      "visibleCountInvalid": "Cantidad de elementos inválida"
     }
   },
   "mediaUpload": {

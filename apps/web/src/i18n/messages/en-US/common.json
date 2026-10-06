@@ -53,7 +53,11 @@
       "save": "Save changes",
       "success": "Profile updated successfully.",
       "saveError": "Could not save the changes. Try again.",
-      "avatarFormatError": "Use a JPG, PNG, or WEBP image."
+      "avatarFormatError": "Use a JPG, PNG, or WEBP image.",
+      "errors": {
+        "nameRequired": "Enter your name.",
+        "emailInvalid": "Enter a valid email."
+      }
     },
     "charges": "Charges"
   },
@@ -76,7 +80,16 @@
     "profileError": "Could not save the changes. Try again.",
     "passwordSuccess": "Password changed successfully.",
     "passwordError": "Could not change the password. Try again.",
-    "avatarFormatError": "Use a JPG, PNG, or WEBP image."
+    "avatarFormatError": "Use a JPG, PNG, or WEBP image.",
+    "errors": {
+      "nameRequired": "Enter your name.",
+      "emailInvalid": "Enter a valid email.",
+      "phoneRequired": "Enter your phone number.",
+      "phoneInvalid": "Enter a valid phone number.",
+      "passwordTooShort": "Password must be at least 8 characters.",
+      "passwordConfirmationRequired": "Confirm the new password.",
+      "passwordMismatch": "Passwords do not match"
+    }
   },
   "roleGuard": {
     "loadingSession": "Loading session",

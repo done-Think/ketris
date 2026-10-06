@@ -21,11 +21,6 @@ export function CrmAccessBoundary({ children }: CrmAccessBoundaryProps) {
   const isRenter = isAuthenticated && session?.papel === 'RENTER'
   const isSessionInvalid = !isAuthenticated || isRenter
 
-  // The server-side layout only redirects on the initial navigation — if the session becomes
-  // invalid while the SPA is already open (token revalidated as stale, expiry, etc.), this is what
-  // sends the user back to /login instead of leaving them stuck on an empty/restricted screen.
-  // clearClientSession() drops the stale NextAuth cookie plus any client-side storage before the
-  // redirect, so a subsequent login never inherits leftover state from the invalidated session.
   useEffect(() => {
     if (status === 'loading') return
 

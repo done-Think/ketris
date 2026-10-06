@@ -65,8 +65,8 @@ describe('/api/agenda/events/{id}/reschedule (integração)', () => {
         criadoPorId: actorId,
         titulo: 'Outro evento do mesmo responsável',
         referenciaImovelLivre: 'Apto teste 2',
-        inicio: new Date('2026-10-13T09:00:00.000Z'),
-        fim: new Date('2026-10-13T09:30:00.000Z'),
+        inicio: new Date('2026-10-13T13:00:00.000Z'),
+        fim: new Date('2026-10-13T13:30:00.000Z'),
         participanteNome: 'Bruno',
         participanteTelefone: '11988880000',
       },
@@ -92,15 +92,15 @@ describe('/api/agenda/events/{id}/reschedule (integração)', () => {
 
   it('reagenda o evento e marca como CONFIRMED', async () => {
     const response = await POST(
-      buildRequest(eventId, { start: '2026-10-14T10:00:00.000Z' }),
+      buildRequest(eventId, { start: '2026-10-14T13:00:00.000Z' }),
       context(eventId),
     )
     const json = await response.json()
 
     expect(response.status).toBe(200)
     expect(json.event.status).toBe('CONFIRMED')
-    expect(json.event.start).toBe('2026-10-14T10:00:00.000Z')
-    expect(json.event.end).toBe('2026-10-14T11:00:00.000Z')
+    expect(json.event.start).toBe('2026-10-14T13:00:00.000Z')
+    expect(json.event.end).toBe('2026-10-14T14:00:00.000Z')
   })
 
   it('retorna 400 ao tentar reagendar a visita para menos de 60 minutos', async () => {
@@ -114,7 +114,7 @@ describe('/api/agenda/events/{id}/reschedule (integração)', () => {
 
   it('retorna 409 ao reagendar para um horário que colide com outro evento do mesmo responsável', async () => {
     const response = await POST(
-      buildRequest(eventId, { start: '2026-10-13T09:15:00.000Z', durationMinutes: 60 }),
+      buildRequest(eventId, { start: '2026-10-13T13:15:00.000Z', durationMinutes: 60 }),
       context(eventId),
     )
     const json = await response.json()
@@ -134,7 +134,7 @@ describe('/api/agenda/events/{id}/reschedule (integração)', () => {
 
   it('não considera o próprio evento como conflito ao reagendar para o mesmo período', async () => {
     const response = await POST(
-      buildRequest(eventId, { start: '2026-10-14T10:00:00.000Z', durationMinutes: 60 }),
+      buildRequest(eventId, { start: '2026-10-14T13:00:00.000Z', durationMinutes: 60 }),
       context(eventId),
     )
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import {
@@ -24,7 +24,7 @@ import { iconSize, brand, radius } from '@shared/theme/tokens'
 
 import { useProperties } from '@modules/properties/hooks/use-properties'
 
-import { maintenanceTicketSchema } from '../schemas/maintenance-ticket-schema'
+import { createMaintenanceTicketSchema } from '../schemas/maintenance-ticket-schema'
 import type { MaintenanceCreateTicketFormValues } from '../types/maintenance'
 
 const defaultValues: MaintenanceCreateTicketFormValues = {
@@ -56,6 +56,10 @@ export function MaintenanceCreateTicketDialog({
   const maintenanceT = useTranslations('dashboard.maintenance')
   const { data: properties } = useProperties()
   const propertyOptions = properties ?? []
+  const maintenanceTicketSchema = useMemo(
+    () => createMaintenanceTicketSchema((key) => t(`errors.${key}`)),
+    [t],
+  )
   const { control, handleSubmit, reset } = useForm<MaintenanceCreateTicketFormValues>({
     defaultValues,
     resolver: zodResolver(maintenanceTicketSchema),

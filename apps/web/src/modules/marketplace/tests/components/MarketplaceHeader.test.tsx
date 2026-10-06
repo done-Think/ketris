@@ -22,8 +22,6 @@ vi.mock('@shared/lib/auth/clear-client-session', () => ({
   clearClientSession: vi.fn().mockResolvedValue(undefined),
 }))
 
-// LanguageSelector usa next/navigation direto (não o wrapper @/i18n/navigation, já mockado
-// globalmente em src/test/setup.ts) — sem isso, usePathname() retorna null em jsdom e quebra.
 vi.mock('next/navigation', () => ({
   usePathname: () => '/',
   useSearchParams: () => new URLSearchParams(),

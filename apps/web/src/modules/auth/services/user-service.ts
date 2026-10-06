@@ -1,28 +1,13 @@
 import { BaseService } from '@shared/lib/api/base-service'
 
-import type { TenantUser } from '../types/user'
-
-interface ListUsersResponse {
-  users: TenantUser[]
-}
-
-interface ApproveMembershipResponse {
-  user: TenantUser
-}
-
-interface UpdateUserResponse {
-  user: TenantUser
-}
-
-interface UploadAvatarResponse {
-  media: { url: string }
-}
-
-export type UpdateCurrentUserPayload = {
-  name: string
-  email: string
-  avatarUrl?: string | null
-}
+import type {
+  ApproveMembershipResponse,
+  ListUsersResponse,
+  TenantUser,
+  UpdateCurrentUserPayload,
+  UpdateUserResponse,
+  UploadAvatarResponse,
+} from '../types/user'
 
 class UserService extends BaseService {
   private readonly path = '/auth/users'

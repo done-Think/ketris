@@ -32,3 +32,23 @@ export interface MaintenanceFilter {
   value: 'all' | MaintenanceStatus | 'urgent'
   count: number
 }
+
+export type MaintenanceStatusFiltersProps = {
+  activeFilter: MaintenanceFilter['value']
+  direction?: 'row' | 'column'
+  getFilterCount: (value: MaintenanceFilter['value']) => number
+  isDesktop?: boolean
+  onChange: (value: MaintenanceFilter['value']) => void
+}
+
+export type MaintenanceFilterOptionLabelProps = {
+  active: boolean
+  count: number
+  label: string
+}
+
+export type MetricCardProps = {
+  label: string
+  value: string
+  tone: 'open' | 'urgent' | 'averageResolution'
+}

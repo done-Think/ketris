@@ -6,8 +6,6 @@ import { formatCompactCurrency } from './search-results'
 const fallbackImage =
   'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=82'
 
-// São Paulo (Praça da Sé) — usado só quando o imóvel não tem coordenadas cadastradas, pra manter
-// o mapa central em vez de travar em (0,0), no meio do oceano.
 const fallbackMapCenter = { latitude: -23.5505, longitude: -46.6333 }
 
 function pluralize(count: number, singular: string, plural: string) {

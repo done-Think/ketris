@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { publicProfileEditorSchema } from '../../schemas/public-profile-editor-schema'
+import { createPublicProfileEditorSchema } from '../../schemas/public-profile-editor-schema'
+
+const publicProfileEditorSchema = createPublicProfileEditorSchema((key) => key)
 
 const validDraft = {
   displayName: 'Marina Costa',
@@ -59,5 +61,15 @@ describe('publicProfileEditorSchema', () => {
     const result = publicProfileEditorSchema.safeParse({ ...validDraft, avatarUrl: 'not-a-url' })
 
     expect(result.success).toBe(false)
+  })
+
+  it('routes each validation message through the translator with the right key', () => {
+    const translated = createPublicProfileEditorSchema((key) => `translated:${key}`)
+    const result = translated.safeParse({ ...validDraft, displayName: '' })
+
+    expect(result.success).toBe(false)
+    expect(result.success ? undefined : result.error.issues[0]?.message).toBe(
+      'translated:displayNameRequired',
+    )
   })
 })

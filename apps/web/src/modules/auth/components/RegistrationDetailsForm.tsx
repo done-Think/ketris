@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Box,
@@ -24,9 +24,9 @@ import { brand } from '@shared/theme/tokens'
 import { AgencyAutocomplete } from './AgencyAutocomplete'
 import { AuthFormField } from './AuthFormField'
 import { authPrimaryButtonSx, authTextFieldSx } from './auth-form.styles'
-import type { AgencySearchResult } from '../services/registration-service'
-import { registrationDetailsSchema } from '../schemas/registration-details-schema'
+import { createRegistrationDetailsSchema } from '../schemas/registration-details-schema'
 import type {
+  AgencySearchResult,
   RegistrationDetailsFormProps,
   RegistrationDetailsFormValues,
   RegistrationPasswordField,
@@ -46,6 +46,10 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
     ReadonlySet<RegistrationPasswordFieldName>
   >(new Set())
   const [selectedAgency, setSelectedAgency] = useState<AgencySearchResult | null>(null)
+  const registrationDetailsSchema = useMemo(
+    () => createRegistrationDetailsSchema((key) => t(`errors.${key}`)),
+    [t],
+  )
   const {
     control,
     handleSubmit,

@@ -53,7 +53,11 @@
       "save": "Guardar cambios",
       "success": "Perfil actualizado correctamente.",
       "saveError": "No se pudieron guardar los cambios. Inténtalo de nuevo.",
-      "avatarFormatError": "Usa una imagen JPG, PNG o WEBP."
+      "avatarFormatError": "Usa una imagen JPG, PNG o WEBP.",
+      "errors": {
+        "nameRequired": "Indica tu nombre.",
+        "emailInvalid": "Indica un correo electrónico válido."
+      }
     },
     "charges": "Cobros"
   },
@@ -76,7 +80,16 @@
     "profileError": "No se pudieron guardar los cambios. Inténtalo de nuevo.",
     "passwordSuccess": "Contraseña cambiada correctamente.",
     "passwordError": "No se pudo cambiar la contraseña. Inténtalo de nuevo.",
-    "avatarFormatError": "Usa una imagen JPG, PNG o WEBP."
+    "avatarFormatError": "Usa una imagen JPG, PNG o WEBP.",
+    "errors": {
+      "nameRequired": "Indica tu nombre.",
+      "emailInvalid": "Indica un correo electrónico válido.",
+      "phoneRequired": "Indica tu teléfono.",
+      "phoneInvalid": "Indica un teléfono válido.",
+      "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
+      "passwordConfirmationRequired": "Confirma la nueva contraseña.",
+      "passwordMismatch": "Las contraseñas no coinciden"
+    }
   },
   "roleGuard": {
     "loadingSession": "Cargando sesión",

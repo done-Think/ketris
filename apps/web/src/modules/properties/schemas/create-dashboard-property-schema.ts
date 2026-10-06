@@ -5,54 +5,60 @@ import type {
   CreatePropertyPurpose,
 } from '../types/dashboard-property'
 
-const numberField = z.coerce.number().nonnegative('Informe um valor válido')
+export type SchemaMessageTranslator = (key: string) => string
 
-export const createDashboardPropertySchema = z
-  .object({
-    activeStepIndex: z.number().int().min(0).default(0),
-    maxVisitedStepIndex: z.number().int().min(0).default(0),
-    type: z.string().min(1, 'Selecione o tipo de imóvel'),
-    purpose: z
-      .array(z.enum(['Aluguel', 'Venda'] satisfies [CreatePropertyPurpose, CreatePropertyPurpose]))
-      .min(1, 'Selecione ao menos uma finalidade'),
-    title: z.string().min(3, 'Informe o título do anúncio'),
-    description: z.string().min(10, 'Informe uma descrição mais completa'),
-    street: z.string().min(3, 'Informe o endereço'),
-    number: z.string().min(1, 'Informe o número'),
-    neighborhood: z.string().min(2, 'Informe o bairro'),
-    city: z.string().min(2, 'Informe a cidade'),
-    state: z.string().length(2, 'Informe a UF'),
-    zipCode: z.string().min(8, 'Informe o CEP'),
-    bedrooms: numberField,
-    bathrooms: numberField,
-    parkingSpaces: numberField,
-    area: z.coerce.number().positive('Informe a área útil'),
-    features: z.array(z.string()).default([]),
-    media: z
-      .array(
-        z.object({ url: z.string(), type: z.string().optional(), order: z.number().optional() }),
-      )
-      .default([]),
-    mainValue: z.coerce.number().positive('Informe o valor principal'),
-    rentalValue: z.coerce.number().nonnegative('Informe um valor de aluguel válido').optional(),
-    condominium: numberField,
-    iptu: numberField,
-    negotiationTerm: z.string().min(1, 'Informe a condição comercial'),
-    publishingOptions: z.array(z.string()).default([]),
-  })
-  .superRefine((values, context) => {
-    if (
-      values.purpose.includes('Aluguel') &&
-      values.purpose.includes('Venda') &&
-      (!values.rentalValue || values.rentalValue <= 0)
-    ) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['rentalValue'],
-        message: 'Informe o valor do aluguel',
-      })
-    }
-  })
+export function createDashboardPropertySchema(t: SchemaMessageTranslator) {
+  const numberField = z.coerce.number().nonnegative(t('numberInvalid'))
+
+  return z
+    .object({
+      activeStepIndex: z.number().int().min(0).default(0),
+      maxVisitedStepIndex: z.number().int().min(0).default(0),
+      type: z.string().min(1, t('propertyTypeRequired')),
+      purpose: z
+        .array(
+          z.enum(['Aluguel', 'Venda'] satisfies [CreatePropertyPurpose, CreatePropertyPurpose]),
+        )
+        .min(1, t('purposeRequired')),
+      title: z.string().min(3, t('titleRequired')),
+      description: z.string().min(10, t('descriptionRequired')),
+      street: z.string().min(3, t('streetRequired')),
+      number: z.string().min(1, t('numberRequired')),
+      neighborhood: z.string().min(2, t('neighborhoodRequired')),
+      city: z.string().min(2, t('cityRequired')),
+      state: z.string().length(2, t('stateRequired')),
+      zipCode: z.string().min(8, t('zipCodeRequired')),
+      bedrooms: numberField,
+      bathrooms: numberField,
+      parkingSpaces: numberField,
+      area: z.coerce.number().positive(t('areaRequired')),
+      features: z.array(z.string()).default([]),
+      media: z
+        .array(
+          z.object({ url: z.string(), type: z.string().optional(), order: z.number().optional() }),
+        )
+        .default([]),
+      mainValue: z.coerce.number().positive(t('mainValueRequired')),
+      rentalValue: z.coerce.number().nonnegative(t('rentalValueInvalid')).optional(),
+      condominium: numberField,
+      iptu: numberField,
+      negotiationTerm: z.string().min(1, t('negotiationTermRequired')),
+      publishingOptions: z.array(z.string()).default([]),
+    })
+    .superRefine((values, context) => {
+      if (
+        values.purpose.includes('Aluguel') &&
+        values.purpose.includes('Venda') &&
+        (!values.rentalValue || values.rentalValue <= 0)
+      ) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['rentalValue'],
+          message: t('rentalValueRequired'),
+        })
+      }
+    })
+}
 
 export const createDashboardPropertyDefaultValues: CreateDashboardPropertyFormValues = {
   activeStepIndex: 0,

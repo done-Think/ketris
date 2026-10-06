@@ -1,20 +1,13 @@
 'use client'
 
-import { useMemo, useState, type MouseEvent } from 'react'
+import { useMemo, useState } from 'react'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
-import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded'
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded'
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import {
   Box,
-  Button,
-  Chip,
-  IconButton,
   InputAdornment,
-  Menu,
-  MenuItem,
   Paper,
   Stack,
   Tab,
@@ -26,8 +19,6 @@ import {
   TableRow,
   Tabs,
   TextField,
-  Tooltip,
-  Typography,
 } from '@mui/material'
 import { useSnackbar } from 'notistack'
 import { useTranslations, useLocale } from 'next-intl'
@@ -46,17 +37,17 @@ import { formatCurrency } from '@shared/lib/utils/format'
 import { useCharges, useCreateCharge, useUpdateCharge } from '../hooks/use-financial'
 import { getMonthlyReceivable, mapChargeListItemFromApi } from '../utils/charge-adapter'
 import { errorMessage } from '../utils/error-message'
-import { chargeStatusColors as statusColors } from './charge-status-colors'
 import type {
-  Charge,
   ChargeDirection,
   ChargeStatus,
   CreateChargeFormValues,
   UpdateChargeFormValues,
 } from '../types/charge'
 import { ArchiveChargeDialog } from './ArchiveChargeDialog'
+import { ChargeRow } from './ChargeRow'
 import { CreateChargeDialog } from './CreateChargeDialog'
 import { EditChargeDialog } from './EditChargeDialog'
+import { Metric } from './Metric'
 
 const defaultRowsPerPage = 6
 const statusKeys: Array<'all' | ChargeStatus> = ['all', 'pending', 'overdue', 'paid', 'scheduled']
@@ -434,167 +425,5 @@ export function ChargesPage() {
         onConfirm={archiveCharge}
       />
     </Box>
-  )
-}
-
-function Metric({
-  label,
-  value,
-  icon,
-  tone,
-}: {
-  label: string
-  value: string
-  icon: React.ReactNode
-  tone: 'success' | 'error' | 'warning'
-}) {
-  const colors = {
-    success: statusColors.paid.bg,
-    error: statusColors.overdue.bg,
-    warning: statusColors.pending.bg,
-  }
-  return (
-    <Stack
-      direction="row"
-      alignItems="center"
-      spacing={1.5}
-      sx={{
-        minHeight: 76,
-        p: 2,
-        bgcolor: surface.paper,
-        borderRadius: `${radius.sm}px`,
-        boxShadow: shadows.crmCardCompact,
-      }}
-    >
-      <Box
-        sx={{
-          display: 'grid',
-          placeItems: 'center',
-          width: 40,
-          height: 40,
-          flexShrink: 0,
-          borderRadius: '50%',
-          bgcolor: colors[tone],
-          color:
-            tone === 'error' ? 'error.main' : tone === 'success' ? 'success.main' : 'warning.dark',
-        }}
-      >
-        {icon}
-      </Box>
-      <Box sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
-        <Typography sx={{ fontSize: 11.5, color: brand.neutral[500] }}>{label}</Typography>
-        <Typography sx={{ fontSize: { xs: 19, md: 20 }, fontWeight: 900 }}>{value}</Typography>
-      </Box>
-    </Stack>
-  )
-}
-function ChargeRow({
-  charge,
-  locale,
-  zebra,
-  labels,
-  onEdit,
-  onArchive,
-  onView,
-}: {
-  charge: Charge
-  locale: string
-  zebra: boolean
-  labels: Record<string, string>
-  onEdit: () => void
-  onArchive: () => void
-  onView: () => void
-}) {
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
-  const style = statusColors[charge.status]
-  return (
-    <TableRow
-      sx={{
-        height: 58,
-        bgcolor: zebra ? surface.app : surface.paper,
-        '&:hover': { bgcolor: alpha.graphite[6] },
-      }}
-    >
-      <TableCell>
-        <Button
-          aria-label={`${labels.view} ${charge.code}`}
-          onClick={onView}
-          variant="text"
-          sx={{ minWidth: 0, p: 0, color: brand.graphite[500], fontSize: 15.5, fontWeight: 900 }}
-        >
-          {charge.code}
-        </Button>
-      </TableCell>
-      <TableCell>{charge.tenant}</TableCell>
-      <TableCell>
-        <Typography noWrap sx={{ color: 'text.secondary', fontSize: 14 }}>
-          {charge.property}
-        </Typography>
-      </TableCell>
-      <TableCell>
-        <Typography sx={{ fontWeight: 800, fontSize: 15.5 }}>
-          {formatCurrency(charge.amount)}
-        </Typography>
-      </TableCell>
-      <TableCell>
-        <Typography sx={{ color: 'text.secondary', fontSize: 15.5 }}>
-          {new Intl.DateTimeFormat(locale).format(new Date(`${charge.dueDate}T12:00:00`))}
-        </Typography>
-      </TableCell>
-      <TableCell>
-        <Chip
-          label={labels.status}
-          size="small"
-          sx={{
-            height: 30,
-            bgcolor: style.bg,
-            color: style.color,
-            borderRadius: `${radius.full}px`,
-            fontWeight: 900,
-            fontSize: 13,
-          }}
-        />
-      </TableCell>
-      <TableCell>
-        <Stack direction="row" justifyContent="center" alignItems="center">
-          <Tooltip title={labels.view}>
-            <IconButton
-              aria-label={`${labels.view} ${charge.code}`}
-              onClick={onView}
-              size="small"
-              sx={{ color: brand.neutral[500], '&:hover': { color: 'primary.main' } }}
-            >
-              <VisibilityOutlinedIcon sx={{ fontSize: iconSize.md }} />
-            </IconButton>
-          </Tooltip>
-          <IconButton
-            aria-label={`${labels.actions} ${charge.code}`}
-            onClick={(event: MouseEvent<HTMLButtonElement>) => setAnchor(event.currentTarget)}
-            size="small"
-            sx={{ color: brand.neutral[500], '&:hover': { color: 'primary.main' } }}
-          >
-            <MoreVertRoundedIcon sx={{ fontSize: iconSize.md }} />
-          </IconButton>
-          <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
-            <MenuItem
-              onClick={() => {
-                onEdit()
-                setAnchor(null)
-              }}
-            >
-              {labels.edit}
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                onArchive()
-                setAnchor(null)
-              }}
-            >
-              {labels.archive}
-            </MenuItem>
-          </Menu>
-        </Stack>
-      </TableCell>
-    </TableRow>
   )
 }

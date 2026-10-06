@@ -53,7 +53,11 @@
       "save": "Salvar alterações",
       "success": "Perfil atualizado com sucesso.",
       "saveError": "Não foi possível salvar as alterações. Tente novamente.",
-      "avatarFormatError": "Use uma imagem JPG, PNG ou WEBP."
+      "avatarFormatError": "Use uma imagem JPG, PNG ou WEBP.",
+      "errors": {
+        "nameRequired": "Informe seu nome.",
+        "emailInvalid": "Informe um e-mail válido."
+      }
     },
     "charges": "Cobranças"
   },
@@ -76,7 +80,16 @@
     "profileError": "Não foi possível salvar as alterações. Tente novamente.",
     "passwordSuccess": "Senha alterada com sucesso.",
     "passwordError": "Não foi possível alterar a senha. Tente novamente.",
-    "avatarFormatError": "Use uma imagem JPG, PNG ou WEBP."
+    "avatarFormatError": "Use uma imagem JPG, PNG ou WEBP.",
+    "errors": {
+      "nameRequired": "Informe seu nome.",
+      "emailInvalid": "Informe um e-mail válido.",
+      "phoneRequired": "Informe seu telefone.",
+      "phoneInvalid": "Informe um telefone válido.",
+      "passwordTooShort": "A senha deve ter pelo menos 8 caracteres.",
+      "passwordConfirmationRequired": "Confirme a nova senha.",
+      "passwordMismatch": "As senhas não coincidem"
+    }
   },
   "roleGuard": {
     "loadingSession": "Carregando sessão",

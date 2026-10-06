@@ -5,7 +5,6 @@ import type {
   RecentTenant,
 } from '../types/platform-overview'
 
-/** Demonstration-only content for the Platform Overview. */
 export const platformMetrics: readonly PlatformMetric[] = [
   { id: 'tenants', value: 45, format: 'number' },
   { id: 'brokers', value: 680, format: 'number' },

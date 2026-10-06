@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useId, useState, type ChangeEvent } from 'react'
+import { useEffect, useId, useMemo, useState, type ChangeEvent } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import PhotoCameraOutlinedIcon from '@mui/icons-material/PhotoCameraOutlined'
 import {
@@ -23,8 +23,8 @@ import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 import { getInitials } from '@shared/utils/get-initials'
 
 import {
-  changeOwnPasswordSchema,
-  currentUserProfileSchema,
+  createChangeOwnPasswordSchema,
+  createCurrentUserProfileSchema,
 } from '../schemas/current-user-profile-schema'
 import { userService } from '../services/user-service'
 import type {
@@ -45,6 +45,14 @@ export function CurrentUserProfilePage() {
   const [profileError, setProfileError] = useState<string | null>(null)
   const [passwordError, setPasswordError] = useState<string | null>(null)
   const user = session?.user
+  const currentUserProfileSchema = useMemo(
+    () => createCurrentUserProfileSchema((key) => t(`errors.${key}`)),
+    [t],
+  )
+  const changeOwnPasswordSchema = useMemo(
+    () => createChangeOwnPasswordSchema((key) => t(`errors.${key}`)),
+    [t],
+  )
   const profileForm = useForm<CurrentUserProfileValues>({
     resolver: zodResolver(currentUserProfileSchema),
     defaultValues: { name: user?.name ?? '', phone: DEMO_PHONE, email: user?.email ?? '' },

@@ -101,8 +101,6 @@ export function ContractsDashboardPage() {
     defaultValues: contractsFiltersDefaultValues,
     resolver: zodResolver(contractsFiltersSchema),
   })
-  // Watching each primitive field individually (instead of the whole form via `watch()`) keeps
-  // stable dependency values, so the filter below only recomputes when a filter actually changes.
   const searchQuery = useWatch({ control, name: 'searchQuery' })
   const status = useWatch({ control, name: 'status' })
   const type = useWatch({ control, name: 'type' })

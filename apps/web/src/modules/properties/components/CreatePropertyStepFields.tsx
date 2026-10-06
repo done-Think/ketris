@@ -1,27 +1,13 @@
-import { Controller } from 'react-hook-form'
-import {
-  Box,
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  MenuItem,
-  Select,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material'
-import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
-import { useTranslations } from 'next-intl'
+import { Typography } from '@mui/material'
 
-import { brand, iconSize, motion, radius, surface } from '@shared/theme/tokens'
+import { brand } from '@shared/theme/tokens'
 
-import {
-  createPropertyFeatureOptions,
-  createPropertyPublishingOptions,
-  createPropertyPurposeOptions,
-  createPropertyTypeOptions,
-} from '../config/dashboard-property-ui'
 import type { CreatePropertyStepFieldsProps } from '../types/dashboard-property'
+import { CreatePropertyAddressStepFields } from './CreatePropertyAddressStepFields'
+import { CreatePropertyBasicStepFields } from './CreatePropertyBasicStepFields'
+import { CreatePropertyFeaturesStepFields } from './CreatePropertyFeaturesStepFields'
+import { CreatePropertyPublishingStepFields } from './CreatePropertyPublishingStepFields'
+import { CreatePropertyValuesStepFields } from './CreatePropertyValuesStepFields'
 import { PropertyMediaUploadField } from './PropertyMediaUploadField'
 
 export function CreatePropertyStepFields({
@@ -30,7 +16,6 @@ export function CreatePropertyStepFields({
   activeStepLabel,
   propertyPurpose,
 }: CreatePropertyStepFieldsProps) {
-  const t = useTranslations('properties.create')
   const hasRentPurpose = propertyPurpose.includes('Aluguel')
   const hasSalePurpose = propertyPurpose.includes('Venda')
   const hasDualPurpose = hasRentPurpose && hasSalePurpose
@@ -56,343 +41,25 @@ export function CreatePropertyStepFields({
         {activeStepLabel}
       </Typography>
 
-      {activeStepKey === 'basic' ? (
-        <>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) minmax(0, 1fr)' },
-              gap: { xs: 2, md: 2.4 },
-              mb: 2.4,
-            }}
-          >
-            <FormControl fullWidth>
-              <Typography
-                sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 800, mb: 0.8 }}
-              >
-                {t('fields.propertyType')}
-              </Typography>
-              <Controller
-                control={control}
-                name="type"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    IconComponent={KeyboardArrowDownRoundedIcon}
-                    sx={{
-                      height: 44,
-                      borderRadius: `${radius.sm}px`,
-                      bgcolor: surface.paper,
-                      fontSize: 14,
-                    }}
-                  >
-                    {createPropertyTypeOptions.map((type) => (
-                      <MenuItem key={type} value={type}>
-                        {t(`propertyTypes.${type}`)}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                )}
-              />
-            </FormControl>
+      {activeStepKey === 'basic' ? <CreatePropertyBasicStepFields control={control} /> : null}
 
-            <Box>
-              <Box sx={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Typography
-                  sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 800, mb: 0.8 }}
-                >
-                  {t('fields.purpose')}
-                </Typography>
-                <Controller
-                  control={control}
-                  name="purpose"
-                  render={({ field }) => (
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        columnGap: '10px',
-                        rowGap: 0.8,
-                      }}
-                    >
-                      {createPropertyPurposeOptions.map((purpose) => {
-                        const active = field.value.includes(purpose)
+      {activeStepKey === 'address' ? <CreatePropertyAddressStepFields control={control} /> : null}
 
-                        return (
-                          <FormControlLabel
-                            key={purpose}
-                            control={
-                              <Checkbox
-                                checked={active}
-                                size="small"
-                                onChange={(event) => {
-                                  field.onChange(
-                                    event.target.checked
-                                      ? [...field.value, purpose]
-                                      : field.value.filter((item) => item !== purpose),
-                                  )
-                                }}
-                              />
-                            }
-                            label={t(`purposes.${purpose}`)}
-                            sx={{
-                              minHeight: 44,
-                              color: active ? 'primary.main' : 'text.secondary',
-                              mx: 0,
-                              px: 0,
-                              transition: motion.transition.interactive,
-                              '& .MuiCheckbox-root': {
-                                color: active ? 'primary.main' : brand.neutral[400],
-                                p: 0.6,
-                                mr: 0.6,
-                                '& .MuiSvgIcon-root': {
-                                  fontSize: iconSize.md,
-                                },
-                              },
-                              '& .MuiFormControlLabel-label': {
-                                fontSize: 14,
-                                fontWeight: 900,
-                                transform: 'translateY(1px)',
-                              },
-                              '&:hover': {
-                                color: 'primary.main',
-                              },
-                            }}
-                          />
-                        )
-                      })}
-                    </Box>
-                  )}
-                />
-              </Box>
-            </Box>
-          </Box>
-
-          <Stack spacing={2.2}>
-            <Controller
-              control={control}
-              name="title"
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label={t('fields.title')}
-                  error={Boolean(fieldState.error)}
-                  helperText={fieldState.error?.message}
-                />
-              )}
-            />
-
-            <Controller
-              control={control}
-              name="description"
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  multiline
-                  minRows={4}
-                  label={t('fields.description')}
-                  error={Boolean(fieldState.error)}
-                  helperText={fieldState.error?.message}
-                />
-              )}
-            />
-          </Stack>
-        </>
-      ) : null}
-
-      {activeStepKey === 'address' ? (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr 1fr', md: '2fr 1fr' },
-            gap: { xs: 1.2, md: 2 },
-          }}
-        >
-          {[
-            ['street', 'street'],
-            ['number', 'number'],
-            ['neighborhood', 'neighborhood'],
-            ['city', 'city'],
-            ['state', 'state'],
-            ['zipCode', 'zipCode'],
-          ].map(([name, label]) => (
-            <Controller
-              key={name}
-              control={control}
-              name={name as 'street' | 'number' | 'neighborhood' | 'city' | 'state' | 'zipCode'}
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  label={t(`fields.${label}`)}
-                  error={Boolean(fieldState.error)}
-                  helperText={fieldState.error?.message}
-                  sx={{
-                    gridColumn: {
-                      xs: name === 'street' || name === 'zipCode' ? '1 / -1' : 'auto',
-                    },
-                  }}
-                />
-              )}
-            />
-          ))}
-        </Box>
-      ) : null}
-
-      {activeStepKey === 'features' ? (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: 'repeat(2, minmax(0, 1fr))',
-              md: 'repeat(4, minmax(0, 1fr))',
-            },
-            gap: { xs: 1.2, md: 2 },
-          }}
-        >
-          {[
-            ['bedrooms', 'bedrooms', 'number'],
-            ['bathrooms', 'bathrooms', 'number'],
-            ['parkingSpaces', 'parkingSpaces', 'number'],
-            ['area', 'area', 'number'],
-          ].map(([name, label, type]) => (
-            <Controller
-              key={name}
-              control={control}
-              name={name as 'bedrooms' | 'bathrooms' | 'parkingSpaces' | 'area'}
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  label={t(`fields.${label}`)}
-                  type={type}
-                  error={Boolean(fieldState.error)}
-                  helperText={fieldState.error?.message}
-                />
-              )}
-            />
-          ))}
-
-          {createPropertyFeatureOptions.map((feature) => (
-            <Controller
-              key={feature}
-              control={control}
-              name="features"
-              render={({ field }) => {
-                const checked = field.value.includes(feature)
-
-                return (
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={checked}
-                        size="small"
-                        onChange={(event) => {
-                          field.onChange(
-                            event.target.checked
-                              ? [...field.value, feature]
-                              : field.value.filter((item) => item !== feature),
-                          )
-                        }}
-                      />
-                    }
-                    label={t(`features.${feature}`)}
-                    sx={{
-                      minHeight: 44,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: `${radius.sm}px`,
-                      mx: 0,
-                      px: 1,
-                      '& .MuiFormControlLabel-label': { fontSize: 14, fontWeight: 800 },
-                    }}
-                  />
-                )
-              }}
-            />
-          ))}
-        </Box>
-      ) : null}
+      {activeStepKey === 'features' ? <CreatePropertyFeaturesStepFields control={control} /> : null}
 
       {activeStepKey === 'media' ? <PropertyMediaUploadField control={control} /> : null}
 
       {activeStepKey === 'values' ? (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
-            gap: 2,
-          }}
-        >
-          {[
-            ['mainValue', hasDualPurpose ? 'referenceValue' : mainValueLabel, 'number'],
-            ...(hasDualPurpose ? ([['rentalValue', 'rentValue', 'number']] as const) : []),
-            ['condominium', 'condominium', 'number'],
-            ['iptu', 'iptu', 'number'],
-            ['negotiationTerm', negotiationTermLabel, 'text'],
-          ].map(([name, label, type]) => (
-            <Controller
-              key={name}
-              control={control}
-              name={
-                name as 'mainValue' | 'rentalValue' | 'condominium' | 'iptu' | 'negotiationTerm'
-              }
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  label={t(`fields.${label}`)}
-                  type={type}
-                  error={Boolean(fieldState.error)}
-                  helperText={fieldState.error?.message}
-                />
-              )}
-            />
-          ))}
-        </Box>
+        <CreatePropertyValuesStepFields
+          control={control}
+          hasDualPurpose={hasDualPurpose}
+          mainValueLabel={mainValueLabel}
+          negotiationTermLabel={negotiationTermLabel}
+        />
       ) : null}
 
       {activeStepKey === 'publishing' ? (
-        <Stack spacing={1.6}>
-          {createPropertyPublishingOptions.map((option) => (
-            <Controller
-              key={option}
-              control={control}
-              name="publishingOptions"
-              render={({ field }) => {
-                const checked = field.value.includes(option)
-
-                return (
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={checked}
-                        size="small"
-                        onChange={(event) => {
-                          field.onChange(
-                            event.target.checked
-                              ? [...field.value, option]
-                              : field.value.filter((item) => item !== option),
-                          )
-                        }}
-                      />
-                    }
-                    label={t(`publishingOptions.${option}`)}
-                    sx={{
-                      minHeight: 44,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: `${radius.sm}px`,
-                      mx: 0,
-                      px: 1,
-                      '& .MuiFormControlLabel-label': { fontSize: 14, fontWeight: 800 },
-                    }}
-                  />
-                )
-              }}
-            />
-          ))}
-        </Stack>
+        <CreatePropertyPublishingStepFields control={control} />
       ) : null}
     </>
   )

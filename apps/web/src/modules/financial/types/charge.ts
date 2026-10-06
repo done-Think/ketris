@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 export type ChargeDirection = 'receivable' | 'payable'
 export type ChargeStatus = 'pending' | 'overdue' | 'paid' | 'scheduled' | 'cancelled'
 
@@ -44,4 +46,21 @@ export type UpdateChargeFormValues = {
   dueDate: string
   direction: ChargeDirection
   status: ChargeStatus
+}
+
+export type MetricProps = {
+  label: string
+  value: string
+  icon: ReactNode
+  tone: 'success' | 'error' | 'warning'
+}
+
+export type ChargeRowProps = {
+  charge: Charge
+  locale: string
+  zebra: boolean
+  labels: Record<string, string>
+  onEdit: () => void
+  onArchive: () => void
+  onView: () => void
 }

@@ -4,21 +4,22 @@ import MarkEmailReadOutlinedIcon from '@mui/icons-material/MarkEmailReadOutlined
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Box, Button, Link as MuiLink, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
+import { useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
 import { brand, componentText, radius } from '@shared/theme/tokens'
 
 import { authPrimaryButtonSx } from './auth-form.styles'
 import { VerificationCodeField } from './VerificationCodeField'
-import { verificationCodeSchema } from '../schemas/password-recovery-schema'
-
-export interface EmailVerificationStepProps {
-  email: string
-  onConfirmed: () => void
-}
+import { createVerificationCodeSchema } from '../schemas/password-recovery-schema'
+import type { EmailVerificationStepProps } from '../types/registration'
 
 export function EmailVerificationStep({ email, onConfirmed }: EmailVerificationStepProps) {
   const t = useTranslations('auth.registerDetails.emailVerification')
+  const verificationCodeSchema = useMemo(
+    () => createVerificationCodeSchema((key) => t(`errors.${key}`)),
+    [t],
+  )
   const { control, handleSubmit } = useForm({
     resolver: zodResolver(verificationCodeSchema),
     defaultValues: { code: '' },

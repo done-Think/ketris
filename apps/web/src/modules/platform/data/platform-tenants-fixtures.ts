@@ -1,6 +1,5 @@
 import type { PlatformTenant, PlatformTenantMetric } from '../types/platform-tenant'
 
-/** Demonstration-only data for the Platform Tenants screen. */
 export const platformTenantMetrics: readonly PlatformTenantMetric[] = [
   { id: 'total', value: '45' },
   { id: 'starter', value: '18' },
@@ -193,8 +192,6 @@ const referenceTenants: readonly PlatformTenant[] = [
   },
 ]
 
-// Keep the six tenants from the visual reference on page one, including when
-// all statuses are selected. The remaining fixtures exercise status filters.
 const referenceIds = ['silva', 'nexo', 'vanguard', 'apex', 'orion', 'prime']
 const orderedReferenceTenants = [
   ...referenceIds.flatMap((id) => referenceTenants.filter((tenant) => tenant.id === id)),

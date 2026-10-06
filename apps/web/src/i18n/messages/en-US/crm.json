@@ -129,6 +129,10 @@
         "cancel": "Cancel",
         "save": "Save"
       },
+      "errors": {
+        "nameRequired": "Name is required.",
+        "emailInvalid": "Invalid email."
+      },
       "createSuccess": "Contact created.",
       "updateSuccess": "Contact updated.",
       "saveError": "Could not save the contact."
@@ -241,7 +245,32 @@
       "pageAriaLabel": "Go to page {page}"
     }
   },
+  "properties": {
+    "searchFilters": {
+      "errors": {
+        "propertyTypeInvalid": "Enter a valid property type.",
+        "cityInvalid": "Enter a valid city.",
+        "minPriceInvalid": "Minimum price cannot be negative.",
+        "maxPriceInvalid": "Maximum price cannot be negative.",
+        "minBedroomsInvalid": "Minimum bedrooms cannot be negative.",
+        "searchTermInvalid": "Enter a valid search term."
+      }
+    }
+  },
   "opportunityDetail": {
+    "errors": {
+      "nameRequired": "Name is required.",
+      "emailInvalid": "Invalid email.",
+      "phoneInvalid": "Invalid phone number.",
+      "propertyRequired": "Select a property.",
+      "proposedValueRequired": "Proposed value is required.",
+      "proposedValuePositive": "Proposed value must be positive.",
+      "contractTermInvalid": "Term must be a positive whole number.",
+      "atLeastOneFieldRequired": "Provide at least one field to update.",
+      "desiredStartDateInvalid": "Invalid start date.",
+      "specialConditionInvalid": "Invalid special condition.",
+      "notesInvalid": "Invalid notes."
+    },
     "editTitle": "Edit opportunity",
     "breadcrumbAriaLabel": "Breadcrumb",
     "pipelineLink": "Pipeline",

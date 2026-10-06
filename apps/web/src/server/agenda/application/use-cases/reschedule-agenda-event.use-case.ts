@@ -2,6 +2,7 @@ import { ForbiddenError } from '@server/shared/errors'
 
 import type { Papel } from '@server/auth/domain/user.entity'
 
+import { assertWithinAgendaSchedulingWindow } from '../../domain/agenda-scheduling-rules'
 import {
   AgendaEventConflictError,
   AgendaEventNotFoundError,
@@ -39,6 +40,10 @@ export class RescheduleAgendaEventUseCase {
 
     if (existing.tipo === 'VISIT' && durationMinutes < 60) {
       throw new AgendaVisitMinimumDurationError()
+    }
+
+    if (input.inicio.getTime() !== existing.inicio.getTime()) {
+      assertWithinAgendaSchedulingWindow(input.inicio)
     }
 
     const fim = new Date(input.inicio.getTime() + durationMinutes * 60_000)

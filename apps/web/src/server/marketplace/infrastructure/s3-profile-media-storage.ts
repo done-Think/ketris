@@ -29,8 +29,6 @@ export class S3ProfileMediaStorage implements ProfileMediaStoragePort {
       }),
     )
 
-    // Bucket privado (ver infra/terraform/s3.tf) — a URL devolvida aponta pra rota própria que faz
-    // proxy do objeto (GET /api/marketplace/media/[...key]), nunca pro S3 direto.
     return { url: `/api/marketplace/media/${key}`, contentType: input.contentType }
   }
 }

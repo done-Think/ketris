@@ -1,18 +1,9 @@
 'use client'
 
 import { Box } from '@mui/material'
-import type { SxProps, Theme } from '@mui/material/styles'
-import type { StaticImageData } from 'next/image'
 
 import { Link } from '@/i18n/navigation'
-
-type AppLogoProps = {
-  src: string | StaticImageData
-  variant?: 'solid' | 'transparent'
-  width: { xs?: number; sm?: number; md?: number } | number
-  marginBottom?: { xs?: number; md?: number } | number
-  sx?: SxProps<Theme>
-}
+import type { AppLogoProps } from '@shared/types/app-logo'
 
 export function AppLogo({ src, variant = 'solid', width, marginBottom, sx }: AppLogoProps) {
   const resolvedSrc = typeof src === 'string' ? src : src.src

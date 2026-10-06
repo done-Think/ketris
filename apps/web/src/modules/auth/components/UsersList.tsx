@@ -15,21 +15,13 @@ import {
   Typography,
 } from '@mui/material'
 import { useSnackbar } from 'notistack'
-import axios from 'axios'
 import { useTranslations } from 'next-intl'
 
 import { radius, shadows } from '@shared/theme/tokens'
+import { extractErrorMessage } from '@shared/utils/error-message'
 
 import { useApproveUserMembership } from '../hooks/use-approve-user-membership'
 import { useUsers } from '../hooks/use-users'
-
-function extractErrorMessage(error: unknown, fallback: string): string {
-  if (axios.isAxiosError(error)) {
-    const message = error.response?.data?.error?.message
-    if (typeof message === 'string') return message
-  }
-  return fallback
-}
 
 export function UsersList() {
   const t = useTranslations('auth.backoffice')

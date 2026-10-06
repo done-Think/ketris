@@ -11,9 +11,8 @@ import SellOutlinedIcon from '@mui/icons-material/SellOutlined'
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined'
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import ShowChartOutlinedIcon from '@mui/icons-material/ShowChartOutlined'
-import type { SvgIconComponent } from '@mui/icons-material'
 import { Box, Button, Drawer, IconButton, Stack, Tooltip, Typography } from '@mui/material'
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { Link, usePathname } from '@/i18n/navigation'
@@ -22,6 +21,8 @@ import { DashboardNotificationsButton } from '@shared/components/layout'
 import { AppLogo } from '@shared/components/ui'
 import { useSidebarPreferencesStore } from '@shared/stores/sidebar-preferences-store'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+
+import type { NavigationItem, PlatformShellProps } from '../types/platform-shell'
 
 const sidebarExpandedWidth = 240
 const sidebarCollapsedWidth = 72
@@ -38,17 +39,6 @@ const marketplaceActionSx = {
   '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
 } as const
 
-type NavigationItem = {
-  label: 'overview' | 'tenants' | 'users' | 'plans' | 'finance' | 'system' | 'logs'
-  icon: SvgIconComponent
-  href?:
-    | '/platform'
-    | '/platform/tenants'
-    | '/platform/system'
-    | '/platform/admins'
-    | '/platform/admins/new'
-}
-
 const navigationItems: readonly NavigationItem[] = [
   { label: 'overview', icon: HomeOutlinedIcon, href: '/platform' },
   { label: 'tenants', icon: ApartmentOutlinedIcon, href: '/platform/tenants' },
@@ -59,7 +49,7 @@ const navigationItems: readonly NavigationItem[] = [
   { label: 'logs', icon: ShowChartOutlinedIcon },
 ]
 
-export function PlatformShell({ children }: { children: ReactNode }) {
+export function PlatformShell({ children }: PlatformShellProps) {
   const t = useTranslations('platform.overview.navigation')
   const commonT = useTranslations('common.appShell')
   const pathname = usePathname()

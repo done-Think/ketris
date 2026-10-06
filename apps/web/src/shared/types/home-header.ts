@@ -17,11 +17,6 @@ export type HomeHeaderProps = {
   profileButtonRef?: RefObject<HTMLButtonElement>
   userProfile?: HomeHeaderUserProfile
   onToggleProfile?: () => void
-  /**
-   * true enquanto a sessão (useSession) ainda não resolveu. Evita mostrar o seletor de idioma por
-   * um instante e trocar pro avatar assim que a sessão carrega — mostra um espaço neutro até saber
-   * qual dos dois é o estado real.
-   */
   isSessionLoading?: boolean
   showSignIn?: boolean
   showLanguageSelector?: boolean

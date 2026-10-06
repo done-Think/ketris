@@ -81,3 +81,51 @@ export interface PropertyListFilters {
   status?: PropertyStatus
   purpose?: PropertyPurpose
 }
+
+export interface ApiPropertyAddress {
+  logradouro: string
+  numero: string
+  complemento: string | null
+  bairro: string
+  cidade: string
+  estado: string
+  cep: string
+  latitude: number | null
+  longitude: number | null
+}
+
+export interface ApiPropertyMedia {
+  id: string
+  url: string
+  tipo: string
+  ordem: number
+  createdAt: string
+}
+
+export interface ApiProperty {
+  id: string
+  tenantId: string
+  responsavelId: string
+  titulo: string
+  descricao: string | null
+  finalidade: 'ALUGUEL' | 'VENDA' | 'AMBOS'
+  tipo: string
+  status: PropertyStatus
+  publicadoEm: string | null
+  createdAt: string
+  updatedAt: string
+  endereco: ApiPropertyAddress | null
+  midias: ApiPropertyMedia[]
+  valores: {
+    valor: number
+    valorAluguel: number | null
+    condominio: number | null
+    iptu: number | null
+  }
+  caracteristicas: {
+    quartos: number | null
+    banheiros: number | null
+    vagas: number | null
+    areaM2: number | null
+  }
+}

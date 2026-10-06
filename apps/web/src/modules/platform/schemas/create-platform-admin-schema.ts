@@ -1,16 +1,20 @@
 import { z } from 'zod'
 
-export const createPlatformAdminSchema = z
-  .object({
-    nome: z.string().min(1, 'Informe o nome'),
-    email: z.string().min(1, 'Informe o e-mail').email('E-mail inválido'),
-    password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres'),
-    confirmarSenha: z.string().min(1, 'Confirme a senha'),
-    role: z.enum(['ADMIN', 'ADMIN_AGENT', 'AGENT']),
-  })
-  .refine((data) => data.password === data.confirmarSenha, {
-    message: 'As senhas não coincidem',
-    path: ['confirmarSenha'],
-  })
+import type { SchemaMessageTranslator } from './create-tenant-schema'
 
-export type CreatePlatformAdminFormValues = z.infer<typeof createPlatformAdminSchema>
+export function createPlatformAdminSchema(t: SchemaMessageTranslator) {
+  return z
+    .object({
+      nome: z.string().min(1, t('nameRequired')),
+      email: z.string().min(1, t('emailRequired')).email(t('emailInvalid')),
+      password: z.string().min(8, t('passwordTooShort')),
+      confirmarSenha: z.string().min(1, t('passwordConfirmationRequired')),
+      role: z.enum(['ADMIN', 'ADMIN_AGENT', 'AGENT']),
+    })
+    .refine((data) => data.password === data.confirmarSenha, {
+      message: t('passwordsDoNotMatch'),
+      path: ['confirmarSenha'],
+    })
+}
+
+export type CreatePlatformAdminFormValues = z.infer<ReturnType<typeof createPlatformAdminSchema>>
