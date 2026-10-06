@@ -163,6 +163,27 @@ export type PropertyValueFieldConfig = readonly [
   isCurrency: boolean,
 ]
 
+export type DashboardPropertyMappingMessages = {
+  notAnnounced: string
+  notInformed: string
+  unknownAddress: string
+  monthlySuffix: string
+  purposes: {
+    rent: string
+    sale: string
+  }
+  activity: {
+    created: string
+    published: string
+    updated: string
+  }
+}
+
+export type DashboardPropertyMappingOptions = {
+  locale: string
+  messages: DashboardPropertyMappingMessages
+}
+
 export type CreatePropertyPublishingStepFieldsProps = {
   control: Control<CreateDashboardPropertyFormValues>
 }

@@ -49,6 +49,21 @@
       "Em análise": "Em análise",
       "Vencendo": "Vencendo",
       "Inativo": "Inativo"
+    },
+    "mapping": {
+      "notAnnounced": "Não anunciado",
+      "notInformed": "Não informado",
+      "unknownAddress": "Endereço não informado",
+      "monthlySuffix": "/mês",
+      "purposes": {
+        "rent": "Aluguel",
+        "sale": "Venda"
+      },
+      "activity": {
+        "created": "Cadastro do imóvel efetuado",
+        "published": "Imóvel publicado",
+        "updated": "Imóvel atualizado"
+      }
     }
   },
   "detail": {

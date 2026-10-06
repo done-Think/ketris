@@ -49,6 +49,21 @@
       "Em análise": "Under review",
       "Vencendo": "Expiring",
       "Inativo": "Inactive"
+    },
+    "mapping": {
+      "notAnnounced": "Not announced",
+      "notInformed": "Not informed",
+      "unknownAddress": "Address not informed",
+      "monthlySuffix": "/mo",
+      "purposes": {
+        "rent": "Rent",
+        "sale": "Sale"
+      },
+      "activity": {
+        "created": "Property registration completed",
+        "published": "Property published",
+        "updated": "Property updated"
+      }
     }
   },
   "detail": {

@@ -4,23 +4,31 @@ const currencyFormatter = new Intl.NumberFormat('pt-BR', {
   maximumFractionDigits: 0,
 })
 
-const relativeTimeFormatter = new Intl.RelativeTimeFormat('pt-BR', { numeric: 'auto' })
-
 export function formatPropertyCurrency(value: number): string {
   return currencyFormatter.format(value).replace(/ /g, ' ')
 }
 
-export function formatPropertyArea(value: number | null): string {
-  return value !== null ? `${value}m²` : 'Não informado'
+export function formatPropertyArea(value: number | null, fallback = 'Não informado'): string {
+  return value !== null ? `${value}m²` : fallback
 }
 
-export function formatPropertyRelativeDate(value: string, capitalizeFirstLetter = false): string {
+export function formatPropertyRelativeDate(
+  value: string,
+  localeOrCapitalize: string | boolean = 'pt-BR',
+  capitalizeFirstLetter = false,
+): string {
+  const locale = typeof localeOrCapitalize === 'string' ? localeOrCapitalize : 'pt-BR'
+  const shouldCapitalize =
+    typeof localeOrCapitalize === 'boolean' ? localeOrCapitalize : capitalizeFirstLetter
+  const relativeTimeFormatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' })
   const target = new Date(value)
   const differenceInSeconds = Math.round((target.getTime() - Date.now()) / 1000)
   const absoluteSeconds = Math.abs(differenceInSeconds)
 
   if (absoluteSeconds < 60) {
-    return capitalizeFirstLetter ? 'Agora' : 'agora'
+    const formatted = relativeTimeFormatter.format(0, 'second')
+
+    return shouldCapitalize ? formatted.charAt(0).toUpperCase() + formatted.slice(1) : formatted
   }
 
   const units = [
@@ -35,5 +43,5 @@ export function formatPropertyRelativeDate(value: string, capitalizeFirstLetter 
   const amount = Math.round(differenceInSeconds / selected.seconds)
   const formatted = relativeTimeFormatter.format(amount, selected.unit)
 
-  return capitalizeFirstLetter ? formatted.charAt(0).toUpperCase() + formatted.slice(1) : formatted
+  return shouldCapitalize ? formatted.charAt(0).toUpperCase() + formatted.slice(1) : formatted
 }

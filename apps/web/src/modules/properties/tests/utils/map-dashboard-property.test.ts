@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { toDashboardProperty } from '../../utils/map-dashboard-property'
+import type { DashboardPropertyMappingOptions } from '../../types/dashboard-property'
 import type { Property } from '../../types/property'
 
 const baseProperty: Property = {
@@ -37,6 +38,25 @@ const baseProperty: Property = {
   ],
   values: { price: 6500, rentalPrice: null, condoFee: 1200, propertyTax: 380 },
   characteristics: { bedrooms: 3, bathrooms: 2, parkingSpots: 2, areaM2: 95 },
+}
+
+const enMappingOptions: DashboardPropertyMappingOptions = {
+  locale: 'en-US',
+  messages: {
+    notAnnounced: 'Not announced',
+    notInformed: 'Not informed',
+    unknownAddress: 'Address not informed',
+    monthlySuffix: '/mo',
+    purposes: {
+      rent: 'Rent',
+      sale: 'Sale',
+    },
+    activity: {
+      created: 'Property registration completed',
+      published: 'Property published',
+      updated: 'Property updated',
+    },
+  },
 }
 
 describe('toDashboardProperty', () => {
@@ -83,10 +103,11 @@ describe('toDashboardProperty', () => {
     expect(result.status).toBe(dashboardStatus)
   })
 
-  it('a SOLD sale listing satisfies the "Vendido" filter convention (purpose Venda + status Ativo)', () => {
+  it('keeps the raw SOLD API status available for dashboard filtering', () => {
     const result = toDashboardProperty({ ...baseProperty, purpose: 'SALE', status: 'SOLD' })
 
-    expect(result.purpose === 'Venda' && result.status === 'Ativo').toBe(true)
+    expect(result.apiStatus).toBe('SOLD')
+    expect(result.status).toBe('Ativo')
   })
 
   it('falls back to placeholders when characteristics/values are null', () => {
@@ -107,6 +128,25 @@ describe('toDashboardProperty', () => {
 
     expect(result.address).toBe('Endereço não informado')
     expect(result.location).toBe('')
+  })
+
+  it('uses mapping options for locale-sensitive dashboard labels', () => {
+    const result = toDashboardProperty(
+      {
+        ...baseProperty,
+        address: null,
+        values: { price: 6500, rentalPrice: null, condoFee: null, propertyTax: null },
+        characteristics: { bedrooms: null, bathrooms: null, parkingSpots: null, areaM2: null },
+      },
+      enMappingOptions,
+    )
+
+    expect(result.purpose).toBe('Rent')
+    expect(result.price).toBe('R$ 6.500/mo')
+    expect(result.pricing.sale).toBe('Not announced')
+    expect(result.summary.area).toBe('Not informed')
+    expect(result.address).toBe('Address not informed')
+    expect(result.activityHistory.some((entry) => entry.label === 'Property published')).toBe(true)
   })
 
   it('includes a "published" activity entry only when publishedAt is set', () => {

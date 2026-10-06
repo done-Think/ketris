@@ -1,4 +1,9 @@
-import type { DashboardProperty, DashboardPropertyStatus } from '../types/dashboard-property'
+import type {
+  DashboardProperty,
+  DashboardPropertyMappingMessages,
+  DashboardPropertyMappingOptions,
+  DashboardPropertyStatus,
+} from '../types/dashboard-property'
 import type { Property, PropertyStatus } from '../types/property'
 import {
   formatPropertyArea,
@@ -20,20 +25,49 @@ const statusByApiStatus: Record<PropertyStatus, DashboardPropertyStatus> = {
   INACTIVE: 'Inativo',
 }
 
-function formatValueOrPlaceholder(value: number | null, suffix = ''): string {
-  return value !== null ? `${formatPropertyCurrency(value)}${suffix}` : 'Não informado'
+const defaultMappingMessages: DashboardPropertyMappingMessages = {
+  notAnnounced: 'Não anunciado',
+  notInformed: 'Não informado',
+  unknownAddress: 'Endereço não informado',
+  monthlySuffix: '/mês',
+  purposes: {
+    rent: 'Aluguel',
+    sale: 'Venda',
+  },
+  activity: {
+    created: 'Cadastro do imóvel efetuado',
+    published: 'Imóvel publicado',
+    updated: 'Imóvel atualizado',
+  },
 }
 
-export function toDashboardProperty(property: Property): DashboardProperty {
+const defaultMappingOptions: DashboardPropertyMappingOptions = {
+  locale: 'pt-BR',
+  messages: defaultMappingMessages,
+}
+
+function formatValueOrPlaceholder(
+  value: number | null,
+  messages: DashboardPropertyMappingMessages,
+  suffix = '',
+): string {
+  return value !== null ? `${formatPropertyCurrency(value)}${suffix}` : messages.notInformed
+}
+
+export function toDashboardProperty(
+  property: Property,
+  options: DashboardPropertyMappingOptions = defaultMappingOptions,
+): DashboardProperty {
+  const { locale, messages } = options
   const isRent = property.purpose === 'RENT'
   const isDualPurpose = property.purpose === 'BOTH'
   const formattedSalePrice = formatPropertyCurrency(property.values.price)
   const formattedRentPrice = property.values.rentalPrice
-    ? `${formatPropertyCurrency(property.values.rentalPrice)}/mês`
-    : 'Não anunciado'
+    ? `${formatPropertyCurrency(property.values.rentalPrice)}${messages.monthlySuffix}`
+    : messages.notAnnounced
   const addressLine = property.address
     ? `${property.address.street}, ${property.address.number}`
-    : 'Endereço não informado'
+    : messages.unknownAddress
   const locationLine = property.address
     ? `${property.address.neighborhood}, ${property.address.city}`
     : ''
@@ -47,13 +81,17 @@ export function toDashboardProperty(property: Property): DashboardProperty {
     address: addressLine,
     location: locationLine,
     type: property.type,
-    purpose: isDualPurpose ? 'Venda' : isRent ? 'Aluguel' : 'Venda',
+    purpose: isDualPurpose
+      ? messages.purposes.sale
+      : isRent
+        ? messages.purposes.rent
+        : messages.purposes.sale,
     price: isDualPurpose
       ? `${formattedSalePrice} · ${formattedRentPrice}`
-      : `${formattedSalePrice}${isRent ? '/mês' : ''}`,
+      : `${formattedSalePrice}${isRent ? messages.monthlySuffix : ''}`,
     status: statusByApiStatus[property.status],
     broker: '',
-    updatedAt: formatPropertyRelativeDate(property.updatedAt, true),
+    updatedAt: formatPropertyRelativeDate(property.updatedAt, locale, true),
     imageUrl: coverUrl,
     heroImageUrl: coverUrl,
     media: property.media.map((item) => ({
@@ -62,52 +100,56 @@ export function toDashboardProperty(property: Property): DashboardProperty {
       kind: mediaKindByType[item.type] ?? 'Foto',
     })),
     summary: {
-      bedrooms: property.characteristics.bedrooms?.toString() ?? 'Não informado',
-      bathrooms: property.characteristics.bathrooms?.toString() ?? 'Não informado',
-      parkingSpaces: property.characteristics.parkingSpots?.toString() ?? 'Não informado',
-      area: formatPropertyArea(property.characteristics.areaM2),
-      condominium: formatValueOrPlaceholder(property.values.condoFee),
-      iptu: formatValueOrPlaceholder(property.values.propertyTax, '/mês'),
+      bedrooms: property.characteristics.bedrooms?.toString() ?? messages.notInformed,
+      bathrooms: property.characteristics.bathrooms?.toString() ?? messages.notInformed,
+      parkingSpaces: property.characteristics.parkingSpots?.toString() ?? messages.notInformed,
+      area: formatPropertyArea(property.characteristics.areaM2, messages.notInformed),
+      condominium: formatValueOrPlaceholder(property.values.condoFee, messages),
+      iptu: formatValueOrPlaceholder(property.values.propertyTax, messages, messages.monthlySuffix),
     },
     pricing: {
       rent: isRent
-        ? `${formattedSalePrice}/mês`
+        ? `${formattedSalePrice}${messages.monthlySuffix}`
         : isDualPurpose
           ? formattedRentPrice
-          : 'Não anunciado',
-      sale: isRent ? 'Não anunciado' : formattedSalePrice,
-      condominium: formatValueOrPlaceholder(property.values.condoFee),
-      iptu: formatValueOrPlaceholder(property.values.propertyTax, '/mês'),
-      administrationFee: 'Não informado',
-      securityDeposit: 'Não informado',
-      lastAdjustment: 'Não informado',
+          : messages.notAnnounced,
+      sale: isRent ? messages.notAnnounced : formattedSalePrice,
+      condominium: formatValueOrPlaceholder(property.values.condoFee, messages),
+      iptu: formatValueOrPlaceholder(property.values.propertyTax, messages, messages.monthlySuffix),
+      administrationFee: messages.notInformed,
+      securityDeposit: messages.notInformed,
+      lastAdjustment: messages.notInformed,
     },
     participants: [],
-    activityHistory: buildActivityHistory(property),
+    activityHistory: buildActivityHistory(property, options),
   }
 }
 
-function buildActivityHistory(property: Property): DashboardProperty['activityHistory'] {
+function buildActivityHistory(
+  property: Property,
+  options: DashboardPropertyMappingOptions,
+): DashboardProperty['activityHistory'] {
+  const { locale, messages } = options
   const history: DashboardProperty['activityHistory'] = [
     {
-      label: 'Cadastro do imóvel efetuado',
-      date: formatPropertyRelativeDate(property.createdAt),
+      label: messages.activity.created,
+      date: formatPropertyRelativeDate(property.createdAt, locale),
       tone: 'neutral',
     },
   ]
 
   if (property.publishedAt) {
     history.unshift({
-      label: 'Imóvel publicado',
-      date: formatPropertyRelativeDate(property.publishedAt),
+      label: messages.activity.published,
+      date: formatPropertyRelativeDate(property.publishedAt, locale),
       tone: 'success',
     })
   }
 
   if (property.updatedAt !== property.createdAt) {
     history.unshift({
-      label: 'Imóvel atualizado',
-      date: formatPropertyRelativeDate(property.updatedAt),
+      label: messages.activity.updated,
+      date: formatPropertyRelativeDate(property.updatedAt, locale),
       tone: 'info',
     })
   }
