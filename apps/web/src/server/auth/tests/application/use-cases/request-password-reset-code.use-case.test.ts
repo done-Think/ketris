@@ -48,7 +48,7 @@ describe('RequestPasswordResetCodeUseCase', () => {
       deps.mailer,
     )
 
-    await useCase.execute({ email: 'ana@ketris.dev' })
+    await useCase.execute({ email: 'ana@ketris.dev', locale: 'pt-BR' })
 
     expect(deps.passwordResetCodeRepository.invalidateAllForUser).toHaveBeenCalledWith(user.id)
     expect(deps.passwordResetCodeRepository.create).toHaveBeenCalledWith(
@@ -67,7 +67,9 @@ describe('RequestPasswordResetCodeUseCase', () => {
       deps.mailer,
     )
 
-    await expect(useCase.execute({ email: 'desconhecido@ketris.dev' })).resolves.toBeUndefined()
+    await expect(
+      useCase.execute({ email: 'desconhecido@ketris.dev', locale: 'pt-BR' }),
+    ).resolves.toBeUndefined()
 
     expect(deps.passwordResetCodeRepository.create).not.toHaveBeenCalled()
     expect(deps.mailer.send).not.toHaveBeenCalled()
@@ -81,8 +83,8 @@ describe('RequestPasswordResetCodeUseCase', () => {
       deps.mailer,
     )
 
-    await useCase.execute({ email: 'ana@ketris.dev' })
-    await useCase.execute({ email: 'ana@ketris.dev' })
+    await useCase.execute({ email: 'ana@ketris.dev', locale: 'pt-BR' })
+    await useCase.execute({ email: 'ana@ketris.dev', locale: 'pt-BR' })
 
     const firstCodeHash = vi.mocked(deps.passwordResetCodeRepository.create).mock.calls[0]![0]
       .codeHash

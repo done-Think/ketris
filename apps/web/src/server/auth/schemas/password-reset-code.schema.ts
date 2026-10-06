@@ -1,6 +1,8 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
+import { locales } from '@/i18n/routing'
+
 export const requestPasswordResetCodeSchema = z
   .object({
     email: z
@@ -9,6 +11,7 @@ export const requestPasswordResetCodeSchema = z
       .email('E-mail inválido.')
       .transform((value) => value.toLowerCase())
       .openapi({ example: 'ana@ketris.dev' }),
+    locale: z.enum(locales).openapi({ example: 'pt-BR' }),
   })
   .openapi('RequestPasswordResetCodeRequest')
 

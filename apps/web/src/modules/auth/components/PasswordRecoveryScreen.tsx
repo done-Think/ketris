@@ -75,6 +75,7 @@ export function PasswordRecoveryScreen() {
       setResetToken(token)
       setStep('newPassword')
     } else {
+      resetForm.setError('code', { type: 'manual' })
       resetForm.setValue('code', '')
     }
   }

@@ -8,7 +8,10 @@ import { parseJsonBody, withErrorHandling } from '@server/shared/http'
 export const POST = withErrorHandling(async (request: NextRequest) => {
   const body = await parseJsonBody(request, requestPasswordResetCodeSchema)
 
-  await authContainer.requestPasswordResetCodeUseCase.execute({ email: body.email })
+  await authContainer.requestPasswordResetCodeUseCase.execute({
+    email: body.email,
+    locale: body.locale,
+  })
 
   return new NextResponse(null, { status: 204 })
 })

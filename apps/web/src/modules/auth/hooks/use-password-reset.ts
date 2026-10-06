@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 import axios from 'axios'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 
 import { passwordRecoveryService } from '../services/password-recovery-service'
 import type { ResetPasswordInput } from '../types/password-recovery'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 function messageForErrorCode(t: (key: string) => string, code: string | undefined): string {
   if (code === 'RATE_LIMIT_EXCEEDED') return t('errors.rateLimited')
@@ -17,6 +18,7 @@ function messageForErrorCode(t: (key: string) => string, code: string | undefine
 
 export function usePasswordReset() {
   const t = useTranslations('auth.passwordRecovery')
+  const locale = useLocale() as AppLocale
   const [requestCodeError, setRequestCodeError] = useState<string | null>(null)
   const [verifyCodeError, setVerifyCodeError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -25,7 +27,7 @@ export function usePasswordReset() {
     setRequestCodeError(null)
 
     try {
-      await passwordRecoveryService.requestCode(email)
+      await passwordRecoveryService.requestCode(email, locale)
       return true
     } catch (requestError) {
       const code = axios.isAxiosError(requestError)

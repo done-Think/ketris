@@ -71,7 +71,7 @@ describe('PasswordRecoveryScreen', () => {
 
     await goToCodeStep(user)
 
-    expect(passwordRecoveryService.requestCode).toHaveBeenCalledWith('usuario@email.com')
+    expect(passwordRecoveryService.requestCode).toHaveBeenCalledWith('usuario@email.com', 'pt-BR')
     expect(screen.getAllByLabelText(/Código de verificação/)).toHaveLength(6)
     expect(screen.getByRole('button', { name: 'Reenviar em 1:00' })).toBeDisabled()
     expect(screen.queryByLabelText('Nova senha')).not.toBeInTheDocument()
@@ -128,6 +128,7 @@ describe('PasswordRecoveryScreen', () => {
     ).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Crie uma nova senha' })).not.toBeInTheDocument()
     expect(boxes[0]).toHaveValue('')
+    expect(boxes[0]).toHaveAttribute('aria-invalid', 'true')
   })
 
   it('exige pelo menos 8 caracteres na nova senha', async () => {
