@@ -1,8 +1,28 @@
 import { Controller } from 'react-hook-form'
 import { Box, TextField } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 
-import type { CreatePropertyValuesStepFieldsProps } from '../types/dashboard-property'
+import type {
+  CreatePropertyValuesStepFieldsProps,
+  PropertyValueFieldConfig,
+} from '../types/dashboard-property'
+
+function formatCurrencyInput(value: unknown, locale: string) {
+  const numericValue = Number(value)
+
+  if (!Number.isFinite(numericValue) || numericValue <= 0) return ''
+
+  return new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+  }).format(numericValue)
+}
+
+function parseCurrencyInput(value: string) {
+  const digits = value.replace(/\D/g, '')
+
+  return digits ? Number(digits) : 0
+}
 
 export function CreatePropertyValuesStepFields({
   control,
@@ -11,6 +31,14 @@ export function CreatePropertyValuesStepFields({
   negotiationTermLabel,
 }: CreatePropertyValuesStepFieldsProps) {
   const t = useTranslations('properties.create')
+  const locale = useLocale()
+  const fields: PropertyValueFieldConfig[] = [
+    ['mainValue', hasDualPurpose ? 'referenceValue' : mainValueLabel, true],
+    ...(hasDualPurpose ? ([['rentalValue', 'rentValue', true]] as const) : []),
+    ['condominium', 'condominium', true],
+    ['iptu', 'iptu', true],
+    ['negotiationTerm', negotiationTermLabel, false],
+  ]
 
   return (
     <Box
@@ -20,22 +48,30 @@ export function CreatePropertyValuesStepFields({
         gap: 2,
       }}
     >
-      {[
-        ['mainValue', hasDualPurpose ? 'referenceValue' : mainValueLabel, 'number'],
-        ...(hasDualPurpose ? ([['rentalValue', 'rentValue', 'number']] as const) : []),
-        ['condominium', 'condominium', 'number'],
-        ['iptu', 'iptu', 'number'],
-        ['negotiationTerm', negotiationTermLabel, 'text'],
-      ].map(([name, label, type]) => (
+      {fields.map(([name, label, isCurrency]) => (
         <Controller
           key={name}
           control={control}
-          name={name as 'mainValue' | 'rentalValue' | 'condominium' | 'iptu' | 'negotiationTerm'}
+          name={name}
           render={({ field, fieldState }) => (
             <TextField
-              {...field}
+              name={field.name}
+              onBlur={field.onBlur}
+              inputRef={field.ref}
               label={t(`fields.${label}`)}
-              type={type}
+              value={isCurrency ? formatCurrencyInput(field.value, locale) : field.value}
+              onChange={(event) =>
+                field.onChange(
+                  isCurrency ? parseCurrencyInput(event.target.value) : event.target.value,
+                )
+              }
+              slotProps={{
+                htmlInput: isCurrency
+                  ? {
+                      inputMode: 'numeric',
+                    }
+                  : undefined,
+              }}
               error={Boolean(fieldState.error)}
               helperText={fieldState.error?.message}
             />

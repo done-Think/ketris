@@ -144,6 +144,25 @@ export type CreatePropertyValuesStepFieldsProps = {
   negotiationTermLabel: 'securityDeposit' | 'commission' | 'commercialTerms'
 }
 
+export type PropertyValueFieldName =
+  'mainValue' | 'rentalValue' | 'condominium' | 'iptu' | 'negotiationTerm'
+
+export type PropertyValueFieldLabel =
+  | 'referenceValue'
+  | 'rentValue'
+  | 'saleValue'
+  | 'condominium'
+  | 'iptu'
+  | 'securityDeposit'
+  | 'commission'
+  | 'commercialTerms'
+
+export type PropertyValueFieldConfig = readonly [
+  name: PropertyValueFieldName,
+  label: PropertyValueFieldLabel,
+  isCurrency: boolean,
+]
+
 export type CreatePropertyPublishingStepFieldsProps = {
   control: Control<CreateDashboardPropertyFormValues>
 }
