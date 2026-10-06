@@ -45,6 +45,16 @@ describe('publicProfileEditorSchema', () => {
     expect(result.success).toBe(true)
   })
 
+  it('aceita caminhos internos retornados pelo upload de imagens', () => {
+    const result = publicProfileEditorSchema.safeParse({
+      ...validDraft,
+      avatarUrl: '/api/marketplace/media/profiles/brokers/user-1/avatar-uuid-avatar.webp',
+      bannerUrl: '/api/marketplace/media/profiles/brokers/user-1/banner-uuid-banner.webp',
+    })
+
+    expect(result.success).toBe(true)
+  })
+
   it('rejeita nome exibido vazio', () => {
     const result = publicProfileEditorSchema.safeParse({ ...validDraft, displayName: '' })
 
