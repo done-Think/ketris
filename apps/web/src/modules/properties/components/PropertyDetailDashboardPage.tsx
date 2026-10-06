@@ -10,7 +10,10 @@ import { useSnackbar } from 'notistack'
 
 import { useRouter } from '@/i18n/navigation'
 
-import { getDashboardPropertyById } from '../data/dashboard-properties'
+import {
+  getDashboardPropertyById,
+  localizeDashboardPropertyFixture,
+} from '../data/dashboard-properties'
 import { useDashboardPropertyMappingOptions } from '../hooks/use-dashboard-property-mapping-options'
 import {
   useDeleteProperty,
@@ -65,9 +68,11 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
     notFound()
   }
 
-  const property =
-    fixtureProperty ??
-    (propertyQuery.data ? toDashboardProperty(propertyQuery.data, mappingOptions) : notFound())
+  const property = fixtureProperty
+    ? localizeDashboardPropertyFixture(fixtureProperty, mappingOptions)
+    : propertyQuery.data
+      ? toDashboardProperty(propertyQuery.data, mappingOptions)
+      : notFound()
   const canManage =
     session?.papel === 'ADMIN' ||
     session?.papel === 'OWNER' ||

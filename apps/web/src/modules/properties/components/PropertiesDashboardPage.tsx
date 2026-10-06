@@ -5,7 +5,11 @@ import { useForm } from 'react-hook-form'
 import { Box, Stack } from '@mui/material'
 
 import { useRouter } from '@/i18n/navigation'
-import { dashboardProperties, propertyStatusFilters } from '../data/dashboard-properties'
+import {
+  dashboardProperties,
+  localizeDashboardPropertyFixture,
+  propertyStatusFilters,
+} from '../data/dashboard-properties'
 import { useDashboardPropertyMappingOptions } from '../hooks/use-dashboard-property-mapping-options'
 import { useProperties } from '../hooks/use-properties'
 import type {
@@ -43,7 +47,9 @@ export function PropertiesDashboardPage() {
   const properties = useMemo(
     () =>
       fixtureMode
-        ? dashboardProperties
+        ? dashboardProperties.map((property) =>
+            localizeDashboardPropertyFixture(property, mappingOptions),
+          )
         : (propertiesQuery.data ?? []).map((property) =>
             toDashboardProperty(property, mappingOptions),
           ),

@@ -172,6 +172,13 @@ export type DashboardPropertyMappingMessages = {
     rent: string
     sale: string
   }
+  propertyTypes: {
+    apartment: string
+    house: string
+    studio: string
+    penthouse: string
+    commercial: string
+  }
   activity: {
     created: string
     published: string

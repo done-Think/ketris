@@ -34,6 +34,13 @@ const defaultMappingMessages: DashboardPropertyMappingMessages = {
     rent: 'Aluguel',
     sale: 'Venda',
   },
+  propertyTypes: {
+    apartment: 'Apartamento',
+    house: 'Casa',
+    studio: 'Studio',
+    penthouse: 'Cobertura',
+    commercial: 'Comercial',
+  },
   activity: {
     created: 'Cadastro do imóvel efetuado',
     published: 'Imóvel publicado',
@@ -52,6 +59,22 @@ function formatValueOrPlaceholder(
   suffix = '',
 ): string {
   return value !== null ? `${formatPropertyCurrency(value)}${suffix}` : messages.notInformed
+}
+
+export function translatePropertyType(
+  type: string,
+  messages: DashboardPropertyMappingMessages,
+): string {
+  const normalizedType = type.trim().toLocaleLowerCase('pt-BR')
+  const propertyTypeByValue: Record<string, string> = {
+    apartamento: messages.propertyTypes.apartment,
+    casa: messages.propertyTypes.house,
+    studio: messages.propertyTypes.studio,
+    cobertura: messages.propertyTypes.penthouse,
+    comercial: messages.propertyTypes.commercial,
+  }
+
+  return propertyTypeByValue[normalizedType] ?? type
 }
 
 export function toDashboardProperty(
@@ -80,7 +103,7 @@ export function toDashboardProperty(
     title: property.title,
     address: addressLine,
     location: locationLine,
-    type: property.type,
+    type: translatePropertyType(property.type, messages),
     purpose: isDualPurpose
       ? messages.purposes.sale
       : isRent

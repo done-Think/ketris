@@ -21,6 +21,13 @@ export function useDashboardPropertyMappingOptions(): DashboardPropertyMappingOp
           rent: t('purposes.rent'),
           sale: t('purposes.sale'),
         },
+        propertyTypes: {
+          apartment: t('propertyTypes.apartment'),
+          house: t('propertyTypes.house'),
+          studio: t('propertyTypes.studio'),
+          penthouse: t('propertyTypes.penthouse'),
+          commercial: t('propertyTypes.commercial'),
+        },
         activity: {
           created: t('activity.created'),
           published: t('activity.published'),

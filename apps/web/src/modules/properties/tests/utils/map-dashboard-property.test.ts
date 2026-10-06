@@ -51,6 +51,13 @@ const enMappingOptions: DashboardPropertyMappingOptions = {
       rent: 'Rent',
       sale: 'Sale',
     },
+    propertyTypes: {
+      apartment: 'Apartment',
+      house: 'House',
+      studio: 'Studio',
+      penthouse: 'Penthouse',
+      commercial: 'Commercial',
+    },
     activity: {
       created: 'Property registration completed',
       published: 'Property published',
@@ -142,6 +149,7 @@ describe('toDashboardProperty', () => {
     )
 
     expect(result.purpose).toBe('Rent')
+    expect(result.type).toBe('Apartment')
     expect(result.price).toBe('R$ 6.500/mo')
     expect(result.pricing.sale).toBe('Not announced')
     expect(result.summary.area).toBe('Not informed')

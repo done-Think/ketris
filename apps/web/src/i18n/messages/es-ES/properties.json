@@ -59,6 +59,13 @@
         "rent": "Alquiler",
         "sale": "Venta"
       },
+      "propertyTypes": {
+        "apartment": "Apartamento",
+        "house": "Casa",
+        "studio": "Studio",
+        "penthouse": "Ático",
+        "commercial": "Comercial"
+      },
       "activity": {
         "created": "Registro del inmueble completado",
         "published": "Inmueble publicado",

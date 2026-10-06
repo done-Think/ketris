@@ -59,6 +59,13 @@
         "rent": "Rent",
         "sale": "Sale"
       },
+      "propertyTypes": {
+        "apartment": "Apartment",
+        "house": "House",
+        "studio": "Studio",
+        "penthouse": "Penthouse",
+        "commercial": "Commercial"
+      },
       "activity": {
         "created": "Property registration completed",
         "published": "Property published",

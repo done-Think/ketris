@@ -1,4 +1,9 @@
-import type { DashboardProperty, DashboardPropertyFilterKey } from '../types/dashboard-property'
+import type {
+  DashboardProperty,
+  DashboardPropertyFilterKey,
+  DashboardPropertyMappingOptions,
+} from '../types/dashboard-property'
+import { translatePropertyType } from '../utils/map-dashboard-property'
 
 export const propertyStatusFilters: Array<{ label: DashboardPropertyFilterKey }> = [
   { label: 'Todos' },
@@ -374,4 +379,77 @@ export const dashboardProperties: DashboardProperty[] = [
 
 export function getDashboardPropertyById(propertyId: string) {
   return dashboardProperties.find((property) => property.id === propertyId)
+}
+
+function translateMonthlyValue(value: string, monthlySuffix: string) {
+  return value.replaceAll('/mês', monthlySuffix)
+}
+
+function translatePlaceholder(value: string, options: DashboardPropertyMappingOptions) {
+  return translateMonthlyValue(
+    value === 'Não anunciado'
+      ? options.messages.notAnnounced
+      : value === 'Não informado'
+        ? options.messages.notInformed
+        : value,
+    options.messages.monthlySuffix,
+  )
+}
+
+function translateRelativeDate(value: string, locale: string) {
+  const match = value.match(/^(há|Há) (\d+) (hora|horas|dia|dias|semana|semanas|mês|meses)$/)
+
+  if (!match) return value
+
+  const [, prefix, amount, unit] = match
+  const unitMap = {
+    hora: 'hour',
+    horas: 'hour',
+    dia: 'day',
+    dias: 'day',
+    semana: 'week',
+    semanas: 'week',
+    mês: 'month',
+    meses: 'month',
+  } as const
+  const formatted = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(
+    -Number(amount),
+    unitMap[unit as keyof typeof unitMap],
+  )
+
+  return prefix === 'Há' ? formatted.charAt(0).toUpperCase() + formatted.slice(1) : formatted
+}
+
+export function localizeDashboardPropertyFixture(
+  property: DashboardProperty,
+  options: DashboardPropertyMappingOptions,
+): DashboardProperty {
+  const isRent = property.purpose === 'Aluguel'
+
+  return {
+    ...property,
+    type: translatePropertyType(property.type, options.messages),
+    purpose: isRent ? options.messages.purposes.rent : options.messages.purposes.sale,
+    price: translatePlaceholder(property.price, options),
+    updatedAt: translateRelativeDate(property.updatedAt, options.locale),
+    summary: {
+      ...property.summary,
+      condominium: translatePlaceholder(property.summary.condominium, options),
+      iptu: translatePlaceholder(property.summary.iptu, options),
+    },
+    pricing: {
+      ...property.pricing,
+      rent: translatePlaceholder(property.pricing.rent, options),
+      sale: translatePlaceholder(property.pricing.sale, options),
+      condominium: translatePlaceholder(property.pricing.condominium, options),
+      iptu: translatePlaceholder(property.pricing.iptu, options),
+      administrationFee: translatePlaceholder(property.pricing.administrationFee, options),
+      securityDeposit: translatePlaceholder(property.pricing.securityDeposit, options),
+      lastAdjustment: translatePlaceholder(property.pricing.lastAdjustment, options),
+    },
+    activityHistory: property.activityHistory.map((entry) => ({
+      ...entry,
+      date: translateRelativeDate(entry.date, options.locale),
+    })),
+  }
 }
