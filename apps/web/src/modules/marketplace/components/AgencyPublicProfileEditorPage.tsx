@@ -363,6 +363,12 @@ export function AgencyPublicProfileEditorPage() {
                   )}
                   getOptionLabel={(agent) => agent.name}
                   isOptionEqualToValue={(option, value) => option.id === value.id}
+                  slotProps={{
+                    popper: {
+                      placement: 'top-start',
+                      modifiers: [{ name: 'flip', enabled: false }],
+                    },
+                  }}
                   onChange={(_event, selected) =>
                     field.onChange(
                       selected
