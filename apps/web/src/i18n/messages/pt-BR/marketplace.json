@@ -204,6 +204,28 @@
       "call": "Ligar",
       "whatsapp": "WhatsApp",
       "email": "E-mail"
+    },
+    "inquiryDialog": {
+      "visitTitle": "Agendar visita",
+      "proposalTitle": "Enviar proposta",
+      "visitDescription": "Deixe seus dados que o corretor responsável entra em contato pra combinar a visita.",
+      "proposalDescription": "Deixe seus dados e, se quiser, o valor proposto — o corretor responsável entra em contato.",
+      "name": "Nome",
+      "email": "E-mail",
+      "phone": "Telefone",
+      "proposedValue": "Valor proposto",
+      "notes": "Mensagem (opcional)",
+      "notesPlaceholderVisit": "Ex.: tenho disponibilidade nas tardes de sábado.",
+      "notesPlaceholderProposal": "Ex.: posso negociar o valor de entrada.",
+      "cancel": "Cancelar",
+      "submit": "Enviar",
+      "success": "Mensagem enviada! O corretor vai entrar em contato em breve.",
+      "error": "Não foi possível enviar sua mensagem. Tente novamente.",
+      "errors": {
+        "nameRequired": "Informe seu nome",
+        "emailInvalid": "Informe um e-mail válido",
+        "proposedValueInvalid": "Informe um valor válido"
+      }
     }
   },
   "profileEditor": {
