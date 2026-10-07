@@ -5,7 +5,12 @@ import { useForm } from 'react-hook-form'
 import { Box, Stack } from '@mui/material'
 
 import { useRouter } from '@/i18n/navigation'
-import { dashboardProperties, propertyStatusFilters } from '../data/dashboard-properties'
+import {
+  dashboardProperties,
+  localizeDashboardPropertyFixture,
+  propertyStatusFilters,
+} from '../data/dashboard-properties'
+import { useDashboardPropertyMappingOptions } from '../hooks/use-dashboard-property-mapping-options'
 import { useProperties } from '../hooks/use-properties'
 import type {
   DashboardProperty,
@@ -19,7 +24,7 @@ import { PropertyStatusFilters } from './PropertyStatusFilters'
 
 function matchesStatusFilter(property: DashboardProperty, filter: DashboardPropertyFilterKey) {
   if (filter === 'Todos') return true
-  if (filter === 'Vendido') return property.purpose === 'Venda' && property.status === 'Ativo'
+  if (filter === 'Vendido') return property.apiStatus === 'SOLD'
 
   return property.status === filter
 }
@@ -36,12 +41,19 @@ function matchesSearchQuery(property: DashboardProperty, query: string) {
 export function PropertiesDashboardPage() {
   const router = useRouter()
   const propertiesQuery = useProperties()
+  const mappingOptions = useDashboardPropertyMappingOptions()
   const canUseFixtures = process.env.NODE_ENV !== 'production'
   const fixtureMode = canUseFixtures && !propertiesQuery.isLoading && propertiesQuery.isError
   const properties = useMemo(
     () =>
-      fixtureMode ? dashboardProperties : (propertiesQuery.data ?? []).map(toDashboardProperty),
-    [fixtureMode, propertiesQuery.data],
+      fixtureMode
+        ? dashboardProperties.map((property) =>
+            localizeDashboardPropertyFixture(property, mappingOptions),
+          )
+        : (propertiesQuery.data ?? []).map((property) =>
+            toDashboardProperty(property, mappingOptions),
+          ),
+    [fixtureMode, mappingOptions, propertiesQuery.data],
   )
   const { setValue, watch } = useForm<PropertiesDashboardFiltersFormValues>({
     defaultValues: {
