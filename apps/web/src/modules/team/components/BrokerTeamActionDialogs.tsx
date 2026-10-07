@@ -19,12 +19,15 @@ import {
   Typography,
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 
 import { brand } from '@shared/theme/tokens'
 
-import { brokerGoalSchema, brokerTransferSchema } from '../schemas/broker-team-action-schemas'
+import {
+  createBrokerGoalSchema,
+  createBrokerTransferSchema,
+} from '../schemas/broker-team-action-schemas'
 import type {
   BrokerGoalFormValues,
   BrokerTeamDialogBaseProps,
@@ -104,13 +107,14 @@ export function BrokerGoalDialog({
   onSave: (brokerId: string, monthlyGoal: number) => void
 }) {
   const t = useTranslations('dashboard.team')
+  const schema = useMemo(() => createBrokerGoalSchema((key) => t(`dialogs.${key}`)), [t])
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm<BrokerGoalFormValues>({
-    resolver: zodResolver(brokerGoalSchema),
+    resolver: zodResolver(schema),
     defaultValues: { monthlyGoal: 1 },
   })
   useEffect(() => {
@@ -168,13 +172,14 @@ export function BrokerTransferDialog({
   onTransfer: (sourceId: string, values: BrokerTransferFormValues) => void
 }) {
   const t = useTranslations('dashboard.team')
+  const schema = useMemo(() => createBrokerTransferSchema((key) => t(`dialogs.${key}`)), [t])
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm<BrokerTransferFormValues>({
-    resolver: zodResolver(brokerTransferSchema),
+    resolver: zodResolver(schema),
     defaultValues: { destinationId: '', leads: false, properties: false },
   })
   useEffect(() => {

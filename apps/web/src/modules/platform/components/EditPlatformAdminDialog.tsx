@@ -17,14 +17,14 @@ import {
 } from '@mui/material'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslations } from 'next-intl'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useSnackbar } from 'notistack'
 import axios from 'axios'
 
 import { iconSize } from '@shared/theme/tokens'
 
 import { useUpdatePlatformAdmin } from '../hooks/use-update-platform-admin'
-import { updatePlatformAdminSchema } from '../schemas/update-platform-admin-schema'
+import { createUpdatePlatformAdminSchema } from '../schemas/update-platform-admin-schema'
 import type {
   EditPlatformAdminDialogProps,
   UpdatePlatformAdminFormValues,
@@ -32,8 +32,13 @@ import type {
 
 export function EditPlatformAdminDialog({ admin, onClose }: EditPlatformAdminDialogProps) {
   const t = useTranslations('platform.admins')
+  const formErrorsT = useTranslations('platform.forms.errors')
   const { enqueueSnackbar } = useSnackbar()
   const updateAdmin = useUpdatePlatformAdmin()
+  const schema = useMemo(
+    () => createUpdatePlatformAdminSchema((key) => formErrorsT(key)),
+    [formErrorsT],
+  )
   const {
     control,
     handleSubmit,
@@ -41,7 +46,7 @@ export function EditPlatformAdminDialog({ admin, onClose }: EditPlatformAdminDia
     reset,
     formState: { errors },
   } = useForm<UpdatePlatformAdminFormValues>({
-    resolver: zodResolver(updatePlatformAdminSchema),
+    resolver: zodResolver(schema),
     defaultValues: { nome: '', email: '', role: 'ADMIN' },
   })
 

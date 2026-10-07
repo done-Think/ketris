@@ -1,13 +1,15 @@
 import type { z } from 'zod'
 
 import type { createPlatformAdminSchema } from '../schemas/create-platform-admin-schema'
-import type { updatePlatformAdminSchema } from '../schemas/update-platform-admin-schema'
+import type { createUpdatePlatformAdminSchema } from '../schemas/update-platform-admin-schema'
 
 export type PlatformAdminRole = 'ADMIN' | 'ADMIN_AGENT' | 'AGENT'
 
 export type CreatePlatformAdminFormValues = z.infer<ReturnType<typeof createPlatformAdminSchema>>
 
-export type UpdatePlatformAdminFormValues = z.infer<typeof updatePlatformAdminSchema>
+export type UpdatePlatformAdminFormValues = z.infer<
+  ReturnType<typeof createUpdatePlatformAdminSchema>
+>
 
 export interface PlatformAdminAccount {
   id: string

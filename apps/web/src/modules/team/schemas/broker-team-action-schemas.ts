@@ -1,16 +1,22 @@
 import { z } from 'zod'
 
-export const brokerGoalSchema = z.object({
-  monthlyGoal: z.coerce.number().int().min(1).max(10000),
-})
+import type { SchemaMessageTranslator } from '@shared/types'
 
-export const brokerTransferSchema = z
-  .object({
-    destinationId: z.string().min(1, 'Selecione o corretor de destino'),
-    leads: z.boolean(),
-    properties: z.boolean(),
+export function createBrokerGoalSchema(t: SchemaMessageTranslator) {
+  return z.object({
+    monthlyGoal: z.coerce.number().int().min(1, t('goalError')).max(10000, t('goalError')),
   })
-  .refine((values) => values.leads || values.properties, {
-    path: ['leads'],
-    message: 'Selecione ao menos um item',
-  })
+}
+
+export function createBrokerTransferSchema(t: SchemaMessageTranslator) {
+  return z
+    .object({
+      destinationId: z.string().min(1, t('destinationError')),
+      leads: z.boolean(),
+      properties: z.boolean(),
+    })
+    .refine((values) => values.leads || values.properties, {
+      path: ['leads'],
+      message: t('itemsError'),
+    })
+}
