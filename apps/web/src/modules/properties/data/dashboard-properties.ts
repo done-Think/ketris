@@ -386,18 +386,31 @@ function translateMonthlyValue(value: string, monthlySuffix: string) {
 }
 
 function translatePlaceholder(value: string, options: DashboardPropertyMappingOptions) {
-  return translateMonthlyValue(
-    value === 'Não anunciado'
-      ? options.messages.notAnnounced
-      : value === 'Não informado'
-        ? options.messages.notInformed
-        : value,
-    options.messages.monthlySuffix,
-  )
+  const { notAnnounced, notInformed } = options.messages
+  const {
+    exempt,
+    notApplicable,
+    insuranceDeposit,
+    registrationPaused,
+    noRecentAdjustment,
+    underDocumentaryReview,
+  } = options.messages.pricingDetails
+  const knownValues: Record<string, string> = {
+    'Não anunciado': notAnnounced,
+    'Não informado': notInformed,
+    Isento: exempt,
+    'Não aplicável': notApplicable,
+    'Seguro fiança': insuranceDeposit,
+    'Cadastro pausado': registrationPaused,
+    'Sem reajuste recente': noRecentAdjustment,
+    'Em análise documental': underDocumentaryReview,
+  }
+
+  return translateMonthlyValue(knownValues[value] ?? value, options.messages.monthlySuffix)
 }
 
 function translateRelativeDate(value: string, locale: string) {
-  const match = value.match(/^(há|Há) (\d+) (hora|horas|dia|dias|semana|semanas|mês|meses)$/)
+  const match = value.match(/^(há|Há|em) (\d+) (hora|horas|dia|dias|semana|semanas|mês|meses)$/)
 
   if (!match) return value
 
@@ -412,12 +425,89 @@ function translateRelativeDate(value: string, locale: string) {
     mês: 'month',
     meses: 'month',
   } as const
+  const sign = prefix.toLowerCase() === 'em' ? 1 : -1
   const formatted = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(
-    -Number(amount),
+    sign * Number(amount),
     unitMap[unit as keyof typeof unitMap],
   )
 
   return prefix === 'Há' ? formatted.charAt(0).toUpperCase() + formatted.slice(1) : formatted
+}
+
+function translateAdministrationFee(value: string, options: DashboardPropertyMappingOptions) {
+  const rentMatch = value.match(/^(\d+)% sobre aluguel$/)
+  if (rentMatch) return options.messages.pricingDetails.feeOnRent.replace('{percent}', rentMatch[1])
+
+  const saleMatch = value.match(/^(\d+)% na venda$/)
+  if (saleMatch) return options.messages.pricingDetails.feeOnSale.replace('{percent}', saleMatch[1])
+
+  return value
+}
+
+function translateSecurityDeposit(value: string, options: DashboardPropertyMappingOptions) {
+  const installmentsMatch = value.match(/^(\d+) aluguéis$/)
+  if (installmentsMatch) {
+    return options.messages.pricingDetails.installmentsDeposit.replace(
+      '{count}',
+      installmentsMatch[1],
+    )
+  }
+
+  return translatePlaceholder(value, options)
+}
+
+function translateLastAdjustment(value: string, options: DashboardPropertyMappingOptions) {
+  const { priceValidated, listingExpires, deactivated } = options.messages.pricingDetails
+
+  const priceWithDateMatch = value.match(/^(R\$ [\d.,]+) (há .+)$/)
+  if (priceWithDateMatch) {
+    return `${priceWithDateMatch[1]} ${translateRelativeDate(priceWithDateMatch[2], options.locale)}`
+  }
+
+  const priceValidatedMatch = value.match(/^Preço validado (há .+)$/)
+  if (priceValidatedMatch) {
+    return `${priceValidated} ${translateRelativeDate(priceValidatedMatch[1], options.locale)}`
+  }
+
+  const listingExpiresMatch = value.match(/^Publicação vence (em .+)$/)
+  if (listingExpiresMatch) {
+    return `${listingExpires} ${translateRelativeDate(listingExpiresMatch[1], options.locale)}`
+  }
+
+  const deactivatedMatch = value.match(/^Inativado (há .+)$/)
+  if (deactivatedMatch) {
+    return `${deactivated} ${translateRelativeDate(deactivatedMatch[1], options.locale)}`
+  }
+
+  return translatePlaceholder(value, options)
+}
+
+function translateActivityLabel(value: string, options: DashboardPropertyMappingOptions) {
+  const { activity } = options.messages
+
+  const priceAdjustmentMatch = value.match(/^Ajuste de preço para (.+)$/)
+  if (priceAdjustmentMatch) {
+    return activity.priceAdjustment.replace('{price}', priceAdjustmentMatch[1])
+  }
+
+  const visitScheduledMatch = value.match(/^Visita agendada com (.+)$/)
+  if (visitScheduledMatch) {
+    return activity.visitScheduled.replace('{name}', visitScheduledMatch[1])
+  }
+
+  const knownLabels: Record<string, string> = {
+    'Cadastro do imóvel efetuado': activity.created,
+    'Contrato ativo vinculado': activity.contractLinked,
+    'Fotos atualizadas': activity.photosUpdated,
+    'Contrato marcado como alugado': activity.markedAsRented,
+    'Proposta aprovada': activity.proposalApproved,
+    'Imóvel ativado para venda': activity.activatedForSale,
+    'Documentação enviada para análise': activity.documentationSubmitted,
+    'Publicação próxima do vencimento': activity.listingExpiringSoon,
+    'Imóvel marcado como inativo': activity.markedAsInactive,
+  }
+
+  return knownLabels[value] ?? value
 }
 
 export function localizeDashboardPropertyFixture(
@@ -443,12 +533,13 @@ export function localizeDashboardPropertyFixture(
       sale: translatePlaceholder(property.pricing.sale, options),
       condominium: translatePlaceholder(property.pricing.condominium, options),
       iptu: translatePlaceholder(property.pricing.iptu, options),
-      administrationFee: translatePlaceholder(property.pricing.administrationFee, options),
-      securityDeposit: translatePlaceholder(property.pricing.securityDeposit, options),
-      lastAdjustment: translatePlaceholder(property.pricing.lastAdjustment, options),
+      administrationFee: translateAdministrationFee(property.pricing.administrationFee, options),
+      securityDeposit: translateSecurityDeposit(property.pricing.securityDeposit, options),
+      lastAdjustment: translateLastAdjustment(property.pricing.lastAdjustment, options),
     },
     activityHistory: property.activityHistory.map((entry) => ({
       ...entry,
+      label: translateActivityLabel(entry.label, options),
       date: translateRelativeDate(entry.date, options.locale),
     })),
   }

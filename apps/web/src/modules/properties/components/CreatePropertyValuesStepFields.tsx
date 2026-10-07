@@ -18,8 +18,18 @@ function formatCurrencyInput(value: unknown, locale: string) {
   }).format(numericValue)
 }
 
-function parseCurrencyInput(value: string) {
-  const digits = value.replace(/\D/g, '')
+function getNumberSeparators(locale: string) {
+  const parts = new Intl.NumberFormat(locale).formatToParts(1234.5)
+  const group = parts.find((part) => part.type === 'group')?.value ?? ','
+  const decimal = parts.find((part) => part.type === 'decimal')?.value ?? '.'
+
+  return { group, decimal }
+}
+
+function parseCurrencyInput(value: string, locale: string) {
+  const { group, decimal } = getNumberSeparators(locale)
+  const integerPart = value.split(decimal)[0] ?? ''
+  const digits = integerPart.split(group).join('').replace(/\D/g, '')
 
   return digits ? Number(digits) : 0
 }
@@ -62,7 +72,7 @@ export function CreatePropertyValuesStepFields({
               value={isCurrency ? formatCurrencyInput(field.value, locale) : field.value}
               onChange={(event) =>
                 field.onChange(
-                  isCurrency ? parseCurrencyInput(event.target.value) : event.target.value,
+                  isCurrency ? parseCurrencyInput(event.target.value, locale) : event.target.value,
                 )
               }
               slotProps={{

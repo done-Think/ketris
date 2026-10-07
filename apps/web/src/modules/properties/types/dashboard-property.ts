@@ -183,6 +183,30 @@ export type DashboardPropertyMappingMessages = {
     created: string
     published: string
     updated: string
+    contractLinked: string
+    photosUpdated: string
+    markedAsRented: string
+    proposalApproved: string
+    activatedForSale: string
+    documentationSubmitted: string
+    listingExpiringSoon: string
+    markedAsInactive: string
+    priceAdjustment: string
+    visitScheduled: string
+  }
+  pricingDetails: {
+    exempt: string
+    notApplicable: string
+    insuranceDeposit: string
+    registrationPaused: string
+    installmentsDeposit: string
+    feeOnRent: string
+    feeOnSale: string
+    noRecentAdjustment: string
+    underDocumentaryReview: string
+    priceValidated: string
+    listingExpires: string
+    deactivated: string
   }
 }
 
