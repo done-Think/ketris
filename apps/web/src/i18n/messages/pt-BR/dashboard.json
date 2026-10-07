@@ -240,7 +240,9 @@
       "resolveSuccess": "Chamado marcado como resolvido.",
       "resolveError": "N\u00e3o foi poss\u00edvel marcar o chamado como resolvido.",
       "noteSuccess": "Mensagem enviada.",
-      "noteError": "N\u00e3o foi poss\u00edvel enviar a mensagem."
+      "noteError": "N\u00e3o foi poss\u00edvel enviar a mensagem.",
+      "attachmentSuccess": "Arquivo anexado com sucesso.",
+      "attachmentError": "N\u00e3o foi poss\u00edvel anexar o arquivo."
     },
     "detail": {
       "back": "Voltar para chamados",

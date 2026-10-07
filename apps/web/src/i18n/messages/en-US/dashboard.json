@@ -240,7 +240,9 @@
       "resolveSuccess": "Ticket marked as resolved.",
       "resolveError": "Could not mark the ticket as resolved.",
       "noteSuccess": "Message sent.",
-      "noteError": "Could not send the message."
+      "noteError": "Could not send the message.",
+      "attachmentSuccess": "File attached successfully.",
+      "attachmentError": "Could not attach the file."
     },
     "detail": {
       "back": "Back to tickets",

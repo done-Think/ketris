@@ -63,6 +63,7 @@ export interface MaintenanceTicketListResult {
 export interface MaintenanceTicketListFilters {
   tenantId: string
   status?: MaintenanceTicketStatus
+  priority?: MaintenanceTicketPriority
   propertyId?: string
   search?: string
   page?: number
@@ -91,6 +92,13 @@ export interface MaintenanceTicketUpdate {
 export interface NewMaintenanceActivity {
   type: MaintenanceActivityType
   message: string
+  authorId: string | null
+  authorName: string | null
+}
+
+export interface NewMaintenanceAttachment {
+  name: string
+  url: string
   authorId: string | null
   authorName: string | null
 }

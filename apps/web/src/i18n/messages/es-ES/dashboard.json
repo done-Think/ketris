@@ -240,7 +240,9 @@
       "resolveSuccess": "Solicitud marcada como resuelta.",
       "resolveError": "No fue posible marcar la solicitud como resuelta.",
       "noteSuccess": "Mensaje enviado.",
-      "noteError": "No fue posible enviar el mensaje."
+      "noteError": "No fue posible enviar el mensaje.",
+      "attachmentSuccess": "Archivo adjuntado con éxito.",
+      "attachmentError": "No fue posible adjuntar el archivo."
     },
     "detail": {
       "back": "Volver a las solicitudes",
