@@ -236,6 +236,7 @@
       "close": "Fechar conversão de lead",
       "proposedValue": "Valor proposto",
       "proposedValueInvalid": "Informe um valor válido",
+      "propertyRequired": "Selecione um imóvel.",
       "cancel": "Cancelar",
       "confirm": "Converter",
       "success": "Lead convertido em oportunidade.",

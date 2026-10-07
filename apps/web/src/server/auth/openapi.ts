@@ -6,6 +6,7 @@ import { errorResponseSchema } from '@server/shared/schemas/error-response.schem
 import { createUserRequestSchema, createUserResponseSchema } from './schemas/create-user.schema'
 import { getUserResponseSchema, listUsersResponseSchema } from './schemas/list-users.schema'
 import { loginRequestSchema, loginResponseSchema } from './schemas/login.schema'
+import { logoutRequestSchema } from './schemas/logout.schema'
 import {
   refreshTokenRequestSchema,
   refreshTokenResponseSchema,
@@ -22,6 +23,12 @@ import { authenticatedUserSchema } from './schemas/user.schema'
 const userIdParamsSchema = z.object({
   id: z.string().openapi({ description: 'ID do usuário.', example: 'clx1y2z3a0000abcd1234efgh' }),
 })
+
+const changeOwnPasswordRequestSchema = z
+  .object({
+    password: resetPasswordRequestSchema.shape.password,
+  })
+  .openapi('ChangeOwnPasswordRequest')
 
 export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
   registry.register('AuthenticatedUser', authenticatedUserSchema)
@@ -368,6 +375,60 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
       },
       401: {
         description: 'Token de redefinição inválido, expirado, ou de outro usuário.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'post',
+    path: '/auth/logout',
+    tags: ['Auth'],
+    summary: 'Revoga um refresh token, encerrando a sessão',
+    description:
+      'Idempotente: revogar um refresh token já revogado (ou inexistente) também ' +
+      'retorna 204, sem erro.',
+    request: {
+      body: {
+        content: { 'application/json': { schema: logoutRequestSchema } },
+      },
+    },
+    responses: {
+      204: {
+        description: 'Refresh token revogado (ou já estava revogado/inexistente).',
+      },
+      400: {
+        description: 'Corpo da requisição inválido (falha de validação Zod).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'post',
+    path: '/auth/me/password',
+    tags: ['Auth'],
+    summary: 'Troca a senha do próprio usuário autenticado',
+    description:
+      'Diferente de POST /auth/reset-password (fluxo de recuperação por e-mail): aqui o usuário ' +
+      'já está autenticado via access token e troca a própria senha diretamente, sem precisar de ' +
+      'código de verificação. Revoga todos os refresh tokens ativos do usuário após a troca.',
+    security: [{ bearerAuth: [] }],
+    request: {
+      body: {
+        content: { 'application/json': { schema: changeOwnPasswordRequestSchema } },
+      },
+    },
+    responses: {
+      204: {
+        description: 'Senha alterada.',
+      },
+      400: {
+        description: 'Corpo da requisição inválido (falha de validação Zod).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido, expirado, ou usuário inexistente/inativo.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },

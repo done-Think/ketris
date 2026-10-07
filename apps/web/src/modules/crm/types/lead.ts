@@ -1,6 +1,7 @@
 import type { Control } from 'react-hook-form'
 import type { z } from 'zod'
 
+import type { createConvertLeadSchema } from '../schemas/convert-lead-schema'
 import type { createLeadSchema } from '../schemas/create-lead-schema'
 
 export type LeadStage = 'Novo' | 'Em contato' | 'Visita marcada' | 'Proposta'
@@ -42,6 +43,8 @@ export interface ConvertLeadPayload {
   propertyId: string
   proposedValue: number
 }
+
+export type ConvertLeadFormValues = z.infer<ReturnType<typeof createConvertLeadSchema>>
 
 export type LeadFilter = 'Todos' | LeadStage
 

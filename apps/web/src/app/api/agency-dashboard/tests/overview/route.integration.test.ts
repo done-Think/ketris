@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
 
-import { GET } from './route'
+import { GET } from '../../overview/route'
 
 describe('/api/agency-dashboard/overview (integração)', () => {
   const tokenService = new JoseTokenService()

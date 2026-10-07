@@ -6,11 +6,11 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
 
-import { GET as listActivities } from './[id]/activities/route'
-import { POST as addNote } from './[id]/notes/route'
-import { POST as resolveTicket } from './[id]/resolve/route'
-import { DELETE, GET as getTicket, PATCH } from './[id]/route'
-import { GET, POST } from './route'
+import { GET as listActivities } from '../../tickets/[id]/activities/route'
+import { POST as addNote } from '../../tickets/[id]/notes/route'
+import { POST as resolveTicket } from '../../tickets/[id]/resolve/route'
+import { DELETE, GET as getTicket, PATCH } from '../../tickets/[id]/route'
+import { GET, POST } from '../../tickets/route'
 
 describe('/api/maintenance/tickets (integração)', () => {
   const tokenService = new JoseTokenService()

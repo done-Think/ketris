@@ -6,9 +6,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
 
-import { POST as signParty } from './[id]/parties/[partyId]/sign/route'
-import { GET as getContract } from './[id]/route'
-import { GET, POST } from './route'
+import { POST as signParty } from '../[id]/parties/[partyId]/sign/route'
+import { GET as getContract } from '../[id]/route'
+import { GET, POST } from '../route'
 
 describe('/api/contracts (integração)', () => {
   const tokenService = new JoseTokenService()
