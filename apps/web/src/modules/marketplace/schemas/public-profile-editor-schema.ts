@@ -9,6 +9,7 @@ const createRequiredTextSchema = (
 ) => (requirePublishFields ? z.string().min(1, t(requiredKey)) : z.string())
 
 const HEX_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/
+const INTERNAL_MARKETPLACE_MEDIA_PATH = /^\/api\/marketplace\/media\/.+/
 
 const createHexColorSchema = (
   t: SchemaMessageTranslator,
@@ -36,8 +37,11 @@ const createUrlSchema = (
   requiredKey: string,
   requirePublishFields: boolean,
 ) => {
+  const isValidMediaUrl = (value: string) =>
+    z.string().url().safeParse(value).success || INTERNAL_MARKETPLACE_MEDIA_PATH.test(value)
+
   if (!requirePublishFields) {
-    return z.string().url(t('urlInvalid')).or(z.literal(''))
+    return z.string().refine(isValidMediaUrl, t('urlInvalid')).or(z.literal(''))
   }
 
   return z.string().superRefine((value, ctx) => {
@@ -46,7 +50,7 @@ const createUrlSchema = (
       return
     }
 
-    if (!z.string().url().safeParse(value).success) {
+    if (!isValidMediaUrl(value)) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: t('urlInvalid') })
     }
   })

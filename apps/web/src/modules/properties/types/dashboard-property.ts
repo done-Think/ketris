@@ -144,6 +144,77 @@ export type CreatePropertyValuesStepFieldsProps = {
   negotiationTermLabel: 'securityDeposit' | 'commission' | 'commercialTerms'
 }
 
+export type PropertyValueFieldName =
+  'mainValue' | 'rentalValue' | 'condominium' | 'iptu' | 'negotiationTerm'
+
+export type PropertyValueFieldLabel =
+  | 'referenceValue'
+  | 'rentValue'
+  | 'saleValue'
+  | 'condominium'
+  | 'iptu'
+  | 'securityDeposit'
+  | 'commission'
+  | 'commercialTerms'
+
+export type PropertyValueFieldConfig = readonly [
+  name: PropertyValueFieldName,
+  label: PropertyValueFieldLabel,
+  isCurrency: boolean,
+]
+
+export type DashboardPropertyMappingMessages = {
+  notAnnounced: string
+  notInformed: string
+  unknownAddress: string
+  monthlySuffix: string
+  purposes: {
+    rent: string
+    sale: string
+  }
+  propertyTypes: {
+    apartment: string
+    house: string
+    studio: string
+    penthouse: string
+    commercial: string
+  }
+  activity: {
+    created: string
+    published: string
+    updated: string
+    contractLinked: string
+    photosUpdated: string
+    markedAsRented: string
+    proposalApproved: string
+    activatedForSale: string
+    documentationSubmitted: string
+    listingExpiringSoon: string
+    markedAsInactive: string
+    priceAdjustment: string
+    visitScheduled: string
+  }
+  pricingDetails: {
+    exempt: string
+    notApplicable: string
+    insuranceDeposit: string
+    registrationPaused: string
+    installmentsDeposit: string
+    feeOnRent: string
+    feeOnSale: string
+    noRecentAdjustment: string
+    underDocumentaryReview: string
+    priceValidated: string
+    listingExpires: string
+    deactivated: string
+  }
+}
+
+export type DashboardPropertyMappingOptions = {
+  locale: string
+  messages: DashboardPropertyMappingMessages
+}
+
 export type CreatePropertyPublishingStepFieldsProps = {
   control: Control<CreateDashboardPropertyFormValues>
 }

@@ -4,23 +4,43 @@ const currencyFormatter = new Intl.NumberFormat('pt-BR', {
   maximumFractionDigits: 0,
 })
 
-const relativeTimeFormatter = new Intl.RelativeTimeFormat('pt-BR', { numeric: 'auto' })
+const relativeTimeFormatters = new Map<string, Intl.RelativeTimeFormat>()
+
+function getRelativeTimeFormatter(locale: string): Intl.RelativeTimeFormat {
+  let formatter = relativeTimeFormatters.get(locale)
+
+  if (!formatter) {
+    formatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' })
+    relativeTimeFormatters.set(locale, formatter)
+  }
+
+  return formatter
+}
 
 export function formatPropertyCurrency(value: number): string {
   return currencyFormatter.format(value).replace(/ /g, ' ')
 }
 
-export function formatPropertyArea(value: number | null): string {
-  return value !== null ? `${value}m²` : 'Não informado'
+export function formatPropertyArea(value: number | null, fallback = 'Não informado'): string {
+  return value !== null ? `${value}m²` : fallback
 }
 
-export function formatPropertyRelativeDate(value: string, capitalizeFirstLetter = false): string {
+export function formatPropertyRelativeDate(
+  value: string,
+  locale = 'pt-BR',
+  capitalizeFirstLetter = false,
+): string {
+  const relativeTimeFormatter = getRelativeTimeFormatter(locale)
   const target = new Date(value)
   const differenceInSeconds = Math.round((target.getTime() - Date.now()) / 1000)
   const absoluteSeconds = Math.abs(differenceInSeconds)
 
   if (absoluteSeconds < 60) {
-    return capitalizeFirstLetter ? 'Agora' : 'agora'
+    const formatted = relativeTimeFormatter.format(0, 'second')
+
+    return capitalizeFirstLetter
+      ? formatted.charAt(0).toUpperCase() + formatted.slice(1)
+      : formatted
   }
 
   const units = [

@@ -27,6 +27,16 @@ describe('agencyPublicProfileEditorSchema', () => {
     expect(agencyPublicProfileEditorSchema.safeParse(validDraft).success).toBe(true)
   })
 
+  it('aceita caminhos internos retornados pelo upload de imagens', () => {
+    const result = agencyPublicProfileEditorSchema.safeParse({
+      ...validDraft,
+      logoUrl: '/api/marketplace/media/profiles/agencies/tenant-1/logo-uuid-logo.webp',
+      bannerUrl: '/api/marketplace/media/profiles/agencies/tenant-1/banner-uuid-banner.webp',
+    })
+
+    expect(result.success).toBe(true)
+  })
+
   it('rejeita nome da imobiliária vazio', () => {
     const result = agencyPublicProfileEditorSchema.safeParse({ ...validDraft, displayName: '' })
 

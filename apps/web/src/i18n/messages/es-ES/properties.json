@@ -49,6 +49,52 @@
       "Em análise": "En revisión",
       "Vencendo": "Por vencer",
       "Inativo": "Inactivo"
+    },
+    "mapping": {
+      "notAnnounced": "No anunciado",
+      "notInformed": "No informado",
+      "unknownAddress": "Dirección no informada",
+      "monthlySuffix": "/mes",
+      "purposes": {
+        "rent": "Alquiler",
+        "sale": "Venta"
+      },
+      "propertyTypes": {
+        "apartment": "Apartamento",
+        "house": "Casa",
+        "studio": "Studio",
+        "penthouse": "Ático",
+        "commercial": "Comercial"
+      },
+      "activity": {
+        "created": "Registro del inmueble completado",
+        "published": "Inmueble publicado",
+        "updated": "Inmueble actualizado",
+        "contractLinked": "Contrato activo vinculado",
+        "photosUpdated": "Fotos actualizadas",
+        "markedAsRented": "Contrato marcado como alquilado",
+        "proposalApproved": "Propuesta aprobada",
+        "activatedForSale": "Inmueble activado para venta",
+        "documentationSubmitted": "Documentación enviada para análisis",
+        "listingExpiringSoon": "Publicación próxima a vencer",
+        "markedAsInactive": "Inmueble marcado como inactivo",
+        "priceAdjustment": "Ajuste de precio a {price}",
+        "visitScheduled": "Visita programada con {name}"
+      },
+      "pricingDetails": {
+        "exempt": "Exento",
+        "notApplicable": "No aplicable",
+        "insuranceDeposit": "Seguro de caución",
+        "registrationPaused": "Registro pausado",
+        "installmentsDeposit": "{count} alquileres",
+        "feeOnRent": "{percent}% sobre el alquiler",
+        "feeOnSale": "{percent}% sobre la venta",
+        "noRecentAdjustment": "Sin reajuste reciente",
+        "underDocumentaryReview": "En análisis documental",
+        "priceValidated": "Precio validado",
+        "listingExpires": "Publicación vence",
+        "deactivated": "Desactivado"
+      }
     }
   },
   "detail": {
