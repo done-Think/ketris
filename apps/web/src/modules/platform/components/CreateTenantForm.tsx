@@ -12,7 +12,8 @@ import { RhfTextField } from '@shared/components/form'
 import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
 import { extractErrorMessage } from '@shared/utils/error-message'
 
-import { createTenantSchema, type CreateTenantFormValues } from '../schemas/create-tenant-schema'
+import { createTenantSchema } from '../schemas/create-tenant-schema'
+import type { CreateTenantFormValues } from '../types/tenant'
 import { useCreateTenant } from '../hooks/use-create-tenant'
 
 export function CreateTenantForm() {

@@ -3,7 +3,7 @@ import { signIn } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useRegister } from '../../hooks/use-register'
-import type { RegistrationDetailsFormValues } from '../../schemas/registration-details-schema'
+import type { RegistrationDetailsFormValues } from '../../types/registration'
 
 const routerMock = {
   replace: vi.fn(),

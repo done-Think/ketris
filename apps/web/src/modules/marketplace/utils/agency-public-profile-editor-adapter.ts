@@ -1,5 +1,5 @@
-import type { AgencyPublicProfileEditorFormValues } from '../schemas/agency-public-profile-editor-schema'
 import type { AgencyProfile } from '../types/agency'
+import type { AgencyPublicProfileEditorFormValues } from '../types/profile-editor'
 import type { PublicAgencyProfile } from '../types/public-agency-profile'
 
 export const emptyValues: AgencyPublicProfileEditorFormValues = {

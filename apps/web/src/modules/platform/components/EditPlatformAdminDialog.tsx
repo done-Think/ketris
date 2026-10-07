@@ -24,16 +24,11 @@ import axios from 'axios'
 import { iconSize } from '@shared/theme/tokens'
 
 import { useUpdatePlatformAdmin } from '../hooks/use-update-platform-admin'
-import {
-  updatePlatformAdminSchema,
-  type UpdatePlatformAdminFormValues,
-} from '../schemas/update-platform-admin-schema'
-import type { PlatformAdminAccount } from '../types/platform-admin'
-
-type EditPlatformAdminDialogProps = {
-  admin: PlatformAdminAccount | null
-  onClose: () => void
-}
+import { updatePlatformAdminSchema } from '../schemas/update-platform-admin-schema'
+import type {
+  EditPlatformAdminDialogProps,
+  UpdatePlatformAdminFormValues,
+} from '../types/platform-admin'
 
 export function EditPlatformAdminDialog({ admin, onClose }: EditPlatformAdminDialogProps) {
   const t = useTranslations('platform.admins')

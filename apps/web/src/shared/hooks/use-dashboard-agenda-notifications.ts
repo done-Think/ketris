@@ -7,16 +7,8 @@ import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
 import { httpClient } from '@shared/lib/api/http-client'
+import type { AgendaEventNotificationSource } from '@shared/types/dashboard-agenda-notifications'
 import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
-
-interface AgendaEventNotificationSource {
-  id: string
-  title: string
-  status: 'CONFIRMED' | 'PENDING' | 'RESCHEDULE' | 'CANCELLED'
-  start: string
-  propertyReference: string | null
-  participantName: string
-}
 
 function isVisitEvent(title: string) {
   return title.toLocaleLowerCase('pt-BR').includes('visita')

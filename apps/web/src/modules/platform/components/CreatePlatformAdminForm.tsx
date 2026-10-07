@@ -10,16 +10,12 @@ import { useTranslations } from 'next-intl'
 import { RhfTextField } from '@shared/components/form'
 import { extractErrorMessage } from '@shared/utils/error-message'
 
-import {
-  createPlatformAdminSchema,
-  type CreatePlatformAdminFormValues,
-} from '../schemas/create-platform-admin-schema'
+import { createPlatformAdminSchema } from '../schemas/create-platform-admin-schema'
 import { useCreatePlatformAdmin } from '../hooks/use-create-platform-admin'
-
-type CreatePlatformAdminFormProps = {
-  onCancel?: () => void
-  onSuccess?: () => void
-}
+import type {
+  CreatePlatformAdminFormProps,
+  CreatePlatformAdminFormValues,
+} from '../types/platform-admin'
 
 export function CreatePlatformAdminForm({ onCancel, onSuccess }: CreatePlatformAdminFormProps) {
   const t = useTranslations('platform.forms')

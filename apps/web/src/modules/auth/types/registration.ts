@@ -1,8 +1,11 @@
 import type { ReactNode } from 'react'
+import type { z } from 'zod'
 
-export type { RegistrationDetailsFormValues } from '../schemas/registration-details-schema'
+import type { createRegistrationDetailsSchema } from '../schemas/registration-details-schema'
 
-import type { RegistrationDetailsFormValues } from '../schemas/registration-details-schema'
+export type RegistrationDetailsFormValues = z.infer<
+  ReturnType<typeof createRegistrationDetailsSchema>
+>
 
 export type RegistrationProfileId =
   'proprietario' | 'corretor' | 'imobiliaria' | 'construtora' | 'locatario'
@@ -65,6 +68,10 @@ export type RegistrationDetailsFormProps = {
 export interface AgencySearchResult {
   id: string
   name: string
+}
+
+export interface SearchAgenciesResponse {
+  tenants: AgencySearchResult[]
 }
 
 export type AgencyAutocompleteProps = {

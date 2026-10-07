@@ -10,12 +10,9 @@ import { useTranslations } from 'next-intl'
 import { RhfTextField } from '@shared/components/form'
 import { extractErrorMessage } from '@shared/utils/error-message'
 
-import {
-  createTenantAdminSchema,
-  type CreateTenantAdminFormValues,
-} from '../schemas/create-tenant-admin-schema'
+import { createTenantAdminSchema } from '../schemas/create-tenant-admin-schema'
 import { useCreateTenantAdmin } from '../hooks/use-create-tenant-admin'
-import type { CreateTenantAdminFormProps } from '../types/tenant'
+import type { CreateTenantAdminFormProps, CreateTenantAdminFormValues } from '../types/tenant'
 
 export function CreateTenantAdminForm({ tenantId }: CreateTenantAdminFormProps) {
   const t = useTranslations('platform.forms')

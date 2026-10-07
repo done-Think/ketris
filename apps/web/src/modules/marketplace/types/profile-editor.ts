@@ -1,4 +1,16 @@
 import type { PointerEventHandler } from 'react'
+import type { z } from 'zod'
+
+import type { createAgencyPublicProfileEditorSchema } from '../schemas/agency-public-profile-editor-schema'
+import type { createPublicProfileEditorSchema } from '../schemas/public-profile-editor-schema'
+
+export type AgencyPublicProfileEditorFormValues = z.infer<
+  ReturnType<typeof createAgencyPublicProfileEditorSchema>
+>
+
+export type PublicProfileEditorFormValues = z.infer<
+  ReturnType<typeof createPublicProfileEditorSchema>
+>
 
 export type ProfileEditorSetSectionOrder<TSectionSlot extends string> = (
   sectionOrder: TSectionSlot[],

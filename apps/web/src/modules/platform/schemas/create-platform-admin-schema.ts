@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import type { SchemaMessageTranslator } from './create-tenant-schema'
+import type { SchemaMessageTranslator } from '@shared/types'
 
 export function createPlatformAdminSchema(t: SchemaMessageTranslator) {
   return z
@@ -16,5 +16,3 @@ export function createPlatformAdminSchema(t: SchemaMessageTranslator) {
       path: ['confirmarSenha'],
     })
 }
-
-export type CreatePlatformAdminFormValues = z.infer<ReturnType<typeof createPlatformAdminSchema>>

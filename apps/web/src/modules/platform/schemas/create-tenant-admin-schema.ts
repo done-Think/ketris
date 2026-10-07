@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import type { SchemaMessageTranslator } from './create-tenant-schema'
+import type { SchemaMessageTranslator } from '@shared/types'
 
 export function createTenantAdminSchema(t: SchemaMessageTranslator) {
   return z
@@ -15,5 +15,3 @@ export function createTenantAdminSchema(t: SchemaMessageTranslator) {
       path: ['confirmarSenha'],
     })
 }
-
-export type CreateTenantAdminFormValues = z.infer<ReturnType<typeof createTenantAdminSchema>>

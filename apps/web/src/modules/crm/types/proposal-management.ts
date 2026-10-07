@@ -100,3 +100,16 @@ export type ProposalsTableProps = ProposalCollectionActions & {
 }
 
 export type ProposalMobileCardsProps = ProposalsTableProps
+
+export type ProposalFixtureInput = {
+  sequence: number
+  leadName: string
+  leadEmail: string
+  propertyTitle: string
+  propertyAddress: string
+  amount: number
+  transactionKind: ProposalTransactionKind
+  status: ProposalManagementStatus
+  createdAt: string
+  createdLabel: string
+}

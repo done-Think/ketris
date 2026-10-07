@@ -50,3 +50,5 @@ export type BrokerTeamCardProps = {
   onOpenProfile: (broker: BrokerTeamMember) => void
   onOpenMenu: (anchorEl: HTMLElement, broker: BrokerTeamMember) => void
 }
+
+export type BrokerTeamDialogBaseProps = { broker: BrokerTeamMember | null; onClose: () => void }

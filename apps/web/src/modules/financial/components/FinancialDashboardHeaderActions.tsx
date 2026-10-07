@@ -10,9 +10,7 @@ import {
 } from '@shared/components/layout'
 import { iconSize } from '@shared/theme/tokens'
 
-export interface FinancialDashboardHeaderActionsProps {
-  exportLabel: string
-}
+import type { FinancialDashboardHeaderActionsProps } from '../types/financial-entry'
 
 export function FinancialDashboardHeaderActions({
   exportLabel,

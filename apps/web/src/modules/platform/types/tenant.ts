@@ -1,3 +1,12 @@
+import type { z } from 'zod'
+
+import type { createTenantAdminSchema } from '../schemas/create-tenant-admin-schema'
+import type { createTenantSchema } from '../schemas/create-tenant-schema'
+
+export type CreateTenantFormValues = z.infer<ReturnType<typeof createTenantSchema>>
+
+export type CreateTenantAdminFormValues = z.infer<ReturnType<typeof createTenantAdminSchema>>
+
 export interface TenantSummary {
   id: string
   nome: string

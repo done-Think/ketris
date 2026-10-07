@@ -27,10 +27,8 @@ import {
   useUnpublishAgencyProfile,
 } from '../hooks/use-agency-profile'
 import { useTenantAgents } from '../hooks/use-tenant-agents'
-import {
-  createAgencyPublicProfileEditorSchema,
-  type AgencyPublicProfileEditorFormValues,
-} from '../schemas/agency-public-profile-editor-schema'
+import { createAgencyPublicProfileEditorSchema } from '../schemas/agency-public-profile-editor-schema'
+import type { AgencyPublicProfileEditorFormValues } from '../types/profile-editor'
 import {
   emptyValues,
   toDraft,

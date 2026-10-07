@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export type SchemaMessageTranslator = (key: string) => string
+import type { SchemaMessageTranslator } from '@shared/types'
 
 const createRequiredTextSchema = (
   t: SchemaMessageTranslator,
@@ -79,7 +79,3 @@ export function createPublicProfileEditorSchema(
     bannerUrl: createUrlSchema(t, 'bannerUrlRequired', requirePublishFields),
   })
 }
-
-export type PublicProfileEditorFormValues = z.infer<
-  ReturnType<typeof createPublicProfileEditorSchema>
->

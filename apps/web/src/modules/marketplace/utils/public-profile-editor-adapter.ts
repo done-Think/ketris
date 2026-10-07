@@ -1,5 +1,5 @@
-import type { PublicProfileEditorFormValues } from '../schemas/public-profile-editor-schema'
 import type { BrokerProfile } from '../types/broker'
+import type { PublicProfileEditorFormValues } from '../types/profile-editor'
 import type { PublicBrokerProfile } from '../types/public-broker-profile'
 
 export const emptyValues: PublicProfileEditorFormValues = {
