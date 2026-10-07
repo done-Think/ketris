@@ -2,37 +2,15 @@ import { Controller } from 'react-hook-form'
 import { Box, TextField } from '@mui/material'
 import { useLocale, useTranslations } from 'next-intl'
 
+import {
+  formatIntegerCurrencyInput,
+  parseIntegerCurrencyInput,
+} from '@shared/lib/utils/currency-input'
+
 import type {
   CreatePropertyValuesStepFieldsProps,
   PropertyValueFieldConfig,
 } from '../types/dashboard-property'
-
-function formatCurrencyInput(value: unknown, locale: string) {
-  const numericValue = Number(value)
-
-  if (!Number.isFinite(numericValue) || numericValue <= 0) return ''
-
-  return new Intl.NumberFormat(locale, {
-    maximumFractionDigits: 0,
-    minimumFractionDigits: 0,
-  }).format(numericValue)
-}
-
-function getNumberSeparators(locale: string) {
-  const parts = new Intl.NumberFormat(locale).formatToParts(1234.5)
-  const group = parts.find((part) => part.type === 'group')?.value ?? ','
-  const decimal = parts.find((part) => part.type === 'decimal')?.value ?? '.'
-
-  return { group, decimal }
-}
-
-function parseCurrencyInput(value: string, locale: string) {
-  const { group, decimal } = getNumberSeparators(locale)
-  const integerPart = value.split(decimal)[0] ?? ''
-  const digits = integerPart.split(group).join('').replace(/\D/g, '')
-
-  return digits ? Number(digits) : 0
-}
 
 export function CreatePropertyValuesStepFields({
   control,
@@ -69,10 +47,12 @@ export function CreatePropertyValuesStepFields({
               onBlur={field.onBlur}
               inputRef={field.ref}
               label={t(`fields.${label}`)}
-              value={isCurrency ? formatCurrencyInput(field.value, locale) : field.value}
+              value={isCurrency ? formatIntegerCurrencyInput(field.value, locale) : field.value}
               onChange={(event) =>
                 field.onChange(
-                  isCurrency ? parseCurrencyInput(event.target.value, locale) : event.target.value,
+                  isCurrency
+                    ? parseIntegerCurrencyInput(event.target.value, locale)
+                    : event.target.value,
                 )
               }
               slotProps={{
