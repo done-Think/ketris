@@ -32,12 +32,14 @@
     "status": "Status",
     "actions": "Actions"
   },
-  "actions": { "edit": "Edit", "archive": "Archive" },
+  "actions": { "edit": "Edit", "archive": "Archive", "delete": "Delete" },
   "feedback": {
     "updated": "Charge updated",
     "updateError": "Could not update the charge.",
     "archived": "Charge archived",
-    "archiveError": "Could not archive the charge."
+    "archiveError": "Could not archive the charge.",
+    "deleted": "Charge deleted",
+    "deleteError": "Could not delete the charge."
   },
   "pagination": { "summary": "Showing {from}-{to} of {total} charges" },
   "createDialog": {
@@ -86,6 +88,12 @@
     "description": "The charge will be marked as cancelled.",
     "cancel": "Cancel",
     "confirm": "Archive"
+  },
+  "deleteDialog": {
+    "title": "Delete charge?",
+    "description": "This action is permanent and cannot be undone.",
+    "cancel": "Cancel",
+    "confirm": "Delete"
   },
   "detailsDialog": {
     "title": "Charge details",

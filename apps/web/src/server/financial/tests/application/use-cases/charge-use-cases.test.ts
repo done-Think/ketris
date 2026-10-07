@@ -8,6 +8,7 @@ import {
 import type { Charge } from '../../../domain/charge.entity'
 import type { ChargeRepository } from '../../../application/ports/charge-repository.port'
 import { CreateChargeUseCase } from '../../../application/use-cases/create-charge.use-case'
+import { DeleteChargeUseCase } from '../../../application/use-cases/delete-charge.use-case'
 import { GetChargeUseCase } from '../../../application/use-cases/get-charge.use-case'
 import { GetFinancialSummaryUseCase } from '../../../application/use-cases/get-financial-summary.use-case'
 import { ListChargesUseCase } from '../../../application/use-cases/list-charges.use-case'
@@ -44,6 +45,7 @@ function createRepository(overrides?: Partial<ChargeRepository>): ChargeReposito
     findMany: vi.fn().mockResolvedValue({ items: [], totalCount: 0 }),
     findById: vi.fn().mockResolvedValue(charge),
     update: vi.fn().mockResolvedValue({ ...charge, amount: 3000 }),
+    delete: vi.fn().mockResolvedValue(undefined),
     registerPayment: vi.fn().mockResolvedValue({ ...charge, status: 'PAGA', paidAt: new Date() }),
     getSummary: vi.fn().mockResolvedValue({
       monthlyReceivable: 0,
@@ -244,6 +246,34 @@ describe('UpdateChargeUseCase', () => {
         paidAt: null,
       }),
     )
+  })
+})
+
+describe('DeleteChargeUseCase', () => {
+  it('lança ForbiddenError quando o ator é RENTER', async () => {
+    const useCase = new DeleteChargeUseCase(createRepository())
+
+    await expect(
+      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'RENTER', chargeId: 'charge-1' }),
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' })
+  })
+
+  it('lança ChargeNotFoundError quando a cobrança não existe no tenant', async () => {
+    const repository = createRepository({ findById: vi.fn().mockResolvedValue(null) })
+    const useCase = new DeleteChargeUseCase(repository)
+
+    await expect(
+      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'AGENT', chargeId: 'charge-1' }),
+    ).rejects.toThrow(ChargeNotFoundError)
+  })
+
+  it('exclui a cobrança quando ela existe no tenant', async () => {
+    const repository = createRepository()
+    const useCase = new DeleteChargeUseCase(repository)
+
+    await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'AGENT', chargeId: 'charge-1' })
+
+    expect(repository.delete).toHaveBeenCalledWith('tenant-1', 'charge-1')
   })
 })
 

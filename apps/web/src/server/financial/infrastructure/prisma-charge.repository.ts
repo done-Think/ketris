@@ -222,6 +222,12 @@ export class PrismaChargeRepository implements ChargeRepository {
     return toDomainCharge(cobranca)
   }
 
+  async delete(tenantId: string, chargeId: string): Promise<void> {
+    await prisma.cobranca.findFirstOrThrow({ where: { tenantId, id: chargeId } })
+
+    await prisma.cobranca.delete({ where: { id: chargeId } })
+  }
+
   async registerPayment(
     tenantId: string,
     chargeId: string,

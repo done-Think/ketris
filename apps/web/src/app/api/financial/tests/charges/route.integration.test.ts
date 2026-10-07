@@ -7,7 +7,11 @@ import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service
 import { prisma } from '@server/db/prisma'
 
 import { POST as registerPayment } from '../../charges/[id]/payment/route'
-import { GET as getCharge, PATCH as patchCharge } from '../../charges/[id]/route'
+import {
+  DELETE as deleteCharge,
+  GET as getCharge,
+  PATCH as patchCharge,
+} from '../../charges/[id]/route'
 import { GET, POST } from '../../charges/route'
 
 describe('/api/financial/charges (integração)', () => {
@@ -364,5 +368,59 @@ describe('/api/financial/charges (integração)', () => {
     expect(json.charge.paymentMethod).toBeNull()
     expect(json.charge.receiptUrl).toBeNull()
     expect(json.charge.paidAt).toBeNull()
+  })
+
+  it('retorna 403 quando um RENTER tenta excluir cobrança', async () => {
+    const response = await deleteCharge(
+      buildRequest(
+        `http://localhost/api/financial/charges/${avulsaChargeId}`,
+        'DELETE',
+        undefined,
+        renterToken,
+      ),
+      { params: Promise.resolve({ id: avulsaChargeId }) },
+    )
+
+    expect(response.status).toBe(403)
+  })
+
+  it('retorna 404 ao tentar excluir cobrança inexistente', async () => {
+    const response = await deleteCharge(
+      buildRequest(
+        'http://localhost/api/financial/charges/missing',
+        'DELETE',
+        undefined,
+        actorToken,
+      ),
+      { params: Promise.resolve({ id: 'missing' }) },
+    )
+
+    expect(response.status).toBe(404)
+  })
+
+  it('exclui permanentemente a cobrança avulsa', async () => {
+    const response = await deleteCharge(
+      buildRequest(
+        `http://localhost/api/financial/charges/${avulsaChargeId}`,
+        'DELETE',
+        undefined,
+        actorToken,
+      ),
+      { params: Promise.resolve({ id: avulsaChargeId }) },
+    )
+
+    expect(response.status).toBe(204)
+
+    const confirmResponse = await getCharge(
+      buildRequest(
+        `http://localhost/api/financial/charges/${avulsaChargeId}`,
+        'GET',
+        undefined,
+        actorToken,
+      ),
+      { params: Promise.resolve({ id: avulsaChargeId }) },
+    )
+
+    expect(confirmResponse.status).toBe(404)
   })
 })

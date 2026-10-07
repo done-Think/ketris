@@ -27,6 +27,7 @@ export function ChargeRow({
   labels,
   onEdit,
   onArchive,
+  onDelete,
   onView,
 }: ChargeRowProps) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
@@ -115,6 +116,14 @@ export function ChargeRow({
               }}
             >
               {labels.archive}
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                onDelete()
+                setAnchor(null)
+              }}
+            >
+              {labels.delete}
             </MenuItem>
           </Menu>
         </Stack>

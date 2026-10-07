@@ -32,12 +32,14 @@
     "status": "Estado",
     "actions": "Acciones"
   },
-  "actions": { "edit": "Editar", "archive": "Archivar" },
+  "actions": { "edit": "Editar", "archive": "Archivar", "delete": "Eliminar" },
   "feedback": {
     "updated": "Cobro actualizado",
     "updateError": "No fue posible actualizar el cobro.",
     "archived": "Cobro archivado",
-    "archiveError": "No fue posible archivar el cobro."
+    "archiveError": "No fue posible archivar el cobro.",
+    "deleted": "Cobro eliminado",
+    "deleteError": "No fue posible eliminar el cobro."
   },
   "pagination": { "summary": "Mostrando {from}-{to} de {total} cobros" },
   "createDialog": {
@@ -86,6 +88,12 @@
     "description": "El cobro se marcará como cancelado.",
     "cancel": "Cancelar",
     "confirm": "Archivar"
+  },
+  "deleteDialog": {
+    "title": "¿Eliminar cobro?",
+    "description": "Esta acción es permanente y no se puede deshacer.",
+    "cancel": "Cancelar",
+    "confirm": "Eliminar"
   },
   "detailsDialog": {
     "title": "Detalles del cobro",
