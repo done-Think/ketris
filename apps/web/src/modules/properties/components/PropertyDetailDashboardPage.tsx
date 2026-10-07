@@ -10,7 +10,11 @@ import { useSnackbar } from 'notistack'
 
 import { useRouter } from '@/i18n/navigation'
 
-import { getDashboardPropertyById } from '../data/dashboard-properties'
+import {
+  getDashboardPropertyById,
+  localizeDashboardPropertyFixture,
+} from '../data/dashboard-properties'
+import { useDashboardPropertyMappingOptions } from '../hooks/use-dashboard-property-mapping-options'
 import {
   useDeleteProperty,
   useProperty,
@@ -33,6 +37,7 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
   const t = useTranslations('properties.detail')
   const { enqueueSnackbar } = useSnackbar()
   const router = useRouter()
+  const mappingOptions = useDashboardPropertyMappingOptions()
   const { data: session } = useSession()
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const { setValue, watch } = useForm<PropertyDetailDashboardFormValues>({
@@ -63,8 +68,11 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
     notFound()
   }
 
-  const property =
-    fixtureProperty ?? (propertyQuery.data ? toDashboardProperty(propertyQuery.data) : notFound())
+  const property = fixtureProperty
+    ? localizeDashboardPropertyFixture(fixtureProperty, mappingOptions)
+    : propertyQuery.data
+      ? toDashboardProperty(propertyQuery.data, mappingOptions)
+      : notFound()
   const canManage =
     session?.papel === 'ADMIN' ||
     session?.papel === 'OWNER' ||
