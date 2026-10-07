@@ -1,10 +1,10 @@
 {
   "dashboard": {
-    "title": "Agenda",
+    "title": "Schedule",
     "subtitle": "Your appointments and tasks, organized",
     "previousWeek": "Previous week",
     "nextWeek": "Next week",
-    "weekRange": "Agenda for {start}-{end}",
+    "weekRange": "Schedule for {start}-{end}",
     "newEvent": "New Event",
     "openEventAriaLabel": "Open {title}",
     "todayVisitTitle": "Visit scheduled for today",
