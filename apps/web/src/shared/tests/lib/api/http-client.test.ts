@@ -98,6 +98,20 @@ describe('HttpClient — refresh de token em respostas 401', () => {
     expect(instance).not.toHaveBeenCalled()
   })
 
+  it('rejeita sem chamar o handler quando a requisição marca skipUnauthorizedHandling', async () => {
+    const httpClient = new HttpClient()
+    const { instance, onRejected } = getResponseErrorHandler()
+    const handler = vi.fn().mockResolvedValue('token')
+
+    httpClient.setUnauthorizedHandler(handler)
+
+    const error = fakeUnauthorizedError({ skipUnauthorizedHandling: true })
+
+    await expect(onRejected(error)).rejects.toBe(error)
+    expect(handler).not.toHaveBeenCalled()
+    expect(instance).not.toHaveBeenCalled()
+  })
+
   it('não tenta renovar de novo uma requisição que já foi reenviada após refresh', async () => {
     const httpClient = new HttpClient()
     const { instance, onRejected } = getResponseErrorHandler()

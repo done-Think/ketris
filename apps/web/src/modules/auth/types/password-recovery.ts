@@ -27,10 +27,13 @@ export type PasswordResetFormProps = {
 export type ResendCountdownButtonProps = {
   onResend: () => void
   seconds?: number
+  disabled?: boolean
 }
 
 export type VerificationCodeStepProps = {
   control: Control<PasswordResetFormValues>
+  isVerifying: boolean
+  error: string | null
   onCodeComplete: () => void
   onResend: () => void
 }
@@ -43,11 +46,8 @@ export type NewPasswordStepProps = {
   onSubmit: FormEventHandler<HTMLFormElement>
 }
 
-export interface ResetPasswordErrorBody {
-  error?: { code?: string }
-}
-
 export interface ResetPasswordInput {
   email: string
   password: string
+  resetToken: string
 }

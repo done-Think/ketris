@@ -4,4 +4,5 @@ export type VerificationCodeFieldProps<TFieldValues extends FieldValues> = {
   control: Control<TFieldValues>
   name: Path<TFieldValues>
   label: string
+  disabled?: boolean
 }

@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import MarkEmailReadOutlinedIcon from '@mui/icons-material/MarkEmailReadOutlined'
-import { Box, Stack, Typography } from '@mui/material'
+import { Alert, Box, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { useWatch } from 'react-hook-form'
 
@@ -14,6 +14,8 @@ import type { VerificationCodeStepProps } from '../types/password-recovery'
 
 export function VerificationCodeStep({
   control,
+  isVerifying,
+  error,
   onCodeComplete,
   onResend,
 }: VerificationCodeStepProps) {
@@ -21,10 +23,10 @@ export function VerificationCodeStep({
   const code = useWatch({ control, name: 'code' })
 
   useEffect(() => {
-    if (/^\d{6}$/.test(code ?? '')) {
+    if (!isVerifying && /^\d{6}$/.test(code ?? '')) {
       onCodeComplete()
     }
-  }, [code, onCodeComplete])
+  }, [code, isVerifying, onCodeComplete])
 
   return (
     <Box>
@@ -58,8 +60,14 @@ export function VerificationCodeStep({
       </Box>
 
       <Stack spacing={1.5} sx={{ mt: { xs: 2, md: 3 } }}>
-        <VerificationCodeField control={control} name="code" label={t('code.label')} />
-        <ResendCountdownButton onResend={onResend} />
+        {error ? <Alert severity="error">{error}</Alert> : null}
+        <VerificationCodeField
+          control={control}
+          name="code"
+          label={t('code.label')}
+          disabled={isVerifying}
+        />
+        <ResendCountdownButton onResend={onResend} disabled={isVerifying} />
       </Stack>
     </Box>
   )

@@ -1,8 +1,24 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { PasswordRecoveryScreen } from '../../components/PasswordRecoveryScreen'
+import { passwordRecoveryService } from '../../services/password-recovery-service'
+
+vi.mock('../../services/password-recovery-service', () => ({
+  passwordRecoveryService: {
+    requestCode: vi.fn(),
+    verifyCode: vi.fn(),
+    resetPassword: vi.fn(),
+  },
+}))
+
+function axiosErrorWithCode(code: string) {
+  return Object.assign(new Error('request failed'), {
+    isAxiosError: true,
+    response: { data: { error: { code } } },
+  })
+}
 
 async function goToCodeStep(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText('E-mail'), 'usuario@email.com')
@@ -20,7 +36,14 @@ async function completeCodeStep(user: ReturnType<typeof userEvent.setup>) {
 
 describe('PasswordRecoveryScreen', () => {
   afterEach(() => {
-    vi.unstubAllGlobals()
+    vi.useRealTimers()
+  })
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(passwordRecoveryService.requestCode).mockResolvedValue(undefined)
+    vi.mocked(passwordRecoveryService.verifyCode).mockResolvedValue('reset-token-123')
+    vi.mocked(passwordRecoveryService.resetPassword).mockResolvedValue(undefined)
   })
 
   it('exibe a composição principal da recuperação de senha', () => {
@@ -31,7 +54,7 @@ describe('PasswordRecoveryScreen', () => {
     expect(screen.getByRole('button', { name: 'Enviar código' })).toBeInTheDocument()
   })
 
-  it('valida o e-mail antes de avançar', async () => {
+  it('valida o e-mail antes de avançar, sem pedir código nenhum', async () => {
     const user = userEvent.setup()
     render(<PasswordRecoveryScreen />)
 
@@ -39,30 +62,73 @@ describe('PasswordRecoveryScreen', () => {
 
     expect(await screen.findByText('Informe seu e-mail')).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Verifique seu e-mail' })).not.toBeInTheDocument()
+    expect(passwordRecoveryService.requestCode).not.toHaveBeenCalled()
   })
 
-  it('avança pro passo do código após enviar o e-mail, sem os campos de nova senha juntos', async () => {
+  it('pede o código por e-mail e avança pro passo do código, sem os campos de nova senha juntos', async () => {
     const user = userEvent.setup()
     render(<PasswordRecoveryScreen />)
 
     await goToCodeStep(user)
 
+    expect(passwordRecoveryService.requestCode).toHaveBeenCalledWith('usuario@email.com', 'pt-BR')
     expect(screen.getAllByLabelText(/Código de verificação/)).toHaveLength(6)
     expect(screen.getByRole('button', { name: 'Reenviar em 1:00' })).toBeDisabled()
     expect(screen.queryByLabelText('Nova senha')).not.toBeInTheDocument()
     expect(screen.queryByLabelText('Confirmar nova senha')).not.toBeInTheDocument()
   })
 
-  it('avança sozinho pra tela de nova senha ao completar o código, sem o código nem o reenviar juntos', async () => {
+  it('mostra um erro e não avança quando pedir o código falha', async () => {
+    vi.mocked(passwordRecoveryService.requestCode).mockRejectedValue(
+      axiosErrorWithCode('RATE_LIMIT_EXCEEDED'),
+    )
+
+    const user = userEvent.setup()
+    render(<PasswordRecoveryScreen />)
+
+    await user.type(screen.getByLabelText('E-mail'), 'usuario@email.com')
+    await user.click(screen.getByRole('button', { name: 'Enviar código' }))
+
+    expect(
+      await screen.findByText(
+        'Muitas tentativas. Aguarde alguns minutos antes de tentar novamente.',
+      ),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Verifique seu e-mail' })).not.toBeInTheDocument()
+  })
+
+  it('verifica o código automaticamente ao completar os 6 dígitos e avança pra nova senha', async () => {
     const user = userEvent.setup()
     render(<PasswordRecoveryScreen />)
 
     await completeCodeStep(user)
 
+    expect(passwordRecoveryService.verifyCode).toHaveBeenCalledWith('usuario@email.com', '123456')
     expect(screen.getByLabelText('Nova senha')).toBeInTheDocument()
     expect(screen.getByLabelText('Confirmar nova senha')).toBeInTheDocument()
     expect(screen.queryAllByLabelText(/Código de verificação/)).toHaveLength(0)
     expect(screen.queryByRole('button', { name: /Reenviar/ })).not.toBeInTheDocument()
+  })
+
+  it('mostra um erro e limpa o código quando ele está errado ou expirado', async () => {
+    vi.mocked(passwordRecoveryService.verifyCode).mockRejectedValue(
+      axiosErrorWithCode('INVALID_RESET_CODE'),
+    )
+
+    const user = userEvent.setup()
+    render(<PasswordRecoveryScreen />)
+
+    await goToCodeStep(user)
+    const boxes = screen.getAllByLabelText(/Código de verificação/)
+    await user.click(boxes[0])
+    await user.type(boxes[0], '000000')
+
+    expect(
+      await screen.findByText('Código incorreto ou expirado. Confira o código ou peça um novo.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Crie uma nova senha' })).not.toBeInTheDocument()
+    expect(boxes[0]).toHaveValue('')
+    expect(boxes[0]).toHaveAttribute('aria-invalid', 'true')
   })
 
   it('exige pelo menos 8 caracteres na nova senha', async () => {
@@ -110,10 +176,7 @@ describe('PasswordRecoveryScreen', () => {
     expect(confirmationInput).toHaveAttribute('type', 'text')
   })
 
-  it('redefine a senha com sucesso e mostra a confirmação', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }))
-    vi.stubGlobal('fetch', fetchMock)
-
+  it('redefine a senha com sucesso, enviando o resetToken obtido na verificação, e mostra a confirmação', async () => {
     const user = userEvent.setup()
     render(<PasswordRecoveryScreen />)
 
@@ -125,25 +188,17 @@ describe('PasswordRecoveryScreen', () => {
     expect(await screen.findByRole('heading', { name: 'Senha redefinida!' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Voltar ao login' })).toHaveAttribute('href', '/login')
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/api/auth/reset-password',
-      expect.objectContaining({
-        method: 'POST',
-        body: JSON.stringify({
-          email: 'usuario@email.com',
-          password: 'senha-longa-123',
-        }),
-      }),
-    )
+    expect(passwordRecoveryService.resetPassword).toHaveBeenCalledWith({
+      email: 'usuario@email.com',
+      password: 'senha-longa-123',
+      resetToken: 'reset-token-123',
+    })
   })
 
   it('mostra uma mensagem de erro quando a redefinição falha no backend', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(JSON.stringify({ error: { code: 'UNKNOWN' } }), { status: 500 }),
-      )
-    vi.stubGlobal('fetch', fetchMock)
+    vi.mocked(passwordRecoveryService.resetPassword).mockRejectedValue(
+      axiosErrorWithCode('UNKNOWN'),
+    )
 
     const user = userEvent.setup()
     render(<PasswordRecoveryScreen />)

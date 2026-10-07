@@ -31,7 +31,10 @@ export function PasswordRecoveryScreen() {
   const t = useTranslations('auth.passwordRecovery')
   const [step, setStep] = useState<RecoveryStep>('request')
   const [email, setEmail] = useState('')
-  const { error, resetPassword } = usePasswordReset()
+  const [resetToken, setResetToken] = useState('')
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false)
+  const { requestCodeError, verifyCodeError, error, requestCode, verifyCode, resetPassword } =
+    usePasswordReset()
   const errorTranslator = useMemo(() => (key: string) => t(`errors.${key}`), [t])
   const passwordRecoverySchema = useMemo(
     () => createPasswordRecoverySchema(errorTranslator),
@@ -52,21 +55,40 @@ export function PasswordRecoveryScreen() {
     defaultValues: { code: '', password: '', passwordConfirmation: '' },
   })
 
-  const requestRecovery = requestForm.handleSubmit((values) => {
-    setEmail(values.email)
-    setStep('code')
+  const requestRecovery = requestForm.handleSubmit(async (values) => {
+    const succeeded = await requestCode(values.email)
+
+    if (succeeded) {
+      setEmail(values.email)
+      setStep('code')
+    }
   })
 
+  async function verifyCurrentCode() {
+    const code = resetForm.getValues('code')
+
+    setIsVerifyingCode(true)
+    const token = await verifyCode(email, code)
+    setIsVerifyingCode(false)
+
+    if (token) {
+      setResetToken(token)
+      setStep('newPassword')
+    } else {
+      resetForm.setError('code', { type: 'manual' })
+      resetForm.setValue('code', '')
+    }
+  }
+
   const submitReset = resetForm.handleSubmit(async (values) => {
-    const succeeded = await resetPassword({
-      email,
-      password: values.password,
-    })
+    const succeeded = await resetPassword({ email, password: values.password, resetToken })
 
     if (succeeded) setStep('done')
   })
 
-  function resendCode() {}
+  async function resendCode() {
+    await requestCode(email)
+  }
 
   return (
     <AuthShell
@@ -87,15 +109,24 @@ export function PasswordRecoveryScreen() {
       }
     >
       {step === 'request' ? (
-        <PasswordRecoveryForm
-          control={requestForm.control}
-          isSubmitting={requestForm.formState.isSubmitting}
-          onSubmit={requestRecovery}
-        />
+        <>
+          {requestCodeError ? (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {requestCodeError}
+            </Alert>
+          ) : null}
+          <PasswordRecoveryForm
+            control={requestForm.control}
+            isSubmitting={requestForm.formState.isSubmitting}
+            onSubmit={requestRecovery}
+          />
+        </>
       ) : step === 'code' ? (
         <VerificationCodeStep
           control={resetForm.control}
-          onCodeComplete={() => setStep('newPassword')}
+          isVerifying={isVerifyingCode}
+          error={verifyCodeError}
+          onCodeComplete={verifyCurrentCode}
           onResend={resendCode}
         />
       ) : step === 'newPassword' ? (

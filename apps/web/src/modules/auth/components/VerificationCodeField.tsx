@@ -16,6 +16,7 @@ export function VerificationCodeField<TFieldValues extends FieldValues>({
   control,
   name,
   label,
+  disabled,
 }: VerificationCodeFieldProps<TFieldValues>) {
   const inputRefs = useRef<Array<HTMLInputElement | null>>([])
 
@@ -111,8 +112,10 @@ export function VerificationCodeField<TFieldValues extends FieldValues>({
                   type="text"
                   inputMode="numeric"
                   maxLength={1}
+                  disabled={disabled}
                   autoComplete={index === 0 ? 'one-time-code' : 'off'}
                   aria-label={`${label} — dígito ${index + 1} de ${CODE_LENGTH}`}
+                  aria-invalid={Boolean(fieldState.error)}
                   value={digit}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                     handleChange(index, event.target.value)
@@ -144,7 +147,7 @@ export function VerificationCodeField<TFieldValues extends FieldValues>({
               ))}
             </Box>
 
-            {fieldState.error ? (
+            {fieldState.error?.message ? (
               <Typography
                 variant="body2"
                 sx={{ color: brand.semantic.error, textAlign: 'center', mt: 0.75 }}

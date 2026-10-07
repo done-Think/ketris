@@ -62,6 +62,7 @@ model Usuario {
   tenant                   Tenant                             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   imoveisResponsavel       Imovel[]                           @relation("ImovelResponsavel")
   refreshTokens            RefreshToken[]
+  codigosRecuperacaoSenha  PasswordResetCode[]
   eventosAgendaResponsavel EventoAgenda[]                     @relation("EventoAgendaResponsavel")
   eventosAgendaCriados     EventoAgenda[]                     @relation("EventoAgendaCriadoPor")
   leadsResponsavel         Lead[]                             @relation("LeadResponsavel")
@@ -86,6 +87,23 @@ model RefreshToken {
   @@index([userId])
   @@index([tenantId])
   @@map("refresh_tokens")
+}
+
+model PasswordResetCode {
+  id         String    @id @default(cuid())
+  codeHash   String
+  userId     String
+  tenantId   String
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  usuario Usuario @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tenantId])
+  @@map("password_reset_codes")
 }
 
 // ---------------------------------------------------------------------------
