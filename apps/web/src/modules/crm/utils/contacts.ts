@@ -1,4 +1,12 @@
-import type { ContactListItem, ContactType } from '../types/contact'
+import { contactFilters } from '../config/contact-filters'
+import type {
+  ContactFilter,
+  ContactListItem,
+  ContactType,
+  ContactsPageResult,
+} from '../types/contact'
+
+export const contactsDefaultPageSize = 5
 
 function normalizeSearchValue(value: string): string {
   return value
@@ -23,4 +31,34 @@ export function filterContacts(
       normalizeSearchValue(value).includes(normalizedQuery),
     )
   })
+}
+
+export function paginateContacts(
+  contacts: readonly ContactListItem[],
+  requestedPage = 1,
+  pageSize = contactsDefaultPageSize,
+): ContactsPageResult {
+  const totalCount = contacts.length
+  const pageCount = Math.max(1, Math.ceil(totalCount / pageSize))
+  const normalizedPage = Number.isFinite(requestedPage) ? Math.floor(requestedPage) : 1
+  const page = Math.min(Math.max(normalizedPage, 1), pageCount)
+  const startIndex = (page - 1) * pageSize
+
+  return {
+    items: contacts.slice(startIndex, startIndex + pageSize),
+    page,
+    pageCount,
+    totalCount,
+  }
+}
+
+export function getContactFilterCount(
+  contacts: readonly ContactListItem[],
+  filter: ContactFilter,
+): number {
+  const selectedType = contactFilters.find(({ label }) => label === filter)?.type ?? null
+
+  if (!selectedType) return contacts.length
+
+  return contacts.filter((contact) => contact.type === selectedType).length
 }
