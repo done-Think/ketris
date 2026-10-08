@@ -10,6 +10,7 @@ import { UnpublishAgencyProfileUseCase } from '../../../application/use-cases/un
 function createDeps(setStatusResult: AgencyProfile | null) {
   const agencyProfileRepository: AgencyProfileRepository = {
     findPublishedById: vi.fn(),
+    findPublishedBySlug: vi.fn(),
     listPublished: vi.fn(),
     findByTenantId: vi.fn(),
     save: vi.fn(),

@@ -1,3 +1,5 @@
+import { buildAgencyPublicProfileHref } from '@shared/utils/public-profile-slug'
+
 import type { AgencyProfile } from '../types/agency'
 import type {
   PublicAgencyListingSummary,
@@ -53,7 +55,7 @@ export function toAgencyProfile(profile: PublicAgencyProfile): AgencyProfile {
     phone: profile.phone,
     email: profile.email,
     summary: profile.summary,
-    href: `/agencies/${profile.id}`,
+    href: buildAgencyPublicProfileHref(profile.displayName, profile.legalCreci, profile.id),
     teamHighlights: profile.team
       .slice()
       .sort((first, second) => first.order - second.order)

@@ -1,4 +1,5 @@
 import { prisma } from '@server/db/prisma'
+import { buildCreciNumberSlug, buildPublicProfileSlug } from '@shared/utils/public-profile-slug'
 
 import type { AgencyProfileRepository } from '../application/ports/agency-profile-repository.port'
 import type {
@@ -118,6 +119,26 @@ export class PrismaAgencyProfileRepository implements AgencyProfileRepository {
     const tenant = await prisma.tenant.findFirst({
       where: { id: tenantId, perfilPublico: { status: 'PUBLISHED' } },
       include: tenantWithPerfilInclude,
+    })
+
+    if (!tenant) return null
+
+    return toAgencyProfile(tenant)
+  }
+
+  async findPublishedBySlug(slug: string, creci: string): Promise<AgencyProfile | null> {
+    const tenants = await prisma.tenant.findMany({
+      where: { perfilPublico: { status: 'PUBLISHED' } },
+      include: tenantWithPerfilInclude,
+    })
+
+    const tenant = tenants.find((currentTenant) => {
+      const displayName = currentTenant.perfilPublico?.displayName ?? currentTenant.nome
+      const legalCreci = currentTenant.perfilPublico?.legalCreci ?? null
+
+      return (
+        buildPublicProfileSlug(displayName) === slug && buildCreciNumberSlug(legalCreci) === creci
+      )
     })
 
     if (!tenant) return null

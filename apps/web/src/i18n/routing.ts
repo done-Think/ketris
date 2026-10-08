@@ -109,6 +109,11 @@ export const routing = defineRouting({
       'en-US': '/agencies/[id]',
       'es-ES': '/inmobiliarias/[id]',
     },
+    '/agencies/[slug]/[creci]': {
+      'pt-BR': '/imobiliarias/[slug]/[creci]',
+      'en-US': '/agencies/[slug]/[creci]',
+      'es-ES': '/inmobiliarias/[slug]/[creci]',
+    },
   },
 })
 
