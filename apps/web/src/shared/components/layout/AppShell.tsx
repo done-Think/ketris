@@ -39,12 +39,12 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   const userContext = session?.user?.email ?? t('defaultUserContext')
   const userInitials = useMemo(() => getInitials(userName), [userName])
   const visibleItems = useMemo(() => {
-    if (isLocalDashboardPreview && status === 'unauthenticated') return appShellNavigationItems
+    if (isLocalDashboardPreview) return appShellNavigationItems
 
     return appShellNavigationItems.filter(
       (item) => !item.roles || (session?.papel && item.roles.includes(session.papel)),
     )
-  }, [isLocalDashboardPreview, session, status])
+  }, [isLocalDashboardPreview, session])
   const activeTargetPath = useMemo(() => {
     if (isPersonalProfileRoute) return null
 

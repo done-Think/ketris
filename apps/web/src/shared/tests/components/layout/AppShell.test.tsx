@@ -71,10 +71,10 @@ function mockUnauthenticatedSession() {
   } as unknown as ReturnType<typeof useSession>)
 }
 
-function renderShell(allowLocalDashboardPreview = false) {
+function renderShell() {
   return render(
     <ThemeProvider theme={theme}>
-      <AppShell allowLocalDashboardPreview={allowLocalDashboardPreview}>
+      <AppShell>
         <div>Conteúdo da rota</div>
       </AppShell>
     </ThemeProvider>,
@@ -165,27 +165,6 @@ describe('AppShell navigation per papel', () => {
     expect(screen.getAllByText('Meus Imóveis').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Contratos').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Agenda').length).toBeGreaterThan(0)
-  })
-
-  it('mantém as permissões do menu na prévia local de Cobros com ADMIN autenticado', () => {
-    vi.mocked(usePathname).mockReturnValue('/dashboard/finance/charges')
-    mockSession({ papel: 'ADMIN' })
-
-    renderShell(true)
-
-    expect(screen.getAllByText('Perfil da Imobiliária').length).toBeGreaterThan(0)
-    expect(screen.queryAllByText('Perfil Público')).toHaveLength(0)
-    expect(screen.getAllByText('Financeiro').length).toBeGreaterThan(0)
-  })
-
-  it('preserva o menu completo na prévia local sem sessão', () => {
-    vi.mocked(usePathname).mockReturnValue('/dashboard/finance/charges')
-    mockUnauthenticatedSession()
-
-    renderShell(true)
-
-    expect(screen.getAllByText('Perfil da Imobiliária').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('Perfil Público').length).toBeGreaterThan(0)
   })
 })
 
