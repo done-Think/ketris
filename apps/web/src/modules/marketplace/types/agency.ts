@@ -61,3 +61,12 @@ export type AgencyBrandBannerProps = {
   agency: AgencyProfile
   size: 'compact' | 'hero'
 }
+
+export type AgencyAdaptiveBrandHeaderVariant = 'compact' | 'list' | 'hero'
+
+export type AgencyAdaptiveBrandHeaderProps = {
+  agency: AgencyProfile
+  variant: AgencyAdaptiveBrandHeaderVariant
+  showBanner?: boolean
+  showHeadquarters?: boolean
+}
