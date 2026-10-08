@@ -1,5 +1,6 @@
 import type { ComponentType, RefObject } from 'react'
 import type { SvgIconProps } from '@mui/material/SvgIcon'
+import type { Papel } from '@server/auth/domain/user.entity'
 import type { LocalizedStringHref } from './localized-href'
 
 export type ProfileModalUserProfile = {
@@ -7,6 +8,7 @@ export type ProfileModalUserProfile = {
   company?: string
   email: string
   avatar?: string
+  role?: Papel
 }
 
 export type ProfileModalAction = {

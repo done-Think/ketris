@@ -6,14 +6,12 @@ export type ProposalManagementFilterId = 'all' | ProposalManagementStatus
 export type ProposalTransactionKind = 'rent' | 'sale'
 
 export type ProposalManagementStatusPresentation = {
-  label: string
   color: string
   backgroundColor: string
 }
 
 export type ProposalManagementStatusFilter = {
   id: ProposalManagementFilterId
-  label: string
 }
 
 export type ProposalManagementPerson = {
@@ -60,6 +58,7 @@ export type ProposalManagementQuery = {
   status?: ProposalManagementFilterId
   page?: number
   pageSize?: number
+  statusLabel?: (status: ProposalManagementStatus) => string
 }
 
 export type ProposalManagementPage = {
@@ -100,11 +99,3 @@ export type ProposalsTableProps = ProposalCollectionActions & {
 }
 
 export type ProposalMobileCardsProps = ProposalsTableProps
-
-export type ProposalPaginationProps = {
-  page: number
-  pageCount: number
-  visibleCount: number
-  totalCount: number
-  onPageChange?: (page: number) => void
-}

@@ -41,9 +41,6 @@ import type {
   ContractStatusCellProps,
 } from '../types/contract'
 
-// `amount`/`startDate`/`endDate` are pre-formatted display strings ("R$ 6.500/mês", "01/09/2026"),
-// which the DataGrid would otherwise sort lexicographically — these comparators make column
-// sorting numeric/chronological instead.
 function parseAmountValue(amount: string): number {
   const digitsOnly = amount.replace(/\D/g, '')
   return digitsOnly ? Number(digitsOnly) : 0
@@ -137,6 +134,7 @@ function ContractActionsCell({ contract, onContractAction }: ContractActionsCell
         height: '100%',
         justifyContent: 'flex-end',
         alignItems: 'center',
+        transform: 'translateX(-40px)',
       }}
     >
       <Tooltip title={t('actionsTooltip')}>
@@ -283,6 +281,8 @@ export function ContractsTable({
       width: 104,
       align: 'right',
       headerAlign: 'right',
+      cellClassName: 'contracts-actions-column',
+      headerClassName: 'contracts-actions-column',
       renderCell: ({ row }) => (
         <ContractActionsCell contract={row} onContractAction={onContractAction} />
       ),
@@ -350,6 +350,9 @@ export function ContractsTable({
           },
           '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': {
             outline: 'none',
+          },
+          '& .contracts-actions-column .MuiDataGrid-columnHeaderTitleContainer': {
+            transform: 'translateX(-40px)',
           },
           '& .MuiDataGrid-row': {
             bgcolor: surface.paper,

@@ -1,9 +1,11 @@
+import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 
 import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
+import { marketplaceContainer } from '@server/marketplace/container'
+import { PropertyNotFoundError } from '@server/marketplace/domain/errors'
 import { PropertyDetailPage } from '@modules/marketplace/components/PropertyDetailPage'
-import { getPropertyDetailById } from '@modules/marketplace/data/property-details'
 import type {
   PropertyBreadcrumbOriginType,
   PropertyBreadcrumbPurpose,
@@ -14,6 +16,26 @@ import {
   getInternalMarketplaceHref,
   isSafeMarketplaceOriginHref,
 } from '@modules/marketplace/utils/property-links'
+import { mapDetailToMarketplacePropertyDetail } from '@modules/marketplace/utils/property-detail-adapter'
+
+const getProperty = cache(async (id: string, locale: string) => {
+  try {
+    const property = await marketplaceContainer.getPropertyUseCase.execute({ propertyId: id })
+    const tFeatures = await getTranslations({ locale, namespace: 'marketplace.propertyFeatures' })
+    return mapDetailToMarketplacePropertyDetail(
+      {
+        ...property,
+        publishedAt: property.publishedAt?.toISOString() ?? null,
+      },
+      locale as 'pt-BR' | 'en-US' | 'es-ES',
+      tFeatures,
+    )
+  } catch (error) {
+    if (error instanceof PropertyNotFoundError) return null
+
+    throw error
+  }
+})
 
 export async function generateMetadata({
   params,
@@ -23,7 +45,7 @@ export async function generateMetadata({
     locale,
     namespace: 'marketplace.metadata.details',
   })
-  const property = getPropertyDetailById(id)
+  const property = await getProperty(id, locale)
 
   if (!property) return { title: t('notFoundTitle') }
 
@@ -62,9 +84,9 @@ export default async function PropertyPage({
   params,
   searchParams,
 }: LocaleRoutePageProps<{ id: string }, PropertyPageSearchParams>) {
-  const { id } = await params
+  const { id, locale } = await params
   const resolvedSearchParams = await searchParams
-  const property = getPropertyDetailById(id)
+  const property = await getProperty(id, locale)
 
   if (!property) notFound()
 

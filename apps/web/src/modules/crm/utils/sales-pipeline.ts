@@ -3,14 +3,10 @@ import type { Opportunity } from '../types/opportunity'
 import type { PublicPropertySummary } from '../types/property'
 import type { SalesPipelineProjectedTotal, SalesPipelineStageId } from '../types/sales-pipeline'
 import { formatCurrency, formatMonthlyCurrency } from './formatters'
+import { defaultLocale } from '@/i18n/routing'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
-export function getOpportunityStageId(
-  opportunity: Opportunity,
-  fixtureMode: boolean,
-  fixtureStageByOpportunityId: ReadonlyMap<string, SalesPipelineStageId>,
-): SalesPipelineStageId | undefined {
-  if (fixtureMode) return fixtureStageByOpportunityId.get(opportunity.id)
-
+export function getOpportunityStageId(opportunity: Opportunity): SalesPipelineStageId | undefined {
   return salesPipelineStages.find((stage) => stage.statuses.includes(opportunity.status))?.id
 }
 
@@ -36,6 +32,7 @@ export function matchesSalesPipelineSearch(
 export function getProjectedTotals(
   opportunities: readonly Opportunity[],
   propertiesById: ReadonlyMap<string, PublicPropertySummary>,
+  locale: AppLocale = defaultLocale,
 ): readonly SalesPipelineProjectedTotal[] {
   const totals = opportunities.reduce(
     (result, opportunity) => {
@@ -56,19 +53,19 @@ export function getProjectedTotals(
           {
             label: 'Aluguel',
             labelKey: 'rent' as const,
-            value: formatMonthlyCurrency(totals.rental),
+            value: formatMonthlyCurrency(totals.rental, locale),
           },
         ]
       : []),
     ...(totals.sale
-      ? [{ label: 'Venda', labelKey: 'sale' as const, value: formatCurrency(totals.sale) }]
+      ? [{ label: 'Venda', labelKey: 'sale' as const, value: formatCurrency(totals.sale, locale) }]
       : []),
     ...(totals.unclassified
       ? [
           {
             label: 'Sem categoria',
             labelKey: 'uncategorized' as const,
-            value: formatCurrency(totals.unclassified),
+            value: formatCurrency(totals.unclassified, locale),
           },
         ]
       : []),

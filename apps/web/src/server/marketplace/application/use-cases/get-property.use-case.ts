@@ -1,5 +1,6 @@
 import { PropertyNotFoundError } from '../../domain/errors'
-import { toPublicPropertyDetail, type PublicPropertyDetail } from '../../domain/property.entity'
+import { toPublicPropertyDetail } from '../../domain/property.entity'
+import type { PublicPropertyDetail } from '../../types/property'
 import type { PublicPropertyRepository } from '../ports/public-property-repository.port'
 
 export interface GetPropertyInput {

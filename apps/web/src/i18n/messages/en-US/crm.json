@@ -25,7 +25,9 @@
     "signIn": "Sign in to Ketris"
   },
   "pipeline": {
+    "propertyReference": "Property {id}",
     "title": "Sales Pipeline",
+    "subtitle": "Track opportunities, stages, and ongoing negotiations.",
     "proposalsTitle": "Proposals",
     "searchPlaceholder": "Search opportunity...",
     "searchAriaLabel": "Search opportunity",
@@ -67,6 +69,7 @@
   },
   "contacts": {
     "title": "Contacts",
+    "subtitle": "Manage owners, brokers and renters",
     "searchPlaceholder": "Search contact by name, email, phone...",
     "searchAriaLabel": "Search contacts",
     "filterAriaLabel": "Filter contacts by type",
@@ -109,6 +112,7 @@
       "brokers": "Brokers"
     },
     "contactForm": {
+      "emailAlreadyExists": "A contact with this email already exists.",
       "createTitle": "New contact",
       "editTitle": "Edit contact",
       "fields": {
@@ -126,6 +130,10 @@
       "actions": {
         "cancel": "Cancel",
         "save": "Save"
+      },
+      "errors": {
+        "nameRequired": "Name is required.",
+        "emailInvalid": "Invalid email."
       },
       "createSuccess": "Contact created.",
       "updateSuccess": "Contact updated.",
@@ -157,6 +165,7 @@
       "eyebrow": "New sales contact",
       "title": "Register lead",
       "success": "Lead registered successfully.",
+      "error": "Could not register the lead. Please try again.",
       "steps": {
         "contact": "Contact",
         "interest": "Interest",
@@ -169,8 +178,6 @@
         "interest": "Property or interest",
         "budget": "Budget",
         "source": "Source",
-        "broker": "Responsible broker",
-        "stage": "Initial status",
         "notes": "Notes"
       },
       "sources": {
@@ -193,8 +200,7 @@
         "emailInvalid": "Enter a valid email",
         "interestRequired": "Enter the property or interest",
         "budgetRequired": "Enter the budget",
-        "sourceRequired": "Enter the source",
-        "brokerRequired": "Enter the responsible broker"
+        "sourceRequired": "Enter the source"
       }
     },
     "filters": {
@@ -215,31 +221,89 @@
     },
     "contact": {
       "eyebrow": "Lead contact",
+      "stageLabel": "Stage",
       "phoneLabel": "Phone",
       "call": "Call",
       "whatsApp": "WhatsApp",
       "cancel": "Close",
       "close": "Close lead contact",
       "emailLabel": "Email",
-      "email": "Email"
+      "email": "Email",
+      "convert": "Convert to opportunity",
+      "alreadyConverted": "Already converted"
+    },
+    "convert": {
+      "eyebrow": "Convert lead",
+      "title": "Convert {name} to opportunity",
+      "close": "Close lead conversion",
+      "proposedValue": "Proposed value",
+      "proposedValueInvalid": "Enter a valid value",
+      "cancel": "Cancel",
+      "confirm": "Convert",
+      "success": "Lead converted to opportunity.",
+      "error": "Could not convert the lead. Please try again."
     },
     "pagination": {
       "pageAriaLabel": "Go to page {page}"
     }
   },
+  "properties": {
+    "searchFilters": {
+      "errors": {
+        "propertyTypeInvalid": "Enter a valid property type.",
+        "cityInvalid": "Enter a valid city.",
+        "minPriceInvalid": "Minimum price cannot be negative.",
+        "maxPriceInvalid": "Maximum price cannot be negative.",
+        "minBedroomsInvalid": "Minimum bedrooms cannot be negative.",
+        "searchTermInvalid": "Enter a valid search term."
+      }
+    }
+  },
   "opportunityDetail": {
+    "moveStage": "Move to another stage",
+    "discardLead": "Discard lead",
+    "editData": "Edit details",
+    "archived": "Archived",
+    "errors": {
+      "nameRequired": "Name is required.",
+      "emailInvalid": "Invalid email.",
+      "phoneInvalid": "Invalid phone number.",
+      "propertyRequired": "Select a property.",
+      "proposedValueRequired": "Proposed value is required.",
+      "proposedValuePositive": "Proposed value must be positive.",
+      "contractTermInvalid": "Term must be a positive whole number.",
+      "atLeastOneFieldRequired": "Provide at least one field to update.",
+      "desiredStartDateInvalid": "Invalid start date.",
+      "specialConditionInvalid": "Invalid special condition.",
+      "notesInvalid": "Invalid notes."
+    },
     "editTitle": "Edit opportunity",
     "breadcrumbAriaLabel": "Breadcrumb",
     "pipelineLink": "Pipeline",
     "contactInterestTitle": "Contact and interest information",
+    "leadSectionTitle": "Lead details",
+    "proposalSectionTitle": "Proposal and contract",
+    "conditionsSectionTitle": "Conditions and notes",
     "archive": "Archive opportunity",
     "archiveTitle": "Archive opportunity?",
     "archiveDescription": "The opportunity will no longer appear in the active pipeline, but will remain stored in the CRM.",
     "loadingAriaLabel": "Loading opportunity",
+    "activitiesTitle": "Recent activities",
+    "activitiesEmpty": "No recent activity registered",
+    "activitiesViewMore": "View more",
+    "activitiesViewLess": "View less",
     "createdActivityTitle": "Opportunity created",
     "createdActivityDetail": "Record added to the pipeline.",
     "updatedActivityTitle": "Opportunity updated",
     "updatedActivityDetail": "Current stage: {stage}.",
+    "proposalSentActivityTitle": "Proposal sent",
+    "proposalSentActivityDetail": "Commercial terms shared with the lead.",
+    "followUpActivityTitle": "Follow-up registered",
+    "followUpActivityDetail": "Contact made to confirm interest and next steps.",
+    "propertyLinkedActivityTitle": "Property associated",
+    "propertyLinkedActivityDetail": "Opportunity linked to the property of interest.",
+    "documentsRequestedActivityTitle": "Documents requested",
+    "documentsRequestedActivityDetail": "Guarantee, income, and registration data entered review.",
     "loadError": "Could not load this opportunity.",
     "backToPipeline": "Back to pipeline",
     "movedSuccess": "Opportunity moved to {stage}.",
@@ -270,6 +334,18 @@
       "specialConditionsHelper": "Separate conditions with commas.",
       "notes": "Notes",
       "notInformed": "Not informed",
+      "currentStatus": "Current stage",
+      "createdAt": "Created at",
+      "updatedAt": "Updated at",
+      "linkedContact": "Linked contact",
+      "linked": "Yes",
+      "notLinked": "No",
+      "archiveStatus": "Archive status",
+      "active": "Active",
+      "archived": "Archived",
+      "reference": "Reference",
+      "specialConditionsCount": "Conditions",
+      "conditionsCount": "{count, plural, =0 {None} one {# condition} other {# conditions}}",
       "months": "{count, plural, one {# month} other {# months}}",
       "property": "Property",
       "status": "Initial status"
@@ -287,11 +363,89 @@
       "createOpportunity": "Create opportunity"
     },
     "createTitle": "New opportunity",
+    "nextActions": {
+      "title": "Next actions",
+      "empty": "No next action registered",
+      "dueAt": "Suggested due date",
+      "viewMore": "View more",
+      "viewLess": "View less",
+      "completeDraft": {
+        "title": "Complete request details",
+        "detail": "Review contact, intended value, and property before sending the proposal."
+      },
+      "sendProposal": {
+        "title": "Send proposal to lead",
+        "detail": "Share the formal proposal and register the expected first response."
+      },
+      "proposalFollowUp": {
+        "title": "Follow up on proposal",
+        "detail": "Confirm receipt, answer questions, and assess intent to move forward."
+      },
+      "validateDocuments": {
+        "title": "Validate documents",
+        "detail": "Check guarantee, income, and pending documents to reduce risk."
+      },
+      "scheduleVisit": {
+        "title": "Schedule visit or call",
+        "detail": "Set the next contact with the lead and responsible broker."
+      },
+      "alignOwnerFeedback": {
+        "title": "Align owner feedback",
+        "detail": "Confirm negotiation openness and the next proposal limits."
+      },
+      "reviewCounteroffer": {
+        "title": "Review counteroffer",
+        "detail": "Consolidate negotiable points and align limits with the owner."
+      },
+      "alignTerms": {
+        "title": "Align final terms",
+        "detail": "Close term, guarantee, upfront payment, and special conditions before the decision."
+      },
+      "prepareContract": {
+        "title": "Prepare contract",
+        "detail": "Send accepted data to the contract and signature stage."
+      },
+      "confirmSignature": {
+        "title": "Confirm signature",
+        "detail": "Track party signatures and the next financial steps."
+      },
+      "registerLossReason": {
+        "title": "Register loss reason",
+        "detail": "Document the main objection and decide whether the lead returns to nurture."
+      }
+    },
     "statuses": {
       "RASCUNHO": "Draft",
-      "ENVIADA": "Sent"
+      "ENVIADA": "Sent",
+      "EM_NEGOCIACAO": "In negotiation",
+      "ACEITA": "Accepted",
+      "RECUSADA": "Rejected"
     },
     "noProperties": "No properties found.",
     "loadingProperties": "Searching properties..."
+  },
+  "proposalManagement": {
+    "allStatuses": "All",
+    "filterByStatus": "Filter proposals by status",
+    "tableAriaLabel": "CRM proposals",
+    "mobileListAriaLabel": "Mobile proposal list",
+    "columns": {
+      "proposal": "Proposal",
+      "lead": "Lead",
+      "property": "Property",
+      "value": "Value",
+      "status": "Status",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "createdAt": "Created on {date}",
+    "viewProposal": "View {reference}",
+    "moreOptions": "More options for {reference}",
+    "kpis": {
+      "ariaLabel": "Proposal indicators",
+      "inNegotiation": "In negotiation",
+      "acceptedTotal": "Total value accepted",
+      "conversionRate": "Conversion rate"
+    }
   }
 }

@@ -8,6 +8,9 @@
     },
     "create": {
       "metadataTitle": "Ketris | Cadastrar Imóvel"
+    },
+    "edit": {
+      "metadataTitle": "Ketris | Editar Imóvel"
     }
   },
   "dashboard": {
@@ -20,18 +23,24 @@
       "property": "Imóvel",
       "type": "Tipo",
       "price": "Preço",
+      "saleValue": "V. Venda",
+      "rentalValue": "V. Aluguel",
       "status": "Status",
       "broker": "Corretor",
       "updated": "Atualizado",
       "actions": "Ações",
-      "editAriaLabel": "Editar {title}",
       "viewAriaLabel": "Visualizar {title}",
+      "moreActionsAriaLabel": "Mais ações de {title}",
       "noRows": "Nenhum imóvel encontrado",
+      "emptyTitle": "Nenhum imóvel adicionado",
+      "emptyDescription": "Adicione aqui o primeiro imóvel do seu portfólio.",
+      "emptyAction": "Novo Imóvel",
       "totalRows": "Total de linhas:",
       "rowsPerPage": "Linhas por página",
       "displayedRows": "{from}-{to} de {count}"
     },
     "filters": {
+      "filterAriaLabel": "Filtrar imóveis por status",
       "Todos": "Todos",
       "Disponível": "Disponível",
       "Alugado": "Alugado",
@@ -40,6 +49,52 @@
       "Em análise": "Em análise",
       "Vencendo": "Vencendo",
       "Inativo": "Inativo"
+    },
+    "mapping": {
+      "notAnnounced": "Não anunciado",
+      "notInformed": "Não informado",
+      "unknownAddress": "Endereço não informado",
+      "monthlySuffix": "/mês",
+      "purposes": {
+        "rent": "Aluguel",
+        "sale": "Venda"
+      },
+      "propertyTypes": {
+        "apartment": "Apartamento",
+        "house": "Casa",
+        "studio": "Studio",
+        "penthouse": "Cobertura",
+        "commercial": "Comercial"
+      },
+      "activity": {
+        "created": "Cadastro do imóvel efetuado",
+        "published": "Imóvel publicado",
+        "updated": "Imóvel atualizado",
+        "contractLinked": "Contrato ativo vinculado",
+        "photosUpdated": "Fotos atualizadas",
+        "markedAsRented": "Contrato marcado como alugado",
+        "proposalApproved": "Proposta aprovada",
+        "activatedForSale": "Imóvel ativado para venda",
+        "documentationSubmitted": "Documentação enviada para análise",
+        "listingExpiringSoon": "Publicação próxima do vencimento",
+        "markedAsInactive": "Imóvel marcado como inativo",
+        "priceAdjustment": "Ajuste de preço para {price}",
+        "visitScheduled": "Visita agendada com {name}"
+      },
+      "pricingDetails": {
+        "exempt": "Isento",
+        "notApplicable": "Não aplicável",
+        "insuranceDeposit": "Seguro fiança",
+        "registrationPaused": "Cadastro pausado",
+        "installmentsDeposit": "{count} aluguéis",
+        "feeOnRent": "{percent}% sobre aluguel",
+        "feeOnSale": "{percent}% na venda",
+        "noRecentAdjustment": "Sem reajuste recente",
+        "underDocumentaryReview": "Em análise documental",
+        "priceValidated": "Preço validado",
+        "listingExpires": "Publicação vence",
+        "deactivated": "Inativado"
+      }
     }
   },
   "detail": {
@@ -76,6 +131,20 @@
       "media": "Mídia",
       "values": "Valores",
       "history": "Histórico"
+    },
+    "publish": "Publicar",
+    "delete": "Excluir",
+    "publishSuccess": "Imóvel publicado com sucesso.",
+    "publishError": "Não foi possível publicar o imóvel. Tente novamente.",
+    "unpublishSuccess": "Imóvel despublicado com sucesso.",
+    "unpublishError": "Não foi possível despublicar o imóvel. Tente novamente.",
+    "deleteSuccess": "Imóvel excluído com sucesso.",
+    "deleteError": "Não foi possível excluir o imóvel. Tente novamente.",
+    "deleteDialog": {
+      "title": "Excluir imóvel",
+      "description": "Tem certeza que deseja excluir \"{title}\"? Essa ação é permanente e não pode ser desfeita. Se o imóvel tiver propostas ou contratos vinculados, a exclusão será bloqueada.",
+      "confirm": "Excluir",
+      "cancel": "Cancelar"
     }
   },
   "create": {
@@ -101,7 +170,7 @@
       "area": "Área útil",
       "rentValue": "Valor do aluguel",
       "saleValue": "Valor de venda",
-      "referenceValue": "Valor de referência",
+      "referenceValue": "Valor de referência do imóvel",
       "condominium": "Condomínio",
       "iptu": "IPTU mensal",
       "securityDeposit": "Garantia",
@@ -135,15 +204,41 @@
       "Aceita pets": "Aceita pets",
       "Portaria 24h": "Portaria 24h"
     },
-    "mediaSlots": {
-      "Foto principal": "Foto principal",
-      "Galeria": "Galeria",
-      "Planta baixa": "Planta baixa"
-    },
+    "mediaDropzone": "Arraste imagens aqui ou clique para selecionar",
+    "mediaUploading": "Enviando...",
+    "mediaRemove": "Remover imagem",
+    "mediaUploadError": "Não foi possível enviar a imagem. Tente novamente.",
     "publishingOptions": {
       "Publicar no marketplace após revisão": "Publicar no marketplace após revisão",
       "Permitir contato por WhatsApp": "Permitir contato por WhatsApp",
       "Destacar imóvel na listagem inicial": "Destacar imóvel na listagem inicial"
+    },
+    "createSuccess": "Imóvel cadastrado com sucesso.",
+    "createError": "Não foi possível cadastrar o imóvel. Tente novamente.",
+    "errors": {
+      "propertyTypeRequired": "Selecione o tipo de imóvel",
+      "purposeRequired": "Selecione ao menos uma finalidade",
+      "titleRequired": "Informe o título do anúncio",
+      "descriptionRequired": "Informe uma descrição mais completa",
+      "streetRequired": "Informe o endereço",
+      "numberRequired": "Informe o número",
+      "neighborhoodRequired": "Informe o bairro",
+      "cityRequired": "Informe a cidade",
+      "stateRequired": "Informe a UF",
+      "zipCodeRequired": "Informe o CEP",
+      "numberInvalid": "Informe um valor válido",
+      "areaRequired": "Informe a área útil",
+      "mainValueRequired": "Informe o valor principal",
+      "negotiationTermRequired": "Informe a condição comercial",
+      "rentalValueInvalid": "Informe um valor de aluguel válido",
+      "rentalValueRequired": "Informe o valor do aluguel"
     }
+  },
+  "edit": {
+    "title": "Editar imóvel",
+    "mobileTitle": "Editar Imóvel",
+    "save": "Salvar alterações",
+    "updateSuccess": "Imóvel atualizado com sucesso.",
+    "updateError": "Não foi possível salvar as alterações. Tente novamente."
   }
 }

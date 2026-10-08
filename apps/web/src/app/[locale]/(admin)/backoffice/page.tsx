@@ -26,6 +26,7 @@ export default async function BackofficePage({ params }: LocaleRoutePageProps) {
         </Typography>
         <Typography color="text.secondary">{t('authenticatedDescription')}</Typography>
         <ActionTextLink href="/backoffice/admins">{t('viewAdmins')}</ActionTextLink>
+        <ActionTextLink href="/backoffice/users">{t('viewUsers')}</ActionTextLink>
       </Stack>
     </Container>
   )

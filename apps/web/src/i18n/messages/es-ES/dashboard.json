@@ -3,27 +3,26 @@
     "overview": {
       "metadataTitle": "Ketris | Dashboard"
     },
+    "agencyOverview": {
+      "metadataTitle": "Ketris | Visión General de la Inmobiliaria"
+    },
     "agenda": {
       "metadataTitle": "Ketris | Agenda"
     },
     "finance": {
       "metadataTitle": "Ketris | Finanzas"
     },
+    "maintenance": {
+      "metadataTitle": "Ketris | Solicitudes de mantenimiento"
+    },
     "leads": {
       "metadataTitle": "Ketris | Leads"
     },
+    "team": {
+      "metadataTitle": "Ketris | Equipo"
+    },
     "proposals": {
       "metadataTitle": "Ketris | Propuestas"
-    }
-  },
-  "agenda": {
-    "title": "Agenda",
-    "subtitle": "Compromisos comerciales, visitas y retornos.",
-    "freeSlot": "Horario libre",
-    "statuses": {
-      "Confirmada": "Confirmada",
-      "Pendente": "Pendiente",
-      "Reagendar": "Reprogramar"
     }
   },
   "notificationsCenter": {
@@ -31,40 +30,25 @@
     "ariaLabel": "Abrir notificaciones del dashboard",
     "title": "Alertas del dashboard",
     "subtitle": "Visitas de hoy y compromisos asignados",
-    "empty": "No hay alertas para mostrar.",
-    "defaultItems": {
-      "todayVisit": {
-        "title": "Visita programada para hoy",
-        "message": "10:30 - Marina Costa en Apt Jardins 3q"
-      },
-      "agencyAssigned": {
-        "title": "Nuevo compromiso asignado",
-        "message": "Inmobiliaria Ketris programó retorno con Bruno Oliveira"
-      },
-      "brokerAssigned": {
-        "title": "Lead compartido",
-        "message": "Ana Silva asignó atención de propuesta"
-      },
-      "proposalReturn": {
-        "title": "Retorno pendiente",
-        "message": "16:00 - Revisar contraoferta de Juliana Mendes"
-      }
-    }
+    "empty": "No hay alertas para mostrar."
   },
   "overview": {
     "title": "Dashboard",
     "notifications": "Notificaciones",
     "performanceTitle": "Desempeño de 6 meses",
-    "performanceTarget": "Meta: {value}%",
+    "metrics": {
+      "leadsActive": { "label": "Leads activos", "caption": "{count} hoy" },
+      "visitsMonth": { "label": "Visitas del mes", "caption": "{count} hoy" },
+      "proposals": { "label": "Propuestas", "caption": "{count} esperando respuesta" },
+      "revenue": { "label": "Facturación", "caption": "{amount} en mora" }
+    },
     "activityDetail": {
       "close": "Cerrar",
-      "openGps": "Abrir en GPS",
-      "openGpsAriaLabel": "Abrir {address} en GPS",
       "meetingTime": "Horario de encuentro",
       "location": "Ubicación",
       "client": "Cliente",
-      "owner": "Propietario",
       "notes": "Observaciones",
+      "noNotes": "Sin observaciones registradas.",
       "visitProperty": "Inmueble de la visita"
     },
     "leadDetails": {
@@ -72,26 +56,18 @@
       "close": "Cerrar",
       "client": "Cliente",
       "interest": "Interés",
+      "budget": "Presupuesto",
       "origin": "Origen",
-      "desiredRegions": "Regiones de búsqueda",
-      "cancel": "Cancelar",
-      "edit": "Editar",
-      "save": "Guardar",
-      "fields": {
-        "reportedNeed": "Qué relató",
-        "lookingFor": "Qué busca",
-        "budgetRange": "Base de valores",
-        "downPayment": "Valor de entrada",
-        "financingStatus": "Financiación",
-        "timeline": "Plazo de decisión",
-        "notes": "Observaciones para atención"
-      }
+      "notes": "Observaciones",
+      "noNotes": "Sin observaciones registradas."
     },
     "recentLeads": {
       "title": "Leads recientes",
+      "empty": "No se encontraron leads recientes.",
       "columns": {
         "name": "Nombre",
         "interest": "Interés",
+        "budget": "Presupuesto",
         "status": "Estado",
         "origin": "Origen",
         "actions": "Acciones"
@@ -104,11 +80,209 @@
         "qualified": "Calificado",
         "pending": "Pendiente"
       }
+    },
+    "upcomingActivities": {
+      "title": "Próximas actividades",
+      "empty": "No hay actividades programadas para este mes."
+    }
+  },
+  "agencyOverview": {
+    "agencyName": "Inmobiliaria Premium SP",
+    "title": "Visión General",
+    "subtitle": "Acompaña movimientos, metas y performance consolidada de la inmobiliaria.",
+    "month": "Septiembre, 2024",
+    "report": "Informe",
+    "navigation": {
+      "overview": "Visión General",
+      "team": "Equipo",
+      "portfolio": "Cartera",
+      "finance": "Financiero",
+      "contracts": "Contratos"
+    },
+    "kpis": {
+      "portfolio": "Inmuebles en cartera",
+      "activeBrokers": "Agentes activos",
+      "receivedLeads": "Leads recibidos",
+      "revenue": "Facturación",
+      "occupancy": "Tasa ocupación"
+    },
+    "performance": {
+      "title": "Performance de Facturación",
+      "subtitle": "Ingresos mensuales recibidos por la inmobiliaria",
+      "revenue": "Ingresos"
+    },
+    "topBrokers": {
+      "title": "Top Agentes",
+      "subtitle": "Destacados por volumen de cierres",
+      "sales": "{count} Ventas",
+      "details": {
+        "eyebrow": "Desempeno del agente",
+        "summary": "{sales} ventas en el periodo - {revenue} en ingresos",
+        "recentSales": "Ultimas ventas",
+        "openProfile": "Ver perfil publico",
+        "close": "Cerrar"
+      }
+    },
+    "activity": {
+      "title": "Actividad Reciente",
+      "messages": {
+        "contract": "{broker} activó un contrato para {detail}",
+        "property": "{broker} registró el inmueble {detail}",
+        "visit": "{broker} agendó {detail}",
+        "lead": "{broker} recibió el lead {detail}"
+      },
+      "messagesNoBroker": {
+        "contract": "Contrato activado para {detail}",
+        "property": "Nuevo inmueble registrado: {detail}",
+        "visit": "Visita agendada: {detail}",
+        "lead": "Nuevo lead recibido: {detail}"
+      },
+      "details": {
+        "eyebrow": "Detalle de actividad",
+        "close": "Cerrar",
+        "fields": {
+          "broker": "Agente",
+          "subject": "Asunto",
+          "time": "Cuando"
+        },
+        "tones": {
+          "contract": "Contrato",
+          "property": "Inmueble",
+          "visit": "Visita",
+          "lead": "Lead"
+        }
+      }
+    }
+  },
+  "maintenance": {
+    "title": "Solicitudes de mantenimiento",
+    "subtitle": "Acompa\u00f1e las solicitudes de reparaci\u00f3n y mantenimiento",
+    "search": "Buscar solicitud...",
+    "allProperties": "Todos los inmuebles",
+    "newTicket": "Nueva solicitud",
+    "filterDialog": {
+      "open": "Filtros",
+      "title": "Filtros",
+      "close": "Cerrar filtros",
+      "property": "Inmueble"
+    },
+    "filters": {
+      "all": "Todos",
+      "open": "Abierto",
+      "inProgress": "En curso",
+      "urgent": "Urgente",
+      "resolved": "Resuelto",
+      "closed": "Cerrado"
+    },
+    "metrics": {
+      "open": "Abiertos",
+      "urgent": "Urgentes",
+      "averageResolution": "Tiempo medio de resoluci\u00f3n",
+      "averageResolutionUnit": "{days} d\u00edas"
+    },
+    "columns": {
+      "ticket": "Solicitud",
+      "property": "Inmueble",
+      "category": "Categor\u00eda",
+      "priority": "Prioridad",
+      "tenant": "Inquilino",
+      "openedAt": "Abierto el",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "priorities": { "urgent": "Urgente", "high": "Alta", "normal": "Normal" },
+    "statuses": {
+      "inProgress": "En curso",
+      "open": "Abierto",
+      "resolved": "Resuelto",
+      "closed": "Cerrado"
+    },
+    "viewTicket": "Ver solicitud {ticket}",
+    "showing": "Mostrando {from}-{to} de {total} solicitudes",
+    "createDialog": {
+      "title": "Nueva solicitud",
+      "editTitle": "Editar solicitud",
+      "close": "Cerrar",
+      "cancel": "Cancelar",
+      "submit": "Crear solicitud",
+      "save": "Guardar cambios",
+      "fields": {
+        "property": "Inmueble",
+        "category": "Categoría",
+        "priority": "Prioridad",
+        "title": "Título de la solicitud",
+        "description": "Descripción del problema",
+        "descriptionPlaceholder": "Describa el problema..."
+      },
+      "errors": {
+        "propertyRequired": "Selecciona el inmueble",
+        "categoryRequired": "Selecciona la categoría",
+        "priorityRequired": "Selecciona la prioridad",
+        "titleRequired": "Indica el título de la solicitud",
+        "descriptionRequired": "Describe el problema"
+      }
+    },
+    "actions": {
+      "menu": "Acciones de la solicitud {ticket}",
+      "edit": "Editar solicitud",
+      "delete": "Eliminar solicitud",
+      "deleteTitle": "¿Eliminar solicitud?",
+      "deleteDescription": "¿Realmente desea eliminar esta solicitud? Esta acción no se puede deshacer."
+    },
+    "pagination": { "previous": "Anterior", "next": "Siguiente" },
+    "notifications": {
+      "createSuccess": "Solicitud creada con éxito.",
+      "createError": "No fue posible crear la solicitud.",
+      "updateSuccess": "Solicitud actualizada con éxito.",
+      "updateError": "No fue posible guardar los cambios.",
+      "deleteSuccess": "Solicitud eliminada con éxito.",
+      "deleteError": "No fue posible eliminar la solicitud.",
+      "resolveSuccess": "Solicitud marcada como resuelta.",
+      "resolveError": "No fue posible marcar la solicitud como resuelta.",
+      "noteSuccess": "Mensaje enviado.",
+      "noteError": "No fue posible enviar el mensaje."
+    },
+    "detail": {
+      "back": "Volver a las solicitudes",
+      "loading": "Cargando solicitud...",
+      "notFound": {
+        "title": "Solicitud no encontrada",
+        "action": "Volver a las solicitudes"
+      },
+      "actions": {
+        "assignProvider": "Asignar proveedor",
+        "resolve": "Marcar como resuelto",
+        "attachFiles": "Adjuntar archivos",
+        "sendMessage": "Enviar mensaje"
+      },
+      "descriptionCard": {
+        "title": "Descripción de la solicitud",
+        "openedBy": "Abierto por",
+        "report": "Relato del problema"
+      },
+      "photos": {
+        "title": "Fotos adjuntas",
+        "empty": "Ninguna foto adjunta a esta solicitud."
+      },
+      "timeline": {
+        "title": "Línea de tiempo y actualizaciones",
+        "empty": "Aún no hay actualizaciones registradas.",
+        "placeholder": "Escriba un mensaje o actualización sobre la solicitud...",
+        "systemAuthor": "Sistema"
+      },
+      "info": {
+        "title": "Información general",
+        "lastUpdated": "Última actualización",
+        "dateTime": "{date} a las {time}"
+      }
     }
   },
   "finance": {
     "title": "Finanzas",
     "subtitle": "Movimiento financiero mensual y registros de ventas/comisiones.",
+    "exchangeRateNotice": "Importes estimados en {currency} con la PTAX de cierre del {date} (1 {currency} = BRL {rate}). Los registros permanecen en BRL.",
+    "exchangeRateLoading": "Consultando la cotización PTAX. Los importes se muestran en BRL por ahora.",
+    "exchangeRateUnavailable": "Cotización no disponible. Los importes se muestran en BRL.",
     "movementTitle": "Movimiento mensual",
     "movementSubtitle": "Entradas de ventas y comisiones por mes.",
     "sales": "Ventas",
@@ -139,10 +313,9 @@
     "revenue": "Facturación",
     "upcomingDuesTitle": "Próximos vencimientos",
     "kpis": {
-      "monthlyRevenue": "Ingresos mensuales",
       "receivable": "Por cobrar",
       "delinquency": "Morosidad",
-      "occupancyRate": "Tasa de ocupación"
+      "defaultRate": "Tasa de morosidad"
     },
     "history": {
       "eyebrow": "Historial financiero",
@@ -159,30 +332,81 @@
       "receiptsTitle": "Comprobantes"
     }
   },
-  "proposals": {
-    "title": "Propuestas",
-    "subtitle": "Negociaciones en curso y valores de referencia.",
-    "columns": {
-      "client": "Cliente",
-      "property": "Inmueble",
-      "value": "Propuesta",
-      "ownerExpectation": "Expectativa",
-      "status": "Estado"
+  "team": {
+    "title": "Equipo de corredores",
+    "subtitle": "Acompaña ventas, retornos y progreso de la meta mensual por representante.",
+    "searchPlaceholder": "Buscar corredor...",
+    "inviteBroker": "Invitar corredor",
+    "moreOptions": "Más opciones",
+    "viewProfileAriaLabel": "Ver perfil de {name}",
+    "goalProgress": "Progreso de la meta",
+    "returns": "{count} retornos",
+    "empty": "No se encontró ningún corredor.",
+    "kpis": {
+      "activeBrokers": "Corredores activos",
+      "properties": "Inmuebles",
+      "monthlySales": "Ventas del mes",
+      "averageGoal": "Meta promedio",
+      "activeBrokersHelper": "+2 en onboarding",
+      "propertiesHelper": "Cartera activa",
+      "monthlySalesHelper": "Producción mensual",
+      "averageGoalHelper": "Meta consolidada"
     },
-    "detail": {
-      "eyebrow": "Detalle de la propuesta",
-      "close": "Cerrar propuesta",
-      "value": "Valor propuesto",
-      "ownerExpectation": "Expectativa del propietario",
-      "currentStatus": "Estado actual",
-      "status": "Cambiar estado",
-      "cancel": "Cancelar",
-      "saveStatus": "Guardar estado"
+    "metrics": {
+      "properties": "Inmuebles",
+      "leads": "Leads",
+      "monthlySales": "Ventas/mes"
     },
     "statuses": {
-      "underReview": "En revisión",
-      "counteroffer": "Contraoferta",
-      "approved": "Aprobada"
+      "ahead": "Sobre la meta",
+      "onTrack": "En ritmo",
+      "attention": "Requiere atención"
+    },
+    "menu": {
+      "performance": "Ver desempeño",
+      "editGoal": "Editar meta mensual",
+      "transferPortfolio": "Transferir leads/inmuebles",
+      "scheduleOneOnOne": "Agendar 1:1",
+      "deactivate": "Pausar/desactivar corredor",
+      "feedback": "{action} de {name}"
+    },
+    "dialogs": {
+      "performanceTitle": "Desempeño — {name}",
+      "returns": "Seguimientos",
+      "monthlyGoal": "Meta mensual",
+      "broker": "Corredor",
+      "source": "Origen",
+      "destination": "Transferir a",
+      "items": "Elementos",
+      "close": "Cerrar",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "transfer": "Transferir",
+      "confirm": "Confirmar",
+      "goalError": "Indique una meta entera entre 1 y 10000",
+      "destinationError": "Seleccione un corredor de destino",
+      "itemsError": "Seleccione al menos un elemento",
+      "transferError": "No se pudieron transferir los elementos",
+      "goalSaved": "Meta mensual actualizada",
+      "transferred": "Leads/inmuebles transferidos",
+      "deactivatePrompt": "¿Desea pausar/desactivar a {name}? Esto cambia el estado actual.",
+      "deactivated": "Corredor desactivado",
+      "activated": "Corredor activado",
+      "inactive": "Inactivo",
+      "activate": "Activar corredor",
+      "oneOnOneTitle": "1:1 — {name}",
+      "internalMeeting": "Reunión interna",
+      "scheduled": "1:1 programado correctamente",
+      "scheduleError": "No se pudo programar el 1:1"
+    },
+    "actions": {
+      "message": "Enviar mensaje",
+      "email": "Enviar e-mail",
+      "call": "Llamar"
     }
+  },
+  "proposals": {
+    "title": "Propuestas",
+    "subtitle": "Negociaciones en curso y valores de referencia."
   }
 }

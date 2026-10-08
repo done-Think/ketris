@@ -16,23 +16,27 @@ export function CrmAccessBoundary({ children }: CrmAccessBoundaryProps) {
   const t = useTranslations('crm.access')
   const router = useRouter()
   const { data: session, status } = useSession()
-  const isSessionInvalid =
-    status !== 'authenticated' || session?.scope !== 'tenant' || !session.tenantId
+  const isAuthenticated =
+    status === 'authenticated' && session?.scope === 'tenant' && !!session.tenantId
+  const isRenter = isAuthenticated && session?.papel === 'RENTER'
+  const isSessionInvalid = !isAuthenticated || isRenter
 
-  // The server-side layout only redirects on the initial navigation — if the session becomes
-  // invalid while the SPA is already open (token revalidated as stale, expiry, etc.), this is what
-  // sends the user back to /login instead of leaving them stuck on an empty/restricted screen.
-  // clearClientSession() drops the stale NextAuth cookie plus any client-side storage before the
-  // redirect, so a subsequent login never inherits leftover state from the invalidated session.
   useEffect(() => {
     if (status === 'loading') return
+
+    if (isRenter) {
+      router.replace('/')
+      router.refresh()
+      return
+    }
+
     if (!isSessionInvalid) return
 
     clearClientSession().finally(() => {
       router.replace('/login')
       router.refresh()
     })
-  }, [status, isSessionInvalid, router])
+  }, [status, isSessionInvalid, isRenter, router])
 
   if (status === 'loading') {
     return (

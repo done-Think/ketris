@@ -1,39 +1,33 @@
 'use client'
 
+import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Button, Card, Stack } from '@mui/material'
 import { useSnackbar } from 'notistack'
-import axios from 'axios'
 import { useTranslations } from 'next-intl'
 
 import { useRouter } from '@/i18n/navigation'
 import { RhfTextField } from '@shared/components/form'
-import { radius, shadows } from '@shared/theme/tokens'
+import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
+import { extractErrorMessage } from '@shared/utils/error-message'
 
 import { createTenantSchema, type CreateTenantFormValues } from '../schemas/create-tenant-schema'
 import { useCreateTenant } from '../hooks/use-create-tenant'
-
-function extractErrorMessage(error: unknown, fallback: string): string {
-  if (axios.isAxiosError(error)) {
-    const message = error.response?.data?.error?.message
-    if (typeof message === 'string') return message
-  }
-  return fallback
-}
 
 export function CreateTenantForm() {
   const t = useTranslations('platform.forms')
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
   const createTenant = useCreateTenant()
+  const schema = useMemo(() => createTenantSchema((key) => t(`errors.${key}`)), [t])
 
   const {
     control,
     handleSubmit,
     formState: { isSubmitting },
   } = useForm<CreateTenantFormValues>({
-    resolver: zodResolver(createTenantSchema),
+    resolver: zodResolver(schema),
     defaultValues: { nome: '', slug: '' },
   })
 
@@ -48,7 +42,17 @@ export function CreateTenantForm() {
   }
 
   return (
-    <Card sx={{ borderRadius: `${radius.lg}px`, boxShadow: shadows.popover, p: 4, maxWidth: 480 }}>
+    <Card
+      variant="outlined"
+      sx={{
+        maxWidth: 480,
+        bgcolor: surface.paper,
+        borderColor: alpha.graphite[6],
+        borderRadius: `${radius.sm}px`,
+        boxShadow: shadows.propertyCard,
+        p: { xs: 2, md: 2.4 },
+      }}
+    >
       <Stack component="form" onSubmit={handleSubmit(onSubmit)} spacing={2.5}>
         <RhfTextField control={control} name="nome" label={t('name')} fullWidth autoFocus />
         <RhfTextField

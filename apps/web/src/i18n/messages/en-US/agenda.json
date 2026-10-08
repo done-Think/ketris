@@ -1,51 +1,111 @@
 {
   "dashboard": {
-    "title": "Agenda",
+    "title": "Schedule",
     "subtitle": "Your appointments and tasks, organized",
     "previousWeek": "Previous week",
     "nextWeek": "Next week",
-    "weekRange": "Agenda for {start}-{end}",
+    "weekRange": "Schedule for {start}-{end}",
     "newEvent": "New Event",
     "openEventAriaLabel": "Open {title}",
     "todayVisitTitle": "Visit scheduled for today",
     "todayVisitMessage": "{time} - {participant} at {property}",
+    "propertyNotInformed": "property not informed",
     "assignedEventTitle": "New assigned appointment",
     "assignedEventMessage": "{role} {name} booked {title}",
     "defaultEventNotes": "Event created manually in the agenda.",
-    "rescheduleSuccess": "{title} rescheduled to {date} at {time}.",
     "createSuccess": "{title} added to the agenda.",
     "freeSlot": "Free slot",
-    "selectedDayLabel": "{day}, {month} {date}"
+    "selectedDayLabel": "{day}, {month} {date}",
+    "creatorRoles": {
+      "agency": "agency",
+      "colleague": "colleague"
+    },
+    "createError": "Could not create the event. Please try again.",
+    "editSuccess": "{title} updated successfully.",
+    "editError": "Could not save the changes. Please try again.",
+    "deleteSuccess": "{title} removed from the schedule.",
+    "deleteError": "Could not delete the event. Please try again."
   },
   "eventForm": {
+    "kinds": {
+      "VISIT": "Visit",
+      "FOLLOW_UP": "Follow-up",
+      "MEETING": "Meeting",
+      "INSPECTION": "Inspection",
+      "SIGNATURE": "Signature",
+      "OTHER": "Other"
+    },
     "eyebrow": "New agenda entry",
     "title": "Add event",
     "closeAriaLabel": "Close new event",
     "fields": {
+      "kind": "Event type",
+      "kindPlaceholder": "Select a type",
       "title": "Title",
       "property": "Property in question",
       "otherProperty": "Other",
       "customProperty": "Property or reference",
-      "participant": "Person",
+      "participant": "Client",
       "phone": "Phone",
       "date": "Date",
       "time": "Time",
       "duration": "Duration",
-      "notes": "Notes"
+      "notes": "Notes",
+      "kind": "Event type",
+      "kindPlaceholder": "Select (optional)"
     },
     "cancel": "Cancel",
-    "submit": "Create event"
+    "submit": "Create event",
+    "kinds": {
+      "VISIT": "Visit",
+      "FOLLOW_UP": "Follow-up",
+      "MEETING": "Meeting",
+      "INSPECTION": "Inspection",
+      "SIGNATURE": "Signature",
+      "OTHER": "Other"
+    },
+    "errors": {
+      "durationTooShort": "Enter at least 15 minutes",
+      "participantRequired": "Enter the person's name",
+      "phoneInvalid": "Enter a valid phone number",
+      "propertyRequired": "Select the property",
+      "dateRequired": "Enter the date",
+      "timeRequired": "Enter the time",
+      "titleRequired": "Enter the event title",
+      "customPropertyRequired": "Enter the property or reference",
+      "visitMinimumDuration": "Visits must last at least 60 minutes",
+      "minimumAdvanceNotice": "Schedule at least 3 hours in advance",
+      "outsideBusinessHours": "Schedule within business hours (08:00–18:00)"
+    }
   },
   "eventDetail": {
     "closeAriaLabel": "Close event details",
     "notesTitle": "Notes",
     "createdBy": "Booked by {role} {name}",
-    "rescheduleTitle": "Reschedule appointment",
-    "fields": {
-      "newDate": "New date",
-      "newTime": "New time"
+    "noProperty": "No property linked",
+    "editTitle": "Edit event",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancelEdit": "Cancel",
+    "deleteDialog": {
+      "title": "Delete event",
+      "description": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
     },
-    "cancel": "Cancel",
-    "submit": "Save rescheduling"
+    "errors": {
+      "durationTooShort": "Enter at least 15 minutes",
+      "participantRequired": "Enter the person's name",
+      "phoneInvalid": "Enter a valid phone number",
+      "propertyRequired": "Select the property",
+      "dateRequired": "Enter the date",
+      "timeRequired": "Enter the time",
+      "titleRequired": "Enter the event title",
+      "customPropertyRequired": "Enter the property or reference",
+      "visitMinimumDuration": "Visits must last at least 60 minutes",
+      "minimumAdvanceNotice": "Schedule at least 3 hours in advance",
+      "outsideBusinessHours": "Schedule within business hours (08:00–18:00)"
+    }
   }
 }

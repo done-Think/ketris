@@ -16,8 +16,8 @@ import type {
 } from '../types/contract'
 
 export const createContractSteps: CreateContractStep[] = [
+  { key: 'opportunity', label: 'Oportunidade' },
   { key: 'parties', label: 'Partes' },
-  { key: 'property', label: 'Imóvel' },
   { key: 'conditions', label: 'Condições' },
   { key: 'review', label: 'Revisão' },
 ]

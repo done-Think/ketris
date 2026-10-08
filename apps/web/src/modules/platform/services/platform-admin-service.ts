@@ -1,20 +1,12 @@
 import { BaseService } from '@shared/lib/api/base-service'
 
-import type { PlatformAdminAccount } from '../types/platform-admin'
-
-interface CreatePlatformAdminPayload {
-  nome: string
-  email: string
-  password: string
-}
-
-interface PlatformAdminResponse {
-  admin: PlatformAdminAccount
-}
-
-interface ListPlatformAdminsResponse {
-  admins: PlatformAdminAccount[]
-}
+import type {
+  CreatePlatformAdminPayload,
+  ListPlatformAdminsResponse,
+  PlatformAdminAccount,
+  PlatformAdminResponse,
+  UpdatePlatformAdminPayload,
+} from '../types/platform-admin'
 
 class PlatformAdminService extends BaseService {
   private readonly path = '/platform/admins'
@@ -25,6 +17,22 @@ class PlatformAdminService extends BaseService {
 
   list(): Promise<PlatformAdminAccount[]> {
     return this.http.get<ListPlatformAdminsResponse>(this.path).then((data) => data.admins)
+  }
+
+  deactivate(id: string): Promise<PlatformAdminAccount> {
+    return this.http.delete<PlatformAdminResponse>(`${this.path}/${id}`).then((data) => data.admin)
+  }
+
+  activate(id: string): Promise<PlatformAdminAccount> {
+    return this.http
+      .patch<PlatformAdminResponse>(`${this.path}/${id}`, { ativo: true })
+      .then((data) => data.admin)
+  }
+
+  update(id: string, payload: UpdatePlatformAdminPayload): Promise<PlatformAdminAccount> {
+    return this.http
+      .patch<PlatformAdminResponse>(`${this.path}/${id}`, payload)
+      .then((data) => data.admin)
   }
 }
 

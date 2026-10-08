@@ -1,16 +1,20 @@
 import { z } from 'zod'
 
-export const publicPropertyPurposeSchema = z.enum(['ALUGUEL', 'VENDA'])
+import type { SchemaMessageTranslator } from './opportunity-schema'
 
-export const publicPropertySearchFiltersSchema = z.object({
-  purpose: publicPropertyPurposeSchema.optional(),
-  propertyType: z.string().min(1).optional(),
-  city: z.string().min(1).optional(),
-  minPrice: z.number().nonnegative().optional(),
-  maxPrice: z.number().nonnegative().optional(),
-  minBedrooms: z.number().int().nonnegative().optional(),
-  q: z.string().min(1).optional(),
-})
+export const publicPropertyPurposeSchema = z.enum(['ALUGUEL', 'VENDA', 'AMBOS'])
+
+export function createPublicPropertySearchFiltersSchema(t: SchemaMessageTranslator) {
+  return z.object({
+    purpose: publicPropertyPurposeSchema.optional(),
+    propertyType: z.string().min(1, t('propertyTypeInvalid')).optional(),
+    city: z.string().min(1, t('cityInvalid')).optional(),
+    minPrice: z.number().nonnegative(t('minPriceInvalid')).optional(),
+    maxPrice: z.number().nonnegative(t('maxPriceInvalid')).optional(),
+    minBedrooms: z.number().int().nonnegative(t('minBedroomsInvalid')).optional(),
+    q: z.string().min(1, t('searchTermInvalid')).optional(),
+  })
+}
 
 export const publicPropertySummarySchema = z.object({
   id: z.string(),

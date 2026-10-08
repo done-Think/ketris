@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
+import { useTranslations } from 'next-intl'
 
-import { directorySearchFormSchema } from '../schemas/directory-search-schema'
+import { createDirectorySearchFormSchema } from '../schemas/directory-search-schema'
 import type {
   DirectorySearchFormValues,
   UseDirectoryListParams,
@@ -18,6 +19,11 @@ export function useDirectoryList<TItem>({
   items,
   pageSize,
 }: UseDirectoryListParams<TItem>): UseDirectoryListResult<TItem> {
+  const t = useTranslations('marketplace.directory.errors')
+  const directorySearchFormSchema = useMemo(
+    () => createDirectorySearchFormSchema((key) => t(key)),
+    [t],
+  )
   const { getValues, register, setValue, watch } = useForm<DirectorySearchFormValues>({
     defaultValues: {
       isLoadingMore: false,

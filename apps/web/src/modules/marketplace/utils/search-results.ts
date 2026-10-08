@@ -1,4 +1,6 @@
 import type { SearchResultProperty } from '../types/search'
+import { defaultLocale } from '@/i18n/routing'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 export function getCurrencyValue(price: string) {
   const [value = '0'] = price.match(/[\d.]+/) ?? []
@@ -13,8 +15,8 @@ export function getFeatureNumber(property: SearchResultProperty, key: string) {
   return Number(value)
 }
 
-export function formatCompactCurrency(value: number) {
-  return new Intl.NumberFormat('pt-BR', {
+export function formatCompactCurrency(value: number, locale: AppLocale = defaultLocale) {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: 'BRL',
     maximumFractionDigits: 0,

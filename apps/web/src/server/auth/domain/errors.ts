@@ -6,6 +6,24 @@ export class InvalidCredentialsError extends AppError {
   }
 }
 
+export class AccountDeactivatedError extends AppError {
+  constructor() {
+    super('Esta conta foi desativada. Entre em contato com o administrador.', {
+      status: 403,
+      code: 'ACCOUNT_DEACTIVATED',
+    })
+  }
+}
+
+export class MembershipPendingApprovalError extends AppError {
+  constructor() {
+    super('Seu cadastro está aguardando aprovação do administrador da imobiliária.', {
+      status: 403,
+      code: 'MEMBERSHIP_PENDING_APPROVAL',
+    })
+  }
+}
+
 export class EmailAlreadyInUseError extends AppError {
   constructor() {
     super('Este e-mail já está em uso.', { status: 409, code: 'EMAIL_ALREADY_IN_USE' })
@@ -32,6 +50,24 @@ export class CannotDeactivateSelfError extends AppError {
     super('Você não pode desativar sua própria conta.', {
       status: 400,
       code: 'CANNOT_DEACTIVATE_SELF',
+    })
+  }
+}
+
+export class InvalidPasswordResetCodeError extends AppError {
+  constructor() {
+    super('Código de verificação inválido ou expirado.', {
+      status: 401,
+      code: 'INVALID_RESET_CODE',
+    })
+  }
+}
+
+export class InvalidPasswordResetTokenError extends AppError {
+  constructor() {
+    super('Sessão de redefinição de senha inválida ou expirada.', {
+      status: 401,
+      code: 'INVALID_RESET_TOKEN',
     })
   }
 }

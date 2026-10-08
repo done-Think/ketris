@@ -13,7 +13,7 @@ const session = {
   papel: 'AGENT',
 }
 
-const opportunityDetailFixtureId = 'pipeline-fixture-ricardo-mendes'
+const opportunityDetailId = 'opportunity-1'
 
 const properties = [
   {
@@ -178,7 +178,7 @@ describe('CRM', () => {
     cy.screenshot('crm-contacts-desktop', { capture: 'fullPage' })
 
     cy.viewport(1200, 748)
-    cy.visit(`/crm/oportunidades/${opportunityDetailFixtureId}`)
+    cy.visit(`/crm/oportunidades/${opportunityDetailId}`)
     cy.wait('@session')
     waitForUi()
 
@@ -227,7 +227,7 @@ describe('CRM', () => {
     })
     cy.screenshot('crm-contacts-mobile', { capture: 'viewport' })
 
-    cy.visit(`/crm/oportunidades/${opportunityDetailFixtureId}`)
+    cy.visit(`/crm/oportunidades/${opportunityDetailId}`)
     cy.wait('@session')
     waitForUi()
 

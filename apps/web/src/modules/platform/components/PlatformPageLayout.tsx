@@ -1,19 +1,14 @@
-import type { ReactNode } from 'react'
 import { Container, Stack } from '@mui/material'
 
-import { SectionHeader } from '@shared/components/ui'
+import { DashboardPageHeader } from '@shared/components/layout'
 
-type PlatformPageLayoutProps = {
-  title: string
-  action?: ReactNode
-  children: ReactNode
-}
+import type { PlatformPageLayoutProps } from '../types/platform-shell'
 
 export function PlatformPageLayout({ title, action, children }: PlatformPageLayoutProps) {
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth={false} sx={{ p: 3.5 }}>
       <Stack spacing={2}>
-        <SectionHeader title={title} action={action} />
+        <DashboardPageHeader title={title} actions={action} />
         {children}
       </Stack>
     </Container>

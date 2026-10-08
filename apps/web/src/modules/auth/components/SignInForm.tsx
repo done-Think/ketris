@@ -1,22 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Button, Stack, Typography } from '@mui/material'
-import { getSession, signIn, signOut } from 'next-auth/react'
+import { getSession, signIn } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
 import { useRouter } from '@/i18n/navigation'
 import { RhfTextField } from '@shared/components/form'
 import { ActionTextLink } from '@shared/components/ui'
+import { clearClientSession } from '@shared/lib/auth/clear-client-session'
 
-import { signInSchema, type SignInFormValues } from '../schemas/sign-in-schema'
+import { createSignInSchema, type SignInFormValues } from '../schemas/sign-in-schema'
 
 export function SignInForm() {
   const t = useTranslations('auth.backoffice')
   const router = useRouter()
   const [formError, setFormError] = useState<string | null>(null)
+  const signInSchema = useMemo(() => createSignInSchema((key) => t(`errors.${key}`)), [t])
 
   const {
     control,
@@ -44,7 +46,7 @@ export function SignInForm() {
     const session = await getSession()
 
     if (session?.papel !== 'ADMIN') {
-      await signOut({ redirect: false })
+      await clearClientSession()
       setFormError(t('signInForbiddenError'))
       return
     }

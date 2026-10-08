@@ -7,7 +7,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { theme } from '@shared/theme/theme'
 
 import { SalesPipelineBoard } from '../../components/SalesPipelineBoard'
-import { salesPipelineFixtures } from '../../fixtures/sales-pipeline-fixtures'
 import {
   useCreateOpportunity,
   useCrmProperties,
@@ -26,16 +25,14 @@ const stageLabels: Record<SalesPipelineStageId, string> = {
   closed: 'Fechado',
 }
 
-const fixtureSummary: Record<SalesPipelineStageId, { count: number; total: number }> = {
-  prospecting: { count: 3, total: 21000 },
-  qualification: { count: 2, total: 19300 },
-  proposal: { count: 2, total: 13100 },
-  negotiation: { count: 2, total: 29500 },
-  closed: { count: 2, total: 13000 },
-}
+const pipelineViewModeStorageKey = 'ketris.crm.pipeline.viewMode'
 
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
+}))
+
+vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
+  useDashboardAgendaNotifications: () => [],
 }))
 
 vi.mock('../../hooks/use-opportunities', async (importOriginal) => {
@@ -131,10 +128,10 @@ function mockCreateOpportunity(overrides: Record<string, unknown> = {}) {
   } as unknown as ReturnType<typeof useCreateOpportunity>)
 }
 
-function renderPipeline({ preview = false }: { preview?: boolean } = {}) {
+function renderPipeline() {
   return render(
     <ThemeProvider theme={theme}>
-      <SalesPipelineBoard preview={preview} />
+      <SalesPipelineBoard />
     </ThemeProvider>,
   )
 }
@@ -159,6 +156,7 @@ describe('SalesPipelineBoard', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    window.localStorage.removeItem(pipelineViewModeStorageKey)
     vi.mocked(useSession).mockReturnValue({
       data: { tenantId: 'tenant-1' },
       status: 'authenticated',
@@ -192,187 +190,39 @@ describe('SalesPipelineBoard', () => {
       expect(stageTypography).toEqual(typography[0])
     }
     expect(typography[0]).toMatchObject({
-      fontSize: '10.5px',
+      fontSize: '14.5px',
       fontWeight: '700',
-      lineHeight: '14px',
+      lineHeight: '18px',
       textTransform: 'uppercase',
     })
     expect(typography[0]?.fontFamily).toContain('var(--font-inter)')
   })
 
-  it('renders the structured fixtures only when the non-production preview is explicit', () => {
-    vi.mocked(useSession).mockReturnValue({
-      data: null,
-      status: 'unauthenticated',
-      update: vi.fn(),
-    } as unknown as ReturnType<typeof useSession>)
+  it('restores and saves the selected pipeline view mode preference', async () => {
+    const user = userEvent.setup()
+    window.localStorage.setItem(pipelineViewModeStorageKey, 'list')
 
-    renderPipeline({ preview: true })
-
-    expect(useOpportunities).toHaveBeenCalledWith('')
-    expect(useCrmProperties).toHaveBeenCalledWith('')
-    expect(salesPipelineFixtures).toHaveLength(11)
-    expect(new Set(salesPipelineFixtures.map(({ opportunity }) => opportunity.id)).size).toBe(11)
-    expect(
-      salesPipelineFixtures.map(({ stageId, opportunity, property, presentation }) => [
-        stageId,
-        opportunity.leadName,
-        property.title,
-        opportunity.proposedValue,
-        presentation.relativeDateLabel,
-        presentation.indicatorLabel,
-      ]),
-    ).toEqual([
-      ['prospecting', 'Carlos Eduardo', 'Ap 3 quartos - Moema', 5200, '2 dias', 'Status verde'],
-      [
-        'prospecting',
-        'Letícia Ramos',
-        'Casa comercial - Pinheiros',
-        12000,
-        '5 dias',
-        'Status amarelo',
-      ],
-      ['prospecting', 'Rui Barbosa', 'Studio mobiliado - Itaim', 3800, '1 dia', 'Status verde'],
-      ['qualification', 'Ricardo Mendes', 'Apt 3q Jardins', 4800, '5 dias', 'Status laranja'],
-      ['qualification', 'Clara Antunes', 'Cobertura - Perdizes', 14500, '12 dias', 'Status verde'],
-      ['proposal', 'Bruno Campina', 'Galpão industrial - Lapa', 8900, '3 dias', 'Status verde'],
-      [
-        'proposal',
-        'Daniela Flores',
-        'Ap reformado - Vila Mariana',
-        4200,
-        '8 dias',
-        'Status laranja',
-      ],
-      [
-        'negotiation',
-        'Fernando Costa',
-        'Conjunto Comercial - Paulista',
-        18000,
-        '15 dias',
-        'Status laranja',
-      ],
-      [
-        'negotiation',
-        'Helena Vaz',
-        'Casa em condomínio - Morumbi',
-        11500,
-        '4 dias',
-        'Status verde',
-      ],
-      ['closed', 'Gabriel Henrique', 'Studio - Consolação', 3500, '20 dias', 'Status verde'],
-      ['closed', 'Silvia Souza', 'Ap Duplex - Campo Belo', 9500, '24 dias', 'Status verde'],
-    ])
-
-    for (const fixture of salesPipelineFixtures) {
-      const stage = screen.getByRole('region', { name: stageLabels[fixture.stageId] })
-      const card = within(stage).getByRole('link', {
-        name: `Abrir oportunidade de ${fixture.opportunity.leadName}`,
-      })
-
-      expect(card).toHaveAttribute('href', `/crm/opportunities/${fixture.opportunity.id}`)
-      expect(within(card).getByText(fixture.property.title)).toBeVisible()
-      expect(within(card).getByText(fixture.presentation.relativeDateLabel)).toBeVisible()
-      expect(within(card).getByLabelText(fixture.presentation.indicatorLabel)).toBeVisible()
-    }
-
-    for (const stageId of Object.keys(stageLabels) as SalesPipelineStageId[]) {
-      const fixtures = salesPipelineFixtures.filter((fixture) => fixture.stageId === stageId)
-      const expected = fixtureSummary[stageId]
-      const stage = screen.getByRole('region', { name: stageLabels[stageId] })
-      const totals = within(stage).getByRole('group', {
-        name: `Total projetado de ${stageLabels[stageId]}`,
-      })
-      const fixtureTotal = fixtures.reduce(
-        (sum, fixture) => sum + fixture.opportunity.proposedValue,
-        0,
-      )
-
-      expect(fixtures).toHaveLength(expected.count)
-      expect(fixtureTotal).toBe(expected.total)
-      expect(within(stage).getByText(String(expected.count))).toBeVisible()
-      expect(
-        within(totals).getByText(matchesText(formatMonthlyCurrency(expected.total))),
-      ).toBeVisible()
-    }
-  })
-
-  it('recalculates preview counts and totals after search and stage filtering', () => {
-    vi.mocked(useSession).mockReturnValue({
-      data: null,
-      status: 'unauthenticated',
-      update: vi.fn(),
-    } as unknown as ReturnType<typeof useSession>)
-    renderPipeline({ preview: true })
-
-    const searchInput = screen.getByRole('textbox', { name: 'Buscar oportunidade' })
-    fireEvent.change(searchInput, { target: { value: 'pinheiros' } })
-
-    const prospecting = screen.getByRole('region', { name: 'Prospecção' })
-    const prospectingTotals = within(prospecting).getByRole('group', {
-      name: 'Total projetado de Prospecção',
-    })
-    expect(screen.getByText('Letícia Ramos')).toBeVisible()
-    expect(screen.queryByText('Carlos Eduardo')).not.toBeInTheDocument()
-    expect(within(prospecting).getByText('1')).toBeVisible()
-    expect(
-      within(prospectingTotals).getByText(matchesText(formatMonthlyCurrency(12000))),
-    ).toBeVisible()
-
-    fireEvent.change(searchInput, { target: { value: '' } })
-    fireEvent.click(screen.getByRole('button', { name: /Filtrar por etapa/i }))
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Qualificação' }))
-
-    const qualification = screen.getByRole('region', { name: 'Qualificação' })
-    const qualificationTotals = within(qualification).getByRole('group', {
-      name: 'Total projetado de Qualificação',
-    })
-    expect(within(qualification).getByText('Ricardo Mendes')).toBeVisible()
-    expect(within(qualification).getByText('Clara Antunes')).toBeVisible()
-    expect(within(qualification).getByText('2')).toBeVisible()
-    expect(
-      within(qualificationTotals).getByText(matchesText(formatMonthlyCurrency(19300))),
-    ).toBeVisible()
-    expect(screen.queryByText('Bruno Campina')).not.toBeInTheDocument()
-  })
-
-  it('preserves the real empty state for an authenticated tenant instead of using fixtures', () => {
     renderPipeline()
 
-    expect(screen.getAllByText('Sem oportunidades nesta etapa.')).toHaveLength(5)
-    for (const fixture of salesPipelineFixtures) {
-      expect(screen.queryByText(fixture.opportunity.leadName)).not.toBeInTheDocument()
-    }
+    expect(screen.getByRole('button', { name: 'Ver em lista' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Ver em quadro' }))
+
+    expect(window.localStorage.getItem(pipelineViewModeStorageKey)).toBe('kanban')
+    expect(screen.getByRole('region', { name: 'Prospecção' })).toBeVisible()
   })
 
-  it('keeps the public development pipeline empty when preview was not requested', () => {
-    vi.mocked(useSession).mockReturnValue({
-      data: null,
-      status: 'unauthenticated',
-      update: vi.fn(),
-    } as unknown as ReturnType<typeof useSession>)
-
+  it('keeps the API-backed pipeline empty when there are no opportunities', () => {
     renderPipeline()
 
     expect(screen.getAllByText('Sem oportunidades nesta etapa.')).toHaveLength(5)
     expect(screen.queryByText('Carlos Eduardo')).not.toBeInTheDocument()
   })
 
-  it('keeps fixtures disabled in production even without an authenticated session', () => {
-    vi.stubEnv('NODE_ENV', 'production')
-    vi.mocked(useSession).mockReturnValue({
-      data: null,
-      status: 'unauthenticated',
-      update: vi.fn(),
-    } as unknown as ReturnType<typeof useSession>)
-
-    renderPipeline({ preview: true })
-
-    expect(screen.getAllByText('Sem oportunidades nesta etapa.')).toHaveLength(5)
-    expect(screen.queryByText('Carlos Eduardo')).not.toBeInTheDocument()
-  })
-
-  it('does not flash fixtures while the session is loading', () => {
+  it('does not render opportunity cards while the session is loading', () => {
     vi.mocked(useSession).mockReturnValue({
       data: null,
       status: 'loading',
@@ -399,7 +249,7 @@ describe('SalesPipelineBoard', () => {
 
     renderPipeline()
 
-    for (const label of ['Prospecção', 'Qualificação', 'Proposta', 'Negociação', 'Fechado']) {
+    for (const label of Object.values(stageLabels)) {
       expect(screen.getByRole('region', { name: label })).toBeInTheDocument()
     }
     expect(screen.getAllByRole('region')).toHaveLength(5)
@@ -407,6 +257,7 @@ describe('SalesPipelineBoard', () => {
     expect(screen.getByText('Ricardo Mendes')).toBeInTheDocument()
     expect(screen.getByText('Daniela Flores')).toBeInTheDocument()
     expect(screen.getByText('Gabriel Henrique')).toBeInTheDocument()
+
     const closed = screen.getByRole('region', { name: 'Fechado' })
     const closedTotals = within(closed).getByRole('group', { name: 'Total projetado de Fechado' })
     expect(within(closed).getByText('Oportunidade perdida')).toBeVisible()
@@ -516,6 +367,8 @@ describe('SalesPipelineBoard', () => {
 
   it('opens the create opportunity dialog from the toolbar button', async () => {
     const user = userEvent.setup()
+    mockOpportunitiesQuery({ data: [makeOpportunity(1, 'RASCUNHO')] })
+    mockPropertiesQuery({ data: [makeProperty(1)] })
     renderPipeline()
 
     await user.click(screen.getByRole('button', { name: 'Nova Oportunidade' }))

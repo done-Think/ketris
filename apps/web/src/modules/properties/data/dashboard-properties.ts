@@ -1,4 +1,9 @@
-import type { DashboardProperty, DashboardPropertyFilterKey } from '../types/dashboard-property'
+import type {
+  DashboardProperty,
+  DashboardPropertyFilterKey,
+  DashboardPropertyMappingOptions,
+} from '../types/dashboard-property'
+import { translatePropertyType } from '../utils/map-dashboard-property'
 
 export const propertyStatusFilters: Array<{ label: DashboardPropertyFilterKey }> = [
   { label: 'Todos' },
@@ -37,6 +42,8 @@ export const dashboardProperties: DashboardProperty[] = [
     purpose: 'Aluguel',
     price: 'R$ 6.500/mês',
     status: 'Alugado',
+    responsibleUserId: 'mock-user-id',
+    apiStatus: 'RENTED',
     broker: 'Roberto Souza',
     updatedAt: 'Há 2 horas',
     imageUrl:
@@ -95,6 +102,8 @@ export const dashboardProperties: DashboardProperty[] = [
     purpose: 'Aluguel',
     price: 'R$ 3.200/mês',
     status: 'Alugado',
+    responsibleUserId: 'mock-user-id',
+    apiStatus: 'RENTED',
     broker: 'Ana Paula',
     updatedAt: 'Há 1 dia',
     imageUrl:
@@ -150,6 +159,8 @@ export const dashboardProperties: DashboardProperty[] = [
     purpose: 'Venda',
     price: 'R$ 4.500.000',
     status: 'Ativo',
+    responsibleUserId: 'mock-user-id',
+    apiStatus: 'SOLD',
     broker: 'Roberto Souza',
     updatedAt: 'Há 3 dias',
     imageUrl:
@@ -205,6 +216,8 @@ export const dashboardProperties: DashboardProperty[] = [
     purpose: 'Venda',
     price: 'R$ 3.800.000',
     status: 'Em análise',
+    responsibleUserId: 'mock-user-id',
+    apiStatus: 'DRAFT',
     broker: 'Marcos Lima',
     updatedAt: 'Há 5 dias',
     imageUrl:
@@ -259,6 +272,8 @@ export const dashboardProperties: DashboardProperty[] = [
     purpose: 'Aluguel',
     price: 'R$ 2.400/mês',
     status: 'Vencendo',
+    responsibleUserId: 'mock-user-id',
+    apiStatus: 'PUBLISHED',
     broker: 'Ana Paula',
     updatedAt: 'Há 1 semana',
     imageUrl:
@@ -313,6 +328,8 @@ export const dashboardProperties: DashboardProperty[] = [
     purpose: 'Aluguel',
     price: 'R$ 4.800/mês',
     status: 'Inativo',
+    responsibleUserId: 'mock-user-id',
+    apiStatus: 'INACTIVE',
     broker: 'Clara G.',
     updatedAt: 'Há 2 semanas',
     imageUrl:
@@ -362,4 +379,168 @@ export const dashboardProperties: DashboardProperty[] = [
 
 export function getDashboardPropertyById(propertyId: string) {
   return dashboardProperties.find((property) => property.id === propertyId)
+}
+
+function translateMonthlyValue(value: string, monthlySuffix: string) {
+  return value.replaceAll('/mês', monthlySuffix)
+}
+
+function translatePlaceholder(value: string, options: DashboardPropertyMappingOptions) {
+  const { notAnnounced, notInformed } = options.messages
+  const {
+    exempt,
+    notApplicable,
+    insuranceDeposit,
+    registrationPaused,
+    noRecentAdjustment,
+    underDocumentaryReview,
+  } = options.messages.pricingDetails
+  const knownValues: Record<string, string> = {
+    'Não anunciado': notAnnounced,
+    'Não informado': notInformed,
+    Isento: exempt,
+    'Não aplicável': notApplicable,
+    'Seguro fiança': insuranceDeposit,
+    'Cadastro pausado': registrationPaused,
+    'Sem reajuste recente': noRecentAdjustment,
+    'Em análise documental': underDocumentaryReview,
+  }
+
+  return translateMonthlyValue(knownValues[value] ?? value, options.messages.monthlySuffix)
+}
+
+function translateRelativeDate(value: string, locale: string) {
+  const match = value.match(/^(há|Há|em) (\d+) (hora|horas|dia|dias|semana|semanas|mês|meses)$/)
+
+  if (!match) return value
+
+  const [, prefix, amount, unit] = match
+  const unitMap = {
+    hora: 'hour',
+    horas: 'hour',
+    dia: 'day',
+    dias: 'day',
+    semana: 'week',
+    semanas: 'week',
+    mês: 'month',
+    meses: 'month',
+  } as const
+  const sign = prefix.toLowerCase() === 'em' ? 1 : -1
+  const formatted = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(
+    sign * Number(amount),
+    unitMap[unit as keyof typeof unitMap],
+  )
+
+  return prefix === 'Há' ? formatted.charAt(0).toUpperCase() + formatted.slice(1) : formatted
+}
+
+function translateAdministrationFee(value: string, options: DashboardPropertyMappingOptions) {
+  const rentMatch = value.match(/^(\d+)% sobre aluguel$/)
+  if (rentMatch) return options.messages.pricingDetails.feeOnRent.replace('{percent}', rentMatch[1])
+
+  const saleMatch = value.match(/^(\d+)% na venda$/)
+  if (saleMatch) return options.messages.pricingDetails.feeOnSale.replace('{percent}', saleMatch[1])
+
+  return value
+}
+
+function translateSecurityDeposit(value: string, options: DashboardPropertyMappingOptions) {
+  const installmentsMatch = value.match(/^(\d+) aluguéis$/)
+  if (installmentsMatch) {
+    return options.messages.pricingDetails.installmentsDeposit.replace(
+      '{count}',
+      installmentsMatch[1],
+    )
+  }
+
+  return translatePlaceholder(value, options)
+}
+
+function translateLastAdjustment(value: string, options: DashboardPropertyMappingOptions) {
+  const { priceValidated, listingExpires, deactivated } = options.messages.pricingDetails
+
+  const priceWithDateMatch = value.match(/^(R\$ [\d.,]+) (há .+)$/)
+  if (priceWithDateMatch) {
+    return `${priceWithDateMatch[1]} ${translateRelativeDate(priceWithDateMatch[2], options.locale)}`
+  }
+
+  const priceValidatedMatch = value.match(/^Preço validado (há .+)$/)
+  if (priceValidatedMatch) {
+    return `${priceValidated} ${translateRelativeDate(priceValidatedMatch[1], options.locale)}`
+  }
+
+  const listingExpiresMatch = value.match(/^Publicação vence (em .+)$/)
+  if (listingExpiresMatch) {
+    return `${listingExpires} ${translateRelativeDate(listingExpiresMatch[1], options.locale)}`
+  }
+
+  const deactivatedMatch = value.match(/^Inativado (há .+)$/)
+  if (deactivatedMatch) {
+    return `${deactivated} ${translateRelativeDate(deactivatedMatch[1], options.locale)}`
+  }
+
+  return translatePlaceholder(value, options)
+}
+
+function translateActivityLabel(value: string, options: DashboardPropertyMappingOptions) {
+  const { activity } = options.messages
+
+  const priceAdjustmentMatch = value.match(/^Ajuste de preço para (.+)$/)
+  if (priceAdjustmentMatch) {
+    return activity.priceAdjustment.replace('{price}', priceAdjustmentMatch[1])
+  }
+
+  const visitScheduledMatch = value.match(/^Visita agendada com (.+)$/)
+  if (visitScheduledMatch) {
+    return activity.visitScheduled.replace('{name}', visitScheduledMatch[1])
+  }
+
+  const knownLabels: Record<string, string> = {
+    'Cadastro do imóvel efetuado': activity.created,
+    'Contrato ativo vinculado': activity.contractLinked,
+    'Fotos atualizadas': activity.photosUpdated,
+    'Contrato marcado como alugado': activity.markedAsRented,
+    'Proposta aprovada': activity.proposalApproved,
+    'Imóvel ativado para venda': activity.activatedForSale,
+    'Documentação enviada para análise': activity.documentationSubmitted,
+    'Publicação próxima do vencimento': activity.listingExpiringSoon,
+    'Imóvel marcado como inativo': activity.markedAsInactive,
+  }
+
+  return knownLabels[value] ?? value
+}
+
+export function localizeDashboardPropertyFixture(
+  property: DashboardProperty,
+  options: DashboardPropertyMappingOptions,
+): DashboardProperty {
+  const isRent = property.purpose === 'Aluguel'
+
+  return {
+    ...property,
+    type: translatePropertyType(property.type, options.messages),
+    purpose: isRent ? options.messages.purposes.rent : options.messages.purposes.sale,
+    price: translatePlaceholder(property.price, options),
+    updatedAt: translateRelativeDate(property.updatedAt, options.locale),
+    summary: {
+      ...property.summary,
+      condominium: translatePlaceholder(property.summary.condominium, options),
+      iptu: translatePlaceholder(property.summary.iptu, options),
+    },
+    pricing: {
+      ...property.pricing,
+      rent: translatePlaceholder(property.pricing.rent, options),
+      sale: translatePlaceholder(property.pricing.sale, options),
+      condominium: translatePlaceholder(property.pricing.condominium, options),
+      iptu: translatePlaceholder(property.pricing.iptu, options),
+      administrationFee: translateAdministrationFee(property.pricing.administrationFee, options),
+      securityDeposit: translateSecurityDeposit(property.pricing.securityDeposit, options),
+      lastAdjustment: translateLastAdjustment(property.pricing.lastAdjustment, options),
+    },
+    activityHistory: property.activityHistory.map((entry) => ({
+      ...entry,
+      label: translateActivityLabel(entry.label, options),
+      date: translateRelativeDate(entry.date, options.locale),
+    })),
+  }
 }

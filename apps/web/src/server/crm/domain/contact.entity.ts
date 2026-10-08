@@ -15,7 +15,6 @@ export interface Contact {
   updatedAt: Date
 }
 
-/** Contact plus what the CRM listing displays and the database doesn't store on the row itself. */
 export interface ContactListItem extends Contact {
   propertyCount: number
 }

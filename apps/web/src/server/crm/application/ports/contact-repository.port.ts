@@ -4,7 +4,6 @@ export interface ContactListFilters {
   type?: Contact['type']
   q?: string
   includeArchived?: boolean
-  /** Set only when the actor is an AGENT — scopes to contacts reachable through their own properties. */
   responsavelId?: string
 }
 

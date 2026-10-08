@@ -1,47 +1,117 @@
 import { z } from 'zod'
 
-import type {
-  AgencyPublicProfileEditorFormValues,
-  AgencyPublicProfileSectionKey,
-  AgencyPublicProfileSectionSlotKey,
-} from '../types/agency-public-profile-editor'
+export type SchemaMessageTranslator = (key: string) => string
 
-export const agencyPublicProfileSectionKeys = [
-  'brand',
-  'metrics',
-  'contact',
-  'team',
-  'listings',
-] as const satisfies AgencyPublicProfileSectionKey[]
+const HEX_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/
+const INTERNAL_MARKETPLACE_MEDIA_PATH = /^\/api\/marketplace\/media\/.+/
 
-export const agencyPublicProfileSectionSlotKeys = [
-  ...agencyPublicProfileSectionKeys,
-  'none',
-] as const satisfies AgencyPublicProfileSectionSlotKey[]
+const createRequiredTextSchema = (
+  t: SchemaMessageTranslator,
+  requiredKey: string,
+  requirePublishFields: boolean,
+) => (requirePublishFields ? z.string().min(1, t(requiredKey)) : z.string())
 
-const hexColorSchema = z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Informe uma cor hexadecimal válida')
-const urlSchema = z.string().url('Informe uma URL válida')
+const createHexColorSchema = (
+  t: SchemaMessageTranslator,
+  requiredKey: string,
+  requirePublishFields: boolean,
+) => {
+  if (!requirePublishFields) {
+    return z.string().regex(HEX_COLOR_PATTERN, t('hexColorInvalid')).or(z.literal(''))
+  }
 
-export const agencyPublicProfileEditorSchema = z.object({
-  displayName: z.string().min(2, 'Informe o nome da imobiliária'),
-  headline: z.string().min(4, 'Informe uma chamada institucional'),
-  summary: z.string().min(20, 'Informe um resumo mais completo'),
-  legalCreci: z.string().min(4, 'Informe o CRECI da imobiliária'),
-  headquarters: z.string().min(4, 'Informe a sede da imobiliária'),
-  address: z.string().min(8, 'Informe o endereço'),
-  coverage: z.string().min(4, 'Informe a cobertura de bairros'),
-  segments: z.string().min(4, 'Informe os segmentos de atuação'),
-  primaryColor: hexColorSchema,
-  accentColor: hexColorSchema,
-  backgroundColor: hexColorSchema,
-  logoUrl: urlSchema,
-  bannerUrl: urlSchema,
-  sectionOrder: z
-    .array(z.enum(agencyPublicProfileSectionSlotKeys))
-    .length(agencyPublicProfileSectionKeys.length)
-    .refine((sections) => {
-      const selectedSections = sections.filter((section) => section !== 'none')
+  return z.string().superRefine((value, ctx) => {
+    if (!value.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: t(requiredKey) })
+      return
+    }
 
-      return new Set(selectedSections).size === selectedSections.length
-    }, 'Cada seção selecionada deve aparecer uma única vez'),
-}) satisfies z.ZodType<AgencyPublicProfileEditorFormValues>
+    if (!HEX_COLOR_PATTERN.test(value)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: t('hexColorInvalid') })
+    }
+  })
+}
+
+const createUrlSchema = (
+  t: SchemaMessageTranslator,
+  requiredKey: string,
+  requirePublishFields: boolean,
+) => {
+  const isValidMediaUrl = (value: string) =>
+    z.string().url().safeParse(value).success || INTERNAL_MARKETPLACE_MEDIA_PATH.test(value)
+
+  if (!requirePublishFields) {
+    return z.string().refine(isValidMediaUrl, t('urlInvalid')).or(z.literal(''))
+  }
+
+  return z.string().superRefine((value, ctx) => {
+    if (!value.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: t(requiredKey) })
+      return
+    }
+
+    if (!isValidMediaUrl(value)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: t('urlInvalid') })
+    }
+  })
+}
+
+export const agencyTeamMemberFieldSchema = z.object({
+  usuarioId: z.string(),
+  name: z.string(),
+})
+
+function createAgencyPublicProfileEditorObjectSchema(
+  t: SchemaMessageTranslator,
+  options?: { requirePublishFields?: boolean },
+) {
+  const requirePublishFields = options?.requirePublishFields ?? false
+
+  return z.object({
+    displayName: z.string().min(2, t('displayNameRequired')),
+    headline: createRequiredTextSchema(t, 'headlineRequired', requirePublishFields),
+    summary: createRequiredTextSchema(t, 'summaryRequired', requirePublishFields),
+    legalCreci: createRequiredTextSchema(t, 'legalCreciRequired', requirePublishFields),
+    headquarters: createRequiredTextSchema(t, 'headquartersRequired', requirePublishFields),
+    address: createRequiredTextSchema(t, 'addressRequired', requirePublishFields),
+    phone: z.string(),
+    email: z.string().email(t('emailInvalid')).or(z.literal('')),
+    coverage: createRequiredTextSchema(t, 'coverageRequired', requirePublishFields),
+    segments: createRequiredTextSchema(t, 'segmentsRequired', requirePublishFields),
+    yearsInMarket: createRequiredTextSchema(t, 'yearsInMarketRequired', requirePublishFields),
+    backgroundColor: createHexColorSchema(t, 'backgroundColorRequired', requirePublishFields),
+    logoUrl: createUrlSchema(t, 'logoUrlRequired', requirePublishFields),
+    bannerUrl: createUrlSchema(t, 'bannerUrlRequired', requirePublishFields),
+    team: requirePublishFields
+      ? z.array(agencyTeamMemberFieldSchema).min(1, t('teamRequired')).max(6, t('teamTooLarge'))
+      : z.array(agencyTeamMemberFieldSchema).max(6, t('teamTooLarge')),
+  })
+}
+
+export function createAgencyPublicProfileEditorSchema(
+  t: SchemaMessageTranslator,
+  options?: { requirePublishFields?: boolean },
+) {
+  const schema = createAgencyPublicProfileEditorObjectSchema(t, options)
+
+  if (!options?.requirePublishFields) return schema
+
+  return schema.superRefine((values, ctx) => {
+    if (!values.phone.trim() && !values.email.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: t('phoneOrEmailRequired'),
+        path: ['phone'],
+      })
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: t('phoneOrEmailRequired'),
+        path: ['email'],
+      })
+    }
+  })
+}
+
+export type AgencyPublicProfileEditorFormValues = z.infer<
+  ReturnType<typeof createAgencyPublicProfileEditorObjectSchema>
+>

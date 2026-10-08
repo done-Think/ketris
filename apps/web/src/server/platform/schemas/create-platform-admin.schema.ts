@@ -11,6 +11,7 @@ export const createPlatformAdminRequestSchema = z
       .string()
       .min(8, 'Senha deve ter pelo menos 8 caracteres.')
       .openapi({ example: 'trocar-em-desenvolvimento' }),
+    role: z.enum(['ADMIN', 'ADMIN_AGENT', 'AGENT']).openapi({ example: 'ADMIN' }),
   })
   .openapi('CreatePlatformAdminRequest')
 

@@ -2,22 +2,29 @@
 
 import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
-import { Box } from '@mui/material'
+import { Box, Stack } from '@mui/material'
 
 import { useRouter } from '@/i18n/navigation'
-import { dashboardProperties, propertyStatusFilters } from '../data/dashboard-properties'
+import {
+  dashboardProperties,
+  localizeDashboardPropertyFixture,
+  propertyStatusFilters,
+} from '../data/dashboard-properties'
+import { useDashboardPropertyMappingOptions } from '../hooks/use-dashboard-property-mapping-options'
+import { useProperties } from '../hooks/use-properties'
 import type {
   DashboardProperty,
   DashboardPropertyFilterKey,
   PropertiesDashboardFiltersFormValues,
 } from '../types/dashboard-property'
+import { toDashboardProperty } from '../utils/map-dashboard-property'
 import { PropertiesDashboardHeader } from './PropertiesDashboardHeader'
 import { PropertiesTable } from './PropertiesTable'
 import { PropertyStatusFilters } from './PropertyStatusFilters'
 
 function matchesStatusFilter(property: DashboardProperty, filter: DashboardPropertyFilterKey) {
   if (filter === 'Todos') return true
-  if (filter === 'Vendido') return property.purpose === 'Venda' && property.status === 'Ativo'
+  if (filter === 'Vendido') return property.apiStatus === 'SOLD'
 
   return property.status === filter
 }
@@ -33,6 +40,21 @@ function matchesSearchQuery(property: DashboardProperty, query: string) {
 
 export function PropertiesDashboardPage() {
   const router = useRouter()
+  const propertiesQuery = useProperties()
+  const mappingOptions = useDashboardPropertyMappingOptions()
+  const canUseFixtures = process.env.NODE_ENV !== 'production'
+  const fixtureMode = canUseFixtures && !propertiesQuery.isLoading && propertiesQuery.isError
+  const properties = useMemo(
+    () =>
+      fixtureMode
+        ? dashboardProperties.map((property) =>
+            localizeDashboardPropertyFixture(property, mappingOptions),
+          )
+        : (propertiesQuery.data ?? []).map((property) =>
+            toDashboardProperty(property, mappingOptions),
+          ),
+    [fixtureMode, mappingOptions, propertiesQuery.data],
+  )
   const { setValue, watch } = useForm<PropertiesDashboardFiltersFormValues>({
     defaultValues: {
       activeStatusFilter: 'Todos',
@@ -42,35 +64,34 @@ export function PropertiesDashboardPage() {
   const { activeStatusFilter, searchQuery } = watch()
   const filteredProperties = useMemo(
     () =>
-      dashboardProperties.filter(
+      properties.filter(
         (property) =>
           matchesStatusFilter(property, activeStatusFilter) &&
           matchesSearchQuery(property, searchQuery),
       ),
-    [activeStatusFilter, searchQuery],
+    [properties, activeStatusFilter, searchQuery],
   )
   const statusFilterCounts = useMemo(
     () =>
       propertyStatusFilters.reduce(
         (counts, filter) => ({
           ...counts,
-          [filter.label]: dashboardProperties.filter((property) =>
+          [filter.label]: properties.filter((property) =>
             matchesStatusFilter(property, filter.label),
           ).length,
         }),
         {} as Record<DashboardPropertyFilterKey, number>,
       ),
-    [],
+    [properties],
   )
 
   return (
-    <Box sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 } }}>
-      <Box
+    <Box sx={{ width: '100%', p: 3.5 }}>
+      <Stack
+        spacing={2}
         sx={{
           width: '100%',
           minHeight: { md: 'calc(100vh - 68px)' },
-          display: 'flex',
-          flexDirection: 'column',
         }}
       >
         <PropertiesDashboardHeader
@@ -85,12 +106,13 @@ export function PropertiesDashboardPage() {
         />
         <PropertiesTable
           properties={filteredProperties}
-          totalCount={dashboardProperties.length}
+          totalCount={properties.length}
+          onCreateProperty={() => router.push('/dashboard/properties/new')}
           onPropertySelect={(propertyId) =>
             router.push({ pathname: '/dashboard/properties/[id]', params: { id: propertyId } })
           }
         />
-      </Box>
+      </Stack>
     </Box>
   )
 }

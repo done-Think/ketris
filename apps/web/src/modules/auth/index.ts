@@ -4,6 +4,8 @@ export { LoginForm } from './components/LoginForm'
 export { PasswordRecoveryConfirmation } from './components/PasswordRecoveryConfirmation'
 export { PasswordRecoveryScreen } from './components/PasswordRecoveryScreen'
 export { RegistrationDetailsForm } from './components/RegistrationDetailsForm'
+export { RegistrationDetailsScreen } from './components/RegistrationDetailsScreen'
+export { AgencyAutocomplete } from './components/AgencyAutocomplete'
 export { RegistrationFormShell } from './components/RegistrationFormShell'
 export { RegistrationProfileScreen } from './components/RegistrationProfileScreen'
 export { RegistrationProfileStep } from './components/RegistrationProfileStep'
@@ -11,13 +13,13 @@ export { RegistrationShell } from './components/RegistrationShell'
 export { isRegistrationProfileId } from './config/registration-profiles'
 export type { RegistrationProfile, RegistrationProfileId } from './types/registration'
 export { authRoutes } from './config/auth-routes'
-export { loginSchema, type LoginFormValues } from './schemas/login-schema'
+export { createLoginSchema, type LoginFormValues } from './schemas/login-schema'
 export {
-  passwordRecoverySchema,
+  createPasswordRecoverySchema,
   type PasswordRecoveryFormValues,
 } from './schemas/password-recovery-schema'
 export {
-  registrationDetailsSchema,
+  createRegistrationDetailsSchema,
   type RegistrationDetailsFormValues,
 } from './schemas/registration-details-schema'
 export * from './schemas/sign-in-schema'
@@ -35,3 +37,11 @@ export * from './components/SignInForm'
 export * from './components/CreateAdminForm'
 export * from './components/AdminsList'
 export * from './components/EditAdminForm'
+export * from './components/UsersList'
+export * from './types/user'
+export * from './services/user-service'
+export * from './hooks/use-users'
+export * from './hooks/use-approve-user-membership'
+export * from './hooks/use-register'
+export * from './hooks/use-agency-search'
+export * from './services/registration-service'

@@ -1,21 +1,25 @@
-import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import { Roboto } from 'next/font/google'
-import { locale as getRootLocale } from 'next/root-params'
-import { getMessages, getTranslations } from 'next-intl/server'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import type { Metadata } from 'next'
+import { getMessages, getTranslations } from 'next-intl/server'
+import { Roboto, Space_Grotesk } from 'next/font/google'
+import { notFound } from 'next/navigation'
+import { locale as getRootLocale } from 'next/root-params'
 
-import { LocaleProviders, Providers } from '../providers'
 import { defaultTimeZone } from '@/i18n/formats'
-import { locales, isAppLocale } from '@/i18n/routing'
+import { isAppLocale, locales } from '@/i18n/routing'
 import type { AppLocale } from '@/i18n/types/locale.types'
 import type { LocaleLayoutProps } from '@/i18n/types/route.types'
+import { LocaleProviders, Providers } from '../providers'
 
-// Roboto é fonte variável: um único arquivo cobre 100..900. Declarar pesos explícitos
-// gerava 4 @font-face por subset (37 no total) apontando para os mesmos 9 arquivos.
 const roboto = Roboto({
   subsets: ['latin'],
   variable: '--font-primary',
+  display: 'swap',
+})
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-space-grotesk',
   display: 'swap',
 })
 
@@ -48,10 +52,10 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   const messages = await getMessages({ locale })
 
   return (
-    <html lang={await getValidatedRootLocale()} className={roboto.variable}>
-      {/* Extensões de browser (ColorZilla, Grammarly, etc.) injetam atributos no body
-          antes da hidratação. Suprime só os atributos/texto DESTE elemento — divergências
-          nos filhos continuam sendo reportadas. */}
+    <html
+      lang={await getValidatedRootLocale()}
+      className={`${roboto.variable} ${spaceGrotesk.variable}`}
+    >
       <body suppressHydrationWarning>
         <LocaleProviders i18n={{ locale, messages, timeZone: defaultTimeZone }}>
           <Providers>{children}</Providers>

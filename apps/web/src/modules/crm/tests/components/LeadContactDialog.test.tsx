@@ -16,16 +16,25 @@ const lead: DashboardLead = {
   phone: '(11) 99984-3021',
   email: 'joao.silva@email.com',
   lastContact: 'Há 30 min',
+  lastContactAt: '2026-09-01T09:30:00.000Z',
   interest: 'Apartamento 3 quartos nos Jardins',
   source: 'Marketplace',
   broker: 'Roberto Souza',
   stage: 'Novo',
+  opportunityId: null,
 }
 
 function renderDialog(overrides: Partial<ComponentProps<typeof LeadContactDialog>> = {}) {
   return render(
     <ThemeProvider theme={theme}>
-      <LeadContactDialog lead={lead} open onClose={vi.fn()} {...overrides} />
+      <LeadContactDialog
+        lead={lead}
+        open
+        onClose={vi.fn()}
+        onStageChange={vi.fn()}
+        onConvertRequest={vi.fn()}
+        {...overrides}
+      />
     </ThemeProvider>,
   )
 }
@@ -34,7 +43,13 @@ describe('LeadContactDialog', () => {
   it('renders nothing when there is no selected lead', () => {
     const { container } = render(
       <ThemeProvider theme={theme}>
-        <LeadContactDialog lead={null} open onClose={vi.fn()} />
+        <LeadContactDialog
+          lead={null}
+          open
+          onClose={vi.fn()}
+          onStageChange={vi.fn()}
+          onConvertRequest={vi.fn()}
+        />
       </ThemeProvider>,
     )
 
@@ -79,5 +94,20 @@ describe('LeadContactDialog', () => {
 
     await user.click(screen.getByRole('button', { name: 'Fechar' }))
     expect(onClose).toHaveBeenCalledOnce()
+  })
+
+  it('calls onConvertRequest with the lead when the convert button is clicked', async () => {
+    const user = userEvent.setup()
+    const onConvertRequest = vi.fn()
+    renderDialog({ onConvertRequest })
+
+    await user.click(screen.getByRole('button', { name: 'Converter em oportunidade' }))
+    expect(onConvertRequest).toHaveBeenCalledWith(lead)
+  })
+
+  it('disables the convert button and shows "already converted" for a converted lead', () => {
+    renderDialog({ lead: { ...lead, opportunityId: 'opportunity-1' } })
+
+    expect(screen.getByRole('button', { name: 'Já convertido' })).toBeDisabled()
   })
 })

@@ -8,13 +8,16 @@ import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { FinancialMovementChartProps } from '../types/financial-entry'
 
-export function FinancialMovementChart({ movement }: FinancialMovementChartProps) {
+export function FinancialMovementChart({
+  movement,
+  currency = 'BRL',
+}: FinancialMovementChartProps) {
   const format = useFormatter()
   const t = useTranslations('dashboard.finance')
   const formatCurrency = (value: number) =>
     format.number(value, {
       style: 'currency',
-      currency: 'BRL',
+      currency,
       maximumFractionDigits: 0,
     })
 

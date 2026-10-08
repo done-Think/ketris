@@ -1,3 +1,5 @@
+import { ApproveUserMembershipUseCase } from './application/use-cases/approve-user-membership.use-case'
+import { ChangeOwnPasswordUseCase } from './application/use-cases/change-own-password.use-case'
 import { CreateAdminUseCase } from './application/use-cases/create-admin.use-case'
 import { CreateUserUseCase } from './application/use-cases/create-user.use-case'
 import { DeactivateAdminUseCase } from './application/use-cases/deactivate-admin.use-case'
@@ -7,18 +9,28 @@ import { GetUserUseCase } from './application/use-cases/get-user.use-case'
 import { ListAdminsUseCase } from './application/use-cases/list-admins.use-case'
 import { ListUsersUseCase } from './application/use-cases/list-users.use-case'
 import { LoginUseCase } from './application/use-cases/login.use-case'
+import { LogoutUseCase } from './application/use-cases/logout.use-case'
 import { RefreshAccessTokenUseCase } from './application/use-cases/refresh-access-token.use-case'
+import { RequestPasswordResetCodeUseCase } from './application/use-cases/request-password-reset-code.use-case'
+import { ResetPasswordUseCase } from './application/use-cases/reset-password.use-case'
 import { UpdateAdminUseCase } from './application/use-cases/update-admin.use-case'
 import { UpdateUserUseCase } from './application/use-cases/update-user.use-case'
+import { VerifyPasswordResetCodeUseCase } from './application/use-cases/verify-password-reset-code.use-case'
 import { BcryptPasswordHasher } from './infrastructure/bcrypt-password-hasher'
+import { JosePasswordResetTokenService } from './infrastructure/jose-password-reset-token.service'
 import { JoseTokenService } from './infrastructure/jose-token.service'
+import { PrismaPasswordResetCodeRepository } from './infrastructure/prisma-password-reset-code.repository'
 import { PrismaRefreshTokenRepository } from './infrastructure/prisma-refresh-token.repository'
 import { PrismaUserRepository } from './infrastructure/prisma-user.repository'
+import { SesMailer } from '@server/shared/email/ses-mailer'
 
 const userRepository = new PrismaUserRepository()
 const passwordHasher = new BcryptPasswordHasher()
 const tokenService = new JoseTokenService()
 const refreshTokenRepository = new PrismaRefreshTokenRepository()
+const passwordResetCodeRepository = new PrismaPasswordResetCodeRepository()
+const passwordResetTokenService = new JosePasswordResetTokenService()
+const mailer = new SesMailer()
 
 export const authContainer = {
   tokenService,
@@ -35,6 +47,7 @@ export const authContainer = {
   getUserUseCase: new GetUserUseCase(userRepository),
   updateUserUseCase: new UpdateUserUseCase(userRepository),
   deactivateUserUseCase: new DeactivateUserUseCase(userRepository, refreshTokenRepository),
+  approveUserMembershipUseCase: new ApproveUserMembershipUseCase(userRepository),
   listAdminsUseCase: new ListAdminsUseCase(userRepository),
   getAdminUseCase: new GetAdminUseCase(userRepository),
   updateAdminUseCase: new UpdateAdminUseCase(userRepository),
@@ -43,5 +56,27 @@ export const authContainer = {
     userRepository,
     tokenService,
     refreshTokenRepository,
+  ),
+  logoutUseCase: new LogoutUseCase(refreshTokenRepository),
+  changeOwnPasswordUseCase: new ChangeOwnPasswordUseCase(
+    userRepository,
+    passwordHasher,
+    refreshTokenRepository,
+  ),
+  requestPasswordResetCodeUseCase: new RequestPasswordResetCodeUseCase(
+    userRepository,
+    passwordResetCodeRepository,
+    mailer,
+  ),
+  verifyPasswordResetCodeUseCase: new VerifyPasswordResetCodeUseCase(
+    userRepository,
+    passwordResetCodeRepository,
+    passwordResetTokenService,
+  ),
+  resetPasswordUseCase: new ResetPasswordUseCase(
+    userRepository,
+    passwordHasher,
+    refreshTokenRepository,
+    passwordResetTokenService,
   ),
 }

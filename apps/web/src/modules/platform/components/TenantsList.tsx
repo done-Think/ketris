@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  Box,
   Card,
   CircularProgress,
   Stack,
@@ -14,7 +15,7 @@ import {
 import { useFormatter, useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
-import { radius, shadows } from '@shared/theme/tokens'
+import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { useTenants } from '../hooks/use-tenants'
 
@@ -25,7 +26,15 @@ export function TenantsList() {
   const { data: tenants, isLoading, isError } = useTenants()
 
   return (
-    <Card sx={{ borderRadius: `${radius.lg}px`, boxShadow: shadows.popover }}>
+    <Card
+      variant="outlined"
+      sx={{
+        bgcolor: surface.paper,
+        borderColor: alpha.graphite[6],
+        borderRadius: `${radius.sm}px`,
+        boxShadow: shadows.propertyCard,
+      }}
+    >
       {isLoading ? (
         <Stack alignItems="center" sx={{ py: 6 }}>
           <CircularProgress size={28} />
@@ -45,14 +54,16 @@ export function TenantsList() {
           </TableHead>
           <TableBody>
             {tenants.map((tenant) => (
-              <TableRow
-                key={tenant.id}
-                hover
-                component={Link}
-                href={{ pathname: '/platform/tenants/[id]', params: { id: tenant.id } }}
-                sx={{ textDecoration: 'none', cursor: 'pointer' }}
-              >
-                <TableCell>{tenant.nome}</TableCell>
+              <TableRow key={tenant.id} hover>
+                <TableCell>
+                  <Box
+                    component={Link}
+                    href={{ pathname: '/platform/tenants/[id]', params: { id: tenant.id } }}
+                    sx={{ color: 'inherit', display: 'inline-block', textDecoration: 'none' }}
+                  >
+                    {tenant.nome}
+                  </Box>
+                </TableCell>
                 <TableCell>{tenant.slug}</TableCell>
                 <TableCell>{format.dateTime(new Date(tenant.createdAt))}</TableCell>
               </TableRow>

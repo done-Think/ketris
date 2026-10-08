@@ -55,3 +55,21 @@ export class OpportunityPropertyNotFoundError extends AppError {
     })
   }
 }
+
+export class LeadNotFoundError extends AppError {
+  constructor() {
+    super('Lead não encontrado.', {
+      status: 404,
+      code: 'LEAD_NOT_FOUND',
+    })
+  }
+}
+
+export class LeadAlreadyConvertedError extends AppError {
+  constructor() {
+    super('Este lead já foi convertido em oportunidade.', {
+      status: 409,
+      code: 'LEAD_ALREADY_CONVERTED',
+    })
+  }
+}

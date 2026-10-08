@@ -9,43 +9,103 @@
     "openEventAriaLabel": "Abrir {title}",
     "todayVisitTitle": "Visita programada para hoy",
     "todayVisitMessage": "{time} - {participant} en {property}",
+    "propertyNotInformed": "inmueble no informado",
     "assignedEventTitle": "Nuevo compromiso asignado",
     "assignedEventMessage": "{role} {name} agendó {title}",
     "defaultEventNotes": "Evento creado manualmente en la agenda.",
-    "rescheduleSuccess": "{title} reprogramado para {date} a las {time}.",
     "createSuccess": "{title} añadido a la agenda.",
     "freeSlot": "Horario libre",
-    "selectedDayLabel": "{day}, {date} de {month}"
+    "selectedDayLabel": "{day}, {date} de {month}",
+    "creatorRoles": {
+      "agency": "inmobiliaria",
+      "colleague": "colega"
+    },
+    "createError": "No se pudo crear el evento. Inténtalo de nuevo.",
+    "editSuccess": "{title} actualizado correctamente.",
+    "editError": "No fue posible guardar los cambios. Inténtalo de nuevo.",
+    "deleteSuccess": "{title} eliminado de la agenda.",
+    "deleteError": "No fue posible eliminar el evento. Inténtalo de nuevo."
   },
   "eventForm": {
+    "kinds": {
+      "VISIT": "Visita",
+      "FOLLOW_UP": "Seguimiento",
+      "MEETING": "Reunión",
+      "INSPECTION": "Inspección",
+      "SIGNATURE": "Firma",
+      "OTHER": "Otro"
+    },
     "eyebrow": "Nuevo punto en la agenda",
     "title": "Agregar evento",
     "closeAriaLabel": "Cerrar nuevo evento",
     "fields": {
+      "kind": "Tipo de evento",
+      "kindPlaceholder": "Selecciona el tipo",
       "title": "Título",
       "property": "Inmueble en cuestión",
       "otherProperty": "Otro",
       "customProperty": "Inmueble o referencia",
-      "participant": "Persona",
+      "participant": "Cliente",
       "phone": "Teléfono",
       "date": "Fecha",
       "time": "Horario",
       "duration": "Duración",
-      "notes": "Observaciones"
+      "notes": "Observaciones",
+      "kind": "Tipo de evento",
+      "kindPlaceholder": "Seleccionar (opcional)"
     },
     "cancel": "Cancelar",
-    "submit": "Crear evento"
+    "submit": "Crear evento",
+    "kinds": {
+      "VISIT": "Visita",
+      "FOLLOW_UP": "Seguimiento",
+      "MEETING": "Reunión",
+      "INSPECTION": "Inspección",
+      "SIGNATURE": "Firma",
+      "OTHER": "Otro"
+    },
+    "errors": {
+      "durationTooShort": "Indica al menos 15 minutos",
+      "participantRequired": "Indica el nombre de la persona",
+      "phoneInvalid": "Indica un teléfono válido",
+      "propertyRequired": "Selecciona el inmueble",
+      "dateRequired": "Indica la fecha",
+      "timeRequired": "Indica el horario",
+      "titleRequired": "Indica el título del evento",
+      "customPropertyRequired": "Indica el inmueble o referencia",
+      "visitMinimumDuration": "Las visitas deben durar al menos 60 minutos",
+      "minimumAdvanceNotice": "Agenda con al menos 3 horas de anticipación",
+      "outsideBusinessHours": "Agenda dentro del horario comercial (08:00–18:00)"
+    }
   },
   "eventDetail": {
     "closeAriaLabel": "Cerrar detalles del evento",
     "notesTitle": "Observaciones",
     "createdBy": "Agendado por {role} {name}",
-    "rescheduleTitle": "Reprogramar compromiso",
-    "fields": {
-      "newDate": "Nueva fecha",
-      "newTime": "Nuevo horario"
+    "noProperty": "Sin inmueble vinculado",
+    "editTitle": "Editar evento",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "save": "Guardar",
+    "cancelEdit": "Cancelar",
+    "deleteDialog": {
+      "title": "Eliminar evento",
+      "description": "¿Seguro que deseas eliminar \"{title}\"? Esta acción no se puede deshacer.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar"
     },
-    "cancel": "Cancelar",
-    "submit": "Guardar reprogramación"
+    "errors": {
+      "durationTooShort": "Indica al menos 15 minutos",
+      "participantRequired": "Indica el nombre de la persona",
+      "phoneInvalid": "Indica un teléfono válido",
+      "propertyRequired": "Selecciona el inmueble",
+      "dateRequired": "Indica la fecha",
+      "timeRequired": "Indica el horario",
+      "titleRequired": "Indica el título del evento",
+      "customPropertyRequired": "Indica el inmueble o referencia",
+      "visitMinimumDuration": "Las visitas deben durar al menos 60 minutos",
+      "minimumAdvanceNotice": "Agenda con al menos 3 horas de anticipación",
+      "outsideBusinessHours": "Agenda dentro del horario comercial (08:00–18:00)"
+    }
   }
 }

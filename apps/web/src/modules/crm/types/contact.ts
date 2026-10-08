@@ -1,7 +1,8 @@
 export type ContactType = 'Proprietário' | 'Locatário' | 'Corretor'
 export type ContactFilterKey = 'all' | 'owners' | 'tenants' | 'brokers'
 
-/** Shape real da API (/crm/contacts) — enum sem acento, nulos explícitos, datas como ISO string. */
+import type { ContactFormValues } from '../schemas/contact-schema'
+
 export type ApiContactType = 'PROPRIETARIO' | 'LOCATARIO' | 'CORRETOR'
 
 export interface ApiContact {
@@ -47,6 +48,11 @@ export interface UpdateContactPayload {
   notes?: string | null
 }
 
+export interface UpdateContactInput {
+  id: string
+  changes: UpdateContactPayload
+}
+
 export type ContactListItem = {
   id: string
   name: string
@@ -88,12 +94,9 @@ export type ContactTypeChipProps = {
 
 export type ContactsTableProps = {
   contacts: readonly ContactListItem[]
-  selectedIds: ReadonlySet<string>
-  onToggleContact: (contactId: string) => void
-  onToggleAll: () => void
 } & Pick<ContactsListProps, 'onEditContact' | 'onOpenInteractions' | 'onOpenMoreOptions'>
 
-export type ContactsCardsProps = Omit<ContactsTableProps, 'onToggleAll'>
+export type ContactsCardsProps = ContactsTableProps
 
 export type ContactsHeaderProps = {
   search: string
@@ -111,4 +114,19 @@ export type ContactsPaginationFooterProps = {
   canGoBack: boolean
   canGoForward: boolean
   onPageChange?: (page: number) => void
+}
+
+export type ArchiveContactDialogProps = {
+  open: boolean
+  isPending: boolean
+  onClose: () => void
+  onConfirm: () => void
+}
+
+export type ContactFormDialogProps = {
+  open: boolean
+  initialValues: ContactFormValues | null
+  isPending: boolean
+  onClose: () => void
+  onSave: (values: ContactFormValues) => void
 }

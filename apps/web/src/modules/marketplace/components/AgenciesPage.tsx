@@ -1,15 +1,17 @@
 'use client'
 
 import { Box, Container } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
-import { agencies } from '../data/agencies'
+import { useAgencyProfiles } from '../hooks/use-agency-profile'
 import { useDirectoryList } from '../hooks/use-directory-list'
 import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { AgencyProfile } from '../types/agency'
+import { toAgencyProfile } from '../utils/agency-profile-adapter'
 import { useViewModePreference } from '../hooks/use-view-mode-preference'
 import { AgencyCard } from './AgencyCard'
 import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
@@ -22,16 +24,22 @@ const initialAgencyCount = 4
 const agencyPageSize = 3
 
 function getAgencySearchableText(agency: AgencyProfile) {
-  return `${agency.name} ${agency.legalCreci} ${agency.headquarters} ${agency.coverage.join(
+  return `${agency.name} ${agency.legalCreci ?? ''} ${agency.headquarters ?? ''} ${agency.coverage.join(
     ' ',
   )} ${agency.segments.join(' ')}`
 }
 
 export function AgenciesPage() {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace')
+  const tFeatures = useTranslations('marketplace.propertyFeatures')
   const directoryT = useTranslations('marketplace.directory.agencies')
   const { footerColumns, legalLinks } = useMarketplaceNavigation()
   const { setViewMode, viewMode } = useViewModePreference('agencies')
+  const { data: agencyProfiles } = useAgencyProfiles()
+  const agencies = (agencyProfiles ?? []).map((profile) =>
+    toAgencyProfile(profile, locale, tFeatures),
+  )
   const {
     filteredItems: filteredAgencies,
     hasMoreItems: hasMoreAgencies,

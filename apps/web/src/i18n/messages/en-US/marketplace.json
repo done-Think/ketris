@@ -4,10 +4,12 @@
     "closeMenu": "Close menu",
     "mainMenu": "Main menu",
     "notifications": "notifications",
+    "signIn": "Sign in",
     "openMenu": "Open menu",
     "openProfile": "Open profile"
   },
   "profile": {
+    "guestName": "Guest",
     "dialogLabel": "User profile",
     "closeProfile": "Close profile",
     "language": "Language",
@@ -16,8 +18,17 @@
       "es": "Spanish",
       "ptBR": "Portuguese"
     },
-    "role": "Partner broker",
+    "roles": {
+      "ADMIN": "Administrator",
+      "OWNER": "Owner",
+      "AGENT": "Partner broker",
+      "RENTER": "Renter"
+    },
     "actions": {
+      "addBroker": "Add new broker",
+      "accessAdmin": "Access admin",
+      "becomeBroker": "Become a broker",
+      "createAgency": "Create agency",
       "settings": "Settings",
       "signOut": "Sign out",
       "support": "Support",
@@ -97,6 +108,11 @@
         "penthouses": "Penthouses",
         "farms": "Country homes and farms",
         "studios": "Studios"
+      },
+      "errors": {
+        "textTooLong": "Text is too long",
+        "optionRequired": "Select an option",
+        "priceInvalid": "Invalid price value"
       }
     },
     "featured": {
@@ -130,6 +146,10 @@
     }
   },
   "publicProfile": {
+    "brokerDefaultHeadline": "Personalized service with regional expertise.",
+    "agencyDefaultHeadline": "Complete support to buy, sell, or rent.",
+    "featuredTeam": "Featured team",
+    "viewBrokerProfile": "View {name}'s profile",
     "propertyCard": {
       "new": "New",
       "viewDetails": "View details"
@@ -168,6 +188,19 @@
     }
   },
   "propertyDetail": {
+    "favorite": "Save",
+    "share": "Share",
+    "aboutProperty": "About this property",
+    "location": "Location",
+    "notInformed": "Not provided",
+    "categories": {
+      "apartment": "Apartment",
+      "house": "House",
+      "studio": "Studio",
+      "penthouse": "Penthouse",
+      "commercial": "Commercial",
+      "loft": "Loft"
+    },
     "condominium": "Condo fee {value}",
     "scheduleVisit": "Schedule visit",
     "sendProposal": "Send proposal",
@@ -190,163 +223,131 @@
       "email": "Email"
     }
   },
+  "propertyFeatures": {
+    "bedrooms": "{count, plural, =0 {No bedrooms} one {# bedroom} other {# bedrooms}}",
+    "bathrooms": "{count, plural, =0 {No bathrooms} one {# bathroom} other {# bathrooms}}",
+    "parking": "{count, plural, =0 {No parking spaces} one {# parking space} other {# parking spaces}}",
+    "monthly": "{price} / month"
+  },
   "profileEditor": {
+    "previewName": "Your name",
     "title": "Edit Profile",
-    "subtitle": "Adjust content, appearance and images shown to visitors.",
+    "subtitle": "Adjust the information shown to visitors on your public profile.",
     "validatedDraft": "Draft validated",
-    "mainContent": "Main content",
-    "appearance": "Appearance",
-    "images": "Images",
-    "team": "Team",
-    "teamDescription": "Add highlighted members and the link to each public profile.",
-    "addMember": "Add member",
-    "removeMember": "Remove",
-    "memberTitle": "Member {index}",
-    "emptyMembers": "No members added.",
-    "dropImage": "Drop the image here",
-    "uploadHelper": "JPG, PNG or WEBP. You can also keep only the link above.",
-    "photoPreview": "Photo preview",
-    "bannerPreview": "Banner preview",
-    "preview": "Preview",
-    "configurableProfile": "Configurable public profile",
-    "newMember": "New member",
-    "dropToMove": "Drop to move",
-    "preparing": "Preparing...",
-    "positionLabel": "Position {position}: {label}",
-    "position": "Position {position}",
-    "profileOrder": "Profile order",
-    "previewDialog": {
-      "title": "Profile preview",
-      "close": "Close preview"
-    },
-    "sections": {
-      "none": {
-        "label": "None",
-        "description": "Do not show a section in this position."
-      },
-      "hero": {
-        "label": "Presentation",
-        "description": "Banner, photo, name, and main headline."
-      },
-      "metrics": {
-        "label": "Indicators",
-        "description": "Rating, average response, active listings, and deals."
-      },
-      "team": {
-        "label": "Team",
-        "description": "Brokers or people highlighted in the profile."
-      },
-      "listings": {
-        "label": "Listings",
-        "description": "Cards for represented properties."
-      },
-      "contact": {
-        "label": "Contact",
-        "description": "Public link, phone, email, and quick facts."
-      }
-    },
-    "contactActions": {
-      "call": "Call",
-      "email": "Email",
-      "openPublicLink": "Open public link"
-    },
+    "saveSuccess": "Profile saved successfully.",
+    "saveError": "Could not save the profile.",
+    "publishSuccess": "Profile published successfully.",
+    "unpublishSuccess": "Profile unpublished.",
+    "publishError": "Could not update the profile's publication status.",
     "fields": {
-      "displayName": "Display name",
+      "mainInfo": "Main information",
       "headline": "Banner headline",
-      "summary": "Summary",
+      "displayName": "Display name",
+      "bio": "Bio",
+      "creci": "License number",
+      "phone": "Phone",
+      "region": "Service area",
+      "neighborhoods": "Neighborhoods served",
+      "specialties": "Specialties",
+      "availability": "Availability",
+      "commaSeparatedHint": "Separate multiple values with a comma.",
+      "appearance": "Appearance",
+      "images": "Images",
       "primaryColor": "Primary color",
-      "accentColor": "Accent color",
+      "secondaryColor": "Secondary color",
       "backgroundColor": "Profile background",
       "photoUrl": "Photo URL",
-      "bannerUrl": "Banner URL",
-      "uploadPhoto": "Upload profile photo",
-      "uploadBanner": "Upload banner",
-      "name": "Name",
-      "role": "Role",
-      "profileUrl": "Profile link"
+      "bannerUrl": "Banner URL"
     },
-    "save": "Save"
+    "actions": {
+      "preview": "Preview",
+      "save": "Save",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "edit": "Edit"
+    },
+    "errors": {
+      "hexColorInvalid": "Enter a valid hex color",
+      "urlInvalid": "Enter a valid URL",
+      "displayNameRequired": "Enter the name shown on the profile",
+      "bioRequired": "Enter the bio",
+      "phoneRequired": "Enter the phone number",
+      "creciRequired": "Enter the CRECI license number",
+      "availabilityRequired": "Enter your availability",
+      "headlineRequired": "Enter the headline",
+      "regionRequired": "Enter the service region",
+      "neighborhoodsRequired": "Enter the neighborhoods you serve",
+      "specialtiesRequired": "Enter your specialties",
+      "primaryColorRequired": "Enter the primary color",
+      "secondaryColorRequired": "Enter the secondary color",
+      "backgroundColorRequired": "Enter the background color",
+      "avatarUrlRequired": "Upload a profile photo",
+      "bannerUrlRequired": "Upload a cover image"
+    }
   },
   "agencyProfileEditor": {
+    "previewName": "Your agency",
     "title": "Edit Agency Profile",
-    "subtitle": "Adjust brand, content and images shown to visitors.",
-    "validatedDraft": "Draft validated",
-    "mainContent": "Main content",
-    "appearance": "Appearance",
-    "brandImages": "Brand images",
-    "dropImage": "Drop the image here",
-    "uploadHelper": "JPG, PNG or WEBP. You can also keep only the link above.",
-    "logoPreview": "Logo preview",
-    "bannerPreview": "Banner preview",
-    "preview": "Preview",
-    "dropToMove": "Drop to move",
-    "preparing": "Preparing...",
-    "positionLabel": "Position {position}: {label}",
-    "position": "Position {position}",
-    "profileOrder": "Profile order",
-    "previewDialog": {
-      "title": "Agency profile preview",
-      "close": "Close preview"
-    },
-    "sections": {
-      "none": {
-        "label": "None",
-        "description": "Do not show a section in this position."
-      },
-      "brand": {
-        "label": "Brand",
-        "description": "Logo, banner, name, and institutional headline."
-      },
-      "metrics": {
-        "label": "Indicators",
-        "description": "Properties, team, years in market, and rating."
-      },
-      "contact": {
-        "label": "Contact",
-        "description": "Public link, phone, email, and quick facts."
-      },
-      "team": {
-        "label": "Team",
-        "description": "Featured brokers in the agency."
-      },
-      "listings": {
-        "label": "Listings",
-        "description": "Cards for represented properties."
-      }
-    },
-    "metrics": {
-      "properties": "Properties",
-      "team": "Team",
-      "years": "Years",
-      "rating": "Rating"
-    },
-    "contactActions": {
-      "call": "Call",
-      "email": "Email",
-      "openPublicLink": "Open public link"
-    },
+    "subtitle": "Adjust brand, contact and featured team shown to visitors.",
+    "saveSuccess": "Profile saved successfully.",
+    "saveError": "Could not save the profile.",
+    "publishSuccess": "Profile published successfully.",
+    "unpublishSuccess": "Profile unpublished.",
+    "publishError": "Could not update the profile's publication status.",
     "fields": {
+      "mainInfo": "Main information",
+      "headline": "Banner headline",
       "displayName": "Agency name",
-      "headline": "Institutional headline",
-      "legalCreci": "CRECI",
+      "summary": "Summary",
+      "legalCreci": "License number",
       "headquarters": "Headquarters",
       "address": "Address",
+      "phone": "Phone",
+      "email": "Email",
       "coverage": "Coverage",
       "segments": "Segments",
-      "summary": "Summary",
-      "primaryColor": "Primary color",
-      "accentColor": "Accent color",
+      "yearsInMarket": "Years in market",
+      "commaSeparatedHint": "Separate multiple values with a comma.",
+      "appearance": "Appearance",
+      "images": "Images",
       "backgroundColor": "Brand background",
       "logoUrl": "Logo URL",
       "bannerUrl": "Banner URL",
-      "uploadLogo": "Upload logo",
-      "uploadBanner": "Upload banner"
+      "team": "Featured team",
+      "teamPicker": "Featured brokers",
+      "teamPickerPlaceholder": "Select up to 6 brokers"
     },
-    "save": "Save"
+    "actions": {
+      "preview": "Preview",
+      "save": "Save",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "edit": "Edit"
+    },
+    "errors": {
+      "hexColorInvalid": "Enter a valid hex color",
+      "urlInvalid": "Enter a valid URL",
+      "displayNameRequired": "Enter the agency name",
+      "emailInvalid": "Enter a valid email",
+      "teamTooLarge": "Select up to 6 brokers",
+      "summaryRequired": "Enter the agency summary",
+      "phoneOrEmailRequired": "Enter a contact phone or email",
+      "legalCreciRequired": "Enter the agency CRECI license number",
+      "headlineRequired": "Enter the headline",
+      "headquartersRequired": "Enter the headquarters",
+      "addressRequired": "Enter the address",
+      "coverageRequired": "Enter the coverage areas",
+      "segmentsRequired": "Enter the market segments",
+      "yearsInMarketRequired": "Enter the years in market",
+      "backgroundColorRequired": "Enter the background color",
+      "logoUrlRequired": "Upload the logo",
+      "bannerUrlRequired": "Upload a cover image",
+      "teamRequired": "Select at least one featured broker"
+    }
   },
   "searchResults": {
     "toolbar": {
-      "resultCount": "{count} properties found",
+      "resultCount": "{count, plural, =0 {No properties found} one {# property found} other {# properties found}}",
       "sortRelevance": "Sort by: Relevance",
       "sortLowerPrice": "Lowest price",
       "sortHigherPrice": "Highest price",
@@ -362,9 +363,14 @@
       "retry": "Try again"
     },
     "map": {
+      "title": "Map",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "attribution": "Show attribution",
       "openProperty": "Open {title}"
     },
     "filters": {
+      "upToPrice": "Up to {price}",
       "allRegions": "All regions",
       "clearSearch": "Clear search",
       "button": "Filters",
@@ -397,7 +403,19 @@
         "area100Plus": "100m²+",
         "all": "All",
         "withParking": "With parking"
+      },
+      "errors": {
+        "textTooLong": "Text is too long",
+        "optionInvalid": "Invalid option",
+        "numbersOnly": "Numbers only",
+        "numberTooLong": "Value is too long"
       }
+    },
+    "errors": {
+      "textTooLong": "Text is too long",
+      "optionInvalid": "Invalid option",
+      "numbersOnly": "Numbers only",
+      "numberTooLong": "Value is too long"
     }
   },
   "directory": {
@@ -408,7 +426,7 @@
     "agencies": {
       "title": "Agencies",
       "placeholder": "Name, CRECI, region, or coverage",
-      "resultCount": "{visible} of {total} agencies found",
+      "resultCount": "{total, plural, one {{visible} of # agency found} other {{visible} of # agencies found}}",
       "empty": "No agencies found",
       "loaded": "All agencies have been loaded",
       "loading": "Loading more agencies"
@@ -416,7 +434,7 @@
     "brokers": {
       "title": "Brokers",
       "placeholder": "Name, CRECI, neighborhood, or region",
-      "resultCount": "{visible} of {total} brokers found",
+      "resultCount": "{total, plural, one {{visible} of # broker found} other {{visible} of # brokers found}}",
       "empty": "No brokers found",
       "loaded": "All brokers have been loaded",
       "loading": "Loading more brokers"
@@ -430,6 +448,18 @@
       "response": "Response",
       "team": "Team",
       "rating": "Rating"
+    },
+    "errors": {
+      "searchQueryTooLong": "Search is too long",
+      "visibleCountInvalid": "Invalid item count"
     }
+  },
+  "mediaUpload": {
+    "dropzone": "Drag an image here or click to select",
+    "dragActive": "Drop the image here",
+    "uploading": "Uploading...",
+    "remove": "Remove image",
+    "hint": "JPG, PNG or WEBP.",
+    "uploadError": "Could not upload the image. Try again."
   }
 }
