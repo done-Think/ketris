@@ -25,6 +25,7 @@
     "signIn": "Entrar a Ketris"
   },
   "pipeline": {
+    "propertyReference": "Inmueble {id}",
     "title": "Pipeline de ventas",
     "subtitle": "Acompaña oportunidades, etapas y negociaciones en curso.",
     "proposalsTitle": "Propuestas",
@@ -111,6 +112,7 @@
       "brokers": "Corredores"
     },
     "contactForm": {
+      "emailAlreadyExists": "Ya existe un contacto con este correo electrónico.",
       "createTitle": "Nuevo contacto",
       "editTitle": "Editar contacto",
       "fields": {
@@ -183,7 +185,7 @@
         "whatsApp": "WhatsApp",
         "instagram": "Instagram",
         "site": "Site",
-        "referral": "Indicación"
+        "referral": "Recomendación"
       },
       "actions": {
         "back": "Volver",
@@ -258,6 +260,10 @@
     }
   },
   "opportunityDetail": {
+    "moveStage": "Mover a otra etapa",
+    "discardLead": "Descartar lead",
+    "editData": "Editar datos",
+    "archived": "Archivada",
     "errors": {
       "nameRequired": "El nombre es obligatorio.",
       "emailInvalid": "Correo electrónico inválido.",
@@ -405,7 +411,7 @@
       },
       "registerLossReason": {
         "title": "Registrar motivo de pérdida",
-        "detail": "Documentar la objeción principal y decidir si el lead vuelve a nutrición."
+        "detail": "Documentar la objeción principal y decidir si el lead vuelve a la fase de seguimiento."
       }
     },
     "statuses": {
@@ -417,5 +423,29 @@
     },
     "noProperties": "No se encontraron inmuebles.",
     "loadingProperties": "Buscando inmuebles..."
+  },
+  "proposalManagement": {
+    "allStatuses": "Todas",
+    "filterByStatus": "Filtrar propuestas por estado",
+    "tableAriaLabel": "Propuestas del CRM",
+    "mobileListAriaLabel": "Lista móvil de propuestas",
+    "columns": {
+      "proposal": "Propuesta",
+      "lead": "Lead",
+      "property": "Inmueble",
+      "value": "Valor",
+      "status": "Estado",
+      "created": "Creada",
+      "actions": "Acciones"
+    },
+    "createdAt": "Creada el {date}",
+    "viewProposal": "Ver {reference}",
+    "moreOptions": "Más opciones para {reference}",
+    "kpis": {
+      "ariaLabel": "Indicadores de propuestas",
+      "inNegotiation": "En negociación",
+      "acceptedTotal": "Valor total aceptado",
+      "conversionRate": "Tasa de conversión"
+    }
   }
 }

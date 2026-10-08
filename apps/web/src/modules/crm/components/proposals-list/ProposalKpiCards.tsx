@@ -2,29 +2,32 @@ import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
 import AttachMoneyRoundedIcon from '@mui/icons-material/AttachMoneyRounded'
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded'
 import { Box, Paper, Stack, Typography } from '@mui/material'
+import { useLocale, useTranslations } from 'next-intl'
 
 import { brand, iconSize, radius, supportColor, surface } from '@shared/theme/tokens'
 
 import type { ProposalKpiCardsProps } from '../../types/proposal-management'
 
 export function ProposalKpiCards({ summary }: ProposalKpiCardsProps) {
+  const locale = useLocale()
+  const t = useTranslations('crm.proposalManagement')
   const cards = [
     {
-      label: 'Em negociação',
-      value: String(summary.negotiationCount),
+      label: t('kpis.inNegotiation'),
+      value: new Intl.NumberFormat(locale).format(summary.negotiationCount),
       icon: AccessTimeRoundedIcon,
       color: brand.semantic.warning,
       backgroundColor: supportColor.warningSoft,
     },
     {
-      label: 'Valor total aceitas',
+      label: t('kpis.acceptedTotal'),
       value: summary.acceptedTotalLabel,
       icon: AttachMoneyRoundedIcon,
       color: brand.semantic.success,
       backgroundColor: supportColor.successSoft,
     },
     {
-      label: 'Taxa de conversão',
+      label: t('kpis.conversionRate'),
       value: summary.conversionRateLabel,
       icon: TrendingUpRoundedIcon,
       color: brand.magenta[500],
@@ -34,7 +37,7 @@ export function ProposalKpiCards({ summary }: ProposalKpiCardsProps) {
 
   return (
     <Box
-      aria-label="Indicadores de propostas"
+      aria-label={t('kpis.ariaLabel')}
       sx={{
         display: 'grid',
         gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',

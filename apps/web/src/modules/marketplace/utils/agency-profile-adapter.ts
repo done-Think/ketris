@@ -1,18 +1,24 @@
 import type { AgencyProfile } from '../types/agency'
+import type { AppLocale } from '@/i18n/types/locale.types'
 import type {
   PublicAgencyListingSummary,
   PublicAgencyProfile,
 } from '../types/public-agency-profile'
 import { formatCompactCurrency } from './search-results'
+import type { PropertyText } from './property-presentation'
 
 function buildListingLocation(listing: PublicAgencyListingSummary): string {
   return [listing.neighborhood, listing.city].filter(Boolean).join(', ')
 }
 
-function buildListingPrice(listing: PublicAgencyListingSummary): string {
-  const formatted = formatCompactCurrency(listing.price)
+function buildListingPrice(
+  listing: PublicAgencyListingSummary,
+  locale: AppLocale,
+  t: PropertyText,
+): string {
+  const formatted = formatCompactCurrency(listing.price, locale)
 
-  return listing.purpose === 'ALUGUEL' ? `${formatted} / mês` : formatted
+  return listing.purpose === 'ALUGUEL' ? t('monthly', { price: formatted }) : formatted
 }
 
 function buildLogoInitials(displayName: string): string {
@@ -26,7 +32,11 @@ function buildLogoInitials(displayName: string): string {
   return initials || '?'
 }
 
-export function toAgencyProfile(profile: PublicAgencyProfile): AgencyProfile {
+export function toAgencyProfile(
+  profile: PublicAgencyProfile,
+  locale: AppLocale,
+  t: PropertyText,
+): AgencyProfile {
   return {
     id: profile.id,
     name: profile.displayName,
@@ -65,7 +75,7 @@ export function toAgencyProfile(profile: PublicAgencyProfile): AgencyProfile {
     featuredListings: profile.featuredListings.map((listing) => ({
       title: listing.title,
       location: buildListingLocation(listing),
-      price: buildListingPrice(listing),
+      price: buildListingPrice(listing, locale, t),
       href: `/properties/${listing.id}`,
       image: listing.coverUrl ?? undefined,
     })),

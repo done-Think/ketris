@@ -1,10 +1,9 @@
-import axios from 'axios'
+import { extractErrorMessage } from '@shared/utils/error-message'
 
-export function errorMessage(error: unknown, fallback: string): string {
-  if (axios.isAxiosError(error)) {
-    const message = error.response?.data?.error?.message
-    if (typeof message === 'string') return message
-  }
-
-  return fallback
+export function errorMessage(
+  error: unknown,
+  fallback: string,
+  messagesByCode?: Record<string, string>,
+): string {
+  return extractErrorMessage(error, fallback, messagesByCode)
 }

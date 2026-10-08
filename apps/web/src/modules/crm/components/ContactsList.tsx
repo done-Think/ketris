@@ -2,12 +2,13 @@
 
 import { useMemo, useState } from 'react'
 import { Box, GlobalStyles, Paper, Stack, Typography } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { contactFilters } from '../config/contact-filters'
-import { contactListFixtures, contactsFixtureTotal } from '../fixtures/contact-list-fixtures'
+import { getContactListFixtures, contactsFixtureTotal } from '../fixtures/contact-list-fixtures'
 import type { ContactFilter, ContactsListProps } from '../types/contact'
 import { filterContacts } from '../utils/contacts'
 import { ContactsCards } from './contacts-list/ContactsCards'
@@ -18,7 +19,7 @@ import { ContactsTable } from './contacts-list/ContactsTable'
 const contactsBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
 
 export function ContactsList({
-  contacts = contactListFixtures,
+  contacts,
   totalCount = contactsFixtureTotal,
   page = 1,
   onPageChange,
@@ -27,20 +28,25 @@ export function ContactsList({
   onOpenInteractions,
   onOpenMoreOptions,
 }: ContactsListProps = {}) {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('crm.contacts')
+  const visibleContacts = useMemo(
+    () => contacts ?? getContactListFixtures(locale),
+    [contacts, locale],
+  )
   const [search, setSearch] = useState('')
   const [activeFilter, setActiveFilter] = useState<ContactFilter>('Todos')
 
   const filteredContacts = useMemo(() => {
     const selectedType =
       contactFilters.find((filter) => filter.label === activeFilter)?.type ?? null
-    return filterContacts(contacts, search, selectedType)
-  }, [activeFilter, contacts, search])
+    return filterContacts(visibleContacts, search, selectedType)
+  }, [activeFilter, visibleContacts, search])
 
   const isDefaultView = activeFilter === 'Todos' && search.trim() === ''
   const resultTotal = isDefaultView ? totalCount : filteredContacts.length
   const firstVisible =
-    filteredContacts.length > 0 ? (isDefaultView ? (page - 1) * contacts.length + 1 : 1) : 0
+    filteredContacts.length > 0 ? (isDefaultView ? (page - 1) * visibleContacts.length + 1 : 1) : 0
   const lastVisible =
     filteredContacts.length > 0
       ? isDefaultView

@@ -1,9 +1,9 @@
-import { proposalStatusPresentations } from '../config/proposal-statuses'
 import type {
   ProposalManagementFilterId,
   ProposalManagementListItem,
   ProposalManagementPage,
   ProposalManagementQuery,
+  ProposalManagementStatus,
 } from '../types/proposal-management'
 
 export const proposalManagementDefaultPageSize = 5
@@ -20,6 +20,7 @@ export function filterProposalManagementItems(
   proposals: readonly ProposalManagementListItem[],
   search = '',
   status: ProposalManagementFilterId = 'all',
+  statusLabel?: (status: ProposalManagementStatus) => string,
 ): ProposalManagementListItem[] {
   const normalizedSearch = normalizeSearchValue(search)
 
@@ -36,7 +37,7 @@ export function filterProposalManagementItems(
       proposal.property.address,
       proposal.valueLabel,
       proposal.createdLabel,
-      proposalStatusPresentations[proposal.status].label,
+      statusLabel?.(proposal.status) ?? proposal.status,
     ]
 
     return searchableValues.some((value) => normalizeSearchValue(value).includes(normalizedSearch))
@@ -72,9 +73,9 @@ export function paginateProposalManagementItems(
 
 export function queryProposalManagementItems(
   proposals: readonly ProposalManagementListItem[],
-  { search = '', status = 'all', page = 1, pageSize }: ProposalManagementQuery = {},
+  { search = '', status = 'all', page = 1, pageSize, statusLabel }: ProposalManagementQuery = {},
 ): ProposalManagementPage {
-  const filteredProposals = filterProposalManagementItems(proposals, search, status)
+  const filteredProposals = filterProposalManagementItems(proposals, search, status, statusLabel)
 
   return paginateProposalManagementItems(filteredProposals, page, pageSize)
 }

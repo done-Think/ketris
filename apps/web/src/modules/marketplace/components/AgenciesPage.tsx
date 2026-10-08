@@ -1,7 +1,8 @@
 'use client'
 
 import { Box, Container } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
@@ -29,12 +30,16 @@ function getAgencySearchableText(agency: AgencyProfile) {
 }
 
 export function AgenciesPage() {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace')
+  const tFeatures = useTranslations('marketplace.propertyFeatures')
   const directoryT = useTranslations('marketplace.directory.agencies')
   const { footerColumns, legalLinks } = useMarketplaceNavigation()
   const { setViewMode, viewMode } = useViewModePreference('agencies')
   const { data: agencyProfiles } = useAgencyProfiles()
-  const agencies = (agencyProfiles ?? []).map(toAgencyProfile)
+  const agencies = (agencyProfiles ?? []).map((profile) =>
+    toAgencyProfile(profile, locale, tFeatures),
+  )
   const {
     filteredItems: filteredAgencies,
     hasMoreItems: hasMoreAgencies,

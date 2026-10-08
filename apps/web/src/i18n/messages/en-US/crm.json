@@ -25,6 +25,7 @@
     "signIn": "Sign in to Ketris"
   },
   "pipeline": {
+    "propertyReference": "Property {id}",
     "title": "Sales Pipeline",
     "subtitle": "Track opportunities, stages, and ongoing negotiations.",
     "proposalsTitle": "Proposals",
@@ -111,6 +112,7 @@
       "brokers": "Brokers"
     },
     "contactForm": {
+      "emailAlreadyExists": "A contact with this email already exists.",
       "createTitle": "New contact",
       "editTitle": "Edit contact",
       "fields": {
@@ -258,6 +260,10 @@
     }
   },
   "opportunityDetail": {
+    "moveStage": "Move to another stage",
+    "discardLead": "Discard lead",
+    "editData": "Edit details",
+    "archived": "Archived",
     "errors": {
       "nameRequired": "Name is required.",
       "emailInvalid": "Invalid email.",
@@ -417,5 +423,29 @@
     },
     "noProperties": "No properties found.",
     "loadingProperties": "Searching properties..."
+  },
+  "proposalManagement": {
+    "allStatuses": "All",
+    "filterByStatus": "Filter proposals by status",
+    "tableAriaLabel": "CRM proposals",
+    "mobileListAriaLabel": "Mobile proposal list",
+    "columns": {
+      "proposal": "Proposal",
+      "lead": "Lead",
+      "property": "Property",
+      "value": "Value",
+      "status": "Status",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "createdAt": "Created on {date}",
+    "viewProposal": "View {reference}",
+    "moreOptions": "More options for {reference}",
+    "kpis": {
+      "ariaLabel": "Proposal indicators",
+      "inNegotiation": "In negotiation",
+      "acceptedTotal": "Total value accepted",
+      "conversionRate": "Conversion rate"
+    }
   }
 }

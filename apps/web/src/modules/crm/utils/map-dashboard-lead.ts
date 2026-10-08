@@ -1,5 +1,6 @@
 import type { DashboardLead, Lead, LeadApiStage, LeadStage } from '../types/lead'
 import { formatLeadRelativeDate } from './format-lead'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 const stageByApiStage: Record<LeadApiStage, LeadStage> = {
   NOVO: 'Novo',
@@ -15,14 +16,14 @@ export const apiStageByStage: Record<LeadStage, LeadApiStage> = {
   Proposta: 'PROPOSTA',
 }
 
-export function toDashboardLead(lead: Lead): DashboardLead {
+export function toDashboardLead(lead: Lead, locale?: AppLocale): DashboardLead {
   return {
     id: lead.id,
     name: lead.name,
     budget: lead.budget,
     phone: lead.phone,
     email: lead.email ?? '',
-    lastContact: formatLeadRelativeDate(lead.updatedAt),
+    lastContact: formatLeadRelativeDate(lead.updatedAt, locale),
     lastContactAt: lead.updatedAt,
     interest: lead.interest,
     source: lead.source,

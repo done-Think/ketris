@@ -1,9 +1,13 @@
 import axios from 'axios'
 
-export function extractErrorMessage(error: unknown, fallback: string): string {
+export function extractErrorMessage(
+  error: unknown,
+  fallback: string,
+  messagesByCode: Record<string, string> = {},
+): string {
   if (axios.isAxiosError(error)) {
-    const message = error.response?.data?.error?.message
-    if (typeof message === 'string') return message
+    const code = error.response?.data?.error?.code
+    if (typeof code === 'string' && messagesByCode[code]) return messagesByCode[code]
   }
   return fallback
 }

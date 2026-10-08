@@ -3,7 +3,8 @@
 import { useMemo, useState } from 'react'
 import { Alert, Box, Button } from '@mui/material'
 import { useSession } from 'next-auth/react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 import { useSnackbar } from 'notistack'
 
 import { useRouter } from '@/i18n/navigation'
@@ -56,7 +57,9 @@ function getInitialPipelineViewMode(): SalesPipelineViewMode {
 }
 
 export function SalesPipelineBoard() {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('crm.pipeline')
+  const tProposalStatuses = useTranslations('crm.opportunityDetail.statuses')
   const router = useRouter()
   const { data: session, status: sessionStatus } = useSession()
   const tenantId = session?.tenantId ?? ''
@@ -121,13 +124,14 @@ export function SalesPipelineBoard() {
         opportunity,
         propertiesById.get(opportunity.propertyId),
         opportunity.propertyId,
+        locale,
       ),
     )
-  }, [opportunitiesQuery.data, propertiesById])
+  }, [opportunitiesQuery.data, propertiesById, locale])
 
   const proposalSummary = useMemo(
-    () => buildProposalManagementSummary(proposalItems),
-    [proposalItems],
+    () => buildProposalManagementSummary(proposalItems, locale),
+    [proposalItems, locale],
   )
 
   const proposalPageResult = useMemo(
@@ -137,8 +141,16 @@ export function SalesPipelineBoard() {
         status: proposalStatus,
         page: proposalPageIndex,
         pageSize: proposalRowsPerPage,
+        statusLabel: (status) => tProposalStatuses(status),
       }),
-    [proposalItems, proposalPageIndex, proposalRowsPerPage, proposalStatus, search],
+    [
+      proposalItems,
+      proposalPageIndex,
+      proposalRowsPerPage,
+      proposalStatus,
+      search,
+      tProposalStatuses,
+    ],
   )
 
   function goToOpportunity(proposal: ProposalManagementListItem) {

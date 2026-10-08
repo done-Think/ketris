@@ -2,7 +2,8 @@
 
 import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded'
 import { Avatar, Box, Button, Chip, Paper, Stack, Typography, useMediaQuery } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 import { useEffect, useRef, useState } from 'react'
 
 import { brand, iconSize, radius, surface } from '@shared/theme/tokens'
@@ -12,6 +13,7 @@ import { formatRelativeDate } from '../../utils/formatters'
 import { panelSx } from './opportunity-detail.styles'
 
 export function OpportunityActivitiesPanel({ activities }: OpportunityActivitiesPanelProps) {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('crm.opportunityDetail')
   const panelRef = useRef<HTMLElement | null>(null)
   const listViewportRef = useRef<HTMLDivElement | null>(null)
@@ -131,7 +133,7 @@ export function OpportunityActivitiesPanel({ activities }: OpportunityActivities
                       <Chip
                         component="time"
                         dateTime={activity.occurredAt}
-                        label={formatRelativeDate(activity.occurredAt)}
+                        label={formatRelativeDate(activity.occurredAt, new Date(), locale)}
                         size="small"
                         variant="outlined"
                         sx={{ height: 22, flexShrink: 0, fontSize: 11, fontWeight: 700 }}

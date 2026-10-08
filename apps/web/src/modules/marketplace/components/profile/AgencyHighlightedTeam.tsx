@@ -1,6 +1,7 @@
 'use client'
 
 import { Avatar, Box, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
 import { componentText, motion, radius, shadows, surface } from '@shared/theme/tokens'
@@ -9,6 +10,7 @@ import type { AgencyHighlightedTeamProps } from '../../types/agency-highlighted-
 import { buildPublicProfileHref } from '../../utils/property-links'
 
 export function AgencyHighlightedTeam({ brand, team }: AgencyHighlightedTeamProps) {
+  const t = useTranslations('marketplace.publicProfile')
   return (
     <Box
       sx={{
@@ -21,7 +23,7 @@ export function AgencyHighlightedTeam({ brand, team }: AgencyHighlightedTeamProp
       }}
     >
       <Typography variant="h5" sx={{ mb: 1.4 }}>
-        Equipe em destaque
+        {t('featuredTeam')}
       </Typography>
       <Box
         sx={{
@@ -35,7 +37,7 @@ export function AgencyHighlightedTeam({ brand, team }: AgencyHighlightedTeamProp
             key={member.usuarioId}
             component={Link}
             href={buildPublicProfileHref(`/brokers/${member.usuarioId}`, 'broker')}
-            aria-label={`Ver perfil de ${member.name}`}
+            aria-label={t('viewBrokerProfile', { name: member.name })}
             sx={{
               alignItems: 'center',
               border: '1px solid',

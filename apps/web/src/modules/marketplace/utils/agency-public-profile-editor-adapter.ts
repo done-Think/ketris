@@ -1,6 +1,9 @@
 import type { AgencyPublicProfileEditorFormValues } from '../schemas/agency-public-profile-editor-schema'
 import type { AgencyProfile } from '../types/agency'
 import type { PublicAgencyProfile } from '../types/public-agency-profile'
+import type { AppLocale } from '@/i18n/types/locale.types'
+import type { PropertyText } from './property-presentation'
+import { formatCompactCurrency } from './search-results'
 
 export const emptyValues: AgencyPublicProfileEditorFormValues = {
   displayName: '',
@@ -77,10 +80,13 @@ export function toFormValues(
 export function toPreviewProfile(
   values: AgencyPublicProfileEditorFormValues,
   profile: PublicAgencyProfile | null,
+  locale: AppLocale,
+  t: PropertyText,
+  previewName: string,
 ): AgencyProfile {
   return {
     id: profile?.id ?? 'preview',
-    name: values.displayName || 'Sua imobiliária',
+    name: values.displayName || previewName,
     headline: values.headline || null,
     legalCreci: values.legalCreci || null,
     logoInitials: (values.displayName || '?').slice(0, 2).toUpperCase(),
@@ -113,7 +119,10 @@ export function toPreviewProfile(
     featuredListings: (profile?.featuredListings ?? []).map((listing) => ({
       title: listing.title,
       location: [listing.neighborhood, listing.city].filter(Boolean).join(', '),
-      price: String(listing.price),
+      price:
+        listing.purpose === 'ALUGUEL'
+          ? t('monthly', { price: formatCompactCurrency(listing.price, locale) })
+          : formatCompactCurrency(listing.price, locale),
       href: `/properties/${listing.id}`,
     })),
   }

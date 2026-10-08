@@ -25,6 +25,7 @@
     "signIn": "Entrar no Ketris"
   },
   "pipeline": {
+    "propertyReference": "Imóvel {id}",
     "title": "Pipeline de Vendas",
     "subtitle": "Acompanhe oportunidades, etapas e negociações em andamento.",
     "proposalsTitle": "Propostas",
@@ -111,6 +112,7 @@
       "brokers": "Corretores"
     },
     "contactForm": {
+      "emailAlreadyExists": "Já existe um contato com este e-mail.",
       "createTitle": "Novo contato",
       "editTitle": "Editar contato",
       "fields": {
@@ -130,8 +132,8 @@
         "save": "Salvar"
       },
       "errors": {
-        "nameRequired": "Nome e obrigatorio.",
-        "emailInvalid": "E-mail invalido."
+        "nameRequired": "Nome é obrigatório.",
+        "emailInvalid": "E-mail inválido."
       },
       "createSuccess": "Contato criado.",
       "updateSuccess": "Contato atualizado.",
@@ -258,14 +260,18 @@
     }
   },
   "opportunityDetail": {
+    "moveStage": "Mover de etapa",
+    "discardLead": "Descartar lead",
+    "editData": "Editar dados",
+    "archived": "Arquivada",
     "errors": {
-      "nameRequired": "Nome e obrigatorio.",
-      "emailInvalid": "E-mail invalido.",
-      "phoneInvalid": "Telefone invalido.",
+      "nameRequired": "Nome é obrigatório.",
+      "emailInvalid": "E-mail inválido.",
+      "phoneInvalid": "Telefone inválido.",
       "propertyRequired": "Selecione um imóvel.",
-      "proposedValueRequired": "Valor proposto e obrigatorio.",
+      "proposedValueRequired": "Valor proposto é obrigatório.",
       "proposedValuePositive": "Valor proposto deve ser positivo.",
-      "contractTermInvalid": "Prazo deve ser um numero inteiro positivo.",
+      "contractTermInvalid": "Prazo deve ser um número inteiro positivo.",
       "atLeastOneFieldRequired": "Informe ao menos um campo para atualizar.",
       "desiredStartDateInvalid": "Data de início inválida.",
       "specialConditionInvalid": "Condição especial inválida.",
@@ -417,5 +423,29 @@
     },
     "noProperties": "Nenhum imóvel encontrado.",
     "loadingProperties": "Buscando imóveis..."
+  },
+  "proposalManagement": {
+    "allStatuses": "Todas",
+    "filterByStatus": "Filtrar propostas por status",
+    "tableAriaLabel": "Propostas do CRM",
+    "mobileListAriaLabel": "Lista móvel de propostas",
+    "columns": {
+      "proposal": "Proposta",
+      "lead": "Lead",
+      "property": "Imóvel",
+      "value": "Valor",
+      "status": "Status",
+      "created": "Criada",
+      "actions": "Ações"
+    },
+    "createdAt": "Criada em {date}",
+    "viewProposal": "Visualizar {reference}",
+    "moreOptions": "Mais opções para {reference}",
+    "kpis": {
+      "ariaLabel": "Indicadores de propostas",
+      "inNegotiation": "Em negociação",
+      "acceptedTotal": "Valor total das aceitas",
+      "conversionRate": "Taxa de conversão"
+    }
   }
 }

@@ -1,4 +1,5 @@
 import { Box, MenuItem, Stack, TextField } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { DashboardStatusFilterButton } from '@shared/components/layout'
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
@@ -11,6 +12,8 @@ export function ProposalStatusFilters({
   summary,
   onStatusChange,
 }: ProposalStatusFiltersProps) {
+  const t = useTranslations('crm.proposalManagement')
+  const tStatus = useTranslations('crm.opportunityDetail.statuses')
   const activeOption =
     proposalStatusFilters.find((filter) => filter.id === activeStatus) ?? proposalStatusFilters[0]
   const activeCount =
@@ -53,9 +56,13 @@ export function ProposalStatusFilters({
           },
         }}
         SelectProps={{
-          inputProps: { 'aria-label': 'Filtrar propostas por status' },
+          inputProps: { 'aria-label': t('filterByStatus') },
           renderValue: () => (
-            <FilterOptionLabel label={activeOption.label} count={activeCount} active />
+            <FilterOptionLabel
+              label={activeOption.id === 'all' ? t('allStatuses') : tStatus(activeOption.id)}
+              count={activeCount}
+              active
+            />
           ),
           MenuProps: {
             PaperProps: {
@@ -68,9 +75,10 @@ export function ProposalStatusFilters({
           },
         }}
       >
-        {proposalStatusFilters.map(({ id, label }) => {
+        {proposalStatusFilters.map(({ id }) => {
           const active = id === activeStatus
           const count = id === 'all' ? summary.totalCount : summary.statusCounts[id]
+          const label = id === 'all' ? t('allStatuses') : tStatus(id)
 
           return (
             <MenuItem
@@ -93,7 +101,7 @@ export function ProposalStatusFilters({
       <Stack
         component="div"
         role="group"
-        aria-label="Filtrar propostas por status"
+        aria-label={t('filterByStatus')}
         direction="row"
         spacing={0.8}
         sx={{
@@ -104,9 +112,10 @@ export function ProposalStatusFilters({
           scrollbarWidth: 'thin',
         }}
       >
-        {proposalStatusFilters.map(({ id, label }) => {
+        {proposalStatusFilters.map(({ id }) => {
           const active = id === activeStatus
           const count = id === 'all' ? summary.totalCount : summary.statusCounts[id]
+          const label = id === 'all' ? t('allStatuses') : tStatus(id)
 
           return (
             <DashboardStatusFilterButton

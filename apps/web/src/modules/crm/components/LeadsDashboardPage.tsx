@@ -3,13 +3,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Box, Paper, Stack, Typography } from '@mui/material'
 import { useSession } from 'next-auth/react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 import { useSearchParams } from 'next/navigation'
 
 import { DashboardTablePagination } from '@shared/components/layout'
 import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
 
-import { leadListFixtures } from '../fixtures/lead-list-fixtures'
+import { getLeadListFixtures } from '../fixtures/lead-list-fixtures'
 import { useLeads, useUpdateLeadStage } from '../hooks/use-leads'
 import type {
   DashboardLead,
@@ -31,6 +32,7 @@ import { LeadsTable } from './leads-list/LeadsTable'
 const leadsBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
 
 export function LeadsDashboardPage() {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('crm.leads')
   const searchParams = useSearchParams()
   const { data: session } = useSession()
@@ -42,8 +44,11 @@ export function LeadsDashboardPage() {
     !leadsQuery.isLoading &&
     (leadsQuery.isError || (leadsQuery.data ?? []).length === 0)
   const leads = useMemo(
-    () => (fixtureMode ? leadListFixtures : (leadsQuery.data ?? []).map(toDashboardLead)),
-    [fixtureMode, leadsQuery.data],
+    () =>
+      fixtureMode
+        ? getLeadListFixtures(locale)
+        : (leadsQuery.data ?? []).map((lead) => toDashboardLead(lead, locale)),
+    [fixtureMode, leadsQuery.data, locale],
   )
   const [search, setSearch] = useState('')
   const [activeFilter, setActiveFilter] = useState<LeadFilter>('Todos')

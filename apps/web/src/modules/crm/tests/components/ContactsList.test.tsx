@@ -45,7 +45,7 @@ describe('ContactsList', () => {
     expect(within(ricardoRow!).getByText('(11) 98722-1200')).toBeInTheDocument()
     expect(within(ricardoRow!).getByText('ricardo.mendes@email.com')).toBeInTheDocument()
     expect(within(ricardoRow!).getByText('2')).toBeInTheDocument()
-    expect(within(ricardoRow!).getByText('Há 2 horas')).toBeInTheDocument()
+    expect(within(ricardoRow!).getByText(/há 2 horas/i)).toBeInTheDocument()
 
     const heitorRow = within(table).getByText('Heitor Prado').closest('tr')
     expect(heitorRow).not.toBeNull()

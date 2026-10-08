@@ -1,5 +1,6 @@
 import { Box, Skeleton, Stack, Typography } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { brand, radius, surface } from '@shared/theme/tokens'
 
@@ -26,6 +27,7 @@ export function PipelineStageColumn({
   hasPipelineError,
   propertiesById,
 }: PipelineStageColumnProps) {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('crm.pipeline')
   const stageLabel = t(`stages.${stage.labelKey}`)
 
@@ -150,7 +152,7 @@ export function PipelineStageColumn({
           <Skeleton width={92} />
         ) : projectedTotals.length === 0 ? (
           <Typography sx={{ mt: 0.25, fontSize: 17, fontWeight: 800, lineHeight: 1.3 }}>
-            {formatCurrency(0)}
+            {formatCurrency(0, locale)}
           </Typography>
         ) : (
           <Stack spacing={0.25} sx={{ mt: 0.25, minHeight: projectedTotals.length > 1 ? 36 : 0 }}>

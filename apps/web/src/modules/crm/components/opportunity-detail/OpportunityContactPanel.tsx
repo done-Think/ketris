@@ -1,5 +1,6 @@
 import { Box, Chip, Divider, Paper, Stack, Typography } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import type { OpportunityContactPanelProps } from '../../types/opportunity-detail'
 import { formatDate } from '../../utils/formatters'
@@ -27,6 +28,7 @@ const sectionTitleSx = {
 } as const
 
 export function OpportunityContactPanel({ opportunity }: OpportunityContactPanelProps) {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('crm.opportunityDetail')
 
   return (
@@ -67,7 +69,10 @@ export function OpportunityContactPanel({ opportunity }: OpportunityContactPanel
             label={t('fields.linkedContact')}
             value={opportunity.contactId ? t('fields.linked') : t('fields.notLinked')}
           />
-          <DetailItem label={t('fields.createdAt')} value={formatDate(opportunity.createdAt)} />
+          <DetailItem
+            label={t('fields.createdAt')}
+            value={formatDate(opportunity.createdAt, locale)}
+          />
           <DetailItem
             label={t('fields.archiveStatus')}
             value={opportunity.archivedAt ? t('fields.archived') : t('fields.active')}
@@ -94,7 +99,7 @@ export function OpportunityContactPanel({ opportunity }: OpportunityContactPanel
             label={t('fields.intendedStart')}
             value={
               opportunity.desiredStartDate
-                ? formatDate(opportunity.desiredStartDate)
+                ? formatDate(opportunity.desiredStartDate, locale)
                 : t('fields.notInformed')
             }
           />
@@ -102,7 +107,10 @@ export function OpportunityContactPanel({ opportunity }: OpportunityContactPanel
             label={t('fields.guarantee')}
             value={t(`guarantees.${opportunity.guaranteeType}`)}
           />
-          <DetailItem label={t('fields.updatedAt')} value={formatDate(opportunity.updatedAt)} />
+          <DetailItem
+            label={t('fields.updatedAt')}
+            value={formatDate(opportunity.updatedAt, locale)}
+          />
           <DetailItem label={t('fields.reference')} value={opportunity.id.slice(0, 8)} />
           <DetailItem
             label={t('fields.specialConditionsCount')}

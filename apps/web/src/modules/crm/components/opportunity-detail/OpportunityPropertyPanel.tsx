@@ -1,6 +1,7 @@
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import { Alert, Box, Button, Paper, Skeleton, Stack, Typography } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { brand, radius, surface } from '@shared/theme/tokens'
 
@@ -16,6 +17,7 @@ export function OpportunityPropertyPanel({
   isError,
   onRetry,
 }: OpportunityPropertyPanelProps) {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('crm.opportunityDetail.propertyPanel')
 
   return (
@@ -102,7 +104,7 @@ export function OpportunityPropertyPanel({
                 textAlign: { xs: 'left', sm: 'right' },
               }}
             >
-              {formatCurrency(property.price)}
+              {formatCurrency(property.price, locale)}
               {property.purpose === 'ALUGUEL' ? t('monthlySuffix') : ''}
             </Typography>
           </Stack>

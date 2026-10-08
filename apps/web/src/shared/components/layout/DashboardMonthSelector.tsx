@@ -4,22 +4,23 @@ import { useMemo, useState, type MouseEvent } from 'react'
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
 import { Menu, MenuItem } from '@mui/material'
 import dayjs, { type Dayjs } from 'dayjs'
+import { useLocale } from 'next-intl'
 import 'dayjs/locale/pt-br'
+import 'dayjs/locale/es'
 
 import { iconSize, radius, shadows } from '@shared/theme/tokens'
 
 import { DashboardHeaderActionButton } from './DashboardHeaderActionButton'
 
-function formatMonthLabel(month: Dayjs) {
-  const label = month.locale('pt-br').format('MMMM YYYY')
-
-  return label.charAt(0).toUpperCase() + label.slice(1)
+function formatMonthLabel(month: Dayjs, locale: string) {
+  const dayjsLocale = locale === 'es-ES' ? 'es' : locale === 'en-US' ? 'en' : 'pt-br'
+  return month.locale(dayjsLocale).format('MMMM YYYY')
 }
 
 export function DashboardMonthSelector() {
+  const locale = useLocale()
   const monthOptions = useMemo(
-    () =>
-      Array.from({ length: 12 }, (_, index) => dayjs().locale('pt-br').subtract(index, 'month')),
+    () => Array.from({ length: 12 }, (_, index) => dayjs().subtract(index, 'month')),
     [],
   )
   const [selectedMonth, setSelectedMonth] = useState(monthOptions[0])
@@ -40,7 +41,7 @@ export function DashboardMonthSelector() {
         onClick={handleMonthButtonClick}
         endIcon={<KeyboardArrowDownRoundedIcon sx={{ fontSize: iconSize.sm }} />}
       >
-        {formatMonthLabel(selectedMonth)}
+        {formatMonthLabel(selectedMonth, locale)}
       </DashboardHeaderActionButton>
       <Menu
         anchorEl={monthAnchor}
@@ -74,7 +75,7 @@ export function DashboardMonthSelector() {
                 fontWeight: selected ? 900 : 700,
               }}
             >
-              {formatMonthLabel(month)}
+              {formatMonthLabel(month, locale)}
             </MenuItem>
           )
         })}

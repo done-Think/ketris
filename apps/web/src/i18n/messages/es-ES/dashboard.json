@@ -280,6 +280,9 @@
   "finance": {
     "title": "Finanzas",
     "subtitle": "Movimiento financiero mensual y registros de ventas/comisiones.",
+    "exchangeRateNotice": "Importes estimados en {currency} con la PTAX de cierre del {date} (1 {currency} = BRL {rate}). Los registros permanecen en BRL.",
+    "exchangeRateLoading": "Consultando la cotización PTAX. Los importes se muestran en BRL por ahora.",
+    "exchangeRateUnavailable": "Cotización no disponible. Los importes se muestran en BRL.",
     "movementTitle": "Movimiento mensual",
     "movementSubtitle": "Entradas de ventas y comisiones por mes.",
     "sales": "Ventas",

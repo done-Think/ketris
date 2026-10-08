@@ -1,28 +1,25 @@
 'use client'
 
 import { Box, Chip, Stack, Typography } from '@mui/material'
-import { useFormatter, useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 import { alpha, brand, motion, radius, shadows, surface } from '@shared/theme/tokens'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { financialStatusStyles } from '../config/financial-status-styles'
 import type { FinancialUpcomingDue, FinancialUpcomingDueListProps } from '../types/financial-entry'
+import { formatFinancialAmount } from '../utils/financial-display-currency'
 import { FinancialDueHistoryDialog } from './FinancialDueHistoryDialog'
 
-export function FinancialUpcomingDueList({ items }: FinancialUpcomingDueListProps) {
-  const format = useFormatter()
+export function FinancialUpcomingDueList({ items, exchangeRate }: FinancialUpcomingDueListProps) {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('dashboard.finance')
   const statusT = useTranslations('dashboard.finance.statuses')
   const searchParams = useSearchParams()
   const [selectedDue, setSelectedDue] = useState<FinancialUpcomingDue | null>(null)
-  const formatCurrency = (value: number) =>
-    format.number(value, {
-      style: 'currency',
-      currency: 'BRL',
-      maximumFractionDigits: 0,
-    })
+  const formatCurrency = (value: number) => formatFinancialAmount(value, locale, exchangeRate, 0)
   const openDueHistory = (due: FinancialUpcomingDue) => {
     setSelectedDue(due)
   }
@@ -153,6 +150,7 @@ export function FinancialUpcomingDueList({ items }: FinancialUpcomingDueListProp
         due={selectedDue}
         open={Boolean(selectedDue)}
         onClose={() => setSelectedDue(null)}
+        exchangeRate={exchangeRate}
       />
     </Box>
   )

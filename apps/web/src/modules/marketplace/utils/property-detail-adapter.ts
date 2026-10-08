@@ -1,6 +1,8 @@
 import type { PublicPropertyDetail } from '../types/public-property'
 import type { MarketplacePropertyDetail } from '../types/property-detail'
 import type { SearchResultProperty } from '../types/search'
+import type { AppLocale } from '@/i18n/types/locale.types'
+import { formatPropertyArea, type PropertyText } from './property-presentation'
 import { formatCompactCurrency } from './search-results'
 
 const fallbackImage =
@@ -8,23 +10,23 @@ const fallbackImage =
 
 const fallbackMapCenter = { latitude: -23.5505, longitude: -46.6333 }
 
-function pluralize(count: number, singular: string, plural: string) {
-  return `${count} ${count === 1 ? singular : plural}`
-}
-
-function buildDetails(property: PublicPropertyDetail): SearchResultProperty['details'] {
+function buildDetails(
+  property: PublicPropertyDetail,
+  locale: AppLocale,
+  t: PropertyText,
+): SearchResultProperty['details'] {
   const details: SearchResultProperty['details'] = []
 
   if (property.bedrooms)
-    details.push({ key: 'bedrooms', label: pluralize(property.bedrooms, 'quarto', 'quartos') })
+    details.push({ key: 'bedrooms', label: t('bedrooms', { count: property.bedrooms }) })
   if (property.bathrooms)
     details.push({
       key: 'bathrooms',
-      label: pluralize(property.bathrooms, 'banheiro', 'banheiros'),
+      label: t('bathrooms', { count: property.bathrooms }),
     })
   if (property.parkingSpots)
-    details.push({ key: 'parking', label: pluralize(property.parkingSpots, 'vaga', 'vagas') })
-  if (property.area) details.push({ key: 'area', label: `${property.area}m²` })
+    details.push({ key: 'parking', label: t('parking', { count: property.parkingSpots }) })
+  if (property.area) details.push({ key: 'area', label: formatPropertyArea(property.area, locale) })
 
   return details
 }
@@ -33,10 +35,10 @@ function buildLocation(property: PublicPropertyDetail): string {
   return [property.neighborhood, property.city].filter(Boolean).join(', ')
 }
 
-function buildPrice(property: PublicPropertyDetail): string {
-  const formatted = formatCompactCurrency(property.price)
+function buildPrice(property: PublicPropertyDetail, locale: AppLocale, t: PropertyText): string {
+  const formatted = formatCompactCurrency(property.price, locale)
 
-  return property.purpose === 'ALUGUEL' ? `${formatted} / mês` : formatted
+  return property.purpose === 'ALUGUEL' ? t('monthly', { price: formatted }) : formatted
 }
 
 function buildAddressLine(property: PublicPropertyDetail): string {
@@ -57,6 +59,8 @@ function buildGallery(property: PublicPropertyDetail): string[] {
 
 export function mapDetailToMarketplacePropertyDetail(
   property: PublicPropertyDetail,
+  locale: AppLocale,
+  t: PropertyText,
 ): MarketplacePropertyDetail {
   return {
     id: property.id,
@@ -66,9 +70,9 @@ export function mapDetailToMarketplacePropertyDetail(
     location: buildLocation(property),
     title: property.title,
     category: property.propertyType,
-    condominium: property.condoFee ? formatCompactCurrency(property.condoFee) : 'Não informado',
-    price: buildPrice(property),
-    details: buildDetails(property),
+    condominium: property.condoFee ? formatCompactCurrency(property.condoFee, locale) : '',
+    price: buildPrice(property, locale, t),
+    details: buildDetails(property, locale, t),
     description: property.description ?? '',
     address: buildAddressLine(property),
     mapCenter:

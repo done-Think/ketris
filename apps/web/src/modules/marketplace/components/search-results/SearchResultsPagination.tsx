@@ -2,6 +2,7 @@
 
 import { Button, IconButton, Stack } from '@mui/material'
 import FilterListRoundedIcon from '@mui/icons-material/FilterListRounded'
+import { useTranslations } from 'next-intl'
 
 import { alpha, componentText, iconSize, radius, surface } from '@shared/theme/tokens'
 import type { SearchResultsPaginationProps } from '../../types/search'
@@ -11,12 +12,13 @@ export function SearchResultsPagination({
   setCurrentPage,
   totalPages,
 }: SearchResultsPaginationProps) {
+  const t = useTranslations('marketplace.searchResults.filters')
   const pages = Array.from({ length: totalPages }, (_, index) => index + 1)
 
   return (
     <Stack direction="row" alignItems="center" justifyContent="center" spacing={1} sx={{ mt: 2.4 }}>
       <IconButton
-        aria-label="Filtros"
+        aria-label={t('button')}
         sx={{
           display: { xs: 'inline-flex', lg: 'none' },
           width: 38,

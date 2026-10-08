@@ -9,6 +9,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { alpha, brand, surface } from '@shared/theme/tokens'
 
@@ -17,17 +18,27 @@ import { ProposalStatusChip } from '../ProposalStatusChip'
 import { ProposalActions } from './ProposalActions'
 
 const proposalTableColumnWidths = ['12%', '17%', '21%', '13%', '15%', '12%', '10%'] as const
+const proposalColumnKeys = [
+  'proposal',
+  'lead',
+  'property',
+  'value',
+  'status',
+  'created',
+  'actions',
+] as const
 
 export function ProposalsTable({
   proposals,
   onViewProposal,
   onOpenMoreOptions,
 }: ProposalsTableProps) {
+  const t = useTranslations('crm.proposalManagement')
   return (
     <TableContainer sx={{ display: { xs: 'none', md: 'block' }, overflowX: 'auto' }}>
       <Table
         size="small"
-        aria-label="Propostas do CRM"
+        aria-label={t('tableAriaLabel')}
         sx={{
           minWidth: 780,
           tableLayout: 'fixed',
@@ -63,17 +74,17 @@ export function ProposalsTable({
         </colgroup>
         <TableHead>
           <TableRow sx={{ height: 44, bgcolor: surface.app }}>
-            {['Proposta', 'Lead', 'Imóvel', 'Valor', 'Status', 'Criada', 'Ações'].map((label) => (
-              <TableCell key={label} scope="col" align={label === 'Ações' ? 'right' : 'left'}>
-                {label.endsWith('es') ? (
+            {proposalColumnKeys.map((key) => (
+              <TableCell key={key} scope="col" align={key === 'actions' ? 'right' : 'left'}>
+                {key === 'actions' ? (
                   <Box
                     component="span"
                     sx={{ display: 'inline-block', transform: 'translateX(-45px)' }}
                   >
-                    {label}
+                    {t(`columns.${key}`)}
                   </Box>
                 ) : (
-                  label
+                  t(`columns.${key}`)
                 )}
               </TableCell>
             ))}

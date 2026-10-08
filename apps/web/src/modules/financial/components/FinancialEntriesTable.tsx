@@ -3,13 +3,15 @@
 import { Box, Chip, Typography } from '@mui/material'
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import { DataGrid } from '@mui/x-data-grid'
-import { useFormatter, useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
 
 import { alpha, brand, motion, radius, shadows, surface } from '@shared/theme/tokens'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { financialStatusStyles } from '../config/financial-status-styles'
 import type { FinancialEntriesTableProps, FinancialEntry } from '../types/financial-entry'
+import { formatFinancialAmount } from '../utils/financial-display-currency'
 import { FinancialEntryDetailDialog } from './FinancialEntryDetailDialog'
 
 function FinancialStatusCell({
@@ -40,17 +42,13 @@ function FinancialStatusCell({
   )
 }
 
-export function FinancialEntriesTable({ entries }: FinancialEntriesTableProps) {
-  const format = useFormatter()
+export function FinancialEntriesTable({ entries, exchangeRate }: FinancialEntriesTableProps) {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('dashboard.finance.table')
   const statusT = useTranslations('dashboard.finance.statuses')
   const [selectedEntry, setSelectedEntry] = useState<FinancialEntry | null>(null)
   const formatCurrency = (value: number) =>
-    `${value > 0 ? '+' : '-'}${format.number(Math.abs(value), {
-      style: 'currency',
-      currency: 'BRL',
-      maximumFractionDigits: 0,
-    })}`
+    `${value > 0 ? '+' : '-'}${formatFinancialAmount(Math.abs(value), locale, exchangeRate, 0)}`
   const columns: GridColDef<FinancialEntry>[] = [
     {
       field: 'date',
@@ -189,6 +187,7 @@ export function FinancialEntriesTable({ entries }: FinancialEntriesTableProps) {
         entry={selectedEntry}
         open={Boolean(selectedEntry)}
         onClose={() => setSelectedEntry(null)}
+        exchangeRate={exchangeRate}
       />
     </Box>
   )

@@ -1,6 +1,9 @@
 import type { PublicProfileEditorFormValues } from '../schemas/public-profile-editor-schema'
 import type { BrokerProfile } from '../types/broker'
 import type { PublicBrokerProfile } from '../types/public-broker-profile'
+import type { AppLocale } from '@/i18n/types/locale.types'
+import type { PropertyText } from './property-presentation'
+import { formatCompactCurrency } from './search-results'
 
 export const emptyValues: PublicProfileEditorFormValues = {
   displayName: '',
@@ -69,12 +72,15 @@ export function toFormValues(profile: PublicBrokerProfile | null): PublicProfile
 export function toPreviewProfile(
   values: PublicProfileEditorFormValues,
   profile: PublicBrokerProfile | null,
+  locale: AppLocale,
+  t: PropertyText,
+  previewName: string,
 ): BrokerProfile {
   return {
     id: profile?.id ?? 'preview',
     agencyName: profile?.agencyName ?? '',
     email: profile?.email ?? '',
-    name: values.displayName || 'Seu nome',
+    name: values.displayName || previewName,
     headline: values.headline || null,
     creci: values.creci || null,
     avatar: values.avatarUrl || null,
@@ -95,7 +101,10 @@ export function toPreviewProfile(
     highlightedListings: (profile?.recentListings ?? []).map((listing) => ({
       title: listing.title,
       location: [listing.neighborhood, listing.city].filter(Boolean).join(', '),
-      price: String(listing.price),
+      price:
+        listing.purpose === 'ALUGUEL'
+          ? t('monthly', { price: formatCompactCurrency(listing.price, locale) })
+          : formatCompactCurrency(listing.price, locale),
       href: `/properties/${listing.id}`,
     })),
   }

@@ -1,7 +1,8 @@
 'use client'
 
 import { Box } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { salesPipelineStages } from '../config/sales-pipeline-stages'
 import type { SalesPipelineKanbanViewProps } from '../types/sales-pipeline'
@@ -14,6 +15,7 @@ export function SalesPipelineKanbanView({
   isPipelineLoading,
   hasPipelineError,
 }: SalesPipelineKanbanViewProps) {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('crm.pipeline')
 
   return (
@@ -49,6 +51,7 @@ export function SalesPipelineKanbanView({
           const projectedTotals = getProjectedTotals(
             opportunities.filter((opportunity) => opportunity.status !== 'RECUSADA'),
             propertiesById,
+            locale,
           )
 
           return (

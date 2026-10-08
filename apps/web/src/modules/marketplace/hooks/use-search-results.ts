@@ -4,7 +4,8 @@ import { useEffect, useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import {
   areaFilterOptions,
@@ -25,6 +26,7 @@ import type {
   ViewMode,
 } from '../types/search'
 import { mapSummaryToSearchResult } from '../utils/property-summary-adapter'
+import { formatPropertyArea, type PropertyText } from '../utils/property-presentation'
 import {
   formatCompactCurrency,
   getCurrencyValue,
@@ -65,6 +67,31 @@ function mapFixtureToSearchResult(
   return {
     ...property,
     purpose,
+  }
+}
+
+function localizeFixtureSearchResult(
+  property: SearchResultProperty,
+  locale: AppLocale,
+  t: PropertyText,
+): SearchResultProperty {
+  const price = formatCompactCurrency(getCurrencyValue(property.price), locale)
+
+  return {
+    ...property,
+    price: property.purpose === 'alugar' ? t('monthly', { price }) : price,
+    details: property.details.map((detail) => {
+      if (detail.key === 'area') {
+        return { ...detail, label: formatPropertyArea(getFeatureNumber(property, 'area'), locale) }
+      }
+      if (detail.key === 'bedrooms' || detail.key === 'bathrooms' || detail.key === 'parking') {
+        return {
+          ...detail,
+          label: t(detail.key, { count: getFeatureNumber(property, detail.key) }),
+        }
+      }
+      return detail
+    }),
   }
 }
 
@@ -113,7 +140,10 @@ function sortFixtureResults(properties: SearchResultProperty[], sortOption: Sort
 }
 
 export function useSearchResults({ purpose, initialLocation = '' }: SearchResultsPageProps) {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace.searchResults.errors')
+  const tFeatures = useTranslations('marketplace.propertyFeatures')
+  const tPrice = useTranslations('marketplace.searchResults.filters')
   const searchResultsFormSchema = useMemo(() => createSearchResultsFormSchema((key) => t(key)), [t])
   const { setValue, watch } = useForm<SearchResultsFormValues>({
     defaultValues: {
@@ -157,9 +187,12 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
   const minArea = customMinAreaValue > 0 ? customMinAreaValue : areaFilter.min
   const priceFilterLabel =
     customMaxPriceValue > 0
-      ? `Até ${formatCompactCurrency(customMaxPriceValue)}`
+      ? tPrice('upToPrice', { price: formatCompactCurrency(customMaxPriceValue, locale) })
       : priceFilter.label
-  const areaFilterLabel = customMinAreaValue > 0 ? `${customMinAreaValue}m²+` : areaFilter.label
+  const areaFilterLabel =
+    customMinAreaValue > 0
+      ? `${new Intl.NumberFormat(locale).format(customMinAreaValue)} m²+`
+      : areaFilter.label
 
   const searchFilters = {
     purpose: apiPurposeByPurpose[purpose],
@@ -210,10 +243,16 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
   ])
 
   const filteredResults = useMemo(() => {
-    if (fixtureMode) return fixtureResults
+    if (fixtureMode) {
+      return fixtureResults.map((property) =>
+        localizeFixtureSearchResult(property, locale, tFeatures),
+      )
+    }
 
-    return (propertiesQuery.data ?? []).map((summary) => mapSummaryToSearchResult(summary, purpose))
-  }, [fixtureMode, fixtureResults, propertiesQuery.data, purpose])
+    return (propertiesQuery.data ?? []).map((summary) =>
+      mapSummaryToSearchResult(summary, purpose, locale, tFeatures),
+    )
+  }, [fixtureMode, fixtureResults, propertiesQuery.data, purpose, locale, tFeatures])
 
   const totalPages = Math.max(1, Math.ceil(filteredResults.length / searchResultsPageSize))
   const safeCurrentPage = Math.min(currentPage, totalPages)
