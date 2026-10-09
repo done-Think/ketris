@@ -1,0 +1,163 @@
+import { Box, MenuItem, Stack, TextField } from '@mui/material'
+import { useTranslations } from 'next-intl'
+
+import { DashboardStatusFilterButton } from '@shared/components/layout'
+import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
+
+import { contactFilters } from '../../config/contact-filters'
+import type { ContactsStatusFiltersProps } from '../../types/contact'
+import { getContactFilterCount } from '../../utils/contacts'
+
+export function ContactsStatusFilters({
+  activeFilter,
+  contacts,
+  onFilterChange,
+}: ContactsStatusFiltersProps) {
+  const t = useTranslations('crm.contacts')
+  const activeCount = getContactFilterCount(contacts, activeFilter)
+
+  return (
+    <>
+      <TextField
+        select
+        size="small"
+        value={activeFilter}
+        onChange={(event) => onFilterChange(event.target.value as typeof activeFilter)}
+        sx={selectSx}
+        SelectProps={{
+          inputProps: { 'aria-label': t('filterAriaLabel') },
+          renderValue: () => (
+            <FilterOptionLabel
+              label={t(
+                `filters.${contactFilters.find((filter) => filter.label === activeFilter)?.labelKey ?? 'all'}`,
+              )}
+              count={activeCount}
+              active
+            />
+          ),
+          MenuProps: menuProps,
+        }}
+      >
+        {contactFilters.map(({ label, labelKey }) => {
+          const active = label === activeFilter
+          const count = getContactFilterCount(contacts, label)
+
+          return (
+            <MenuItem key={label} value={label} sx={menuItemSx(active)}>
+              <FilterOptionLabel label={t(`filters.${labelKey}`)} count={count} active={active} />
+            </MenuItem>
+          )
+        })}
+      </TextField>
+
+      <Stack
+        component="div"
+        role="group"
+        aria-label={t('filterAriaLabel')}
+        direction="row"
+        spacing={0.8}
+        useFlexGap
+        flexWrap="wrap"
+        sx={{ display: { xs: 'none', sm: 'flex' }, mb: -0.25 }}
+      >
+        {contactFilters.map(({ label, labelKey }) => {
+          const active = label === activeFilter
+          const count = getContactFilterCount(contacts, label)
+
+          return (
+            <DashboardStatusFilterButton
+              key={label}
+              active={active}
+              count={count}
+              onClick={() => onFilterChange(label)}
+            >
+              {t(`filters.${labelKey}`)}
+            </DashboardStatusFilterButton>
+          )
+        })}
+      </Stack>
+    </>
+  )
+}
+
+const selectSx = {
+  width: { xs: '100%', sm: 160 },
+  display: { xs: 'block', sm: 'none' },
+  '& .MuiOutlinedInput-root': {
+    minHeight: 46,
+    borderRadius: `${radius.sm}px`,
+    bgcolor: surface.paper,
+    color: brand.graphite[500],
+    fontSize: 18,
+    fontWeight: 800,
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: 'transparent',
+      borderWidth: 0,
+    },
+  },
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'transparent',
+    borderWidth: 0,
+  },
+  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'transparent',
+  },
+  '& .MuiSelect-select': {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 0.8,
+  },
+}
+
+const menuProps = {
+  PaperProps: {
+    sx: {
+      mt: 0.6,
+      borderRadius: `${radius.sm}px`,
+      boxShadow: shadows.popover,
+    },
+  },
+}
+
+function menuItemSx(active: boolean) {
+  return {
+    minHeight: 46,
+    bgcolor: active ? alpha.magenta[8] : 'transparent',
+    '&:hover': {
+      bgcolor: alpha.magenta[8],
+    },
+  }
+}
+
+function FilterOptionLabel({
+  active,
+  count,
+  label,
+}: {
+  active: boolean
+  count: number
+  label: string
+}) {
+  return (
+    <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+      <Box component="span">{label}</Box>
+      <Box
+        component="span"
+        sx={{
+          display: 'grid',
+          minWidth: 26,
+          height: 26,
+          placeItems: 'center',
+          px: 0.6,
+          borderRadius: `${radius.full}px`,
+          bgcolor: active ? brand.magenta[500] : alpha.graphite[6],
+          color: active ? surface.lightText : brand.neutral[500],
+          fontSize: 15,
+          fontWeight: 900,
+        }}
+      >
+        {count}
+      </Box>
+    </Box>
+  )
+}
