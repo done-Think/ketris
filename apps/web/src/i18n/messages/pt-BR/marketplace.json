@@ -185,9 +185,21 @@
   },
   "propertyDetail": {
     "condominium": "Condomínio {value}",
+    "condominiumNotInformed": "Condomínio não informado",
+    "notInformed": "Não informado",
     "scheduleVisit": "Agendar visita",
     "sendProposal": "Enviar proposta",
+    "favorite": "Favoritar",
+    "share": "Compartilhar",
+    "about": "Sobre o imóvel",
+    "location": "Localização",
     "brokerRole": "Corretor Ketris",
+    "features": {
+      "bedrooms": "{count, plural, one {# quarto} other {# quartos}}",
+      "bathrooms": "{count, plural, one {# banheiro} other {# banheiros}}",
+      "parking": "{count, plural, one {# vaga} other {# vagas}}",
+      "area": "{count}m²"
+    },
     "gallery": {
       "openGallery": "Abrir galeria de fotos do imóvel",
       "openPhoto": "Abrir foto {index} de {total}",

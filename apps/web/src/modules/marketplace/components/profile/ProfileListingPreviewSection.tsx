@@ -9,6 +9,7 @@ import { PillBadge } from '@shared/components/ui'
 import { iconSize, motion, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { ProfileListingPreviewSectionProps } from '../../types/profile-listings'
+import { getPropertyFeatureLabel } from '../../utils/property-feature-label'
 import { buildProfileListingHref } from '../../utils/property-links'
 
 export function ProfileListingPreviewSection({
@@ -20,6 +21,7 @@ export function ProfileListingPreviewSection({
   source,
 }: ProfileListingPreviewSectionProps) {
   const t = useTranslations('marketplace.publicProfile.listings')
+  const tDetail = useTranslations('marketplace.propertyDetail')
   const sideBorderStyles =
     sideBorderBreakpoint === 'lg'
       ? {
@@ -113,7 +115,7 @@ export function ProfileListingPreviewSection({
                       noWrap
                       sx={{ color: 'text.secondary', fontSize: 9.5, fontWeight: 700 }}
                     >
-                      {detail.label}
+                      {getPropertyFeatureLabel(detail, tDetail)}
                     </Typography>
                   ))}
                 </Box>

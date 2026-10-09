@@ -14,6 +14,7 @@ import { PillBadge } from '@shared/components/ui'
 import { alpha, componentText, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
 import type { PropertyFeatureKey } from '@shared/types'
 import type { SearchPropertyCardProps } from '../types/search'
+import { getPropertyFeatureLabel } from '../utils/property-feature-label'
 import { buildPropertyDetailHref } from '../utils/property-links'
 
 const detailIcons: Record<PropertyFeatureKey, typeof ApartmentOutlinedIcon> = {
@@ -30,6 +31,7 @@ export function SearchPropertyCard({
   viewMode = 'grid',
 }: SearchPropertyCardProps) {
   const t = useTranslations('marketplace.publicProfile')
+  const tDetail = useTranslations('marketplace.propertyDetail')
   const isListView = viewMode === 'list'
   const detailsHref = buildPropertyDetailHref(property.href, property.purpose)
 
@@ -104,7 +106,7 @@ export function SearchPropertyCard({
               >
                 <Icon sx={{ color: 'text.secondary', fontSize: iconSize.xs }} />
                 <Typography color="text.secondary" sx={componentText.cardMeta}>
-                  {detail.label}
+                  {getPropertyFeatureLabel(detail, tDetail)}
                 </Typography>
               </Stack>
             )

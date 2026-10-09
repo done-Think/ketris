@@ -7,10 +7,12 @@ import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlin
 import LocalParkingOutlinedIcon from '@mui/icons-material/LocalParkingOutlined'
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined'
+import { useTranslations } from 'next-intl'
 
 import { componentText, iconSize, radius, surface } from '@shared/theme/tokens'
 
 import type { PropertyOverviewProps } from '../../types/property-detail'
+import { getPropertyFeatureLabel } from '../../utils/property-feature-label'
 import { PropertyDetailMap } from '../PropertyDetailMap'
 
 const featureIcons = [
@@ -21,6 +23,8 @@ const featureIcons = [
 ]
 
 export function PropertyOverview({ property }: PropertyOverviewProps) {
+  const t = useTranslations('marketplace.propertyDetail')
+
   return (
     <>
       <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
@@ -47,10 +51,10 @@ export function PropertyOverview({ property }: PropertyOverviewProps) {
         }}
       >
         <Button startIcon={<FavoriteBorderOutlinedIcon />} variant="outlined" color="secondary">
-          Favoritar
+          {t('favorite')}
         </Button>
         <Button startIcon={<ShareOutlinedIcon />} variant="outlined" color="secondary">
-          Compartilhar
+          {t('share')}
         </Button>
       </Stack>
 
@@ -78,21 +82,23 @@ export function PropertyOverview({ property }: PropertyOverviewProps) {
               }}
             >
               <Icon sx={{ color: 'primary.main', fontSize: iconSize.lg, mb: 0.6 }} />
-              <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{detail.label}</Typography>
+              <Typography sx={{ fontSize: 13, fontWeight: 700 }}>
+                {getPropertyFeatureLabel(detail, t)}
+              </Typography>
             </Box>
           )
         })}
       </Box>
 
       <Typography variant="h5" sx={{ mb: 1.2 }}>
-        Sobre o imóvel
+        {t('about')}
       </Typography>
       <Typography sx={{ color: 'text.secondary', maxWidth: 820, mb: 4 }}>
         {property.description}
       </Typography>
 
       <Typography variant="h5" sx={{ mb: 1.2 }}>
-        Localização
+        {t('location')}
       </Typography>
       <Typography sx={{ color: 'text.secondary', mb: 1.4, fontWeight: 700 }}>
         {property.address}
