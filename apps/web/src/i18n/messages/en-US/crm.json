@@ -235,6 +235,7 @@
       "title": "Convert {name} to opportunity",
       "close": "Close lead conversion",
       "proposedValue": "Proposed value",
+      "propertyRequired": "Select a property.",
       "proposedValueInvalid": "Enter a valid value",
       "cancel": "Cancel",
       "confirm": "Convert",
