@@ -1,18 +1,19 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Box, GlobalStyles, Paper, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
+import { DashboardTablePagination } from '@shared/components/layout'
 import { brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { contactFilters } from '../config/contact-filters'
 import { contactListFixtures, contactsFixtureTotal } from '../fixtures/contact-list-fixtures'
 import type { ContactFilter, ContactsListProps } from '../types/contact'
-import { filterContacts } from '../utils/contacts'
+import { contactsDefaultPageSize, filterContacts, paginateContacts } from '../utils/contacts'
 import { ContactsCards } from './contacts-list/ContactsCards'
 import { ContactsHeader } from './contacts-list/ContactsHeader'
-import { ContactsPaginationFooter } from './contacts-list/ContactsPaginationFooter'
+import { ContactsStatusFilters } from './contacts-list/ContactsStatusFilters'
 import { ContactsTable } from './contacts-list/ContactsTable'
 
 const contactsBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
@@ -30,6 +31,9 @@ export function ContactsList({
   const t = useTranslations('crm.contacts')
   const [search, setSearch] = useState('')
   const [activeFilter, setActiveFilter] = useState<ContactFilter>('Todos')
+  const [internalPage, setInternalPage] = useState(page)
+  const [rowsPerPage, setRowsPerPage] = useState(contactsDefaultPageSize)
+  const currentPage = onPageChange ? page : internalPage
 
   const filteredContacts = useMemo(() => {
     const selectedType =
@@ -38,25 +42,49 @@ export function ContactsList({
   }, [activeFilter, contacts, search])
 
   const isDefaultView = activeFilter === 'Todos' && search.trim() === ''
-  const resultTotal = isDefaultView ? totalCount : filteredContacts.length
-  const firstVisible =
-    filteredContacts.length > 0 ? (isDefaultView ? (page - 1) * contacts.length + 1 : 1) : 0
-  const lastVisible =
-    filteredContacts.length > 0
-      ? isDefaultView
-        ? Math.min(firstVisible + filteredContacts.length - 1, resultTotal)
-        : filteredContacts.length
-      : 0
-  const canGoBack = isDefaultView && page > 1
-  const canGoForward =
-    isDefaultView &&
-    filteredContacts.length > 0 &&
-    firstVisible + filteredContacts.length <= resultTotal
+  const contactPage = useMemo(
+    () => paginateContacts(filteredContacts, currentPage, rowsPerPage),
+    [currentPage, filteredContacts, rowsPerPage],
+  )
+  const resultTotal = isDefaultView && onPageChange ? totalCount : contactPage.totalCount
+  const visibleContacts = contactPage.items
+
+  function handlePageChange(nextPage: number) {
+    if (onPageChange) {
+      onPageChange(nextPage)
+      return
+    }
+
+    setInternalPage(nextPage)
+  }
+
+  function resetPage() {
+    if (onPageChange) {
+      onPageChange(1)
+      return
+    }
+
+    setInternalPage(1)
+  }
+
+  function handleSearchChange(value: string) {
+    setSearch(value)
+    resetPage()
+  }
+
+  function handleFilterChange(filter: ContactFilter) {
+    setActiveFilter(filter)
+    resetPage()
+  }
+
+  useEffect(() => {
+    setInternalPage(page)
+  }, [page])
 
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        width: '100%',
         p: 3.5,
         bgcolor: surface.app,
         fontFamily: contactsBodyFontFamily,
@@ -70,19 +98,25 @@ export function ContactsList({
     >
       <GlobalStyles styles={{ '.tsqd-parent-container': { display: 'none' } }} />
 
-      <ContactsHeader
-        search={search}
-        activeFilter={activeFilter}
-        onSearchChange={setSearch}
-        onFilterChange={setActiveFilter}
-        onNewContact={onNewContact}
-      />
+      <Stack spacing={2}>
+        <ContactsHeader
+          search={search}
+          onSearchChange={handleSearchChange}
+          onNewContact={onNewContact}
+        />
+
+        <ContactsStatusFilters
+          activeFilter={activeFilter}
+          contacts={contacts}
+          onFilterChange={handleFilterChange}
+        />
+      </Stack>
 
       <Paper
         variant="outlined"
         sx={{
           display: 'flex',
-          minHeight: { xs: 520, md: 'calc(100vh - 118px)' },
+          minHeight: { xs: 420, md: 360 },
           mt: 2.25,
           overflow: 'hidden',
           flexDirection: 'column',
@@ -92,16 +126,16 @@ export function ContactsList({
           boxShadow: shadows.crmListPanel,
         }}
       >
-        {filteredContacts.length > 0 ? (
+        {visibleContacts.length > 0 ? (
           <>
             <ContactsTable
-              contacts={filteredContacts}
+              contacts={visibleContacts}
               onEditContact={onEditContact}
               onOpenInteractions={onOpenInteractions}
               onOpenMoreOptions={onOpenMoreOptions}
             />
             <ContactsCards
-              contacts={filteredContacts}
+              contacts={visibleContacts}
               onEditContact={onEditContact}
               onOpenInteractions={onOpenInteractions}
               onOpenMoreOptions={onOpenMoreOptions}
@@ -113,14 +147,15 @@ export function ContactsList({
           </Stack>
         )}
 
-        <ContactsPaginationFooter
-          firstVisible={firstVisible}
-          lastVisible={lastVisible}
-          resultTotal={resultTotal}
-          page={page}
-          canGoBack={canGoBack}
-          canGoForward={canGoForward}
-          onPageChange={onPageChange}
+        <DashboardTablePagination
+          count={resultTotal}
+          page={contactPage.page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={handlePageChange}
+          onRowsPerPageChange={(nextRowsPerPage) => {
+            setRowsPerPage(nextRowsPerPage)
+            resetPage()
+          }}
         />
       </Paper>
     </Box>
