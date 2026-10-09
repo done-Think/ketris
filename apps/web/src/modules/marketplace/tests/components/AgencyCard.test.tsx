@@ -33,7 +33,7 @@ const agency: AgencyCardProps = {
   email: 'parcerias@alamedaprime.com.br',
   address: 'Alameda Santos, 1320 - Jardins',
   summary: 'Operação focada em imóveis residenciais de alto padrão nos Jardins.',
-  href: '/agencies/alameda-prime',
+  href: '/agencies/alameda-prime-imoveis/38210',
   teamHighlights: [
     { usuarioId: 'marina-costa', name: 'Marina Costa', avatarUrl: null },
     { usuarioId: 'juliana-mendes', name: 'Juliana Mendes', avatarUrl: null },
@@ -72,7 +72,7 @@ describe('AgencyCard', () => {
     })
     const profileClick = vi.spyOn(profileLink, 'click').mockImplementation(() => undefined)
 
-    expect(profileLink).toHaveAttribute('href', '/imobiliarias/alameda-prime')
+    expect(profileLink).toHaveAttribute('href', '/imobiliarias/alameda-prime-imoveis/38210')
 
     fireEvent.click(screen.getAllByText('Alameda Prime Imóveis')[0])
 

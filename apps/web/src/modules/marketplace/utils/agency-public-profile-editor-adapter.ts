@@ -1,3 +1,5 @@
+import { buildAgencyPublicProfileHref } from '@shared/utils/public-profile-slug'
+
 import type { AgencyPublicProfileEditorFormValues } from '../schemas/agency-public-profile-editor-schema'
 import type { AgencyProfile } from '../types/agency'
 import type { PublicAgencyProfile } from '../types/public-agency-profile'
@@ -104,7 +106,9 @@ export function toPreviewProfile(
     phone: values.phone || null,
     email: values.email || null,
     summary: values.summary || null,
-    href: profile ? `/agencies/${profile.id}` : '',
+    href: profile
+      ? buildAgencyPublicProfileHref(values.displayName, values.legalCreci, profile.id)
+      : '',
     teamHighlights: values.team.map((member) => ({
       usuarioId: member.usuarioId,
       name: member.name,
