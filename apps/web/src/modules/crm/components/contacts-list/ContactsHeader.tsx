@@ -1,6 +1,6 @@
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
-import { Box, InputAdornment, MenuItem, Stack, TextField } from '@mui/material'
+import { Box, InputAdornment, Stack, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import {
@@ -10,16 +10,9 @@ import {
 } from '@shared/components/layout'
 import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
-import { contactFilters } from '../../config/contact-filters'
 import type { ContactsHeaderProps } from '../../types/contact'
 
-export function ContactsHeader({
-  search,
-  activeFilter,
-  onSearchChange,
-  onFilterChange,
-  onNewContact,
-}: ContactsHeaderProps) {
+export function ContactsHeader({ search, onSearchChange, onNewContact }: ContactsHeaderProps) {
   const t = useTranslations('crm.contacts')
 
   const actions = (
@@ -57,37 +50,6 @@ export function ContactsHeader({
           },
         }}
       />
-
-      <TextField
-        select
-        size="small"
-        value={activeFilter}
-        onChange={(event) => onFilterChange(event.target.value as typeof activeFilter)}
-        sx={{
-          width: { xs: '100%', sm: 190 },
-          '& .MuiInputBase-root': {
-            height: { xs: 40, sm: 32 },
-            borderRadius: `${radius.sm}px`,
-            bgcolor: surface.paper,
-            color: brand.graphite[500],
-            fontSize: 12,
-          },
-          '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: alpha.graphite[8],
-          },
-        }}
-        SelectProps={{
-          inputProps: { 'aria-label': t('filterAriaLabel') },
-        }}
-      >
-        {contactFilters.map(({ label, labelKey }) => {
-          return (
-            <MenuItem key={label} value={label}>
-              {t(`filters.${labelKey}`)}
-            </MenuItem>
-          )
-        })}
-      </TextField>
 
       <DashboardHeaderActionButton
         startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
