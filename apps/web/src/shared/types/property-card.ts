@@ -9,6 +9,7 @@ export type PropertyCardData = {
   details: Array<{
     key: PropertyFeatureKey
     label: string
+    value?: number
   }>
   broker: string
   avatar: string

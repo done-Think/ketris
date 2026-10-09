@@ -176,6 +176,11 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
             backgroundColor={surface.app}
             hoverBorderColor="primary.main"
             listings={highlightedListings}
+            source={{
+              href: brokerCardProps.href,
+              name: brokerCardProps.name,
+              type: 'broker',
+            }}
           />
         ) : null}
 

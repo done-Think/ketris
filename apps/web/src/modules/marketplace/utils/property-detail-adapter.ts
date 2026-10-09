@@ -8,23 +8,25 @@ const fallbackImage =
 
 const fallbackMapCenter = { latitude: -23.5505, longitude: -46.6333 }
 
-function pluralize(count: number, singular: string, plural: string) {
-  return `${count} ${count === 1 ? singular : plural}`
-}
-
 function buildDetails(property: PublicPropertyDetail): SearchResultProperty['details'] {
   const details: SearchResultProperty['details'] = []
 
   if (property.bedrooms)
-    details.push({ key: 'bedrooms', label: pluralize(property.bedrooms, 'quarto', 'quartos') })
+    details.push({ key: 'bedrooms', label: String(property.bedrooms), value: property.bedrooms })
   if (property.bathrooms)
     details.push({
       key: 'bathrooms',
-      label: pluralize(property.bathrooms, 'banheiro', 'banheiros'),
+      label: String(property.bathrooms),
+      value: property.bathrooms,
     })
   if (property.parkingSpots)
-    details.push({ key: 'parking', label: pluralize(property.parkingSpots, 'vaga', 'vagas') })
-  if (property.area) details.push({ key: 'area', label: `${property.area}m²` })
+    details.push({
+      key: 'parking',
+      label: String(property.parkingSpots),
+      value: property.parkingSpots,
+    })
+  if (property.area)
+    details.push({ key: 'area', label: `${property.area}m²`, value: property.area })
 
   return details
 }
@@ -66,7 +68,7 @@ export function mapDetailToMarketplacePropertyDetail(
     location: buildLocation(property),
     title: property.title,
     category: property.propertyType,
-    condominium: property.condoFee ? formatCompactCurrency(property.condoFee) : 'Não informado',
+    condominium: property.condoFee ? formatCompactCurrency(property.condoFee) : '',
     price: buildPrice(property),
     details: buildDetails(property),
     description: property.description ?? '',

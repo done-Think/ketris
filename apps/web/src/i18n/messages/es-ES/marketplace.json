@@ -185,9 +185,21 @@
   },
   "propertyDetail": {
     "condominium": "Condominio {value}",
+    "condominiumNotInformed": "Condominio no informado",
+    "notInformed": "No informado",
     "scheduleVisit": "Agendar visita",
     "sendProposal": "Enviar propuesta",
+    "favorite": "Favorito",
+    "share": "Compartir",
+    "about": "Sobre el inmueble",
+    "location": "Ubicación",
     "brokerRole": "Corredor Ketris",
+    "features": {
+      "bedrooms": "{count, plural, one {# dormitorio} other {# dormitorios}}",
+      "bathrooms": "{count, plural, one {# baño} other {# baños}}",
+      "parking": "{count, plural, one {# plaza} other {# plazas}}",
+      "area": "{count}m²"
+    },
     "gallery": {
       "openGallery": "Abrir galería de fotos del inmueble",
       "openPhoto": "Abrir foto {index} de {total}",

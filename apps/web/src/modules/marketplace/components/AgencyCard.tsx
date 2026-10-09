@@ -144,6 +144,11 @@ export function AgencyCard(agency: AgencyCardProps) {
             hoverBorderColor={agency.brand.primaryColor ?? ''}
             listings={featuredListings}
             sideBorderBreakpoint="lg"
+            source={{
+              href: agency.href,
+              name: agency.name,
+              type: 'agency',
+            }}
           />
         ) : null}
 

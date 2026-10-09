@@ -185,9 +185,21 @@
   },
   "propertyDetail": {
     "condominium": "Condo fee {value}",
+    "condominiumNotInformed": "Condo fee not informed",
+    "notInformed": "Not informed",
     "scheduleVisit": "Schedule visit",
     "sendProposal": "Send proposal",
+    "favorite": "Favorite",
+    "share": "Share",
+    "about": "About the property",
+    "location": "Location",
     "brokerRole": "Ketris broker",
+    "features": {
+      "bedrooms": "{count, plural, one {# bedroom} other {# bedrooms}}",
+      "bathrooms": "{count, plural, one {# bathroom} other {# bathrooms}}",
+      "parking": "{count, plural, one {# parking space} other {# parking spaces}}",
+      "area": "{count}m²"
+    },
     "gallery": {
       "openGallery": "Open property photo gallery",
       "openPhoto": "Open photo {index} of {total}",

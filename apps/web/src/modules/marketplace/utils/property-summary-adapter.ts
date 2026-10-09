@@ -2,20 +2,24 @@ import type { PublicPropertySummary } from '../types/public-property'
 import type { SearchResultProperty, SearchResultPurpose } from '../types/search'
 import { formatCompactCurrency } from './search-results'
 
-function pluralize(count: number, singular: string, plural: string) {
-  return `${count} ${count === 1 ? singular : plural}`
-}
-
 function buildDetails(summary: PublicPropertySummary): SearchResultProperty['details'] {
   const details: SearchResultProperty['details'] = []
 
   if (summary.bedrooms)
-    details.push({ key: 'bedrooms', label: pluralize(summary.bedrooms, 'quarto', 'quartos') })
+    details.push({ key: 'bedrooms', label: String(summary.bedrooms), value: summary.bedrooms })
   if (summary.bathrooms)
-    details.push({ key: 'bathrooms', label: pluralize(summary.bathrooms, 'banheiro', 'banheiros') })
+    details.push({
+      key: 'bathrooms',
+      label: String(summary.bathrooms),
+      value: summary.bathrooms,
+    })
   if (summary.parkingSpots)
-    details.push({ key: 'parking', label: pluralize(summary.parkingSpots, 'vaga', 'vagas') })
-  if (summary.area) details.push({ key: 'area', label: `${summary.area}m²` })
+    details.push({
+      key: 'parking',
+      label: String(summary.parkingSpots),
+      value: summary.parkingSpots,
+    })
+  if (summary.area) details.push({ key: 'area', label: `${summary.area}m²`, value: summary.area })
 
   return details
 }
