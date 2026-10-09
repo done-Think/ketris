@@ -95,8 +95,8 @@ export function buildPublicProfileHref(
 
   if (slug && creci) {
     return {
-      pathname: '/agencies/[slug]/[creci]',
-      params: { slug, creci },
+      pathname: '/agencies/[id]/[creci]',
+      params: { id: slug, creci },
     }
   }
 

@@ -25,10 +25,10 @@ const getAgency = cache(async (slug: string, creci: string) => {
 
 export async function generateMetadata({
   params,
-}: LocaleRoutePageProps<{ slug: string; creci: string }>) {
-  const { creci, locale, slug } = await params
+}: LocaleRoutePageProps<{ id: string; creci: string }>) {
+  const { creci, id, locale } = await params
   const t = await getTranslations({ locale, namespace: 'marketplace.metadata' })
-  const agency = await getAgency(slug, creci)
+  const agency = await getAgency(id, creci)
 
   if (!agency) {
     return {
@@ -48,9 +48,9 @@ export async function generateMetadata({
 
 export default async function AgencySlugPage({
   params,
-}: LocaleRoutePageProps<{ slug: string; creci: string }>) {
-  const { creci, slug } = await params
-  const agency = await getAgency(slug, creci)
+}: LocaleRoutePageProps<{ id: string; creci: string }>) {
+  const { creci, id } = await params
+  const agency = await getAgency(id, creci)
 
   if (!agency) notFound()
 
