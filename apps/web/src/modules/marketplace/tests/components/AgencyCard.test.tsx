@@ -80,7 +80,10 @@ describe('AgencyCard', () => {
 
     const listingLink = screen.getByRole('link', { name: /R\$ 1\.420\.000/i })
 
-    expect(listingLink).toHaveAttribute('href', '/imoveis/apartamento-jardins-venda')
+    expect(listingLink).toHaveAttribute(
+      'href',
+      '/imoveis/apartamento-jardins-venda?source=agency&sourceHref=%2Fagencies%2Falameda-prime&sourceName=Alameda+Prime+Im%C3%B3veis',
+    )
 
     listingLink.addEventListener('click', (event) => event.preventDefault())
     fireEvent.click(listingLink)

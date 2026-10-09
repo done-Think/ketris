@@ -35,4 +35,5 @@ export type ProfileListingPreviewSectionProps = {
   hoverBorderColor: string
   listings: PublicProfileListing[]
   sideBorderBreakpoint?: 'lg' | 'md'
+  source?: PublicProfileSource
 }

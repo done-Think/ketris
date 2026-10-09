@@ -17,6 +17,7 @@ export function ProfileListingPreviewSection({
   hoverBorderColor,
   listings,
   sideBorderBreakpoint = 'md',
+  source,
 }: ProfileListingPreviewSectionProps) {
   const t = useTranslations('marketplace.publicProfile.listings')
   const sideBorderStyles =
@@ -57,7 +58,7 @@ export function ProfileListingPreviewSection({
         {listings.map((listing) => (
           <Box
             component={Link}
-            href={buildProfileListingHref(listing.href)}
+            href={buildProfileListingHref(listing.href, source)}
             key={listing.href}
             sx={{
               display: 'block',
