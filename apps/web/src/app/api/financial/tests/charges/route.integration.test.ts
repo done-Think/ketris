@@ -13,6 +13,7 @@ import {
   PATCH as patchCharge,
 } from '../../charges/[id]/route'
 import { GET, POST } from '../../charges/route'
+import { GET as getSummary } from '../../summary/route'
 
 describe('/api/financial/charges (integração)', () => {
   const tokenService = new JoseTokenService()
@@ -422,5 +423,15 @@ describe('/api/financial/charges (integração)', () => {
     )
 
     expect(confirmResponse.status).toBe(404)
+  })
+
+  it('calcula a taxa de ocupação no resumo financeiro a partir dos imóveis de aluguel', async () => {
+    const response = await getSummary(
+      buildRequest('http://localhost/api/financial/summary', 'GET', undefined, actorToken),
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(json.occupancyRatePercentage).toBe(100)
   })
 })

@@ -314,7 +314,8 @@
     "kpis": {
       "receivable": "A receber",
       "delinquency": "Inadimplência",
-      "defaultRate": "Taxa de inadimplência"
+      "defaultRate": "Taxa de inadimplência",
+      "occupancyRate": "Taxa de ocupação"
     },
     "history": {
       "eyebrow": "Histórico financeiro",

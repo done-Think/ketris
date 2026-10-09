@@ -258,6 +258,8 @@ export class PrismaChargeRepository implements ChargeRepository {
       totalReceivableAggregate,
       seriesRows,
       upcomingRows,
+      rentedPropertiesCount,
+      listedPropertiesCount,
     ] = await Promise.all([
       prisma.cobranca.aggregate({
         _sum: { valor: true },
@@ -290,12 +292,24 @@ export class PrismaChargeRepository implements ChargeRepository {
         take: 5,
         include: chargeInclude,
       }),
+      prisma.imovel.count({
+        where: { tenantId, finalidade: { in: ['ALUGUEL', 'AMBOS'] }, status: 'RENTED' },
+      }),
+      prisma.imovel.count({
+        where: {
+          tenantId,
+          finalidade: { in: ['ALUGUEL', 'AMBOS'] },
+          status: { in: ['PUBLISHED', 'RENTED'] },
+        },
+      }),
     ])
 
     const monthlyReceivable = monthlyReceivableAggregate._sum.valor?.toNumber() ?? 0
     const overdueTotal = overdueAggregate._sum.valor?.toNumber() ?? 0
     const totalReceivable = totalReceivableAggregate._sum.valor?.toNumber() ?? 0
     const defaultRatePercentage = totalReceivable > 0 ? (overdueTotal / totalReceivable) * 100 : 0
+    const occupancyRatePercentage =
+      listedPropertiesCount > 0 ? (rentedPropertiesCount / listedPropertiesCount) * 100 : 0
 
     const monthlySeries: FinancialMonthlyTotal[] = Array.from({ length: 6 }, (_, index) => {
       const date = new Date(referenceDate.getFullYear(), referenceDate.getMonth() - (5 - index), 1)
@@ -329,6 +343,13 @@ export class PrismaChargeRepository implements ChargeRepository {
       }
     })
 
-    return { monthlyReceivable, overdueTotal, defaultRatePercentage, monthlySeries, upcomingDues }
+    return {
+      monthlyReceivable,
+      overdueTotal,
+      defaultRatePercentage,
+      occupancyRatePercentage,
+      monthlySeries,
+      upcomingDues,
+    }
   }
 }

@@ -314,7 +314,8 @@
     "kpis": {
       "receivable": "Por cobrar",
       "delinquency": "Morosidad",
-      "defaultRate": "Tasa de morosidad"
+      "defaultRate": "Tasa de morosidad",
+      "occupancyRate": "Tasa de ocupación"
     },
     "history": {
       "eyebrow": "Historial financiero",

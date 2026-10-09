@@ -51,6 +51,7 @@ function createRepository(overrides?: Partial<ChargeRepository>): ChargeReposito
       monthlyReceivable: 0,
       overdueTotal: 0,
       defaultRatePercentage: 0,
+      occupancyRatePercentage: 0,
       monthlySeries: [],
       upcomingDues: [],
     }),

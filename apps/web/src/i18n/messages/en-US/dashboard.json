@@ -314,7 +314,8 @@
     "kpis": {
       "receivable": "Receivable",
       "delinquency": "Delinquency",
-      "defaultRate": "Default rate"
+      "defaultRate": "Default rate",
+      "occupancyRate": "Occupancy rate"
     },
     "history": {
       "eyebrow": "Financial history",
