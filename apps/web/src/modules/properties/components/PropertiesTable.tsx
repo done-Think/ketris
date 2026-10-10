@@ -283,8 +283,12 @@ export function PropertiesTable({
           border: 0,
           minHeight: emptyInventory ? 360 : 'auto',
           overflow: 'hidden',
+          borderRadius: `${radius.sm}px`,
           '& .MuiDataGrid-main': {
             overflow: 'hidden',
+          },
+          '& .MuiDataGrid-topContainer': {
+            bgcolor: surface.paper,
           },
           '& .MuiDataGrid-columnHeaders': {
             bgcolor: surface.paper,
