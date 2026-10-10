@@ -235,6 +235,7 @@
       "title": "Convertir a {name} en oportunidad",
       "close": "Cerrar conversión de lead",
       "proposedValue": "Valor propuesto",
+      "propertyRequired": "Selecciona un inmueble.",
       "proposedValueInvalid": "Indica un valor válido",
       "cancel": "Cancelar",
       "confirm": "Convertir",
