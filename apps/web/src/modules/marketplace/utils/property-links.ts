@@ -25,6 +25,10 @@ function getHrefLastSegment(href: string) {
   return href.split('?')[0].split('/').filter(Boolean).at(-1) ?? ''
 }
 
+function getHrefSegments(href: string) {
+  return href.split('?')[0].split('/').filter(Boolean)
+}
+
 export function getPropertyDetailId(href: string): string | null {
   if (!href.startsWith(`${propertyListingPathname}/`)) return null
 
@@ -81,6 +85,18 @@ export function buildPublicProfileHref(
     return {
       pathname: '/brokers/[id]',
       params: { id },
+    }
+  }
+
+  const segments = getHrefSegments(href)
+  const agencyIndex = segments.indexOf('agencies')
+  const slug = agencyIndex >= 0 ? segments[agencyIndex + 1] : null
+  const creci = agencyIndex >= 0 ? segments[agencyIndex + 2] : null
+
+  if (slug && creci) {
+    return {
+      pathname: '/agencies/[id]/[creci]',
+      params: { id: slug, creci },
     }
   }
 

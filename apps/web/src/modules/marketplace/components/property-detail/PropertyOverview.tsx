@@ -22,8 +22,19 @@ const featureIcons = [
   SquareFootOutlinedIcon,
 ]
 
+const propertyCategoryKeys = {
+  apartamento: 'apartment',
+  casa: 'house',
+  studio: 'studio',
+  cobertura: 'penthouse',
+  comercial: 'commercial',
+  loft: 'loft',
+} as const
+
 export function PropertyOverview({ property }: PropertyOverviewProps) {
   const t = useTranslations('marketplace.propertyDetail')
+  const normalizedCategory = property.category.trim().toLocaleLowerCase('pt-BR')
+  const categoryKey = propertyCategoryKeys[normalizedCategory as keyof typeof propertyCategoryKeys]
 
   return (
     <>
@@ -32,7 +43,7 @@ export function PropertyOverview({ property }: PropertyOverviewProps) {
           {property.location}
         </Typography>
         <Typography sx={{ color: 'text.secondary', fontSize: 12, fontWeight: 700 }}>
-          / {property.category}
+          / {categoryKey ? t(`categories.${categoryKey}`) : property.category}
         </Typography>
       </Stack>
 

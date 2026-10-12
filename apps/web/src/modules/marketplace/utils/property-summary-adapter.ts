@@ -1,5 +1,7 @@
 import type { PublicPropertySummary } from '../types/public-property'
 import type { SearchResultProperty, SearchResultPurpose } from '../types/search'
+import type { AppLocale } from '@/i18n/types/locale.types'
+import type { PropertyText } from './property-presentation'
 import { formatCompactCurrency } from './search-results'
 
 function buildDetails(summary: PublicPropertySummary): SearchResultProperty['details'] {
@@ -28,15 +30,17 @@ function buildLocation(summary: PublicPropertySummary): string {
   return [summary.neighborhood, summary.city].filter(Boolean).join(', ')
 }
 
-function buildPrice(summary: PublicPropertySummary): string {
-  const formatted = formatCompactCurrency(summary.price)
+function buildPrice(summary: PublicPropertySummary, locale: AppLocale, t: PropertyText): string {
+  const formatted = formatCompactCurrency(summary.price, locale)
 
-  return summary.purpose === 'ALUGUEL' ? `${formatted} / mês` : formatted
+  return summary.purpose === 'ALUGUEL' ? t('monthly', { price: formatted }) : formatted
 }
 
 export function mapSummaryToSearchResult(
   summary: PublicPropertySummary,
   purpose: SearchResultPurpose,
+  locale: AppLocale,
+  t: PropertyText,
 ): SearchResultProperty {
   return {
     id: summary.id,
@@ -44,7 +48,7 @@ export function mapSummaryToSearchResult(
     image: summary.coverUrl ?? '',
     location: buildLocation(summary),
     title: summary.title,
-    price: buildPrice(summary),
+    price: buildPrice(summary, locale, t),
     details: buildDetails(summary),
     broker: summary.brokerName ?? '',
     avatar: summary.brokerAvatarUrl ?? '',

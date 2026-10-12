@@ -11,24 +11,26 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import { useFormatter, useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
 import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { financialStatusStyles } from '../config/financial-status-styles'
 import type { FinancialDueHistoryDialogProps } from '../types/financial-entry'
+import { formatFinancialAmount } from '../utils/financial-display-currency'
 
-export function FinancialDueHistoryDialog({ due, onClose, open }: FinancialDueHistoryDialogProps) {
-  const format = useFormatter()
+export function FinancialDueHistoryDialog({
+  due,
+  onClose,
+  open,
+  exchangeRate,
+}: FinancialDueHistoryDialogProps) {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('dashboard.finance.history')
   const statusT = useTranslations('dashboard.finance.statuses')
-  const formatCurrency = (value: number) =>
-    format.number(value, {
-      style: 'currency',
-      currency: 'BRL',
-      maximumFractionDigits: 0,
-    })
+  const formatCurrency = (value: number) => formatFinancialAmount(value, locale, exchangeRate, 0)
 
   if (!due) return null
 

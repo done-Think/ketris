@@ -1,8 +1,10 @@
 import { Box, Skeleton, Stack } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 export function DetailLoading() {
+  const t = useTranslations('crm.opportunityDetail')
   return (
-    <Box sx={{ p: { xs: 2, md: 3.5 } }} aria-label="Carregando oportunidade">
+    <Box sx={{ p: { xs: 2, md: 3.5 } }} aria-label={t('loadingAriaLabel')}>
       <Skeleton width={180} height={24} />
       <Stack direction="row" justifyContent="space-between" sx={{ mt: 1, mb: 3 }}>
         <Skeleton width="42%" height={48} />

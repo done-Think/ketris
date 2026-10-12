@@ -11,3 +11,5 @@ dev.log
 cypress/videos
 cypress/screenshots
 .turbo
+.local
+apps/web/.local

@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 import { useSnackbar } from 'notistack'
 
 import {
@@ -11,7 +12,7 @@ import {
   useCreateContact,
   useUpdateContact,
 } from '../hooks/use-contacts'
-import { contactListFixtures, contactsFixtureTotal } from '../fixtures/contact-list-fixtures'
+import { getContactListFixtures, contactsFixtureTotal } from '../fixtures/contact-list-fixtures'
 import type { ContactFormValues } from '../schemas/contact-schema'
 import type { ApiContactListItem, ContactListItem } from '../types/contact'
 import { mapContactToListItem } from '../utils/contact-adapter'
@@ -21,6 +22,7 @@ import { ArchiveContactDialog } from './contacts-list/ArchiveContactDialog'
 import { ContactFormDialog } from './contacts-list/ContactFormDialog'
 
 export function ContactsPage() {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('crm.contacts')
   const { data: session } = useSession()
   const tenantId = session?.tenantId ?? ''
@@ -40,7 +42,9 @@ export function ContactsPage() {
     process.env.NODE_ENV !== 'production' &&
     !contactsQuery.isLoading &&
     (contactsQuery.isError || apiContacts.length === 0)
-  const contacts = fixtureMode ? contactListFixtures : apiContacts.map(mapContactToListItem)
+  const contacts = fixtureMode
+    ? getContactListFixtures(locale)
+    : apiContacts.map((contact) => mapContactToListItem(contact, locale))
   const totalCount = fixtureMode ? contactsFixtureTotal : contacts.length
 
   function findRawContact(item: ContactListItem): ApiContactListItem | undefined {
@@ -86,7 +90,12 @@ export function ContactsPage() {
       }
       setFormOpen(false)
     } catch (error) {
-      enqueueSnackbar(errorMessage(error, t('contactForm.saveError')), { variant: 'error' })
+      enqueueSnackbar(
+        errorMessage(error, t('contactForm.saveError'), {
+          CONTACT_EMAIL_ALREADY_EXISTS: t('contactForm.emailAlreadyExists'),
+        }),
+        { variant: 'error' },
+      )
     }
   }
 

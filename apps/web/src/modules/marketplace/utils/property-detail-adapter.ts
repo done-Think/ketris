@@ -1,6 +1,8 @@
 import type { PublicPropertyDetail } from '../types/public-property'
 import type { MarketplacePropertyDetail } from '../types/property-detail'
 import type { SearchResultProperty } from '../types/search'
+import type { AppLocale } from '@/i18n/types/locale.types'
+import type { PropertyText } from './property-presentation'
 import { formatCompactCurrency } from './search-results'
 
 const fallbackImage =
@@ -35,10 +37,10 @@ function buildLocation(property: PublicPropertyDetail): string {
   return [property.neighborhood, property.city].filter(Boolean).join(', ')
 }
 
-function buildPrice(property: PublicPropertyDetail): string {
-  const formatted = formatCompactCurrency(property.price)
+function buildPrice(property: PublicPropertyDetail, locale: AppLocale, t: PropertyText): string {
+  const formatted = formatCompactCurrency(property.price, locale)
 
-  return property.purpose === 'ALUGUEL' ? `${formatted} / mês` : formatted
+  return property.purpose === 'ALUGUEL' ? t('monthly', { price: formatted }) : formatted
 }
 
 function buildAddressLine(property: PublicPropertyDetail): string {
@@ -59,6 +61,8 @@ function buildGallery(property: PublicPropertyDetail): string[] {
 
 export function mapDetailToMarketplacePropertyDetail(
   property: PublicPropertyDetail,
+  locale: AppLocale,
+  t: PropertyText,
 ): MarketplacePropertyDetail {
   return {
     id: property.id,
@@ -68,8 +72,8 @@ export function mapDetailToMarketplacePropertyDetail(
     location: buildLocation(property),
     title: property.title,
     category: property.propertyType,
-    condominium: property.condoFee ? formatCompactCurrency(property.condoFee) : '',
-    price: buildPrice(property),
+    condominium: property.condoFee ? formatCompactCurrency(property.condoFee, locale) : '',
+    price: buildPrice(property, locale, t),
     details: buildDetails(property),
     description: property.description ?? '',
     address: buildAddressLine(property),
