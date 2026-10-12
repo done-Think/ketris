@@ -51,6 +51,7 @@ export function ProfileListingPreviewSection({
         sx={{
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+          alignContent: 'start',
           gap: 1,
         }}
       >
@@ -78,7 +79,7 @@ export function ProfileListingPreviewSection({
             <Box
               sx={{
                 position: 'relative',
-                height: 118,
+                height: { xs: 112, lg: 92 },
                 bgcolor: surface.paper,
                 backgroundImage: listing.image ? `url("${listing.image}")` : undefined,
                 backgroundPosition: 'center',
@@ -89,12 +90,12 @@ export function ProfileListingPreviewSection({
                 <PillBadge>{t('featured')}</PillBadge>
               </Box>
             </Box>
-            <Box sx={{ minWidth: 0, px: 1, py: 0.75 }}>
+            <Box sx={{ minWidth: 0, px: 1, py: 0.65 }}>
               <Typography noWrap sx={{ color: 'text.secondary', fontSize: 10, fontWeight: 900 }}>
                 {listing.location}
               </Typography>
               <Stack direction="row" alignItems="end" justifyContent="space-between" spacing={1}>
-                <Typography noWrap sx={{ color: accentColor, fontSize: 14, fontWeight: 900 }}>
+                <Typography noWrap sx={{ color: accentColor, fontSize: 13, fontWeight: 900 }}>
                   {listing.price}
                 </Typography>
                 <Box

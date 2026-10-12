@@ -64,6 +64,13 @@ export type ContactListItem = {
   avatarUrl: string
 }
 
+export type ContactsPageResult = {
+  items: ContactListItem[]
+  page: number
+  pageCount: number
+  totalCount: number
+}
+
 export type ContactFilter = 'Todos' | 'Proprietários' | 'Locatários' | 'Corretores'
 
 export type ContactsListProps = {
@@ -100,20 +107,14 @@ export type ContactsCardsProps = ContactsTableProps
 
 export type ContactsHeaderProps = {
   search: string
-  activeFilter: ContactFilter
   onSearchChange: (search: string) => void
-  onFilterChange: (filter: ContactFilter) => void
   onNewContact?: () => void
 }
 
-export type ContactsPaginationFooterProps = {
-  firstVisible: number
-  lastVisible: number
-  resultTotal: number
-  page: number
-  canGoBack: boolean
-  canGoForward: boolean
-  onPageChange?: (page: number) => void
+export type ContactsStatusFiltersProps = {
+  activeFilter: ContactFilter
+  contacts: readonly ContactListItem[]
+  onFilterChange: (filter: ContactFilter) => void
 }
 
 export type ArchiveContactDialogProps = {

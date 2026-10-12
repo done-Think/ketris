@@ -1,6 +1,7 @@
 'use client'
 
 import { Box } from '@mui/material'
+import { useTranslations } from 'next-intl'
 import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre'
 
 import { env } from '@config/env'
@@ -12,6 +13,7 @@ const defaultMapStyleUrl = 'https://basemaps.cartocdn.com/gl/positron-gl-style/s
 const mapContainerStyle = { width: '100%', height: '100%' } as const
 
 export function PropertyDetailMap({ latitude, longitude }: PropertyDetailMapProps) {
+  const t = useTranslations('marketplace.searchResults.map')
   const mapStyleUrl =
     env.mapStyleUrl && !env.mapStyleUrl.includes('demotiles') ? env.mapStyleUrl : defaultMapStyleUrl
 
@@ -26,6 +28,12 @@ export function PropertyDetailMap({ latitude, longitude }: PropertyDetailMapProp
       }}
     >
       <Map
+        locale={{
+          'Map.Title': t('title'),
+          'NavigationControl.ZoomIn': t('zoomIn'),
+          'NavigationControl.ZoomOut': t('zoomOut'),
+          'AttributionControl.ToggleAttribution': t('attribution'),
+        }}
         initialViewState={{ latitude, longitude, zoom: 13.5 }}
         mapStyle={mapStyleUrl}
         style={mapContainerStyle}

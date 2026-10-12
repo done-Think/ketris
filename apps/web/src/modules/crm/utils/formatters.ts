@@ -1,41 +1,51 @@
-const currencyFormatter = new Intl.NumberFormat('pt-BR', {
-  style: 'currency',
-  currency: 'BRL',
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 2,
-})
+import { defaultLocale } from '@/i18n/routing'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
-const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
-  day: '2-digit',
-  month: 'short',
-  year: 'numeric',
-  timeZone: 'UTC',
-})
-
-const relativeTimeFormatter = new Intl.RelativeTimeFormat('pt-BR', { numeric: 'auto' })
-
-export function formatCurrency(value: number): string {
-  return currencyFormatter.format(value)
+const monthlySuffixByLocale: Record<AppLocale, string> = {
+  'pt-BR': '/mês',
+  'en-US': '/month',
+  'es-ES': '/mes',
 }
 
-export function formatMonthlyCurrency(value: number): string {
-  return `${formatCurrency(value)}/mês`
+export function formatCurrency(value: number, locale: AppLocale = defaultLocale): string {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(value)
 }
 
-export function formatDate(value: string | Date): string {
-  return dateFormatter.format(new Date(value))
+export function formatMonthlyCurrency(value: number, locale: AppLocale = defaultLocale): string {
+  return `${formatCurrency(value, locale)}${monthlySuffixByLocale[locale]}`
 }
 
-export function formatRelativeDate(value: string | Date, now = new Date()): string {
+export function formatDate(value: string | Date, locale: AppLocale = defaultLocale): string {
+  return new Intl.DateTimeFormat(locale, {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(value))
+}
+
+export function formatRelativeDate(
+  value: string | Date,
+  now = new Date(),
+  locale: AppLocale = defaultLocale,
+): string {
   const target = new Date(value)
   const differenceInSeconds = Math.round((target.getTime() - now.getTime()) / 1000)
   const absoluteSeconds = Math.abs(differenceInSeconds)
 
-  if (absoluteSeconds < 60) return 'agora'
+  if (absoluteSeconds < 60) {
+    return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(0, 'second')
+  }
 
   const units = [
     { unit: 'year', seconds: 31_536_000 },
     { unit: 'month', seconds: 2_592_000 },
+    { unit: 'week', seconds: 604_800 },
     { unit: 'day', seconds: 86_400 },
     { unit: 'hour', seconds: 3_600 },
     { unit: 'minute', seconds: 60 },
@@ -44,7 +54,9 @@ export function formatRelativeDate(value: string | Date, now = new Date()): stri
   const selected = units.find(({ seconds }) => absoluteSeconds >= seconds) ?? units.at(-1)!
   const amount = Math.round(differenceInSeconds / selected.seconds)
 
-  return relativeTimeFormatter.format(amount, selected.unit)
+  return new Intl.RelativeTimeFormat(locale, {
+    numeric: selected.unit === 'day' && amount === -1 ? 'auto' : 'always',
+  }).format(amount, selected.unit)
 }
 
 export function getInitials(name: string): string {

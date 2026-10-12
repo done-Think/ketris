@@ -1,3 +1,5 @@
+import type { FinancialExchangeRate } from '../utils/financial-display-currency'
+
 export type FinancialEntryStatus = 'Pago' | 'Pendente' | 'Atrasado'
 
 export type FinancialEntry = {
@@ -69,24 +71,29 @@ export type FinancialKpiCardsProps = {
 
 export type FinancialEntriesTableProps = {
   entries: FinancialEntry[]
+  exchangeRate?: FinancialExchangeRate | null
 }
 
 export type FinancialMovementChartProps = {
   movement: FinancialMonthlyMovement[]
+  currency?: 'BRL' | 'EUR' | 'USD'
 }
 
 export type FinancialUpcomingDueListProps = {
   items: FinancialUpcomingDue[]
+  exchangeRate?: FinancialExchangeRate | null
 }
 
 export type FinancialDueHistoryDialogProps = {
   due: FinancialUpcomingDue | null
   onClose: () => void
   open: boolean
+  exchangeRate?: FinancialExchangeRate | null
 }
 
 export type FinancialEntryDetailDialogProps = {
   entry: FinancialEntry | null
   onClose: () => void
   open: boolean
+  exchangeRate?: FinancialExchangeRate | null
 }

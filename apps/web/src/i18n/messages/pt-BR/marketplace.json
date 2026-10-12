@@ -146,6 +146,10 @@
     }
   },
   "publicProfile": {
+    "brokerDefaultHeadline": "Atendimento especializado com carteira regional.",
+    "agencyDefaultHeadline": "Atendimento completo para comprar, vender ou alugar.",
+    "featuredTeam": "Equipe em destaque",
+    "viewBrokerProfile": "Ver perfil de {name}",
     "propertyCard": {
       "new": "Novo",
       "viewDetails": "Ver detalhes"
@@ -184,6 +188,19 @@
     }
   },
   "propertyDetail": {
+    "favorite": "Favoritar",
+    "share": "Compartilhar",
+    "aboutProperty": "Sobre o imóvel",
+    "location": "Localização",
+    "notInformed": "Não informado",
+    "categories": {
+      "apartment": "Apartamento",
+      "house": "Casa",
+      "studio": "Studio",
+      "penthouse": "Cobertura",
+      "commercial": "Comercial",
+      "loft": "Loft"
+    },
     "condominium": "Condomínio {value}",
     "scheduleVisit": "Agendar visita",
     "sendProposal": "Enviar proposta",
@@ -206,7 +223,14 @@
       "email": "E-mail"
     }
   },
+  "propertyFeatures": {
+    "bedrooms": "{count, plural, =0 {Nenhum quarto} one {# quarto} other {# quartos}}",
+    "bathrooms": "{count, plural, =0 {Nenhum banheiro} one {# banheiro} other {# banheiros}}",
+    "parking": "{count, plural, =0 {Nenhuma vaga} one {# vaga} other {# vagas}}",
+    "monthly": "{price} / mês"
+  },
   "profileEditor": {
+    "previewName": "Seu nome",
     "title": "Editar Perfil",
     "subtitle": "Ajuste as informações exibidas para visitantes no seu perfil público.",
     "validatedDraft": "Rascunho validado",
@@ -262,6 +286,7 @@
     }
   },
   "agencyProfileEditor": {
+    "previewName": "Sua imobiliária",
     "title": "Editar Perfil da Imobiliária",
     "subtitle": "Ajuste marca, contato e equipe em destaque exibidos para visitantes.",
     "saveSuccess": "Perfil salvo com sucesso.",
@@ -322,7 +347,7 @@
   },
   "searchResults": {
     "toolbar": {
-      "resultCount": "{count} imóveis encontrados",
+      "resultCount": "{count, plural, =0 {Nenhum imóvel encontrado} one {# imóvel encontrado} other {# imóveis encontrados}}",
       "sortRelevance": "Ordenar por: Relevância",
       "sortLowerPrice": "Menor preço",
       "sortHigherPrice": "Maior preço",
@@ -338,9 +363,14 @@
       "retry": "Tentar novamente"
     },
     "map": {
+      "title": "Mapa",
+      "zoomIn": "Aproximar",
+      "zoomOut": "Afastar",
+      "attribution": "Mostrar atribuição",
       "openProperty": "Abrir {title}"
     },
     "filters": {
+      "upToPrice": "Até {price}",
       "allRegions": "Todas as regiões",
       "clearSearch": "Limpar busca",
       "button": "Filtros",
@@ -396,7 +426,7 @@
     "agencies": {
       "title": "Imobiliárias",
       "placeholder": "Nome, CRECI, região ou cobertura",
-      "resultCount": "{visible} de {total} imobiliárias encontradas",
+      "resultCount": "{total, plural, one {{visible} de # imobiliária encontrada} other {{visible} de # imobiliárias encontradas}}",
       "empty": "Nenhuma imobiliária encontrada",
       "loaded": "Todas as imobiliárias foram carregadas",
       "loading": "Carregando mais imobiliárias"
@@ -404,7 +434,7 @@
     "brokers": {
       "title": "Corretores",
       "placeholder": "Nome, CRECI, bairro ou região",
-      "resultCount": "{visible} de {total} corretores encontrados",
+      "resultCount": "{total, plural, one {{visible} de # corretor encontrado} other {{visible} de # corretores encontrados}}",
       "empty": "Nenhum corretor encontrado",
       "loaded": "Todos os corretores foram carregados",
       "loading": "Carregando mais corretores"

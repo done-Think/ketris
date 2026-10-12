@@ -5,7 +5,8 @@ import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlin
 import ScheduleRoundedIcon from '@mui/icons-material/ScheduleRounded'
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded'
 import { Avatar, Box, Button, Chip, Paper, Stack, Typography, useMediaQuery } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 import { useEffect, useRef, useState } from 'react'
 
 import { brand, iconSize, radius, supportColor, surface } from '@shared/theme/tokens'
@@ -44,6 +45,7 @@ function OpportunityNextActionItem({
   expanded: boolean
   onToggle: () => void
 }) {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('crm.opportunityDetail')
   const tone = toneConfig[action.tone]
   const Icon = tone.icon
@@ -112,7 +114,7 @@ function OpportunityNextActionItem({
           <Chip
             component="time"
             dateTime={action.dueAt}
-            label={formatRelativeDate(action.dueAt)}
+            label={formatRelativeDate(action.dueAt, new Date(), locale)}
             size="small"
             variant="outlined"
             aria-label={t('nextActions.dueAt')}

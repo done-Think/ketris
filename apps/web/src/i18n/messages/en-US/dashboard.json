@@ -280,6 +280,9 @@
   "finance": {
     "title": "Finance",
     "subtitle": "Monthly financial movement and sales/commission records.",
+    "exchangeRateNotice": "Estimated amounts in {currency} using the {date} PTAX closing rate (1 {currency} = BRL {rate}). Records remain in BRL.",
+    "exchangeRateLoading": "Loading the PTAX exchange rate. Amounts are shown in BRL for now.",
+    "exchangeRateUnavailable": "Exchange rate unavailable. Amounts are shown in BRL.",
     "movementTitle": "Monthly movement",
     "movementSubtitle": "Sales and commission inflows by month.",
     "sales": "Sales",
