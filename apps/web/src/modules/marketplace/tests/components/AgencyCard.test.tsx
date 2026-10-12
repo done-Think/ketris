@@ -82,7 +82,7 @@ describe('AgencyCard', () => {
 
     expect(listingLink).toHaveAttribute(
       'href',
-      '/imoveis/apartamento-jardins-venda?source=agency&sourceHref=%2Fagencies%2Falameda-prime&sourceName=Alameda+Prime+Im%C3%B3veis',
+      '/imoveis/apartamento-jardins-venda?source=agency&sourceHref=%2Fagencies%2Falameda-prime-imoveis%2F38210&sourceName=Alameda+Prime+Im%C3%B3veis',
     )
 
     listingLink.addEventListener('click', (event) => event.preventDefault())
