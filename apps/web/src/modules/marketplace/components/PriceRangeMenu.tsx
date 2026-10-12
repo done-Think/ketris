@@ -1,6 +1,7 @@
 import { Box, Button, IconButton, Slider, Stack, TextField, Typography } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { componentText, radius } from '@shared/theme/tokens'
 
@@ -13,6 +14,7 @@ export function PriceRangeMenu({
   updatePriceRange,
   closeSearchMenu,
 }: PriceRangeMenuProps) {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace.home.search')
 
   return (
@@ -71,7 +73,7 @@ export function PriceRangeMenu({
           value={priceRange}
           onChange={(_, nextValue) => updatePriceRange(nextValue as [number, number])}
           valueLabelDisplay="auto"
-          valueLabelFormat={(value) => formatSearchCurrency(value)}
+          valueLabelFormat={(value) => formatSearchCurrency(value, locale)}
           min={priceLimit.min}
           max={priceLimit.max}
           step={priceLimit.step}
@@ -81,10 +83,10 @@ export function PriceRangeMenu({
 
       <Stack direction="row" justifyContent="space-between" sx={{ mt: 0.5 }}>
         <Typography sx={{ color: 'text.secondary', ...componentText.menuCaption }}>
-          {formatSearchCurrency(priceLimit.min)}
+          {formatSearchCurrency(priceLimit.min, locale)}
         </Typography>
         <Typography sx={{ color: 'text.secondary', ...componentText.menuCaption }}>
-          {formatSearchCurrency(priceLimit.max)}
+          {formatSearchCurrency(priceLimit.max, locale)}
         </Typography>
       </Stack>
 

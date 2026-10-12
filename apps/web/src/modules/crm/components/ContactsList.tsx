@@ -2,13 +2,14 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { Box, GlobalStyles, Paper, Stack, Typography } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { DashboardTablePagination } from '@shared/components/layout'
 import { brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { contactFilters } from '../config/contact-filters'
-import { contactListFixtures, contactsFixtureTotal } from '../fixtures/contact-list-fixtures'
+import { getContactListFixtures, contactsFixtureTotal } from '../fixtures/contact-list-fixtures'
 import type { ContactFilter, ContactsListProps } from '../types/contact'
 import { contactsDefaultPageSize, filterContacts, paginateContacts } from '../utils/contacts'
 import { ContactsCards } from './contacts-list/ContactsCards'
@@ -19,7 +20,7 @@ import { ContactsTable } from './contacts-list/ContactsTable'
 const contactsBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
 
 export function ContactsList({
-  contacts = contactListFixtures,
+  contacts,
   totalCount = contactsFixtureTotal,
   page = 1,
   onPageChange,
@@ -28,7 +29,12 @@ export function ContactsList({
   onOpenInteractions,
   onOpenMoreOptions,
 }: ContactsListProps = {}) {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('crm.contacts')
+  const resolvedContacts = useMemo(
+    () => contacts ?? getContactListFixtures(locale),
+    [contacts, locale],
+  )
   const [search, setSearch] = useState('')
   const [activeFilter, setActiveFilter] = useState<ContactFilter>('Todos')
   const [internalPage, setInternalPage] = useState(page)
@@ -38,8 +44,8 @@ export function ContactsList({
   const filteredContacts = useMemo(() => {
     const selectedType =
       contactFilters.find((filter) => filter.label === activeFilter)?.type ?? null
-    return filterContacts(contacts, search, selectedType)
-  }, [activeFilter, contacts, search])
+    return filterContacts(resolvedContacts, search, selectedType)
+  }, [activeFilter, resolvedContacts, search])
 
   const isDefaultView = activeFilter === 'Todos' && search.trim() === ''
   const contactPage = useMemo(
@@ -107,7 +113,7 @@ export function ContactsList({
 
         <ContactsStatusFilters
           activeFilter={activeFilter}
-          contacts={contacts}
+          contacts={resolvedContacts}
           onFilterChange={handleFilterChange}
         />
       </Stack>

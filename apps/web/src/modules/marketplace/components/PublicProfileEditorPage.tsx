@@ -5,7 +5,8 @@ import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlin
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import { Box, Dialog, DialogContent, Stack, Typography } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 import { useSnackbar } from 'notistack'
 import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -39,7 +40,9 @@ import { editorPanelSx } from './public-profile-editor/public-profile-editor-sha
 import { SingleImageUploadField } from './public-profile-editor/SingleImageUploadField'
 
 export function PublicProfileEditorPage() {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace.profileEditor')
+  const tFeatures = useTranslations('marketplace.propertyFeatures')
   const { enqueueSnackbar } = useSnackbar()
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const { data: profile } = useOwnBrokerProfile()
@@ -382,7 +385,9 @@ export function PublicProfileEditorPage() {
 
       <Dialog open={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} maxWidth="lg" fullWidth>
         <DialogContent sx={{ p: 0 }}>
-          <BrokerPublicProfilePage broker={toPreviewProfile(draft, profile ?? null)} />
+          <BrokerPublicProfilePage
+            broker={toPreviewProfile(draft, profile ?? null, locale, tFeatures, t('previewName'))}
+          />
         </DialogContent>
       </Dialog>
     </Box>

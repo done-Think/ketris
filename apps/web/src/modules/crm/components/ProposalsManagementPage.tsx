@@ -14,7 +14,8 @@ import {
   Typography,
 } from '@mui/material'
 import { useSession } from 'next-auth/react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { useRouter } from '@/i18n/navigation'
 import {
@@ -45,8 +46,10 @@ import { ProposalsTable } from './proposals-list/ProposalsTable'
 const proposalsBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
 
 export function ProposalsManagementPage() {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('dashboard.proposals')
   const tPipeline = useTranslations('crm.pipeline')
+  const tProposalStatuses = useTranslations('crm.opportunityDetail.statuses')
   const router = useRouter()
   const { data: session } = useSession()
   const tenantId = session?.tenantId ?? ''
@@ -72,17 +75,27 @@ export function ProposalsManagementPage() {
           opportunity,
           propertiesById.get(opportunity.propertyId),
           opportunity.propertyId,
+          locale,
         ),
       ),
-    [opportunitiesQuery.data, propertiesById],
+    [opportunitiesQuery.data, propertiesById, locale],
   )
 
-  const summary = useMemo(() => buildProposalManagementSummary(proposalItems), [proposalItems])
+  const summary = useMemo(
+    () => buildProposalManagementSummary(proposalItems, locale),
+    [proposalItems, locale],
+  )
 
   const pageResult = useMemo(
     () =>
-      queryProposalManagementItems(proposalItems, { search, status, page, pageSize: rowsPerPage }),
-    [proposalItems, page, rowsPerPage, search, status],
+      queryProposalManagementItems(proposalItems, {
+        search,
+        status,
+        page,
+        pageSize: rowsPerPage,
+        statusLabel: (status) => tProposalStatuses(status),
+      }),
+    [proposalItems, page, rowsPerPage, search, status, tProposalStatuses],
   )
 
   function goToOpportunity(proposal: ProposalManagementListItem) {

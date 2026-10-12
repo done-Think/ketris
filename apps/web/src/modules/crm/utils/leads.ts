@@ -58,7 +58,7 @@ const leadStageOrder: Record<DashboardLead['stage'], number> = {
 }
 
 function getLeadSortValue(lead: DashboardLead, sort: NonNullable<LeadTableSortState>) {
-  if (sort.field === 'budget') return parseBudgetValue(lead.budget)
+  if (sort.field === 'budget') return lead.budgetAmount ?? parseBudgetValue(lead.budget)
   if (sort.field === 'stage') return leadStageOrder[lead.stage]
   if (sort.field === 'lastContact') return new Date(lead.lastContactAt).getTime()
 

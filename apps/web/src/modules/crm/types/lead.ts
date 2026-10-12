@@ -63,6 +63,7 @@ export type DashboardLead = {
   id: string
   name: string
   budget: string
+  budgetAmount?: number
   phone: string
   email: string
   lastContact: string

@@ -146,6 +146,10 @@
     }
   },
   "publicProfile": {
+    "brokerDefaultHeadline": "Atención personalizada con experiencia en la región.",
+    "agencyDefaultHeadline": "Asesoramiento completo para comprar, vender o alquilar.",
+    "featuredTeam": "Equipo destacado",
+    "viewBrokerProfile": "Ver el perfil de {name}",
     "propertyCard": {
       "new": "Nuevo",
       "viewDetails": "Ver detalles"
@@ -184,6 +188,19 @@
     }
   },
   "propertyDetail": {
+    "favorite": "Guardar",
+    "share": "Compartir",
+    "aboutProperty": "Sobre el inmueble",
+    "location": "Ubicación",
+    "notInformed": "No indicado",
+    "categories": {
+      "apartment": "Apartamento",
+      "house": "Casa",
+      "studio": "Estudio",
+      "penthouse": "Ático",
+      "commercial": "Comercial",
+      "loft": "Loft"
+    },
     "condominium": "Condominio {value}",
     "scheduleVisit": "Agendar visita",
     "sendProposal": "Enviar propuesta",
@@ -206,7 +223,14 @@
       "email": "Email"
     }
   },
+  "propertyFeatures": {
+    "bedrooms": "{count, plural, =0 {Ningún dormitorio} one {# dormitorio} other {# dormitorios}}",
+    "bathrooms": "{count, plural, =0 {Ningún baño} one {# baño} other {# baños}}",
+    "parking": "{count, plural, =0 {Ninguna plaza de garaje} one {# plaza de garaje} other {# plazas de garaje}}",
+    "monthly": "{price} / mes"
+  },
   "profileEditor": {
+    "previewName": "Tu nombre",
     "title": "Editar perfil",
     "subtitle": "Ajusta la información mostrada a los visitantes en tu perfil público.",
     "validatedDraft": "Borrador validado",
@@ -262,6 +286,7 @@
     }
   },
   "agencyProfileEditor": {
+    "previewName": "Tu inmobiliaria",
     "title": "Editar perfil de la inmobiliaria",
     "subtitle": "Ajusta marca, contacto y equipo destacado mostrados a visitantes.",
     "saveSuccess": "Perfil guardado con éxito.",
@@ -322,7 +347,7 @@
   },
   "searchResults": {
     "toolbar": {
-      "resultCount": "{count} inmuebles encontrados",
+      "resultCount": "{count, plural, =0 {No se encontraron inmuebles} one {# inmueble encontrado} other {# inmuebles encontrados}}",
       "sortRelevance": "Ordenar por: Relevancia",
       "sortLowerPrice": "Menor precio",
       "sortHigherPrice": "Mayor precio",
@@ -338,9 +363,14 @@
       "retry": "Intentar de nuevo"
     },
     "map": {
+      "title": "Mapa",
+      "zoomIn": "Acercar",
+      "zoomOut": "Alejar",
+      "attribution": "Mostrar atribución",
       "openProperty": "Abrir {title}"
     },
     "filters": {
+      "upToPrice": "Hasta {price}",
       "allRegions": "Todas las regiones",
       "clearSearch": "Limpiar búsqueda",
       "button": "Filtros",
@@ -396,7 +426,7 @@
     "agencies": {
       "title": "Inmobiliarias",
       "placeholder": "Nombre, CRECI, región o cobertura",
-      "resultCount": "{visible} de {total} inmobiliarias encontradas",
+      "resultCount": "{total, plural, one {{visible} de # inmobiliaria encontrada} other {{visible} de # inmobiliarias encontradas}}",
       "empty": "No se encontraron inmobiliarias",
       "loaded": "Todas las inmobiliarias fueron cargadas",
       "loading": "Cargando más inmobiliarias"
@@ -404,7 +434,7 @@
     "brokers": {
       "title": "Corredores",
       "placeholder": "Nombre, CRECI, barrio o región",
-      "resultCount": "{visible} de {total} corredores encontrados",
+      "resultCount": "{total, plural, one {{visible} de # corredor encontrado} other {{visible} de # corredores encontrados}}",
       "empty": "No se encontraron corredores",
       "loaded": "Todos los corredores fueron cargados",
       "loading": "Cargando más corredores"
