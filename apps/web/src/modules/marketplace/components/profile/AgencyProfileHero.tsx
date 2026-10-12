@@ -1,14 +1,16 @@
 'use client'
 
 import { Box, Chip, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
-import { defaultAgencyHeadline, defaultProfileCoverImage } from '../../config/profile-defaults'
+import { defaultProfileCoverImage } from '../../config/profile-defaults'
 import type { AgencyProfileHeroProps } from '../../types/agency'
 import { AgencyBrandBanner } from '../AgencyBrandBanner'
 
 export function AgencyProfileHero({ agency }: AgencyProfileHeroProps) {
+  const t = useTranslations('marketplace.publicProfile')
   return (
     <Box
       sx={{
@@ -41,7 +43,7 @@ export function AgencyProfileHero({ agency }: AgencyProfileHeroProps) {
             maxWidth: 720,
           }}
         >
-          {agency.headline ?? defaultAgencyHeadline}
+          {agency.headline ?? t('agencyDefaultHeadline')}
         </Typography>
       </Box>
 

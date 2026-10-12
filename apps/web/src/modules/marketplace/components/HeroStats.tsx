@@ -1,15 +1,16 @@
 import { Stack, Typography } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 
 import { alpha, componentText } from '@shared/theme/tokens'
 
 const heroStats = [
-  { value: '2.500+', labelKey: 'activeProperties' },
-  { value: '180+', labelKey: 'partnerBrokers' },
-  { value: '45+', labelKey: 'servedCities' },
+  { value: 2500, labelKey: 'activeProperties' },
+  { value: 180, labelKey: 'partnerBrokers' },
+  { value: 45, labelKey: 'servedCities' },
 ] as const
 
 export function HeroStats() {
+  const locale = useLocale()
   const t = useTranslations('marketplace.home.hero.stats')
 
   return (
@@ -29,7 +30,7 @@ export function HeroStats() {
       {heroStats.map((stat) => (
         <Stack key={stat.labelKey} direction="row" alignItems="baseline" spacing={1}>
           <Typography sx={{ color: 'primary.main', ...componentText.heroStatValue }}>
-            {stat.value}
+            {new Intl.NumberFormat(locale).format(stat.value)}+
           </Typography>
           <Typography sx={{ color: alpha.white[78], ...componentText.heroStatLabel }}>
             {t(stat.labelKey)}

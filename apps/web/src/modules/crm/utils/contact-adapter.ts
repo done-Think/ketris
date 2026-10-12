@@ -5,6 +5,7 @@ import type {
   ContactType,
 } from '../types/contact'
 import { formatRelativeDate } from './formatters'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 const typeLabelByApiType: Record<ApiContactType, ContactType> = {
   PROPRIETARIO: 'Proprietário',
@@ -12,7 +13,10 @@ const typeLabelByApiType: Record<ApiContactType, ContactType> = {
   CORRETOR: 'Corretor',
 }
 
-export function mapContactToListItem(contact: ApiContactListItem): ContactListItem {
+export function mapContactToListItem(
+  contact: ApiContactListItem,
+  locale?: AppLocale,
+): ContactListItem {
   return {
     id: contact.id,
     name: contact.name,
@@ -20,7 +24,9 @@ export function mapContactToListItem(contact: ApiContactListItem): ContactListIt
     phone: contact.phone ?? '',
     email: contact.email,
     propertyCount: contact.propertyCount,
-    lastInteraction: contact.lastInteraction ? formatRelativeDate(contact.lastInteraction) : '',
+    lastInteraction: contact.lastInteraction
+      ? formatRelativeDate(contact.lastInteraction, new Date(), locale)
+      : '',
     avatarUrl: contact.avatarUrl ?? '',
   }
 }

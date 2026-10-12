@@ -2,6 +2,7 @@ import type { AgencyProfile, AgencyProfileDraft } from '../../types/agency-profi
 
 export interface AgencyProfileRepository {
   findPublishedById(tenantId: string): Promise<AgencyProfile | null>
+  findPublishedBySlug(slug: string, creci: string): Promise<AgencyProfile | null>
   listPublished(): Promise<AgencyProfile[]>
   findByTenantId(tenantId: string): Promise<AgencyProfile | null>
   save(tenantId: string, draft: AgencyProfileDraft): Promise<AgencyProfile>
