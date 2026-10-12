@@ -146,6 +146,10 @@
     }
   },
   "publicProfile": {
+    "brokerDefaultHeadline": "Personalized service with regional expertise.",
+    "agencyDefaultHeadline": "Complete support to buy, sell, or rent.",
+    "featuredTeam": "Featured team",
+    "viewBrokerProfile": "View {name}'s profile",
     "propertyCard": {
       "new": "New",
       "viewDetails": "View details"
@@ -184,6 +188,19 @@
     }
   },
   "propertyDetail": {
+    "favorite": "Save",
+    "share": "Share",
+    "aboutProperty": "About this property",
+    "location": "Location",
+    "notInformed": "Not provided",
+    "categories": {
+      "apartment": "Apartment",
+      "house": "House",
+      "studio": "Studio",
+      "penthouse": "Penthouse",
+      "commercial": "Commercial",
+      "loft": "Loft"
+    },
     "condominium": "Condo fee {value}",
     "scheduleVisit": "Schedule visit",
     "sendProposal": "Send proposal",
@@ -206,7 +223,14 @@
       "email": "Email"
     }
   },
+  "propertyFeatures": {
+    "bedrooms": "{count, plural, =0 {No bedrooms} one {# bedroom} other {# bedrooms}}",
+    "bathrooms": "{count, plural, =0 {No bathrooms} one {# bathroom} other {# bathrooms}}",
+    "parking": "{count, plural, =0 {No parking spaces} one {# parking space} other {# parking spaces}}",
+    "monthly": "{price} / month"
+  },
   "profileEditor": {
+    "previewName": "Your name",
     "title": "Edit Profile",
     "subtitle": "Adjust the information shown to visitors on your public profile.",
     "validatedDraft": "Draft validated",
@@ -262,6 +286,7 @@
     }
   },
   "agencyProfileEditor": {
+    "previewName": "Your agency",
     "title": "Edit Agency Profile",
     "subtitle": "Adjust brand, contact and featured team shown to visitors.",
     "saveSuccess": "Profile saved successfully.",
@@ -322,7 +347,7 @@
   },
   "searchResults": {
     "toolbar": {
-      "resultCount": "{count} properties found",
+      "resultCount": "{count, plural, =0 {No properties found} one {# property found} other {# properties found}}",
       "sortRelevance": "Sort by: Relevance",
       "sortLowerPrice": "Lowest price",
       "sortHigherPrice": "Highest price",
@@ -338,9 +363,14 @@
       "retry": "Try again"
     },
     "map": {
+      "title": "Map",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "attribution": "Show attribution",
       "openProperty": "Open {title}"
     },
     "filters": {
+      "upToPrice": "Up to {price}",
       "allRegions": "All regions",
       "clearSearch": "Clear search",
       "button": "Filters",
@@ -396,7 +426,7 @@
     "agencies": {
       "title": "Agencies",
       "placeholder": "Name, CRECI, region, or coverage",
-      "resultCount": "{visible} of {total} agencies found",
+      "resultCount": "{total, plural, one {{visible} of # agency found} other {{visible} of # agencies found}}",
       "empty": "No agencies found",
       "loaded": "All agencies have been loaded",
       "loading": "Loading more agencies"
@@ -404,7 +434,7 @@
     "brokers": {
       "title": "Brokers",
       "placeholder": "Name, CRECI, neighborhood, or region",
-      "resultCount": "{visible} of {total} brokers found",
+      "resultCount": "{total, plural, one {{visible} of # broker found} other {{visible} of # brokers found}}",
       "empty": "No brokers found",
       "loaded": "All brokers have been loaded",
       "loading": "Loading more brokers"

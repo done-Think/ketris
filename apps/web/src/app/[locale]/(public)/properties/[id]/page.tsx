@@ -18,13 +18,18 @@ import {
 } from '@modules/marketplace/utils/property-links'
 import { mapDetailToMarketplacePropertyDetail } from '@modules/marketplace/utils/property-detail-adapter'
 
-const getProperty = cache(async (id: string) => {
+const getProperty = cache(async (id: string, locale: string) => {
   try {
     const property = await marketplaceContainer.getPropertyUseCase.execute({ propertyId: id })
-    return mapDetailToMarketplacePropertyDetail({
-      ...property,
-      publishedAt: property.publishedAt?.toISOString() ?? null,
-    })
+    const tFeatures = await getTranslations({ locale, namespace: 'marketplace.propertyFeatures' })
+    return mapDetailToMarketplacePropertyDetail(
+      {
+        ...property,
+        publishedAt: property.publishedAt?.toISOString() ?? null,
+      },
+      locale as 'pt-BR' | 'en-US' | 'es-ES',
+      tFeatures,
+    )
   } catch (error) {
     if (error instanceof PropertyNotFoundError) return null
 
@@ -40,7 +45,7 @@ export async function generateMetadata({
     locale,
     namespace: 'marketplace.metadata.details',
   })
-  const property = await getProperty(id)
+  const property = await getProperty(id, locale)
 
   if (!property) return { title: t('notFoundTitle') }
 
@@ -79,9 +84,9 @@ export default async function PropertyPage({
   params,
   searchParams,
 }: LocaleRoutePageProps<{ id: string }, PropertyPageSearchParams>) {
-  const { id } = await params
+  const { id, locale } = await params
   const resolvedSearchParams = await searchParams
-  const property = await getProperty(id)
+  const property = await getProperty(id, locale)
 
   if (!property) notFound()
 

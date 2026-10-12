@@ -27,7 +27,7 @@ export function PropertyContactCard({ property }: PropertyContactCardProps) {
         {property.price}
       </Typography>
       <Typography sx={{ color: 'text.secondary', fontSize: 12, fontWeight: 700, mb: 2 }}>
-        {t('condominium', { value: property.condominium })}
+        {t('condominium', { value: property.condominium || t('notInformed') })}
       </Typography>
 
       <Stack spacing={1} sx={{ mb: 2 }}>

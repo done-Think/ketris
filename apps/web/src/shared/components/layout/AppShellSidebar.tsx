@@ -131,17 +131,22 @@ export function AppShellSidebar({
                   >
                     <Icon
                       sx={{
-                        fontSize: iconSize.md,
+                        display: 'block',
+                        flexShrink: 0,
+                        fontSize: iconSize.md + 1,
+                        width: iconSize.md + 1,
+                        height: iconSize.md + 1,
                         color: active ? 'primary.main' : 'inherit',
                       }}
                     />
                     <Typography
                       sx={{
-                        display: collapsed ? 'none' : 'block',
+                        display: collapsed ? 'none' : 'flex',
+                        alignItems: 'center',
                         fontFamily: 'var(--font-inter), system-ui, -apple-system, sans-serif',
                         fontSize: 14,
                         fontWeight: active ? 600 : 500,
-                        lineHeight: '20px',
+                        lineHeight: `${iconSize.md + 1}px`,
                         letterSpacing: 0,
                       }}
                     >

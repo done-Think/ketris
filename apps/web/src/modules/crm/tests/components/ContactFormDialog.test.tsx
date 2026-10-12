@@ -59,7 +59,7 @@ describe('ContactFormDialog', () => {
     )
 
     await user.click(screen.getByRole('button', { name: 'Salvar' }))
-    expect(await screen.findByText('E-mail invalido.')).toBeVisible()
+    expect(await screen.findByText('E-mail inválido.')).toBeVisible()
     expect(onSave).not.toHaveBeenCalled()
 
     await user.type(screen.getByLabelText(/^Nome/), 'Joao Souza')

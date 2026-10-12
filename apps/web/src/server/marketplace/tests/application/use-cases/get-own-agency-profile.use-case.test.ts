@@ -8,6 +8,7 @@ import { GetOwnAgencyProfileUseCase } from '../../../application/use-cases/get-o
 function createDeps() {
   const agencyProfileRepository: AgencyProfileRepository = {
     findPublishedById: vi.fn(),
+    findPublishedBySlug: vi.fn(),
     listPublished: vi.fn(),
     findByTenantId: vi.fn().mockResolvedValue(null),
     save: vi.fn(),

@@ -3,7 +3,8 @@
 import { useCallback, useMemo, type SetStateAction } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { priceLimit, searchOptions } from '../config/search-filters'
 import { createMarketplaceSearchFormSchema } from '../schemas/marketplace-search-schema'
@@ -17,6 +18,7 @@ import type {
 import { buildSearchHref, formatSearchCurrency, normalizeSearchText } from '../utils/search'
 
 export function useMarketplaceSearch() {
+  const locale = useLocale() as AppLocale
   const tPropertyTypes = useTranslations('marketplace.home.search.propertyTypes')
   const tErrors = useTranslations('marketplace.home.search.errors')
   const marketplaceSearchFormSchema = useMemo(
@@ -116,8 +118,9 @@ export function useMarketplaceSearch() {
     [getValues, setValue],
   )
 
-  const priceRangeLabel = `${formatSearchCurrency(priceRange[0])} - ${formatSearchCurrency(
+  const priceRangeLabel = `${formatSearchCurrency(priceRange[0], locale)} - ${formatSearchCurrency(
     priceRange[1],
+    locale,
   )}`
 
   const searchHref = useMemo(
