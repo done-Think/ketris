@@ -8,14 +8,19 @@ import { AgencyProfileNotFoundError } from '@server/marketplace/domain/errors'
 import { AgencyPublicProfilePage } from '@modules/marketplace'
 import { toAgencyProfile } from '@modules/marketplace/utils/agency-profile-adapter'
 
-const getAgency = cache(async (slug: string, creci: string) => {
+const getAgency = cache(async (slug: string, creci: string, locale: string) => {
   try {
     const profile = await marketplaceContainer.getAgencyProfileUseCase.execute({ slug, creci })
+    const tFeatures = await getTranslations({ locale, namespace: 'marketplace.propertyFeatures' })
 
-    return toAgencyProfile({
-      ...profile,
-      publishedAt: profile.publishedAt?.toISOString() ?? null,
-    })
+    return toAgencyProfile(
+      {
+        ...profile,
+        publishedAt: profile.publishedAt?.toISOString() ?? null,
+      },
+      locale as 'pt-BR' | 'en-US' | 'es-ES',
+      tFeatures,
+    )
   } catch (error) {
     if (error instanceof AgencyProfileNotFoundError) return null
 
@@ -28,7 +33,7 @@ export async function generateMetadata({
 }: LocaleRoutePageProps<{ id: string; creci: string }>) {
   const { creci, id, locale } = await params
   const t = await getTranslations({ locale, namespace: 'marketplace.metadata' })
-  const agency = await getAgency(id, creci)
+  const agency = await getAgency(id, creci, locale)
 
   if (!agency) {
     return {
@@ -49,8 +54,8 @@ export async function generateMetadata({
 export default async function AgencySlugPage({
   params,
 }: LocaleRoutePageProps<{ id: string; creci: string }>) {
-  const { creci, id } = await params
-  const agency = await getAgency(id, creci)
+  const { creci, id, locale } = await params
+  const agency = await getAgency(id, creci, locale)
 
   if (!agency) notFound()
 
