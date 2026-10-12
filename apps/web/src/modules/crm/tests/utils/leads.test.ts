@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { DashboardLead } from '../../types/lead'
 import { sortLeads } from '../../utils/leads'
+import { getLeadListFixtures } from '../../fixtures/lead-list-fixtures'
 
 function makeDashboardLead(overrides: Partial<DashboardLead> = {}): DashboardLead {
   return {
@@ -22,6 +23,20 @@ function makeDashboardLead(overrides: Partial<DashboardLead> = {}): DashboardLea
 }
 
 describe('sortLeads', () => {
+  it('keeps numeric fixture budgets sortable after localizing their display', () => {
+    const now = new Date('2026-10-07T12:00:00.000Z')
+    const englishLeads = getLeadListFixtures('en-US', now)
+    const spanishLeads = getLeadListFixtures('es-ES', now)
+
+    expect(englishLeads[0].budget).toContain('1.2M')
+    expect(spanishLeads[0].budget).toContain('1,2')
+    expect(englishLeads[0].lastContact).toBe('2 hours ago')
+    expect(spanishLeads[0].lastContact).toContain('hace 2 horas')
+    expect(sortLeads(englishLeads, { field: 'budget', direction: 'asc' })[0].id).toBe(
+      'lead-fixture-003',
+    )
+  })
+
   it('ordena orçamentos no formato brasileiro (separador de milhar) corretamente', () => {
     const leads = [
       makeDashboardLead({ id: 'a', budget: 'R$ 1.850.000' }),

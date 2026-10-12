@@ -91,13 +91,13 @@ describe('proposal management status configuration', () => {
       'RECUSADA',
       'RASCUNHO',
     ])
-    expect(proposalStatusFilters.map(({ label }) => label)).toEqual([
-      'Todas',
-      'Em negociação',
-      'Enviada',
-      'Aceita',
-      'Recusada',
-      'Rascunho',
+    expect(proposalStatusFilters.map(({ id }) => id)).toEqual([
+      'all',
+      'EM_NEGOCIACAO',
+      'ENVIADA',
+      'ACEITA',
+      'RECUSADA',
+      'RASCUNHO',
     ])
     expect(proposalStatusPresentations).toMatchObject({
       EM_NEGOCIACAO: {
