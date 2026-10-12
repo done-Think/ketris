@@ -202,7 +202,7 @@ describe('OpportunityDetail', () => {
     const user = userEvent.setup()
     renderDetail()
 
-    await user.click(screen.getByRole('button', { name: 'Arquivar' }))
+    await user.click(screen.getByRole('button', { name: 'Arquivar oportunidade' }))
     expect(mocks.archive).not.toHaveBeenCalled()
 
     const dialog = screen.getByRole('dialog', { name: 'Arquivar oportunidade?' })

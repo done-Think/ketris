@@ -44,8 +44,6 @@ export interface ConvertLeadPayload {
   proposedValue: number
 }
 
-export type ConvertLeadFormValues = z.infer<ReturnType<typeof createConvertLeadSchema>>
-
 export type LeadFilter = 'Todos' | LeadStage
 
 export type LeadTableSortField = 'name' | 'interest' | 'budget' | 'stage' | 'source' | 'lastContact'
@@ -65,6 +63,7 @@ export type DashboardLead = {
   id: string
   name: string
   budget: string
+  budgetAmount?: number
   phone: string
   email: string
   lastContact: string
@@ -191,6 +190,8 @@ export type ConvertLeadDialogProps = {
   onClose: () => void
   open: boolean
 }
+
+export type ConvertLeadFormValues = z.infer<ReturnType<typeof createConvertLeadSchema>>
 
 export type LeadsFilterBarProps = {
   activeFilter: LeadFilter

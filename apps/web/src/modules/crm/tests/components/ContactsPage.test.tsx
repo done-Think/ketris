@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { theme } from '@shared/theme/theme'
 
 import { ContactsPage } from '../../components/ContactsPage'
-import { contactListFixtures, contactsFixtureTotal } from '../../fixtures/contact-list-fixtures'
+import { contactListFixtures } from '../../fixtures/contact-list-fixtures'
 import type { ApiContactListItem } from '../../types/contact'
 
 const mocks = vi.hoisted(() => ({
@@ -105,9 +105,7 @@ describe('ContactsPage', () => {
     renderContactsPage()
 
     expect(screen.getAllByText(contactListFixtures[0].name).length).toBeGreaterThan(0)
-    expect(
-      screen.getByText(`Mostrando 1\u2013${contactListFixtures.length} de ${contactsFixtureTotal}`),
-    ).toBeVisible()
+    expect(screen.getByText('1-5 de 6')).toBeVisible()
     screen
       .getAllByRole('button', { name: `Editar ${contactListFixtures[0].name}` })
       .forEach((button) => expect(button).toBeDisabled())

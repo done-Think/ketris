@@ -8,14 +8,19 @@ import { BrokerProfileNotFoundError } from '@server/marketplace/domain/errors'
 import { BrokerPublicProfilePage } from '@modules/marketplace'
 import { toBrokerProfile } from '@modules/marketplace/utils/broker-profile-adapter'
 
-const getBroker = cache(async (id: string) => {
+const getBroker = cache(async (id: string, locale: string) => {
   try {
     const profile = await marketplaceContainer.getBrokerProfileUseCase.execute({ id })
+    const tFeatures = await getTranslations({ locale, namespace: 'marketplace.propertyFeatures' })
 
-    return toBrokerProfile({
-      ...profile,
-      publishedAt: profile.publishedAt?.toISOString() ?? null,
-    })
+    return toBrokerProfile(
+      {
+        ...profile,
+        publishedAt: profile.publishedAt?.toISOString() ?? null,
+      },
+      locale as 'pt-BR' | 'en-US' | 'es-ES',
+      tFeatures,
+    )
   } catch (error) {
     if (error instanceof BrokerProfileNotFoundError) return null
 
@@ -26,7 +31,7 @@ const getBroker = cache(async (id: string) => {
 export async function generateMetadata({ params }: LocaleRoutePageProps<{ id: string }>) {
   const { id, locale } = await params
   const t = await getTranslations({ locale, namespace: 'marketplace.metadata' })
-  const broker = await getBroker(id)
+  const broker = await getBroker(id, locale)
 
   if (!broker) {
     return {
@@ -45,8 +50,8 @@ export async function generateMetadata({ params }: LocaleRoutePageProps<{ id: st
 }
 
 export default async function BrokerPage({ params }: LocaleRoutePageProps<{ id: string }>) {
-  const { id } = await params
-  const broker = await getBroker(id)
+  const { id, locale } = await params
+  const broker = await getBroker(id, locale)
 
   if (!broker) notFound()
 

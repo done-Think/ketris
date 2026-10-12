@@ -9,6 +9,7 @@ import { PillBadge } from '@shared/components/ui'
 import { iconSize, motion, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { ProfileListingPreviewSectionProps } from '../../types/profile-listings'
+import { getPropertyFeatureLabel } from '../../utils/property-feature-label'
 import { buildProfileListingHref } from '../../utils/property-links'
 
 export function ProfileListingPreviewSection({
@@ -17,8 +18,10 @@ export function ProfileListingPreviewSection({
   hoverBorderColor,
   listings,
   sideBorderBreakpoint = 'md',
+  source,
 }: ProfileListingPreviewSectionProps) {
   const t = useTranslations('marketplace.publicProfile.listings')
+  const tDetail = useTranslations('marketplace.propertyDetail')
   const sideBorderStyles =
     sideBorderBreakpoint === 'lg'
       ? {
@@ -51,13 +54,14 @@ export function ProfileListingPreviewSection({
         sx={{
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+          alignContent: 'start',
           gap: 1,
         }}
       >
         {listings.map((listing) => (
           <Box
             component={Link}
-            href={buildProfileListingHref(listing.href)}
+            href={buildProfileListingHref(listing.href, source)}
             key={listing.href}
             sx={{
               display: 'block',
@@ -78,7 +82,7 @@ export function ProfileListingPreviewSection({
             <Box
               sx={{
                 position: 'relative',
-                height: 118,
+                height: { xs: 112, lg: 92 },
                 bgcolor: surface.paper,
                 backgroundImage: listing.image ? `url("${listing.image}")` : undefined,
                 backgroundPosition: 'center',
@@ -89,12 +93,12 @@ export function ProfileListingPreviewSection({
                 <PillBadge>{t('featured')}</PillBadge>
               </Box>
             </Box>
-            <Box sx={{ minWidth: 0, px: 1, py: 0.75 }}>
+            <Box sx={{ minWidth: 0, px: 1, py: 0.65 }}>
               <Typography noWrap sx={{ color: 'text.secondary', fontSize: 10, fontWeight: 900 }}>
                 {listing.location}
               </Typography>
               <Stack direction="row" alignItems="end" justifyContent="space-between" spacing={1}>
-                <Typography noWrap sx={{ color: accentColor, fontSize: 14, fontWeight: 900 }}>
+                <Typography noWrap sx={{ color: accentColor, fontSize: 13, fontWeight: 900 }}>
                   {listing.price}
                 </Typography>
                 <Box
@@ -112,7 +116,7 @@ export function ProfileListingPreviewSection({
                       noWrap
                       sx={{ color: 'text.secondary', fontSize: 9.5, fontWeight: 700 }}
                     >
-                      {detail.label}
+                      {getPropertyFeatureLabel(detail, tDetail)}
                     </Typography>
                   ))}
                 </Box>
