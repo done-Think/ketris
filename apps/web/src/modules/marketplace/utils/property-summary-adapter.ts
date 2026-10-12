@@ -1,23 +1,27 @@
 import type { PublicPropertySummary } from '../types/public-property'
 import type { SearchResultProperty, SearchResultPurpose } from '../types/search'
 import type { AppLocale } from '@/i18n/types/locale.types'
-import { formatPropertyArea, type PropertyText } from './property-presentation'
+import type { PropertyText } from './property-presentation'
 import { formatCompactCurrency } from './search-results'
 
-function buildDetails(
-  summary: PublicPropertySummary,
-  locale: AppLocale,
-  t: PropertyText,
-): SearchResultProperty['details'] {
+function buildDetails(summary: PublicPropertySummary): SearchResultProperty['details'] {
   const details: SearchResultProperty['details'] = []
 
   if (summary.bedrooms)
-    details.push({ key: 'bedrooms', label: t('bedrooms', { count: summary.bedrooms }) })
+    details.push({ key: 'bedrooms', label: String(summary.bedrooms), value: summary.bedrooms })
   if (summary.bathrooms)
-    details.push({ key: 'bathrooms', label: t('bathrooms', { count: summary.bathrooms }) })
+    details.push({
+      key: 'bathrooms',
+      label: String(summary.bathrooms),
+      value: summary.bathrooms,
+    })
   if (summary.parkingSpots)
-    details.push({ key: 'parking', label: t('parking', { count: summary.parkingSpots }) })
-  if (summary.area) details.push({ key: 'area', label: formatPropertyArea(summary.area, locale) })
+    details.push({
+      key: 'parking',
+      label: String(summary.parkingSpots),
+      value: summary.parkingSpots,
+    })
+  if (summary.area) details.push({ key: 'area', label: `${summary.area}m²`, value: summary.area })
 
   return details
 }
@@ -45,7 +49,7 @@ export function mapSummaryToSearchResult(
     location: buildLocation(summary),
     title: summary.title,
     price: buildPrice(summary, locale, t),
-    details: buildDetails(summary, locale, t),
+    details: buildDetails(summary),
     broker: summary.brokerName ?? '',
     avatar: summary.brokerAvatarUrl ?? '',
     purpose,

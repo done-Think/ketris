@@ -2,7 +2,7 @@ import type { PublicPropertyDetail } from '../types/public-property'
 import type { MarketplacePropertyDetail } from '../types/property-detail'
 import type { SearchResultProperty } from '../types/search'
 import type { AppLocale } from '@/i18n/types/locale.types'
-import { formatPropertyArea, type PropertyText } from './property-presentation'
+import type { PropertyText } from './property-presentation'
 import { formatCompactCurrency } from './search-results'
 
 const fallbackImage =
@@ -10,23 +10,25 @@ const fallbackImage =
 
 const fallbackMapCenter = { latitude: -23.5505, longitude: -46.6333 }
 
-function buildDetails(
-  property: PublicPropertyDetail,
-  locale: AppLocale,
-  t: PropertyText,
-): SearchResultProperty['details'] {
+function buildDetails(property: PublicPropertyDetail): SearchResultProperty['details'] {
   const details: SearchResultProperty['details'] = []
 
   if (property.bedrooms)
-    details.push({ key: 'bedrooms', label: t('bedrooms', { count: property.bedrooms }) })
+    details.push({ key: 'bedrooms', label: String(property.bedrooms), value: property.bedrooms })
   if (property.bathrooms)
     details.push({
       key: 'bathrooms',
-      label: t('bathrooms', { count: property.bathrooms }),
+      label: String(property.bathrooms),
+      value: property.bathrooms,
     })
   if (property.parkingSpots)
-    details.push({ key: 'parking', label: t('parking', { count: property.parkingSpots }) })
-  if (property.area) details.push({ key: 'area', label: formatPropertyArea(property.area, locale) })
+    details.push({
+      key: 'parking',
+      label: String(property.parkingSpots),
+      value: property.parkingSpots,
+    })
+  if (property.area)
+    details.push({ key: 'area', label: `${property.area}m²`, value: property.area })
 
   return details
 }
@@ -72,7 +74,7 @@ export function mapDetailToMarketplacePropertyDetail(
     category: property.propertyType,
     condominium: property.condoFee ? formatCompactCurrency(property.condoFee, locale) : '',
     price: buildPrice(property, locale, t),
-    details: buildDetails(property, locale, t),
+    details: buildDetails(property),
     description: property.description ?? '',
     address: buildAddressLine(property),
     mapCenter:

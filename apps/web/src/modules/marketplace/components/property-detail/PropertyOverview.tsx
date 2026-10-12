@@ -12,6 +12,7 @@ import { useTranslations } from 'next-intl'
 import { componentText, iconSize, radius, surface } from '@shared/theme/tokens'
 
 import type { PropertyOverviewProps } from '../../types/property-detail'
+import { getPropertyFeatureLabel } from '../../utils/property-feature-label'
 import { PropertyDetailMap } from '../PropertyDetailMap'
 
 const featureIcons = [
@@ -34,6 +35,7 @@ export function PropertyOverview({ property }: PropertyOverviewProps) {
   const t = useTranslations('marketplace.propertyDetail')
   const normalizedCategory = property.category.trim().toLocaleLowerCase('pt-BR')
   const categoryKey = propertyCategoryKeys[normalizedCategory as keyof typeof propertyCategoryKeys]
+
   return (
     <>
       <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
@@ -91,14 +93,16 @@ export function PropertyOverview({ property }: PropertyOverviewProps) {
               }}
             >
               <Icon sx={{ color: 'primary.main', fontSize: iconSize.lg, mb: 0.6 }} />
-              <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{detail.label}</Typography>
+              <Typography sx={{ fontSize: 13, fontWeight: 700 }}>
+                {getPropertyFeatureLabel(detail, t)}
+              </Typography>
             </Box>
           )
         })}
       </Box>
 
       <Typography variant="h5" sx={{ mb: 1.2 }}>
-        {t('aboutProperty')}
+        {t('about')}
       </Typography>
       <Typography sx={{ color: 'text.secondary', maxWidth: 820, mb: 4 }}>
         {property.description}
