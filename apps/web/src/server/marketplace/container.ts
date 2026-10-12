@@ -18,13 +18,17 @@ import { PrismaAgencyProfileRepository } from './infrastructure/prisma-agency-pr
 import { PrismaBrokerProfileRepository } from './infrastructure/prisma-broker-profile.repository'
 import { PrismaInquiryRepository } from './infrastructure/prisma-inquiry.repository'
 import { PrismaPublicPropertyRepository } from './infrastructure/prisma-public-property.repository'
+import { LocalProfileMediaStorage } from './infrastructure/local-profile-media-storage'
 import { S3ProfileMediaStorage } from './infrastructure/s3-profile-media-storage'
+import { shouldUseLocalUploadsStorage } from '@server/shared/storage/s3-client'
 
 const propertyRepository = new PrismaPublicPropertyRepository()
 const inquiryRepository = new PrismaInquiryRepository()
 const brokerProfileRepository = new PrismaBrokerProfileRepository()
 const agencyProfileRepository = new PrismaAgencyProfileRepository()
-const profileMediaStorage = new S3ProfileMediaStorage()
+const profileMediaStorage = shouldUseLocalUploadsStorage()
+  ? new LocalProfileMediaStorage()
+  : new S3ProfileMediaStorage()
 
 export const marketplaceContainer = {
   searchPropertiesUseCase: new SearchPropertiesUseCase(propertyRepository),
