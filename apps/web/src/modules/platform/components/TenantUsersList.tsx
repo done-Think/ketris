@@ -47,13 +47,13 @@ export function TenantUsersList({ tenantId }: TenantUsersListProps) {
           <TableBody>
             {users.map((user) => (
               <TableRow key={user.id}>
-                <TableCell>{user.nome}</TableCell>
+                <TableCell>{user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
-                <TableCell>{user.papel}</TableCell>
+                <TableCell>{user.role}</TableCell>
                 <TableCell>
                   <Chip
-                    label={user.ativo ? formsT('active') : formsT('inactive')}
-                    color={user.ativo ? 'success' : 'default'}
+                    label={user.active ? formsT('active') : formsT('inactive')}
+                    color={user.active ? 'success' : 'default'}
                     size="small"
                   />
                 </TableCell>

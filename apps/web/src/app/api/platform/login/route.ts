@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { platformContainer } from '@server/platform/container'
+import { toAuthenticatedPlatformAdminResponse } from '@server/platform/domain/platform-admin.entity'
 import { loginPlatformRequestSchema } from '@server/platform/schemas/login-platform.schema'
 import { parseJsonBody, withErrorHandling } from '@server/shared/http'
 
@@ -14,5 +15,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       password: body.password,
     })
 
-  return NextResponse.json({ admin, accessToken, refreshToken }, { status: 200 })
+  return NextResponse.json(
+    { admin: toAuthenticatedPlatformAdminResponse(admin), accessToken, refreshToken },
+    { status: 200 },
+  )
 })

@@ -5,14 +5,14 @@ import type { SchemaMessageTranslator } from '@shared/types'
 export function createPlatformAdminSchema(t: SchemaMessageTranslator) {
   return z
     .object({
-      nome: z.string().min(1, t('nameRequired')),
+      name: z.string().min(1, t('nameRequired')),
       email: z.string().min(1, t('emailRequired')).email(t('emailInvalid')),
       password: z.string().min(8, t('passwordTooShort')),
-      confirmarSenha: z.string().min(1, t('passwordConfirmationRequired')),
+      confirmPassword: z.string().min(1, t('passwordConfirmationRequired')),
       role: z.enum(['ADMIN', 'ADMIN_AGENT', 'AGENT']),
     })
-    .refine((data) => data.password === data.confirmarSenha, {
+    .refine((data) => data.password === data.confirmPassword, {
       message: t('passwordsDoNotMatch'),
-      path: ['confirmarSenha'],
+      path: ['confirmPassword'],
     })
 }

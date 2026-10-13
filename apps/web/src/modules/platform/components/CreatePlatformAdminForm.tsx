@@ -30,13 +30,13 @@ export function CreatePlatformAdminForm({ onCancel, onSuccess }: CreatePlatformA
     formState: { isSubmitting },
   } = useForm<CreatePlatformAdminFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { nome: '', email: '', password: '', confirmarSenha: '', role: 'ADMIN' },
+    defaultValues: { name: '', email: '', password: '', confirmPassword: '', role: 'ADMIN' },
   })
 
   async function onSubmit(values: CreatePlatformAdminFormValues) {
     try {
       const admin = await createPlatformAdmin.mutateAsync({
-        nome: values.nome,
+        name: values.name,
         email: values.email,
         password: values.password,
         role: values.role,
@@ -55,7 +55,7 @@ export function CreatePlatformAdminForm({ onCancel, onSuccess }: CreatePlatformA
 
   return (
     <Stack component="form" onSubmit={handleSubmit(onSubmit)} spacing={2.5} sx={{ maxWidth: 420 }}>
-      <RhfTextField control={control} name="nome" label={t('name')} fullWidth autoFocus />
+      <RhfTextField control={control} name="name" label={t('name')} fullWidth autoFocus />
       <RhfTextField
         control={control}
         name="email"
@@ -92,7 +92,7 @@ export function CreatePlatformAdminForm({ onCancel, onSuccess }: CreatePlatformA
       />
       <RhfTextField
         control={control}
-        name="confirmarSenha"
+        name="confirmPassword"
         label={t('passwordConfirmation')}
         type="password"
         autoComplete="new-password"

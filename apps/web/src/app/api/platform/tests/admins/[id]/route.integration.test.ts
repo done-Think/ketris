@@ -79,13 +79,13 @@ describe('/api/platform/admins/[id] (integração)', () => {
   })
 
   it('PATCH atualiza o nome quando autenticado', async () => {
-    const response = await PATCH(buildRequest('PATCH', { nome: 'Nome Atualizado' }, actorToken), {
+    const response = await PATCH(buildRequest('PATCH', { name: 'Nome Atualizado' }, actorToken), {
       params: Promise.resolve({ id: targetId }),
     })
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(json.admin.nome).toBe('Nome Atualizado')
+    expect(json.admin.name).toBe('Nome Atualizado')
   })
 
   it('DELETE desativa o alvo quando autenticado e o ator não é o próprio alvo', async () => {
@@ -95,21 +95,21 @@ describe('/api/platform/admins/[id] (integração)', () => {
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(json.admin.ativo).toBe(false)
+    expect(json.admin.active).toBe(false)
   })
 
   it('PATCH reativa o alvo quando autenticado', async () => {
-    const response = await PATCH(buildRequest('PATCH', { ativo: true }, actorToken), {
+    const response = await PATCH(buildRequest('PATCH', { active: true }, actorToken), {
       params: Promise.resolve({ id: targetId }),
     })
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(json.admin.ativo).toBe(true)
+    expect(json.admin.active).toBe(true)
   })
 
   it('PATCH não permite desativar o alvo', async () => {
-    const response = await PATCH(buildRequest('PATCH', { ativo: false }, actorToken), {
+    const response = await PATCH(buildRequest('PATCH', { active: false }, actorToken), {
       params: Promise.resolve({ id: targetId }),
     })
 

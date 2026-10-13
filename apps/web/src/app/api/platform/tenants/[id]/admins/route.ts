@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
+import { toAuthenticatedUserResponse } from '@server/auth/domain/user.entity'
 import { platformContainer } from '@server/platform/container'
 import { requirePlatformBearerAuth } from '@server/platform/require-platform-bearer-auth'
 import { createTenantAdminRequestSchema } from '@server/platform/schemas/create-tenant-admin.schema'
@@ -16,10 +17,10 @@ export const POST = withErrorHandling(async (request: NextRequest, context: Rout
 
   const user = await platformContainer.createTenantAdminUseCase.execute({
     tenantId: (await context.params).id,
-    nome: body.nome,
+    nome: body.name,
     email: body.email,
     password: body.password,
   })
 
-  return NextResponse.json({ user }, { status: 201 })
+  return NextResponse.json({ user: toAuthenticatedUserResponse(user) }, { status: 201 })
 })

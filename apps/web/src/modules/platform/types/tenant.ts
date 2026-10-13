@@ -9,29 +9,31 @@ export type CreateTenantAdminFormValues = z.infer<ReturnType<typeof createTenant
 
 export interface TenantSummary {
   id: string
-  nome: string
+  name: string
   slug: string
   createdAt: string
 }
 
-export type TenantUserPapel = 'ADMIN' | 'OWNER' | 'AGENT' | 'RENTER'
+export type TenantUserRole = 'ADMIN' | 'OWNER' | 'AGENT' | 'RENTER'
 
 export interface TenantUser {
   id: string
   tenantId: string
-  nome: string
+  name: string
   email: string
-  papel: TenantUserPapel
-  ativo: boolean
+  avatarUrl: string | null
+  role: TenantUserRole
+  active: boolean
+  pendingApproval: boolean
 }
 
 export interface CreateTenantPayload {
-  nome: string
+  name: string
   slug: string
 }
 
 export interface CreateTenantAdminPayload {
-  nome: string
+  name: string
   email: string
   password: string
 }
@@ -61,13 +63,13 @@ export type CreateTenantAdminFormProps = {
 }
 
 export interface CreateTenantInput {
-  nome: string
+  name: string
   slug: string
 }
 
 export interface CreateTenantAdminInput {
   tenantId: string
-  nome: string
+  name: string
   email: string
   password: string
 }

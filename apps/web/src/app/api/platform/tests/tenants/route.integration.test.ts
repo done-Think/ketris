@@ -74,7 +74,7 @@ describe('/api/platform/tenants (integração)', () => {
   it('POST cria um novo tenant quando autenticado', async () => {
     const slug = `novo-${randomUUID()}`
 
-    const response = await POST(buildRequest('POST', { nome: 'Novo Tenant', slug }, actorToken))
+    const response = await POST(buildRequest('POST', { name: 'Novo Tenant', slug }, actorToken))
     const json = await response.json()
 
     expect(response.status).toBe(201)
@@ -84,7 +84,7 @@ describe('/api/platform/tenants (integração)', () => {
 
   it('POST retorna 409 quando o slug já existe', async () => {
     const response = await POST(
-      buildRequest('POST', { nome: 'Duplicado', slug: existingTenantSlug }, actorToken),
+      buildRequest('POST', { name: 'Duplicado', slug: existingTenantSlug }, actorToken),
     )
     const json = await response.json()
 
@@ -93,7 +93,7 @@ describe('/api/platform/tenants (integração)', () => {
   })
 
   it('POST retorna 401 sem Authorization header', async () => {
-    const response = await POST(buildRequest('POST', { nome: 'X', slug: `x-${randomUUID()}` }))
+    const response = await POST(buildRequest('POST', { name: 'X', slug: `x-${randomUUID()}` }))
 
     expect(response.status).toBe(401)
   })

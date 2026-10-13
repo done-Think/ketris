@@ -29,13 +29,13 @@ export function CreateTenantForm() {
     formState: { isSubmitting },
   } = useForm<CreateTenantFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { nome: '', slug: '' },
+    defaultValues: { name: '', slug: '' },
   })
 
   async function onSubmit(values: CreateTenantFormValues) {
     try {
       const tenant = await createTenant.mutateAsync(values)
-      enqueueSnackbar(t('createTenantSuccess', { name: tenant.nome }), { variant: 'success' })
+      enqueueSnackbar(t('createTenantSuccess', { name: tenant.name }), { variant: 'success' })
       router.push({ pathname: '/platform/tenants/[id]', params: { id: tenant.id } })
     } catch (error) {
       enqueueSnackbar(extractErrorMessage(error, t('createTenantError')), { variant: 'error' })
@@ -55,7 +55,7 @@ export function CreateTenantForm() {
       }}
     >
       <Stack component="form" onSubmit={handleSubmit(onSubmit)} spacing={2.5}>
-        <RhfTextField control={control} name="nome" label={t('name')} fullWidth autoFocus />
+        <RhfTextField control={control} name="name" label={t('name')} fullWidth autoFocus />
         <RhfTextField
           control={control}
           name="slug"

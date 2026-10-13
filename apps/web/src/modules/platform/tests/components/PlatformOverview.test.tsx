@@ -70,7 +70,7 @@ function renderOverview() {
 describe('PlatformOverview', () => {
   const existingTenant = {
     id: 'existing',
-    nome: 'Existing agency',
+    name: 'Existing agency',
     slug: 'agency',
     createdAt: '2024-01-01T00:00:00Z',
   }

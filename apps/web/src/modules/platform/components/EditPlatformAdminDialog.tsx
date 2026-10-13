@@ -47,11 +47,11 @@ export function EditPlatformAdminDialog({ admin, onClose }: EditPlatformAdminDia
     formState: { errors },
   } = useForm<UpdatePlatformAdminFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { nome: '', email: '', role: 'ADMIN' },
+    defaultValues: { name: '', email: '', role: 'ADMIN' },
   })
 
   useEffect(() => {
-    if (admin) reset({ nome: admin.nome, email: admin.email, role: admin.role })
+    if (admin) reset({ name: admin.name, email: admin.email, role: admin.role })
   }, [admin, reset])
 
   async function onSubmit(values: UpdatePlatformAdminFormValues) {
@@ -59,7 +59,7 @@ export function EditPlatformAdminDialog({ admin, onClose }: EditPlatformAdminDia
     try {
       await updateAdmin.mutateAsync({
         id: admin.id,
-        nome: values.nome,
+        name: values.name,
         email: values.email,
         role: values.role,
       })
@@ -102,9 +102,9 @@ export function EditPlatformAdminDialog({ admin, onClose }: EditPlatformAdminDia
           <Stack spacing={2} sx={{ pt: 1 }}>
             <TextField
               label={t('name')}
-              error={Boolean(errors.nome)}
-              helperText={errors.nome?.message}
-              {...register('nome')}
+              error={Boolean(errors.name)}
+              helperText={errors.name?.message}
+              {...register('name')}
               autoFocus
             />
             <TextField

@@ -13,21 +13,21 @@ export type UpdatePlatformAdminFormValues = z.infer<
 
 export interface PlatformAdminAccount {
   id: string
-  nome: string
+  name: string
   email: string
   role: PlatformAdminRole
-  ativo: boolean
+  active: boolean
 }
 
 export interface CreatePlatformAdminPayload {
-  nome: string
+  name: string
   email: string
   password: string
   role: PlatformAdminRole
 }
 
 export interface UpdatePlatformAdminPayload {
-  nome: string
+  name: string
   email: string
   role: PlatformAdminRole
 }
@@ -41,7 +41,7 @@ export interface ListPlatformAdminsResponse {
 }
 
 export interface CreatePlatformAdminInput {
-  nome: string
+  name: string
   email: string
   password: string
   role: PlatformAdminRole
@@ -49,7 +49,7 @@ export interface CreatePlatformAdminInput {
 
 export interface UpdatePlatformAdminInput {
   id: string
-  nome: string
+  name: string
   email: string
   role: PlatformAdminRole
 }
