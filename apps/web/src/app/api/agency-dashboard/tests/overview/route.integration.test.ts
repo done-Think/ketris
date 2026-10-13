@@ -211,6 +211,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
         tenantId,
         responsavelId: brokerId,
         titulo: 'Visita agendada ao Apartamento Batel',
+        tipo: 'VISIT',
         inicio: new Date('2026-09-28T14:00:00.000Z'),
         fim: new Date('2026-09-28T15:00:00.000Z'),
         participanteNome: 'Cliente Interessado',

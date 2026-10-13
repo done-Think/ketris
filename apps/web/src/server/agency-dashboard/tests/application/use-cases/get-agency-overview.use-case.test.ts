@@ -9,6 +9,7 @@ const topBroker: AgencyTopBroker = {
   id: 'broker-1',
   name: 'Marina Souza',
   avatarUrl: null,
+  hasPublicProfile: true,
   salesCount: 2,
   revenueTotal: 5000,
   recentSales: [

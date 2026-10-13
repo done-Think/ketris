@@ -29,6 +29,7 @@ export type AgencyTopBroker = {
   id: string
   name: string
   profileId: string
+  hasPublicProfile: boolean
   sales: number
   revenue: string
   avatarUrl?: string | null

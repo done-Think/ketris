@@ -10,10 +10,6 @@ import { httpClient } from '@shared/lib/api/http-client'
 import type { AgendaEventNotificationSource } from '@shared/types/dashboard-agenda-notifications'
 import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
 
-function isVisitEvent(title: string) {
-  return title.toLocaleLowerCase('pt-BR').includes('visita')
-}
-
 export function useDashboardAgendaNotifications(): DashboardNotificationItem[] {
   const { data: session } = useSession()
   const tenantId = session?.tenantId
@@ -36,7 +32,7 @@ export function useDashboardAgendaNotifications(): DashboardNotificationItem[] {
     const events = eventsQuery.data ?? []
 
     return events
-      .filter((event) => event.status !== 'CANCELLED' && isVisitEvent(event.title))
+      .filter((event) => event.status !== 'CANCELLED' && event.kind === 'VISIT')
       .map((event) => ({
         href: { pathname: '/dashboard/agenda' as const, query: { eventId: event.id } },
         id: `${event.id}-today-visit`,

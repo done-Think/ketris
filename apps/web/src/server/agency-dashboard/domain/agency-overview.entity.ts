@@ -25,6 +25,7 @@ export interface AgencyTopBroker {
   id: string
   name: string
   avatarUrl: string | null
+  hasPublicProfile: boolean
   salesCount: number
   revenueTotal: number
   recentSales: AgencyBrokerSale[]

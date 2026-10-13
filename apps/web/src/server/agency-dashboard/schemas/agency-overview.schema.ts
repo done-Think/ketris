@@ -35,6 +35,7 @@ export const agencyTopBrokerSchema = z
     id: z.string(),
     name: z.string(),
     avatarUrl: z.string().nullable(),
+    hasPublicProfile: z.boolean(),
     salesCount: z.number().int(),
     revenueTotal: z.number(),
     recentSales: z.array(agencyBrokerSaleSchema),

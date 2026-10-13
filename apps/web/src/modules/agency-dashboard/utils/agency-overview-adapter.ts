@@ -95,6 +95,7 @@ export function mapTopBrokersToAgencyTopBrokers(
     id: broker.id,
     name: broker.name,
     profileId: broker.id,
+    hasPublicProfile: broker.hasPublicProfile,
     sales: broker.salesCount,
     revenue: formatCurrency(broker.revenueTotal),
     avatarUrl: broker.avatarUrl,

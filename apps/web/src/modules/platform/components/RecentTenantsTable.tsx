@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, Chip, Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import type { GridColDef } from '@mui/x-data-grid'
 import { useFormatter, useTranslations } from 'next-intl'
@@ -10,18 +10,6 @@ import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 import type { RecentTenant } from '../types/platform-overview'
 import { platformTenantGridSx } from './platform-tenant-table.styles'
 import { usePlatformGridLocale } from '../hooks/use-platform-grid-locale'
-
-const planSx = {
-  enterprise: { bgcolor: '#FCE3F1', color: brand.magenta[600] },
-  proGrowth: { bgcolor: '#E8F0FF', color: brand.semantic.info },
-  starterPack: { bgcolor: brand.neutral[100], color: brand.neutral[500] },
-} as const
-
-const statusSx = {
-  active: { bgcolor: '#E7F7EE', color: brand.semantic.success },
-  provisioning: { bgcolor: '#FFF0E6', color: '#D97706' },
-  suspended: { bgcolor: '#FDEBEC', color: brand.semantic.error },
-} as const
 
 export function RecentTenantsTable({ tenants }: { tenants: readonly RecentTenant[] }) {
   const t = useTranslations('platform.overview.recentTenants')
@@ -55,17 +43,6 @@ export function RecentTenantsTable({ tenants }: { tenants: readonly RecentTenant
       ),
     },
     {
-      field: 'plan',
-      headerName: t('columns.plan'),
-      align: 'center',
-      headerAlign: 'center',
-      flex: 0.9,
-      minWidth: 130,
-      renderCell: ({ row }) => (
-        <Chip label={t(`plans.${row.plan}`)} size="small" sx={{ ...chipSx, ...planSx[row.plan] }} />
-      ),
-    },
-    {
       field: 'brokers',
       headerName: t('columns.brokers'),
       align: 'center',
@@ -74,9 +51,17 @@ export function RecentTenantsTable({ tenants }: { tenants: readonly RecentTenant
       minWidth: 110,
     },
     {
+      field: 'properties',
+      headerName: t('columns.properties'),
+      align: 'center',
+      headerAlign: 'center',
+      flex: 0.7,
+      minWidth: 110,
+    },
+    {
       field: 'registeredAt',
       valueFormatter: (value: string) =>
-        format.dateTime(new Date(`${value}T00:00:00Z`), {
+        format.dateTime(new Date(value), {
           day: '2-digit',
           month: '2-digit',
           year: 'numeric',
@@ -87,21 +72,6 @@ export function RecentTenantsTable({ tenants }: { tenants: readonly RecentTenant
       headerAlign: 'center',
       flex: 0.9,
       minWidth: 130,
-    },
-    {
-      field: 'status',
-      headerName: t('columns.status'),
-      align: 'center',
-      headerAlign: 'center',
-      flex: 0.9,
-      minWidth: 130,
-      renderCell: ({ row }) => (
-        <Chip
-          label={t(`statuses.${row.status}`)}
-          size="small"
-          sx={{ ...chipSx, ...statusSx[row.status] }}
-        />
-      ),
     },
   ]
 
@@ -147,5 +117,3 @@ export function RecentTenantsTable({ tenants }: { tenants: readonly RecentTenant
     </Box>
   )
 }
-
-const chipSx = { borderRadius: `${radius.full}px`, fontSize: 10, fontWeight: 800, height: 22 }
