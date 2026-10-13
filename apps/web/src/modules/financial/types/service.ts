@@ -102,6 +102,7 @@ export interface FinancialSummary {
   monthlyReceivable: number
   overdueTotal: number
   defaultRatePercentage: number
+  occupancyRatePercentage: number
   monthlySeries: FinancialMonthlyTotal[]
   upcomingDues: FinancialUpcomingCharge[]
 }

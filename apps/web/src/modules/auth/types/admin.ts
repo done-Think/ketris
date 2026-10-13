@@ -1,4 +1,13 @@
+import type { z } from 'zod'
+
+import type { createAdminSchema } from '../schemas/create-admin-schema'
+import type { createUpdateAdminSchema } from '../schemas/update-admin-schema'
+
 export type Role = 'ADMIN' | 'OWNER' | 'AGENT' | 'RENTER'
+
+export type CreateAdminFormValues = z.infer<ReturnType<typeof createAdminSchema>>
+
+export type UpdateAdminFormValues = z.infer<ReturnType<typeof createUpdateAdminSchema>>
 
 export interface AdminUser {
   id: string

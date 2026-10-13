@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import type { SchemaMessageTranslator } from './email-schema'
+import type { SchemaMessageTranslator } from '@shared/types'
 
 export function isValidCpf(value: string): boolean {
   const digits = value.replace(/\D/g, '')

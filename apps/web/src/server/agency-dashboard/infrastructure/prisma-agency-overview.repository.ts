@@ -65,7 +65,14 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
             id: true,
             titulo: true,
             endereco: { select: { bairro: true, cidade: true } },
-            responsavel: { select: { id: true, nome: true, avatarUrl: true } },
+            responsavel: {
+              select: {
+                id: true,
+                nome: true,
+                avatarUrl: true,
+                perfilPublico: { select: { status: true } },
+              },
+            },
           },
         },
       },
@@ -77,6 +84,7 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
         id: string
         name: string
         avatarUrl: string | null
+        hasPublicProfile: boolean
         salesCount: number
         revenueTotal: number
         sales: AgencyBrokerSale[]
@@ -89,6 +97,7 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
         id: broker.id,
         name: broker.nome,
         avatarUrl: broker.avatarUrl,
+        hasPublicProfile: broker.perfilPublico?.status === 'PUBLISHED',
         salesCount: 0,
         revenueTotal: 0,
         sales: [],
@@ -115,6 +124,7 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
         id: entry.id,
         name: entry.name,
         avatarUrl: entry.avatarUrl,
+        hasPublicProfile: entry.hasPublicProfile,
         salesCount: entry.salesCount,
         revenueTotal: entry.revenueTotal,
         recentSales: entry.sales.slice(0, RECENT_SALES_PER_BROKER_LIMIT),
@@ -136,7 +146,7 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
         include: { responsavel: { select: { nome: true } } },
       }),
       prisma.eventoAgenda.findMany({
-        where: { tenantId, titulo: { contains: 'visita', mode: 'insensitive' } },
+        where: { tenantId, tipo: 'VISIT' },
         orderBy: { createdAt: 'desc' },
         take: PER_SOURCE_ACTIVITY_LIMIT,
         include: { responsavel: { select: { nome: true } } },

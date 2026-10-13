@@ -1,11 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-interface SidebarPreferencesState {
-  isCollapsed: boolean
-  setCollapsed: (isCollapsed: boolean) => void
-  toggleCollapsed: () => void
-}
+import type { SidebarPreferencesState } from '@shared/types'
 
 export const useSidebarPreferencesStore = create<SidebarPreferencesState>()(
   persist(

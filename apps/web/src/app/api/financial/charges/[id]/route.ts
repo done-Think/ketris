@@ -40,3 +40,15 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Rou
 
   return NextResponse.json({ charge }, { status: 200 })
 })
+
+export const DELETE = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
+  const actor = await requireBearerAuth(request, authContainer.tokenService)
+
+  await financialContainer.deleteChargeUseCase.execute({
+    actorTenantId: actor.tenantId,
+    actorPapel: actor.papel as Papel,
+    chargeId: (await context.params).id,
+  })
+
+  return new NextResponse(null, { status: 204 })
+})

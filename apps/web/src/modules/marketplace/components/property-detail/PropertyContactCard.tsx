@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Avatar, Box, Button, Divider, Stack, Typography } from '@mui/material'
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined'
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined'
@@ -7,10 +8,12 @@ import { useTranslations } from 'next-intl'
 
 import { alpha, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
-import type { PropertyContactCardProps } from '../../types/property-detail'
+import type { PropertyContactCardProps, PropertyInquiryMode } from '../../types/property-detail'
+import { PropertyInquiryDialog } from './PropertyInquiryDialog'
 
 export function PropertyContactCard({ property }: PropertyContactCardProps) {
   const t = useTranslations('marketplace.propertyDetail')
+  const [inquiryMode, setInquiryMode] = useState<PropertyInquiryMode | null>(null)
 
   return (
     <Box
@@ -33,10 +36,16 @@ export function PropertyContactCard({ property }: PropertyContactCardProps) {
       </Typography>
 
       <Stack spacing={1} sx={{ mb: 2 }}>
-        <Button variant="contained" size="large" fullWidth>
+        <Button variant="contained" size="large" fullWidth onClick={() => setInquiryMode('visit')}>
           {t('scheduleVisit')}
         </Button>
-        <Button variant="outlined" color="secondary" size="large" fullWidth>
+        <Button
+          variant="outlined"
+          color="secondary"
+          size="large"
+          fullWidth
+          onClick={() => setInquiryMode('proposal')}
+        >
           {t('sendProposal')}
         </Button>
       </Stack>
@@ -77,6 +86,15 @@ export function PropertyContactCard({ property }: PropertyContactCardProps) {
           </Button>
         ))}
       </Stack>
+
+      {inquiryMode && (
+        <PropertyInquiryDialog
+          open
+          mode={inquiryMode}
+          propertyId={property.id}
+          onClose={() => setInquiryMode(null)}
+        />
+      )}
     </Box>
   )
 }

@@ -15,11 +15,7 @@ import { useTranslations } from 'next-intl'
 import { iconSize } from '@shared/theme/tokens'
 
 import { CreatePlatformAdminForm } from './CreatePlatformAdminForm'
-
-type CreatePlatformAdminDialogProps = {
-  open: boolean
-  onClose: () => void
-}
+import type { CreatePlatformAdminDialogProps } from '../types/platform-admin'
 
 export function CreatePlatformAdminDialog({ open, onClose }: CreatePlatformAdminDialogProps) {
   const t = useTranslations('platform.admins')

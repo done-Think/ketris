@@ -137,20 +137,9 @@
       "tableLabel": "Tabla de tenants recientes",
       "columns": {
         "name": "Nombre / Inmobiliaria",
-        "plan": "Plan",
         "brokers": "Corredores",
-        "registeredAt": "Registro",
-        "status": "Estado"
-      },
-      "plans": {
-        "enterprise": "Enterprise",
-        "proGrowth": "Pro Growth",
-        "starterPack": "Starter Pack"
-      },
-      "statuses": {
-        "active": "Activo",
-        "provisioning": "En aprovisionamiento",
-        "suspended": "Suspendido"
+        "properties": "Inmuebles",
+        "registeredAt": "Registro"
       }
     }
   },

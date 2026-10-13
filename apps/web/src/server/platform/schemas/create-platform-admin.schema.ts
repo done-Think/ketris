@@ -5,7 +5,7 @@ import { authenticatedPlatformAdminSchema } from './platform-admin.schema'
 
 export const createPlatformAdminRequestSchema = z
   .object({
-    nome: z.string().min(1, 'Nome é obrigatório.').openapi({ example: 'Sócio Ketris' }),
+    name: z.string().min(1, 'Nome é obrigatório.').openapi({ example: 'Sócio Ketris' }),
     email: z.string().email('E-mail inválido.').openapi({ example: 'socio@ketris.dev' }),
     password: z
       .string()

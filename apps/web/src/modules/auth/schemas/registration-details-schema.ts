@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import type { SchemaMessageTranslator } from '@shared/schemas/email-schema'
+import type { SchemaMessageTranslator } from '@shared/types'
 
 import { createEmailSchema } from './login-schema'
 
@@ -54,7 +54,3 @@ export function createRegistrationDetailsSchema(t: SchemaMessageTranslator) {
       }
     })
 }
-
-export type RegistrationDetailsFormValues = z.infer<
-  ReturnType<typeof createRegistrationDetailsSchema>
->

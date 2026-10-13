@@ -1,4 +1,10 @@
 import type { ReactNode } from 'react'
+import type { Dayjs } from 'dayjs'
+
+import type { AgendaEventApi } from '@modules/agenda/types/agenda-event'
+import type { Lead } from '@modules/crm/types/lead'
+import type { Opportunity } from '@modules/crm/types/opportunity'
+import type { FinancialSummary } from '@modules/financial/types/service'
 
 export type DashboardMetricTone = 'success' | 'danger'
 
@@ -11,6 +17,15 @@ export type DashboardMetric = {
 
 export type DashboardMetricGridProps = {
   metrics: DashboardMetric[]
+}
+
+export type BuildDashboardMetricsParams = {
+  leads: Lead[]
+  opportunities: Opportunity[]
+  monthEvents: AgendaEventApi[]
+  financialSummary: FinancialSummary | undefined
+  today: Dayjs
+  t: (key: string, values?: Record<string, string | number>) => string
 }
 
 export type DashboardPerformancePoint = {

@@ -1,7 +1,11 @@
+import type { z } from 'zod'
+
+import type { createContactFormSchema } from '../schemas/contact-schema'
+
 export type ContactType = 'Proprietário' | 'Locatário' | 'Corretor'
 export type ContactFilterKey = 'all' | 'owners' | 'tenants' | 'brokers'
 
-import type { ContactFormValues } from '../schemas/contact-schema'
+export type ContactFormValues = z.infer<ReturnType<typeof createContactFormSchema>>
 
 export type ApiContactType = 'PROPRIETARIO' | 'LOCATARIO' | 'CORRETOR'
 

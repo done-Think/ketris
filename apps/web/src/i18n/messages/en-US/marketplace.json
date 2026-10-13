@@ -233,6 +233,28 @@
       "call": "Call",
       "whatsapp": "WhatsApp",
       "email": "Email"
+    },
+    "inquiryDialog": {
+      "visitTitle": "Schedule a visit",
+      "proposalTitle": "Send a proposal",
+      "visitDescription": "Leave your details and the listing agent will reach out to schedule the visit.",
+      "proposalDescription": "Leave your details and, if you'd like, the proposed value — the listing agent will reach out.",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "proposedValue": "Proposed value",
+      "notes": "Message (optional)",
+      "notesPlaceholderVisit": "E.g.: I'm available on Saturday afternoons.",
+      "notesPlaceholderProposal": "E.g.: I can negotiate the down payment.",
+      "cancel": "Cancel",
+      "submit": "Send",
+      "success": "Message sent! The agent will reach out soon.",
+      "error": "Could not send your message. Please try again.",
+      "errors": {
+        "nameRequired": "Enter your name",
+        "emailInvalid": "Enter a valid email",
+        "proposedValueInvalid": "Enter a valid value"
+      }
     }
   },
   "propertyFeatures": {

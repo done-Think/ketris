@@ -78,6 +78,7 @@ export const financialSummarySchema = z
     monthlyReceivable: z.number(),
     overdueTotal: z.number(),
     defaultRatePercentage: z.number(),
+    occupancyRatePercentage: z.number(),
     monthlySeries: z.array(financialMonthlyTotalSchema),
     upcomingDues: z.array(financialUpcomingChargeSchema),
   })

@@ -62,5 +62,6 @@ export type ChargeRowProps = {
   labels: Record<string, string>
   onEdit: () => void
   onArchive: () => void
+  onDelete: () => void
   onView: () => void
 }

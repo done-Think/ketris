@@ -3,7 +3,6 @@
 import { Box, MenuItem, Stack } from '@mui/material'
 import dayjs from 'dayjs'
 import { useTranslations } from 'next-intl'
-import type { Control } from 'react-hook-form'
 import { useWatch } from 'react-hook-form'
 
 import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
@@ -12,7 +11,7 @@ import {
   agendaEventKindOptions,
   agendaOtherPropertyValue,
 } from '../schemas/agenda-event-form-schema'
-import type { AgendaEventFormValues, AgendaPropertyOption } from '../types/agenda-event'
+import type { AgendaEventFormFieldsProps } from '../types/agenda-event'
 import {
   AGENDA_BUSINESS_HOURS_END,
   AGENDA_BUSINESS_HOURS_START,
@@ -33,13 +32,6 @@ function getMinTimeForDate(scheduledDate: string): string {
 }
 
 const phoneMask = [{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }]
-
-export interface AgendaEventFormFieldsProps {
-  control: Control<AgendaEventFormValues>
-  maxDate: string
-  minDate: string
-  propertyOptions: AgendaPropertyOption[]
-}
 
 export function AgendaEventFormFields({
   control,

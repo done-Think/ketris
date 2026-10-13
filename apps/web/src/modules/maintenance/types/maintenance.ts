@@ -8,6 +8,14 @@ export type MaintenanceCreateTicketFormValues = {
   description: string
 }
 
+export type MaintenanceCreateTicketDialogProps = {
+  open: boolean
+  onClose: () => void
+  onCreate: (values: MaintenanceCreateTicketFormValues) => void
+  initialValues?: MaintenanceCreateTicketFormValues
+  mode?: 'create' | 'edit'
+}
+
 export type MaintenanceStatus = 'inProgress' | 'open' | 'resolved' | 'closed'
 
 export interface MaintenanceTicket {

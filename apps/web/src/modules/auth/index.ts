@@ -14,14 +14,10 @@ export { isRegistrationProfileId } from './config/registration-profiles'
 export type { RegistrationProfile, RegistrationProfileId } from './types/registration'
 export { authRoutes } from './config/auth-routes'
 export { createLoginSchema, type LoginFormValues } from './schemas/login-schema'
-export {
-  createPasswordRecoverySchema,
-  type PasswordRecoveryFormValues,
-} from './schemas/password-recovery-schema'
-export {
-  createRegistrationDetailsSchema,
-  type RegistrationDetailsFormValues,
-} from './schemas/registration-details-schema'
+export { createPasswordRecoverySchema } from './schemas/password-recovery-schema'
+export type { PasswordRecoveryFormValues } from './types/password-recovery'
+export { createRegistrationDetailsSchema } from './schemas/registration-details-schema'
+export type { RegistrationDetailsFormValues } from './types/registration'
 export * from './schemas/sign-in-schema'
 export * from './schemas/create-admin-schema'
 export * from './schemas/update-admin-schema'

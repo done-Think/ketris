@@ -23,3 +23,7 @@ export interface PlatformTenantEditDialogProps {
   onClose: () => void
   onSave: (tenant: PlatformTenant) => void
 }
+
+export type PlatformTenantPlanFilter = 'all' | PlatformTenantPlan
+
+export type PlatformTenantStatusFilter = 'all' | PlatformTenantStatus

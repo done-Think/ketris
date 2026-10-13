@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 
 import { getLocalizedPathname } from '@/i18n/locale-prefix'
-import type { RegistrationDetailsFormValues } from '../schemas/registration-details-schema'
+import type { RegistrationDetailsFormValues } from '../types/registration'
 import type { RegisterErrorBody, RegisterResponseBody } from '../types/registration'
 
 export function useRegister() {

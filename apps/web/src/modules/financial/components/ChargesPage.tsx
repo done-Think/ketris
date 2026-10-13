@@ -34,7 +34,12 @@ import {
 } from '@shared/components/layout'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 import { formatCurrency } from '@shared/lib/utils/format'
-import { useCharges, useCreateCharge, useUpdateCharge } from '../hooks/use-financial'
+import {
+  useCharges,
+  useCreateCharge,
+  useDeleteCharge,
+  useUpdateCharge,
+} from '../hooks/use-financial'
 import { getMonthlyReceivable, mapChargeListItemFromApi } from '../utils/charge-adapter'
 import { errorMessage } from '../utils/error-message'
 import type {
@@ -46,6 +51,7 @@ import type {
 import { ArchiveChargeDialog } from './ArchiveChargeDialog'
 import { ChargeRow } from './ChargeRow'
 import { CreateChargeDialog } from './CreateChargeDialog'
+import { DeleteChargeDialog } from './DeleteChargeDialog'
 import { EditChargeDialog } from './EditChargeDialog'
 import { Metric } from './Metric'
 
@@ -65,6 +71,7 @@ export function ChargesPage() {
   )
   const createChargeMutation = useCreateCharge(tenantId)
   const updateChargeMutation = useUpdateCharge(tenantId)
+  const deleteChargeMutation = useDeleteCharge(tenantId)
   const [direction, setDirection] = useState<ChargeDirection>('receivable')
   const [status, setStatus] = useState<'all' | ChargeStatus>('all')
   const [query, setQuery] = useState('')
@@ -73,6 +80,7 @@ export function ChargesPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [editingChargeId, setEditingChargeId] = useState<string | null>(null)
   const [archivingChargeId, setArchivingChargeId] = useState<string | null>(null)
+  const [deletingChargeId, setDeletingChargeId] = useState<string | null>(null)
   const router = useRouter()
   const normalized = query.trim().toLocaleLowerCase(locale)
   const visible = useMemo(
@@ -165,6 +173,18 @@ export function ChargesPage() {
         },
       },
     )
+  }
+  const deleteCharge = () => {
+    if (!deletingChargeId) return
+    deleteChargeMutation.mutate(deletingChargeId, {
+      onSuccess: () => {
+        setDeletingChargeId(null)
+        enqueueSnackbar(t('feedback.deleted'), { variant: 'success' })
+      },
+      onError: (error) => {
+        enqueueSnackbar(errorMessage(error, t('feedback.deleteError')), { variant: 'error' })
+      },
+    })
   }
   return (
     <Box sx={{ width: '100%', p: 3.5 }}>
@@ -380,10 +400,12 @@ export function ChargesPage() {
                       view: t('detailsDialog.title'),
                       edit: t('actions.edit'),
                       archive: t('actions.archive'),
+                      delete: t('actions.delete'),
                       status: t(`statuses.${charge.status}`),
                     }}
                     onEdit={() => setEditingChargeId(charge.id)}
                     onArchive={() => setArchivingChargeId(charge.id)}
+                    onDelete={() => setDeletingChargeId(charge.id)}
                     onView={() =>
                       router.push({
                         pathname: '/dashboard/finance/charges/[id]',
@@ -423,6 +445,11 @@ export function ChargesPage() {
         open={Boolean(archivingChargeId)}
         onClose={() => setArchivingChargeId(null)}
         onConfirm={archiveCharge}
+      />
+      <DeleteChargeDialog
+        open={Boolean(deletingChargeId)}
+        onClose={() => setDeletingChargeId(null)}
+        onConfirm={deleteCharge}
       />
     </Box>
   )

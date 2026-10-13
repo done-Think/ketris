@@ -4,8 +4,7 @@ import type {
   CreateDashboardPropertyFormValues,
   CreatePropertyPurpose,
 } from '../types/dashboard-property'
-
-export type SchemaMessageTranslator = (key: string) => string
+import type { SchemaMessageTranslator } from '@shared/types'
 
 export function createDashboardPropertySchema(t: SchemaMessageTranslator) {
   const numberField = z.coerce.number().nonnegative(t('numberInvalid'))

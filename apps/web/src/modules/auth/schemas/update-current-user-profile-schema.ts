@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export type SchemaMessageTranslator = (key: string) => string
+import type { SchemaMessageTranslator } from '@shared/types'
 
 export function createUpdateCurrentUserProfileSchema(t: SchemaMessageTranslator) {
   return z.object({

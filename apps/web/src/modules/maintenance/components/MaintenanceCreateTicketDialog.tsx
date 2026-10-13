@@ -25,7 +25,10 @@ import { iconSize, brand, radius } from '@shared/theme/tokens'
 import { useProperties } from '@modules/properties/hooks/use-properties'
 
 import { createMaintenanceTicketSchema } from '../schemas/maintenance-ticket-schema'
-import type { MaintenanceCreateTicketFormValues } from '../types/maintenance'
+import type {
+  MaintenanceCreateTicketDialogProps,
+  MaintenanceCreateTicketFormValues,
+} from '../types/maintenance'
 
 const defaultValues: MaintenanceCreateTicketFormValues = {
   propertyId: '',
@@ -36,14 +39,6 @@ const defaultValues: MaintenanceCreateTicketFormValues = {
 }
 
 const categoryOptions = ['Hidráulica', 'Elétrica', 'Estrutural', 'Pintura'] as const
-
-export type MaintenanceCreateTicketDialogProps = {
-  open: boolean
-  onClose: () => void
-  onCreate: (values: MaintenanceCreateTicketFormValues) => void
-  initialValues?: MaintenanceCreateTicketFormValues
-  mode?: 'create' | 'edit'
-}
 
 export function MaintenanceCreateTicketDialog({
   open,

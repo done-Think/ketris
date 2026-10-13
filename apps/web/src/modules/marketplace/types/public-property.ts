@@ -67,3 +67,22 @@ export interface SearchPropertiesFilters {
   hasParking?: boolean
   sortBy?: PropertySortOption
 }
+
+export interface SubmitInquiryPayload {
+  leadName: string
+  leadEmail: string
+  leadPhone?: string
+  proposedValue?: number
+  notes?: string
+}
+
+export interface SubmitInquiryResult {
+  id: string
+  propertyId: string
+  status: 'ENVIADA'
+  createdAt: string
+}
+
+export interface SubmitInquiryResponse {
+  inquiry: SubmitInquiryResult
+}

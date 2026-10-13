@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import type { ChangeEvent } from 'react'
+import { useRef, useState } from 'react'
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
 import AttachFileRoundedIcon from '@mui/icons-material/AttachFileRounded'
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
@@ -28,6 +29,7 @@ import {
   useAddMaintenanceTicketNote,
   useMaintenanceTicket,
   useResolveMaintenanceTicket,
+  useUploadMaintenanceTicketAttachment,
 } from '../hooks/use-maintenance'
 import type { MaintenancePriority, MaintenanceStatus } from '../types/maintenance'
 import { errorMessage } from '../utils/error-message'
@@ -81,10 +83,12 @@ export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) 
   const { data: session } = useSession()
   const tenantId = session?.tenantId
   const [message, setMessage] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const ticketQuery = useMaintenanceTicket(tenantId, ticketId)
   const resolveMutation = useResolveMaintenanceTicket(tenantId, ticketId)
   const addNoteMutation = useAddMaintenanceTicketNote(tenantId, ticketId)
+  const uploadAttachmentMutation = useUploadMaintenanceTicketAttachment(tenantId, ticketId)
 
   const ticket = ticketQuery.data
 
@@ -94,6 +98,21 @@ export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) 
       enqueueSnackbar(t('notifications.resolveSuccess'), { variant: 'success' })
     } catch (error) {
       enqueueSnackbar(errorMessage(error, t('notifications.resolveError')), { variant: 'error' })
+    }
+  }
+
+  async function handleAttachmentChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+
+    try {
+      await uploadAttachmentMutation.mutateAsync(file)
+      enqueueSnackbar(t('notifications.attachmentSuccess'), { variant: 'success' })
+    } catch (error) {
+      enqueueSnackbar(errorMessage(error, t('notifications.attachmentError')), {
+        variant: 'error',
+      })
     }
   }
 
@@ -379,11 +398,25 @@ export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) 
                 }}
               />
               <Stack direction="row" justifyContent="space-between" sx={{ mt: 1 }}>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  hidden
+                  onChange={handleAttachmentChange}
+                />
                 <Button
                   variant="outlined"
-                  startIcon={<AttachFileRoundedIcon />}
+                  startIcon={
+                    uploadAttachmentMutation.isPending ? (
+                      <CircularProgress size={16} color="inherit" />
+                    ) : (
+                      <AttachFileRoundedIcon />
+                    )
+                  }
                   sx={secondaryButtonSx}
-                  disabled
+                  disabled={uploadAttachmentMutation.isPending}
+                  onClick={() => fileInputRef.current?.click()}
                 >
                   {detailT('actions.attachFiles')}
                 </Button>

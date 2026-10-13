@@ -6,9 +6,12 @@ import { ListMaintenanceTicketActivitiesUseCase } from './application/use-cases/
 import { ListMaintenanceTicketsUseCase } from './application/use-cases/list-maintenance-tickets.use-case'
 import { ResolveMaintenanceTicketUseCase } from './application/use-cases/resolve-maintenance-ticket.use-case'
 import { UpdateMaintenanceTicketUseCase } from './application/use-cases/update-maintenance-ticket.use-case'
+import { UploadMaintenanceTicketAttachmentUseCase } from './application/use-cases/upload-maintenance-ticket-attachment.use-case'
+import { S3MaintenanceAttachmentStorage } from './infrastructure/s3-maintenance-attachment-storage'
 import { PrismaMaintenanceTicketRepository } from './infrastructure/prisma-maintenance-ticket.repository'
 
 const maintenanceTicketRepository = new PrismaMaintenanceTicketRepository()
+const maintenanceAttachmentStorage = new S3MaintenanceAttachmentStorage()
 
 export const maintenanceContainer = {
   createMaintenanceTicketUseCase: new CreateMaintenanceTicketUseCase(maintenanceTicketRepository),
@@ -20,5 +23,9 @@ export const maintenanceContainer = {
   addMaintenanceTicketNoteUseCase: new AddMaintenanceTicketNoteUseCase(maintenanceTicketRepository),
   listMaintenanceTicketActivitiesUseCase: new ListMaintenanceTicketActivitiesUseCase(
     maintenanceTicketRepository,
+  ),
+  uploadMaintenanceTicketAttachmentUseCase: new UploadMaintenanceTicketAttachmentUseCase(
+    maintenanceTicketRepository,
+    maintenanceAttachmentStorage,
   ),
 }

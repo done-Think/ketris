@@ -14,6 +14,7 @@ import {
 } from './schemas/list-platform-admins.schema'
 import { listTenantUsersResponseSchema } from './schemas/list-tenant-users.schema'
 import { listTenantsResponseSchema } from './schemas/list-tenants.schema'
+import { platformOverviewResponseSchema } from './schemas/platform-overview.schema'
 import {
   loginPlatformRequestSchema,
   loginPlatformResponseSchema,
@@ -193,6 +194,24 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
       },
       404: {
         description: 'Platform admin não encontrado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'get',
+    path: '/platform/overview',
+    tags: ['Platform'],
+    summary: 'Métricas agregadas da plataforma (tenants, corretores, imóveis, crescimento)',
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: 'Visão geral da plataforma.',
+        content: { 'application/json': { schema: platformOverviewResponseSchema } },
+      },
+      401: {
+        description: 'Access token de platform admin ausente, inválido ou expirado.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },

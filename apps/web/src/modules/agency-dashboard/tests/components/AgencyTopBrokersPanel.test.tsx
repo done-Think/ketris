@@ -13,6 +13,7 @@ const topBrokers: AgencyTopBroker[] = [
     id: 'broker-1',
     name: 'Marina Souza',
     profileId: 'broker-1',
+    hasPublicProfile: true,
     sales: 2,
     revenue: 'R$ 5.000,00',
     avatarUrl: null,

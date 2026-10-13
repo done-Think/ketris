@@ -1,14 +1,13 @@
 import { z } from 'zod'
 
-import { createEmailSchema, type SchemaMessageTranslator } from '@shared/schemas/email-schema'
+import { createEmailSchema } from '@shared/schemas/email-schema'
+import type { SchemaMessageTranslator } from '@shared/types'
 
 export function createPasswordRecoverySchema(t: SchemaMessageTranslator) {
   return z.object({
     email: createEmailSchema(t),
   })
 }
-
-export type PasswordRecoveryFormValues = z.infer<ReturnType<typeof createPasswordRecoverySchema>>
 
 export function createVerificationCodeSchema(t: SchemaMessageTranslator) {
   return z.object({
@@ -27,5 +26,3 @@ export function createPasswordResetSchema(t: SchemaMessageTranslator) {
       path: ['passwordConfirmation'],
     })
 }
-
-export type PasswordResetFormValues = z.infer<ReturnType<typeof createPasswordResetSchema>>

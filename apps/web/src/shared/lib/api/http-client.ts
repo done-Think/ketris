@@ -1,20 +1,16 @@
 import axios, {
   type AxiosInstance,
-  type AxiosRequestConfig,
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from 'axios'
 
 import { env } from '@config/env'
+import type { AppRequestConfig, UnauthorizedHandler } from '@shared/types'
 
 type RetryableRequestConfig = InternalAxiosRequestConfig & {
   _retriedAfterRefresh?: boolean
   skipUnauthorizedHandling?: boolean
 }
-
-export type AppRequestConfig = AxiosRequestConfig & { skipUnauthorizedHandling?: boolean }
-
-export type UnauthorizedHandler = () => Promise<string | null>
 
 export class HttpClient {
   protected instance: AxiosInstance

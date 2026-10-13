@@ -6,13 +6,13 @@ import { useTranslations } from 'next-intl'
 
 import { brand, radius } from '@shared/theme/tokens'
 
+import { platformAlerts, platformLiveUtcDisplay } from '../data/platform-overview-fixtures'
+import { usePlatformOverview } from '../hooks/use-platform-overview'
 import {
-  growthTrend,
-  platformAlerts,
-  platformLiveUtcDisplay,
-  platformMetrics,
-  recentTenants,
-} from '../data/platform-overview-fixtures'
+  mapGrowthTrend,
+  mapPlatformMetricsToCards,
+  mapRecentTenants,
+} from '../utils/platform-overview-adapter'
 import { PlatformGrowthChart } from './PlatformGrowthChart'
 import { PlatformMetricCards } from './PlatformMetricCards'
 import { RecentTenantsTable } from './RecentTenantsTable'
@@ -21,6 +21,12 @@ import { TenantsList } from './TenantsList'
 
 export function PlatformOverview() {
   const t = useTranslations('platform.overview')
+  const overviewQuery = usePlatformOverview()
+  const platformMetrics = overviewQuery.data
+    ? mapPlatformMetricsToCards(overviewQuery.data.metrics)
+    : []
+  const growthTrend = overviewQuery.data ? mapGrowthTrend(overviewQuery.data.growthTrend) : []
+  const recentTenants = overviewQuery.data ? mapRecentTenants(overviewQuery.data.recentTenants) : []
 
   return (
     <Box

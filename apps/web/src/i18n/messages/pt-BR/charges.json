@@ -32,12 +32,14 @@
     "status": "Status",
     "actions": "Ações"
   },
-  "actions": { "edit": "Editar", "archive": "Arquivar" },
+  "actions": { "edit": "Editar", "archive": "Arquivar", "delete": "Excluir" },
   "feedback": {
     "updated": "Cobrança atualizada",
     "updateError": "Não foi possível atualizar a cobrança.",
     "archived": "Cobrança arquivada",
-    "archiveError": "Não foi possível arquivar a cobrança."
+    "archiveError": "Não foi possível arquivar a cobrança.",
+    "deleted": "Cobrança excluída",
+    "deleteError": "Não foi possível excluir a cobrança."
   },
   "pagination": { "summary": "Mostrando {from}-{to} de {total} cobranças" },
   "createDialog": {
@@ -86,6 +88,12 @@
     "description": "A cobrança será marcada como cancelada.",
     "cancel": "Cancelar",
     "confirm": "Arquivar"
+  },
+  "deleteDialog": {
+    "title": "Excluir cobrança?",
+    "description": "Essa ação é permanente e não pode ser desfeita.",
+    "cancel": "Cancelar",
+    "confirm": "Excluir"
   },
   "detailsDialog": {
     "title": "Detalhes da cobrança",

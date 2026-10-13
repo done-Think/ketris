@@ -7,10 +7,10 @@ const schema = createTenantAdminSchema((key) => key)
 describe('createTenantAdminSchema', () => {
   it('aceita payload válido com senhas coincidentes', () => {
     const result = schema.safeParse({
-      nome: 'Admin da Imobiliária',
+      name: 'Admin da Imobiliária',
       email: 'admin@imobiliaria.dev',
       password: 'senha-longa-123',
-      confirmarSenha: 'senha-longa-123',
+      confirmPassword: 'senha-longa-123',
     })
 
     expect(result.success).toBe(true)
@@ -18,25 +18,25 @@ describe('createTenantAdminSchema', () => {
 
   it('rejeita quando as senhas não coincidem', () => {
     const result = schema.safeParse({
-      nome: 'Admin da Imobiliária',
+      name: 'Admin da Imobiliária',
       email: 'admin@imobiliaria.dev',
       password: 'senha-longa-123',
-      confirmarSenha: 'outra-senha',
+      confirmPassword: 'outra-senha',
     })
 
     expect(result.success).toBe(false)
     if (!result.success) {
-      expect(result.error.issues[0]?.path).toEqual(['confirmarSenha'])
+      expect(result.error.issues[0]?.path).toEqual(['confirmPassword'])
     }
   })
 
   it('routes each validation message through the translator with the right key', () => {
     const translated = createTenantAdminSchema((key) => `translated:${key}`)
     const result = translated.safeParse({
-      nome: 'Admin da Imobiliária',
+      name: 'Admin da Imobiliária',
       email: 'admin@imobiliaria.dev',
       password: '123',
-      confirmarSenha: '123',
+      confirmPassword: '123',
     })
 
     expect(result.success).toBe(false)

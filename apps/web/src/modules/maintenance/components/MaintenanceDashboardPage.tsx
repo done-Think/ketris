@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
@@ -61,6 +61,8 @@ import type {
 } from '../types/maintenance'
 import {
   buildUpdateMaintenanceTicketPayload,
+  mapMaintenancePriorityToApi,
+  mapMaintenanceStatusToApi,
   mapMaintenanceTicketListItemFromApi,
   mapMaintenanceTicketToFormValues,
 } from '../utils/maintenance-adapter'
@@ -101,7 +103,21 @@ export function MaintenanceDashboardPage() {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null)
   const [menuTicketId, setMenuTicketId] = useState<string | null>(null)
 
-  const ticketsQuery = useMaintenanceTickets(tenantId, { pageSize: 100 })
+  const ticketsQuery = useMaintenanceTickets(tenantId, {
+    status:
+      activeFilter !== 'all' && activeFilter !== 'urgent'
+        ? mapMaintenanceStatusToApi(activeFilter)
+        : undefined,
+    priority: activeFilter === 'urgent' ? mapMaintenancePriorityToApi('urgent') : undefined,
+    propertyId: propertyFilter === 'all' ? undefined : propertyFilter,
+    search: search.trim() || undefined,
+    page: currentPage,
+    pageSize: rowsPerPage,
+  })
+  // Fetch pulled separately (unfiltered, capped at the API's max pageSize) only to compute the
+  // metric cards and the per-tab counts, which need totals across all tickets, not just the
+  // current page/filter.
+  const allTicketsQuery = useMaintenanceTickets(tenantId, { pageSize: 100 })
   const propertiesQuery = useProperties()
   const editTicketQuery = useMaintenanceTicket(tenantId, editingTicketId)
   const createMutation = useCreateMaintenanceTicket(tenantId)
@@ -109,41 +125,20 @@ export function MaintenanceDashboardPage() {
   const deleteMutation = useDeleteMaintenanceTicket(tenantId)
 
   const properties = propertiesQuery.data ?? []
-  const tickets = useMemo(
+  const pagedTickets = useMemo(
     () => (ticketsQuery.data?.items ?? []).map(mapMaintenanceTicketListItemFromApi),
     [ticketsQuery.data],
   )
-
-  const filteredTickets = useMemo(
-    () =>
-      tickets.filter((ticket) => {
-        const matchesFilter =
-          activeFilter === 'all' ||
-          (activeFilter === 'urgent'
-            ? ticket.priority === 'urgent'
-            : ticket.status === activeFilter)
-        const normalized = search.trim().toLocaleLowerCase('pt-BR')
-        return (
-          matchesFilter &&
-          (propertyFilter === 'all' || ticket.propertyId === propertyFilter) &&
-          (!normalized ||
-            [ticket.id, ticket.property, ticket.category, ticket.tenant].some((value) =>
-              value.toLocaleLowerCase('pt-BR').includes(normalized),
-            ))
-        )
-      }),
-    [activeFilter, propertyFilter, search, tickets],
+  const allTickets = useMemo(
+    () => (allTicketsQuery.data?.items ?? []).map(mapMaintenanceTicketListItemFromApi),
+    [allTicketsQuery.data],
   )
-  const totalPages = Math.max(1, Math.ceil(filteredTickets.length / rowsPerPage))
-  const pagedTickets = filteredTickets.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage,
-  )
+  const totalCount = ticketsQuery.data?.totalCount ?? 0
 
   const metrics = useMemo<MaintenanceMetric[]>(() => {
-    const openCount = tickets.filter((ticket) => ticket.status === 'open').length
-    const urgentCount = tickets.filter((ticket) => ticket.priority === 'urgent').length
-    const resolvedItems = (ticketsQuery.data?.items ?? []).filter((item) => item.resolvedAt)
+    const openCount = allTickets.filter((ticket) => ticket.status === 'open').length
+    const urgentCount = allTickets.filter((ticket) => ticket.priority === 'urgent').length
+    const resolvedItems = (allTicketsQuery.data?.items ?? []).filter((item) => item.resolvedAt)
     const averageResolutionDays =
       resolvedItems.length > 0
         ? resolvedItems.reduce(
@@ -166,14 +161,10 @@ export function MaintenanceDashboardPage() {
     }
 
     return result
-  }, [t, ticketsQuery.data, tickets])
-
-  useEffect(() => {
-    setCurrentPage((page) => Math.min(page, totalPages))
-  }, [totalPages])
+  }, [t, allTicketsQuery.data, allTickets])
 
   function getFilterCount(value: MaintenanceFilter['value']) {
-    return tickets.filter(
+    return allTickets.filter(
       (ticket) =>
         value === 'all' ||
         (value === 'urgent' ? ticket.priority === 'urgent' : ticket.status === value),
@@ -467,7 +458,7 @@ export function MaintenanceDashboardPage() {
             </TableBody>
           </Table>
           <DashboardTablePagination
-            count={filteredTickets.length}
+            count={totalCount}
             page={currentPage}
             rowsPerPage={rowsPerPage}
             onPageChange={setCurrentPage}

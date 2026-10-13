@@ -2,8 +2,8 @@ import dayjs from 'dayjs'
 import { z } from 'zod'
 
 import { isWithinBusinessHours, meetsMinimumAdvanceNotice } from '../utils/scheduling-window'
-
-export type SchemaMessageTranslator = (key: string) => string
+import type { BuildAgendaEventFormSchemaOptions } from '../types/agenda-event'
+import type { SchemaMessageTranslator } from '@shared/types'
 
 export const agendaOtherPropertyValue = 'other'
 
@@ -15,11 +15,6 @@ export const agendaEventKindOptions = [
   'SIGNATURE',
   'OTHER',
 ] as const
-
-export interface BuildAgendaEventFormSchemaOptions {
-  unchangedScheduleDate?: string
-  unchangedScheduleTime?: string
-}
 
 export function buildAgendaEventFormSchema(
   t: SchemaMessageTranslator,

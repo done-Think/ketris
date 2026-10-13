@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export type SchemaMessageTranslator = (key: string) => string
+import type { SchemaMessageTranslator } from '@shared/types'
 
 const HEX_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/
 const INTERNAL_MARKETPLACE_MEDIA_PATH = /^\/api\/marketplace\/media\/.+/
@@ -111,7 +111,3 @@ export function createAgencyPublicProfileEditorSchema(
     }
   })
 }
-
-export type AgencyPublicProfileEditorFormValues = z.infer<
-  ReturnType<typeof createAgencyPublicProfileEditorObjectSchema>
->

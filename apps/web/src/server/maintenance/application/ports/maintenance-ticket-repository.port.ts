@@ -1,11 +1,13 @@
 import type {
   MaintenanceActivity,
+  MaintenanceAttachment,
   MaintenanceProperty,
   MaintenanceTicket,
   MaintenanceTicketListFilters,
   MaintenanceTicketListResult,
   MaintenanceTicketUpdate,
   NewMaintenanceActivity,
+  NewMaintenanceAttachment,
   NewMaintenanceTicket,
 } from '../../domain/maintenance-ticket.entity'
 
@@ -30,5 +32,10 @@ export interface MaintenanceTicketRepository {
     ticketId: string,
     activity: NewMaintenanceActivity,
   ): Promise<MaintenanceActivity>
+  addAttachment(
+    tenantId: string,
+    ticketId: string,
+    attachment: NewMaintenanceAttachment,
+  ): Promise<MaintenanceAttachment>
   findActivities(tenantId: string, ticketId: string): Promise<MaintenanceActivity[]>
 }

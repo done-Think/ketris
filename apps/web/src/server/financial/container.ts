@@ -1,4 +1,5 @@
 import { CreateChargeUseCase } from './application/use-cases/create-charge.use-case'
+import { DeleteChargeUseCase } from './application/use-cases/delete-charge.use-case'
 import { GetChargeUseCase } from './application/use-cases/get-charge.use-case'
 import { GetFinancialSummaryUseCase } from './application/use-cases/get-financial-summary.use-case'
 import { ListChargesUseCase } from './application/use-cases/list-charges.use-case'
@@ -13,6 +14,7 @@ export const financialContainer = {
   listChargesUseCase: new ListChargesUseCase(chargeRepository),
   getChargeUseCase: new GetChargeUseCase(chargeRepository),
   updateChargeUseCase: new UpdateChargeUseCase(chargeRepository),
+  deleteChargeUseCase: new DeleteChargeUseCase(chargeRepository),
   registerChargePaymentUseCase: new RegisterChargePaymentUseCase(chargeRepository),
   getFinancialSummaryUseCase: new GetFinancialSummaryUseCase(chargeRepository),
 }

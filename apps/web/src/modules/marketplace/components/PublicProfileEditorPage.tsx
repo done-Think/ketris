@@ -25,10 +25,8 @@ import {
   useSaveBrokerProfile,
   useUnpublishBrokerProfile,
 } from '../hooks/use-broker-profile'
-import {
-  createPublicProfileEditorSchema,
-  type PublicProfileEditorFormValues,
-} from '../schemas/public-profile-editor-schema'
+import { createPublicProfileEditorSchema } from '../schemas/public-profile-editor-schema'
+import type { PublicProfileEditorFormValues } from '../types/profile-editor'
 import {
   emptyValues,
   toDraft,

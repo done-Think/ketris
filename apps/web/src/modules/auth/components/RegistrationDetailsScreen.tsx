@@ -13,7 +13,7 @@ import { EmailVerificationStep } from './EmailVerificationStep'
 import { RegistrationDetailsForm } from './RegistrationDetailsForm'
 import { authRoutes } from '../config/auth-routes'
 import { useRegister } from '../hooks/use-register'
-import type { RegistrationDetailsFormValues } from '../schemas/registration-details-schema'
+import type { RegistrationDetailsFormValues } from '../types/registration'
 import type { RegistrationDetailsScreenProps } from '../types/registration'
 
 export function RegistrationDetailsScreen({ profile }: RegistrationDetailsScreenProps) {

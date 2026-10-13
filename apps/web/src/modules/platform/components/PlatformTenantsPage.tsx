@@ -27,16 +27,15 @@ import { platformTenantMetrics, platformTenants } from '../data/platform-tenants
 import type {
   PlatformTenant,
   PlatformTenantPlan,
+  PlatformTenantPlanFilter,
   PlatformTenantStatus,
+  PlatformTenantStatusFilter,
 } from '../types/platform-tenant'
 import { platformTenantGridSx } from './platform-tenant-table.styles'
 import { PlatformTenantEditDialog } from './PlatformTenantEditDialog'
 import { usePlatformGridLocale } from '../hooks/use-platform-grid-locale'
 
 const pageSize = 6
-
-type PlanFilter = 'all' | PlatformTenantPlan
-type StatusFilter = 'all' | PlatformTenantStatus
 
 const planStyles: Record<PlatformTenantPlan, { bgcolor: string; color: string }> = {
   enterprise: { bgcolor: '#FCE3F1', color: brand.magenta[600] },
@@ -69,8 +68,8 @@ export function PlatformTenantsPage() {
     tenant: PlatformTenant
   } | null>(null)
   const [query, setQuery] = useState('')
-  const [plan, setPlan] = useState<PlanFilter>('all')
-  const [status, setStatus] = useState<StatusFilter>('all')
+  const [plan, setPlan] = useState<PlatformTenantPlanFilter>('all')
+  const [status, setStatus] = useState<PlatformTenantStatusFilter>('all')
   const [page, setPage] = useState(1)
 
   const filteredTenants = useMemo(
@@ -323,12 +322,12 @@ export function PlatformTenantsPage() {
           <Select
             value={plan}
             onChange={(event) => {
-              setPlan(event.target.value as PlanFilter)
+              setPlan(event.target.value as PlatformTenantPlanFilter)
               resetPage()
             }}
             inputProps={{ 'aria-label': t('planFilterLabel') }}
             renderValue={(value) =>
-              t('planFilterValue', { value: t(`plans.${value as PlanFilter}`) })
+              t('planFilterValue', { value: t(`plans.${value as PlatformTenantPlanFilter}`) })
             }
             sx={filterSx}
           >
@@ -341,12 +340,14 @@ export function PlatformTenantsPage() {
           <Select
             value={status}
             onChange={(event) => {
-              setStatus(event.target.value as StatusFilter)
+              setStatus(event.target.value as PlatformTenantStatusFilter)
               resetPage()
             }}
             inputProps={{ 'aria-label': t('statusFilterLabel') }}
             renderValue={(value) =>
-              t('statusFilterValue', { value: t(`statuses.${value as StatusFilter}`) })
+              t('statusFilterValue', {
+                value: t(`statuses.${value as PlatformTenantStatusFilter}`),
+              })
             }
             sx={filterSx}
           >

@@ -69,6 +69,10 @@ export type FinancialKpiCardsProps = {
   kpis: FinancialKpi[]
 }
 
+export type FinancialDashboardHeaderActionsProps = {
+  exportLabel: string
+}
+
 export type FinancialEntriesTableProps = {
   entries: FinancialEntry[]
   exchangeRate?: FinancialExchangeRate | null
