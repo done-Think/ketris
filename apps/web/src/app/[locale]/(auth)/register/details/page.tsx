@@ -6,7 +6,7 @@ import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
 import {
   authRoutes,
   isRegistrationProfileId,
-  RegistrationDetailsForm,
+  RegistrationDetailsScreen,
   RegistrationFormShell,
 } from '@modules/auth'
 
@@ -36,7 +36,7 @@ export default async function RegisterDetailsPage({
 
   return (
     <RegistrationFormShell currentStep={2} totalSteps={3} title={t('title')}>
-      <RegistrationDetailsForm profile={requestedProfile} />
+      <RegistrationDetailsScreen profile={requestedProfile} />
     </RegistrationFormShell>
   )
 }

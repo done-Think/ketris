@@ -1,33 +1,15 @@
 import { BaseService } from '@shared/lib/api/base-service'
 
-import type { TenantSummary, TenantUser } from '../types/tenant'
-
-interface CreateTenantPayload {
-  nome: string
-  slug: string
-}
-
-interface CreateTenantAdminPayload {
-  nome: string
-  email: string
-  password: string
-}
-
-interface ListTenantsResponse {
-  tenants: TenantSummary[]
-}
-
-interface CreateTenantResponse {
-  tenant: TenantSummary
-}
-
-interface ListTenantUsersResponse {
-  users: TenantUser[]
-}
-
-interface CreateTenantAdminResponse {
-  user: TenantUser
-}
+import type {
+  CreateTenantAdminPayload,
+  CreateTenantAdminResponse,
+  CreateTenantPayload,
+  CreateTenantResponse,
+  ListTenantsResponse,
+  ListTenantUsersResponse,
+  TenantSummary,
+  TenantUser,
+} from '../types/tenant'
 
 class TenantService extends BaseService {
   private readonly path = '/platform/tenants'

@@ -1,10 +1,16 @@
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi'
 
+import { registerAgencyDashboardOpenApi } from '@server/agency-dashboard/openapi'
+import { registerAgendaOpenApi } from '@server/agenda/openapi'
 import { registerAuthOpenApi } from '@server/auth/openapi'
+import { registerContractsOpenApi } from '@server/contracts/openapi'
 import { registerCrmOpenApi } from '@server/crm/openapi'
+import { registerFinancialOpenApi } from '@server/financial/openapi'
+import { registerMaintenanceOpenApi } from '@server/maintenance/openapi'
 import { registerMarketplaceOpenApi } from '@server/marketplace/openapi'
 import { registerPlatformOpenApi } from '@server/platform/openapi'
 import { registerPropertiesOpenApi } from '@server/properties/openapi'
+import { registerRegistrationOpenApi } from '@server/registration/openapi'
 import './zod-extend'
 
 export const registry = new OpenAPIRegistry()
@@ -20,6 +26,12 @@ registerPlatformOpenApi(registry)
 registerMarketplaceOpenApi(registry)
 registerPropertiesOpenApi(registry)
 registerCrmOpenApi(registry)
+registerRegistrationOpenApi(registry)
+registerAgendaOpenApi(registry)
+registerContractsOpenApi(registry)
+registerFinancialOpenApi(registry)
+registerMaintenanceOpenApi(registry)
+registerAgencyDashboardOpenApi(registry)
 
 export function generateOpenApiDocument() {
   const generator = new OpenApiGeneratorV3(registry.definitions)

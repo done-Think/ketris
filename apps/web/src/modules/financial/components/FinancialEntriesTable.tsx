@@ -3,13 +3,15 @@
 import { Box, Chip, Typography } from '@mui/material'
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import { DataGrid } from '@mui/x-data-grid'
-import { useFormatter, useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
 
 import { alpha, brand, motion, radius, shadows, surface } from '@shared/theme/tokens'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { financialStatusStyles } from '../config/financial-status-styles'
 import type { FinancialEntriesTableProps, FinancialEntry } from '../types/financial-entry'
+import { formatFinancialAmount } from '../utils/financial-display-currency'
 import { FinancialEntryDetailDialog } from './FinancialEntryDetailDialog'
 
 function FinancialStatusCell({
@@ -19,32 +21,34 @@ function FinancialStatusCell({
   const status = financialStatusStyles[row.status]
 
   return (
-    <Chip
-      label={label}
-      size="small"
+    <Box
       sx={{
-        width: 'fit-content',
-        bgcolor: status.bgcolor,
-        color: status.color,
-        borderRadius: `${radius.full}px`,
-        fontSize: 10,
-        fontWeight: 900,
+        transform: 'translateX(20px)',
       }}
-    />
+    >
+      <Chip
+        label={label}
+        size="small"
+        sx={{
+          width: 'fit-content',
+          bgcolor: status.bgcolor,
+          color: status.color,
+          borderRadius: `${radius.full}px`,
+          fontSize: 10,
+          fontWeight: 900,
+        }}
+      />
+    </Box>
   )
 }
 
-export function FinancialEntriesTable({ entries }: FinancialEntriesTableProps) {
-  const format = useFormatter()
+export function FinancialEntriesTable({ entries, exchangeRate }: FinancialEntriesTableProps) {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('dashboard.finance.table')
   const statusT = useTranslations('dashboard.finance.statuses')
   const [selectedEntry, setSelectedEntry] = useState<FinancialEntry | null>(null)
   const formatCurrency = (value: number) =>
-    `${value > 0 ? '+' : '-'}${format.number(Math.abs(value), {
-      style: 'currency',
-      currency: 'BRL',
-      maximumFractionDigits: 0,
-    })}`
+    `${value > 0 ? '+' : '-'}${formatFinancialAmount(Math.abs(value), locale, exchangeRate, 0)}`
   const columns: GridColDef<FinancialEntry>[] = [
     {
       field: 'date',
@@ -69,16 +73,30 @@ export function FinancialEntriesTable({ entries }: FinancialEntriesTableProps) {
       headerName: t('amount'),
       flex: 0.8,
       minWidth: 130,
+      align: 'center',
+      headerAlign: 'center',
       renderCell: ({ row }) => (
-        <Typography
+        <Box
           sx={{
-            color: row.amountValue >= 0 ? brand.semantic.success : brand.semantic.error,
-            fontSize: 13,
-            fontWeight: 900,
+            display: 'flex',
+            width: '100%',
+            height: '100%',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          {formatCurrency(row.amountValue)}
-        </Typography>
+          <Typography
+            sx={{
+              color: row.amountValue >= 0 ? brand.semantic.success : brand.semantic.error,
+              fontSize: 13,
+              fontWeight: 900,
+              lineHeight: 1,
+              textAlign: 'center',
+            }}
+          >
+            {formatCurrency(row.amountValue)}
+          </Typography>
+        </Box>
       ),
     },
     {
@@ -86,6 +104,8 @@ export function FinancialEntriesTable({ entries }: FinancialEntriesTableProps) {
       headerName: t('status'),
       flex: 0.7,
       minWidth: 120,
+      cellClassName: 'financial-status-cell',
+      headerClassName: 'financial-status-header',
       renderCell: (params) => (
         <FinancialStatusCell {...params} label={statusT(params.row.status)} />
       ),
@@ -133,6 +153,9 @@ export function FinancialEntriesTable({ entries }: FinancialEntriesTableProps) {
           '& .MuiDataGrid-columnSeparator': {
             display: 'none',
           },
+          '& .financial-status-header .MuiDataGrid-columnHeaderTitleContainer': {
+            transform: 'translateX(20px)',
+          },
           '& .MuiDataGrid-cell': {
             borderBottom: 0,
             color: brand.neutral[500],
@@ -164,6 +187,7 @@ export function FinancialEntriesTable({ entries }: FinancialEntriesTableProps) {
         entry={selectedEntry}
         open={Boolean(selectedEntry)}
         onClose={() => setSelectedEntry(null)}
+        exchangeRate={exchangeRate}
       />
     </Box>
   )

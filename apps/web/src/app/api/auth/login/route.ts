@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
+import { toAuthenticatedUserResponse } from '@server/auth/domain/user.entity'
 import { loginRequestSchema } from '@server/auth/schemas/login.schema'
 import { parseJsonBody, withErrorHandling } from '@server/shared/http'
 
@@ -13,5 +14,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     password: body.password,
   })
 
-  return NextResponse.json({ user, accessToken, refreshToken }, { status: 200 })
+  return NextResponse.json(
+    { user: toAuthenticatedUserResponse(user), accessToken, refreshToken },
+    { status: 200 },
+  )
 })

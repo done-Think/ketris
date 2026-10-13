@@ -2,10 +2,7 @@
 
 import { useEffect, type RefObject } from 'react'
 
-type UseClickAwayOptions = {
-  enabled?: boolean
-  onEscape?: () => void
-}
+import type { UseClickAwayOptions } from '@shared/types'
 
 export function useClickAway<T extends HTMLElement>(
   refs: Array<RefObject<T>>,

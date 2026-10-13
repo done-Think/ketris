@@ -4,6 +4,7 @@ import { PlatformAdminEmailAlreadyInUseError } from '../../domain/errors'
 import {
   toAuthenticatedPlatformAdmin,
   type AuthenticatedPlatformAdmin,
+  type PlatformAdminRole,
 } from '../../domain/platform-admin.entity'
 import type { PlatformAdminRepository } from '../ports/platform-admin-repository.port'
 
@@ -11,6 +12,7 @@ export interface CreatePlatformAdminInput {
   nome: string
   email: string
   password: string
+  role: PlatformAdminRole
 }
 
 export type CreatePlatformAdminOutput = AuthenticatedPlatformAdmin
@@ -34,6 +36,7 @@ export class CreatePlatformAdminUseCase {
       nome: input.nome,
       email: input.email,
       senhaHash,
+      role: input.role,
     })
 
     return toAuthenticatedPlatformAdmin(created)

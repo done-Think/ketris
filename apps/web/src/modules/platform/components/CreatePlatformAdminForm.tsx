@@ -1,32 +1,27 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
+import { useMemo } from 'react'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Alert, Button, Stack } from '@mui/material'
+import { Alert, Button, DialogActions, MenuItem, Stack, TextField } from '@mui/material'
 import { useSnackbar } from 'notistack'
-import axios from 'axios'
 import { useTranslations } from 'next-intl'
 
 import { RhfTextField } from '@shared/components/form'
+import { extractErrorMessage } from '@shared/utils/error-message'
 
-import {
-  createPlatformAdminSchema,
-  type CreatePlatformAdminFormValues,
-} from '../schemas/create-platform-admin-schema'
+import { createPlatformAdminSchema } from '../schemas/create-platform-admin-schema'
 import { useCreatePlatformAdmin } from '../hooks/use-create-platform-admin'
+import type {
+  CreatePlatformAdminFormProps,
+  CreatePlatformAdminFormValues,
+} from '../types/platform-admin'
 
-function extractErrorMessage(error: unknown, fallback: string): string {
-  if (axios.isAxiosError(error)) {
-    const message = error.response?.data?.error?.message
-    if (typeof message === 'string') return message
-  }
-  return fallback
-}
-
-export function CreatePlatformAdminForm() {
+export function CreatePlatformAdminForm({ onCancel, onSuccess }: CreatePlatformAdminFormProps) {
   const t = useTranslations('platform.forms')
   const { enqueueSnackbar } = useSnackbar()
   const createPlatformAdmin = useCreatePlatformAdmin()
+  const schema = useMemo(() => createPlatformAdminSchema((key) => t(`errors.${key}`)), [t])
 
   const {
     control,
@@ -34,21 +29,23 @@ export function CreatePlatformAdminForm() {
     reset,
     formState: { isSubmitting },
   } = useForm<CreatePlatformAdminFormValues>({
-    resolver: zodResolver(createPlatformAdminSchema),
-    defaultValues: { nome: '', email: '', password: '', confirmarSenha: '' },
+    resolver: zodResolver(schema),
+    defaultValues: { name: '', email: '', password: '', confirmPassword: '', role: 'ADMIN' },
   })
 
   async function onSubmit(values: CreatePlatformAdminFormValues) {
     try {
       const admin = await createPlatformAdmin.mutateAsync({
-        nome: values.nome,
+        name: values.name,
         email: values.email,
         password: values.password,
+        role: values.role,
       })
       enqueueSnackbar(t('createPlatformAdminSuccess', { email: admin.email }), {
         variant: 'success',
       })
       reset()
+      onSuccess?.()
     } catch (error) {
       enqueueSnackbar(extractErrorMessage(error, t('createPlatformAdminError')), {
         variant: 'error',
@@ -58,7 +55,7 @@ export function CreatePlatformAdminForm() {
 
   return (
     <Stack component="form" onSubmit={handleSubmit(onSubmit)} spacing={2.5} sx={{ maxWidth: 420 }}>
-      <RhfTextField control={control} name="nome" label={t('name')} fullWidth autoFocus />
+      <RhfTextField control={control} name="name" label={t('name')} fullWidth autoFocus />
       <RhfTextField
         control={control}
         name="email"
@@ -66,6 +63,24 @@ export function CreatePlatformAdminForm() {
         type="email"
         autoComplete="username"
         fullWidth
+      />
+      <Controller
+        control={control}
+        name="role"
+        render={({ field }) => (
+          <TextField
+            select
+            label={t('role')}
+            value={field.value}
+            onChange={field.onChange}
+            inputRef={field.ref}
+            fullWidth
+          >
+            <MenuItem value="ADMIN">Admin</MenuItem>
+            <MenuItem value="ADMIN_AGENT">Admin + Agent</MenuItem>
+            <MenuItem value="AGENT">Agent</MenuItem>
+          </TextField>
+        )}
       />
       <RhfTextField
         control={control}
@@ -77,7 +92,7 @@ export function CreatePlatformAdminForm() {
       />
       <RhfTextField
         control={control}
-        name="confirmarSenha"
+        name="confirmPassword"
         label={t('passwordConfirmation')}
         type="password"
         autoComplete="new-password"
@@ -90,9 +105,26 @@ export function CreatePlatformAdminForm() {
         </Alert>
       ) : null}
 
-      <Button type="submit" variant="contained" size="large" disabled={isSubmitting}>
-        {t('createPlatformAdminSubmit')}
-      </Button>
+      {onCancel ? (
+        <DialogActions sx={{ px: 0, pb: 0, pt: 0 }}>
+          <Button
+            type="button"
+            variant="outlined"
+            color="secondary"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            {t('cancel')}
+          </Button>
+          <Button type="submit" variant="contained" disabled={isSubmitting}>
+            {t('createPlatformAdminSubmit')}
+          </Button>
+        </DialogActions>
+      ) : (
+        <Button type="submit" variant="contained" size="large" disabled={isSubmitting}>
+          {t('createPlatformAdminSubmit')}
+        </Button>
+      )}
     </Stack>
   )
 }

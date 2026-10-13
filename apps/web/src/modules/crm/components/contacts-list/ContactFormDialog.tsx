@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Box,
@@ -18,7 +18,9 @@ import {
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslations } from 'next-intl'
 
-import { contactFormSchema, type ContactFormValues } from '../../schemas/contact-schema'
+import { createContactFormSchema } from '../../schemas/contact-schema'
+import type { ContactFormValues } from '../../types/contact'
+import type { ContactFormDialogProps } from '../../types/contact'
 
 const emptyContactFormValues: ContactFormValues = {
   name: '',
@@ -26,15 +28,6 @@ const emptyContactFormValues: ContactFormValues = {
   phone: '',
   type: 'LOCATARIO',
   notes: '',
-}
-
-export interface ContactFormDialogProps {
-  open: boolean
-  /** null = criar (form vazio); preenchido = editar. */
-  initialValues: ContactFormValues | null
-  isPending: boolean
-  onClose: () => void
-  onSave: (values: ContactFormValues) => void
 }
 
 export function ContactFormDialog({
@@ -45,6 +38,7 @@ export function ContactFormDialog({
   onSave,
 }: ContactFormDialogProps) {
   const t = useTranslations('crm.contacts.contactForm')
+  const contactFormSchema = useMemo(() => createContactFormSchema((key) => t(`errors.${key}`)), [t])
   const {
     control,
     handleSubmit,

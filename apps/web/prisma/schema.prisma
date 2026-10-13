@@ -25,12 +25,16 @@ model Tenant {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  usuarios      Usuario[]
-  imoveis       Imovel[]
-  oportunidades Oportunidade[]
-  contratos     Contrato[]
-  cobrancas     Cobranca[]
-  contatos      Contato[]
+  usuarios           Usuario[]
+  imoveis            Imovel[]
+  oportunidades      Oportunidade[]
+  leads              Lead[]
+  contratos          Contrato[]
+  cobrancas          Cobranca[]
+  contatos           Contato[]
+  eventosAgenda      EventoAgenda[]
+  chamadosManutencao ChamadoManutencao[]
+  perfilPublico      PerfilPublicoImobiliaria?
 
   @@map("tenants")
 }
@@ -39,25 +43,32 @@ enum PapelUsuario {
   ADMIN
   OWNER
   AGENT
+  RENTER
 }
 
 model Usuario {
-  id        String       @id @default(cuid())
-  tenantId  String
-  nome      String
-  email     String
-  senhaHash String
-  avatarUrl String?
-  papel     PapelUsuario @default(AGENT)
-  ativo     Boolean      @default(true)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id                String       @id @default(cuid())
+  tenantId          String
+  nome              String
+  email             String       @unique
+  senhaHash         String
+  avatarUrl         String?
+  papel             PapelUsuario @default(AGENT)
+  ativo             Boolean      @default(true)
+  vinculoAprovadoEm DateTime?    @default(now())
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 
-  tenant             Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  imoveisResponsavel Imovel[]       @relation("ImovelResponsavel")
-  refreshTokens      RefreshToken[]
+  tenant                   Tenant                             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  imoveisResponsavel       Imovel[]                           @relation("ImovelResponsavel")
+  refreshTokens            RefreshToken[]
+  codigosRecuperacaoSenha  PasswordResetCode[]
+  eventosAgendaResponsavel EventoAgenda[]                     @relation("EventoAgendaResponsavel")
+  eventosAgendaCriados     EventoAgenda[]                     @relation("EventoAgendaCriadoPor")
+  leadsResponsavel         Lead[]                             @relation("LeadResponsavel")
+  perfilPublico            PerfilPublicoCorretor?
+  destaquesRecebidos       PerfilPublicoImobiliariaDestaque[]
 
-  @@unique([tenantId, email])
   @@index([tenantId])
   @@map("usuarios")
 }
@@ -78,17 +89,41 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
+model PasswordResetCode {
+  id         String    @id @default(cuid())
+  codeHash   String
+  userId     String
+  tenantId   String
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  usuario Usuario @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tenantId])
+  @@map("password_reset_codes")
+}
+
 // ---------------------------------------------------------------------------
 // Platform Admin — identidade separada de Tenant/Usuario, ver ADR-0003
 // (docs/adr/0003-platform-admin-identidade-separada.md). Deliberadamente sem tenantId em nenhum
 // model desta seção: é o único papel que opera fora do boundary multi-tenant.
 // ---------------------------------------------------------------------------
 
+enum PlatformAdminRole {
+  ADMIN
+  ADMIN_AGENT
+  AGENT
+}
+
 model PlatformAdmin {
   id        String   @id @default(cuid())
   nome      String
   email     String   @unique
   senhaHash String
+  role      PlatformAdminRole @default(ADMIN)
   ativo     Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -119,6 +154,7 @@ model PlatformAdminRefreshToken {
 enum FinalidadeImovel {
   ALUGUEL
   VENDA
+  AMBOS
 }
 
 enum StatusImovel {
@@ -144,6 +180,7 @@ model Imovel {
   vagas         Int?
   areaM2        Decimal?         @db.Decimal(10, 2)
   valor         Decimal          @db.Decimal(12, 2)
+  valorAluguel  Decimal?         @db.Decimal(12, 2)
   condominio    Decimal?         @db.Decimal(10, 2)
   iptu          Decimal?         @db.Decimal(10, 2)
   status        StatusImovel     @default(DRAFT)
@@ -151,12 +188,14 @@ model Imovel {
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
-  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  responsavel   Usuario        @relation("ImovelResponsavel", fields: [responsavelId], references: [id])
-  endereco      Endereco?
-  midias        Midia[]
-  oportunidades Oportunidade[]
-  contratos     Contrato[]
+  tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  responsavel        Usuario             @relation("ImovelResponsavel", fields: [responsavelId], references: [id])
+  endereco           Endereco?
+  midias             Midia[]
+  oportunidades      Oportunidade[]
+  contratos          Contrato[]
+  eventosAgenda      EventoAgenda[]
+  chamadosManutencao ChamadoManutencao[]
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -193,6 +232,90 @@ model Midia {
 
   @@index([imovelId])
   @@map("midias")
+}
+
+// ---------------------------------------------------------------------------
+// Perfil Público (módulo `marketplace`) — página pública de corretor/imobiliária,
+// editada pelo próprio usuário/tenant no dashboard. Sem registro = não aparece no
+// diretório público (ver PerfilPublicoStatus).
+// ---------------------------------------------------------------------------
+
+enum PerfilPublicoStatus {
+  DRAFT     @map("RASCUNHO")
+  PUBLISHED @map("PUBLICADO")
+
+  @@map("PerfilPublicoStatus")
+}
+
+model PerfilPublicoCorretor {
+  id              String              @id @default(cuid())
+  usuarioId       String              @unique
+  displayName     String
+  headline        String?
+  bio             String?
+  creci           String?
+  telefone        String?
+  regiao          String?
+  bairros         String[]            @default([])
+  especialidades  String[]            @default([])
+  disponibilidade String?
+  corPrimaria     String?
+  corSecundaria   String?
+  corFundo        String?
+  avatarUrl       String?
+  bannerUrl       String?
+  status          PerfilPublicoStatus @default(DRAFT)
+  publicadoEm     DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("perfis_publicos_corretor")
+}
+
+model PerfilPublicoImobiliaria {
+  id            String              @id @default(cuid())
+  tenantId      String              @unique
+  displayName   String
+  headline      String?
+  resumo        String?
+  legalCreci    String?
+  sede          String?
+  endereco      String?
+  telefone      String?
+  email         String?
+  cobertura     String[]            @default([])
+  segmentos     String[]            @default([])
+  anosDeMercado Int?
+  corFundo      String?
+  logoUrl       String?
+  bannerUrl     String?
+  status        PerfilPublicoStatus @default(DRAFT)
+  publicadoEm   DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  tenant    Tenant                             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  destaques PerfilPublicoImobiliariaDestaque[]
+
+  @@map("perfis_publicos_imobiliaria")
+}
+
+// Equipe em destaque na página pública da imobiliária — vínculo real por usuário
+// (antes era texto livre casado por nome, no mock de frontend).
+model PerfilPublicoImobiliariaDestaque {
+  id        String @id @default(cuid())
+  perfilId  String
+  usuarioId String
+  ordem     Int    @default(0)
+
+  perfil  PerfilPublicoImobiliaria @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+  usuario Usuario                  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([perfilId, usuarioId])
+  @@index([usuarioId])
+  @@map("perfis_publicos_imobiliaria_destaques")
 }
 
 // ---------------------------------------------------------------------------
@@ -236,10 +359,13 @@ model Oportunidade {
   updatedAt           DateTime           @updatedAt
 
   tenant     Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  imovel     Imovel                  @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  // Restrict (não Cascade): excluir um imóvel nunca pode apagar oportunidades de tabela junto —
+  // isso é decidido explicitamente pela camada de aplicação (ver PropertyRepository.hasLinkedRecords).
+  imovel     Imovel                  @relation(fields: [imovelId], references: [id], onDelete: Restrict)
   contrato   Contrato?
   contato    Contato?                @relation(fields: [contatoId], references: [id], onDelete: SetNull)
   atividades AtividadeOportunidade[]
+  lead       Lead?
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -247,6 +373,40 @@ model Oportunidade {
   @@index([imovelId])
   @@index([contatoId])
   @@map("oportunidades")
+}
+
+enum EstagioLead {
+  NOVO
+  EM_CONTATO
+  VISITA_MARCADA
+  PROPOSTA
+}
+
+// Contato bruto, ainda não qualificado com um imóvel específico nem valor proposto — por isso não
+// é uma Oportunidade ainda. Vira uma quando o corretor converte (ver ConvertLeadToOpportunityUseCase).
+model Lead {
+  id             String      @id @default(cuid())
+  tenantId       String
+  responsavelId  String
+  nome           String
+  telefone       String
+  email          String?
+  interesse      String
+  orcamento      String
+  origem         String
+  estagio        EstagioLead @default(NOVO)
+  observacoes    String?
+  oportunidadeId String?     @unique
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  responsavel  Usuario       @relation("LeadResponsavel", fields: [responsavelId], references: [id])
+  oportunidade Oportunidade? @relation(fields: [oportunidadeId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tenantId, estagio])
+  @@map("leads")
 }
 
 // ---------------------------------------------------------------------------
@@ -320,8 +480,31 @@ model AtividadeOportunidade {
 
 enum StatusContrato {
   RASCUNHO
+  EM_REVISAO
   AGUARDANDO_ASSINATURA
+  ASSINADO
   ATIVO
+  ENCERRADO
+  CANCELADO
+}
+
+enum TipoContrato {
+  RESIDENCIAL
+  COMERCIAL
+  TEMPORADA
+}
+
+enum IndiceReajuste {
+  IPCA
+  IGPM
+  INPC
+}
+
+enum TipoGarantia {
+  FIADOR
+  CAUCAO
+  SEGURO_FIANCA
+  TITULO_CAPITALIZACAO
 }
 
 model Contrato {
@@ -329,21 +512,44 @@ model Contrato {
   tenantId             String
   imovelId             String
   oportunidadeOrigemId String         @unique // FR-014: contrato sempre nasce de uma oportunidade aceita
+  codigo               String         @unique
+  tipo                 TipoContrato   @default(RESIDENCIAL)
   valor                Decimal        @db.Decimal(12, 2)
+  diaVencimento        Int
+  dataInicio           DateTime
+  dataFim              DateTime
+  indiceReajuste       IndiceReajuste
+  tipoGarantia         TipoGarantia
+  observacoes          String?
   status               StatusContrato @default(RASCUNHO)
   ativadoEm            DateTime?
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
 
-  tenant             Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  imovel             Imovel          @relation(fields: [imovelId], references: [id], onDelete: Cascade)
-  oportunidadeOrigem Oportunidade    @relation(fields: [oportunidadeOrigemId], references: [id])
+  tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  // Restrict (não Cascade): um contrato nunca pode desaparecer junto com o imóvel excluído.
+  imovel             Imovel              @relation(fields: [imovelId], references: [id], onDelete: Restrict)
+  oportunidadeOrigem Oportunidade        @relation(fields: [oportunidadeOrigemId], references: [id])
   partes             ParteContrato[]
   cobrancas          Cobranca[]
+  documentos         DocumentoContrato[]
 
   @@index([tenantId])
   @@index([tenantId, status])
   @@map("contratos")
+}
+
+model DocumentoContrato {
+  id         String   @id @default(cuid())
+  contratoId String
+  nome       String
+  url        String?
+  createdAt  DateTime @default(now())
+
+  contrato Contrato @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+
+  @@index([contratoId])
+  @@map("documentos_contrato")
 }
 
 enum PapelParteContrato {
@@ -385,6 +591,56 @@ model Assinatura {
 }
 
 // ---------------------------------------------------------------------------
+// Evento de agenda (módulo `agenda`)
+// ---------------------------------------------------------------------------
+
+enum StatusEventoAgenda {
+  CONFIRMED
+  PENDING
+  RESCHEDULE
+  CANCELLED
+}
+
+enum TipoEventoAgenda {
+  VISIT
+  FOLLOW_UP
+  MEETING
+  INSPECTION
+  SIGNATURE
+  OTHER
+}
+
+model EventoAgenda {
+  id                    String             @id @default(cuid())
+  tenantId              String
+  responsavelId         String
+  criadoPorId           String?
+  imovelId              String?
+  referenciaImovelLivre String?
+  titulo                String
+  tipo                  TipoEventoAgenda?
+  status                StatusEventoAgenda @default(CONFIRMED)
+  inicio                DateTime
+  fim                   DateTime
+  participanteNome      String
+  participanteTelefone  String
+  notas                 String?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  responsavel Usuario  @relation("EventoAgendaResponsavel", fields: [responsavelId], references: [id], onDelete: Cascade)
+  criadoPor   Usuario? @relation("EventoAgendaCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  imovel      Imovel?  @relation(fields: [imovelId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tenantId, inicio])
+  @@index([responsavelId])
+  @@index([imovelId])
+  @@map("eventos_agenda")
+}
+
+// ---------------------------------------------------------------------------
 // Cobrança (módulo `financial`)
 // ---------------------------------------------------------------------------
 
@@ -404,7 +660,13 @@ enum StatusCobranca {
 model Cobranca {
   id             String         @id @default(cuid())
   tenantId       String
-  contratoId     String
+  // Opcional: cobranças avulsas (contas a pagar de fornecedor, sem contrato de locação por trás)
+  // não têm contrato — ver módulo `financial`.
+  contratoId     String?
+  codigo         String         @unique
+  // Só usado quando contratoId é nulo (cobrança avulsa) — identifica o fornecedor/finalidade sem
+  // depender de contrato/imóvel.
+  descricao      String?
   tipo           TipoCobranca   @default(A_RECEBER)
   valor          Decimal        @db.Decimal(12, 2)
   vencimento     DateTime
@@ -415,11 +677,91 @@ model Cobranca {
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
-  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  contrato Contrato @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  contrato Contrato? @relation(fields: [contratoId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([contratoId])
   @@map("cobrancas")
+}
+
+// ---------------------------------------------------------------------------
+// Chamados de manutenção (módulo `maintenance`)
+// ---------------------------------------------------------------------------
+
+enum StatusChamadoManutencao {
+  ABERTO
+  EM_ANDAMENTO
+  RESOLVIDO
+  FECHADO
+}
+
+enum PrioridadeChamadoManutencao {
+  NORMAL
+  ALTA
+  URGENTE
+}
+
+model ChamadoManutencao {
+  id            String                      @id @default(cuid())
+  tenantId      String
+  imovelId      String
+  categoria     String
+  prioridade    PrioridadeChamadoManutencao @default(NORMAL)
+  status        StatusChamadoManutencao     @default(ABERTO)
+  titulo        String
+  descricao     String
+  abertoPorId   String
+  abertoPorNome String
+  resolvidoEm   DateTime?
+  createdAt     DateTime                    @default(now())
+  updatedAt     DateTime                    @updatedAt
+
+  tenant     Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  imovel     Imovel                       @relation(fields: [imovelId], references: [id], onDelete: Restrict)
+  atividades AtividadeChamadoManutencao[]
+  anexos     AnexoChamadoManutencao[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([imovelId])
+  @@map("chamados_manutencao")
+}
+
+enum TipoAtividadeChamadoManutencao {
+  NOTA
+  MUDANCA_STATUS
+  ANEXO_ADICIONADO
+}
+
+// Timeline do chamado, mesmo padrão append-only de AtividadeOportunidade — autor opcional/denormalizado
+// porque nem toda atividade nasce de uma sessão autenticada (ex.: mudança automática de status).
+model AtividadeChamadoManutencao {
+  id        String                         @id @default(cuid())
+  chamadoId String
+  tipo      TipoAtividadeChamadoManutencao
+  mensagem  String
+  autorId   String?
+  autorNome String?
+  createdAt DateTime                       @default(now())
+
+  chamado ChamadoManutencao @relation(fields: [chamadoId], references: [id], onDelete: Cascade)
+
+  @@index([chamadoId])
+  @@index([chamadoId, createdAt])
+  @@map("atividades_chamado_manutencao")
+}
+
+model AnexoChamadoManutencao {
+  id        String   @id @default(cuid())
+  chamadoId String
+  nome      String
+  url       String
+  createdAt DateTime @default(now())
+
+  chamado ChamadoManutencao @relation(fields: [chamadoId], references: [id], onDelete: Cascade)
+
+  @@index([chamadoId])
+  @@map("anexos_chamado_manutencao")
 }

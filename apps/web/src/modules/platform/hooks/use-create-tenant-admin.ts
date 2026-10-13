@@ -1,13 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { tenantService } from '../services/tenant-service'
-
-interface CreateTenantAdminInput {
-  tenantId: string
-  nome: string
-  email: string
-  password: string
-}
+import type { CreateTenantAdminInput } from '../types/tenant'
 
 export function useCreateTenantAdmin() {
   const queryClient = useQueryClient()

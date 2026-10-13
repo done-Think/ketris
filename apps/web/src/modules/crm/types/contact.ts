@@ -1,7 +1,12 @@
+import type { z } from 'zod'
+
+import type { createContactFormSchema } from '../schemas/contact-schema'
+
 export type ContactType = 'Proprietário' | 'Locatário' | 'Corretor'
 export type ContactFilterKey = 'all' | 'owners' | 'tenants' | 'brokers'
 
-/** Shape real da API (/crm/contacts) — enum sem acento, nulos explícitos, datas como ISO string. */
+export type ContactFormValues = z.infer<ReturnType<typeof createContactFormSchema>>
+
 export type ApiContactType = 'PROPRIETARIO' | 'LOCATARIO' | 'CORRETOR'
 
 export interface ApiContact {
@@ -47,6 +52,11 @@ export interface UpdateContactPayload {
   notes?: string | null
 }
 
+export interface UpdateContactInput {
+  id: string
+  changes: UpdateContactPayload
+}
+
 export type ContactListItem = {
   id: string
   name: string
@@ -56,6 +66,13 @@ export type ContactListItem = {
   propertyCount: number
   lastInteraction: string
   avatarUrl: string
+}
+
+export type ContactsPageResult = {
+  items: ContactListItem[]
+  page: number
+  pageCount: number
+  totalCount: number
 }
 
 export type ContactFilter = 'Todos' | 'Proprietários' | 'Locatários' | 'Corretores'
@@ -88,27 +105,33 @@ export type ContactTypeChipProps = {
 
 export type ContactsTableProps = {
   contacts: readonly ContactListItem[]
-  selectedIds: ReadonlySet<string>
-  onToggleContact: (contactId: string) => void
-  onToggleAll: () => void
 } & Pick<ContactsListProps, 'onEditContact' | 'onOpenInteractions' | 'onOpenMoreOptions'>
 
-export type ContactsCardsProps = Omit<ContactsTableProps, 'onToggleAll'>
+export type ContactsCardsProps = ContactsTableProps
 
 export type ContactsHeaderProps = {
   search: string
-  activeFilter: ContactFilter
   onSearchChange: (search: string) => void
-  onFilterChange: (filter: ContactFilter) => void
   onNewContact?: () => void
 }
 
-export type ContactsPaginationFooterProps = {
-  firstVisible: number
-  lastVisible: number
-  resultTotal: number
-  page: number
-  canGoBack: boolean
-  canGoForward: boolean
-  onPageChange?: (page: number) => void
+export type ContactsStatusFiltersProps = {
+  activeFilter: ContactFilter
+  contacts: readonly ContactListItem[]
+  onFilterChange: (filter: ContactFilter) => void
+}
+
+export type ArchiveContactDialogProps = {
+  open: boolean
+  isPending: boolean
+  onClose: () => void
+  onConfirm: () => void
+}
+
+export type ContactFormDialogProps = {
+  open: boolean
+  initialValues: ContactFormValues | null
+  isPending: boolean
+  onClose: () => void
+  onSave: (values: ContactFormValues) => void
 }

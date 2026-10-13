@@ -1,20 +1,9 @@
 'use client'
 
-import {
-  Controller,
-  type FieldPath,
-  type FieldValues,
-  type UseControllerProps,
-} from 'react-hook-form'
-import { TextField, type TextFieldProps } from '@mui/material'
+import { TextField } from '@mui/material'
+import { Controller, type FieldPath, type FieldValues } from 'react-hook-form'
 
-type RhfTextFieldProps<
-  TFieldValues extends FieldValues,
-  TName extends FieldPath<TFieldValues>,
-> = UseControllerProps<TFieldValues, TName> &
-  Omit<TextFieldProps, 'name' | 'defaultValue' | 'value' | 'disabled'> & {
-    disabled?: boolean
-  }
+import type { RhfTextFieldProps } from '@shared/types'
 
 export function RhfTextField<
   TFieldValues extends FieldValues,
@@ -33,7 +22,6 @@ export function RhfTextField<
       name={name}
       rules={rules}
       shouldUnregister={shouldUnregister}
-      disabled={disabled}
       render={({ field, fieldState }) => (
         <TextField
           {...textFieldProps}

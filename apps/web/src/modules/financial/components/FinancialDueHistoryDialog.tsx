@@ -11,24 +11,26 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import { useFormatter, useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
 import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { financialStatusStyles } from '../config/financial-status-styles'
 import type { FinancialDueHistoryDialogProps } from '../types/financial-entry'
+import { formatFinancialAmount } from '../utils/financial-display-currency'
 
-export function FinancialDueHistoryDialog({ due, onClose, open }: FinancialDueHistoryDialogProps) {
-  const format = useFormatter()
+export function FinancialDueHistoryDialog({
+  due,
+  onClose,
+  open,
+  exchangeRate,
+}: FinancialDueHistoryDialogProps) {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('dashboard.finance.history')
   const statusT = useTranslations('dashboard.finance.statuses')
-  const formatCurrency = (value: number) =>
-    format.number(value, {
-      style: 'currency',
-      currency: 'BRL',
-      maximumFractionDigits: 0,
-    })
+  const formatCurrency = (value: number) => formatFinancialAmount(value, locale, exchangeRate, 0)
 
   if (!due) return null
 
@@ -128,8 +130,12 @@ export function FinancialDueHistoryDialog({ due, onClose, open }: FinancialDueHi
                   borderColor: alpha.graphite[6],
                   borderRadius: `${radius.sm}px`,
                   display: 'grid',
-                  gridTemplateColumns: { xs: '1fr', sm: '90px minmax(0, 1fr) auto auto' },
-                  gap: 1.2,
+                  gridTemplateColumns: {
+                    xs: '76px minmax(0, 1fr) 74px 66px',
+                    sm: '90px minmax(0, 1fr) 92px 76px',
+                  },
+                  columnGap: { xs: 0.7, sm: 1.2 },
+                  rowGap: 0.8,
                   alignItems: 'center',
                   p: 1.4,
                 }}
@@ -140,14 +146,23 @@ export function FinancialDueHistoryDialog({ due, onClose, open }: FinancialDueHi
                 <Typography sx={{ color: brand.graphite[500], fontSize: 13, fontWeight: 900 }}>
                   {entry.description}
                 </Typography>
-                <Typography sx={{ color: brand.graphite[500], fontSize: 13, fontWeight: 900 }}>
+                <Typography
+                  noWrap
+                  sx={{
+                    color: brand.graphite[500],
+                    fontSize: 13,
+                    fontWeight: 900,
+                    justifySelf: 'end',
+                  }}
+                >
                   {formatCurrency(entry.amountValue)}
                 </Typography>
                 <Chip
                   label={statusT(entry.status)}
                   size="small"
                   sx={{
-                    justifySelf: { xs: 'start', sm: 'end' },
+                    justifySelf: 'end',
+                    minWidth: { xs: 62, sm: 72 },
                     bgcolor: status.bgcolor,
                     color: status.color,
                     borderRadius: `${radius.full}px`,

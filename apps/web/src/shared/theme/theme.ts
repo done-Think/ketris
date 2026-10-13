@@ -1,11 +1,8 @@
 import { createTheme, type Theme } from '@mui/material/styles'
-import { brand, radius, surface } from './tokens'
 
-export interface TenantThemeOverride {
-  primaryColor?: string
-  secondaryColor?: string
-  mode?: 'light' | 'dark'
-}
+import type { TenantThemeOverride } from '@shared/types'
+
+import { brand, radius, surface } from './tokens'
 
 export function buildTheme(override: TenantThemeOverride = {}): Theme {
   const mode = override.mode ?? 'light'
@@ -135,6 +132,16 @@ export function buildTheme(override: TenantThemeOverride = {}): Theme {
             fontSynthesis: 'none',
             textRendering: 'geometricPrecision',
           },
+        },
+      },
+      MuiModal: {
+        defaultProps: {
+          disableScrollLock: true,
+        },
+      },
+      MuiPopover: {
+        defaultProps: {
+          disableScrollLock: true,
         },
       },
     },

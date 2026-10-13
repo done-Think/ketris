@@ -1,12 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { adminService } from '../services/admin-service'
-
-interface UpdateAdminInput {
-  id: string
-  nome?: string
-  email?: string
-}
+import type { UpdateAdminInput } from '../types/admin'
 
 export function useUpdateAdmin() {
   const queryClient = useQueryClient()

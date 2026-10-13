@@ -2,29 +2,32 @@ import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
 import AttachMoneyRoundedIcon from '@mui/icons-material/AttachMoneyRounded'
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded'
 import { Box, Paper, Stack, Typography } from '@mui/material'
+import { useLocale, useTranslations } from 'next-intl'
 
 import { brand, iconSize, radius, supportColor, surface } from '@shared/theme/tokens'
 
 import type { ProposalKpiCardsProps } from '../../types/proposal-management'
 
 export function ProposalKpiCards({ summary }: ProposalKpiCardsProps) {
+  const locale = useLocale()
+  const t = useTranslations('crm.proposalManagement')
   const cards = [
     {
-      label: 'Em negociação',
-      value: String(summary.negotiationCount),
+      label: t('kpis.inNegotiation'),
+      value: new Intl.NumberFormat(locale).format(summary.negotiationCount),
       icon: AccessTimeRoundedIcon,
       color: brand.semantic.warning,
       backgroundColor: supportColor.warningSoft,
     },
     {
-      label: 'Valor total aceitas',
+      label: t('kpis.acceptedTotal'),
       value: summary.acceptedTotalLabel,
       icon: AttachMoneyRoundedIcon,
       color: brand.semantic.success,
       backgroundColor: supportColor.successSoft,
     },
     {
-      label: 'Taxa de conversão',
+      label: t('kpis.conversionRate'),
       value: summary.conversionRateLabel,
       icon: TrendingUpRoundedIcon,
       color: brand.magenta[500],
@@ -34,11 +37,11 @@ export function ProposalKpiCards({ summary }: ProposalKpiCardsProps) {
 
   return (
     <Box
-      aria-label="Indicadores de propostas"
+      aria-label={t('kpis.ariaLabel')}
       sx={{
         display: 'grid',
-        gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' },
-        gap: 1.5,
+        gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+        gap: { xs: 0.8, md: 1.5 },
         mt: 2,
       }}
     >
@@ -48,11 +51,14 @@ export function ProposalKpiCards({ summary }: ProposalKpiCardsProps) {
           variant="outlined"
           sx={{
             display: 'flex',
-            minHeight: 80,
-            alignItems: 'center',
-            gap: 1.5,
-            px: 2,
-            py: 1.5,
+            minWidth: 0,
+            minHeight: { xs: 84, md: 88 },
+            alignItems: { xs: 'flex-start', md: 'center' },
+            flexDirection: { xs: 'column', md: 'row' },
+            gap: { xs: 0.7, md: 1.5 },
+            overflow: 'hidden',
+            px: { xs: 1.2, md: 2 },
+            py: { xs: 1.2, md: 1.5 },
             borderColor: brand.neutral[100],
             borderRadius: `${radius.md}px`,
             bgcolor: surface.paper,
@@ -62,7 +68,7 @@ export function ProposalKpiCards({ summary }: ProposalKpiCardsProps) {
           <Box
             aria-hidden="true"
             sx={{
-              display: 'grid',
+              display: { xs: 'none', md: 'grid' },
               width: 40,
               height: 40,
               flexShrink: 0,
@@ -74,11 +80,37 @@ export function ProposalKpiCards({ summary }: ProposalKpiCardsProps) {
           >
             <Icon sx={{ fontSize: iconSize.xl }} />
           </Box>
-          <Stack spacing={0.125} minWidth={0}>
-            <Typography sx={{ color: 'text.secondary', fontSize: 11.5, lineHeight: 1.35 }}>
+          <Stack spacing={{ xs: 0.5, md: 0.125 }} sx={{ width: '100%', minWidth: 0 }}>
+            <Typography
+              noWrap
+              sx={{
+                color: 'text.secondary',
+                width: '100%',
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                fontSize: { xs: 10, md: 15 },
+                fontWeight: { xs: 900, md: 400 },
+                lineHeight: { xs: 1.2, md: 1.35 },
+                textTransform: { xs: 'uppercase', md: 'none' },
+              }}
+            >
               {label}
             </Typography>
-            <Typography sx={{ fontSize: 20, fontWeight: 800, lineHeight: 1.2 }}>{value}</Typography>
+            <Typography
+              noWrap
+              sx={{
+                width: '100%',
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                fontSize: { xs: 20, md: 24 },
+                fontWeight: 800,
+                lineHeight: 1.2,
+              }}
+            >
+              {value}
+            </Typography>
           </Stack>
         </Paper>
       ))}

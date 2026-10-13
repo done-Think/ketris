@@ -127,7 +127,7 @@ export function ProfileModal({
                 {userProfile.name}
               </Typography>
               <Typography noWrap sx={{ color: 'text.secondary', ...componentText.modalSubtitle }}>
-                {t('role')}
+                {userProfile.role ? t(`roles.${userProfile.role}`) : null}
               </Typography>
             </Box>
           </Stack>
@@ -136,26 +136,28 @@ export function ProfileModal({
           </IconButton>
         </Stack>
 
-        <Box
-          sx={{
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: `${radius.sm}px`,
-            bgcolor: surface.app,
-            px: 1.5,
-            py: 1.2,
-            mb: 2,
-          }}
-        >
-          {userProfile.company ? (
-            <Typography sx={{ color: 'text.secondary', ...componentText.modalEyebrow }}>
-              {userProfile.company}
+        {userProfile.company || userProfile.email ? (
+          <Box
+            sx={{
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: `${radius.sm}px`,
+              bgcolor: surface.app,
+              px: 1.5,
+              py: 1.2,
+              mb: 2,
+            }}
+          >
+            {userProfile.company ? (
+              <Typography sx={{ color: 'text.secondary', ...componentText.modalEyebrow }}>
+                {userProfile.company}
+              </Typography>
+            ) : null}
+            <Typography sx={{ color: 'text.primary', ...componentText.modalSubtitle }}>
+              {userProfile.email}
             </Typography>
-          ) : null}
-          <Typography sx={{ color: 'text.primary', ...componentText.modalSubtitle }}>
-            {userProfile.email}
-          </Typography>
-        </Box>
+          </Box>
+        ) : null}
 
         <Divider sx={{ mb: 1 }} />
 
@@ -176,9 +178,10 @@ export function ProfileModal({
                   action.onClick?.()
                   onClose()
                 }}
-                startIcon={<Icon fontSize="small" />}
+                startIcon={<Icon />}
                 fullWidth
                 sx={{
+                  alignItems: 'center',
                   justifyContent: 'flex-start',
                   minHeight: 42,
                   borderRadius: `${radius.sm}px`,
@@ -190,9 +193,33 @@ export function ProfileModal({
                     bgcolor: isDanger ? alpha.error[10] : alpha.magenta[8],
                     color: isDanger ? 'error.main' : 'primary.main',
                   },
+                  '& .MuiButton-startIcon': {
+                    alignItems: 'center',
+                    display: 'inline-flex',
+                    height: 20,
+                    justifyContent: 'center',
+                    ml: 0,
+                    mr: 1,
+                    width: 20,
+                  },
+                  '& .MuiButton-icon > *:nth-of-type(1)': {
+                    display: 'block',
+                    fontSize: 20,
+                  },
                 }}
               >
-                {action.label}
+                <Typography
+                  component="span"
+                  sx={{
+                    color: 'inherit',
+                    fontSize: 'inherit',
+                    fontWeight: 'inherit',
+                    lineHeight: '20px',
+                    transform: 'translateY(1px)',
+                  }}
+                >
+                  {action.label}
+                </Typography>
               </Button>
             )
           })}

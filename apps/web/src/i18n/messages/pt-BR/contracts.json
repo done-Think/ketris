@@ -12,6 +12,7 @@
   },
   "dashboardHeader": {
     "title": "Contratos",
+    "subtitle": "Gerencie contratos, vencimentos e assinaturas em andamento.",
     "searchPlaceholder": "Buscar contratos...",
     "newContract": "Novo Contrato"
   },
@@ -39,9 +40,9 @@
       "label": "Vencendo em 30d",
       "caption": "Exigem acompanhamento"
     },
-    "Inadimplentes": {
-      "label": "Inadimplentes",
-      "caption": "Com pendencias financeiras"
+    "Total": {
+      "label": "Total de contratos",
+      "caption": "Em todos os status"
     }
   },
   "table": {
@@ -91,18 +92,55 @@
     "title": "Gerar Contrato",
     "stepsAriaLabel": "Etapas do contrato",
     "steps": {
+      "opportunity": "Oportunidade",
       "parties": "Partes",
-      "property": "Imóvel",
       "conditions": "Condições",
       "review": "Revisão"
     },
     "stepFormTitleReview": "Revisão do Contrato",
     "stepFormTitle": "{step} do Contrato",
-    "successMessage": "{code} adicionado em revisão.",
+    "successMessage": "{code} criado, aguardando assinaturas.",
+    "errorMessage": "Não foi possível criar o contrato.",
+    "errors": {
+      "opportunityRequired": "Selecione a oportunidade aceita",
+      "ownerNameRequired": "Informe o nome do locador",
+      "emailInvalid": "Informe um e-mail válido",
+      "cpfRequired": "Informe o CPF",
+      "cpfInvalid": "Informe um CPF válido",
+      "phoneRequired": "Informe o telefone",
+      "phoneInvalid": "Informe um telefone válido",
+      "tenantNameRequired": "Informe o nome do locatário",
+      "contractTypeRequired": "Selecione o tipo de contrato",
+      "dueDayRequired": "Informe o dia de vencimento",
+      "startDateRequired": "Informe a data de início",
+      "endDateRequired": "Informe a data de término",
+      "guaranteeTypeRequired": "Selecione a garantia",
+      "adjustmentIndexRequired": "Selecione o índice de reajuste",
+      "guarantorNameRequired": "Informe o nome do fiador",
+      "guarantorCpfRequired": "Informe o CPF do fiador",
+      "guarantorCpfInvalid": "Informe um CPF válido",
+      "guarantorEmailRequired": "Informe o e-mail do fiador",
+      "guarantorPhoneRequired": "Informe o telefone do fiador",
+      "guarantorPhoneInvalid": "Informe um telefone válido"
+    },
     "actions": {
       "back": "Voltar",
       "next": "Próximo passo",
       "generate": "Gerar contrato"
+    },
+    "opportunity": {
+      "title": "Oportunidade de origem",
+      "picker": {
+        "label": "Selecionar oportunidade aceita",
+        "helperText": "Só oportunidades aceitas e sem contrato aparecem aqui.",
+        "noOptions": "Nenhuma oportunidade aceita disponível."
+      },
+      "summary": {
+        "property": "Imóvel",
+        "address": "Endereço",
+        "lead": "Interessado",
+        "amount": "Valor proposto"
+      }
     },
     "parties": {
       "ownerTitle": "Locador (Proprietário)",
@@ -116,38 +154,10 @@
         "phone": "Telefone"
       }
     },
-    "property": {
-      "title": "Dados do imóvel",
-      "fields": {
-        "propertyTitle": "Imóvel",
-        "propertyType": "Tipo",
-        "propertyAddress": "Endereço",
-        "propertyZipCode": "CEP",
-        "propertyCity": "Cidade",
-        "propertyState": "UF",
-        "propertyRegistration": "Matrícula",
-        "propertyArea": "Área útil"
-      },
-      "typeOptions": {
-        "Apartamento": "Apartamento",
-        "Casa": "Casa",
-        "Studio": "Studio",
-        "Cobertura": "Cobertura",
-        "Sala comercial": "Sala comercial"
-      },
-      "picker": {
-        "label": "Selecionar imóvel cadastrado",
-        "helperText": "Escolha um imóvel já cadastrado para preencher os dados automaticamente.",
-        "noOptions": "Nenhum imóvel encontrado."
-      }
-    },
     "conditions": {
       "title": "Condições comerciais",
       "fields": {
         "contractType": "Tipo de contrato",
-        "monthlyRent": "Valor do aluguel",
-        "condominiumFee": "Condomínio",
-        "iptu": "IPTU",
         "dueDay": "Vencimento",
         "guaranteeType": "Garantia",
         "startDate": "Início",
@@ -156,25 +166,24 @@
         "notes": "Observações"
       },
       "contractTypeOptions": {
-        "Locação residencial": "Locação residencial",
-        "Locação comercial": "Locação comercial",
-        "Temporada": "Temporada"
+        "RESIDENCIAL": "Residencial",
+        "COMERCIAL": "Comercial",
+        "TEMPORADA": "Temporada"
       },
       "guaranteeTypeOptions": {
-        "Fiador": "Fiador",
-        "Caução": "Caução",
-        "Seguro fiança": "Seguro fiança",
-        "Título de capitalização": "Título de capitalização"
+        "FIADOR": "Fiador",
+        "CAUCAO": "Caução",
+        "SEGURO_FIANCA": "Seguro fiança",
+        "TITULO_CAPITALIZACAO": "Título de capitalização"
       },
       "adjustmentIndexOptions": {
         "IPCA": "IPCA",
-        "IGP-M": "IGP-M",
+        "IGPM": "IGP-M",
         "INPC": "INPC"
       }
     },
     "review": {
       "partiesTitle": "Partes",
-      "propertyTitle": "Imóvel",
       "conditionsTitle": "Condições",
       "termTitle": "Vigência",
       "labels": {
@@ -184,12 +193,7 @@
         "tenantCpf": "CPF do locatário",
         "guarantor": "Fiador",
         "guarantorCpf": "CPF do fiador",
-        "property": "Imóvel",
-        "type": "Tipo",
-        "address": "Endereço",
-        "cityState": "Cidade/UF",
         "contract": "Contrato",
-        "rent": "Aluguel",
         "dueDay": "Vencimento",
         "dueDayValue": "Dia {day}",
         "guarantee": "Garantia",

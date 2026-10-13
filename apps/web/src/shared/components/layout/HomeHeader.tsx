@@ -13,7 +13,9 @@ import {
   Stack,
 } from '@mui/material'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
+import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded'
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
@@ -41,12 +43,16 @@ export function HomeHeader({
   userProfile,
   onToggleProfile,
   isSessionLoading = false,
+  showSignIn = false,
+  showLanguageSelector = false,
 }: HomeHeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const closeMobileMenu = () => setIsMobileMenuOpen(false)
   const t = useTranslations('marketplace.header')
-  const { status } = useSession()
+  const { data: session, status } = useSession()
+  const showNotifications = status === 'authenticated'
   const announcePropertyHref = status === 'authenticated' ? '/dashboard/properties' : '/login'
+  const canAnnounceProperty = session?.papel !== 'RENTER'
 
   return (
     <Box
@@ -66,7 +72,7 @@ export function HomeHeader({
           sx={{
             minHeight: 60,
             display: 'grid',
-            gridTemplateColumns: { xs: 'auto 1fr', md: '1fr auto 1fr' },
+            gridTemplateColumns: { xs: 'auto 1fr', md: 'auto minmax(0, 1fr) auto' },
             alignItems: 'center',
             gap: 2,
           }}
@@ -82,8 +88,8 @@ export function HomeHeader({
             component="nav"
             direction="row"
             alignItems="center"
-            spacing={{ xs: 2, md: 4 }}
-            sx={{ display: { xs: 'none', md: 'flex' }, justifySelf: 'center' }}
+            spacing={{ xs: 2, md: 2.5, lg: 4 }}
+            sx={{ display: { xs: 'none', md: 'flex' }, justifySelf: 'center', minWidth: 0 }}
           >
             {navigationItems.map((item) => (
               <MuiLink
@@ -121,36 +127,112 @@ export function HomeHeader({
             ))}
           </Stack>
 
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ justifySelf: 'end' }}>
-            <Button
-              component={Link}
-              href={announcePropertyHref}
-              variant="outlined"
-              color="secondary"
-              size="small"
-              sx={{
-                borderColor: 'divider',
-                color: 'text.primary',
-                borderRadius: `${radius.sm}px`,
-                display: { xs: 'none', md: 'inline-flex' },
-                minHeight: 42,
-                px: 2,
-                ...componentText.headerCta,
-                transition: motion.transition.bordered,
-                '&:hover': {
-                  bgcolor: 'transparent',
-                  borderColor: surface.darkText,
-                  color: surface.darkText,
-                  transform: 'translateY(-1px)',
-                },
-              }}
-            >
-              {t('announceProperty')}
-            </Button>
-            <IconButton aria-label={t('notifications')} size="small" sx={{ width: 42, height: 42 }}>
-              <NotificationsNoneOutlinedIcon sx={{ fontSize: iconSize.xl }} />
-            </IconButton>
-            {userProfile && profileButtonRef && onToggleProfile ? (
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={{ xs: 0.5, md: 1 }}
+            sx={{ justifySelf: 'end', flexShrink: 0 }}
+          >
+            {canAnnounceProperty ? (
+              <Button
+                component={Link}
+                href={announcePropertyHref}
+                variant="outlined"
+                color="secondary"
+                size="small"
+                sx={{
+                  borderColor: 'divider',
+                  color: 'text.primary',
+                  borderRadius: `${radius.sm}px`,
+                  display: { xs: 'none', md: 'inline-flex' },
+                  minHeight: 42,
+                  minWidth: 138,
+                  px: 2,
+                  whiteSpace: 'nowrap',
+                  ...componentText.headerCta,
+                  transition: motion.transition.bordered,
+                  '&:hover': {
+                    bgcolor: 'transparent',
+                    borderColor: surface.darkText,
+                    color: surface.darkText,
+                    transform: 'translateY(-1px)',
+                  },
+                }}
+              >
+                {t('announceProperty')}
+              </Button>
+            ) : null}
+            {canAnnounceProperty && showNotifications ? (
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{
+                  display: { xs: 'none', md: 'block' },
+                  height: 24,
+                  alignSelf: 'center',
+                  borderColor: 'divider',
+                }}
+              />
+            ) : null}
+            {showNotifications ? (
+              <IconButton
+                aria-label={t('notifications')}
+                size="small"
+                sx={{ width: 42, height: 42 }}
+              >
+                <NotificationsNoneOutlinedIcon sx={{ fontSize: iconSize.xl }} />
+              </IconButton>
+            ) : null}
+            {showSignIn ? (
+              <>
+                <Divider
+                  orientation="vertical"
+                  flexItem
+                  sx={{
+                    display: { xs: 'none', md: 'block' },
+                    height: 24,
+                    alignSelf: 'center',
+                    borderColor: 'divider',
+                  }}
+                />
+                <Button
+                  component={Link}
+                  href="/login"
+                  aria-label={t('signIn')}
+                  startIcon={<LoginOutlinedIcon fontSize="small" />}
+                  size="small"
+                  sx={{
+                    minWidth: { xs: 42, sm: 'auto' },
+                    minHeight: 42,
+                    px: { xs: 1, sm: 1.25 },
+                    color: 'text.primary',
+                    borderRadius: `${radius.sm}px`,
+                    ...componentText.headerCta,
+                    '& .MuiButton-startIcon': { m: { xs: 0, sm: undefined } },
+                    '&:hover': {
+                      bgcolor: alpha.magenta[8],
+                      color: 'primary.main',
+                    },
+                  }}
+                >
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                    {t('signIn')}
+                  </Box>
+                </Button>
+              </>
+            ) : null}
+            {userProfile && profileButtonRef && onToggleProfile && showSignIn ? (
+              <IconButton
+                aria-label={t('openProfile')}
+                aria-haspopup="dialog"
+                ref={profileButtonRef}
+                onClick={onToggleProfile}
+                size="small"
+                sx={{ width: 42, height: 42, color: 'text.secondary' }}
+              >
+                <MoreVertRoundedIcon sx={{ fontSize: iconSize.xl }} />
+              </IconButton>
+            ) : userProfile && profileButtonRef && onToggleProfile ? (
               <Box
                 component="button"
                 type="button"
@@ -187,9 +269,14 @@ export function HomeHeader({
               </Box>
             ) : isSessionLoading ? (
               <Box sx={{ width: 48, height: 42 }} />
-            ) : (
+            ) : !showLanguageSelector ? (
               <LanguageSelector variant="header" />
-            )}
+            ) : null}
+            {!isSessionLoading && showLanguageSelector ? (
+              <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+                <LanguageSelector variant="header" />
+              </Box>
+            ) : null}
             <IconButton
               aria-label={t('openMenu')}
               aria-controls="home-mobile-menu"
@@ -267,23 +354,27 @@ export function HomeHeader({
             ))}
           </Stack>
 
-          <Divider />
+          {canAnnounceProperty ? (
+            <>
+              <Divider />
 
-          <Button
-            component={Link}
-            href={announcePropertyHref}
-            variant="contained"
-            color="primary"
-            onClick={closeMobileMenu}
-            fullWidth
-            sx={{
-              minHeight: 44,
-              borderRadius: `${radius.sm}px`,
-              ...componentText.headerCta,
-            }}
-          >
-            {t('announceProperty')}
-          </Button>
+              <Button
+                component={Link}
+                href={announcePropertyHref}
+                variant="contained"
+                color="primary"
+                onClick={closeMobileMenu}
+                fullWidth
+                sx={{
+                  minHeight: 44,
+                  borderRadius: `${radius.sm}px`,
+                  ...componentText.headerCta,
+                }}
+              >
+                {t('announceProperty')}
+              </Button>
+            </>
+          ) : null}
         </Stack>
       </Drawer>
     </Box>

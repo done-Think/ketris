@@ -1,4 +1,4 @@
-export type PublicPropertyPurpose = 'ALUGUEL' | 'VENDA'
+export type PublicPropertyPurpose = 'ALUGUEL' | 'VENDA' | 'AMBOS'
 
 export interface PublicPropertySummary {
   id: string
@@ -22,6 +22,39 @@ export interface PublicPropertySummary {
   publishedAt: string | null
 }
 
+export interface ListPropertiesResponse {
+  properties: PublicPropertySummary[]
+}
+
+export interface PublicPropertyAddress {
+  street: string
+  number: string
+  complement: string | null
+  neighborhood: string
+  city: string
+  state: string
+  zipCode: string
+  latitude: number | null
+  longitude: number | null
+}
+
+export interface PublicPropertyMedia {
+  id: string
+  url: string
+  type: string
+  order: number
+}
+
+export interface PublicPropertyDetail extends PublicPropertySummary {
+  description: string | null
+  address: PublicPropertyAddress | null
+  media: PublicPropertyMedia[]
+}
+
+export interface PropertyDetailResponse {
+  property: PublicPropertyDetail
+}
+
 export type PropertySortOption = 'recent' | 'priceAsc' | 'priceDesc'
 
 export interface SearchPropertiesFilters {
@@ -33,4 +66,23 @@ export interface SearchPropertiesFilters {
   minArea?: number
   hasParking?: boolean
   sortBy?: PropertySortOption
+}
+
+export interface SubmitInquiryPayload {
+  leadName: string
+  leadEmail: string
+  leadPhone?: string
+  proposedValue?: number
+  notes?: string
+}
+
+export interface SubmitInquiryResult {
+  id: string
+  propertyId: string
+  status: 'ENVIADA'
+  createdAt: string
+}
+
+export interface SubmitInquiryResponse {
+  inquiry: SubmitInquiryResult
 }

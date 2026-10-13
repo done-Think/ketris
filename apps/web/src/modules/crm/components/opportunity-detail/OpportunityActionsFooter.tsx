@@ -3,6 +3,7 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded'
 import SellOutlinedIcon from '@mui/icons-material/SellOutlined'
 import { Button, Paper, Stack } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { radius, shadows } from '@shared/theme/tokens'
 
@@ -16,16 +17,12 @@ export function OpportunityActionsFooter({
   onEdit,
   onArchive,
 }: OpportunityActionsFooterProps) {
+  const t = useTranslations('crm.opportunityDetail')
   return (
     <Paper
       component="footer"
       elevation={0}
       sx={{
-        position: 'sticky',
-        bottom: 0,
-        zIndex: 5,
-        mx: { xs: 1, sm: 2.5, lg: 3.5 },
-        mt: 1,
         p: { xs: 1.4, sm: 1.7 },
         border: '1px solid',
         borderColor: 'divider',
@@ -47,17 +44,18 @@ export function OpportunityActionsFooter({
             disabled={isMutating}
             onClick={onStageMenuOpen}
           >
-            Mover de etapa
+            {t('moveStage')}
           </Button>
           {opportunity.status !== 'RECUSADA' && (
             <Button color="error" variant="outlined" disabled={isMutating} onClick={onDiscardLead}>
-              Descartar lead
+              {t('discardLead')}
             </Button>
           )}
         </Stack>
+
         <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
           <Button startIcon={<EditOutlinedIcon />} disabled={isMutating} onClick={onEdit}>
-            Editar dados
+            {t('editData')}
           </Button>
           <Button
             color="inherit"
@@ -65,7 +63,7 @@ export function OpportunityActionsFooter({
             disabled={isMutating || Boolean(opportunity.archivedAt)}
             onClick={onArchive}
           >
-            {opportunity.archivedAt ? 'Arquivada' : 'Arquivar'}
+            {opportunity.archivedAt ? t('archived') : t('archive')}
           </Button>
         </Stack>
       </Stack>

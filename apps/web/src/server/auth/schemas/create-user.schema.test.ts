@@ -3,47 +3,47 @@ import { describe, expect, it } from 'vitest'
 import { createUserRequestSchema } from './create-user.schema'
 
 describe('createUserRequestSchema', () => {
-  it('aceita payload completo válido com papel OWNER', () => {
+  it('aceita payload completo válido com role OWNER', () => {
     const result = createUserRequestSchema.safeParse({
-      nome: 'Ana Proprietária',
+      name: 'Ana Proprietária',
       email: 'ana@ketris.dev',
       password: 'senha-longa-123',
-      papel: 'OWNER',
+      role: 'OWNER',
     })
 
     expect(result.success).toBe(true)
   })
 
-  it('aceita payload completo válido com papel AGENT', () => {
+  it('aceita payload completo válido com role AGENT', () => {
     const result = createUserRequestSchema.safeParse({
-      nome: 'Ana Agente',
+      name: 'Ana Agente',
       email: 'ana@ketris.dev',
       password: 'senha-longa-123',
-      papel: 'AGENT',
+      role: 'AGENT',
     })
 
     expect(result.success).toBe(true)
   })
 
-  it('aplica papel padrão AGENT quando omitido', () => {
+  it('aplica role padrão AGENT quando omitido', () => {
     const result = createUserRequestSchema.safeParse({
-      nome: 'Ana Agente',
+      name: 'Ana Agente',
       email: 'ana@ketris.dev',
       password: 'senha-longa-123',
     })
 
     expect(result.success).toBe(true)
     if (result.success) {
-      expect(result.data.papel).toBe('AGENT')
+      expect(result.data.role).toBe('AGENT')
     }
   })
 
-  it('rejeita papel ADMIN — este endpoint nunca cria administradores', () => {
+  it('rejeita role ADMIN — este endpoint nunca cria administradores', () => {
     const result = createUserRequestSchema.safeParse({
-      nome: 'Ana Agente',
+      name: 'Ana Agente',
       email: 'ana@ketris.dev',
       password: 'senha-longa-123',
-      papel: 'ADMIN',
+      role: 'ADMIN',
     })
 
     expect(result.success).toBe(false)
@@ -51,7 +51,7 @@ describe('createUserRequestSchema', () => {
 
   it('rejeita senha com menos de 8 caracteres', () => {
     const result = createUserRequestSchema.safeParse({
-      nome: 'Ana Agente',
+      name: 'Ana Agente',
       email: 'ana@ketris.dev',
       password: '123',
     })
@@ -64,7 +64,7 @@ describe('createUserRequestSchema', () => {
 
   it('rejeita nome vazio', () => {
     const result = createUserRequestSchema.safeParse({
-      nome: '',
+      name: '',
       email: 'ana@ketris.dev',
       password: 'senha-longa-123',
     })
@@ -74,7 +74,7 @@ describe('createUserRequestSchema', () => {
 
   it('rejeita e-mail inválido', () => {
     const result = createUserRequestSchema.safeParse({
-      nome: 'Ana Agente',
+      name: 'Ana Agente',
       email: 'nao-e-email',
       password: 'senha-longa-123',
     })
@@ -82,12 +82,12 @@ describe('createUserRequestSchema', () => {
     expect(result.success).toBe(false)
   })
 
-  it('rejeita papel fora do enum', () => {
+  it('rejeita role fora do enum', () => {
     const result = createUserRequestSchema.safeParse({
-      nome: 'Ana Agente',
+      name: 'Ana Agente',
       email: 'ana@ketris.dev',
       password: 'senha-longa-123',
-      papel: 'SUPERADMIN',
+      role: 'SUPERADMIN',
     })
 
     expect(result.success).toBe(false)

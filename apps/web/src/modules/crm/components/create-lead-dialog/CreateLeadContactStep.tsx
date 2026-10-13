@@ -24,6 +24,7 @@ export function CreateLeadContactStep({ control }: CreateLeadContactStepProps) {
         name="email"
         label={t('create.fields.email')}
         type="email"
+        required
         sx={{ gridColumn: { md: '1 / -1' } }}
       />
     </Box>

@@ -6,13 +6,9 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from '@/i18n/navigation'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
 import { useTenantStore } from '@shared/stores/tenant-store'
+import type { RefreshTokenResponse } from '@shared/types'
 
 import { httpClient } from './http-client'
-
-type RefreshTokenResponse = {
-  accessToken: string
-  refreshToken: string
-}
 
 export function useHttpClientSessionSync() {
   const { data: session, update } = useSession()

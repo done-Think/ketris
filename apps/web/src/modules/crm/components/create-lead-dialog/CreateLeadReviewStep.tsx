@@ -12,8 +12,6 @@ const reviewFieldKeys: readonly CreateLeadFieldName[] = [
   'interest',
   'budget',
   'source',
-  'broker',
-  'stage',
 ]
 
 export function CreateLeadReviewStep({ control, formValues }: CreateLeadReviewStepProps) {

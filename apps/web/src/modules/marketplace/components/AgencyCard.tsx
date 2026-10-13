@@ -5,17 +5,15 @@ import { Box, Card, CardContent, Chip, Divider, Stack, Typography } from '@mui/m
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
-import StarRoundedIcon from '@mui/icons-material/StarRounded'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
 import { alpha, componentText, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
 
 import type { AgencyCardProps } from '../types/agency'
-import { formatRating } from '../utils/format-rating'
 import { buildPublicProfileHref } from '../utils/property-links'
 import { buildProfileListings } from '../utils/profile-listings'
-import { AgencyBrandBanner } from './AgencyBrandBanner'
+import { AgencyAdaptiveBrandHeader } from './AgencyAdaptiveBrandHeader'
 import { DirectoryCardMetrics } from './directory/DirectoryCardMetrics'
 import { ProfileListingPreviewSection } from './profile/ProfileListingPreviewSection'
 
@@ -23,7 +21,8 @@ export function AgencyCard(agency: AgencyCardProps) {
   const t = useTranslations('marketplace.directory.cards')
   const profileLinkRef = useRef<HTMLAnchorElement | null>(null)
   const isListView = agency.viewMode === 'list'
-  const featuredListings = buildProfileListings(agency.featuredListings).slice(0, 2)
+  const featuredListings = buildProfileListings(agency.featuredListings).slice(0, 4)
+  const hasFeaturedListings = featuredListings.length > 0
 
   function handleCardClick(event: MouseEvent<HTMLElement>) {
     if (event.target instanceof Element && event.target.closest('a')) return
@@ -73,12 +72,12 @@ export function AgencyCard(agency: AgencyCardProps) {
 
       <CardContent
         sx={{
-          display: isListView ? 'grid' : 'block',
+          display: isListView && hasFeaturedListings ? 'grid' : 'block',
           gridTemplateColumns: {
-            lg: isListView ? 'minmax(0, 1fr) minmax(430px, 0.72fr)' : '1fr',
+            lg: isListView && hasFeaturedListings ? 'minmax(0, 1fr) minmax(480px, 0.58fr)' : '1fr',
           },
-          gap: { xs: 2, lg: 2.4 },
-          p: { xs: 2, md: isListView ? 2.6 : 2.2 },
+          gap: { xs: 2, lg: 2 },
+          p: { xs: 2, md: isListView ? 2 : 2.2 },
           position: 'relative',
           zIndex: 2,
           '& a': {
@@ -87,30 +86,48 @@ export function AgencyCard(agency: AgencyCardProps) {
           },
         }}
       >
-        <Box sx={{ minWidth: 0 }}>
-          <Box sx={{ mb: isListView ? 1.6 : 1 }}>
-            <AgencyBrandBanner agency={agency} size={isListView ? 'hero' : 'compact'} />
+        <Box
+          sx={{
+            minWidth: 0,
+            display: isListView ? 'flex' : 'block',
+            flexDirection: 'column',
+            height: isListView ? '100%' : 'auto',
+          }}
+        >
+          <Box sx={{ mb: isListView ? 1.4 : 1.2 }}>
+            <AgencyAdaptiveBrandHeader
+              agency={agency}
+              variant={isListView ? 'list' : 'compact'}
+              showBanner
+              showHeadquarters={isListView}
+            />
           </Box>
 
-          <Typography sx={{ ...componentText.cardTitle, mb: 0.4 }}>{agency.name}</Typography>
-          <Typography sx={{ color: 'text.secondary', ...componentText.cardBroker }}>
-            {agency.legalCreci} / {agency.headquarters}
-          </Typography>
-          {isListView ? (
+          {!isListView && agency.headquarters ? (
+            <Typography sx={{ color: 'text.secondary', ...componentText.cardBroker }}>
+              {agency.headquarters}
+            </Typography>
+          ) : null}
+
+          {isListView && agency.summary ? (
             <Typography
               sx={{
                 color: 'text.secondary',
                 fontSize: 12,
                 fontWeight: 600,
                 lineHeight: 1.5,
-                mt: 1,
+                mt: 0.8,
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
               }}
             >
               {agency.summary}
             </Typography>
           ) : null}
 
-          <Stack direction="row" spacing={0.8} useFlexGap flexWrap="wrap" sx={{ mt: 1.6 }}>
+          <Stack direction="row" spacing={0.8} useFlexGap flexWrap="wrap" sx={{ mt: 1.8 }}>
             {agency.segments.slice(0, 3).map((segment) => (
               <Chip
                 key={segment}
@@ -128,25 +145,39 @@ export function AgencyCard(agency: AgencyCardProps) {
             ))}
           </Stack>
 
-          <DirectoryCardMetrics
-            gridTemplateColumns="repeat(3, minmax(0, 1fr))"
-            labelFontWeight={700}
-            metrics={[
-              { label: t('properties'), value: agency.activeListings, icon: ApartmentOutlinedIcon },
-              { label: t('team'), value: agency.brokersCount, icon: GroupsOutlinedIcon },
-              { label: t('rating'), value: formatRating(agency.rating), icon: StarRoundedIcon },
-            ]}
-            valueFontWeight={700}
-          />
+          <Box sx={{ mt: isListView ? 'auto' : 0, pt: isListView ? 2 : 0 }}>
+            <DirectoryCardMetrics
+              gridTemplateColumns={
+                isListView
+                  ? { xs: 'repeat(2, minmax(0, 1fr))', md: 'repeat(2, minmax(160px, 0.28fr))' }
+                  : 'repeat(2, minmax(0, 1fr))'
+              }
+              labelFontWeight={700}
+              metrics={[
+                {
+                  label: t('properties'),
+                  value: agency.activeListings,
+                  icon: ApartmentOutlinedIcon,
+                },
+                { label: t('team'), value: agency.brokersCount, icon: GroupsOutlinedIcon },
+              ]}
+              valueFontWeight={700}
+            />
+          </Box>
         </Box>
 
-        {isListView ? (
+        {isListView && hasFeaturedListings ? (
           <ProfileListingPreviewSection
-            accentColor={agency.brand.primaryColor}
-            backgroundColor={agency.brand.backgroundColor}
-            hoverBorderColor={agency.brand.primaryColor}
+            accentColor={agency.brand.primaryColor ?? ''}
+            backgroundColor={agency.brand.backgroundColor ?? ''}
+            hoverBorderColor={agency.brand.primaryColor ?? ''}
             listings={featuredListings}
             sideBorderBreakpoint="lg"
+            source={{
+              href: agency.href,
+              name: agency.name,
+              type: 'agency',
+            }}
           />
         ) : null}
 

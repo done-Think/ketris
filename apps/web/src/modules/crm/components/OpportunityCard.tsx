@@ -2,7 +2,8 @@
 
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
 import { Avatar, Box, Card, Stack, Typography } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { Link } from '@/i18n/navigation'
 import { motion, radius, shadows } from '@shared/theme/tokens'
@@ -32,17 +33,18 @@ export function OpportunityCard({
   density = 'regular',
   presentation,
 }: OpportunityCardProps) {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('crm.pipeline')
   const stage = opportunityStageByStatus[opportunity.status]
   const isCompact = density === 'compact'
   const indicatorColor = presentation?.indicatorColor ?? stage.color
   const indicatorLabel = presentation?.indicatorLabel ?? t(`stages.${stage.labelKey}`)
-  const propertyTitle = property?.title ?? `Imóvel ${opportunity.propertyId}`
+  const propertyTitle = property?.title ?? t('propertyReference', { id: opportunity.propertyId })
   const propertyLocation = getPropertyLocation(property, t('propertyUnavailable'))
   const value =
     property?.purpose === 'ALUGUEL'
-      ? formatMonthlyCurrency(opportunity.proposedValue)
-      : formatCurrency(opportunity.proposedValue)
+      ? formatMonthlyCurrency(opportunity.proposedValue, locale)
+      : formatCurrency(opportunity.proposedValue, locale)
 
   return (
     <Card
@@ -52,9 +54,9 @@ export function OpportunityCard({
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        height: isCompact ? 124 : undefined,
-        minHeight: isCompact ? 124 : 140,
-        p: isCompact ? 1.75 : 2,
+        height: isCompact ? 148 : undefined,
+        minHeight: isCompact ? 148 : 164,
+        p: isCompact ? 2 : 2.25,
         border: '1px solid',
         borderColor: isCompact ? 'transparent' : 'divider',
         borderRadius: isCompact ? `${radius.md}px` : 1.5,
@@ -76,7 +78,7 @@ export function OpportunityCard({
       <Typography
         noWrap
         sx={{
-          fontSize: isCompact ? 12.5 : 14,
+          fontSize: isCompact ? 16.5 : 18,
           fontWeight: 700,
           lineHeight: isCompact ? 1.3 : 1.4,
         }}
@@ -89,7 +91,7 @@ export function OpportunityCard({
         sx={{
           mt: 0.25,
           color: 'text.secondary',
-          fontSize: isCompact ? 10.5 : 11.5,
+          fontSize: isCompact ? 14.5 : 15.5,
           lineHeight: isCompact ? 1.35 : 1.45,
         }}
       >
@@ -101,7 +103,7 @@ export function OpportunityCard({
         sx={{
           display: isCompact ? 'none' : 'block',
           color: 'text.secondary',
-          fontSize: 11,
+          fontSize: 15,
           lineHeight: 1.4,
         }}
       >
@@ -113,7 +115,7 @@ export function OpportunityCard({
         sx={{
           mt: isCompact ? 0.75 : 1,
           color: 'primary.main',
-          fontSize: isCompact ? 13 : 14,
+          fontSize: isCompact ? 17 : 18,
           fontWeight: 800,
           lineHeight: isCompact ? 1.35 : 1.4,
         }}
@@ -139,14 +141,14 @@ export function OpportunityCard({
             height: isCompact ? 20 : 24,
             bgcolor: stage.softColor,
             color: stage.color,
-            fontSize: isCompact ? 8 : 9,
+            fontSize: isCompact ? 12 : 13,
           }}
         >
           {getInitials(opportunity.leadName)}
         </Avatar>
         <Stack direction="row" alignItems="center" spacing={0.4} sx={{ minWidth: 0 }}>
           <AccessTimeRoundedIcon
-            sx={{ display: isCompact ? 'none' : 'block', color: 'text.disabled', fontSize: 12 }}
+            sx={{ display: isCompact ? 'none' : 'block', color: 'text.disabled', fontSize: 16 }}
           />
           <Typography
             noWrap
@@ -156,11 +158,12 @@ export function OpportunityCard({
               borderRadius: isCompact ? '4px' : 0,
               bgcolor: isCompact ? 'grey.100' : 'transparent',
               color: 'text.secondary',
-              fontSize: isCompact ? 10 : 10.5,
+              fontSize: isCompact ? 14 : 14.5,
               lineHeight: isCompact ? 1.2 : 'normal',
             }}
           >
-            {presentation?.relativeDateLabel ?? formatRelativeDate(opportunity.updatedAt)}
+            {presentation?.relativeDateLabel ??
+              formatRelativeDate(opportunity.updatedAt, new Date(), locale)}
           </Typography>
         </Stack>
         <Box

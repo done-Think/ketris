@@ -1,20 +1,16 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import { PasswordRecoveryConfirmation } from '../../components/PasswordRecoveryConfirmation'
 
 describe('PasswordRecoveryConfirmation', () => {
-  it('exibe a confirmação e o caminho de volta ao login', () => {
-    render(<PasswordRecoveryConfirmation onResend={vi.fn()} />)
+  it('exibe a confirmação de senha redefinida e o caminho de volta ao login', () => {
+    render(<PasswordRecoveryConfirmation />)
 
-    expect(screen.getByRole('heading', { name: 'E-mail enviado!' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Senha redefinida!' })).toBeInTheDocument()
     expect(
-      screen.getByText(
-        'Verifique sua caixa de entrada e siga as instruções para redefinir sua senha.',
-      ),
+      screen.getByText('Sua senha foi alterada com sucesso. Você já pode entrar com a nova senha.'),
     ).toBeInTheDocument()
-    expect(screen.getByText('Enviamos as instruções para o seu e-mail.')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Voltar ao login' })).toHaveAttribute('href', '/login')
-    expect(screen.getByRole('button', { name: 'Reenviar em 1:00' })).toBeDisabled()
   })
 })

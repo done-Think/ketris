@@ -29,7 +29,7 @@ export class CreateTenantAdminUseCase {
       throw new TenantNotFoundError()
     }
 
-    const existing = await this.userRepository.findByEmailAndTenant(tenant.id, input.email)
+    const existing = await this.userRepository.findByEmail(input.email)
 
     if (existing) {
       throw new EmailAlreadyInUseError()

@@ -3,6 +3,7 @@
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import EmailRoundedIcon from '@mui/icons-material/EmailRounded'
 import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded'
+import SwapHorizRoundedIcon from '@mui/icons-material/SwapHorizRounded'
 import WhatsAppIcon from '@mui/icons-material/WhatsApp'
 import {
   Box,
@@ -12,14 +13,18 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  MenuItem,
   Stack,
+  TextField,
   Typography,
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
+import { leadStageOptions } from '../config/lead-creation'
 import type { LeadContactDialogProps } from '../types/lead'
+import { apiStageByStage } from '../utils/map-dashboard-lead'
 
 function getPhoneDigits(phone: string) {
   return phone.replace(/\D/g, '')
@@ -35,30 +40,59 @@ function getWhatsAppUrl(phone: string) {
   return `https://wa.me/${internationalPhone}`
 }
 
-export function LeadContactDialog({ lead, onClose, open }: LeadContactDialogProps) {
+export function LeadContactDialog({
+  lead,
+  onClose,
+  open,
+  onStageChange,
+  onConvertRequest,
+}: LeadContactDialogProps) {
   const t = useTranslations('crm.leads.contact')
+  const tFilters = useTranslations('crm.leads.filters')
 
   if (!lead) return null
+
+  const isConverted = Boolean(lead.opportunityId)
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
       <DialogTitle sx={{ px: { xs: 2, md: 2.6 }, pb: 1, pt: 2.4 }}>
         <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
-          <Box sx={{ minWidth: 0 }}>
-            <Typography sx={{ color: brand.magenta[600], fontSize: 13, fontWeight: 900 }}>
-              {t('eyebrow')}
-            </Typography>
-            <Typography sx={{ color: brand.graphite[500], fontSize: 22, fontWeight: 900 }}>
-              {lead.name}
-            </Typography>
-          </Box>
+          <Stack spacing={1.4} sx={{ flex: 1, minWidth: 0 }}>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography sx={{ color: brand.magenta[600], fontSize: 13, fontWeight: 900 }}>
+                {t('eyebrow')}
+              </Typography>
+              <Typography sx={{ color: brand.graphite[500], fontSize: 22, fontWeight: 900 }}>
+                {lead.name}
+              </Typography>
+            </Box>
+            <TextField
+              select
+              fullWidth
+              label={t('stageLabel')}
+              value={lead.stage}
+              disabled={isConverted}
+              slotProps={{ inputLabel: { shrink: true } }}
+              onChange={(event) => {
+                const nextStage = event.target.value as (typeof leadStageOptions)[number]['value']
+                onStageChange(lead.id, apiStageByStage[nextStage])
+              }}
+            >
+              {leadStageOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {tFilters(option.labelKey)}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Stack>
           <IconButton aria-label={t('close')} onClick={onClose}>
             <CloseRoundedIcon sx={{ fontSize: iconSize.lg }} />
           </IconButton>
         </Stack>
       </DialogTitle>
 
-      <DialogContent sx={{ px: { xs: 2, md: 2.6 }, pb: 2 }}>
+      <DialogContent sx={{ px: { xs: 2, md: 2.6 }, pb: 2, pt: 1 }}>
         <Stack spacing={1.6}>
           <Box
             sx={{
@@ -141,6 +175,15 @@ export function LeadContactDialog({ lead, onClose, open }: LeadContactDialogProp
       <DialogActions sx={{ px: { xs: 2, md: 2.6 }, pb: 2.4, pt: 0 }}>
         <Button type="button" variant="outlined" color="secondary" onClick={onClose}>
           {t('cancel')}
+        </Button>
+        <Button
+          type="button"
+          variant="contained"
+          disabled={isConverted}
+          startIcon={<SwapHorizRoundedIcon sx={{ fontSize: iconSize.sm }} />}
+          onClick={() => onConvertRequest(lead)}
+        >
+          {isConverted ? t('alreadyConverted') : t('convert')}
         </Button>
       </DialogActions>
     </Dialog>

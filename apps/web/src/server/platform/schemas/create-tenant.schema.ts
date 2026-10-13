@@ -7,7 +7,7 @@ const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
 export const createTenantRequestSchema = z
   .object({
-    nome: z.string().min(1, 'Nome é obrigatório.').openapi({ example: 'Imobiliária Exemplo' }),
+    name: z.string().min(1, 'Nome é obrigatório.').openapi({ example: 'Imobiliária Exemplo' }),
     slug: z
       .string()
       .min(1, 'Slug é obrigatório.')

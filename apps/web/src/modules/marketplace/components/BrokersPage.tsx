@@ -1,15 +1,17 @@
 'use client'
 
 import { Box, Container } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
-import { brokers } from '../data/brokers'
+import { useBrokerProfiles } from '../hooks/use-broker-profile'
 import { useDirectoryList } from '../hooks/use-directory-list'
 import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { BrokerProfile } from '../types/broker'
+import { toBrokerProfile } from '../utils/broker-profile-adapter'
 import { useViewModePreference } from '../hooks/use-view-mode-preference'
 import { BrokerCard } from './BrokerCard'
 import { DirectoryLoadMoreStatus } from './directory/DirectoryLoadMoreStatus'
@@ -28,10 +30,16 @@ function getBrokerSearchableText(broker: BrokerProfile) {
 }
 
 export function BrokersPage() {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace')
+  const tFeatures = useTranslations('marketplace.propertyFeatures')
   const directoryT = useTranslations('marketplace.directory.brokers')
   const { footerColumns, legalLinks } = useMarketplaceNavigation()
   const { setViewMode, viewMode } = useViewModePreference('brokers')
+  const { data: brokerProfiles } = useBrokerProfiles()
+  const brokers = (brokerProfiles ?? []).map((profile) =>
+    toBrokerProfile(profile, locale, tFeatures),
+  )
   const {
     filteredItems: filteredBrokers,
     hasMoreItems: hasMoreBrokers,

@@ -4,8 +4,9 @@ import { z } from 'zod'
 export const authenticatedPlatformAdminSchema = z
   .object({
     id: z.string(),
-    nome: z.string(),
+    name: z.string(),
     email: z.string().email(),
-    ativo: z.boolean(),
+    role: z.enum(['ADMIN', 'ADMIN_AGENT', 'AGENT']),
+    active: z.boolean(),
   })
   .openapi('AuthenticatedPlatformAdmin')

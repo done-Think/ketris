@@ -33,7 +33,7 @@ export function ContactActions({
   ] as const
 
   return (
-    <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={0.125}>
+    <Stack direction="row" alignItems="center" justifyContent="center" spacing={0.125}>
       {iconActions.map(({ label, icon: Icon, onClick }) => (
         <Tooltip key={label} title={label}>
           <Box component="span" sx={{ display: 'inline-flex' }}>

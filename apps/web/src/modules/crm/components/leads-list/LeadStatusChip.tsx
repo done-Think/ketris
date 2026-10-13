@@ -37,11 +37,11 @@ export function LeadStatusChip({ stage }: LeadStatusChipProps) {
       size="small"
       sx={{
         width: 'fit-content',
-        height: 22,
+        height: 24,
         bgcolor: presentation.backgroundColor,
         color: presentation.color,
         borderRadius: `${radius.full}px`,
-        fontSize: 10.5,
+        fontSize: 14,
         fontWeight: 900,
         '& .MuiChip-label': { px: 1.125 },
       }}

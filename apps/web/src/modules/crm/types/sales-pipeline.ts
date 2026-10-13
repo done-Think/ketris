@@ -1,5 +1,10 @@
-import type { OpportunityCardProps } from './opportunity-card'
 import type { Opportunity, OpportunityStatus } from './opportunity'
+import type {
+  ProposalManagementFilterId,
+  ProposalManagementListItem,
+  ProposalManagementPage,
+  ProposalManagementSummary,
+} from './proposal-management'
 import type { PublicPropertySummary } from './property'
 
 export type SalesPipelineStageId =
@@ -18,10 +23,6 @@ export type SalesPipelineProjectedTotal = {
   label: string
   labelKey: 'rent' | 'sale' | 'uncategorized'
   value: string
-}
-
-export type SalesPipelineBoardProps = {
-  preview?: boolean
 }
 
 export type SalesPipelineViewMode = 'kanban' | 'list'
@@ -46,33 +47,23 @@ export type PipelineStageColumnProps = {
   projectedTotals: readonly SalesPipelineProjectedTotal[]
   isPipelineLoading: boolean
   hasPipelineError: boolean
-  fixtureMode: boolean
   propertiesById: ReadonlyMap<string, PublicPropertySummary>
-  presentationByOpportunityId: ReadonlyMap<string, OpportunityCardProps['presentation']>
 }
 
-export type SalesPipelinePreviewIndicator = {
-  color: string
-  label: string
+export type SalesPipelineKanbanViewProps = {
+  visibleOpportunities: readonly Opportunity[]
+  propertiesById: ReadonlyMap<string, PublicPropertySummary>
+  isPipelineLoading: boolean
+  hasPipelineError: boolean
 }
 
-export type SalesPipelineFixture = {
-  stageId: SalesPipelineStageId
-  opportunity: Opportunity
-  property: PublicPropertySummary
-  presentation: {
-    indicatorColor: string
-    indicatorLabel: string
-    relativeDateLabel: string
-  }
-}
-
-export type SalesPipelineFixtureInput = {
-  slug: string
-  stageId: SalesPipelineStageId
-  name: string
-  propertyTitle: string
-  value: number
-  daysAgo: number
-  indicator: SalesPipelinePreviewIndicator
+export type SalesPipelineListViewProps = {
+  proposalStatus: ProposalManagementFilterId
+  proposalSummary: ProposalManagementSummary
+  onStatusChange: (status: ProposalManagementFilterId) => void
+  proposalPageResult: ProposalManagementPage
+  proposalRowsPerPage: number
+  onPageChange: (page: number) => void
+  onRowsPerPageChange: (rowsPerPage: number) => void
+  onViewProposal: (proposal: ProposalManagementListItem) => void
 }

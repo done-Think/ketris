@@ -1,11 +1,7 @@
 import { Box } from '@mui/material'
-import type { ReactNode } from 'react'
 
 import { alpha, componentText, radius, surface } from '@shared/theme/tokens'
-
-type PillBadgeProps = {
-  children: ReactNode
-}
+import type { PillBadgeProps } from '@shared/types/pill-badge'
 
 export function PillBadge({ children }: PillBadgeProps) {
   return (

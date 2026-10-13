@@ -4,13 +4,25 @@ import { updatePlatformAdminRequestSchema } from './update-platform-admin.schema
 
 describe('updatePlatformAdminRequestSchema', () => {
   it('aceita quando apenas nome é informado', () => {
-    expect(updatePlatformAdminRequestSchema.safeParse({ nome: 'Novo Nome' }).success).toBe(true)
+    expect(updatePlatformAdminRequestSchema.safeParse({ name: 'Novo Nome' }).success).toBe(true)
   })
 
   it('aceita quando apenas email é informado', () => {
     expect(updatePlatformAdminRequestSchema.safeParse({ email: 'novo@ketris.dev' }).success).toBe(
       true,
     )
+  })
+
+  it('aceita quando apenas função é informada', () => {
+    expect(updatePlatformAdminRequestSchema.safeParse({ role: 'ADMIN_AGENT' }).success).toBe(true)
+  })
+
+  it('aceita quando apenas status é informado', () => {
+    expect(updatePlatformAdminRequestSchema.safeParse({ active: true }).success).toBe(true)
+  })
+
+  it('rejeita desativação pelo PATCH', () => {
+    expect(updatePlatformAdminRequestSchema.safeParse({ active: false }).success).toBe(false)
   })
 
   it('rejeita corpo vazio (nenhum campo informado)', () => {

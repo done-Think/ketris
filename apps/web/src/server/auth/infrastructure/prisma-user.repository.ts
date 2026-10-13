@@ -2,6 +2,7 @@ import { prisma } from '@server/db/prisma'
 
 import type { NewUser, UserRepository, UserUpdate } from '../application/ports/user-repository.port'
 import type { User } from '../domain/user.entity'
+import { normalizeEmail } from '@server/shared/normalize-email'
 
 function toDomainUser(usuario: {
   id: string
@@ -9,8 +10,10 @@ function toDomainUser(usuario: {
   nome: string
   email: string
   senhaHash: string
+  avatarUrl: string | null
   papel: User['papel']
   ativo: boolean
+  vinculoAprovadoEm: Date | null
 }): User {
   return {
     id: usuario.id,
@@ -18,8 +21,10 @@ function toDomainUser(usuario: {
     nome: usuario.nome,
     email: usuario.email,
     senhaHash: usuario.senhaHash,
+    avatarUrl: usuario.avatarUrl,
     papel: usuario.papel,
     ativo: usuario.ativo,
+    vinculoAprovadoEm: usuario.vinculoAprovadoEm,
   }
 }
 
@@ -31,15 +36,7 @@ export class PrismaUserRepository implements UserRepository {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const usuario = await prisma.usuario.findFirst({ where: { email } })
-
-    return usuario ? toDomainUser(usuario) : null
-  }
-
-  async findByEmailAndTenant(tenantId: string, email: string): Promise<User | null> {
-    const usuario = await prisma.usuario.findUnique({
-      where: { tenantId_email: { tenantId, email } },
-    })
+    const usuario = await prisma.usuario.findUnique({ where: { email: normalizeEmail(email) } })
 
     return usuario ? toDomainUser(usuario) : null
   }
@@ -58,9 +55,12 @@ export class PrismaUserRepository implements UserRepository {
       data: {
         tenantId: newUser.tenantId,
         nome: newUser.nome,
-        email: newUser.email,
+        email: normalizeEmail(newUser.email),
         senhaHash: newUser.senhaHash,
         papel: newUser.papel,
+        ...(newUser.vinculoAprovadoEm !== undefined
+          ? { vinculoAprovadoEm: newUser.vinculoAprovadoEm }
+          : {}),
       },
     })
 
@@ -72,8 +72,10 @@ export class PrismaUserRepository implements UserRepository {
       where: { id },
       data: {
         nome: changes.nome,
-        email: changes.email,
+        email: changes.email ? normalizeEmail(changes.email) : undefined,
+        avatarUrl: changes.avatarUrl,
         papel: changes.papel,
+        senhaHash: changes.senhaHash,
       },
     })
 
@@ -84,6 +86,15 @@ export class PrismaUserRepository implements UserRepository {
     const usuario = await prisma.usuario.update({
       where: { id },
       data: { ativo: false },
+    })
+
+    return toDomainUser(usuario)
+  }
+
+  async approveMembership(id: string): Promise<User> {
+    const usuario = await prisma.usuario.update({
+      where: { id },
+      data: { vinculoAprovadoEm: new Date() },
     })
 
     return toDomainUser(usuario)

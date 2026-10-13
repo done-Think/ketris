@@ -2,41 +2,15 @@
 
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
 import { Box, Stack, Typography } from '@mui/material'
-import type { SxProps, Theme } from '@mui/material'
 
 import { iconSize, motion, radius } from '@shared/theme/tokens'
-
-export interface WizardStepsNavStep {
-  key: string
-}
-
-export interface WizardStepsNavProps<TStep extends WizardStepsNavStep> {
-  steps: readonly TStep[]
-  activeStepIndex: number
-  /** Highest index the user may jump to. Defaults to `activeStepIndex` (strictly-linear wizard). */
-  reachableUpToIndex?: number
-  ariaLabel: string
-  getStepLabel: (step: TStep, index: number) => string
-  onStepSelect: (stepIndex: number) => void
-  gridTemplateColumns: string | Record<string, string>
-  /**
-   * `true`: the active step's circle fills in like a completed one (used while a step is being
-   * actively filled and any reachable step counts as "done enough"). `false` (default): only
-   * strictly-completed steps (before the active one) are filled.
-   */
-  fillActiveStep?: boolean
-  /**
-   * Replaces the full step grid with a compact dots + "current/total" bar below `md`. Meant for
-   * longer wizards (5+ steps) where the full grid gets cramped on narrow screens.
-   */
-  mobileProgressLabel?: (current: number, total: number) => string
-  sx?: SxProps<Theme>
-}
+import type { WizardStepsNavProps, WizardStepsNavStep } from '@shared/types/wizard-steps-nav'
 
 export function WizardStepsNav<TStep extends WizardStepsNavStep>({
   steps,
   activeStepIndex,
   reachableUpToIndex = activeStepIndex,
+  completedUpToIndex,
   ariaLabel,
   getStepLabel,
   onStepSelect,
@@ -61,11 +35,12 @@ export function WizardStepsNav<TStep extends WizardStepsNavStep>({
       {steps.map((step, index) => {
         const active = index === activeStepIndex
         const reachable = index <= reachableUpToIndex
-        const filled = fillActiveStep ? reachable : index < activeStepIndex
+        const completed = index <= (completedUpToIndex ?? activeStepIndex - 1)
+        const filled = fillActiveStep ? reachable : completed
         const connectorFilled = fillActiveStep
           ? index < reachableUpToIndex
-          : index < activeStepIndex
-        const showCheck = filled && !(fillActiveStep && active)
+          : index <= (completedUpToIndex ?? activeStepIndex - 1)
+        const showCheck = filled && !active
 
         return (
           <Stack

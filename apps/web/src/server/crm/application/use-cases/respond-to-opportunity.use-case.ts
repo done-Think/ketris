@@ -20,7 +20,6 @@ export interface RespondToOpportunityInput {
   actorName?: string | null
   opportunityId: string
   action: OpportunityResponseAction
-  /** Rejection reason or what's being asked of the lead. Becomes the timeline note. */
   message?: string | null
 }
 
@@ -35,13 +34,6 @@ const defaultDescription: Record<OpportunityResponseAction, string> = {
   SOLICITAR_INFORMACOES: 'Solicitadas mais informações ao interessado.',
 }
 
-/**
- * The broker's response to a proposal: accept, reject, or ask for more information.
- *
- * Kept separate from the generic update because it carries a rule the PATCH doesn't: it validates
- * the opportunity is in an answerable state and records the decision on the timeline. Without this
- * there's no trail of who accepted what — and an accepted proposal spawns a Contract (FR-014).
- */
 export class RespondToOpportunityUseCase {
   constructor(
     private readonly opportunityRepository: OpportunityRepository,

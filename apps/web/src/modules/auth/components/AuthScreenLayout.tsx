@@ -1,15 +1,10 @@
-import type { ReactNode } from 'react'
 import { Box, Card, CardContent, Container, Stack, Typography } from '@mui/material'
 
 import ketrisLogoTransparent from '@shared/assets/ketris-logo-transparent.png'
 import { AppLogo } from '@shared/components/ui'
 import { radius, shadows } from '@shared/theme/tokens'
 
-type AuthScreenLayoutProps = {
-  title: string
-  subtitle: string
-  children: ReactNode
-}
+import type { AuthScreenLayoutProps } from '../types/auth-shell'
 
 export function AuthScreenLayout({ title, subtitle, children }: AuthScreenLayoutProps) {
   return (

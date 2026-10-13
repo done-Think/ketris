@@ -1,4 +1,4 @@
-export const placeholderDatabaseUrl = 'postgresql://ketris:ketris@localhost:55432/ketris'
+export const placeholderDatabaseUrl = 'postgresql://ketris:ketris@localhost:55532/ketris'
 
 export function getDatabaseUrl(options?: { allowPlaceholder?: boolean }) {
   const databaseUrl =

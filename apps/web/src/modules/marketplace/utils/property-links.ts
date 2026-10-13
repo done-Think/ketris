@@ -25,11 +25,10 @@ function getHrefLastSegment(href: string) {
   return href.split('?')[0].split('/').filter(Boolean).at(-1) ?? ''
 }
 
-/**
- * Um href só vira rota de detalhe quando aponta para `/properties/<id>`. Parte dos
- * dados de destaque traz `/properties` puro, e tratar isso como id produziria
- * `/imoveis/properties` — uma 404. Nesses casos o destino correto é a listagem.
- */
+function getHrefSegments(href: string) {
+  return href.split('?')[0].split('/').filter(Boolean)
+}
+
 export function getPropertyDetailId(href: string): string | null {
   if (!href.startsWith(`${propertyListingPathname}/`)) return null
 
@@ -86,6 +85,18 @@ export function buildPublicProfileHref(
     return {
       pathname: '/brokers/[id]',
       params: { id },
+    }
+  }
+
+  const segments = getHrefSegments(href)
+  const agencyIndex = segments.indexOf('agencies')
+  const slug = agencyIndex >= 0 ? segments[agencyIndex + 1] : null
+  const creci = agencyIndex >= 0 ? segments[agencyIndex + 2] : null
+
+  if (slug && creci) {
+    return {
+      pathname: '/agencies/[id]/[creci]',
+      params: { id: slug, creci },
     }
   }
 

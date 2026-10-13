@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Box,
@@ -19,6 +19,7 @@ import { useTranslations } from 'next-intl'
 
 import { createOpportunityFormSchema } from '../../schemas/opportunity-schema'
 import type { CreateOpportunityFormValues } from '../../types/opportunity'
+import type { CreateOpportunityDialogProps } from '../../types/opportunity-detail'
 import type { PublicPropertySummary } from '../../types/property'
 import { PropertyAutocomplete } from './PropertyAutocomplete'
 
@@ -32,14 +33,6 @@ const emptyCreateOpportunityValues: CreateOpportunityFormValues = {
   status: 'RASCUNHO',
 }
 
-export interface CreateOpportunityDialogProps {
-  open: boolean
-  tenantId: string
-  isPending: boolean
-  onClose: () => void
-  onSave: (values: CreateOpportunityFormValues) => void
-}
-
 export function CreateOpportunityDialog({
   open,
   tenantId,
@@ -49,6 +42,10 @@ export function CreateOpportunityDialog({
 }: CreateOpportunityDialogProps) {
   const t = useTranslations('crm.opportunityDetail')
   const [selectedProperty, setSelectedProperty] = useState<PublicPropertySummary | null>(null)
+  const opportunityFormSchema = useMemo(
+    () => createOpportunityFormSchema((key) => t(`errors.${key}`)),
+    [t],
+  )
   const {
     control,
     handleSubmit,
@@ -57,7 +54,7 @@ export function CreateOpportunityDialog({
     formState: { errors },
   } = useForm<CreateOpportunityFormValues>({
     defaultValues: emptyCreateOpportunityValues,
-    resolver: zodResolver(createOpportunityFormSchema),
+    resolver: zodResolver(opportunityFormSchema),
   })
 
   useEffect(() => {

@@ -1,29 +1,35 @@
 import type { ViewMode } from './search'
 
-export type BrokerSpecialty = 'Aluguel' | 'Compra' | 'Alto padrão' | 'Comercial'
+export type BrokerProfileStatus = 'DRAFT' | 'PUBLISHED'
 
 export type BrokerProfile = {
   id: string
+  agencyName: string
+  email: string
   name: string
-  creci: string
-  avatar: string
-  region: string
-  specialties: BrokerSpecialty[]
+  headline: string | null
+  creci: string | null
+  avatar: string | null
+  bannerUrl: string | null
+  primaryColor: string | null
+  backgroundColor: string | null
+  region: string | null
+  specialties: string[]
   neighborhoods: string[]
   activeListings: number
-  responseTime: string
-  rating: number
   dealsClosed: number
-  phone: string
-  email: string
-  availability: string
-  bio: string
+  responseTime: string | null
+  rating: number | null
+  phone: string | null
+  availability: string | null
+  bio: string | null
   href: string
   highlightedListings: Array<{
     title: string
     location: string
     price: string
     href: string
+    image?: string
   }>
 }
 
@@ -36,17 +42,6 @@ export type BrokerPublicProfilePageProps = {
   broker: BrokerProfile
 }
 
-export type BrokerProfileTheme = {
-  label: string
-  tone: string
-  accent: string
-  cover: string
-  signature: string
-  summary: string
-  method: string[]
-}
-
 export type BrokerProfileHeroProps = {
   broker: BrokerProfile
-  theme: BrokerProfileTheme
 }

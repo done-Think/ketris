@@ -5,16 +5,14 @@ export type ProfileListingSource = {
   location: string
   price: string
   href: string
+  image?: string
 }
 
 export type ProfileListingOptions = {
-  brokerName?: string
-  coverage?: string[]
   limit?: number
 }
 
 export type PublicProfileListing = ProfileListingSource & {
-  image?: string
   details: PropertyCardData['details']
   category?: string
 }
@@ -37,4 +35,5 @@ export type ProfileListingPreviewSectionProps = {
   hoverBorderColor: string
   listings: PublicProfileListing[]
   sideBorderBreakpoint?: 'lg' | 'md'
+  source?: PublicProfileSource
 }

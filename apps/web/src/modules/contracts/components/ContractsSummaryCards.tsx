@@ -16,10 +16,10 @@ export function ContractsSummaryCards({ metrics }: ContractsSummaryCardsProps) {
       sx={{
         display: 'grid',
         gridTemplateColumns: {
-          xs: '1fr',
+          xs: 'repeat(3, minmax(0, 1fr))',
           md: 'repeat(3, minmax(0, 1fr))',
         },
-        gap: 1.9,
+        gap: { xs: 0.8, md: 1.9 },
         mb: 2.6,
       }}
     >
@@ -30,31 +30,61 @@ export function ContractsSummaryCards({ metrics }: ContractsSummaryCardsProps) {
         return (
           <Stack
             key={metric.label}
-            direction="row"
-            alignItems="center"
+            direction={{ xs: 'column', md: 'row' }}
+            alignItems={{ xs: 'flex-start', md: 'center' }}
             justifyContent="space-between"
-            spacing={2}
+            spacing={{ xs: 0.4, md: 2 }}
             sx={{
               minWidth: 0,
+              overflow: 'hidden',
               borderRadius: `${radius.sm}px`,
               bgcolor: surface.paper,
-              p: { xs: 1.8, md: 2.2 },
+              minHeight: { xs: 84, md: 'auto' },
+              p: { xs: 1.2, md: 2.2 },
               boxShadow: shadows.crmCardCompact,
             }}
           >
-            <Stack spacing={0.7} sx={{ minWidth: 0 }}>
+            <Stack spacing={0.7} sx={{ width: '100%', minWidth: 0, overflow: 'hidden' }}>
               <Typography
+                noWrap
                 sx={{
                   color: brand.neutral[500],
-                  fontSize: 11,
+                  width: '100%',
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  fontSize: { xs: 10, md: 11 },
                   fontWeight: 900,
                   textTransform: 'uppercase',
                 }}
               >
                 {t(`${metric.label}.label`)}
               </Typography>
-              <Typography sx={{ color: brand.graphite[500], fontSize: 28, fontWeight: 900 }}>
+              <Typography
+                sx={{
+                  color: brand.graphite[500],
+                  fontSize: { xs: 24, md: 28 },
+                  lineHeight: 1.1,
+                  fontWeight: 900,
+                }}
+              >
                 {metric.value}
+              </Typography>
+              <Typography
+                noWrap
+                sx={{
+                  display: { xs: 'block', md: 'none' },
+                  width: '100%',
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  color: brand.neutral[500],
+                  fontSize: 10,
+                  fontWeight: 700,
+                  lineHeight: 1.2,
+                }}
+              >
+                {t(`${metric.label}.caption`)}
               </Typography>
             </Stack>
             <Box
@@ -65,7 +95,7 @@ export function ContractsSummaryCards({ metrics }: ContractsSummaryCardsProps) {
                 borderRadius: radius.full,
                 bgcolor: tone.bgcolor,
                 color: tone.color,
-                display: 'grid',
+                display: { xs: 'none', md: 'grid' },
                 placeItems: 'center',
                 flexShrink: 0,
               }}

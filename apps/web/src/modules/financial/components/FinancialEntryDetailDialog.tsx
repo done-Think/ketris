@@ -12,28 +12,26 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import { useFormatter, useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
 import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { financialStatusStyles } from '../config/financial-status-styles'
 import type { FinancialEntryDetailDialogProps } from '../types/financial-entry'
+import { formatFinancialAmount } from '../utils/financial-display-currency'
 
 export function FinancialEntryDetailDialog({
   entry,
   onClose,
   open,
+  exchangeRate,
 }: FinancialEntryDetailDialogProps) {
-  const format = useFormatter()
+  const locale = useLocale() as AppLocale
   const t = useTranslations('dashboard.finance.entryDetail')
   const statusT = useTranslations('dashboard.finance.statuses')
-  const formatCurrency = (value: number) =>
-    format.number(value, {
-      style: 'currency',
-      currency: 'BRL',
-      maximumFractionDigits: 0,
-    })
+  const formatCurrency = (value: number) => formatFinancialAmount(value, locale, exchangeRate, 0)
 
   if (!entry) return null
 

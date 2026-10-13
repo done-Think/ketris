@@ -44,3 +44,9 @@ export type AuthFormFieldProps = {
   labelSx?: SxProps<Theme>
   required?: boolean
 }
+
+export type AuthScreenLayoutProps = {
+  title: string
+  subtitle: string
+  children: ReactNode
+}

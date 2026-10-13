@@ -20,8 +20,6 @@ describe('/api/crm/opportunities/[id]/activities (integração)', () => {
     })
     tenantId = tenant.id
 
-    // ADMIN — o escopo por AGENT já é coberto nos testes unitários do use-case e na suíte de
-    // integração de /api/crm/opportunities (list/create).
     const actor = await prisma.usuario.create({
       data: {
         tenantId,
@@ -38,6 +36,7 @@ describe('/api/crm/opportunities/[id]/activities (integração)', () => {
       email: actor.email,
       papel: actor.papel,
       ativo: actor.ativo,
+      vinculoAprovadoEm: actor.vinculoAprovadoEm,
     })
 
     const responsavel = await prisma.usuario.create({

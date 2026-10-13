@@ -1,4 +1,5 @@
 import { Box, Divider, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { brand } from '@shared/theme/tokens'
 
@@ -11,9 +12,10 @@ export function ProposalMobileCards({
   onViewProposal,
   onOpenMoreOptions,
 }: ProposalMobileCardsProps) {
+  const t = useTranslations('crm.proposalManagement')
   return (
     <Stack
-      aria-label="Lista móvel de propostas"
+      aria-label={t('mobileListAriaLabel')}
       sx={{ display: { xs: 'flex', md: 'none' } }}
       divider={<Divider />}
     >
@@ -21,7 +23,7 @@ export function ProposalMobileCards({
         <Stack key={proposal.id} spacing={1.5} sx={{ p: 2 }}>
           <Stack direction="row" alignItems="center" justifyContent="space-between" gap={1.5}>
             <Stack direction="row" alignItems="center" spacing={1} minWidth={0}>
-              <Typography noWrap sx={{ fontSize: 13, fontWeight: 800 }}>
+              <Typography noWrap sx={{ fontSize: 16, fontWeight: 800 }}>
                 {proposal.reference}
               </Typography>
               <ProposalStatusChip status={proposal.status} />
@@ -44,17 +46,17 @@ export function ProposalMobileCards({
               <Typography
                 sx={{
                   color: brand.neutral[500],
-                  fontSize: 10,
+                  fontSize: 14,
                   fontWeight: 700,
                   textTransform: 'uppercase',
                 }}
               >
-                Lead
+                {t('columns.lead')}
               </Typography>
-              <Typography noWrap sx={{ fontSize: 13, fontWeight: 700 }}>
+              <Typography noWrap sx={{ fontSize: 16, fontWeight: 700 }}>
                 {proposal.lead.name}
               </Typography>
-              <Typography noWrap sx={{ color: 'text.secondary', fontSize: 11 }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontSize: 15 }}>
                 {proposal.lead.email}
               </Typography>
             </Stack>
@@ -63,17 +65,17 @@ export function ProposalMobileCards({
               <Typography
                 sx={{
                   color: brand.neutral[500],
-                  fontSize: 10,
+                  fontSize: 14,
                   fontWeight: 700,
                   textTransform: 'uppercase',
                 }}
               >
-                Imóvel
+                {t('columns.property')}
               </Typography>
-              <Typography noWrap sx={{ fontSize: 13, fontWeight: 700 }}>
+              <Typography noWrap sx={{ fontSize: 16, fontWeight: 700 }}>
                 {proposal.property.title}
               </Typography>
-              <Typography noWrap sx={{ color: 'text.secondary', fontSize: 11 }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontSize: 15 }}>
                 {proposal.property.address}
               </Typography>
             </Stack>
@@ -84,19 +86,17 @@ export function ProposalMobileCards({
               <Typography
                 sx={{
                   color: brand.neutral[500],
-                  fontSize: 10,
+                  fontSize: 14,
                   fontWeight: 700,
                   textTransform: 'uppercase',
                 }}
               >
-                Valor
+                {t('columns.value')}
               </Typography>
-              <Typography sx={{ fontSize: 13.5, fontWeight: 800 }}>
-                {proposal.valueLabel}
-              </Typography>
+              <Typography sx={{ fontSize: 17, fontWeight: 800 }}>{proposal.valueLabel}</Typography>
             </Stack>
-            <Typography sx={{ color: 'text.secondary', fontSize: 11.5 }}>
-              Criada em {proposal.createdLabel}
+            <Typography sx={{ color: 'text.secondary', fontSize: 15.5 }}>
+              {t('createdAt', { date: proposal.createdLabel })}
             </Typography>
           </Stack>
         </Stack>

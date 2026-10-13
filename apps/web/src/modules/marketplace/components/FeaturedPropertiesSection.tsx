@@ -1,14 +1,17 @@
-import { Box, Container } from '@mui/material'
+import { Box, Container, Skeleton } from '@mui/material'
 import NorthEastOutlinedIcon from '@mui/icons-material/NorthEastOutlined'
 import { useTranslations } from 'next-intl'
 
 import { ActionTextLink, PropertyCard, SectionHeader } from '@shared/components/ui'
-import { iconSize, surface, zIndex } from '@shared/theme/tokens'
+import { iconSize, radius, surface, zIndex } from '@shared/theme/tokens'
 
-import { featuredProperties } from '../data/featured-properties'
+import { useFeaturedProperties } from '../hooks/use-featured-properties'
 
 export function FeaturedPropertiesSection() {
   const t = useTranslations('marketplace.home.featured')
+  const { featuredProperties, isLoading, isError } = useFeaturedProperties()
+
+  if (!isLoading && (isError || featuredProperties.length === 0)) return null
 
   return (
     <Box
@@ -39,9 +42,18 @@ export function FeaturedPropertiesSection() {
             gap: { xs: 2, md: 3 },
           }}
         >
-          {featuredProperties.map((property) => (
-            <PropertyCard key={property.title} property={property} />
-          ))}
+          {isLoading
+            ? Array.from({ length: 3 }, (_, index) => (
+                <Skeleton
+                  key={index}
+                  variant="rounded"
+                  height={340}
+                  sx={{ borderRadius: `${radius.sm}px` }}
+                />
+              ))
+            : featuredProperties.map((property) => (
+                <PropertyCard key={property.id} property={property} />
+              ))}
         </Box>
       </Container>
     </Box>

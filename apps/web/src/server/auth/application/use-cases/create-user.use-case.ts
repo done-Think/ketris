@@ -32,10 +32,7 @@ export class CreateUserUseCase {
       throw new ForbiddenError('Apenas administradores podem criar usuários.')
     }
 
-    const existing = await this.userRepository.findByEmailAndTenant(
-      input.actorTenantId,
-      input.email,
-    )
+    const existing = await this.userRepository.findByEmail(input.email)
 
     if (existing) {
       throw new EmailAlreadyInUseError()

@@ -5,9 +5,9 @@ import type { LocalizedHref } from '@shared/types/localized-href'
 import type { PropertyCardData } from '@shared/types'
 import type { searchOptions } from '../config/search-filters'
 import type {
-  marketplaceSearchFormSchema,
-  searchResultsFiltersDialogFormSchema,
-  searchResultsFormSchema,
+  createMarketplaceSearchFormSchema,
+  createSearchResultsFiltersDialogFormSchema,
+  createSearchResultsFormSchema,
 } from '../schemas/marketplace-search-schema'
 
 export type SearchFilterKey = keyof typeof searchOptions
@@ -21,24 +21,27 @@ export type SearchResultPurposeParam = 'rent' | 'buy'
 export type SearchResultProperty = PropertyCardData & {
   id: string
   purpose: SearchResultPurpose
-  // Sem coordenadas no contrato público hoje — ver utils/property-summary-adapter.ts.
   mapCenter?: {
     latitude: number
     longitude: number
   }
 }
 
-export type MarketplaceSearchFormValues = z.infer<typeof marketplaceSearchFormSchema>
+export type MarketplaceSearchFormValues = z.infer<
+  ReturnType<typeof createMarketplaceSearchFormSchema>
+>
 
-export type SearchResultsFormValues = z.infer<typeof searchResultsFormSchema>
+export type SearchResultsFormValues = z.infer<ReturnType<typeof createSearchResultsFormSchema>>
 
 export type SearchResultsFiltersDialogFormValues = z.infer<
-  typeof searchResultsFiltersDialogFormSchema
+  ReturnType<typeof createSearchResultsFiltersDialogFormSchema>
 >
 
 export type SortOption = 'relevancia' | 'menor-preco' | 'maior-preco'
 
 export type ViewMode = 'grid' | 'list'
+
+export type SearchResultsViewModeScope = 'rent' | 'buy' | 'brokers' | 'agencies'
 
 export type QuickFilterKey = 'type' | 'price' | 'bedrooms' | 'area' | 'more'
 
@@ -59,6 +62,8 @@ export type SearchResultsFiltersProps = {
   setLocationQuery: (value: string) => void
 }
 
+export type SearchResultsLocationFieldProps = SearchResultsFiltersProps
+
 export type SearchResultsFilterButtonProps = {
   areaFilterIndex: number
   bedroomFilterIndex: number
@@ -69,6 +74,25 @@ export type SearchResultsFilterButtonProps = {
   onlyWithParking: boolean
   priceFilterIndex: number
   propertyTypeFilter: string
+  setAreaFilterIndex: (index: number) => void
+  setBedroomFilterIndex: (index: number) => void
+  setCustomMaxPrice: (value: string) => void
+  setCustomMinArea: (value: string) => void
+  setOnlyWithParking: (value: boolean) => void
+  setPriceFilterIndex: (index: number) => void
+  setPropertyTypeFilter: (value: string) => void
+}
+
+export type SearchResultsFilterMenuProps = {
+  areaFilterIndex: number
+  bedroomFilterIndex: number
+  customMaxPrice: string
+  customMinArea: string
+  filterKey: QuickFilterKey
+  onlyWithParking: boolean
+  priceFilterIndex: number
+  propertyTypeFilter: string
+  setActiveQuickFilter: (filterKey: QuickFilterKey | null) => void
   setAreaFilterIndex: (index: number) => void
   setBedroomFilterIndex: (index: number) => void
   setCustomMaxPrice: (value: string) => void
@@ -105,6 +129,14 @@ export type SearchResultsMapPanelProps = {
   searchQuery?: string
 }
 
+export type SearchResultsListProps = {
+  properties: SearchResultProperty[]
+  isLoading?: boolean
+  selectedPropertyId: string
+  setSelectedPropertyId: (propertyId: string) => void
+  viewMode: ViewMode
+}
+
 export type SearchResultsToolbarProps = {
   filtersControl?: ReactNode
   resultCount: number
@@ -112,6 +144,12 @@ export type SearchResultsToolbarProps = {
   setViewMode: (mode: ViewMode) => void
   sortOption: SortOption
   viewMode: ViewMode
+}
+
+export type SearchResultsPaginationProps = {
+  currentPage: number
+  setCurrentPage: (page: number) => void
+  totalPages: number
 }
 
 export type SearchPropertyCardProps = {

@@ -9,6 +9,10 @@
   "actions": {
     "backHome": "Voltar ao início"
   },
+  "dashboardPagination": {
+    "rowsPerPage": "Linhas por página",
+    "displayedRows": "{from}-{to} de {count}"
+  },
   "errors": {
     "backHome": "Voltar ao início",
     "notFound": "Página não encontrada.",
@@ -18,17 +22,78 @@
   "appShell": {
     "ariaLabel": "Navegação principal",
     "openNavigation": "Abrir navegação",
+    "collapseNavigation": "Recolher navegação",
+    "expandNavigation": "Expandir navegação",
     "defaultUserName": "Equipe Ketris",
     "defaultUserContext": "Painel administrativo",
     "backToMarketplace": "Voltar para o marketplace",
+    "logoutToMarketplace": "Sair e voltar para o marketplace",
     "dashboard": "Dashboard",
+    "agencyOverview": "Visão Geral Imob.",
     "pipeline": "Pipeline",
     "contacts": "Contatos",
     "leads": "Leads",
+    "team": "Equipe",
     "properties": "Meus Imóveis",
     "contracts": "Contratos",
     "publicProfile": "Perfil Público",
+    "agencyPublicProfile": "Perfil da Imobiliária",
     "agenda": "Agenda",
-    "finance": "Financeiro"
+    "proposals": "Propostas",
+    "maintenance": "Chamados",
+    "finance": "Financeiro",
+    "editProfile": "Editar perfil",
+    "collapseMenu": "Recolher menu",
+    "profileEditor": {
+      "title": "Editar perfil",
+      "changePhoto": "Alterar foto",
+      "name": "Nome",
+      "email": "E-mail",
+      "cancel": "Cancelar",
+      "save": "Salvar alterações",
+      "success": "Perfil atualizado com sucesso.",
+      "saveError": "Não foi possível salvar as alterações. Tente novamente.",
+      "avatarFormatError": "Use uma imagem JPG, PNG ou WEBP.",
+      "errors": {
+        "nameRequired": "Informe seu nome.",
+        "emailInvalid": "Informe um e-mail válido."
+      }
+    },
+    "charges": "Cobranças"
+  },
+  "profilePage": {
+    "title": "Perfil",
+    "subtitle": "Gerencie seus dados pessoais e informações de acesso.",
+    "personalData": "Dados pessoais",
+    "changePhoto": "Alterar foto",
+    "name": "Nome",
+    "phone": "Telefone",
+    "email": "E-mail",
+    "cancel": "Cancelar",
+    "save": "Salvar alterações",
+    "security": "Segurança",
+    "securityDescription": "Altere sua senha de acesso.",
+    "newPassword": "Nova senha",
+    "confirmPassword": "Confirmar nova senha",
+    "changePassword": "Alterar senha",
+    "profileSuccess": "Perfil atualizado com sucesso.",
+    "profileError": "Não foi possível salvar as alterações. Tente novamente.",
+    "passwordSuccess": "Senha alterada com sucesso.",
+    "passwordError": "Não foi possível alterar a senha. Tente novamente.",
+    "avatarFormatError": "Use uma imagem JPG, PNG ou WEBP.",
+    "errors": {
+      "nameRequired": "Informe seu nome.",
+      "emailInvalid": "Informe um e-mail válido.",
+      "phoneRequired": "Informe seu telefone.",
+      "phoneInvalid": "Informe um telefone válido.",
+      "passwordTooShort": "A senha deve ter pelo menos 8 caracteres.",
+      "passwordConfirmationRequired": "Confirme a nova senha.",
+      "passwordMismatch": "As senhas não coincidem"
+    }
+  },
+  "roleGuard": {
+    "loadingSession": "Carregando sessão",
+    "restrictedTitle": "Acesso restrito",
+    "restrictedDescription": "Você não tem permissão para ver esta página. Redirecionando para o painel."
   }
 }

@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { platformContainer } from '@server/platform/container'
+import { toAuthenticatedPlatformAdminResponse } from '@server/platform/domain/platform-admin.entity'
 import { requirePlatformBearerAuth } from '@server/platform/require-platform-bearer-auth'
 import { updatePlatformAdminRequestSchema } from '@server/platform/schemas/update-platform-admin.schema'
 import { parseJsonBody, withErrorHandling } from '@server/shared/http'
@@ -17,7 +18,7 @@ export const GET = withErrorHandling(async (request: NextRequest, context: Route
     platformAdminId: (await context.params).id,
   })
 
-  return NextResponse.json({ admin }, { status: 200 })
+  return NextResponse.json({ admin: toAuthenticatedPlatformAdminResponse(admin) }, { status: 200 })
 })
 
 export const PATCH = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
@@ -26,11 +27,13 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Rou
 
   const admin = await platformContainer.updatePlatformAdminUseCase.execute({
     platformAdminId: (await context.params).id,
-    nome: body.nome,
+    nome: body.name,
     email: body.email,
+    role: body.role,
+    ativo: body.active,
   })
 
-  return NextResponse.json({ admin }, { status: 200 })
+  return NextResponse.json({ admin: toAuthenticatedPlatformAdminResponse(admin) }, { status: 200 })
 })
 
 export const DELETE = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
@@ -41,5 +44,5 @@ export const DELETE = withErrorHandling(async (request: NextRequest, context: Ro
     platformAdminId: (await context.params).id,
   })
 
-  return NextResponse.json({ admin }, { status: 200 })
+  return NextResponse.json({ admin: toAuthenticatedPlatformAdminResponse(admin) }, { status: 200 })
 })

@@ -1,13 +1,12 @@
 import { z } from 'zod'
 
+import type { SchemaMessageTranslator } from '@shared/types'
+
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
-export const createTenantSchema = z.object({
-  nome: z.string().min(1, 'Informe o nome'),
-  slug: z
-    .string()
-    .min(1, 'Informe o slug')
-    .regex(SLUG_PATTERN, 'Use apenas letras minúsculas, números e hífens'),
-})
-
-export type CreateTenantFormValues = z.infer<typeof createTenantSchema>
+export function createTenantSchema(t: SchemaMessageTranslator) {
+  return z.object({
+    name: z.string().min(1, t('nameRequired')),
+    slug: z.string().min(1, t('slugRequired')).regex(SLUG_PATTERN, t('slugInvalid')),
+  })
+}

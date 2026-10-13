@@ -27,8 +27,6 @@ export class ListContactsUseCase {
 
     if (contacts.length === 0) return []
 
-    // The CRM listing shows how many properties each contact has in negotiation. Resolved with a
-    // single aggregation query, not one query per row.
     const counts = await this.opportunityRepository.countByContact(
       input.actorTenantId,
       contacts.map((contact) => contact.id),

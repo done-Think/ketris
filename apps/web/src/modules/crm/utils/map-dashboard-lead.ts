@@ -1,0 +1,34 @@
+import type { DashboardLead, Lead, LeadApiStage, LeadStage } from '../types/lead'
+import { formatLeadRelativeDate } from './format-lead'
+import type { AppLocale } from '@/i18n/types/locale.types'
+
+const stageByApiStage: Record<LeadApiStage, LeadStage> = {
+  NOVO: 'Novo',
+  EM_CONTATO: 'Em contato',
+  VISITA_MARCADA: 'Visita marcada',
+  PROPOSTA: 'Proposta',
+}
+
+export const apiStageByStage: Record<LeadStage, LeadApiStage> = {
+  Novo: 'NOVO',
+  'Em contato': 'EM_CONTATO',
+  'Visita marcada': 'VISITA_MARCADA',
+  Proposta: 'PROPOSTA',
+}
+
+export function toDashboardLead(lead: Lead, locale?: AppLocale): DashboardLead {
+  return {
+    id: lead.id,
+    name: lead.name,
+    budget: lead.budget,
+    phone: lead.phone,
+    email: lead.email ?? '',
+    lastContact: formatLeadRelativeDate(lead.updatedAt, locale),
+    lastContactAt: lead.updatedAt,
+    interest: lead.interest,
+    source: lead.source,
+    broker: '',
+    stage: stageByApiStage[lead.stage],
+    opportunityId: lead.opportunityId,
+  }
+}

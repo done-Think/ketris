@@ -1,15 +1,16 @@
 import axios, {
   type AxiosInstance,
-  type AxiosRequestConfig,
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from 'axios'
 
 import { env } from '@config/env'
+import type { AppRequestConfig, UnauthorizedHandler } from '@shared/types'
 
-type RetryableRequestConfig = InternalAxiosRequestConfig & { _retriedAfterRefresh?: boolean }
-
-export type UnauthorizedHandler = () => Promise<string | null>
+type RetryableRequestConfig = InternalAxiosRequestConfig & {
+  _retriedAfterRefresh?: boolean
+  skipUnauthorizedHandling?: boolean
+}
 
 export class HttpClient {
   protected instance: AxiosInstance
@@ -40,7 +41,12 @@ export class HttpClient {
         const originalRequest = error.config as RetryableRequestConfig | undefined
         const isUnauthorized = error.response?.status === 401
 
-        if (!isUnauthorized || !originalRequest || originalRequest._retriedAfterRefresh) {
+        if (
+          !isUnauthorized ||
+          !originalRequest ||
+          originalRequest._retriedAfterRefresh ||
+          originalRequest.skipUnauthorizedHandling
+        ) {
           return Promise.reject(error)
         }
 
@@ -89,27 +95,27 @@ export class HttpClient {
     }
   }
 
-  async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+  async get<T>(url: string, config?: AppRequestConfig): Promise<T> {
     const { data } = await this.instance.get<T>(url, config)
     return data
   }
 
-  async post<T>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> {
+  async post<T>(url: string, body?: unknown, config?: AppRequestConfig): Promise<T> {
     const { data } = await this.instance.post<T>(url, body, config)
     return data
   }
 
-  async put<T>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> {
+  async put<T>(url: string, body?: unknown, config?: AppRequestConfig): Promise<T> {
     const { data } = await this.instance.put<T>(url, body, config)
     return data
   }
 
-  async patch<T>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> {
+  async patch<T>(url: string, body?: unknown, config?: AppRequestConfig): Promise<T> {
     const { data } = await this.instance.patch<T>(url, body, config)
     return data
   }
 
-  async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+  async delete<T>(url: string, config?: AppRequestConfig): Promise<T> {
     const { data } = await this.instance.delete<T>(url, config)
     return data
   }

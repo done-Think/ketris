@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import { Box } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre'
@@ -15,7 +16,7 @@ const defaultMapStyleUrl = 'https://basemaps.cartocdn.com/gl/positron-gl-style/s
 const mapContainerStyle = { width: '100%', height: '100%' } as const
 
 function getMapMarkerLabel(price: string) {
-  return price.replace(' / mês', '')
+  return price.replace(/\s*\/\s*[^/]+$/, '')
 }
 
 export function SearchResultsMap({
@@ -26,6 +27,13 @@ export function SearchResultsMap({
   const t = useTranslations('marketplace.searchResults.map')
   const mapStyleUrl =
     env.mapStyleUrl && !env.mapStyleUrl.includes('demotiles') ? env.mapStyleUrl : defaultMapStyleUrl
+  const orderedProperties = useMemo(
+    () => [
+      ...properties.filter((property) => property.id !== selectedPropertyId),
+      ...properties.filter((property) => property.id === selectedPropertyId),
+    ],
+    [properties, selectedPropertyId],
+  )
 
   return (
     <Box
@@ -39,6 +47,12 @@ export function SearchResultsMap({
       }}
     >
       <Map
+        locale={{
+          'Map.Title': t('title'),
+          'NavigationControl.ZoomIn': t('zoomIn'),
+          'NavigationControl.ZoomOut': t('zoomOut'),
+          'AttributionControl.ToggleAttribution': t('attribution'),
+        }}
         initialViewState={{
           latitude: -23.5617,
           longitude: -46.6559,
@@ -48,7 +62,7 @@ export function SearchResultsMap({
         style={mapContainerStyle}
         attributionControl={true}
       >
-        {properties
+        {orderedProperties
           .filter((property) => property.mapCenter)
           .map((property) => {
             const selected = property.id === selectedPropertyId
@@ -61,6 +75,7 @@ export function SearchResultsMap({
                 latitude={mapCenter.latitude}
                 longitude={mapCenter.longitude}
                 anchor="bottom"
+                style={{ zIndex: selected ? 2 : 1 }}
               >
                 <Box
                   component={Link}

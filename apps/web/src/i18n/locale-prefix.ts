@@ -11,6 +11,11 @@ const localePrefixes = Object.values(localePathPrefixes)
 
 const localizedPublicPathnames = [
   {
+    'pt-BR': '/dashboard/agenda',
+    'en-US': '/dashboard/schedule',
+    'es-ES': '/dashboard/agenda',
+  },
+  {
     'pt-BR': '/imoveis',
     'en-US': '/properties',
     'es-ES': '/inmuebles',
@@ -42,12 +47,14 @@ export function getLocalePathPrefix(locale: string | undefined) {
 }
 
 export function getLocalizedPathname(pathname: string, locale: string | undefined) {
+  const appLocale = isAppLocale(locale) ? locale : defaultLocale
   const prefix = getLocalePathPrefix(locale)
 
   if (!pathname.startsWith('/')) return pathname
   if (hasLocalePathPrefix(pathname)) return pathname
+  if (pathname === '/') return prefix
 
-  return pathname === '/' ? prefix : `${prefix}${pathname}`
+  return `${prefix}${translatePathnameForLocale(pathname, appLocale)}`
 }
 
 export function getLocaleFromPathname(pathname: string): AppLocale | undefined {
@@ -64,21 +71,23 @@ export function getLocalizedPathnameForLocale(pathname: string, locale: AppLocal
 
   if (normalizedPathname === '/') return prefix
 
+  return `${prefix}${translatePathnameForLocale(normalizedPathname, locale)}`
+}
+
+function translatePathnameForLocale(pathname: string, locale: AppLocale) {
   for (const publicPathnames of localizedPublicPathnames) {
     const currentBasePathname = Object.values(publicPathnames).find(
-      (publicPathname) =>
-        normalizedPathname === publicPathname ||
-        normalizedPathname.startsWith(`${publicPathname}/`),
+      (publicPathname) => pathname === publicPathname || pathname.startsWith(`${publicPathname}/`),
     )
 
     if (!currentBasePathname) continue
 
-    const suffix = normalizedPathname.slice(currentBasePathname.length)
+    const suffix = pathname.slice(currentBasePathname.length)
 
-    return `${prefix}${publicPathnames[locale]}${suffix}`
+    return `${publicPathnames[locale]}${suffix}`
   }
 
-  return `${prefix}${normalizedPathname}`
+  return pathname
 }
 
 function removeLocalePathPrefix(pathname: string) {

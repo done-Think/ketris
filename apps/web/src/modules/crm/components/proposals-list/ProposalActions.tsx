@@ -1,6 +1,7 @@
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import { IconButton, Stack, Tooltip } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
 import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
@@ -12,9 +13,10 @@ export function ProposalActions({
   onViewProposal,
   onOpenMoreOptions,
 }: ProposalActionsProps) {
+  const t = useTranslations('crm.proposalManagement')
   const buttonSx = {
-    width: 28,
-    height: 28,
+    width: 32,
+    height: 32,
     border: '1px solid',
     borderColor: brand.neutral[100],
     borderRadius: `${radius.sm}px`,
@@ -35,11 +37,11 @@ export function ProposalActions({
 
   return (
     <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={0.75}>
-      <Tooltip title={`Visualizar ${proposal.reference}`}>
+      <Tooltip title={t('viewProposal', { reference: proposal.reference })}>
         <IconButton
           component={Link}
           href={{ pathname: '/crm/opportunities/[id]', params: { id: proposal.id } }}
-          aria-label={`Visualizar ${proposal.reference}`}
+          aria-label={t('viewProposal', { reference: proposal.reference })}
           size="small"
           onClick={() => onViewProposal?.(proposal)}
           sx={buttonSx}
@@ -48,11 +50,11 @@ export function ProposalActions({
         </IconButton>
       </Tooltip>
 
-      <Tooltip title={`Mais opções para ${proposal.reference}`}>
+      <Tooltip title={t('moreOptions', { reference: proposal.reference })}>
         <span>
           <IconButton
             type="button"
-            aria-label={`Mais opções para ${proposal.reference}`}
+            aria-label={t('moreOptions', { reference: proposal.reference })}
             size="small"
             disabled={!onOpenMoreOptions}
             onClick={() => onOpenMoreOptions?.(proposal)}

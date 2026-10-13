@@ -10,8 +10,10 @@ import type { CreatePropertyActionsProps } from '../types/dashboard-property'
 export function CreatePropertyActions({
   firstStep,
   lastStep,
+  isSubmitting,
   onPreviousStep,
   onNextStep,
+  submitLabel,
 }: CreatePropertyActionsProps) {
   const t = useTranslations('properties.create')
 
@@ -50,10 +52,12 @@ export function CreatePropertyActions({
         {t('back')}
       </Button>
       <Button
+        key={lastStep ? 'submit' : 'next'}
         type={lastStep ? 'submit' : 'button'}
         variant="contained"
         endIcon={!lastStep ? <ChevronRightRoundedIcon sx={{ fontSize: iconSize.sm }} /> : null}
         onClick={lastStep ? undefined : onNextStep}
+        disabled={lastStep && isSubmitting}
         sx={{
           flex: { xs: 1, md: 'initial' },
           minHeight: { xs: 44, md: 40 },
@@ -62,7 +66,7 @@ export function CreatePropertyActions({
           fontWeight: 900,
         }}
       >
-        {lastStep ? t('publish') : t('next')}
+        {lastStep ? (submitLabel ?? t('publish')) : t('next')}
       </Button>
     </Stack>
   )

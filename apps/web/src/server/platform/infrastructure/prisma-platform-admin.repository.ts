@@ -5,13 +5,14 @@ import type {
   PlatformAdminRepository,
   PlatformAdminUpdate,
 } from '../application/ports/platform-admin-repository.port'
-import type { PlatformAdmin } from '../domain/platform-admin.entity'
+import type { PlatformAdmin, PlatformAdminRole } from '../domain/platform-admin.entity'
 
 function toDomainPlatformAdmin(admin: {
   id: string
   nome: string
   email: string
   senhaHash: string
+  role: PlatformAdminRole
   ativo: boolean
 }): PlatformAdmin {
   return {
@@ -19,6 +20,7 @@ function toDomainPlatformAdmin(admin: {
     nome: admin.nome,
     email: admin.email,
     senhaHash: admin.senhaHash,
+    role: admin.role,
     ativo: admin.ativo,
   }
 }
@@ -48,6 +50,7 @@ export class PrismaPlatformAdminRepository implements PlatformAdminRepository {
         nome: newAdmin.nome,
         email: newAdmin.email,
         senhaHash: newAdmin.senhaHash,
+        role: newAdmin.role,
       },
     })
 
@@ -57,7 +60,12 @@ export class PrismaPlatformAdminRepository implements PlatformAdminRepository {
   async update(id: string, changes: PlatformAdminUpdate): Promise<PlatformAdmin> {
     const admin = await prisma.platformAdmin.update({
       where: { id },
-      data: { nome: changes.nome, email: changes.email },
+      data: {
+        nome: changes.nome,
+        email: changes.email,
+        role: changes.role,
+        ativo: changes.ativo,
+      },
     })
 
     return toDomainPlatformAdmin(admin)

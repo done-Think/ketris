@@ -1,5 +1,5 @@
 import { ContractNotFoundError, ContractPropertyTransitionError } from '../../domain/errors'
-import type { PropertyStatus } from '../../domain/property.entity'
+import type { PropertyStatus } from '../../types/property'
 import type { PropertyRepository } from '../ports/property-repository.port'
 
 export class TransitionPropertyFromActiveContractUseCase {

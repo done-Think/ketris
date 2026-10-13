@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
+import { toAuthenticatedUserResponse } from '@server/auth/domain/user.entity'
 import { platformContainer } from '@server/platform/container'
 import { requirePlatformBearerAuth } from '@server/platform/require-platform-bearer-auth'
 import { withErrorHandling } from '@server/shared/http'
@@ -16,5 +17,5 @@ export const GET = withErrorHandling(async (request: NextRequest, context: Route
     tenantId: (await context.params).id,
   })
 
-  return NextResponse.json({ users }, { status: 200 })
+  return NextResponse.json({ users: users.map(toAuthenticatedUserResponse) }, { status: 200 })
 })

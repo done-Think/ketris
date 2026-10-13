@@ -31,7 +31,6 @@ export interface NewOpportunity {
   leadPhone: string | null
   proposedValue: number
   notes: string | null
-  /** Omitted = ENVIADA (marketplace's public flow). Manual creation can start at RASCUNHO. */
   status?: Extract<OpportunityStatus, 'RASCUNHO' | 'ENVIADA'>
 }
 

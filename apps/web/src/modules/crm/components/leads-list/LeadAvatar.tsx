@@ -10,11 +10,11 @@ export function LeadAvatar({ lead }: LeadAvatarProps) {
     <Avatar
       aria-hidden="true"
       sx={{
-        width: 34,
-        height: 34,
+        width: 35,
+        height: 35,
         bgcolor: alpha.magenta[10],
         color: brand.magenta[700],
-        fontSize: 11,
+        fontSize: 13.5,
         fontWeight: 900,
       }}
     >

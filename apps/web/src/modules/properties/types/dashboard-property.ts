@@ -3,6 +3,7 @@ import type { Control } from 'react-hook-form'
 import type { z } from 'zod'
 
 import type { createDashboardPropertySchema } from '../schemas/create-dashboard-property-schema'
+import type { PropertyStatus as ApiPropertyStatus } from './property'
 
 export type DashboardPropertyStatus =
   'Disponível' | 'Alugado' | 'Ativo' | 'Em análise' | 'Vencendo' | 'Inativo'
@@ -19,7 +20,9 @@ export type CreatePropertyPurpose = 'Aluguel' | 'Venda'
 
 export type DashboardActivityTone = 'success' | 'accent' | 'info' | 'warning' | 'neutral' | 'error'
 
-export type CreateDashboardPropertyFormValues = z.infer<typeof createDashboardPropertySchema>
+export type CreateDashboardPropertyFormValues = z.infer<
+  ReturnType<typeof createDashboardPropertySchema>
+>
 
 export type PropertiesDashboardFiltersFormValues = {
   activeStatusFilter: DashboardPropertyFilterKey
@@ -32,6 +35,8 @@ export type PropertyDetailDashboardFormValues = {
 
 export type DashboardProperty = {
   id: string
+  responsibleUserId: string
+  apiStatus: ApiPropertyStatus
   title: string
   address: string
   location: string
@@ -82,6 +87,10 @@ export type PropertyDetailDashboardPageProps = {
   propertyId: string
 }
 
+export type EditPropertyDashboardPageProps = {
+  propertyId: string
+}
+
 export type PropertyNavigationHandler = (propertyId: string) => void
 
 export type PropertiesDashboardHeaderProps = {
@@ -100,6 +109,7 @@ export type PropertiesTableProps = {
   properties: DashboardProperty[]
   totalCount: number
   onPropertySelect: PropertyNavigationHandler
+  onCreateProperty: () => void
 }
 
 export type CreatePropertyStepsNavProps = {
@@ -115,15 +125,119 @@ export type CreatePropertyStepFieldsProps = {
   propertyPurpose: CreatePropertyPurpose[]
 }
 
+export type CreatePropertyBasicStepFieldsProps = {
+  control: Control<CreateDashboardPropertyFormValues>
+}
+
+export type CreatePropertyAddressStepFieldsProps = {
+  control: Control<CreateDashboardPropertyFormValues>
+}
+
+export type CreatePropertyFeaturesStepFieldsProps = {
+  control: Control<CreateDashboardPropertyFormValues>
+}
+
+export type CreatePropertyValuesStepFieldsProps = {
+  control: Control<CreateDashboardPropertyFormValues>
+  hasDualPurpose: boolean
+  mainValueLabel: 'rentValue' | 'saleValue' | 'referenceValue'
+  negotiationTermLabel: 'securityDeposit' | 'commission' | 'commercialTerms'
+}
+
+export type PropertyValueFieldName =
+  'mainValue' | 'rentalValue' | 'condominium' | 'iptu' | 'negotiationTerm'
+
+export type PropertyValueFieldLabel =
+  | 'referenceValue'
+  | 'rentValue'
+  | 'saleValue'
+  | 'condominium'
+  | 'iptu'
+  | 'securityDeposit'
+  | 'commission'
+  | 'commercialTerms'
+
+export type PropertyValueFieldConfig = readonly [
+  name: PropertyValueFieldName,
+  label: PropertyValueFieldLabel,
+  isCurrency: boolean,
+]
+
+export type DashboardPropertyMappingMessages = {
+  notAnnounced: string
+  notInformed: string
+  unknownAddress: string
+  monthlySuffix: string
+  purposes: {
+    rent: string
+    sale: string
+  }
+  propertyTypes: {
+    apartment: string
+    house: string
+    studio: string
+    penthouse: string
+    commercial: string
+  }
+  activity: {
+    created: string
+    published: string
+    updated: string
+    contractLinked: string
+    photosUpdated: string
+    markedAsRented: string
+    proposalApproved: string
+    activatedForSale: string
+    documentationSubmitted: string
+    listingExpiringSoon: string
+    markedAsInactive: string
+    priceAdjustment: string
+    visitScheduled: string
+  }
+  pricingDetails: {
+    exempt: string
+    notApplicable: string
+    insuranceDeposit: string
+    registrationPaused: string
+    installmentsDeposit: string
+    feeOnRent: string
+    feeOnSale: string
+    noRecentAdjustment: string
+    underDocumentaryReview: string
+    priceValidated: string
+    listingExpires: string
+    deactivated: string
+  }
+}
+
+export type DashboardPropertyMappingOptions = {
+  locale: string
+  messages: DashboardPropertyMappingMessages
+}
+
+export type CreatePropertyPublishingStepFieldsProps = {
+  control: Control<CreateDashboardPropertyFormValues>
+}
+
 export type CreatePropertyActionsProps = {
   firstStep: boolean
   lastStep: boolean
+  isSubmitting: boolean
   onPreviousStep: () => void
   onNextStep: () => void
+  submitLabel?: string
 }
 
 export type PropertyDetailHeaderProps = {
   property: DashboardProperty
+  canManage: boolean
+  isPublishing: boolean
+  isUnpublishing: boolean
+  isDeleting: boolean
+  onEdit: () => void
+  onPublish: () => void
+  onUnpublish: () => void
+  onDeleteRequest: () => void
 }
 
 export type PropertyDetailTabsProps = {
@@ -143,4 +257,17 @@ export type PropertyDetailSidebarProps = {
 export type PropertyDetailPanelProps = {
   title: string
   children: ReactNode
+}
+
+export type DeletePropertyDialogProps = {
+  open: boolean
+  isPending: boolean
+  title: string
+  onClose: () => void
+  onConfirm: () => void
+}
+
+export type PropertyRowActionsProps = {
+  property: DashboardProperty
+  onView: () => void
 }

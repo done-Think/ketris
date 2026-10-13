@@ -37,6 +37,7 @@ jobs:
       NEXTAUTH_SECRET: ci-nextauth-secret
       AUTH_TOKEN_SECRET: ci-auth-token-secret
       PLATFORM_TOKEN_SECRET: ci-platform-token-secret
+      PASSWORD_RESET_TOKEN_SECRET: ci-password-reset-token-secret
 
     steps:
       - uses: actions/checkout@v4

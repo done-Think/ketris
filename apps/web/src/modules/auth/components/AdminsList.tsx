@@ -15,23 +15,15 @@ import {
   Typography,
 } from '@mui/material'
 import { useSnackbar } from 'notistack'
-import axios from 'axios'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
 import { radius, shadows } from '@shared/theme/tokens'
+import { extractErrorMessage } from '@shared/utils/error-message'
 
 import { useAdmins } from '../hooks/use-admins'
 import { useDeactivateAdmin } from '../hooks/use-deactivate-admin'
-
-function extractErrorMessage(error: unknown, fallback: string): string {
-  if (axios.isAxiosError(error)) {
-    const message = error.response?.data?.error?.message
-    if (typeof message === 'string') return message
-  }
-  return fallback
-}
 
 export function AdminsList() {
   const t = useTranslations('auth.backoffice')
@@ -83,14 +75,14 @@ export function AdminsList() {
                 <TableRow key={admin.id}>
                   <TableCell>
                     <Link href={{ pathname: '/backoffice/admins/[id]', params: { id: admin.id } }}>
-                      {admin.nome}
+                      {admin.name}
                     </Link>
                   </TableCell>
                   <TableCell>{admin.email}</TableCell>
                   <TableCell>
                     <Chip
-                      label={admin.ativo ? t('statusActive') : t('statusInactive')}
-                      color={admin.ativo ? 'success' : 'default'}
+                      label={admin.active ? t('statusActive') : t('statusInactive')}
+                      color={admin.active ? 'success' : 'default'}
                       size="small"
                     />
                   </TableCell>
@@ -98,7 +90,7 @@ export function AdminsList() {
                     <Button
                       size="small"
                       color="error"
-                      disabled={isSelf || !admin.ativo || pendingId === admin.id}
+                      disabled={isSelf || !admin.active || pendingId === admin.id}
                       onClick={() => handleDeactivate(admin.id)}
                     >
                       {t('deactivate')}

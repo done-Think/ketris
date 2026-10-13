@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  createPublicPropertySearchFiltersSchema,
   publicPropertyDetailSchema,
-  publicPropertySearchFiltersSchema,
   publicPropertySummarySchema,
 } from '../../schemas/property-schema'
+
+const publicPropertySearchFiltersSchema = createPublicPropertySearchFiltersSchema((key) => key)
 
 const summary = {
   id: 'property-1',
@@ -65,6 +67,16 @@ describe('public property schemas', () => {
     ).toBe(true)
     expect(publicPropertySearchFiltersSchema.safeParse({ purpose: 'TEMPORADA' }).success).toBe(
       false,
+    )
+  })
+
+  it('routes each validation message through the translator with the right key', () => {
+    const translated = createPublicPropertySearchFiltersSchema((key) => `translated:${key}`)
+    const result = translated.safeParse({ city: '' })
+
+    expect(result.success).toBe(false)
+    expect(result.success ? undefined : result.error.issues[0]?.message).toBe(
+      'translated:cityInvalid',
     )
   })
 })

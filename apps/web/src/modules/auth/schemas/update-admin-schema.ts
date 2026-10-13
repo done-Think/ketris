@@ -1,8 +1,10 @@
 import { z } from 'zod'
 
-export const updateAdminSchema = z.object({
-  nome: z.string().min(1, 'Informe o nome'),
-  email: z.string().min(1, 'Informe o e-mail').email('E-mail inválido'),
-})
+import type { SchemaMessageTranslator } from '@shared/types'
 
-export type UpdateAdminFormValues = z.infer<typeof updateAdminSchema>
+export function createUpdateAdminSchema(t: SchemaMessageTranslator) {
+  return z.object({
+    name: z.string().min(1, t('nameRequired')),
+    email: z.string().min(1, t('emailRequired')).email(t('emailInvalid')),
+  })
+}

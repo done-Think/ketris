@@ -1,8 +1,11 @@
 import type { ReactNode } from 'react'
+import type { z } from 'zod'
 
-export type { RegistrationDetailsFormValues } from '../schemas/registration-details-schema'
+import type { createRegistrationDetailsSchema } from '../schemas/registration-details-schema'
 
-import type { RegistrationDetailsFormValues } from '../schemas/registration-details-schema'
+export type RegistrationDetailsFormValues = z.infer<
+  ReturnType<typeof createRegistrationDetailsSchema>
+>
 
 export type RegistrationProfileId =
   'proprietario' | 'corretor' | 'imobiliaria' | 'construtora' | 'locatario'
@@ -61,3 +64,44 @@ export type RegistrationDetailsFormProps = {
   profile: RegistrationProfileId
   onSubmit?: (values: RegistrationDetailsFormValues) => void
 }
+
+export interface AgencySearchResult {
+  id: string
+  name: string
+}
+
+export interface SearchAgenciesResponse {
+  tenants: AgencySearchResult[]
+}
+
+export type AgencyAutocompleteProps = {
+  value: AgencySearchResult | null
+  onChange: (agency: AgencySearchResult | null) => void
+}
+
+export type RegistrationDetailsScreenProps = {
+  profile: RegistrationProfileId
+}
+
+export type EmailVerificationStepProps = {
+  email: string
+  onConfirmed: () => void
+}
+
+export interface RegisterErrorBody {
+  error?: { code?: string }
+}
+
+export interface RegisteredBody {
+  outcome: 'REGISTERED'
+  user: { role: string }
+  accessToken: string
+  refreshToken: string
+}
+
+export interface PendingApprovalBody {
+  outcome: 'PENDING_APPROVAL'
+  email: string
+}
+
+export type RegisterResponseBody = RegisteredBody | PendingApprovalBody

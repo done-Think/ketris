@@ -1,6 +1,70 @@
+import type { z } from 'zod'
+
+import type { createPlatformAdminSchema } from '../schemas/create-platform-admin-schema'
+import type { createUpdatePlatformAdminSchema } from '../schemas/update-platform-admin-schema'
+
+export type PlatformAdminRole = 'ADMIN' | 'ADMIN_AGENT' | 'AGENT'
+
+export type CreatePlatformAdminFormValues = z.infer<ReturnType<typeof createPlatformAdminSchema>>
+
+export type UpdatePlatformAdminFormValues = z.infer<
+  ReturnType<typeof createUpdatePlatformAdminSchema>
+>
+
 export interface PlatformAdminAccount {
   id: string
-  nome: string
+  name: string
   email: string
-  ativo: boolean
+  role: PlatformAdminRole
+  active: boolean
+}
+
+export interface CreatePlatformAdminPayload {
+  name: string
+  email: string
+  password: string
+  role: PlatformAdminRole
+}
+
+export interface UpdatePlatformAdminPayload {
+  name: string
+  email: string
+  role: PlatformAdminRole
+}
+
+export interface PlatformAdminResponse {
+  admin: PlatformAdminAccount
+}
+
+export interface ListPlatformAdminsResponse {
+  admins: PlatformAdminAccount[]
+}
+
+export interface CreatePlatformAdminInput {
+  name: string
+  email: string
+  password: string
+  role: PlatformAdminRole
+}
+
+export interface UpdatePlatformAdminInput {
+  id: string
+  name: string
+  email: string
+  role: PlatformAdminRole
+}
+
+export type CreatePlatformAdminDialogProps = {
+  open: boolean
+  onClose: () => void
+}
+
+export type EditPlatformAdminDialogProps = {
+  admin: PlatformAdminAccount | null
+  onClose: () => void
+}
+
+export type CreatePlatformAdminFormProps = {
+  onCancel?: () => void
+  onSuccess?: () => void
 }

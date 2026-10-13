@@ -1,4 +1,4 @@
-import type { DashboardLead, LeadFilter, LeadsPage } from '../types/lead'
+import type { DashboardLead, LeadFilter, LeadTableSortState, LeadsPage } from '../types/lead'
 
 export const leadsDefaultPageSize = 5
 
@@ -27,6 +27,65 @@ export function getLeadFilterCount(leads: readonly DashboardLead[], filter: Lead
   if (filter === 'Todos') return leads.length
 
   return leads.filter((lead) => lead.stage === filter).length
+}
+
+function parseBudgetValue(budget: string): number {
+  const match = budget.match(/([\d.,]+)\s*(m|k)?/i)
+
+  if (!match) return 0
+
+  const [, rawNumber, suffix] = match
+  const upperSuffix = suffix?.toUpperCase()
+
+  if (upperSuffix === 'M' || upperSuffix === 'K') {
+    const value = Number(rawNumber.replace(',', '.'))
+
+    if (!Number.isFinite(value)) return 0
+
+    return upperSuffix === 'M' ? value * 1_000_000 : value * 1_000
+  }
+
+  const value = Number(rawNumber.replace(/\./g, '').replace(',', '.'))
+
+  return Number.isFinite(value) ? value : 0
+}
+
+const leadStageOrder: Record<DashboardLead['stage'], number> = {
+  Novo: 0,
+  'Em contato': 1,
+  'Visita marcada': 2,
+  Proposta: 3,
+}
+
+function getLeadSortValue(lead: DashboardLead, sort: NonNullable<LeadTableSortState>) {
+  if (sort.field === 'budget') return lead.budgetAmount ?? parseBudgetValue(lead.budget)
+  if (sort.field === 'stage') return leadStageOrder[lead.stage]
+  if (sort.field === 'lastContact') return new Date(lead.lastContactAt).getTime()
+
+  return lead[sort.field]
+}
+
+export function sortLeads(
+  leads: readonly DashboardLead[],
+  sort: LeadTableSortState,
+): DashboardLead[] {
+  if (!sort) return [...leads]
+
+  return [...leads].sort((firstLead, secondLead) => {
+    const firstValue = getLeadSortValue(firstLead, sort)
+    const secondValue = getLeadSortValue(secondLead, sort)
+    const directionMultiplier = sort.direction === 'asc' ? 1 : -1
+
+    if (typeof firstValue === 'number' && typeof secondValue === 'number') {
+      return (firstValue - secondValue) * directionMultiplier
+    }
+
+    return (
+      String(firstValue).localeCompare(String(secondValue), 'pt-BR', {
+        sensitivity: 'base',
+      }) * directionMultiplier
+    )
+  })
 }
 
 export function paginateLeads(

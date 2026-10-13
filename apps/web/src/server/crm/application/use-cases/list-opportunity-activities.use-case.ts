@@ -24,7 +24,6 @@ export class ListOpportunityActivitiesUseCase {
   ) {}
 
   async execute(input: ListOpportunityActivitiesInput): Promise<ListOpportunityActivitiesOutput> {
-    // The timeline doesn't store a tenantId: isolation comes from the opportunity that owns it.
     const opportunity = await this.opportunityRepository.findById(input.opportunityId)
 
     if (!opportunity || opportunity.tenantId !== input.actorTenantId) {

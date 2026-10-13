@@ -20,6 +20,7 @@ function formatCountdown(totalSeconds: number) {
 export function ResendCountdownButton({
   onResend,
   seconds = RESEND_DELAY_SECONDS,
+  disabled = false,
 }: ResendCountdownButtonProps) {
   const t = useTranslations('auth.passwordRecovery')
   const { remainingSeconds, isCountingDown, restart } = useResendCountdown(seconds)
@@ -35,7 +36,7 @@ export function ResendCountdownButton({
       variant="outlined"
       color="secondary"
       fullWidth
-      disabled={isCountingDown}
+      disabled={isCountingDown || disabled}
       aria-live="polite"
       onClick={resend}
       sx={{

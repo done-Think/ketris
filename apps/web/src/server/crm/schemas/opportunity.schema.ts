@@ -69,10 +69,6 @@ export const createOpportunityRequestSchema = z
     leadPhone: leadPhone.optional(),
     proposedValue,
     notes: notes.optional(),
-    // Deliberately restricted: a manually created opportunity enters at the top of the funnel
-    // (RASCUNHO/prospecting) or already ENVIADA (a lead logged outside the marketplace, but
-    // already formalized). ACEITA/EM_NEGOCIACAO/RECUSADA as an initial state would skip the
-    // timeline that justifies reaching them.
     status: z.enum(['RASCUNHO', 'ENVIADA']).optional(),
   })
   .openapi('CreateOpportunityRequest')

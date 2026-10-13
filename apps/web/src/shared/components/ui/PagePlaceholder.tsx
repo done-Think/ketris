@@ -1,11 +1,6 @@
 import { Container, Typography } from '@mui/material'
 
-type PagePlaceholderProps = {
-  title: string
-  description: string
-  maxWidth?: 'sm' | 'lg'
-  paddingY?: number
-}
+import type { PagePlaceholderProps } from '@shared/types/page-placeholder'
 
 export function PagePlaceholder({
   title,

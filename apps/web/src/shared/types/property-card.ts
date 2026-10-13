@@ -9,7 +9,12 @@ export type PropertyCardData = {
   details: Array<{
     key: PropertyFeatureKey
     label: string
+    value?: number
   }>
   broker: string
   avatar: string
+}
+
+export type PropertyCardProps = {
+  property: PropertyCardData
 }

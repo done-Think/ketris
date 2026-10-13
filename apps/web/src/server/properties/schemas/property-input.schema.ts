@@ -19,7 +19,7 @@ export const propertyAddressInputSchema = z
 
 export const propertyMediaInputSchema = z
   .object({
-    url: z.string().trim().url(),
+    url: z.string().trim().min(1),
     tipo: z.string().trim().min(1).optional(),
     ordem: z.number().int().nonnegative().optional(),
   })
@@ -39,6 +39,7 @@ export const createPropertyRequestSchema = z
     vagas: optionalNullableNonNegativeIntSchema,
     areaM2: optionalNullableNonNegativeNumberSchema,
     valor: z.number().positive(),
+    valorAluguel: optionalNullableNonNegativeNumberSchema,
     condominio: optionalNullableNonNegativeNumberSchema,
     iptu: optionalNullableNonNegativeNumberSchema,
     endereco: propertyAddressInputSchema.optional(),
