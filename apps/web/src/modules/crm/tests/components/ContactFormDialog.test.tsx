@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
 import { ContactFormDialog } from '../../components/contacts-list/ContactFormDialog'
-import type { ContactFormValues } from '../../schemas/contact-schema'
+import type { ContactFormValues } from '../../types/contact'
 
 const initialValues: ContactFormValues = {
   name: 'Maria Silva',
@@ -59,7 +59,7 @@ describe('ContactFormDialog', () => {
     )
 
     await user.click(screen.getByRole('button', { name: 'Salvar' }))
-    expect(await screen.findByText('E-mail invalido.')).toBeVisible()
+    expect(await screen.findByText('E-mail inválido.')).toBeVisible()
     expect(onSave).not.toHaveBeenCalled()
 
     await user.type(screen.getByLabelText(/^Nome/), 'Joao Souza')

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { UnauthorizedError } from '@server/shared/errors'
 
-import { POST } from './route'
+import { POST } from '../../../me/password/route'
 
 const { findById, changeOwnPassword, requireAuth } = vi.hoisted(() => ({
   findById: vi.fn(),

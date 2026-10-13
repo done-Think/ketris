@@ -8,6 +8,7 @@ import {
   useAddMaintenanceTicketNote,
   useMaintenanceTicket,
   useResolveMaintenanceTicket,
+  useUploadMaintenanceTicketAttachment,
 } from '../../hooks/use-maintenance'
 import type { ApiMaintenanceTicket } from '../../types/service'
 
@@ -19,6 +20,7 @@ vi.mock('../../hooks/use-maintenance', () => ({
   useMaintenanceTicket: vi.fn(),
   useResolveMaintenanceTicket: vi.fn(),
   useAddMaintenanceTicketNote: vi.fn(),
+  useUploadMaintenanceTicketAttachment: vi.fn(),
 }))
 
 const mockTicket: ApiMaintenanceTicket = {
@@ -86,6 +88,7 @@ function mockMutations(
   overrides: {
     resolve?: Record<string, unknown>
     addNote?: Record<string, unknown>
+    uploadAttachment?: Record<string, unknown>
   } = {},
 ) {
   vi.mocked(useResolveMaintenanceTicket).mockReturnValue({
@@ -99,6 +102,12 @@ function mockMutations(
     isPending: false,
     ...overrides.addNote,
   } as unknown as ReturnType<typeof useAddMaintenanceTicketNote>)
+
+  vi.mocked(useUploadMaintenanceTicketAttachment).mockReturnValue({
+    mutateAsync: vi.fn().mockResolvedValue(mockTicket.attachments[0]),
+    isPending: false,
+    ...overrides.uploadAttachment,
+  } as unknown as ReturnType<typeof useUploadMaintenanceTicketAttachment>)
 }
 
 describe('MaintenanceTicketDetailPage', () => {
@@ -169,11 +178,23 @@ describe('MaintenanceTicketDetailPage', () => {
     await waitFor(() => expect(textbox).toHaveValue(''))
   })
 
-  it('disables assign-provider and attach-files since there is no backend support yet', () => {
+  it('disables assign-provider since there is no backend support yet', () => {
     render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
 
     expect(screen.getByRole('button', { name: 'Atribuir prestador' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Anexar arquivos' })).toBeDisabled()
+  })
+
+  it('uploads a file through the attach-files button and the hidden file input', async () => {
+    const user = userEvent.setup()
+    render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+
+    const uploadMutation = vi.mocked(useUploadMaintenanceTicketAttachment).mock.results[0].value
+    const file = new File(['conteudo'], 'foto.jpg', { type: 'image/jpeg' })
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement
+
+    await user.upload(input, file)
+
+    await waitFor(() => expect(uploadMutation.mutateAsync).toHaveBeenCalledWith(file))
   })
 
   it('renders a loading state while the ticket is being fetched', () => {

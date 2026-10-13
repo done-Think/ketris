@@ -11,13 +11,7 @@ import {
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-export interface CancelAgendaEventDialogProps {
-  open: boolean
-  isPending: boolean
-  title: string
-  onClose: () => void
-  onConfirm: () => void
-}
+import type { CancelAgendaEventDialogProps } from '../types/agenda-event'
 
 export function CancelAgendaEventDialog({
   open,

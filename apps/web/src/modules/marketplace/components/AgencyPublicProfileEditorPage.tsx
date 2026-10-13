@@ -13,7 +13,8 @@ import {
   Typography,
 } from '@mui/material'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 import { useSnackbar } from 'notistack'
 import { Controller, useForm } from 'react-hook-form'
 
@@ -27,10 +28,8 @@ import {
   useUnpublishAgencyProfile,
 } from '../hooks/use-agency-profile'
 import { useTenantAgents } from '../hooks/use-tenant-agents'
-import {
-  createAgencyPublicProfileEditorSchema,
-  type AgencyPublicProfileEditorFormValues,
-} from '../schemas/agency-public-profile-editor-schema'
+import { createAgencyPublicProfileEditorSchema } from '../schemas/agency-public-profile-editor-schema'
+import type { AgencyPublicProfileEditorFormValues } from '../types/profile-editor'
 import {
   emptyValues,
   toDraft,
@@ -42,7 +41,9 @@ import { SingleImageUploadField } from './public-profile-editor/SingleImageUploa
 import { AgencyPublicProfilePage } from './AgencyPublicProfilePage'
 
 export function AgencyPublicProfileEditorPage() {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace.agencyProfileEditor')
+  const tFeatures = useTranslations('marketplace.propertyFeatures')
   const { enqueueSnackbar } = useSnackbar()
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const { data: profile } = useOwnAgencyProfile()
@@ -394,7 +395,9 @@ export function AgencyPublicProfileEditorPage() {
 
       <Dialog open={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} maxWidth="lg" fullWidth>
         <DialogContent sx={{ p: 0 }}>
-          <AgencyPublicProfilePage agency={toPreviewProfile(draft, profile ?? null)} />
+          <AgencyPublicProfilePage
+            agency={toPreviewProfile(draft, profile ?? null, locale, tFeatures, t('previewName'))}
+          />
         </DialogContent>
       </Dialog>
     </Box>

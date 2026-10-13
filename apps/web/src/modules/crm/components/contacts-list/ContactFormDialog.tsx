@@ -18,7 +18,8 @@ import {
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslations } from 'next-intl'
 
-import { createContactFormSchema, type ContactFormValues } from '../../schemas/contact-schema'
+import { createContactFormSchema } from '../../schemas/contact-schema'
+import type { ContactFormValues } from '../../types/contact'
 import type { ContactFormDialogProps } from '../../types/contact'
 
 const emptyContactFormValues: ContactFormValues = {

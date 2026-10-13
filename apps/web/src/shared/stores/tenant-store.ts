@@ -1,11 +1,6 @@
 import { create } from 'zustand'
 
-interface TenantState {
-  tenantId: string | null
-  tenantName: string | null
-  setTenant: (id: string, name?: string | null) => void
-  clearTenant: () => void
-}
+import type { TenantState } from '@shared/types'
 
 export const useTenantStore = create<TenantState>((set) => ({
   tenantId: null,

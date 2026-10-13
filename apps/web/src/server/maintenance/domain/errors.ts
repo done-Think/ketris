@@ -26,3 +26,9 @@ export class MaintenanceTicketAlreadyResolvedError extends AppError {
     })
   }
 }
+
+export class MaintenanceAttachmentValidationError extends AppError {
+  constructor(message: string) {
+    super(message, { status: 400, code: 'MAINTENANCE_ATTACHMENT_VALIDATION_ERROR' })
+  }
+}

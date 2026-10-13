@@ -16,6 +16,7 @@ import {
   surface,
 } from '@shared/theme/tokens'
 import type { PublicProfileListingsProps } from '../../types/profile-listings'
+import { getPropertyFeatureLabel } from '../../utils/property-feature-label'
 import { buildProfileListingHref } from '../../utils/property-links'
 
 export function PublicProfileListings({
@@ -24,6 +25,7 @@ export function PublicProfileListings({
   source,
 }: PublicProfileListingsProps) {
   const t = useTranslations('marketplace.publicProfile.listings')
+  const tDetail = useTranslations('marketplace.propertyDetail')
 
   return (
     <>
@@ -95,7 +97,7 @@ export function PublicProfileListings({
                 {listing.details.map((detail) => (
                   <Chip
                     key={detail.key}
-                    label={detail.label}
+                    label={getPropertyFeatureLabel(detail, tDetail)}
                     size="small"
                     sx={{
                       height: 26,

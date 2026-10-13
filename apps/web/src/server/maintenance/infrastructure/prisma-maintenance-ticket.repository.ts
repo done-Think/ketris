@@ -15,6 +15,7 @@ import type {
   MaintenanceTicketListResult,
   MaintenanceTicketUpdate,
   NewMaintenanceActivity,
+  NewMaintenanceAttachment,
   NewMaintenanceTicket,
 } from '../domain/maintenance-ticket.entity'
 import type { MaintenanceTicketRepository } from '../application/ports/maintenance-ticket-repository.port'
@@ -113,6 +114,7 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
     const where = {
       tenantId: filters.tenantId,
       status: filters.status,
+      prioridade: filters.priority,
       imovelId: filters.propertyId,
       ...(search
         ? {
@@ -241,6 +243,34 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
     })
 
     return toDomainActivity(created)
+  }
+
+  async addAttachment(
+    tenantId: string,
+    ticketId: string,
+    attachment: NewMaintenanceAttachment,
+  ): Promise<MaintenanceAttachment> {
+    await prisma.chamadoManutencao.findFirstOrThrow({
+      where: { tenantId, id: ticketId },
+      select: { id: true },
+    })
+
+    const [created] = await prisma.$transaction([
+      prisma.anexoChamadoManutencao.create({
+        data: { chamadoId: ticketId, nome: attachment.name, url: attachment.url },
+      }),
+      prisma.atividadeChamadoManutencao.create({
+        data: {
+          chamadoId: ticketId,
+          tipo: 'ANEXO_ADICIONADO',
+          mensagem: attachment.name,
+          autorId: attachment.authorId,
+          autorNome: attachment.authorName,
+        },
+      }),
+    ])
+
+    return toDomainAttachment(created)
   }
 
   async findActivities(tenantId: string, ticketId: string): Promise<MaintenanceActivity[]> {

@@ -6,6 +6,7 @@ import { CreateTenantAdminUseCase } from './application/use-cases/create-tenant-
 import { CreateTenantUseCase } from './application/use-cases/create-tenant.use-case'
 import { DeactivatePlatformAdminUseCase } from './application/use-cases/deactivate-platform-admin.use-case'
 import { GetPlatformAdminUseCase } from './application/use-cases/get-platform-admin.use-case'
+import { GetPlatformOverviewUseCase } from './application/use-cases/get-platform-overview.use-case'
 import { ListPlatformAdminsUseCase } from './application/use-cases/list-platform-admins.use-case'
 import { ListTenantUsersUseCase } from './application/use-cases/list-tenant-users.use-case'
 import { ListTenantsUseCase } from './application/use-cases/list-tenants.use-case'
@@ -14,6 +15,7 @@ import { RefreshPlatformAdminTokenUseCase } from './application/use-cases/refres
 import { UpdatePlatformAdminUseCase } from './application/use-cases/update-platform-admin.use-case'
 import { JosePlatformTokenService } from './infrastructure/jose-platform-token.service'
 import { PrismaPlatformAdminRepository } from './infrastructure/prisma-platform-admin.repository'
+import { PrismaPlatformOverviewRepository } from './infrastructure/prisma-platform-overview.repository'
 import { PrismaPlatformRefreshTokenRepository } from './infrastructure/prisma-platform-refresh-token.repository'
 import { PrismaTenantRepository } from './infrastructure/prisma-tenant.repository'
 
@@ -23,6 +25,7 @@ const tokenService = new JosePlatformTokenService()
 const refreshTokenRepository = new PrismaPlatformRefreshTokenRepository()
 const tenantRepository = new PrismaTenantRepository()
 const userRepository = new PrismaUserRepository()
+const platformOverviewRepository = new PrismaPlatformOverviewRepository()
 
 export const platformContainer = {
   tokenService,
@@ -56,4 +59,5 @@ export const platformContainer = {
     userRepository,
     passwordHasher,
   ),
+  getPlatformOverviewUseCase: new GetPlatformOverviewUseCase(platformOverviewRepository),
 }

@@ -4,7 +4,7 @@ import { z } from 'zod'
 
 export const createTenantAdminRequestSchema = z
   .object({
-    nome: z.string().min(1, 'Nome é obrigatório.').openapi({ example: 'Admin da Imobiliária' }),
+    name: z.string().min(1, 'Nome é obrigatório.').openapi({ example: 'Admin da Imobiliária' }),
     email: z.string().email('E-mail inválido.').openapi({ example: 'admin@imobiliaria.dev' }),
     password: z
       .string()

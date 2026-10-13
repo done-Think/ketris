@@ -56,6 +56,7 @@ export interface ApiMaintenanceTicketListItem {
 
 export interface MaintenanceTicketListFilters {
   status?: ApiMaintenanceTicketStatus
+  priority?: ApiMaintenanceTicketPriority
   propertyId?: string
   search?: string
   page?: number
@@ -93,4 +94,8 @@ export interface MaintenanceActivityResponse {
 
 export interface MaintenanceActivitiesResponse {
   activities: ApiMaintenanceActivity[]
+}
+
+export interface UploadMaintenanceTicketAttachmentResponse {
+  attachment: ApiMaintenanceAttachment
 }

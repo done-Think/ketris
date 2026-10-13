@@ -137,20 +137,9 @@
       "tableLabel": "Recent tenants table",
       "columns": {
         "name": "Name / Agency",
-        "plan": "Plan",
         "brokers": "Brokers",
-        "registeredAt": "Registered",
-        "status": "Status"
-      },
-      "plans": {
-        "enterprise": "Enterprise",
-        "proGrowth": "Pro Growth",
-        "starterPack": "Starter Pack"
-      },
-      "statuses": {
-        "active": "Active",
-        "provisioning": "Provisioning",
-        "suspended": "Suspended"
+        "properties": "Properties",
+        "registeredAt": "Registered"
       }
     }
   },

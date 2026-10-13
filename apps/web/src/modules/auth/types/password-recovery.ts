@@ -1,15 +1,15 @@
 import type { FormEventHandler } from 'react'
 import type { Control } from 'react-hook-form'
+import type { z } from 'zod'
 
 import type {
-  PasswordRecoveryFormValues,
-  PasswordResetFormValues,
+  createPasswordRecoverySchema,
+  createPasswordResetSchema,
 } from '../schemas/password-recovery-schema'
 
-export type {
-  PasswordRecoveryFormValues,
-  PasswordResetFormValues,
-} from '../schemas/password-recovery-schema'
+export type PasswordRecoveryFormValues = z.infer<ReturnType<typeof createPasswordRecoverySchema>>
+
+export type PasswordResetFormValues = z.infer<ReturnType<typeof createPasswordResetSchema>>
 
 export type PasswordRecoveryFormProps = {
   control: Control<PasswordRecoveryFormValues>
@@ -51,3 +51,5 @@ export interface ResetPasswordInput {
   password: string
   resetToken: string
 }
+
+export type RecoveryStep = 'request' | 'code' | 'newPassword' | 'done'

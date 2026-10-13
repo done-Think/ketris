@@ -8,6 +8,7 @@ import { buildCreateMaintenanceTicketPayload } from '../utils/maintenance-adapte
 function normalizeFilters(filters: MaintenanceTicketListFilters) {
   return {
     status: filters.status ?? null,
+    priority: filters.priority ?? null,
     propertyId: filters.propertyId ?? null,
     search: filters.search ?? null,
     page: filters.page ?? null,
@@ -114,6 +115,23 @@ export function useAddMaintenanceTicketNote(tenantId: string | null | undefined,
 
   return useMutation({
     mutationFn: (message: string) => maintenanceService.addNote(ticketId, message),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: maintenanceQueryKeys.detail(scopedTenantId, ticketId),
+      })
+    },
+  })
+}
+
+export function useUploadMaintenanceTicketAttachment(
+  tenantId: string | null | undefined,
+  ticketId: string,
+) {
+  const queryClient = useQueryClient()
+  const scopedTenantId = tenantId ?? ''
+
+  return useMutation({
+    mutationFn: (file: File) => maintenanceService.uploadAttachment(ticketId, file),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: maintenanceQueryKeys.detail(scopedTenantId, ticketId),

@@ -28,6 +28,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const result = await maintenanceContainer.listMaintenanceTicketsUseCase.execute({
     tenantId: actor.tenantId,
     status: parsed.data.status,
+    priority: parsed.data.priority,
     propertyId: parsed.data.propertyId,
     search: parsed.data.search,
     page: parsed.data.page,

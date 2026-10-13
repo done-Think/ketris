@@ -2,7 +2,8 @@
 
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
 import { Avatar, Box, Card, Stack, Typography } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { Link } from '@/i18n/navigation'
 import { motion, radius, shadows } from '@shared/theme/tokens'
@@ -32,17 +33,18 @@ export function OpportunityCard({
   density = 'regular',
   presentation,
 }: OpportunityCardProps) {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('crm.pipeline')
   const stage = opportunityStageByStatus[opportunity.status]
   const isCompact = density === 'compact'
   const indicatorColor = presentation?.indicatorColor ?? stage.color
   const indicatorLabel = presentation?.indicatorLabel ?? t(`stages.${stage.labelKey}`)
-  const propertyTitle = property?.title ?? `Imóvel ${opportunity.propertyId}`
+  const propertyTitle = property?.title ?? t('propertyReference', { id: opportunity.propertyId })
   const propertyLocation = getPropertyLocation(property, t('propertyUnavailable'))
   const value =
     property?.purpose === 'ALUGUEL'
-      ? formatMonthlyCurrency(opportunity.proposedValue)
-      : formatCurrency(opportunity.proposedValue)
+      ? formatMonthlyCurrency(opportunity.proposedValue, locale)
+      : formatCurrency(opportunity.proposedValue, locale)
 
   return (
     <Card
@@ -160,7 +162,8 @@ export function OpportunityCard({
               lineHeight: isCompact ? 1.2 : 'normal',
             }}
           >
-            {presentation?.relativeDateLabel ?? formatRelativeDate(opportunity.updatedAt)}
+            {presentation?.relativeDateLabel ??
+              formatRelativeDate(opportunity.updatedAt, new Date(), locale)}
           </Typography>
         </Stack>
         <Box

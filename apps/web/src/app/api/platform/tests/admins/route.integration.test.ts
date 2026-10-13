@@ -54,7 +54,7 @@ describe('/api/platform/admins (integração)', () => {
     const response = await POST(
       buildRequest(
         'POST',
-        { nome: 'Novo Admin', email, password: 'senha-longa-123', role: 'ADMIN' },
+        { name: 'Novo Admin', email, password: 'senha-longa-123', role: 'ADMIN' },
         actorToken,
       ),
     )
@@ -70,7 +70,7 @@ describe('/api/platform/admins (integração)', () => {
   it('POST retorna 401 sem Authorization header', async () => {
     const response = await POST(
       buildRequest('POST', {
-        nome: 'X',
+        name: 'X',
         email: `x-${randomUUID()}@ketris.dev`,
         password: 'senha-longa-123',
       }),

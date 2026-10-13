@@ -6,6 +6,9 @@ import type {
   PublicPropertyDetail,
   PublicPropertySummary,
   SearchPropertiesFilters,
+  SubmitInquiryPayload,
+  SubmitInquiryResponse,
+  SubmitInquiryResult,
 } from '../types/public-property'
 
 export class MarketplaceService extends BaseService {
@@ -32,6 +35,12 @@ export class MarketplaceService extends BaseService {
     return this.http
       .get<PropertyDetailResponse>(`${this.propertiesPath}/${id}`)
       .then((data) => data.property)
+  }
+
+  submitInquiry(propertyId: string, payload: SubmitInquiryPayload): Promise<SubmitInquiryResult> {
+    return this.http
+      .post<SubmitInquiryResponse>(`${this.propertiesPath}/${propertyId}/inquiries`, payload)
+      .then((data) => data.inquiry)
   }
 }
 

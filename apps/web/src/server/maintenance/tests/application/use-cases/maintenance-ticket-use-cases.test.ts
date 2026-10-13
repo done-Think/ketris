@@ -1,11 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import {
+  MaintenanceAttachmentValidationError,
   MaintenancePropertyNotFoundError,
   MaintenanceTicketAlreadyResolvedError,
   MaintenanceTicketNotFoundError,
 } from '../../../domain/errors'
 import type { MaintenanceTicket } from '../../../domain/maintenance-ticket.entity'
+import type { MaintenanceAttachmentStoragePort } from '../../../application/ports/maintenance-attachment-storage.port'
 import type { MaintenanceTicketRepository } from '../../../application/ports/maintenance-ticket-repository.port'
 import { AddMaintenanceTicketNoteUseCase } from '../../../application/use-cases/add-maintenance-ticket-note.use-case'
 import { CreateMaintenanceTicketUseCase } from '../../../application/use-cases/create-maintenance-ticket.use-case'
@@ -15,6 +17,7 @@ import { ListMaintenanceTicketActivitiesUseCase } from '../../../application/use
 import { ListMaintenanceTicketsUseCase } from '../../../application/use-cases/list-maintenance-tickets.use-case'
 import { ResolveMaintenanceTicketUseCase } from '../../../application/use-cases/resolve-maintenance-ticket.use-case'
 import { UpdateMaintenanceTicketUseCase } from '../../../application/use-cases/update-maintenance-ticket.use-case'
+import { UploadMaintenanceTicketAttachmentUseCase } from '../../../application/use-cases/upload-maintenance-ticket-attachment.use-case'
 
 const ticket: MaintenanceTicket = {
   id: 'ticket-1',
@@ -56,6 +59,24 @@ function createRepository(
       createdAt: new Date('2026-09-29T00:00:00.000Z'),
     }),
     findActivities: vi.fn().mockResolvedValue([]),
+    addAttachment: vi.fn().mockResolvedValue({
+      id: 'attachment-1',
+      ticketId: 'ticket-1',
+      name: 'foto.jpg',
+      url: '/api/maintenance/media/foto.jpg',
+      createdAt: new Date('2026-09-29T00:00:00.000Z'),
+    }),
+    ...overrides,
+  }
+}
+
+function createAttachmentStorage(
+  overrides?: Partial<MaintenanceAttachmentStoragePort>,
+): MaintenanceAttachmentStoragePort {
+  return {
+    upload: vi
+      .fn()
+      .mockResolvedValue({ url: '/api/maintenance/media/foto.jpg', contentType: 'image/jpeg' }),
     ...overrides,
   }
 }
@@ -322,5 +343,92 @@ describe('ListMaintenanceTicketActivitiesUseCase', () => {
     await useCase.execute({ actorTenantId: 'tenant-1', ticketId: 'ticket-1' })
 
     expect(repository.findActivities).toHaveBeenCalledWith('tenant-1', 'ticket-1')
+  })
+})
+
+describe('UploadMaintenanceTicketAttachmentUseCase', () => {
+  function execute(
+    overrides: Partial<Parameters<UploadMaintenanceTicketAttachmentUseCase['execute']>[0]> = {},
+  ) {
+    const repository = createRepository()
+    const storage = createAttachmentStorage()
+    const useCase = new UploadMaintenanceTicketAttachmentUseCase(repository, storage)
+
+    return useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorId: 'user-1',
+      actorName: 'Bruno Oliveira',
+      ticketId: 'ticket-1',
+      filename: 'foto.jpg',
+      contentType: 'image/jpeg',
+      body: Buffer.from('conteudo'),
+      ...overrides,
+    })
+  }
+
+  it('lança MaintenanceTicketNotFoundError quando o chamado não existe no tenant', async () => {
+    const repository = createRepository({ findById: vi.fn().mockResolvedValue(null) })
+    const storage = createAttachmentStorage()
+    const useCase = new UploadMaintenanceTicketAttachmentUseCase(repository, storage)
+
+    await expect(
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'user-1',
+        actorName: 'Bruno Oliveira',
+        ticketId: 'missing',
+        filename: 'foto.jpg',
+        contentType: 'image/jpeg',
+        body: Buffer.from('conteudo'),
+      }),
+    ).rejects.toThrow(MaintenanceTicketNotFoundError)
+  })
+
+  it('lança MaintenanceAttachmentValidationError quando o arquivo está vazio', async () => {
+    await expect(execute({ body: Buffer.alloc(0) })).rejects.toThrow(
+      MaintenanceAttachmentValidationError,
+    )
+  })
+
+  it('lança MaintenanceAttachmentValidationError quando o arquivo excede 8MB', async () => {
+    await expect(execute({ body: Buffer.alloc(8 * 1024 * 1024 + 1) })).rejects.toThrow(
+      MaintenanceAttachmentValidationError,
+    )
+  })
+
+  it('lança MaintenanceAttachmentValidationError quando o formato não é suportado', async () => {
+    await expect(execute({ contentType: 'application/pdf' })).rejects.toThrow(
+      MaintenanceAttachmentValidationError,
+    )
+  })
+
+  it('envia o arquivo para o storage e registra o anexo no chamado', async () => {
+    const repository = createRepository()
+    const storage = createAttachmentStorage()
+    const useCase = new UploadMaintenanceTicketAttachmentUseCase(repository, storage)
+
+    const result = await useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorId: 'user-1',
+      actorName: 'Bruno Oliveira',
+      ticketId: 'ticket-1',
+      filename: 'foto.jpg',
+      contentType: 'image/jpeg',
+      body: Buffer.from('conteudo'),
+    })
+
+    expect(storage.upload).toHaveBeenCalledWith({
+      tenantId: 'tenant-1',
+      filename: 'foto.jpg',
+      contentType: 'image/jpeg',
+      body: Buffer.from('conteudo'),
+    })
+    expect(repository.addAttachment).toHaveBeenCalledWith('tenant-1', 'ticket-1', {
+      name: 'foto.jpg',
+      url: '/api/maintenance/media/foto.jpg',
+      authorId: 'user-1',
+      authorName: 'Bruno Oliveira',
+    })
+    expect(result.name).toBe('foto.jpg')
   })
 })

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 async function loadEnv() {
   vi.resetModules()
-  const { env } = await import('./env')
+  const { env } = await import('../env')
   return env
 }
 

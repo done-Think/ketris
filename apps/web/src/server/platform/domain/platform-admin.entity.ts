@@ -20,3 +20,23 @@ export function toAuthenticatedPlatformAdmin(admin: PlatformAdmin): Authenticate
     ativo: admin.ativo,
   }
 }
+
+export interface AuthenticatedPlatformAdminResponse {
+  id: string
+  name: string
+  email: string
+  role: PlatformAdminRole
+  active: boolean
+}
+
+export function toAuthenticatedPlatformAdminResponse(
+  admin: AuthenticatedPlatformAdmin,
+): AuthenticatedPlatformAdminResponse {
+  return {
+    id: admin.id,
+    name: admin.nome,
+    email: admin.email,
+    role: admin.role,
+    active: admin.ativo,
+  }
+}

@@ -27,6 +27,7 @@ const draft = {
 function createDeps() {
   const agencyProfileRepository: AgencyProfileRepository = {
     findPublishedById: vi.fn(),
+    findPublishedBySlug: vi.fn(),
     listPublished: vi.fn(),
     findByTenantId: vi.fn(),
     save: vi.fn().mockResolvedValue({} as AgencyProfile),

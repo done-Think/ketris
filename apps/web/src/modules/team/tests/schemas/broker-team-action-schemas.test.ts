@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { brokerGoalSchema, brokerTransferSchema } from '../../schemas/broker-team-action-schemas'
+import {
+  createBrokerGoalSchema,
+  createBrokerTransferSchema,
+} from '../../schemas/broker-team-action-schemas'
+
+const brokerGoalSchema = createBrokerGoalSchema((key) => key)
+const brokerTransferSchema = createBrokerTransferSchema((key) => key)
 
 describe('broker action validation', () => {
   it('requires a positive whole-number monthly goal', () => {

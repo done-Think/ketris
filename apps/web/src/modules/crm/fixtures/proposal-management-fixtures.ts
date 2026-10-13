@@ -1,23 +1,11 @@
 import type {
+  ProposalFixtureInput,
   ProposalManagementListItem,
   ProposalManagementStatus,
   ProposalManagementStatusCounts,
   ProposalManagementSummary,
   ProposalTransactionKind,
 } from '../types/proposal-management'
-
-type ProposalFixtureInput = {
-  sequence: number
-  leadName: string
-  leadEmail: string
-  propertyTitle: string
-  propertyAddress: string
-  amount: number
-  transactionKind: ProposalTransactionKind
-  status: ProposalManagementStatus
-  createdAt: string
-  createdLabel: string
-}
 
 const leadAvatarUrls = [
   'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=96&q=80',

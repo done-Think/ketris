@@ -16,7 +16,7 @@ const defaultMapStyleUrl = 'https://basemaps.cartocdn.com/gl/positron-gl-style/s
 const mapContainerStyle = { width: '100%', height: '100%' } as const
 
 function getMapMarkerLabel(price: string) {
-  return price.replace(' / mês', '')
+  return price.replace(/\s*\/\s*[^/]+$/, '')
 }
 
 export function SearchResultsMap({
@@ -47,6 +47,12 @@ export function SearchResultsMap({
       }}
     >
       <Map
+        locale={{
+          'Map.Title': t('title'),
+          'NavigationControl.ZoomIn': t('zoomIn'),
+          'NavigationControl.ZoomOut': t('zoomOut'),
+          'AttributionControl.ToggleAttribution': t('attribution'),
+        }}
         initialViewState={{
           latitude: -23.5617,
           longitude: -46.6559,

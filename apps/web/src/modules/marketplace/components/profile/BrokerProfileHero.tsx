@@ -1,13 +1,15 @@
 'use client'
 
 import { Avatar, Box, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
-import { defaultBrokerHeadline, defaultProfileCoverImage } from '../../config/profile-defaults'
+import { defaultProfileCoverImage } from '../../config/profile-defaults'
 import type { BrokerProfileHeroProps } from '../../types/broker'
 
 export function BrokerProfileHero({ broker }: BrokerProfileHeroProps) {
+  const t = useTranslations('marketplace.publicProfile')
   return (
     <Box
       sx={{
@@ -41,7 +43,7 @@ export function BrokerProfileHero({ broker }: BrokerProfileHeroProps) {
               letterSpacing: 0,
             }}
           >
-            {broker.headline ?? defaultBrokerHeadline}
+            {broker.headline ?? t('brokerDefaultHeadline')}
           </Typography>
         </Box>
       </Box>

@@ -124,14 +124,16 @@ export function AgencyBrokerDetailDialog({ broker, onClose }: AgencyBrokerDetail
         <Button variant="outlined" onClick={onClose}>
           {t('details.close')}
         </Button>
-        <Button
-          component={Link}
-          href={`/brokers/${broker.profileId}`}
-          variant="contained"
-          endIcon={<OpenInNewOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-        >
-          {t('details.openProfile')}
-        </Button>
+        {broker.hasPublicProfile ? (
+          <Button
+            component={Link}
+            href={`/brokers/${broker.profileId}`}
+            variant="contained"
+            endIcon={<OpenInNewOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+          >
+            {t('details.openProfile')}
+          </Button>
+        ) : null}
       </DialogActions>
     </Dialog>
   )

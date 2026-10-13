@@ -1,10 +1,6 @@
 import { BaseService } from '@shared/lib/api/base-service'
 
-import type { AgencySearchResult } from '../types/registration'
-
-interface SearchAgenciesResponse {
-  tenants: AgencySearchResult[]
-}
+import type { AgencySearchResult, SearchAgenciesResponse } from '../types/registration'
 
 class RegistrationService extends BaseService {
   searchAgencies(query: string): Promise<AgencySearchResult[]> {

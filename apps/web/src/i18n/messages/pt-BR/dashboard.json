@@ -240,7 +240,9 @@
       "resolveSuccess": "Chamado marcado como resolvido.",
       "resolveError": "N\u00e3o foi poss\u00edvel marcar o chamado como resolvido.",
       "noteSuccess": "Mensagem enviada.",
-      "noteError": "N\u00e3o foi poss\u00edvel enviar a mensagem."
+      "noteError": "N\u00e3o foi poss\u00edvel enviar a mensagem.",
+      "attachmentSuccess": "Arquivo anexado com sucesso.",
+      "attachmentError": "N\u00e3o foi poss\u00edvel anexar o arquivo."
     },
     "detail": {
       "back": "Voltar para chamados",
@@ -280,6 +282,9 @@
   "finance": {
     "title": "Financeiro",
     "subtitle": "Movimentação financeira mensal e registros de venda/comissão.",
+    "exchangeRateNotice": "Valores estimados em {currency} pela PTAX de fechamento de {date} (1 {currency} = R$ {rate}). Lançamentos permanecem em BRL.",
+    "exchangeRateLoading": "Consultando a cotação PTAX. Valores exibidos em BRL por enquanto.",
+    "exchangeRateUnavailable": "Cotação indisponível. Valores exibidos em BRL.",
     "movementTitle": "Movimentação mensal",
     "movementSubtitle": "Entradas de vendas e comissões por mês.",
     "sales": "Vendas",
@@ -312,7 +317,8 @@
     "kpis": {
       "receivable": "A receber",
       "delinquency": "Inadimplência",
-      "defaultRate": "Taxa de inadimplência"
+      "defaultRate": "Taxa de inadimplência",
+      "occupancyRate": "Taxa de ocupação"
     },
     "history": {
       "eyebrow": "Histórico financeiro",

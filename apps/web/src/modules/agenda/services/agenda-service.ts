@@ -2,18 +2,12 @@ import { BaseService } from '@shared/lib/api/base-service'
 
 import type {
   AgendaEventApi,
+  AgendaEventResponse,
+  AgendaEventsResponse,
   CreateAgendaEventPayload,
   RescheduleAgendaEventPayload,
   UpdateAgendaEventPayload,
 } from '../types/agenda-event'
-
-interface AgendaEventResponse {
-  event: AgendaEventApi
-}
-
-interface AgendaEventsResponse {
-  events: AgendaEventApi[]
-}
 
 export class AgendaService extends BaseService {
   private readonly path = '/agenda/events'

@@ -10,10 +10,10 @@ import { useTranslations } from 'next-intl'
 import { RhfTextField } from '@shared/components/form'
 import { extractErrorMessage } from '@shared/utils/error-message'
 
-import { createUpdateAdminSchema, type UpdateAdminFormValues } from '../schemas/update-admin-schema'
+import { createUpdateAdminSchema } from '../schemas/update-admin-schema'
 import { useAdmin } from '../hooks/use-admin'
 import { useUpdateAdmin } from '../hooks/use-update-admin'
-import type { EditAdminFormProps } from '../types/admin'
+import type { EditAdminFormProps, UpdateAdminFormValues } from '../types/admin'
 
 export function EditAdminForm({ adminId }: EditAdminFormProps) {
   const t = useTranslations('auth.backoffice')

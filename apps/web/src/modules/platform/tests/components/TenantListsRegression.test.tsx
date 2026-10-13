@@ -17,10 +17,12 @@ describe('existing Platform list behavior', () => {
       data: Array.from({ length: 105 }, (_, index) => ({
         id: `user-${index}`,
         tenantId: 'tenant',
-        nome: `User ${index}`,
+        name: `User ${index}`,
         email: `user${index}@example.test`,
-        papel: 'AGENT',
-        ativo: true,
+        avatarUrl: null,
+        role: 'AGENT',
+        active: true,
+        pendingApproval: false,
       })),
       isLoading: false,
       isError: false,
@@ -36,7 +38,7 @@ describe('existing Platform list behavior', () => {
       data: [
         {
           id: 'existing',
-          nome: 'Existing agency',
+          name: 'Existing agency',
           slug: 'agency',
           createdAt: '2024-01-01T00:00:00Z',
         },

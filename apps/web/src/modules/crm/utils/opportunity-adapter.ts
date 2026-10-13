@@ -1,6 +1,8 @@
 import type { Opportunity } from '../types/opportunity'
 import type { PublicPropertyDetail, PublicPropertySummary } from '../types/property'
 import { formatCurrency, formatDate, formatMonthlyCurrency } from './formatters'
+import { defaultLocale } from '@/i18n/routing'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import type {
   ProposalManagementListItem,
@@ -17,8 +19,14 @@ function toTransactionKind(
   return property?.purpose === 'ALUGUEL' ? 'rent' : 'sale'
 }
 
-function toValueLabel(amount: number, transactionKind: ProposalTransactionKind): string {
-  return transactionKind === 'rent' ? formatMonthlyCurrency(amount) : formatCurrency(amount)
+function toValueLabel(
+  amount: number,
+  transactionKind: ProposalTransactionKind,
+  locale: AppLocale,
+): string {
+  return transactionKind === 'rent'
+    ? formatMonthlyCurrency(amount, locale)
+    : formatCurrency(amount, locale)
 }
 
 function toReference(opportunityId: string): string {
@@ -53,6 +61,7 @@ export function mapOpportunityToProposalListItem(
   opportunity: Opportunity,
   property: PublicPropertyDetail | PublicPropertySummary | undefined,
   fallbackAddressLabel: string,
+  locale: AppLocale = defaultLocale,
 ): ProposalManagementListItem {
   const transactionKind = toTransactionKind(property)
 
@@ -67,15 +76,16 @@ export function mapOpportunityToProposalListItem(
     property: toProperty(opportunity.propertyId, property, fallbackAddressLabel),
     amount: opportunity.proposedValue,
     transactionKind,
-    valueLabel: toValueLabel(opportunity.proposedValue, transactionKind),
+    valueLabel: toValueLabel(opportunity.proposedValue, transactionKind, locale),
     status: opportunity.status,
     createdAt: opportunity.createdAt,
-    createdLabel: formatDate(opportunity.createdAt),
+    createdLabel: formatDate(opportunity.createdAt, locale),
   }
 }
 
 export function buildProposalManagementSummary(
   items: readonly ProposalManagementListItem[],
+  locale: AppLocale = defaultLocale,
 ): ProposalManagementSummary {
   const statusCounts = Object.fromEntries(
     proposalManagementStatuses.map((status) => [
@@ -93,7 +103,7 @@ export function buildProposalManagementSummary(
     statusCounts,
     negotiationCount: statusCounts.EM_NEGOCIACAO,
     acceptedTotalAmount,
-    acceptedTotalLabel: formatCurrency(acceptedTotalAmount),
+    acceptedTotalLabel: formatCurrency(acceptedTotalAmount, locale),
     conversionRate,
     conversionRateLabel: `${Math.round(conversionRate * 100)}%`,
   }

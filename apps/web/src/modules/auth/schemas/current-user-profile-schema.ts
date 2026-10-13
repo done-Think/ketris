@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import type { SchemaMessageTranslator } from './update-current-user-profile-schema'
+import type { SchemaMessageTranslator } from '@shared/types'
 import { createUpdateCurrentUserProfileSchema } from './update-current-user-profile-schema'
 import { createPhoneSchema } from './registration-details-schema'
 

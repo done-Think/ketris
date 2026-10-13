@@ -14,6 +14,7 @@ export interface ChargeRepository {
   findMany(filters: ChargeListFilters): Promise<ChargeListResult>
   findById(tenantId: string, chargeId: string): Promise<Charge | null>
   update(tenantId: string, chargeId: string, patch: ChargeUpdateData): Promise<Charge>
+  delete(tenantId: string, chargeId: string): Promise<void>
   registerPayment(tenantId: string, chargeId: string, payment: ChargePaymentData): Promise<Charge>
   getSummary(tenantId: string, referenceDate: Date): Promise<FinancialSummary>
 }

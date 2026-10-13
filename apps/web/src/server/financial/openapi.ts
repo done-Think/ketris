@@ -118,6 +118,32 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
   })
 
   registry.registerPath({
+    method: 'delete',
+    path: '/financial/charges/{id}',
+    tags: ['Financial'],
+    summary: 'Exclui permanentemente uma cobrança do tenant autenticado',
+    security: [{ bearerAuth: [] }],
+    request: { params: chargeIdParamsSchema },
+    responses: {
+      204: {
+        description: 'Cobrança excluída.',
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Locatário não pode gerenciar cobranças.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      404: {
+        description: 'Cobrança não encontrada neste tenant.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
     method: 'post',
     path: '/financial/charges/{id}/payment',
     tags: ['Financial'],

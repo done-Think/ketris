@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
-import { createEmailSchema, type SchemaMessageTranslator } from './email-schema'
+import { createEmailSchema } from './email-schema'
+import type { SchemaMessageTranslator } from '@shared/types'
 
 export function createCredentialsSchema(t: SchemaMessageTranslator) {
   return z.object({
@@ -8,5 +9,3 @@ export function createCredentialsSchema(t: SchemaMessageTranslator) {
     password: z.string().min(1, t('passwordRequired')),
   })
 }
-
-export type CredentialsFormValues = z.infer<ReturnType<typeof createCredentialsSchema>>
