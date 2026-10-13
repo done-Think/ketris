@@ -38,41 +38,81 @@ const activityTypeToTone: Record<ApiAgencyActivityType, AgencyActivityTone> = {
   LEAD: 'lead',
 }
 
+type KpiComparison = Pick<AgencyOverviewKpi, 'helper' | 'tone'>
+
+function getNewPropertiesComparison(newPropertiesCount: number): KpiComparison {
+  return {
+    helper: { key: 'newProperties', values: { count: newPropertiesCount } },
+    tone: newPropertiesCount > 0 ? 'success' : 'neutral',
+  }
+}
+
+function getLeadsComparison(current: number, previous: number): KpiComparison {
+  const difference = current - previous
+
+  if (difference > 0) {
+    return { helper: { key: 'leadsIncrease', values: { count: difference } }, tone: 'success' }
+  }
+
+  if (difference < 0) {
+    return { helper: { key: 'leadsDecrease', values: { count: -difference } }, tone: 'neutral' }
+  }
+
+  return { helper: { key: 'leadsSame' }, tone: 'neutral' }
+}
+
+function getRevenueComparison(current: number, previous: number): KpiComparison {
+  if (previous <= 0) {
+    return current > 0
+      ? { helper: { key: 'revenueNoPrevious' }, tone: 'neutral' }
+      : { tone: 'neutral' }
+  }
+
+  // Rounds away from zero symmetrically, so +0.5% and −0.5% are both reported (Math.round(-0.5) is -0).
+  const change = ((current - previous) / previous) * 100
+  const percent = Math.sign(change) * Math.round(Math.abs(change))
+
+  if (percent > 0) {
+    return { helper: { key: 'revenueIncrease', values: { percent } }, tone: 'success' }
+  }
+
+  if (percent < 0) {
+    return { helper: { key: 'revenueDecrease', values: { percent: -percent } }, tone: 'neutral' }
+  }
+
+  return { helper: { key: 'revenueSame' }, tone: 'neutral' }
+}
+
 export function mapKpisToAgencyOverviewKpis(kpis: ApiAgencyOverviewKpis): AgencyOverviewKpi[] {
   return [
     {
       id: 'portfolio',
       labelKey: 'portfolio',
       value: String(kpis.portfolioCount),
-      helper: '',
-      tone: 'neutral',
+      ...getNewPropertiesComparison(kpis.newPropertiesThisMonth),
     },
     {
       id: 'brokers',
       labelKey: 'activeBrokers',
       value: String(kpis.activeBrokersCount),
-      helper: '',
       tone: 'neutral',
     },
     {
       id: 'leads',
       labelKey: 'receivedLeads',
       value: String(kpis.receivedLeadsThisMonth),
-      helper: '',
-      tone: 'neutral',
+      ...getLeadsComparison(kpis.receivedLeadsThisMonth, kpis.receivedLeadsPreviousPeriod),
     },
     {
       id: 'revenue',
       labelKey: 'revenue',
       value: formatCurrency(kpis.monthlyReceivable),
-      helper: '',
-      tone: 'neutral',
+      ...getRevenueComparison(kpis.monthlyReceivable, kpis.monthlyReceivablePreviousMonth),
     },
     {
       id: 'occupancy',
       labelKey: 'occupancy',
       value: `${kpis.occupancyPercentage}%`,
-      helper: '',
       tone: 'neutral',
       progress: kpis.occupancyPercentage,
     },
