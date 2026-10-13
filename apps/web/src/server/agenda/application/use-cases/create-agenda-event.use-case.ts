@@ -1,10 +1,9 @@
-import { ForbiddenError } from '@server/shared/errors'
-
 import type { Papel } from '@server/auth/domain/user.entity'
 import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
 import { PropertyNotFoundError } from '@server/properties/domain/errors'
 import type { PropertyRepository } from '@server/properties/application/ports/property-repository.port'
 
+import { assertCanAccessAgenda } from '../../domain/agenda-access-rules'
 import { assertWithinAgendaSchedulingWindow } from '../../domain/agenda-scheduling-rules'
 import { AgendaEventConflictError, AgendaResponsibleNotFoundError } from '../../domain/errors'
 import type { AgendaEventKind } from '../../domain/agenda-event.entity'
@@ -34,9 +33,7 @@ export class CreateAgendaEventUseCase {
   ) {}
 
   async execute(input: CreateAgendaEventInput) {
-    if (input.actorPapel === 'RENTER') {
-      throw new ForbiddenError('Locatários não podem gerenciar a agenda.')
-    }
+    assertCanAccessAgenda(input.actorPapel)
 
     assertWithinAgendaSchedulingWindow(input.inicio)
 

@@ -38,6 +38,10 @@ export function registerAgendaOpenApi(registry: OpenAPIRegistry): void {
         description: 'Access token ausente, inválido ou expirado.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
+      403: {
+        description: 'Autenticado como RENTER — não pode acessar a agenda.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
     },
   })
 
@@ -94,6 +98,14 @@ export function registerAgendaOpenApi(registry: OpenAPIRegistry): void {
       200: {
         description: 'Evento encontrado.',
         content: { 'application/json': { schema: agendaEventResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Autenticado como RENTER — não pode acessar a agenda.',
+        content: { 'application/json': { schema: errorResponseSchema } },
       },
       404: {
         description: 'Evento não encontrado neste tenant.',

@@ -28,7 +28,11 @@ describe('GetAgendaEventUseCase', () => {
     const deps = createDeps()
     const useCase = new GetAgendaEventUseCase(deps.agendaEventRepository)
 
-    const result = await useCase.execute({ actorTenantId: 'tenant-1', id: 'event-1' })
+    const result = await useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorPapel: 'AGENT',
+      id: 'event-1',
+    })
 
     expect(result).toBe(event)
     expect(deps.agendaEventRepository.findByTenantAndId).toHaveBeenCalledWith('tenant-1', 'event-1')
@@ -38,8 +42,18 @@ describe('GetAgendaEventUseCase', () => {
     const deps = createDeps({ findByTenantAndId: vi.fn().mockResolvedValue(null) })
     const useCase = new GetAgendaEventUseCase(deps.agendaEventRepository)
 
-    await expect(useCase.execute({ actorTenantId: 'tenant-1', id: 'inexistente' })).rejects.toThrow(
-      AgendaEventNotFoundError,
-    )
+    await expect(
+      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'AGENT', id: 'inexistente' }),
+    ).rejects.toThrow(AgendaEventNotFoundError)
+  })
+
+  it('lança ForbiddenError quando o ator é RENTER, sem consultar o repositório', async () => {
+    const deps = createDeps()
+    const useCase = new GetAgendaEventUseCase(deps.agendaEventRepository)
+
+    await expect(
+      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'RENTER', id: 'event-1' }),
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' })
+    expect(deps.agendaEventRepository.findByTenantAndId).not.toHaveBeenCalled()
   })
 })

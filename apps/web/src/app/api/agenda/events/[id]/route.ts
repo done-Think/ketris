@@ -18,6 +18,7 @@ export const GET = withErrorHandling(async (request: NextRequest, context: Route
 
   const event = await agendaContainer.getAgendaEventUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorPapel: actor.papel as Papel,
     id: (await context.params).id,
   })
 
