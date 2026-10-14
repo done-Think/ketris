@@ -4,6 +4,7 @@ import type { SchemaMessageTranslator } from '@shared/types'
 
 export function createMaintenanceTicketSchema(t: SchemaMessageTranslator) {
   return z.object({
+    contractId: z.string().min(1, t('contractRequired')),
     propertyId: z.string().min(1, t('propertyRequired')),
     category: z.string().min(1, t('categoryRequired')),
     priority: z.enum(['normal', 'high', 'urgent'], { message: t('priorityRequired') }),

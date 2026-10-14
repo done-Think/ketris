@@ -1,11 +1,11 @@
 'use client'
 
+import type { MaintenanceStatusStyle, MaintenanceTicketDetailPageProps } from '../types/maintenance'
+
 import type { ChangeEvent } from 'react'
 import { useRef, useState } from 'react'
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
 import AttachFileRoundedIcon from '@mui/icons-material/AttachFileRounded'
-import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
-import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined'
 import {
   Avatar,
   Box,
@@ -28,21 +28,24 @@ import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 import {
   useAddMaintenanceTicketNote,
   useMaintenanceTicket,
-  useResolveMaintenanceTicket,
   useUploadMaintenanceTicketAttachment,
 } from '../hooks/use-maintenance'
 import type { MaintenancePriority, MaintenanceStatus } from '../types/maintenance'
+import { MaintenanceWorkflowControls } from './MaintenanceWorkflowControls'
 import { errorMessage } from '../utils/error-message'
 import {
   mapMaintenancePriorityFromApi,
   mapMaintenanceStatusFromApi,
 } from '../utils/maintenance-adapter'
 
-const statusStyles: Record<MaintenanceStatus, { bgcolor: string; color: string }> = {
+const statusStyles: Record<MaintenanceStatus, MaintenanceStatusStyle> = {
   inProgress: { bgcolor: '#FFF2CC', color: '#D98900' },
   open: { bgcolor: '#E8F1FF', color: '#2877E8' },
   resolved: { bgcolor: '#E5F8ED', color: '#12A150' },
   closed: { bgcolor: '#EFF1F4', color: '#617086' },
+  pendingConfirmation: { bgcolor: '#E8F1FF', color: '#2877E8' },
+  contested: { bgcolor: '#FDE8EB', color: '#B42338' },
+  cancelled: { bgcolor: '#EFF1F4', color: '#617086' },
 }
 const priorityColors: Record<MaintenancePriority, string> = {
   urgent: brand.semantic.error,
@@ -76,7 +79,7 @@ function getInitials(name: string | null): string {
     .toUpperCase()
 }
 
-export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) {
+export function MaintenanceTicketDetailPage({ ticketId }: MaintenanceTicketDetailPageProps) {
   const t = useTranslations('dashboard.maintenance')
   const detailT = useTranslations('dashboard.maintenance.detail')
   const { enqueueSnackbar } = useSnackbar()
@@ -86,20 +89,10 @@ export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const ticketQuery = useMaintenanceTicket(tenantId, ticketId)
-  const resolveMutation = useResolveMaintenanceTicket(tenantId, ticketId)
   const addNoteMutation = useAddMaintenanceTicketNote(tenantId, ticketId)
   const uploadAttachmentMutation = useUploadMaintenanceTicketAttachment(tenantId, ticketId)
 
   const ticket = ticketQuery.data
-
-  async function handleResolve() {
-    try {
-      await resolveMutation.mutateAsync()
-      enqueueSnackbar(t('notifications.resolveSuccess'), { variant: 'success' })
-    } catch (error) {
-      enqueueSnackbar(errorMessage(error, t('notifications.resolveError')), { variant: 'error' })
-    }
-  }
 
   async function handleAttachmentChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -156,7 +149,6 @@ export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) 
 
   const status = mapMaintenanceStatusFromApi(ticket.status)
   const priority = mapMaintenancePriorityFromApi(ticket.priority)
-  const isResolved = ticket.status === 'RESOLVIDO' || ticket.status === 'FECHADO'
   const sortedActivities = [...ticket.activities].sort((a, b) =>
     a.createdAt.localeCompare(b.createdAt),
   )
@@ -223,32 +215,8 @@ export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) 
               </Typography>
             </Stack>
           </Stack>
-          <Stack direction="row" spacing={1}>
-            <Button
-              variant="outlined"
-              startIcon={<PersonAddAltOutlinedIcon />}
-              sx={secondaryButtonSx}
-              disabled
-            >
-              {detailT('actions.assignProvider')}
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={
-                resolveMutation.isPending ? (
-                  <CircularProgress size={16} color="inherit" />
-                ) : (
-                  <CheckRoundedIcon />
-                )
-              }
-              sx={primaryButtonSx}
-              onClick={handleResolve}
-              disabled={isResolved || resolveMutation.isPending}
-            >
-              {detailT('actions.resolve')}
-            </Button>
-          </Stack>
         </Stack>
+        <MaintenanceWorkflowControls ticket={ticket} />
         <Box
           sx={{
             display: 'grid',
@@ -387,6 +355,7 @@ export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) 
               <Divider sx={{ my: 1.7 }} />
               <TextField
                 value={message}
+                disabled={!ticket.permissions?.collaborate}
                 onChange={(event) => setMessage(event.target.value)}
                 multiline
                 minRows={4}
@@ -415,14 +384,16 @@ export function MaintenanceTicketDetailPage({ ticketId }: { ticketId: string }) 
                     )
                   }
                   sx={secondaryButtonSx}
-                  disabled={uploadAttachmentMutation.isPending}
+                  disabled={!ticket.permissions?.collaborate || uploadAttachmentMutation.isPending}
                   onClick={() => fileInputRef.current?.click()}
                 >
                   {detailT('actions.attachFiles')}
                 </Button>
                 <Button
                   variant="contained"
-                  disabled={!message.trim() || addNoteMutation.isPending}
+                  disabled={
+                    !ticket.permissions?.collaborate || !message.trim() || addNoteMutation.isPending
+                  }
                   sx={primaryButtonSx}
                   onClick={handleSendMessage}
                 >

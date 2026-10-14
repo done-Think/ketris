@@ -7,6 +7,8 @@ import {
   createMaintenanceTicketRequestSchema,
   listMaintenanceTicketsQuerySchema,
   updateMaintenanceTicketRequestSchema,
+  maintenanceActionSchema,
+  maintenanceLinksSchema,
 } from './schemas/maintenance-ticket-input.schema'
 import {
   maintenanceActivitiesResponseSchema,
@@ -14,9 +16,55 @@ import {
   maintenanceTicketIdParamsSchema,
   maintenanceTicketResponseSchema,
   maintenanceTicketsResponseSchema,
+  maintenanceOptionsSchema,
 } from './schemas/maintenance-ticket.schema'
 
 export function registerMaintenanceOpenApi(registry: OpenAPIRegistry): void {
+  registry.registerPath({
+    method: 'get',
+    path: '/maintenance/options',
+    tags: ['Maintenance'],
+    summary: 'Contratos permitidos e usuarios para administracao',
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: 'Opcoes limitadas ao usuario autenticado.',
+        content: { 'application/json': { schema: maintenanceOptionsSchema } },
+      },
+    },
+  })
+  registry.registerPath({
+    method: 'post',
+    path: '/maintenance/links',
+    tags: ['Maintenance'],
+    summary: 'Admin regulariza vinculos explicitos de proprietario e locatario',
+    security: [{ bearerAuth: [] }],
+    request: { body: { content: { 'application/json': { schema: maintenanceLinksSchema } } } },
+    responses: {
+      204: { description: 'Vinculos regularizados e auditados.' },
+      403: { description: 'Somente admin do tenant.' },
+    },
+  })
+  registry.registerPath({
+    method: 'post',
+    path: '/maintenance/tickets/{id}/actions',
+    tags: ['Maintenance'],
+    summary: 'Executa transicoes, atribuicoes, troca de prestador e restauracao autorizadas',
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: maintenanceTicketIdParamsSchema,
+      body: { content: { 'application/json': { schema: maintenanceActionSchema } } },
+    },
+    responses: {
+      200: {
+        description: 'Acao e historico gravados juntos.',
+        content: { 'application/json': { schema: maintenanceTicketResponseSchema } },
+      },
+      403: { description: 'Acao nao permitida.' },
+      404: { description: 'Chamado fora do escopo.' },
+      409: { description: 'Estado invalido ou alteracao concorrente.' },
+    },
+  })
   registry.registerPath({
     method: 'get',
     path: '/maintenance/tickets',
@@ -118,7 +166,7 @@ export function registerMaintenanceOpenApi(registry: OpenAPIRegistry): void {
     security: [{ bearerAuth: [] }],
     request: { params: maintenanceTicketIdParamsSchema },
     responses: {
-      204: { description: 'Chamado excluído.' },
+      204: { description: 'Chamado arquivado sem remover dados; somente admin.' },
       404: {
         description: 'Chamado não encontrado neste tenant.',
         content: { 'application/json': { schema: errorResponseSchema } },
@@ -130,12 +178,12 @@ export function registerMaintenanceOpenApi(registry: OpenAPIRegistry): void {
     method: 'post',
     path: '/maintenance/tickets/{id}/resolve',
     tags: ['Maintenance'],
-    summary: 'Marca um chamado de manutenção como resolvido',
+    summary: 'Conclui atendimento e solicita confirmacao da resolucao',
     security: [{ bearerAuth: [] }],
     request: { params: maintenanceTicketIdParamsSchema },
     responses: {
       200: {
-        description: 'Chamado marcado como resolvido.',
+        description: 'Chamado aguardando confirmacao.',
         content: { 'application/json': { schema: maintenanceTicketResponseSchema } },
       },
       404: {

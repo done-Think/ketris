@@ -1,3 +1,4 @@
+import type { MaintenanceMutationOverrides } from '../../types/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
@@ -9,6 +10,8 @@ import {
   useMaintenanceTicket,
   useResolveMaintenanceTicket,
   useUploadMaintenanceTicketAttachment,
+  useMaintenanceOptions,
+  useMaintenanceAction,
 } from '../../hooks/use-maintenance'
 import type { ApiMaintenanceTicket } from '../../types/service'
 
@@ -21,9 +24,27 @@ vi.mock('../../hooks/use-maintenance', () => ({
   useResolveMaintenanceTicket: vi.fn(),
   useAddMaintenanceTicketNote: vi.fn(),
   useUploadMaintenanceTicketAttachment: vi.fn(),
+  useMaintenanceOptions: vi.fn(),
+  useMaintenanceAction: vi.fn(),
 }))
 
 const mockTicket: ApiMaintenanceTicket = {
+  permissions: {
+    edit: true,
+    collaborate: true,
+    assume: false,
+    assign: false,
+    provider: true,
+    requestReplacement: false,
+    start: false,
+    complete: true,
+    confirm: false,
+    contest: false,
+    cancel: false,
+    reopen: false,
+    delete: false,
+    restore: false,
+  },
   id: 'MNT-0089',
   propertyId: 'p1',
   propertyTitle: 'Apt Jardins 3q',
@@ -84,13 +105,14 @@ function mockTicketQuery(overrides: Partial<ReturnType<typeof useMaintenanceTick
   } as unknown as ReturnType<typeof useMaintenanceTicket>)
 }
 
-function mockMutations(
-  overrides: {
-    resolve?: Record<string, unknown>
-    addNote?: Record<string, unknown>
-    uploadAttachment?: Record<string, unknown>
-  } = {},
-) {
+function mockMutations(overrides: MaintenanceMutationOverrides = {}) {
+  vi.mocked(useMaintenanceOptions).mockReturnValue({
+    data: { contracts: [], users: [] },
+  } as unknown as ReturnType<typeof useMaintenanceOptions>)
+  vi.mocked(useMaintenanceAction).mockReturnValue({
+    mutateAsync: vi.fn().mockResolvedValue(mockTicket),
+    isPending: false,
+  } as unknown as ReturnType<typeof useMaintenanceAction>)
   vi.mocked(useResolveMaintenanceTicket).mockReturnValue({
     mutateAsync: vi.fn().mockResolvedValue(mockTicket),
     isPending: false,
@@ -149,15 +171,18 @@ describe('MaintenanceTicketDetailPage', () => {
     expect(screen.getByText('Marina Costa')).toBeVisible()
   })
 
-  it('marks the ticket as resolved through the resolve mutation', async () => {
+  it('completes service through the action mutation after confirmation', async () => {
     const user = userEvent.setup()
     render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
 
-    const resolveMutation = vi.mocked(useResolveMaintenanceTicket).mock.results[0].value
+    const actionMutation = vi.mocked(useMaintenanceAction).mock.results[0].value
 
-    await user.click(screen.getByRole('button', { name: 'Marcar resolvido' }))
+    await user.click(screen.getByRole('button', { name: 'Concluir atendimento' }))
+    await user.click(screen.getByRole('button', { name: 'Confirmar' }))
 
-    await waitFor(() => expect(resolveMutation.mutateAsync).toHaveBeenCalled())
+    await waitFor(() =>
+      expect(actionMutation.mutateAsync).toHaveBeenCalledWith({ action: 'complete' }),
+    )
   })
 
   it('sends a note through the add-note mutation and clears the field on success', async () => {
@@ -178,10 +203,28 @@ describe('MaintenanceTicketDetailPage', () => {
     await waitFor(() => expect(textbox).toHaveValue(''))
   })
 
-  it('disables assign-provider since there is no backend support yet', () => {
+  it('enables provider assignment when the API grants permission', () => {
     render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
 
-    expect(screen.getByRole('button', { name: 'Atribuir prestador' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Definir prestador' })).toBeEnabled()
+  })
+
+  it('hides provider controls and blocks collaboration when API denies permission', () => {
+    mockTicketQuery({
+      data: {
+        ...mockTicket,
+        permissions: {
+          ...mockTicket.permissions!,
+          provider: false,
+          collaborate: false,
+          complete: false,
+        },
+      },
+    })
+    render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+    expect(screen.queryByRole('button', { name: 'Definir prestador' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Anexar arquivos' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Enviar Mensagem' })).toBeDisabled()
   })
 
   it('uploads a file through the attach-files button and the hidden file input', async () => {
