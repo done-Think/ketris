@@ -1,5 +1,5 @@
 import { ThemeProvider } from '@mui/material'
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -109,16 +109,41 @@ describe('PlatformOverview', () => {
     })
   })
 
-  it('renders the real metrics, growth chart, alerts and recent tenants', () => {
+  it('renders the real metrics, growth chart and recent tenants', () => {
     renderOverview()
 
     expect(screen.getByRole('heading', { name: 'Visão geral da plataforma' })).toBeVisible()
     expect(screen.getAllByText('45')[0]).toBeVisible()
     expect(screen.getByLabelText('Growth trends chart')).toBeVisible()
-    expect(screen.getByText('4 ativos')).toBeVisible()
-    expect(screen.getByText('Backup automatizado falhou')).toBeVisible()
     expect(screen.getByText('Apex Brokers S/A')).toBeVisible()
     expect(screen.getByText('Nobre Imobiliária')).toBeVisible()
+  })
+
+  it('does not show sample system alerts', () => {
+    renderOverview()
+
+    expect(screen.queryByText('Alertas do sistema')).not.toBeInTheDocument()
+    expect(screen.queryByText('Backup automatizado falhou')).not.toBeInTheDocument()
+  })
+
+  it('shows the current UTC time and keeps it updated', () => {
+    vi.useFakeTimers({
+      toFake: ['Date', 'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval'],
+    })
+    try {
+      vi.setSystemTime(new Date('2026-10-14T13:05:10Z'))
+      const view = renderOverview()
+
+      act(() => vi.advanceTimersByTime(0))
+      expect(screen.getByText('UTC ao vivo: 14/10/2026, 13:05')).toBeVisible()
+
+      act(() => vi.advanceTimersByTime(60_000))
+      expect(screen.getByText('UTC ao vivo: 14/10/2026, 13:06')).toBeVisible()
+
+      view.unmount()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('renders both recent tenants in the accessible grid', () => {

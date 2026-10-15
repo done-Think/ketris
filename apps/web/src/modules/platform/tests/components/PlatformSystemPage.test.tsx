@@ -1,21 +1,10 @@
 import { ThemeProvider } from '@mui/material'
-import { act, fireEvent, render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { LineChartProps } from '@mui/x-charts/LineChart'
-import type { BarChartProps } from '@mui/x-charts/BarChart'
+import { render, screen } from '@testing-library/react'
+import { describe, expect, it } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
 
 import { PlatformSystemPage } from '../../components/PlatformSystemPage'
-import { networkTraffic, errorNotifications } from '../../data/platform-system-fixtures'
-
-vi.mock('@mui/x-charts/LineChart', () => ({
-  LineChart: () => <div aria-label="Network traffic chart" />,
-}))
-vi.mock('@mui/x-charts/BarChart', () => ({
-  BarChart: () => <div aria-label="Error notifications chart" />,
-}))
 
 function renderPage() {
   return render(
@@ -26,56 +15,23 @@ function renderPage() {
 }
 
 describe('PlatformSystemPage', () => {
-  afterEach(() => vi.useRealTimers())
-
-  it('provides correctly typed chart datasets', () => {
-    const traffic: LineChartProps['dataset'] = [...networkTraffic]
-    const errors: BarChartProps['dataset'] = [...errorNotifications]
-    expect(traffic).toHaveLength(networkTraffic.length)
-    expect(errors).toHaveLength(errorNotifications.length)
-  })
-  it('renders health metrics, charts and fixture logs', () => {
+  it('says that infrastructure monitoring is not available yet', () => {
     renderPage()
+
     expect(screen.getByRole('heading', { name: 'Saúde do Sistema' })).toBeVisible()
-    expect(screen.getByText('99,9%')).toBeVisible()
-    expect(screen.getByText('45 ms')).toBeVisible()
-    expect(screen.getByLabelText('Network traffic chart')).toBeVisible()
-    expect(screen.getByText('auth-service')).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Monitoramento em breve' })).toBeVisible()
+    expect(
+      screen.getByText(/vai aparecer aqui quando uma ferramenta de monitoramento for integrada/),
+    ).toBeVisible()
   })
 
-  it('toggles auto-refresh and clears the local console', async () => {
-    const user = userEvent.setup()
+  it('does not show sample health metrics, charts or logs', () => {
     renderPage()
-    const refresh = screen.getByRole('checkbox', { name: 'Atualização automática (5s)' })
-    expect(refresh).toBeChecked()
-    await user.click(refresh)
-    expect(refresh).not.toBeChecked()
-    await user.click(screen.getByRole('button', { name: 'Limpar Console' }))
-    expect(screen.getByText('Console limpo.')).toBeVisible()
-  })
 
-  it('reloads the demo logs every five seconds, pauses, resumes and cleans up', () => {
-    vi.useFakeTimers()
-    const clearInterval = vi.spyOn(window, 'clearInterval')
-    const view = renderPage()
-    const refresh = screen.getByRole('checkbox', { name: 'Atualização automática (5s)' })
-    fireEvent.click(screen.getByRole('button', { name: 'Limpar Console' }))
-    act(() => vi.advanceTimersByTime(4999))
-    expect(screen.getByText('Console limpo.')).toBeVisible()
-    act(() => vi.advanceTimersByTime(1))
-    expect(screen.getByText('auth-service')).toBeVisible()
-    expect(screen.getAllByText('ERROR')).toHaveLength(2)
-    expect(screen.getByText(/Autenticação bem-sucedida/)).toBeVisible()
-    fireEvent.click(refresh)
-    fireEvent.click(screen.getByRole('button', { name: 'Limpar Console' }))
-    act(() => vi.advanceTimersByTime(10000))
-    expect(screen.getByText('Console limpo.')).toBeVisible()
-    expect(clearInterval).toHaveBeenCalledTimes(1)
-    fireEvent.click(refresh)
-    act(() => vi.advanceTimersByTime(5000))
-    expect(screen.getByText('auth-service')).toBeVisible()
-    view.unmount()
-    expect(clearInterval).toHaveBeenCalledTimes(2)
-    clearInterval.mockRestore()
+    expect(screen.queryByText('99,9%')).not.toBeInTheDocument()
+    expect(screen.queryByText('45 ms')).not.toBeInTheDocument()
+    expect(screen.queryByText('auth-service')).not.toBeInTheDocument()
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Limpar Console' })).not.toBeInTheDocument()
   })
 })

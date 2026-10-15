@@ -14,14 +14,6 @@ export interface GrowthTrendPoint extends Record<string, string | number> {
   contracts: number
 }
 
-export type PlatformAlertTone = 'error' | 'warning' | 'info'
-
-export interface PlatformAlert {
-  id: 'backup' | 'cpu' | 'ssl' | 'tenant-registration'
-  elapsedMinutes: number
-  tone: PlatformAlertTone
-}
-
 export interface RecentTenant {
   id: string
   name: string

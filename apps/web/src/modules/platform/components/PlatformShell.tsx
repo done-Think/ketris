@@ -322,19 +322,6 @@ export function PlatformShell({ children }: PlatformShellProps) {
           },
         }}
       >
-        {['/platform', '/platform/tenants', '/platform/system'].includes(pathname) && (
-          <Typography
-            sx={{
-              px: { xs: 2, md: 3, lg: 4 },
-              pt: { xs: 1.5, md: 1 },
-              fontSize: 12,
-              lineHeight: { xs: 1.4, md: 'inherit' },
-              color: brand.neutral[500],
-            }}
-          >
-            {t('demoNotice')}
-          </Typography>
-        )}
         {children}
       </Box>
     </Box>
