@@ -47,14 +47,21 @@ import { tenantStatusChipColor } from '../utils/tenant-status'
 import { EditTenantAccountDialog } from './EditTenantAccountDialog'
 
 type StatusFilter = 'ALL' | TenantStatus
-type TypeFilter = 'ALL' | TenantAccountType
+export type TenantTypeFilter = 'ALL' | TenantAccountType
 
-interface TenantsListProps {
-  // Search, account type filter and status tabs (the tenants page); the overview shows the list only.
-  withFilters?: boolean
+export interface TenantsListFilters {
+  query: string
+  accountType: TenantTypeFilter
+  onClear: () => void
 }
 
-export function TenantsList({ withFilters = false }: TenantsListProps) {
+interface TenantsListProps {
+  // Search and account type come from the page header (TenantsFilters); the list adds the status
+  // tabs. Without filters (the overview) it shows the plain list.
+  filters?: TenantsListFilters
+}
+
+export function TenantsList({ filters }: TenantsListProps) {
   const t = useTranslations('platform.dashboard')
   const tenantsT = useTranslations('platform.tenants')
   const formsT = useTranslations('platform.forms')
@@ -62,9 +69,9 @@ export function TenantsList({ withFilters = false }: TenantsListProps) {
   const plansT = useTranslations('platform.plans')
   const format = useFormatter()
   const [editingTenant, setEditingTenant] = useState<PlatformTenant | null>(null)
-  const [query, setQuery] = useState('')
   const [status, setStatus] = useState<StatusFilter>('ALL')
-  const [accountType, setAccountType] = useState<TypeFilter>('ALL')
+  const query = filters?.query ?? ''
+  const accountType = filters?.accountType ?? 'ALL'
   const { data: tenants, isPending, isError } = useTenants()
   // On phones the six columns do not fit: each account becomes a stacked row instead.
   const theme = useTheme()
@@ -109,9 +116,8 @@ export function TenantsList({ withFilters = false }: TenantsListProps) {
   }, [tenants, query, status, accountType])
 
   const clearFilters = () => {
-    setQuery('')
     setStatus('ALL')
-    setAccountType('ALL')
+    filters?.onClear()
   }
 
   return (
@@ -124,15 +130,23 @@ export function TenantsList({ withFilters = false }: TenantsListProps) {
         boxShadow: shadows.propertyCard,
       }}
     >
-      {withFilters && tenants && tenants.length > 0 ? (
-        <Box sx={{ borderBottom: '1px solid', borderColor: alpha.graphite[6] }}>
+      {filters && tenants && tenants.length > 0 ? (
+        <Stack
+          direction="row"
+          alignItems="center"
+          sx={{
+            borderBottom: '1px solid',
+            borderColor: alpha.graphite[6],
+            pr: { xs: 1.6, md: 2.2 },
+          }}
+        >
           <Tabs
             value={status}
             onChange={(_, value: StatusFilter) => setStatus(value)}
             variant="scrollable"
             allowScrollButtonsMobile
             aria-label={tenantsT('filters.statusLabel')}
-            sx={{ px: { xs: 1, md: 1.6 }, minHeight: 48 }}
+            sx={{ px: { xs: 1, md: 1.6 }, minHeight: 48, flex: 1, minWidth: 0 }}
           >
             {(['ALL', ...TENANT_STATUSES] as const).map((item) => (
               <Tab
@@ -156,62 +170,17 @@ export function TenantsList({ withFilters = false }: TenantsListProps) {
               />
             ))}
           </Tabs>
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={1.2}
+          <Typography
             sx={{
-              px: { xs: 1.6, md: 2.2 },
-              py: 1.6,
-              borderTop: '1px solid',
-              borderColor: alpha.graphite[6],
+              display: { xs: 'none', sm: 'block' },
+              color: brand.neutral[500],
+              fontSize: 13,
+              whiteSpace: 'nowrap',
             }}
           >
-            <TextField
-              size="small"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={tenantsT('search.placeholder')}
-              slotProps={{
-                htmlInput: { 'aria-label': tenantsT('search.label') },
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchRoundedIcon
-                        sx={{ fontSize: iconSize.lg, color: brand.neutral[500] }}
-                      />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              sx={{ flex: 1, maxWidth: { sm: 420 } }}
-            />
-            <TextField
-              select
-              size="small"
-              value={accountType}
-              onChange={(event) => setAccountType(event.target.value as TypeFilter)}
-              label={tenantsT('filters.typeLabel')}
-              sx={{ minWidth: 200 }}
-            >
-              <MenuItem value="ALL">{tenantsT('filters.allTypes')}</MenuItem>
-              {TENANT_ACCOUNT_TYPES.map((type) => (
-                <MenuItem key={type} value={type}>
-                  {accountT(`accountTypes.${type}`)}
-                </MenuItem>
-              ))}
-            </TextField>
-            <Typography
-              sx={{
-                color: brand.neutral[500],
-                fontSize: 13,
-                alignSelf: { sm: 'center' },
-                ml: { sm: 'auto !important' },
-              }}
-            >
-              {tenantsT('count', { count: visibleTenants.length })}
-            </Typography>
-          </Stack>
-        </Box>
+            {tenantsT('count', { count: visibleTenants.length })}
+          </Typography>
+        </Stack>
       ) : null}
 
       {isPending ? (
@@ -412,3 +381,56 @@ const visuallyHiddenSx = {
   whiteSpace: 'nowrap',
   width: 1,
 } as const
+
+// Search and account type filter, shown in the tenants page header next to "New account".
+export function TenantsFilters({
+  query,
+  accountType,
+  onQueryChange,
+  onAccountTypeChange,
+}: {
+  query: string
+  accountType: TenantTypeFilter
+  onQueryChange: (query: string) => void
+  onAccountTypeChange: (accountType: TenantTypeFilter) => void
+}) {
+  const tenantsT = useTranslations('platform.tenants')
+  const accountT = useTranslations('platform.account')
+
+  return (
+    <>
+      <TextField
+        size="small"
+        value={query}
+        onChange={(event) => onQueryChange(event.target.value)}
+        placeholder={tenantsT('search.placeholder')}
+        slotProps={{
+          htmlInput: { 'aria-label': tenantsT('search.label') },
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchRoundedIcon sx={{ fontSize: iconSize.lg, color: brand.neutral[500] }} />
+              </InputAdornment>
+            ),
+          },
+        }}
+        sx={{ width: { xs: '100%', lg: 300 }, flex: { sm: 1, lg: 'none' }, bgcolor: surface.paper }}
+      />
+      <TextField
+        select
+        size="small"
+        value={accountType}
+        onChange={(event) => onAccountTypeChange(event.target.value as TenantTypeFilter)}
+        label={tenantsT('filters.typeLabel')}
+        sx={{ width: { xs: '100%', sm: 190 }, flexShrink: 0, bgcolor: surface.paper }}
+      >
+        <MenuItem value="ALL">{tenantsT('filters.allTypes')}</MenuItem>
+        {TENANT_ACCOUNT_TYPES.map((type) => (
+          <MenuItem key={type} value={type}>
+            {accountT(`accountTypes.${type}`)}
+          </MenuItem>
+        ))}
+      </TextField>
+    </>
+  )
+}

@@ -2,22 +2,25 @@
 
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import { Box, Button, Stack, Typography } from '@mui/material'
+import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
 import { brand, radius } from '@shared/theme/tokens'
 
-import { TenantsList } from './TenantsList'
+import { TenantsFilters, TenantsList, type TenantTypeFilter } from './TenantsList'
 
 export function PlatformTenantsPage() {
   const t = useTranslations('platform.tenants')
+  const [query, setQuery] = useState('')
+  const [accountType, setAccountType] = useState<TenantTypeFilter>('ALL')
 
   return (
     <Box sx={{ width: '100%', p: 3.5 }}>
       <Stack
-        direction={{ xs: 'column', md: 'row' }}
+        direction={{ xs: 'column', lg: 'row' }}
         justifyContent="space-between"
-        alignItems={{ md: 'center' }}
+        alignItems={{ lg: 'center' }}
         spacing={1.6}
         sx={{
           pb: 1.75,
@@ -43,17 +46,39 @@ export function PlatformTenantsPage() {
             {t('subtitle')}
           </Typography>
         </Box>
-        <Button
-          component={Link}
-          href="/platform/tenants/new"
-          variant="contained"
-          startIcon={<AddRoundedIcon />}
-          sx={newTenantButtonSx}
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={1.2}
+          alignItems={{ sm: 'center' }}
+          sx={{ width: { xs: '100%', lg: 'auto' } }}
         >
-          {t('newTenant')}
-        </Button>
+          <TenantsFilters
+            query={query}
+            accountType={accountType}
+            onQueryChange={setQuery}
+            onAccountTypeChange={setAccountType}
+          />
+          <Button
+            component={Link}
+            href="/platform/tenants/new"
+            variant="contained"
+            startIcon={<AddRoundedIcon />}
+            sx={newTenantButtonSx}
+          >
+            {t('newTenant')}
+          </Button>
+        </Stack>
       </Stack>
-      <TenantsList withFilters />
+      <TenantsList
+        filters={{
+          query,
+          accountType,
+          onClear: () => {
+            setQuery('')
+            setAccountType('ALL')
+          },
+        }}
+      />
     </Box>
   )
 }
@@ -64,8 +89,9 @@ const newTenantButtonSx = {
   boxShadow: 'none',
   fontSize: 12,
   fontWeight: 800,
-  height: { xs: 40, sm: 32 },
-  width: { xs: '100%', md: 'auto' },
+  height: 40,
+  flexShrink: 0,
+  width: { xs: '100%', sm: 'auto' },
   px: 2.25,
   textTransform: 'none',
   whiteSpace: 'nowrap',
