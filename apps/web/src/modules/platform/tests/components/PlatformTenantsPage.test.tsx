@@ -75,6 +75,19 @@ describe('PlatformTenantsPage', () => {
     expect(screen.getByRole('link', { name: 'Novo Tenant' })).toBeVisible()
   })
 
+  it('shows a loading indicator, not the empty state, while the tenants are pending', () => {
+    vi.mocked(useTenants).mockReturnValue({
+      data: undefined,
+      isPending: true,
+      isLoading: false,
+      isError: false,
+    })
+    renderPage()
+
+    expect(screen.getByRole('progressbar')).toBeVisible()
+    expect(screen.queryByText('Nenhuma imobiliária cadastrada ainda.')).not.toBeInTheDocument()
+  })
+
   it('shows the load error instead of sample data when the request fails', () => {
     vi.mocked(useTenants).mockReturnValue({ data: undefined, isLoading: false, isError: true })
     renderPage()

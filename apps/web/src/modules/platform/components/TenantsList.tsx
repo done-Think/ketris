@@ -23,7 +23,7 @@ export function TenantsList() {
   const t = useTranslations('platform.dashboard')
   const formsT = useTranslations('platform.forms')
   const format = useFormatter()
-  const { data: tenants, isLoading, isError } = useTenants()
+  const { data: tenants, isPending, isError } = useTenants()
 
   return (
     <Card
@@ -35,7 +35,7 @@ export function TenantsList() {
         boxShadow: shadows.propertyCard,
       }}
     >
-      {isLoading ? (
+      {isPending ? (
         <Stack alignItems="center" sx={{ py: 6 }}>
           <CircularProgress size={28} />
         </Stack>
