@@ -1,12 +1,13 @@
 'use client'
 
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
-import { Box, Button, Stack, Typography } from '@mui/material'
+import { Box, Stack, Typography } from '@mui/material'
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
-import { brand, radius } from '@shared/theme/tokens'
+import { DashboardHeaderActionButton } from '@shared/components/layout'
+import { brand } from '@shared/theme/tokens'
 
 import { TenantsFilters, TenantsList, type TenantTypeFilter } from './TenantsList'
 
@@ -58,15 +59,13 @@ export function PlatformTenantsPage() {
             onQueryChange={setQuery}
             onAccountTypeChange={setAccountType}
           />
-          <Button
+          <DashboardHeaderActionButton
             component={Link}
             href="/platform/tenants/new"
-            variant="contained"
             startIcon={<AddRoundedIcon />}
-            sx={newTenantButtonSx}
           >
             {t('newTenant')}
-          </Button>
+          </DashboardHeaderActionButton>
         </Stack>
       </Stack>
       <TenantsList
@@ -81,19 +80,4 @@ export function PlatformTenantsPage() {
       />
     </Box>
   )
-}
-
-const newTenantButtonSx = {
-  bgcolor: brand.magenta[500],
-  borderRadius: `${radius.sm}px`,
-  boxShadow: 'none',
-  fontSize: 12,
-  fontWeight: 800,
-  height: 40,
-  flexShrink: 0,
-  width: { xs: '100%', sm: 'auto' },
-  px: 2.25,
-  textTransform: 'none',
-  whiteSpace: 'nowrap',
-  '&:hover': { bgcolor: brand.magenta[600], boxShadow: 'none' },
 }

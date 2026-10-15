@@ -22,6 +22,7 @@ import {
   TableRow,
   Tabs,
   TextField,
+  Select,
   Tooltip,
   Typography,
   useMediaQuery,
@@ -382,7 +383,8 @@ const visuallyHiddenSx = {
   width: 1,
 } as const
 
-// Search and account type filter, shown in the tenants page header next to "New account".
+// Search and account type filter, shown in the tenants page header next to "New account". Same
+// sizes as the platform users page filters.
 export function TenantsFilters({
   query,
   accountType,
@@ -400,29 +402,27 @@ export function TenantsFilters({
   return (
     <>
       <TextField
-        size="small"
         value={query}
         onChange={(event) => onQueryChange(event.target.value)}
         placeholder={tenantsT('search.placeholder')}
+        size="small"
+        sx={filterSearchSx}
         slotProps={{
           htmlInput: { 'aria-label': tenantsT('search.label') },
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <SearchRoundedIcon sx={{ fontSize: iconSize.lg, color: brand.neutral[500] }} />
+                <SearchRoundedIcon sx={{ color: brand.neutral[400], fontSize: 18 }} />
               </InputAdornment>
             ),
           },
         }}
-        sx={{ width: { xs: '100%', lg: 300 }, flex: { sm: 1, lg: 'none' }, bgcolor: surface.paper }}
       />
-      <TextField
-        select
-        size="small"
+      <Select
         value={accountType}
         onChange={(event) => onAccountTypeChange(event.target.value as TenantTypeFilter)}
-        label={tenantsT('filters.typeLabel')}
-        sx={{ width: { xs: '100%', sm: 190 }, flexShrink: 0, bgcolor: surface.paper }}
+        inputProps={{ 'aria-label': tenantsT('filters.typeLabel') }}
+        sx={filterSelectSx}
       >
         <MenuItem value="ALL">{tenantsT('filters.allTypes')}</MenuItem>
         {TENANT_ACCOUNT_TYPES.map((type) => (
@@ -430,7 +430,27 @@ export function TenantsFilters({
             {accountT(`accountTypes.${type}`)}
           </MenuItem>
         ))}
-      </TextField>
+      </Select>
     </>
   )
+}
+
+const filterSearchSx = {
+  flex: { sm: 1 },
+  width: { xs: '100%', sm: 'auto' },
+  maxWidth: { sm: 360 },
+  minWidth: { lg: 280 },
+  '& .MuiInputBase-root': {
+    height: { xs: 40, sm: 32 },
+    borderRadius: `${radius.sm}px`,
+    bgcolor: surface.paper,
+    fontSize: 12,
+  },
+}
+const filterSelectSx = {
+  minWidth: { xs: '100%', sm: 170 },
+  height: { xs: 40, sm: 32 },
+  borderRadius: `${radius.sm}px`,
+  bgcolor: surface.paper,
+  fontSize: 12,
 }
