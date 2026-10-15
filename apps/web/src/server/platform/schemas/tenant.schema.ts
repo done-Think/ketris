@@ -22,6 +22,22 @@ export const tenantSummarySchema = z
   })
   .openapi('TenantSummary')
 
+export const monthlyChargeSchema = z
+  .object({
+    usageUnit: z.enum(['PROPERTIES', 'BROKERS']).openapi({
+      description: 'O que o limite conta: imóveis (pessoa física e corretor) ou corretores ativos.',
+    }),
+    usage: z.number().int(),
+    includedUnits: z.number().int(),
+    extraUnits: z.number().int(),
+    basePrice: z.number(),
+    extraAmount: z.number(),
+    total: z
+      .number()
+      .openapi({ description: 'Mensalidade em BRL: base + extras.', example: 119.97 }),
+  })
+  .openapi('MonthlyCharge')
+
 export const platformTenantSchema = z
   .object({
     id: z.string(),
@@ -34,5 +50,13 @@ export const platformTenantSchema = z
       example: null,
     }),
     createdAt: z.string().openapi({ description: 'ISO 8601', example: '2026-08-04T12:00:00.000Z' }),
+    monthlyCharge: monthlyChargeSchema
+      .nullable()
+      .optional()
+      .openapi({
+        description:
+          'Mensalidade calculada pelo plano do tipo de conta e pelo uso atual (só na listagem). ' +
+          'null para o tenant de sistema dos locatários.',
+      }),
   })
   .openapi('PlatformTenant')

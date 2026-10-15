@@ -3,6 +3,7 @@ import type { z } from 'zod'
 import type { createTenantAdminSchema } from '../schemas/create-tenant-admin-schema'
 import type { createTenantSchema } from '../schemas/create-tenant-schema'
 import type { createTenantAccountSchema } from '../schemas/tenant-account-schema'
+import type { MonthlyCharge } from './platform-plan'
 
 export type CreateTenantFormValues = z.infer<ReturnType<typeof createTenantSchema>>
 
@@ -26,6 +27,8 @@ export interface PlatformTenant extends TenantSummary {
   accountType: TenantAccountType
   status: TenantStatus
   canceledAt: string | null
+  // What its plan costs for its current usage; null for the renters' system tenant.
+  monthlyCharge?: MonthlyCharge | null
 }
 
 export type TenantAccountFormValues = z.infer<ReturnType<typeof createTenantAccountSchema>>

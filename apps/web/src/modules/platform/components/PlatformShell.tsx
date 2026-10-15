@@ -43,7 +43,7 @@ const navigationItems: readonly NavigationItem[] = [
   { label: 'overview', icon: HomeOutlinedIcon, href: '/platform' },
   { label: 'tenants', icon: ApartmentOutlinedIcon, href: '/platform/tenants' },
   { label: 'users', icon: PeopleOutlineIcon, href: '/platform/admins' },
-  { label: 'plans', icon: SellOutlinedIcon },
+  { label: 'plans', icon: SellOutlinedIcon, href: '/platform/plans' },
   { label: 'finance', icon: AccountBalanceWalletOutlinedIcon },
   { label: 'system', icon: SettingsOutlinedIcon, href: '/platform/system' },
   { label: 'logs', icon: ShowChartOutlinedIcon },

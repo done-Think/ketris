@@ -20,6 +20,9 @@
     },
     "system": {
       "metadataTitle": "Ketris | Saúde do Sistema"
+    },
+    "plans": {
+      "metadataTitle": "Ketris | Planos da Plataforma"
     }
   },
   "login": {
@@ -271,7 +274,8 @@
       "accountTypeHelper": "Define o plano cobrado (ver Planos).",
       "status": "Situação",
       "statusHelper": "Só contas ativas são cobradas.",
-      "canceledHelper": "A data de cancelamento é registrada e entra no churn deste mês."
+      "canceledHelper": "A data de cancelamento é registrada e entra no churn deste mês.",
+      "monthlyCharge": "Mensalidade"
     },
     "accountTypes": {
       "INDIVIDUAL": "Pessoa física",
@@ -288,5 +292,41 @@
     "cancel": "Cancelar",
     "updateSuccess": "Conta atualizada.",
     "updateError": "Não foi possível atualizar a conta."
+  },
+  "plans": {
+    "title": "Planos",
+    "subtitle": "Preço mensal de cada tipo de conta e o que está incluído nele.",
+    "loadError": "Não foi possível carregar os planos.",
+    "perMonth": "/mês",
+    "includesProperties": "{count, plural, one {Inclui até # imóvel} other {Inclui até # imóveis}}",
+    "includesBrokers": "{count, plural, one {Inclui até # corretor ativo} other {Inclui até # corretores ativos}}",
+    "extraProperties": "{price} por imóvel extra",
+    "extraBrokers": "{price} por corretor extra",
+    "activeAccounts": "{count, plural, =0 {Nenhuma conta ativa} one {# conta ativa} other {# contas ativas}}",
+    "edit": "Editar",
+    "editAction": "Editar plano {name}",
+    "editTitle": "Editar plano",
+    "closeEditDialog": "Fechar edição do plano",
+    "note": "Valores em reais. Não há cobrança automática: a mensalidade de cada conta é calculada pelo plano do tipo dela e pelo uso atual. Só contas ativas entram na receita.",
+    "fields": {
+      "monthlyPrice": "Preço mensal",
+      "includedUnitsProperties": "Imóveis incluídos",
+      "includedUnitsBrokers": "Corretores ativos incluídos",
+      "extraUnitPriceProperties": "Valor por imóvel extra",
+      "extraUnitPriceBrokers": "Valor por corretor extra"
+    },
+    "exampleProperties": "Exemplo: com {count, plural, one {# imóvel} other {# imóveis}}, a mensalidade fica {total}.",
+    "exampleBrokers": "Exemplo: com {count, plural, one {# corretor ativo} other {# corretores ativos}}, a mensalidade fica {total}.",
+    "chargeBaseOnly": "Preço base do plano",
+    "chargeWithExtraProperties": "{base} + {count, plural, one {# imóvel extra} other {# imóveis extras}} ({extra})",
+    "chargeWithExtraBrokers": "{base} + {count, plural, one {# corretor extra} other {# corretores extras}} ({extra})",
+    "errors": {
+      "invalidAmount": "Informe um valor válido, com até duas casas decimais.",
+      "invalidUnits": "Informe um número inteiro."
+    },
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "updateSuccess": "Plano atualizado.",
+    "updateError": "Não foi possível atualizar o plano."
   }
 }

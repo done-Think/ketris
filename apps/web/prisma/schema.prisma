@@ -57,6 +57,19 @@ enum TenantStatus {
   CANCELED
 }
 
+// Tabela de preços da plataforma, uma linha por tipo de conta, editada pelo super admin.
+// includedUnits conta imóveis (pessoa física e corretor) ou corretores ativos (imobiliária);
+// cada unidade acima disso custa extraUnitPrice.
+model PlatformPlan {
+  accountType    TenantAccountType @id
+  monthlyPrice   Decimal           @db.Decimal(12, 2)
+  includedUnits  Int
+  extraUnitPrice Decimal           @db.Decimal(12, 2)
+  updatedAt      DateTime          @updatedAt
+
+  @@map("platform_plans")
+}
+
 enum PapelUsuario {
   ADMIN
   OWNER

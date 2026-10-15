@@ -7,6 +7,7 @@ export type NavigationItem = {
   href?:
     | '/platform'
     | '/platform/tenants'
+    | '/platform/plans'
     | '/platform/system'
     | '/platform/admins'
     | '/platform/admins/new'

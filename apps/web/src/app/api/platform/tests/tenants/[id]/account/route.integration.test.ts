@@ -125,3 +125,103 @@ describe('PATCH /api/platform/tenants/[id]/account (integração)', () => {
     expect(reactivated.tenant.canceledAt).toBeNull()
   })
 })
+
+describe('GET /api/platform/tenants – mensalidade (integração)', () => {
+  const tokenService = new JosePlatformTokenService()
+  let actorId: string
+  let actorToken: string
+  let tenantId: string
+
+  beforeAll(async () => {
+    const actor = await prisma.platformAdmin.create({
+      data: {
+        nome: 'Ator Mensalidade',
+        email: `ator-${randomUUID()}@ketris.dev`,
+        senhaHash: 'hash-fake',
+      },
+    })
+    actorId = actor.id
+    actorToken = await tokenService.sign({
+      id: actor.id,
+      nome: actor.nome,
+      email: actor.email,
+      role: 'ADMIN',
+      ativo: true,
+    })
+    const tenant = await prisma.tenant.create({
+      data: {
+        nome: 'Corretor Mensalidade',
+        slug: `corretor-mensalidade-${randomUUID()}`,
+        accountType: 'BROKER',
+      },
+    })
+    tenantId = tenant.id
+    const owner = await prisma.usuario.create({
+      data: {
+        tenantId,
+        nome: 'Responsável',
+        email: `responsavel-${randomUUID()}@ketris.dev`,
+        senhaHash: 'hash-fake',
+        papel: 'ADMIN',
+      },
+    })
+    // 12 properties count toward the plan; the inactive one does not.
+    const statuses = [...Array<'PUBLISHED'>(12).fill('PUBLISHED'), 'INACTIVE' as const]
+    for (const [index, status] of statuses.entries()) {
+      await prisma.imovel.create({
+        data: {
+          tenantId,
+          responsavelId: owner.id,
+          titulo: `Imóvel ${index}`,
+          finalidade: 'VENDA',
+          tipo: 'casa',
+          valor: 1000,
+          status,
+        },
+      })
+    }
+  })
+
+  afterAll(async () => {
+    await prisma.tenant.delete({ where: { id: tenantId } }).catch(() => undefined)
+    await prisma.platformAdmin.delete({ where: { id: actorId } })
+  })
+
+  it('calcula a mensalidade pelo plano do tipo de conta e pelos imóveis acima do limite', async () => {
+    const plan = await prisma.platformPlan.findUniqueOrThrow({ where: { accountType: 'BROKER' } })
+    const response = await listTenants(
+      new NextRequest('http://localhost/api/platform/tenants', {
+        headers: { authorization: `Bearer ${actorToken}` },
+      }),
+    )
+    const json = await response.json()
+    const extraUnits = Math.max(0, 12 - plan.includedUnits)
+
+    expect(
+      json.tenants.find((tenant: { id: string }) => tenant.id === tenantId).monthlyCharge,
+    ).toEqual({
+      usageUnit: 'PROPERTIES',
+      usage: 12,
+      includedUnits: plan.includedUnits,
+      extraUnits,
+      basePrice: plan.monthlyPrice.toNumber(),
+      extraAmount: Math.round(extraUnits * plan.extraUnitPrice.toNumber() * 100) / 100,
+      total:
+        Math.round(
+          (plan.monthlyPrice.toNumber() + extraUnits * plan.extraUnitPrice.toNumber()) * 100,
+        ) / 100,
+    })
+  })
+
+  it('não calcula mensalidade para o tenant de sistema dos locatários', async () => {
+    const response = await listTenants(
+      new NextRequest('http://localhost/api/platform/tenants', {
+        headers: { authorization: `Bearer ${actorToken}` },
+      }),
+    )
+    const json = await response.json()
+    const renters = json.tenants.find((tenant: { slug: string }) => tenant.slug === 'locatarios')
+
+    if (renters) expect(renters.monthlyCharge).toBeNull()
+  })
+})

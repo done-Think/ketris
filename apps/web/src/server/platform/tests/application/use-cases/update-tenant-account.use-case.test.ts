@@ -21,6 +21,7 @@ function createRepository(tenant: PlatformTenant | null): PlatformTenantReposito
     findMany: vi.fn(),
     findById: vi.fn().mockResolvedValue(tenant),
     updateAccount: vi.fn().mockImplementation(async (_id, account) => ({ ...tenant, ...account })),
+    countUsage: vi.fn(),
   }
 }
 

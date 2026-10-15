@@ -4,6 +4,7 @@ import { prisma } from '@server/db/prisma'
 
 import type { PlatformTenantRepository } from '../application/ports/platform-tenant-repository.port'
 import type { PlatformTenant } from '../domain/platform-tenant.entity'
+import type { TenantUsage } from '../domain/platform-plan'
 import type { TenantAccount } from '../domain/tenant-account'
 
 function toDomainPlatformTenant(tenant: Tenant): PlatformTenant {
@@ -42,5 +43,32 @@ export class PrismaPlatformTenantRepository implements PlatformTenantRepository 
     })
 
     return toDomainPlatformTenant(tenant)
+  }
+
+  async countUsage(): Promise<Map<string, TenantUsage>> {
+    const [properties, brokers] = await Promise.all([
+      prisma.imovel.groupBy({
+        by: ['tenantId'],
+        where: { status: { not: 'INACTIVE' } },
+        _count: { _all: true },
+      }),
+      // Same definition as the agency dashboard's "active brokers".
+      prisma.usuario.groupBy({
+        by: ['tenantId'],
+        where: { papel: { in: ['AGENT', 'OWNER'] }, ativo: true },
+        _count: { _all: true },
+      }),
+    ])
+
+    const usage = new Map<string, TenantUsage>()
+    const usageOf = (tenantId: string) => {
+      const current = usage.get(tenantId) ?? { properties: 0, brokers: 0 }
+      usage.set(tenantId, current)
+      return current
+    }
+    for (const row of properties) usageOf(row.tenantId).properties = row._count._all
+    for (const row of brokers) usageOf(row.tenantId).brokers = row._count._all
+
+    return usage
   }
 }

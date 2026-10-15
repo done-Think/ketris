@@ -24,6 +24,7 @@ import { Link } from '@/i18n/navigation'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { useTenants } from '../hooks/use-tenants'
+import type { MonthlyCharge } from '../types/platform-plan'
 import type { PlatformTenant, TenantStatus } from '../types/tenant'
 import { EditTenantAccountDialog } from './EditTenantAccountDialog'
 
@@ -38,8 +39,22 @@ export function TenantsList() {
   const t = useTranslations('platform.dashboard')
   const formsT = useTranslations('platform.forms')
   const accountT = useTranslations('platform.account')
+  const plansT = useTranslations('platform.plans')
   const format = useFormatter()
   const [editingTenant, setEditingTenant] = useState<PlatformTenant | null>(null)
+  const formatPrice = (value: number) =>
+    format.number(value, { style: 'currency', currency: 'BRL' })
+  const describeCharge = (charge: MonthlyCharge) =>
+    charge.extraUnits > 0
+      ? plansT(
+          charge.usageUnit === 'BROKERS' ? 'chargeWithExtraBrokers' : 'chargeWithExtraProperties',
+          {
+            base: formatPrice(charge.basePrice),
+            count: charge.extraUnits,
+            extra: formatPrice(charge.extraAmount),
+          },
+        )
+      : plansT('chargeBaseOnly')
   const { data: tenants, isPending, isError } = useTenants()
 
   return (
@@ -69,6 +84,7 @@ export function TenantsList() {
                 <TableCell>{formsT('slug')}</TableCell>
                 <TableCell>{accountT('fields.accountType')}</TableCell>
                 <TableCell>{accountT('fields.status')}</TableCell>
+                <TableCell align="right">{accountT('fields.monthlyCharge')}</TableCell>
                 <TableCell>{t('createdAt')}</TableCell>
                 <TableCell align="right">
                   <Box component="span" sx={visuallyHiddenSx}>
@@ -98,6 +114,15 @@ export function TenantsList() {
                       variant={tenant.status === 'CANCELED' ? 'outlined' : 'filled'}
                       label={accountT(`statuses.${tenant.status}`)}
                     />
+                  </TableCell>
+                  <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                    {tenant.monthlyCharge ? (
+                      <Tooltip title={describeCharge(tenant.monthlyCharge)}>
+                        <Box component="span">{formatPrice(tenant.monthlyCharge.total)}</Box>
+                      </Tooltip>
+                    ) : (
+                      '—'
+                    )}
                   </TableCell>
                   <TableCell>{format.dateTime(new Date(tenant.createdAt))}</TableCell>
                   <TableCell align="right">

@@ -73,6 +73,7 @@ export const routing = defineRouting({
     '/platform/admins': '/platform/admins',
     '/platform/admins/new': '/platform/admins/new',
     '/platform/login': '/platform/login',
+    '/platform/plans': '/platform/plans',
     '/platform/system': '/platform/system',
     '/platform/tenants/[id]': '/platform/tenants/[id]',
     '/platform/tenants': '/platform/tenants',

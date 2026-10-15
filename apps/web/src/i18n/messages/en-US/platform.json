@@ -20,6 +20,9 @@
     },
     "system": {
       "metadataTitle": "Ketris | System Health"
+    },
+    "plans": {
+      "metadataTitle": "Ketris | Platform Plans"
     }
   },
   "login": {
@@ -271,7 +274,8 @@
       "accountTypeHelper": "Defines the plan charged (see Plans).",
       "status": "Status",
       "statusHelper": "Only active accounts are charged.",
-      "canceledHelper": "The cancellation date is recorded and counts toward this month’s churn."
+      "canceledHelper": "The cancellation date is recorded and counts toward this month’s churn.",
+      "monthlyCharge": "Monthly fee"
     },
     "accountTypes": {
       "INDIVIDUAL": "Individual",
@@ -288,5 +292,41 @@
     "cancel": "Cancel",
     "updateSuccess": "Account updated.",
     "updateError": "Unable to update the account."
+  },
+  "plans": {
+    "title": "Plans",
+    "subtitle": "Monthly price of each account type and what it includes.",
+    "loadError": "Unable to load the plans.",
+    "perMonth": "/month",
+    "includesProperties": "{count, plural, one {Includes up to # property} other {Includes up to # properties}}",
+    "includesBrokers": "{count, plural, one {Includes up to # active broker} other {Includes up to # active brokers}}",
+    "extraProperties": "{price} per extra property",
+    "extraBrokers": "{price} per extra broker",
+    "activeAccounts": "{count, plural, =0 {No active accounts} one {# active account} other {# active accounts}}",
+    "edit": "Edit",
+    "editAction": "Edit plan {name}",
+    "editTitle": "Edit plan",
+    "closeEditDialog": "Close plan editing",
+    "note": "Amounts in BRL. There is no automatic billing: each account’s monthly fee is calculated from its type’s plan and current usage. Only active accounts count as revenue.",
+    "fields": {
+      "monthlyPrice": "Monthly price",
+      "includedUnitsProperties": "Included properties",
+      "includedUnitsBrokers": "Included active brokers",
+      "extraUnitPriceProperties": "Price per extra property",
+      "extraUnitPriceBrokers": "Price per extra broker"
+    },
+    "exampleProperties": "Example: with {count, plural, one {# property} other {# properties}}, the monthly fee is {total}.",
+    "exampleBrokers": "Example: with {count, plural, one {# active broker} other {# active brokers}}, the monthly fee is {total}.",
+    "chargeBaseOnly": "Plan base price",
+    "chargeWithExtraProperties": "{base} + {count, plural, one {# extra property} other {# extra properties}} ({extra})",
+    "chargeWithExtraBrokers": "{base} + {count, plural, one {# extra broker} other {# extra brokers}} ({extra})",
+    "errors": {
+      "invalidAmount": "Enter a valid amount with up to two decimals.",
+      "invalidUnits": "Enter a whole number."
+    },
+    "save": "Save",
+    "cancel": "Cancel",
+    "updateSuccess": "Plan updated.",
+    "updateError": "Unable to update the plan."
   }
 }

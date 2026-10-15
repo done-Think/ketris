@@ -14,6 +14,12 @@ import {
 } from './schemas/list-platform-admins.schema'
 import { listTenantUsersResponseSchema } from './schemas/list-tenant-users.schema'
 import { listTenantsResponseSchema } from './schemas/list-tenants.schema'
+import {
+  listPlatformPlansResponseSchema,
+  platformPlanSchema,
+  updatePlatformPlanRequestSchema,
+  updatePlatformPlanResponseSchema,
+} from './schemas/platform-plan.schema'
 import { platformOverviewResponseSchema } from './schemas/platform-overview.schema'
 import {
   loginPlatformRequestSchema,
@@ -24,7 +30,12 @@ import {
   refreshPlatformTokenResponseSchema,
 } from './schemas/refresh-platform-token.schema'
 import { systemHealthResponseSchema } from './schemas/system-health.schema'
-import { platformTenantSchema, tenantSummarySchema } from './schemas/tenant.schema'
+import {
+  monthlyChargeSchema,
+  platformTenantSchema,
+  tenantAccountTypeSchema,
+  tenantSummarySchema,
+} from './schemas/tenant.schema'
 import {
   updatePlatformAdminRequestSchema,
   updatePlatformAdminResponseSchema,
@@ -48,6 +59,8 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
   registry.register('AuthenticatedPlatformAdmin', authenticatedPlatformAdminSchema)
   registry.register('TenantSummary', tenantSummarySchema)
   registry.register('PlatformTenant', platformTenantSchema)
+  registry.register('MonthlyCharge', monthlyChargeSchema)
+  registry.register('PlatformPlan', platformPlanSchema)
 
   registry.registerPath({
     method: 'post',
@@ -283,6 +296,54 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
       },
       401: {
         description: 'Access token de platform admin ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'get',
+    path: '/platform/plans',
+    tags: ['Platform'],
+    summary: 'Lista os planos da plataforma (um por tipo de conta) com as contas ativas em cada um',
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: 'Planos.',
+        content: { 'application/json': { schema: listPlatformPlansResponseSchema } },
+      },
+      401: {
+        description: 'Access token de platform admin ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'patch',
+    path: '/platform/plans/{accountType}',
+    tags: ['Platform'],
+    summary: 'Edita o preço, o limite incluso e o preço por unidade extra de um plano',
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: z.object({ accountType: tenantAccountTypeSchema }),
+      body: { content: { 'application/json': { schema: updatePlatformPlanRequestSchema } } },
+    },
+    responses: {
+      200: {
+        description: 'Plano atualizado.',
+        content: { 'application/json': { schema: updatePlatformPlanResponseSchema } },
+      },
+      400: {
+        description: 'Corpo da requisição inválido (falha de validação Zod).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Access token de platform admin ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      404: {
+        description: 'Tipo de conta inexistente.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },

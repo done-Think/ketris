@@ -20,6 +20,9 @@
     },
     "system": {
       "metadataTitle": "Ketris | Salud del Sistema"
+    },
+    "plans": {
+      "metadataTitle": "Ketris | Planes de la Plataforma"
     }
   },
   "login": {
@@ -271,7 +274,8 @@
       "accountTypeHelper": "Define el plan cobrado (ver Planes).",
       "status": "Situación",
       "statusHelper": "Solo se cobran las cuentas activas.",
-      "canceledHelper": "La fecha de cancelación se registra y cuenta en el churn de este mes."
+      "canceledHelper": "La fecha de cancelación se registra y cuenta en el churn de este mes.",
+      "monthlyCharge": "Mensualidad"
     },
     "accountTypes": {
       "INDIVIDUAL": "Persona física",
@@ -288,5 +292,41 @@
     "cancel": "Cancelar",
     "updateSuccess": "Cuenta actualizada.",
     "updateError": "No se pudo actualizar la cuenta."
+  },
+  "plans": {
+    "title": "Planes",
+    "subtitle": "Precio mensual de cada tipo de cuenta y lo que incluye.",
+    "loadError": "No se pudieron cargar los planes.",
+    "perMonth": "/mes",
+    "includesProperties": "{count, plural, one {Incluye hasta # inmueble} other {Incluye hasta # inmuebles}}",
+    "includesBrokers": "{count, plural, one {Incluye hasta # corredor activo} other {Incluye hasta # corredores activos}}",
+    "extraProperties": "{price} por inmueble extra",
+    "extraBrokers": "{price} por corredor extra",
+    "activeAccounts": "{count, plural, =0 {Ninguna cuenta activa} one {# cuenta activa} other {# cuentas activas}}",
+    "edit": "Editar",
+    "editAction": "Editar plan {name}",
+    "editTitle": "Editar plan",
+    "closeEditDialog": "Cerrar edición del plan",
+    "note": "Valores en reales. No hay cobro automático: la mensualidad de cada cuenta se calcula con el plan de su tipo y su uso actual. Solo las cuentas activas cuentan como ingreso.",
+    "fields": {
+      "monthlyPrice": "Precio mensual",
+      "includedUnitsProperties": "Inmuebles incluidos",
+      "includedUnitsBrokers": "Corredores activos incluidos",
+      "extraUnitPriceProperties": "Valor por inmueble extra",
+      "extraUnitPriceBrokers": "Valor por corredor extra"
+    },
+    "exampleProperties": "Ejemplo: con {count, plural, one {# inmueble} other {# inmuebles}}, la mensualidad queda en {total}.",
+    "exampleBrokers": "Ejemplo: con {count, plural, one {# corredor activo} other {# corredores activos}}, la mensualidad queda en {total}.",
+    "chargeBaseOnly": "Precio base del plan",
+    "chargeWithExtraProperties": "{base} + {count, plural, one {# inmueble extra} other {# inmuebles extra}} ({extra})",
+    "chargeWithExtraBrokers": "{base} + {count, plural, one {# corredor extra} other {# corredores extra}} ({extra})",
+    "errors": {
+      "invalidAmount": "Indica un valor válido, con hasta dos decimales.",
+      "invalidUnits": "Indica un número entero."
+    },
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "updateSuccess": "Plan actualizado.",
+    "updateError": "No se pudo actualizar el plan."
   }
 }

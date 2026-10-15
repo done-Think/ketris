@@ -10,16 +10,19 @@ import { GetPlatformOverviewUseCase } from './application/use-cases/get-platform
 import { GetSystemHealthUseCase } from './application/use-cases/get-system-health.use-case'
 import { ListPlatformAdminsUseCase } from './application/use-cases/list-platform-admins.use-case'
 import { ListTenantUsersUseCase } from './application/use-cases/list-tenant-users.use-case'
+import { ListPlatformPlansUseCase } from './application/use-cases/list-platform-plans.use-case'
 import { ListTenantsUseCase } from './application/use-cases/list-tenants.use-case'
 import { LoginPlatformAdminUseCase } from './application/use-cases/login-platform-admin.use-case'
 import { RefreshPlatformAdminTokenUseCase } from './application/use-cases/refresh-platform-admin-token.use-case'
 import { UpdatePlatformAdminUseCase } from './application/use-cases/update-platform-admin.use-case'
+import { UpdatePlatformPlanUseCase } from './application/use-cases/update-platform-plan.use-case'
 import { UpdateTenantAccountUseCase } from './application/use-cases/update-tenant-account.use-case'
 import { JosePlatformTokenService } from './infrastructure/jose-platform-token.service'
 import { PrismaDatabaseHealthProbe } from './infrastructure/prisma-database-health.probe'
 import { PrismaPlatformAdminRepository } from './infrastructure/prisma-platform-admin.repository'
 import { PrismaPlatformOverviewRepository } from './infrastructure/prisma-platform-overview.repository'
 import { PrismaPlatformRefreshTokenRepository } from './infrastructure/prisma-platform-refresh-token.repository'
+import { PrismaPlatformPlanRepository } from './infrastructure/prisma-platform-plan.repository'
 import { PrismaPlatformTenantRepository } from './infrastructure/prisma-platform-tenant.repository'
 import { PrismaTenantRepository } from './infrastructure/prisma-tenant.repository'
 import { SentryErrorTrackingProvider } from './infrastructure/sentry-error-tracking.provider'
@@ -30,6 +33,7 @@ const tokenService = new JosePlatformTokenService()
 const refreshTokenRepository = new PrismaPlatformRefreshTokenRepository()
 const tenantRepository = new PrismaTenantRepository()
 const platformTenantRepository = new PrismaPlatformTenantRepository()
+const platformPlanRepository = new PrismaPlatformPlanRepository()
 const userRepository = new PrismaUserRepository()
 const platformOverviewRepository = new PrismaPlatformOverviewRepository()
 
@@ -57,7 +61,12 @@ export const platformContainer = {
     platformAdminRepository,
     refreshTokenRepository,
   ),
-  listTenantsUseCase: new ListTenantsUseCase(platformTenantRepository),
+  listTenantsUseCase: new ListTenantsUseCase(platformTenantRepository, platformPlanRepository),
+  listPlatformPlansUseCase: new ListPlatformPlansUseCase(
+    platformPlanRepository,
+    platformTenantRepository,
+  ),
+  updatePlatformPlanUseCase: new UpdatePlatformPlanUseCase(platformPlanRepository),
   updateTenantAccountUseCase: new UpdateTenantAccountUseCase(platformTenantRepository),
   createTenantUseCase: new CreateTenantUseCase(tenantRepository),
   listTenantUsersUseCase: new ListTenantUsersUseCase(tenantRepository, userRepository),
