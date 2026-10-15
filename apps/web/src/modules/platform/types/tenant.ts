@@ -2,6 +2,7 @@ import type { z } from 'zod'
 
 import type { createTenantAdminSchema } from '../schemas/create-tenant-admin-schema'
 import type { createTenantSchema } from '../schemas/create-tenant-schema'
+import type { createTenantAccountSchema } from '../schemas/tenant-account-schema'
 
 export type CreateTenantFormValues = z.infer<ReturnType<typeof createTenantSchema>>
 
@@ -12,6 +13,35 @@ export interface TenantSummary {
   name: string
   slug: string
   createdAt: string
+}
+
+export const TENANT_ACCOUNT_TYPES = ['INDIVIDUAL', 'BROKER', 'AGENCY'] as const
+export type TenantAccountType = (typeof TENANT_ACCOUNT_TYPES)[number]
+
+export const TENANT_STATUSES = ['TRIAL', 'ACTIVE', 'SUSPENDED', 'CANCELED'] as const
+export type TenantStatus = (typeof TENANT_STATUSES)[number]
+
+// A tenant with how the platform bills it (kept manually by a platform admin).
+export interface PlatformTenant extends TenantSummary {
+  accountType: TenantAccountType
+  status: TenantStatus
+  canceledAt: string | null
+}
+
+export type TenantAccountFormValues = z.infer<ReturnType<typeof createTenantAccountSchema>>
+
+export interface UpdateTenantAccountPayload {
+  accountType: TenantAccountType
+  status: TenantStatus
+}
+
+export interface UpdateTenantAccountResponse {
+  tenant: PlatformTenant
+}
+
+export interface EditTenantAccountDialogProps {
+  tenant: PlatformTenant
+  onClose: () => void
 }
 
 export type TenantUserRole = 'ADMIN' | 'OWNER' | 'AGENT' | 'RENTER'
@@ -39,7 +69,7 @@ export interface CreateTenantAdminPayload {
 }
 
 export interface ListTenantsResponse {
-  tenants: TenantSummary[]
+  tenants: PlatformTenant[]
 }
 
 export interface CreateTenantResponse {

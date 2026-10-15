@@ -260,5 +260,33 @@
     "last": "Last page",
     "next": "Next page",
     "previous": "Previous page"
+  },
+  "account": {
+    "actions": "Actions",
+    "editAction": "Edit account of {name}",
+    "editTitle": "Account and billing",
+    "closeEditDialog": "Close account editing",
+    "fields": {
+      "accountType": "Account type",
+      "accountTypeHelper": "Defines the plan charged (see Plans).",
+      "status": "Status",
+      "statusHelper": "Only active accounts are charged.",
+      "canceledHelper": "The cancellation date is recorded and counts toward this month’s churn."
+    },
+    "accountTypes": {
+      "INDIVIDUAL": "Individual",
+      "BROKER": "Broker",
+      "AGENCY": "Agency"
+    },
+    "statuses": {
+      "TRIAL": "Trial",
+      "ACTIVE": "Active",
+      "SUSPENDED": "Suspended",
+      "CANCELED": "Canceled"
+    },
+    "save": "Save",
+    "cancel": "Cancel",
+    "updateSuccess": "Account updated.",
+    "updateError": "Unable to update the account."
   }
 }

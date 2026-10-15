@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { platformContainer } from '@server/platform/container'
+import { toPlatformTenantResponse } from '@server/platform/domain/platform-tenant.entity'
 import { toTenantSummaryResponse } from '@server/platform/domain/tenant-summary.entity'
 import { requirePlatformBearerAuth } from '@server/platform/require-platform-bearer-auth'
 import { createTenantRequestSchema } from '@server/platform/schemas/create-tenant.schema'
@@ -12,7 +13,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   const tenants = await platformContainer.listTenantsUseCase.execute()
 
-  return NextResponse.json({ tenants: tenants.map(toTenantSummaryResponse) }, { status: 200 })
+  return NextResponse.json({ tenants: tenants.map(toPlatformTenantResponse) }, { status: 200 })
 })
 
 export const POST = withErrorHandling(async (request: NextRequest) => {

@@ -72,6 +72,9 @@ describe('PlatformOverview', () => {
     id: 'existing',
     name: 'Existing agency',
     slug: 'agency',
+    accountType: 'AGENCY',
+    status: 'ACTIVE',
+    canceledAt: null,
     createdAt: '2024-01-01T00:00:00Z',
   }
 

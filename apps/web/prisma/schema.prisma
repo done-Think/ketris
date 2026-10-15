@@ -22,8 +22,13 @@ model Tenant {
   // White-label: cores do tema sobrescrevem primary/secondary do MUI em runtime (docs/stack.md).
   corPrimaria   String?
   corSecundaria String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  // Tipo de conta define o plano cobrado pela plataforma (ver PlatformPlan); a situação define se
+  // a conta entra no MRR. Não há gateway de pagamento: os dois são mantidos pelo super admin.
+  accountType   TenantAccountType @default(AGENCY)
+  status        TenantStatus      @default(ACTIVE)
+  canceledAt    DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
   usuarios           Usuario[]
   imoveis            Imovel[]
@@ -37,6 +42,19 @@ model Tenant {
   perfilPublico      PerfilPublicoImobiliaria?
 
   @@map("tenants")
+}
+
+enum TenantAccountType {
+  INDIVIDUAL
+  BROKER
+  AGENCY
+}
+
+enum TenantStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+  CANCELED
 }
 
 enum PapelUsuario {

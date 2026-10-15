@@ -24,11 +24,15 @@ import {
   refreshPlatformTokenResponseSchema,
 } from './schemas/refresh-platform-token.schema'
 import { systemHealthResponseSchema } from './schemas/system-health.schema'
-import { tenantSummarySchema } from './schemas/tenant.schema'
+import { platformTenantSchema, tenantSummarySchema } from './schemas/tenant.schema'
 import {
   updatePlatformAdminRequestSchema,
   updatePlatformAdminResponseSchema,
 } from './schemas/update-platform-admin.schema'
+import {
+  updateTenantAccountRequestSchema,
+  updateTenantAccountResponseSchema,
+} from './schemas/update-tenant-account.schema'
 
 const platformAdminIdParamsSchema = z.object({
   id: z
@@ -43,6 +47,7 @@ const tenantIdParamsSchema = z.object({
 export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
   registry.register('AuthenticatedPlatformAdmin', authenticatedPlatformAdminSchema)
   registry.register('TenantSummary', tenantSummarySchema)
+  registry.register('PlatformTenant', platformTenantSchema)
 
   registry.registerPath({
     method: 'post',
@@ -278,6 +283,39 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
       },
       401: {
         description: 'Access token de platform admin ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'patch',
+    path: '/platform/tenants/{id}/account',
+    tags: ['Platform'],
+    summary: 'Define o tipo de conta e a situação de um tenant',
+    description:
+      'O tipo de conta define o plano cobrado (ver /platform/plans). Ao mudar a situação para ' +
+      'CANCELED, canceledAt recebe a data atual e entra no churn; ao reativar, é limpo.',
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: tenantIdParamsSchema,
+      body: { content: { 'application/json': { schema: updateTenantAccountRequestSchema } } },
+    },
+    responses: {
+      200: {
+        description: 'Tenant atualizado.',
+        content: { 'application/json': { schema: updateTenantAccountResponseSchema } },
+      },
+      400: {
+        description: 'Corpo da requisição inválido (falha de validação Zod).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Access token de platform admin ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      404: {
+        description: 'Tenant não encontrado.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },

@@ -14,11 +14,13 @@ import { ListTenantsUseCase } from './application/use-cases/list-tenants.use-cas
 import { LoginPlatformAdminUseCase } from './application/use-cases/login-platform-admin.use-case'
 import { RefreshPlatformAdminTokenUseCase } from './application/use-cases/refresh-platform-admin-token.use-case'
 import { UpdatePlatformAdminUseCase } from './application/use-cases/update-platform-admin.use-case'
+import { UpdateTenantAccountUseCase } from './application/use-cases/update-tenant-account.use-case'
 import { JosePlatformTokenService } from './infrastructure/jose-platform-token.service'
 import { PrismaDatabaseHealthProbe } from './infrastructure/prisma-database-health.probe'
 import { PrismaPlatformAdminRepository } from './infrastructure/prisma-platform-admin.repository'
 import { PrismaPlatformOverviewRepository } from './infrastructure/prisma-platform-overview.repository'
 import { PrismaPlatformRefreshTokenRepository } from './infrastructure/prisma-platform-refresh-token.repository'
+import { PrismaPlatformTenantRepository } from './infrastructure/prisma-platform-tenant.repository'
 import { PrismaTenantRepository } from './infrastructure/prisma-tenant.repository'
 import { SentryErrorTrackingProvider } from './infrastructure/sentry-error-tracking.provider'
 
@@ -27,6 +29,7 @@ const passwordHasher = new BcryptPasswordHasher()
 const tokenService = new JosePlatformTokenService()
 const refreshTokenRepository = new PrismaPlatformRefreshTokenRepository()
 const tenantRepository = new PrismaTenantRepository()
+const platformTenantRepository = new PrismaPlatformTenantRepository()
 const userRepository = new PrismaUserRepository()
 const platformOverviewRepository = new PrismaPlatformOverviewRepository()
 
@@ -54,7 +57,8 @@ export const platformContainer = {
     platformAdminRepository,
     refreshTokenRepository,
   ),
-  listTenantsUseCase: new ListTenantsUseCase(tenantRepository),
+  listTenantsUseCase: new ListTenantsUseCase(platformTenantRepository),
+  updateTenantAccountUseCase: new UpdateTenantAccountUseCase(platformTenantRepository),
   createTenantUseCase: new CreateTenantUseCase(tenantRepository),
   listTenantUsersUseCase: new ListTenantUsersUseCase(tenantRepository, userRepository),
   createTenantAdminUseCase: new CreateTenantAdminUseCase(

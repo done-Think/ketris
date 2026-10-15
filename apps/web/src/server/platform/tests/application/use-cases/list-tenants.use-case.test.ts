@@ -1,28 +1,39 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type { TenantSummary } from '../../../domain/tenant-summary.entity'
-import type { TenantRepository } from '../../../application/ports/tenant-repository.port'
+import type { PlatformTenant } from '../../../domain/platform-tenant.entity'
+import type { PlatformTenantRepository } from '../../../application/ports/platform-tenant-repository.port'
 import { ListTenantsUseCase } from '../../../application/use-cases/list-tenants.use-case'
 
-const tenants: TenantSummary[] = [
-  { id: 't1', nome: 'Imobiliária A', slug: 'imobiliaria-a', createdAt: new Date() },
-  { id: 't2', nome: 'Imobiliária B', slug: 'imobiliaria-b', createdAt: new Date() },
+const tenants: PlatformTenant[] = [
+  {
+    id: 't1',
+    nome: 'Imobiliária A',
+    slug: 'imobiliaria-a',
+    accountType: 'AGENCY',
+    status: 'ACTIVE',
+    canceledAt: null,
+    createdAt: new Date(),
+  },
+  {
+    id: 't2',
+    nome: 'Corretor B',
+    slug: 'corretor-b',
+    accountType: 'BROKER',
+    status: 'TRIAL',
+    canceledAt: null,
+    createdAt: new Date(),
+  },
 ]
 
 describe('ListTenantsUseCase', () => {
-  it('retorna todos os tenants', async () => {
-    const tenantRepository: TenantRepository = {
-      findBySlug: vi.fn(),
-      findById: vi.fn(),
+  it('retorna todos os tenants com tipo de conta e situação', async () => {
+    const repository: PlatformTenantRepository = {
       findMany: vi.fn().mockResolvedValue(tenants),
-      create: vi.fn(),
-      searchByName: vi.fn(),
+      findById: vi.fn(),
+      updateAccount: vi.fn(),
     }
-    const useCase = new ListTenantsUseCase(tenantRepository)
+    const useCase = new ListTenantsUseCase(repository)
 
-    const result = await useCase.execute()
-
-    expect(result).toHaveLength(2)
-    expect(result).toEqual(tenants)
+    await expect(useCase.execute()).resolves.toEqual(tenants)
   })
 })

@@ -260,5 +260,33 @@
     "last": "Última página",
     "next": "Página siguiente",
     "previous": "Página anterior"
+  },
+  "account": {
+    "actions": "Acciones",
+    "editAction": "Editar cuenta de {name}",
+    "editTitle": "Cuenta y cobro",
+    "closeEditDialog": "Cerrar edición de la cuenta",
+    "fields": {
+      "accountType": "Tipo de cuenta",
+      "accountTypeHelper": "Define el plan cobrado (ver Planes).",
+      "status": "Situación",
+      "statusHelper": "Solo se cobran las cuentas activas.",
+      "canceledHelper": "La fecha de cancelación se registra y cuenta en el churn de este mes."
+    },
+    "accountTypes": {
+      "INDIVIDUAL": "Persona física",
+      "BROKER": "Corredor",
+      "AGENCY": "Inmobiliaria"
+    },
+    "statuses": {
+      "TRIAL": "En prueba",
+      "ACTIVE": "Activa",
+      "SUSPENDED": "Suspendida",
+      "CANCELED": "Cancelada"
+    },
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "updateSuccess": "Cuenta actualizada.",
+    "updateError": "No se pudo actualizar la cuenta."
   }
 }
