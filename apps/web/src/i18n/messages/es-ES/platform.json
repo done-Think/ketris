@@ -394,7 +394,9 @@
       },
       "usageProperties": "{usage} de {included} inmuebles",
       "usageBrokers": "{usage} de {included} corredores",
-      "notBilled": "fuera del MRR"
+      "notBilled": "fuera del MRR",
+      "extraUnits": "{count, plural, one {+# extra} other {+# extras}}",
+      "includesExtras": "incluye {amount} de extras"
     },
     "note": "No hay cobro automático: los valores se calculan con el plan de cada tipo de cuenta y su uso actual. Solo las cuentas activas cuentan en el MRR."
   },

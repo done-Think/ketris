@@ -107,8 +107,9 @@ describe('PlatformFinancePage', () => {
 
     const accounts = screen.getByRole('region', { name: 'Mensalidades por conta' })
     const horizonte = within(accounts).getByRole('row', { name: /Imobiliária Horizonte/ })
-    expect(within(horizonte).getByText('13 de 10 corretores')).toBeVisible()
+    expect(horizonte).toHaveTextContent('13 de 10 corretores · +3 extras')
     expect(within(horizonte).getByText(/R\$\s*259,96/)).toBeVisible()
+    expect(within(horizonte).getByText(/inclui R\$\s*59,97 de extras/)).toBeVisible()
     expect(within(horizonte).queryByText('fora do MRR')).not.toBeInTheDocument()
     expect(within(accounts).getByRole('link', { name: 'Imobiliária Horizonte' })).toHaveAttribute(
       'href',
@@ -116,7 +117,7 @@ describe('PlatformFinancePage', () => {
     )
 
     const roberto = within(accounts).getByRole('row', { name: /Roberto Lima/ })
-    expect(within(roberto).getByText('12 de 10 imóveis')).toBeVisible()
+    expect(roberto).toHaveTextContent('12 de 10 imóveis · +2 extras')
     expect(within(roberto).getByText('Em teste')).toBeVisible()
     expect(within(roberto).getByText('fora do MRR')).toBeVisible()
   })

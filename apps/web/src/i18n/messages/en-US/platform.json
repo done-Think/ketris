@@ -394,7 +394,9 @@
       },
       "usageProperties": "{usage} of {included} properties",
       "usageBrokers": "{usage} of {included} brokers",
-      "notBilled": "not in MRR"
+      "notBilled": "not in MRR",
+      "extraUnits": "{count, plural, one {+# extra} other {+# extras}}",
+      "includesExtras": "includes {amount} in extras"
     },
     "note": "There is no automatic billing: amounts are calculated from each account type’s plan and current usage. Only active accounts count toward MRR."
   },
