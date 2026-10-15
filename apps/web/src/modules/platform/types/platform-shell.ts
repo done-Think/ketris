@@ -18,6 +18,8 @@ export type PlatformShellProps = {
 
 export type PlatformPageLayoutProps = {
   title: string
+  subtitle?: string
   action?: ReactNode
+  back?: { href: '/platform/tenants'; label: string }
   children: ReactNode
 }

@@ -15,7 +15,11 @@ export default async function PlatformNewTenantPage({ params }: LocaleRoutePageP
   const t = await getTranslations({ locale, namespace: 'platform.dashboard' })
 
   return (
-    <PlatformPageLayout title={t('newTenant')}>
+    <PlatformPageLayout
+      title={t('newTenant')}
+      subtitle={t('newTenantSubtitle')}
+      back={{ href: '/platform/tenants', label: t('backToTenants') }}
+    >
       <CreateTenantForm />
     </PlatformPageLayout>
   )

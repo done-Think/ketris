@@ -41,7 +41,9 @@
     "newTenant": "Nova imobiliária",
     "loadError": "Não foi possível carregar as imobiliárias.",
     "empty": "Nenhuma imobiliária cadastrada ainda.",
-    "createdAt": "Criada em"
+    "createdAt": "Criada em",
+    "newTenantSubtitle": "Cadastre uma imobiliária para ela começar a usar a plataforma.",
+    "backToTenants": "Voltar para Tenants"
   },
   "overview": {
     "title": "Visão geral da plataforma",
@@ -221,7 +223,7 @@
     "passwordConfirmation": "Confirmar senha",
     "cancel": "Cancelar",
     "slug": "Slug",
-    "slugHelper": "Identificador único, ex.: imobiliaria-exemplo",
+    "slugHelper": "Preenchido a partir do nome. Use letras minúsculas, números e hífens.",
     "role": "Papel",
     "administrator": "Administrador",
     "status": "Status",
@@ -245,7 +247,13 @@
       "passwordsDoNotMatch": "As senhas não coincidem",
       "slugRequired": "Informe o slug",
       "slugInvalid": "Use apenas letras minúsculas, números e hífens"
-    }
+    },
+    "tenantSectionTitle": "Dados da imobiliária",
+    "tenantSectionDescription": "Essas informações identificam a imobiliária na plataforma.",
+    "namePlaceholder": "Ex.: Imobiliária Horizonte",
+    "slugLabel": "Identificador (slug)",
+    "slugPlaceholder": "imobiliaria-horizonte",
+    "nextStepNotice": "Depois de criar, você vai para a página da imobiliária para cadastrar o administrador dela."
   },
   "table": {
     "first": "Primeira página",

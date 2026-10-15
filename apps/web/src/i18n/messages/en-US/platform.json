@@ -41,7 +41,9 @@
     "newTenant": "New agency",
     "loadError": "Could not load agencies.",
     "empty": "No agencies registered yet.",
-    "createdAt": "Created at"
+    "createdAt": "Created at",
+    "newTenantSubtitle": "Register an agency so it can start using the platform.",
+    "backToTenants": "Back to Tenants"
   },
   "overview": {
     "title": "Platform Overview",
@@ -222,7 +224,7 @@
     "passwordConfirmation": "Confirm password",
     "cancel": "Cancel",
     "slug": "Slug",
-    "slugHelper": "Unique identifier, e.g. example-agency",
+    "slugHelper": "Filled in from the name. Use lowercase letters, numbers and hyphens.",
     "role": "Role",
     "status": "Status",
     "active": "Active",
@@ -245,7 +247,13 @@
       "passwordsDoNotMatch": "Passwords do not match",
       "slugRequired": "Enter the slug",
       "slugInvalid": "Use only lowercase letters, numbers, and hyphens"
-    }
+    },
+    "tenantSectionTitle": "Agency details",
+    "tenantSectionDescription": "This information identifies the agency on the platform.",
+    "namePlaceholder": "E.g. Horizon Real Estate",
+    "slugLabel": "Identifier (slug)",
+    "slugPlaceholder": "horizon-real-estate",
+    "nextStepNotice": "After creating it, you will go to the agency page to add its administrator."
   },
   "table": {
     "first": "First page",

@@ -41,7 +41,9 @@
     "newTenant": "Nueva inmobiliaria",
     "loadError": "No fue posible cargar las inmobiliarias.",
     "empty": "Aún no hay inmobiliarias registradas.",
-    "createdAt": "Creada en"
+    "createdAt": "Creada en",
+    "newTenantSubtitle": "Registra una inmobiliaria para que empiece a usar la plataforma.",
+    "backToTenants": "Volver a Tenants"
   },
   "overview": {
     "title": "Resumen de la plataforma",
@@ -221,7 +223,7 @@
     "passwordConfirmation": "Confirmar contraseña",
     "cancel": "Cancelar",
     "slug": "Slug",
-    "slugHelper": "Identificador único, ej.: inmobiliaria-ejemplo",
+    "slugHelper": "Se completa a partir del nombre. Usa letras minúsculas, números y guiones.",
     "role": "Rol",
     "administrator": "Administrador",
     "status": "Estado",
@@ -245,7 +247,13 @@
       "passwordsDoNotMatch": "Las contraseñas no coinciden",
       "slugRequired": "Introduce el slug",
       "slugInvalid": "Usa solo letras minúsculas, números y guiones"
-    }
+    },
+    "tenantSectionTitle": "Datos de la inmobiliaria",
+    "tenantSectionDescription": "Esta información identifica a la inmobiliaria en la plataforma.",
+    "namePlaceholder": "Ej.: Inmobiliaria Horizonte",
+    "slugLabel": "Identificador (slug)",
+    "slugPlaceholder": "inmobiliaria-horizonte",
+    "nextStepNotice": "Después de crearla, irás a la página de la inmobiliaria para registrar a su administrador."
   },
   "table": {
     "first": "Primera página",
