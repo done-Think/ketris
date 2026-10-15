@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { usePlatformOverview } from '../../hooks/use-platform-overview'
 import { useSystemHealth } from '../../hooks/use-system-health'
+import { useTenantUsers } from '../../hooks/use-tenant-users'
 import { useTenants } from '../../hooks/use-tenants'
 import { platformOverviewService } from '../../services/platform-overview-service'
 import { platformSystemService } from '../../services/platform-system-service'
@@ -12,7 +13,9 @@ import { tenantService } from '../../services/tenant-service'
 
 const { useSession } = vi.hoisted(() => ({ useSession: vi.fn() }))
 vi.mock('next-auth/react', () => ({ useSession }))
-vi.mock('../../services/tenant-service', () => ({ tenantService: { list: vi.fn() } }))
+vi.mock('../../services/tenant-service', () => ({
+  tenantService: { list: vi.fn(), listUsers: vi.fn() },
+}))
 vi.mock('../../services/platform-overview-service', () => ({
   platformOverviewService: { get: vi.fn() },
 }))
@@ -49,7 +52,9 @@ describe('platform queries wait for the session token', () => {
     expect(tenants.result.current.isPending).toBe(true)
     expect(overview.result.current.isPending).toBe(true)
     expect(health.result.current.isPending).toBe(true)
+    renderHook(() => useTenantUsers('tenant-1'), { wrapper: createWrapper() })
     expect(tenantService.list).not.toHaveBeenCalled()
+    expect(tenantService.listUsers).not.toHaveBeenCalled()
     expect(platformOverviewService.get).not.toHaveBeenCalled()
     expect(platformSystemService.getHealth).not.toHaveBeenCalled()
   })

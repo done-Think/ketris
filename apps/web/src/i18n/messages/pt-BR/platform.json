@@ -126,10 +126,42 @@
     }
   },
   "tenant": {
-    "usersTitle": "Usuários da imobiliária",
-    "newAdmin": "Novo administrador",
-    "usersLoadError": "Não foi possível carregar os usuários.",
-    "emptyUsers": "Nenhum usuário cadastrado ainda."
+    "back": "Voltar para Tenants",
+    "notFound": "Conta não encontrada.",
+    "loadError": "Não foi possível carregar a conta.",
+    "editAccount": "Editar conta",
+    "users": {
+      "title": "Usuários",
+      "loadError": "Não foi possível carregar os usuários.",
+      "emptyTitle": "Nenhum usuário ainda",
+      "emptyDescription": "Cadastre o administrador ao lado para a conta começar a usar a plataforma.",
+      "pendingApproval": "Aguardando aprovação",
+      "roles": {
+        "ADMIN": "Administrador",
+        "OWNER": "Dono",
+        "AGENT": "Corretor",
+        "RENTER": "Locatário"
+      }
+    },
+    "account": {
+      "title": "Conta",
+      "accountType": "Tipo de conta",
+      "status": "Situação",
+      "monthlyFee": "Mensalidade",
+      "usage": "Uso do plano",
+      "usageProperties": "{usage} de {included} imóveis",
+      "usageBrokers": "{usage} de {included} corretores",
+      "createdAt": "Criada em",
+      "canceledAt": "Cancelada em"
+    },
+    "newAdmin": {
+      "title": "Novo administrador",
+      "description": "Tem acesso total à conta e pode convidar a equipe.",
+      "passwordHelper": "Mínimo de 8 caracteres.",
+      "showPassword": "Mostrar senha",
+      "hidePassword": "Esconder senha",
+      "submit": "Criar administrador"
+    }
   },
   "tenants": {
     "title": "Tenants",
@@ -235,7 +267,6 @@
     "createPlatformAdminSubmit": "Criar administrador da plataforma",
     "createPlatformAdminError": "Não foi possível criar o administrador da plataforma. Tente novamente.",
     "createPlatformAdminSuccess": "Administrador da plataforma {email} criado com sucesso.",
-    "createTenantAdminSubmit": "Criar administrador da imobiliária",
     "createTenantAdminError": "Não foi possível criar o administrador da imobiliária. Tente novamente.",
     "createTenantAdminSuccess": "Administrador {email} criado com sucesso.",
     "errors": {

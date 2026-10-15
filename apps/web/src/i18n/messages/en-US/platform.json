@@ -126,10 +126,42 @@
     }
   },
   "tenant": {
-    "usersTitle": "Agency users",
-    "newAdmin": "New administrator",
-    "usersLoadError": "Could not load users.",
-    "emptyUsers": "No users registered yet."
+    "back": "Back to Tenants",
+    "notFound": "Account not found.",
+    "loadError": "Unable to load the account.",
+    "editAccount": "Edit account",
+    "users": {
+      "title": "Users",
+      "loadError": "Unable to load the users.",
+      "emptyTitle": "No users yet",
+      "emptyDescription": "Add the administrator alongside so the account can start using the platform.",
+      "pendingApproval": "Awaiting approval",
+      "roles": {
+        "ADMIN": "Administrator",
+        "OWNER": "Owner",
+        "AGENT": "Broker",
+        "RENTER": "Renter"
+      }
+    },
+    "account": {
+      "title": "Account",
+      "accountType": "Account type",
+      "status": "Status",
+      "monthlyFee": "Monthly fee",
+      "usage": "Plan usage",
+      "usageProperties": "{usage} of {included} properties",
+      "usageBrokers": "{usage} of {included} brokers",
+      "createdAt": "Created on",
+      "canceledAt": "Canceled on"
+    },
+    "newAdmin": {
+      "title": "New administrator",
+      "description": "Has full access to the account and can invite the team.",
+      "passwordHelper": "At least 8 characters.",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "submit": "Create administrator"
+    }
   },
   "tenants": {
     "title": "Tenants",
@@ -235,7 +267,6 @@
     "createPlatformAdminSubmit": "Create platform administrator",
     "createPlatformAdminError": "Could not create the platform administrator. Try again.",
     "createPlatformAdminSuccess": "Platform administrator {email} created successfully.",
-    "createTenantAdminSubmit": "Create agency administrator",
     "createTenantAdminError": "Could not create the agency administrator. Try again.",
     "createTenantAdminSuccess": "Administrator {email} created successfully.",
     "errors": {
