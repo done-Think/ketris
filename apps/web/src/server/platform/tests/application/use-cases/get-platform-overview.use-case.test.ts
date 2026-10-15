@@ -1,10 +1,15 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type { PlatformOverview } from '../../../domain/platform-overview.entity'
-import type { PlatformOverviewRepository } from '../../../application/ports/platform-overview-repository.port'
+import type {
+  PlatformOverviewCounts,
+  PlatformOverviewRepository,
+} from '../../../application/ports/platform-overview-repository.port'
+import type { PlatformPlanRepository } from '../../../application/ports/platform-plan-repository.port'
+import type { PlatformTenantRepository } from '../../../application/ports/platform-tenant-repository.port'
 import { GetPlatformOverviewUseCase } from '../../../application/use-cases/get-platform-overview.use-case'
 
-const overview: PlatformOverview = {
+const now = new Date(2026, 9, 15, 12, 0)
+const counts: PlatformOverviewCounts = {
   metrics: { tenantsCount: 12, brokersCount: 48, propertiesCount: 230 },
   growthTrend: [{ year: 2026, month: 10, tenants: 2, contracts: 5 }],
   recentTenants: [
@@ -18,16 +23,84 @@ const overview: PlatformOverview = {
   ],
 }
 
+function createRepositories() {
+  const createdAt = new Date(2026, 0, 10)
+  const overviewRepository: PlatformOverviewRepository = {
+    getOverview: vi.fn().mockResolvedValue(counts),
+  }
+  const tenantRepository: PlatformTenantRepository = {
+    findMany: vi.fn().mockResolvedValue([
+      {
+        id: 'a',
+        nome: 'A',
+        slug: 'a',
+        accountType: 'AGENCY',
+        status: 'ACTIVE',
+        canceledAt: null,
+        createdAt,
+      },
+      {
+        id: 'b',
+        nome: 'B',
+        slug: 'b',
+        accountType: 'BROKER',
+        status: 'TRIAL',
+        canceledAt: null,
+        createdAt,
+      },
+      {
+        id: 'c',
+        nome: 'C',
+        slug: 'c',
+        accountType: 'BROKER',
+        status: 'CANCELED',
+        canceledAt: new Date(2026, 9, 3),
+        createdAt,
+      },
+    ]),
+    findById: vi.fn(),
+    updateAccount: vi.fn(),
+    countUsage: vi.fn().mockResolvedValue(new Map()),
+  }
+  const planRepository: PlatformPlanRepository = {
+    findAll: vi.fn().mockResolvedValue([
+      {
+        accountType: 'BROKER',
+        monthlyPrice: 99.99,
+        includedUnits: 10,
+        extraUnitPrice: 9.99,
+        updatedAt: createdAt,
+      },
+      {
+        accountType: 'AGENCY',
+        monthlyPrice: 199.99,
+        includedUnits: 10,
+        extraUnitPrice: 19.99,
+        updatedAt: createdAt,
+      },
+    ]),
+    update: vi.fn(),
+  }
+
+  return { overviewRepository, tenantRepository, planRepository }
+}
+
 describe('GetPlatformOverviewUseCase', () => {
-  it('delega a agregação para o repositório', async () => {
-    const repository: PlatformOverviewRepository = {
-      getOverview: vi.fn().mockResolvedValue(overview),
-    }
-    const useCase = new GetPlatformOverviewUseCase(repository)
+  it('junta as contagens do repositório com o MRR e o churn calculados pelos planos', async () => {
+    const { overviewRepository, tenantRepository, planRepository } = createRepositories()
+    const useCase = new GetPlatformOverviewUseCase(
+      overviewRepository,
+      tenantRepository,
+      planRepository,
+      () => now,
+    )
 
     const result = await useCase.execute()
 
-    expect(result).toEqual(overview)
-    expect(repository.getOverview).toHaveBeenCalledWith(expect.any(Date))
+    expect(result).toEqual({
+      ...counts,
+      metrics: { ...counts.metrics, mrr: 199.99, churnRate: 1 / 3 },
+    })
+    expect(overviewRepository.getOverview).toHaveBeenCalledWith(now)
   })
 })

@@ -80,7 +80,11 @@ export const platformContainer = {
     userRepository,
     passwordHasher,
   ),
-  getPlatformOverviewUseCase: new GetPlatformOverviewUseCase(platformOverviewRepository),
+  getPlatformOverviewUseCase: new GetPlatformOverviewUseCase(
+    platformOverviewRepository,
+    platformTenantRepository,
+    platformPlanRepository,
+  ),
   getSystemHealthUseCase: new GetSystemHealthUseCase(
     new PrismaDatabaseHealthProbe(),
     new SentryErrorTrackingProvider(),

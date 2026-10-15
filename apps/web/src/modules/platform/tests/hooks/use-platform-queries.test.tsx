@@ -33,7 +33,7 @@ describe('platform queries wait for the session token', () => {
     vi.clearAllMocks()
     vi.mocked(tenantService.list).mockResolvedValue([])
     vi.mocked(platformOverviewService.get).mockResolvedValue({
-      metrics: { tenantsCount: 0, brokersCount: 0, propertiesCount: 0 },
+      metrics: { tenantsCount: 0, brokersCount: 0, propertiesCount: 0, mrr: 0, churnRate: null },
       growthTrend: [],
       recentTenants: [],
     })

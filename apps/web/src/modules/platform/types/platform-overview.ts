@@ -2,7 +2,8 @@ export type PlatformMetricTone = 'success' | 'neutral'
 
 export interface PlatformMetric {
   id: 'tenants' | 'brokers' | 'properties' | 'mrr' | 'churn' | 'uptime'
-  value: number
+  // null when the metric cannot be measured yet (e.g. churn without a base); shown as "—".
+  value: number | null
   format: 'number' | 'compactNumber' | 'compactCurrency' | 'percent'
   indicator?: 'growth' | 'stable' | 'normal'
   tone?: PlatformMetricTone
@@ -26,6 +27,8 @@ export interface ApiPlatformOverviewMetrics {
   tenantsCount: number
   brokersCount: number
   propertiesCount: number
+  mrr: number
+  churnRate: number | null
 }
 
 export interface ApiPlatformGrowthMonth {

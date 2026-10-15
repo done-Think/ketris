@@ -87,7 +87,7 @@
         "label": "MRR"
       },
       "churn": {
-        "label": "Churn"
+        "label": "Churn (month)"
       },
       "uptime": {
         "label": "Platform uptime"

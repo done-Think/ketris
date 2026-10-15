@@ -79,7 +79,13 @@ describe('PlatformOverview', () => {
   }
 
   const overviewData = {
-    metrics: { tenantsCount: 45, brokersCount: 680, propertiesCount: 12400 },
+    metrics: {
+      tenantsCount: 45,
+      brokersCount: 680,
+      propertiesCount: 12400,
+      mrr: 12450,
+      churnRate: 0.025,
+    },
     growthTrend: [{ year: 2026, month: 10, tenants: 45, contracts: 52 }],
     recentTenants: [
       {
@@ -120,6 +126,38 @@ describe('PlatformOverview', () => {
     expect(screen.getByLabelText('Growth trends chart')).toBeVisible()
     expect(screen.getByText('Apex Brokers S/A')).toBeVisible()
     expect(screen.getByText('Nobre Imobiliária')).toBeVisible()
+  })
+
+  it('shows the MRR and the monthly churn calculated from the plans', () => {
+    renderOverview()
+
+    expect(screen.getByText('MRR')).toBeVisible()
+    expect(screen.getByText(/R\$\s*12,5\s*mil/)).toBeVisible()
+    expect(screen.getByText('Churn (mês)')).toBeVisible()
+    expect(screen.getByText('2,5%')).toBeVisible()
+  })
+
+  it('shows a zero MRR without decimals', () => {
+    vi.mocked(usePlatformOverview).mockReturnValue({
+      data: { ...overviewData, metrics: { ...overviewData.metrics, mrr: 0 } },
+      isLoading: false,
+      isError: false,
+    })
+    renderOverview()
+
+    expect(screen.getByText(/^R\$\s*0$/)).toBeVisible()
+  })
+
+  it('shows a dash when churn cannot be measured yet', () => {
+    vi.mocked(usePlatformOverview).mockReturnValue({
+      data: { ...overviewData, metrics: { ...overviewData.metrics, churnRate: null } },
+      isLoading: false,
+      isError: false,
+    })
+    renderOverview()
+
+    const churnCard = screen.getByText('Churn (mês)').parentElement as HTMLElement
+    expect(within(churnCard).getByText('—')).toBeVisible()
   })
 
   it('does not show sample system alerts', () => {

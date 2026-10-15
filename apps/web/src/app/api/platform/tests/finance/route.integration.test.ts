@@ -7,6 +7,7 @@ import { prisma } from '@server/db/prisma'
 import { JosePlatformTokenService } from '@server/platform/infrastructure/jose-platform-token.service'
 
 import { GET } from '../../finance/route'
+import { GET as getOverview } from '../../overview/route'
 
 describe('GET /api/platform/finance (integração)', () => {
   const tokenService = new JosePlatformTokenService()
@@ -50,12 +51,10 @@ describe('GET /api/platform/finance (integração)', () => {
     expect((await getFinance(null)).status).toBe(401)
   })
 
-  it('soma no MRR a mensalidade das contas ativas e ignora as que estão em teste', async () => {
-    const before = await (await getFinance()).json()
+  it('cobra pelo plano do tipo de conta e soma no MRR só as contas ativas', async () => {
     const plan = await prisma.platformPlan.findUniqueOrThrow({
       where: { accountType: 'INDIVIDUAL' },
     })
-
     for (const status of ['ACTIVE', 'TRIAL'] as const) {
       const tenant = await prisma.tenant.create({
         data: {
@@ -69,21 +68,41 @@ describe('GET /api/platform/finance (integração)', () => {
     }
 
     const response = await getFinance()
-    const after = await response.json()
+    const finance = await response.json()
+    type Account = { id: string; slug: string; status: string; monthlyCharge: { total: number } }
+    const accounts: Account[] = finance.accounts
+    // Other test files create tenants concurrently, so only compare numbers from this response.
+    const activeTotal =
+      accounts
+        .filter((account) => account.status === 'ACTIVE')
+        .reduce((cents, account) => cents + Math.round(account.monthlyCharge.total * 100), 0) / 100
 
     expect(response.status).toBe(200)
-    expect(after.mrr - before.mrr).toBeCloseTo(plan.monthlyPrice.toNumber(), 2)
-    expect(after.payingAccounts - before.payingAccounts).toBe(1)
-    expect(after.trialAccounts - before.trialAccounts).toBe(1)
-    expect(
-      after.accounts.find((account: { id: string }) => account.id === tenantIds[0]),
-    ).toMatchObject({
-      accountType: 'INDIVIDUAL',
+    expect(finance.mrr).toBe(activeTotal)
+    expect(finance.payingAccounts).toBe(
+      accounts.filter((account) => account.status === 'ACTIVE').length,
+    )
+    expect(accounts.find((account) => account.id === tenantIds[0])).toMatchObject({
       status: 'ACTIVE',
       monthlyCharge: { total: plan.monthlyPrice.toNumber() },
     })
-    expect(after.accounts.some((account: { slug: string }) => account.slug === 'locatarios')).toBe(
-      false,
+    expect(accounts.find((account) => account.id === tenantIds[1])).toMatchObject({
+      status: 'TRIAL',
+      monthlyCharge: { total: plan.monthlyPrice.toNumber() },
+    })
+    expect(accounts.some((account) => account.slug === 'locatarios')).toBe(false)
+  })
+
+  it('a visão geral traz o MRR e o churn calculados pelos planos', async () => {
+    const response = await getOverview(
+      new NextRequest('http://localhost/api/platform/overview', {
+        headers: { authorization: `Bearer ${actorToken}` },
+      }),
     )
+    const overview = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(overview.metrics.mrr).toEqual(expect.any(Number))
+    expect(overview.metrics).toHaveProperty('churnRate')
   })
 })
