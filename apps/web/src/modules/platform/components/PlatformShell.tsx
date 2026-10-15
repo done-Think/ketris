@@ -316,7 +316,9 @@ export function PlatformShell({ children }: PlatformShellProps) {
           pt: { xs: '64px', md: 0 },
           minWidth: 0,
           transition: 'margin-left 180ms ease, width 180ms ease',
-          '& :focus-visible, & .Mui-focusVisible': {
+          // Text fields and selects already show their own focused border; outlining them too
+          // drew a second ring around the field and over its label.
+          '& :focus-visible:not(input, textarea, [role="combobox"]), & .Mui-focusVisible': {
             outline: `2px solid ${brand.magenta[500]}`,
             outlineOffset: 2,
           },
