@@ -26,18 +26,23 @@ export function PlatformTenantsPage() {
           borderColor: 'divider',
         }}
       >
-        <Typography
-          component="h1"
-          sx={{
-            color: brand.graphite[500],
-            fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
-            fontSize: { xs: 26, sm: 30 },
-            fontWeight: 700,
-            lineHeight: 1.15,
-          }}
-        >
-          {t('title')}
-        </Typography>
+        <Box>
+          <Typography
+            component="h1"
+            sx={{
+              color: brand.graphite[500],
+              fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
+              fontSize: { xs: 26, sm: 30 },
+              fontWeight: 700,
+              lineHeight: 1.15,
+            }}
+          >
+            {t('title')}
+          </Typography>
+          <Typography sx={{ color: brand.neutral[500], fontSize: 14, mt: 0.5 }}>
+            {t('subtitle')}
+          </Typography>
+        </Box>
         <Button
           component={Link}
           href="/platform/tenants/new"
@@ -48,7 +53,7 @@ export function PlatformTenantsPage() {
           {t('newTenant')}
         </Button>
       </Stack>
-      <TenantsList />
+      <TenantsList withFilters />
     </Box>
   )
 }

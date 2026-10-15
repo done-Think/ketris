@@ -165,7 +165,21 @@
   },
   "tenants": {
     "title": "Tenants",
-    "newTenant": "Novo Tenant"
+    "newTenant": "Nova conta",
+    "subtitle": "Contas cadastradas na plataforma, com o plano e a situação de cada uma.",
+    "search": {
+      "label": "Buscar conta",
+      "placeholder": "Buscar por nome ou identificador"
+    },
+    "filters": {
+      "statusLabel": "Filtrar por situação",
+      "allStatuses": "Todas",
+      "typeLabel": "Tipo de conta",
+      "allTypes": "Todos os tipos"
+    },
+    "count": "{count, plural, =0 {Nenhuma conta} one {# conta} other {# contas}}",
+    "noResults": "Nenhuma conta encontrada com esses filtros.",
+    "clearFilters": "Limpar filtros"
   },
   "system": {
     "title": "Saúde do Sistema",

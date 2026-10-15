@@ -90,7 +90,7 @@ describe('PlatformTenantsPage', () => {
   it('opens the real tenant creation page from the New Tenant button', () => {
     renderPage()
 
-    expect(screen.getByRole('link', { name: 'Novo Tenant' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Nova conta' })).toHaveAttribute(
       'href',
       '/platform/tenants/new',
     )
@@ -118,6 +118,52 @@ describe('PlatformTenantsPage', () => {
     const roberto = screen.getByRole('row', { name: /Roberto Lima/ })
     await user.hover(within(roberto).getByText(/R\$\s*119,97/))
     expect(await screen.findByText(/R\$\s*99,99 \+ 2 imóveis extras \(R\$\s*19,98\)/)).toBeVisible()
+  })
+
+  it('counts the accounts by status in the tabs and filters by them', async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    expect(screen.getByRole('tab', { name: /Todas\s*2/ })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tab', { name: /Ativa\s*1/ })).toBeVisible()
+    expect(screen.getByRole('tab', { name: /Canceladas?\s*0/ })).toBeVisible()
+
+    await user.click(screen.getByRole('tab', { name: /Em teste\s*1/ }))
+
+    expect(screen.getByRole('row', { name: /Roberto Lima/ })).toBeVisible()
+    expect(screen.queryByRole('row', { name: /Imobiliária Horizonte/ })).not.toBeInTheDocument()
+    expect(screen.getByText('1 conta')).toBeVisible()
+  })
+
+  it('searches by name or identifier and filters by account type', async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    await user.type(screen.getByLabelText('Buscar conta'), 'horiz')
+    expect(screen.getByRole('row', { name: /Imobiliária Horizonte/ })).toBeVisible()
+    expect(screen.queryByRole('row', { name: /Roberto Lima/ })).not.toBeInTheDocument()
+
+    await user.clear(screen.getByLabelText('Buscar conta'))
+    await user.type(screen.getByLabelText('Buscar conta'), 'roberto')
+    expect(screen.getByRole('row', { name: /Roberto Lima/ })).toBeVisible()
+
+    await user.clear(screen.getByLabelText('Buscar conta'))
+    await user.click(screen.getByRole('combobox', { name: 'Tipo de conta' }))
+    await user.click(await screen.findByRole('option', { name: 'Imobiliária' }))
+    expect(screen.getByRole('row', { name: /Imobiliária Horizonte/ })).toBeVisible()
+    expect(screen.queryByRole('row', { name: /Roberto Lima/ })).not.toBeInTheDocument()
+  })
+
+  it('explains when no account matches and clears the filters', async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    await user.type(screen.getByLabelText('Buscar conta'), 'inexistente')
+    expect(screen.getByText('Nenhuma conta encontrada com esses filtros.')).toBeVisible()
+
+    await user.click(screen.getByRole('button', { name: 'Limpar filtros' }))
+    expect(screen.getByLabelText('Buscar conta')).toHaveValue('')
+    expect(screen.getAllByRole('row')).toHaveLength(3)
   })
 
   it('edits the account type and status of a tenant', async () => {
@@ -159,7 +205,7 @@ describe('PlatformTenantsPage', () => {
     renderPage()
 
     expect(screen.getByText('Nenhuma imobiliária cadastrada ainda.')).toBeVisible()
-    expect(screen.getByRole('link', { name: 'Novo Tenant' })).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Nova conta' })).toBeVisible()
   })
 
   it('shows a loading indicator, not the empty state, while the tenants are pending', () => {
