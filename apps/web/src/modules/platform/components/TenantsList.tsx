@@ -25,15 +25,9 @@ import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/
 
 import { useTenants } from '../hooks/use-tenants'
 import type { MonthlyCharge } from '../types/platform-plan'
-import type { PlatformTenant, TenantStatus } from '../types/tenant'
+import type { PlatformTenant } from '../types/tenant'
+import { tenantStatusChipColor } from '../utils/tenant-status'
 import { EditTenantAccountDialog } from './EditTenantAccountDialog'
-
-const statusChipColor: Record<TenantStatus, 'success' | 'warning' | 'error' | 'default'> = {
-  ACTIVE: 'success',
-  TRIAL: 'warning',
-  SUSPENDED: 'error',
-  CANCELED: 'default',
-}
 
 export function TenantsList() {
   const t = useTranslations('platform.dashboard')
@@ -110,7 +104,7 @@ export function TenantsList() {
                   <TableCell>
                     <Chip
                       size="small"
-                      color={statusChipColor[tenant.status]}
+                      color={tenantStatusChipColor[tenant.status]}
                       variant={tenant.status === 'CANCELED' ? 'outlined' : 'filled'}
                       label={accountT(`statuses.${tenant.status}`)}
                     />

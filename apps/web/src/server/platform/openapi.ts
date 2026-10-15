@@ -20,6 +20,7 @@ import {
   updatePlatformPlanRequestSchema,
   updatePlatformPlanResponseSchema,
 } from './schemas/platform-plan.schema'
+import { platformFinanceResponseSchema } from './schemas/platform-finance.schema'
 import { platformOverviewResponseSchema } from './schemas/platform-overview.schema'
 import {
   loginPlatformRequestSchema,
@@ -293,6 +294,27 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
       200: {
         description: 'Medição feita no momento da requisição.',
         content: { 'application/json': { schema: systemHealthResponseSchema } },
+      },
+      401: {
+        description: 'Access token de platform admin ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'get',
+    path: '/platform/finance',
+    tags: ['Platform'],
+    summary: 'Receita recorrente da plataforma calculada pelos planos (MRR, churn e mensalidades)',
+    description:
+      'Não há gateway de pagamento: os valores vêm do plano de cada tipo de conta e do uso atual. ' +
+      'Só contas ACTIVE entram no MRR; o tenant de sistema dos locatários não é cobrado.',
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: 'Resumo financeiro do mês corrente.',
+        content: { 'application/json': { schema: platformFinanceResponseSchema } },
       },
       401: {
         description: 'Access token de platform admin ausente, inválido ou expirado.',

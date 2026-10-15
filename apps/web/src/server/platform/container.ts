@@ -6,6 +6,7 @@ import { CreateTenantAdminUseCase } from './application/use-cases/create-tenant-
 import { CreateTenantUseCase } from './application/use-cases/create-tenant.use-case'
 import { DeactivatePlatformAdminUseCase } from './application/use-cases/deactivate-platform-admin.use-case'
 import { GetPlatformAdminUseCase } from './application/use-cases/get-platform-admin.use-case'
+import { GetPlatformFinanceUseCase } from './application/use-cases/get-platform-finance.use-case'
 import { GetPlatformOverviewUseCase } from './application/use-cases/get-platform-overview.use-case'
 import { GetSystemHealthUseCase } from './application/use-cases/get-system-health.use-case'
 import { ListPlatformAdminsUseCase } from './application/use-cases/list-platform-admins.use-case'
@@ -67,6 +68,10 @@ export const platformContainer = {
     platformTenantRepository,
   ),
   updatePlatformPlanUseCase: new UpdatePlatformPlanUseCase(platformPlanRepository),
+  getPlatformFinanceUseCase: new GetPlatformFinanceUseCase(
+    platformTenantRepository,
+    platformPlanRepository,
+  ),
   updateTenantAccountUseCase: new UpdateTenantAccountUseCase(platformTenantRepository),
   createTenantUseCase: new CreateTenantUseCase(tenantRepository),
   listTenantUsersUseCase: new ListTenantUsersUseCase(tenantRepository, userRepository),

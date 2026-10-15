@@ -23,6 +23,9 @@
     },
     "plans": {
       "metadataTitle": "Ketris | Platform Plans"
+    },
+    "finance": {
+      "metadataTitle": "Ketris | Platform Finance"
     }
   },
   "login": {
@@ -328,5 +331,35 @@
     "cancel": "Cancel",
     "updateSuccess": "Plan updated.",
     "updateError": "Unable to update the plan."
+  },
+  "finance": {
+    "title": "Finance",
+    "subtitle": "Recurring revenue for {month}, calculated from the plans.",
+    "loadError": "Unable to load the finance data.",
+    "kpis": {
+      "mrr": "MRR",
+      "payingAccounts": "Paying accounts",
+      "trialAccounts": "On trial",
+      "suspendedAccounts": "{count, plural, =0 {None suspended} one {# suspended} other {# suspended}}",
+      "churn": "Monthly churn",
+      "churnNoBase": "No base at the start of the month",
+      "canceledThisMonth": "{count, plural, =0 {No cancellations} one {# cancellation} other {# cancellations}}"
+    },
+    "byAccountType": {
+      "title": "Revenue by account type",
+      "activeAccounts": "{count, plural, =0 {No active accounts} one {# active account} other {# active accounts}}"
+    },
+    "accounts": {
+      "title": "Monthly fees by account",
+      "empty": "No accounts yet.",
+      "columns": {
+        "account": "Account",
+        "usage": "Plan usage"
+      },
+      "usageProperties": "{usage} of {included} properties",
+      "usageBrokers": "{usage} of {included} brokers",
+      "notBilled": "not in MRR"
+    },
+    "note": "There is no automatic billing: amounts are calculated from each account type’s plan and current usage. Only active accounts count toward MRR."
   }
 }

@@ -193,6 +193,7 @@ describe('PlatformShell', () => {
     ['/platform/tenants', 'Tenants'],
     ['/platform/system', 'Sistema'],
     ['/platform/plans', 'Planos'],
+    ['/platform/finance', 'Financeiro'],
     ['/platform/tenants/new', 'Tenants'],
     ['/platform/admins/new', 'Usuários'],
   ] as const)('marks the current navigation item for %s', (pathname, name) => {

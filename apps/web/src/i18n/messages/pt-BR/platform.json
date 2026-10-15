@@ -23,6 +23,9 @@
     },
     "plans": {
       "metadataTitle": "Ketris | Planos da Plataforma"
+    },
+    "finance": {
+      "metadataTitle": "Ketris | Financeiro da Plataforma"
     }
   },
   "login": {
@@ -328,5 +331,35 @@
     "cancel": "Cancelar",
     "updateSuccess": "Plano atualizado.",
     "updateError": "Não foi possível atualizar o plano."
+  },
+  "finance": {
+    "title": "Financeiro",
+    "subtitle": "Receita recorrente de {month}, calculada pelos planos.",
+    "loadError": "Não foi possível carregar o financeiro.",
+    "kpis": {
+      "mrr": "MRR",
+      "payingAccounts": "Contas pagantes",
+      "trialAccounts": "Em teste",
+      "suspendedAccounts": "{count, plural, =0 {Nenhuma suspensa} one {# suspensa} other {# suspensas}}",
+      "churn": "Churn do mês",
+      "churnNoBase": "Sem base no início do mês",
+      "canceledThisMonth": "{count, plural, =0 {Nenhum cancelamento} one {# cancelamento} other {# cancelamentos}}"
+    },
+    "byAccountType": {
+      "title": "Receita por tipo de conta",
+      "activeAccounts": "{count, plural, =0 {Nenhuma conta ativa} one {# conta ativa} other {# contas ativas}}"
+    },
+    "accounts": {
+      "title": "Mensalidades por conta",
+      "empty": "Nenhuma conta cadastrada.",
+      "columns": {
+        "account": "Conta",
+        "usage": "Uso do plano"
+      },
+      "usageProperties": "{usage} de {included} imóveis",
+      "usageBrokers": "{usage} de {included} corretores",
+      "notBilled": "fora do MRR"
+    },
+    "note": "Não há cobrança automática: os valores são calculados pelo plano de cada tipo de conta e pelo uso atual. Só contas ativas entram no MRR."
   }
 }

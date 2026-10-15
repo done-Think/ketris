@@ -8,6 +8,7 @@ export type NavigationItem = {
     | '/platform'
     | '/platform/tenants'
     | '/platform/plans'
+    | '/platform/finance'
     | '/platform/system'
     | '/platform/admins'
     | '/platform/admins/new'
