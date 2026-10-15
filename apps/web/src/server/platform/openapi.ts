@@ -23,6 +23,7 @@ import {
   refreshPlatformTokenRequestSchema,
   refreshPlatformTokenResponseSchema,
 } from './schemas/refresh-platform-token.schema'
+import { systemHealthResponseSchema } from './schemas/system-health.schema'
 import { tenantSummarySchema } from './schemas/tenant.schema'
 import {
   updatePlatformAdminRequestSchema,
@@ -259,6 +260,24 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
       },
       409: {
         description: 'Já existe um tenant com este slug.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'get',
+    path: '/platform/system/health',
+    tags: ['Platform'],
+    summary: 'Saúde real da plataforma: banco de dados, tempo no ar e erros recentes do Sentry',
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: 'Medição feita no momento da requisição.',
+        content: { 'application/json': { schema: systemHealthResponseSchema } },
+      },
+      401: {
+        description: 'Access token de platform admin ausente, inválido ou expirado.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },

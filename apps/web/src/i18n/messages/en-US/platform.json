@@ -132,8 +132,30 @@
   },
   "system": {
     "title": "System Health",
-    "comingSoonTitle": "Monitoring coming soon",
-    "comingSoonDescription": "Infrastructure health — servers, database, traffic and logs — will appear here once a monitoring tool is integrated."
+    "checkedAt": "Updated at {time} · refreshes every 30 s",
+    "loadError": "Unable to check the system health right now.",
+    "database": {
+      "label": "Database",
+      "up": "Responding",
+      "down": "Down",
+      "helper": "Response time measured just now."
+    },
+    "server": {
+      "label": "Server up for",
+      "helper": "Time since this server last started.",
+      "uptimeHours": "{hours} h {minutes} min",
+      "uptimeDays": "{days, plural, one {# day} other {# days}} {hours} h"
+    },
+    "errors": {
+      "title": "Recent errors (Sentry, last 24 h)",
+      "notConfiguredTitle": "Sentry not configured",
+      "notConfiguredDescription": "To see real errors here, set SENTRY_API_TOKEN (read-only token) in the server environment.",
+      "unavailable": "Unable to reach Sentry right now.",
+      "empty": "No open errors in the last 24 h.",
+      "issueMeta": "{count, plural, one {# event} other {# events}} · last seen {lastSeen}",
+      "openInSentry": "Open in Sentry"
+    },
+    "externalMonitoringNote": "Availability (uptime %) and network traffic require an external monitoring tool, which is not integrated yet."
   },
   "newAdmin": {
     "title": "New platform administrator"

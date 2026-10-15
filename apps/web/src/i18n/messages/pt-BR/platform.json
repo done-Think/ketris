@@ -132,8 +132,30 @@
   },
   "system": {
     "title": "Saúde do Sistema",
-    "comingSoonTitle": "Monitoramento em breve",
-    "comingSoonDescription": "A saúde da infraestrutura — servidores, banco de dados, tráfego e logs — vai aparecer aqui quando uma ferramenta de monitoramento for integrada."
+    "checkedAt": "Atualizado às {time} · atualiza sozinho a cada 30 s",
+    "loadError": "Não foi possível verificar a saúde do sistema agora.",
+    "database": {
+      "label": "Banco de dados",
+      "up": "Respondendo",
+      "down": "Fora do ar",
+      "helper": "Tempo de resposta medido agora."
+    },
+    "server": {
+      "label": "Servidor no ar há",
+      "helper": "Tempo desde o último início deste servidor.",
+      "uptimeHours": "{hours} h {minutes} min",
+      "uptimeDays": "{days, plural, one {# dia} other {# dias}} {hours} h"
+    },
+    "errors": {
+      "title": "Erros recentes (Sentry, últimas 24 h)",
+      "notConfiguredTitle": "Sentry não configurado",
+      "notConfiguredDescription": "Para ver os erros reais aqui, configure SENTRY_API_TOKEN (token de leitura) no ambiente do servidor.",
+      "unavailable": "Não foi possível consultar o Sentry agora.",
+      "empty": "Nenhum erro aberto nas últimas 24 h.",
+      "issueMeta": "{count, plural, one {# ocorrência} other {# ocorrências}} · última em {lastSeen}",
+      "openInSentry": "Abrir no Sentry"
+    },
+    "externalMonitoringNote": "Disponibilidade (uptime %) e tráfego de rede dependem de uma ferramenta de monitoramento externa, que ainda não está integrada."
   },
   "newAdmin": {
     "title": "Novo administrador da plataforma"

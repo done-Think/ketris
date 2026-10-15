@@ -7,6 +7,7 @@ import { CreateTenantUseCase } from './application/use-cases/create-tenant.use-c
 import { DeactivatePlatformAdminUseCase } from './application/use-cases/deactivate-platform-admin.use-case'
 import { GetPlatformAdminUseCase } from './application/use-cases/get-platform-admin.use-case'
 import { GetPlatformOverviewUseCase } from './application/use-cases/get-platform-overview.use-case'
+import { GetSystemHealthUseCase } from './application/use-cases/get-system-health.use-case'
 import { ListPlatformAdminsUseCase } from './application/use-cases/list-platform-admins.use-case'
 import { ListTenantUsersUseCase } from './application/use-cases/list-tenant-users.use-case'
 import { ListTenantsUseCase } from './application/use-cases/list-tenants.use-case'
@@ -14,10 +15,12 @@ import { LoginPlatformAdminUseCase } from './application/use-cases/login-platfor
 import { RefreshPlatformAdminTokenUseCase } from './application/use-cases/refresh-platform-admin-token.use-case'
 import { UpdatePlatformAdminUseCase } from './application/use-cases/update-platform-admin.use-case'
 import { JosePlatformTokenService } from './infrastructure/jose-platform-token.service'
+import { PrismaDatabaseHealthProbe } from './infrastructure/prisma-database-health.probe'
 import { PrismaPlatformAdminRepository } from './infrastructure/prisma-platform-admin.repository'
 import { PrismaPlatformOverviewRepository } from './infrastructure/prisma-platform-overview.repository'
 import { PrismaPlatformRefreshTokenRepository } from './infrastructure/prisma-platform-refresh-token.repository'
 import { PrismaTenantRepository } from './infrastructure/prisma-tenant.repository'
+import { SentryErrorTrackingProvider } from './infrastructure/sentry-error-tracking.provider'
 
 const platformAdminRepository = new PrismaPlatformAdminRepository()
 const passwordHasher = new BcryptPasswordHasher()
@@ -60,4 +63,8 @@ export const platformContainer = {
     passwordHasher,
   ),
   getPlatformOverviewUseCase: new GetPlatformOverviewUseCase(platformOverviewRepository),
+  getSystemHealthUseCase: new GetSystemHealthUseCase(
+    new PrismaDatabaseHealthProbe(),
+    new SentryErrorTrackingProvider(),
+  ),
 }
