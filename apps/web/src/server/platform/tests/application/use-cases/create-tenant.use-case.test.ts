@@ -36,6 +36,25 @@ describe('CreateTenantUseCase', () => {
     })
   })
 
+  it('repassa o tipo de conta e a situação inicial escolhidos', async () => {
+    const repository = createRepository()
+    const useCase = new CreateTenantUseCase(repository)
+
+    await useCase.execute({
+      nome: 'Corretor Novo',
+      slug: 'corretor-novo',
+      accountType: 'BROKER',
+      status: 'TRIAL',
+    })
+
+    expect(repository.create).toHaveBeenCalledWith({
+      nome: 'Corretor Novo',
+      slug: 'corretor-novo',
+      accountType: 'BROKER',
+      status: 'TRIAL',
+    })
+  })
+
   it('lança TenantSlugAlreadyInUseError quando o slug já existe', async () => {
     const repository = createRepository(vi.fn().mockResolvedValue(createdTenant))
     const useCase = new CreateTenantUseCase(repository)

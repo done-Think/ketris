@@ -13,7 +13,7 @@
       "metadataTitle": "Ketris | Imobiliária Plataforma"
     },
     "newTenant": {
-      "metadataTitle": "Ketris | Nova imobiliária Plataforma"
+      "metadataTitle": "Ketris | Nova conta Plataforma"
     },
     "newAdmin": {
       "metadataTitle": "Ketris | Administradores da plataforma"
@@ -44,12 +44,9 @@
   "dashboard": {
     "title": "Imobiliárias",
     "platformAdmins": "Administradores da plataforma",
-    "newTenant": "Nova imobiliária",
     "loadError": "Não foi possível carregar as imobiliárias.",
     "empty": "Nenhuma imobiliária cadastrada ainda.",
-    "createdAt": "Criada em",
-    "newTenantSubtitle": "Cadastre uma imobiliária para ela começar a usar a plataforma.",
-    "backToTenants": "Voltar para Tenants"
+    "createdAt": "Criada em"
   },
   "overview": {
     "title": "Visão geral da plataforma",
@@ -235,9 +232,6 @@
     "status": "Status",
     "active": "Ativo",
     "inactive": "Inativo",
-    "createTenantSubmit": "Criar imobiliária",
-    "createTenantError": "Não foi possível criar a imobiliária. Tente novamente.",
-    "createTenantSuccess": "Imobiliária {name} criada com sucesso.",
     "createPlatformAdminSubmit": "Criar administrador da plataforma",
     "createPlatformAdminError": "Não foi possível criar o administrador da plataforma. Tente novamente.",
     "createPlatformAdminSuccess": "Administrador da plataforma {email} criado com sucesso.",
@@ -254,12 +248,9 @@
       "slugRequired": "Informe o slug",
       "slugInvalid": "Use apenas letras minúsculas, números e hífens"
     },
-    "tenantSectionTitle": "Dados da imobiliária",
-    "tenantSectionDescription": "Essas informações identificam a imobiliária na plataforma.",
     "namePlaceholder": "Ex.: Imobiliária Horizonte",
     "slugLabel": "Identificador (slug)",
-    "slugPlaceholder": "imobiliaria-horizonte",
-    "nextStepNotice": "Depois de criar, você vai para a página da imobiliária para cadastrar o administrador dela."
+    "slugPlaceholder": "imobiliaria-horizonte"
   },
   "table": {
     "first": "Primeira página",
@@ -361,5 +352,48 @@
       "notBilled": "fora do MRR"
     },
     "note": "Não há cobrança automática: os valores são calculados pelo plano de cada tipo de conta e pelo uso atual. Só contas ativas entram no MRR."
+  },
+  "createAccount": {
+    "title": "Nova conta",
+    "subtitle": "Cadastre uma pessoa física, um corretor ou uma imobiliária para começar a usar a plataforma.",
+    "backToTenants": "Voltar para Tenants",
+    "pricePerMonth": "{price}/mês",
+    "sections": {
+      "accountType": {
+        "title": "Tipo de conta",
+        "description": "Define o plano e a mensalidade cobrada."
+      },
+      "identity": {
+        "title": "Identificação",
+        "description": "Nome exibido na plataforma e identificador único da conta."
+      },
+      "status": {
+        "title": "Situação inicial",
+        "trialLabel": "Começar em período de teste",
+        "trialHelper": "Contas em teste não entram no MRR até serem ativadas na lista de Tenants."
+      }
+    },
+    "summary": {
+      "title": "Resumo",
+      "namePlaceholder": "Nome da conta",
+      "slugPlaceholder": "identificador",
+      "accountType": "Tipo de conta",
+      "status": "Situação",
+      "monthlyFee": "Mensalidade",
+      "pricePerMonth": "{price}/mês",
+      "extraProperties": "+ {price} por imóvel acima de {count}",
+      "extraBrokers": "+ {price} por corretor acima de {count}",
+      "trialNotBilled": "Não é cobrada enquanto estiver em teste."
+    },
+    "nextSteps": {
+      "title": "Próximos passos",
+      "create": "Criar a conta",
+      "admin": "Cadastrar o administrador",
+      "finance": "Acompanhar a cobrança em Financeiro"
+    },
+    "submit": "Criar conta",
+    "cancel": "Cancelar",
+    "createSuccess": "Conta {name} criada com sucesso.",
+    "createError": "Não foi possível criar a conta. Tente novamente."
   }
 }

@@ -63,6 +63,8 @@ export interface TenantUser {
 export interface CreateTenantPayload {
   name: string
   slug: string
+  accountType?: TenantAccountType
+  status?: 'TRIAL' | 'ACTIVE'
 }
 
 export interface CreateTenantAdminPayload {
@@ -95,10 +97,7 @@ export type CreateTenantAdminFormProps = {
   tenantId: string
 }
 
-export interface CreateTenantInput {
-  name: string
-  slug: string
-}
+export type CreateTenantInput = CreateTenantPayload
 
 export interface CreateTenantAdminInput {
   tenantId: string

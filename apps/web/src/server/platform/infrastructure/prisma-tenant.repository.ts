@@ -38,7 +38,12 @@ export class PrismaTenantRepository implements TenantRepository {
 
   async create(newTenant: NewTenant): Promise<TenantSummary> {
     const tenant = await prisma.tenant.create({
-      data: { nome: newTenant.nome, slug: newTenant.slug },
+      data: {
+        nome: newTenant.nome,
+        slug: newTenant.slug,
+        accountType: newTenant.accountType,
+        status: newTenant.status,
+      },
     })
 
     return toDomainTenantSummary(tenant)

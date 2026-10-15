@@ -13,7 +13,7 @@
       "metadataTitle": "Ketris | Platform Agency"
     },
     "newTenant": {
-      "metadataTitle": "Ketris | New Platform Agency"
+      "metadataTitle": "Ketris | New Platform Account"
     },
     "newAdmin": {
       "metadataTitle": "Ketris | Platform Admins"
@@ -44,12 +44,9 @@
   "dashboard": {
     "title": "Agencies",
     "platformAdmins": "Platform admins",
-    "newTenant": "New agency",
     "loadError": "Could not load agencies.",
     "empty": "No agencies registered yet.",
-    "createdAt": "Created at",
-    "newTenantSubtitle": "Register an agency so it can start using the platform.",
-    "backToTenants": "Back to Tenants"
+    "createdAt": "Created at"
   },
   "overview": {
     "title": "Platform Overview",
@@ -235,9 +232,6 @@
     "status": "Status",
     "active": "Active",
     "inactive": "Inactive",
-    "createTenantSubmit": "Create agency",
-    "createTenantError": "Could not create the agency. Try again.",
-    "createTenantSuccess": "Agency {name} created successfully.",
     "createPlatformAdminSubmit": "Create platform administrator",
     "createPlatformAdminError": "Could not create the platform administrator. Try again.",
     "createPlatformAdminSuccess": "Platform administrator {email} created successfully.",
@@ -254,12 +248,9 @@
       "slugRequired": "Enter the slug",
       "slugInvalid": "Use only lowercase letters, numbers, and hyphens"
     },
-    "tenantSectionTitle": "Agency details",
-    "tenantSectionDescription": "This information identifies the agency on the platform.",
     "namePlaceholder": "E.g. Horizon Real Estate",
     "slugLabel": "Identifier (slug)",
-    "slugPlaceholder": "horizon-real-estate",
-    "nextStepNotice": "After creating it, you will go to the agency page to add its administrator."
+    "slugPlaceholder": "horizon-real-estate"
   },
   "table": {
     "first": "First page",
@@ -361,5 +352,48 @@
       "notBilled": "not in MRR"
     },
     "note": "There is no automatic billing: amounts are calculated from each account type’s plan and current usage. Only active accounts count toward MRR."
+  },
+  "createAccount": {
+    "title": "New account",
+    "subtitle": "Register an individual, a broker or an agency so it can start using the platform.",
+    "backToTenants": "Back to Tenants",
+    "pricePerMonth": "{price}/month",
+    "sections": {
+      "accountType": {
+        "title": "Account type",
+        "description": "Defines the plan and the monthly fee charged."
+      },
+      "identity": {
+        "title": "Identification",
+        "description": "Name shown on the platform and the account’s unique identifier."
+      },
+      "status": {
+        "title": "Initial status",
+        "trialLabel": "Start on a trial",
+        "trialHelper": "Trial accounts do not count toward MRR until they are activated in the Tenants list."
+      }
+    },
+    "summary": {
+      "title": "Summary",
+      "namePlaceholder": "Account name",
+      "slugPlaceholder": "identifier",
+      "accountType": "Account type",
+      "status": "Status",
+      "monthlyFee": "Monthly fee",
+      "pricePerMonth": "{price}/month",
+      "extraProperties": "+ {price} per property above {count}",
+      "extraBrokers": "+ {price} per broker above {count}",
+      "trialNotBilled": "Not charged while on trial."
+    },
+    "nextSteps": {
+      "title": "Next steps",
+      "create": "Create the account",
+      "admin": "Add its administrator",
+      "finance": "Follow its billing in Finance"
+    },
+    "submit": "Create account",
+    "cancel": "Cancel",
+    "createSuccess": "Account {name} created.",
+    "createError": "Unable to create the account. Please try again."
   }
 }

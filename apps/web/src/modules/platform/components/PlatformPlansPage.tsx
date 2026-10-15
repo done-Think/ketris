@@ -1,10 +1,6 @@
 'use client'
 
-import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
-import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
-import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded'
-import type { SvgIconComponent } from '@mui/icons-material'
 import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material'
 import { useState } from 'react'
 import { useFormatter, useTranslations } from 'next-intl'
@@ -13,14 +9,8 @@ import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/
 
 import { usePlatformPlans } from '../hooks/use-platform-plans'
 import type { ApiPlatformPlan } from '../types/platform-plan'
-import type { TenantAccountType } from '../types/tenant'
+import { accountTypeIcons } from '../utils/account-type-icons'
 import { EditPlatformPlanDialog } from './EditPlatformPlanDialog'
-
-const planIcons: Record<TenantAccountType, SvgIconComponent> = {
-  INDIVIDUAL: PersonOutlineRoundedIcon,
-  BROKER: BadgeOutlinedIcon,
-  AGENCY: ApartmentOutlinedIcon,
-}
 
 export function PlatformPlansPage() {
   const t = useTranslations('platform.plans')
@@ -58,7 +48,7 @@ export function PlatformPlansPage() {
             }}
           >
             {plansQuery.data.map((plan) => {
-              const Icon = planIcons[plan.accountType]
+              const Icon = accountTypeIcons[plan.accountType]
               const unit = plan.usageUnit === 'BROKERS' ? 'Brokers' : 'Properties'
 
               return (

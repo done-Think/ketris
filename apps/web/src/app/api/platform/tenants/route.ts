@@ -23,6 +23,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const tenant = await platformContainer.createTenantUseCase.execute({
     nome: body.name,
     slug: body.slug,
+    accountType: body.accountType,
+    status: body.status,
   })
 
   return NextResponse.json({ tenant: toTenantSummaryResponse(tenant) }, { status: 201 })
