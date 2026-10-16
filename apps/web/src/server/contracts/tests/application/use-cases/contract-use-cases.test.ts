@@ -81,6 +81,7 @@ function createRepository(overrides?: Partial<ContractRepository>): ContractRepo
 
 const baseCreateInput = {
   actorTenantId: 'tenant-1',
+  actorId: 'agent-1',
   actorPapel: 'AGENT' as const,
   opportunityId: 'opportunity-1',
   type: 'RESIDENCIAL' as const,
@@ -103,6 +104,45 @@ describe('CreateContractFromOpportunityUseCase', () => {
       useCase.execute({ ...baseCreateInput, actorPapel: 'RENTER' }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
   })
+
+  it('busca a oportunidade do AGENT só entre os imóveis pelos quais ele é responsável', async () => {
+    const repository = createRepository()
+    const useCase = new CreateContractFromOpportunityUseCase(repository)
+
+    await useCase.execute(baseCreateInput)
+
+    expect(repository.findEligibleOpportunity).toHaveBeenCalledWith('tenant-1', 'opportunity-1', {
+      responsibleId: 'agent-1',
+    })
+  })
+
+  it('responde 404 e não cria quando o AGENT não é o responsável pelo imóvel', async () => {
+    const repository = createRepository({
+      findEligibleOpportunity: vi.fn().mockResolvedValue(null),
+    })
+    const useCase = new CreateContractFromOpportunityUseCase(repository)
+
+    await expect(useCase.execute({ ...baseCreateInput, actorId: 'agent-2' })).rejects.toThrow(
+      OpportunityNotFoundError,
+    )
+    expect(repository.create).not.toHaveBeenCalled()
+  })
+
+  it.each(['ADMIN', 'OWNER'] as const)(
+    'deixa %s criar a partir de qualquer oportunidade aceita do tenant',
+    async (actorPapel) => {
+      const repository = createRepository()
+      const useCase = new CreateContractFromOpportunityUseCase(repository)
+
+      await useCase.execute({ ...baseCreateInput, actorId: 'user-1', actorPapel })
+
+      expect(repository.findEligibleOpportunity).toHaveBeenCalledWith(
+        'tenant-1',
+        'opportunity-1',
+        {},
+      )
+    },
+  )
 
   it('lança GuarantorPartyRequiredError quando a garantia é fiador sem dados do fiador', async () => {
     const useCase = new CreateContractFromOpportunityUseCase(createRepository())

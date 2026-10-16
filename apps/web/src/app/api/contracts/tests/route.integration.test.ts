@@ -199,6 +199,24 @@ describe('/api/contracts (integração)', () => {
     expect(json.error.code).toBe('CONTRACT_OPPORTUNITY_NOT_ACCEPTED')
   })
 
+  it('retorna 404 quando um AGENT cria contrato a partir de oportunidade de imóvel de outro responsável', async () => {
+    const response = await POST(
+      buildRequest(
+        'http://localhost/api/contracts',
+        'POST',
+        { ...createPayload, opportunityId: acceptedOpportunityId },
+        otherAgentToken,
+      ),
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(404)
+    expect(json.error.code).toBe('CONTRACT_OPPORTUNITY_NOT_FOUND')
+    expect(
+      await prisma.contrato.count({ where: { oportunidadeOrigemId: acceptedOpportunityId } }),
+    ).toBe(0)
+  })
+
   let contractId: string
   let ownerPartyId: string
   let tenantPartyId: string

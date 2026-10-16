@@ -103,9 +103,10 @@ export class PrismaContractRepository implements ContractRepository {
   async findEligibleOpportunity(
     tenantId: string,
     opportunityId: string,
+    scope: ContractAccessScope,
   ): Promise<EligibleOpportunity | null> {
     const opportunity = await prisma.oportunidade.findFirst({
-      where: { tenantId, id: opportunityId },
+      where: { tenantId, id: opportunityId, ...scopeWhere(scope) },
       select: { id: true, imovelId: true, status: true, contrato: { select: { id: true } } },
     })
 

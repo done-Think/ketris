@@ -11,6 +11,7 @@ export interface ContractRepository {
   findEligibleOpportunity(
     tenantId: string,
     opportunityId: string,
+    scope: ContractAccessScope,
   ): Promise<EligibleOpportunity | null>
   create(input: NewContract): Promise<Contract>
   findMany(filters: ContractListFilters, scope: ContractAccessScope): Promise<ContractListResult>

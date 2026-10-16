@@ -45,6 +45,9 @@ export function registerContractsOpenApi(registry: OpenAPIRegistry): void {
     path: '/contracts',
     tags: ['Contracts'],
     summary: 'Cria contrato a partir de uma oportunidade aceita',
+    description:
+      'Um ator AGENT só cria contrato a partir de oportunidade de imóvel do qual é responsável ' +
+      '(404 opaco caso contrário). RENTER não acessa contratos.',
     security: [{ bearerAuth: [] }],
     request: {
       body: { content: { 'application/json': { schema: createContractRequestSchema } } },
@@ -62,8 +65,13 @@ export function registerContractsOpenApi(registry: OpenAPIRegistry): void {
         description: 'Access token ausente, inválido ou expirado.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
+      403: {
+        description: 'Autenticado como RENTER — não pode acessar contratos.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
       404: {
-        description: 'Oportunidade não encontrada neste tenant.',
+        description:
+          'Oportunidade não encontrada neste tenant, ou de imóvel de outro responsável (AGENT).',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       409: {
