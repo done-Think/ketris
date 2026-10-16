@@ -20,12 +20,14 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
     method: 'get',
     path: '/financial/charges',
     tags: ['Financial'],
-    summary: 'Lista cobranças do tenant autenticado',
+    summary: 'Lista cobranças autorizadas para o usuário autenticado',
+    description:
+      'ADMIN, OWNER e AGENT consultam seu tenant. RENTER consulta apenas A_RECEBER de contratos com parte LOCATARIO vinculada ao seu ID, inclusive em outros tenants. Contagem e paginação seguem o mesmo escopo. Sem vínculo, retorna lista vazia.',
     security: [{ bearerAuth: [] }],
     request: { query: listChargesQuerySchema },
     responses: {
       200: {
-        description: 'Lista de cobranças do tenant.',
+        description: 'Lista de cobranças no escopo autorizado.',
         content: { 'application/json': { schema: chargesResponseSchema } },
       },
       401: {
@@ -72,7 +74,9 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
     method: 'get',
     path: '/financial/charges/{id}',
     tags: ['Financial'],
-    summary: 'Consulta cobrança do tenant autenticado',
+    summary: 'Consulta cobrança no escopo autorizado do usuário',
+    description:
+      'RENTER precisa estar vinculado por ID como LOCATARIO ao contrato e a cobrança deve ser A_RECEBER. Cobranças avulsas, A_PAGAR e contratos sem vínculo não são acessíveis. Ausência de acesso retorna 404.',
     security: [{ bearerAuth: [] }],
     request: { params: chargeIdParamsSchema },
     responses: {
@@ -174,11 +178,16 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
     path: '/financial/summary',
     tags: ['Financial'],
     summary: 'Agregação financeira do tenant para o dashboard',
+    description: 'Disponível para ADMIN, OWNER e AGENT. RENTER não tem acesso ao resumo geral.',
     security: [{ bearerAuth: [] }],
     responses: {
       200: {
         description: 'Resumo financeiro do tenant.',
         content: { 'application/json': { schema: financialSummarySchema } },
+      },
+      403: {
+        description: 'RENTER não tem acesso ao resumo financeiro geral.',
+        content: { 'application/json': { schema: errorResponseSchema } },
       },
       401: {
         description: 'Access token ausente, inválido ou expirado.',

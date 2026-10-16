@@ -1,5 +1,3 @@
-import type { Assinatura, Contrato, ParteContrato } from '@prisma/client'
-
 import { prisma } from '@server/db/prisma'
 
 import type {
@@ -10,11 +8,8 @@ import type {
   NewContract,
 } from '../domain/contract.entity'
 import type { ContractRepository } from '../application/ports/contract-repository.port'
-
-type ContratoWithRelations = Contrato & {
-  partes: (ParteContrato & { assinatura: Assinatura | null })[]
-  documentos: { id: string; nome: string; url: string | null; createdAt: Date }[]
-}
+import type { LinkContractPartyUserData } from '../types/contract-party-user-link'
+import type { ContratoWithRelations } from '../types/prisma-contract-repository'
 
 function toDomainContract(contrato: ContratoWithRelations): Contract {
   return {
@@ -37,6 +32,7 @@ function toDomainContract(contrato: ContratoWithRelations): Contract {
     updatedAt: contrato.updatedAt,
     parties: contrato.partes.map((parte) => ({
       id: parte.id,
+      userId: parte.usuarioId,
       role: parte.papel,
       name: parte.nome,
       cpf: parte.cpf,
@@ -80,6 +76,22 @@ const contractInclude = {
 } as const
 
 export class PrismaContractRepository implements ContractRepository {
+  async linkPartyUser(input: LinkContractPartyUserData): Promise<boolean> {
+    const result = await prisma.parteContrato.updateMany({
+      where: {
+        id: input.partyId,
+        contratoId: input.contractId,
+        contrato: { tenantId: input.tenantId },
+        papel: 'LOCATARIO',
+        email: { equals: input.email, mode: 'insensitive' },
+        OR: [{ usuarioId: null }, { usuarioId: input.userId }],
+      },
+      data: { usuarioId: input.userId },
+    })
+
+    return result.count === 1
+  }
+
   async findEligibleOpportunity(
     tenantId: string,
     opportunityId: string,

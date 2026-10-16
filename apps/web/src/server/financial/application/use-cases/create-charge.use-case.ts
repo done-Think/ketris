@@ -3,7 +3,8 @@ import { ForbiddenError } from '@server/shared/errors'
 import type { Papel } from '@server/auth/domain/user.entity'
 
 import { ChargeContractNotFoundError } from '../../domain/errors'
-import type { Charge, ChargeType, NewChargeStatus } from '../../domain/charge.entity'
+import type { Charge } from '../../domain/charge.entity'
+import type { ChargeType, NewChargeStatus } from '../../types/charge'
 import type { ChargeRepository } from '../ports/charge-repository.port'
 
 export interface CreateChargeInput {

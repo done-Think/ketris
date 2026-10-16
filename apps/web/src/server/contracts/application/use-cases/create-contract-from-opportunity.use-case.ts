@@ -8,13 +8,8 @@ import {
   OpportunityNotAcceptedError,
   OpportunityNotFoundError,
 } from '../../domain/errors'
-import type {
-  AdjustmentIndex,
-  Contract,
-  ContractGuaranteeType,
-  ContractType,
-  NewContractParty,
-} from '../../domain/contract.entity'
+import type { Contract, NewContractParty } from '../../domain/contract.entity'
+import type { AdjustmentIndex, ContractGuaranteeType, ContractType } from '../../types/contract'
 import type { ContractRepository } from '../ports/contract-repository.port'
 
 export interface CreateContractFromOpportunityInput {

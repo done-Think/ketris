@@ -68,6 +68,7 @@ model Usuario {
   leadsResponsavel         Lead[]                             @relation("LeadResponsavel")
   perfilPublico            PerfilPublicoCorretor?
   destaquesRecebidos       PerfilPublicoImobiliariaDestaque[]
+  partesContrato           ParteContrato[]
 
   @@index([tenantId])
   @@map("usuarios")
@@ -566,11 +567,14 @@ model ParteContrato {
   cpf        String
   email      String
   telefone   String?
+  usuarioId  String?
 
   contrato   Contrato    @relation(fields: [contratoId], references: [id], onDelete: Cascade)
   assinatura Assinatura?
+  usuario    Usuario?    @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
 
   @@index([contratoId])
+  @@index([usuarioId])
   @@map("partes_contrato")
 }
 
