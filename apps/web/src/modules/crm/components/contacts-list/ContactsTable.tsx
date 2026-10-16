@@ -46,14 +46,9 @@ export function ContactsTable({
             textTransform: 'uppercase',
             whiteSpace: 'nowrap',
           },
-          '& .MuiTableHead-root .MuiTableCell-root:nth-of-type(1), & .MuiTableHead-root .MuiTableCell-root:nth-of-type(4)':
-            {
-              textAlign: 'left',
-            },
-          '& .MuiTableHead-root .MuiTableCell-root:nth-of-type(4), & .MuiTableBody-root .MuiTableCell-root:nth-of-type(4)':
-            {
-              pl: '104px',
-            },
+          '& .MuiTableHead-root .MuiTableCell-root:nth-of-type(1)': {
+            textAlign: 'left',
+          },
           '& .MuiTableBody-root .MuiTableCell-root': {
             px: 1,
             py: 0,
@@ -62,16 +57,13 @@ export function ContactsTable({
             lineHeight: 1.3,
             whiteSpace: 'nowrap',
           },
-          '& .MuiTableBody-root .MuiTableCell-root:nth-of-type(4)': {
-            textAlign: 'left',
-          },
         }}
       >
         <colgroup>
-          <col style={{ width: '25%' }} />
+          <col style={{ width: '23%' }} />
           <col style={{ width: '12%' }} />
           <col style={{ width: '13%' }} />
-          <col style={{ width: '21%' }} />
+          <col style={{ width: '23%' }} />
           <col style={{ width: '7%' }} />
           <col style={{ width: '15%' }} />
           <col style={{ width: '7%' }} />
@@ -121,7 +113,11 @@ export function ContactsTable({
                 <ContactTypeChip type={contact.type} />
               </TableCell>
               <TableCell align="center">{contact.phone}</TableCell>
-              <TableCell>{contact.email}</TableCell>
+              <TableCell align="center">
+                <Typography noWrap title={contact.email} sx={{ fontSize: 15.5 }}>
+                  {contact.email}
+                </Typography>
+              </TableCell>
               <TableCell align="center">{contact.propertyCount}</TableCell>
               <TableCell align="center" sx={{ color: 'text.secondary' }}>
                 {contact.lastInteraction}
