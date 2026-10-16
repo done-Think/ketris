@@ -92,7 +92,7 @@ export function ContractsDashboardPage() {
     contract: null,
     action: null,
   })
-  const contractsQuery = useContracts(tenantId, { pageSize: 500 })
+  const contractsQuery = useContracts(tenantId, { pageSize: 100 })
   const contracts = useMemo(
     () => (contractsQuery.data?.items ?? []).map(mapContractListItemFromApi),
     [contractsQuery.data],

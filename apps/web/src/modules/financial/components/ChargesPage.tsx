@@ -64,7 +64,7 @@ export function ChargesPage() {
   const { enqueueSnackbar } = useSnackbar()
   const { data: session } = useSession()
   const tenantId = session?.tenantId ?? ''
-  const chargesQuery = useCharges(tenantId, { pageSize: 500 })
+  const chargesQuery = useCharges(tenantId, { pageSize: 100 })
   const charges = useMemo(
     () => (chargesQuery.data?.items ?? []).map(mapChargeListItemFromApi),
     [chargesQuery.data],
