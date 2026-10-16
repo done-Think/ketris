@@ -15,6 +15,8 @@ describe('/api/contracts (integração)', () => {
   let tenantId: string
   let actorToken: string
   let renterToken: string
+  let adminToken: string
+  let otherAgentToken: string
   let acceptedOpportunityId: string
   let pendingOpportunityId: string
   let propertyId: string
@@ -63,6 +65,9 @@ describe('/api/contracts (integração)', () => {
       vinculoAprovadoEm: renter.vinculoAprovadoEm,
     })
 
+    adminToken = await createUserToken('ADMIN')
+    otherAgentToken = await createUserToken('AGENT')
+
     const property = await prisma.imovel.create({
       data: {
         tenantId,
@@ -100,6 +105,28 @@ describe('/api/contracts (integração)', () => {
     })
     pendingOpportunityId = pendingOpportunity.id
   })
+
+  async function createUserToken(papel: 'ADMIN' | 'AGENT'): Promise<string> {
+    const user = await prisma.usuario.create({
+      data: {
+        tenantId,
+        nome: `Usuário ${papel}`,
+        email: `${papel.toLowerCase()}-${randomUUID()}@ketris.dev`,
+        senhaHash: 'hash-fake',
+        papel,
+      },
+    })
+
+    return tokenService.sign({
+      id: user.id,
+      tenantId: user.tenantId,
+      nome: user.nome,
+      email: user.email,
+      papel: user.papel,
+      ativo: user.ativo,
+      vinculoAprovadoEm: user.vinculoAprovadoEm,
+    })
+  }
 
   afterAll(async () => {
     if (tenantId) {
@@ -236,6 +263,58 @@ describe('/api/contracts (integração)', () => {
     const ids = json.items.map((item: { id: string }) => item.id)
     expect(response.status).toBe(200)
     expect(ids).toContain(contractId)
+  })
+
+  it('lista o contrato para o ADMIN, mesmo sem ser o responsável pelo imóvel', async () => {
+    const response = await GET(
+      buildRequest('http://localhost/api/contracts', 'GET', undefined, adminToken),
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(json.items.map((item: { id: string }) => item.id)).toContain(contractId)
+  })
+
+  it('esconde da lista do AGENT os contratos de imóveis de outro responsável', async () => {
+    const response = await GET(
+      buildRequest('http://localhost/api/contracts', 'GET', undefined, otherAgentToken),
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(json.items.map((item: { id: string }) => item.id)).not.toContain(contractId)
+    expect(json.totalCount).toBe(0)
+  })
+
+  it('retorna 404 quando um AGENT consulta contrato de imóvel de outro responsável', async () => {
+    const response = await getContract(
+      buildRequest(
+        `http://localhost/api/contracts/${contractId}`,
+        'GET',
+        undefined,
+        otherAgentToken,
+      ),
+      { params: Promise.resolve({ id: contractId }) },
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(404)
+    expect(json.error.code).toBe('CONTRACT_NOT_FOUND')
+  })
+
+  it('retorna 403 quando um RENTER lista ou consulta contratos', async () => {
+    const listResponse = await GET(
+      buildRequest('http://localhost/api/contracts', 'GET', undefined, renterToken),
+    )
+    const detailResponse = await getContract(
+      buildRequest(`http://localhost/api/contracts/${contractId}`, 'GET', undefined, renterToken),
+      { params: Promise.resolve({ id: contractId }) },
+    )
+
+    expect(listResponse.status).toBe(403)
+    expect((await listResponse.json()).error.code).toBe('FORBIDDEN')
+    expect(detailResponse.status).toBe(403)
+    expect((await detailResponse.json()).error.code).toBe('FORBIDDEN')
   })
 
   function partyContext(id: string, partyId: string) {

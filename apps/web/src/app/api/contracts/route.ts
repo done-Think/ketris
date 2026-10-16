@@ -28,6 +28,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   const result = await contractsContainer.listContractsUseCase.execute({
     tenantId: actor.tenantId,
+    actorId: actor.sub,
+    actorPapel: actor.papel as Papel,
     status: parsed.data.status,
     type: parsed.data.type,
     propertyId: parsed.data.propertyId,

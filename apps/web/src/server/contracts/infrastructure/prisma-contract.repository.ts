@@ -4,6 +4,7 @@ import { prisma } from '@server/db/prisma'
 
 import type {
   Contract,
+  ContractAccessScope,
   ContractListFilters,
   ContractListResult,
   EligibleOpportunity,
@@ -148,6 +149,7 @@ export class PrismaContractRepository implements ContractRepository {
       status: filters.status,
       tipo: filters.type,
       imovelId: filters.propertyId,
+      ...(filters.responsibleId ? { imovel: { responsavelId: filters.responsibleId } } : {}),
       ...(search
         ? {
             OR: [
@@ -213,9 +215,17 @@ export class PrismaContractRepository implements ContractRepository {
     }
   }
 
-  async findById(tenantId: string, contractId: string): Promise<Contract | null> {
+  async findById(
+    tenantId: string,
+    contractId: string,
+    scope: ContractAccessScope = {},
+  ): Promise<Contract | null> {
     const contrato = await prisma.contrato.findFirst({
-      where: { tenantId, id: contractId },
+      where: {
+        tenantId,
+        id: contractId,
+        ...(scope.responsibleId ? { imovel: { responsavelId: scope.responsibleId } } : {}),
+      },
       include: contractInclude,
     })
 

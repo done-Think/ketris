@@ -4,6 +4,7 @@ import {
   ContractNotFoundError,
   ContractPartyAlreadySignedError,
   ContractPartyNotFoundError,
+  ContractRenterForbiddenError,
   GuarantorPartyRequiredError,
   OpportunityAlreadyHasContractError,
   OpportunityNotAcceptedError,
@@ -119,14 +120,12 @@ describe('CreateContractFromOpportunityUseCase', () => {
 
   it('lança OpportunityAlreadyHasContractError quando a oportunidade já tem contrato', async () => {
     const repository = createRepository({
-      findEligibleOpportunity: vi
-        .fn()
-        .mockResolvedValue({
-          id: 'opportunity-1',
-          propertyId: 'property-1',
-          status: 'ACEITA',
-          hasContract: true,
-        }),
+      findEligibleOpportunity: vi.fn().mockResolvedValue({
+        id: 'opportunity-1',
+        propertyId: 'property-1',
+        status: 'ACEITA',
+        hasContract: true,
+      }),
     })
     const useCase = new CreateContractFromOpportunityUseCase(repository)
 
@@ -193,33 +192,105 @@ describe('CreateContractFromOpportunityUseCase', () => {
 })
 
 describe('ListContractsUseCase', () => {
-  it('delega os filtros para o repositório', async () => {
+  it.each(['ADMIN', 'OWNER'] as const)(
+    'lista todos os contratos do tenant para %s, sem filtro de responsável',
+    async (actorPapel) => {
+      const repository = createRepository()
+      const useCase = new ListContractsUseCase(repository)
+
+      await useCase.execute({
+        tenantId: 'tenant-1',
+        actorId: 'user-1',
+        actorPapel,
+        status: 'ATIVO',
+      })
+
+      expect(repository.findMany).toHaveBeenCalledWith({
+        tenantId: 'tenant-1',
+        status: 'ATIVO',
+        responsibleId: undefined,
+      })
+    },
+  )
+
+  it('restringe a lista do AGENT aos imóveis pelos quais ele é responsável', async () => {
     const repository = createRepository()
     const useCase = new ListContractsUseCase(repository)
 
-    await useCase.execute({ tenantId: 'tenant-1', status: 'ATIVO' })
+    await useCase.execute({ tenantId: 'tenant-1', actorId: 'agent-1', actorPapel: 'AGENT' })
 
-    expect(repository.findMany).toHaveBeenCalledWith({ tenantId: 'tenant-1', status: 'ATIVO' })
+    expect(repository.findMany).toHaveBeenCalledWith({
+      tenantId: 'tenant-1',
+      responsibleId: 'agent-1',
+    })
+  })
+
+  it('lança 403 para RENTER sem consultar o repositório', async () => {
+    const repository = createRepository()
+    const useCase = new ListContractsUseCase(repository)
+
+    await expect(
+      useCase.execute({ tenantId: 'tenant-1', actorId: 'renter-1', actorPapel: 'RENTER' }),
+    ).rejects.toThrow(ContractRenterForbiddenError)
+    expect(repository.findMany).not.toHaveBeenCalled()
   })
 })
 
 describe('GetContractUseCase', () => {
+  const baseGetInput = {
+    actorTenantId: 'tenant-1',
+    actorId: 'user-1',
+    actorPapel: 'ADMIN' as const,
+    contractId: 'contract-1',
+  }
+
   it('lança ContractNotFoundError quando o contrato não existe no tenant', async () => {
     const repository = createRepository({ findById: vi.fn().mockResolvedValue(null) })
     const useCase = new GetContractUseCase(repository)
 
-    await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', contractId: 'missing' }),
-    ).rejects.toThrow(ContractNotFoundError)
+    await expect(useCase.execute({ ...baseGetInput, contractId: 'missing' })).rejects.toThrow(
+      ContractNotFoundError,
+    )
   })
 
-  it('retorna o contrato quando encontrado', async () => {
+  it('retorna o contrato quando encontrado, sem filtro de responsável para ADMIN', async () => {
     const repository = createRepository()
     const useCase = new GetContractUseCase(repository)
 
-    const result = await useCase.execute({ actorTenantId: 'tenant-1', contractId: 'contract-1' })
+    const result = await useCase.execute(baseGetInput)
 
     expect(result).toEqual(contract)
+    expect(repository.findById).toHaveBeenCalledWith('tenant-1', 'contract-1', {})
+  })
+
+  it('busca o contrato do AGENT só entre os imóveis pelos quais ele é responsável', async () => {
+    const repository = createRepository()
+    const useCase = new GetContractUseCase(repository)
+
+    await useCase.execute({ ...baseGetInput, actorId: 'agent-1', actorPapel: 'AGENT' })
+
+    expect(repository.findById).toHaveBeenCalledWith('tenant-1', 'contract-1', {
+      responsibleId: 'agent-1',
+    })
+  })
+
+  it('responde 404 para o AGENT quando o contrato é de imóvel de outro responsável', async () => {
+    const repository = createRepository({ findById: vi.fn().mockResolvedValue(null) })
+    const useCase = new GetContractUseCase(repository)
+
+    await expect(
+      useCase.execute({ ...baseGetInput, actorId: 'agent-2', actorPapel: 'AGENT' }),
+    ).rejects.toThrow(ContractNotFoundError)
+  })
+
+  it('lança 403 para RENTER sem consultar o repositório', async () => {
+    const repository = createRepository()
+    const useCase = new GetContractUseCase(repository)
+
+    await expect(
+      useCase.execute({ ...baseGetInput, actorId: 'renter-1', actorPapel: 'RENTER' }),
+    ).rejects.toThrow(ContractRenterForbiddenError)
+    expect(repository.findById).not.toHaveBeenCalled()
   })
 })
 
