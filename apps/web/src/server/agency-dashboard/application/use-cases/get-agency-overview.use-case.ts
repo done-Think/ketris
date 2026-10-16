@@ -38,7 +38,10 @@ export class GetAgencyOverviewUseCase {
       this.repository.getActiveBrokersCount(input.actorTenantId),
       this.repository.getReceivedLeadsThisMonth(input.actorTenantId, referenceDate),
       this.repository.getOccupancyPercentage(input.actorTenantId),
-      this.financialSummaryProvider.execute({ actorTenantId: input.actorTenantId }),
+      this.financialSummaryProvider.execute({
+        actorTenantId: input.actorTenantId,
+        actorPapel: input.actorPapel,
+      }),
       this.repository.getTopBrokers(input.actorTenantId),
       this.repository.getRecentActivities(input.actorTenantId),
     ])
