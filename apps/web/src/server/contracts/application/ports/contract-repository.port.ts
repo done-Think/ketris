@@ -13,11 +13,11 @@ export interface ContractRepository {
     opportunityId: string,
   ): Promise<EligibleOpportunity | null>
   create(input: NewContract): Promise<Contract>
-  findMany(filters: ContractListFilters): Promise<ContractListResult>
+  findMany(filters: ContractListFilters, scope: ContractAccessScope): Promise<ContractListResult>
   findById(
     tenantId: string,
     contractId: string,
-    scope?: ContractAccessScope,
+    scope: ContractAccessScope,
   ): Promise<Contract | null>
   signParty(
     tenantId: string,

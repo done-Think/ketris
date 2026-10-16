@@ -85,14 +85,13 @@ export interface NewContract {
   parties: NewContractParty[]
 }
 
-// Limits reads to contracts of properties the actor is responsible for (AGENT).
+// Limits contract access to properties the actor is responsible for (AGENT).
 export interface ContractAccessScope {
   responsibleId?: string
 }
 
 export interface ContractListFilters {
   tenantId: string
-  responsibleId?: string
   status?: ContractStatus
   type?: ContractType
   propertyId?: string

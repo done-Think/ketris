@@ -88,6 +88,10 @@ async function generateContractCode(): Promise<string> {
 
 const usuarioRefSelect = { select: { id: true, nome: true } } as const
 
+function scopeWhere(scope: ContractAccessScope) {
+  return scope.responsibleId ? { imovel: { responsavelId: scope.responsibleId } } : {}
+}
+
 const contractInclude = {
   ativadoPor: usuarioRefSelect,
   partes: { include: { assinatura: { include: { assinadaPor: usuarioRefSelect } } } },
@@ -153,7 +157,10 @@ export class PrismaContractRepository implements ContractRepository {
     return toDomainContract(contrato)
   }
 
-  async findMany(filters: ContractListFilters): Promise<ContractListResult> {
+  async findMany(
+    filters: ContractListFilters,
+    scope: ContractAccessScope,
+  ): Promise<ContractListResult> {
     const page = filters.page && filters.page > 0 ? Math.floor(filters.page) : 1
     const pageSize = filters.pageSize && filters.pageSize > 0 ? Math.floor(filters.pageSize) : 10
     const search = filters.search?.trim()
@@ -163,7 +170,7 @@ export class PrismaContractRepository implements ContractRepository {
       status: filters.status,
       tipo: filters.type,
       imovelId: filters.propertyId,
-      ...(filters.responsibleId ? { imovel: { responsavelId: filters.responsibleId } } : {}),
+      ...scopeWhere(scope),
       ...(search
         ? {
             OR: [
@@ -232,13 +239,13 @@ export class PrismaContractRepository implements ContractRepository {
   async findById(
     tenantId: string,
     contractId: string,
-    scope: ContractAccessScope = {},
+    scope: ContractAccessScope,
   ): Promise<Contract | null> {
     const contrato = await prisma.contrato.findFirst({
       where: {
         tenantId,
         id: contractId,
-        ...(scope.responsibleId ? { imovel: { responsavelId: scope.responsibleId } } : {}),
+        ...scopeWhere(scope),
       },
       include: contractInclude,
     })

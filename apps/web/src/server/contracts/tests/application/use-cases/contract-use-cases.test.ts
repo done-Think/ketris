@@ -208,11 +208,10 @@ describe('ListContractsUseCase', () => {
         status: 'ATIVO',
       })
 
-      expect(repository.findMany).toHaveBeenCalledWith({
-        tenantId: 'tenant-1',
-        status: 'ATIVO',
-        responsibleId: undefined,
-      })
+      expect(repository.findMany).toHaveBeenCalledWith(
+        { tenantId: 'tenant-1', status: 'ATIVO' },
+        {},
+      )
     },
   )
 
@@ -222,10 +221,10 @@ describe('ListContractsUseCase', () => {
 
     await useCase.execute({ tenantId: 'tenant-1', actorId: 'agent-1', actorPapel: 'AGENT' })
 
-    expect(repository.findMany).toHaveBeenCalledWith({
-      tenantId: 'tenant-1',
-      responsibleId: 'agent-1',
-    })
+    expect(repository.findMany).toHaveBeenCalledWith(
+      { tenantId: 'tenant-1' },
+      { responsibleId: 'agent-1' },
+    )
   })
 
   it('lança 403 para RENTER sem consultar o repositório', async () => {

@@ -4,7 +4,7 @@ import { resolveContractAccessScope } from '../../domain/contract-access-rules'
 import type { ContractListFilters, ContractListResult } from '../../domain/contract.entity'
 import type { ContractRepository } from '../ports/contract-repository.port'
 
-export interface ListContractsInput extends Omit<ContractListFilters, 'responsibleId'> {
+export interface ListContractsInput extends ContractListFilters {
   actorId: string
   actorPapel: Papel
 }
@@ -19,6 +19,6 @@ export class ListContractsUseCase {
   }: ListContractsInput): Promise<ContractListResult> {
     const scope = resolveContractAccessScope(actorId, actorPapel)
 
-    return this.contractRepository.findMany({ ...filters, responsibleId: scope.responsibleId })
+    return this.contractRepository.findMany(filters, scope)
   }
 }
