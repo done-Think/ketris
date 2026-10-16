@@ -49,7 +49,7 @@ export function MaintenanceCreateTicketDialog({
 }: MaintenanceCreateTicketDialogProps) {
   const t = useTranslations('dashboard.maintenance.createDialog')
   const maintenanceT = useTranslations('dashboard.maintenance')
-  const { data: properties } = useProperties()
+  const { data: properties } = useProperties({ enabled: open })
   const propertyOptions = properties ?? []
   const maintenanceTicketSchema = useMemo(
     () => createMaintenanceTicketSchema((key) => t(`errors.${key}`)),

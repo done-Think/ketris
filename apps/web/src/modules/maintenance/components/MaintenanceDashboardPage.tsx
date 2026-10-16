@@ -118,7 +118,9 @@ export function MaintenanceDashboardPage() {
   // metric cards and the per-tab counts, which need totals across all tickets, not just the
   // current page/filter.
   const allTicketsQuery = useMaintenanceTickets(tenantId, { pageSize: 100 })
-  const propertiesQuery = useProperties()
+  // Waits for the session like the ticket queries: in the local dashboard preview the page renders
+  // before the session loads, and an unauthenticated request here would sign the user out.
+  const propertiesQuery = useProperties({ enabled: Boolean(tenantId) })
   const editTicketQuery = useMaintenanceTicket(tenantId, editingTicketId)
   const createMutation = useCreateMaintenanceTicket(tenantId)
   const updateMutation = useUpdateMaintenanceTicket(tenantId)

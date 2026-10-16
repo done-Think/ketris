@@ -8,10 +8,11 @@ export const propertyQueryKeys = {
   detail: (id: string) => [...propertyQueryKeys.all, id] as const,
 }
 
-export function useProperties() {
+export function useProperties({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: propertyQueryKeys.all,
     queryFn: () => propertiesService.list(),
+    enabled,
   })
 }
 
