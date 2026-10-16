@@ -1,7 +1,6 @@
-import { ForbiddenError } from '@server/shared/errors'
-
 import type { Papel } from '@server/auth/domain/user.entity'
 
+import { resolveContractAccessScope } from '../../domain/contract-access-rules'
 import {
   ContractNotFoundError,
   ContractPartyAlreadySignedError,
@@ -12,6 +11,7 @@ import type { ContractRepository } from '../ports/contract-repository.port'
 
 export interface SignContractPartyInput {
   actorTenantId: string
+  actorId: string
   actorPapel: Papel
   contractId: string
   partyId: string
@@ -21,11 +21,12 @@ export class SignContractPartyUseCase {
   constructor(private readonly contractRepository: ContractRepository) {}
 
   async execute(input: SignContractPartyInput): Promise<Contract> {
-    if (input.actorPapel === 'RENTER') {
-      throw new ForbiddenError('Locatários não podem gerenciar contratos.')
-    }
-
-    const contract = await this.contractRepository.findById(input.actorTenantId, input.contractId)
+    const scope = resolveContractAccessScope(input.actorId, input.actorPapel)
+    const contract = await this.contractRepository.findById(
+      input.actorTenantId,
+      input.contractId,
+      scope,
+    )
 
     if (!contract) {
       throw new ContractNotFoundError()

@@ -109,6 +109,9 @@ export function registerContractsOpenApi(registry: OpenAPIRegistry): void {
     path: '/contracts/{id}/parties/{partyId}/sign',
     tags: ['Contracts'],
     summary: 'Registra a assinatura de uma parte do contrato',
+    description:
+      'Segue a mesma regra de acesso da consulta do contrato: um ator AGENT recebe 404 opaco para ' +
+      'um contrato de imóvel do qual não é responsável, e RENTER não acessa contratos.',
     security: [{ bearerAuth: [] }],
     request: { params: contractPartyIdParamsSchema },
     responses: {
@@ -116,8 +119,18 @@ export function registerContractsOpenApi(registry: OpenAPIRegistry): void {
         description: 'Assinatura registrada; contrato ativado se era a última assinatura pendente.',
         content: { 'application/json': { schema: contractResponseSchema } },
       },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Autenticado como RENTER — não pode acessar contratos.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
       404: {
-        description: 'Contrato ou parte não encontrados neste tenant.',
+        description:
+          'Contrato ou parte não encontrados neste tenant, ou contrato de imóvel de outro ' +
+          'responsável (AGENT).',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       409: {

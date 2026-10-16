@@ -321,6 +321,42 @@ describe('/api/contracts (integração)', () => {
     return { params: Promise.resolve({ id, partyId }) }
   }
 
+  it('retorna 404 e não assina quando o AGENT não é o responsável pelo imóvel', async () => {
+    const response = await signParty(
+      buildRequest(
+        `http://localhost/api/contracts/${contractId}/parties/${ownerPartyId}/sign`,
+        'POST',
+        undefined,
+        otherAgentToken,
+      ),
+      partyContext(contractId, ownerPartyId),
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(404)
+    expect(json.error.code).toBe('CONTRACT_NOT_FOUND')
+
+    const signature = await prisma.assinatura.findUniqueOrThrow({
+      where: { parteContratoId: ownerPartyId },
+    })
+    expect(signature.status).toBe('PENDENTE')
+  })
+
+  it('retorna 403 quando um RENTER tenta assinar', async () => {
+    const response = await signParty(
+      buildRequest(
+        `http://localhost/api/contracts/${contractId}/parties/${ownerPartyId}/sign`,
+        'POST',
+        undefined,
+        renterToken,
+      ),
+      partyContext(contractId, ownerPartyId),
+    )
+
+    expect(response.status).toBe(403)
+    expect((await response.json()).error.code).toBe('FORBIDDEN')
+  })
+
   it('mantém o contrato e o imóvel fora do estado ativo enquanto faltam assinaturas', async () => {
     const response = await signParty(
       buildRequest(
@@ -356,13 +392,13 @@ describe('/api/contracts (integração)', () => {
     expect(json.error.code).toBe('CONTRACT_PARTY_ALREADY_SIGNED')
   })
 
-  it('ativa o contrato, aluga o imóvel e gera a primeira cobrança quando a última parte assina', async () => {
+  it('ativa o contrato, aluga o imóvel e gera a primeira cobrança quando a última parte assina (pelo ADMIN)', async () => {
     const response = await signParty(
       buildRequest(
         `http://localhost/api/contracts/${contractId}/parties/${tenantPartyId}/sign`,
         'POST',
         undefined,
-        actorToken,
+        adminToken,
       ),
       partyContext(contractId, tenantPartyId),
     )

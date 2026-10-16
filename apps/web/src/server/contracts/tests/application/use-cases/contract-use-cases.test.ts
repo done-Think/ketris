@@ -295,71 +295,89 @@ describe('GetContractUseCase', () => {
 })
 
 describe('SignContractPartyUseCase', () => {
-  it('lança ForbiddenError quando o ator é RENTER', async () => {
-    const useCase = new SignContractPartyUseCase(createRepository())
+  const baseSignInput = {
+    actorTenantId: 'tenant-1',
+    actorId: 'agent-1',
+    actorPapel: 'AGENT' as const,
+    contractId: 'contract-1',
+    partyId: 'party-owner',
+  }
+
+  it('lança 403 quando o ator é RENTER, sem consultar o repositório', async () => {
+    const repository = createRepository()
+    const useCase = new SignContractPartyUseCase(repository)
 
     await expect(
-      useCase.execute({
-        actorTenantId: 'tenant-1',
-        actorPapel: 'RENTER',
-        contractId: 'contract-1',
-        partyId: 'party-owner',
-      }),
+      useCase.execute({ ...baseSignInput, actorId: 'renter-1', actorPapel: 'RENTER' }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
+    expect(repository.findById).not.toHaveBeenCalled()
   })
 
   it('lança ContractNotFoundError quando o contrato não existe no tenant', async () => {
     const repository = createRepository({ findById: vi.fn().mockResolvedValue(null) })
     const useCase = new SignContractPartyUseCase(repository)
 
-    await expect(
-      useCase.execute({
-        actorTenantId: 'tenant-1',
-        actorPapel: 'AGENT',
-        contractId: 'missing',
-        partyId: 'party-owner',
-      }),
-    ).rejects.toThrow(ContractNotFoundError)
+    await expect(useCase.execute({ ...baseSignInput, contractId: 'missing' })).rejects.toThrow(
+      ContractNotFoundError,
+    )
+  })
+
+  it('busca o contrato do AGENT só entre os imóveis pelos quais ele é responsável', async () => {
+    const repository = createRepository()
+    const useCase = new SignContractPartyUseCase(repository)
+
+    await useCase.execute(baseSignInput)
+
+    expect(repository.findById).toHaveBeenCalledWith('tenant-1', 'contract-1', {
+      responsibleId: 'agent-1',
+    })
+  })
+
+  it('não assina e responde 404 quando o AGENT não é o responsável pelo imóvel', async () => {
+    const repository = createRepository({ findById: vi.fn().mockResolvedValue(null) })
+    const useCase = new SignContractPartyUseCase(repository)
+
+    await expect(useCase.execute({ ...baseSignInput, actorId: 'agent-2' })).rejects.toThrow(
+      ContractNotFoundError,
+    )
+    expect(repository.signParty).not.toHaveBeenCalled()
+  })
+
+  it('deixa ADMIN e OWNER assinarem qualquer contrato do tenant', async () => {
+    const repository = createRepository()
+    const useCase = new SignContractPartyUseCase(repository)
+
+    await useCase.execute({ ...baseSignInput, actorId: 'admin-1', actorPapel: 'ADMIN' })
+    await useCase.execute({ ...baseSignInput, actorId: 'owner-1', actorPapel: 'OWNER' })
+
+    expect(repository.findById).toHaveBeenNthCalledWith(1, 'tenant-1', 'contract-1', {})
+    expect(repository.findById).toHaveBeenNthCalledWith(2, 'tenant-1', 'contract-1', {})
+    expect(repository.signParty).toHaveBeenCalledTimes(2)
   })
 
   it('lança ContractPartyNotFoundError quando a parte não pertence ao contrato', async () => {
     const repository = createRepository()
     const useCase = new SignContractPartyUseCase(repository)
 
-    await expect(
-      useCase.execute({
-        actorTenantId: 'tenant-1',
-        actorPapel: 'AGENT',
-        contractId: 'contract-1',
-        partyId: 'party-unknown',
-      }),
-    ).rejects.toThrow(ContractPartyNotFoundError)
+    await expect(useCase.execute({ ...baseSignInput, partyId: 'party-unknown' })).rejects.toThrow(
+      ContractPartyNotFoundError,
+    )
   })
 
   it('lança ContractPartyAlreadySignedError quando a parte já assinou', async () => {
     const repository = createRepository()
     const useCase = new SignContractPartyUseCase(repository)
 
-    await expect(
-      useCase.execute({
-        actorTenantId: 'tenant-1',
-        actorPapel: 'AGENT',
-        contractId: 'contract-1',
-        partyId: 'party-tenant',
-      }),
-    ).rejects.toThrow(ContractPartyAlreadySignedError)
+    await expect(useCase.execute({ ...baseSignInput, partyId: 'party-tenant' })).rejects.toThrow(
+      ContractPartyAlreadySignedError,
+    )
   })
 
   it('assina a parte pendente e retorna o contrato atualizado', async () => {
     const repository = createRepository()
     const useCase = new SignContractPartyUseCase(repository)
 
-    const result = await useCase.execute({
-      actorTenantId: 'tenant-1',
-      actorPapel: 'AGENT',
-      contractId: 'contract-1',
-      partyId: 'party-owner',
-    })
+    const result = await useCase.execute(baseSignInput)
 
     expect(repository.signParty).toHaveBeenCalledWith('tenant-1', 'contract-1', 'party-owner')
     expect(result.status).toBe('ATIVO')
