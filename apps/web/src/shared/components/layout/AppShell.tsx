@@ -42,7 +42,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
     if (isLocalDashboardPreview) return appShellNavigationItems
 
     return appShellNavigationItems.filter(
-      (item) => !item.roles || (session?.papel && item.roles.includes(session.papel)),
+      (item) => !item.roles || (session?.role && item.roles.includes(session.role)),
     )
   }, [isLocalDashboardPreview, session])
   const activeTargetPath = useMemo(() => {

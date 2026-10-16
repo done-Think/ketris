@@ -21,7 +21,7 @@ export default async function DashboardLayout({
     redirect(getLocalizedPathname('/login', locale))
   }
 
-  if (session.papel === 'RENTER') {
+  if (session.role === 'RENTER') {
     redirect(getLocalizedPathname('/', locale))
   }
 

@@ -74,8 +74,8 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
       ? toDashboardProperty(propertyQuery.data, mappingOptions)
       : notFound()
   const canManage =
-    session?.papel === 'ADMIN' ||
-    session?.papel === 'OWNER' ||
+    session?.role === 'ADMIN' ||
+    session?.role === 'OWNER' ||
     session?.user?.id === property.responsibleUserId
 
   const handlePublish = async () => {
