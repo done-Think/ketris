@@ -449,4 +449,57 @@ describe('/api/contracts (integração)', () => {
       json.contract.parties.map((party: { signedBy: { name: string } }) => party.signedBy.name),
     ).toEqual(expect.arrayContaining(['Corretor', 'Usuário ADMIN']))
   })
+
+  it('quando duas pessoas assinam a mesma parte ao mesmo tempo, só uma assina e o contrato ativa uma vez', async () => {
+    const opportunity = await prisma.oportunidade.create({
+      data: {
+        tenantId,
+        imovelId: propertyId,
+        interessadoNome: 'Paula Reis',
+        interessadoEmail: 'paula@example.com',
+        valorProposto: 3100,
+        status: 'ACEITA',
+      },
+    })
+    const created = await POST(
+      buildRequest(
+        'http://localhost/api/contracts',
+        'POST',
+        { ...createPayload, opportunityId: opportunity.id },
+        actorToken,
+      ),
+    )
+    const { contract } = await created.json()
+    const owner = contract.parties.find((party: { role: string }) => party.role === 'LOCADOR')
+    const tenant = contract.parties.find((party: { role: string }) => party.role === 'LOCATARIO')
+    const signAs = (partyId: string, token: string) =>
+      signParty(
+        buildRequest(
+          `http://localhost/api/contracts/${contract.id}/parties/${partyId}/sign`,
+          'POST',
+          undefined,
+          token,
+        ),
+        partyContext(contract.id, partyId),
+      )
+
+    await signAs(owner.id, actorToken)
+    const responses = await Promise.all([
+      signAs(tenant.id, actorToken),
+      signAs(tenant.id, adminToken),
+    ])
+
+    expect(responses.map((response) => response.status).sort()).toEqual([200, 409])
+    const winnerIndex = responses.findIndex((response) => response.status === 200)
+    const winnerName = winnerIndex === 0 ? 'Corretor' : 'Usuário ADMIN'
+    const { contract: activated } = await responses[winnerIndex].json()
+    expect(activated.status).toBe('ATIVO')
+    expect(activated.activatedBy).toMatchObject({ name: winnerName })
+    expect(
+      activated.parties.find((party: { id: string }) => party.id === tenant.id).signedBy,
+    ).toMatchObject({ name: winnerName })
+
+    const charges = await prisma.cobranca.findMany({ where: { contratoId: contract.id } })
+    expect(charges).toHaveLength(1)
+  })
 })

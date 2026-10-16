@@ -11,6 +11,7 @@ import type {
   NewContract,
 } from '../domain/contract.entity'
 import type { ContractRepository } from '../application/ports/contract-repository.port'
+import { ContractPartyAlreadySignedError } from '../domain/errors'
 
 type UsuarioRef = { id: string; nome: string }
 
@@ -260,10 +261,16 @@ export class PrismaContractRepository implements ContractRepository {
     actorId: string,
   ): Promise<Contract> {
     const updated = await prisma.$transaction(async (tx) => {
-      await tx.assinatura.update({
-        where: { parteContratoId: partyId },
+      // Conditional on PENDENTE so two concurrent requests for the same party cannot both sign
+      // it (the second would overwrite who signed); the loser gets a 409.
+      const { count } = await tx.assinatura.updateMany({
+        where: { parteContratoId: partyId, status: 'PENDENTE' },
         data: { status: 'ASSINADA', assinadaEm: new Date(), assinadaPorId: actorId },
       })
+
+      if (count === 0) {
+        throw new ContractPartyAlreadySignedError()
+      }
 
       const contrato = await tx.contrato.findFirstOrThrow({
         where: { tenantId, id: contractId },
