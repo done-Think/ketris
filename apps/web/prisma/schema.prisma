@@ -65,6 +65,8 @@ model Usuario {
   codigosRecuperacaoSenha  PasswordResetCode[]
   eventosAgendaResponsavel EventoAgenda[]                     @relation("EventoAgendaResponsavel")
   eventosAgendaCriados     EventoAgenda[]                     @relation("EventoAgendaCriadoPor")
+  assinaturasRegistradas   Assinatura[]                       @relation("AssinaturaRegistradaPor")
+  contratosAtivados        Contrato[]                         @relation("ContratoAtivadoPor")
   leadsResponsavel         Lead[]                             @relation("LeadResponsavel")
   perfilPublico            PerfilPublicoCorretor?
   destaquesRecebidos       PerfilPublicoImobiliariaDestaque[]
@@ -119,14 +121,14 @@ enum PlatformAdminRole {
 }
 
 model PlatformAdmin {
-  id        String   @id @default(cuid())
+  id        String            @id @default(cuid())
   nome      String
-  email     String   @unique
+  email     String            @unique
   senhaHash String
   role      PlatformAdminRole @default(ADMIN)
-  ativo     Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  ativo     Boolean           @default(true)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
 
   refreshTokens PlatformAdminRefreshToken[]
 
@@ -523,10 +525,13 @@ model Contrato {
   observacoes          String?
   status               StatusContrato @default(RASCUNHO)
   ativadoEm            DateTime?
+  // Quem registrou a última assinatura, que ativou o contrato.
+  ativadoPorId         String?
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
 
   tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  ativadoPor         Usuario?            @relation("ContratoAtivadoPor", fields: [ativadoPorId], references: [id], onDelete: SetNull)
   // Restrict (não Cascade): um contrato nunca pode desaparecer junto com o imóvel excluído.
   imovel             Imovel              @relation(fields: [imovelId], references: [id], onDelete: Restrict)
   oportunidadeOrigem Oportunidade        @relation(fields: [oportunidadeOrigemId], references: [id])
@@ -584,8 +589,11 @@ model Assinatura {
   parteContratoId String           @unique // uma assinatura por parte do contrato
   status          StatusAssinatura @default(PENDENTE)
   assinadaEm      DateTime?
+  // Usuário da imobiliária que registrou a assinatura no sistema.
+  assinadaPorId   String?
 
   parteContrato ParteContrato @relation(fields: [parteContratoId], references: [id], onDelete: Cascade)
+  assinadaPor   Usuario?      @relation("AssinaturaRegistradaPor", fields: [assinadaPorId], references: [id], onDelete: SetNull)
 
   @@map("assinaturas")
 }

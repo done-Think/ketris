@@ -12,9 +12,18 @@ import type {
 } from '../domain/contract.entity'
 import type { ContractRepository } from '../application/ports/contract-repository.port'
 
+type UsuarioRef = { id: string; nome: string }
+
 type ContratoWithRelations = Contrato & {
-  partes: (ParteContrato & { assinatura: Assinatura | null })[]
+  ativadoPor: UsuarioRef | null
+  partes: (ParteContrato & {
+    assinatura: (Assinatura & { assinadaPor: UsuarioRef | null }) | null
+  })[]
   documentos: { id: string; nome: string; url: string | null; createdAt: Date }[]
+}
+
+function toContractActor(usuario: UsuarioRef | null | undefined) {
+  return usuario ? { id: usuario.id, name: usuario.nome } : null
 }
 
 function toDomainContract(contrato: ContratoWithRelations): Contract {
@@ -34,6 +43,7 @@ function toDomainContract(contrato: ContratoWithRelations): Contract {
     notes: contrato.observacoes,
     status: contrato.status,
     activatedAt: contrato.ativadoEm,
+    activatedBy: toContractActor(contrato.ativadoPor),
     createdAt: contrato.createdAt,
     updatedAt: contrato.updatedAt,
     parties: contrato.partes.map((parte) => ({
@@ -45,6 +55,7 @@ function toDomainContract(contrato: ContratoWithRelations): Contract {
       phone: parte.telefone,
       signatureStatus: parte.assinatura?.status ?? 'PENDENTE',
       signedAt: parte.assinatura?.assinadaEm ?? null,
+      signedBy: toContractActor(parte.assinatura?.assinadaPor),
     })),
     documents: contrato.documentos.map((documento) => ({
       id: documento.id,
@@ -75,8 +86,11 @@ async function generateContractCode(): Promise<string> {
   return `CTR-${year}-${String(count + 1).padStart(4, '0')}`
 }
 
+const usuarioRefSelect = { select: { id: true, nome: true } } as const
+
 const contractInclude = {
-  partes: { include: { assinatura: true } },
+  ativadoPor: usuarioRefSelect,
+  partes: { include: { assinatura: { include: { assinadaPor: usuarioRefSelect } } } },
   documentos: true,
 } as const
 
@@ -232,11 +246,16 @@ export class PrismaContractRepository implements ContractRepository {
     return contrato ? toDomainContract(contrato) : null
   }
 
-  async signParty(tenantId: string, contractId: string, partyId: string): Promise<Contract> {
+  async signParty(
+    tenantId: string,
+    contractId: string,
+    partyId: string,
+    actorId: string,
+  ): Promise<Contract> {
     const updated = await prisma.$transaction(async (tx) => {
       await tx.assinatura.update({
         where: { parteContratoId: partyId },
-        data: { status: 'ASSINADA', assinadaEm: new Date() },
+        data: { status: 'ASSINADA', assinadaEm: new Date(), assinadaPorId: actorId },
       })
 
       const contrato = await tx.contrato.findFirstOrThrow({
@@ -252,7 +271,7 @@ export class PrismaContractRepository implements ContractRepository {
       if (allSigned && contrato.status !== 'ATIVO') {
         await tx.contrato.update({
           where: { id: contractId },
-          data: { status: 'ATIVO', ativadoEm: new Date() },
+          data: { status: 'ATIVO', ativadoEm: new Date(), ativadoPorId: actorId },
         })
         await tx.imovel.update({
           where: { id: contrato.imovelId },

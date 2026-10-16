@@ -371,6 +371,12 @@ describe('/api/contracts (integração)', () => {
 
     expect(response.status).toBe(200)
     expect(json.contract.status).toBe('AGUARDANDO_ASSINATURA')
+    expect(json.contract.activatedBy).toBeNull()
+
+    const ownerParty = json.contract.parties.find(
+      (party: { id: string }) => party.id === ownerPartyId,
+    )
+    expect(ownerParty.signedBy).toMatchObject({ name: 'Corretor' })
 
     const property = await prisma.imovel.findUniqueOrThrow({ where: { id: propertyId } })
     expect(property.status).toBe('PUBLISHED')
@@ -407,6 +413,12 @@ describe('/api/contracts (integração)', () => {
     expect(response.status).toBe(200)
     expect(json.contract.status).toBe('ATIVO')
     expect(json.contract.activatedAt).not.toBeNull()
+    expect(json.contract.activatedBy).toMatchObject({ name: 'Usuário ADMIN' })
+
+    const tenantParty = json.contract.parties.find(
+      (party: { id: string }) => party.id === tenantPartyId,
+    )
+    expect(tenantParty.signedBy).toMatchObject({ name: 'Usuário ADMIN' })
 
     const property = await prisma.imovel.findUniqueOrThrow({ where: { id: propertyId } })
     expect(property.status).toBe('RENTED')
@@ -432,5 +444,9 @@ describe('/api/contracts (integração)', () => {
         (party: { signatureStatus: string }) => party.signatureStatus === 'ASSINADA',
       ),
     ).toBe(true)
+    expect(json.contract.activatedBy).toMatchObject({ name: 'Usuário ADMIN' })
+    expect(
+      json.contract.parties.map((party: { signedBy: { name: string } }) => party.signedBy.name),
+    ).toEqual(expect.arrayContaining(['Corretor', 'Usuário ADMIN']))
   })
 })

@@ -17,6 +17,11 @@ export type ContractPartyRole = 'LOCADOR' | 'LOCATARIO' | 'FIADOR'
 
 export type SignatureStatus = 'PENDENTE' | 'ASSINADA'
 
+export interface ContractActor {
+  id: string
+  name: string
+}
+
 export interface ContractParty {
   id: string
   role: ContractPartyRole
@@ -26,6 +31,7 @@ export interface ContractParty {
   phone: string | null
   signatureStatus: SignatureStatus
   signedAt: Date | null
+  signedBy: ContractActor | null
 }
 
 export interface ContractDocument {
@@ -51,6 +57,7 @@ export interface Contract {
   notes: string | null
   status: ContractStatus
   activatedAt: Date | null
+  activatedBy: ContractActor | null
   createdAt: Date
   updatedAt: Date
   parties: ContractParty[]

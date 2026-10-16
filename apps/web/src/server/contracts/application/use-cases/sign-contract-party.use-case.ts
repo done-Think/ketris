@@ -42,6 +42,11 @@ export class SignContractPartyUseCase {
       throw new ContractPartyAlreadySignedError()
     }
 
-    return this.contractRepository.signParty(input.actorTenantId, input.contractId, input.partyId)
+    return this.contractRepository.signParty(
+      input.actorTenantId,
+      input.contractId,
+      input.partyId,
+      input.actorId,
+    )
   }
 }

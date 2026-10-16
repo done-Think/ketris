@@ -33,6 +33,7 @@ const contract: Contract = {
   notes: null,
   status: 'AGUARDANDO_ASSINATURA',
   activatedAt: null,
+  activatedBy: null,
   createdAt: new Date('2026-09-29T00:00:00.000Z'),
   updatedAt: new Date('2026-09-29T00:00:00.000Z'),
   parties: [
@@ -45,6 +46,7 @@ const contract: Contract = {
       phone: null,
       signatureStatus: 'PENDENTE',
       signedAt: null,
+      signedBy: null,
     },
     {
       id: 'party-tenant',
@@ -55,6 +57,7 @@ const contract: Contract = {
       phone: null,
       signatureStatus: 'ASSINADA',
       signedAt: new Date('2026-09-29T00:00:00.000Z'),
+      signedBy: { id: 'agent-1', name: 'Camila Rocha' },
     },
   ],
   documents: [],
@@ -379,7 +382,12 @@ describe('SignContractPartyUseCase', () => {
 
     const result = await useCase.execute(baseSignInput)
 
-    expect(repository.signParty).toHaveBeenCalledWith('tenant-1', 'contract-1', 'party-owner')
+    expect(repository.signParty).toHaveBeenCalledWith(
+      'tenant-1',
+      'contract-1',
+      'party-owner',
+      'agent-1',
+    )
     expect(result.status).toBe('ATIVO')
   })
 })

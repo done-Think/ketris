@@ -19,5 +19,10 @@ export interface ContractRepository {
     contractId: string,
     scope?: ContractAccessScope,
   ): Promise<Contract | null>
-  signParty(tenantId: string, contractId: string, partyId: string): Promise<Contract>
+  signParty(
+    tenantId: string,
+    contractId: string,
+    partyId: string,
+    actorId: string,
+  ): Promise<Contract>
 }
