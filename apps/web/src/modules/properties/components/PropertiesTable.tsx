@@ -253,7 +253,6 @@ export function PropertiesTable({
         columns={columns}
         rowHeight={82}
         columnHeaderHeight={56}
-        getRowSpacing={() => ({ top: 0, bottom: 10 })}
         disableColumnMenu
         disableColumnResize
         disableRowSelectionOnClick
@@ -283,10 +282,13 @@ export function PropertiesTable({
         sx={{
           border: 0,
           minHeight: emptyInventory ? 360 : 'auto',
-          px: 1.25,
-          pb: 1,
+          overflow: 'hidden',
+          borderRadius: `${radius.sm}px`,
           '& .MuiDataGrid-main': {
-            overflow: 'visible',
+            overflow: 'hidden',
+          },
+          '& .MuiDataGrid-topContainer': {
+            bgcolor: surface.paper,
           },
           '& .MuiDataGrid-columnHeaders': {
             bgcolor: surface.paper,
@@ -317,23 +319,17 @@ export function PropertiesTable({
             outline: 'none',
           },
           '& .MuiDataGrid-cell[data-field="title"]': {
-            borderLeft: '1px solid',
-            borderColor: alpha.graphite[8],
-            borderTopLeftRadius: `${radius.sm}px`,
-            borderBottomLeftRadius: `${radius.sm}px`,
+            borderLeft: 0,
           },
           '& .MuiDataGrid-cell[data-field="actions"]': {
-            borderRight: '1px solid',
-            borderColor: alpha.graphite[8],
-            borderTopRightRadius: `${radius.sm}px`,
-            borderBottomRightRadius: `${radius.sm}px`,
+            borderRight: 0,
           },
           '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': {
             outline: 'none',
           },
           '& .MuiDataGrid-row': {
             cursor: 'pointer',
-            borderRadius: `${radius.sm}px`,
+            borderRadius: 0,
           },
           '& .MuiDataGrid-row.properties-row-base': {
             bgcolor: surface.paper,
