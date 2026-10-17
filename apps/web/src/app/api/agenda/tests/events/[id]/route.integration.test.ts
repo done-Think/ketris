@@ -14,6 +14,7 @@ describe('/api/agenda/events/{id} (integração)', () => {
   let otherTenantId: string
   let actorId: string
   let actorToken: string
+  let renterToken: string
   let eventId: string
   let otherTenantEventId: string
 
@@ -46,6 +47,25 @@ describe('/api/agenda/events/{id} (integração)', () => {
       papel: actor.papel,
       ativo: actor.ativo,
       vinculoAprovadoEm: actor.vinculoAprovadoEm,
+    })
+
+    const renter = await prisma.usuario.create({
+      data: {
+        tenantId,
+        nome: 'Locatário Agenda',
+        email: `locatario-agenda-detail-${randomUUID()}@ketris.dev`,
+        senhaHash: 'hash-fake',
+        papel: 'RENTER',
+      },
+    })
+    renterToken = await tokenService.sign({
+      id: renter.id,
+      tenantId: renter.tenantId,
+      nome: renter.nome,
+      email: renter.email,
+      papel: renter.papel,
+      ativo: renter.ativo,
+      vinculoAprovadoEm: renter.vinculoAprovadoEm,
     })
 
     const event = await prisma.eventoAgenda.create({
@@ -123,6 +143,18 @@ describe('/api/agenda/events/{id} (integração)', () => {
     expect(json.event.id).toBe(eventId)
     expect(json.event.tenantId).toBe(tenantId)
     expect(json.event.responsibleId).toBe(actorId)
+  })
+
+  it('retorna 403 quando um RENTER do mesmo tenant tenta consultar um evento', async () => {
+    const response = await GET(
+      buildRequest('GET', eventId, undefined, renterToken),
+      context(eventId),
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(403)
+    expect(json.error.code).toBe('FORBIDDEN')
+    expect(json.event).toBeUndefined()
   })
 
   it('retorna 404 para evento de outro tenant', async () => {

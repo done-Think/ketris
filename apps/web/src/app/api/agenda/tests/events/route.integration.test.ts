@@ -271,6 +271,22 @@ describe('/api/agenda/events (integração)', () => {
     expect(titles).toContain('Reunião externa')
   })
 
+  it('retorna 403 quando um RENTER do mesmo tenant tenta listar a agenda', async () => {
+    const response = await GET(
+      buildRequest(
+        'GET',
+        'http://localhost/api/agenda/events?from=2030-01-15T00:00:00.000Z&to=2030-01-17T00:00:00.000Z',
+        undefined,
+        renterToken,
+      ),
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(403)
+    expect(json.error.code).toBe('FORBIDDEN')
+    expect(json.events).toBeUndefined()
+  })
+
   it('não retorna eventos fora do período informado', async () => {
     const response = await GET(
       buildRequest(

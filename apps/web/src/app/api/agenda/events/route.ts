@@ -33,6 +33,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   const events = await agendaContainer.listAgendaEventsUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorPapel: actor.papel as Papel,
     from: parsed.data.from,
     to: parsed.data.to,
     responsavelId: parsed.data.responsibleId,

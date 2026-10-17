@@ -1,9 +1,8 @@
-import { ForbiddenError } from '@server/shared/errors'
-
 import type { Papel } from '@server/auth/domain/user.entity'
 import { PropertyNotFoundError } from '@server/properties/domain/errors'
 import type { PropertyRepository } from '@server/properties/application/ports/property-repository.port'
 
+import { assertCanAccessAgenda } from '../../domain/agenda-access-rules'
 import { AgendaEventNotFoundError, AgendaVisitMinimumDurationError } from '../../domain/errors'
 import type { AgendaEventChanges } from '../../domain/agenda-event.entity'
 import type { AgendaEventRepository } from '../ports/agenda-event-repository.port'
@@ -21,9 +20,7 @@ export class UpdateAgendaEventUseCase {
   ) {}
 
   async execute(input: UpdateAgendaEventInput) {
-    if (input.actorPapel === 'RENTER') {
-      throw new ForbiddenError('Locatários não podem gerenciar a agenda.')
-    }
+    assertCanAccessAgenda(input.actorPapel)
 
     if (input.imovelId) {
       const property = await this.propertyRepository.findByTenantAndId(

@@ -1,4 +1,10 @@
-import { AppError, ConflictError, NotFoundError } from '@server/shared/errors'
+import { AppError, ConflictError, ForbiddenError, NotFoundError } from '@server/shared/errors'
+
+export class AgendaRenterForbiddenError extends ForbiddenError {
+  constructor() {
+    super('Locatários não podem acessar a agenda.')
+  }
+}
 
 export class AgendaEventNotFoundError extends NotFoundError {
   constructor() {
