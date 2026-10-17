@@ -1,8 +1,11 @@
 export interface ApiAgencyOverviewKpis {
   portfolioCount: number
+  newPropertiesThisMonth: number
   activeBrokersCount: number
   receivedLeadsThisMonth: number
+  receivedLeadsPreviousPeriod: number
   monthlyReceivable: number
+  monthlyReceivablePreviousMonth: number
   occupancyPercentage: number
 }
 
