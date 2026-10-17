@@ -53,3 +53,9 @@ export class TenantNotFoundError extends AppError {
     super('Tenant não encontrado.', { status: 404, code: 'TENANT_NOT_FOUND' })
   }
 }
+
+export class PlatformPlanNotFoundError extends AppError {
+  constructor() {
+    super('Plano não encontrado.', { status: 404, code: 'PLATFORM_PLAN_NOT_FOUND' })
+  }
+}

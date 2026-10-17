@@ -1,21 +1,29 @@
 import { ThemeProvider } from '@mui/material'
-import { act, fireEvent, render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { LineChartProps } from '@mui/x-charts/LineChart'
-import type { BarChartProps } from '@mui/x-charts/BarChart'
+import { render, screen, within } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
 
 import { PlatformSystemPage } from '../../components/PlatformSystemPage'
-import { networkTraffic, errorNotifications } from '../../data/platform-system-fixtures'
+import type { ApiSystemHealth } from '../../types/platform-system'
 
-vi.mock('@mui/x-charts/LineChart', () => ({
-  LineChart: () => <div aria-label="Network traffic chart" />,
-}))
-vi.mock('@mui/x-charts/BarChart', () => ({
-  BarChart: () => <div aria-label="Error notifications chart" />,
-}))
+const { useSystemHealth } = vi.hoisted(() => ({ useSystemHealth: vi.fn() }))
+vi.mock('../../hooks/use-system-health', () => ({ useSystemHealth }))
+
+const healthy: ApiSystemHealth = {
+  checkedAt: '2026-10-15T12:00:05.000Z',
+  database: { status: 'up', latencyMs: 12 },
+  serverUptimeSeconds: 2 * 3600 + 15 * 60 + 30,
+  errorTracking: { configured: false },
+}
+
+function mockHealth(data: Partial<ApiSystemHealth>) {
+  vi.mocked(useSystemHealth).mockReturnValue({
+    data: { ...healthy, ...data },
+    isPending: false,
+    isError: false,
+  })
+}
 
 function renderPage() {
   return render(
@@ -26,56 +34,102 @@ function renderPage() {
 }
 
 describe('PlatformSystemPage', () => {
-  afterEach(() => vi.useRealTimers())
+  beforeEach(() => mockHealth({}))
 
-  it('provides correctly typed chart datasets', () => {
-    const traffic: LineChartProps['dataset'] = [...networkTraffic]
-    const errors: BarChartProps['dataset'] = [...errorNotifications]
-    expect(traffic).toHaveLength(networkTraffic.length)
-    expect(errors).toHaveLength(errorNotifications.length)
-  })
-  it('renders health metrics, charts and fixture logs', () => {
+  it('shows the measured database latency and the server uptime', () => {
     renderPage()
+
     expect(screen.getByRole('heading', { name: 'Saúde do Sistema' })).toBeVisible()
-    expect(screen.getByText('99,9%')).toBeVisible()
-    expect(screen.getByText('45 ms')).toBeVisible()
-    expect(screen.getByLabelText('Network traffic chart')).toBeVisible()
-    expect(screen.getByText('auth-service')).toBeVisible()
+    const database = screen.getByRole('region', { name: 'Banco de dados' })
+    expect(within(database).getByText('Respondendo')).toBeVisible()
+    expect(within(database).getByText(/^12\s?ms$/)).toBeVisible()
+    expect(screen.getByText('2 h 15 min')).toBeVisible()
+    expect(screen.getByText(/Atualizado às/)).toBeVisible()
   })
 
-  it('toggles auto-refresh and clears the local console', async () => {
-    const user = userEvent.setup()
+  it('shows days in the uptime after the first day', () => {
+    mockHealth({ serverUptimeSeconds: 3 * 86_400 + 4 * 3600 })
     renderPage()
-    const refresh = screen.getByRole('checkbox', { name: 'Atualização automática (5s)' })
-    expect(refresh).toBeChecked()
-    await user.click(refresh)
-    expect(refresh).not.toBeChecked()
-    await user.click(screen.getByRole('button', { name: 'Limpar Console' }))
-    expect(screen.getByText('Console limpo.')).toBeVisible()
+
+    expect(screen.getByText('3 dias 4 h')).toBeVisible()
   })
 
-  it('reloads the demo logs every five seconds, pauses, resumes and cleans up', () => {
-    vi.useFakeTimers()
-    const clearInterval = vi.spyOn(window, 'clearInterval')
+  it('shows when the database is down', () => {
+    mockHealth({ database: { status: 'down', latencyMs: null } })
+    renderPage()
+
+    const database = screen.getByRole('region', { name: 'Banco de dados' })
+    expect(within(database).getByText('Fora do ar')).toBeVisible()
+    expect(within(database).getByText('—')).toBeVisible()
+  })
+
+  it('explains how to enable Sentry when it is not configured', () => {
+    renderPage()
+
+    expect(screen.getByText('Sentry não configurado')).toBeVisible()
+    expect(screen.getByText(/configure SENTRY_API_TOKEN/)).toBeVisible()
+  })
+
+  it('says when Sentry cannot be reached', () => {
+    mockHealth({ errorTracking: { configured: true, available: false } })
+    renderPage()
+
+    expect(screen.getByText('Não foi possível consultar o Sentry agora.')).toBeVisible()
+  })
+
+  it('says when there are no open errors', () => {
+    mockHealth({ errorTracking: { configured: true, available: true, issues: [] } })
+    renderPage()
+
+    expect(screen.getByText('Nenhum erro aberto nas últimas 24 h.')).toBeVisible()
+  })
+
+  it('lists the recent Sentry errors with a link to each one', () => {
+    mockHealth({
+      errorTracking: {
+        configured: true,
+        available: true,
+        issues: [
+          {
+            id: '42',
+            title: 'TypeError: x is undefined',
+            level: 'error',
+            eventsCount: 17,
+            lastSeen: '2026-10-15T11:58:00.000Z',
+            permalink: 'https://sentry.io/organizations/donethink-ct/issues/42/',
+          },
+          {
+            id: '43',
+            title: 'Slow query',
+            level: 'warning',
+            eventsCount: 1,
+            lastSeen: '2026-10-15T10:00:00.000Z',
+            permalink: 'https://sentry.io/organizations/donethink-ct/issues/43/',
+          },
+        ],
+      },
+    })
+    renderPage()
+
+    const errors = screen.getByRole('region', { name: 'Erros recentes (Sentry, últimas 24 h)' })
+    expect(within(errors).getByText('TypeError: x is undefined')).toBeVisible()
+    expect(within(errors).getByText(/^17 ocorrências · última em/)).toBeVisible()
+    expect(within(errors).getByText(/^1 ocorrência · última em/)).toBeVisible()
+    expect(within(errors).getAllByRole('link', { name: /Abrir no Sentry/ })[0]).toHaveAttribute(
+      'href',
+      'https://sentry.io/organizations/donethink-ct/issues/42/',
+    )
+  })
+
+  it('shows a loading indicator and then an error message without inventing data', () => {
+    vi.mocked(useSystemHealth).mockReturnValue({ data: undefined, isPending: true, isError: false })
     const view = renderPage()
-    const refresh = screen.getByRole('checkbox', { name: 'Atualização automática (5s)' })
-    fireEvent.click(screen.getByRole('button', { name: 'Limpar Console' }))
-    act(() => vi.advanceTimersByTime(4999))
-    expect(screen.getByText('Console limpo.')).toBeVisible()
-    act(() => vi.advanceTimersByTime(1))
-    expect(screen.getByText('auth-service')).toBeVisible()
-    expect(screen.getAllByText('ERROR')).toHaveLength(2)
-    expect(screen.getByText(/Autenticação bem-sucedida/)).toBeVisible()
-    fireEvent.click(refresh)
-    fireEvent.click(screen.getByRole('button', { name: 'Limpar Console' }))
-    act(() => vi.advanceTimersByTime(10000))
-    expect(screen.getByText('Console limpo.')).toBeVisible()
-    expect(clearInterval).toHaveBeenCalledTimes(1)
-    fireEvent.click(refresh)
-    act(() => vi.advanceTimersByTime(5000))
-    expect(screen.getByText('auth-service')).toBeVisible()
+    expect(screen.getByRole('progressbar')).toBeVisible()
     view.unmount()
-    expect(clearInterval).toHaveBeenCalledTimes(2)
-    clearInterval.mockRestore()
+
+    vi.mocked(useSystemHealth).mockReturnValue({ data: undefined, isPending: false, isError: true })
+    renderPage()
+    expect(screen.getByText('Não foi possível verificar a saúde do sistema agora.')).toBeVisible()
+    expect(screen.queryByText('99,9%')).not.toBeInTheDocument()
   })
 })

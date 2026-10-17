@@ -34,10 +34,11 @@ async function main() {
   for (const seedTenant of seedTenants) {
     const tenant = await prisma.tenant.upsert({
       where: { slug: seedTenant.slug },
-      update: { nome: seedTenant.name },
+      update: { nome: seedTenant.name, accountType: seedTenant.accountType },
       create: {
         nome: seedTenant.name,
         slug: seedTenant.slug,
+        accountType: seedTenant.accountType,
         corPrimaria: seedTenant.corPrimaria,
         corSecundaria: seedTenant.corSecundaria,
       },
