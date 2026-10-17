@@ -1,8 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
+import type { MaintenanceAction } from '../types/service'
 
 import { maintenanceService } from '../services/maintenance-service'
 import type { MaintenanceCreateTicketFormValues } from '../types/maintenance'
-import type { MaintenanceTicketListFilters, UpdateMaintenanceTicketPayload } from '../types/service'
+import type {
+  MaintenanceTicketListFilters,
+  UpdateMaintenanceTicketVariables,
+} from '../types/service'
 import { buildCreateMaintenanceTicketPayload } from '../utils/maintenance-adapter'
 
 function normalizeFilters(filters: MaintenanceTicketListFilters) {
@@ -13,6 +18,7 @@ function normalizeFilters(filters: MaintenanceTicketListFilters) {
     search: filters.search ?? null,
     page: filters.page ?? null,
     pageSize: filters.pageSize ?? null,
+    archived: filters.archived ?? false,
   }
 }
 
@@ -34,9 +40,14 @@ export function useMaintenanceTickets(
   filters: MaintenanceTicketListFilters = {},
 ) {
   const scopedTenantId = tenantId ?? ''
+  const { data: session } = useSession()
 
   return useQuery({
-    queryKey: maintenanceQueryKeys.list(scopedTenantId, filters),
+    queryKey: [
+      ...maintenanceQueryKeys.list(scopedTenantId, filters),
+      session?.user?.id,
+      session?.papel,
+    ],
     queryFn: () => maintenanceService.list(filters),
     enabled: Boolean(tenantId),
   })
@@ -47,10 +58,15 @@ export function useMaintenanceTicket(
   ticketId: string | null | undefined,
 ) {
   const scopedTenantId = tenantId ?? ''
+  const { data: session } = useSession()
   const scopedTicketId = ticketId ?? ''
 
   return useQuery({
-    queryKey: maintenanceQueryKeys.detail(scopedTenantId, scopedTicketId),
+    queryKey: [
+      ...maintenanceQueryKeys.detail(scopedTenantId, scopedTicketId),
+      session?.user?.id,
+      session?.papel,
+    ],
     queryFn: () => maintenanceService.get(scopedTicketId),
     enabled: Boolean(tenantId) && Boolean(ticketId),
   })
@@ -74,10 +90,12 @@ export function useUpdateMaintenanceTicket(tenantId: string | null | undefined) 
   const scopedTenantId = tenantId ?? ''
 
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: UpdateMaintenanceTicketPayload }) =>
+    mutationFn: ({ id, payload }: UpdateMaintenanceTicketVariables) =>
       maintenanceService.update(id, payload),
     onSuccess: (ticket) => {
-      queryClient.setQueryData(maintenanceQueryKeys.detail(scopedTenantId, ticket.id), ticket)
+      queryClient.invalidateQueries({
+        queryKey: maintenanceQueryKeys.detail(scopedTenantId, ticket.id),
+      })
       queryClient.invalidateQueries({ queryKey: maintenanceQueryKeys.lists(scopedTenantId) })
     },
   })
@@ -102,8 +120,10 @@ export function useResolveMaintenanceTicket(tenantId: string | null | undefined,
 
   return useMutation({
     mutationFn: () => maintenanceService.resolve(ticketId),
-    onSuccess: (ticket) => {
-      queryClient.setQueryData(maintenanceQueryKeys.detail(scopedTenantId, ticketId), ticket)
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: maintenanceQueryKeys.detail(scopedTenantId, ticketId),
+      })
       queryClient.invalidateQueries({ queryKey: maintenanceQueryKeys.lists(scopedTenantId) })
     },
   })
@@ -137,5 +157,23 @@ export function useUploadMaintenanceTicketAttachment(
         queryKey: maintenanceQueryKeys.detail(scopedTenantId, ticketId),
       })
     },
+  })
+}
+
+export function useMaintenanceOptions() {
+  const { data: session } = useSession()
+  return useQuery({
+    queryKey: ['maintenance-options', session?.tenantId, session?.user?.id, session?.papel],
+    queryFn: () => maintenanceService.options(),
+    enabled: Boolean(session?.tenantId),
+  })
+}
+
+export function useMaintenanceAction(tenantId: string | undefined, ticketId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (action: MaintenanceAction) => maintenanceService.act(ticketId, action),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: maintenanceQueryKeys.tenant(tenantId ?? '') }),
   })
 }

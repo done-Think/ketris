@@ -61,6 +61,9 @@ model Usuario {
 
   tenant                   Tenant                             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   imoveisResponsavel       Imovel[]                           @relation("ImovelResponsavel")
+  imoveisProprietario      Imovel[]                           @relation("ImovelProprietario")
+  partesContrato          ParteContrato[]
+  chamadosResponsavel     ChamadoManutencao[]                 @relation("ChamadoResponsavel")
   refreshTokens            RefreshToken[]
   codigosRecuperacaoSenha  PasswordResetCode[]
   eventosAgendaResponsavel EventoAgenda[]                     @relation("EventoAgendaResponsavel")
@@ -171,6 +174,7 @@ model Imovel {
   id            String           @id @default(cuid())
   tenantId      String
   responsavelId String
+  proprietarioId String?
   titulo        String
   descricao     String?
   finalidade    FinalidadeImovel
@@ -190,6 +194,7 @@ model Imovel {
 
   tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   responsavel        Usuario             @relation("ImovelResponsavel", fields: [responsavelId], references: [id])
+  proprietario       Usuario?            @relation("ImovelProprietario", fields: [proprietarioId], references: [id], onDelete: SetNull)
   endereco           Endereco?
   midias             Midia[]
   oportunidades      Oportunidade[]
@@ -199,6 +204,7 @@ model Imovel {
 
   @@index([tenantId])
   @@index([tenantId, status])
+  @@index([tenantId, proprietarioId])
   @@map("imoveis")
 }
 
@@ -533,6 +539,7 @@ model Contrato {
   partes             ParteContrato[]
   cobrancas          Cobranca[]
   documentos         DocumentoContrato[]
+  chamadosManutencao  ChamadoManutencao[]
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -566,11 +573,14 @@ model ParteContrato {
   cpf        String
   email      String
   telefone   String?
+  usuarioId  String?
 
   contrato   Contrato    @relation(fields: [contratoId], references: [id], onDelete: Cascade)
   assinatura Assinatura?
+  usuario    Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
 
   @@index([contratoId])
+  @@index([usuarioId])
   @@map("partes_contrato")
 }
 
@@ -695,6 +705,9 @@ enum StatusChamadoManutencao {
   EM_ANDAMENTO
   RESOLVIDO
   FECHADO
+  AGUARDANDO_CONFIRMACAO
+  CONTESTADO
+  CANCELADO
 }
 
 enum PrioridadeChamadoManutencao {
@@ -707,6 +720,16 @@ model ChamadoManutencao {
   id            String                      @id @default(cuid())
   tenantId      String
   imovelId      String
+  contratoId    String?
+  responsavelId String?
+  prestadorNome String?
+  prestadorTelefone String?
+  prestadorEmail String?
+  prestadorObservacoes String?
+  concluidoPorId String?
+  concluidoPorPapel PapelUsuario?
+  excluidoEm DateTime?
+  excluidoPorId String?
   categoria     String
   prioridade    PrioridadeChamadoManutencao @default(NORMAL)
   status        StatusChamadoManutencao     @default(ABERTO)
@@ -720,12 +743,18 @@ model ChamadoManutencao {
 
   tenant     Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   imovel     Imovel                       @relation(fields: [imovelId], references: [id], onDelete: Restrict)
+  contrato   Contrato?                    @relation(fields: [contratoId], references: [id], onDelete: Restrict)
+  responsavel Usuario?                   @relation("ChamadoResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
+  solicitacoesTroca SolicitacaoTrocaPrestador[]
   atividades AtividadeChamadoManutencao[]
   anexos     AnexoChamadoManutencao[]
 
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([imovelId])
+  @@index([tenantId, excluidoEm])
+  @@index([contratoId])
+  @@index([responsavelId])
   @@map("chamados_manutencao")
 }
 
@@ -733,6 +762,13 @@ enum TipoAtividadeChamadoManutencao {
   NOTA
   MUDANCA_STATUS
   ANEXO_ADICIONADO
+  EDICAO
+  RESPONSAVEL_ALTERADO
+  PRESTADOR_ALTERADO
+  TROCA_SOLICITADA
+  TROCA_DECIDIDA
+  EXCLUSAO
+  RESTAURACAO
 }
 
 // Timeline do chamado, mesmo padrão append-only de AtividadeOportunidade — autor opcional/denormalizado
@@ -744,6 +780,7 @@ model AtividadeChamadoManutencao {
   mensagem  String
   autorId   String?
   autorNome String?
+  detalhes  Json?
   createdAt DateTime                       @default(now())
 
   chamado ChamadoManutencao @relation(fields: [chamadoId], references: [id], onDelete: Cascade)
@@ -751,6 +788,29 @@ model AtividadeChamadoManutencao {
   @@index([chamadoId])
   @@index([chamadoId, createdAt])
   @@map("atividades_chamado_manutencao")
+}
+
+enum StatusSolicitacaoTrocaPrestador {
+  PENDENTE
+  APROVADA
+  REJEITADA
+}
+
+model SolicitacaoTrocaPrestador {
+  id String @id @default(cuid())
+  chamadoId String
+  justificativa String
+  solicitanteId String
+  solicitanteNome String
+  status StatusSolicitacaoTrocaPrestador @default(PENDENTE)
+  decisaoJustificativa String?
+  decididoPorId String?
+  decididoPorNome String?
+  decididoEm DateTime?
+  createdAt DateTime @default(now())
+  chamado ChamadoManutencao @relation(fields: [chamadoId], references: [id], onDelete: Cascade)
+  @@index([chamadoId, status])
+  @@map("solicitacoes_troca_prestador")
 }
 
 model AnexoChamadoManutencao {

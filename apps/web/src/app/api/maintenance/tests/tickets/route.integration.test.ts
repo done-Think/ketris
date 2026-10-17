@@ -1,357 +1,350 @@
+import type { MaintenanceTicketListItem } from '@server/maintenance/types/maintenance-ticket'
 import { randomUUID } from 'node:crypto'
-
 import { NextRequest } from 'next/server'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
-
-import { GET as listActivities } from '../../tickets/[id]/activities/route'
-import { POST as addNote } from '../../tickets/[id]/notes/route'
-import { POST as resolveTicket } from '../../tickets/[id]/resolve/route'
-import { DELETE, GET as getTicket, PATCH } from '../../tickets/[id]/route'
+import type { Papel } from '@server/auth/domain/user.entity'
 import { GET, POST } from '../../tickets/route'
+import { DELETE, GET as getTicket, PATCH } from '../../tickets/[id]/route'
+import { POST as act } from '../../tickets/[id]/actions/route'
+import { POST as addNote } from '../../tickets/[id]/notes/route'
+import { GET as listActivities } from '../../tickets/[id]/activities/route'
+import { POST as links } from '../../links/route'
+import { GET as options } from '../../options/route'
 
-describe('/api/maintenance/tickets (integração)', () => {
+describe('/api/maintenance authorization and workflow (database integration)', () => {
   const tokenService = new JoseTokenService()
-  let tenantId: string
-  let otherTenantId: string
-  let actorToken: string
-  let renterToken: string
-  let otherTenantToken: string
-  let propertyId: string
-  let otherTenantPropertyId: string
-
-  beforeAll(async () => {
+  const tenantIds: string[] = []
+  let fixture: Awaited<ReturnType<typeof createFixture>>
+  let other: Awaited<ReturnType<typeof createFixture>>
+  async function createFixture() {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Maintenance', slug: `maintenance-${randomUUID()}` },
+      data: { nome: 'Maintenance Test', slug: `maintenance-${randomUUID()}` },
     })
-    tenantId = tenant.id
-
-    const otherTenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Maintenance Outro', slug: `maintenance-outro-${randomUUID()}` },
-    })
-    otherTenantId = otherTenant.id
-
-    const actor = await prisma.usuario.create({
-      data: {
-        tenantId,
-        nome: 'Marina Costa',
-        email: `corretor-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
-      },
-    })
-    actorToken = await tokenService.sign({
-      id: actor.id,
-      tenantId: actor.tenantId,
-      nome: actor.nome,
-      email: actor.email,
-      papel: actor.papel,
-      ativo: actor.ativo,
-      vinculoAprovadoEm: actor.vinculoAprovadoEm,
-    })
-
-    const renter = await prisma.usuario.create({
-      data: {
-        tenantId,
-        nome: 'Bruno Oliveira',
-        email: `locatario-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'RENTER',
-      },
-    })
-    renterToken = await tokenService.sign({
-      id: renter.id,
-      tenantId: renter.tenantId,
-      nome: renter.nome,
-      email: renter.email,
-      papel: renter.papel,
-      ativo: renter.ativo,
-      vinculoAprovadoEm: renter.vinculoAprovadoEm,
-    })
-
-    const otherActor = await prisma.usuario.create({
-      data: {
-        tenantId: otherTenantId,
-        nome: 'Outro Corretor',
-        email: `outro-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
-      },
-    })
-    otherTenantToken = await tokenService.sign({
-      id: otherActor.id,
-      tenantId: otherActor.tenantId,
-      nome: otherActor.nome,
-      email: otherActor.email,
-      papel: otherActor.papel,
-      ativo: otherActor.ativo,
-      vinculoAprovadoEm: otherActor.vinculoAprovadoEm,
-    })
-
+    tenantIds.push(tenant.id)
+    async function user(role: Papel) {
+      const user = await prisma.usuario.create({
+        data: {
+          tenantId: tenant.id,
+          nome: role,
+          email: `${randomUUID()}@maintenance.test`,
+          senhaHash: 'test-hash',
+          papel: role,
+        },
+      })
+      return { ...user, token: await tokenService.sign(user) }
+    }
+    const admin = await user('ADMIN'),
+      agent = await user('AGENT'),
+      owner = await user('OWNER'),
+      renter = await user('RENTER'),
+      unrelated = await user('RENTER')
     const property = await prisma.imovel.create({
       data: {
-        tenantId,
-        responsavelId: actor.id,
-        titulo: 'Apt Jardins 3q',
+        tenantId: tenant.id,
+        responsavelId: agent.id,
+        proprietarioId: owner.id,
+        titulo: 'Test Property',
         finalidade: 'ALUGUEL',
         tipo: 'apartamento',
         valor: 2500,
-        status: 'PUBLISHED',
       },
     })
-    propertyId = property.id
-
-    const otherProperty = await prisma.imovel.create({
+    const opportunity = await prisma.oportunidade.create({
       data: {
-        tenantId: otherTenantId,
-        responsavelId: otherActor.id,
-        titulo: 'Studio Pinheiros',
-        finalidade: 'ALUGUEL',
-        tipo: 'studio',
-        valor: 1800,
-        status: 'PUBLISHED',
+        tenantId: tenant.id,
+        imovelId: property.id,
+        interessadoNome: renter.nome,
+        interessadoEmail: renter.email,
+        valorProposto: 2500,
+        status: 'ACEITA',
       },
     })
-    otherTenantPropertyId = otherProperty.id
+    const contract = await prisma.contrato.create({
+      data: {
+        tenantId: tenant.id,
+        imovelId: property.id,
+        oportunidadeOrigemId: opportunity.id,
+        codigo: `TEST-${randomUUID()}`,
+        valor: 2500,
+        diaVencimento: 5,
+        dataInicio: new Date('2026-01-01'),
+        dataFim: new Date('2027-01-01'),
+        indiceReajuste: 'IPCA',
+        tipoGarantia: 'CAUCAO',
+        status: 'ATIVO',
+        partes: {
+          create: {
+            papel: 'LOCATARIO',
+            nome: renter.nome,
+            cpf: '00000000000',
+            email: renter.email,
+            usuarioId: renter.id,
+          },
+        },
+      },
+      include: { partes: true },
+    })
+    return { tenant, admin, agent, owner, renter, unrelated, property, contract }
+  }
+  beforeAll(async () => {
+    fixture = await createFixture()
+    other = await createFixture()
   })
-
   afterAll(async () => {
-    if (tenantId) await prisma.tenant.delete({ where: { id: tenantId } })
-    if (otherTenantId) await prisma.tenant.delete({ where: { id: otherTenantId } })
+    for (const tenantId of tenantIds) {
+      await prisma.solicitacaoTrocaPrestador.deleteMany({ where: { chamado: { tenantId } } })
+      await prisma.tenant.delete({ where: { id: tenantId } })
+    }
     await prisma.$disconnect()
   })
-
-  function buildRequest(url: string, method: string, body?: unknown, token?: string): NextRequest {
-    return new NextRequest(url, {
+  function request(path: string, method: string, token?: string, body?: unknown) {
+    return new NextRequest(`http://localhost/api/maintenance/${path}`, {
       method,
-      ...(body ? { body: JSON.stringify(body) } : {}),
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { authorization: `Bearer ${token}` } : {}),
       },
+      ...(body ? { body: JSON.stringify(body) } : {}),
     })
   }
-
-  function context(id: string) {
-    return { params: Promise.resolve({ id }) }
+  const context = (id: string) => ({ params: Promise.resolve({ id }) })
+  const payload = {
+    title: 'Leak',
+    description: 'Kitchen leak',
+    category: 'Plumbing',
+    priority: 'NORMAL',
   }
-
-  const createPayload = {
-    category: 'Hidráulica',
-    priority: 'URGENTE',
-    title: 'Vazamento na cozinha',
-    description: 'A pia está vazando, água acumulando no armário.',
+  async function create(token = fixture.renter.token) {
+    const response = await POST(
+      request('tickets', 'POST', token, { ...payload, contractId: fixture.contract.id }),
+    )
+    expect(response.status).toBe(201)
+    return (await response.json()).ticket.id as string
   }
-
-  it('retorna 401 sem Authorization header', async () => {
-    const response = await GET(buildRequest('http://localhost/api/maintenance/tickets', 'GET'))
-
-    expect(response.status).toBe(401)
+  async function action(id: string, token: string, body: unknown) {
+    return act(request(`tickets/${id}/actions`, 'POST', token, body), context(id))
+  }
+  it('requires authentication', async () =>
+    expect((await GET(request('tickets', 'GET'))).status).toBe(401))
+  it('creates for all linked roles and refuses another tenants contract', async () => {
+    for (const user of [fixture.admin, fixture.agent, fixture.owner, fixture.renter])
+      await create(user.token)
+    expect(
+      (
+        await POST(
+          request('tickets', 'POST', fixture.renter.token, {
+            ...payload,
+            contractId: other.contract.id,
+          }),
+        )
+      ).status,
+    ).toBe(404)
+    expect(
+      (
+        await POST(
+          request('tickets', 'POST', fixture.unrelated.token, {
+            ...payload,
+            contractId: fixture.contract.id,
+          }),
+        )
+      ).status,
+    ).toBe(404)
   })
-
-  it('retorna 404 ao criar chamado para um imóvel de outro tenant', async () => {
-    const response = await POST(
-      buildRequest(
-        'http://localhost/api/maintenance/tickets',
-        'POST',
-        { ...createPayload, propertyId: otherTenantPropertyId },
-        actorToken,
-      ),
-    )
-    const json = await response.json()
-
-    expect(response.status).toBe(404)
-    expect(json.error.code).toBe('MAINTENANCE_PROPERTY_NOT_FOUND')
+  it('filters list and options by explicit membership, including same-tenant isolation', async () => {
+    const id = await create()
+    const allowed = await GET(request('tickets', 'GET', fixture.renter.token))
+    expect(
+      (await allowed.json()).items.map((item: Pick<MaintenanceTicketListItem, 'id'>) => item.id),
+    ).toContain(id)
+    const denied = await GET(request('tickets', 'GET', fixture.unrelated.token))
+    expect(await denied.json()).toEqual({ items: [], totalCount: 0 })
+    expect(
+      (await (await options(request('options', 'GET', fixture.unrelated.token))).json()).contracts,
+    ).toEqual([])
+    for (const user of [fixture.unrelated, other.admin]) {
+      expect(
+        (await getTicket(request(`tickets/${id}`, 'GET', user.token), context(id))).status,
+      ).toBe(404)
+      expect(
+        (
+          await PATCH(
+            request(`tickets/${id}`, 'PATCH', user.token, { title: 'Changed' }),
+            context(id),
+          )
+        ).status,
+      ).toBe(404)
+      expect(
+        (await listActivities(request(`tickets/${id}/activities`, 'GET', user.token), context(id)))
+          .status,
+      ).toBe(404)
+      expect(
+        (
+          await addNote(
+            request(`tickets/${id}/notes`, 'POST', user.token, { message: 'Denied' }),
+            context(id),
+          )
+        ).status,
+      ).toBe(404)
+      expect(
+        (await DELETE(request(`tickets/${id}`, 'DELETE', user.token), context(id))).status,
+      ).toBe(404)
+    }
   })
-
-  let ticketId: string
-
-  it('um RENTER também consegue abrir um chamado (simplificação: sem restrição de papel neste módulo)', async () => {
-    const response = await POST(
-      buildRequest(
-        'http://localhost/api/maintenance/tickets',
-        'POST',
-        { ...createPayload, propertyId },
-        renterToken,
-      ),
-    )
-    const json = await response.json()
-
-    expect(response.status).toBe(201)
-    expect(json.ticket.openedByName).toBe('Bruno Oliveira')
+  it('allows renter collaboration on admin calls, but only edits own OPEN calls', async () => {
+    const id = await create(fixture.admin.token)
+    expect(
+      (
+        await addNote(
+          request(`tickets/${id}/notes`, 'POST', fixture.renter.token, { message: 'Comment' }),
+          context(id),
+        )
+      ).status,
+    ).toBe(201)
+    expect(
+      (
+        await PATCH(
+          request(`tickets/${id}`, 'PATCH', fixture.renter.token, { title: 'Denied' }),
+          context(id),
+        )
+      ).status,
+    ).toBe(403)
+    const own = await create()
+    expect(
+      (
+        await PATCH(
+          request(`tickets/${own}`, 'PATCH', fixture.renter.token, { title: 'Allowed' }),
+          context(own),
+        )
+      ).status,
+    ).toBe(200)
+    expect((await action(own, fixture.renter.token, { action: 'cancel' })).status).toBe(403)
+    expect((await action(own, fixture.renter.token, { action: 'complete' })).status).toBe(403)
   })
-
-  it('cria um chamado de manutenção para um imóvel do próprio tenant', async () => {
-    const response = await POST(
-      buildRequest(
-        'http://localhost/api/maintenance/tickets',
-        'POST',
-        { ...createPayload, propertyId },
-        actorToken,
-      ),
-    )
-    const json = await response.json()
-
-    expect(response.status).toBe(201)
-    expect(json.ticket.status).toBe('ABERTO')
-    expect(json.ticket.propertyTitle).toBe('Apt Jardins 3q')
-    expect(json.ticket.openedByName).toBe('Marina Costa')
-    expect(json.ticket.activities).toEqual([])
-
-    ticketId = json.ticket.id
+  it('requires assigned agent, contests and confirms resolution, then locks writes', async () => {
+    const id = await create()
+    expect((await action(id, fixture.agent.token, { action: 'start' })).status).toBe(403)
+    expect((await action(id, fixture.agent.token, { action: 'assume' })).status).toBe(200)
+    expect((await action(id, fixture.owner.token, { action: 'assume' })).status).toBe(403)
+    expect((await action(id, fixture.agent.token, { action: 'start' })).status).toBe(200)
+    expect((await action(id, fixture.agent.token, { action: 'complete' })).status).toBe(200)
+    expect(
+      (await action(id, fixture.owner.token, { action: 'contest', reason: 'Still leaking' }))
+        .status,
+    ).toBe(200)
+    expect((await action(id, fixture.agent.token, { action: 'start' })).status).toBe(200)
+    expect((await action(id, fixture.agent.token, { action: 'complete' })).status).toBe(200)
+    const resolved = await action(id, fixture.owner.token, { action: 'confirm' })
+    expect(resolved.status).toBe(200)
+    expect((await resolved.json()).ticket.status).toBe('RESOLVIDO')
+    expect(
+      (
+        await addNote(
+          request(`tickets/${id}/notes`, 'POST', fixture.admin.token, { message: 'Denied' }),
+          context(id),
+        )
+      ).status,
+    ).toBe(409)
+    expect(
+      (await action(id, fixture.admin.token, { action: 'reopen', status: 'EM_ANDAMENTO' })).status,
+    ).toBe(200)
   })
-
-  it('lista os chamados do tenant do ator', async () => {
-    const response = await GET(
-      buildRequest('http://localhost/api/maintenance/tickets', 'GET', undefined, actorToken),
-    )
-    const json = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(json.items.map((item: { id: string }) => item.id)).toContain(ticketId)
+  it('prevents owner self-confirmation and requires admin validation', async () => {
+    const id = await create()
+    await action(id, fixture.owner.token, { action: 'assume' })
+    await action(id, fixture.owner.token, { action: 'start' })
+    await action(id, fixture.owner.token, { action: 'complete' })
+    expect((await action(id, fixture.owner.token, { action: 'confirm' })).status).toBe(403)
+    expect((await action(id, fixture.admin.token, { action: 'confirm' })).status).toBe(200)
   })
-
-  it('retorna 404 ao consultar um chamado de outro tenant', async () => {
-    const response = await getTicket(
-      buildRequest(
-        `http://localhost/api/maintenance/tickets/${ticketId}`,
-        'GET',
-        undefined,
-        otherTenantToken,
-      ),
-      context(ticketId),
-    )
-
-    expect(response.status).toBe(404)
+  it('records provider replacement requests and approval snapshots', async () => {
+    const id = await create()
+    await action(id, fixture.admin.token, { action: 'provider', provider: { name: 'Old vendor' } })
+    expect(
+      (await action(id, fixture.owner.token, { action: 'provider', provider: { name: 'Denied' } }))
+        .status,
+    ).toBe(403)
+    const response = await action(id, fixture.owner.token, {
+      action: 'requestReplacement',
+      reason: 'Unreliable',
+    })
+    const pending = (await response.json()).ticket.replacementRequests[0]
+    expect(
+      (
+        await action(id, fixture.admin.token, {
+          action: 'rejectReplacement',
+          requestId: pending.id,
+          reason: ' ',
+        })
+      ).status,
+    ).toBe(400)
+    expect(
+      (
+        await action(id, fixture.admin.token, {
+          action: 'approveReplacement',
+          requestId: pending.id,
+          provider: { name: 'New vendor' },
+        })
+      ).status,
+    ).toBe(200)
+    const row = await prisma.chamadoManutencao.findUniqueOrThrow({
+      where: { id },
+      include: { atividades: true, solicitacoesTroca: true },
+    })
+    expect(row.prestadorNome).toBe('New vendor')
+    expect(row.solicitacoesTroca[0].status).toBe('APROVADA')
+    expect(row.atividades.find((a) => a.tipo === 'TROCA_DECIDIDA')?.detalhes).toMatchObject({
+      before: { name: 'Old vendor' },
+      after: { name: 'New vendor' },
+    })
   })
-
-  it('consulta o chamado pelo id dentro do próprio tenant', async () => {
-    const response = await getTicket(
-      buildRequest(
-        `http://localhost/api/maintenance/tickets/${ticketId}`,
-        'GET',
-        undefined,
-        actorToken,
-      ),
-      context(ticketId),
+  it('preserves excluded records and permits only admin to list/restore them', async () => {
+    const id = await create()
+    expect(
+      (await DELETE(request(`tickets/${id}`, 'DELETE', fixture.renter.token), context(id))).status,
+    ).toBe(403)
+    expect(
+      (await DELETE(request(`tickets/${id}`, 'DELETE', fixture.admin.token), context(id))).status,
+    ).toBe(204)
+    expect(
+      (await prisma.chamadoManutencao.findUniqueOrThrow({ where: { id } })).excluidoEm,
+    ).not.toBeNull()
+    expect(
+      (await getTicket(request(`tickets/${id}`, 'GET', fixture.renter.token), context(id))).status,
+    ).toBe(404)
+    expect((await GET(request('tickets?archived=true', 'GET', fixture.renter.token))).status).toBe(
+      403,
     )
-    const json = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(json.ticket.id).toBe(ticketId)
+    const archived = await GET(request('tickets?archived=true', 'GET', fixture.admin.token))
+    expect(
+      (await archived.json()).items.map((item: Pick<MaintenanceTicketListItem, 'id'>) => item.id),
+    ).toContain(id)
+    expect((await action(id, fixture.admin.token, { action: 'restore' })).status).toBe(200)
+    const row = await prisma.chamadoManutencao.findUniqueOrThrow({
+      where: { id },
+      include: { atividades: true },
+    })
+    expect(row.excluidoEm).toBeNull()
+    expect(row.status).toBe('ABERTO')
+    expect(row.atividades.map((a) => a.tipo)).toEqual(
+      expect.arrayContaining(['EXCLUSAO', 'RESTAURACAO']),
+    )
   })
-
-  it('atualiza categoria e prioridade do chamado', async () => {
-    const response = await PATCH(
-      buildRequest(
-        `http://localhost/api/maintenance/tickets/${ticketId}`,
-        'PATCH',
-        { category: 'Elétrica', priority: 'NORMAL' },
-        actorToken,
-      ),
-      context(ticketId),
-    )
-    const json = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(json.ticket.category).toBe('Elétrica')
-    expect(json.ticket.priority).toBe('NORMAL')
-  })
-
-  it('adiciona uma nota na linha do tempo do chamado', async () => {
-    const response = await addNote(
-      buildRequest(
-        `http://localhost/api/maintenance/tickets/${ticketId}/notes`,
-        'POST',
-        { message: 'Visita agendada para amanhã de manhã.' },
-        actorToken,
-      ),
-      context(ticketId),
-    )
-    const json = await response.json()
-
-    expect(response.status).toBe(201)
-    expect(json.activity.type).toBe('NOTA')
-    expect(json.activity.message).toBe('Visita agendada para amanhã de manhã.')
-    expect(json.activity.authorName).toBe('Marina Costa')
-  })
-
-  it('lista a linha do tempo do chamado com a nota registrada', async () => {
-    const response = await listActivities(
-      buildRequest(
-        `http://localhost/api/maintenance/tickets/${ticketId}/activities`,
-        'GET',
-        undefined,
-        actorToken,
-      ),
-      context(ticketId),
-    )
-    const json = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(json.activities).toHaveLength(1)
-    expect(json.activities[0].message).toBe('Visita agendada para amanhã de manhã.')
-  })
-
-  it('marca o chamado como resolvido e registra a mudança de status na linha do tempo', async () => {
-    const response = await resolveTicket(
-      buildRequest(
-        `http://localhost/api/maintenance/tickets/${ticketId}/resolve`,
-        'POST',
-        undefined,
-        actorToken,
-      ),
-      context(ticketId),
-    )
-    const json = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(json.ticket.status).toBe('RESOLVIDO')
-    expect(json.ticket.resolvedAt).not.toBeNull()
-    expect(json.ticket.activities).toHaveLength(2)
-    expect(json.ticket.activities[1].type).toBe('MUDANCA_STATUS')
-  })
-
-  it('retorna 409 ao tentar resolver um chamado já resolvido', async () => {
-    const response = await resolveTicket(
-      buildRequest(
-        `http://localhost/api/maintenance/tickets/${ticketId}/resolve`,
-        'POST',
-        undefined,
-        actorToken,
-      ),
-      context(ticketId),
-    )
-    const json = await response.json()
-
-    expect(response.status).toBe(409)
-    expect(json.error.code).toBe('MAINTENANCE_TICKET_ALREADY_RESOLVED')
-  })
-
-  it('exclui o chamado', async () => {
-    const response = await DELETE(
-      buildRequest(
-        `http://localhost/api/maintenance/tickets/${ticketId}`,
-        'DELETE',
-        undefined,
-        actorToken,
-      ),
-      context(ticketId),
-    )
-
-    expect(response.status).toBe(204)
-
-    const afterDelete = await getTicket(
-      buildRequest(
-        `http://localhost/api/maintenance/tickets/${ticketId}`,
-        'GET',
-        undefined,
-        actorToken,
-      ),
-      context(ticketId),
-    )
-    expect(afterDelete.status).toBe(404)
+  it('allows only admin to regularize and never links foreign tenant users', async () => {
+    const input = {
+      contractId: fixture.contract.id,
+      partyId: fixture.contract.partes[0].id,
+      renterId: fixture.renter.id,
+    }
+    expect((await links(request('links', 'POST', fixture.owner.token, input))).status).toBe(403)
+    expect(
+      (
+        await links(
+          request('links', 'POST', fixture.admin.token, { ...input, renterId: other.renter.id }),
+        )
+      ).status,
+    ).toBe(403)
+    expect((await links(request('links', 'POST', fixture.admin.token, input))).status).toBe(204)
   })
 })

@@ -20,6 +20,9 @@ const statusFromApiMap: Record<ApiMaintenanceTicketStatus, MaintenanceStatus> = 
   EM_ANDAMENTO: 'inProgress',
   RESOLVIDO: 'resolved',
   FECHADO: 'closed',
+  AGUARDANDO_CONFIRMACAO: 'pendingConfirmation',
+  CONTESTADO: 'contested',
+  CANCELADO: 'cancelled',
 }
 
 const statusToApiMap: Record<MaintenanceStatus, ApiMaintenanceTicketStatus> = {
@@ -27,6 +30,9 @@ const statusToApiMap: Record<MaintenanceStatus, ApiMaintenanceTicketStatus> = {
   inProgress: 'EM_ANDAMENTO',
   resolved: 'RESOLVIDO',
   closed: 'FECHADO',
+  pendingConfirmation: 'AGUARDANDO_CONFIRMACAO',
+  contested: 'CONTESTADO',
+  cancelled: 'CANCELADO',
 }
 
 const priorityFromApiMap: Record<ApiMaintenanceTicketPriority, MaintenancePriority> = {
@@ -66,6 +72,7 @@ export function mapMaintenanceTicketListItemFromApi(
 ): MaintenanceTicket {
   return {
     id: item.id,
+    permissions: item.permissions,
     propertyId: item.propertyId,
     property: item.propertyTitle,
     category: item.category,
@@ -96,6 +103,7 @@ export function mapMaintenanceTicketToFormValues(
   ticket: ApiMaintenanceTicket,
 ): MaintenanceCreateTicketFormValues {
   return {
+    contractId: ticket.contractId ?? '',
     propertyId: ticket.propertyId,
     category: ticket.category,
     priority: mapMaintenancePriorityFromApi(ticket.priority),
@@ -108,6 +116,7 @@ export function buildCreateMaintenanceTicketPayload(
   values: MaintenanceCreateTicketFormValues,
 ): CreateMaintenanceTicketPayload {
   return {
+    contractId: values.contractId ?? '',
     propertyId: values.propertyId,
     category: values.category,
     priority: mapMaintenancePriorityToApi(values.priority),
@@ -120,6 +129,7 @@ export function buildUpdateMaintenanceTicketPayload(
   values: MaintenanceCreateTicketFormValues,
 ): UpdateMaintenanceTicketPayload {
   return {
+    contractId: values.contractId || undefined,
     propertyId: values.propertyId,
     category: values.category,
     priority: mapMaintenancePriorityToApi(values.priority),

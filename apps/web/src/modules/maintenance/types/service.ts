@@ -1,8 +1,24 @@
-export type ApiMaintenanceTicketStatus = 'ABERTO' | 'EM_ANDAMENTO' | 'RESOLVIDO' | 'FECHADO'
+import type {
+  MaintenanceAction,
+  MaintenancePermissions,
+  MaintenanceProvider,
+  MaintenanceOptions,
+} from '@server/maintenance/types/maintenance-ticket'
+export type { MaintenanceAction, MaintenancePermissions, MaintenanceProvider, MaintenanceOptions }
+
+export type ApiMaintenanceTicketStatus =
+  | 'ABERTO'
+  | 'EM_ANDAMENTO'
+  | 'AGUARDANDO_CONFIRMACAO'
+  | 'RESOLVIDO'
+  | 'CONTESTADO'
+  | 'CANCELADO'
+  | 'FECHADO'
 
 export type ApiMaintenanceTicketPriority = 'NORMAL' | 'ALTA' | 'URGENTE'
 
-export type ApiMaintenanceActivityType = 'NOTA' | 'MUDANCA_STATUS' | 'ANEXO_ADICIONADO'
+export type ApiMaintenanceActivityType =
+  import('@server/maintenance/types/maintenance-ticket').MaintenanceActivityType
 
 export interface ApiMaintenanceActivity {
   id: string
@@ -11,6 +27,7 @@ export interface ApiMaintenanceActivity {
   message: string
   authorId: string | null
   authorName: string | null
+  details?: Record<string, unknown> | null
   createdAt: string
 }
 
@@ -26,6 +43,21 @@ export interface ApiMaintenanceTicket {
   id: string
   propertyId: string
   propertyTitle: string
+  contractId?: string | null
+  responsibleId?: string | null
+  responsibleName?: string | null
+  provider?: MaintenanceProvider | null
+  deletedAt?: string | null
+  permissions?: MaintenancePermissions
+  replacementRequests?: {
+    id: string
+    reason: string
+    status: 'PENDENTE' | 'APROVADA' | 'REJEITADA'
+    requestedByName: string
+    decisionReason: string | null
+    decidedByName: string | null
+    createdAt: string
+  }[]
   category: string
   priority: ApiMaintenanceTicketPriority
   status: ApiMaintenanceTicketStatus
@@ -44,6 +76,9 @@ export interface ApiMaintenanceTicketListItem {
   id: string
   propertyId: string
   propertyTitle: string
+  contractId?: string | null
+  deletedAt?: string | null
+  permissions?: MaintenancePermissions
   category: string
   priority: ApiMaintenanceTicketPriority
   status: ApiMaintenanceTicketStatus
@@ -55,6 +90,7 @@ export interface ApiMaintenanceTicketListItem {
 }
 
 export interface MaintenanceTicketListFilters {
+  archived?: boolean
   status?: ApiMaintenanceTicketStatus
   priority?: ApiMaintenanceTicketPriority
   propertyId?: string
@@ -64,6 +100,7 @@ export interface MaintenanceTicketListFilters {
 }
 
 export interface CreateMaintenanceTicketPayload {
+  contractId: string
   propertyId: string
   category: string
   priority: ApiMaintenanceTicketPriority
@@ -72,6 +109,7 @@ export interface CreateMaintenanceTicketPayload {
 }
 
 export interface UpdateMaintenanceTicketPayload {
+  contractId?: string
   propertyId?: string
   category?: string
   priority?: ApiMaintenanceTicketPriority
@@ -98,4 +136,11 @@ export interface MaintenanceActivitiesResponse {
 
 export interface UploadMaintenanceTicketAttachmentResponse {
   attachment: ApiMaintenanceAttachment
+}
+
+export type { MaintenanceUserLinkInput } from '@server/maintenance/types/maintenance-ticket'
+
+export interface UpdateMaintenanceTicketVariables {
+  id: string
+  payload: UpdateMaintenanceTicketPayload
 }

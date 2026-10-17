@@ -182,7 +182,10 @@
       "inProgress": "In progress",
       "urgent": "Urgent",
       "resolved": "Resolved",
-      "closed": "Closed"
+      "closed": "Closed",
+      "pendingConfirmation": "Pending confirmation",
+      "contested": "Contested",
+      "cancelled": "Cancelled"
     },
     "metrics": {
       "open": "Open",
@@ -200,12 +203,19 @@
       "status": "Status",
       "actions": "Actions"
     },
-    "priorities": { "urgent": "Urgent", "high": "High", "normal": "Normal" },
+    "priorities": {
+      "urgent": "Urgent",
+      "high": "High",
+      "normal": "Normal"
+    },
     "statuses": {
       "inProgress": "In progress",
       "open": "Open",
       "resolved": "Resolved",
-      "closed": "Closed"
+      "closed": "Closed",
+      "pendingConfirmation": "Pending confirmation",
+      "contested": "Contested",
+      "cancelled": "Cancelled"
     },
     "viewTicket": "View ticket {ticket}",
     "showing": "Showing {from}-{to} of {total} tickets",
@@ -222,24 +232,33 @@
         "priority": "Priority",
         "title": "Ticket title",
         "description": "Problem description",
-        "descriptionPlaceholder": "Describe the problem..."
+        "descriptionPlaceholder": "Describe the problem...",
+        "contract": "Contract / property"
       },
       "errors": {
         "propertyRequired": "Select the property",
         "categoryRequired": "Select the category",
         "priorityRequired": "Select the priority",
         "titleRequired": "Enter the ticket title",
-        "descriptionRequired": "Describe the problem"
-      }
+        "descriptionRequired": "Describe the problem",
+        "contractRequired": "Select a contract"
+      },
+      "discardDraft": "Discard draft",
+      "saveDraftAndClose": "Save and close",
+      "discardTitle": "Discard this draft?",
+      "currentContract": "Current contract"
     },
     "actions": {
       "menu": "Actions for ticket {ticket}",
       "edit": "Edit ticket",
       "delete": "Delete ticket",
       "deleteTitle": "Delete ticket?",
-      "deleteDescription": "Do you really want to delete this ticket? This action cannot be undone."
+      "deleteDescription": "The ticket will be archived and can be restored by an administrator."
     },
-    "pagination": { "previous": "Previous", "next": "Next" },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next"
+    },
     "notifications": {
       "createSuccess": "Ticket created successfully.",
       "createError": "Could not create the ticket.",
@@ -287,6 +306,56 @@
         "lastUpdated": "Last updated",
         "dateTime": "{date} at {time}"
       }
+    },
+    "activeTickets": "Active",
+    "archivedTickets": "Archived",
+    "workflow": {
+      "assume": "Take responsibility",
+      "assign": "Assign responsible user",
+      "provider": "Set provider",
+      "requestReplacement": "Request replacement",
+      "start": "Start service",
+      "complete": "Complete service",
+      "confirm": "Confirm resolution",
+      "contest": "Contest resolution",
+      "cancel": "Cancel ticket",
+      "reopen": "Reopen ticket",
+      "restore": "Restore ticket",
+      "approveReplacement": "Approve replacement",
+      "rejectReplacement": "Reject replacement",
+      "reason": "Reason",
+      "responsible": "Responsible user",
+      "providerLabel": "Service provider",
+      "unassigned": "Unassigned",
+      "replacement": "Replacement request",
+      "reopenStatus": "Reopening status",
+      "open": "Open",
+      "inProgress": "In progress",
+      "name": "Person or company name",
+      "phone": "Phone",
+      "email": "Email",
+      "notes": "Notes",
+      "back": "Back",
+      "save": "Confirm",
+      "success": "Action completed.",
+      "error": "Could not complete the action.",
+      "requestStatuses": {
+        "PENDENTE": "Pending",
+        "APROVADA": "Approved",
+        "REJEITADA": "Rejected"
+      }
+    },
+    "links": {
+      "title": "Regularize links",
+      "contract": "Contract / property",
+      "owner": "Property owner account",
+      "party": "Contract renter party",
+      "renter": "Renter account",
+      "unchanged": "Keep current link",
+      "back": "Back",
+      "save": "Save links",
+      "success": "Links updated.",
+      "error": "Could not update links."
     }
   },
   "finance": {
