@@ -16,7 +16,7 @@ export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
   const router = useRouter()
   const { data: session, status } = useSession()
   const isAllowed =
-    status === 'authenticated' && !!session?.papel && allowedRoles.includes(session.papel as Papel)
+    status === 'authenticated' && !!session?.role && allowedRoles.includes(session.role as Papel)
 
   useEffect(() => {
     if (status === 'loading') return

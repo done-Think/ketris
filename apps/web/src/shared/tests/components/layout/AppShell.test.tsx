@@ -50,13 +50,13 @@ vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))
 
-function mockSession(overrides?: Partial<{ papel: 'ADMIN' | 'OWNER' | 'AGENT' }>) {
+function mockSession(overrides?: Partial<{ role: 'ADMIN' | 'OWNER' | 'AGENT' }>) {
   vi.mocked(useSession).mockReturnValue({
     data: {
       user: { id: 'user-1', name: 'Ana', email: 'ana@example.com' },
       scope: 'tenant',
       tenantId: 't1',
-      papel: overrides?.papel ?? 'ADMIN',
+      role: overrides?.role ?? 'ADMIN',
     },
     status: 'authenticated',
     update: vi.fn(),
@@ -119,7 +119,7 @@ describe('AppShell navigation per papel', () => {
   })
 
   it('ADMIN vê Dashboard, Perfil da Imobiliária e Financeiro, mas não o Perfil Público do corretor', () => {
-    mockSession({ papel: 'ADMIN' })
+    mockSession({ role: 'ADMIN' })
 
     renderShell()
 
@@ -130,7 +130,7 @@ describe('AppShell navigation per papel', () => {
   })
 
   it('exibe Visão Geral Imob. na navegação para ADMIN', () => {
-    mockSession({ papel: 'ADMIN' })
+    mockSession({ role: 'ADMIN' })
 
     renderShell()
 
@@ -142,7 +142,7 @@ describe('AppShell navigation per papel', () => {
   })
 
   it('OWNER também vê Dashboard, Perfil da Imobiliária e Financeiro', () => {
-    mockSession({ papel: 'OWNER' })
+    mockSession({ role: 'OWNER' })
 
     renderShell()
 
@@ -152,7 +152,7 @@ describe('AppShell navigation per papel', () => {
   })
 
   it('AGENT não vê Dashboard, Perfil da Imobiliária nem Financeiro, mas vê Perfil Público, Pipeline e Contatos', () => {
-    mockSession({ papel: 'AGENT' })
+    mockSession({ role: 'AGENT' })
 
     renderShell()
 
@@ -172,7 +172,7 @@ describe('AppShell active nav item', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     useSidebarPreferencesStore.getState().setCollapsed(false)
-    mockSession({ papel: 'ADMIN' })
+    mockSession({ role: 'ADMIN' })
   })
 
   function activeLabels() {
@@ -271,7 +271,7 @@ describe('AppShell mobile top bar', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(usePathname).mockReturnValue('/dashboard')
-    mockSession({ papel: 'ADMIN' })
+    mockSession({ role: 'ADMIN' })
   })
 
   it('shows a single notifications bell next to the menu button', () => {
@@ -308,7 +308,7 @@ describe('AppShell collapsible desktop navigation', () => {
     vi.clearAllMocks()
     useSidebarPreferencesStore.getState().setCollapsed(false)
     vi.mocked(usePathname).mockReturnValue('/dashboard/agenda')
-    mockSession({ papel: 'ADMIN' })
+    mockSession({ role: 'ADMIN' })
   })
 
   it('keeps the active navigation item while toggling the desktop sidebar', async () => {
@@ -384,7 +384,7 @@ describe('AppShell marketplace logout shortcut', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(usePathname).mockReturnValue('/dashboard/properties')
-    mockSession({ papel: 'ADMIN' })
+    mockSession({ role: 'ADMIN' })
   })
 
   it('clears the session before returning to the public marketplace', async () => {
