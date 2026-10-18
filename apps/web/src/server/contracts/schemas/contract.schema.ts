@@ -29,6 +29,7 @@ export const signatureStatusSchema = z.enum(['PENDENTE', 'ASSINADA'])
 export const contractPartySchema = z
   .object({
     id: z.string(),
+    userId: z.string().nullable(),
     role: contractPartyRoleSchema,
     name: z.string(),
     cpf: z.string(),
@@ -38,6 +39,10 @@ export const contractPartySchema = z
     signedAt: z.string().nullable(),
   })
   .openapi('ContractParty')
+
+export const contractPartyUserLinkSchema = z
+  .object({ partyId: z.string(), userId: z.string() })
+  .openapi('ContractPartyUserLink')
 
 export const contractDocumentSchema = z
   .object({

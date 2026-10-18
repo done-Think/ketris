@@ -1,8 +1,5 @@
-export type ChargeType = 'A_RECEBER' | 'A_PAGAR'
-
-export type ChargeStatus = 'PENDENTE' | 'PAGA' | 'ATRASADA' | 'AGENDADA' | 'CANCELADA'
-
-export type NewChargeStatus = Extract<ChargeStatus, 'PENDENTE' | 'AGENDADA'>
+import type { ChargeReadScope } from '../types/charge-read-scope'
+import type { ChargeStatus, ChargeType, NewChargeStatus } from '../types/charge'
 
 export interface Charge {
   id: string
@@ -55,7 +52,7 @@ export interface ChargePaymentData {
 }
 
 export interface ChargeListFilters {
-  tenantId: string
+  scope: ChargeReadScope
   type?: ChargeType
   status?: ChargeStatus
   search?: string

@@ -1,5 +1,6 @@
 import type { FinancialSummary } from '@server/financial/domain/charge.entity'
+import type { GetFinancialSummaryInput } from '@server/financial/types/charge-read'
 
 export interface FinancialSummaryProvider {
-  execute(input: { actorTenantId: string }): Promise<FinancialSummary>
+  execute(input: GetFinancialSummaryInput): Promise<FinancialSummary>
 }
