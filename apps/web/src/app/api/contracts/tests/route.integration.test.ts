@@ -15,6 +15,8 @@ describe('/api/contracts (integração)', () => {
   let tenantId: string
   let actorToken: string
   let renterToken: string
+  let adminToken: string
+  let otherAgentToken: string
   let acceptedOpportunityId: string
   let pendingOpportunityId: string
   let propertyId: string
@@ -63,6 +65,9 @@ describe('/api/contracts (integração)', () => {
       vinculoAprovadoEm: renter.vinculoAprovadoEm,
     })
 
+    adminToken = await createUserToken('ADMIN')
+    otherAgentToken = await createUserToken('AGENT')
+
     const property = await prisma.imovel.create({
       data: {
         tenantId,
@@ -100,6 +105,28 @@ describe('/api/contracts (integração)', () => {
     })
     pendingOpportunityId = pendingOpportunity.id
   })
+
+  async function createUserToken(papel: 'ADMIN' | 'AGENT'): Promise<string> {
+    const user = await prisma.usuario.create({
+      data: {
+        tenantId,
+        nome: `Usuário ${papel}`,
+        email: `${papel.toLowerCase()}-${randomUUID()}@ketris.dev`,
+        senhaHash: 'hash-fake',
+        papel,
+      },
+    })
+
+    return tokenService.sign({
+      id: user.id,
+      tenantId: user.tenantId,
+      nome: user.nome,
+      email: user.email,
+      papel: user.papel,
+      ativo: user.ativo,
+      vinculoAprovadoEm: user.vinculoAprovadoEm,
+    })
+  }
 
   afterAll(async () => {
     if (tenantId) {
@@ -172,6 +199,24 @@ describe('/api/contracts (integração)', () => {
     expect(json.error.code).toBe('CONTRACT_OPPORTUNITY_NOT_ACCEPTED')
   })
 
+  it('retorna 404 quando um AGENT cria contrato a partir de oportunidade de imóvel de outro responsável', async () => {
+    const response = await POST(
+      buildRequest(
+        'http://localhost/api/contracts',
+        'POST',
+        { ...createPayload, opportunityId: acceptedOpportunityId },
+        otherAgentToken,
+      ),
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(404)
+    expect(json.error.code).toBe('CONTRACT_OPPORTUNITY_NOT_FOUND')
+    expect(
+      await prisma.contrato.count({ where: { oportunidadeOrigemId: acceptedOpportunityId } }),
+    ).toBe(0)
+  })
+
   let contractId: string
   let ownerPartyId: string
   let tenantPartyId: string
@@ -238,9 +283,97 @@ describe('/api/contracts (integração)', () => {
     expect(ids).toContain(contractId)
   })
 
+  it('lista o contrato para o ADMIN, mesmo sem ser o responsável pelo imóvel', async () => {
+    const response = await GET(
+      buildRequest('http://localhost/api/contracts', 'GET', undefined, adminToken),
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(json.items.map((item: { id: string }) => item.id)).toContain(contractId)
+  })
+
+  it('esconde da lista do AGENT os contratos de imóveis de outro responsável', async () => {
+    const response = await GET(
+      buildRequest('http://localhost/api/contracts', 'GET', undefined, otherAgentToken),
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(json.items.map((item: { id: string }) => item.id)).not.toContain(contractId)
+    expect(json.totalCount).toBe(0)
+  })
+
+  it('retorna 404 quando um AGENT consulta contrato de imóvel de outro responsável', async () => {
+    const response = await getContract(
+      buildRequest(
+        `http://localhost/api/contracts/${contractId}`,
+        'GET',
+        undefined,
+        otherAgentToken,
+      ),
+      { params: Promise.resolve({ id: contractId }) },
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(404)
+    expect(json.error.code).toBe('CONTRACT_NOT_FOUND')
+  })
+
+  it('retorna 403 quando um RENTER lista ou consulta contratos', async () => {
+    const listResponse = await GET(
+      buildRequest('http://localhost/api/contracts', 'GET', undefined, renterToken),
+    )
+    const detailResponse = await getContract(
+      buildRequest(`http://localhost/api/contracts/${contractId}`, 'GET', undefined, renterToken),
+      { params: Promise.resolve({ id: contractId }) },
+    )
+
+    expect(listResponse.status).toBe(403)
+    expect((await listResponse.json()).error.code).toBe('FORBIDDEN')
+    expect(detailResponse.status).toBe(403)
+    expect((await detailResponse.json()).error.code).toBe('FORBIDDEN')
+  })
+
   function partyContext(id: string, partyId: string) {
     return { params: Promise.resolve({ id, partyId }) }
   }
+
+  it('retorna 404 e não assina quando o AGENT não é o responsável pelo imóvel', async () => {
+    const response = await signParty(
+      buildRequest(
+        `http://localhost/api/contracts/${contractId}/parties/${ownerPartyId}/sign`,
+        'POST',
+        undefined,
+        otherAgentToken,
+      ),
+      partyContext(contractId, ownerPartyId),
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(404)
+    expect(json.error.code).toBe('CONTRACT_NOT_FOUND')
+
+    const signature = await prisma.assinatura.findUniqueOrThrow({
+      where: { parteContratoId: ownerPartyId },
+    })
+    expect(signature.status).toBe('PENDENTE')
+  })
+
+  it('retorna 403 quando um RENTER tenta assinar', async () => {
+    const response = await signParty(
+      buildRequest(
+        `http://localhost/api/contracts/${contractId}/parties/${ownerPartyId}/sign`,
+        'POST',
+        undefined,
+        renterToken,
+      ),
+      partyContext(contractId, ownerPartyId),
+    )
+
+    expect(response.status).toBe(403)
+    expect((await response.json()).error.code).toBe('FORBIDDEN')
+  })
 
   it('mantém o contrato e o imóvel fora do estado ativo enquanto faltam assinaturas', async () => {
     const response = await signParty(
@@ -256,6 +389,12 @@ describe('/api/contracts (integração)', () => {
 
     expect(response.status).toBe(200)
     expect(json.contract.status).toBe('AGUARDANDO_ASSINATURA')
+    expect(json.contract.activatedBy).toBeNull()
+
+    const ownerParty = json.contract.parties.find(
+      (party: { id: string }) => party.id === ownerPartyId,
+    )
+    expect(ownerParty.signedBy).toMatchObject({ name: 'Corretor' })
 
     const property = await prisma.imovel.findUniqueOrThrow({ where: { id: propertyId } })
     expect(property.status).toBe('PUBLISHED')
@@ -277,13 +416,13 @@ describe('/api/contracts (integração)', () => {
     expect(json.error.code).toBe('CONTRACT_PARTY_ALREADY_SIGNED')
   })
 
-  it('ativa o contrato, aluga o imóvel e gera a primeira cobrança quando a última parte assina', async () => {
+  it('ativa o contrato, aluga o imóvel e gera a primeira cobrança quando a última parte assina (pelo ADMIN)', async () => {
     const response = await signParty(
       buildRequest(
         `http://localhost/api/contracts/${contractId}/parties/${tenantPartyId}/sign`,
         'POST',
         undefined,
-        actorToken,
+        adminToken,
       ),
       partyContext(contractId, tenantPartyId),
     )
@@ -292,6 +431,12 @@ describe('/api/contracts (integração)', () => {
     expect(response.status).toBe(200)
     expect(json.contract.status).toBe('ATIVO')
     expect(json.contract.activatedAt).not.toBeNull()
+    expect(json.contract.activatedBy).toMatchObject({ name: 'Usuário ADMIN' })
+
+    const tenantParty = json.contract.parties.find(
+      (party: { id: string }) => party.id === tenantPartyId,
+    )
+    expect(tenantParty.signedBy).toMatchObject({ name: 'Usuário ADMIN' })
 
     const property = await prisma.imovel.findUniqueOrThrow({ where: { id: propertyId } })
     expect(property.status).toBe('RENTED')
@@ -317,5 +462,62 @@ describe('/api/contracts (integração)', () => {
         (party: { signatureStatus: string }) => party.signatureStatus === 'ASSINADA',
       ),
     ).toBe(true)
+    expect(json.contract.activatedBy).toMatchObject({ name: 'Usuário ADMIN' })
+    expect(
+      json.contract.parties.map((party: { signedBy: { name: string } }) => party.signedBy.name),
+    ).toEqual(expect.arrayContaining(['Corretor', 'Usuário ADMIN']))
+  })
+
+  it('quando duas pessoas assinam a mesma parte ao mesmo tempo, só uma assina e o contrato ativa uma vez', async () => {
+    const opportunity = await prisma.oportunidade.create({
+      data: {
+        tenantId,
+        imovelId: propertyId,
+        interessadoNome: 'Paula Reis',
+        interessadoEmail: 'paula@example.com',
+        valorProposto: 3100,
+        status: 'ACEITA',
+      },
+    })
+    const created = await POST(
+      buildRequest(
+        'http://localhost/api/contracts',
+        'POST',
+        { ...createPayload, opportunityId: opportunity.id },
+        actorToken,
+      ),
+    )
+    const { contract } = await created.json()
+    const owner = contract.parties.find((party: { role: string }) => party.role === 'LOCADOR')
+    const tenant = contract.parties.find((party: { role: string }) => party.role === 'LOCATARIO')
+    const signAs = (partyId: string, token: string) =>
+      signParty(
+        buildRequest(
+          `http://localhost/api/contracts/${contract.id}/parties/${partyId}/sign`,
+          'POST',
+          undefined,
+          token,
+        ),
+        partyContext(contract.id, partyId),
+      )
+
+    await signAs(owner.id, actorToken)
+    const responses = await Promise.all([
+      signAs(tenant.id, actorToken),
+      signAs(tenant.id, adminToken),
+    ])
+
+    expect(responses.map((response) => response.status).sort()).toEqual([200, 409])
+    const winnerIndex = responses.findIndex((response) => response.status === 200)
+    const winnerName = winnerIndex === 0 ? 'Corretor' : 'Usuário ADMIN'
+    const { contract: activated } = await responses[winnerIndex].json()
+    expect(activated.status).toBe('ATIVO')
+    expect(activated.activatedBy).toMatchObject({ name: winnerName })
+    expect(
+      activated.parties.find((party: { id: string }) => party.id === tenant.id).signedBy,
+    ).toMatchObject({ name: winnerName })
+
+    const charges = await prisma.cobranca.findMany({ where: { contratoId: contract.id } })
+    expect(charges).toHaveLength(1)
   })
 })

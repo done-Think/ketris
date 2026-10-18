@@ -28,6 +28,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   const result = await contractsContainer.listContractsUseCase.execute({
     tenantId: actor.tenantId,
+    actorId: actor.sub,
+    actorPapel: actor.papel as Papel,
     status: parsed.data.status,
     type: parsed.data.type,
     propertyId: parsed.data.propertyId,
@@ -45,6 +47,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
   const contract = await contractsContainer.createContractFromOpportunityUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorId: actor.sub,
     actorPapel: actor.papel as Papel,
     opportunityId: body.opportunityId,
     type: body.type,

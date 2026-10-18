@@ -4,16 +4,27 @@ import { prisma } from '@server/db/prisma'
 
 import type {
   Contract,
+  ContractAccessScope,
   ContractListFilters,
   ContractListResult,
   EligibleOpportunity,
   NewContract,
 } from '../domain/contract.entity'
 import type { ContractRepository } from '../application/ports/contract-repository.port'
+import { ContractPartyAlreadySignedError } from '../domain/errors'
+
+type UsuarioRef = { id: string; nome: string }
 
 type ContratoWithRelations = Contrato & {
-  partes: (ParteContrato & { assinatura: Assinatura | null })[]
+  ativadoPor: UsuarioRef | null
+  partes: (ParteContrato & {
+    assinatura: (Assinatura & { assinadaPor: UsuarioRef | null }) | null
+  })[]
   documentos: { id: string; nome: string; url: string | null; createdAt: Date }[]
+}
+
+function toContractActor(usuario: UsuarioRef | null | undefined) {
+  return usuario ? { id: usuario.id, name: usuario.nome } : null
 }
 
 function toDomainContract(contrato: ContratoWithRelations): Contract {
@@ -33,6 +44,7 @@ function toDomainContract(contrato: ContratoWithRelations): Contract {
     notes: contrato.observacoes,
     status: contrato.status,
     activatedAt: contrato.ativadoEm,
+    activatedBy: toContractActor(contrato.ativadoPor),
     createdAt: contrato.createdAt,
     updatedAt: contrato.updatedAt,
     parties: contrato.partes.map((parte) => ({
@@ -44,6 +56,7 @@ function toDomainContract(contrato: ContratoWithRelations): Contract {
       phone: parte.telefone,
       signatureStatus: parte.assinatura?.status ?? 'PENDENTE',
       signedAt: parte.assinatura?.assinadaEm ?? null,
+      signedBy: toContractActor(parte.assinatura?.assinadaPor),
     })),
     documents: contrato.documentos.map((documento) => ({
       id: documento.id,
@@ -74,8 +87,15 @@ async function generateContractCode(): Promise<string> {
   return `CTR-${year}-${String(count + 1).padStart(4, '0')}`
 }
 
+const usuarioRefSelect = { select: { id: true, nome: true } } as const
+
+function scopeWhere(scope: ContractAccessScope) {
+  return scope.responsibleId ? { imovel: { responsavelId: scope.responsibleId } } : {}
+}
+
 const contractInclude = {
-  partes: { include: { assinatura: true } },
+  ativadoPor: usuarioRefSelect,
+  partes: { include: { assinatura: { include: { assinadaPor: usuarioRefSelect } } } },
   documentos: true,
 } as const
 
@@ -83,9 +103,10 @@ export class PrismaContractRepository implements ContractRepository {
   async findEligibleOpportunity(
     tenantId: string,
     opportunityId: string,
+    scope: ContractAccessScope,
   ): Promise<EligibleOpportunity | null> {
     const opportunity = await prisma.oportunidade.findFirst({
-      where: { tenantId, id: opportunityId },
+      where: { tenantId, id: opportunityId, ...scopeWhere(scope) },
       select: { id: true, imovelId: true, status: true, contrato: { select: { id: true } } },
     })
 
@@ -138,7 +159,10 @@ export class PrismaContractRepository implements ContractRepository {
     return toDomainContract(contrato)
   }
 
-  async findMany(filters: ContractListFilters): Promise<ContractListResult> {
+  async findMany(
+    filters: ContractListFilters,
+    scope: ContractAccessScope,
+  ): Promise<ContractListResult> {
     const page = filters.page && filters.page > 0 ? Math.floor(filters.page) : 1
     const pageSize = filters.pageSize && filters.pageSize > 0 ? Math.floor(filters.pageSize) : 10
     const search = filters.search?.trim()
@@ -148,6 +172,7 @@ export class PrismaContractRepository implements ContractRepository {
       status: filters.status,
       tipo: filters.type,
       imovelId: filters.propertyId,
+      ...scopeWhere(scope),
       ...(search
         ? {
             OR: [
@@ -213,21 +238,40 @@ export class PrismaContractRepository implements ContractRepository {
     }
   }
 
-  async findById(tenantId: string, contractId: string): Promise<Contract | null> {
+  async findById(
+    tenantId: string,
+    contractId: string,
+    scope: ContractAccessScope,
+  ): Promise<Contract | null> {
     const contrato = await prisma.contrato.findFirst({
-      where: { tenantId, id: contractId },
+      where: {
+        tenantId,
+        id: contractId,
+        ...scopeWhere(scope),
+      },
       include: contractInclude,
     })
 
     return contrato ? toDomainContract(contrato) : null
   }
 
-  async signParty(tenantId: string, contractId: string, partyId: string): Promise<Contract> {
+  async signParty(
+    tenantId: string,
+    contractId: string,
+    partyId: string,
+    actorId: string,
+  ): Promise<Contract> {
     const updated = await prisma.$transaction(async (tx) => {
-      await tx.assinatura.update({
-        where: { parteContratoId: partyId },
-        data: { status: 'ASSINADA', assinadaEm: new Date() },
+      // Conditional on PENDENTE so two concurrent requests for the same party cannot both sign
+      // it (the second would overwrite who signed); the loser gets a 409.
+      const { count } = await tx.assinatura.updateMany({
+        where: { parteContratoId: partyId, status: 'PENDENTE' },
+        data: { status: 'ASSINADA', assinadaEm: new Date(), assinadaPorId: actorId },
       })
+
+      if (count === 0) {
+        throw new ContractPartyAlreadySignedError()
+      }
 
       const contrato = await tx.contrato.findFirstOrThrow({
         where: { tenantId, id: contractId },
@@ -242,7 +286,7 @@ export class PrismaContractRepository implements ContractRepository {
       if (allSigned && contrato.status !== 'ATIVO') {
         await tx.contrato.update({
           where: { id: contractId },
-          data: { status: 'ATIVO', ativadoEm: new Date() },
+          data: { status: 'ATIVO', ativadoEm: new Date(), ativadoPorId: actorId },
         })
         await tx.imovel.update({
           where: { id: contrato.imovelId },

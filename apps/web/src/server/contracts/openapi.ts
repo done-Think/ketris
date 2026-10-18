@@ -19,15 +19,22 @@ export function registerContractsOpenApi(registry: OpenAPIRegistry): void {
     path: '/contracts',
     tags: ['Contracts'],
     summary: 'Lista contratos do tenant autenticado',
+    description:
+      'ADMIN e OWNER veem todos os contratos do tenant. Quando o ator tem papel AGENT, a listagem é ' +
+      'restrita aos contratos de imóveis dos quais ele é responsável. RENTER não acessa contratos.',
     security: [{ bearerAuth: [] }],
     request: { query: listContractsQuerySchema },
     responses: {
       200: {
-        description: 'Lista de contratos do tenant.',
+        description: 'Lista de contratos visíveis para o ator.',
         content: { 'application/json': { schema: contractsResponseSchema } },
       },
       401: {
         description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Autenticado como RENTER — não pode acessar contratos.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },
@@ -38,6 +45,9 @@ export function registerContractsOpenApi(registry: OpenAPIRegistry): void {
     path: '/contracts',
     tags: ['Contracts'],
     summary: 'Cria contrato a partir de uma oportunidade aceita',
+    description:
+      'Um ator AGENT só cria contrato a partir de oportunidade de imóvel do qual é responsável ' +
+      '(404 opaco caso contrário). RENTER não acessa contratos.',
     security: [{ bearerAuth: [] }],
     request: {
       body: { content: { 'application/json': { schema: createContractRequestSchema } } },
@@ -55,8 +65,13 @@ export function registerContractsOpenApi(registry: OpenAPIRegistry): void {
         description: 'Access token ausente, inválido ou expirado.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
+      403: {
+        description: 'Autenticado como RENTER — não pode acessar contratos.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
       404: {
-        description: 'Oportunidade não encontrada neste tenant.',
+        description:
+          'Oportunidade não encontrada neste tenant, ou de imóvel de outro responsável (AGENT).',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       409: {
@@ -71,6 +86,9 @@ export function registerContractsOpenApi(registry: OpenAPIRegistry): void {
     path: '/contracts/{id}',
     tags: ['Contracts'],
     summary: 'Consulta contrato do tenant autenticado',
+    description:
+      'Um ator AGENT recebe 404 opaco para um contrato de imóvel do qual não é responsável. ' +
+      'RENTER não acessa contratos.',
     security: [{ bearerAuth: [] }],
     request: { params: contractIdParamsSchema },
     responses: {
@@ -78,8 +96,17 @@ export function registerContractsOpenApi(registry: OpenAPIRegistry): void {
         description: 'Contrato encontrado.',
         content: { 'application/json': { schema: contractResponseSchema } },
       },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Autenticado como RENTER — não pode acessar contratos.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
       404: {
-        description: 'Contrato não encontrado neste tenant.',
+        description:
+          'Contrato não encontrado neste tenant, ou de imóvel de outro responsável (AGENT).',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },
@@ -90,6 +117,9 @@ export function registerContractsOpenApi(registry: OpenAPIRegistry): void {
     path: '/contracts/{id}/parties/{partyId}/sign',
     tags: ['Contracts'],
     summary: 'Registra a assinatura de uma parte do contrato',
+    description:
+      'Segue a mesma regra de acesso da consulta do contrato: um ator AGENT recebe 404 opaco para ' +
+      'um contrato de imóvel do qual não é responsável, e RENTER não acessa contratos.',
     security: [{ bearerAuth: [] }],
     request: { params: contractPartyIdParamsSchema },
     responses: {
@@ -97,8 +127,18 @@ export function registerContractsOpenApi(registry: OpenAPIRegistry): void {
         description: 'Assinatura registrada; contrato ativado se era a última assinatura pendente.',
         content: { 'application/json': { schema: contractResponseSchema } },
       },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Autenticado como RENTER — não pode acessar contratos.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
       404: {
-        description: 'Contrato ou parte não encontrados neste tenant.',
+        description:
+          'Contrato ou parte não encontrados neste tenant, ou contrato de imóvel de outro ' +
+          'responsável (AGENT).',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       409: {
