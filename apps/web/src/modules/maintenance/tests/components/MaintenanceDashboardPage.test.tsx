@@ -122,10 +122,21 @@ function mockDefaults() {
     update: vi.fn(),
   } as unknown as ReturnType<typeof useSession>)
 
-  vi.mocked(useMaintenanceTickets).mockReturnValue({
-    data: { items: listItems, totalCount: listItems.length },
-    isLoading: false,
-  } as unknown as ReturnType<typeof useMaintenanceTickets>)
+  vi.mocked(useMaintenanceTickets).mockImplementation((_tenantId, filters = {}) => {
+    const filtered = listItems.filter(
+      (item) =>
+        (!filters.status || item.status === filters.status) &&
+        (!filters.priority || item.priority === filters.priority) &&
+        (!filters.propertyId || item.propertyId === filters.propertyId) &&
+        (!filters.search ||
+          item.title.toLocaleLowerCase().includes(filters.search.toLocaleLowerCase())),
+    )
+
+    return {
+      data: { items: filtered, totalCount: filtered.length },
+      isLoading: false,
+    } as unknown as ReturnType<typeof useMaintenanceTickets>
+  })
 
   vi.mocked(useMaintenanceTicket).mockImplementation(
     (_tenantId, ticketId) =>

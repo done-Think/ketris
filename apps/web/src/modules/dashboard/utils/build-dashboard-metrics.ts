@@ -1,23 +1,8 @@
-import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
 
 import { formatCurrency } from '@shared/lib/utils/format'
 
-import type { AgendaEventApi } from '@modules/agenda/types/agenda-event'
-import type { Lead } from '@modules/crm/types/lead'
-import type { Opportunity } from '@modules/crm/types/opportunity'
-import type { FinancialSummary } from '@modules/financial/types/service'
-
-import type { DashboardMetric } from '../types/dashboard-overview'
-
-export type BuildDashboardMetricsParams = {
-  leads: Lead[]
-  opportunities: Opportunity[]
-  monthEvents: AgendaEventApi[]
-  financialSummary: FinancialSummary | undefined
-  today: Dayjs
-  t: (key: string, values?: Record<string, string | number>) => string
-}
+import type { BuildDashboardMetricsParams, DashboardMetric } from '../types/dashboard-overview'
 
 export function buildDashboardMetrics({
   leads,

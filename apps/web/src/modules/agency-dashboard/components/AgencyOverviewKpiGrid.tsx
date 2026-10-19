@@ -75,7 +75,7 @@ export function AgencyOverviewKpiGrid({ kpis }: AgencyOverviewKpiGridProps) {
                     lineHeight: 1.25,
                   }}
                 >
-                  {kpi.helper}
+                  {t(`helpers.${kpi.helper.key}`, kpi.helper.values)}
                 </Typography>
               ) : null}
             </Stack>

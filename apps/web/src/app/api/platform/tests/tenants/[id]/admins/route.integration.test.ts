@@ -59,13 +59,13 @@ describe('POST /api/platform/tenants/[id]/admins (integração)', () => {
     const email = `admin-${randomUUID()}@ketris.dev`
 
     const response = await POST(
-      buildRequest({ nome: 'Admin do Tenant', email, password: 'senha-longa-123' }, actorToken),
+      buildRequest({ name: 'Admin do Tenant', email, password: 'senha-longa-123' }, actorToken),
       { params: Promise.resolve({ id: tenantId }) },
     )
     const json = await response.json()
 
     expect(response.status).toBe(201)
-    expect(json.user.papel).toBe('ADMIN')
+    expect(json.user.role).toBe('ADMIN')
     expect(json.user.tenantId).toBe(tenantId)
   })
 
@@ -73,7 +73,7 @@ describe('POST /api/platform/tenants/[id]/admins (integração)', () => {
     const email = `segundo-admin-${randomUUID()}@ketris.dev`
 
     const response = await POST(
-      buildRequest({ nome: 'Segundo Admin', email, password: 'senha-longa-123' }, actorToken),
+      buildRequest({ name: 'Segundo Admin', email, password: 'senha-longa-123' }, actorToken),
       { params: Promise.resolve({ id: tenantId }) },
     )
 
@@ -83,7 +83,7 @@ describe('POST /api/platform/tenants/[id]/admins (integração)', () => {
   it('retorna 401 sem Authorization header', async () => {
     const response = await POST(
       buildRequest({
-        nome: 'X',
+        name: 'X',
         email: `x-${randomUUID()}@ketris.dev`,
         password: 'senha-longa-123',
       }),
@@ -96,7 +96,7 @@ describe('POST /api/platform/tenants/[id]/admins (integração)', () => {
   it('retorna 404 para um tenant inexistente', async () => {
     const response = await POST(
       buildRequest(
-        { nome: 'X', email: `x-${randomUUID()}@ketris.dev`, password: 'senha-longa-123' },
+        { name: 'X', email: `x-${randomUUID()}@ketris.dev`, password: 'senha-longa-123' },
         actorToken,
       ),
       { params: Promise.resolve({ id: 'inexistente' }) },

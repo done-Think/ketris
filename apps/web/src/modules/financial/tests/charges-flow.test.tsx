@@ -223,6 +223,7 @@ const fullCharges: Record<string, ApiCharge> = {
 
 const createChargeMutate = vi.fn()
 const updateChargeMutate = vi.fn()
+const deleteChargeMutate = vi.fn()
 const registerChargePaymentMutate = vi.fn()
 const chargeQueryState: Record<string, { data: ApiCharge | undefined; isLoading: boolean }> = {}
 
@@ -233,6 +234,7 @@ vi.mock('../hooks/use-financial', () => ({
   }),
   useCreateCharge: () => ({ mutate: createChargeMutate }),
   useUpdateCharge: () => ({ mutate: updateChargeMutate }),
+  useDeleteCharge: () => ({ mutate: deleteChargeMutate }),
   useCharge: (_tenantId: unknown, chargeId: string) =>
     chargeQueryState[chargeId] ?? { data: undefined, isLoading: false },
   useRegisterChargePayment: () => ({ mutate: registerChargePaymentMutate }),
@@ -249,6 +251,7 @@ beforeEach(() => {
   updateChargeMutate.mockImplementation((variables, options) =>
     options?.onSuccess?.(fullCharges[variables.id] ?? fullCharges['0340']),
   )
+  deleteChargeMutate.mockImplementation((_chargeId, options) => options?.onSuccess?.())
   registerChargePaymentMutate.mockImplementation((_values, options) =>
     options?.onSuccess?.(fullCharges['0340']),
   )
@@ -323,6 +326,18 @@ describe('charges list', () => {
     const [variables] = updateChargeMutate.mock.calls[0]
     expect(variables.id).toBe('0340')
     expect(variables.values).toMatchObject({ status: 'cancelled' })
+  })
+
+  it('confirms permanent deletion of a charge', async () => {
+    const user = userEvent.setup()
+    render(wrap(<ChargesPage />))
+    await user.click(screen.getByRole('button', { name: 'Ações #COB-2025-0340' }))
+    await user.click(screen.getByRole('menuitem', { name: 'Excluir' }))
+    expect(screen.getByText('Excluir cobrança?')).toBeVisible()
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Excluir' }))
+    await waitFor(() => expect(deleteChargeMutate).toHaveBeenCalledTimes(1))
+    const [chargeId] = deleteChargeMutate.mock.calls[0]
+    expect(chargeId).toBe('0340')
   })
 })
 

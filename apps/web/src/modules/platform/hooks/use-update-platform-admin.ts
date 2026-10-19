@@ -1,14 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { platformAdminService } from '../services/platform-admin-service'
-import type { PlatformAdminRole } from '../types/platform-admin'
-
-type UpdatePlatformAdminInput = {
-  id: string
-  nome: string
-  email: string
-  role: PlatformAdminRole
-}
+import type { UpdatePlatformAdminInput } from '../types/platform-admin'
 
 export function useUpdatePlatformAdmin() {
   const queryClient = useQueryClient()

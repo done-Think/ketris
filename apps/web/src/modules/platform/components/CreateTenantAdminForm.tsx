@@ -10,12 +10,9 @@ import { useTranslations } from 'next-intl'
 import { RhfTextField } from '@shared/components/form'
 import { extractErrorMessage } from '@shared/utils/error-message'
 
-import {
-  createTenantAdminSchema,
-  type CreateTenantAdminFormValues,
-} from '../schemas/create-tenant-admin-schema'
+import { createTenantAdminSchema } from '../schemas/create-tenant-admin-schema'
 import { useCreateTenantAdmin } from '../hooks/use-create-tenant-admin'
-import type { CreateTenantAdminFormProps } from '../types/tenant'
+import type { CreateTenantAdminFormProps, CreateTenantAdminFormValues } from '../types/tenant'
 
 export function CreateTenantAdminForm({ tenantId }: CreateTenantAdminFormProps) {
   const t = useTranslations('platform.forms')
@@ -30,7 +27,7 @@ export function CreateTenantAdminForm({ tenantId }: CreateTenantAdminFormProps) 
     formState: { isSubmitting },
   } = useForm<CreateTenantAdminFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { nome: '', email: '', password: '', confirmarSenha: '' },
+    defaultValues: { name: '', email: '', password: '', confirmPassword: '' },
   })
 
   async function onSubmit(values: CreateTenantAdminFormValues) {
@@ -45,7 +42,7 @@ export function CreateTenantAdminForm({ tenantId }: CreateTenantAdminFormProps) 
 
   return (
     <Stack component="form" onSubmit={handleSubmit(onSubmit)} spacing={2.5} sx={{ maxWidth: 420 }}>
-      <RhfTextField control={control} name="nome" label={t('name')} fullWidth />
+      <RhfTextField control={control} name="name" label={t('name')} fullWidth />
       <RhfTextField
         control={control}
         name="email"
@@ -64,7 +61,7 @@ export function CreateTenantAdminForm({ tenantId }: CreateTenantAdminFormProps) 
       />
       <RhfTextField
         control={control}
-        name="confirmarSenha"
+        name="confirmPassword"
         label={t('passwordConfirmation')}
         type="password"
         autoComplete="new-password"

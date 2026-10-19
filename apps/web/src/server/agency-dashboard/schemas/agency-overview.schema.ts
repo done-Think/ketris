@@ -4,9 +4,20 @@ import { z } from 'zod'
 export const agencyOverviewKpisSchema = z
   .object({
     portfolioCount: z.number().int(),
+    newPropertiesThisMonth: z
+      .number()
+      .int()
+      .openapi({ description: 'Imóveis cadastrados no mês corrente.' }),
     activeBrokersCount: z.number().int(),
     receivedLeadsThisMonth: z.number().int(),
+    receivedLeadsPreviousPeriod: z.number().int().openapi({
+      description:
+        'Leads recebidos no mesmo trecho do mês anterior (do dia 1 até o mesmo dia/hora de hoje).',
+    }),
     monthlyReceivable: z.number(),
+    monthlyReceivablePreviousMonth: z.number().openapi({
+      description: 'Mesmo cálculo de monthlyReceivable, aplicado ao mês anterior inteiro.',
+    }),
     occupancyPercentage: z.number(),
   })
   .openapi('AgencyOverviewKpis')
@@ -35,6 +46,7 @@ export const agencyTopBrokerSchema = z
     id: z.string(),
     name: z.string(),
     avatarUrl: z.string().nullable(),
+    hasPublicProfile: z.boolean(),
     salesCount: z.number().int(),
     revenueTotal: z.number(),
     recentSales: z.array(agencyBrokerSaleSchema),

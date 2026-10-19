@@ -1,8 +1,7 @@
 import { z } from 'zod'
 
 import { searchResultsViewModes } from '../config/search-results-view-mode'
-
-export type SchemaMessageTranslator = (key: string) => string
+import type { SchemaMessageTranslator } from '@shared/types'
 
 const searchFilterKeySchema = z.enum(['location', 'propertyType', 'priceRange'])
 

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import type { SchemaMessageTranslator } from './opportunity-schema'
+import type { SchemaMessageTranslator } from '@shared/types'
 
 export function createConvertLeadSchema(t: SchemaMessageTranslator) {
   return z.object({

@@ -23,9 +23,8 @@ import {
 import type {
   PasswordRecoveryFormValues,
   PasswordResetFormValues,
+  RecoveryStep,
 } from '../types/password-recovery'
-
-type RecoveryStep = 'request' | 'code' | 'newPassword' | 'done'
 
 export function PasswordRecoveryScreen() {
   const t = useTranslations('auth.passwordRecovery')

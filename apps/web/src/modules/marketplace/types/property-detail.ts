@@ -1,5 +1,9 @@
+import type { z } from 'zod'
+
 import type { PropertyCardData } from '@shared/types'
 import type { LocalizedHref } from '@shared/types/localized-href'
+
+import type { createPropertyInquirySchema } from '../schemas/property-inquiry-schema'
 
 export type MarketplacePropertyDetail = PropertyCardData & {
   id: string
@@ -69,6 +73,17 @@ export type PropertyOverviewProps = {
 
 export type PropertyContactCardProps = {
   property: MarketplacePropertyDetail
+}
+
+export type PropertyInquiryMode = 'visit' | 'proposal'
+
+export type PropertyInquiryFormValues = z.infer<ReturnType<typeof createPropertyInquirySchema>>
+
+export type PropertyInquiryDialogProps = {
+  open: boolean
+  mode: PropertyInquiryMode
+  propertyId: string
+  onClose: () => void
 }
 
 export type PropertyPhotoDialogProps = {

@@ -9,7 +9,10 @@ import { usePathname } from '@/i18n/navigation'
 import { PlatformOverview } from '../../components/PlatformOverview'
 import { PlatformShell } from '../../components/PlatformShell'
 
-const { useTenants } = vi.hoisted(() => ({ useTenants: vi.fn() }))
+const { useTenants, usePlatformOverview } = vi.hoisted(() => ({
+  useTenants: vi.fn(),
+  usePlatformOverview: vi.fn(),
+}))
 
 type MockLinkProps = Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & {
   href?: string | { pathname: string; params?: Record<string, string> }
@@ -20,6 +23,8 @@ vi.mock('@mui/x-charts/LineChart', () => ({
 }))
 
 vi.mock('../../hooks/use-tenants', () => ({ useTenants }))
+
+vi.mock('../../hooks/use-platform-overview', () => ({ usePlatformOverview }))
 
 vi.mock('next-auth/react', () => ({
   useSession: () => ({ data: { tenantId: 'tenant-1' }, status: 'authenticated' }),
@@ -65,9 +70,30 @@ function renderOverview() {
 describe('PlatformOverview', () => {
   const existingTenant = {
     id: 'existing',
-    nome: 'Existing agency',
+    name: 'Existing agency',
     slug: 'agency',
     createdAt: '2024-01-01T00:00:00Z',
+  }
+
+  const overviewData = {
+    metrics: { tenantsCount: 45, brokersCount: 680, propertiesCount: 12400 },
+    growthTrend: [{ year: 2026, month: 10, tenants: 45, contracts: 52 }],
+    recentTenants: [
+      {
+        id: 'apex',
+        name: 'Apex Brokers S/A',
+        brokersCount: 45,
+        propertiesCount: 900,
+        createdAt: '2026-03-01T00:00:00.000Z',
+      },
+      {
+        id: 'nobre',
+        name: 'Nobre Imobiliária',
+        brokersCount: 24,
+        propertiesCount: 310,
+        createdAt: '2026-02-24T00:00:00.000Z',
+      },
+    ],
   }
 
   beforeEach(() => {
@@ -76,14 +102,18 @@ describe('PlatformOverview', () => {
       isLoading: false,
       isError: false,
     })
+    vi.mocked(usePlatformOverview).mockReturnValue({
+      data: overviewData,
+      isLoading: false,
+      isError: false,
+    })
   })
 
-  it('renders the demonstration metrics, growth chart, alerts and recent tenants', () => {
+  it('renders the real metrics, growth chart, alerts and recent tenants', () => {
     renderOverview()
 
     expect(screen.getByRole('heading', { name: 'Visão geral da plataforma' })).toBeVisible()
     expect(screen.getAllByText('45')[0]).toBeVisible()
-    expect(screen.getByText(/R\$\s*89,6\s*mil/)).toBeVisible()
     expect(screen.getByLabelText('Growth trends chart')).toBeVisible()
     expect(screen.getByText('4 ativos')).toBeVisible()
     expect(screen.getByText('Backup automatizado falhou')).toBeVisible()
@@ -91,12 +121,12 @@ describe('PlatformOverview', () => {
     expect(screen.getByText('Nobre Imobiliária')).toBeVisible()
   })
 
-  it('renders all five fixture tenants in the accessible grid', () => {
+  it('renders both recent tenants in the accessible grid', () => {
     renderOverview()
 
     const grid = screen.getByRole('grid')
     expect(grid).toBeVisible()
-    expect(within(grid).getAllByRole('row')).toHaveLength(6)
+    expect(within(grid).getAllByRole('row')).toHaveLength(3)
   })
 
   it('restores the real-tenant administrative flow from the overview inside the shell', () => {

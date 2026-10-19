@@ -239,6 +239,7 @@
       "proposedValue": "Valor proposto",
       "propertyRequired": "Selecione um imóvel.",
       "proposedValueInvalid": "Informe um valor válido",
+      "propertyRequired": "Selecione um imóvel.",
       "cancel": "Cancelar",
       "confirm": "Converter",
       "success": "Lead convertido em oportunidade.",

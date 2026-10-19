@@ -19,19 +19,21 @@ import {
   Typography,
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 
 import { brand } from '@shared/theme/tokens'
 
-import { brokerGoalSchema, brokerTransferSchema } from '../schemas/broker-team-action-schemas'
+import {
+  createBrokerGoalSchema,
+  createBrokerTransferSchema,
+} from '../schemas/broker-team-action-schemas'
 import type {
   BrokerGoalFormValues,
+  BrokerTeamDialogBaseProps,
   BrokerTeamMember,
   BrokerTransferFormValues,
 } from '../types/broker-team'
-
-type BaseProps = { broker: BrokerTeamMember | null; onClose: () => void }
 
 function ActionTitle({ title, onClose }: { title: string; onClose: () => void }) {
   const t = useTranslations('dashboard.team')
@@ -49,7 +51,7 @@ function ActionTitle({ title, onClose }: { title: string; onClose: () => void })
   )
 }
 
-export function BrokerPerformanceDialog({ broker, onClose }: BaseProps) {
+export function BrokerPerformanceDialog({ broker, onClose }: BrokerTeamDialogBaseProps) {
   const t = useTranslations('dashboard.team')
   return (
     <Dialog open={Boolean(broker)} onClose={onClose} fullWidth maxWidth="sm">
@@ -101,17 +103,18 @@ export function BrokerGoalDialog({
   broker,
   onClose,
   onSave,
-}: BaseProps & {
+}: BrokerTeamDialogBaseProps & {
   onSave: (brokerId: string, monthlyGoal: number) => void
 }) {
   const t = useTranslations('dashboard.team')
+  const schema = useMemo(() => createBrokerGoalSchema((key) => t(`dialogs.${key}`)), [t])
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm<BrokerGoalFormValues>({
-    resolver: zodResolver(brokerGoalSchema),
+    resolver: zodResolver(schema),
     defaultValues: { monthlyGoal: 1 },
   })
   useEffect(() => {
@@ -164,18 +167,19 @@ export function BrokerTransferDialog({
   brokers,
   onClose,
   onTransfer,
-}: BaseProps & {
+}: BrokerTeamDialogBaseProps & {
   brokers: readonly BrokerTeamMember[]
   onTransfer: (sourceId: string, values: BrokerTransferFormValues) => void
 }) {
   const t = useTranslations('dashboard.team')
+  const schema = useMemo(() => createBrokerTransferSchema((key) => t(`dialogs.${key}`)), [t])
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm<BrokerTransferFormValues>({
-    resolver: zodResolver(brokerTransferSchema),
+    resolver: zodResolver(schema),
     defaultValues: { destinationId: '', leads: false, properties: false },
   })
   useEffect(() => {
@@ -272,7 +276,7 @@ export function BrokerDeactivateDialog({
   broker,
   onClose,
   onConfirm,
-}: BaseProps & {
+}: BrokerTeamDialogBaseProps & {
   onConfirm: (brokerId: string) => void
 }) {
   const t = useTranslations('dashboard.team')

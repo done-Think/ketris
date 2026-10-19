@@ -104,7 +104,17 @@
       "activeBrokers": "Active brokers",
       "receivedLeads": "Received leads",
       "revenue": "Revenue",
-      "occupancy": "Occupancy rate"
+      "occupancy": "Occupancy rate",
+      "helpers": {
+        "newProperties": "{count, plural, =0 {None new this month} other {+# new this month}}",
+        "leadsIncrease": "+{count, number} vs last month",
+        "leadsDecrease": "−{count, number} vs last month",
+        "leadsSame": "Same as last month",
+        "revenueIncrease": "+{percent, number}% vs last month",
+        "revenueDecrease": "−{percent, number}% vs last month",
+        "revenueSame": "Same as last month",
+        "revenueNoPrevious": "Last month was zero"
+      }
     },
     "performance": {
       "title": "Revenue Performance",
@@ -240,7 +250,9 @@
       "resolveSuccess": "Ticket marked as resolved.",
       "resolveError": "Could not mark the ticket as resolved.",
       "noteSuccess": "Message sent.",
-      "noteError": "Could not send the message."
+      "noteError": "Could not send the message.",
+      "attachmentSuccess": "File attached successfully.",
+      "attachmentError": "Could not attach the file."
     },
     "detail": {
       "back": "Back to tickets",
@@ -315,7 +327,8 @@
     "kpis": {
       "receivable": "Receivable",
       "delinquency": "Delinquency",
-      "defaultRate": "Default rate"
+      "defaultRate": "Default rate",
+      "occupancyRate": "Occupancy rate"
     },
     "history": {
       "eyebrow": "Financial history",

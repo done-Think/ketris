@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import type { SchemaMessageTranslator } from './opportunity-schema'
+import type { SchemaMessageTranslator } from '@shared/types'
 
 export const publicPropertyPurposeSchema = z.enum(['ALUGUEL', 'VENDA', 'AMBOS'])
 

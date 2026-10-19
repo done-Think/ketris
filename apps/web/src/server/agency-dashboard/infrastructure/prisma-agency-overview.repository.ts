@@ -6,13 +6,11 @@ import type {
   AgencyTopBroker,
 } from '../domain/agency-overview.entity'
 import type { AgencyOverviewRepository } from '../application/ports/agency-overview-repository.port'
-
-function monthRange(referenceDate: Date) {
-  const start = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), 1)
-  const end = new Date(referenceDate.getFullYear(), referenceDate.getMonth() + 1, 1)
-
-  return { start, end }
-}
+import {
+  currentMonthRange,
+  previousMonthRange,
+  previousMonthSamePeriodRange,
+} from '../domain/agency-overview-periods'
 
 function buildLocation(endereco: { bairro: string; cidade: string } | null): string | null {
   if (!endereco) return null
@@ -32,6 +30,14 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
     return prisma.imovel.count({ where: { tenantId } })
   }
 
+  async getNewPropertiesThisMonth(tenantId: string, referenceDate: Date): Promise<number> {
+    const { start, end } = currentMonthRange(referenceDate)
+
+    return prisma.imovel.count({
+      where: { tenantId, createdAt: { gte: start, lt: end } },
+    })
+  }
+
   async getActiveBrokersCount(tenantId: string): Promise<number> {
     return prisma.usuario.count({
       where: { tenantId, papel: { in: ['AGENT', 'OWNER'] }, ativo: true },
@@ -39,11 +45,36 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
   }
 
   async getReceivedLeadsThisMonth(tenantId: string, referenceDate: Date): Promise<number> {
-    const { start, end } = monthRange(referenceDate)
+    const { start, end } = currentMonthRange(referenceDate)
 
     return prisma.lead.count({
       where: { tenantId, createdAt: { gte: start, lt: end } },
     })
+  }
+
+  async getReceivedLeadsPreviousPeriod(tenantId: string, referenceDate: Date): Promise<number> {
+    const { start, end } = previousMonthSamePeriodRange(referenceDate)
+
+    return prisma.lead.count({
+      where: { tenantId, createdAt: { gte: start, lt: end } },
+    })
+  }
+
+  // Mirrors FinancialSummary.monthlyReceivable (A_RECEBER, PENDENTE or PAGA, due in the month) so the
+  // revenue KPI is compared against the same metric one month earlier.
+  async getMonthlyReceivablePreviousMonth(tenantId: string, referenceDate: Date): Promise<number> {
+    const { start, end } = previousMonthRange(referenceDate)
+    const aggregate = await prisma.cobranca.aggregate({
+      _sum: { valor: true },
+      where: {
+        tenantId,
+        tipo: 'A_RECEBER',
+        vencimento: { gte: start, lt: end },
+        status: { in: ['PENDENTE', 'PAGA'] },
+      },
+    })
+
+    return aggregate._sum.valor?.toNumber() ?? 0
   }
 
   async getOccupancyPercentage(tenantId: string): Promise<number> {
@@ -65,7 +96,14 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
             id: true,
             titulo: true,
             endereco: { select: { bairro: true, cidade: true } },
-            responsavel: { select: { id: true, nome: true, avatarUrl: true } },
+            responsavel: {
+              select: {
+                id: true,
+                nome: true,
+                avatarUrl: true,
+                perfilPublico: { select: { status: true } },
+              },
+            },
           },
         },
       },
@@ -77,6 +115,7 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
         id: string
         name: string
         avatarUrl: string | null
+        hasPublicProfile: boolean
         salesCount: number
         revenueTotal: number
         sales: AgencyBrokerSale[]
@@ -89,6 +128,7 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
         id: broker.id,
         name: broker.nome,
         avatarUrl: broker.avatarUrl,
+        hasPublicProfile: broker.perfilPublico?.status === 'PUBLISHED',
         salesCount: 0,
         revenueTotal: 0,
         sales: [],
@@ -115,6 +155,7 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
         id: entry.id,
         name: entry.name,
         avatarUrl: entry.avatarUrl,
+        hasPublicProfile: entry.hasPublicProfile,
         salesCount: entry.salesCount,
         revenueTotal: entry.revenueTotal,
         recentSales: entry.sales.slice(0, RECENT_SALES_PER_BROKER_LIMIT),
@@ -136,7 +177,7 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
         include: { responsavel: { select: { nome: true } } },
       }),
       prisma.eventoAgenda.findMany({
-        where: { tenantId, titulo: { contains: 'visita', mode: 'insensitive' } },
+        where: { tenantId, tipo: 'VISIT' },
         orderBy: { createdAt: 'desc' },
         take: PER_SOURCE_ACTIVITY_LIMIT,
         include: { responsavel: { select: { nome: true } } },

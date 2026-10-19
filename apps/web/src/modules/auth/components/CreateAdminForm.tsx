@@ -11,7 +11,8 @@ import { RhfTextField } from '@shared/components/form'
 import { ActionTextLink } from '@shared/components/ui'
 import { extractErrorMessage } from '@shared/utils/error-message'
 
-import { createAdminSchema, type CreateAdminFormValues } from '../schemas/create-admin-schema'
+import { createAdminSchema } from '../schemas/create-admin-schema'
+import type { CreateAdminFormValues } from '../types/admin'
 import { useCreateAdmin } from '../hooks/use-create-admin'
 
 export function CreateAdminForm() {

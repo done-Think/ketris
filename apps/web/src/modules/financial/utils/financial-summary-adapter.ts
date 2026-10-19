@@ -67,6 +67,13 @@ export function mapFinancialSummaryToKpis(
       helper: '',
       tone: 'warning',
     },
+    {
+      id: 'occupancyRate',
+      labelKey: 'occupancyRate',
+      value: `${summary.occupancyRatePercentage.toFixed(1)}%`,
+      helper: '',
+      tone: 'success',
+    },
   ]
 }
 

@@ -7,10 +7,10 @@ const schema = createPlatformAdminSchema((key) => key)
 describe('createPlatformAdminSchema', () => {
   it('aceita payload válido com senhas coincidentes', () => {
     const result = schema.safeParse({
-      nome: 'Sócio Ketris',
+      name: 'Sócio Ketris',
       email: 'socio@ketris.dev',
       password: 'senha-longa-123',
-      confirmarSenha: 'senha-longa-123',
+      confirmPassword: 'senha-longa-123',
       role: 'ADMIN',
     })
 
@@ -19,25 +19,25 @@ describe('createPlatformAdminSchema', () => {
 
   it('rejeita quando as senhas não coincidem', () => {
     const result = schema.safeParse({
-      nome: 'Sócio Ketris',
+      name: 'Sócio Ketris',
       email: 'socio@ketris.dev',
       password: 'senha-longa-123',
-      confirmarSenha: 'outra-senha',
+      confirmPassword: 'outra-senha',
       role: 'ADMIN_AGENT',
     })
 
     expect(result.success).toBe(false)
     if (!result.success) {
-      expect(result.error.issues[0]?.path).toEqual(['confirmarSenha'])
+      expect(result.error.issues[0]?.path).toEqual(['confirmPassword'])
     }
   })
 
   it('rejeita senha com menos de 8 caracteres', () => {
     const result = schema.safeParse({
-      nome: 'Sócio Ketris',
+      name: 'Sócio Ketris',
       email: 'socio@ketris.dev',
       password: '123',
-      confirmarSenha: '123',
+      confirmPassword: '123',
       role: 'AGENT',
     })
 
@@ -47,10 +47,10 @@ describe('createPlatformAdminSchema', () => {
   it('routes each validation message through the translator with the right key', () => {
     const translated = createPlatformAdminSchema((key) => `translated:${key}`)
     const result = translated.safeParse({
-      nome: '',
+      name: '',
       email: 'socio@ketris.dev',
       password: 'senha-longa-123',
-      confirmarSenha: 'senha-longa-123',
+      confirmPassword: 'senha-longa-123',
     })
 
     expect(result.success).toBe(false)

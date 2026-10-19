@@ -2,6 +2,7 @@ import { BaseService } from '@shared/lib/api/base-service'
 
 import type {
   ApiMaintenanceActivity,
+  ApiMaintenanceAttachment,
   ApiMaintenanceTicket,
   CreateMaintenanceTicketPayload,
   ListMaintenanceTicketsResponse,
@@ -10,6 +11,7 @@ import type {
   MaintenanceTicketListFilters,
   MaintenanceTicketResponse,
   UpdateMaintenanceTicketPayload,
+  UploadMaintenanceTicketAttachmentResponse,
 } from '../types/service'
 
 export class MaintenanceService extends BaseService {
@@ -18,6 +20,7 @@ export class MaintenanceService extends BaseService {
   list(filters: MaintenanceTicketListFilters = {}): Promise<ListMaintenanceTicketsResponse> {
     const params = {
       ...(filters.status ? { status: filters.status } : {}),
+      ...(filters.priority ? { priority: filters.priority } : {}),
       ...(filters.propertyId ? { propertyId: filters.propertyId } : {}),
       ...(filters.search ? { search: filters.search } : {}),
       ...(filters.page ? { page: String(filters.page) } : {}),
@@ -63,6 +66,17 @@ export class MaintenanceService extends BaseService {
     return this.http
       .get<MaintenanceActivitiesResponse>(`${this.path}/${id}/activities`)
       .then((data) => data.activities)
+  }
+
+  uploadAttachment(id: string, file: File): Promise<ApiMaintenanceAttachment> {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    return this.http
+      .post<UploadMaintenanceTicketAttachmentResponse>(`${this.path}/${id}/attachments`, formData, {
+        headers: { 'Content-Type': undefined },
+      })
+      .then((data) => data.attachment)
   }
 }
 

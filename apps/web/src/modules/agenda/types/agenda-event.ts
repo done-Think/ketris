@@ -1,4 +1,5 @@
 import type { Dayjs } from 'dayjs'
+import type { Control } from 'react-hook-form'
 import type { z } from 'zod'
 
 import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
@@ -67,10 +68,30 @@ export type AgendaEventCardProps = {
 
 export type AgendaEventFormValues = z.infer<ReturnType<typeof buildAgendaEventFormSchema>>
 
+export interface BuildAgendaEventFormSchemaOptions {
+  unchangedScheduleDate?: string
+  unchangedScheduleTime?: string
+}
+
 export type AgendaPropertyOption = {
   href: string
   id: string
   label: string
+}
+
+export type CancelAgendaEventDialogProps = {
+  open: boolean
+  isPending: boolean
+  title: string
+  onClose: () => void
+  onConfirm: () => void
+}
+
+export type AgendaEventFormFieldsProps = {
+  control: Control<AgendaEventFormValues>
+  maxDate: string
+  minDate: string
+  propertyOptions: AgendaPropertyOption[]
 }
 
 export type AgendaEventDetailDialogProps = {
@@ -142,6 +163,14 @@ export interface AgendaEventApi {
   notes: string | null
   createdAt: string
   updatedAt: string
+}
+
+export interface AgendaEventResponse {
+  event: AgendaEventApi
+}
+
+export interface AgendaEventsResponse {
+  events: AgendaEventApi[]
 }
 
 export interface CreateAgendaEventPayload {

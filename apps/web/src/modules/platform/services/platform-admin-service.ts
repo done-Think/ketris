@@ -25,7 +25,7 @@ class PlatformAdminService extends BaseService {
 
   activate(id: string): Promise<PlatformAdminAccount> {
     return this.http
-      .patch<PlatformAdminResponse>(`${this.path}/${id}`, { ativo: true })
+      .patch<PlatformAdminResponse>(`${this.path}/${id}`, { active: true })
       .then((data) => data.admin)
   }
 

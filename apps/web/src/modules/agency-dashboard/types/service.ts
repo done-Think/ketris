@@ -1,8 +1,11 @@
 export interface ApiAgencyOverviewKpis {
   portfolioCount: number
+  newPropertiesThisMonth: number
   activeBrokersCount: number
   receivedLeadsThisMonth: number
+  receivedLeadsPreviousPeriod: number
   monthlyReceivable: number
+  monthlyReceivablePreviousMonth: number
   occupancyPercentage: number
 }
 
@@ -25,6 +28,7 @@ export interface ApiAgencyTopBroker {
   id: string
   name: string
   avatarUrl: string | null
+  hasPublicProfile: boolean
   salesCount: number
   revenueTotal: number
   recentSales: ApiAgencyBrokerSale[]

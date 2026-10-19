@@ -65,3 +65,15 @@ export const publicBrokerProfileSchema = z
     recentListings: z.array(brokerListingSummarySchema),
   })
   .openapi('PublicBrokerProfile')
+
+export const listBrokersResponseSchema = z
+  .object({ brokers: z.array(publicBrokerProfileSchema) })
+  .openapi('ListBrokersResponse')
+
+export const getBrokerProfileResponseSchema = z
+  .object({ broker: publicBrokerProfileSchema })
+  .openapi('GetBrokerProfileResponse')
+
+export const ownBrokerProfileResponseSchema = z
+  .object({ profile: publicBrokerProfileSchema })
+  .openapi('OwnBrokerProfileResponse')

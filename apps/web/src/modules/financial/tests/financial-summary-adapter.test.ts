@@ -40,6 +40,7 @@ describe('financial monthly movement labels', () => {
       monthlyReceivable: 10500.5,
       overdueTotal: 2500,
       defaultRatePercentage: 12.5,
+      occupancyRatePercentage: 64,
       monthlySeries: [],
       upcomingDues: [],
     }
@@ -48,16 +49,19 @@ describe('financial monthly movement labels', () => {
       new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(10500.5),
       new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(2500),
       '12,5%',
+      '64.0%',
     ])
     expect(mapFinancialSummaryToKpis(summary, 'en-US').map(({ value }) => value)).toEqual([
       'R$10,500.50',
       'R$2,500.00',
       '12.5%',
+      '64.0%',
     ])
     expect(mapFinancialSummaryToKpis(summary, 'es-ES').map(({ value }) => value)).toEqual([
       new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'BRL' }).format(10500.5),
       new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'BRL' }).format(2500),
       '12,5%',
+      '64.0%',
     ])
   })
 
@@ -66,6 +70,7 @@ describe('financial monthly movement labels', () => {
       monthlyReceivable: 600,
       overdueTotal: 300,
       defaultRatePercentage: 12.5,
+      occupancyRatePercentage: 64,
       monthlySeries: [],
       upcomingDues: [],
     }

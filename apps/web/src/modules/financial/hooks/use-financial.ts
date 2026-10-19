@@ -88,6 +88,19 @@ export function useUpdateCharge(tenantId: string | null | undefined) {
   })
 }
 
+export function useDeleteCharge(tenantId: string | null | undefined) {
+  const queryClient = useQueryClient()
+  const scopedTenantId = tenantId ?? ''
+
+  return useMutation({
+    mutationFn: (chargeId: string) => financialService.deleteCharge(chargeId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financialQueryKeys.charges(scopedTenantId) })
+      queryClient.invalidateQueries({ queryKey: financialQueryKeys.summary(scopedTenantId) })
+    },
+  })
+}
+
 export function useRegisterChargePayment(tenantId: string | null | undefined, chargeId: string) {
   const queryClient = useQueryClient()
   const scopedTenantId = tenantId ?? ''

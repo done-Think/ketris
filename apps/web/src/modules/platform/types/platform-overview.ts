@@ -25,8 +25,34 @@ export interface PlatformAlert {
 export interface RecentTenant {
   id: string
   name: string
-  plan: 'enterprise' | 'proGrowth' | 'starterPack'
   brokers: number
+  properties: number
   registeredAt: string
-  status: 'active' | 'provisioning' | 'suspended'
+}
+
+export interface ApiPlatformOverviewMetrics {
+  tenantsCount: number
+  brokersCount: number
+  propertiesCount: number
+}
+
+export interface ApiPlatformGrowthMonth {
+  year: number
+  month: number
+  tenants: number
+  contracts: number
+}
+
+export interface ApiPlatformRecentTenant {
+  id: string
+  name: string
+  brokersCount: number
+  propertiesCount: number
+  createdAt: string
+}
+
+export interface ApiPlatformOverview {
+  metrics: ApiPlatformOverviewMetrics
+  growthTrend: ApiPlatformGrowthMonth[]
+  recentTenants: ApiPlatformRecentTenant[]
 }

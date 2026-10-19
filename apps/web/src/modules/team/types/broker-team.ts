@@ -1,9 +1,12 @@
 import type { z } from 'zod'
 
-import type { brokerGoalSchema, brokerTransferSchema } from '../schemas/broker-team-action-schemas'
+import type {
+  createBrokerGoalSchema,
+  createBrokerTransferSchema,
+} from '../schemas/broker-team-action-schemas'
 
-export type BrokerGoalFormValues = z.infer<typeof brokerGoalSchema>
-export type BrokerTransferFormValues = z.infer<typeof brokerTransferSchema>
+export type BrokerGoalFormValues = z.infer<ReturnType<typeof createBrokerGoalSchema>>
+export type BrokerTransferFormValues = z.infer<ReturnType<typeof createBrokerTransferSchema>>
 
 export type BrokerTeamStatus = 'ahead' | 'onTrack' | 'attention'
 
@@ -50,3 +53,5 @@ export type BrokerTeamCardProps = {
   onOpenProfile: (broker: BrokerTeamMember) => void
   onOpenMenu: (anchorEl: HTMLElement, broker: BrokerTeamMember) => void
 }
+
+export type BrokerTeamDialogBaseProps = { broker: BrokerTeamMember | null; onClose: () => void }

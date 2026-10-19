@@ -9,6 +9,7 @@ const topBroker: AgencyTopBroker = {
   id: 'broker-1',
   name: 'Marina Souza',
   avatarUrl: null,
+  hasPublicProfile: true,
   salesCount: 2,
   revenueTotal: 5000,
   recentSales: [
@@ -34,8 +35,11 @@ const activity: AgencyActivity = {
 function createRepository(overrides?: Partial<AgencyOverviewRepository>): AgencyOverviewRepository {
   return {
     getPortfolioCount: vi.fn().mockResolvedValue(10),
+    getNewPropertiesThisMonth: vi.fn().mockResolvedValue(2),
     getActiveBrokersCount: vi.fn().mockResolvedValue(3),
     getReceivedLeadsThisMonth: vi.fn().mockResolvedValue(4),
+    getReceivedLeadsPreviousPeriod: vi.fn().mockResolvedValue(6),
+    getMonthlyReceivablePreviousMonth: vi.fn().mockResolvedValue(7000),
     getOccupancyPercentage: vi.fn().mockResolvedValue(75),
     getTopBrokers: vi.fn().mockResolvedValue([topBroker]),
     getRecentActivities: vi.fn().mockResolvedValue([activity]),
@@ -91,9 +95,12 @@ describe('GetAgencyOverviewUseCase', () => {
     expect(result).toEqual({
       kpis: {
         portfolioCount: 10,
+        newPropertiesThisMonth: 2,
         activeBrokersCount: 3,
         receivedLeadsThisMonth: 4,
+        receivedLeadsPreviousPeriod: 6,
         monthlyReceivable: 8500,
+        monthlyReceivablePreviousMonth: 7000,
         occupancyPercentage: 75,
       },
       revenueSeries: [{ year: 2026, month: 9, total: 8500 }],
@@ -112,8 +119,33 @@ describe('GetAgencyOverviewUseCase', () => {
     expect(repository.getPortfolioCount).toHaveBeenCalledWith('tenant-2')
     expect(repository.getActiveBrokersCount).toHaveBeenCalledWith('tenant-2')
     expect(repository.getReceivedLeadsThisMonth).toHaveBeenCalledWith('tenant-2', expect.any(Date))
+    expect(repository.getNewPropertiesThisMonth).toHaveBeenCalledWith('tenant-2', expect.any(Date))
+    expect(repository.getReceivedLeadsPreviousPeriod).toHaveBeenCalledWith(
+      'tenant-2',
+      expect.any(Date),
+    )
+    expect(repository.getMonthlyReceivablePreviousMonth).toHaveBeenCalledWith(
+      'tenant-2',
+      expect.any(Date),
+    )
     expect(repository.getOccupancyPercentage).toHaveBeenCalledWith('tenant-2')
     expect(repository.getTopBrokers).toHaveBeenCalledWith('tenant-2')
     expect(repository.getRecentActivities).toHaveBeenCalledWith('tenant-2')
+  })
+
+  it('usa a mesma data de referência para o mês atual e para a comparação com o mês anterior', async () => {
+    const repository = createRepository()
+    const useCase = new GetAgencyOverviewUseCase(repository, createFinancialSummaryProvider())
+
+    await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER' })
+
+    const referenceDate = vi.mocked(repository.getReceivedLeadsThisMonth).mock.calls[0][1]
+    expect(vi.mocked(repository.getReceivedLeadsPreviousPeriod).mock.calls[0][1]).toBe(
+      referenceDate,
+    )
+    expect(vi.mocked(repository.getMonthlyReceivablePreviousMonth).mock.calls[0][1]).toBe(
+      referenceDate,
+    )
+    expect(vi.mocked(repository.getNewPropertiesThisMonth).mock.calls[0][1]).toBe(referenceDate)
   })
 })

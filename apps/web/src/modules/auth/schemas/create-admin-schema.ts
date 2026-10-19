@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export type SchemaMessageTranslator = (key: string) => string
+import type { SchemaMessageTranslator } from '@shared/types'
 
 export function createAdminSchema(t: SchemaMessageTranslator) {
   return z
@@ -15,5 +15,3 @@ export function createAdminSchema(t: SchemaMessageTranslator) {
       path: ['confirmPassword'],
     })
 }
-
-export type CreateAdminFormValues = z.infer<ReturnType<typeof createAdminSchema>>

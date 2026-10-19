@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export type SchemaMessageTranslator = (key: string) => string
+import type { SchemaMessageTranslator } from '@shared/types'
 
 export const contactTypeSchema = z.enum(['PROPRIETARIO', 'LOCATARIO', 'CORRETOR'])
 
@@ -13,5 +13,3 @@ export function createContactFormSchema(t: SchemaMessageTranslator) {
     notes: z.string().trim(),
   })
 }
-
-export type ContactFormValues = z.infer<ReturnType<typeof createContactFormSchema>>

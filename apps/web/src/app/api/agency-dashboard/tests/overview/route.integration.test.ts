@@ -1,12 +1,12 @@
 import { randomUUID } from 'node:crypto'
 
 import { NextRequest } from 'next/server'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
 
-import { GET } from './route'
+import { GET } from '../../overview/route'
 
 describe('/api/agency-dashboard/overview (integração)', () => {
   const tokenService = new JoseTokenService()
@@ -211,6 +211,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
         tenantId,
         responsavelId: brokerId,
         titulo: 'Visita agendada ao Apartamento Batel',
+        tipo: 'VISIT',
         inicio: new Date('2026-09-28T14:00:00.000Z'),
         fim: new Date('2026-09-28T15:00:00.000Z'),
         participanteNome: 'Cliente Interessado',
@@ -315,5 +316,196 @@ describe('/api/agency-dashboard/overview (integração)', () => {
         activity.type === 'LEAD' && activity.detail === 'Lead Recente',
     )
     expect(leadActivity?.brokerName).toBe(brokerName)
+  })
+
+  it('retorna os dados de comparação com o mês anterior', async () => {
+    const now = new Date()
+    const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const previousMonthDate = (day: number) => new Date(now.getFullYear(), now.getMonth() - 1, day)
+
+    await prisma.imovel.create({
+      data: {
+        tenantId,
+        responsavelId: brokerId,
+        titulo: 'Casa Cadastrada Há Dois Meses',
+        finalidade: 'VENDA',
+        tipo: 'casa',
+        valor: 1000,
+        status: 'DRAFT',
+        createdAt: new Date(now.getFullYear(), now.getMonth() - 2, 5),
+      },
+    })
+
+    await prisma.lead.create({
+      data: {
+        tenantId,
+        responsavelId: brokerId,
+        nome: 'Lead Do Mês Passado',
+        telefone: '41999990002',
+        interesse: 'Apartamento',
+        orcamento: '1000-2000',
+        origem: 'Portal Ketris',
+        createdAt: previousMonthStart,
+      },
+    })
+
+    for (const [valor, status] of [
+      [1000, 'PAGA'],
+      [400, 'PENDENTE'],
+      [999, 'CANCELADA'],
+      [700, 'ATRASADA'],
+    ] as const) {
+      await prisma.cobranca.create({
+        data: {
+          tenantId,
+          codigo: `COB-${randomUUID()}`,
+          tipo: 'A_RECEBER',
+          valor,
+          vencimento: previousMonthDate(10),
+          status,
+        },
+      })
+    }
+
+    const response = await GET(buildRequest(ownerToken))
+    const json = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(json.kpis.newPropertiesThisMonth).toBe(4)
+    expect(json.kpis.portfolioCount).toBe(5)
+    expect(json.kpis.receivedLeadsThisMonth).toBe(1)
+    expect(json.kpis.receivedLeadsPreviousPeriod).toBe(1)
+    expect(json.kpis.monthlyReceivable).toBe(1500)
+    expect(json.kpis.monthlyReceivablePreviousMonth).toBe(1400)
+  })
+
+  describe('limites dos períodos de comparação (relógio em 13/01/2027 14:00)', () => {
+    const tenantIds: string[] = []
+    let frozenOwnerToken: string
+
+    async function createTenantWithOwner(label: string) {
+      const tenant = await prisma.tenant.create({
+        data: { nome: `Tenant ${label}`, slug: `agency-dashboard-${label}-${randomUUID()}` },
+      })
+      tenantIds.push(tenant.id)
+      const owner = await prisma.usuario.create({
+        data: {
+          tenantId: tenant.id,
+          nome: `Owner ${label}`,
+          email: `owner-${randomUUID()}@ketris.dev`,
+          senhaHash: 'hash-fake',
+          papel: 'OWNER',
+        },
+      })
+
+      return { tenant, owner }
+    }
+
+    async function seedComparisonData(tenantId: string, ownerId: string) {
+      for (const [index, createdAt] of [
+        new Date(2026, 11, 1, 0, 0),
+        new Date(2026, 11, 13, 13, 59),
+        new Date(2026, 11, 13, 14, 0),
+        new Date(2026, 11, 20),
+        new Date(2026, 10, 30, 23, 59),
+        new Date(2027, 0, 2),
+        new Date(2027, 0, 13, 13, 0),
+      ].entries()) {
+        await prisma.lead.create({
+          data: {
+            tenantId,
+            responsavelId: ownerId,
+            nome: `Lead ${index}`,
+            telefone: '41999990000',
+            interesse: 'Apartamento',
+            orcamento: '1000-2000',
+            origem: 'Portal Ketris',
+            createdAt,
+          },
+        })
+      }
+
+      for (const [index, createdAt] of [
+        new Date(2027, 0, 1, 0, 0),
+        new Date(2026, 11, 31, 23, 59, 59),
+        new Date(2027, 0, 10),
+      ].entries()) {
+        await prisma.imovel.create({
+          data: {
+            tenantId,
+            responsavelId: ownerId,
+            titulo: `Imóvel ${index}`,
+            finalidade: 'VENDA',
+            tipo: 'casa',
+            valor: 1000,
+            status: 'DRAFT',
+            createdAt,
+          },
+        })
+      }
+
+      for (const [valor, tipo, status, vencimento] of [
+        [100, 'A_RECEBER', 'PAGA', new Date(2026, 11, 1, 0, 0)],
+        [200, 'A_RECEBER', 'PENDENTE', new Date(2026, 11, 31, 23, 59)],
+        [4000, 'A_RECEBER', 'PENDENTE', new Date(2027, 0, 1, 0, 0)],
+        [8000, 'A_RECEBER', 'PAGA', new Date(2026, 10, 30, 23, 59)],
+        [16000, 'A_PAGAR', 'PAGA', new Date(2026, 11, 15)],
+        [32000, 'A_RECEBER', 'AGENDADA', new Date(2026, 11, 15)],
+        [64000, 'A_RECEBER', 'ATRASADA', new Date(2026, 11, 15)],
+        [128000, 'A_RECEBER', 'CANCELADA', new Date(2026, 11, 15)],
+      ] as const) {
+        await prisma.cobranca.create({
+          data: { tenantId, codigo: `COB-${randomUUID()}`, tipo, valor, vencimento, status },
+        })
+      }
+    }
+
+    beforeAll(async () => {
+      vi.useFakeTimers({ toFake: ['Date'] })
+      vi.setSystemTime(new Date(2027, 0, 13, 14, 0))
+
+      const { tenant, owner } = await createTenantWithOwner('frozen')
+      await seedComparisonData(tenant.id, owner.id)
+
+      // Another tenant with the same data must not leak into the counts.
+      const other = await createTenantWithOwner('other')
+      await seedComparisonData(other.tenant.id, other.owner.id)
+
+      frozenOwnerToken = await tokenService.sign({
+        id: owner.id,
+        tenantId: owner.tenantId,
+        nome: owner.nome,
+        email: owner.email,
+        papel: owner.papel,
+        ativo: owner.ativo,
+        vinculoAprovadoEm: owner.vinculoAprovadoEm,
+      })
+    })
+
+    afterAll(async () => {
+      vi.useRealTimers()
+      await prisma.tenant.deleteMany({ where: { id: { in: tenantIds } } })
+    })
+
+    it('conta só os leads do mesmo trecho de dezembro, na virada de ano', async () => {
+      const json = await (await GET(buildRequest(frozenOwnerToken))).json()
+
+      expect(json.kpis.receivedLeadsThisMonth).toBe(2)
+      expect(json.kpis.receivedLeadsPreviousPeriod).toBe(2)
+    })
+
+    it('conta como novos só os imóveis criados a partir de 1º de janeiro', async () => {
+      const json = await (await GET(buildRequest(frozenOwnerToken))).json()
+
+      expect(json.kpis.portfolioCount).toBe(3)
+      expect(json.kpis.newPropertiesThisMonth).toBe(2)
+    })
+
+    it('soma no mês anterior só cobranças a receber pendentes ou pagas com vencimento em dezembro', async () => {
+      const json = await (await GET(buildRequest(frozenOwnerToken))).json()
+
+      expect(json.kpis.monthlyReceivable).toBe(4000)
+      expect(json.kpis.monthlyReceivablePreviousMonth).toBe(300)
+    })
   })
 })

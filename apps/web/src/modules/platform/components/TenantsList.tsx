@@ -61,7 +61,7 @@ export function TenantsList() {
                     href={{ pathname: '/platform/tenants/[id]', params: { id: tenant.id } }}
                     sx={{ color: 'inherit', display: 'inline-block', textDecoration: 'none' }}
                   >
-                    {tenant.nome}
+                    {tenant.name}
                   </Box>
                 </TableCell>
                 <TableCell>{tenant.slug}</TableCell>

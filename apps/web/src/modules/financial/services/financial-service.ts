@@ -42,6 +42,10 @@ export class FinancialService extends BaseService {
       .then((data) => data.charge)
   }
 
+  deleteCharge(id: string): Promise<void> {
+    return this.http.delete<void>(`${this.path}/charges/${id}`)
+  }
+
   registerPayment(id: string, payload: RegisterChargePaymentPayload): Promise<ApiCharge> {
     return this.http
       .post<ChargeResponse>(`${this.path}/charges/${id}/payment`, payload)

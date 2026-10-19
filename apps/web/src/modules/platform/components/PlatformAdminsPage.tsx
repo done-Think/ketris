@@ -72,8 +72,8 @@ export function PlatformAdminsPage() {
 
     return admins.filter((admin) => {
       const matchesSearch =
-        !query || `${admin.nome} ${admin.email}`.toLocaleLowerCase().includes(query)
-      const matchesStatus = status === 'all' || (status === 'active' ? admin.ativo : !admin.ativo)
+        !query || `${admin.name} ${admin.email}`.toLocaleLowerCase().includes(query)
+      const matchesStatus = status === 'all' || (status === 'active' ? admin.active : !admin.active)
       const matchesRole = role === 'all' || admin.role === role
 
       return matchesSearch && matchesStatus && matchesRole
@@ -275,7 +275,7 @@ export function PlatformAdminsPage() {
             {t('editRegistration')}
           </MenuItem>
         ) : null}
-        {selectedAdmin?.ativo ? (
+        {selectedAdmin?.active ? (
           <MenuItem
             onClick={() => {
               requestDeactivation()
@@ -294,7 +294,7 @@ export function PlatformAdminsPage() {
         <DialogTitle>{t('deactivateTitle')}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {selectedAdmin ? t('deactivateDescription', { name: selectedAdmin.nome }) : ''}
+            {selectedAdmin ? t('deactivateDescription', { name: selectedAdmin.name }) : ''}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -329,13 +329,13 @@ function AdminRow({ admin, t, onMenuOpen }: AdminItemProps) {
         <RoleBadge label={t(`roles.${admin.role}`)} />
       </TableCell>
       <TableCell>
-        <StatusBadge active={admin.ativo} label={admin.ativo ? t('active') : t('inactive')} />
+        <StatusBadge active={admin.active} label={admin.active ? t('active') : t('inactive')} />
       </TableCell>
       <TableCell sx={cellSx}>{t('unavailable')}</TableCell>
       <TableCell sx={cellSx}>{t('unavailable')}</TableCell>
       <TableCell align="right">
         <IconButton
-          aria-label={t('actionsFor', { name: admin.nome })}
+          aria-label={t('actionsFor', { name: admin.name })}
           onClick={(event) => onMenuOpen(event.currentTarget, admin)}
         >
           <MoreHorizRoundedIcon />
@@ -354,7 +354,7 @@ function AdminMobileCard({ admin, t, onMenuOpen }: AdminItemProps) {
       <Stack direction="row" alignItems="center" justifyContent="space-between">
         <AdminIdentity admin={admin} />
         <IconButton
-          aria-label={t('actionsFor', { name: admin.nome })}
+          aria-label={t('actionsFor', { name: admin.name })}
           onClick={(event) => onMenuOpen(event.currentTarget, admin)}
         >
           <MoreHorizRoundedIcon />
@@ -363,7 +363,7 @@ function AdminMobileCard({ admin, t, onMenuOpen }: AdminItemProps) {
       <Typography sx={cellSx}>{admin.email}</Typography>
       <Stack direction="row" spacing={1}>
         <RoleBadge label={t(`roles.${admin.role}`)} />
-        <StatusBadge active={admin.ativo} label={admin.ativo ? t('active') : t('inactive')} />
+        <StatusBadge active={admin.active} label={admin.active ? t('active') : t('inactive')} />
       </Stack>
       <Stack direction="row" justifyContent="space-between">
         <Typography sx={labelSx}>{t('columns.lastAccess')}</Typography>
@@ -379,10 +379,10 @@ function AdminIdentity({ admin }: { admin: PlatformAdminAccount }) {
       <Avatar
         sx={{ width: 32, height: 32, bgcolor: brand.magenta[500], fontSize: 12, fontWeight: 800 }}
       >
-        {initials(admin.nome)}
+        {initials(admin.name)}
       </Avatar>
       <Typography noWrap sx={{ color: brand.graphite[500], fontSize: 13, fontWeight: 800 }}>
-        {admin.nome}
+        {admin.name}
       </Typography>
     </Stack>
   )

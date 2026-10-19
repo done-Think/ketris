@@ -86,3 +86,15 @@ export const publicAgencyProfileSchema = z
     featuredListings: z.array(agencyListingSummarySchema),
   })
   .openapi('PublicAgencyProfile')
+
+export const listAgenciesResponseSchema = z
+  .object({ agencies: z.array(publicAgencyProfileSchema) })
+  .openapi('ListAgenciesResponse')
+
+export const getAgencyProfileResponseSchema = z
+  .object({ agency: publicAgencyProfileSchema })
+  .openapi('GetAgencyProfileResponse')
+
+export const ownAgencyProfileResponseSchema = z
+  .object({ profile: publicAgencyProfileSchema })
+  .openapi('OwnAgencyProfileResponse')

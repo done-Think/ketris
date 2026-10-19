@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { platformContainer } from '@server/platform/container'
+import { toAuthenticatedPlatformAdminResponse } from '@server/platform/domain/platform-admin.entity'
 import { requirePlatformBearerAuth } from '@server/platform/require-platform-bearer-auth'
 import { createPlatformAdminRequestSchema } from '@server/platform/schemas/create-platform-admin.schema'
 import { parseJsonBody, withErrorHandling } from '@server/shared/http'
@@ -11,13 +12,13 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const body = await parseJsonBody(request, createPlatformAdminRequestSchema)
 
   const admin = await platformContainer.createPlatformAdminUseCase.execute({
-    nome: body.nome,
+    nome: body.name,
     email: body.email,
     password: body.password,
     role: body.role,
   })
 
-  return NextResponse.json({ admin }, { status: 201 })
+  return NextResponse.json({ admin: toAuthenticatedPlatformAdminResponse(admin) }, { status: 201 })
 })
 
 export const GET = withErrorHandling(async (request: NextRequest) => {
@@ -25,5 +26,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   const admins = await platformContainer.listPlatformAdminsUseCase.execute()
 
-  return NextResponse.json({ admins }, { status: 200 })
+  return NextResponse.json(
+    { admins: admins.map(toAuthenticatedPlatformAdminResponse) },
+    { status: 200 },
+  )
 })

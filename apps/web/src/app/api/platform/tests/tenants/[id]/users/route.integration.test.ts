@@ -78,7 +78,7 @@ describe('GET /api/platform/tenants/[id]/users (integração)', () => {
 
     expect(response.status).toBe(200)
     expect(json.users).toHaveLength(2)
-    expect(json.users.some((user: { papel: string }) => user.papel === 'ADMIN')).toBe(true)
+    expect(json.users.some((user: { role: string }) => user.role === 'ADMIN')).toBe(true)
   })
 
   it('retorna 401 sem Authorization header', async () => {

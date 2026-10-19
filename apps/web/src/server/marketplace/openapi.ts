@@ -3,6 +3,18 @@ import { z } from 'zod'
 
 import { errorResponseSchema } from '@server/shared/schemas/error-response.schema'
 
+import {
+  getAgencyProfileResponseSchema,
+  listAgenciesResponseSchema,
+  ownAgencyProfileResponseSchema,
+  saveAgencyProfileRequestSchema,
+} from './schemas/agency-profile.schema'
+import {
+  getBrokerProfileResponseSchema,
+  listBrokersResponseSchema,
+  ownBrokerProfileResponseSchema,
+  saveBrokerProfileRequestSchema,
+} from './schemas/broker-profile.schema'
 import { getPropertyResponseSchema } from './schemas/get-property.schema'
 import {
   searchPropertiesQuerySchema,
@@ -15,6 +27,18 @@ import {
 
 const propertyIdParamsSchema = z.object({
   id: z.string().openapi({ description: 'ID do imóvel.', example: 'clx1y2z3a0000abcd1234efgh' }),
+})
+
+const agencyIdParamsSchema = z.object({
+  id: z
+    .string()
+    .openapi({ description: 'ID do perfil público da imobiliária.', example: 'clx1y2z3a0000agcy' }),
+})
+
+const brokerIdParamsSchema = z.object({
+  id: z
+    .string()
+    .openapi({ description: 'ID do perfil público do corretor.', example: 'clx1y2z3a0000brkr' }),
 })
 
 export function registerMarketplaceOpenApi(registry: OpenAPIRegistry): void {
@@ -91,6 +115,262 @@ export function registerMarketplaceOpenApi(registry: OpenAPIRegistry): void {
       },
       404: {
         description: 'Imóvel não encontrado ou não publicado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'get',
+    path: '/marketplace/agencies',
+    tags: ['Marketplace'],
+    summary: 'Lista imobiliárias com perfil público publicado',
+    description:
+      'Rota pública, sem autenticação. Retorna todas as imobiliárias de todos os ' +
+      'tenants com perfil público no status PUBLISHED.',
+    responses: {
+      200: {
+        description: 'Lista de perfis públicos de imobiliárias.',
+        content: { 'application/json': { schema: listAgenciesResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'get',
+    path: '/marketplace/agencies/{id}',
+    tags: ['Marketplace'],
+    summary: 'Consulta o perfil público de uma imobiliária',
+    description:
+      'Rota pública, sem autenticação. Retorna 404 se o perfil não existir ou não ' +
+      'estiver publicado.',
+    request: { params: agencyIdParamsSchema },
+    responses: {
+      200: {
+        description: 'Perfil público da imobiliária.',
+        content: { 'application/json': { schema: getAgencyProfileResponseSchema } },
+      },
+      404: {
+        description: 'Perfil não encontrado ou não publicado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'get',
+    path: '/marketplace/brokers',
+    tags: ['Marketplace'],
+    summary: 'Lista corretores com perfil público publicado',
+    description:
+      'Rota pública, sem autenticação. Retorna todos os corretores de todos os ' +
+      'tenants com perfil público no status PUBLISHED.',
+    responses: {
+      200: {
+        description: 'Lista de perfis públicos de corretores.',
+        content: { 'application/json': { schema: listBrokersResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'get',
+    path: '/marketplace/brokers/{id}',
+    tags: ['Marketplace'],
+    summary: 'Consulta o perfil público de um corretor',
+    description:
+      'Rota pública, sem autenticação. Retorna 404 se o perfil não existir ou não ' +
+      'estiver publicado.',
+    request: { params: brokerIdParamsSchema },
+    responses: {
+      200: {
+        description: 'Perfil público do corretor.',
+        content: { 'application/json': { schema: getBrokerProfileResponseSchema } },
+      },
+      404: {
+        description: 'Perfil não encontrado ou não publicado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'get',
+    path: '/marketplace/profiles/agency',
+    tags: ['Marketplace'],
+    summary: 'Consulta o próprio perfil público de imobiliária do tenant autenticado',
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: 'Perfil (rascunho ou publicado) do tenant autenticado.',
+        content: { 'application/json': { schema: ownAgencyProfileResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'put',
+    path: '/marketplace/profiles/agency',
+    tags: ['Marketplace'],
+    summary: 'Salva o próprio perfil público de imobiliária do tenant autenticado',
+    security: [{ bearerAuth: [] }],
+    request: {
+      body: { content: { 'application/json': { schema: saveAgencyProfileRequestSchema } } },
+    },
+    responses: {
+      200: {
+        description: 'Perfil salvo (continua rascunho até publicar).',
+        content: { 'application/json': { schema: ownAgencyProfileResponseSchema } },
+      },
+      400: {
+        description: 'Corpo da requisição inválido (falha de validação Zod).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'post',
+    path: '/marketplace/profiles/agency/publish',
+    tags: ['Marketplace'],
+    summary: 'Publica o perfil público de imobiliária do tenant autenticado',
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: 'Perfil publicado.',
+        content: { 'application/json': { schema: ownAgencyProfileResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      404: {
+        description: 'Perfil ainda não foi salvo nenhuma vez.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      422: {
+        description: 'Faltam campos obrigatórios para publicar.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'post',
+    path: '/marketplace/profiles/agency/unpublish',
+    tags: ['Marketplace'],
+    summary: 'Despublica o perfil público de imobiliária do tenant autenticado',
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: 'Perfil despublicado (volta a rascunho).',
+        content: { 'application/json': { schema: ownAgencyProfileResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      404: {
+        description: 'Perfil ainda não foi salvo nenhuma vez.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'get',
+    path: '/marketplace/profiles/broker',
+    tags: ['Marketplace'],
+    summary: 'Consulta o próprio perfil público de corretor do usuário autenticado',
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: 'Perfil (rascunho ou publicado) do usuário autenticado.',
+        content: { 'application/json': { schema: ownBrokerProfileResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'put',
+    path: '/marketplace/profiles/broker',
+    tags: ['Marketplace'],
+    summary: 'Salva o próprio perfil público de corretor do usuário autenticado',
+    security: [{ bearerAuth: [] }],
+    request: {
+      body: { content: { 'application/json': { schema: saveBrokerProfileRequestSchema } } },
+    },
+    responses: {
+      200: {
+        description: 'Perfil salvo (continua rascunho até publicar).',
+        content: { 'application/json': { schema: ownBrokerProfileResponseSchema } },
+      },
+      400: {
+        description: 'Corpo da requisição inválido (falha de validação Zod).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'post',
+    path: '/marketplace/profiles/broker/publish',
+    tags: ['Marketplace'],
+    summary: 'Publica o perfil público de corretor do usuário autenticado',
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: 'Perfil publicado.',
+        content: { 'application/json': { schema: ownBrokerProfileResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      404: {
+        description: 'Perfil ainda não foi salvo nenhuma vez.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      422: {
+        description: 'Faltam campos obrigatórios para publicar.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'post',
+    path: '/marketplace/profiles/broker/unpublish',
+    tags: ['Marketplace'],
+    summary: 'Despublica o perfil público de corretor do usuário autenticado',
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: 'Perfil despublicado (volta a rascunho).',
+        content: { 'application/json': { schema: ownBrokerProfileResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      404: {
+        description: 'Perfil ainda não foi salvo nenhuma vez.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },

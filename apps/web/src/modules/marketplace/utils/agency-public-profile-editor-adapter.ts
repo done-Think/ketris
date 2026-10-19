@@ -1,7 +1,7 @@
 import { buildAgencyPublicProfileHref } from '@shared/utils/public-profile-slug'
 
-import type { AgencyPublicProfileEditorFormValues } from '../schemas/agency-public-profile-editor-schema'
 import type { AgencyProfile } from '../types/agency'
+import type { AgencyPublicProfileEditorFormValues } from '../types/profile-editor'
 import type { PublicAgencyProfile } from '../types/public-agency-profile'
 import type { AppLocale } from '@/i18n/types/locale.types'
 import type { PropertyText } from './property-presentation'

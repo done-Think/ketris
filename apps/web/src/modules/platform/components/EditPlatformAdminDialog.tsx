@@ -17,28 +17,28 @@ import {
 } from '@mui/material'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslations } from 'next-intl'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useSnackbar } from 'notistack'
 import axios from 'axios'
 
 import { iconSize } from '@shared/theme/tokens'
 
 import { useUpdatePlatformAdmin } from '../hooks/use-update-platform-admin'
-import {
-  updatePlatformAdminSchema,
-  type UpdatePlatformAdminFormValues,
-} from '../schemas/update-platform-admin-schema'
-import type { PlatformAdminAccount } from '../types/platform-admin'
-
-type EditPlatformAdminDialogProps = {
-  admin: PlatformAdminAccount | null
-  onClose: () => void
-}
+import { createUpdatePlatformAdminSchema } from '../schemas/update-platform-admin-schema'
+import type {
+  EditPlatformAdminDialogProps,
+  UpdatePlatformAdminFormValues,
+} from '../types/platform-admin'
 
 export function EditPlatformAdminDialog({ admin, onClose }: EditPlatformAdminDialogProps) {
   const t = useTranslations('platform.admins')
+  const formErrorsT = useTranslations('platform.forms.errors')
   const { enqueueSnackbar } = useSnackbar()
   const updateAdmin = useUpdatePlatformAdmin()
+  const schema = useMemo(
+    () => createUpdatePlatformAdminSchema((key) => formErrorsT(key)),
+    [formErrorsT],
+  )
   const {
     control,
     handleSubmit,
@@ -46,12 +46,12 @@ export function EditPlatformAdminDialog({ admin, onClose }: EditPlatformAdminDia
     reset,
     formState: { errors },
   } = useForm<UpdatePlatformAdminFormValues>({
-    resolver: zodResolver(updatePlatformAdminSchema),
-    defaultValues: { nome: '', email: '', role: 'ADMIN' },
+    resolver: zodResolver(schema),
+    defaultValues: { name: '', email: '', role: 'ADMIN' },
   })
 
   useEffect(() => {
-    if (admin) reset({ nome: admin.nome, email: admin.email, role: admin.role })
+    if (admin) reset({ name: admin.name, email: admin.email, role: admin.role })
   }, [admin, reset])
 
   async function onSubmit(values: UpdatePlatformAdminFormValues) {
@@ -59,7 +59,7 @@ export function EditPlatformAdminDialog({ admin, onClose }: EditPlatformAdminDia
     try {
       await updateAdmin.mutateAsync({
         id: admin.id,
-        nome: values.nome,
+        name: values.name,
         email: values.email,
         role: values.role,
       })
@@ -102,9 +102,9 @@ export function EditPlatformAdminDialog({ admin, onClose }: EditPlatformAdminDia
           <Stack spacing={2} sx={{ pt: 1 }}>
             <TextField
               label={t('name')}
-              error={Boolean(errors.nome)}
-              helperText={errors.nome?.message}
-              {...register('nome')}
+              error={Boolean(errors.name)}
+              helperText={errors.name?.message}
+              {...register('name')}
               autoFocus
             />
             <TextField

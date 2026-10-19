@@ -13,7 +13,7 @@ import {
   useUpdateContact,
 } from '../hooks/use-contacts'
 import { getContactListFixtures, contactsFixtureTotal } from '../fixtures/contact-list-fixtures'
-import type { ContactFormValues } from '../schemas/contact-schema'
+import type { ContactFormValues } from '../types/contact'
 import type { ApiContactListItem, ContactListItem } from '../types/contact'
 import { mapContactToListItem } from '../utils/contact-adapter'
 import { errorMessage } from '../utils/error-message'

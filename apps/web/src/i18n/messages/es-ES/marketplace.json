@@ -233,6 +233,28 @@
       "call": "Llamar",
       "whatsapp": "WhatsApp",
       "email": "Email"
+    },
+    "inquiryDialog": {
+      "visitTitle": "Programar visita",
+      "proposalTitle": "Enviar propuesta",
+      "visitDescription": "Deja tus datos y el corredor responsable se pondrá en contacto para coordinar la visita.",
+      "proposalDescription": "Deja tus datos y, si quieres, el valor propuesto — el corredor responsable se pondrá en contacto.",
+      "name": "Nombre",
+      "email": "Correo electrónico",
+      "phone": "Teléfono",
+      "proposedValue": "Valor propuesto",
+      "notes": "Mensaje (opcional)",
+      "notesPlaceholderVisit": "Ej.: tengo disponibilidad los sábados por la tarde.",
+      "notesPlaceholderProposal": "Ej.: puedo negociar el valor de entrada.",
+      "cancel": "Cancelar",
+      "submit": "Enviar",
+      "success": "¡Mensaje enviado! El corredor se pondrá en contacto pronto.",
+      "error": "No fue posible enviar tu mensaje. Inténtalo de nuevo.",
+      "errors": {
+        "nameRequired": "Indica tu nombre",
+        "emailInvalid": "Indica un correo electrónico válido",
+        "proposedValueInvalid": "Indica un valor válido"
+      }
     }
   },
   "propertyFeatures": {

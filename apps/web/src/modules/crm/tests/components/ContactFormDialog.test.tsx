@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
 import { ContactFormDialog } from '../../components/contacts-list/ContactFormDialog'
-import type { ContactFormValues } from '../../schemas/contact-schema'
+import type { ContactFormValues } from '../../types/contact'
 
 const initialValues: ContactFormValues = {
   name: 'Maria Silva',

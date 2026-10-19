@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
-import { createChargeDateSchema, type SchemaMessageTranslator } from './charge-date-schema'
+import { createChargeDateSchema } from './charge-date-schema'
+import type { SchemaMessageTranslator } from '@shared/types'
 
 export function createUpdateChargeSchema(t: SchemaMessageTranslator) {
   return z.object({

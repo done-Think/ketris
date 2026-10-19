@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { createRateLimitPolicy, InMemoryRateLimitStore } from './rate-limit'
+import { createRateLimitPolicy, InMemoryRateLimitStore } from '../rate-limit'
 
 describe('InMemoryRateLimitStore', () => {
   it('permite requisições dentro do limite da janela', () => {
