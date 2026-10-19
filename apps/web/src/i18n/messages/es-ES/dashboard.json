@@ -104,7 +104,17 @@
       "activeBrokers": "Agentes activos",
       "receivedLeads": "Leads recibidos",
       "revenue": "Facturación",
-      "occupancy": "Tasa ocupación"
+      "occupancy": "Tasa ocupación",
+      "helpers": {
+        "newProperties": "{count, plural, =0 {Ninguno nuevo este mes} one {+# nuevo este mes} other {+# nuevos este mes}}",
+        "leadsIncrease": "+{count, number} vs mes anterior",
+        "leadsDecrease": "−{count, number} vs mes anterior",
+        "leadsSame": "Igual al mes anterior",
+        "revenueIncrease": "+{percent, number}% vs mes anterior",
+        "revenueDecrease": "−{percent, number}% vs mes anterior",
+        "revenueSame": "Igual al mes anterior",
+        "revenueNoPrevious": "Mes anterior en cero"
+      }
     },
     "performance": {
       "title": "Performance de Facturación",
