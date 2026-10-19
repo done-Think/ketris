@@ -19,6 +19,8 @@ export function registerPropertiesOpenApi(registry: OpenAPIRegistry): void {
     path: '/properties',
     tags: ['Properties'],
     summary: 'Lista imóveis do tenant autenticado',
+    description:
+      'RENTER consulta somente imóveis com contrato ATIVO do mesmo tenant e vínculo explícito de LOCATARIO ao seu usuário, independentemente do status do anúncio.',
     security: [{ bearerAuth: [] }],
     request: { query: listPropertiesQuerySchema },
     responses: {
@@ -63,6 +65,8 @@ export function registerPropertiesOpenApi(registry: OpenAPIRegistry): void {
     path: '/properties/{id}',
     tags: ['Properties'],
     summary: 'Consulta imóvel do tenant autenticado',
+    description:
+      'RENTER tem acesso somente de leitura aos imóveis dos próprios contratos ATIVOS. Imóveis sem vínculo autorizado retornam 404.',
     security: [{ bearerAuth: [] }],
     request: { params: propertyIdParamsSchema },
     responses: {

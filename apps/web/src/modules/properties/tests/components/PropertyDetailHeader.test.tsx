@@ -93,6 +93,17 @@ function renderHeader(overrides: Partial<Parameters<typeof PropertyDetailHeader>
 }
 
 describe('PropertyDetailHeader', () => {
+  it('does not request administrative contracts in a read-only property detail', () => {
+    renderHeader({
+      property: { ...baseProperty, status: 'Alugado', apiStatus: 'RENTED' },
+      canManage: false,
+    })
+    expect(useContracts).toHaveBeenLastCalledWith(undefined, {
+      propertyId: baseProperty.id,
+      status: 'ATIVO',
+    })
+    expect(screen.queryByRole('button', { name: /Contrato ativo/ })).not.toBeInTheDocument()
+  })
   it('shows the manage actions and a Publicar button for a draft property when canManage is true', () => {
     renderHeader()
 

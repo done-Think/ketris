@@ -94,6 +94,7 @@ export type EditPropertyDashboardPageProps = {
 export type PropertyNavigationHandler = (propertyId: string) => void
 
 export type PropertiesDashboardHeaderProps = {
+  readOnly?: boolean
   searchQuery: string
   onSearchQueryChange: (value: string) => void
   onCreateProperty: () => void
@@ -106,6 +107,7 @@ export type PropertyStatusFiltersProps = {
 }
 
 export type PropertiesTableProps = {
+  readOnly?: boolean
   properties: DashboardProperty[]
   totalCount: number
   onPropertySelect: PropertyNavigationHandler
@@ -241,6 +243,7 @@ export type PropertyDetailHeaderProps = {
 }
 
 export type PropertyDetailTabsProps = {
+  readOnly?: boolean
   activeTab: DashboardPropertyDetailTab
   onTabChange: (tab: DashboardPropertyDetailTab) => void
 }

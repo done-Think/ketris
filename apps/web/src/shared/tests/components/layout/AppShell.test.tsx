@@ -118,16 +118,19 @@ describe('AppShell navigation per papel', () => {
     '/dashboard/finance/charges/[id]',
     '/dashboard/maintenance',
     '/dashboard/maintenance/[id]',
-  ] as const)('shows charges and tickets to RENTER on %s', (pathname) => {
+    '/dashboard/properties',
+    '/dashboard/properties/[id]',
+  ] as const)('shows charges, tickets and properties to RENTER on %s', (pathname) => {
     mockSession({ papel: 'RENTER' })
     vi.mocked(usePathname).mockReturnValue(pathname)
     renderShell()
     expect(screen.getByText('Conteúdo da rota')).toBeVisible()
     const links = within(screen.getByRole('navigation')).getAllByRole('link')
-    expect(links).toHaveLength(2)
+    expect(links).toHaveLength(3)
     expect(links.map((link) => link.getAttribute('href')).sort()).toEqual([
       '/dashboard/finance/charges',
       '/dashboard/maintenance',
+      '/dashboard/properties',
     ])
   })
 
@@ -135,7 +138,8 @@ describe('AppShell navigation per papel', () => {
     '/dashboard',
     '/dashboard/finance',
     '/dashboard/agenda',
-    '/dashboard/properties',
+    '/dashboard/properties/new',
+    '/dashboard/properties/[id]/edit',
     '/crm',
     '/dashboard/contracts',
   ] as const)('redirects RENTER away from %s without rendering its contents', (pathname) => {
