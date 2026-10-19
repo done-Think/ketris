@@ -1,5 +1,5 @@
 import { ThemeProvider } from '@mui/material'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -50,7 +50,7 @@ vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))
 
-function mockSession(overrides?: Partial<{ papel: 'ADMIN' | 'OWNER' | 'AGENT' }>) {
+function mockSession(overrides?: Partial<{ papel: 'ADMIN' | 'OWNER' | 'AGENT' | 'RENTER' }>) {
   vi.mocked(useSession).mockReturnValue({
     data: {
       user: { id: 'user-1', name: 'Ana', email: 'ana@example.com' },
@@ -113,6 +113,31 @@ describe('AppShell access rules', () => {
 })
 
 describe('AppShell navigation per papel', () => {
+  it('shows only charges to RENTER and renders the allowed route', () => {
+    mockSession({ papel: 'RENTER' })
+    vi.mocked(usePathname).mockReturnValue('/dashboard/finance/charges')
+    renderShell()
+    expect(screen.getByText('Conteúdo da rota')).toBeVisible()
+    const links = within(screen.getByRole('navigation')).getAllByRole('link')
+    expect(links).toHaveLength(1)
+    expect(links[0]).toHaveAttribute('href', '/dashboard/finance/charges')
+  })
+
+  it.each([
+    '/dashboard',
+    '/dashboard/finance',
+    '/dashboard/agenda',
+    '/dashboard/properties',
+    '/dashboard/maintenance',
+    '/crm',
+    '/dashboard/contracts',
+  ] as const)('redirects RENTER away from %s without rendering its contents', (pathname) => {
+    mockSession({ papel: 'RENTER' })
+    vi.mocked(usePathname).mockReturnValue(pathname)
+    renderShell()
+    expect(screen.queryByText('Conteúdo da rota')).not.toBeInTheDocument()
+    expect(routerMock.replace).toHaveBeenCalledWith('/pt/dashboard/finance/charges')
+  })
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(usePathname).mockReturnValue('/crm')

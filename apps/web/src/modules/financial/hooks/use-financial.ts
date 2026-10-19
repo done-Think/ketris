@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
 
 import { financialService } from '../services/financial-service'
 import type { ChargeListFilters } from '../types/service'
@@ -36,10 +37,15 @@ export const financialQueryKeys = {
 }
 
 export function useCharges(tenantId: string | null | undefined, filters: ChargeListFilters = {}) {
+  const { data: session } = useSession()
   const scopedTenantId = tenantId ?? ''
 
   return useQuery({
-    queryKey: financialQueryKeys.chargesList(scopedTenantId, filters),
+    queryKey: [
+      ...financialQueryKeys.chargesList(scopedTenantId, filters),
+      session?.user?.id,
+      session?.papel,
+    ],
     queryFn: () => financialService.listCharges(filters),
     enabled: Boolean(tenantId),
   })
@@ -49,11 +55,16 @@ export function useCharge(
   tenantId: string | null | undefined,
   chargeId: string | null | undefined,
 ) {
+  const { data: session } = useSession()
   const scopedTenantId = tenantId ?? ''
   const scopedChargeId = chargeId ?? ''
 
   return useQuery({
-    queryKey: financialQueryKeys.chargeDetail(scopedTenantId, scopedChargeId),
+    queryKey: [
+      ...financialQueryKeys.chargeDetail(scopedTenantId, scopedChargeId),
+      session?.user?.id,
+      session?.papel,
+    ],
     queryFn: () => financialService.getCharge(scopedChargeId),
     enabled: Boolean(tenantId) && Boolean(chargeId),
   })
@@ -117,11 +128,12 @@ export function useRegisterChargePayment(tenantId: string | null | undefined, ch
 }
 
 export function useFinancialSummary(tenantId: string | null | undefined) {
+  const { data: session } = useSession()
   const scopedTenantId = tenantId ?? ''
 
   return useQuery({
     queryKey: financialQueryKeys.summary(scopedTenantId),
     queryFn: () => financialService.getSummary(),
-    enabled: Boolean(tenantId),
+    enabled: Boolean(tenantId) && session?.papel !== 'RENTER',
   })
 }

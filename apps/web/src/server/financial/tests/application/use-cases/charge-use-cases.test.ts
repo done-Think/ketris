@@ -119,23 +119,63 @@ describe('CreateChargeUseCase', () => {
 })
 
 describe('ListChargesUseCase', () => {
+  it('restricts renter queries even when payable charges are requested', async () => {
+    const repository = createRepository()
+    await new ListChargesUseCase(repository).execute({
+      tenantId: 'tenant-1',
+      actorId: 'renter-1',
+      actorPapel: 'RENTER',
+      type: 'A_PAGAR',
+      search: 'rent',
+      page: 2,
+    })
+    expect(repository.findMany).toHaveBeenCalledWith({
+      tenantId: 'tenant-1',
+      renterId: 'renter-1',
+      type: 'A_RECEBER',
+      search: 'rent',
+      page: 2,
+    })
+  })
   it('delega os filtros para o repositório', async () => {
     const repository = createRepository()
     const useCase = new ListChargesUseCase(repository)
 
-    await useCase.execute({ tenantId: 'tenant-1', status: 'PENDENTE' })
+    await useCase.execute({
+      tenantId: 'tenant-1',
+      actorId: 'agent-1',
+      actorPapel: 'AGENT',
+      status: 'PENDENTE',
+    })
 
     expect(repository.findMany).toHaveBeenCalledWith({ tenantId: 'tenant-1', status: 'PENDENTE' })
   })
 })
 
 describe('GetChargeUseCase', () => {
+  it('passes the authenticated renter identity to the repository', async () => {
+    const repository = createRepository({ findById: vi.fn().mockResolvedValue(null) })
+    await expect(
+      new GetChargeUseCase(repository).execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'renter-1',
+        actorPapel: 'RENTER',
+        chargeId: 'foreign',
+      }),
+    ).rejects.toThrow(ChargeNotFoundError)
+    expect(repository.findById).toHaveBeenCalledWith('tenant-1', 'foreign', 'renter-1')
+  })
   it('lança ChargeNotFoundError quando a cobrança não existe no tenant', async () => {
     const repository = createRepository({ findById: vi.fn().mockResolvedValue(null) })
     const useCase = new GetChargeUseCase(repository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', chargeId: 'missing' }),
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'agent-1',
+        actorPapel: 'AGENT',
+        chargeId: 'missing',
+      }),
     ).rejects.toThrow(ChargeNotFoundError)
   })
 
@@ -143,7 +183,12 @@ describe('GetChargeUseCase', () => {
     const repository = createRepository()
     const useCase = new GetChargeUseCase(repository)
 
-    const result = await useCase.execute({ actorTenantId: 'tenant-1', chargeId: 'charge-1' })
+    const result = await useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorId: 'agent-1',
+      actorPapel: 'AGENT',
+      chargeId: 'charge-1',
+    })
 
     expect(result).toEqual(charge)
   })
@@ -337,11 +382,21 @@ describe('RegisterChargePaymentUseCase', () => {
 })
 
 describe('GetFinancialSummaryUseCase', () => {
+  it('does not disclose tenant financial totals to renters', () => {
+    const repository = createRepository()
+    expect(() =>
+      new GetFinancialSummaryUseCase(repository).execute({
+        actorTenantId: 'tenant-1',
+        actorPapel: 'RENTER',
+      }),
+    ).toThrow()
+    expect(repository.getSummary).not.toHaveBeenCalled()
+  })
   it('delega para o repositório com a data de referência atual', async () => {
     const repository = createRepository()
     const useCase = new GetFinancialSummaryUseCase(repository)
 
-    await useCase.execute({ actorTenantId: 'tenant-1' })
+    await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'AGENT' })
 
     expect(repository.getSummary).toHaveBeenCalledWith('tenant-1', expect.any(Date))
   })

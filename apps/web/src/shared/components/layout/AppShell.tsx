@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import { Box, Drawer, IconButton, Stack, Tooltip } from '@mui/material'
 import { useSession } from 'next-auth/react'
@@ -27,6 +27,13 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   const pathname = usePathname()
   const router = useRouter()
   const { data: session, status } = useSession()
+  const isRenter = session?.scope === 'tenant' && session.papel === 'RENTER'
+  const isRenterRoute = /^\/dashboard\/finance\/charges(?:\/[^/]+)?\/?$/.test(pathname)
+  useEffect(() => {
+    if (isRenter && !isRenterRoute) {
+      router.replace(getLocalizedPathname('/dashboard/finance/charges', locale))
+    }
+  }, [isRenter, isRenterRoute, locale, router])
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isSigningOut, setIsSigningOut] = useState(false)
   const sidebarCollapsed = useSidebarPreferencesStore((state) => state.isCollapsed)
@@ -39,12 +46,14 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   const userContext = session?.user?.email ?? t('defaultUserContext')
   const userInitials = useMemo(() => getInitials(userName), [userName])
   const visibleItems = useMemo(() => {
+    if (isRenter)
+      return appShellNavigationItems.filter((item) => item.href === '/dashboard/finance/charges')
     if (isLocalDashboardPreview) return appShellNavigationItems
 
     return appShellNavigationItems.filter(
       (item) => !item.roles || (session?.papel && item.roles.includes(session.papel)),
     )
-  }, [isLocalDashboardPreview, session])
+  }, [isLocalDashboardPreview, isRenter, session])
   const activeTargetPath = useMemo(() => {
     if (isPersonalProfileRoute) return null
 
@@ -72,6 +81,8 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
     router.refresh()
   }
 
+  if (isRenter && !isRenterRoute) return null
+
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: surface.app }}>
       <Box
@@ -94,7 +105,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           userContext={userContext}
           userInitials={userInitials}
           userImage={session?.user?.image ?? undefined}
-          canEditProfile={!!session?.user?.id}
+          canEditProfile={!!session?.user?.id && !isRenter}
           isPersonalProfileRoute={isPersonalProfileRoute}
           isSigningOut={isSigningOut}
           onNavItemClick={() => setMobileOpen(false)}
@@ -176,7 +187,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           userContext={userContext}
           userInitials={userInitials}
           userImage={session?.user?.image ?? undefined}
-          canEditProfile={!!session?.user?.id}
+          canEditProfile={!!session?.user?.id && !isRenter}
           isPersonalProfileRoute={isPersonalProfileRoute}
           isSigningOut={isSigningOut}
           onNavItemClick={() => setMobileOpen(false)}
@@ -202,7 +213,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           pt: { xs: '64px', md: 0 },
         }}
       >
-        {isSigningOut || isPublicCrmRoute || isLocalDashboardPreview ? (
+        {isRenter || isSigningOut || isPublicCrmRoute || isLocalDashboardPreview ? (
           children
         ) : (
           <CrmAccessBoundary>{children}</CrmAccessBoundary>

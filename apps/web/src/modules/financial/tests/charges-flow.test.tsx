@@ -7,11 +7,18 @@ import { ChargesPage } from '../components/ChargesPage'
 import { ChargeDetailsPage } from '../components/ChargeDetailsPage'
 import type { ApiCharge, ApiChargeListItem } from '../types/service'
 
-const { push } = vi.hoisted(() => ({ push: vi.fn() }))
+const { push, sessionState, chargesListSpy } = vi.hoisted(() => ({
+  push: vi.fn(),
+  sessionState: { papel: 'ADMIN' },
+  chargesListSpy: vi.fn(),
+}))
 vi.mock('@/i18n/navigation', () => ({ useRouter: () => ({ push }) }))
 vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar: vi.fn() }) }))
 vi.mock('next-auth/react', () => ({
-  useSession: () => ({ data: { tenantId: 'tenant-1' }, status: 'authenticated' }),
+  useSession: () => ({
+    data: { tenantId: 'tenant-1', papel: sessionState.papel },
+    status: 'authenticated',
+  }),
 }))
 vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
@@ -228,10 +235,13 @@ const registerChargePaymentMutate = vi.fn()
 const chargeQueryState: Record<string, { data: ApiCharge | undefined; isLoading: boolean }> = {}
 
 vi.mock('../hooks/use-financial', () => ({
-  useCharges: () => ({
-    data: { items: chargeListItems, totalCount: chargeListItems.length },
-    isLoading: false,
-  }),
+  useCharges: (...args: unknown[]) => {
+    chargesListSpy(...args)
+    return {
+      data: { items: chargeListItems, totalCount: chargeListItems.length },
+      isLoading: false,
+    }
+  },
   useCreateCharge: () => ({ mutate: createChargeMutate }),
   useUpdateCharge: () => ({ mutate: updateChargeMutate }),
   useDeleteCharge: () => ({ mutate: deleteChargeMutate }),
@@ -245,6 +255,7 @@ const detail = (id: string) => wrap(<ChargeDetailsPage chargeId={id} />)
 
 beforeEach(() => {
   vi.clearAllMocks()
+  sessionState.papel = 'ADMIN'
   chargeQueryState['0340'] = { data: fullCharges['0340'], isLoading: false }
   chargeQueryState['0333'] = { data: fullCharges['0333'], isLoading: false }
   createChargeMutate.mockImplementation((_values, options) => options?.onSuccess?.())
@@ -258,6 +269,29 @@ beforeEach(() => {
 })
 
 describe('charges list', () => {
+  it('offers only reading actions and requests server pagination for RENTER', async () => {
+    sessionState.papel = 'RENTER'
+    const user = userEvent.setup()
+    render(wrap(<ChargesPage />))
+    expect(screen.getByText('Consulte as cobranças dos seus contratos.')).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Nova Cobrança' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Ações/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('tab')).not.toBeInTheDocument()
+    expect(chargesListSpy).toHaveBeenLastCalledWith(
+      'tenant-1',
+      expect.objectContaining({ type: 'A_RECEBER', page: 1, pageSize: 6 }),
+    )
+    await user.click(screen.getByRole('button', { name: /next page/i }))
+    expect(chargesListSpy).toHaveBeenLastCalledWith(
+      'tenant-1',
+      expect.objectContaining({ page: 2 }),
+    )
+    await user.click(screen.getByRole('button', { name: 'Pendente' }))
+    expect(chargesListSpy).toHaveBeenLastCalledWith(
+      'tenant-1',
+      expect.objectContaining({ page: 1, status: 'PENDENTE' }),
+    )
+  })
   it('renders six rows, paginates, searches, filters status and switches direction', async () => {
     const user = userEvent.setup()
     render(wrap(<ChargesPage />))
@@ -342,6 +376,13 @@ describe('charges list', () => {
 })
 
 describe('charge details', () => {
+  it('lets RENTER read details without registering a payment', () => {
+    sessionState.papel = 'RENTER'
+    render(detail('0340'))
+    expect(screen.getByText('#COB-2025-0340')).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Registrar pagamento' })).not.toBeInTheDocument()
+    expect(registerChargePaymentMutate).not.toHaveBeenCalled()
+  })
   it('renders charge details fetched from the API', async () => {
     render(detail('0340'))
     expect(await screen.findByText('#COB-2025-0340')).toBeVisible()

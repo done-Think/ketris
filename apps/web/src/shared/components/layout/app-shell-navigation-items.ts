@@ -65,6 +65,6 @@ export const appShellNavigationItems: readonly AppShellNavItem[] = [
     labelKey: 'charges',
     href: '/dashboard/finance/charges',
     icon: ReceiptLongOutlinedIcon,
-    roles: ['ADMIN', 'OWNER'],
+    roles: ['ADMIN', 'OWNER', 'RENTER'],
   },
 ]

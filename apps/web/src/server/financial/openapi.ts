@@ -21,6 +21,8 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
     path: '/financial/charges',
     tags: ['Financial'],
     summary: 'Lista cobranças do tenant autenticado',
+    description:
+      'RENTER consulta somente cobranças A_RECEBER de contratos com vínculo explícito de LOCATARIO ao seu usuário. Busca, paginação e contagem respeitam esse vínculo.',
     security: [{ bearerAuth: [] }],
     request: { query: listChargesQuerySchema },
     responses: {
@@ -73,6 +75,8 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
     path: '/financial/charges/{id}',
     tags: ['Financial'],
     summary: 'Consulta cobrança do tenant autenticado',
+    description:
+      'RENTER consulta somente cobranças A_RECEBER dos próprios contratos. Cobranças sem vínculo ou de terceiros retornam 404. Acesso do locatário é somente de leitura.',
     security: [{ bearerAuth: [] }],
     request: { params: chargeIdParamsSchema },
     responses: {
@@ -174,11 +178,16 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
     path: '/financial/summary',
     tags: ['Financial'],
     summary: 'Agregação financeira do tenant para o dashboard',
+    description: 'O resumo geral do tenant não está disponível para RENTER.',
     security: [{ bearerAuth: [] }],
     responses: {
       200: {
         description: 'Resumo financeiro do tenant.',
         content: { 'application/json': { schema: financialSummarySchema } },
+      },
+      403: {
+        description: 'Locatário não pode consultar indicadores financeiros do tenant.',
+        content: { 'application/json': { schema: errorResponseSchema } },
       },
       401: {
         description: 'Access token ausente, inválido ou expirado.',

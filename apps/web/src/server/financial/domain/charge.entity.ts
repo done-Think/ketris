@@ -56,6 +56,7 @@ export interface ChargePaymentData {
 
 export interface ChargeListFilters {
   tenantId: string
+  renterId?: string
   type?: ChargeType
   status?: ChargeStatus
   search?: string

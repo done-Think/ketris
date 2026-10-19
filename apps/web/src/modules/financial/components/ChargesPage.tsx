@@ -40,7 +40,11 @@ import {
   useDeleteCharge,
   useUpdateCharge,
 } from '../hooks/use-financial'
-import { getMonthlyReceivable, mapChargeListItemFromApi } from '../utils/charge-adapter'
+import {
+  getMonthlyReceivable,
+  mapChargeListItemFromApi,
+  mapChargeStatusToApi,
+} from '../utils/charge-adapter'
 import { errorMessage } from '../utils/error-message'
 import type {
   ChargeDirection,
@@ -63,12 +67,8 @@ export function ChargesPage() {
   const locale = useLocale()
   const { enqueueSnackbar } = useSnackbar()
   const { data: session } = useSession()
+  const isRenter = session?.papel === 'RENTER'
   const tenantId = session?.tenantId ?? ''
-  const chargesQuery = useCharges(tenantId, { pageSize: 500 })
-  const charges = useMemo(
-    () => (chargesQuery.data?.items ?? []).map(mapChargeListItemFromApi),
-    [chargesQuery.data],
-  )
   const createChargeMutation = useCreateCharge(tenantId)
   const updateChargeMutation = useUpdateCharge(tenantId)
   const deleteChargeMutation = useDeleteCharge(tenantId)
@@ -81,24 +81,45 @@ export function ChargesPage() {
   const [editingChargeId, setEditingChargeId] = useState<string | null>(null)
   const [archivingChargeId, setArchivingChargeId] = useState<string | null>(null)
   const [deletingChargeId, setDeletingChargeId] = useState<string | null>(null)
+  const chargesQuery = useCharges(
+    tenantId,
+    isRenter
+      ? {
+          type: 'A_RECEBER',
+          status: status === 'all' ? undefined : mapChargeStatusToApi(status),
+          search: query.trim() || undefined,
+          page,
+          pageSize: rowsPerPage,
+        }
+      : { pageSize: 500 },
+  )
+  const charges = useMemo(
+    () => (chargesQuery.data?.items ?? []).map(mapChargeListItemFromApi),
+    [chargesQuery.data],
+  )
   const router = useRouter()
   const normalized = query.trim().toLocaleLowerCase(locale)
   const visible = useMemo(
     () =>
-      charges.filter(
-        (charge) =>
-          charge.direction === direction &&
-          (status === 'all' || charge.status === status) &&
-          (!normalized ||
-            [charge.code, charge.tenant, charge.property].some((item) =>
-              item.toLocaleLowerCase(locale).includes(normalized),
-            )),
-      ),
-    [charges, direction, locale, normalized, status],
+      isRenter
+        ? charges
+        : charges.filter(
+            (charge) =>
+              charge.direction === direction &&
+              (status === 'all' || charge.status === status) &&
+              (!normalized ||
+                [charge.code, charge.tenant, charge.property].some((item) =>
+                  item.toLocaleLowerCase(locale).includes(normalized),
+                )),
+          ),
+    [charges, direction, isRenter, locale, normalized, status],
   )
-  const pageCount = Math.max(1, Math.ceil(visible.length / rowsPerPage))
+  const totalCount = isRenter ? (chargesQuery.data?.totalCount ?? 0) : visible.length
+  const pageCount = Math.max(1, Math.ceil(totalCount / rowsPerPage))
   const currentPage = Math.min(page, pageCount)
-  const rows = visible.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)
+  const rows = isRenter
+    ? visible
+    : visible.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)
   const editingCharge = charges.find((charge) => charge.id === editingChargeId) ?? null
   const receivables = charges.filter((charge) => charge.direction === 'receivable')
   const due = getMonthlyReceivable(charges)
@@ -191,7 +212,7 @@ export function ChargesPage() {
       <Stack spacing={{ xs: 2, md: 2.7 }}>
         <DashboardPageHeader
           title={t('title')}
-          subtitle={t('subtitle')}
+          subtitle={t(isRenter ? 'renter.subtitle' : 'subtitle')}
           sx={{ pb: 1.75, borderBottom: '1px solid', borderColor: 'divider' }}
           actions={
             <Stack
@@ -235,12 +256,14 @@ export function ChargesPage() {
                   '& .MuiInputAdornment-root .MuiSvgIcon-root': { fontSize: iconSize.sm },
                 }}
               />
-              <DashboardHeaderActionButton
-                startIcon={<AddRoundedIcon />}
-                onClick={() => setCreateOpen(true)}
-              >
-                {t('newCharge')}
-              </DashboardHeaderActionButton>
+              {!isRenter && (
+                <DashboardHeaderActionButton
+                  startIcon={<AddRoundedIcon />}
+                  onClick={() => setCreateOpen(true)}
+                >
+                  {t('newCharge')}
+                </DashboardHeaderActionButton>
+              )}
               <Box sx={{ display: { xs: 'none', md: 'block' } }}>
                 <DashboardNotificationsButton />
               </Box>
@@ -276,7 +299,7 @@ export function ChargesPage() {
                 <DashboardStatusFilterButton
                   key={item}
                   active={active}
-                  count={count}
+                  count={isRenter ? undefined : count}
                   onClick={() => selectStatus(item)}
                 >
                   {t(`statuses.${item}`)}
@@ -284,62 +307,66 @@ export function ChargesPage() {
               )
             })}
           </Stack>
-          <Tabs
-            value={direction}
-            onChange={changeDirection}
-            sx={{
-              minHeight: 36,
-              alignSelf: { xs: 'stretch', md: 'flex-end' },
-              '& .MuiTabs-flexContainer': {
-                justifyContent: { xs: 'stretch', md: 'flex-end' },
-              },
-              '& .MuiTab-root': {
+          {!isRenter && (
+            <Tabs
+              value={direction}
+              onChange={changeDirection}
+              sx={{
                 minHeight: 36,
-                px: { xs: 0, sm: 2 },
-                flex: { xs: 1, md: 'initial' },
-                whiteSpace: 'nowrap',
-                textTransform: 'none',
-                color: brand.neutral[500],
-                fontSize: 12,
-                fontWeight: 700,
+                alignSelf: { xs: 'stretch', md: 'flex-end' },
+                '& .MuiTabs-flexContainer': {
+                  justifyContent: { xs: 'stretch', md: 'flex-end' },
+                },
+                '& .MuiTab-root': {
+                  minHeight: 36,
+                  px: { xs: 0, sm: 2 },
+                  flex: { xs: 1, md: 'initial' },
+                  whiteSpace: 'nowrap',
+                  textTransform: 'none',
+                  color: brand.neutral[500],
+                  fontSize: 12,
+                  fontWeight: 700,
+                },
+                '& .Mui-selected': { color: 'primary.main' },
+                '& .MuiTabs-indicator': { height: 2 },
+              }}
+            >
+              <Tab value="receivable" label={t('tabs.receivable')} />
+              <Tab value="payable" label={t('tabs.payable')} />
+            </Tabs>
+          )}
+        </Stack>
+        {!isRenter && (
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: 'minmax(0, 1fr)',
+                lg: 'repeat(3, minmax(0, 1fr))',
               },
-              '& .Mui-selected': { color: 'primary.main' },
-              '& .MuiTabs-indicator': { height: 2 },
+              gap: { xs: 1.4, md: 1.8 },
             }}
           >
-            <Tab value="receivable" label={t('tabs.receivable')} />
-            <Tab value="payable" label={t('tabs.payable')} />
-          </Tabs>
-        </Stack>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: 'minmax(0, 1fr)',
-              lg: 'repeat(3, minmax(0, 1fr))',
-            },
-            gap: { xs: 1.4, md: 1.8 },
-          }}
-        >
-          <Metric
-            label={t('kpis.receivable')}
-            value={formatCurrency(due)}
-            icon={<TrendingUpRoundedIcon />}
-            tone="success"
-          />
-          <Metric
-            label={t('kpis.overdue')}
-            value={formatCurrency(overdue)}
-            icon={<TrendingDownRoundedIcon />}
-            tone="error"
-          />
-          <Metric
-            label={t('kpis.defaultRate')}
-            value={total ? `${((overdue / total) * 100).toFixed(1)}%` : '0%'}
-            icon={<TrendingDownRoundedIcon />}
-            tone="warning"
-          />
-        </Box>
+            <Metric
+              label={t('kpis.receivable')}
+              value={formatCurrency(due)}
+              icon={<TrendingUpRoundedIcon />}
+              tone="success"
+            />
+            <Metric
+              label={t('kpis.overdue')}
+              value={formatCurrency(overdue)}
+              icon={<TrendingDownRoundedIcon />}
+              tone="error"
+            />
+            <Metric
+              label={t('kpis.defaultRate')}
+              value={total ? `${((overdue / total) * 100).toFixed(1)}%` : '0%'}
+              icon={<TrendingDownRoundedIcon />}
+              tone="warning"
+            />
+          </Box>
+        )}
         <Paper
           variant="outlined"
           sx={{
@@ -391,6 +418,7 @@ export function ChargesPage() {
               <TableBody>
                 {rows.map((charge, index) => (
                   <ChargeRow
+                    readOnly={isRenter}
                     key={charge.id}
                     charge={charge}
                     locale={locale}
@@ -419,7 +447,7 @@ export function ChargesPage() {
           </TableContainer>
 
           <DashboardTablePagination
-            count={visible.length}
+            count={totalCount}
             page={currentPage}
             rowsPerPage={rowsPerPage}
             rowsPerPageOptions={[6, 10, 25]}
@@ -431,26 +459,30 @@ export function ChargesPage() {
           />
         </Paper>
       </Stack>
-      <CreateChargeDialog
-        open={createOpen}
-        onClose={() => setCreateOpen(false)}
-        onCreate={addCharge}
-      />
-      <EditChargeDialog
-        charge={editingCharge}
-        onClose={() => setEditingChargeId(null)}
-        onSave={updateCharge}
-      />
-      <ArchiveChargeDialog
-        open={Boolean(archivingChargeId)}
-        onClose={() => setArchivingChargeId(null)}
-        onConfirm={archiveCharge}
-      />
-      <DeleteChargeDialog
-        open={Boolean(deletingChargeId)}
-        onClose={() => setDeletingChargeId(null)}
-        onConfirm={deleteCharge}
-      />
+      {!isRenter && (
+        <>
+          <CreateChargeDialog
+            open={createOpen}
+            onClose={() => setCreateOpen(false)}
+            onCreate={addCharge}
+          />
+          <EditChargeDialog
+            charge={editingCharge}
+            onClose={() => setEditingChargeId(null)}
+            onSave={updateCharge}
+          />
+          <ArchiveChargeDialog
+            open={Boolean(archivingChargeId)}
+            onClose={() => setArchivingChargeId(null)}
+            onConfirm={archiveCharge}
+          />
+          <DeleteChargeDialog
+            open={Boolean(deletingChargeId)}
+            onClose={() => setDeletingChargeId(null)}
+            onConfirm={deleteCharge}
+          />
+        </>
+      )}
     </Box>
   )
 }

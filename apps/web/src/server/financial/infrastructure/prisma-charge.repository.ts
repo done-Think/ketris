@@ -95,6 +95,21 @@ function monthRange(referenceDate: Date, monthsBack: number) {
   return { start, end }
 }
 
+function renterChargeScope(tenantId: string, renterId?: string) {
+  return renterId === undefined
+    ? {}
+    : {
+        tipo: 'A_RECEBER' as const,
+        contrato: {
+          is: {
+            tenantId,
+            imovel: { tenantId },
+            partes: { some: { papel: 'LOCATARIO' as const, usuarioId: renterId } },
+          },
+        },
+      }
+}
+
 export class PrismaChargeRepository implements ChargeRepository {
   async findContractSummary(tenantId: string, contractId: string): Promise<{ id: string } | null> {
     const contrato = await prisma.contrato.findFirst({
@@ -157,6 +172,7 @@ export class PrismaChargeRepository implements ChargeRepository {
             ],
           }
         : {}),
+      ...renterChargeScope(filters.tenantId, filters.renterId),
     }
 
     const [cobrancas, totalCount] = await Promise.all([
@@ -192,9 +208,9 @@ export class PrismaChargeRepository implements ChargeRepository {
     }
   }
 
-  async findById(tenantId: string, chargeId: string): Promise<Charge | null> {
+  async findById(tenantId: string, chargeId: string, renterId?: string): Promise<Charge | null> {
     const cobranca = await prisma.cobranca.findFirst({
-      where: { tenantId, id: chargeId },
+      where: { tenantId, id: chargeId, ...renterChargeScope(tenantId, renterId) },
       include: chargeInclude,
     })
 
