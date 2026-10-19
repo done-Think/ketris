@@ -166,6 +166,12 @@
   },
   "maintenance": {
     "title": "Chamados de Manutenção",
+    "empty": "Nenhum chamado encontrado.",
+    "renter": {
+      "subtitle": "Abra e acompanhe chamados dos imóveis vinculados aos seus contratos.",
+      "resolutionNotice": "A confirmação ou contestação da resolução cabe ao administrador ou ao proprietário vinculado. Quando a conclusão é feita por um proprietário, somente o administrador pode confirmá-la.",
+      "readOnlyNotice": "Este chamado está encerrado e disponível somente para consulta."
+    },
     "subtitle": "Acompanhe solicitações de reparo e manutenção",
     "search": "Buscar chamado...",
     "allProperties": "Todos os Imóveis",

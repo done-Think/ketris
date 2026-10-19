@@ -156,6 +156,7 @@ export function MaintenanceCreateTicketDialog({
               <RhfTextField
                 control={control}
                 name="contractId"
+                disabled={mode === 'edit' && session?.papel === 'RENTER'}
                 label={t('fields.contract')}
                 select
                 fullWidth

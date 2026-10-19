@@ -1,7 +1,8 @@
 import type { MaintenanceTicketListItem } from '@server/maintenance/types/maintenance-ticket'
 import { randomUUID } from 'node:crypto'
 import { NextRequest } from 'next/server'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import type { UploadMaintenanceAttachmentInput } from '@server/maintenance/types/maintenance-attachment-storage'
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
 import type { Papel } from '@server/auth/domain/user.entity'
@@ -12,6 +13,14 @@ import { POST as addNote } from '../../tickets/[id]/notes/route'
 import { GET as listActivities } from '../../tickets/[id]/activities/route'
 import { POST as links } from '../../links/route'
 import { GET as options } from '../../options/route'
+import { POST as attachFile } from '../../tickets/[id]/attachments/route'
+
+const { uploadToStorage } = vi.hoisted(() => ({ uploadToStorage: vi.fn() }))
+vi.mock('@server/maintenance/infrastructure/s3-maintenance-attachment-storage', () => ({
+  S3MaintenanceAttachmentStorage: class {
+    upload = uploadToStorage
+  },
+}))
 
 describe('/api/maintenance authorization and workflow (database integration)', () => {
   const tokenService = new JoseTokenService()
@@ -89,6 +98,10 @@ describe('/api/maintenance authorization and workflow (database integration)', (
     return { tenant, admin, agent, owner, renter, unrelated, property, contract }
   }
   beforeAll(async () => {
+    uploadToStorage.mockImplementation(async (input: UploadMaintenanceAttachmentInput) => ({
+      url: `/api/maintenance/media/maintenance/${input.tenantId}/${randomUUID()}.png`,
+      contentType: input.contentType,
+    }))
     fixture = await createFixture()
     other = await createFixture()
   })
@@ -126,6 +139,116 @@ describe('/api/maintenance authorization and workflow (database integration)', (
   async function action(id: string, token: string, body: unknown) {
     return act(request(`tickets/${id}/actions`, 'POST', token, body), context(id))
   }
+
+  function attachmentRequest(id: string, token: string) {
+    const formData = new FormData()
+    formData.set('file', new File(['test image'], 'repair.png', { type: 'image/png' }))
+    return new NextRequest(`http://localhost/api/maintenance/tickets/${id}/attachments`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${token}` },
+      body: formData,
+    })
+  }
+
+  it.each(['RESOLVIDO', 'CANCELADO', 'FECHADO'] as const)(
+    'preserves linked renter reading of %s tickets with timeline and attachments',
+    async (status) => {
+      const id = await create()
+      const note = await addNote(
+        request(`tickets/${id}/notes`, 'POST', fixture.renter.token, {
+          message: 'Repair photo attached.',
+        }),
+        context(id),
+      )
+      expect(note.status).toBe(201)
+      const attachment = await attachFile(attachmentRequest(id, fixture.renter.token), context(id))
+      expect(attachment.status).toBe(201)
+      const attachmentBody = await attachment.json()
+      await prisma.chamadoManutencao.update({ where: { id }, data: { status } })
+      const detail = await getTicket(
+        request(`tickets/${id}`, 'GET', fixture.renter.token),
+        context(id),
+      )
+      expect(detail.status).toBe(200)
+      const body = await detail.json()
+      expect(body.ticket.status).toBe(status)
+      expect(body.ticket.activities).toEqual(
+        expect.arrayContaining([expect.objectContaining({ message: 'Repair photo attached.' })]),
+      )
+      expect(body.ticket.attachments).toEqual(
+        expect.arrayContaining([expect.objectContaining({ id: attachmentBody.attachment.id })]),
+      )
+      expect(Object.values(body.ticket.permissions).every((allowed) => allowed === false)).toBe(
+        true,
+      )
+      const list = await GET(request(`tickets?status=${status}`, 'GET', fixture.renter.token))
+      expect((await list.json()).items).toEqual(
+        expect.arrayContaining([expect.objectContaining({ id })]),
+      )
+      expect(
+        (
+          await listActivities(
+            request(`tickets/${id}/activities`, 'GET', fixture.renter.token),
+            context(id),
+          )
+        ).status,
+      ).toBe(200)
+      const uploadCount = uploadToStorage.mock.calls.length
+      expect(
+        (await attachFile(attachmentRequest(id, fixture.renter.token), context(id))).status,
+      ).toBe(409)
+      expect(uploadToStorage).toHaveBeenCalledTimes(uploadCount)
+      expect(
+        (
+          await PATCH(
+            request(`tickets/${id}`, 'PATCH', fixture.renter.token, { title: 'Denied' }),
+            context(id),
+          )
+        ).status,
+      ).toBe(409)
+      expect(
+        (
+          await addNote(
+            request(`tickets/${id}/notes`, 'POST', fixture.renter.token, { message: 'Denied' }),
+            context(id),
+          )
+        ).status,
+      ).toBe(409)
+      for (const user of [fixture.unrelated, other.renter]) {
+        expect(
+          (await getTicket(request(`tickets/${id}`, 'GET', user.token), context(id))).status,
+        ).toBe(404)
+        expect((await attachFile(attachmentRequest(id, user.token), context(id))).status).toBe(404)
+      }
+      expect(uploadToStorage).toHaveBeenCalledTimes(uploadCount)
+    },
+  )
+
+  it('does not grant renters management, confirmation or contestation permissions', async () => {
+    const id = await create()
+    const actions = [
+      { action: 'assume' },
+      { action: 'assign', responsibleId: fixture.agent.id },
+      { action: 'provider', provider: { name: 'Denied' } },
+      { action: 'requestReplacement', reason: 'Denied' },
+      { action: 'start' },
+      { action: 'complete' },
+      { action: 'cancel' },
+    ]
+    for (const input of actions)
+      expect((await action(id, fixture.renter.token, input)).status).toBe(403)
+    await prisma.chamadoManutencao.update({
+      where: { id },
+      data: { status: 'AGUARDANDO_CONFIRMACAO' },
+    })
+    expect((await action(id, fixture.renter.token, { action: 'confirm' })).status).toBe(403)
+    expect(
+      (await action(id, fixture.renter.token, { action: 'contest', reason: 'Denied' })).status,
+    ).toBe(403)
+    expect(
+      (await DELETE(request(`tickets/${id}`, 'DELETE', fixture.renter.token), context(id))).status,
+    ).toBe(403)
+  })
   it('requires authentication', async () =>
     expect((await GET(request('tickets', 'GET'))).status).toBe(401))
   it('creates for all linked roles and refuses another tenants contract', async () => {

@@ -53,7 +53,7 @@ export const appShellNavigationItems: readonly AppShellNavItem[] = [
     labelKey: 'maintenance',
     href: '/dashboard/maintenance',
     icon: BuildOutlinedIcon,
-    roles: ['ADMIN', 'OWNER'],
+    roles: ['ADMIN', 'OWNER', 'RENTER'],
   },
   {
     labelKey: 'finance',

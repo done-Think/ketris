@@ -113,14 +113,22 @@ describe('AppShell access rules', () => {
 })
 
 describe('AppShell navigation per papel', () => {
-  it('shows only charges to RENTER and renders the allowed route', () => {
+  it.each([
+    '/dashboard/finance/charges',
+    '/dashboard/finance/charges/[id]',
+    '/dashboard/maintenance',
+    '/dashboard/maintenance/[id]',
+  ] as const)('shows charges and tickets to RENTER on %s', (pathname) => {
     mockSession({ papel: 'RENTER' })
-    vi.mocked(usePathname).mockReturnValue('/dashboard/finance/charges')
+    vi.mocked(usePathname).mockReturnValue(pathname)
     renderShell()
     expect(screen.getByText('Conteúdo da rota')).toBeVisible()
     const links = within(screen.getByRole('navigation')).getAllByRole('link')
-    expect(links).toHaveLength(1)
-    expect(links[0]).toHaveAttribute('href', '/dashboard/finance/charges')
+    expect(links).toHaveLength(2)
+    expect(links.map((link) => link.getAttribute('href')).sort()).toEqual([
+      '/dashboard/finance/charges',
+      '/dashboard/maintenance',
+    ])
   })
 
   it.each([
@@ -128,7 +136,6 @@ describe('AppShell navigation per papel', () => {
     '/dashboard/finance',
     '/dashboard/agenda',
     '/dashboard/properties',
-    '/dashboard/maintenance',
     '/crm',
     '/dashboard/contracts',
   ] as const)('redirects RENTER away from %s without rendering its contents', (pathname) => {

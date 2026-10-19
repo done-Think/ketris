@@ -89,9 +89,9 @@ const mockTicket: ApiMaintenanceTicket = {
   ],
 }
 
-function mockSession() {
+function mockSession(role: 'ADMIN' | 'RENTER' = 'ADMIN') {
   vi.mocked(useSession).mockReturnValue({
-    data: { tenantId: 'tenant-1' },
+    data: { tenantId: 'tenant-1', papel: role },
     status: 'authenticated',
     update: vi.fn(),
   } as unknown as ReturnType<typeof useSession>)
@@ -138,6 +138,87 @@ describe('MaintenanceTicketDetailPage', () => {
     mockSession()
     mockTicketQuery()
     mockMutations()
+  })
+
+  it('lets a linked renter comment and attach images without management actions', async () => {
+    mockSession('RENTER')
+    mockTicketQuery({
+      data: {
+        ...mockTicket,
+        permissions: { ...mockTicket.permissions!, edit: false, provider: false, complete: false },
+      },
+    })
+    const user = userEvent.setup()
+    render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+    expect(
+      screen.queryByRole('button', {
+        name: /Assumir chamado|Atribuir responsável|Definir prestador|Concluir atendimento|Confirmar resolução|Contestar resolução|Cancelar chamado/,
+      }),
+    ).not.toBeInTheDocument()
+    const file = new File(['image'], 'repair.png', { type: 'image/png' })
+    await user.upload(document.querySelector('input[type="file"]') as HTMLInputElement, file)
+    expect(
+      vi.mocked(useUploadMaintenanceTicketAttachment).mock.results[0].value.mutateAsync,
+    ).toHaveBeenCalledWith(file)
+    await user.type(
+      screen.getByPlaceholderText('Escreva uma mensagem ou atualização sobre o chamado...'),
+      'The leak is still visible.',
+    )
+    await user.click(screen.getByRole('button', { name: 'Enviar Mensagem' }))
+    expect(
+      vi.mocked(useAddMaintenanceTicketNote).mock.results[0].value.mutateAsync,
+    ).toHaveBeenCalledWith('The leak is still visible.')
+  })
+
+  it.each(['RESOLVIDO', 'CANCELADO', 'FECHADO'] as const)(
+    'keeps %s tickets readable and blocks renter collaboration',
+    (status) => {
+      mockSession('RENTER')
+      mockTicketQuery({
+        data: {
+          ...mockTicket,
+          status,
+          permissions: {
+            ...mockTicket.permissions!,
+            edit: false,
+            provider: false,
+            complete: false,
+            collaborate: false,
+          },
+        },
+      })
+      render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+      expect(
+        screen.getByText('Este chamado está encerrado e disponível somente para consulta.'),
+      ).toBeVisible()
+      expect(screen.getByText('Abri o chamado.')).toBeVisible()
+      expect(screen.getByText('pia_cozinha1.jpg')).toBeVisible()
+      expect(screen.getByRole('button', { name: 'Anexar arquivos' })).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'Enviar Mensagem' })).toBeDisabled()
+      expect(
+        screen.queryByRole('button', {
+          name: /Confirmar resolução|Contestar resolução|Concluir atendimento/,
+        }),
+      ).not.toBeInTheDocument()
+    },
+  )
+
+  it('explains confirmation permissions while the renter waits for resolution approval', () => {
+    mockSession('RENTER')
+    mockTicketQuery({
+      data: {
+        ...mockTicket,
+        status: 'AGUARDANDO_CONFIRMACAO',
+        permissions: { ...mockTicket.permissions!, edit: false, provider: false, complete: false },
+      },
+    })
+    render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+    expect(
+      screen.getByText(/A confirmação ou contestação da resolução cabe ao administrador/),
+    ).toBeVisible()
+    expect(
+      screen.queryByRole('button', { name: /Confirmar resolução|Contestar resolução/ }),
+    ).not.toBeInTheDocument()
   })
 
   it('renders the ticket header, description and property details from the API', () => {

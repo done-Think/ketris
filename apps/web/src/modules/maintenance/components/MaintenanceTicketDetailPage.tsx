@@ -84,6 +84,7 @@ export function MaintenanceTicketDetailPage({ ticketId }: MaintenanceTicketDetai
   const detailT = useTranslations('dashboard.maintenance.detail')
   const { enqueueSnackbar } = useSnackbar()
   const { data: session } = useSession()
+  const isRenter = session?.papel === 'RENTER'
   const tenantId = session?.tenantId
   const [message, setMessage] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -217,6 +218,16 @@ export function MaintenanceTicketDetailPage({ ticketId }: MaintenanceTicketDetai
           </Stack>
         </Stack>
         <MaintenanceWorkflowControls ticket={ticket} />
+        {isRenter && ticket.status === 'AGUARDANDO_CONFIRMACAO' && (
+          <Typography variant="body2" color="text.secondary">
+            {t('renter.resolutionNotice')}
+          </Typography>
+        )}
+        {isRenter && ['RESOLVIDO', 'CANCELADO', 'FECHADO'].includes(ticket.status) && (
+          <Typography variant="body2" color="text.secondary">
+            {t('renter.readOnlyNotice')}
+          </Typography>
+        )}
         <Box
           sx={{
             display: 'grid',

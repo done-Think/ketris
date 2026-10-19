@@ -193,6 +193,40 @@ describe('MaintenanceDashboardPage', () => {
     mockDefaults()
   })
 
+  it('offers renter editing only where the API permits it and hides administrative controls', async () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: { tenantId: 'tenant-1', papel: 'RENTER', user: { id: 'renter-1' } },
+      status: 'authenticated',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
+    vi.mocked(useMaintenanceTickets).mockReturnValue({
+      data: {
+        items: listItems.map((item) => ({
+          ...item,
+          permissions: { edit: item.status === 'ABERTO', delete: false },
+        })),
+        totalCount: listItems.length,
+      },
+      isLoading: false,
+    } as unknown as ReturnType<typeof useMaintenanceTickets>)
+    const user = userEvent.setup()
+    render(<MaintenanceDashboardPage />)
+    expect(
+      screen.getByText('Abra e acompanhe chamados dos imóveis vinculados aos seus contratos.'),
+    ).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Novo Chamado' })).toBeEnabled()
+    expect(screen.queryByRole('button', { name: 'Arquivados' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Ações do chamado MNT-0089' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Ações do chamado MNT-0086' }),
+    ).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Ações do chamado MNT-0088' }))
+    expect(screen.getByRole('menuitem', { name: 'Editar chamado' })).toBeVisible()
+    expect(screen.queryByRole('menuitem', { name: 'Excluir chamado' })).not.toBeInTheDocument()
+  })
+
   it('renders tickets mapped from the API list', () => {
     render(<MaintenanceDashboardPage />)
 

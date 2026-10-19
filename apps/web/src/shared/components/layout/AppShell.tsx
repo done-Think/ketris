@@ -28,7 +28,9 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   const router = useRouter()
   const { data: session, status } = useSession()
   const isRenter = session?.scope === 'tenant' && session.papel === 'RENTER'
-  const isRenterRoute = /^\/dashboard\/finance\/charges(?:\/[^/]+)?\/?$/.test(pathname)
+  const isRenterRoute = /^\/dashboard\/(?:finance\/charges|maintenance)(?:\/[^/]+)?\/?$/.test(
+    pathname,
+  )
   useEffect(() => {
     if (isRenter && !isRenterRoute) {
       router.replace(getLocalizedPathname('/dashboard/finance/charges', locale))
@@ -47,7 +49,10 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   const userInitials = useMemo(() => getInitials(userName), [userName])
   const visibleItems = useMemo(() => {
     if (isRenter)
-      return appShellNavigationItems.filter((item) => item.href === '/dashboard/finance/charges')
+      return appShellNavigationItems.filter(
+        (item) =>
+          item.href === '/dashboard/finance/charges' || item.href === '/dashboard/maintenance',
+      )
     if (isLocalDashboardPreview) return appShellNavigationItems
 
     return appShellNavigationItems.filter(

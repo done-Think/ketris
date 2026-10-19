@@ -166,6 +166,12 @@
   },
   "maintenance": {
     "title": "Solicitudes de mantenimiento",
+    "empty": "No se encontraron solicitudes.",
+    "renter": {
+      "subtitle": "Abre y sigue las solicitudes de los inmuebles vinculados a tus contratos.",
+      "resolutionNotice": "El administrador o el propietario vinculado confirma o impugna la resolución. Cuando un propietario completa el trabajo, solo el administrador puede confirmarlo.",
+      "readOnlyNotice": "Esta solicitud está cerrada y disponible solo para consulta."
+    },
     "subtitle": "Acompañe las solicitudes de reparación y mantenimiento",
     "search": "Buscar solicitud...",
     "allProperties": "Todos los inmuebles",

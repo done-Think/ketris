@@ -166,6 +166,12 @@
   },
   "maintenance": {
     "title": "Maintenance tickets",
+    "empty": "No tickets found.",
+    "renter": {
+      "subtitle": "Open and track maintenance tickets for properties linked to your contracts.",
+      "resolutionNotice": "The administrator or linked owner confirms or contests the resolution. When an owner completes the work, only the administrator can confirm it.",
+      "readOnlyNotice": "This ticket is closed and available for viewing only."
+    },
     "subtitle": "Track repair and maintenance requests",
     "search": "Search ticket...",
     "allProperties": "All properties",
