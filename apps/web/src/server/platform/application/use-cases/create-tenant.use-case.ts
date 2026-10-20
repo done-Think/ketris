@@ -1,11 +1,8 @@
 import { TenantSlugAlreadyInUseError } from '../../domain/errors'
 import type { TenantSummary } from '../../domain/tenant-summary.entity'
-import type { TenantRepository } from '../ports/tenant-repository.port'
+import type { NewTenant, TenantRepository } from '../ports/tenant-repository.port'
 
-export interface CreateTenantInput {
-  nome: string
-  slug: string
-}
+export type CreateTenantInput = NewTenant
 
 export type CreateTenantOutput = TenantSummary
 
@@ -19,6 +16,11 @@ export class CreateTenantUseCase {
       throw new TenantSlugAlreadyInUseError()
     }
 
-    return this.tenantRepository.create({ nome: input.nome, slug: input.slug })
+    return this.tenantRepository.create({
+      nome: input.nome,
+      slug: input.slug,
+      accountType: input.accountType,
+      status: input.status,
+    })
   }
 }

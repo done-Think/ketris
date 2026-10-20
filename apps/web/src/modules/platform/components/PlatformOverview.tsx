@@ -2,11 +2,11 @@
 
 import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined'
 import { Box, Chip, Stack, Typography } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useEffect, useState } from 'react'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { brand, radius } from '@shared/theme/tokens'
 
-import { platformAlerts, platformLiveUtcDisplay } from '../data/platform-overview-fixtures'
 import { usePlatformOverview } from '../hooks/use-platform-overview'
 import {
   mapGrowthTrend,
@@ -16,11 +16,30 @@ import {
 import { PlatformGrowthChart } from './PlatformGrowthChart'
 import { PlatformMetricCards } from './PlatformMetricCards'
 import { RecentTenantsTable } from './RecentTenantsTable'
-import { PlatformSystemAlerts } from './PlatformSystemAlerts'
 import { TenantsList } from './TenantsList'
+
+// Current time, set only after mount so the server render and the first client render match.
+function useUtcNow() {
+  const [now, setNow] = useState<Date | null>(null)
+
+  useEffect(() => {
+    const tick = () => setNow(new Date())
+    const timeout = window.setTimeout(tick, 0)
+    const interval = window.setInterval(tick, 30_000)
+
+    return () => {
+      window.clearTimeout(timeout)
+      window.clearInterval(interval)
+    }
+  }, [])
+
+  return now
+}
 
 export function PlatformOverview() {
   const t = useTranslations('platform.overview')
+  const format = useFormatter()
+  const utcNow = useUtcNow()
   const overviewQuery = usePlatformOverview()
   const platformMetrics = overviewQuery.data
     ? mapPlatformMetricsToCards(overviewQuery.data.metrics)
@@ -70,24 +89,29 @@ export function PlatformOverview() {
             }}
           />
         </Stack>
-        <Stack direction="row" alignItems="center" spacing={0.7} sx={{ color: brand.neutral[500] }}>
-          <AccessTimeOutlinedIcon sx={{ fontSize: 17 }} />
-          <Typography sx={{ fontSize: 12, fontWeight: 600 }}>
-            {t('liveUtc', { value: platformLiveUtcDisplay })}
-          </Typography>
-        </Stack>
+        {utcNow ? (
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={0.7}
+            sx={{ color: brand.neutral[500] }}
+          >
+            <AccessTimeOutlinedIcon sx={{ fontSize: 17 }} />
+            <Typography sx={{ fontSize: 12, fontWeight: 600 }}>
+              {t('liveUtc', {
+                value: format.dateTime(utcNow, {
+                  dateStyle: 'short',
+                  timeStyle: 'short',
+                  timeZone: 'UTC',
+                }),
+              })}
+            </Typography>
+          </Stack>
+        ) : null}
       </Stack>
       <PlatformMetricCards metrics={platformMetrics} />
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.7fr) minmax(360px, 0.95fr)' },
-          gap: 2,
-          mt: 3,
-        }}
-      >
+      <Box sx={{ mt: 3 }}>
         <PlatformGrowthChart trend={growthTrend} />
-        <PlatformSystemAlerts alerts={platformAlerts} />
       </Box>
       <Box sx={{ mt: 3 }}>
         <RecentTenantsTable tenants={recentTenants} />

@@ -1,8 +1,12 @@
+import type { TenantAccountType } from '../../domain/tenant-account'
 import type { TenantSummary } from '../../domain/tenant-summary.entity'
 
 export interface NewTenant {
   nome: string
   slug: string
+  // Defaults to an active agency when omitted.
+  accountType?: TenantAccountType
+  status?: 'TRIAL' | 'ACTIVE'
 }
 
 export interface TenantRepository {
