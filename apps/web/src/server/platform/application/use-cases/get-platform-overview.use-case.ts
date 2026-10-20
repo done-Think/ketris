@@ -1,3 +1,4 @@
+import { groupStatusChangesByTenant } from '../../domain/tenant-status-history'
 import { summarizeBilling } from '../../domain/platform-billing'
 import type { PlatformOverview } from '../../domain/platform-overview.entity'
 import { chargePlatformTenants } from '../../domain/platform-tenant.entity'
@@ -15,14 +16,16 @@ export class GetPlatformOverviewUseCase {
 
   async execute(): Promise<PlatformOverview> {
     const referenceDate = this.now()
-    const [overview, tenants, plans, usage] = await Promise.all([
+    const [overview, tenants, plans, usage, statusChanges] = await Promise.all([
       this.platformOverviewRepository.getOverview(referenceDate),
       this.platformTenantRepository.findMany(),
       this.platformPlanRepository.findAll(),
       this.platformTenantRepository.countUsage(),
+      this.platformTenantRepository.findStatusChanges(),
     ])
     const { mrr, churnRate } = summarizeBilling(
       chargePlatformTenants(tenants, plans, usage),
+      groupStatusChangesByTenant(statusChanges),
       referenceDate,
     )
 

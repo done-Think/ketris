@@ -59,3 +59,12 @@ export class PlatformPlanNotFoundError extends AppError {
     super('Plano não encontrado.', { status: 404, code: 'PLATFORM_PLAN_NOT_FOUND' })
   }
 }
+
+export class TenantAccountChangedConcurrentlyError extends AppError {
+  constructor() {
+    super('A situação deste tenant foi alterada por outra pessoa. Recarregue e tente novamente.', {
+      status: 409,
+      code: 'TENANT_ACCOUNT_CHANGED_CONCURRENTLY',
+    })
+  }
+}

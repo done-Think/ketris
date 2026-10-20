@@ -12,11 +12,25 @@ export const platformFinanceResponseSchema = z
     payingAccounts: z.number().int(),
     trialAccounts: z.number().int(),
     suspendedAccounts: z.number().int(),
-    canceledThisMonth: z.number().int(),
-    churnRate: z.number().nullable().openapi({
-      description:
-        'Fração (0–1) das contas da base no dia 1 do mês que cancelaram no mês. null sem base.',
+    canceledThisMonth: z.number().int().openapi({
+      description: 'Contas da base do churn que cancelaram no mês (cada conta conta uma vez).',
     }),
+    churnBaseAccounts: z
+      .number()
+      .int()
+      .openapi({
+        description:
+          'Base do churn: contas pagantes (ACTIVE) às 00:00 do dia 1 do mês, no fuso ' +
+          'America/Sao_Paulo. TRIAL e SUSPENDED não entram (não estavam pagando).',
+      }),
+    churnRate: z
+      .number()
+      .nullable()
+      .openapi({
+        description:
+          'canceledThisMonth / churnBaseAccounts (0–1), calculado pelo histórico de situações: ' +
+          'uma reativação posterior não altera o churn de um mês. null sem base.',
+      }),
     byAccountType: z.array(
       z.object({
         accountType: tenantAccountTypeSchema,

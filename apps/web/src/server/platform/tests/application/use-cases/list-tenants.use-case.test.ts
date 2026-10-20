@@ -66,6 +66,7 @@ describe('ListTenantsUseCase', () => {
       findMany: vi.fn().mockResolvedValue(tenants),
       findById: vi.fn(),
       updateAccount: vi.fn(),
+      findStatusChanges: vi.fn().mockResolvedValue([]),
       countUsage: vi.fn().mockResolvedValue(
         new Map([
           ['t1', { properties: 40, brokers: 12 }],

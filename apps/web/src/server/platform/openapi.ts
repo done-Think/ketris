@@ -308,8 +308,13 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Platform'],
     summary: 'Receita recorrente da plataforma calculada pelos planos (MRR, churn e mensalidades)',
     description:
-      'Não há gateway de pagamento: os valores vêm do plano de cada tipo de conta e do uso atual. ' +
-      'Só contas ACTIVE entram no MRR; o tenant de sistema dos locatários não é cobrado.',
+      'Os valores são mensalidades CALCULADAS a partir do plano de cada tipo de conta e do uso ' +
+      'atual: não há integração de cobrança nem de pagamento, nada é faturado ou recebido. Só ' +
+      'contas ACTIVE entram no MRR; o tenant de sistema dos locatários não é cobrado. Churn do ' +
+      'mês (fuso America/Sao_Paulo): base = contas ACTIVE às 00:00 do dia 1 (TRIAL e SUSPENDED ' +
+      'não entram); cancelamentos = contas da base que mudaram para CANCELED no mês, contadas uma ' +
+      'vez, mesmo que reativadas depois. É calculado pelo histórico de situações, então não muda ' +
+      'retroativamente.',
     security: [{ bearerAuth: [] }],
     responses: {
       200: {
@@ -377,8 +382,10 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Platform'],
     summary: 'Define o tipo de conta e a situação de um tenant',
     description:
-      'O tipo de conta define o plano cobrado (ver /platform/plans). Ao mudar a situação para ' +
-      'CANCELED, canceledAt recebe a data atual e entra no churn; ao reativar, é limpo.',
+      'O tipo de conta define o plano usado no cálculo da mensalidade (ver /platform/plans). ' +
+      'Toda mudança de situação é registrada no histórico (base do churn) com data e autor; ' +
+      'reativar adiciona uma nova mudança, sem apagar o cancelamento anterior. canceledAt é só a ' +
+      'data do cancelamento atual (exibição): preenchida ao cancelar, limpa ao reativar.',
     security: [{ bearerAuth: [] }],
     request: {
       params: tenantIdParamsSchema,
@@ -399,6 +406,12 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
       },
       404: {
         description: 'Tenant não encontrado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      409: {
+        description:
+          'A situação do tenant foi alterada por outra requisição desde a leitura ' +
+          '(TENANT_ACCOUNT_CHANGED_CONCURRENTLY); recarregue e tente de novo.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },

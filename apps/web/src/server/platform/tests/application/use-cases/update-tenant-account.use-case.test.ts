@@ -20,46 +20,70 @@ function createRepository(tenant: PlatformTenant | null): PlatformTenantReposito
   return {
     findMany: vi.fn(),
     findById: vi.fn().mockResolvedValue(tenant),
-    updateAccount: vi.fn().mockImplementation(async (_id, account) => ({ ...tenant, ...account })),
+    updateAccount: vi
+      .fn()
+      .mockImplementation(async (_id, _expectedStatus, account) => ({ ...tenant, ...account })),
+    findStatusChanges: vi.fn(),
     countUsage: vi.fn(),
   }
 }
 
 describe('UpdateTenantAccountUseCase', () => {
   it('lança TenantNotFoundError quando o tenant não existe', async () => {
-    const useCase = new UpdateTenantAccountUseCase(createRepository(null), () => now)
+    const repository = createRepository(null)
+    const useCase = new UpdateTenantAccountUseCase(repository, () => now)
 
     await expect(
-      useCase.execute({ tenantId: 'missing', accountType: 'BROKER', status: 'ACTIVE' }),
+      useCase.execute({
+        tenantId: 'missing',
+        accountType: 'BROKER',
+        status: 'ACTIVE',
+        actorId: 'admin-1',
+      }),
     ).rejects.toMatchObject({ code: 'TENANT_NOT_FOUND' })
+    expect(repository.updateAccount).not.toHaveBeenCalled()
   })
 
-  it('salva tipo de conta e situação sem data de cancelamento enquanto ativo', async () => {
+  it('muda só o tipo de conta sem registrar troca de situação', async () => {
     const repository = createRepository(activeTenant)
     const useCase = new UpdateTenantAccountUseCase(repository, () => now)
 
-    await useCase.execute({ tenantId: 'tenant-1', accountType: 'BROKER', status: 'ACTIVE' })
-
-    expect(repository.updateAccount).toHaveBeenCalledWith('tenant-1', {
+    await useCase.execute({
+      tenantId: 'tenant-1',
       accountType: 'BROKER',
       status: 'ACTIVE',
-      canceledAt: null,
+      actorId: 'admin-1',
     })
+
+    expect(repository.updateAccount).toHaveBeenCalledWith(
+      'tenant-1',
+      'ACTIVE',
+      { accountType: 'BROKER', status: 'ACTIVE', canceledAt: null },
+      null,
+    )
   })
 
-  it('registra a data de cancelamento ao cancelar', async () => {
-    const useCase = new UpdateTenantAccountUseCase(createRepository(activeTenant), () => now)
+  it('ao cancelar, registra a data e a troca de situação com quem fez', async () => {
+    const repository = createRepository(activeTenant)
+    const useCase = new UpdateTenantAccountUseCase(repository, () => now)
 
     const result = await useCase.execute({
       tenantId: 'tenant-1',
       accountType: 'AGENCY',
       status: 'CANCELED',
+      actorId: 'admin-1',
     })
 
     expect(result.canceledAt).toEqual(now)
+    expect(repository.updateAccount).toHaveBeenCalledWith(
+      'tenant-1',
+      'ACTIVE',
+      { accountType: 'AGENCY', status: 'CANCELED', canceledAt: now },
+      { fromStatus: 'ACTIVE', toStatus: 'CANCELED', changedAt: now, changedById: 'admin-1' },
+    )
   })
 
-  it('mantém a data original ao editar um tenant que já estava cancelado', async () => {
+  it('mantém a data original e não registra troca ao editar um tenant já cancelado', async () => {
     const canceledAt = new Date('2026-09-03T10:00:00.000Z')
     const repository = createRepository({ ...activeTenant, status: 'CANCELED', canceledAt })
     const useCase = new UpdateTenantAccountUseCase(repository, () => now)
@@ -68,12 +92,19 @@ describe('UpdateTenantAccountUseCase', () => {
       tenantId: 'tenant-1',
       accountType: 'INDIVIDUAL',
       status: 'CANCELED',
+      actorId: 'admin-1',
     })
 
     expect(result.canceledAt).toEqual(canceledAt)
+    expect(repository.updateAccount).toHaveBeenCalledWith(
+      'tenant-1',
+      'CANCELED',
+      { accountType: 'INDIVIDUAL', status: 'CANCELED', canceledAt },
+      null,
+    )
   })
 
-  it('limpa a data de cancelamento ao reativar', async () => {
+  it('ao reativar, limpa a data exibida mas registra a reativação no histórico', async () => {
     const repository = createRepository({
       ...activeTenant,
       status: 'CANCELED',
@@ -85,8 +116,49 @@ describe('UpdateTenantAccountUseCase', () => {
       tenantId: 'tenant-1',
       accountType: 'AGENCY',
       status: 'ACTIVE',
+      actorId: 'admin-2',
     })
 
     expect(result.canceledAt).toBeNull()
+    expect(repository.updateAccount).toHaveBeenCalledWith(
+      'tenant-1',
+      'CANCELED',
+      { accountType: 'AGENCY', status: 'ACTIVE', canceledAt: null },
+      { fromStatus: 'CANCELED', toStatus: 'ACTIVE', changedAt: now, changedById: 'admin-2' },
+    )
+  })
+
+  it('registra trocas que não são cancelamento, como suspender', async () => {
+    const repository = createRepository(activeTenant)
+    const useCase = new UpdateTenantAccountUseCase(repository, () => now)
+
+    await useCase.execute({
+      tenantId: 'tenant-1',
+      accountType: 'AGENCY',
+      status: 'SUSPENDED',
+      actorId: null,
+    })
+
+    expect(repository.updateAccount).toHaveBeenCalledWith(
+      'tenant-1',
+      'ACTIVE',
+      { accountType: 'AGENCY', status: 'SUSPENDED', canceledAt: null },
+      { fromStatus: 'ACTIVE', toStatus: 'SUSPENDED', changedAt: now, changedById: null },
+    )
+  })
+
+  it('lança conflito quando outra alteração mudou a situação antes de salvar', async () => {
+    const repository = createRepository(activeTenant)
+    vi.mocked(repository.updateAccount).mockResolvedValue(null)
+    const useCase = new UpdateTenantAccountUseCase(repository, () => now)
+
+    await expect(
+      useCase.execute({
+        tenantId: 'tenant-1',
+        accountType: 'AGENCY',
+        status: 'CANCELED',
+        actorId: 'admin-1',
+      }),
+    ).rejects.toMatchObject({ code: 'TENANT_ACCOUNT_CHANGED_CONCURRENTLY', status: 409 })
   })
 })

@@ -54,12 +54,20 @@ function createRepositories() {
         slug: 'c',
         accountType: 'BROKER',
         status: 'CANCELED',
-        canceledAt: new Date(2026, 9, 3),
+        canceledAt: new Date('2026-10-03T13:00:00.000Z'),
         createdAt,
       },
     ]),
     findById: vi.fn(),
     updateAccount: vi.fn(),
+    findStatusChanges: vi.fn().mockResolvedValue([
+      {
+        tenantId: 'c',
+        fromStatus: 'ACTIVE',
+        toStatus: 'CANCELED',
+        changedAt: new Date('2026-10-03T13:00:00.000Z'),
+      },
+    ]),
     countUsage: vi.fn().mockResolvedValue(new Map()),
   }
   const planRepository: PlatformPlanRepository = {
@@ -86,7 +94,7 @@ function createRepositories() {
 }
 
 describe('GetPlatformOverviewUseCase', () => {
-  it('junta as contagens do repositório com o MRR e o churn calculados pelos planos', async () => {
+  it('junta as contagens do repositório com o MRR e o churn calculados pelo histórico', async () => {
     const { overviewRepository, tenantRepository, planRepository } = createRepositories()
     const useCase = new GetPlatformOverviewUseCase(
       overviewRepository,
@@ -99,7 +107,8 @@ describe('GetPlatformOverviewUseCase', () => {
 
     expect(result).toEqual({
       ...counts,
-      metrics: { ...counts.metrics, mrr: 199.99, churnRate: 1 / 3 },
+      // Base on October 1st: A and C (B is in trial, not paying); C canceled in October.
+      metrics: { ...counts.metrics, mrr: 199.99, churnRate: 1 / 2 },
     })
     expect(overviewRepository.getOverview).toHaveBeenCalledWith(now)
   })

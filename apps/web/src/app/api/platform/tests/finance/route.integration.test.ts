@@ -4,10 +4,12 @@ import { NextRequest } from 'next/server'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import { prisma } from '@server/db/prisma'
+import { monthBoundsInTimeZone } from '@server/platform/domain/platform-calendar'
 import { JosePlatformTokenService } from '@server/platform/infrastructure/jose-platform-token.service'
 
 import { GET } from '../../finance/route'
 import { GET as getOverview } from '../../overview/route'
+import { PATCH as patchAccount } from '../../tenants/[id]/account/route'
 
 describe('GET /api/platform/finance (integração)', () => {
   const tokenService = new JosePlatformTokenService()
@@ -52,15 +54,16 @@ describe('GET /api/platform/finance (integração)', () => {
   })
 
   it('cobra pelo plano do tipo de conta e soma no MRR só as contas ativas', async () => {
+    // The plans test edits the INDIVIDUAL plan while the files run in parallel, so use BROKER.
     const plan = await prisma.platformPlan.findUniqueOrThrow({
-      where: { accountType: 'INDIVIDUAL' },
+      where: { accountType: 'BROKER' },
     })
     for (const status of ['ACTIVE', 'TRIAL'] as const) {
       const tenant = await prisma.tenant.create({
         data: {
-          nome: `Pessoa ${status}`,
-          slug: `pessoa-financeiro-${randomUUID()}`,
-          accountType: 'INDIVIDUAL',
+          nome: `Corretor ${status}`,
+          slug: `corretor-financeiro-${randomUUID()}`,
+          accountType: 'BROKER',
           status,
         },
       })
@@ -104,5 +107,90 @@ describe('GET /api/platform/finance (integração)', () => {
     expect(response.status).toBe(200)
     expect(overview.metrics.mrr).toEqual(expect.any(Number))
     expect(overview.metrics).toHaveProperty('churnRate')
+  })
+
+  it('mede o churn pelo histórico: reativar não muda a base nem apaga o cancelamento', async () => {
+    const month = monthBoundsInTimeZone(new Date())
+    const beforeMonth = new Date(month.start.getTime() - 30 * 24 * 60 * 60 * 1000)
+    const create = async (data: { status: 'ACTIVE' | 'CANCELED'; canceledAt?: Date }) => {
+      const tenant = await prisma.tenant.create({
+        data: {
+          nome: 'Imobiliária Churn',
+          slug: `imobiliaria-churn-${randomUUID()}`,
+          createdAt: beforeMonth,
+          ...data,
+        },
+      })
+      tenantIds.push(tenant.id)
+
+      return tenant
+    }
+    const changeStatus = (id: string, status: string) =>
+      patchAccount(
+        new NextRequest(`http://localhost/api/platform/tenants/${id}/account`, {
+          method: 'PATCH',
+          body: JSON.stringify({ accountType: 'AGENCY', status }),
+          headers: { 'Content-Type': 'application/json', authorization: `Bearer ${actorToken}` },
+        }),
+        { params: Promise.resolve({ id }) },
+      )
+    const churnNumbers = async () => {
+      const finance = await (await getFinance()).json()
+      const overview = await (
+        await getOverview(
+          new NextRequest('http://localhost/api/platform/overview', {
+            headers: { authorization: `Bearer ${actorToken}` },
+          }),
+        )
+      ).json()
+
+      // Both screens must show the same churn.
+      expect(overview.metrics.churnRate).toBe(finance.churnRate)
+      expect(finance.churnRate).toBe(
+        finance.churnBaseAccounts ? finance.canceledThisMonth / finance.churnBaseAccounts : null,
+      )
+
+      return {
+        canceledThisMonth: finance.canceledThisMonth as number,
+        churnBaseAccounts: finance.churnBaseAccounts as number,
+      }
+    }
+
+    // Tenants created by other test files are new this month, so they never enter the base.
+    const baseline = await churnNumbers()
+    const stays = await create({ status: 'ACTIVE' })
+    const leaves = await create({ status: 'ACTIVE' })
+    // Canceled last month and reactivated now: not part of this month's base.
+    const lastMonth = await create({ status: 'CANCELED', canceledAt: beforeMonth })
+    await prisma.tenantStatusChange.create({
+      data: {
+        tenantId: lastMonth.id,
+        fromStatus: 'ACTIVE',
+        toStatus: 'CANCELED',
+        changedAt: beforeMonth,
+      },
+    })
+    const delta = async () => {
+      const current = await churnNumbers()
+
+      return {
+        canceledThisMonth: current.canceledThisMonth - baseline.canceledThisMonth,
+        churnBaseAccounts: current.churnBaseAccounts - baseline.churnBaseAccounts,
+      }
+    }
+
+    expect(stays.id).toBeTruthy()
+    expect(await delta()).toEqual({ canceledThisMonth: 0, churnBaseAccounts: 2 })
+
+    expect((await changeStatus(leaves.id, 'CANCELED')).status).toBe(200)
+    expect(await delta()).toEqual({ canceledThisMonth: 1, churnBaseAccounts: 2 })
+
+    expect((await changeStatus(leaves.id, 'ACTIVE')).status).toBe(200)
+    expect((await changeStatus(lastMonth.id, 'ACTIVE')).status).toBe(200)
+    expect(await delta()).toEqual({ canceledThisMonth: 1, churnBaseAccounts: 2 })
+
+    expect((await changeStatus(leaves.id, 'CANCELED')).status).toBe(200)
+    expect((await changeStatus(lastMonth.id, 'CANCELED')).status).toBe(200)
+    expect(await delta()).toEqual({ canceledThisMonth: 1, churnBaseAccounts: 2 })
   })
 })

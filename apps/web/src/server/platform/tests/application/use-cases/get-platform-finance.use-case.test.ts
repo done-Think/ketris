@@ -41,6 +41,7 @@ describe('GetPlatformFinanceUseCase', () => {
       ]),
       findById: vi.fn(),
       updateAccount: vi.fn(),
+      findStatusChanges: vi.fn().mockResolvedValue([]),
       countUsage: vi.fn().mockResolvedValue(new Map([['b', { properties: 11, brokers: 1 }]])),
     }
     const planRepository: PlatformPlanRepository = {
@@ -76,5 +77,73 @@ describe('GetPlatformFinanceUseCase', () => {
       ['a', 199.99],
       ['b', 109.98],
     ])
+  })
+
+  it('mede o churn pelo histórico: reativar não apaga o cancelamento do mês', async () => {
+    const tenantRepository: PlatformTenantRepository = {
+      findMany: vi.fn().mockResolvedValue([
+        {
+          id: 'a',
+          nome: 'Imobiliária A',
+          slug: 'imobiliaria-a',
+          accountType: 'AGENCY',
+          status: 'ACTIVE',
+          canceledAt: null,
+          createdAt,
+        },
+        {
+          id: 'b',
+          nome: 'Imobiliária B',
+          slug: 'imobiliaria-b',
+          accountType: 'AGENCY',
+          status: 'ACTIVE',
+          canceledAt: null,
+          createdAt,
+        },
+      ]),
+      findById: vi.fn(),
+      updateAccount: vi.fn(),
+      findStatusChanges: vi.fn().mockResolvedValue([
+        {
+          tenantId: 'a',
+          fromStatus: 'ACTIVE',
+          toStatus: 'CANCELED',
+          changedAt: new Date('2026-10-05T12:00:00.000Z'),
+        },
+        {
+          tenantId: 'a',
+          fromStatus: 'CANCELED',
+          toStatus: 'ACTIVE',
+          changedAt: new Date('2026-10-07T12:00:00.000Z'),
+        },
+      ]),
+      countUsage: vi.fn().mockResolvedValue(new Map()),
+    }
+    const planRepository: PlatformPlanRepository = {
+      findAll: vi.fn().mockResolvedValue([
+        {
+          accountType: 'AGENCY',
+          monthlyPrice: 199.99,
+          includedUnits: 10,
+          extraUnitPrice: 19.99,
+          updatedAt: createdAt,
+        },
+      ]),
+      update: vi.fn(),
+    }
+
+    const finance = await new GetPlatformFinanceUseCase(
+      tenantRepository,
+      planRepository,
+      () => new Date('2026-10-15T15:00:00.000Z'),
+    ).execute()
+
+    expect(finance).toMatchObject({
+      mrr: 399.98,
+      payingAccounts: 2,
+      canceledThisMonth: 1,
+      churnBaseAccounts: 2,
+      churnRate: 1 / 2,
+    })
   })
 })

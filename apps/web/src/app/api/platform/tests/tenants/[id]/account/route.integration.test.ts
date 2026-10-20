@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import { prisma } from '@server/db/prisma'
 import { JosePlatformTokenService } from '@server/platform/infrastructure/jose-platform-token.service'
+import { PrismaPlatformTenantRepository } from '@server/platform/infrastructure/prisma-platform-tenant.repository'
 
 import { GET as listTenants } from '../../../../tenants/route'
 import { PATCH } from '../../../../tenants/[id]/account/route'
@@ -39,10 +40,29 @@ describe('PATCH /api/platform/tenants/[id]/account (integração)', () => {
   })
 
   afterAll(async () => {
-    await prisma.tenant.delete({ where: { id: tenantId } }).catch(() => undefined)
+    await prisma.tenant.deleteMany({ where: { id: { in: [tenantId, ...extraTenantIds] } } })
     await prisma.platformAdmin.delete({ where: { id: actorId } })
     await prisma.$disconnect()
   })
+
+  const extraTenantIds: string[] = []
+
+  async function createTenant() {
+    const tenant = await prisma.tenant.create({
+      data: { nome: 'Tenant Histórico', slug: `tenant-historico-${randomUUID()}` },
+    })
+    extraTenantIds.push(tenant.id)
+
+    return tenant
+  }
+
+  function history(id: string) {
+    return prisma.tenantStatusChange.findMany({
+      where: { tenantId: id },
+      orderBy: { changedAt: 'asc' },
+      select: { fromStatus: true, toStatus: true, changedById: true },
+    })
+  }
 
   function patch(body: unknown, options: { id?: string; token?: string | null } = {}) {
     const id = options.id ?? tenantId
@@ -102,7 +122,7 @@ describe('PATCH /api/platform/tenants/[id]/account (integração)', () => {
     expect(response.status).toBe(400)
   })
 
-  it('salva o tipo de conta e a situação', async () => {
+  it('salva o tipo de conta e a situação e registra a troca com quem fez', async () => {
     const response = await patch({ accountType: 'INDIVIDUAL', status: 'TRIAL' })
     const json = await response.json()
 
@@ -113,16 +133,120 @@ describe('PATCH /api/platform/tenants/[id]/account (integração)', () => {
       status: 'TRIAL',
       canceledAt: null,
     })
+    expect(await history(tenantId)).toEqual([
+      { fromStatus: 'ACTIVE', toStatus: 'TRIAL', changedById: actorId },
+    ])
   })
 
-  it('registra a data ao cancelar e limpa ao reativar', async () => {
-    const canceled = await (await patch({ accountType: 'BROKER', status: 'CANCELED' })).json()
+  it('mudar só o tipo de conta não grava troca de situação', async () => {
+    const before = await history(tenantId)
+    const response = await patch({ accountType: 'AGENCY', status: 'TRIAL' })
+
+    expect(response.status).toBe(200)
+    expect(await history(tenantId)).toEqual(before)
+  })
+
+  it('cancelar, reativar e cancelar de novo guarda as três trocas', async () => {
+    const tenant = await createTenant()
+    const canceled = await (
+      await patch({ accountType: 'BROKER', status: 'CANCELED' }, { id: tenant.id })
+    ).json()
 
     expect(canceled.tenant.status).toBe('CANCELED')
     expect(new Date(canceled.tenant.canceledAt).getTime()).toBeGreaterThan(Date.now() - 60_000)
 
-    const reactivated = await (await patch({ accountType: 'BROKER', status: 'ACTIVE' })).json()
+    const reactivated = await (
+      await patch({ accountType: 'BROKER', status: 'ACTIVE' }, { id: tenant.id })
+    ).json()
     expect(reactivated.tenant.canceledAt).toBeNull()
+
+    const canceledAgain = await (
+      await patch({ accountType: 'BROKER', status: 'CANCELED' }, { id: tenant.id })
+    ).json()
+    expect(new Date(canceledAgain.tenant.canceledAt).getTime()).toBeGreaterThan(
+      new Date(canceled.tenant.canceledAt).getTime(),
+    )
+
+    // Reactivating cleared the displayed date but not the first cancellation.
+    expect(await history(tenant.id)).toEqual([
+      { fromStatus: 'ACTIVE', toStatus: 'CANCELED', changedById: actorId },
+      { fromStatus: 'CANCELED', toStatus: 'ACTIVE', changedById: actorId },
+      { fromStatus: 'ACTIVE', toStatus: 'CANCELED', changedById: actorId },
+    ])
+  })
+
+  it('alterações simultâneas da situação não deixam o histórico inconsistente', async () => {
+    const tenant = await createTenant()
+    const statuses = ['CANCELED', 'SUSPENDED', 'TRIAL', 'CANCELED', 'SUSPENDED', 'TRIAL']
+
+    const responses = await Promise.all(
+      statuses.map((status) => patch({ accountType: 'AGENCY', status }, { id: tenant.id })),
+    )
+    const bodies = await Promise.all(responses.map((response) => response.json()))
+
+    for (const [index, response] of responses.entries()) {
+      expect([200, 409]).toContain(response.status)
+      if (response.status === 409) {
+        expect(bodies[index].error.code).toBe('TENANT_ACCOUNT_CHANGED_CONCURRENTLY')
+      }
+    }
+
+    const changes = await history(tenant.id)
+    const current = await prisma.tenant.findUniqueOrThrow({ where: { id: tenant.id } })
+
+    expect(changes.length).toBeGreaterThan(0)
+    expect(changes[0].fromStatus).toBe('ACTIVE')
+    for (let index = 1; index < changes.length; index += 1) {
+      expect(changes[index].fromStatus).toBe(changes[index - 1].toStatus)
+    }
+    expect(changes[changes.length - 1].toStatus).toBe(current.status)
+  })
+
+  it('não grava nada quando a situação lida já mudou (conflito)', async () => {
+    const tenant = await createTenant()
+    const repository = new PrismaPlatformTenantRepository()
+
+    const result = await repository.updateAccount(
+      tenant.id,
+      'TRIAL',
+      { accountType: 'BROKER', status: 'CANCELED', canceledAt: new Date() },
+      { fromStatus: 'TRIAL', toStatus: 'CANCELED', changedAt: new Date(), changedById: actorId },
+    )
+
+    expect(result).toBeNull()
+    expect(await prisma.tenant.findUniqueOrThrow({ where: { id: tenant.id } })).toMatchObject({
+      accountType: 'AGENCY',
+      status: 'ACTIVE',
+      canceledAt: null,
+    })
+    expect(await history(tenant.id)).toEqual([])
+  })
+
+  it('mantém o histórico quando o platform admin é removido e apaga junto com o tenant', async () => {
+    const tenant = await createTenant()
+    const otherAdmin = await prisma.platformAdmin.create({
+      data: { nome: 'Ator Removido', email: `ator-${randomUUID()}@ketris.dev`, senhaHash: 'x' },
+    })
+    const otherToken = await tokenService.sign({
+      id: otherAdmin.id,
+      nome: otherAdmin.nome,
+      email: otherAdmin.email,
+      role: 'ADMIN',
+      ativo: true,
+    })
+
+    await patch(
+      { accountType: 'AGENCY', status: 'SUSPENDED' },
+      { id: tenant.id, token: otherToken },
+    )
+    await prisma.platformAdmin.delete({ where: { id: otherAdmin.id } })
+
+    expect(await history(tenant.id)).toEqual([
+      { fromStatus: 'ACTIVE', toStatus: 'SUSPENDED', changedById: null },
+    ])
+
+    await prisma.tenant.delete({ where: { id: tenant.id } })
+    expect(await prisma.tenantStatusChange.count({ where: { tenantId: tenant.id } })).toBe(0)
   })
 })
 

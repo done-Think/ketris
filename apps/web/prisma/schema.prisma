@@ -16,9 +16,9 @@ datasource db {
 // ---------------------------------------------------------------------------
 
 model Tenant {
-  id            String   @id @default(cuid())
+  id            String            @id @default(cuid())
   nome          String
-  slug          String   @unique
+  slug          String            @unique
   // White-label: cores do tema sobrescrevem primary/secondary do MUI em runtime (docs/stack.md).
   corPrimaria   String?
   corSecundaria String?
@@ -40,6 +40,7 @@ model Tenant {
   eventosAgenda      EventoAgenda[]
   chamadosManutencao ChamadoManutencao[]
   perfilPublico      PerfilPublicoImobiliaria?
+  statusChanges      TenantStatusChange[]
 
   @@map("tenants")
 }
@@ -55,6 +56,25 @@ enum TenantStatus {
   ACTIVE
   SUSPENDED
   CANCELED
+}
+
+// Histórico das mudanças de situação do tenant, base do churn mensal. É só de inclusão: reativar um
+// tenant cancelado registra uma nova mudança em vez de reescrever o passado, então o churn de um mês
+// já fechado não muda depois. Tenant.canceledAt fica apenas para exibição do cancelamento atual.
+model TenantStatusChange {
+  id          String       @id @default(cuid())
+  tenantId    String
+  fromStatus  TenantStatus
+  toStatus    TenantStatus
+  changedAt   DateTime     @default(now())
+  changedById String?
+
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  changedBy PlatformAdmin? @relation(fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, changedAt])
+  @@index([changedById])
+  @@map("tenant_status_changes")
 }
 
 // Tabela de preços da plataforma, uma linha por tipo de conta, editada pelo super admin.
@@ -150,16 +170,17 @@ enum PlatformAdminRole {
 }
 
 model PlatformAdmin {
-  id        String   @id @default(cuid())
+  id        String            @id @default(cuid())
   nome      String
-  email     String   @unique
+  email     String            @unique
   senhaHash String
   role      PlatformAdminRole @default(ADMIN)
-  ativo     Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  ativo     Boolean           @default(true)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
 
-  refreshTokens PlatformAdminRefreshToken[]
+  refreshTokens       PlatformAdminRefreshToken[]
+  tenantStatusChanges TenantStatusChange[]
 
   @@map("platform_admins")
 }

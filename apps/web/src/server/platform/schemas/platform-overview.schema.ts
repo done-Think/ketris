@@ -10,11 +10,15 @@ export const platformOverviewMetricsSchema = z
       description: 'Soma das mensalidades das contas ACTIVE, em BRL (igual a /platform/finance).',
       example: 1499.89,
     }),
-    churnRate: z.number().nullable().openapi({
-      description:
-        'Fração (0–1) das contas da base no dia 1 do mês que cancelaram no mês. null sem base.',
-      example: 0.025,
-    }),
+    churnRate: z
+      .number()
+      .nullable()
+      .openapi({
+        description:
+          'Fração (0–1) das contas pagantes (ACTIVE) às 00:00 do dia 1 do mês (fuso ' +
+          'America/Sao_Paulo) que cancelaram no mês, pelo histórico de situações. null sem base.',
+        example: 0.025,
+      }),
   })
   .openapi('PlatformOverviewMetrics')
 

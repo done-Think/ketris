@@ -12,8 +12,10 @@ export interface TenantAccount {
   canceledAt: Date | null
 }
 
-// canceledAt follows the status: set when a tenant becomes CANCELED, kept while it stays canceled
-// (so later edits do not move its churn month), cleared on reactivation.
+// canceledAt is only the date of the current cancellation, shown on the tenant page: set when a
+// tenant becomes CANCELED, kept while it stays canceled, cleared on reactivation. The churn does
+// not read it; it uses the append-only status history (see platform-billing.ts), which keeps every
+// past cancellation even after a reactivation.
 export function resolveCanceledAt(
   current: Pick<TenantAccount, 'status' | 'canceledAt'>,
   nextStatus: TenantStatus,

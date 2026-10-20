@@ -2,10 +2,14 @@ import type { Tenant } from '@prisma/client'
 
 import { prisma } from '@server/db/prisma'
 
-import type { PlatformTenantRepository } from '../application/ports/platform-tenant-repository.port'
+import type {
+  NewTenantStatusChange,
+  PlatformTenantRepository,
+} from '../application/ports/platform-tenant-repository.port'
 import type { PlatformTenant } from '../domain/platform-tenant.entity'
 import type { TenantUsage } from '../domain/platform-plan'
-import type { TenantAccount } from '../domain/tenant-account'
+import type { TenantAccount, TenantStatus } from '../domain/tenant-account'
+import type { TenantStatusChange } from '../domain/tenant-status-history'
 
 function toDomainPlatformTenant(tenant: Tenant): PlatformTenant {
   return {
@@ -32,17 +36,43 @@ export class PrismaPlatformTenantRepository implements PlatformTenantRepository 
     return tenant ? toDomainPlatformTenant(tenant) : null
   }
 
-  async updateAccount(tenantId: string, account: TenantAccount): Promise<PlatformTenant> {
-    const tenant = await prisma.tenant.update({
-      where: { id: tenantId },
-      data: {
-        accountType: account.accountType,
-        status: account.status,
-        canceledAt: account.canceledAt,
-      },
+  async updateAccount(
+    tenantId: string,
+    expectedStatus: TenantStatus,
+    account: TenantAccount,
+    statusChange: NewTenantStatusChange | null,
+  ): Promise<PlatformTenant | null> {
+    return prisma.$transaction(async (transaction) => {
+      const { count } = await transaction.tenant.updateMany({
+        where: { id: tenantId, status: expectedStatus },
+        data: {
+          accountType: account.accountType,
+          status: account.status,
+          canceledAt: account.canceledAt,
+        },
+      })
+
+      if (count === 0) {
+        return null
+      }
+
+      if (statusChange) {
+        await transaction.tenantStatusChange.create({ data: { tenantId, ...statusChange } })
+      }
+
+      const tenant = await transaction.tenant.findUniqueOrThrow({ where: { id: tenantId } })
+
+      return toDomainPlatformTenant(tenant)
+    })
+  }
+
+  async findStatusChanges(): Promise<TenantStatusChange[]> {
+    const changes = await prisma.tenantStatusChange.findMany({
+      orderBy: { changedAt: 'asc' },
+      select: { tenantId: true, fromStatus: true, toStatus: true, changedAt: true },
     })
 
-    return toDomainPlatformTenant(tenant)
+    return changes
   }
 
   async countUsage(): Promise<Map<string, TenantUsage>> {
