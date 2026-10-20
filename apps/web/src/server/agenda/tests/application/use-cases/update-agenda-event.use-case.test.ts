@@ -5,7 +5,7 @@ import type { Property } from '@server/properties/types/property'
 import type { PropertyRepository } from '@server/properties/application/ports/property-repository.port'
 
 import { AgendaEventNotFoundError, AgendaVisitMinimumDurationError } from '../../../domain/errors'
-import type { AgendaEvent } from '../../../domain/agenda-event.entity'
+import type { AgendaEvent, AgendaEventLinks } from '../../../domain/agenda-event.entity'
 import type { AgendaEventRepository } from '../../../application/ports/agenda-event-repository.port'
 import { UpdateAgendaEventUseCase } from '../../../application/use-cases/update-agenda-event.use-case'
 
@@ -16,6 +16,10 @@ const shortEvent: AgendaEvent = {
   tenantId: 'tenant-1',
   responsavelId: 'agent-1',
   criadoPorId: 'agent-1',
+  responsavelNome: 'Corretor',
+  donoUsuarioId: null,
+  dono: null,
+  participantes: [],
   imovelId: null,
   referenciaImovelLivre: null,
   titulo: 'Follow-up rápido',
@@ -38,6 +42,7 @@ function createDeps(overrides?: {
   const agendaEventRepository: AgendaEventRepository = {
     create: vi.fn(),
     list: vi.fn(),
+    findByScopeAndId: vi.fn(),
     findByTenantAndId: overrides?.agendaFindByTenantAndId ?? vi.fn().mockResolvedValue(shortEvent),
     update: overrides?.update ?? vi.fn().mockResolvedValue(updatedEvent),
     reschedule: vi.fn(),
@@ -79,6 +84,7 @@ describe('UpdateAgendaEventUseCase', () => {
       'tenant-1',
       'event-1',
       expect.objectContaining({ titulo: 'Atualizado' }),
+      { donoEmail: undefined, participanteEmails: undefined },
     )
   })
 
@@ -167,4 +173,48 @@ describe('UpdateAgendaEventUseCase', () => {
 
     expect(deps.agendaEventRepository.update).toHaveBeenCalled()
   })
+
+  const linkEditCases: [string, AgendaEventLinks, AgendaEventLinks][] = [
+    [
+      'omitidos mantêm dono e participantes',
+      {},
+      { donoEmail: undefined, participanteEmails: undefined },
+    ],
+    [
+      'null remove o dono e [] remove os participantes',
+      { donoEmail: null, participanteEmails: [] },
+      { donoEmail: null, participanteEmails: [] },
+    ],
+    [
+      'e-mails trocam o dono e substituem os participantes',
+      { donoEmail: 'Novo@Ketris.dev', participanteEmails: ['a@ketris.dev', 'A@ketris.dev'] },
+      { donoEmail: 'novo@ketris.dev', participanteEmails: ['a@ketris.dev'] },
+    ],
+  ]
+
+  it.each(linkEditCases)(
+    'repassa a semântica de edição dos vínculos: %s',
+    async (_, links, expected) => {
+      const deps = createDeps()
+      const useCase = new UpdateAgendaEventUseCase(
+        deps.agendaEventRepository,
+        deps.propertyRepository,
+      )
+
+      await useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorPapel: 'AGENT',
+        id: 'event-1',
+        titulo: 'Atualizado',
+        ...links,
+      })
+
+      expect(deps.agendaEventRepository.update).toHaveBeenCalledWith(
+        'tenant-1',
+        'event-1',
+        expect.objectContaining({ titulo: 'Atualizado' }),
+        expected,
+      )
+    },
+  )
 })

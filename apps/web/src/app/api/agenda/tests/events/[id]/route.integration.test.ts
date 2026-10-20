@@ -145,15 +145,15 @@ describe('/api/agenda/events/{id} (integração)', () => {
     expect(json.event.responsibleId).toBe(actorId)
   })
 
-  it('retorna 403 quando um RENTER do mesmo tenant tenta consultar um evento', async () => {
+  it('retorna 404 quando um RENTER do mesmo tenant consulta um evento sem vínculo com ele', async () => {
     const response = await GET(
       buildRequest('GET', eventId, undefined, renterToken),
       context(eventId),
     )
     const json = await response.json()
 
-    expect(response.status).toBe(403)
-    expect(json.error.code).toBe('FORBIDDEN')
+    expect(response.status).toBe(404)
+    expect(json.error.code).toBe('NOT_FOUND')
     expect(json.event).toBeUndefined()
   })
 

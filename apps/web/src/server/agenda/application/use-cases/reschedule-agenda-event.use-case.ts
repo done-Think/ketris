@@ -1,6 +1,6 @@
 import type { Papel } from '@server/auth/domain/user.entity'
 
-import { assertCanAccessAgenda } from '../../domain/agenda-access-rules'
+import { assertCanManageAgenda } from '../../domain/agenda-access-rules'
 import { assertWithinAgendaSchedulingWindow } from '../../domain/agenda-scheduling-rules'
 import {
   AgendaEventConflictError,
@@ -21,7 +21,7 @@ export class RescheduleAgendaEventUseCase {
   constructor(private readonly agendaEventRepository: AgendaEventRepository) {}
 
   async execute(input: RescheduleAgendaEventInput) {
-    assertCanAccessAgenda(input.actorPapel)
+    assertCanManageAgenda(input.actorPapel)
 
     const existing = await this.agendaEventRepository.findByTenantAndId(
       input.actorTenantId,

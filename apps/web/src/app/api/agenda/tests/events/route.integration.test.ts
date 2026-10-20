@@ -271,7 +271,7 @@ describe('/api/agenda/events (integração)', () => {
     expect(titles).toContain('Reunião externa')
   })
 
-  it('retorna 403 quando um RENTER do mesmo tenant tenta listar a agenda', async () => {
+  it('não lista para um RENTER sem vínculo os eventos do tenant (agenda do time não vaza)', async () => {
     const response = await GET(
       buildRequest(
         'GET',
@@ -282,9 +282,8 @@ describe('/api/agenda/events (integração)', () => {
     )
     const json = await response.json()
 
-    expect(response.status).toBe(403)
-    expect(json.error.code).toBe('FORBIDDEN')
-    expect(json.events).toBeUndefined()
+    expect(response.status).toBe(200)
+    expect(json.events).toEqual([])
   })
 
   it('não retorna eventos fora do período informado', async () => {

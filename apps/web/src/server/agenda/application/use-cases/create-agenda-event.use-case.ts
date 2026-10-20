@@ -3,7 +3,8 @@ import type { UserRepository } from '@server/auth/application/ports/user-reposit
 import { PropertyNotFoundError } from '@server/properties/domain/errors'
 import type { PropertyRepository } from '@server/properties/application/ports/property-repository.port'
 
-import { assertCanAccessAgenda } from '../../domain/agenda-access-rules'
+import { assertCanManageAgenda } from '../../domain/agenda-access-rules'
+import { normalizeAgendaEventLinks } from '../../domain/agenda-event-links'
 import { assertWithinAgendaSchedulingWindow } from '../../domain/agenda-scheduling-rules'
 import { AgendaEventConflictError, AgendaResponsibleNotFoundError } from '../../domain/errors'
 import type { AgendaEventKind } from '../../domain/agenda-event.entity'
@@ -23,6 +24,8 @@ export interface CreateAgendaEventInput {
   participanteNome: string
   participanteTelefone: string
   notas?: string | null
+  donoEmail?: string
+  participanteEmails?: string[]
 }
 
 export class CreateAgendaEventUseCase {
@@ -33,7 +36,7 @@ export class CreateAgendaEventUseCase {
   ) {}
 
   async execute(input: CreateAgendaEventInput) {
-    assertCanAccessAgenda(input.actorPapel)
+    assertCanManageAgenda(input.actorPapel)
 
     assertWithinAgendaSchedulingWindow(input.inicio)
 
@@ -68,20 +71,28 @@ export class CreateAgendaEventUseCase {
       throw new AgendaEventConflictError()
     }
 
-    return this.agendaEventRepository.create({
-      tenantId: input.actorTenantId,
-      responsavelId,
-      criadoPorId: input.actorUserId,
-      imovelId: input.imovelId ?? null,
-      referenciaImovelLivre: input.referenciaImovelLivre ?? null,
-      titulo: input.titulo,
-      tipo: input.tipo ?? null,
-      inicio,
-      fim,
-      participanteNome: input.participanteNome,
-      participanteTelefone: input.participanteTelefone,
-      notas: input.notas ?? null,
+    const links = normalizeAgendaEventLinks({
+      donoEmail: input.donoEmail,
+      participanteEmails: input.participanteEmails,
     })
+
+    return this.agendaEventRepository.create(
+      {
+        tenantId: input.actorTenantId,
+        responsavelId,
+        criadoPorId: input.actorUserId,
+        imovelId: input.imovelId ?? null,
+        referenciaImovelLivre: input.referenciaImovelLivre ?? null,
+        titulo: input.titulo,
+        tipo: input.tipo ?? null,
+        inicio,
+        fim,
+        participanteNome: input.participanteNome,
+        participanteTelefone: input.participanteTelefone,
+        notas: input.notas ?? null,
+      },
+      links,
+    )
   }
 
   private async assertResponsibleBelongsToTenant(tenantId: string, responsavelId: string) {
