@@ -370,7 +370,7 @@
   },
   "finance": {
     "title": "Finance",
-    "subtitle": "Recurring revenue for {month}, calculated from the plans.",
+    "subtitle": "Current MRR at today's plan prices and churn for {month}. Calculated values, with no billing or payment integration.",
     "loadError": "Unable to load the finance data.",
     "kpis": {
       "mrr": "MRR",

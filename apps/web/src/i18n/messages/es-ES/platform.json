@@ -370,7 +370,7 @@
   },
   "finance": {
     "title": "Finanzas",
-    "subtitle": "Ingreso recurrente de {month}, calculado con los planes.",
+    "subtitle": "MRR actual según los precios vigentes de los planes y churn de {month}. Valores calculados, sin integración de cobro ni pago.",
     "loadError": "No se pudieron cargar las finanzas.",
     "kpis": {
       "mrr": "MRR",

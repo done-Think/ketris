@@ -370,7 +370,7 @@
   },
   "finance": {
     "title": "Financeiro",
-    "subtitle": "Receita recorrente de {month}, calculada pelos planos.",
+    "subtitle": "MRR atual pelos preços vigentes dos planos e churn de {month}. Valores calculados, sem integração de cobrança ou pagamento.",
     "loadError": "Não foi possível carregar o financeiro.",
     "kpis": {
       "mrr": "MRR",
