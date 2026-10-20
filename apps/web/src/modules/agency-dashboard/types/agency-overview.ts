@@ -1,12 +1,19 @@
 import type { SvgIconComponent } from '@mui/icons-material'
 
+import type { DisplayCurrency } from '@modules/financial/utils/financial-display-currency'
+
 export type AgencyOverviewKpiTone = 'success' | 'neutral' | 'warning'
+
+export type AgencyOverviewKpiHelper = {
+  key: string
+  values?: Record<string, number>
+}
 
 export type AgencyOverviewKpi = {
   id: string
   labelKey: string
   value: string
-  helper: string
+  helper?: AgencyOverviewKpiHelper
   tone: AgencyOverviewKpiTone
   progress?: number
 }
@@ -73,6 +80,7 @@ export type AgencyOverviewKpiGridProps = {
 
 export type AgencyRevenuePerformancePanelProps = {
   revenuePoints: readonly AgencyRevenuePoint[]
+  currency?: DisplayCurrency
 }
 
 export type AgencyTopBrokersPanelProps = {

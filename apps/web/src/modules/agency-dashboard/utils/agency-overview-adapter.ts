@@ -1,4 +1,11 @@
-import { formatCurrency, formatDate } from '@shared/lib/utils/format'
+import {
+  formatFinancialAmount,
+  type FinancialExchangeRate,
+} from '@modules/financial/utils/financial-display-currency'
+import { mapMonthlySeriesToMovement } from '@modules/financial/utils/financial-summary-adapter'
+import { formatDate } from '@shared/lib/utils/format'
+import { defaultLocale } from '@/i18n/routing'
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import type {
   AgencyActivity,
@@ -16,21 +23,6 @@ import type {
   ApiAgencyTopBroker,
 } from '../types/service'
 
-const monthAbbreviations = [
-  'Jan',
-  'Fev',
-  'Mar',
-  'Abr',
-  'Mai',
-  'Jun',
-  'Jul',
-  'Ago',
-  'Set',
-  'Out',
-  'Nov',
-  'Dez',
-]
-
 const activityTypeToTone: Record<ApiAgencyActivityType, AgencyActivityTone> = {
   CONTRACT: 'contract',
   PROPERTY: 'property',
@@ -38,41 +30,89 @@ const activityTypeToTone: Record<ApiAgencyActivityType, AgencyActivityTone> = {
   LEAD: 'lead',
 }
 
-export function mapKpisToAgencyOverviewKpis(kpis: ApiAgencyOverviewKpis): AgencyOverviewKpi[] {
+type KpiComparison = Pick<AgencyOverviewKpi, 'helper' | 'tone'>
+
+function getNewPropertiesComparison(newPropertiesCount: number): KpiComparison {
+  return {
+    helper: { key: 'newProperties', values: { count: newPropertiesCount } },
+    tone: newPropertiesCount > 0 ? 'success' : 'neutral',
+  }
+}
+
+function getLeadsComparison(current: number, previous: number): KpiComparison {
+  const difference = current - previous
+
+  if (difference > 0) {
+    return { helper: { key: 'leadsIncrease', values: { count: difference } }, tone: 'success' }
+  }
+
+  if (difference < 0) {
+    return { helper: { key: 'leadsDecrease', values: { count: -difference } }, tone: 'neutral' }
+  }
+
+  return { helper: { key: 'leadsSame' }, tone: 'neutral' }
+}
+
+function getRevenueComparison(current: number, previous: number): KpiComparison {
+  if (previous <= 0) {
+    return current > 0
+      ? { helper: { key: 'revenueNoPrevious' }, tone: 'neutral' }
+      : { tone: 'neutral' }
+  }
+
+  // Rounds away from zero symmetrically, so +0.5% and −0.5% are both reported (Math.round(-0.5) is -0).
+  const change = ((current - previous) / previous) * 100
+  const percent = Math.sign(change) * Math.round(Math.abs(change))
+
+  if (percent > 0) {
+    return { helper: { key: 'revenueIncrease', values: { percent } }, tone: 'success' }
+  }
+
+  if (percent < 0) {
+    return { helper: { key: 'revenueDecrease', values: { percent: -percent } }, tone: 'neutral' }
+  }
+
+  return { helper: { key: 'revenueSame' }, tone: 'neutral' }
+}
+
+// Money is stored in BRL; like the financial dashboard, it is shown in the locale's currency
+// (EUR for es-ES, USD for en-US) when an exchange rate is available, and in BRL otherwise.
+export function mapKpisToAgencyOverviewKpis(
+  kpis: ApiAgencyOverviewKpis,
+  locale: AppLocale = defaultLocale,
+  exchangeRate?: FinancialExchangeRate | null,
+): AgencyOverviewKpi[] {
+  const formatNumber = new Intl.NumberFormat(locale).format
+
   return [
     {
       id: 'portfolio',
       labelKey: 'portfolio',
-      value: String(kpis.portfolioCount),
-      helper: '',
-      tone: 'neutral',
+      value: formatNumber(kpis.portfolioCount),
+      ...getNewPropertiesComparison(kpis.newPropertiesThisMonth),
     },
     {
       id: 'brokers',
       labelKey: 'activeBrokers',
-      value: String(kpis.activeBrokersCount),
-      helper: '',
+      value: formatNumber(kpis.activeBrokersCount),
       tone: 'neutral',
     },
     {
       id: 'leads',
       labelKey: 'receivedLeads',
-      value: String(kpis.receivedLeadsThisMonth),
-      helper: '',
-      tone: 'neutral',
+      value: formatNumber(kpis.receivedLeadsThisMonth),
+      ...getLeadsComparison(kpis.receivedLeadsThisMonth, kpis.receivedLeadsPreviousPeriod),
     },
     {
       id: 'revenue',
       labelKey: 'revenue',
-      value: formatCurrency(kpis.monthlyReceivable),
-      helper: '',
-      tone: 'neutral',
+      value: formatFinancialAmount(kpis.monthlyReceivable, locale, exchangeRate),
+      ...getRevenueComparison(kpis.monthlyReceivable, kpis.monthlyReceivablePreviousMonth),
     },
     {
       id: 'occupancy',
       labelKey: 'occupancy',
-      value: `${kpis.occupancyPercentage}%`,
-      helper: '',
+      value: `${formatNumber(kpis.occupancyPercentage)}%`,
       tone: 'neutral',
       progress: kpis.occupancyPercentage,
     },
@@ -81,15 +121,16 @@ export function mapKpisToAgencyOverviewKpis(kpis: ApiAgencyOverviewKpis): Agency
 
 export function mapRevenueSeriesToAgencyRevenuePoints(
   series: ApiAgencyRevenueMonth[],
+  locale: AppLocale = defaultLocale,
+  exchangeRate?: FinancialExchangeRate | null,
 ): AgencyRevenuePoint[] {
-  return series.map((entry) => ({
-    month: monthAbbreviations[entry.month - 1] ?? String(entry.month),
-    revenue: entry.total,
-  }))
+  return mapMonthlySeriesToMovement(series, locale, exchangeRate)
 }
 
 export function mapTopBrokersToAgencyTopBrokers(
   topBrokers: ApiAgencyTopBroker[],
+  locale: AppLocale = defaultLocale,
+  exchangeRate?: FinancialExchangeRate | null,
 ): AgencyTopBroker[] {
   return topBrokers.map((broker) => ({
     id: broker.id,
@@ -97,14 +138,14 @@ export function mapTopBrokersToAgencyTopBrokers(
     profileId: broker.id,
     hasPublicProfile: broker.hasPublicProfile,
     sales: broker.salesCount,
-    revenue: formatCurrency(broker.revenueTotal),
+    revenue: formatFinancialAmount(broker.revenueTotal, locale, exchangeRate),
     avatarUrl: broker.avatarUrl,
     recentSales: broker.recentSales.map((sale) => ({
       id: sale.id,
       propertyId: sale.propertyId,
       property: sale.propertyTitle,
       location: sale.location,
-      value: formatCurrency(sale.value),
+      value: formatFinancialAmount(sale.value, locale, exchangeRate),
       closedAt: formatDate(sale.closedAt),
     })),
   }))
@@ -120,11 +161,19 @@ export function mapActivitiesToAgencyActivities(activities: ApiAgencyActivity[])
   }))
 }
 
-export function mapAgencyOverviewToUi(overview: ApiAgencyOverview) {
+export function mapAgencyOverviewToUi(
+  overview: ApiAgencyOverview,
+  locale: AppLocale = defaultLocale,
+  exchangeRate?: FinancialExchangeRate | null,
+) {
   return {
-    kpis: mapKpisToAgencyOverviewKpis(overview.kpis),
-    revenuePoints: mapRevenueSeriesToAgencyRevenuePoints(overview.revenueSeries),
-    topBrokers: mapTopBrokersToAgencyTopBrokers(overview.topBrokers),
+    kpis: mapKpisToAgencyOverviewKpis(overview.kpis, locale, exchangeRate),
+    revenuePoints: mapRevenueSeriesToAgencyRevenuePoints(
+      overview.revenueSeries,
+      locale,
+      exchangeRate,
+    ),
+    topBrokers: mapTopBrokersToAgencyTopBrokers(overview.topBrokers, locale, exchangeRate),
     activities: mapActivitiesToAgencyActivities(overview.recentActivities),
   }
 }
