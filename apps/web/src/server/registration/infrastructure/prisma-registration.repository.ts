@@ -42,7 +42,12 @@ export class PrismaRegistrationRepository implements RegistrationRepository {
 
     return prisma.$transaction(async (transaction) => {
       const tenant = await transaction.tenant.create({
-        data: { nome: input.tenantName, slug },
+        data: {
+          nome: input.tenantName,
+          slug,
+          accountType: input.accountType,
+          status: input.status,
+        },
       })
 
       const usuario = await transaction.usuario.create({
