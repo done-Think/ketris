@@ -1,14 +1,14 @@
-import { ForbiddenError } from '@server/shared/errors'
-
 import type { Papel } from '@server/auth/domain/user.entity'
 import { PropertyNotFoundError } from '@server/properties/domain/errors'
 import type { PropertyRepository } from '@server/properties/application/ports/property-repository.port'
 
+import { assertCanManageAgenda } from '../../domain/agenda-access-rules'
+import { normalizeAgendaEventLinks } from '../../domain/agenda-event-links'
 import { AgendaEventNotFoundError, AgendaVisitMinimumDurationError } from '../../domain/errors'
-import type { AgendaEventChanges } from '../../domain/agenda-event.entity'
+import type { AgendaEventChanges, AgendaEventLinks } from '../../domain/agenda-event.entity'
 import type { AgendaEventRepository } from '../ports/agenda-event-repository.port'
 
-export interface UpdateAgendaEventInput extends AgendaEventChanges {
+export interface UpdateAgendaEventInput extends AgendaEventChanges, AgendaEventLinks {
   actorTenantId: string
   actorPapel: Papel
   id: string
@@ -21,9 +21,7 @@ export class UpdateAgendaEventUseCase {
   ) {}
 
   async execute(input: UpdateAgendaEventInput) {
-    if (input.actorPapel === 'RENTER') {
-      throw new ForbiddenError('Locatários não podem gerenciar a agenda.')
-    }
+    assertCanManageAgenda(input.actorPapel)
 
     if (input.imovelId) {
       const property = await this.propertyRepository.findByTenantAndId(
@@ -53,16 +51,24 @@ export class UpdateAgendaEventUseCase {
       }
     }
 
-    const event = await this.agendaEventRepository.update(input.actorTenantId, input.id, {
-      titulo: input.titulo,
-      tipo: input.tipo,
-      status: input.status,
-      imovelId: input.imovelId,
-      referenciaImovelLivre: input.referenciaImovelLivre,
-      participanteNome: input.participanteNome,
-      participanteTelefone: input.participanteTelefone,
-      notas: input.notas,
-    })
+    const event = await this.agendaEventRepository.update(
+      input.actorTenantId,
+      input.id,
+      {
+        titulo: input.titulo,
+        tipo: input.tipo,
+        status: input.status,
+        imovelId: input.imovelId,
+        referenciaImovelLivre: input.referenciaImovelLivre,
+        participanteNome: input.participanteNome,
+        participanteTelefone: input.participanteTelefone,
+        notas: input.notas,
+      },
+      normalizeAgendaEventLinks({
+        donoEmail: input.donoEmail,
+        participanteEmails: input.participanteEmails,
+      }),
+    )
 
     if (!event) {
       throw new AgendaEventNotFoundError()

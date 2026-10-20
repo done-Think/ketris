@@ -7,13 +7,12 @@ import { GetAgendaEventUseCase } from '../../../application/use-cases/get-agenda
 
 const event = { id: 'event-1', tenantId: 'tenant-1' } as AgendaEvent
 
-function createDeps(overrides?: {
-  findByTenantAndId?: AgendaEventRepository['findByTenantAndId']
-}) {
+function createDeps(overrides?: { findByScopeAndId?: AgendaEventRepository['findByScopeAndId'] }) {
   const agendaEventRepository: AgendaEventRepository = {
     create: vi.fn(),
     list: vi.fn(),
-    findByTenantAndId: overrides?.findByTenantAndId ?? vi.fn().mockResolvedValue(event),
+    findByScopeAndId: overrides?.findByScopeAndId ?? vi.fn().mockResolvedValue(event),
+    findByTenantAndId: vi.fn(),
     update: vi.fn(),
     reschedule: vi.fn(),
     cancel: vi.fn(),
@@ -24,22 +23,56 @@ function createDeps(overrides?: {
 }
 
 describe('GetAgendaEventUseCase', () => {
-  it('retorna o evento quando encontrado no tenant', async () => {
+  it('consulta pelo escopo do tenant quando o ator é da equipe', async () => {
     const deps = createDeps()
     const useCase = new GetAgendaEventUseCase(deps.agendaEventRepository)
 
-    const result = await useCase.execute({ actorTenantId: 'tenant-1', id: 'event-1' })
+    const result = await useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorUserId: 'agent-1',
+      actorPapel: 'AGENT',
+      id: 'event-1',
+    })
 
     expect(result).toBe(event)
-    expect(deps.agendaEventRepository.findByTenantAndId).toHaveBeenCalledWith('tenant-1', 'event-1')
+    expect(deps.agendaEventRepository.findByScopeAndId).toHaveBeenCalledWith(
+      { kind: 'tenant', tenantId: 'tenant-1' },
+      'event-1',
+    )
   })
 
-  it('lança AgendaEventNotFoundError quando o evento não existe no tenant', async () => {
-    const deps = createDeps({ findByTenantAndId: vi.fn().mockResolvedValue(null) })
+  it('consulta pelo vínculo com o próprio usuário quando o ator é RENTER', async () => {
+    const deps = createDeps()
     const useCase = new GetAgendaEventUseCase(deps.agendaEventRepository)
 
-    await expect(useCase.execute({ actorTenantId: 'tenant-1', id: 'inexistente' })).rejects.toThrow(
-      AgendaEventNotFoundError,
+    const result = await useCase.execute({
+      actorTenantId: 'renters-tenant',
+      actorUserId: 'renter-1',
+      actorPapel: 'RENTER',
+      id: 'event-1',
+    })
+
+    expect(result).toBe(event)
+    expect(deps.agendaEventRepository.findByScopeAndId).toHaveBeenCalledWith(
+      { kind: 'linkedUser', userId: 'renter-1' },
+      'event-1',
     )
+  })
+
+  it.each([
+    { actorPapel: 'AGENT' as const, reason: 'evento inexistente ou de outro tenant' },
+    { actorPapel: 'RENTER' as const, reason: 'evento sem vínculo com o locatário' },
+  ])('lança AgendaEventNotFoundError (404) para $actorPapel: $reason', async ({ actorPapel }) => {
+    const deps = createDeps({ findByScopeAndId: vi.fn().mockResolvedValue(null) })
+    const useCase = new GetAgendaEventUseCase(deps.agendaEventRepository)
+
+    await expect(
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorUserId: 'user-1',
+        actorPapel,
+        id: 'event-x',
+      }),
+    ).rejects.toThrow(AgendaEventNotFoundError)
   })
 })

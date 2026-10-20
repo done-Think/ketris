@@ -89,6 +89,37 @@ describe('createAgendaEventRequestSchema', () => {
 
     expect(result.success).toBe(false)
   })
+
+  it('aceita ownerEmail e participantEmails opcionais', () => {
+    const result = createAgendaEventRequestSchema.safeParse({
+      ...base,
+      propertyReference: 'Apto',
+      ownerEmail: 'locatario@ketris.dev',
+      participantEmails: ['fiador@ketris.dev'],
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('rejeita e-mail de vínculo inválido', () => {
+    const result = createAgendaEventRequestSchema.safeParse({
+      ...base,
+      propertyReference: 'Apto',
+      participantEmails: ['nao-e-email'],
+    })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('rejeita mais de 20 participantes', () => {
+    const result = createAgendaEventRequestSchema.safeParse({
+      ...base,
+      propertyReference: 'Apto',
+      participantEmails: Array.from({ length: 21 }, (_, index) => `p${index}@ketris.dev`),
+    })
+
+    expect(result.success).toBe(false)
+  })
 })
 
 describe('updateAgendaEventRequestSchema', () => {
@@ -102,6 +133,11 @@ describe('updateAgendaEventRequestSchema', () => {
     const result = updateAgendaEventRequestSchema.safeParse({ status: 'PENDING' })
 
     expect(result.success).toBe(true)
+  })
+
+  it('aceita ownerEmail null (remover dono) e participantEmails [] (remover todos)', () => {
+    expect(updateAgendaEventRequestSchema.safeParse({ ownerEmail: null }).success).toBe(true)
+    expect(updateAgendaEventRequestSchema.safeParse({ participantEmails: [] }).success).toBe(true)
   })
 })
 

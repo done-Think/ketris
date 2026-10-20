@@ -271,6 +271,21 @@ describe('/api/agenda/events (integração)', () => {
     expect(titles).toContain('Reunião externa')
   })
 
+  it('não lista para um RENTER sem vínculo os eventos do tenant (agenda do time não vaza)', async () => {
+    const response = await GET(
+      buildRequest(
+        'GET',
+        'http://localhost/api/agenda/events?from=2030-01-15T00:00:00.000Z&to=2030-01-17T00:00:00.000Z',
+        undefined,
+        renterToken,
+      ),
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(json.events).toEqual([])
+  })
+
   it('não retorna eventos fora do período informado', async () => {
     const response = await GET(
       buildRequest(
