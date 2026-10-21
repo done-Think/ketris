@@ -205,9 +205,9 @@ describe('Renter charge isolation (database integration)', () => {
     })
   })
 
-  it('preserves the existing tenant scope for agents', async () => {
+  // DTK-153: the agency finance is for owners and admins only; agents get 403.
+  it('blocks agents from the agency charges', async () => {
     const response = await GET(request('charges', 'GET', undefined, agentToken))
-    expect(response.status).toBe(200)
-    expect((await response.json()).totalCount).toBe(7)
+    expect(response.status).toBe(403)
   })
 })

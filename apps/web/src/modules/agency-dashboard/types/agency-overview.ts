@@ -1,6 +1,7 @@
-import type { SvgIconComponent } from '@mui/icons-material'
-
-import type { DisplayCurrency } from '@modules/financial/utils/financial-display-currency'
+import type {
+  DisplayCurrency,
+  FinancialExchangeRate,
+} from '@modules/financial/utils/financial-display-currency'
 
 export type AgencyOverviewKpiTone = 'success' | 'neutral' | 'warning'
 
@@ -68,12 +69,6 @@ export type AgencyActivityDetailField = {
   value: string
 }
 
-export type AgencySidebarNavItem = {
-  id: string
-  labelKey: string
-  icon: SvgIconComponent
-}
-
 export type AgencyOverviewKpiGridProps = {
   kpis: readonly AgencyOverviewKpi[]
 }
@@ -89,4 +84,10 @@ export type AgencyTopBrokersPanelProps = {
 
 export type AgencyRecentActivityPanelProps = {
   activities: readonly AgencyActivity[]
+}
+
+export type AgencyExchangeRateNoticeProps = {
+  targetCurrency: DisplayCurrency
+  exchangeRate: FinancialExchangeRate | undefined
+  isPending: boolean
 }

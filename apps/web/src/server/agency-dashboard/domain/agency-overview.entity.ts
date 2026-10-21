@@ -6,6 +6,7 @@ export interface AgencyOverviewKpis {
   receivedLeadsPreviousPeriod: number
   monthlyReceivable: number
   monthlyReceivablePreviousMonth: number
+  overdueTotal: number
   occupancyPercentage: number
 }
 
