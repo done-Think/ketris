@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within, waitFor } from '@testing-library/rea
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ThemeProvider } from '@mui/material'
+import { useSession } from 'next-auth/react'
 import { theme } from '@shared/theme/theme'
 import { ChargesPage } from '../components/ChargesPage'
 import { ChargeDetailsPage } from '../components/ChargeDetailsPage'
@@ -11,7 +12,7 @@ const { push } = vi.hoisted(() => ({ push: vi.fn() }))
 vi.mock('@/i18n/navigation', () => ({ useRouter: () => ({ push }) }))
 vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar: vi.fn() }) }))
 vi.mock('next-auth/react', () => ({
-  useSession: () => ({ data: { tenantId: 'tenant-1' }, status: 'authenticated' }),
+  useSession: vi.fn(),
 }))
 vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
@@ -245,6 +246,11 @@ const detail = (id: string) => wrap(<ChargeDetailsPage chargeId={id} />)
 
 beforeEach(() => {
   vi.clearAllMocks()
+  vi.mocked(useSession).mockReturnValue({
+    data: { tenantId: 'tenant-1', role: 'ADMIN' },
+    status: 'authenticated',
+    update: vi.fn(),
+  } as unknown as ReturnType<typeof useSession>)
   chargeQueryState['0340'] = { data: fullCharges['0340'], isLoading: false }
   chargeQueryState['0333'] = { data: fullCharges['0333'], isLoading: false }
   createChargeMutate.mockImplementation((_values, options) => options?.onSuccess?.())
@@ -258,6 +264,64 @@ beforeEach(() => {
 })
 
 describe('charges list', () => {
+  it('hides charge creation from renters', () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: { tenantId: 'tenant-1', role: 'RENTER' },
+      status: 'authenticated',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
+
+    render(wrap(<ChargesPage />))
+
+    expect(screen.queryByRole('button', { name: 'Nova Cobrança' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(createChargeMutate).not.toHaveBeenCalled()
+  })
+
+  it('hides charge creation while the session is loading', () => {
+    vi.mocked(useSession).mockReturnValue({ data: null, status: 'loading', update: vi.fn() })
+
+    render(wrap(<ChargesPage />))
+
+    expect(screen.queryByRole('button', { name: 'Nova Cobrança' })).not.toBeInTheDocument()
+  })
+
+  it.each(['ADMIN', 'OWNER', 'AGENT'] as const)(
+    'preserves charge creation for %s',
+    async (role) => {
+      vi.mocked(useSession).mockReturnValue({
+        data: { tenantId: 'tenant-1', role },
+        status: 'authenticated',
+        update: vi.fn(),
+      } as unknown as ReturnType<typeof useSession>)
+
+      const user = userEvent.setup()
+      render(wrap(<ChargesPage />))
+      await user.click(screen.getByRole('button', { name: 'Nova Cobrança' }))
+
+      expect(screen.getByRole('dialog')).toBeVisible()
+      expect(screen.getByRole('button', { name: 'Criar cobrança' })).toBeVisible()
+    },
+  )
+
+  it('removes an open creation dialog when the account changes to renter', async () => {
+    const user = userEvent.setup()
+    const { rerender } = render(wrap(<ChargesPage />))
+    await user.click(screen.getByRole('button', { name: 'Nova Cobrança' }))
+    expect(screen.getByRole('dialog')).toBeVisible()
+
+    vi.mocked(useSession).mockReturnValue({
+      data: { tenantId: 'tenant-1', role: 'RENTER' },
+      status: 'authenticated',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
+    rerender(wrap(<ChargesPage />))
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Nova Cobrança' })).not.toBeInTheDocument()
+    expect(createChargeMutate).not.toHaveBeenCalled()
+  })
+
   it('renders six rows, paginates, searches, filters status and switches direction', async () => {
     const user = userEvent.setup()
     render(wrap(<ChargesPage />))

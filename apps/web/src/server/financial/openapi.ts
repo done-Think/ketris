@@ -22,7 +22,7 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Financial'],
     summary: 'Lista cobranças autorizadas para o usuário autenticado',
     description:
-      'ADMIN, OWNER e AGENT consultam seu tenant. RENTER consulta apenas A_RECEBER de contratos com parte LOCATARIO vinculada ao seu ID, inclusive em outros tenants. Contagem e paginação seguem o mesmo escopo. Sem vínculo, retorna lista vazia.',
+      'ADMIN e OWNER consultam seu tenant. AGENT recebe 403. RENTER consulta apenas A_RECEBER de contratos com parte LOCATARIO vinculada ao seu ID, inclusive em outros tenants. Contagem e paginação seguem o mesmo escopo. Sem vínculo, retorna lista vazia.',
     security: [{ bearerAuth: [] }],
     request: { query: listChargesQuerySchema },
     responses: {
@@ -32,6 +32,10 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
       },
       401: {
         description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'AGENT não pode consultar o financeiro da imobiliária.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },
@@ -59,12 +63,13 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
         description: 'Access token ausente, inválido ou expirado.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
-      403: {
-        description: 'Ator sem permissão para gerenciar cobranças.',
-        content: { 'application/json': { schema: errorResponseSchema } },
-      },
       404: {
         description: 'Contrato não encontrado neste tenant.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description:
+          'Usuário AGENT ou RENTER: o financeiro é só de proprietários e administradores.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },
@@ -76,7 +81,7 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Financial'],
     summary: 'Consulta cobrança no escopo autorizado do usuário',
     description:
-      'RENTER precisa estar vinculado por ID como LOCATARIO ao contrato e a cobrança deve ser A_RECEBER. Cobranças avulsas, A_PAGAR e contratos sem vínculo não são acessíveis. Ausência de acesso retorna 404.',
+      'ADMIN e OWNER consultam seu tenant; AGENT recebe 403. RENTER precisa estar vinculado por ID como LOCATARIO ao contrato e a cobrança deve ser A_RECEBER. Cobranças avulsas, A_PAGAR e contratos sem vínculo não são acessíveis ao RENTER. Ausência de acesso ao registro retorna 404.',
     security: [{ bearerAuth: [] }],
     request: { params: chargeIdParamsSchema },
     responses: {
@@ -85,7 +90,11 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
         content: { 'application/json': { schema: chargeResponseSchema } },
       },
       404: {
-        description: 'Cobrança não encontrada neste tenant.',
+        description: 'Cobrança não encontrada no escopo autorizado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'AGENT não pode consultar o financeiro da imobiliária.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },
@@ -118,6 +127,11 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
         description: 'Cobrança não encontrada neste tenant.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
+      403: {
+        description:
+          'Usuário AGENT ou RENTER: o financeiro é só de proprietários e administradores.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
     },
   })
 
@@ -136,12 +150,13 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
         description: 'Access token ausente, inválido ou expirado.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
-      403: {
-        description: 'Locatário não pode gerenciar cobranças.',
-        content: { 'application/json': { schema: errorResponseSchema } },
-      },
       404: {
         description: 'Cobrança não encontrada neste tenant.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description:
+          'Usuário AGENT ou RENTER: o financeiro é só de proprietários e administradores.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },
@@ -170,6 +185,11 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
         description: 'Cobrança já paga ou cancelada.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
+      403: {
+        description:
+          'Usuário AGENT ou RENTER: o financeiro é só de proprietários e administradores.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
     },
   })
 
@@ -178,19 +198,20 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
     path: '/financial/summary',
     tags: ['Financial'],
     summary: 'Agregação financeira do tenant para o dashboard',
-    description: 'Disponível para ADMIN, OWNER e AGENT. RENTER não tem acesso ao resumo geral.',
+    description: 'Receita da imobiliária inteira: só OWNER e ADMIN do tenant.',
     security: [{ bearerAuth: [] }],
     responses: {
       200: {
         description: 'Resumo financeiro do tenant.',
         content: { 'application/json': { schema: financialSummarySchema } },
       },
-      403: {
-        description: 'RENTER não tem acesso ao resumo financeiro geral.',
-        content: { 'application/json': { schema: errorResponseSchema } },
-      },
       401: {
         description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description:
+          'Usuário AGENT ou RENTER: o financeiro é só de proprietários e administradores.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },

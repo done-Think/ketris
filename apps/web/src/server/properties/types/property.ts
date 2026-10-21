@@ -98,6 +98,7 @@ export interface PropertyChanges {
 
 export interface PropertyListFilters {
   tenantId: string
+  renterId?: string
   status?: PropertyStatus
   finalidade?: PropertyPurpose
   responsavelId?: string

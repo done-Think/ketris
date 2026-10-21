@@ -3,12 +3,23 @@
 import { Box, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { brand, radius, shadows } from '@shared/theme/tokens'
+import { brand, surface } from '@shared/theme/tokens'
 
 import type { AgendaEventCardProps } from '../../types/agenda-event'
-import { agendaEventToneStyles } from './agenda-dashboard-shared'
+import {
+  agendaCardBaseSx,
+  agendaEventToneStyles,
+  getAgendaCardPlacementSx,
+} from './agenda-dashboard-shared'
 
-export function AgendaEventCard({ event, height, onSelect, top }: AgendaEventCardProps) {
+export function AgendaEventCard({
+  event,
+  height,
+  onSelect,
+  top,
+  lane = 0,
+  laneCount = 1,
+}: AgendaEventCardProps) {
   const t = useTranslations('agenda.dashboard')
   const tone = agendaEventToneStyles[event.tone]
 
@@ -19,27 +30,12 @@ export function AgendaEventCard({ event, height, onSelect, top }: AgendaEventCar
       aria-label={t('openEventAriaLabel', { title: event.title })}
       onClick={() => onSelect(event)}
       sx={{
-        position: 'absolute',
-        top,
-        left: { xs: 8, md: 16 },
-        right: { xs: 8, md: 16 },
-        minHeight: height,
-        border: 0,
-        borderLeft: '3px solid',
+        ...agendaCardBaseSx,
+        ...getAgendaCardPlacementSx(top, height, lane, laneCount),
         borderColor: tone.borderColor,
-        borderRadius: `${radius.sm}px`,
-        bgcolor: tone.bgcolor,
-        px: 1.1,
-        py: 0.8,
-        overflow: 'hidden',
+        bgcolor: surface.paper,
+        backgroundImage: `linear-gradient(${tone.bgcolor}, ${tone.bgcolor})`,
         cursor: 'pointer',
-        textAlign: 'left',
-        transition: 'box-shadow 160ms ease, transform 160ms ease',
-        '&:hover, &:focus-visible': {
-          boxShadow: shadows.crmCardHover,
-          transform: 'translateY(-1px)',
-          outline: 'none',
-        },
       }}
     >
       <Typography noWrap sx={{ color: tone.color, fontSize: 12, fontWeight: 900 }}>

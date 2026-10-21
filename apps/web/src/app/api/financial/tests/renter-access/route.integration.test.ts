@@ -259,9 +259,11 @@ describe('Renter financial authorization (integration)', () => {
     }
   })
 
-  it('keeps agency staff inside their tenant', async () => {
-    expect((await detail(owned.chargeId, agent.token)).status).toBe(200)
-    expect((await detail(otherAgencyOwned.chargeId, agent.token)).status).toBe(404)
+  it('keeps authorized agency staff inside their tenant and blocks agents', async () => {
+    expect((await detail(owned.chargeId, admin.token)).status).toBe(200)
+    expect((await detail(otherAgencyOwned.chargeId, admin.token)).status).toBe(404)
+    expect((await detail(owned.chargeId, agent.token)).status).toBe(403)
+    expect((await listCharges(request('/financial/charges', agent.token))).status).toBe(403)
   })
 
   it('forbids renter access to financial summary', async () => {

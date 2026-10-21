@@ -1,5 +1,35 @@
 {
+  "organization": {
+    "allDay": "All day",
+    "charges": "charges",
+    "maintenance": "maintenance tickets",
+    "sourceError": "Unable to load {source}. Other records remain available.",
+    "kinds": {
+      "charge": "Charge due",
+      "ticketOpened": "Ticket opened",
+      "ticketScheduled": "Scheduled service"
+    },
+    "chargeStatuses": {
+      "PENDENTE": "Pending",
+      "PAGA": "Paid",
+      "ATRASADA": "Overdue",
+      "AGENDADA": "Scheduled",
+      "CANCELADA": "Cancelled"
+    },
+    "ticketStatuses": {
+      "ABERTO": "Open",
+      "EM_ANDAMENTO": "In progress",
+      "RESOLVIDO": "Resolved",
+      "FECHADO": "Closed",
+      "AGUARDANDO_CONFIRMACAO": "Awaiting confirmation",
+      "CONTESTADO": "Contested",
+      "CANCELADO": "Cancelled"
+    }
+  },
   "dashboard": {
+    "loading": "Loading calendar",
+    "loadError": "Unable to load the calendar. Please try again.",
+    "empty": "No events linked to you in this period.",
     "title": "Schedule",
     "subtitle": "Your appointments and tasks, organized",
     "previousWeek": "Previous week",
@@ -27,6 +57,14 @@
     "deleteError": "Could not delete the event. Please try again."
   },
   "eventForm": {
+    "audiences": {
+      "LEGACY_TEAM": "Current sharing",
+      "ALL_AGENTS": "All agents",
+      "ASSIGNED_AGENT": "Specific agent"
+    },
+    "agentsLoading": "Loading agents…",
+    "agentsError": "Unable to load agents. Reopen the form to try again.",
+    "agentsEmpty": "No active, approved agents available.",
     "kinds": {
       "VISIT": "Visit",
       "FOLLOW_UP": "Follow-up",
@@ -39,8 +77,16 @@
     "title": "Add event",
     "closeAriaLabel": "Close new event",
     "fields": {
+      "internal": "Internal team event",
+      "audience": "Recipients",
+      "agent": "Agent",
+      "agentPlaceholder": "Select an agent",
+      "optionalProperty": "Property (optional)",
+      "noProperty": "No linked property",
+      "optionalParticipant": "Client (optional)",
+      "optionalPhone": "Phone (optional)",
       "kind": "Event type",
-      "kindPlaceholder": "Select a type",
+      "kindPlaceholder": "Select (optional)",
       "title": "Title",
       "property": "Property in question",
       "otherProperty": "Other",
@@ -50,21 +96,13 @@
       "date": "Date",
       "time": "Time",
       "duration": "Duration",
-      "notes": "Notes",
-      "kind": "Event type",
-      "kindPlaceholder": "Select (optional)"
+      "notes": "Notes"
     },
     "cancel": "Cancel",
     "submit": "Create event",
-    "kinds": {
-      "VISIT": "Visit",
-      "FOLLOW_UP": "Follow-up",
-      "MEETING": "Meeting",
-      "INSPECTION": "Inspection",
-      "SIGNATURE": "Signature",
-      "OTHER": "Other"
-    },
     "errors": {
+      "agentRequired": "Select an agent",
+      "audienceRequired": "Choose all agents or a specific agent",
       "durationTooShort": "Enter at least 15 minutes",
       "participantRequired": "Enter the person's name",
       "phoneInvalid": "Enter a valid phone number",
@@ -73,12 +111,17 @@
       "timeRequired": "Enter the time",
       "titleRequired": "Enter the event title",
       "customPropertyRequired": "Enter the property or reference",
-      "visitMinimumDuration": "Visits must last at least 60 minutes",
-      "minimumAdvanceNotice": "Schedule at least 3 hours in advance",
-      "outsideBusinessHours": "Schedule within business hours (08:00–18:00)"
+      "visitMinimumDuration": "Visits must last at least 30 minutes",
+      "minimumAdvanceNotice": "Schedule at least 3 hours in advance"
+    },
+    "outsideHoursWarning": {
+      "message": "This event falls outside business hours (08:00–18:00). Would you like to continue?",
+      "continue": "Continue",
+      "back": "Go back"
     }
   },
   "eventDetail": {
+    "responsible": "Responsible: {name}",
     "closeAriaLabel": "Close event details",
     "notesTitle": "Notes",
     "createdBy": "Booked by {role} {name}",
@@ -103,9 +146,8 @@
       "timeRequired": "Enter the time",
       "titleRequired": "Enter the event title",
       "customPropertyRequired": "Enter the property or reference",
-      "visitMinimumDuration": "Visits must last at least 60 minutes",
-      "minimumAdvanceNotice": "Schedule at least 3 hours in advance",
-      "outsideBusinessHours": "Schedule within business hours (08:00–18:00)"
+      "visitMinimumDuration": "Visits must last at least 30 minutes",
+      "minimumAdvanceNotice": "Schedule at least 3 hours in advance"
     }
   }
 }

@@ -77,9 +77,11 @@ describe('POST /api/register (integração)', () => {
     const createdTenant = await prisma.tenant.findUnique({ where: { id: json.user.tenantId } })
     expect(createdTenant).not.toBeNull()
     if (createdTenant) createdTenantIds.push(createdTenant.id)
+    // Billed as an agency, but only after the platform admin activates the trial.
+    expect(createdTenant).toMatchObject({ accountType: 'AGENCY', status: 'TRIAL' })
   })
 
-  it('corretor autônomo (sem agencyId): cria um tenant novo, igual imobiliária', async () => {
+  it('corretor autônomo (sem agencyId): cria um tenant novo de corretor, em teste', async () => {
     const email = `corretor-autonomo-${randomUUID()}@ketris.dev`
 
     const response = await POST(
@@ -97,6 +99,32 @@ describe('POST /api/register (integração)', () => {
     expect(json.user.role).toBe('ADMIN')
 
     if (json.user?.tenantId) createdTenantIds.push(json.user.tenantId)
+    expect(await prisma.tenant.findUnique({ where: { id: json.user.tenantId } })).toMatchObject({
+      accountType: 'BROKER',
+      status: 'TRIAL',
+    })
+  })
+
+  it.each([
+    ['proprietario', 'INDIVIDUAL'],
+    ['construtora', 'AGENCY'],
+  ] as const)('%s: cria o tenant como %s, em teste', async (profile, accountType) => {
+    const response = await POST(
+      buildRequest({
+        profile,
+        fullName: `Cadastro ${profile}`,
+        email: `cadastro-${profile}-${randomUUID()}@ketris.dev`,
+        password: 'senha-longa-123',
+      }),
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(201)
+    if (json.user?.tenantId) createdTenantIds.push(json.user.tenantId)
+    expect(await prisma.tenant.findUnique({ where: { id: json.user.tenantId } })).toMatchObject({
+      accountType,
+      status: 'TRIAL',
+    })
   })
 
   it('corretor com agencyId: cria vínculo pendente, sem sessão, e bloqueia login até aprovação', async () => {

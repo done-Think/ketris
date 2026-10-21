@@ -10,9 +10,15 @@ import type { RefreshTokenRepository } from '@server/auth/application/ports/refr
 import type { TokenService } from '@server/auth/application/ports/token-service.port'
 import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
 
+import {
+  accountTypeForProfile,
+  SELF_REGISTERED_TENANT_STATUS,
+  type TenantOwnerProfile,
+} from '../../domain/tenant-owner-profile'
 import type { RegistrationRepository } from '../ports/registration-repository.port'
 
 export interface RegisterTenantOwnerInput {
+  profile: TenantOwnerProfile
   fullName: string
   companyName?: string
   email: string
@@ -48,6 +54,8 @@ export class RegisterTenantOwnerUseCase {
       adminName: input.fullName,
       email: input.email,
       senhaHash,
+      accountType: accountTypeForProfile(input.profile),
+      status: SELF_REGISTERED_TENANT_STATUS,
     })
 
     const authenticatedUser = toAuthenticatedUser(user)

@@ -6,7 +6,7 @@ import { resolveChargeReadScope } from '../charge-read-scope'
 export class ListChargesUseCase {
   constructor(private readonly chargeRepository: ChargeRepository) {}
 
-  execute(input: ListChargesInput): Promise<ChargeListResult> {
+  async execute(input: ListChargesInput): Promise<ChargeListResult> {
     const { actorId, actorTenantId, actorPapel, ...filters } = input
     const scope = resolveChargeReadScope({ actorId, actorTenantId, actorPapel })
 

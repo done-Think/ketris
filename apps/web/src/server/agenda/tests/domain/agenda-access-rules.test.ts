@@ -21,10 +21,23 @@ describe('assertCanManageAgenda', () => {
 })
 
 describe('resolveAgendaReadScope', () => {
-  it.each(['ADMIN', 'OWNER', 'AGENT'] as const)('usa o tenant do ator para %s', (actorPapel) => {
+  it('usa o tenant do ator para ADMIN', () => {
+    expect(
+      resolveAgendaReadScope({
+        actorTenantId: 'tenant-1',
+        actorUserId: 'user-1',
+        actorPapel: 'ADMIN',
+      }),
+    ).toEqual({ kind: 'tenant', tenantId: 'tenant-1' })
+  })
+  it.each(['AGENT', 'OWNER'] as const)('usa o tenant e o usuário para %s', (actorPapel) => {
     expect(
       resolveAgendaReadScope({ actorTenantId: 'tenant-1', actorUserId: 'user-1', actorPapel }),
-    ).toEqual({ kind: 'tenant', tenantId: 'tenant-1' })
+    ).toEqual({
+      kind: actorPapel === 'AGENT' ? 'agent' : 'owner',
+      tenantId: 'tenant-1',
+      userId: 'user-1',
+    })
   })
 
   it('usa o vínculo com o próprio usuário (e não o tenant) para RENTER', () => {

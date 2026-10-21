@@ -45,7 +45,7 @@ export function SignInForm() {
 
     const session = await getSession()
 
-    if (session?.papel !== 'ADMIN') {
+    if (session?.role !== 'ADMIN') {
       await clearClientSession()
       setFormError(t('signInForbiddenError'))
       return

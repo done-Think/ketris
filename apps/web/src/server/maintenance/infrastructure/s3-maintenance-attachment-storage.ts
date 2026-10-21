@@ -8,7 +8,7 @@ import type {
   MaintenanceAttachmentStoragePort,
   UploadedMaintenanceAttachment,
   UploadMaintenanceAttachmentInput,
-} from '../application/ports/maintenance-attachment-storage.port'
+} from '../types/maintenance-attachment-storage'
 
 function sanitizeFilename(filename: string): string {
   const sanitized = filename.replace(/[^a-zA-Z0-9._-]/g, '_')

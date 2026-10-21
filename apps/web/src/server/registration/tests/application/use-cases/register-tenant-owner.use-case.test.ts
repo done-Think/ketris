@@ -82,6 +82,7 @@ describe('RegisterTenantOwnerUseCase', () => {
     )
 
     const result = await useCase.execute({
+      profile: 'imobiliaria',
       fullName: 'Dona da Imobiliária',
       companyName: 'Imobiliária Nova',
       email: 'dona@ketris.dev',
@@ -94,12 +95,41 @@ describe('RegisterTenantOwnerUseCase', () => {
       adminName: 'Dona da Imobiliária',
       email: 'dona@ketris.dev',
       senhaHash: 'hash-novo',
+      accountType: 'AGENCY',
+      status: 'TRIAL',
     })
     expect(result.user.papel).toBe('ADMIN')
     expect(result.accessToken).toBe('jwt-fake')
     expect(typeof result.refreshToken).toBe('string')
     expect(deps.refreshTokenRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({ userId: user.id, tenantId: user.tenantId }),
+    )
+  })
+
+  it.each([
+    ['proprietario', 'INDIVIDUAL'],
+    ['corretor', 'BROKER'],
+    ['imobiliaria', 'AGENCY'],
+    ['construtora', 'AGENCY'],
+  ] as const)('cria o tenant do perfil %s como %s, em teste', async (profile, accountType) => {
+    const deps = createDeps()
+    const useCase = new RegisterTenantOwnerUseCase(
+      deps.registrationRepository,
+      deps.userRepository,
+      deps.passwordHasher,
+      deps.tokenService,
+      deps.refreshTokenRepository,
+    )
+
+    await useCase.execute({
+      profile,
+      fullName: 'Pessoa Nova',
+      email: 'nova@ketris.dev',
+      password: 'senha-longa-123',
+    })
+
+    expect(deps.registrationRepository.createTenantWithAdmin).toHaveBeenCalledWith(
+      expect.objectContaining({ accountType, status: 'TRIAL' }),
     )
   })
 
@@ -114,6 +144,7 @@ describe('RegisterTenantOwnerUseCase', () => {
     )
 
     await useCase.execute({
+      profile: 'corretor',
       fullName: 'Corretor Autônomo',
       email: 'corretor@ketris.dev',
       password: 'senha-longa-123',
@@ -136,6 +167,7 @@ describe('RegisterTenantOwnerUseCase', () => {
 
     await expect(
       useCase.execute({
+        profile: 'proprietario',
         fullName: 'Outra Pessoa',
         email: 'dona@ketris.dev',
         password: 'senha-longa-123',

@@ -12,7 +12,7 @@ declare module 'next-auth' {
     refreshToken: string
     scope: SessionScope
     tenantId?: string
-    papel?: Papel
+    role?: Papel
   }
 
   interface Session {
@@ -20,7 +20,7 @@ declare module 'next-auth' {
     refreshToken?: string
     scope?: SessionScope
     tenantId?: string
-    papel?: Papel
+    role?: Papel
     user: { id: string } & DefaultSession['user']
   }
 }
@@ -31,6 +31,6 @@ declare module 'next-auth/jwt' {
     refreshToken?: string
     scope?: SessionScope
     tenantId?: string
-    papel?: Papel
+    role?: Papel
   }
 }

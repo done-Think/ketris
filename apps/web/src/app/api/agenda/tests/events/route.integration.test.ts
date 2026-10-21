@@ -199,14 +199,14 @@ describe('/api/agenda/events (integração)', () => {
     expect(json.error.code).toBe('NOT_FOUND')
   })
 
-  it('retorna 400 quando uma visita (kind VISIT) tem duração menor que 60 minutos', async () => {
+  it('retorna 400 quando uma visita (kind VISIT) tem duração menor que 30 minutos', async () => {
     const response = await POST(
       buildRequest('POST', 'http://localhost/api/agenda/events', {
         title: 'Visita rápida demais',
         kind: 'VISIT',
         propertyId,
         start: '2030-01-16T18:00:00.000Z',
-        durationMinutes: 30,
+        durationMinutes: 15,
         participantName: 'Marcos Lima',
         participantPhone: '(11) 98731-4402',
       }),
