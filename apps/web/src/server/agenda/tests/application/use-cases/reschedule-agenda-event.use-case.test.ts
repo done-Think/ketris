@@ -22,6 +22,10 @@ const existingEvent: AgendaEvent = {
   tenantId: 'tenant-1',
   responsavelId: 'agent-1',
   criadoPorId: 'agent-1',
+  responsavelNome: 'Corretor',
+  donoUsuarioId: null,
+  dono: null,
+  participantes: [],
   imovelId: null,
   referenciaImovelLivre: null,
   titulo: 'Follow-up',
@@ -48,6 +52,7 @@ function createDeps(overrides?: {
   const agendaEventRepository: AgendaEventRepository = {
     create: vi.fn(),
     list: vi.fn(),
+    findByScopeAndId: vi.fn(),
     findByTenantAndId: overrides?.findByTenantAndId ?? vi.fn().mockResolvedValue(existingEvent),
     update: vi.fn(),
     reschedule: overrides?.reschedule ?? vi.fn().mockResolvedValue(rescheduledEvent),

@@ -65,6 +65,8 @@ model Usuario {
   codigosRecuperacaoSenha  PasswordResetCode[]
   eventosAgendaResponsavel EventoAgenda[]                     @relation("EventoAgendaResponsavel")
   eventosAgendaCriados     EventoAgenda[]                     @relation("EventoAgendaCriadoPor")
+  eventosAgendaDono        EventoAgenda[]                     @relation("EventoAgendaDono")
+  participacoesAgenda      EventoAgendaParticipante[]
   assinaturasRegistradas   Assinatura[]                       @relation("AssinaturaRegistradaPor")
   contratosAtivados        Contrato[]                         @relation("ContratoAtivadoPor")
   leadsResponsavel         Lead[]                             @relation("LeadResponsavel")
@@ -622,11 +624,20 @@ enum TipoEventoAgenda {
   OTHER
 }
 
+// Papéis de pessoa no evento (não presumir que coincidam):
+// - responsavelId: quem responde pelo evento na imobiliária (staff do tenant do evento).
+// - criadoPorId: auditoria de quem criou o registro; não concede acesso.
+// - donoUsuarioId: dono explícito do evento para fins de acesso de leitura (pode ser um
+//   RENTER do tenant compartilhado de locatários ou staff do tenant do evento).
+// - participantes (EventoAgendaParticipante): usuários com acesso de leitura ao evento.
+// participanteNome/participanteTelefone são apenas dados de exibição para a equipe e não
+// identificam nem autorizam nenhum usuário.
 model EventoAgenda {
   id                    String             @id @default(cuid())
   tenantId              String
   responsavelId         String
   criadoPorId           String?
+  donoUsuarioId         String?
   imovelId              String?
   referenciaImovelLivre String?
   titulo                String
@@ -643,13 +654,31 @@ model EventoAgenda {
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   responsavel Usuario  @relation("EventoAgendaResponsavel", fields: [responsavelId], references: [id], onDelete: Cascade)
   criadoPor   Usuario? @relation("EventoAgendaCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  donoUsuario Usuario? @relation("EventoAgendaDono", fields: [donoUsuarioId], references: [id], onDelete: SetNull)
   imovel      Imovel?  @relation(fields: [imovelId], references: [id], onDelete: SetNull)
+
+  participantes EventoAgendaParticipante[]
 
   @@index([tenantId])
   @@index([tenantId, inicio])
   @@index([responsavelId])
+  @@index([donoUsuarioId])
   @@index([imovelId])
   @@map("eventos_agenda")
+}
+
+model EventoAgendaParticipante {
+  id        String   @id @default(cuid())
+  eventoId  String
+  usuarioId String
+  createdAt DateTime @default(now())
+
+  evento  EventoAgenda @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+  usuario Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([eventoId, usuarioId])
+  @@index([usuarioId])
+  @@map("eventos_agenda_participantes")
 }
 
 // ---------------------------------------------------------------------------

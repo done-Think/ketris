@@ -1,4 +1,23 @@
-import { AppError, ConflictError, NotFoundError } from '@server/shared/errors'
+import { AppError, ConflictError, ForbiddenError, NotFoundError } from '@server/shared/errors'
+
+export class AgendaRenterForbiddenError extends ForbiddenError {
+  constructor() {
+    super('Locatários não podem gerenciar a agenda.')
+  }
+}
+
+/**
+ * Same status, code and message for every reason (unknown e-mail, inactive user, staff from
+ * another tenant), so the response never reveals whether or why an account can't be linked.
+ */
+export class AgendaEventUserLinkUnavailableError extends AppError {
+  constructor(email: string) {
+    super(`Não foi possível vincular o e-mail ${email} a este evento.`, {
+      status: 400,
+      code: 'AGENDA_EVENT_USER_LINK_UNAVAILABLE',
+    })
+  }
+}
 
 export class AgendaEventNotFoundError extends NotFoundError {
   constructor() {

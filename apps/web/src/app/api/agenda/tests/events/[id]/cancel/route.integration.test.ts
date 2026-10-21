@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
 import { NextRequest } from 'next/server'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
@@ -14,11 +14,11 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
   let actorToken: string
   let renterToken: string
   let eventId: string
-  // Creating an event needs 3h of notice, so a fixed date breaks the test once it passes.
-  // January 15th of next year at 13:00 UTC (10:00 in São Paulo) stays ahead and in business hours.
-  const slotStart = new Date(Date.UTC(new Date().getUTCFullYear() + 1, 0, 15, 13, 0))
 
   beforeAll(async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-10-01T09:00:00.000Z'))
+
     const tenant = await prisma.tenant.create({
       data: { nome: 'Tenant Agenda Cancel', slug: `agenda-cancel-${randomUUID()}` },
     })
@@ -69,8 +69,8 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
         criadoPorId: actor.id,
         titulo: 'Evento para cancelar',
         referenciaImovelLivre: 'Apto teste',
-        inicio: slotStart,
-        fim: new Date(slotStart.getTime() + 30 * 60_000),
+        inicio: new Date('2026-10-20T13:00:00.000Z'),
+        fim: new Date('2026-10-20T13:30:00.000Z'),
         participanteNome: 'Ana',
         participanteTelefone: '11999990000',
       },
@@ -79,6 +79,7 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
   })
 
   afterAll(async () => {
+    vi.useRealTimers()
     if (tenantId) await prisma.tenant.delete({ where: { id: tenantId } })
     await prisma.$disconnect()
   })
@@ -122,12 +123,15 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
   it('um evento cancelado libera o horário para um novo agendamento (sem falso conflito)', async () => {
     const { POST: createEvent } = await import('../../../../events/route')
 
+    const cancelResponse = await POST(buildRequest(eventId), context(eventId))
+    expect(cancelResponse.status).toBe(200)
+
     const createRequest = new NextRequest('http://localhost/api/agenda/events', {
       method: 'POST',
       body: JSON.stringify({
         title: 'Novo evento no horário liberado',
         propertyReference: 'Apto teste',
-        start: slotStart.toISOString(),
+        start: '2026-10-20T13:00:00.000Z',
         durationMinutes: 30,
         participantName: 'Novo cliente',
         participantPhone: '11988880000',
