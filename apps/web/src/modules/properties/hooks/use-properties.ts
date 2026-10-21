@@ -9,7 +9,7 @@ export const propertyQueryKeys = {
   detail: (id: string) => [...propertyQueryKeys.all, id] as const,
 }
 
-export function useProperties() {
+export function useProperties({ enabled = true }: { enabled?: boolean } = {}) {
   const { data: session } = useSession()
   return useQuery({
     queryKey: [
@@ -20,7 +20,7 @@ export function useProperties() {
       session?.role,
     ],
     queryFn: () => propertiesService.list(),
-    enabled: Boolean(session?.tenantId),
+    enabled: enabled && Boolean(session?.tenantId),
   })
 }
 

@@ -167,7 +167,14 @@ function ChargeDetailsContent({ charge, tenantId }: { charge: Charge; tenantId: 
           alignItems={{ xs: 'stretch', md: 'center' }}
           spacing={1.5}
         >
-          <Stack direction="row" alignItems="center" spacing={1.2} useFlexGap flexWrap="wrap">
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1.2}
+            useFlexGap
+            flexWrap="wrap"
+            sx={{ flex: 1, minWidth: 0 }}
+          >
             <Typography
               sx={{ color: brand.graphite[500], fontSize: { xs: 24, md: 25 }, fontWeight: 900 }}
             >
@@ -190,7 +197,11 @@ function ChargeDetailsContent({ charge, tenantId }: { charge: Charge; tenantId: 
               }}
             />
           </Stack>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.1}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.1}
+            sx={{ flexShrink: 0, '& .MuiButton-root': { whiteSpace: 'nowrap' } }}
+          >
             <Button
               variant="outlined"
               color="secondary"

@@ -155,12 +155,13 @@ export function PropertiesTable({
   const t = useTranslations('properties.dashboard.table')
   const filterT = useTranslations('properties.dashboard.filters')
   const emptyInventory = totalCount === 0
+  // Minimum widths add up to about 1050px, so the grid fits a 1366-1440px screen without scrolling.
   const columns: GridColDef<DashboardProperty>[] = [
     {
       field: 'title',
       headerName: t('property'),
       flex: 2.2,
-      minWidth: 360,
+      minWidth: 240,
       resizable: false,
       sortable: true,
       renderCell: (params) => <PropertyIdentityCell {...params} />,
@@ -169,7 +170,7 @@ export function PropertiesTable({
       field: 'type',
       headerName: t('type'),
       flex: 0.9,
-      minWidth: 130,
+      minWidth: 110,
       align: 'center',
       headerAlign: 'center',
       resizable: false,
@@ -178,7 +179,7 @@ export function PropertiesTable({
       field: 'saleValue',
       headerName: t('saleValue'),
       flex: 0.9,
-      minWidth: 130,
+      minWidth: 120,
       align: 'center',
       headerAlign: 'center',
       resizable: false,
@@ -188,7 +189,7 @@ export function PropertiesTable({
       field: 'rentalValue',
       headerName: t('rentalValue'),
       flex: 0.9,
-      minWidth: 130,
+      minWidth: 120,
       align: 'center',
       headerAlign: 'center',
       resizable: false,
@@ -198,7 +199,7 @@ export function PropertiesTable({
       field: 'status',
       headerName: t('status'),
       flex: 0.8,
-      minWidth: 130,
+      minWidth: 110,
       align: 'center',
       headerAlign: 'center',
       resizable: false,
@@ -209,7 +210,7 @@ export function PropertiesTable({
       field: 'broker',
       headerName: t('broker'),
       flex: 1,
-      minWidth: 160,
+      minWidth: 130,
       align: 'center',
       headerAlign: 'center',
       resizable: false,
@@ -218,7 +219,7 @@ export function PropertiesTable({
       field: 'updatedAt',
       headerName: t('updated'),
       flex: 0.9,
-      minWidth: 140,
+      minWidth: 120,
       align: 'center',
       headerAlign: 'center',
       resizable: false,

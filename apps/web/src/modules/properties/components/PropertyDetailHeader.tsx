@@ -40,21 +40,42 @@ export function PropertyDetailHeader({
   const activeContract = activeContractQuery.data?.items[0]
 
   return (
+    // The actions drop below the title whenever the title would get less than 420px, instead of
+    // squeezing it into one word per line (the page also has a right column from lg up).
     <Stack
-      direction={{ xs: 'column', md: 'row' }}
-      alignItems={{ xs: 'flex-start', md: 'center' }}
+      direction="row"
+      flexWrap="wrap"
+      alignItems="center"
       justifyContent="space-between"
-      spacing={2}
+      useFlexGap
+      gap={2}
       sx={{ mb: 2.6 }}
     >
-      <Box sx={{ minWidth: 0 }}>
-        <Stack direction="row" alignItems="center" spacing={1.6} sx={{ mb: 0.7 }}>
-          <Typography variant="h2" sx={{ fontSize: { xs: 30, md: 42 }, fontWeight: 900 }}>
+      <Box sx={{ flex: '1 1 420px', minWidth: 0 }}>
+        <Stack
+          direction="row"
+          flexWrap="wrap"
+          alignItems="center"
+          useFlexGap
+          columnGap={1.6}
+          rowGap={0.8}
+          sx={{ mb: 0.7 }}
+        >
+          <Typography
+            variant="h2"
+            sx={{
+              minWidth: 0,
+              fontSize: { xs: 30, md: 42 },
+              fontWeight: 900,
+              overflowWrap: 'anywhere',
+            }}
+          >
             {property.title}
           </Typography>
           <Chip
             label={statusT(property.status)}
             sx={{
+              flexShrink: 0,
               height: 32,
               borderRadius: `${radius.full}px`,
               bgcolor: status.bgcolor,
@@ -70,7 +91,14 @@ export function PropertyDetailHeader({
       </Box>
 
       {canManage ? (
-        <Stack direction="row" alignItems="flex-start" spacing={1.2}>
+        <Stack
+          direction="row"
+          flexWrap="wrap"
+          alignItems="flex-start"
+          useFlexGap
+          gap={1.2}
+          sx={{ flexShrink: 0 }}
+        >
           <Button
             variant="outlined"
             color="error"
