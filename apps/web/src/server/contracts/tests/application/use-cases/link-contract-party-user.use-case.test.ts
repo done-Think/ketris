@@ -84,7 +84,10 @@ describe('LinkContractPartyUserUseCase', () => {
   it('does not look up users when the contract is outside the administrator tenant', async () => {
     const { contracts, users, useCase } = setup(null)
     await expect(useCase.execute(input)).rejects.toMatchObject({ code: 'CONTRACT_NOT_FOUND' })
-    expect(contracts.findById).toHaveBeenCalledWith('agency-1', 'contract-1', {})
+    expect(contracts.findById).toHaveBeenCalledWith('contract-1', {
+      kind: 'tenant',
+      tenantId: 'agency-1',
+    })
     expect(users.findByEmail).not.toHaveBeenCalled()
   })
 

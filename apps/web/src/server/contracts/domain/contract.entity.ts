@@ -76,13 +76,17 @@ export interface NewContract {
   parties: NewContractParty[]
 }
 
-// Limits contract access to properties the actor is responsible for (AGENT).
-export interface ContractAccessScope {
+// Limits contract management to properties the actor is responsible for (AGENT).
+export interface ContractManageScope {
   responsibleId?: string
 }
 
+// Reads stay inside the actor's tenant (and the AGENT's properties), except for a RENTER, who
+// reads only the contracts where it is the linked LOCATARIO party, in any tenant.
+export type ContractReadScope =
+  ({ kind: 'tenant'; tenantId: string } & ContractManageScope) | { kind: 'party'; userId: string }
+
 export interface ContractListFilters {
-  tenantId: string
   status?: ContractStatus
   type?: ContractType
   propertyId?: string

@@ -1,8 +1,9 @@
 import type {
   Contract,
-  ContractAccessScope,
   ContractListFilters,
   ContractListResult,
+  ContractManageScope,
+  ContractReadScope,
   EligibleOpportunity,
   NewContract,
 } from '../../domain/contract.entity'
@@ -12,15 +13,11 @@ export interface ContractRepository {
   findEligibleOpportunity(
     tenantId: string,
     opportunityId: string,
-    scope: ContractAccessScope,
+    scope: ContractManageScope,
   ): Promise<EligibleOpportunity | null>
   create(input: NewContract): Promise<Contract>
-  findMany(filters: ContractListFilters, scope: ContractAccessScope): Promise<ContractListResult>
-  findById(
-    tenantId: string,
-    contractId: string,
-    scope: ContractAccessScope,
-  ): Promise<Contract | null>
+  findMany(filters: ContractListFilters, scope: ContractReadScope): Promise<ContractListResult>
+  findById(contractId: string, scope: ContractReadScope): Promise<Contract | null>
   signParty(
     tenantId: string,
     contractId: string,

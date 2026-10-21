@@ -245,15 +245,15 @@ describe('ListContractsUseCase', () => {
       const useCase = new ListContractsUseCase(repository)
 
       await useCase.execute({
-        tenantId: 'tenant-1',
+        actorTenantId: 'tenant-1',
         actorId: 'user-1',
         actorPapel,
         status: 'ATIVO',
       })
 
       expect(repository.findMany).toHaveBeenCalledWith(
-        { tenantId: 'tenant-1', status: 'ATIVO' },
-        {},
+        { status: 'ATIVO' },
+        { kind: 'tenant', tenantId: 'tenant-1' },
       )
     },
   )
@@ -262,22 +262,30 @@ describe('ListContractsUseCase', () => {
     const repository = createRepository()
     const useCase = new ListContractsUseCase(repository)
 
-    await useCase.execute({ tenantId: 'tenant-1', actorId: 'agent-1', actorPapel: 'AGENT' })
+    await useCase.execute({ actorTenantId: 'tenant-1', actorId: 'agent-1', actorPapel: 'AGENT' })
 
     expect(repository.findMany).toHaveBeenCalledWith(
-      { tenantId: 'tenant-1' },
-      { responsibleId: 'agent-1' },
+      {},
+      { kind: 'tenant', tenantId: 'tenant-1', responsibleId: 'agent-1' },
     )
   })
 
-  it('lança 403 para RENTER sem consultar o repositório', async () => {
+  it('lista para o RENTER só os contratos em que ele é a parte vinculada, em qualquer tenant', async () => {
     const repository = createRepository()
     const useCase = new ListContractsUseCase(repository)
 
-    await expect(
-      useCase.execute({ tenantId: 'tenant-1', actorId: 'renter-1', actorPapel: 'RENTER' }),
-    ).rejects.toThrow(ContractRenterForbiddenError)
-    expect(repository.findMany).not.toHaveBeenCalled()
+    await useCase.execute({
+      actorTenantId: 'locatarios',
+      actorId: 'renter-1',
+      actorPapel: 'RENTER',
+      search: 'Jardins',
+      page: 2,
+    })
+
+    expect(repository.findMany).toHaveBeenCalledWith(
+      { search: 'Jardins', page: 2 },
+      { kind: 'party', userId: 'renter-1' },
+    )
   })
 })
 
@@ -305,7 +313,10 @@ describe('GetContractUseCase', () => {
     const result = await useCase.execute(baseGetInput)
 
     expect(result).toEqual(contract)
-    expect(repository.findById).toHaveBeenCalledWith('tenant-1', 'contract-1', {})
+    expect(repository.findById).toHaveBeenCalledWith('contract-1', {
+      kind: 'tenant',
+      tenantId: 'tenant-1',
+    })
   })
 
   it('busca o contrato do AGENT só entre os imóveis pelos quais ele é responsável', async () => {
@@ -314,7 +325,9 @@ describe('GetContractUseCase', () => {
 
     await useCase.execute({ ...baseGetInput, actorId: 'agent-1', actorPapel: 'AGENT' })
 
-    expect(repository.findById).toHaveBeenCalledWith('tenant-1', 'contract-1', {
+    expect(repository.findById).toHaveBeenCalledWith('contract-1', {
+      kind: 'tenant',
+      tenantId: 'tenant-1',
       responsibleId: 'agent-1',
     })
   })
@@ -328,14 +341,30 @@ describe('GetContractUseCase', () => {
     ).rejects.toThrow(ContractNotFoundError)
   })
 
-  it('lança 403 para RENTER sem consultar o repositório', async () => {
+  it('busca o contrato do RENTER só entre os contratos em que ele é a parte vinculada', async () => {
     const repository = createRepository()
     const useCase = new GetContractUseCase(repository)
 
+    await useCase.execute({
+      ...baseGetInput,
+      actorTenantId: 'locatarios',
+      actorId: 'renter-1',
+      actorPapel: 'RENTER',
+    })
+
+    expect(repository.findById).toHaveBeenCalledWith('contract-1', {
+      kind: 'party',
+      userId: 'renter-1',
+    })
+  })
+
+  it('responde 404 para o RENTER quando ele não é parte vinculada do contrato', async () => {
+    const repository = createRepository({ findById: vi.fn().mockResolvedValue(null) })
+    const useCase = new GetContractUseCase(repository)
+
     await expect(
-      useCase.execute({ ...baseGetInput, actorId: 'renter-1', actorPapel: 'RENTER' }),
-    ).rejects.toThrow(ContractRenterForbiddenError)
-    expect(repository.findById).not.toHaveBeenCalled()
+      useCase.execute({ ...baseGetInput, actorId: 'renter-2', actorPapel: 'RENTER' }),
+    ).rejects.toThrow(ContractNotFoundError)
   })
 })
 
@@ -354,7 +383,7 @@ describe('SignContractPartyUseCase', () => {
 
     await expect(
       useCase.execute({ ...baseSignInput, actorId: 'renter-1', actorPapel: 'RENTER' }),
-    ).rejects.toMatchObject({ code: 'FORBIDDEN' })
+    ).rejects.toThrow(ContractRenterForbiddenError)
     expect(repository.findById).not.toHaveBeenCalled()
   })
 
@@ -373,7 +402,9 @@ describe('SignContractPartyUseCase', () => {
 
     await useCase.execute(baseSignInput)
 
-    expect(repository.findById).toHaveBeenCalledWith('tenant-1', 'contract-1', {
+    expect(repository.findById).toHaveBeenCalledWith('contract-1', {
+      kind: 'tenant',
+      tenantId: 'tenant-1',
       responsibleId: 'agent-1',
     })
   })
@@ -395,8 +426,9 @@ describe('SignContractPartyUseCase', () => {
     await useCase.execute({ ...baseSignInput, actorId: 'admin-1', actorPapel: 'ADMIN' })
     await useCase.execute({ ...baseSignInput, actorId: 'owner-1', actorPapel: 'OWNER' })
 
-    expect(repository.findById).toHaveBeenNthCalledWith(1, 'tenant-1', 'contract-1', {})
-    expect(repository.findById).toHaveBeenNthCalledWith(2, 'tenant-1', 'contract-1', {})
+    const tenantScope = { kind: 'tenant', tenantId: 'tenant-1' }
+    expect(repository.findById).toHaveBeenNthCalledWith(1, 'contract-1', tenantScope)
+    expect(repository.findById).toHaveBeenNthCalledWith(2, 'contract-1', tenantScope)
     expect(repository.signParty).toHaveBeenCalledTimes(2)
   })
 

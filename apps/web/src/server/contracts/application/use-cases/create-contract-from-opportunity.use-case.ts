@@ -1,6 +1,6 @@
 import type { Papel } from '@server/auth/domain/user.entity'
 
-import { resolveContractAccessScope } from '../../domain/contract-access-rules'
+import { resolveContractManageScope } from '../../domain/contract-access-rules'
 import {
   GuarantorPartyRequiredError,
   OpportunityAlreadyHasContractError,
@@ -32,7 +32,7 @@ export class CreateContractFromOpportunityUseCase {
   constructor(private readonly contractRepository: ContractRepository) {}
 
   async execute(input: CreateContractFromOpportunityInput): Promise<Contract> {
-    const scope = resolveContractAccessScope(input.actorId, input.actorPapel)
+    const scope = resolveContractManageScope(input.actorId, input.actorPapel)
 
     if (input.guaranteeType === 'FIADOR' && !input.guarantor) {
       throw new GuarantorPartyRequiredError()

@@ -6,6 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
 
+import { POST as linkPartyUser } from '../[id]/parties/[partyId]/link-user/route'
 import { POST as signParty } from '../[id]/parties/[partyId]/sign/route'
 import { GET as getContract } from '../[id]/route'
 import { GET, POST } from '../route'
@@ -15,6 +16,9 @@ describe('/api/contracts (integração)', () => {
   let tenantId: string
   let actorToken: string
   let renterToken: string
+  let sharedTenantId: string
+  let linkedRenterToken: string
+  const tenantPartyEmail = `mariana-${randomUUID()}@example.com`
   let adminToken: string
   let otherAgentToken: string
   let acceptedOpportunityId: string
@@ -64,6 +68,22 @@ describe('/api/contracts (integração)', () => {
       ativo: renter.ativo,
       vinculoAprovadoEm: renter.vinculoAprovadoEm,
     })
+
+    // A RENTER from the shared renters tenant, linked later to the contract's LOCATARIO party.
+    const sharedTenant = await prisma.tenant.create({
+      data: { nome: 'Locatários', slug: `locatarios-${randomUUID()}` },
+    })
+    sharedTenantId = sharedTenant.id
+    const linkedRenter = await prisma.usuario.create({
+      data: {
+        tenantId: sharedTenantId,
+        nome: 'Mariana Souza',
+        email: tenantPartyEmail,
+        senhaHash: 'hash-fake',
+        papel: 'RENTER',
+      },
+    })
+    linkedRenterToken = await tokenService.sign(linkedRenter)
 
     adminToken = await createUserToken('ADMIN')
     otherAgentToken = await createUserToken('AGENT')
@@ -132,6 +152,9 @@ describe('/api/contracts (integração)', () => {
     if (tenantId) {
       await prisma.tenant.delete({ where: { id: tenantId } })
     }
+    if (sharedTenantId) {
+      await prisma.tenant.delete({ where: { id: sharedTenantId } })
+    }
     await prisma.$disconnect()
   })
 
@@ -154,7 +177,7 @@ describe('/api/contracts (integração)', () => {
     adjustmentIndex: 'IGPM',
     guaranteeType: 'CAUCAO',
     owner: { name: 'Bruno Oliveira', cpf: '11111111111', email: 'bruno@example.com' },
-    tenant: { name: 'Mariana Souza', cpf: '22222222222', email: 'mariana@example.com' },
+    tenant: { name: 'Mariana Souza', cpf: '22222222222', email: tenantPartyEmail },
   }
 
   it('retorna 403 quando um RENTER tenta criar contrato', async () => {
@@ -320,19 +343,76 @@ describe('/api/contracts (integração)', () => {
     expect(json.error.code).toBe('CONTRACT_NOT_FOUND')
   })
 
-  it('retorna 403 quando um RENTER lista ou consulta contratos', async () => {
-    const listResponse = await GET(
-      buildRequest('http://localhost/api/contracts', 'GET', undefined, renterToken),
-    )
-    const detailResponse = await getContract(
-      buildRequest(`http://localhost/api/contracts/${contractId}`, 'GET', undefined, renterToken),
+  function listAs(token: string, query = '') {
+    return GET(buildRequest(`http://localhost/api/contracts${query}`, 'GET', undefined, token))
+  }
+
+  function getAs(token: string) {
+    return getContract(
+      buildRequest(`http://localhost/api/contracts/${contractId}`, 'GET', undefined, token),
       { params: Promise.resolve({ id: contractId }) },
     )
+  }
 
-    expect(listResponse.status).toBe(403)
-    expect((await listResponse.json()).error.code).toBe('FORBIDDEN')
-    expect(detailResponse.status).toBe(403)
-    expect((await detailResponse.json()).error.code).toBe('FORBIDDEN')
+  it('esconde o contrato do RENTER sem vínculo, mesmo no tenant da imobiliária (lista vazia e 404)', async () => {
+    const listResponse = await listAs(renterToken)
+    const detailResponse = await getAs(renterToken)
+    const list = await listResponse.json()
+
+    expect(listResponse.status).toBe(200)
+    expect(list.items).toEqual([])
+    expect(list.totalCount).toBe(0)
+    expect(detailResponse.status).toBe(404)
+    expect((await detailResponse.json()).error.code).toBe('CONTRACT_NOT_FOUND')
+  })
+
+  it('lista e consulta para o RENTER vinculado o contrato de outra imobiliária, com busca e contagem no mesmo escopo', async () => {
+    expect((await listAs(linkedRenterToken)).status).toBe(200)
+    expect((await getAs(linkedRenterToken)).status).toBe(404)
+
+    const linkResponse = await linkPartyUser(
+      buildRequest(
+        `http://localhost/api/contracts/${contractId}/parties/${tenantPartyId}/link-user`,
+        'POST',
+        { email: tenantPartyEmail },
+        adminToken,
+      ),
+      partyContext(contractId, tenantPartyId),
+    )
+    expect(linkResponse.status).toBe(200)
+
+    const list = await (await listAs(linkedRenterToken)).json()
+    expect(list.items.map((item: { id: string }) => item.id)).toEqual([contractId])
+    expect(list.totalCount).toBe(1)
+
+    const matching = await (await listAs(linkedRenterToken, '?search=Batel')).json()
+    expect(matching.totalCount).toBe(1)
+    const notMatching = await (await listAs(linkedRenterToken, '?search=Inexistente')).json()
+    expect(notMatching.items).toEqual([])
+    expect(notMatching.totalCount).toBe(0)
+
+    const detailResponse = await getAs(linkedRenterToken)
+    expect(detailResponse.status).toBe(200)
+    expect((await detailResponse.json()).contract.id).toBe(contractId)
+  })
+
+  it('retorna 403 quando o RENTER vinculado tenta assinar o contrato que consegue consultar', async () => {
+    const response = await signParty(
+      buildRequest(
+        `http://localhost/api/contracts/${contractId}/parties/${tenantPartyId}/sign`,
+        'POST',
+        undefined,
+        linkedRenterToken,
+      ),
+      partyContext(contractId, tenantPartyId),
+    )
+
+    expect(response.status).toBe(403)
+    expect((await response.json()).error.code).toBe('FORBIDDEN')
+    const signature = await prisma.assinatura.findUniqueOrThrow({
+      where: { parteContratoId: tenantPartyId },
+    })
+    expect(signature.status).toBe('PENDENTE')
   })
 
   function partyContext(id: string, partyId: string) {

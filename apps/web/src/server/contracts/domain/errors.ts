@@ -20,7 +20,7 @@ export class ContractNotFoundError extends AppError {
 
 export class ContractRenterForbiddenError extends ForbiddenError {
   constructor() {
-    super('Locatários não podem acessar contratos.')
+    super('Locatários não podem gerenciar contratos.')
   }
 }
 

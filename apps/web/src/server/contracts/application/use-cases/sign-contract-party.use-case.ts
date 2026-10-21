@@ -1,6 +1,6 @@
 import type { Papel } from '@server/auth/domain/user.entity'
 
-import { resolveContractAccessScope } from '../../domain/contract-access-rules'
+import { resolveContractManageScope } from '../../domain/contract-access-rules'
 import {
   ContractNotFoundError,
   ContractPartyAlreadySignedError,
@@ -21,12 +21,12 @@ export class SignContractPartyUseCase {
   constructor(private readonly contractRepository: ContractRepository) {}
 
   async execute(input: SignContractPartyInput): Promise<Contract> {
-    const scope = resolveContractAccessScope(input.actorId, input.actorPapel)
-    const contract = await this.contractRepository.findById(
-      input.actorTenantId,
-      input.contractId,
-      scope,
-    )
+    const scope = resolveContractManageScope(input.actorId, input.actorPapel)
+    const contract = await this.contractRepository.findById(input.contractId, {
+      kind: 'tenant',
+      tenantId: input.actorTenantId,
+      ...scope,
+    })
 
     if (!contract) {
       throw new ContractNotFoundError()

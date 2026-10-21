@@ -1,10 +1,13 @@
+import type { Prisma } from '@prisma/client'
+
 import { prisma } from '@server/db/prisma'
 
 import type {
   Contract,
-  ContractAccessScope,
   ContractListFilters,
   ContractListResult,
+  ContractManageScope,
+  ContractReadScope,
   EligibleOpportunity,
   NewContract,
 } from '../domain/contract.entity'
@@ -80,8 +83,24 @@ async function generateContractCode(): Promise<string> {
 
 const usuarioRefSelect = { select: { id: true, nome: true } } as const
 
-function scopeWhere(scope: ContractAccessScope) {
+function scopeWhere(scope: ContractManageScope) {
   return scope.responsibleId ? { imovel: { responsavelId: scope.responsibleId } } : {}
+}
+
+function contractReadWhere(scope: ContractReadScope): Prisma.ContratoWhereInput {
+  if (scope.kind === 'party') {
+    return {
+      partes: {
+        some: {
+          papel: 'LOCATARIO',
+          usuarioId: scope.userId,
+          usuario: { ativo: true, papel: 'RENTER' },
+        },
+      },
+    }
+  }
+
+  return { tenantId: scope.tenantId, ...scopeWhere(scope) }
 }
 
 const contractInclude = {
@@ -110,7 +129,7 @@ export class PrismaContractRepository implements ContractRepository {
   async findEligibleOpportunity(
     tenantId: string,
     opportunityId: string,
-    scope: ContractAccessScope,
+    scope: ContractManageScope,
   ): Promise<EligibleOpportunity | null> {
     const opportunity = await prisma.oportunidade.findFirst({
       where: { tenantId, id: opportunityId, ...scopeWhere(scope) },
@@ -168,18 +187,19 @@ export class PrismaContractRepository implements ContractRepository {
 
   async findMany(
     filters: ContractListFilters,
-    scope: ContractAccessScope,
+    scope: ContractReadScope,
   ): Promise<ContractListResult> {
     const page = filters.page && filters.page > 0 ? Math.floor(filters.page) : 1
     const pageSize = filters.pageSize && filters.pageSize > 0 ? Math.floor(filters.pageSize) : 10
     const search = filters.search?.trim()
 
-    const where = {
-      tenantId: filters.tenantId,
+    // The read scope goes into the same `where` as the filters, so search, count and pagination
+    // never see contracts outside it; AND keeps a filter from overwriting it.
+    const where: Prisma.ContratoWhereInput = {
+      AND: [contractReadWhere(scope)],
       status: filters.status,
       tipo: filters.type,
       imovelId: filters.propertyId,
-      ...scopeWhere(scope),
       ...(search
         ? {
             OR: [
@@ -245,17 +265,9 @@ export class PrismaContractRepository implements ContractRepository {
     }
   }
 
-  async findById(
-    tenantId: string,
-    contractId: string,
-    scope: ContractAccessScope,
-  ): Promise<Contract | null> {
+  async findById(contractId: string, scope: ContractReadScope): Promise<Contract | null> {
     const contrato = await prisma.contrato.findFirst({
-      where: {
-        tenantId,
-        id: contractId,
-        ...scopeWhere(scope),
-      },
+      where: { id: contractId, ...contractReadWhere(scope) },
       include: contractInclude,
     })
 
