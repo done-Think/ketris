@@ -8,18 +8,24 @@ const TIMEOUT_MS = 3_000
 export class PrismaDatabaseHealthProbe implements DatabaseHealthProbe {
   async check(): Promise<DatabaseHealth> {
     const startedAt = performance.now()
+    let timeout: ReturnType<typeof setTimeout> | undefined
 
     try {
       await Promise.race([
         prisma.$queryRaw`SELECT 1`,
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('database health check timed out')), TIMEOUT_MS),
-        ),
+        new Promise((_, reject) => {
+          timeout = setTimeout(
+            () => reject(new Error('database health check timed out')),
+            TIMEOUT_MS,
+          )
+        }),
       ])
 
       return { status: 'up', latencyMs: Math.round(performance.now() - startedAt) }
     } catch {
       return { status: 'down', latencyMs: null }
+    } finally {
+      clearTimeout(timeout)
     }
   }
 }
