@@ -11,7 +11,8 @@ function createDeps(overrides?: { cancel?: AgendaEventRepository['cancel'] }) {
   const agendaEventRepository: AgendaEventRepository = {
     create: vi.fn(),
     list: vi.fn(),
-    findByTenantAndId: vi.fn(),
+    findByScopeAndId: vi.fn(),
+    findByTenantAndId: vi.fn().mockResolvedValue(cancelledEvent),
     update: vi.fn(),
     reschedule: vi.fn(),
     cancel: overrides?.cancel ?? vi.fn().mockResolvedValue(cancelledEvent),

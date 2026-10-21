@@ -38,6 +38,34 @@ describe('AgendaService', () => {
     service = new AgendaService(http as unknown as HttpClient)
   })
 
+  it('offers only active approved agents from the tenant-scoped user endpoint', async () => {
+    http.get.mockResolvedValue({
+      users: [
+        { id: 'agent', name: 'Ana', role: 'AGENT', active: true, pendingApproval: false },
+        { id: 'inactive', role: 'AGENT', active: false, pendingApproval: false },
+        { id: 'pending', role: 'AGENT', active: true, pendingApproval: true },
+        { id: 'owner', role: 'OWNER', active: true, pendingApproval: false },
+      ],
+    })
+    expect(await service.listAgents()).toEqual([{ id: 'agent', name: 'Ana' }])
+    expect(http.get).toHaveBeenCalledWith('/auth/users')
+  })
+
+  it('loads every page of authorized charges and tickets instead of truncating the agenda', async () => {
+    http.get
+      .mockResolvedValueOnce({ items: [{ id: 'first' }], totalCount: 2 })
+      .mockResolvedValueOnce({ items: [{ id: 'second' }], totalCount: 2 })
+      .mockResolvedValueOnce({ items: [], totalCount: 0 })
+    expect(await service.listCharges()).toEqual([{ id: 'first' }, { id: 'second' }])
+    expect(http.get).toHaveBeenNthCalledWith(2, '/financial/charges', {
+      params: { page: 2, pageSize: 100 },
+    })
+    expect(await service.listMaintenance()).toEqual([])
+    expect(http.get).toHaveBeenLastCalledWith('/maintenance/tickets', {
+      params: { page: 1, pageSize: 100 },
+    })
+  })
+
   it('lists events for a period and unwraps the response', async () => {
     http.get.mockResolvedValueOnce({ events: [event] })
 

@@ -13,7 +13,7 @@
       "metadataTitle": "Ketris | Financeiro"
     },
     "maintenance": {
-      "metadataTitle": "Ketris | Chamados de Manuten\u00e7\u00e3o"
+      "metadataTitle": "Ketris | Chamados de Manutenção"
     },
     "leads": {
       "metadataTitle": "Ketris | Leads"
@@ -37,10 +37,22 @@
     "notifications": "Notificações",
     "performanceTitle": "Desempenho 6 meses",
     "metrics": {
-      "leadsActive": { "label": "Leads ativos", "caption": "{count} hoje" },
-      "visitsMonth": { "label": "Visitas mês", "caption": "{count} hoje" },
-      "proposals": { "label": "Propostas", "caption": "{count} aguardando resposta" },
-      "revenue": { "label": "Faturamento", "caption": "{amount} em atraso" }
+      "leadsActive": {
+        "label": "Leads ativos",
+        "caption": "{count} hoje"
+      },
+      "visitsMonth": {
+        "label": "Visitas mês",
+        "caption": "{count} hoje"
+      },
+      "proposals": {
+        "label": "Propostas",
+        "caption": "{count} aguardando resposta"
+      },
+      "revenue": {
+        "label": "Faturamento",
+        "caption": "{amount} em atraso"
+      }
     },
     "activityDetail": {
       "close": "Fechar",
@@ -165,10 +177,10 @@
     }
   },
   "maintenance": {
-    "title": "Chamados de Manuten\u00e7\u00e3o",
-    "subtitle": "Acompanhe solicita\u00e7\u00f5es de reparo e manuten\u00e7\u00e3o",
+    "title": "Chamados de Manutenção",
+    "subtitle": "Acompanhe solicitações de reparo e manutenção",
     "search": "Buscar chamado...",
-    "allProperties": "Todos os Im\u00f3veis",
+    "allProperties": "Todos os Imóveis",
     "newTicket": "Novo Chamado",
     "filterDialog": {
       "open": "Filtros",
@@ -182,30 +194,40 @@
       "inProgress": "Em andamento",
       "urgent": "Urgente",
       "resolved": "Resolvido",
-      "closed": "Fechado"
+      "closed": "Fechado",
+      "pendingConfirmation": "Aguardando confirmação",
+      "contested": "Contestado",
+      "cancelled": "Cancelado"
     },
     "metrics": {
       "open": "Abertos",
       "urgent": "Urgentes",
-      "averageResolution": "Tempo m\u00e9dio resolu\u00e7\u00e3o",
+      "averageResolution": "Tempo médio resolução",
       "averageResolutionUnit": "{days} dias"
     },
     "columns": {
       "ticket": "Chamado",
-      "property": "Im\u00f3vel",
+      "property": "Imóvel",
       "category": "Categoria",
       "priority": "Prioridade",
-      "tenant": "Locat\u00e1rio",
+      "tenant": "Locatário",
       "openedAt": "Aberto em",
       "status": "Status",
-      "actions": "A\u00e7\u00f5es"
+      "actions": "Ações"
     },
-    "priorities": { "urgent": "Urgente", "high": "Alta", "normal": "Normal" },
+    "priorities": {
+      "urgent": "Urgente",
+      "high": "Alta",
+      "normal": "Normal"
+    },
     "statuses": {
       "inProgress": "Em andamento",
       "open": "Aberto",
       "resolved": "Resolvido",
-      "closed": "Fechado"
+      "closed": "Fechado",
+      "pendingConfirmation": "Aguardando confirmação",
+      "contested": "Contestado",
+      "cancelled": "Cancelado"
     },
     "viewTicket": "Visualizar chamado {ticket}",
     "showing": "Mostrando {from}-{to} de {total} chamados",
@@ -222,43 +244,52 @@
         "priority": "Prioridade",
         "title": "Título do Chamado",
         "description": "Relato do Problema",
-        "descriptionPlaceholder": "Descreva o problema..."
+        "descriptionPlaceholder": "Descreva o problema...",
+        "contract": "Contrato / imóvel"
       },
       "errors": {
         "propertyRequired": "Selecione o imóvel",
         "categoryRequired": "Selecione a categoria",
         "priorityRequired": "Selecione a prioridade",
         "titleRequired": "Informe o título do chamado",
-        "descriptionRequired": "Descreva o problema"
-      }
+        "descriptionRequired": "Descreva o problema",
+        "contractRequired": "Selecione o contrato"
+      },
+      "discardDraft": "Descartar rascunho",
+      "saveDraftAndClose": "Salvar e fechar",
+      "discardTitle": "Descartar o preenchimento?",
+      "currentContract": "Contrato atual"
     },
     "actions": {
       "menu": "Ações do chamado {ticket}",
       "edit": "Editar chamado",
       "delete": "Excluir chamado",
       "deleteTitle": "Excluir chamado?",
-      "deleteDescription": "Deseja realmente excluir este chamado? Esta ação não poderá ser desfeita."
+      "deleteDescription": "O chamado ficará arquivado e poderá ser restaurado pelo administrador."
     },
-    "pagination": { "previous": "Anterior", "next": "Pr\u00f3ximo" },
+    "pagination": {
+      "previous": "Anterior",
+      "next": "Próximo"
+    },
     "notifications": {
       "createSuccess": "Chamado criado com sucesso.",
-      "createError": "N\u00e3o foi poss\u00edvel criar o chamado.",
+      "createError": "Não foi possível criar o chamado.",
       "updateSuccess": "Chamado atualizado com sucesso.",
-      "updateError": "N\u00e3o foi poss\u00edvel salvar as altera\u00e7\u00f5es.",
-      "deleteSuccess": "Chamado exclu\u00eddo com sucesso.",
-      "deleteError": "N\u00e3o foi poss\u00edvel excluir o chamado.",
+      "updateError": "Não foi possível salvar as alterações.",
+      "deleteSuccess": "Chamado excluído com sucesso.",
+      "deleteError": "Não foi possível excluir o chamado.",
       "resolveSuccess": "Chamado marcado como resolvido.",
-      "resolveError": "N\u00e3o foi poss\u00edvel marcar o chamado como resolvido.",
+      "resolveError": "Não foi possível marcar o chamado como resolvido.",
       "noteSuccess": "Mensagem enviada.",
-      "noteError": "N\u00e3o foi poss\u00edvel enviar a mensagem.",
+      "noteError": "Não foi possível enviar a mensagem.",
       "attachmentSuccess": "Arquivo anexado com sucesso.",
-      "attachmentError": "N\u00e3o foi poss\u00edvel anexar o arquivo."
+      "attachmentError": "Não foi possível anexar o arquivo."
     },
     "detail": {
       "back": "Voltar para chamados",
       "loading": "Carregando chamado...",
       "notFound": {
-        "title": "Chamado n\u00e3o encontrado",
+        "title": "Chamado não encontrado",
         "action": "Voltar para chamados"
       },
       "actions": {
@@ -268,7 +299,7 @@
         "sendMessage": "Enviar Mensagem"
       },
       "descriptionCard": {
-        "title": "Descri\u00e7\u00e3o do Chamado",
+        "title": "Descrição do Chamado",
         "openedBy": "Aberto por",
         "report": "Relato do problema"
       },
@@ -277,16 +308,93 @@
         "empty": "Nenhuma foto anexada a este chamado."
       },
       "timeline": {
-        "title": "Linha do Tempo e Atualiza\u00e7\u00f5es",
-        "empty": "Nenhuma atualiza\u00e7\u00e3o registrada ainda.",
-        "placeholder": "Escreva uma mensagem ou atualiza\u00e7\u00e3o sobre o chamado...",
+        "title": "Linha do Tempo e Atualizações",
+        "empty": "Nenhuma atualização registrada ainda.",
+        "placeholder": "Escreva uma mensagem ou atualização sobre o chamado...",
         "systemAuthor": "Sistema"
       },
       "info": {
-        "title": "Informa\u00e7\u00f5es Gerais",
-        "lastUpdated": "\u00daltima atualiza\u00e7\u00e3o",
-        "dateTime": "{date} \u00e0s {time}"
+        "title": "Informações Gerais",
+        "lastUpdated": "Última atualização",
+        "dateTime": "{date} às {time}"
       }
+    },
+    "activeTickets": "Ativos",
+    "archivedTickets": "Arquivados",
+    "workflow": {
+      "linkContract": "Associar contrato",
+      "contract": "Contrato do chamado",
+      "linkContractHelp": "Selecione o contrato correto deste imóvel. A associação preserva o status, a data de resolução, o arquivamento e o histórico do chamado.",
+      "assume": "Assumir chamado",
+      "assign": "Atribuir responsável",
+      "provider": "Definir prestador",
+      "requestReplacement": "Solicitar troca",
+      "start": "Iniciar atendimento",
+      "complete": "Concluir atendimento",
+      "confirm": "Confirmar resolução",
+      "contest": "Contestar resolução",
+      "cancel": "Cancelar chamado",
+      "reopen": "Reabrir chamado",
+      "restore": "Restaurar chamado",
+      "approveReplacement": "Aprovar troca",
+      "rejectReplacement": "Rejeitar troca",
+      "reason": "Justificativa",
+      "responsible": "Responsável interno",
+      "providerLabel": "Prestador",
+      "unassigned": "Não atribuído",
+      "replacement": "Solicitação de troca",
+      "reopenStatus": "Status de reabertura",
+      "open": "Aberto",
+      "inProgress": "Em andamento",
+      "name": "Nome da pessoa ou empresa",
+      "phone": "Telefone",
+      "email": "E-mail",
+      "notes": "Observações",
+      "back": "Voltar",
+      "save": "Confirmar",
+      "success": "Ação realizada com sucesso.",
+      "error": "Não foi possível realizar a ação.",
+      "requestStatuses": {
+        "PENDENTE": "Pendente",
+        "APROVADA": "Aprovada",
+        "REJEITADA": "Rejeitada"
+      },
+      "finish": "Finalizar chamado",
+      "finishConfirmation": "Você confirma que o problema foi resolvido? O chamado será marcado como resolvido e o histórico será preservado."
+    },
+    "links": {
+      "title": "Regularizar vínculos",
+      "contract": "Contrato / imóvel",
+      "owner": "Usuário proprietário do imóvel",
+      "party": "Parte locatária do contrato",
+      "renter": "Usuário inquilino",
+      "unchanged": "Manter vínculo atual",
+      "back": "Voltar",
+      "save": "Salvar vínculos",
+      "success": "Vínculos atualizados.",
+      "error": "Não foi possível atualizar os vínculos."
+    },
+    "scheduleNotSet": "Ainda não agendado",
+    "empty": "Nenhum chamado encontrado.",
+    "renter": {
+      "subtitle": "Abra e acompanhe chamados dos imóveis vinculados aos seus contratos.",
+      "resolutionNotice": "Se o problema foi resolvido, você pode finalizar o chamado. Se o serviço não ficou correto, pode contestar informando um motivo.",
+      "readOnlyNotice": "Este chamado está encerrado e disponível somente para consulta.",
+      "resolvedNotice": "Você pode acrescentar notas ou reabrir este chamado com uma justificativa. As informações já registradas serão preservadas."
+    },
+    "schedule": {
+      "title": "Agendamento da manutenção",
+      "dateLabel": "Data do atendimento",
+      "hourLabel": "Hora (24h)",
+      "minuteLabel": "Minuto",
+      "summaryLabel": "Atendimento agendado",
+      "save": "Salvar data",
+      "providerRequired": "Defina um prestador para liberar o agendamento.",
+      "coordinationNotice": "Antes de marcar o atendimento aqui, combine a data e o horário com o prestador selecionado.",
+      "required": "Informe a data e o horário do atendimento.",
+      "invalid": "Informe uma data e um horário válidos.",
+      "success": "Data do atendimento salva.",
+      "error": "Não foi possível salvar a data do atendimento."
     }
   },
   "finance": {

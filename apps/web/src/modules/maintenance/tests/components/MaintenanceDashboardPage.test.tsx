@@ -12,6 +12,7 @@ import {
   useMaintenanceTicket,
   useMaintenanceTickets,
   useUpdateMaintenanceTicket,
+  useMaintenanceOptions,
 } from '../../hooks/use-maintenance'
 import type { ApiMaintenanceTicket, ApiMaintenanceTicketListItem } from '../../types/service'
 
@@ -29,6 +30,7 @@ vi.mock('../../hooks/use-maintenance', () => ({
   useCreateMaintenanceTicket: vi.fn(),
   useUpdateMaintenanceTicket: vi.fn(),
   useDeleteMaintenanceTicket: vi.fn(),
+  useMaintenanceOptions: vi.fn(),
 }))
 
 vi.mock('@modules/properties/hooks/use-properties', () => ({
@@ -98,6 +100,7 @@ const properties = [
 ]
 
 const fullTicket: ApiMaintenanceTicket = {
+  contractId: 'c-p1',
   id: 'MNT-0089',
   propertyId: 'p1',
   propertyTitle: 'Apt Jardins 3q',
@@ -133,7 +136,10 @@ function mockDefaults() {
     )
 
     return {
-      data: { items: filtered, totalCount: filtered.length },
+      data: {
+        items: filtered.map((item) => ({ ...item, permissions: { edit: true, delete: true } })),
+        totalCount: filtered.length,
+      },
       isLoading: false,
     } as unknown as ReturnType<typeof useMaintenanceTickets>
   })
@@ -149,6 +155,21 @@ function mockDefaults() {
   vi.mocked(useProperties).mockReturnValue({
     data: properties,
   } as unknown as ReturnType<typeof useProperties>)
+  vi.mocked(useMaintenanceOptions).mockReturnValue({
+    data: {
+      contracts: properties.map((property) => ({
+        id: `c-${property.id}`,
+        code: `C-${property.id}`,
+        propertyId: property.id,
+        propertyTitle: property.title,
+        agentId: 'agent',
+        ownerId: null,
+        renterIds: [],
+        parties: [],
+      })),
+      users: [],
+    },
+  } as unknown as ReturnType<typeof useMaintenanceOptions>)
 
   vi.mocked(useCreateMaintenanceTicket).mockReturnValue({
     mutateAsync: vi.fn().mockResolvedValue(fullTicket),
@@ -223,8 +244,8 @@ describe('MaintenanceDashboardPage', () => {
     const createMutation = vi.mocked(useCreateMaintenanceTicket).mock.results[0].value
 
     await user.click(screen.getByRole('button', { name: 'Novo Chamado' }))
-    await user.click(screen.getByLabelText('Imóvel'))
-    await user.click(await screen.findByRole('option', { name: 'Apt Jardins 3q' }))
+    await user.click(screen.getByLabelText('Contrato / imóvel'))
+    await user.click(await screen.findByRole('option', { name: 'C-p1 - Apt Jardins 3q' }))
     await user.click(screen.getByLabelText('Categoria'))
     await user.click(await screen.findByRole('option', { name: 'Hidráulica' }))
     await user.type(screen.getByLabelText('Título do Chamado'), 'Vazamento na cozinha')

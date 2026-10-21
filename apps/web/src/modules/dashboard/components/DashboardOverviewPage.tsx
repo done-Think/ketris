@@ -10,6 +10,7 @@ import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/compo
 import { brand } from '@shared/theme/tokens'
 
 import { useAgendaEvents } from '@modules/agenda/hooks/use-agenda-events'
+import type { AgendaEventApi } from '@modules/agenda/types/agenda-event'
 import { useLeads } from '@modules/crm/hooks/use-leads'
 import { useOpportunities } from '@modules/crm/hooks/use-opportunities'
 import { useFinancialSummary } from '@modules/financial/hooks/use-financial'
@@ -66,7 +67,11 @@ export function DashboardOverviewPage() {
   const leads = useMemo(() => leadsQuery.data ?? [], [leadsQuery.data])
   const opportunities = useMemo(() => opportunitiesQuery.data ?? [], [opportunitiesQuery.data])
   const monthEvents = useMemo(
-    () => (monthEventsQuery.data ?? []).filter((event) => event.status !== 'CANCELLED'),
+    () =>
+      (monthEventsQuery.data ?? []).filter(
+        (event): event is AgendaEventApi =>
+          event.status !== 'CANCELLED' && 'participantName' in event,
+      ),
     [monthEventsQuery.data],
   )
   const financialSummary = financialSummaryQuery.data

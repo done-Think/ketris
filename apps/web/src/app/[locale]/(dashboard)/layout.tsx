@@ -21,9 +21,5 @@ export default async function DashboardLayout({
     redirect(getLocalizedPathname('/login', locale))
   }
 
-  if (session.papel === 'RENTER') {
-    redirect(getLocalizedPathname('/', locale))
-  }
-
   return <Box sx={{ minHeight: '100vh' }}>{children}</Box>
 }

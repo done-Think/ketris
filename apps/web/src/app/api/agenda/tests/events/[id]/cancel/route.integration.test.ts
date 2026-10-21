@@ -122,6 +122,9 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
   it('um evento cancelado libera o horário para um novo agendamento (sem falso conflito)', async () => {
     const { POST: createEvent } = await import('../../../../events/route')
 
+    const cancelResponse = await POST(buildRequest(eventId), context(eventId))
+    expect(cancelResponse.status).toBe(200)
+
     const createRequest = new NextRequest('http://localhost/api/agenda/events', {
       method: 'POST',
       body: JSON.stringify({
