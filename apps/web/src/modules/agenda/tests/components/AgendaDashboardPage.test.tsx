@@ -3,7 +3,7 @@ import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import dayjs from 'dayjs'
 import { useSession } from 'next-auth/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
 
@@ -52,8 +52,8 @@ vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))
 
-const today = dayjs().format('YYYY-MM-DD')
-const twoDaysFromNow = dayjs().add(2, 'day').format('YYYY-MM-DD')
+const today = '2026-10-21'
+const twoDaysFromNow = '2026-10-23'
 
 function makeEvent(overrides: Partial<AgendaEventApi> = {}): AgendaEventApi {
   return {
@@ -138,6 +138,8 @@ function renderPage() {
 
 describe('AgendaDashboardPage', () => {
   beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(`${today}T13:15:34`))
     vi.clearAllMocks()
     vi.mocked(useSession).mockReturnValue({
       data: { tenantId: 'tenant-1' },
@@ -150,6 +152,10 @@ describe('AgendaDashboardPage', () => {
     mockUpdateEvent()
     mockCancelEvent()
     mockPropertiesQuery()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it('renders the header and today events on the calendar', () => {
