@@ -16,6 +16,41 @@ describe('createAgendaEventRequestSchema', () => {
     participantPhone: '(11) 99999-0000',
   }
 
+  it('accepts an internal team event without client contact or property', () => {
+    expect(
+      createAgendaEventRequestSchema.parse({
+        title: base.title,
+        start: base.start,
+        durationMinutes: 60,
+        internal: true,
+        audience: 'ALL_AGENTS',
+      }),
+    ).toMatchObject({
+      internal: true,
+      audience: 'ALL_AGENTS',
+      participantName: '',
+      participantPhone: '',
+    })
+  })
+
+  it('keeps contact and property mandatory for client events', () => {
+    expect(
+      createAgendaEventRequestSchema.safeParse({
+        title: base.title,
+        start: base.start,
+        durationMinutes: 60,
+        internal: false,
+        audience: 'ALL_AGENTS',
+      }).success,
+    ).toBe(false)
+  })
+
+  it('requires an explicit audience for internal events', () => {
+    expect(createAgendaEventRequestSchema.safeParse({ ...base, internal: true }).success).toBe(
+      false,
+    )
+  })
+
   it('aceita payload válido com propertyId', () => {
     const result = createAgendaEventRequestSchema.safeParse({ ...base, propertyId: 'property-1' })
 
@@ -47,7 +82,18 @@ describe('createAgendaEventRequestSchema', () => {
     expect(result.success).toBe(false)
   })
 
-  it('rejeita visita (kind VISIT) com duração menor que 60 minutos', () => {
+  it('rejeita visita (kind VISIT) com duração menor que 30 minutos', () => {
+    const result = createAgendaEventRequestSchema.safeParse({
+      ...base,
+      propertyId: 'property-1',
+      kind: 'VISIT',
+      durationMinutes: 15,
+    })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('aceita visita (kind VISIT) com duração de 30 minutos ou mais', () => {
     const result = createAgendaEventRequestSchema.safeParse({
       ...base,
       propertyId: 'property-1',
@@ -55,21 +101,10 @@ describe('createAgendaEventRequestSchema', () => {
       durationMinutes: 30,
     })
 
-    expect(result.success).toBe(false)
-  })
-
-  it('aceita visita (kind VISIT) com duração de 60 minutos ou mais', () => {
-    const result = createAgendaEventRequestSchema.safeParse({
-      ...base,
-      propertyId: 'property-1',
-      kind: 'VISIT',
-      durationMinutes: 60,
-    })
-
     expect(result.success).toBe(true)
   })
 
-  it('não exige 60 minutos para outros tipos de evento', () => {
+  it('não exige 30 minutos para outros tipos de evento', () => {
     const result = createAgendaEventRequestSchema.safeParse({
       ...base,
       propertyId: 'property-1',
@@ -89,6 +124,37 @@ describe('createAgendaEventRequestSchema', () => {
 
     expect(result.success).toBe(false)
   })
+
+  it('aceita ownerEmail e participantEmails opcionais', () => {
+    const result = createAgendaEventRequestSchema.safeParse({
+      ...base,
+      propertyReference: 'Apto',
+      ownerEmail: 'locatario@ketris.dev',
+      participantEmails: ['fiador@ketris.dev'],
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('rejeita e-mail de vínculo inválido', () => {
+    const result = createAgendaEventRequestSchema.safeParse({
+      ...base,
+      propertyReference: 'Apto',
+      participantEmails: ['nao-e-email'],
+    })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('rejeita mais de 20 participantes', () => {
+    const result = createAgendaEventRequestSchema.safeParse({
+      ...base,
+      propertyReference: 'Apto',
+      participantEmails: Array.from({ length: 21 }, (_, index) => `p${index}@ketris.dev`),
+    })
+
+    expect(result.success).toBe(false)
+  })
 })
 
 describe('updateAgendaEventRequestSchema', () => {
@@ -102,6 +168,11 @@ describe('updateAgendaEventRequestSchema', () => {
     const result = updateAgendaEventRequestSchema.safeParse({ status: 'PENDING' })
 
     expect(result.success).toBe(true)
+  })
+
+  it('aceita ownerEmail null (remover dono) e participantEmails [] (remover todos)', () => {
+    expect(updateAgendaEventRequestSchema.safeParse({ ownerEmail: null }).success).toBe(true)
+    expect(updateAgendaEventRequestSchema.safeParse({ participantEmails: [] }).success).toBe(true)
   })
 })
 

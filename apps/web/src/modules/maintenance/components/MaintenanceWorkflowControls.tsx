@@ -58,15 +58,17 @@ export function MaintenanceWorkflowControls({ ticket }: MaintenanceWorkflowContr
     { permission: 'requestReplacement', action: 'requestReplacement', icon: <UndoRoundedIcon /> },
     { permission: 'start', action: 'start', icon: <PlayArrowRoundedIcon /> },
     { permission: 'complete', action: 'complete', icon: <CheckRoundedIcon /> },
+    { permission: 'finish', action: 'finish', icon: <CheckRoundedIcon /> },
     { permission: 'confirm', action: 'confirm', icon: <CheckRoundedIcon /> },
     { permission: 'contest', action: 'contest', icon: <ReportProblemOutlinedIcon /> },
     { permission: 'cancel', action: 'cancel', icon: <CancelOutlinedIcon /> },
     { permission: 'reopen', action: 'reopen', icon: <UndoRoundedIcon /> },
     { permission: 'restore', action: 'restore', icon: <RestoreFromTrashOutlinedIcon /> },
   ]
-  function choose(action: MaintenanceAction['action'], requestId?: string) {
+  function choose(action: MaintenanceWorkflowSelection['action'], requestId?: string) {
     setSelection({ action, requestId })
     setReason('')
+    setStatus('ABERTO')
     setResponsibleId(ticket.responsibleId ?? '')
     setContractId('')
     setName(action === 'approveReplacement' ? '' : (ticket.provider?.name ?? ''))
@@ -77,7 +79,9 @@ export function MaintenanceWorkflowControls({ ticket }: MaintenanceWorkflowContr
   const providerAction =
     selection?.action === 'provider' || selection?.action === 'approveReplacement'
   const reasonAction =
-    selection && ['contest', 'requestReplacement', 'rejectReplacement'].includes(selection.action)
+    selection &&
+    (['contest', 'requestReplacement', 'rejectReplacement'].includes(selection.action) ||
+      (selection.action === 'reopen' && session?.papel === 'RENTER'))
   const valid =
     (!providerAction || Boolean(name.trim())) &&
     (!reasonAction || Boolean(reason.trim())) &&
@@ -117,7 +121,10 @@ export function MaintenanceWorkflowControls({ ticket }: MaintenanceWorkflowContr
         action = { action: 'assign', responsibleId }
         break
       case 'reopen':
-        action = { action: 'reopen', status }
+        action =
+          session?.papel === 'RENTER'
+            ? { action: 'reopen', status: 'ABERTO', reason }
+            : { action: 'reopen', status }
         break
       default:
         action = { action: selection.action }
@@ -226,6 +233,7 @@ export function MaintenanceWorkflowControls({ ticket }: MaintenanceWorkflowContr
                   </TextField>
                 </>
               )}
+              {selection?.action === 'finish' && <Typography>{t('finishConfirmation')}</Typography>}
               {reasonAction && (
                 <TextField
                   label={t('reason')}
@@ -254,7 +262,7 @@ export function MaintenanceWorkflowControls({ ticket }: MaintenanceWorkflowContr
                     ))}
                 </TextField>
               )}
-              {selection?.action === 'reopen' && (
+              {selection?.action === 'reopen' && session?.papel !== 'RENTER' && (
                 <TextField
                   label={t('reopenStatus')}
                   value={status}

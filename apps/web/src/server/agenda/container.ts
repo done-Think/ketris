@@ -21,7 +21,11 @@ export const agendaContainer = {
   ),
   listAgendaEventsUseCase: new ListAgendaEventsUseCase(agendaEventRepository),
   getAgendaEventUseCase: new GetAgendaEventUseCase(agendaEventRepository),
-  updateAgendaEventUseCase: new UpdateAgendaEventUseCase(agendaEventRepository, propertyRepository),
+  updateAgendaEventUseCase: new UpdateAgendaEventUseCase(
+    agendaEventRepository,
+    propertyRepository,
+    userRepository,
+  ),
   rescheduleAgendaEventUseCase: new RescheduleAgendaEventUseCase(agendaEventRepository),
   cancelAgendaEventUseCase: new CancelAgendaEventUseCase(agendaEventRepository),
 }

@@ -37,10 +37,22 @@
     "notifications": "Notifications",
     "performanceTitle": "6-month performance",
     "metrics": {
-      "leadsActive": { "label": "Active leads", "caption": "{count} today" },
-      "visitsMonth": { "label": "Visits this month", "caption": "{count} today" },
-      "proposals": { "label": "Proposals", "caption": "{count} awaiting response" },
-      "revenue": { "label": "Revenue", "caption": "{amount} overdue" }
+      "leadsActive": {
+        "label": "Active leads",
+        "caption": "{count} today"
+      },
+      "visitsMonth": {
+        "label": "Visits this month",
+        "caption": "{count} today"
+      },
+      "proposals": {
+        "label": "Proposals",
+        "caption": "{count} awaiting response"
+      },
+      "revenue": {
+        "label": "Revenue",
+        "caption": "{amount} overdue"
+      }
     },
     "activityDetail": {
       "close": "Close",
@@ -346,7 +358,9 @@
         "PENDENTE": "Pending",
         "APROVADA": "Approved",
         "REJEITADA": "Rejected"
-      }
+      },
+      "finish": "Finish ticket",
+      "finishConfirmation": "Do you confirm that the problem is resolved? The ticket will be marked as resolved and its history will be preserved."
     },
     "links": {
       "title": "Regularize links",
@@ -359,6 +373,28 @@
       "save": "Save links",
       "success": "Links updated.",
       "error": "Could not update links."
+    },
+    "scheduleNotSet": "Not scheduled yet",
+    "empty": "No tickets found.",
+    "renter": {
+      "subtitle": "Open and track maintenance tickets for properties linked to your contracts.",
+      "resolutionNotice": "If the problem is resolved, you can finish the ticket. If the work was not satisfactory, you can contest it by providing a reason.",
+      "readOnlyNotice": "This ticket is closed and available for viewing only.",
+      "resolvedNotice": "You can add notes or reopen this ticket with a reason. Previously recorded information will be preserved."
+    },
+    "schedule": {
+      "title": "Maintenance scheduling",
+      "dateLabel": "Service date",
+      "hourLabel": "Hour (24h)",
+      "minuteLabel": "Minute",
+      "summaryLabel": "Scheduled service",
+      "save": "Save date",
+      "providerRequired": "Choose a provider to enable scheduling.",
+      "coordinationNotice": "Before recording the service here, agree on the date and time with the selected provider.",
+      "required": "Enter the service date and time.",
+      "invalid": "Enter a valid date and time.",
+      "success": "Service date saved.",
+      "error": "Unable to save the service date."
     }
   },
   "finance": {

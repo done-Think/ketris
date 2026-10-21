@@ -2,7 +2,9 @@
 
 import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
-import { Box, Stack } from '@mui/material'
+import { Box, CircularProgress, Stack, Typography } from '@mui/material'
+import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 
 import { useRouter } from '@/i18n/navigation'
 import {
@@ -39,10 +41,13 @@ function matchesSearchQuery(property: DashboardProperty, query: string) {
 }
 
 export function PropertiesDashboardPage() {
+  const t = useTranslations('properties.dashboard.renter')
+  const { data: session } = useSession()
+  const isRenter = session?.papel === 'RENTER'
   const router = useRouter()
   const propertiesQuery = useProperties()
   const mappingOptions = useDashboardPropertyMappingOptions()
-  const canUseFixtures = process.env.NODE_ENV !== 'production'
+  const canUseFixtures = !isRenter && process.env.NODE_ENV !== 'production'
   const fixtureMode = canUseFixtures && !propertiesQuery.isLoading && propertiesQuery.isError
   const properties = useMemo(
     () =>
@@ -66,10 +71,10 @@ export function PropertiesDashboardPage() {
     () =>
       properties.filter(
         (property) =>
-          matchesStatusFilter(property, activeStatusFilter) &&
+          (isRenter || matchesStatusFilter(property, activeStatusFilter)) &&
           matchesSearchQuery(property, searchQuery),
       ),
-    [properties, activeStatusFilter, searchQuery],
+    [properties, activeStatusFilter, isRenter, searchQuery],
   )
   const statusFilterCounts = useMemo(
     () =>
@@ -85,6 +90,21 @@ export function PropertiesDashboardPage() {
     [properties],
   )
 
+  if (isRenter && propertiesQuery.isLoading) {
+    return (
+      <Stack alignItems="center" sx={{ p: 4 }}>
+        <CircularProgress aria-label={t('loading')} />
+      </Stack>
+    )
+  }
+  if (isRenter && propertiesQuery.isError) {
+    return (
+      <Typography role="alert" sx={{ p: 4 }}>
+        {t('loadError')}
+      </Typography>
+    )
+  }
+
   return (
     <Box sx={{ width: '100%', p: 3.5 }}>
       <Stack
@@ -95,16 +115,20 @@ export function PropertiesDashboardPage() {
         }}
       >
         <PropertiesDashboardHeader
+          readOnly={isRenter}
           searchQuery={searchQuery}
           onSearchQueryChange={(value) => setValue('searchQuery', value)}
           onCreateProperty={() => router.push('/dashboard/properties/new')}
         />
-        <PropertyStatusFilters
-          activeStatusFilter={activeStatusFilter}
-          statusFilterCounts={statusFilterCounts}
-          onStatusFilterChange={(filter) => setValue('activeStatusFilter', filter)}
-        />
+        {!isRenter && (
+          <PropertyStatusFilters
+            activeStatusFilter={activeStatusFilter}
+            statusFilterCounts={statusFilterCounts}
+            onStatusFilterChange={(filter) => setValue('activeStatusFilter', filter)}
+          />
+        )}
         <PropertiesTable
+          readOnly={isRenter}
           properties={filteredProperties}
           totalCount={properties.length}
           onCreateProperty={() => router.push('/dashboard/properties/new')}

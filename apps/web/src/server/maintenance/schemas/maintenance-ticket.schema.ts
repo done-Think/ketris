@@ -28,7 +28,9 @@ export const maintenanceActivityTypeSchema = z.enum([
 
 export const maintenancePermissionsSchema = z.object({
   linkContract: z.boolean(),
+  schedule: z.boolean(),
   edit: z.boolean(),
+  comment: z.boolean(),
   collaborate: z.boolean(),
   assume: z.boolean(),
   assign: z.boolean(),
@@ -36,6 +38,7 @@ export const maintenancePermissionsSchema = z.object({
   requestReplacement: z.boolean(),
   start: z.boolean(),
   complete: z.boolean(),
+  finish: z.boolean(),
   confirm: z.boolean(),
   contest: z.boolean(),
   cancel: z.boolean(),
@@ -87,6 +90,7 @@ export const maintenanceAttachmentSchema = z
 
 export const maintenanceTicketSchema = z
   .object({
+    scheduledAt: z.string().nullable(),
     id: z.string(),
     propertyId: z.string(),
     propertyTitle: z.string(),
@@ -115,6 +119,7 @@ export const maintenanceTicketSchema = z
 
 export const maintenanceTicketListItemSchema = z
   .object({
+    scheduledAt: z.string().nullable(),
     id: z.string(),
     propertyId: z.string(),
     propertyTitle: z.string(),

@@ -13,7 +13,7 @@
       "metadataTitle": "Ketris | Financeiro"
     },
     "maintenance": {
-      "metadataTitle": "Ketris | Chamados de Manuten\u00e7\u00e3o"
+      "metadataTitle": "Ketris | Chamados de Manutenção"
     },
     "leads": {
       "metadataTitle": "Ketris | Leads"
@@ -37,10 +37,22 @@
     "notifications": "Notificações",
     "performanceTitle": "Desempenho 6 meses",
     "metrics": {
-      "leadsActive": { "label": "Leads ativos", "caption": "{count} hoje" },
-      "visitsMonth": { "label": "Visitas mês", "caption": "{count} hoje" },
-      "proposals": { "label": "Propostas", "caption": "{count} aguardando resposta" },
-      "revenue": { "label": "Faturamento", "caption": "{amount} em atraso" }
+      "leadsActive": {
+        "label": "Leads ativos",
+        "caption": "{count} hoje"
+      },
+      "visitsMonth": {
+        "label": "Visitas mês",
+        "caption": "{count} hoje"
+      },
+      "proposals": {
+        "label": "Propostas",
+        "caption": "{count} aguardando resposta"
+      },
+      "revenue": {
+        "label": "Faturamento",
+        "caption": "{amount} em atraso"
+      }
     },
     "activityDetail": {
       "close": "Fechar",
@@ -346,7 +358,9 @@
         "PENDENTE": "Pendente",
         "APROVADA": "Aprovada",
         "REJEITADA": "Rejeitada"
-      }
+      },
+      "finish": "Finalizar chamado",
+      "finishConfirmation": "Você confirma que o problema foi resolvido? O chamado será marcado como resolvido e o histórico será preservado."
     },
     "links": {
       "title": "Regularizar vínculos",
@@ -359,6 +373,28 @@
       "save": "Salvar vínculos",
       "success": "Vínculos atualizados.",
       "error": "Não foi possível atualizar os vínculos."
+    },
+    "scheduleNotSet": "Ainda não agendado",
+    "empty": "Nenhum chamado encontrado.",
+    "renter": {
+      "subtitle": "Abra e acompanhe chamados dos imóveis vinculados aos seus contratos.",
+      "resolutionNotice": "Se o problema foi resolvido, você pode finalizar o chamado. Se o serviço não ficou correto, pode contestar informando um motivo.",
+      "readOnlyNotice": "Este chamado está encerrado e disponível somente para consulta.",
+      "resolvedNotice": "Você pode acrescentar notas ou reabrir este chamado com uma justificativa. As informações já registradas serão preservadas."
+    },
+    "schedule": {
+      "title": "Agendamento da manutenção",
+      "dateLabel": "Data do atendimento",
+      "hourLabel": "Hora (24h)",
+      "minuteLabel": "Minuto",
+      "summaryLabel": "Atendimento agendado",
+      "save": "Salvar data",
+      "providerRequired": "Defina um prestador para liberar o agendamento.",
+      "coordinationNotice": "Antes de marcar o atendimento aqui, combine a data e o horário com o prestador selecionado.",
+      "required": "Informe a data e o horário do atendimento.",
+      "invalid": "Informe uma data e um horário válidos.",
+      "success": "Data do atendimento salva.",
+      "error": "Não foi possível salvar a data do atendimento."
     }
   },
   "finance": {
