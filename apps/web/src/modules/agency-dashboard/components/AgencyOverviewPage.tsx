@@ -60,9 +60,7 @@ export function AgencyOverviewPage() {
   )
 
   return (
-    <Box
-      sx={{ width: '100%', px: { xs: 2, md: 3.6 }, py: { xs: 2.4, md: 4.2 }, bgcolor: surface.app }}
-    >
+    <Box sx={{ width: '100%', p: 3.5, bgcolor: surface.app }}>
       <Stack spacing={2.4}>
         <DashboardPageHeader title={t('title')} subtitle={t('subtitle')} actions={actions} />
         {targetCurrency !== 'BRL' && (

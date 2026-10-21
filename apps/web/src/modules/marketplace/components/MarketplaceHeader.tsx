@@ -10,7 +10,7 @@ import { HomeHeader, ProfileModal } from '@shared/components/layout'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
 import type { LocalizedStringHref } from '@shared/types/localized-href'
 
-import { guestProfileActions, profileActions } from '../data/user-profile'
+import { profileActions } from '../data/user-profile'
 import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { MarketplaceHeaderProps } from '../types/marketplace-header'
 import type { ProfileActionTranslationKey } from '../types/user-profile'
@@ -40,7 +40,6 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileButtonRef = useRef<HTMLButtonElement>(null)
   const tProfileActions = useTranslations('marketplace.profile.actions')
-  const tProfile = useTranslations('marketplace.profile')
   const locale = useLocale()
   const router = useRouter()
   const { data: session, status } = useSession()
@@ -60,23 +59,14 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
         }
       : undefined
   const isGuest = status === 'unauthenticated'
-  const menuProfile =
-    userProfile ??
-    (isGuest
-      ? {
-          name: tProfile('guestName'),
-          email: '',
-        }
-      : undefined)
+  const isAuthenticatedUser = Boolean(userProfile)
 
   const translatedProfileActions = useMemo(() => {
-    const actions = userProfile ? profileActions : guestProfileActions
+    if (!isAuthenticatedUser) return []
 
-    return actions.flatMap((action) => {
+    return profileActions.flatMap((action) => {
       const switchModeAction =
-        userProfile && action.labelKey === 'switchMode'
-          ? getSwitchModeAction(session?.papel)
-          : undefined
+        action.labelKey === 'switchMode' ? getSwitchModeAction(session?.papel) : undefined
 
       if (switchModeAction === null) return []
 
@@ -96,26 +86,26 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
             : undefined,
       }
     })
-  }, [locale, router, session?.papel, tProfileActions, userProfile])
+  }, [isAuthenticatedUser, locale, router, session?.papel, tProfileActions])
 
   return (
     <>
       <HomeHeader
         navigationItems={navigationItems}
         profileButtonRef={profileButtonRef}
-        userProfile={menuProfile}
-        onToggleProfile={menuProfile ? () => setIsProfileOpen((current) => !current) : undefined}
+        userProfile={userProfile}
+        onToggleProfile={userProfile ? () => setIsProfileOpen((current) => !current) : undefined}
         isSessionLoading={status === 'loading'}
         showSignIn={isGuest}
         showLanguageSelector={isGuest}
       />
 
-      {menuProfile ? (
+      {userProfile ? (
         <ProfileModal
           open={isProfileOpen}
           anchorRef={profileButtonRef}
           actions={translatedProfileActions}
-          userProfile={menuProfile}
+          userProfile={userProfile}
           onClose={() => setIsProfileOpen(false)}
         />
       ) : null}

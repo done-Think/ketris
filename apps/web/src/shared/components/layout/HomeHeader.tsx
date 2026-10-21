@@ -15,7 +15,6 @@ import {
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
-import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded'
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
@@ -152,27 +151,14 @@ export function HomeHeader({
                   ...componentText.headerCta,
                   transition: motion.transition.bordered,
                   '&:hover': {
-                    bgcolor: 'transparent',
-                    borderColor: surface.darkText,
-                    color: surface.darkText,
-                    transform: 'translateY(-1px)',
+                    bgcolor: alpha.magenta[8],
+                    borderColor: alpha.magenta[36],
+                    color: 'primary.main',
                   },
                 }}
               >
                 {t('announceProperty')}
               </Button>
-            ) : null}
-            {canAnnounceProperty && showNotifications ? (
-              <Divider
-                orientation="vertical"
-                flexItem
-                sx={{
-                  display: { xs: 'none', md: 'block' },
-                  height: 24,
-                  alignSelf: 'center',
-                  borderColor: 'divider',
-                }}
-              />
             ) : null}
             {showNotifications ? (
               <IconButton
@@ -183,56 +169,7 @@ export function HomeHeader({
                 <NotificationsNoneOutlinedIcon sx={{ fontSize: iconSize.xl }} />
               </IconButton>
             ) : null}
-            {showSignIn ? (
-              <>
-                <Divider
-                  orientation="vertical"
-                  flexItem
-                  sx={{
-                    display: { xs: 'none', md: 'block' },
-                    height: 24,
-                    alignSelf: 'center',
-                    borderColor: 'divider',
-                  }}
-                />
-                <Button
-                  component={Link}
-                  href="/login"
-                  aria-label={t('signIn')}
-                  startIcon={<LoginOutlinedIcon fontSize="small" />}
-                  size="small"
-                  sx={{
-                    minWidth: { xs: 42, sm: 'auto' },
-                    minHeight: 42,
-                    px: { xs: 1, sm: 1.25 },
-                    color: 'text.primary',
-                    borderRadius: `${radius.sm}px`,
-                    ...componentText.headerCta,
-                    '& .MuiButton-startIcon': { m: { xs: 0, sm: undefined } },
-                    '&:hover': {
-                      bgcolor: alpha.magenta[8],
-                      color: 'primary.main',
-                    },
-                  }}
-                >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                    {t('signIn')}
-                  </Box>
-                </Button>
-              </>
-            ) : null}
-            {userProfile && profileButtonRef && onToggleProfile && showSignIn ? (
-              <IconButton
-                aria-label={t('openProfile')}
-                aria-haspopup="dialog"
-                ref={profileButtonRef}
-                onClick={onToggleProfile}
-                size="small"
-                sx={{ width: 42, height: 42, color: 'text.secondary' }}
-              >
-                <MoreVertRoundedIcon sx={{ fontSize: iconSize.xl }} />
-              </IconButton>
-            ) : userProfile && profileButtonRef && onToggleProfile ? (
+            {userProfile && profileButtonRef && onToggleProfile ? (
               <Box
                 component="button"
                 type="button"
@@ -276,6 +213,38 @@ export function HomeHeader({
               <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
                 <LanguageSelector variant="header" />
               </Box>
+            ) : null}
+            {showSignIn ? (
+              <Button
+                component={Link}
+                href="/login"
+                aria-label={t('signIn')}
+                endIcon={<LoginOutlinedIcon fontSize="small" />}
+                variant="outlined"
+                color="secondary"
+                size="small"
+                sx={{
+                  minWidth: { xs: 42, sm: 'auto' },
+                  minHeight: 42,
+                  px: { xs: 1, sm: 1.75 },
+                  borderColor: 'divider',
+                  color: 'text.primary',
+                  borderRadius: `${radius.sm}px`,
+                  whiteSpace: 'nowrap',
+                  ...componentText.headerCta,
+                  transition: motion.transition.bordered,
+                  '& .MuiButton-endIcon': { m: 0, ml: { xs: 0, sm: 0.75 } },
+                  '&:hover': {
+                    bgcolor: alpha.magenta[8],
+                    borderColor: alpha.magenta[36],
+                    color: 'primary.main',
+                  },
+                }}
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  {t('signIn')}
+                </Box>
+              </Button>
             ) : null}
             <IconButton
               aria-label={t('openMenu')}
