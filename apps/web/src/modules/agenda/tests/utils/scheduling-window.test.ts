@@ -25,15 +25,15 @@ describe('meetsMinimumAdvanceNotice', () => {
 
 describe('isWithinBusinessHours', () => {
   it('aceita horários entre 08:00 e 18:00', () => {
-    expect(isWithinBusinessHours(dayjs('2026-09-29T08:00:00'))).toBe(true)
-    expect(isWithinBusinessHours(dayjs('2026-09-29T12:30:00'))).toBe(true)
-    expect(isWithinBusinessHours(dayjs('2026-09-29T18:00:00'))).toBe(true)
+    expect(isWithinBusinessHours(dayjs('2026-09-29T08:00:00-03:00'))).toBe(true)
+    expect(isWithinBusinessHours(dayjs('2026-09-29T12:30:00-03:00'))).toBe(true)
+    expect(isWithinBusinessHours(dayjs('2026-09-29T18:00:00-03:00'))).toBe(true)
   })
 
   it('rejeita horários antes das 08:00 ou depois das 18:00', () => {
-    expect(isWithinBusinessHours(dayjs('2026-09-29T07:59:00'))).toBe(false)
-    expect(isWithinBusinessHours(dayjs('2026-09-29T18:01:00'))).toBe(false)
-    expect(isWithinBusinessHours(dayjs('2026-09-29T22:00:00'))).toBe(false)
+    expect(isWithinBusinessHours(dayjs('2026-09-29T07:59:00-03:00'))).toBe(false)
+    expect(isWithinBusinessHours(dayjs('2026-09-29T18:01:00-03:00'))).toBe(false)
+    expect(isWithinBusinessHours(dayjs('2026-09-29T22:00:00-03:00'))).toBe(false)
   })
 })
 

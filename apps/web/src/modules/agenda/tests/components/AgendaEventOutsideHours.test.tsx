@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SnackbarProvider } from 'notistack'
+import dayjs from 'dayjs'
 import { beforeEach, afterEach, expect, it, vi } from 'vitest'
 import { AgendaEventFormDialog } from '../../components/AgendaEventFormDialog'
 import { AgendaEventDetailDialog } from '../../components/AgendaEventDetailDialog'
@@ -11,6 +12,17 @@ beforeEach(() => {
   vi.setSystemTime(new Date('2026-10-20T10:00:00-03:00'))
 })
 afterEach(() => vi.useRealTimers())
+
+// Form fields use browser-local time; their instants must still represent São Paulo hours.
+function localSchedule(instant: string) {
+  const date = dayjs(instant)
+  return {
+    scheduledDate: date.format('YYYY-MM-DD'),
+    scheduledTime: date.format('HH:mm'),
+  }
+}
+
+const lateSchedule = localSchedule('2031-03-01T22:00:00-03:00')
 
 function createForm() {
   const onCreate = vi.fn().mockResolvedValue(undefined)
@@ -30,8 +42,7 @@ function createForm() {
           audience: 'ALL_AGENTS',
           title: 'Late meeting',
           kind: 'MEETING',
-          scheduledDate: '2031-03-01',
-          scheduledTime: '22:00',
+          ...lateSchedule,
           durationMinutes: 30,
         }}
       />
@@ -48,7 +59,7 @@ it('waits for a decision and preserves the filled form when returning', async ()
   await userEvent.click(screen.getByRole('button', { name: 'Voltar' }))
   await waitFor(() => expect(screen.getByRole('button', { name: 'Criar evento' })).toBeEnabled())
   expect(screen.getByLabelText('Título')).toHaveValue('Late meeting')
-  expect(screen.getByLabelText('Horário')).toHaveValue('22:00')
+  expect(screen.getByLabelText('Horário')).toHaveValue(lateSchedule.scheduledTime)
   expect(onCreate).not.toHaveBeenCalled()
 })
 
@@ -58,7 +69,7 @@ it('saves exactly once with explicit confirmation after continuing', async () =>
   await userEvent.click(await screen.findByRole('button', { name: 'Continuar' }))
   await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
   expect(onCreate.mock.calls[0][0]).toMatchObject({
-    scheduledTime: '22:00',
+    ...lateSchedule,
     outsideBusinessHoursConfirmed: true,
   })
 })
@@ -74,22 +85,29 @@ it('cancels the pending submission when the form closes', async () => {
 
 it('revalidates changed values instead of saving the stale period shown before confirmation', async () => {
   const { onCreate } = createForm()
+  const daytimeSchedule = localSchedule('2031-03-01T12:00:00-03:00')
   await userEvent.click(screen.getByRole('button', { name: 'Criar evento' }))
   await screen.findByRole('button', { name: 'Continuar' })
-  fireEvent.change(screen.getByLabelText('Horário'), { target: { value: '12:00' } })
+  fireEvent.change(screen.getByLabelText('Data'), {
+    target: { value: daytimeSchedule.scheduledDate },
+  })
+  fireEvent.change(screen.getByLabelText('Horário'), {
+    target: { value: daytimeSchedule.scheduledTime },
+  })
   await userEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
   expect(onCreate.mock.calls[0][0]).toMatchObject({
-    scheduledTime: '12:00',
+    ...daytimeSchedule,
     outsideBusinessHoursConfirmed: false,
   })
 })
 
 it('warns when an edited duration extends past business hours', async () => {
+  const schedule = localSchedule('2031-03-01T17:30:00-03:00')
   const event: AgendaEvent = {
     id: 'event',
-    scheduledDate: '2031-03-01',
-    time: '17:30',
+    scheduledDate: schedule.scheduledDate,
+    time: schedule.scheduledTime,
     durationMinutes: 30,
     title: 'Meeting',
     property: '',
@@ -130,7 +148,7 @@ it('warns when an edited duration extends past business hours', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   await waitFor(() => expect(onEdit).toHaveBeenCalledTimes(1))
   expect(onEdit.mock.calls[0][0]).toMatchObject({
-    scheduledTime: '17:30',
+    ...schedule,
     durationMinutes: 60,
     outsideBusinessHoursConfirmed: true,
   })
