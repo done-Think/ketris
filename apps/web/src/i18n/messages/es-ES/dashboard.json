@@ -87,6 +87,7 @@
       "activeBrokers": "Agentes activos",
       "receivedLeads": "Leads recibidos",
       "revenue": "Facturación",
+      "overdue": "En mora",
       "occupancy": "Tasa ocupación",
       "helpers": {
         "newProperties": "{count, plural, =0 {Ninguno nuevo este mes} one {+# nuevo este mes} other {+# nuevos este mes}}",
@@ -96,7 +97,9 @@
         "revenueIncrease": "+{percent, number}% vs mes anterior",
         "revenueDecrease": "−{percent, number}% vs mes anterior",
         "revenueSame": "Igual al mes anterior",
-        "revenueNoPrevious": "Mes anterior en cero"
+        "revenueNoPrevious": "Mes anterior en cero",
+        "overdue": "Vencidos sin pagar",
+        "noOverdue": "Nada en mora"
       }
     },
     "performance": {

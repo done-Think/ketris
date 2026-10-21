@@ -72,6 +72,7 @@ const overview: ApiAgencyOverview = {
     receivedLeadsPreviousPeriod: 5,
     monthlyReceivable: 12000,
     monthlyReceivablePreviousMonth: 10000,
+    overdueTotal: 450,
     occupancyPercentage: 80,
   },
   revenueSeries: [],
@@ -118,6 +119,7 @@ describe('DashboardOverviewPage', () => {
       expect(screen.getByText('42')).toBeInTheDocument()
       expect(screen.getByText('Corretores ativos')).toBeInTheDocument()
       expect(screen.getByText('Faturamento')).toBeInTheDocument()
+      expect(screen.getByText('Em atraso')).toBeInTheDocument()
       expect(screen.getByText('Top Corretores')).toBeInTheDocument()
       expect(screen.getByText('Atividade Recente')).toBeInTheDocument()
       expect(screen.getByText('Leads ativos')).toBeInTheDocument()
@@ -134,6 +136,7 @@ describe('DashboardOverviewPage', () => {
     expect(useAgencyOverview).not.toHaveBeenCalledWith('tenant-1')
     expect(screen.queryByText('Imóveis na carteira')).not.toBeInTheDocument()
     expect(screen.queryByText('Faturamento')).not.toBeInTheDocument()
+    expect(screen.queryByText('Em atraso')).not.toBeInTheDocument()
     expect(screen.queryByText('Top Corretores')).not.toBeInTheDocument()
     expect(screen.queryByText('Atividade Recente')).not.toBeInTheDocument()
 

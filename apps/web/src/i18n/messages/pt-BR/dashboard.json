@@ -87,6 +87,7 @@
       "activeBrokers": "Corretores ativos",
       "receivedLeads": "Leads recebidos",
       "revenue": "Faturamento",
+      "overdue": "Em atraso",
       "occupancy": "Tx ocupação",
       "helpers": {
         "newProperties": "{count, plural, =0 {Nenhum novo este mês} one {+# novo este mês} other {+# novos este mês}}",
@@ -96,7 +97,9 @@
         "revenueIncrease": "+{percent, number}% vs mês passado",
         "revenueDecrease": "−{percent, number}% vs mês passado",
         "revenueSame": "Igual ao mês passado",
-        "revenueNoPrevious": "Mês passado zerado"
+        "revenueNoPrevious": "Mês passado zerado",
+        "overdue": "Vencidas e não pagas",
+        "noOverdue": "Nada em atraso"
       }
     },
     "performance": {
