@@ -1,7 +1,6 @@
-import { ForbiddenError } from '@server/shared/errors'
-
 import type { Papel } from '@server/auth/domain/user.entity'
 
+import { resolveContractManageScope } from '../../domain/contract-access-rules'
 import {
   GuarantorPartyRequiredError,
   OpportunityAlreadyHasContractError,
@@ -14,6 +13,7 @@ import type { ContractRepository } from '../ports/contract-repository.port'
 
 export interface CreateContractFromOpportunityInput {
   actorTenantId: string
+  actorId: string
   actorPapel: Papel
   opportunityId: string
   type: ContractType
@@ -32,9 +32,7 @@ export class CreateContractFromOpportunityUseCase {
   constructor(private readonly contractRepository: ContractRepository) {}
 
   async execute(input: CreateContractFromOpportunityInput): Promise<Contract> {
-    if (input.actorPapel === 'RENTER') {
-      throw new ForbiddenError('Locatários não podem gerenciar contratos.')
-    }
+    const scope = resolveContractManageScope(input.actorId, input.actorPapel)
 
     if (input.guaranteeType === 'FIADOR' && !input.guarantor) {
       throw new GuarantorPartyRequiredError()
@@ -43,6 +41,7 @@ export class CreateContractFromOpportunityUseCase {
     const opportunity = await this.contractRepository.findEligibleOpportunity(
       input.actorTenantId,
       input.opportunityId,
+      scope,
     )
 
     if (!opportunity) {

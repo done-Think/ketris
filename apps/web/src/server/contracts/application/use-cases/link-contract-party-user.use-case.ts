@@ -24,7 +24,10 @@ export class LinkContractPartyUserUseCase {
       throw new ForbiddenError('Apenas administradores podem vincular locatários a contratos.')
     }
 
-    const contract = await this.contractRepository.findById(input.actorTenantId, input.contractId)
+    const contract = await this.contractRepository.findById(input.contractId, {
+      kind: 'tenant',
+      tenantId: input.actorTenantId,
+    })
 
     if (!contract) {
       throw new ContractNotFoundError()

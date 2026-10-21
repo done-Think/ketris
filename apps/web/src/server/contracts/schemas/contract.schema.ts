@@ -26,6 +26,10 @@ export const contractPartyRoleSchema = z.enum(['LOCADOR', 'LOCATARIO', 'FIADOR']
 
 export const signatureStatusSchema = z.enum(['PENDENTE', 'ASSINADA'])
 
+export const contractActorSchema = z
+  .object({ id: z.string(), name: z.string() })
+  .openapi('ContractActor')
+
 export const contractPartySchema = z
   .object({
     id: z.string(),
@@ -37,6 +41,9 @@ export const contractPartySchema = z
     phone: z.string().nullable(),
     signatureStatus: signatureStatusSchema,
     signedAt: z.string().nullable(),
+    signedBy: contractActorSchema
+      .nullable()
+      .openapi({ description: 'Usuário da imobiliária que registrou a assinatura.' }),
   })
   .openapi('ContractParty')
 
@@ -69,6 +76,9 @@ export const contractSchema = z
     notes: z.string().nullable(),
     status: contractStatusSchema,
     activatedAt: z.string().nullable(),
+    activatedBy: contractActorSchema
+      .nullable()
+      .openapi({ description: 'Usuário que registrou a última assinatura e ativou o contrato.' }),
     createdAt: z.string(),
     updatedAt: z.string(),
     parties: z.array(contractPartySchema),

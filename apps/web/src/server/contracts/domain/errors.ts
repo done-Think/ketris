@@ -1,4 +1,4 @@
-import { AppError } from '@server/shared/errors'
+import { AppError, ForbiddenError } from '@server/shared/errors'
 
 export class ContractRenterUserNotFoundError extends AppError {
   constructor() {
@@ -15,6 +15,12 @@ export class ContractNotFoundError extends AppError {
       status: 404,
       code: 'CONTRACT_NOT_FOUND',
     })
+  }
+}
+
+export class ContractRenterForbiddenError extends ForbiddenError {
+  constructor() {
+    super('Locatários não podem gerenciar contratos.')
   }
 }
 
