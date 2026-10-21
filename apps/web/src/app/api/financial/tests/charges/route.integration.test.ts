@@ -20,6 +20,7 @@ describe('/api/financial/charges (integração)', () => {
   let tenantId: string
   let actorToken: string
   let renterToken: string
+  let agentToken: string
   let contractId: string
 
   beforeAll(async () => {
@@ -31,10 +32,10 @@ describe('/api/financial/charges (integração)', () => {
     const actor = await prisma.usuario.create({
       data: {
         tenantId,
-        nome: 'Corretor',
-        email: `corretor-${randomUUID()}@ketris.dev`,
+        nome: 'Proprietário',
+        email: `proprietario-${randomUUID()}@ketris.dev`,
         senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        papel: 'OWNER',
       },
     })
     actorToken = await tokenService.sign({
@@ -45,6 +46,25 @@ describe('/api/financial/charges (integração)', () => {
       papel: actor.papel,
       ativo: actor.ativo,
       vinculoAprovadoEm: actor.vinculoAprovadoEm,
+    })
+
+    const agent = await prisma.usuario.create({
+      data: {
+        tenantId,
+        nome: 'Corretor',
+        email: `corretor-${randomUUID()}@ketris.dev`,
+        senhaHash: 'hash-fake',
+        papel: 'AGENT',
+      },
+    })
+    agentToken = await tokenService.sign({
+      id: agent.id,
+      tenantId: agent.tenantId,
+      nome: agent.nome,
+      email: agent.email,
+      papel: agent.papel,
+      ativo: agent.ativo,
+      vinculoAprovadoEm: agent.vinculoAprovadoEm,
     })
 
     const renter = await prisma.usuario.create({
@@ -278,6 +298,44 @@ describe('/api/financial/charges (integração)', () => {
     expect(json.charge.id).toBe(avulsaChargeId)
   })
 
+  it.each([
+    ['AGENT', () => agentToken],
+    ['RENTER', () => renterToken],
+  ])('retorna 403 para %s em todas as rotas de cobrança, sem alterar nada', async (_, token) => {
+    const url = `http://localhost/api/financial/charges/${avulsaChargeId}`
+    const params = { params: Promise.resolve({ id: avulsaChargeId }) }
+    const body = {
+      description: 'Alterada sem permissão',
+      type: 'A_PAGAR',
+      amount: 1,
+      dueDate: '2026-10-15',
+      status: 'PENDENTE',
+    }
+    const before = await prisma.cobranca.findUniqueOrThrow({ where: { id: avulsaChargeId } })
+
+    const responses = [
+      await GET(buildRequest('http://localhost/api/financial/charges', 'GET', undefined, token())),
+      await POST(buildRequest('http://localhost/api/financial/charges', 'POST', body, token())),
+      await getCharge(buildRequest(url, 'GET', undefined, token()), params),
+      await patchCharge(buildRequest(url, 'PATCH', body, token()), params),
+      await registerPayment(
+        buildRequest(
+          `${url}/payment`,
+          'POST',
+          { paidAt: '2026-10-14', paymentMethod: 'Boleto' },
+          token(),
+        ),
+        params,
+      ),
+      await deleteCharge(buildRequest(url, 'DELETE', undefined, token()), params),
+    ]
+
+    expect(responses.map((response) => response.status)).toEqual([403, 403, 403, 403, 403, 403])
+    expect(await prisma.cobranca.findUniqueOrThrow({ where: { id: avulsaChargeId } })).toEqual(
+      before,
+    )
+  })
+
   it('retorna 404 ao consultar cobrança de outro tenant/id inexistente', async () => {
     const response = await getCharge(
       buildRequest('http://localhost/api/financial/charges/missing', 'GET', undefined, actorToken),
@@ -476,7 +534,7 @@ describe('/api/financial/charges (integração)', () => {
   })
 
   it.each([
-    ['AGENT', () => actorToken],
+    ['AGENT', () => agentToken],
     ['RENTER', () => renterToken],
   ])('retorna 403 quando um %s pede o resumo financeiro da imobiliária', async (_, token) => {
     const response = await getSummary(

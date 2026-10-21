@@ -61,7 +61,7 @@ function createRepository(overrides?: Partial<ChargeRepository>): ChargeReposito
 
 const baseCreateInput = {
   actorTenantId: 'tenant-1',
-  actorPapel: 'AGENT' as const,
+  actorPapel: 'OWNER' as const,
   contractId: null,
   description: 'Aluguel avulso',
   type: 'A_RECEBER' as const,
@@ -71,13 +71,16 @@ const baseCreateInput = {
 }
 
 describe('CreateChargeUseCase', () => {
-  it('lança ForbiddenError quando o ator é RENTER', async () => {
-    const useCase = new CreateChargeUseCase(createRepository())
+  it.each(['AGENT', 'RENTER'] as const)(
+    'lança ForbiddenError quando o ator é %s',
+    async (actorPapel) => {
+      const useCase = new CreateChargeUseCase(createRepository())
 
-    await expect(
-      useCase.execute({ ...baseCreateInput, actorPapel: 'RENTER' }),
-    ).rejects.toMatchObject({ code: 'FORBIDDEN' })
-  })
+      await expect(useCase.execute({ ...baseCreateInput, actorPapel })).rejects.toMatchObject({
+        code: 'FORBIDDEN',
+      })
+    },
+  )
 
   it('lança ChargeContractNotFoundError quando o contrato informado não existe no tenant', async () => {
     const repository = createRepository({ findContractSummary: vi.fn().mockResolvedValue(null) })
@@ -123,10 +126,23 @@ describe('ListChargesUseCase', () => {
     const repository = createRepository()
     const useCase = new ListChargesUseCase(repository)
 
-    await useCase.execute({ tenantId: 'tenant-1', status: 'PENDENTE' })
+    await useCase.execute({ actorPapel: 'ADMIN', tenantId: 'tenant-1', status: 'PENDENTE' })
 
     expect(repository.findMany).toHaveBeenCalledWith({ tenantId: 'tenant-1', status: 'PENDENTE' })
   })
+
+  it.each(['AGENT', 'RENTER'] as const)(
+    'lança ForbiddenError para %s sem consultar o repositório',
+    async (actorPapel) => {
+      const repository = createRepository()
+      const useCase = new ListChargesUseCase(repository)
+
+      await expect(useCase.execute({ actorPapel, tenantId: 'tenant-1' })).rejects.toMatchObject({
+        code: 'FORBIDDEN',
+      })
+      expect(repository.findMany).not.toHaveBeenCalled()
+    },
+  )
 })
 
 describe('GetChargeUseCase', () => {
@@ -135,7 +151,7 @@ describe('GetChargeUseCase', () => {
     const useCase = new GetChargeUseCase(repository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', chargeId: 'missing' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER', chargeId: 'missing' }),
     ).rejects.toThrow(ChargeNotFoundError)
   })
 
@@ -143,15 +159,29 @@ describe('GetChargeUseCase', () => {
     const repository = createRepository()
     const useCase = new GetChargeUseCase(repository)
 
-    const result = await useCase.execute({ actorTenantId: 'tenant-1', chargeId: 'charge-1' })
+    const result = await useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorPapel: 'OWNER',
+      chargeId: 'charge-1',
+    })
 
     expect(result).toEqual(charge)
+  })
+
+  it.each(['AGENT', 'RENTER'] as const)('lança ForbiddenError para %s', async (actorPapel) => {
+    const repository = createRepository()
+    const useCase = new GetChargeUseCase(repository)
+
+    await expect(
+      useCase.execute({ actorTenantId: 'tenant-1', actorPapel, chargeId: 'charge-1' }),
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' })
+    expect(repository.findById).not.toHaveBeenCalled()
   })
 })
 
 const baseUpdateInput = {
   actorTenantId: 'tenant-1',
-  actorPapel: 'AGENT' as const,
+  actorPapel: 'OWNER' as const,
   chargeId: 'charge-1',
   description: 'Aluguel avulso atualizado',
   type: 'A_RECEBER' as const,
@@ -161,13 +191,16 @@ const baseUpdateInput = {
 }
 
 describe('UpdateChargeUseCase', () => {
-  it('lança ForbiddenError quando o ator é RENTER', async () => {
-    const useCase = new UpdateChargeUseCase(createRepository())
+  it.each(['AGENT', 'RENTER'] as const)(
+    'lança ForbiddenError quando o ator é %s',
+    async (actorPapel) => {
+      const useCase = new UpdateChargeUseCase(createRepository())
 
-    await expect(
-      useCase.execute({ ...baseUpdateInput, actorPapel: 'RENTER' }),
-    ).rejects.toMatchObject({ code: 'FORBIDDEN' })
-  })
+      await expect(useCase.execute({ ...baseUpdateInput, actorPapel })).rejects.toMatchObject({
+        code: 'FORBIDDEN',
+      })
+    },
+  )
 
   it('lança ChargeNotFoundError quando a cobrança não existe no tenant', async () => {
     const repository = createRepository({ findById: vi.fn().mockResolvedValue(null) })
@@ -251,20 +284,25 @@ describe('UpdateChargeUseCase', () => {
 })
 
 describe('DeleteChargeUseCase', () => {
-  it('lança ForbiddenError quando o ator é RENTER', async () => {
-    const useCase = new DeleteChargeUseCase(createRepository())
+  it.each(['AGENT', 'RENTER'] as const)(
+    'lança ForbiddenError quando o ator é %s',
+    async (actorPapel) => {
+      const repository = createRepository()
+      const useCase = new DeleteChargeUseCase(repository)
 
-    await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'RENTER', chargeId: 'charge-1' }),
-    ).rejects.toMatchObject({ code: 'FORBIDDEN' })
-  })
+      await expect(
+        useCase.execute({ actorTenantId: 'tenant-1', actorPapel, chargeId: 'charge-1' }),
+      ).rejects.toMatchObject({ code: 'FORBIDDEN' })
+      expect(repository.delete).not.toHaveBeenCalled()
+    },
+  )
 
   it('lança ChargeNotFoundError quando a cobrança não existe no tenant', async () => {
     const repository = createRepository({ findById: vi.fn().mockResolvedValue(null) })
     const useCase = new DeleteChargeUseCase(repository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'AGENT', chargeId: 'charge-1' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER', chargeId: 'charge-1' }),
     ).rejects.toThrow(ChargeNotFoundError)
   })
 
@@ -272,7 +310,7 @@ describe('DeleteChargeUseCase', () => {
     const repository = createRepository()
     const useCase = new DeleteChargeUseCase(repository)
 
-    await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'AGENT', chargeId: 'charge-1' })
+    await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER', chargeId: 'charge-1' })
 
     expect(repository.delete).toHaveBeenCalledWith('tenant-1', 'charge-1')
   })
@@ -281,20 +319,23 @@ describe('DeleteChargeUseCase', () => {
 describe('RegisterChargePaymentUseCase', () => {
   const baseInput = {
     actorTenantId: 'tenant-1',
-    actorPapel: 'AGENT' as const,
+    actorPapel: 'OWNER' as const,
     chargeId: 'charge-1',
     paidAt: new Date('2026-10-05T00:00:00.000Z'),
     paymentMethod: 'PIX',
     receiptUrl: null,
   }
 
-  it('lança ForbiddenError quando o ator é RENTER', async () => {
-    const useCase = new RegisterChargePaymentUseCase(createRepository())
+  it.each(['AGENT', 'RENTER'] as const)(
+    'lança ForbiddenError quando o ator é %s',
+    async (actorPapel) => {
+      const useCase = new RegisterChargePaymentUseCase(createRepository())
 
-    await expect(useCase.execute({ ...baseInput, actorPapel: 'RENTER' })).rejects.toMatchObject({
-      code: 'FORBIDDEN',
-    })
-  })
+      await expect(useCase.execute({ ...baseInput, actorPapel })).rejects.toMatchObject({
+        code: 'FORBIDDEN',
+      })
+    },
+  )
 
   it('lança ChargeNotFoundError quando a cobrança não existe no tenant', async () => {
     const repository = createRepository({ findById: vi.fn().mockResolvedValue(null) })
