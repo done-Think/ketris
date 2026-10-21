@@ -16,7 +16,6 @@ function createRepository(findBySlug?: TenantRepository['findBySlug']): TenantRe
   return {
     findBySlug: findBySlug ?? vi.fn().mockResolvedValue(null),
     findById: vi.fn(),
-    findMany: vi.fn(),
     create: vi.fn().mockResolvedValue(createdTenant),
     searchByName: vi.fn(),
   }
