@@ -50,6 +50,8 @@ export function registerMaintenanceOpenApi(registry: OpenAPIRegistry): void {
     path: '/maintenance/tickets/{id}/actions',
     tags: ['Maintenance'],
     summary: 'Executa transicoes, atribuicoes, troca de prestador e restauracao autorizadas',
+    description:
+      'linkContract: somente ADMIN do tenant associa explicitamente o chamado a um contrato do mesmo imovel, inclusive encerrados e arquivados. Preserva status, data de resolucao, arquivamento e historico; registra contrato anterior/novo e autor na auditoria. Nenhum contrato e selecionado automaticamente. Arquivados continuam restritos ao ADMIN ate restauracao. confirm: ADMIN ou proprietario vinculado, desde que a conclusao nao tenha sido feita por OWNER. contest: ADMIN ou proprietario vinculado, com justificativa obrigatoria. Ambas exigem AGUARDANDO_CONFIRMACAO. AGENT e RENTER nao confirmam nem contestam.',
     security: [{ bearerAuth: [] }],
     request: {
       params: maintenanceTicketIdParamsSchema,

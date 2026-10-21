@@ -61,6 +61,7 @@ export const maintenanceProviderSchema = z.object({
 
 const reason = z.string().trim().min(1).max(5000)
 export const maintenanceActionSchema = z.discriminatedUnion('action', [
+  z.object({ action: z.literal('linkContract'), contractId: z.string().trim().min(1) }),
   z.object({ action: z.literal('start') }),
   z.object({ action: z.literal('complete') }),
   z.object({ action: z.literal('confirm') }),

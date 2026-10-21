@@ -6,6 +6,7 @@ import type {
 import { Prisma } from '@prisma/client'
 import { prisma } from '@server/db/prisma'
 import { ConflictError, ForbiddenError } from '@server/shared/errors'
+import { MaintenancePropertyNotFoundError } from '../domain/errors'
 import type {
   MaintenanceActor,
   MaintenanceActivity,
@@ -423,6 +424,18 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
     request?: MaintenanceRequestMutation,
   ) {
     return prisma.$transaction(async (tx) => {
+      if (changes.contractId) {
+        const contract = await tx.contrato.findFirst({
+          where: {
+            id: changes.contractId,
+            tenantId: ticket.tenantId,
+            imovelId: changes.propertyId ?? ticket.propertyId,
+            imovel: { tenantId: ticket.tenantId },
+          },
+          select: { id: true },
+        })
+        if (!contract) throw new MaintenancePropertyNotFoundError()
+      }
       await this.lockTicket(tx, ticket, {
         imovelId: changes.propertyId,
         contratoId: changes.contractId,

@@ -144,6 +144,23 @@ export async function actOnTicket(
   let event: NewMaintenanceActivity
   let request: MaintenanceRequestMutation | undefined
   switch (action.action) {
+    case 'linkContract': {
+      assertAdmin(actor)
+      const contract = await validateContract(
+        repository,
+        actor,
+        action.contractId,
+        ticket.propertyId,
+      )
+      return repository.mutate(
+        ticket,
+        { contractId: contract.id },
+        activity(actor, 'EDICAO', 'Contrato do chamado associado pelo administrador.', {
+          before: { contractId: ticket.contractId, propertyId: ticket.propertyId },
+          after: { contractId: contract.id, propertyId: ticket.propertyId },
+        }),
+      )
+    }
     case 'start':
       assertPermission(actor, ticket, 'start')
       changes = { status: 'EM_ANDAMENTO' }

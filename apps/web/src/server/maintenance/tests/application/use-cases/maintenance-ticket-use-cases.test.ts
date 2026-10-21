@@ -237,6 +237,49 @@ describe('Maintenance access', () => {
   })
 })
 describe('Maintenance workflow and audit', () => {
+  it.each(['ABERTO', 'RESOLVIDO', 'CANCELADO', 'FECHADO'] as const)(
+    'admin links legacy %s calls without changing their lifecycle, including archived calls',
+    async (status) => {
+      for (const deletedAt of [null, new Date('2026-10-01')]) {
+        const repo = repository({ status, deletedAt, contractId: null })
+        await actOnTicket(repo, admin, ticket.id, {
+          action: 'linkContract',
+          contractId: contract.id,
+        })
+        expect(repo.findById).toHaveBeenCalledWith(admin.actorTenantId, ticket.id, true)
+        expect(repo.mutate).toHaveBeenCalledWith(
+          expect.anything(),
+          { contractId: contract.id },
+          expect.objectContaining({
+            type: 'EDICAO',
+            authorId: admin.actorId,
+            details: {
+              before: { contractId: null, propertyId: ticket.propertyId },
+              after: { contractId: contract.id, propertyId: ticket.propertyId },
+            },
+          }),
+        )
+      }
+    },
+  )
+  it.each([agent, owner, renter])('denies contract linking by $actorPapel', async (user) => {
+    const repo = repository()
+    expect(permissionsFor(user, ticket).linkContract).toBe(false)
+    await expect(
+      actOnTicket(repo, user, ticket.id, { action: 'linkContract', contractId: contract.id }),
+    ).rejects.toBeInstanceOf(ForbiddenError)
+    expect(repo.mutate).not.toHaveBeenCalled()
+  })
+  it('rejects missing contracts and contracts from another property during regularization', async () => {
+    for (const value of [null, { ...contract, propertyId: 'another-property' }]) {
+      const repo = repository({}, { findContract: vi.fn().mockResolvedValue(value) })
+      await expect(
+        actOnTicket(repo, admin, ticket.id, { action: 'linkContract', contractId: contract.id }),
+      ).rejects.toBeInstanceOf(MaintenancePropertyNotFoundError)
+      expect(repo.findContract).toHaveBeenCalledWith(admin.actorTenantId, contract.id)
+      expect(repo.mutate).not.toHaveBeenCalled()
+    }
+  })
   it.each([agent, owner])('allows $actorPapel to assume only unassigned calls', async (user) => {
     const repo = repository()
     await actOnTicket(repo, user, ticket.id, { action: 'assume' })

@@ -1,4 +1,7 @@
-import type { MaintenanceTicketListItem } from '@server/maintenance/types/maintenance-ticket'
+import type {
+  MaintenanceTicketListItem,
+  MaintenanceTicketStatus,
+} from '@server/maintenance/types/maintenance-ticket'
 import { randomUUID } from 'node:crypto'
 import { NextRequest } from 'next/server'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -39,7 +42,9 @@ describe('/api/maintenance authorization and workflow (database integration)', (
       agent = await user('AGENT'),
       owner = await user('OWNER'),
       renter = await user('RENTER'),
-      unrelated = await user('RENTER')
+      unrelated = await user('RENTER'),
+      unrelatedOwner = await user('OWNER'),
+      unrelatedAgent = await user('AGENT')
     const property = await prisma.imovel.create({
       data: {
         tenantId: tenant.id,
@@ -86,7 +91,18 @@ describe('/api/maintenance authorization and workflow (database integration)', (
       },
       include: { partes: true },
     })
-    return { tenant, admin, agent, owner, renter, unrelated, property, contract }
+    return {
+      tenant,
+      admin,
+      agent,
+      owner,
+      renter,
+      unrelated,
+      unrelatedOwner,
+      unrelatedAgent,
+      property,
+      contract,
+    }
   }
   beforeAll(async () => {
     fixture = await createFixture()
@@ -126,6 +142,294 @@ describe('/api/maintenance authorization and workflow (database integration)', (
   async function action(id: string, token: string, body: unknown) {
     return act(request(`tickets/${id}/actions`, 'POST', token, body), context(id))
   }
+  async function legacyTicket(status: MaintenanceTicketStatus = 'FECHADO', archived = false) {
+    return prisma.chamadoManutencao.create({
+      data: {
+        tenantId: fixture.tenant.id,
+        imovelId: fixture.property.id,
+        categoria: 'Plumbing',
+        titulo: 'Legacy ticket',
+        descricao: 'Existing record',
+        abertoPorId: fixture.admin.id,
+        abertoPorNome: fixture.admin.nome,
+        status,
+        resolvidoEm: ['RESOLVIDO', 'FECHADO'].includes(status) ? new Date('2026-09-01') : null,
+        excluidoEm: archived ? new Date('2026-09-02') : null,
+        excluidoPorId: archived ? fixture.admin.id : null,
+        concluidoPorId: fixture.agent.id,
+        concluidoPorPapel: 'AGENT',
+        atividades: { create: { tipo: 'NOTA', mensagem: 'Historical note' } },
+        anexos: { create: { nome: 'Historical photo', url: '/existing-photo.png' } },
+      },
+      include: { atividades: true, anexos: true },
+    })
+  }
+  async function anotherContract(propertyId = fixture.property.id) {
+    const opportunity = await prisma.oportunidade.create({
+      data: {
+        tenantId: fixture.tenant.id,
+        imovelId: propertyId,
+        interessadoNome: fixture.unrelated.nome,
+        interessadoEmail: fixture.unrelated.email,
+        valorProposto: 2500,
+        status: 'ACEITA',
+      },
+    })
+    return prisma.contrato.create({
+      data: {
+        tenantId: fixture.tenant.id,
+        imovelId: propertyId,
+        oportunidadeOrigemId: opportunity.id,
+        codigo: `TEST-${randomUUID()}`,
+        valor: 2500,
+        diaVencimento: 5,
+        dataInicio: new Date('2027-01-01'),
+        dataFim: new Date('2028-01-01'),
+        indiceReajuste: 'IPCA',
+        tipoGarantia: 'CAUCAO',
+        partes: {
+          create: {
+            papel: 'LOCATARIO',
+            nome: fixture.unrelated.nome,
+            cpf: '00000000000',
+            email: fixture.unrelated.email,
+            usuarioId: fixture.unrelated.id,
+          },
+        },
+      },
+    })
+  }
+  it.each([
+    { status: 'ABERTO', archived: false },
+    { status: 'EM_ANDAMENTO', archived: false },
+    { status: 'RESOLVIDO', archived: false },
+    { status: 'CANCELADO', archived: false },
+    { status: 'FECHADO', archived: false },
+    { status: 'FECHADO', archived: true },
+    { status: 'RESOLVIDO', archived: true },
+  ] as const)(
+    'regularizes legacy $status (archived=$archived) preserving lifecycle and restoring scoped access',
+    async ({ status, archived }) => {
+      const before = await legacyTicket(status, archived)
+      const authorized = [fixture.owner, fixture.agent, fixture.renter]
+      const outsiders = [
+        fixture.unrelated,
+        fixture.unrelatedOwner,
+        fixture.unrelatedAgent,
+        other.admin,
+      ]
+      for (const user of [...authorized, ...outsiders]) {
+        expect(
+          (await getTicket(request(`tickets/${before.id}`, 'GET', user.token), context(before.id)))
+            .status,
+        ).toBe(404)
+      }
+      const response = await action(before.id, fixture.admin.token, {
+        action: 'linkContract',
+        contractId: fixture.contract.id,
+      })
+      expect(response.status).toBe(200)
+      const after = await prisma.chamadoManutencao.findUniqueOrThrow({
+        where: { id: before.id },
+        include: { atividades: true, anexos: true },
+      })
+      expect(after).toEqual({
+        ...before,
+        contratoId: fixture.contract.id,
+        updatedAt: expect.any(Date),
+        atividades: expect.arrayContaining(before.atividades),
+      })
+      expect(after.updatedAt.getTime()).toBeGreaterThan(before.updatedAt.getTime())
+      expect(after.atividades).toHaveLength(before.atividades.length + 1)
+      expect(after.atividades.find((a) => a.tipo === 'EDICAO')).toMatchObject({
+        autorId: fixture.admin.id,
+        autorNome: fixture.admin.nome,
+        detalhes: {
+          before: { contractId: null, propertyId: fixture.property.id },
+          after: { contractId: fixture.contract.id, propertyId: fixture.property.id },
+        },
+      })
+      if (archived) {
+        for (const user of authorized) {
+          expect(
+            (
+              await getTicket(
+                request(`tickets/${before.id}`, 'GET', user.token),
+                context(before.id),
+              )
+            ).status,
+          ).toBe(404)
+        }
+        expect((await action(before.id, fixture.admin.token, { action: 'restore' })).status).toBe(
+          200,
+        )
+        const restored = await prisma.chamadoManutencao.findUniqueOrThrow({
+          where: { id: before.id },
+        })
+        expect(restored.status).toBe(status)
+        expect(restored.resolvidoEm).toEqual(before.resolvidoEm)
+      }
+      for (const user of authorized) {
+        expect(
+          (await getTicket(request(`tickets/${before.id}`, 'GET', user.token), context(before.id)))
+            .status,
+        ).toBe(200)
+        expect(
+          (
+            await listActivities(
+              request(`tickets/${before.id}/activities`, 'GET', user.token),
+              context(before.id),
+            )
+          ).status,
+        ).toBe(200)
+        const list = await GET(request('tickets', 'GET', user.token))
+        expect(
+          (await list.json()).items.map((item: MaintenanceTicketListItem) => item.id),
+        ).toContain(before.id)
+      }
+      for (const user of outsiders) {
+        expect(
+          (await getTicket(request(`tickets/${before.id}`, 'GET', user.token), context(before.id)))
+            .status,
+        ).toBe(404)
+        expect(
+          (
+            await listActivities(
+              request(`tickets/${before.id}/activities`, 'GET', user.token),
+              context(before.id),
+            )
+          ).status,
+        ).toBe(404)
+        const list = await GET(request('tickets', 'GET', user.token))
+        expect(
+          (await list.json()).items.map((item: MaintenanceTicketListItem) => item.id),
+        ).not.toContain(before.id)
+      }
+    },
+  )
+  it('regularization rejects unauthorized actors, missing/foreign contracts and another property without audit or mutation', async () => {
+    const before = await legacyTicket()
+    const property = await prisma.imovel.create({
+      data: {
+        tenantId: fixture.tenant.id,
+        responsavelId: fixture.agent.id,
+        titulo: 'Another property',
+        finalidade: 'ALUGUEL',
+        tipo: 'apartamento',
+        valor: 2500,
+      },
+    })
+    const wrongProperty = await anotherContract(property.id)
+    for (const contractId of ['missing', other.contract.id, wrongProperty.id]) {
+      expect(
+        (await action(before.id, fixture.admin.token, { action: 'linkContract', contractId }))
+          .status,
+      ).toBe(404)
+    }
+    for (const user of [fixture.owner, fixture.agent, fixture.renter, other.admin]) {
+      expect(
+        (
+          await action(before.id, user.token, {
+            action: 'linkContract',
+            contractId: fixture.contract.id,
+          })
+        ).status,
+      ).toBe(404)
+    }
+    const after = await prisma.chamadoManutencao.findUniqueOrThrow({
+      where: { id: before.id },
+      include: { atividades: true, anexos: true },
+    })
+    expect(after).toEqual(before)
+  })
+  it('regularization requires an explicit choice among contracts and grants access only to the selected contract renter', async () => {
+    const before = await legacyTicket()
+    const selected = await anotherContract()
+    expect((await action(before.id, fixture.admin.token, { action: 'linkContract' })).status).toBe(
+      400,
+    )
+    expect(
+      (await action(before.id, fixture.admin.token, { action: 'linkContract', contractId: ' ' }))
+        .status,
+    ).toBe(400)
+    expect(
+      (await prisma.chamadoManutencao.findUniqueOrThrow({ where: { id: before.id } })).contratoId,
+    ).toBeNull()
+    // User membership regularization does not infer a contract for existing calls.
+    expect(
+      (
+        await links(
+          request('links', 'POST', fixture.admin.token, {
+            contractId: selected.id,
+            ownerId: fixture.owner.id,
+          }),
+        )
+      ).status,
+    ).toBe(204)
+    expect(
+      (await prisma.chamadoManutencao.findUniqueOrThrow({ where: { id: before.id } })).contratoId,
+    ).toBeNull()
+    expect(
+      (
+        await action(before.id, fixture.admin.token, {
+          action: 'linkContract',
+          contractId: selected.id,
+        })
+      ).status,
+    ).toBe(200)
+    expect(
+      (
+        await getTicket(
+          request(`tickets/${before.id}`, 'GET', fixture.unrelated.token),
+          context(before.id),
+        )
+      ).status,
+    ).toBe(200)
+    expect(
+      (
+        await getTicket(
+          request(`tickets/${before.id}`, 'GET', fixture.renter.token),
+          context(before.id),
+        )
+      ).status,
+    ).toBe(404)
+    // Also audit explicit correction of an existing association, without reopening the call.
+    expect(
+      (
+        await action(before.id, fixture.admin.token, {
+          action: 'linkContract',
+          contractId: fixture.contract.id,
+        })
+      ).status,
+    ).toBe(200)
+    const corrected = await prisma.chamadoManutencao.findUniqueOrThrow({
+      where: { id: before.id },
+      include: { atividades: true },
+    })
+    expect(corrected.status).toBe(before.status)
+    expect(corrected.resolvidoEm).toEqual(before.resolvidoEm)
+    expect(
+      corrected.atividades.some(
+        (a) => a.detalhes && JSON.stringify(a.detalhes).includes(selected.id),
+      ),
+    ).toBe(true)
+    expect(
+      (
+        await getTicket(
+          request(`tickets/${before.id}`, 'GET', fixture.unrelated.token),
+          context(before.id),
+        )
+      ).status,
+    ).toBe(404)
+    expect(
+      (
+        await getTicket(
+          request(`tickets/${before.id}`, 'GET', fixture.renter.token),
+          context(before.id),
+        )
+      ).status,
+    ).toBe(200)
+  })
   it('requires authentication', async () =>
     expect((await GET(request('tickets', 'GET'))).status).toBe(401))
   it('creates for all linked roles and refuses another tenants contract', async () => {

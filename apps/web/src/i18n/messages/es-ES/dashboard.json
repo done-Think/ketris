@@ -310,6 +310,9 @@
     "activeTickets": "Activos",
     "archivedTickets": "Archivados",
     "workflow": {
+      "linkContract": "Asociar contrato",
+      "contract": "Contrato de la solicitud",
+      "linkContractHelp": "Seleccione el contrato correcto de este inmueble. La asociación conserva el estado, la fecha de resolución, el archivo y el historial de la solicitud.",
       "assume": "Asumir solicitud",
       "assign": "Asignar responsable",
       "provider": "Definir proveedor",

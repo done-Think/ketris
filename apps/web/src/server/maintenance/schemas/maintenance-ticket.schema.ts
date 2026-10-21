@@ -27,6 +27,7 @@ export const maintenanceActivityTypeSchema = z.enum([
 ])
 
 export const maintenancePermissionsSchema = z.object({
+  linkContract: z.boolean(),
   edit: z.boolean(),
   collaborate: z.boolean(),
   assume: z.boolean(),

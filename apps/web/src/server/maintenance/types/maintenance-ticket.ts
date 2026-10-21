@@ -36,6 +36,7 @@ export interface MaintenanceReplacementRequest {
 }
 
 export interface MaintenancePermissions {
+  linkContract: boolean
   edit: boolean
   collaborate: boolean
   assume: boolean
@@ -219,6 +220,7 @@ export type MaintenanceAction =
   | { [K in 'start' | 'complete' | 'confirm' | 'cancel' | 'assume' | 'restore']: { action: K } }[
       'start' | 'complete' | 'confirm' | 'cancel' | 'assume' | 'restore']
   | { action: 'contest'; reason: string }
+  | { action: 'linkContract'; contractId: string }
   | { action: 'reopen'; status: 'ABERTO' | 'EM_ANDAMENTO' }
   | { action: 'assign'; responsibleId: string }
   | { action: 'provider'; provider: MaintenanceProvider }

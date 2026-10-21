@@ -65,6 +65,7 @@ export function permissionsFor(
   const active = access && !ticket.deletedAt && !isTerminal(ticket)
   const pending = active && ticket.status === 'AGUARDANDO_CONFIRMACAO'
   return {
+    linkContract: admin,
     edit:
       active &&
       (manager ||

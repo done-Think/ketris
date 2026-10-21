@@ -310,6 +310,9 @@
     "activeTickets": "Ativos",
     "archivedTickets": "Arquivados",
     "workflow": {
+      "linkContract": "Associar contrato",
+      "contract": "Contrato do chamado",
+      "linkContractHelp": "Selecione o contrato correto deste imóvel. A associação preserva o status, a data de resolução, o arquivamento e o histórico do chamado.",
       "assume": "Assumir chamado",
       "assign": "Atribuir responsável",
       "provider": "Definir prestador",

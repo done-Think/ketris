@@ -30,6 +30,7 @@ vi.mock('../../hooks/use-maintenance', () => ({
 
 const mockTicket: ApiMaintenanceTicket = {
   permissions: {
+    linkContract: false,
     edit: true,
     collaborate: true,
     assume: false,
@@ -152,6 +153,58 @@ describe('MaintenanceTicketDetailPage', () => {
     expect(screen.getByText('Vazamento embaixo da pia da cozinha.')).toBeVisible()
   })
 
+  it.each(['RESOLVIDO', 'FECHADO'] as const)(
+    'requires explicit contract selection for archived %s tickets and filters other properties',
+    async (status) => {
+      mockTicketQuery({
+        data: {
+          ...mockTicket,
+          status,
+          deletedAt: '2026-10-01T10:00:00.000Z',
+          contractId: null,
+          permissions: {
+            ...mockTicket.permissions!,
+            linkContract: true,
+            edit: false,
+            collaborate: false,
+          },
+        },
+      })
+      vi.mocked(useMaintenanceOptions).mockReturnValue({
+        data: {
+          users: [],
+          contracts: ['contract-1', 'contract-2', 'another-property'].map((id) => ({
+            id,
+            code: id,
+            propertyId: id === 'another-property' ? 'p2' : 'p1',
+            propertyTitle: 'Apt Jardins 3q',
+            agentId: 'agent',
+            ownerId: null,
+            renterIds: [],
+            parties: [],
+          })),
+        },
+      } as unknown as ReturnType<typeof useMaintenanceOptions>)
+      const user = userEvent.setup()
+      render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+      const actionMutation = vi.mocked(useMaintenanceAction).mock.results[0].value
+      await user.click(screen.getByRole('button', { name: 'Associar contrato' }))
+      expect(screen.getByRole('button', { name: 'Confirmar' })).toBeDisabled()
+      expect(actionMutation.mutateAsync).not.toHaveBeenCalled()
+      await user.click(screen.getByRole('combobox', { name: /Contrato do chamado/ }))
+      expect(screen.queryByRole('option', { name: /another-property/ })).not.toBeInTheDocument()
+      expect(screen.getByRole('option', { name: /contract-1/ })).toBeVisible()
+      await user.click(screen.getByRole('option', { name: /contract-2/ }))
+      await user.click(screen.getByRole('button', { name: 'Confirmar' }))
+      await waitFor(() =>
+        expect(actionMutation.mutateAsync).toHaveBeenCalledWith({
+          action: 'linkContract',
+          contractId: 'contract-2',
+        }),
+      )
+    },
+  )
+
   it('renders attached photos from ticket.attachments and nothing when there are none', () => {
     const { unmount } = render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
     expect(screen.getByText('pia_cozinha1.jpg')).toBeVisible()
@@ -223,6 +276,7 @@ describe('MaintenanceTicketDetailPage', () => {
     })
     render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
     expect(screen.queryByRole('button', { name: 'Definir prestador' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Associar contrato' })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Anexar arquivos' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Enviar Mensagem' })).toBeDisabled()
   })

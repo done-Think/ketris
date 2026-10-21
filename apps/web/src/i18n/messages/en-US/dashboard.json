@@ -310,6 +310,9 @@
     "activeTickets": "Active",
     "archivedTickets": "Archived",
     "workflow": {
+      "linkContract": "Link contract",
+      "contract": "Ticket contract",
+      "linkContractHelp": "Select the correct contract for this property. Linking preserves the ticket status, resolution date, archive state and history.",
       "assume": "Take responsibility",
       "assign": "Assign responsible user",
       "provider": "Set provider",
