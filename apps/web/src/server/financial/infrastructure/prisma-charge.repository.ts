@@ -1,6 +1,7 @@
-import type { Cobranca, Contrato, Imovel, ParteContrato } from '@prisma/client'
+import type { Cobranca, Contrato, Imovel, ParteContrato, Prisma } from '@prisma/client'
 
 import { prisma } from '@server/db/prisma'
+import { nextSequentialCode } from '@server/shared/sequential-code'
 
 import type {
   Charge,
@@ -64,13 +65,8 @@ function toDomainCharge(cobranca: CobrancaWithRelations): Charge {
   }
 }
 
-async function generateChargeCode(): Promise<string> {
-  const year = new Date().getFullYear()
-  const count = await prisma.cobranca.count({
-    where: { codigo: { startsWith: `COB-${year}-` } },
-  })
-
-  return `COB-${year}-${String(count + 1).padStart(4, '0')}`
+function generateChargeCode(tx: Prisma.TransactionClient): Promise<string> {
+  return nextSequentialCode(tx, 'cobrancas', `COB-${new Date().getFullYear()}-`)
 }
 
 const chargeInclude = {
@@ -106,21 +102,21 @@ export class PrismaChargeRepository implements ChargeRepository {
   }
 
   async create(input: NewCharge): Promise<Charge> {
-    const codigo = await generateChargeCode()
-
-    const cobranca = await prisma.cobranca.create({
-      data: {
-        tenantId: input.tenantId,
-        contratoId: input.contractId,
-        codigo,
-        descricao: input.description,
-        tipo: input.type,
-        valor: input.amount,
-        vencimento: input.dueDate,
-        status: input.status,
-      },
-      include: chargeInclude,
-    })
+    const cobranca = await prisma.$transaction(async (tx) =>
+      tx.cobranca.create({
+        data: {
+          tenantId: input.tenantId,
+          contratoId: input.contractId,
+          codigo: await generateChargeCode(tx),
+          descricao: input.description,
+          tipo: input.type,
+          valor: input.amount,
+          vencimento: input.dueDate,
+          status: input.status,
+        },
+        include: chargeInclude,
+      }),
+    )
 
     return toDomainCharge(cobranca)
   }
