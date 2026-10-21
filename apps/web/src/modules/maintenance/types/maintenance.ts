@@ -85,13 +85,25 @@ export interface MaintenanceWorkflowControlsProps {
   ticket: ApiMaintenanceTicket
 }
 
+export interface MaintenanceScheduleProps {
+  ticket: ApiMaintenanceTicket
+}
+
+export interface MaintenanceScheduleFormValues {
+  scheduledDate: string
+  scheduledHour: string
+  scheduledMinute: string
+}
+
 export interface MaintenanceWorkflowSelection {
-  action: MaintenanceAction['action']
+  action: MaintenanceWorkflowAction
   requestId?: string
 }
 
 export interface MaintenanceWorkflowControl {
   permission: keyof MaintenancePermissions
-  action: MaintenanceAction['action']
+  action: MaintenanceWorkflowAction
   icon: ReactNode
 }
+
+export type MaintenanceWorkflowAction = Exclude<MaintenanceAction['action'], 'schedule'>

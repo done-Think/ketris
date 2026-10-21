@@ -95,6 +95,14 @@
         "listingExpires": "Listing expires",
         "deactivated": "Deactivated"
       }
+    },
+    "renter": {
+      "subtitle": "View properties linked to your active contracts.",
+      "emptyTitle": "No linked properties",
+      "emptyDescription": "Properties will appear here when an active contract is linked to your user account.",
+      "loading": "Loading your properties",
+      "loadError": "Unable to load your properties. Please try again later.",
+      "readOnly": "This property information is available for viewing only."
     }
   },
   "detail": {

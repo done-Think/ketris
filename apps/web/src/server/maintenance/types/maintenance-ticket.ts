@@ -37,7 +37,9 @@ export interface MaintenanceReplacementRequest {
 
 export interface MaintenancePermissions {
   linkContract: boolean
+  schedule: boolean
   edit: boolean
+  comment: boolean
   collaborate: boolean
   assume: boolean
   assign: boolean
@@ -45,6 +47,7 @@ export interface MaintenancePermissions {
   requestReplacement: boolean
   start: boolean
   complete: boolean
+  finish: boolean
   confirm: boolean
   contest: boolean
   cancel: boolean
@@ -124,6 +127,7 @@ export interface MaintenanceTicket {
   openedById: string
   openedByName: string
   resolvedAt: Date | null
+  scheduledAt?: Date | null
   createdAt: Date
   updatedAt: Date
   activities: MaintenanceActivity[]
@@ -131,6 +135,7 @@ export interface MaintenanceTicket {
 }
 
 export interface MaintenanceTicketListItem {
+  scheduledAt?: Date | null
   id: string
   propertyId: string
   propertyTitle: string
@@ -167,6 +172,7 @@ export interface MaintenanceTicketListFilters {
 }
 
 export interface NewMaintenanceTicket {
+  scheduledAt?: Date | null
   tenantId: string
   propertyId: string
   contractId: string
@@ -179,6 +185,7 @@ export interface NewMaintenanceTicket {
 }
 
 export interface MaintenanceTicketUpdate {
+  scheduledAt?: Date | null
   propertyId?: string
   contractId?: string
   category?: string
@@ -217,11 +224,15 @@ export type MaintenanceRequestMutation =
     }
 
 export type MaintenanceAction =
-  | { [K in 'start' | 'complete' | 'confirm' | 'cancel' | 'assume' | 'restore']: { action: K } }[
-      'start' | 'complete' | 'confirm' | 'cancel' | 'assume' | 'restore']
+  | { action: 'schedule'; scheduledAt: string }
+  | {
+      [K in 'start' | 'complete' | 'finish' | 'confirm' | 'cancel' | 'assume' | 'restore']: {
+        action: K
+      }
+    }['start' | 'complete' | 'finish' | 'confirm' | 'cancel' | 'assume' | 'restore']
   | { action: 'contest'; reason: string }
   | { action: 'linkContract'; contractId: string }
-  | { action: 'reopen'; status: 'ABERTO' | 'EM_ANDAMENTO' }
+  | { action: 'reopen'; status: 'ABERTO' | 'EM_ANDAMENTO'; reason?: string }
   | { action: 'assign'; responsibleId: string }
   | { action: 'provider'; provider: MaintenanceProvider }
   | { action: 'requestReplacement'; reason: string }

@@ -22,6 +22,10 @@ const existingEvent: AgendaEvent = {
   tenantId: 'tenant-1',
   responsavelId: 'agent-1',
   criadoPorId: 'agent-1',
+  responsavelNome: 'Corretor',
+  donoUsuarioId: null,
+  dono: null,
+  participantes: [],
   imovelId: null,
   referenciaImovelLivre: null,
   titulo: 'Follow-up',
@@ -48,6 +52,7 @@ function createDeps(overrides?: {
   const agendaEventRepository: AgendaEventRepository = {
     create: vi.fn(),
     list: vi.fn(),
+    findByScopeAndId: vi.fn(),
     findByTenantAndId: overrides?.findByTenantAndId ?? vi.fn().mockResolvedValue(existingEvent),
     update: vi.fn(),
     reschedule: overrides?.reschedule ?? vi.fn().mockResolvedValue(rescheduledEvent),
@@ -233,7 +238,7 @@ describe('RescheduleAgendaEventUseCase', () => {
     })
   })
 
-  it('lança AgendaVisitMinimumDurationError ao reagendar uma VISIT para menos de 60min', async () => {
+  it('lança AgendaVisitMinimumDurationError ao reagendar uma VISIT para menos de 30min', async () => {
     const deps = createDeps({ findByTenantAndId: vi.fn().mockResolvedValue(existingVisitEvent) })
     const useCase = new RescheduleAgendaEventUseCase(deps.agendaEventRepository)
 
@@ -243,13 +248,13 @@ describe('RescheduleAgendaEventUseCase', () => {
         actorPapel: 'AGENT',
         id: 'visit-1',
         inicio: NEW_VALID_INICIO,
-        durationMinutes: 30,
+        durationMinutes: 15,
       }),
     ).rejects.toThrow(AgendaVisitMinimumDurationError)
     expect(deps.agendaEventRepository.reschedule).not.toHaveBeenCalled()
   })
 
-  it('permite reagendar uma VISIT mantendo 60min ou mais', async () => {
+  it('permite reagendar uma VISIT mantendo 30min ou mais', async () => {
     const deps = createDeps({ findByTenantAndId: vi.fn().mockResolvedValue(existingVisitEvent) })
     const useCase = new RescheduleAgendaEventUseCase(deps.agendaEventRepository)
 

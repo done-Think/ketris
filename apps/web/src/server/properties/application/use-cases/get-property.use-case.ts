@@ -8,13 +8,19 @@ export class GetPropertyUseCase {
   constructor(private readonly propertyRepository: PropertyRepository) {}
 
   async execute(input: { actorTenantId: string; actorId: string; actorPapel: Papel; id: string }) {
-    const property = await this.propertyRepository.findByTenantAndId(input.actorTenantId, input.id)
+    const property = await this.propertyRepository.findByTenantAndId(
+      input.actorTenantId,
+      input.id,
+      input.actorPapel === 'RENTER' ? input.actorId : undefined,
+    )
 
     if (!property) {
       throw new PropertyNotFoundError()
     }
 
-    assertPropertyAccess(property.responsavelId, input.actorId, input.actorPapel)
+    if (input.actorPapel !== 'RENTER') {
+      assertPropertyAccess(property.responsavelId, input.actorId, input.actorPapel)
+    }
 
     return property
   }

@@ -60,38 +60,40 @@ export function permissionsFor(
   const access = canAccessTicket(actor, ticket)
   const admin = access && actor.actorPapel === 'ADMIN'
   const owner = access && actor.actorPapel === 'OWNER' && ticket.access.ownerId === actor.actorId
+  const renter = access && actor.actorPapel === 'RENTER'
   const manager = admin || (access && ['AGENT', 'OWNER'].includes(actor.actorPapel))
   const responsible = manager && ticket.responsibleId === actor.actorId
   const active = access && !ticket.deletedAt && !isTerminal(ticket)
   const pending = active && ticket.status === 'AGUARDANDO_CONFIRMACAO'
   return {
     linkContract: admin,
-    edit:
-      active &&
-      (manager ||
-        (actor.actorPapel === 'RENTER' &&
-          ticket.openedById === actor.actorId &&
-          ticket.status === 'ABERTO')),
+    schedule: active && Boolean(ticket.provider) && (renter || manager),
+    edit: active && manager,
+    comment: active || (renter && !ticket.deletedAt && ticket.status === 'RESOLVIDO'),
     collaborate: active,
     assume: active && !ticket.responsibleId && ['AGENT', 'OWNER'].includes(actor.actorPapel),
     assign: active && admin,
-    provider: active && (admin || (responsible && actor.actorPapel === 'AGENT')),
+    provider: active && (admin || renter || (responsible && actor.actorPapel === 'AGENT')),
     requestReplacement:
       active &&
       owner &&
       Boolean(ticket.provider) &&
       !ticket.replacementRequests.some((r) => r.status === 'PENDENTE'),
     start: active && (admin || responsible) && ['ABERTO', 'CONTESTADO'].includes(ticket.status),
+    finish: active && renter,
     complete:
       active &&
       ticket.access.validContract &&
       (admin || responsible) &&
       ticket.status === 'EM_ANDAMENTO',
     confirm: pending && (admin || (owner && ticket.completedByRole !== 'OWNER')),
-    contest: pending && (admin || owner),
+    contest: pending && (admin || owner || renter),
     cancel: active && admin,
     reopen:
-      access && !ticket.deletedAt && isTerminal(ticket) && ticket.status !== 'FECHADO' && admin,
+      access &&
+      !ticket.deletedAt &&
+      ((admin && isTerminal(ticket) && ticket.status !== 'FECHADO') ||
+        (renter && ticket.status === 'RESOLVIDO')),
     delete: access && !ticket.deletedAt && admin,
     restore: access && Boolean(ticket.deletedAt) && admin,
   }
