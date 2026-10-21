@@ -122,7 +122,7 @@ describe('AppShell navigation per papel', () => {
     '/dashboard/properties',
     '/dashboard/properties/[id]',
   ] as const)('shows charges, tickets, properties and agenda to RENTER on %s', (pathname) => {
-    mockSession({ papel: 'RENTER' })
+    mockSession({ role: 'RENTER' })
     vi.mocked(usePathname).mockReturnValue(pathname)
     renderShell()
     expect(screen.getByText('Conteúdo da rota')).toBeVisible()
@@ -144,7 +144,7 @@ describe('AppShell navigation per papel', () => {
     '/crm',
     '/dashboard/contracts',
   ] as const)('redirects RENTER away from %s without rendering its contents', (pathname) => {
-    mockSession({ papel: 'RENTER' })
+    mockSession({ role: 'RENTER' })
     vi.mocked(usePathname).mockReturnValue(pathname)
     renderShell()
     expect(screen.queryByText('Conteúdo da rota')).not.toBeInTheDocument()

@@ -85,7 +85,7 @@ export function ChargeDetailsPage({ chargeId }: { chargeId: string }) {
 
 function ChargeDetailsContent({ charge, tenantId }: { charge: Charge; tenantId: string }) {
   const { data: session } = useSession()
-  const isRenter = session?.papel === 'RENTER'
+  const isRenter = session?.role === 'RENTER'
   const t = useTranslations('charges.details')
   const statusT = useTranslations('charges.statuses')
   const locale = useLocale()

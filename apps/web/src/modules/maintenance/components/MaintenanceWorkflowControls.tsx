@@ -81,7 +81,7 @@ export function MaintenanceWorkflowControls({ ticket }: MaintenanceWorkflowContr
   const reasonAction =
     selection &&
     (['contest', 'requestReplacement', 'rejectReplacement'].includes(selection.action) ||
-      (selection.action === 'reopen' && session?.papel === 'RENTER'))
+      (selection.action === 'reopen' && session?.role === 'RENTER'))
   const valid =
     (!providerAction || Boolean(name.trim())) &&
     (!reasonAction || Boolean(reason.trim())) &&
@@ -122,7 +122,7 @@ export function MaintenanceWorkflowControls({ ticket }: MaintenanceWorkflowContr
         break
       case 'reopen':
         action =
-          session?.papel === 'RENTER'
+          session?.role === 'RENTER'
             ? { action: 'reopen', status: 'ABERTO', reason }
             : { action: 'reopen', status }
         break
@@ -184,7 +184,7 @@ export function MaintenanceWorkflowControls({ ticket }: MaintenanceWorkflowContr
             </Typography>
           )}
           {request.status === 'PENDENTE' &&
-            session?.papel === 'ADMIN' &&
+            session?.role === 'ADMIN' &&
             permissions?.collaborate && (
               <Stack direction="row" spacing={1}>
                 <Button
@@ -262,7 +262,7 @@ export function MaintenanceWorkflowControls({ ticket }: MaintenanceWorkflowContr
                     ))}
                 </TextField>
               )}
-              {selection?.action === 'reopen' && session?.papel !== 'RENTER' && (
+              {selection?.action === 'reopen' && session?.role !== 'RENTER' && (
                 <TextField
                   label={t('reopenStatus')}
                   value={status}

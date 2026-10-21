@@ -10,7 +10,7 @@ import { agendaService } from '../../services/agenda-service'
 import type { RenterAgendaEventApi } from '../../types/agenda-event'
 
 const { session } = vi.hoisted(() => ({
-  session: { tenantId: 'renters', papel: 'RENTER', user: { id: 'renter-1' } },
+  session: { tenantId: 'renters', role: 'RENTER', user: { id: 'renter-1' } },
 }))
 vi.mock('next-auth/react', () => ({ useSession: () => ({ data: session }) }))
 vi.mock('../../services/agenda-service', () => ({
@@ -25,18 +25,18 @@ vi.mock('../../services/agenda-service', () => ({
 beforeEach(() => {
   vi.resetAllMocks()
   session.tenantId = 'renters'
-  session.papel = 'RENTER'
+  session.role = 'RENTER'
   session.user.id = 'renter-1'
 })
 
 it.each(['RENTER', 'AGENT', 'OWNER'])('does not request the agency user list for %s', (role) => {
-  session.papel = role
+  session.role = role
   renderHook(() => useAgendaAgents(true), { wrapper: wrapper() })
   expect(agendaService.listAgents).not.toHaveBeenCalled()
 })
 
 it('loads agent options only for an administrator with an open form', async () => {
-  session.papel = 'ADMIN'
+  session.role = 'ADMIN'
   vi.mocked(agendaService.listAgents).mockResolvedValue([{ id: 'agent', name: 'Ana' }])
   const { result, rerender } = renderHook(({ open }) => useAgendaAgents(open), {
     initialProps: { open: false },
@@ -78,7 +78,7 @@ it('does not reuse agenda data between renters sharing a tenant or between roles
   rerender()
   expect(result.current.data).toBeUndefined()
   await waitFor(() => expect(result.current.data).toEqual([]))
-  session.papel = 'AGENT'
+  session.role = 'AGENT'
   rerender()
   expect(result.current.data).toBeUndefined()
   await waitFor(() => expect(agendaService.list).toHaveBeenCalledTimes(3))
@@ -108,7 +108,7 @@ it('isolates charges and tickets between renters and keeps successful sources wh
 })
 
 it('loads maintenance for the tenant administrator without requesting renter charges', async () => {
-  session.papel = 'ADMIN'
+  session.role = 'ADMIN'
   vi.mocked(agendaService.listMaintenance).mockResolvedValue([])
   const { result } = renderHook(() => useAgendaOrganization(), { wrapper: wrapper() })
   await waitFor(() => expect(result.current.maintenance.isSuccess).toBe(true))
@@ -117,7 +117,7 @@ it('loads maintenance for the tenant administrator without requesting renter cha
 })
 
 it.each(['OWNER', 'AGENT'])('does not expand organization data access for %s', (role) => {
-  session.papel = role
+  session.role = role
   renderHook(() => useAgendaOrganization(), { wrapper: wrapper() })
   expect(agendaService.listCharges).not.toHaveBeenCalled()
   expect(agendaService.listMaintenance).not.toHaveBeenCalled()
@@ -131,7 +131,7 @@ it('waits for a resolved user before loading organization data', () => {
 })
 
 it('does not reuse administrator tickets between tenants, users or roles', async () => {
-  session.papel = 'ADMIN'
+  session.role = 'ADMIN'
   const tickets = [
     {
       id: 'tenant-ticket',
@@ -157,7 +157,7 @@ it('does not reuse administrator tickets between tenants, users or roles', async
   expect(result.current.maintenance.data).toBeUndefined()
   await waitFor(() => expect(result.current.maintenance.data).toEqual([]))
 
-  session.papel = 'RENTER'
+  session.role = 'RENTER'
   rerender()
   expect(result.current.maintenance.data).toBeUndefined()
   await waitFor(() => expect(result.current.maintenance.data).toEqual([]))

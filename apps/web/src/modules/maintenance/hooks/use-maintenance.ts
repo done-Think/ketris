@@ -46,7 +46,7 @@ export function useMaintenanceTickets(
     queryKey: [
       ...maintenanceQueryKeys.list(scopedTenantId, filters),
       session?.user?.id,
-      session?.papel,
+      session?.role,
     ],
     queryFn: () => maintenanceService.list(filters),
     enabled: Boolean(tenantId),
@@ -65,7 +65,7 @@ export function useMaintenanceTicket(
     queryKey: [
       ...maintenanceQueryKeys.detail(scopedTenantId, scopedTicketId),
       session?.user?.id,
-      session?.papel,
+      session?.role,
     ],
     queryFn: () => maintenanceService.get(scopedTicketId),
     enabled: Boolean(tenantId) && Boolean(ticketId),
@@ -163,7 +163,7 @@ export function useUploadMaintenanceTicketAttachment(
 export function useMaintenanceOptions() {
   const { data: session } = useSession()
   return useQuery({
-    queryKey: ['maintenance-options', session?.tenantId, session?.user?.id, session?.papel],
+    queryKey: ['maintenance-options', session?.tenantId, session?.user?.id, session?.role],
     queryFn: () => maintenanceService.options(),
     enabled: Boolean(session?.tenantId),
   })

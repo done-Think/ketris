@@ -43,7 +43,7 @@ function matchesSearchQuery(property: DashboardProperty, query: string) {
 export function PropertiesDashboardPage() {
   const t = useTranslations('properties.dashboard.renter')
   const { data: session } = useSession()
-  const isRenter = session?.papel === 'RENTER'
+  const isRenter = session?.role === 'RENTER'
   const router = useRouter()
   const propertiesQuery = useProperties()
   const mappingOptions = useDashboardPropertyMappingOptions()

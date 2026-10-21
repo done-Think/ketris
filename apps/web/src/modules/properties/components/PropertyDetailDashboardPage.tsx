@@ -40,7 +40,7 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
   const router = useRouter()
   const mappingOptions = useDashboardPropertyMappingOptions()
   const { data: session } = useSession()
-  const isRenter = session?.papel === 'RENTER'
+  const isRenter = session?.role === 'RENTER'
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const { setValue, watch } = useForm<PropertyDetailDashboardFormValues>({
     defaultValues: {

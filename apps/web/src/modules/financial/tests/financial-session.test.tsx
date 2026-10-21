@@ -9,7 +9,7 @@ import { useDashboardAgendaNotifications } from '@shared/hooks/use-dashboard-age
 import { httpClient } from '@shared/lib/api/http-client'
 
 const { session } = vi.hoisted(() => ({
-  session: { user: { id: 'agent' }, tenantId: 'tenant', papel: 'AGENT' },
+  session: { user: { id: 'agent' }, tenantId: 'tenant', role: 'AGENT' },
 }))
 vi.mock('next-auth/react', () => ({
   useSession: () => ({ data: session, status: 'authenticated' }),
@@ -22,7 +22,7 @@ vi.mock('@shared/lib/api/http-client', () => ({ httpClient: { get: vi.fn() } }))
 beforeEach(() => {
   vi.resetAllMocks()
   session.user.id = 'agent'
-  session.papel = 'AGENT'
+  session.role = 'AGENT'
 })
 
 function wrapper() {
@@ -50,7 +50,7 @@ it('does not reuse another users financial list or detail cache in the same tena
   await waitFor(() => expect(result.current.list.data?.totalCount).toBe(20))
   await waitFor(() => expect(result.current.detail.data?.description).toBe('Agent view'))
   session.user.id = 'renter'
-  session.papel = 'RENTER'
+  session.role = 'RENTER'
   rerender()
   expect(result.current.list.data?.totalCount).not.toBe(20)
   expect(result.current.detail.data).toBeUndefined()
@@ -67,7 +67,7 @@ it('does not fetch agenda notifications or reuse cached tenant events for RENTER
   })
   await waitFor(() => expect(httpClient.get).toHaveBeenCalledTimes(1))
   session.user.id = 'renter'
-  session.papel = 'RENTER'
+  session.role = 'RENTER'
   rerender()
   expect(result.current).toEqual([])
   expect(httpClient.get).toHaveBeenCalledTimes(1)

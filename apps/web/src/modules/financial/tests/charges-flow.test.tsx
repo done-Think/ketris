@@ -10,7 +10,7 @@ import type { ApiCharge, ApiChargeListItem } from '../types/service'
 
 const { push, sessionState, chargesListSpy } = vi.hoisted(() => ({
   push: vi.fn(),
-  sessionState: { papel: 'ADMIN' },
+  sessionState: { role: 'ADMIN' },
   chargesListSpy: vi.fn(),
 }))
 vi.mock('@/i18n/navigation', () => ({ useRouter: () => ({ push }) }))
@@ -253,11 +253,11 @@ const detail = (id: string) => wrap(<ChargeDetailsPage chargeId={id} />)
 
 beforeEach(() => {
   vi.clearAllMocks()
-  sessionState.papel = 'ADMIN'
+  sessionState.role = 'ADMIN'
   vi.mocked(useSession).mockImplementation(
     () =>
       ({
-        data: { tenantId: 'tenant-1', papel: sessionState.papel },
+        data: { tenantId: 'tenant-1', role: sessionState.role },
         status: 'authenticated',
         update: vi.fn(),
       }) as unknown as ReturnType<typeof useSession>,
@@ -276,7 +276,7 @@ beforeEach(() => {
 
 describe('charges list', () => {
   it('offers only reading actions and requests server pagination for RENTER', async () => {
-    sessionState.papel = 'RENTER'
+    sessionState.role = 'RENTER'
     const user = userEvent.setup()
     render(wrap(<ChargesPage />))
     expect(screen.getByText('Consulte as cobranças dos seus contratos.')).toBeVisible()
@@ -301,7 +301,7 @@ describe('charges list', () => {
 
   it('hides charge creation from renters', () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1', papel: 'RENTER' },
+      data: { tenantId: 'tenant-1', role: 'RENTER' },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
@@ -323,9 +323,9 @@ describe('charges list', () => {
 
   it.each(['ADMIN', 'OWNER', 'AGENT'] as const)(
     'preserves charge creation for %s',
-    async (papel) => {
+    async (role) => {
       vi.mocked(useSession).mockReturnValue({
-        data: { tenantId: 'tenant-1', papel },
+        data: { tenantId: 'tenant-1', role },
         status: 'authenticated',
         update: vi.fn(),
       } as unknown as ReturnType<typeof useSession>)
@@ -346,7 +346,7 @@ describe('charges list', () => {
     expect(screen.getByRole('dialog')).toBeVisible()
 
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1', papel: 'RENTER' },
+      data: { tenantId: 'tenant-1', role: 'RENTER' },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
@@ -442,7 +442,7 @@ describe('charges list', () => {
 
 describe('charge details', () => {
   it('lets RENTER read details without registering a payment', () => {
-    sessionState.papel = 'RENTER'
+    sessionState.role = 'RENTER'
     render(detail('0340'))
     expect(screen.getByText('#COB-2025-0340')).toBeVisible()
     expect(screen.queryByRole('button', { name: 'Registrar pagamento' })).not.toBeInTheDocument()

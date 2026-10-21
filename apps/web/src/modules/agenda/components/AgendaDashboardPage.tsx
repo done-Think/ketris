@@ -49,25 +49,25 @@ export function AgendaDashboardPage() {
   const { enqueueSnackbar } = useSnackbar()
   const { data: session } = useSession()
   const tenantId = session?.tenantId ?? ''
-  const isRenter = session?.papel === 'RENTER'
-  const hasOrganization = isRenter || session?.papel === 'ADMIN'
+  const isRenter = session?.role === 'RENTER'
+  const hasOrganization = isRenter || session?.role === 'ADMIN'
   const [isEventFormOpen, setIsEventFormOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null)
   const agentsQuery = useAgendaAgents(isEventFormOpen || Boolean(selectedEvent))
   const audienceFormProps = {
-    canManageAudience: session?.papel === 'ADMIN',
+    canManageAudience: session?.role === 'ADMIN',
     agentOptions: agentsQuery.data,
     agentsLoading: agentsQuery.isLoading,
     agentsError: agentsQuery.isError,
   }
   const selectedEventReadOnly =
     isRenter ||
-    (session?.papel !== 'ADMIN' &&
+    (session?.role !== 'ADMIN' &&
       Boolean(selectedEvent) &&
       (selectedEvent?.internal ||
         selectedEvent?.audience === 'ALL_AGENTS' ||
         (selectedEvent?.audience === 'ASSIGNED_AGENT' &&
-          (session?.papel !== 'AGENT' || selectedEvent.responsibleId !== session?.user?.id))))
+          (session?.role !== 'AGENT' || selectedEvent.responsibleId !== session?.user?.id))))
   const today = useMemo(() => dayjs().startOf('day'), [])
   const scheduleHorizonEnd = useMemo(() => today.add(6, 'month').endOf('month'), [today])
   const scheduleStart = isRenter ? today.subtract(6, 'month') : today

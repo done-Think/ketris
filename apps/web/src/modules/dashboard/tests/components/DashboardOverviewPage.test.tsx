@@ -13,11 +13,11 @@ import type { AgendaEventApi } from '@modules/agenda/types/agenda-event'
 
 import { DashboardOverviewPage } from '../../components/DashboardOverviewPage'
 
-let papel: Papel = 'ADMIN'
+let sessionRole: Papel = 'ADMIN'
 
 vi.mock('next-auth/react', () => ({
   useSession: () => ({
-    data: { tenantId: 'tenant-1', papel, user: { id: 'agent-1' } },
+    data: { tenantId: 'tenant-1', role: sessionRole, user: { id: 'agent-1' } },
     status: 'authenticated',
   }),
 }))
@@ -95,7 +95,7 @@ vi.mock('@modules/agency-dashboard/hooks/use-agency-dashboard', () => ({
 }))
 
 function renderPage(role: Papel) {
-  papel = role
+  sessionRole = role
 
   return render(
     <QueryClientProvider client={new QueryClient()}>

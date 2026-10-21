@@ -67,9 +67,9 @@ export function ChargesPage() {
   const locale = useLocale()
   const { enqueueSnackbar } = useSnackbar()
   const { data: session, status: sessionStatus } = useSession()
-  const isRenter = session?.papel === 'RENTER'
+  const isRenter = session?.role === 'RENTER'
   const canCreateCharge =
-    sessionStatus === 'authenticated' && Boolean(session?.papel && session.papel !== 'RENTER')
+    sessionStatus === 'authenticated' && Boolean(session?.role && session.role !== 'RENTER')
   const tenantId = session?.tenantId ?? ''
   const createChargeMutation = useCreateCharge(tenantId)
   const updateChargeMutation = useUpdateCharge(tenantId)
