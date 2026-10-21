@@ -3,9 +3,6 @@
     "overview": {
       "metadataTitle": "Ketris | Dashboard"
     },
-    "agencyOverview": {
-      "metadataTitle": "Ketris | Visión General de la Inmobiliaria"
-    },
     "agenda": {
       "metadataTitle": "Ketris | Agenda"
     },
@@ -35,24 +32,10 @@
   "overview": {
     "title": "Dashboard",
     "notifications": "Notificaciones",
-    "performanceTitle": "Desempeño de 6 meses",
     "metrics": {
-      "leadsActive": {
-        "label": "Leads activos",
-        "caption": "{count} hoy"
-      },
-      "visitsMonth": {
-        "label": "Visitas del mes",
-        "caption": "{count} hoy"
-      },
-      "proposals": {
-        "label": "Propuestas",
-        "caption": "{count} esperando respuesta"
-      },
-      "revenue": {
-        "label": "Facturación",
-        "caption": "{amount} en mora"
-      }
+      "leadsActive": { "label": "Leads activos", "caption": "{count} hoy" },
+      "visitsMonth": { "label": "Visitas del mes", "caption": "{count} hoy" },
+      "proposals": { "label": "Propuestas", "caption": "{count} esperando respuesta" }
     },
     "activityDetail": {
       "close": "Cerrar",
@@ -99,23 +82,12 @@
     }
   },
   "agencyOverview": {
-    "agencyName": "Inmobiliaria Premium SP",
-    "title": "Visión General",
-    "subtitle": "Acompaña movimientos, metas y performance consolidada de la inmobiliaria.",
-    "month": "Septiembre, 2024",
-    "report": "Informe",
-    "navigation": {
-      "overview": "Visión General",
-      "team": "Equipo",
-      "portfolio": "Cartera",
-      "finance": "Financiero",
-      "contracts": "Contratos"
-    },
     "kpis": {
       "portfolio": "Inmuebles en cartera",
       "activeBrokers": "Agentes activos",
       "receivedLeads": "Leads recibidos",
       "revenue": "Facturación",
+      "overdue": "En mora",
       "occupancy": "Tasa ocupación",
       "helpers": {
         "newProperties": "{count, plural, =0 {Ninguno nuevo este mes} one {+# nuevo este mes} other {+# nuevos este mes}}",
@@ -125,7 +97,9 @@
         "revenueIncrease": "+{percent, number}% vs mes anterior",
         "revenueDecrease": "−{percent, number}% vs mes anterior",
         "revenueSame": "Igual al mes anterior",
-        "revenueNoPrevious": "Mes anterior en cero"
+        "revenueNoPrevious": "Mes anterior en cero",
+        "overdue": "Vencidos sin pagar",
+        "noOverdue": "Nada en mora"
       }
     },
     "performance": {
