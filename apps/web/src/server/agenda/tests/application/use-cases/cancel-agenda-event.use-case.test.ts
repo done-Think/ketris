@@ -11,6 +11,7 @@ function createDeps(overrides?: { cancel?: AgendaEventRepository['cancel'] }) {
   const agendaEventRepository: AgendaEventRepository = {
     create: vi.fn(),
     list: vi.fn(),
+    findByScopeAndId: vi.fn(),
     findByTenantAndId: vi.fn(),
     update: vi.fn(),
     reschedule: vi.fn(),

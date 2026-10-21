@@ -19,7 +19,8 @@ export function isWithinBusinessHours(date: dayjs.Dayjs): boolean {
 
 function roundUpToNextQuarterHour(date: dayjs.Dayjs): dayjs.Dayjs {
   const remainder = date.minute() % 15
-  const rounded = remainder === 0 ? date : date.add(15 - remainder, 'minute')
+  const isExactQuarterHour = remainder === 0 && date.second() === 0 && date.millisecond() === 0
+  const rounded = isExactQuarterHour ? date : date.add(15 - remainder, 'minute')
   return rounded.second(0).millisecond(0)
 }
 
