@@ -9,6 +9,25 @@ describe('parseMoneyInput', () => {
     expect(parseMoneyInput('1.234,5', 'pt-BR')).toBe(1234.5)
     expect(parseMoneyInput('1,234.56', 'en-US')).toBe(1234.56)
     expect(parseMoneyInput(' 100 ', 'pt-BR')).toBe(100)
+    expect(parseMoneyInput('49,99', 'es-ES')).toBe(49.99)
+    expect(parseMoneyInput('1499,00', 'es-ES')).toBe(1499)
+    expect(parseMoneyInput('12.345,67', 'es-ES')).toBe(12345.67)
+  })
+
+  it('lê de volta o valor que formatMoneyInput mostrou no campo', () => {
+    for (const locale of ['pt-BR', 'en-US', 'es-ES']) {
+      for (const amount of [9.99, 49.99, 1499, 12345.67]) {
+        expect(parseMoneyInput(formatMoneyInput(amount, locale), locale)).toBe(amount)
+      }
+    }
+  })
+
+  it('lê os centavos digitados com o separador do outro idioma', () => {
+    expect(parseMoneyInput('49.99', 'pt-BR')).toBe(49.99)
+    expect(parseMoneyInput('49.9', 'es-ES')).toBe(49.9)
+    expect(parseMoneyInput('49,99', 'en-US')).toBe(49.99)
+    expect(parseMoneyInput('1.234', 'pt-BR')).toBe(1234)
+    expect(parseMoneyInput('1,234', 'en-US')).toBe(1234)
   })
 
   it('recusa texto, negativos e mais de duas casas decimais', () => {
@@ -16,6 +35,8 @@ describe('parseMoneyInput', () => {
     expect(parseMoneyInput('abc', 'pt-BR')).toBeNull()
     expect(parseMoneyInput('-5', 'pt-BR')).toBeNull()
     expect(parseMoneyInput('9,999', 'pt-BR')).toBeNull()
+    expect(parseMoneyInput('1,2,3', 'pt-BR')).toBeNull()
+    expect(parseMoneyInput('12.34.567', 'pt-BR')).toBeNull()
   })
 
   it('formata com duas casas para edição', () => {

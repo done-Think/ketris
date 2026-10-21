@@ -8,7 +8,7 @@ import type {
 } from '../application/ports/platform-tenant-repository.port'
 import type { PlatformTenant } from '../domain/platform-tenant.entity'
 import type { TenantUsage } from '../domain/platform-plan'
-import type { TenantAccount, TenantStatus } from '../domain/tenant-account'
+import type { TenantAccount } from '../domain/tenant-account'
 import type { TenantStatusChange } from '../domain/tenant-status-history'
 
 function toDomainPlatformTenant(tenant: Tenant): PlatformTenant {
@@ -38,13 +38,13 @@ export class PrismaPlatformTenantRepository implements PlatformTenantRepository 
 
   async updateAccount(
     tenantId: string,
-    expectedStatus: TenantStatus,
+    expected: Pick<TenantAccount, 'accountType' | 'status'>,
     account: TenantAccount,
     statusChange: NewTenantStatusChange | null,
   ): Promise<PlatformTenant | null> {
     return prisma.$transaction(async (transaction) => {
       const { count } = await transaction.tenant.updateMany({
-        where: { id: tenantId, status: expectedStatus },
+        where: { id: tenantId, accountType: expected.accountType, status: expected.status },
         data: {
           accountType: account.accountType,
           status: account.status,
@@ -66,13 +66,25 @@ export class PrismaPlatformTenantRepository implements PlatformTenantRepository 
     })
   }
 
-  async findStatusChanges(): Promise<TenantStatusChange[]> {
-    const changes = await prisma.tenantStatusChange.findMany({
-      orderBy: { changedAt: 'asc' },
-      select: { tenantId: true, fromStatus: true, toStatus: true, changedAt: true },
-    })
+  async findStatusChanges(since: Date): Promise<TenantStatusChange[]> {
+    const [lastBefore, fromSince] = await Promise.all([
+      // Uses the (tenantId, changedAt) index.
+      prisma.$queryRaw<TenantStatusChange[]>`
+        SELECT DISTINCT ON ("tenantId") "tenantId", "fromStatus", "toStatus", "changedAt"
+        FROM "tenant_status_changes"
+        WHERE "changedAt" < ${since}
+        ORDER BY "tenantId", "changedAt" DESC
+      `,
+      prisma.tenantStatusChange.findMany({
+        where: { changedAt: { gte: since } },
+        orderBy: { changedAt: 'asc' },
+        select: { tenantId: true, fromStatus: true, toStatus: true, changedAt: true },
+      }),
+    ])
 
-    return changes
+    return [...lastBefore, ...fromSince].sort(
+      (a, b) => a.changedAt.getTime() - b.changedAt.getTime(),
+    )
   }
 
   async countUsage(): Promise<Map<string, TenantUsage>> {

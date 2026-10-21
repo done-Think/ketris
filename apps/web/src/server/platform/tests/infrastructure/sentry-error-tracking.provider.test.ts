@@ -26,14 +26,22 @@ describe('SentryErrorTrackingProvider', () => {
     expect(fetcher).not.toHaveBeenCalled()
   })
 
-  it('busca os erros não resolvidos das últimas 24h com o token de leitura', async () => {
+  it('busca os erros não resolvidos vistos nas últimas 24h com o token de leitura', async () => {
     const fetcher = vi.fn().mockResolvedValue(
       jsonResponse([
         {
           id: '42',
           title: 'TypeError: x is undefined',
           level: 'error',
-          count: '17',
+          // Lifetime total: the panel shows only the last 24h (stats).
+          count: '12000',
+          stats: {
+            '24h': [
+              [1760526000, 0],
+              [1760529600, 12],
+              [1760533200, 5],
+            ],
+          },
           lastSeen: '2026-10-15T11:58:00.000Z',
           permalink: 'https://sentry.io/organizations/donethink-ct/issues/42/',
         },
@@ -46,7 +54,7 @@ describe('SentryErrorTrackingProvider', () => {
 
     const [url, init] = fetcher.mock.calls[0]
     expect(String(url)).toBe(
-      'https://sentry.io/api/0/projects/donethink-ct/ketris/issues/?query=is%3Aunresolved&statsPeriod=24h&limit=10',
+      'https://sentry.io/api/0/projects/donethink-ct/ketris/issues/?query=is%3Aunresolved+lastSeen%3A-24h&statsPeriod=24h&limit=10',
     )
     expect(init.headers).toEqual({ Authorization: 'Bearer read-token' })
     expect(result).toEqual({
@@ -63,6 +71,25 @@ describe('SentryErrorTrackingProvider', () => {
         },
       ],
     })
+  })
+
+  it('reaproveita a resposta por um minuto e não guarda falhas', async () => {
+    let now = 0
+    const fetcher = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('network down'))
+      .mockImplementation(async () => jsonResponse([]))
+    const provider = new SentryErrorTrackingProvider(config, fetcher, () => now)
+
+    await expect(provider.getRecentIssues()).resolves.toMatchObject({ available: false })
+    await expect(provider.getRecentIssues()).resolves.toMatchObject({ available: true })
+    now = 59_000
+    await provider.getRecentIssues()
+    expect(fetcher).toHaveBeenCalledTimes(2)
+
+    now = 61_000
+    await provider.getRecentIssues()
+    expect(fetcher).toHaveBeenCalledTimes(3)
   })
 
   it('informa indisponível quando o Sentry recusa, responde algo inesperado ou falha', async () => {

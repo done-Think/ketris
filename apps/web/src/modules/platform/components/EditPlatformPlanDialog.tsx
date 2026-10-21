@@ -18,10 +18,10 @@ import { useForm } from 'react-hook-form'
 import { useFormatter, useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 import { useSnackbar } from 'notistack'
-import axios from 'axios'
 
 import { RhfTextField } from '@shared/components/form'
 import { brand, iconSize, radius } from '@shared/theme/tokens'
+import { extractErrorMessage } from '@shared/utils/error-message'
 
 import { useUpdatePlatformPlan } from '../hooks/use-platform-plans'
 import { createPlatformPlanSchema } from '../schemas/platform-plan-schema'
@@ -95,11 +95,14 @@ export function EditPlatformPlanDialog({ plan, onClose }: EditPlatformPlanDialog
       enqueueSnackbar(t('updateSuccess'), { variant: 'success' })
       onClose()
     } catch (error) {
-      const message =
-        axios.isAxiosError(error) && typeof error.response?.data?.error?.message === 'string'
-          ? error.response.data.error.message
-          : t('updateError')
-      enqueueSnackbar(message, { variant: 'error' })
+      // Server messages are in Portuguese: show the translated text for the known codes.
+      enqueueSnackbar(
+        extractErrorMessage(error, t('updateError'), {
+          FORBIDDEN: t('errors.forbidden'),
+          PLATFORM_PLAN_NOT_FOUND: t('errors.notFound'),
+        }),
+        { variant: 'error' },
+      )
     }
   }
 

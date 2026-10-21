@@ -106,6 +106,40 @@ describe('/api/platform/plans (integração)', () => {
     ).toBe(401)
   })
 
+  it('retorna 403 para platform admin sem a função ADMIN e não altera o preço', async () => {
+    const admin = await prisma.platformAdmin.create({
+      data: {
+        nome: 'Agente Planos',
+        email: `agente-${randomUUID()}@ketris.dev`,
+        senhaHash: 'x',
+        role: 'AGENT',
+      },
+    })
+    const token = await tokenService.sign({ ...admin })
+    const before = await prisma.platformPlan.findUniqueOrThrow({
+      where: { accountType: 'INDIVIDUAL' },
+    })
+
+    try {
+      const response = await patch(
+        'INDIVIDUAL',
+        { monthlyPrice: 1, includedUnits: 1, extraUnitPrice: 1 },
+        token,
+      )
+
+      expect(response.status).toBe(403)
+      expect(
+        await prisma.platformPlan.findUniqueOrThrow({ where: { accountType: 'INDIVIDUAL' } }),
+      ).toEqual(before)
+      // Reading the plans stays open to every platform admin.
+      expect(
+        (await GET(request('GET', 'http://localhost/api/platform/plans', undefined, token))).status,
+      ).toBe(200)
+    } finally {
+      await prisma.platformAdmin.delete({ where: { id: admin.id } })
+    }
+  })
+
   it('retorna 404 para um tipo de conta inexistente', async () => {
     const response = await patch('GOLD', { monthlyPrice: 1, includedUnits: 1, extraUnitPrice: 1 })
 

@@ -145,5 +145,9 @@ describe('GetPlatformFinanceUseCase', () => {
       churnBaseAccounts: 2,
       churnRate: 1 / 2,
     })
+    // Only the history the month needs: from 00:00 of Oct 1st in São Paulo (03:00 UTC) on.
+    expect(tenantRepository.findStatusChanges).toHaveBeenCalledWith(
+      new Date('2026-10-01T03:00:00.000Z'),
+    )
   })
 })

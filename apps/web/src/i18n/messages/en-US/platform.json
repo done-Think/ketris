@@ -327,6 +327,11 @@
       "SUSPENDED": "Suspended",
       "CANCELED": "Canceled"
     },
+    "errors": {
+      "forbidden": "Only platform admins with the Admin role can change accounts.",
+      "changedConcurrently": "This account was changed by someone else. Reload and try again.",
+      "notFound": "This account no longer exists."
+    },
     "save": "Save",
     "cancel": "Cancel",
     "updateSuccess": "Account updated.",
@@ -361,7 +366,9 @@
     "chargeWithExtraBrokers": "{base} + {count, plural, one {# extra broker} other {# extra brokers}} ({extra})",
     "errors": {
       "invalidAmount": "Enter a valid amount with up to two decimals.",
-      "invalidUnits": "Enter a whole number."
+      "invalidUnits": "Enter a whole number.",
+      "forbidden": "Only platform admins with the Admin role can change plans.",
+      "notFound": "This plan does not exist."
     },
     "save": "Save",
     "cancel": "Cancel",
