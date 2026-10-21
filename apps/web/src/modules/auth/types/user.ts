@@ -11,6 +11,17 @@ export interface TenantUser {
   pendingApproval: boolean
 }
 
+export interface CreateTenantUserPayload {
+  name: string
+  email: string
+  password: string
+  role: 'OWNER' | 'AGENT'
+}
+
+export interface CreateTenantUserResponse {
+  user: TenantUser
+}
+
 export interface ListUsersResponse {
   users: TenantUser[]
 }

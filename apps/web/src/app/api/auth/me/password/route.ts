@@ -9,6 +9,7 @@ import { resetPasswordRequestSchema } from '@server/auth/schemas/reset-password.
 import { parseJsonBody, withErrorHandling } from '@server/shared/http'
 
 const changeOwnPasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Senha atual é obrigatória.'),
   password: resetPasswordRequestSchema.shape.password,
 })
 
@@ -21,7 +22,11 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     throw new UserNotFoundError()
   }
 
-  await authContainer.changeOwnPasswordUseCase.execute({ userId: user.id, password: body.password })
+  await authContainer.changeOwnPasswordUseCase.execute({
+    userId: user.id,
+    currentPassword: body.currentPassword,
+    password: body.password,
+  })
 
   return new NextResponse(null, { status: 204 })
 })

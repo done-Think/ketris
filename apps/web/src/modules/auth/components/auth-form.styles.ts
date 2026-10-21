@@ -1,6 +1,6 @@
 import { alpha as muiAlpha } from '@mui/material/styles'
 
-import { brand, radius, surface } from '@shared/theme/tokens'
+import { brand, componentText, radius, surface } from '@shared/theme/tokens'
 
 export const authTextFieldSx = {
   '& .MuiOutlinedInput-root': {
@@ -37,4 +37,15 @@ export const authPrimaryButtonSx = {
   height: 50,
   borderRadius: `${radius.sm}px`,
   boxShadow: `0 8px 18px ${muiAlpha(brand.magenta[500], 0.2)}`,
+} as const
+
+export const authLoginTextFieldSx = {
+  '& .MuiOutlinedInput-root': {
+    height: { xs: 36, md: 46 },
+  },
+  '& .MuiInputBase-input': {
+    px: { xs: 1.5, md: 1.75 },
+    py: { xs: 1, md: 1.5 },
+    ...componentText.authBody,
+  },
 } as const

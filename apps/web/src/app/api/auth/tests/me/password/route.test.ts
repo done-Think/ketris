@@ -20,11 +20,11 @@ vi.mock('@server/auth/container', () => ({
 }))
 vi.mock('@server/auth/require-bearer-auth', () => ({ requireBearerAuth: requireAuth }))
 
-function request(password = 'nova-senha-123') {
+function request(password = 'nova-senha-123', currentPassword: string | null = 'senha-atual') {
   return new NextRequest('http://localhost/api/auth/me/password', {
     method: 'POST',
     headers: { authorization: 'Bearer token', 'content-type': 'application/json' },
-    body: JSON.stringify({ password }),
+    body: JSON.stringify(currentPassword === null ? { password } : { currentPassword, password }),
   })
 }
 
@@ -47,8 +47,16 @@ describe('POST /api/auth/me/password', () => {
     expect(findById).toHaveBeenCalledWith('current-user')
     expect(changeOwnPassword).toHaveBeenCalledWith({
       userId: 'current-user',
+      currentPassword: 'senha-atual',
       password: 'nova-senha-123',
     })
+  })
+
+  it('requires the current password', async () => {
+    const response = await POST(request('nova-senha-123', null))
+
+    expect(response.status).toBe(400)
+    expect(changeOwnPassword).not.toHaveBeenCalled()
   })
 
   it('rejects a user from another tenant without changing a password', async () => {

@@ -14,11 +14,12 @@ import {
   Typography,
 } from '@mui/material'
 import { useSession } from 'next-auth/react'
+import axios from 'axios'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 import { useForm } from 'react-hook-form'
 
-import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
+import { RhfMaskedTextField, RhfPasswordField, RhfTextField } from '@shared/components/form'
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 import { getInitials } from '@shared/utils/get-initials'
 
@@ -59,7 +60,7 @@ export function CurrentUserProfilePage() {
   })
   const passwordForm = useForm<ChangeOwnPasswordValues>({
     resolver: zodResolver(changeOwnPasswordSchema),
-    defaultValues: { password: '', passwordConfirmation: '' },
+    defaultValues: { currentPassword: '', password: '', passwordConfirmation: '' },
   })
   const resetProfile = profileForm.reset
 
@@ -115,10 +116,17 @@ export function CurrentUserProfilePage() {
   async function changePassword(values: ChangeOwnPasswordValues) {
     setPasswordError(null)
     try {
-      await userService.changeOwnPassword(values.password)
-      passwordForm.reset({ password: '', passwordConfirmation: '' })
+      await userService.changeOwnPassword(values.currentPassword, values.password)
+      passwordForm.reset({ currentPassword: '', password: '', passwordConfirmation: '' })
       enqueueSnackbar(t('passwordSuccess'), { variant: 'success' })
-    } catch {
+    } catch (error) {
+      if (
+        axios.isAxiosError(error) &&
+        error.response?.data?.error?.code === 'INVALID_CURRENT_PASSWORD'
+      ) {
+        passwordForm.setError('currentPassword', { message: t('errors.currentPasswordIncorrect') })
+        return
+      }
       setPasswordError(t('passwordError'))
     }
   }
@@ -260,19 +268,24 @@ export function CurrentUserProfilePage() {
               </Typography>
               <Typography sx={{ color: brand.neutral[500] }}>{t('securityDescription')}</Typography>
             </Box>
-            <RhfTextField
+            <RhfPasswordField
+              control={passwordForm.control}
+              name="currentPassword"
+              label={t('currentPassword')}
+              autoComplete="current-password"
+              fullWidth
+            />
+            <RhfPasswordField
               control={passwordForm.control}
               name="password"
               label={t('newPassword')}
-              type="password"
               autoComplete="new-password"
               fullWidth
             />
-            <RhfTextField
+            <RhfPasswordField
               control={passwordForm.control}
               name="passwordConfirmation"
               label={t('confirmPassword')}
-              type="password"
               autoComplete="new-password"
               fullWidth
             />

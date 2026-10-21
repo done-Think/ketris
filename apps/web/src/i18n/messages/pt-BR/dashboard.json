@@ -410,7 +410,22 @@
       "oneOnOneTitle": "1:1 — {name}",
       "internalMeeting": "Reunião interna",
       "scheduled": "1:1 agendado com sucesso",
-      "scheduleError": "Não foi possível agendar o 1:1"
+      "scheduleError": "Não foi possível agendar o 1:1",
+      "inviteDescription": "Crie o acesso do corretor à sua imobiliária. Uma senha provisória é gerada automaticamente: copie e envie ao corretor junto com o e-mail.",
+      "inviteName": "Nome completo",
+      "inviteEmail": "E-mail",
+      "invitePassword": "Senha provisória",
+      "invitePasswordHelper": "Senha forte com maiúscula, minúscula, número e caractere especial. O corretor pode trocá-la depois no perfil.",
+      "inviteSubmit": "Convidar",
+      "inviteNameError": "Informe o nome do corretor",
+      "inviteEmailError": "Informe um e-mail válido",
+      "invitePasswordError": "A senha deve ter ao menos 8 caracteres, com maiúscula, minúscula, número e caractere especial",
+      "invited": "{name} foi adicionado à equipe",
+      "inviteError": "Não foi possível convidar o corretor",
+      "inviteEmailInUse": "Este e-mail já está em uso",
+      "generatePassword": "Gerar nova senha",
+      "copyPassword": "Copiar senha",
+      "passwordCopied": "Senha copiada"
     },
     "actions": {
       "message": "Enviar mensagem",

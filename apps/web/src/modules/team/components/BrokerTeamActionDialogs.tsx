@@ -1,7 +1,10 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded'
+import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded'
 import {
   Box,
   Button,
@@ -12,28 +15,34 @@ import {
   DialogTitle,
   FormControlLabel,
   IconButton,
+  InputAdornment,
   LinearProgress,
   MenuItem,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 
 import { brand } from '@shared/theme/tokens'
 
 import {
   createBrokerGoalSchema,
+  createBrokerInviteSchema,
   createBrokerTransferSchema,
 } from '../schemas/broker-team-action-schemas'
 import type {
   BrokerGoalFormValues,
+  BrokerInviteDialogProps,
+  BrokerInviteFormValues,
   BrokerTeamDialogBaseProps,
   BrokerTeamMember,
   BrokerTransferFormValues,
 } from '../types/broker-team'
+import { generateTemporaryPassword } from '../utils/generate-temporary-password'
 
 function ActionTitle({ title, onClose }: { title: string; onClose: () => void }) {
   const t = useTranslations('dashboard.team')
@@ -298,6 +307,141 @@ export function BrokerDeactivateDialog({
           {t('dialogs.confirm')}
         </Button>
       </DialogActions>
+    </Dialog>
+  )
+}
+
+export function BrokerInviteDialog({
+  open,
+  isPending,
+  onClose,
+  onInvite,
+}: BrokerInviteDialogProps) {
+  const t = useTranslations('dashboard.team')
+  const schema = useMemo(() => createBrokerInviteSchema((key) => t(`dialogs.${key}`)), [t])
+  const [copied, setCopied] = useState(false)
+  const {
+    control,
+    getValues,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors },
+  } = useForm<BrokerInviteFormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { name: '', email: '', password: '' },
+  })
+  useEffect(() => {
+    if (!open) return
+    reset({ name: '', email: '', password: generateTemporaryPassword() })
+    setCopied(false)
+  }, [open, reset])
+  const regeneratePassword = () => {
+    setValue('password', generateTemporaryPassword(), { shouldValidate: true })
+    setCopied(false)
+  }
+  const copyPassword = async () => {
+    try {
+      await navigator.clipboard.writeText(getValues('password'))
+      setCopied(true)
+    } catch {
+      setCopied(false)
+    }
+  }
+  return (
+    <Dialog open={open} onClose={isPending ? undefined : onClose} fullWidth maxWidth="xs">
+      <Box component="form" noValidate onSubmit={handleSubmit(onInvite)}>
+        <ActionTitle title={t('inviteBroker')} onClose={onClose} />
+        <DialogContent sx={{ px: 3, py: 2 }}>
+          <Stack spacing={2}>
+            <Typography sx={{ color: brand.neutral[500], fontSize: 13 }}>
+              {t('dialogs.inviteDescription')}
+            </Typography>
+            <Controller
+              name="name"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label={t('dialogs.inviteName')}
+                  autoComplete="off"
+                  autoFocus
+                  error={Boolean(errors.name)}
+                  helperText={errors.name?.message}
+                />
+              )}
+            />
+            <Controller
+              name="email"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  type="email"
+                  label={t('dialogs.inviteEmail')}
+                  autoComplete="off"
+                  error={Boolean(errors.email)}
+                  helperText={errors.email?.message}
+                />
+              )}
+            />
+            <Controller
+              name="password"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label={t('dialogs.invitePassword')}
+                  autoComplete="off"
+                  error={Boolean(errors.password)}
+                  helperText={errors.password?.message ?? t('dialogs.invitePasswordHelper')}
+                  InputProps={{
+                    readOnly: true,
+                    sx: { fontFamily: 'monospace', letterSpacing: '0.04em' },
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Tooltip title={t('dialogs.generatePassword')}>
+                          <IconButton
+                            aria-label={t('dialogs.generatePassword')}
+                            onClick={regeneratePassword}
+                            edge="end"
+                          >
+                            <AutorenewRoundedIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip
+                          title={copied ? t('dialogs.passwordCopied') : t('dialogs.copyPassword')}
+                        >
+                          <IconButton
+                            aria-label={t('dialogs.copyPassword')}
+                            onClick={copyPassword}
+                            edge="end"
+                            sx={{ ml: 0.5, color: copied ? 'success.main' : undefined }}
+                          >
+                            {copied ? (
+                              <CheckRoundedIcon fontSize="small" />
+                            ) : (
+                              <ContentCopyRoundedIcon fontSize="small" />
+                            )}
+                          </IconButton>
+                        </Tooltip>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              )}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button onClick={onClose} disabled={isPending}>
+            {t('dialogs.cancel')}
+          </Button>
+          <Button type="submit" variant="contained" disabled={isPending}>
+            {t('dialogs.inviteSubmit')}
+          </Button>
+        </DialogActions>
+      </Box>
     </Dialog>
   )
 }

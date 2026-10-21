@@ -26,6 +26,10 @@ const userIdParamsSchema = z.object({
 
 const changeOwnPasswordRequestSchema = z
   .object({
+    currentPassword: z
+      .string()
+      .min(1)
+      .openapi({ description: 'Senha atual do usuário.', example: 'senha-atual-123' }),
     password: resetPasswordRequestSchema.shape.password,
   })
   .openapi('ChangeOwnPasswordRequest')
@@ -411,8 +415,8 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
     summary: 'Troca a senha do próprio usuário autenticado',
     description:
       'Diferente de POST /auth/reset-password (fluxo de recuperação por e-mail): aqui o usuário ' +
-      'já está autenticado via access token e troca a própria senha diretamente, sem precisar de ' +
-      'código de verificação. Revoga todos os refresh tokens ativos do usuário após a troca.',
+      'já está autenticado via access token e troca a própria senha informando a senha atual, sem ' +
+      'precisar de código de verificação. Revoga todos os refresh tokens ativos do usuário após a troca.',
     security: [{ bearerAuth: [] }],
     request: {
       body: {
@@ -424,7 +428,9 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
         description: 'Senha alterada.',
       },
       400: {
-        description: 'Corpo da requisição inválido (falha de validação Zod).',
+        description:
+          'Corpo da requisição inválido (falha de validação Zod) ou senha atual incorreta ' +
+          '(code INVALID_CURRENT_PASSWORD).',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       401: {

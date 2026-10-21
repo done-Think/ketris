@@ -410,7 +410,22 @@
       "oneOnOneTitle": "1:1 — {name}",
       "internalMeeting": "Reunión interna",
       "scheduled": "1:1 programado correctamente",
-      "scheduleError": "No se pudo programar el 1:1"
+      "scheduleError": "No se pudo programar el 1:1",
+      "inviteDescription": "Crea el acceso del corredor a tu inmobiliaria. Se genera una contraseña provisional automáticamente: cópiala y envíala al corredor junto con el correo.",
+      "inviteName": "Nombre completo",
+      "inviteEmail": "Correo electrónico",
+      "invitePassword": "Contraseña provisional",
+      "invitePasswordHelper": "Contraseña fuerte con mayúscula, minúscula, número y carácter especial. El corredor puede cambiarla después en su perfil.",
+      "inviteSubmit": "Invitar",
+      "inviteNameError": "Indica el nombre del corredor",
+      "inviteEmailError": "Indica un correo válido",
+      "invitePasswordError": "La contraseña debe tener al menos 8 caracteres, con mayúscula, minúscula, número y carácter especial",
+      "invited": "{name} fue añadido al equipo",
+      "inviteError": "No se pudo invitar al corredor",
+      "inviteEmailInUse": "Este correo ya está en uso",
+      "generatePassword": "Generar nueva contraseña",
+      "copyPassword": "Copiar contraseña",
+      "passwordCopied": "Contraseña copiada"
     },
     "actions": {
       "message": "Enviar mensaje",
