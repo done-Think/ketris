@@ -165,17 +165,26 @@ describe('/api/maintenance authorization and workflow (database integration)', (
     })
   }
   async function anotherContract(propertyId = fixture.property.id) {
+    const renter = await prisma.usuario.create({
+      data: {
+        tenantId: fixture.tenant.id,
+        nome: 'Alternate contract renter',
+        email: `${randomUUID()}@maintenance.test`,
+        senhaHash: 'test-hash',
+        papel: 'RENTER',
+      },
+    })
     const opportunity = await prisma.oportunidade.create({
       data: {
         tenantId: fixture.tenant.id,
         imovelId: propertyId,
-        interessadoNome: fixture.unrelated.nome,
-        interessadoEmail: fixture.unrelated.email,
+        interessadoNome: renter.nome,
+        interessadoEmail: renter.email,
         valorProposto: 2500,
         status: 'ACEITA',
       },
     })
-    return prisma.contrato.create({
+    const contract = await prisma.contrato.create({
       data: {
         tenantId: fixture.tenant.id,
         imovelId: propertyId,
@@ -190,14 +199,15 @@ describe('/api/maintenance authorization and workflow (database integration)', (
         partes: {
           create: {
             papel: 'LOCATARIO',
-            nome: fixture.unrelated.nome,
+            nome: renter.nome,
             cpf: '00000000000',
-            email: fixture.unrelated.email,
-            usuarioId: fixture.unrelated.id,
+            email: renter.email,
+            usuarioId: renter.id,
           },
         },
       },
     })
+    return { ...contract, renterToken: await tokenService.sign(renter) }
   }
   it.each([
     { status: 'ABERTO', archived: false },
@@ -380,7 +390,7 @@ describe('/api/maintenance authorization and workflow (database integration)', (
     expect(
       (
         await getTicket(
-          request(`tickets/${before.id}`, 'GET', fixture.unrelated.token),
+          request(`tickets/${before.id}`, 'GET', selected.renterToken),
           context(before.id),
         )
       ).status,
@@ -416,7 +426,7 @@ describe('/api/maintenance authorization and workflow (database integration)', (
     expect(
       (
         await getTicket(
-          request(`tickets/${before.id}`, 'GET', fixture.unrelated.token),
+          request(`tickets/${before.id}`, 'GET', selected.renterToken),
           context(before.id),
         )
       ).status,
