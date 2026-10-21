@@ -1,26 +1,17 @@
-import type { Papel } from '@server/auth/domain/user.entity'
-
 import { ChargeNotFoundError } from '../../domain/errors'
 import type { Charge } from '../../domain/charge.entity'
+import type { GetChargeInput } from '../../types/charge-read'
 import { assertCanReadCharges } from '../assert-can-access-finance'
 import type { ChargeRepository } from '../ports/charge-repository.port'
+import { resolveChargeReadScope } from '../charge-read-scope'
 
 export class GetChargeUseCase {
   constructor(private readonly chargeRepository: ChargeRepository) {}
 
-  async execute(input: {
-    actorTenantId: string
-    actorId: string
-    actorPapel: Papel
-    chargeId: string
-  }): Promise<Charge> {
+  async execute(input: GetChargeInput): Promise<Charge> {
     assertCanReadCharges(input.actorPapel)
-
-    const charge = await this.chargeRepository.findById(
-      input.actorTenantId,
-      input.chargeId,
-      input.actorPapel === 'RENTER' ? input.actorId : undefined,
-    )
+    const scope = resolveChargeReadScope(input)
+    const charge = await this.chargeRepository.findReadableById(scope, input.chargeId)
 
     if (!charge) {
       throw new ChargeNotFoundError()

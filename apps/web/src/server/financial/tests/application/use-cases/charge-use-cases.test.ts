@@ -44,6 +44,7 @@ function createRepository(overrides?: Partial<ChargeRepository>): ChargeReposito
     create: vi.fn().mockResolvedValue(charge),
     findMany: vi.fn().mockResolvedValue({ items: [], totalCount: 0 }),
     findById: vi.fn().mockResolvedValue(charge),
+    findReadableById: vi.fn().mockResolvedValue(charge),
     update: vi.fn().mockResolvedValue({ ...charge, amount: 3000 }),
     delete: vi.fn().mockResolvedValue(undefined),
     registerPayment: vi.fn().mockResolvedValue({ ...charge, status: 'PAGA', paidAt: new Date() }),
@@ -122,36 +123,51 @@ describe('CreateChargeUseCase', () => {
 })
 
 describe('ListChargesUseCase', () => {
-  it('restricts renter queries even when payable charges are requested', async () => {
+  it('scopes renter reads by authenticated user ID instead of the shared tenant', async () => {
     const repository = createRepository()
     await new ListChargesUseCase(repository).execute({
-      tenantId: 'tenant-1',
       actorId: 'renter-1',
+      actorTenantId: 'shared-renter-tenant',
       actorPapel: 'RENTER',
-      type: 'A_PAGAR',
-      search: 'rent',
+      search: 'Aluguel',
       page: 2,
+      pageSize: 5,
     })
     expect(repository.findMany).toHaveBeenCalledWith({
-      tenantId: 'tenant-1',
-      renterId: 'renter-1',
-      type: 'A_RECEBER',
-      search: 'rent',
+      scope: { kind: 'renter', userId: 'renter-1' },
+      search: 'Aluguel',
       page: 2,
+      pageSize: 5,
     })
   })
+
+  it('does not expose accounts payable to renters even when requested explicitly', async () => {
+    const repository = createRepository()
+    const result = await new ListChargesUseCase(repository).execute({
+      actorId: 'renter-1',
+      actorTenantId: 'shared',
+      actorPapel: 'RENTER',
+      type: 'A_PAGAR',
+    })
+    expect(result).toEqual({ items: [], totalCount: 0 })
+    expect(repository.findMany).not.toHaveBeenCalled()
+  })
+
   it('delega os filtros para o repositório', async () => {
     const repository = createRepository()
     const useCase = new ListChargesUseCase(repository)
 
     await useCase.execute({
-      tenantId: 'tenant-1',
       actorId: 'admin-1',
+      actorTenantId: 'tenant-1',
       actorPapel: 'ADMIN',
       status: 'PENDENTE',
     })
 
-    expect(repository.findMany).toHaveBeenCalledWith({ tenantId: 'tenant-1', status: 'PENDENTE' })
+    expect(repository.findMany).toHaveBeenCalledWith({
+      scope: { kind: 'tenant', tenantId: 'tenant-1' },
+      status: 'PENDENTE',
+    })
   })
 
   it('lança ForbiddenError para AGENT sem consultar o repositório', async () => {
@@ -159,27 +175,41 @@ describe('ListChargesUseCase', () => {
     const useCase = new ListChargesUseCase(repository)
 
     await expect(
-      useCase.execute({ actorId: 'agent-1', actorPapel: 'AGENT', tenantId: 'tenant-1' }),
+      useCase.execute({ actorId: 'agent-1', actorPapel: 'AGENT', actorTenantId: 'tenant-1' }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
     expect(repository.findMany).not.toHaveBeenCalled()
   })
 })
 
 describe('GetChargeUseCase', () => {
-  it('passes the authenticated renter identity to the repository', async () => {
-    const repository = createRepository({ findById: vi.fn().mockResolvedValue(null) })
+  it('uses the renter ID to authorize a charge from an agency tenant', async () => {
+    const repository = createRepository()
+    await new GetChargeUseCase(repository).execute({
+      actorId: 'renter-1',
+      actorTenantId: 'shared',
+      actorPapel: 'RENTER',
+      chargeId: charge.id,
+    })
+    expect(repository.findReadableById).toHaveBeenCalledWith(
+      { kind: 'renter', userId: 'renter-1' },
+      charge.id,
+    )
+  })
+
+  it('returns not found when a renter has no access to the charge', async () => {
+    const repository = createRepository({ findReadableById: vi.fn().mockResolvedValue(null) })
     await expect(
       new GetChargeUseCase(repository).execute({
-        actorTenantId: 'tenant-1',
         actorId: 'renter-1',
+        actorTenantId: 'shared',
         actorPapel: 'RENTER',
         chargeId: 'foreign',
       }),
     ).rejects.toThrow(ChargeNotFoundError)
-    expect(repository.findById).toHaveBeenCalledWith('tenant-1', 'foreign', 'renter-1')
   })
+
   it('lança ChargeNotFoundError quando a cobrança não existe no tenant', async () => {
-    const repository = createRepository({ findById: vi.fn().mockResolvedValue(null) })
+    const repository = createRepository({ findReadableById: vi.fn().mockResolvedValue(null) })
     const useCase = new GetChargeUseCase(repository)
 
     await expect(

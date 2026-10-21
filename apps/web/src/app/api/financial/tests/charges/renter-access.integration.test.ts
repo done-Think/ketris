@@ -114,9 +114,11 @@ describe('Renter charge isolation (database integration)', () => {
         },
       })
     }
+    // An explicit link authorizes the renter in another agency's contract too (ADR-0004).
     ownIds = [
       (await charge(tenantId, own.id)).id,
       (await charge(tenantId, own.id, 'A_RECEBER', 'ATRASADA')).id,
+      (await charge(foreignTenantId, foreign.id)).id,
     ]
     hiddenIds = [
       (await charge(tenantId, own.id, 'A_PAGAR')).id,
@@ -124,7 +126,6 @@ describe('Renter charge isolation (database integration)', () => {
       (await charge(tenantId, unlinked.id)).id,
       (await charge(tenantId, wrongRole.id)).id,
       (await charge(tenantId, null)).id,
-      (await charge(foreignTenantId, foreign.id)).id,
     ]
   })
 
@@ -148,25 +149,27 @@ describe('Renter charge isolation (database integration)', () => {
   const context = (id: string) => ({ params: Promise.resolve({ id }) })
 
   it('lists only linked receivables and scopes search, counts, status and pagination', async () => {
-    const first = await GET(request('charges?pageSize=1&search=isolation-charge&type=A_PAGAR'))
+    const first = await GET(request('charges?pageSize=1&search=isolation-charge'))
     expect(first.status).toBe(200)
     const firstBody = await first.json()
-    expect(firstBody.totalCount).toBe(2)
+    expect(firstBody.totalCount).toBe(3)
     expect(firstBody.items).toHaveLength(1)
     expect(ownIds).toContain(firstBody.items[0].id)
     const second = await GET(request('charges?pageSize=1&page=2&search=isolation-charge'))
     const secondBody = await second.json()
-    expect(secondBody.totalCount).toBe(2)
+    expect(secondBody.totalCount).toBe(3)
     expect(secondBody.items).toHaveLength(1)
     expect(secondBody.items[0].id).not.toBe(firstBody.items[0].id)
     expect(ownIds).toContain(secondBody.items[0].id)
     const overdue = await GET(request('charges?status=ATRASADA'))
     expect((await overdue.json()).totalCount).toBe(1)
+    const payable = await GET(request('charges?type=A_PAGAR'))
+    expect(await payable.json()).toMatchObject({ items: [], totalCount: 0 })
     const noMatch = await GET(request('charges?search=not-present'))
     expect(await noMatch.json()).toMatchObject({ items: [], totalCount: 0 })
   })
 
-  it('reads own details and hides third-party, foreign, unlinked, wrong-role and payable charges', async () => {
+  it('reads own details, including a linked foreign contract, and hides third-party, unlinked, wrong-role and payable charges', async () => {
     for (const id of ownIds) {
       const response = await getCharge(request(`charges/${id}`), context(id))
       expect(response.status).toBe(200)

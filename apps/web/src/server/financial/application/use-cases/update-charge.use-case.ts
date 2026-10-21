@@ -1,7 +1,8 @@
 import type { Papel } from '@server/auth/domain/user.entity'
 
 import { ChargeNotFoundError } from '../../domain/errors'
-import type { Charge, ChargeStatus, ChargeType } from '../../domain/charge.entity'
+import type { Charge } from '../../domain/charge.entity'
+import type { ChargeStatus, ChargeType } from '../../types/charge'
 import { assertCanAccessFinance } from '../assert-can-access-finance'
 import type { ChargeRepository } from '../ports/charge-repository.port'
 

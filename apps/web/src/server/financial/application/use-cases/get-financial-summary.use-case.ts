@@ -1,13 +1,7 @@
-import type { Papel } from '@server/auth/domain/user.entity'
-
 import type { FinancialSummary } from '../../domain/charge.entity'
+import type { GetFinancialSummaryInput } from '../../types/charge-read'
 import { assertCanAccessFinance } from '../assert-can-access-finance'
 import type { ChargeRepository } from '../ports/charge-repository.port'
-
-export interface GetFinancialSummaryInput {
-  actorTenantId: string
-  actorPapel: Papel
-}
 
 export class GetFinancialSummaryUseCase {
   constructor(private readonly chargeRepository: ChargeRepository) {}
