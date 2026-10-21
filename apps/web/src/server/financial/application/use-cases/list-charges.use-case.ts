@@ -1,19 +1,19 @@
-import type { Papel } from '@server/auth/domain/user.entity'
-
-import type { ChargeListFilters, ChargeListResult } from '../../domain/charge.entity'
-import { assertCanAccessFinance } from '../assert-can-access-finance'
+import type { ChargeListResult } from '../../domain/charge.entity'
+import type { ListChargesInput } from '../../types/charge-read'
 import type { ChargeRepository } from '../ports/charge-repository.port'
-
-export interface ListChargesInput extends ChargeListFilters {
-  actorPapel: Papel
-}
+import { resolveChargeReadScope } from '../charge-read-scope'
 
 export class ListChargesUseCase {
   constructor(private readonly chargeRepository: ChargeRepository) {}
 
-  async execute({ actorPapel, ...filters }: ListChargesInput): Promise<ChargeListResult> {
-    assertCanAccessFinance(actorPapel)
+  async execute(input: ListChargesInput): Promise<ChargeListResult> {
+    const { actorId, actorTenantId, actorPapel, ...filters } = input
+    const scope = resolveChargeReadScope({ actorId, actorTenantId, actorPapel })
 
-    return this.chargeRepository.findMany(filters)
+    if (scope.kind === 'renter' && filters.type === 'A_PAGAR') {
+      return Promise.resolve({ items: [], totalCount: 0 })
+    }
+
+    return this.chargeRepository.findMany({ ...filters, scope })
   }
 }

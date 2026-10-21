@@ -5,6 +5,7 @@ import type {
   EligibleOpportunity,
   NewContract,
 } from '../../domain/contract.entity'
+import type { LinkContractPartyUserData } from '../../types/contract-party-user-link'
 
 export interface ContractRepository {
   findEligibleOpportunity(
@@ -15,4 +16,5 @@ export interface ContractRepository {
   findMany(filters: ContractListFilters): Promise<ContractListResult>
   findById(tenantId: string, contractId: string): Promise<Contract | null>
   signParty(tenantId: string, contractId: string, partyId: string): Promise<Contract>
+  linkPartyUser(input: LinkContractPartyUserData): Promise<boolean>
 }

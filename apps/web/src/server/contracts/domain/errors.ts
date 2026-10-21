@@ -1,5 +1,14 @@
 import { AppError } from '@server/shared/errors'
 
+export class ContractRenterUserNotFoundError extends AppError {
+  constructor() {
+    super('Conta de locatário ativa não encontrada para este e-mail.', {
+      status: 404,
+      code: 'CONTRACT_RENTER_USER_NOT_FOUND',
+    })
+  }
+}
+
 export class ContractNotFoundError extends AppError {
   constructor() {
     super('Contrato não encontrado.', {

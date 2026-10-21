@@ -11,8 +11,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const actor = await requireBearerAuth(request, authContainer.tokenService)
 
   const summary = await financialContainer.getFinancialSummaryUseCase.execute({
-    actorTenantId: actor.tenantId,
     actorPapel: actor.papel as Papel,
+    actorTenantId: actor.tenantId,
   })
 
   return NextResponse.json(summary, { status: 200 })

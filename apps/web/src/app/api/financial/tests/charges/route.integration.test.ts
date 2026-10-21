@@ -301,7 +301,7 @@ describe('/api/financial/charges (integração)', () => {
   it.each([
     ['AGENT', () => agentToken],
     ['RENTER', () => renterToken],
-  ])('retorna 403 para %s em todas as rotas de cobrança, sem alterar nada', async (_, token) => {
+  ])('protege leituras e bloqueia alterações de %s sem alterar nada', async (role, token) => {
     const url = `http://localhost/api/financial/charges/${avulsaChargeId}`
     const params = { params: Promise.resolve({ id: avulsaChargeId }) }
     const body = {
@@ -330,7 +330,12 @@ describe('/api/financial/charges (integração)', () => {
       await deleteCharge(buildRequest(url, 'DELETE', undefined, token()), params),
     ]
 
-    expect(responses.map((response) => response.status)).toEqual([403, 403, 403, 403, 403, 403])
+    expect(responses.map((response) => response.status)).toEqual(
+      role === 'RENTER' ? [200, 403, 404, 403, 403, 403] : [403, 403, 403, 403, 403, 403],
+    )
+    if (role === 'RENTER') {
+      expect(await responses[0].json()).toMatchObject({ items: [], totalCount: 0 })
+    }
     expect(await prisma.cobranca.findUniqueOrThrow({ where: { id: avulsaChargeId } })).toEqual(
       before,
     )

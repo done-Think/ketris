@@ -16,8 +16,9 @@ export const GET = withErrorHandling(async (request: NextRequest, context: Route
   const actor = await requireBearerAuth(request, authContainer.tokenService)
 
   const charge = await financialContainer.getChargeUseCase.execute({
-    actorTenantId: actor.tenantId,
+    actorId: actor.sub,
     actorPapel: actor.papel as Papel,
+    actorTenantId: actor.tenantId,
     chargeId: (await context.params).id,
   })
 
