@@ -75,7 +75,7 @@ describe('authOptions — CredentialsProvider.authorize', () => {
       refreshToken: 'refresh-fake',
       scope: 'tenant',
       tenantId: 't1',
-      papel: 'AGENT',
+      role: 'AGENT',
     })
   })
 
@@ -140,7 +140,7 @@ describe('authOptions — token-session.authorize', () => {
       refreshToken: 'refresh-valido',
       scope: 'tenant',
       tenantId: 't1',
-      papel: 'AGENT',
+      role: 'AGENT',
     })
   })
 
@@ -190,7 +190,7 @@ describe('authOptions — platform-credentials.authorize', () => {
     expect(platformExecuteMock).not.toHaveBeenCalled()
   })
 
-  it('chama o LoginPlatformAdminUseCase e mapeia o resultado, sem tenantId/papel', async () => {
+  it('chama o LoginPlatformAdminUseCase e mapeia o resultado, sem tenantId/role', async () => {
     platformExecuteMock.mockResolvedValueOnce({
       admin: { id: 'p1', nome: 'Dono', email: 'dono@ketris.dev', ativo: true },
       accessToken: 'jwt-platform-fake',
@@ -213,7 +213,7 @@ describe('authOptions — platform-credentials.authorize', () => {
       scope: 'platform',
     })
     expect(result).not.toHaveProperty('tenantId')
-    expect(result).not.toHaveProperty('papel')
+    expect(result).not.toHaveProperty('role')
   })
 
   it('retorna null (não lança) quando as credenciais são inválidas', async () => {
@@ -241,11 +241,11 @@ describe('authOptions — callbacks.jwt (revalidação contra o banco)', () => {
         refreshToken: 'r',
         scope: 'tenant',
         tenantId: 't1',
-        papel: 'AGENT',
+        role: 'AGENT',
       },
     } as unknown as Parameters<typeof jwt>[0])
 
-    expect(token).toMatchObject({ scope: 'tenant', tenantId: 't1', papel: 'AGENT' })
+    expect(token).toMatchObject({ scope: 'tenant', tenantId: 't1', role: 'AGENT' })
     expect(findByIdMock).not.toHaveBeenCalled()
   })
 
@@ -254,11 +254,11 @@ describe('authOptions — callbacks.jwt (revalidação contra o banco)', () => {
     const jwt = await getJwtCallback()
 
     const token = await jwt({
-      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', papel: 'AGENT' },
+      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', role: 'AGENT' },
       user: undefined,
     } as unknown as Parameters<typeof jwt>[0])
 
-    expect(token).toMatchObject({ scope: 'tenant', tenantId: 't1', papel: 'AGENT' })
+    expect(token).toMatchObject({ scope: 'tenant', tenantId: 't1', role: 'AGENT' })
   })
 
   it('limpa o escopo quando o usuário não existe mais (tenant/usuário apagado)', async () => {
@@ -266,13 +266,13 @@ describe('authOptions — callbacks.jwt (revalidação contra o banco)', () => {
     const jwt = await getJwtCallback()
 
     const token = await jwt({
-      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', papel: 'AGENT' },
+      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', role: 'AGENT' },
       user: undefined,
     } as unknown as Parameters<typeof jwt>[0])
 
     expect(token.scope).toBeUndefined()
     expect(token.tenantId).toBeUndefined()
-    expect(token.papel).toBeUndefined()
+    expect(token.role).toBeUndefined()
   })
 
   it('limpa o escopo quando o usuário foi desativado', async () => {
@@ -280,7 +280,7 @@ describe('authOptions — callbacks.jwt (revalidação contra o banco)', () => {
     const jwt = await getJwtCallback()
 
     const token = await jwt({
-      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', papel: 'AGENT' },
+      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', role: 'AGENT' },
       user: undefined,
     } as unknown as Parameters<typeof jwt>[0])
 
@@ -292,7 +292,7 @@ describe('authOptions — callbacks.jwt (revalidação contra o banco)', () => {
     const jwt = await getJwtCallback()
 
     const token = await jwt({
-      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', papel: 'AGENT' },
+      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', role: 'AGENT' },
       user: undefined,
     } as unknown as Parameters<typeof jwt>[0])
 
@@ -320,7 +320,7 @@ describe('authOptions — callbacks.jwt (revalidação contra o banco)', () => {
         refreshToken: 'stale-refresh',
         scope: 'tenant',
         tenantId: 't1',
-        papel: 'AGENT',
+        role: 'AGENT',
       },
       user: undefined,
       trigger: 'update',
@@ -342,5 +342,53 @@ describe('authOptions — callbacks.jwt (revalidação contra o banco)', () => {
     } as unknown as Parameters<typeof jwt>[0])
 
     expect(token).toMatchObject({ accessToken: 'stale-access', refreshToken: 'stale-refresh' })
+  })
+
+  it('converte o papel de um cookie antigo para role, sem deixar o campo antigo no token', async () => {
+    findByIdMock.mockResolvedValueOnce({ id: 'u1', tenantId: 't1', ativo: true })
+    const jwt = await getJwtCallback()
+
+    const token = await jwt({
+      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', papel: 'OWNER' },
+      user: undefined,
+    } as unknown as Parameters<typeof jwt>[0])
+
+    expect(token).toMatchObject({ scope: 'tenant', tenantId: 't1', role: 'OWNER' })
+    expect(token).not.toHaveProperty('papel')
+  })
+
+  it('converte o cookie antigo também no trigger update', async () => {
+    const jwt = await getJwtCallback()
+
+    const token = await jwt({
+      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', papel: 'ADMIN' },
+      user: undefined,
+      trigger: 'update',
+      session: { accessToken: 'fresh-access', refreshToken: 'fresh-refresh' },
+    } as unknown as Parameters<typeof jwt>[0])
+
+    expect(token).toMatchObject({ role: 'ADMIN', accessToken: 'fresh-access' })
+    expect(token).not.toHaveProperty('papel')
+  })
+
+  it('não sobrescreve um role já presente nem aceita um papel antigo inválido', async () => {
+    findByIdMock
+      .mockResolvedValueOnce({ id: 'u1', tenantId: 't1', ativo: true })
+      .mockResolvedValueOnce({ id: 'u1', tenantId: 't1', ativo: true })
+    const jwt = await getJwtCallback()
+
+    const kept = await jwt({
+      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', role: 'AGENT', papel: 'ADMIN' },
+      user: undefined,
+    } as unknown as Parameters<typeof jwt>[0])
+    const invalid = await jwt({
+      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', papel: 'SUPERUSER' },
+      user: undefined,
+    } as unknown as Parameters<typeof jwt>[0])
+
+    expect(kept.role).toBe('AGENT')
+    expect(kept).not.toHaveProperty('papel')
+    expect(invalid.role).toBeUndefined()
+    expect(invalid).not.toHaveProperty('papel')
   })
 })

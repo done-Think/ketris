@@ -184,7 +184,7 @@ describe('AgendaDashboardPage', () => {
 
   it('sends the chosen agent when the agency creates an internal event', async () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1', papel: 'ADMIN', user: { id: 'admin' } },
+      data: { tenantId: 'tenant-1', role: 'ADMIN', user: { id: 'admin' } },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
@@ -220,7 +220,7 @@ describe('AgendaDashboardPage', () => {
 
   it('lets the assigned agent read internal event notes without editing or redirecting it', async () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1', papel: 'AGENT', user: { id: 'agent-1' } },
+      data: { tenantId: 'tenant-1', role: 'AGENT', user: { id: 'agent-1' } },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
@@ -247,7 +247,7 @@ describe('AgendaDashboardPage', () => {
 
   it('shows linked renter events with the reduced API response and no management actions', async () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { scope: 'tenant', tenantId: 'renters', papel: 'RENTER', user: { id: 'renter-1' } },
+      data: { scope: 'tenant', tenantId: 'renters', role: 'RENTER', user: { id: 'renter-1' } },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
@@ -280,7 +280,7 @@ describe('AgendaDashboardPage', () => {
 
   it('explains when a renter has no linked events', () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'renters', papel: 'RENTER', user: { id: 'renter-1' } },
+      data: { tenantId: 'renters', role: 'RENTER', user: { id: 'renter-1' } },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
@@ -294,7 +294,7 @@ describe('AgendaDashboardPage', () => {
 
   it('shows charges and both ticket dates even when appointments fail, with links to the records', async () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1', papel: 'RENTER', user: { id: 'renter-1' } },
+      data: { tenantId: 'tenant-1', role: 'RENTER', user: { id: 'renter-1' } },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
@@ -350,7 +350,7 @@ describe('AgendaDashboardPage', () => {
     'shows administrator ticket dates even when appointments fail: %s',
     (isError) => {
       vi.mocked(useSession).mockReturnValue({
-        data: { tenantId: 'tenant-1', papel: 'ADMIN', user: { id: 'admin-1' } },
+        data: { tenantId: 'tenant-1', role: 'ADMIN', user: { id: 'admin-1' } },
         status: 'authenticated',
         update: vi.fn(),
       } as unknown as ReturnType<typeof useSession>)
@@ -394,7 +394,7 @@ describe('AgendaDashboardPage', () => {
 
   it('shows a maintenance source failure without hiding administrator appointments', () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1', papel: 'ADMIN', user: { id: 'admin-1' } },
+      data: { tenantId: 'tenant-1', role: 'ADMIN', user: { id: 'admin-1' } },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)

@@ -14,7 +14,7 @@ import { createMaintenanceTicketSchema } from '../../schemas/maintenance-ticket-
 
 vi.mock('next-auth/react', () => ({ useSession: vi.fn() }))
 vi.mock('../../hooks/use-maintenance', () => ({ useMaintenanceOptions: vi.fn() }))
-const session = { tenantId: 'tenant-1', user: { id: 'renter-1' }, papel: 'RENTER' }
+const session = { tenantId: 'tenant-1', user: { id: 'renter-1' }, role: 'RENTER' }
 const options = {
   contracts: [
     {

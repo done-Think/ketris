@@ -324,7 +324,7 @@ export function MaintenanceDashboardPage() {
       >
         {t('newTicket')}
       </DashboardHeaderActionButton>
-      {session?.papel === 'ADMIN' && (
+      {session?.role === 'ADMIN' && (
         <>
           <Button startIcon={<LinkRoundedIcon />} onClick={() => setLinksOpen(true)}>
             {t('links.title')}
@@ -523,7 +523,7 @@ export function MaintenanceDashboardPage() {
         initialValues={initialValues}
         mode={editingTicketId ? 'edit' : 'create'}
       />
-      {session?.papel === 'ADMIN' && (
+      {session?.role === 'ADMIN' && (
         <MaintenanceLinksDialog open={linksOpen} onClose={() => setLinksOpen(false)} />
       )}
       <Dialog

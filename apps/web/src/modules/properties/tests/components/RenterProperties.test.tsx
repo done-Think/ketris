@@ -74,7 +74,7 @@ const property: Property = {
 beforeEach(() => {
   vi.clearAllMocks()
   vi.mocked(useSession).mockReturnValue({
-    data: { scope: 'tenant', tenantId: 'tenant-1', papel: 'RENTER', user: { id: 'renter-1' } },
+    data: { scope: 'tenant', tenantId: 'tenant-1', role: 'RENTER', user: { id: 'renter-1' } },
     status: 'authenticated',
     update: vi.fn(),
   } as unknown as ReturnType<typeof useSession>)

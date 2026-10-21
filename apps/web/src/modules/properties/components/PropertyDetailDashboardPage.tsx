@@ -40,7 +40,7 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
   const router = useRouter()
   const mappingOptions = useDashboardPropertyMappingOptions()
   const { data: session } = useSession()
-  const isRenter = session?.papel === 'RENTER'
+  const isRenter = session?.role === 'RENTER'
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const { setValue, watch } = useForm<PropertyDetailDashboardFormValues>({
     defaultValues: {
@@ -77,8 +77,8 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
       : notFound()
   const canManage =
     !isRenter &&
-    (session?.papel === 'ADMIN' ||
-      session?.papel === 'OWNER' ||
+    (session?.role === 'ADMIN' ||
+      session?.role === 'OWNER' ||
       session?.user?.id === property.responsibleUserId)
 
   const handlePublish = async () => {

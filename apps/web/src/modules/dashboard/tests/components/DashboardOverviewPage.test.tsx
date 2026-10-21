@@ -17,7 +17,7 @@ let papel: Papel = 'ADMIN'
 
 vi.mock('next-auth/react', () => ({
   useSession: () => ({
-    data: { tenantId: 'tenant-1', papel, user: { id: 'agent-1' } },
+    data: { tenantId: 'tenant-1', role: papel, user: { id: 'agent-1' } },
     status: 'authenticated',
   }),
 }))

@@ -42,7 +42,7 @@ vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
 const renterSession = {
   scope: 'tenant',
   tenantId: 'tenant-1',
-  papel: 'RENTER',
+  role: 'RENTER',
   user: { id: 'renter-1', name: 'Renter', email: 'renter@example.test' },
 } as const
 

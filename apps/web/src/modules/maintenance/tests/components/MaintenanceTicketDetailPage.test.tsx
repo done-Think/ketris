@@ -95,7 +95,7 @@ const mockTicket: ApiMaintenanceTicket = {
 
 function mockSession(role: 'ADMIN' | 'RENTER' = 'ADMIN') {
   vi.mocked(useSession).mockReturnValue({
-    data: { tenantId: 'tenant-1', papel: role },
+    data: { tenantId: 'tenant-1', role },
     status: 'authenticated',
     update: vi.fn(),
   } as unknown as ReturnType<typeof useSession>)
