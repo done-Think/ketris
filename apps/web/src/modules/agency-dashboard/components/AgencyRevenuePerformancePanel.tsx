@@ -2,18 +2,20 @@
 
 import { Box, Stack, Typography } from '@mui/material'
 import { LineChart } from '@mui/x-charts/LineChart'
-import { useTranslations } from 'next-intl'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { DashboardPanel } from '@modules/dashboard/components/DashboardPanel'
-import { formatCurrency } from '@shared/lib/utils/format'
 import { alpha, brand } from '@shared/theme/tokens'
 
 import type { AgencyRevenuePerformancePanelProps } from '../types/agency-overview'
 
 export function AgencyRevenuePerformancePanel({
   revenuePoints,
+  currency = 'BRL',
 }: AgencyRevenuePerformancePanelProps) {
   const t = useTranslations('dashboard.agencyOverview.performance')
+  const format = useFormatter()
+  const formatCurrency = (value: number) => format.number(value, { style: 'currency', currency })
   const chartDataset = [...revenuePoints]
 
   return (
@@ -42,6 +44,12 @@ export function AgencyRevenuePerformancePanel({
           <LineChart
             dataset={chartDataset}
             xAxis={[{ scaleType: 'point', dataKey: 'month' }]}
+            yAxis={[
+              {
+                valueFormatter: (value: number) =>
+                  format.number(value, { notation: 'compact', maximumFractionDigits: 1 }),
+              },
+            ]}
             series={[
               {
                 dataKey: 'revenue',
@@ -54,7 +62,7 @@ export function AgencyRevenuePerformancePanel({
               },
             ]}
             height={270}
-            margin={{ left: 28, right: 16, top: 20, bottom: 30 }}
+            margin={{ left: 48, right: 16, top: 20, bottom: 30 }}
             grid={{ horizontal: true, vertical: true }}
             slotProps={{ legend: { hidden: true } }}
             sx={{
