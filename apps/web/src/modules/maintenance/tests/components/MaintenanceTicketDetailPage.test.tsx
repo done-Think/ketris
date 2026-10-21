@@ -1,5 +1,5 @@
 import type { MaintenanceMutationOverrides } from '../../types/testing'
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -30,14 +30,18 @@ vi.mock('../../hooks/use-maintenance', () => ({
 
 const mockTicket: ApiMaintenanceTicket = {
   permissions: {
+    linkContract: false,
+    schedule: false,
     edit: true,
     collaborate: true,
+    comment: true,
     assume: false,
     assign: false,
     provider: true,
     requestReplacement: false,
     start: false,
     complete: true,
+    finish: false,
     confirm: false,
     contest: false,
     cancel: false,
@@ -140,6 +144,69 @@ describe('MaintenanceTicketDetailPage', () => {
     mockMutations()
   })
 
+  it('keeps scheduling disabled without a provider and enables it after assignment', async () => {
+    mockSession('RENTER')
+    mockTicketQuery({ data: { ...mockTicket, provider: null } })
+    const { rerender } = render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+    expect(screen.getByLabelText('Data do atendimento')).toBeDisabled()
+    expect(screen.getByRole('combobox', { name: 'Hora (24h)' })).toBeDisabled()
+    expect(screen.getByRole('combobox', { name: 'Minuto' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Salvar data' })).toBeDisabled()
+    expect(screen.getByText('Defina um prestador para liberar o agendamento.')).toBeVisible()
+    expect(
+      screen.getByText(
+        'Antes de marcar o atendimento aqui, combine a data e o horário com o prestador selecionado.',
+      ),
+    ).toBeVisible()
+    mockTicketQuery({
+      data: {
+        ...mockTicket,
+        provider: { name: 'Selected provider' },
+        permissions: { ...mockTicket.permissions!, schedule: true, edit: false },
+      },
+    })
+    rerender(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+    const input = screen.getByLabelText('Data do atendimento')
+    const hour = screen.getByRole('combobox', { name: 'Hora (24h)' })
+    const minute = screen.getByRole('combobox', { name: 'Minuto' })
+    expect(input).toBeEnabled()
+    expect(hour).toBeEnabled()
+    expect(minute).toBeEnabled()
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar data' }))
+    expect(await screen.findAllByText('Informe a data e o horário do atendimento.')).toHaveLength(3)
+    const mutation = vi.mocked(useMaintenanceAction).mock.results[0].value.mutateAsync
+    expect(mutation).not.toHaveBeenCalled()
+    fireEvent.change(input, { target: { value: '2026-10-24' } })
+    await userEvent.selectOptions(hour, '14')
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar data' }))
+    expect(mutation).not.toHaveBeenCalled()
+    await userEvent.selectOptions(minute, '23')
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar data' }))
+    await waitFor(() =>
+      expect(mutation).toHaveBeenCalledWith({
+        action: 'schedule',
+        scheduledAt: new Date('2026-10-24T14:23').toISOString(),
+      }),
+    )
+  })
+
+  it('loads the scheduled date and time separately and refreshes them after rescheduling', () => {
+    const scheduledAt = new Date(2026, 9, 24, 0, 5).toISOString()
+    mockTicketQuery({ data: { ...mockTicket, scheduledAt } })
+    const { rerender } = render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+    expect(screen.getByLabelText('Data do atendimento')).toHaveValue('2026-10-24')
+    expect(screen.getByRole('combobox', { name: 'Hora (24h)' })).toHaveValue('00')
+    expect(screen.getByRole('combobox', { name: 'Minuto' })).toHaveValue('05')
+
+    mockTicketQuery({
+      data: { ...mockTicket, scheduledAt: new Date(2026, 9, 25, 23, 59).toISOString() },
+    })
+    rerender(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+    expect(screen.getByLabelText('Data do atendimento')).toHaveValue('2026-10-25')
+    expect(screen.getByRole('combobox', { name: 'Hora (24h)' })).toHaveValue('23')
+    expect(screen.getByRole('combobox', { name: 'Minuto' })).toHaveValue('59')
+  })
+
   it('lets a linked renter comment and attach images without management actions', async () => {
     mockSession('RENTER')
     mockTicketQuery({
@@ -170,7 +237,7 @@ describe('MaintenanceTicketDetailPage', () => {
     ).toHaveBeenCalledWith('The leak is still visible.')
   })
 
-  it.each(['RESOLVIDO', 'CANCELADO', 'FECHADO'] as const)(
+  it.each(['CANCELADO', 'FECHADO'] as const)(
     'keeps %s tickets readable and blocks renter collaboration',
     (status) => {
       mockSession('RENTER')
@@ -184,6 +251,7 @@ describe('MaintenanceTicketDetailPage', () => {
             provider: false,
             complete: false,
             collaborate: false,
+            comment: false,
           },
         },
       })
@@ -203,22 +271,104 @@ describe('MaintenanceTicketDetailPage', () => {
     },
   )
 
-  it('explains confirmation permissions while the renter waits for resolution approval', () => {
+  it('lets a renter add notes after resolution without enabling attachments or editing original information', async () => {
+    mockSession('RENTER')
+    mockTicketQuery({
+      data: {
+        ...mockTicket,
+        status: 'RESOLVIDO',
+        permissions: {
+          ...mockTicket.permissions!,
+          edit: false,
+          comment: true,
+          collaborate: false,
+          provider: false,
+          complete: false,
+          reopen: true,
+        },
+      },
+    })
+    const user = userEvent.setup()
+    render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+    expect(screen.getByText(/Você pode acrescentar notas ou reabrir este chamado/)).toBeVisible()
+    expect(screen.getByText(mockTicket.description)).toBeVisible()
+    expect(screen.getByText('Abri o chamado.')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Anexar arquivos' })).toBeDisabled()
+    await user.type(
+      screen.getByPlaceholderText('Escreva uma mensagem ou atualização sobre o chamado...'),
+      'Extra detail after resolution',
+    )
+    await user.click(screen.getByRole('button', { name: 'Enviar Mensagem' }))
+    expect(
+      vi.mocked(useAddMaintenanceTicketNote).mock.results[0].value.mutateAsync,
+    ).toHaveBeenCalledWith('Extra detail after resolution')
+  })
+  it('requires a reason when the renter reopens and does not offer a target status', async () => {
+    mockSession('RENTER')
+    mockTicketQuery({
+      data: {
+        ...mockTicket,
+        status: 'RESOLVIDO',
+        permissions: {
+          ...mockTicket.permissions!,
+          edit: false,
+          comment: true,
+          collaborate: false,
+          provider: false,
+          complete: false,
+          reopen: true,
+        },
+      },
+    })
+    const user = userEvent.setup()
+    render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+    await user.click(screen.getByRole('button', { name: 'Reabrir chamado' }))
+    expect(screen.queryByLabelText('Status de reabertura')).not.toBeInTheDocument()
+    const confirm = screen.getByRole('button', { name: 'Confirmar' })
+    expect(confirm).toBeDisabled()
+    await user.type(screen.getByRole('textbox', { name: /Justificativa/ }), '   ')
+    expect(confirm).toBeDisabled()
+    await user.type(screen.getByRole('textbox', { name: /Justificativa/ }), 'Leak returned')
+    await user.click(confirm)
+    await waitFor(() =>
+      expect(
+        vi.mocked(useMaintenanceAction).mock.results[0].value.mutateAsync,
+      ).toHaveBeenCalledWith({ action: 'reopen', status: 'ABERTO', reason: '   Leak returned' }),
+    )
+  })
+  it('lets a linked renter contest with a mandatory reason while confirmation stays unavailable', async () => {
     mockSession('RENTER')
     mockTicketQuery({
       data: {
         ...mockTicket,
         status: 'AGUARDANDO_CONFIRMACAO',
-        permissions: { ...mockTicket.permissions!, edit: false, provider: false, complete: false },
+        permissions: {
+          ...mockTicket.permissions!,
+          edit: false,
+          provider: false,
+          complete: false,
+          contest: true,
+        },
       },
     })
+    const user = userEvent.setup()
     render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
     expect(
-      screen.getByText(/A confirmação ou contestação da resolução cabe ao administrador/),
+      screen.getByText(/Se o problema foi resolvido, você pode finalizar o chamado/),
     ).toBeVisible()
-    expect(
-      screen.queryByRole('button', { name: /Confirmar resolução|Contestar resolução/ }),
-    ).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Confirmar resolução' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Contestar resolução' }))
+    const save = screen.getByRole('button', { name: 'Confirmar' })
+    expect(save).toBeDisabled()
+    await user.type(screen.getByRole('textbox', { name: /Justificativa/ }), '   ')
+    expect(save).toBeDisabled()
+    await user.type(screen.getByRole('textbox', { name: /Justificativa/ }), 'Still leaking')
+    await user.click(save)
+    await waitFor(() =>
+      expect(
+        vi.mocked(useMaintenanceAction).mock.results[0].value.mutateAsync,
+      ).toHaveBeenCalledWith({ action: 'contest', reason: '   Still leaking' }),
+    )
   })
 
   it('renders the ticket header, description and property details from the API', () => {
@@ -231,7 +381,61 @@ describe('MaintenanceTicketDetailPage', () => {
     expect(screen.getByText('Apt Jardins 3q')).toBeVisible()
     expect(screen.getByText('Hidráulica')).toBeVisible()
     expect(screen.getByText('Vazamento embaixo da pia da cozinha.')).toBeVisible()
+    expect(screen.getByText('Atendimento agendado')).toBeVisible()
+    expect(screen.getByText('Ainda não agendado')).toBeVisible()
   })
+
+  it.each(['RESOLVIDO', 'FECHADO'] as const)(
+    'requires explicit contract selection for archived %s tickets and filters other properties',
+    async (status) => {
+      mockTicketQuery({
+        data: {
+          ...mockTicket,
+          status,
+          deletedAt: '2026-10-01T10:00:00.000Z',
+          contractId: null,
+          permissions: {
+            ...mockTicket.permissions!,
+            linkContract: true,
+            edit: false,
+            collaborate: false,
+          },
+        },
+      })
+      vi.mocked(useMaintenanceOptions).mockReturnValue({
+        data: {
+          users: [],
+          contracts: ['contract-1', 'contract-2', 'another-property'].map((id) => ({
+            id,
+            code: id,
+            propertyId: id === 'another-property' ? 'p2' : 'p1',
+            propertyTitle: 'Apt Jardins 3q',
+            agentId: 'agent',
+            ownerId: null,
+            renterIds: [],
+            parties: [],
+          })),
+        },
+      } as unknown as ReturnType<typeof useMaintenanceOptions>)
+      const user = userEvent.setup()
+      render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+      const actionMutation = vi.mocked(useMaintenanceAction).mock.results[0].value
+      await user.click(screen.getByRole('button', { name: 'Associar contrato' }))
+      expect(screen.getByRole('button', { name: 'Confirmar' })).toBeDisabled()
+      expect(actionMutation.mutateAsync).not.toHaveBeenCalled()
+      await user.click(screen.getByRole('combobox', { name: /Contrato do chamado/ }))
+      expect(screen.queryByRole('option', { name: /another-property/ })).not.toBeInTheDocument()
+      expect(screen.getByRole('option', { name: /contract-1/ })).toBeVisible()
+      await user.click(screen.getByRole('option', { name: /contract-2/ }))
+      await user.click(screen.getByRole('button', { name: 'Confirmar' }))
+      await waitFor(() =>
+        expect(actionMutation.mutateAsync).toHaveBeenCalledWith({
+          action: 'linkContract',
+          contractId: 'contract-2',
+        }),
+      )
+    },
+  )
 
   it('renders attached photos from ticket.attachments and nothing when there are none', () => {
     const { unmount } = render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
@@ -252,6 +456,55 @@ describe('MaintenanceTicketDetailPage', () => {
     expect(screen.getByText('Marina Costa')).toBeVisible()
   })
 
+  it.each(['ABERTO', 'EM_ANDAMENTO', 'AGUARDANDO_CONFIRMACAO', 'CONTESTADO'] as const)(
+    'lets a renter finish a %s ticket after confirming the problem is resolved',
+    async (status) => {
+      mockSession('RENTER')
+      mockTicketQuery({
+        data: {
+          ...mockTicket,
+          status,
+          permissions: {
+            ...mockTicket.permissions!,
+            finish: true,
+            edit: false,
+            provider: false,
+            complete: false,
+          },
+        },
+      })
+      const user = userEvent.setup()
+      render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+      expect(screen.queryByRole('button', { name: 'Concluir atendimento' })).not.toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'Finalizar chamado' }))
+      expect(screen.getByText(/Você confirma que o problema foi resolvido/)).toBeVisible()
+      const mutation = vi.mocked(useMaintenanceAction).mock.results[0].value.mutateAsync
+      expect(mutation).not.toHaveBeenCalled()
+      await user.click(screen.getByRole('button', { name: 'Confirmar' }))
+      await waitFor(() => expect(mutation).toHaveBeenCalledWith({ action: 'finish' }))
+    },
+  )
+  it('does not finish a ticket when the renter dismisses the confirmation', async () => {
+    mockSession('RENTER')
+    mockTicketQuery({
+      data: {
+        ...mockTicket,
+        status: 'ABERTO',
+        permissions: {
+          ...mockTicket.permissions!,
+          finish: true,
+          edit: false,
+          provider: false,
+          complete: false,
+        },
+      },
+    })
+    const user = userEvent.setup()
+    render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+    await user.click(screen.getByRole('button', { name: 'Finalizar chamado' }))
+    await user.keyboard('{Escape}')
+    expect(vi.mocked(useMaintenanceAction).mock.results[0].value.mutateAsync).not.toHaveBeenCalled()
+  })
   it('completes service through the action mutation after confirmation', async () => {
     const user = userEvent.setup()
     render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
@@ -289,6 +542,46 @@ describe('MaintenanceTicketDetailPage', () => {
 
     expect(screen.getByRole('button', { name: 'Definir prestador' })).toBeEnabled()
   })
+  it('lets the renter open and submit the existing provider modal', async () => {
+    mockSession('RENTER')
+    mockTicketQuery({
+      data: {
+        ...mockTicket,
+        permissions: {
+          ...mockTicket.permissions!,
+          provider: true,
+          edit: false,
+          complete: false,
+        },
+      },
+    })
+    const user = userEvent.setup()
+    render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+    await user.click(screen.getByRole('button', { name: 'Definir prestador' }))
+    const confirm = screen.getByRole('button', { name: 'Confirmar' })
+    expect(confirm).toBeDisabled()
+    await user.type(
+      screen.getByLabelText('Nome da pessoa ou empresa', { exact: false }),
+      'Chosen professional',
+    )
+    await user.type(screen.getByLabelText('Telefone'), '51999990000')
+    await user.type(screen.getByLabelText('E-mail'), 'professional@example.test')
+    await user.type(screen.getByLabelText('Observações'), 'Plumbing services')
+    await user.click(confirm)
+    await waitFor(() =>
+      expect(
+        vi.mocked(useMaintenanceAction).mock.results[0].value.mutateAsync,
+      ).toHaveBeenCalledWith({
+        action: 'provider',
+        provider: {
+          name: 'Chosen professional',
+          phone: '51999990000',
+          email: 'professional@example.test',
+          notes: 'Plumbing services',
+        },
+      }),
+    )
+  })
 
   it('hides provider controls and blocks collaboration when API denies permission', () => {
     mockTicketQuery({
@@ -298,12 +591,14 @@ describe('MaintenanceTicketDetailPage', () => {
           ...mockTicket.permissions!,
           provider: false,
           collaborate: false,
+          comment: false,
           complete: false,
         },
       },
     })
     render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
     expect(screen.queryByRole('button', { name: 'Definir prestador' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Associar contrato' })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Anexar arquivos' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Enviar Mensagem' })).toBeDisabled()
   })

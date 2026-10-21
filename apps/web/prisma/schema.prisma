@@ -690,8 +690,14 @@ enum TipoEventoAgenda {
 // - participantes (EventoAgendaParticipante): usuários com acesso de leitura ao evento.
 // participanteNome/participanteTelefone são apenas dados de exibição para a equipe e não
 // identificam nem autorizam nenhum usuário.
+enum DestinoEventoAgenda {
+  LEGACY_TEAM
+  ALL_AGENTS
+  ASSIGNED_AGENT
+}
+
 model EventoAgenda {
-  id                    String             @id @default(cuid())
+  id                    String              @id @default(cuid())
   tenantId              String
   responsavelId         String
   criadoPorId           String?
@@ -700,14 +706,16 @@ model EventoAgenda {
   referenciaImovelLivre String?
   titulo                String
   tipo                  TipoEventoAgenda?
-  status                StatusEventoAgenda @default(CONFIRMED)
+  destino               DestinoEventoAgenda @default(LEGACY_TEAM)
+  interno               Boolean             @default(false)
+  status                StatusEventoAgenda  @default(CONFIRMED)
   inicio                DateTime
   fim                   DateTime
   participanteNome      String
   participanteTelefone  String
   notas                 String?
-  createdAt             DateTime           @default(now())
-  updatedAt             DateTime           @updatedAt
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
 
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   responsavel Usuario  @relation("EventoAgendaResponsavel", fields: [responsavelId], references: [id], onDelete: Cascade)
@@ -827,6 +835,7 @@ model ChamadoManutencao {
   abertoPorId          String
   abertoPorNome        String
   resolvidoEm          DateTime?
+  atendimentoEm        DateTime?
   createdAt            DateTime                    @default(now())
   updatedAt            DateTime                    @updatedAt
 
@@ -844,6 +853,7 @@ model ChamadoManutencao {
   @@index([tenantId, excluidoEm])
   @@index([contratoId])
   @@index([responsavelId])
+  @@index([tenantId, atendimentoEm])
   @@map("chamados_manutencao")
 }
 

@@ -9,6 +9,40 @@ import {
 const now = new Date('2026-09-29T12:00:00.000Z')
 
 describe('assertWithinAgendaSchedulingWindow', () => {
+  it('allows an explicitly confirmed outside-hours period', () => {
+    expect(() =>
+      assertWithinAgendaSchedulingWindow(new Date('2026-09-29T23:00:00Z'), now, {
+        durationMinutes: 60,
+        outsideBusinessHoursConfirmed: true,
+      }),
+    ).not.toThrow()
+  })
+  it('warns for an event starting inside hours but ending after 18:00', () => {
+    expect(() =>
+      assertWithinAgendaSchedulingWindow(new Date('2026-09-29T20:30:00Z'), now, {
+        durationMinutes: 60,
+      }),
+    ).toThrow(AgendaOutsideBusinessHoursError)
+    expect(() =>
+      assertWithinAgendaSchedulingWindow(new Date('2026-09-29T20:30:00Z'), now, {
+        durationMinutes: 30,
+      }),
+    ).not.toThrow()
+  })
+  it('keeps minimum advance notice mandatory after outside-hours confirmation', () => {
+    expect(() =>
+      assertWithinAgendaSchedulingWindow(new Date(now.getTime() + 60000), now, {
+        outsideBusinessHoursConfirmed: true,
+      }),
+    ).toThrow(AgendaMinimumAdvanceNoticeError)
+  })
+  it('requires confirmation when a period crosses midnight', () => {
+    expect(() =>
+      assertWithinAgendaSchedulingWindow(new Date('2026-09-30T02:30:00Z'), now, {
+        durationMinutes: 90,
+      }),
+    ).toThrow(AgendaOutsideBusinessHoursError)
+  })
   it('aceita um horário com pelo menos 3 horas de antecedência dentro do horário comercial', () => {
     expect(() =>
       assertWithinAgendaSchedulingWindow(new Date('2026-09-29T18:00:00.000Z'), now),

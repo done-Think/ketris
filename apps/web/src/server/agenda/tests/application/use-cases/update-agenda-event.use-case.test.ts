@@ -1,3 +1,4 @@
+import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
 import { describe, expect, it, vi } from 'vitest'
 
 import { PropertyNotFoundError } from '@server/properties/domain/errors'
@@ -26,7 +27,7 @@ const shortEvent: AgendaEvent = {
   tipo: 'FOLLOW_UP',
   status: 'CONFIRMED',
   inicio: new Date('2026-10-01T13:00:00.000Z'),
-  fim: new Date('2026-10-01T13:30:00.000Z'),
+  fim: new Date('2026-10-01T13:15:00.000Z'),
   participanteNome: 'Ana',
   participanteTelefone: '11999990000',
   notas: null,
@@ -61,7 +62,11 @@ function createDeps(overrides?: {
     delete: vi.fn(),
   }
 
-  return { agendaEventRepository, propertyRepository }
+  return {
+    agendaEventRepository,
+    propertyRepository,
+    userRepository: { findById: vi.fn() } as unknown as UserRepository,
+  }
 }
 
 describe('UpdateAgendaEventUseCase', () => {
@@ -70,6 +75,7 @@ describe('UpdateAgendaEventUseCase', () => {
     const useCase = new UpdateAgendaEventUseCase(
       deps.agendaEventRepository,
       deps.propertyRepository,
+      deps.userRepository,
     )
 
     const result = await useCase.execute({
@@ -93,6 +99,7 @@ describe('UpdateAgendaEventUseCase', () => {
     const useCase = new UpdateAgendaEventUseCase(
       deps.agendaEventRepository,
       deps.propertyRepository,
+      deps.userRepository,
     )
 
     await expect(
@@ -111,6 +118,7 @@ describe('UpdateAgendaEventUseCase', () => {
     const useCase = new UpdateAgendaEventUseCase(
       deps.agendaEventRepository,
       deps.propertyRepository,
+      deps.userRepository,
     )
 
     await expect(
@@ -128,6 +136,7 @@ describe('UpdateAgendaEventUseCase', () => {
     const useCase = new UpdateAgendaEventUseCase(
       deps.agendaEventRepository,
       deps.propertyRepository,
+      deps.userRepository,
     )
 
     await expect(
@@ -135,11 +144,12 @@ describe('UpdateAgendaEventUseCase', () => {
     ).rejects.toThrow(AgendaEventNotFoundError)
   })
 
-  it('lança AgendaVisitMinimumDurationError ao marcar como VISIT um evento com menos de 60min', async () => {
+  it('lança AgendaVisitMinimumDurationError ao marcar como VISIT um evento com menos de 30min', async () => {
     const deps = createDeps()
     const useCase = new UpdateAgendaEventUseCase(
       deps.agendaEventRepository,
       deps.propertyRepository,
+      deps.userRepository,
     )
 
     await expect(
@@ -153,15 +163,16 @@ describe('UpdateAgendaEventUseCase', () => {
     expect(deps.agendaEventRepository.update).not.toHaveBeenCalled()
   })
 
-  it('permite marcar como VISIT um evento que já dura 60min ou mais', async () => {
+  it('permite marcar como VISIT um evento que já dura 30min ou mais', async () => {
     const longEvent = {
       ...shortEvent,
-      fim: new Date('2026-10-01T14:00:00.000Z'),
+      fim: new Date('2026-10-01T13:30:00.000Z'),
     }
     const deps = createDeps({ agendaFindByTenantAndId: vi.fn().mockResolvedValue(longEvent) })
     const useCase = new UpdateAgendaEventUseCase(
       deps.agendaEventRepository,
       deps.propertyRepository,
+      deps.userRepository,
     )
 
     await useCase.execute({
@@ -199,6 +210,7 @@ describe('UpdateAgendaEventUseCase', () => {
       const useCase = new UpdateAgendaEventUseCase(
         deps.agendaEventRepository,
         deps.propertyRepository,
+        deps.userRepository,
       )
 
       await useCase.execute({

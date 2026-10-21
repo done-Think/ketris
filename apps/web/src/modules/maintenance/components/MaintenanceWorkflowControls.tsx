@@ -43,6 +43,7 @@ export function MaintenanceWorkflowControls({ ticket }: MaintenanceWorkflowContr
   const [selection, setSelection] = useState<MaintenanceWorkflowSelection | null>(null)
   const [reason, setReason] = useState('')
   const [responsibleId, setResponsibleId] = useState('')
+  const [contractId, setContractId] = useState('')
   const [status, setStatus] = useState<'ABERTO' | 'EM_ANDAMENTO'>('ABERTO')
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -50,22 +51,26 @@ export function MaintenanceWorkflowControls({ ticket }: MaintenanceWorkflowContr
   const [notes, setNotes] = useState('')
   const permissions = ticket.permissions
   const controls: MaintenanceWorkflowControl[] = [
+    { permission: 'linkContract', action: 'linkContract', icon: <AssignmentIndOutlinedIcon /> },
     { permission: 'assume', action: 'assume', icon: <AssignmentIndOutlinedIcon /> },
     { permission: 'assign', action: 'assign', icon: <AssignmentIndOutlinedIcon /> },
     { permission: 'provider', action: 'provider', icon: <BuildOutlinedIcon /> },
     { permission: 'requestReplacement', action: 'requestReplacement', icon: <UndoRoundedIcon /> },
     { permission: 'start', action: 'start', icon: <PlayArrowRoundedIcon /> },
     { permission: 'complete', action: 'complete', icon: <CheckRoundedIcon /> },
+    { permission: 'finish', action: 'finish', icon: <CheckRoundedIcon /> },
     { permission: 'confirm', action: 'confirm', icon: <CheckRoundedIcon /> },
     { permission: 'contest', action: 'contest', icon: <ReportProblemOutlinedIcon /> },
     { permission: 'cancel', action: 'cancel', icon: <CancelOutlinedIcon /> },
     { permission: 'reopen', action: 'reopen', icon: <UndoRoundedIcon /> },
     { permission: 'restore', action: 'restore', icon: <RestoreFromTrashOutlinedIcon /> },
   ]
-  function choose(action: MaintenanceAction['action'], requestId?: string) {
+  function choose(action: MaintenanceWorkflowSelection['action'], requestId?: string) {
     setSelection({ action, requestId })
     setReason('')
+    setStatus('ABERTO')
     setResponsibleId(ticket.responsibleId ?? '')
+    setContractId('')
     setName(action === 'approveReplacement' ? '' : (ticket.provider?.name ?? ''))
     setPhone(action === 'approveReplacement' ? '' : (ticket.provider?.phone ?? ''))
     setEmail(action === 'approveReplacement' ? '' : (ticket.provider?.email ?? ''))
@@ -74,16 +79,22 @@ export function MaintenanceWorkflowControls({ ticket }: MaintenanceWorkflowContr
   const providerAction =
     selection?.action === 'provider' || selection?.action === 'approveReplacement'
   const reasonAction =
-    selection && ['contest', 'requestReplacement', 'rejectReplacement'].includes(selection.action)
+    selection &&
+    (['contest', 'requestReplacement', 'rejectReplacement'].includes(selection.action) ||
+      (selection.action === 'reopen' && session?.papel === 'RENTER'))
   const valid =
     (!providerAction || Boolean(name.trim())) &&
     (!reasonAction || Boolean(reason.trim())) &&
-    (selection?.action !== 'assign' || Boolean(responsibleId))
+    (selection?.action !== 'assign' || Boolean(responsibleId)) &&
+    (selection?.action !== 'linkContract' || Boolean(contractId))
   async function submit(event: React.FormEvent) {
     event.preventDefault()
     if (!selection || !valid) return
     let action: MaintenanceAction
     switch (selection.action) {
+      case 'linkContract':
+        action = { action: 'linkContract', contractId }
+        break
       case 'provider':
         action = {
           action: 'provider',
@@ -110,7 +121,10 @@ export function MaintenanceWorkflowControls({ ticket }: MaintenanceWorkflowContr
         action = { action: 'assign', responsibleId }
         break
       case 'reopen':
-        action = { action: 'reopen', status }
+        action =
+          session?.papel === 'RENTER'
+            ? { action: 'reopen', status: 'ABERTO', reason }
+            : { action: 'reopen', status }
         break
       default:
         action = { action: selection.action }
@@ -199,6 +213,27 @@ export function MaintenanceWorkflowControls({ ticket }: MaintenanceWorkflowContr
           <DialogTitle>{selection && t(selection.action)}</DialogTitle>
           <DialogContent>
             <Stack spacing={2} sx={{ pt: 1 }}>
+              {selection?.action === 'linkContract' && (
+                <>
+                  <Typography variant="body2">{t('linkContractHelp')}</Typography>
+                  <TextField
+                    label={t('contract')}
+                    value={contractId}
+                    onChange={(event) => setContractId(event.target.value)}
+                    select
+                    required
+                  >
+                    {(options?.contracts ?? [])
+                      .filter((contract) => contract.propertyId === ticket.propertyId)
+                      .map((contract) => (
+                        <MenuItem key={contract.id} value={contract.id}>
+                          {contract.code} - {contract.propertyTitle}
+                        </MenuItem>
+                      ))}
+                  </TextField>
+                </>
+              )}
+              {selection?.action === 'finish' && <Typography>{t('finishConfirmation')}</Typography>}
               {reasonAction && (
                 <TextField
                   label={t('reason')}
@@ -227,7 +262,7 @@ export function MaintenanceWorkflowControls({ ticket }: MaintenanceWorkflowContr
                     ))}
                 </TextField>
               )}
-              {selection?.action === 'reopen' && (
+              {selection?.action === 'reopen' && session?.papel !== 'RENTER' && (
                 <TextField
                   label={t('reopenStatus')}
                   value={status}

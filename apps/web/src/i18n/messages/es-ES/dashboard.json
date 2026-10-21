@@ -302,6 +302,9 @@
     "activeTickets": "Activos",
     "archivedTickets": "Archivados",
     "workflow": {
+      "linkContract": "Asociar contrato",
+      "contract": "Contrato de la solicitud",
+      "linkContractHelp": "Seleccione el contrato correcto de este inmueble. La asociación conserva el estado, la fecha de resolución, el archivo y el historial de la solicitud.",
       "assume": "Asumir solicitud",
       "assign": "Asignar responsable",
       "provider": "Definir proveedor",
@@ -335,7 +338,9 @@
         "PENDENTE": "Pendiente",
         "APROVADA": "Aprobada",
         "REJEITADA": "Rechazada"
-      }
+      },
+      "finish": "Finalizar solicitud",
+      "finishConfirmation": "¿Confirma que el problema está resuelto? La solicitud se marcará como resuelta y se conservará su historial."
     },
     "links": {
       "title": "Regularizar vínculos",
@@ -348,6 +353,28 @@
       "save": "Guardar vínculos",
       "success": "Vínculos actualizados.",
       "error": "No se pudieron actualizar los vínculos."
+    },
+    "scheduleNotSet": "Aún sin programar",
+    "empty": "No se encontraron solicitudes.",
+    "renter": {
+      "subtitle": "Abre y sigue las solicitudes de los inmuebles vinculados a tus contratos.",
+      "resolutionNotice": "Si el problema está resuelto, puede finalizar la solicitud. Si el trabajo no fue satisfactorio, puede impugnarlo indicando un motivo.",
+      "readOnlyNotice": "Esta solicitud está cerrada y disponible solo para consulta.",
+      "resolvedNotice": "Puede agregar notas o reabrir este caso indicando un motivo. Se conservará la información registrada anteriormente."
+    },
+    "schedule": {
+      "title": "Programación del mantenimiento",
+      "dateLabel": "Fecha del servicio",
+      "hourLabel": "Hora (24h)",
+      "minuteLabel": "Minuto",
+      "summaryLabel": "Atención programada",
+      "save": "Guardar fecha",
+      "providerRequired": "Selecciona un proveedor para habilitar la programación.",
+      "coordinationNotice": "Antes de registrar el servicio aquí, acuerda la fecha y hora con el proveedor seleccionado.",
+      "required": "Introduce la fecha y hora del servicio.",
+      "invalid": "Introduce una fecha y hora válidas.",
+      "success": "Fecha del servicio guardada.",
+      "error": "No se pudo guardar la fecha del servicio."
     }
   },
   "finance": {

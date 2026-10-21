@@ -16,6 +16,41 @@ describe('createAgendaEventRequestSchema', () => {
     participantPhone: '(11) 99999-0000',
   }
 
+  it('accepts an internal team event without client contact or property', () => {
+    expect(
+      createAgendaEventRequestSchema.parse({
+        title: base.title,
+        start: base.start,
+        durationMinutes: 60,
+        internal: true,
+        audience: 'ALL_AGENTS',
+      }),
+    ).toMatchObject({
+      internal: true,
+      audience: 'ALL_AGENTS',
+      participantName: '',
+      participantPhone: '',
+    })
+  })
+
+  it('keeps contact and property mandatory for client events', () => {
+    expect(
+      createAgendaEventRequestSchema.safeParse({
+        title: base.title,
+        start: base.start,
+        durationMinutes: 60,
+        internal: false,
+        audience: 'ALL_AGENTS',
+      }).success,
+    ).toBe(false)
+  })
+
+  it('requires an explicit audience for internal events', () => {
+    expect(createAgendaEventRequestSchema.safeParse({ ...base, internal: true }).success).toBe(
+      false,
+    )
+  })
+
   it('aceita payload válido com propertyId', () => {
     const result = createAgendaEventRequestSchema.safeParse({ ...base, propertyId: 'property-1' })
 
@@ -47,7 +82,18 @@ describe('createAgendaEventRequestSchema', () => {
     expect(result.success).toBe(false)
   })
 
-  it('rejeita visita (kind VISIT) com duração menor que 60 minutos', () => {
+  it('rejeita visita (kind VISIT) com duração menor que 30 minutos', () => {
+    const result = createAgendaEventRequestSchema.safeParse({
+      ...base,
+      propertyId: 'property-1',
+      kind: 'VISIT',
+      durationMinutes: 15,
+    })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('aceita visita (kind VISIT) com duração de 30 minutos ou mais', () => {
     const result = createAgendaEventRequestSchema.safeParse({
       ...base,
       propertyId: 'property-1',
@@ -55,21 +101,10 @@ describe('createAgendaEventRequestSchema', () => {
       durationMinutes: 30,
     })
 
-    expect(result.success).toBe(false)
-  })
-
-  it('aceita visita (kind VISIT) com duração de 60 minutos ou mais', () => {
-    const result = createAgendaEventRequestSchema.safeParse({
-      ...base,
-      propertyId: 'property-1',
-      kind: 'VISIT',
-      durationMinutes: 60,
-    })
-
     expect(result.success).toBe(true)
   })
 
-  it('não exige 60 minutos para outros tipos de evento', () => {
+  it('não exige 30 minutos para outros tipos de evento', () => {
     const result = createAgendaEventRequestSchema.safeParse({
       ...base,
       propertyId: 'property-1',

@@ -78,11 +78,10 @@ export function MaintenanceCreateTicketDialog({
 
   useEffect(() => {
     if (open)
-      reset(
-        initialValues ??
-          (mode === 'create' ? readMaintenanceDraft(draftKey) : null) ??
-          defaultValues,
-      )
+      reset({
+        ...defaultValues,
+        ...(initialValues ?? (mode === 'create' ? readMaintenanceDraft(draftKey) : null) ?? {}),
+      })
   }, [initialValues, open, reset, mode, draftKey])
 
   useEffect(() => {

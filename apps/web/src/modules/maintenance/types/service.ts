@@ -40,6 +40,7 @@ export interface ApiMaintenanceAttachment {
 }
 
 export interface ApiMaintenanceTicket {
+  scheduledAt?: string | null
   id: string
   propertyId: string
   propertyTitle: string
@@ -73,6 +74,7 @@ export interface ApiMaintenanceTicket {
 }
 
 export interface ApiMaintenanceTicketListItem {
+  scheduledAt?: string | null
   id: string
   propertyId: string
   propertyTitle: string
@@ -100,6 +102,7 @@ export interface MaintenanceTicketListFilters {
 }
 
 export interface CreateMaintenanceTicketPayload {
+  scheduledAt?: string | null
   contractId: string
   propertyId: string
   category: string
@@ -109,6 +112,7 @@ export interface CreateMaintenanceTicketPayload {
 }
 
 export interface UpdateMaintenanceTicketPayload {
+  scheduledAt?: string | null
   contractId?: string
   propertyId?: string
   category?: string

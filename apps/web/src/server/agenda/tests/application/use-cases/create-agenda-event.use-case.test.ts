@@ -170,7 +170,7 @@ describe('CreateAgendaEventUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorUserId: 'agent-1',
-        actorPapel: 'AGENT',
+        actorPapel: 'ADMIN',
         responsavelId: 'outro-agente',
         titulo: 'Visita',
         inicio: VALID_INICIO,

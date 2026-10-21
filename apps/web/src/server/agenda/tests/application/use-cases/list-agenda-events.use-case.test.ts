@@ -38,7 +38,7 @@ describe('ListAgendaEventsUseCase', () => {
     })
 
     expect(deps.agendaEventRepository.list).toHaveBeenCalledWith({
-      scope: { kind: 'tenant', tenantId: 'tenant-1' },
+      scope: { kind: 'agent', tenantId: 'tenant-1', userId: 'agent-1' },
       from,
       to,
       responsavelId: 'agent-1',
@@ -46,7 +46,7 @@ describe('ListAgendaEventsUseCase', () => {
   })
 
   it.each(['ADMIN', 'OWNER', 'AGENT'] as const)(
-    'mantém a agenda compartilhada do tenant quando o ator é %s',
+    'repassa o escopo de leitura do perfil %s',
     async (papel) => {
       const deps = createDeps()
       const useCase = new ListAgendaEventsUseCase(deps.agendaEventRepository)
@@ -61,7 +61,16 @@ describe('ListAgendaEventsUseCase', () => {
 
       expect(result).toBe(events)
       expect(deps.agendaEventRepository.list).toHaveBeenCalledWith(
-        expect.objectContaining({ scope: { kind: 'tenant', tenantId: 'tenant-1' } }),
+        expect.objectContaining({
+          scope:
+            papel === 'ADMIN'
+              ? { kind: 'tenant', tenantId: 'tenant-1' }
+              : {
+                  kind: papel === 'AGENT' ? 'agent' : 'owner',
+                  tenantId: 'tenant-1',
+                  userId: 'user-1',
+                },
+        }),
       )
     },
   )

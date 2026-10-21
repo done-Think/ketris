@@ -83,6 +83,7 @@ export async function updateTicket(
 ) {
   const ticket = await loadTicket(repository, actor, ticketId)
   assertPermission(actor, ticket, 'edit')
+  if (changes.scheduledAt !== undefined) assertPermission(actor, ticket, 'schedule')
   if (
     (changes.contractId && changes.contractId !== ticket.contractId) ||
     (changes.propertyId && changes.propertyId !== ticket.propertyId)
@@ -144,6 +145,57 @@ export async function actOnTicket(
   let event: NewMaintenanceActivity
   let request: MaintenanceRequestMutation | undefined
   switch (action.action) {
+    case 'linkContract': {
+      assertAdmin(actor)
+      const contract = await validateContract(
+        repository,
+        actor,
+        action.contractId,
+        ticket.propertyId,
+      )
+      return repository.mutate(
+        ticket,
+        { contractId: contract.id },
+        activity(actor, 'EDICAO', 'Contrato do chamado associado pelo administrador.', {
+          before: { contractId: ticket.contractId, propertyId: ticket.propertyId },
+          after: { contractId: contract.id, propertyId: ticket.propertyId },
+        }),
+      )
+    }
+    case 'schedule': {
+      assertPermission(actor, ticket, 'schedule')
+      const scheduledAt = new Date(action.scheduledAt)
+      if (Number.isNaN(scheduledAt.getTime()))
+        throw new ConflictError('Informe uma data de atendimento valida.')
+      return repository.mutate(
+        ticket,
+        { scheduledAt },
+        activity(actor, 'EDICAO', 'Atendimento agendado com o prestador.', {
+          before: { scheduledAt: ticket.scheduledAt?.toISOString() ?? null },
+          after: { scheduledAt: scheduledAt.toISOString() },
+          provider: ticket.provider?.name,
+        }),
+      )
+    }
+    case 'finish': {
+      assertPermission(actor, ticket, 'finish')
+      const resolvedAt = new Date()
+      return repository.mutate(
+        ticket,
+        {
+          status: 'RESOLVIDO',
+          resolvedAt,
+          completedByRole: actor.actorPapel,
+          completedById: actor.actorId,
+        },
+        activity(actor, 'MUDANCA_STATUS', 'Chamado finalizado pelo locatário.', {
+          before: ticket.status,
+          after: 'RESOLVIDO',
+          resolvedAt: resolvedAt.toISOString(),
+          previousCompletionRole: ticket.completedByRole,
+        }),
+      )
+    }
     case 'start':
       assertPermission(actor, ticket, 'start')
       changes = { status: 'EM_ANDAMENTO' }
@@ -170,17 +222,36 @@ export async function actOnTicket(
       assertPermission(actor, ticket, 'cancel')
       changes = { status: 'CANCELADO', resolvedAt: null }
       break
-    case 'reopen':
+    case 'reopen': {
       assertPermission(actor, ticket, 'reopen')
       if (!['ABERTO', 'EM_ANDAMENTO'].includes(action.status))
         throw new ConflictError('Status de reabertura invalido.')
+      if (actor.actorPapel === 'RENTER' && action.status !== 'ABERTO')
+        throw new ForbiddenError('O locatario pode reabrir o chamado somente como aberto.')
+      const reopenReason =
+        actor.actorPapel === 'RENTER' || action.reason !== undefined
+          ? reason(action.reason ?? '')
+          : null
       changes = {
         status: action.status,
         resolvedAt: null,
         completedById: null,
         completedByRole: null,
       }
-      break
+      return repository.mutate(
+        ticket,
+        changes,
+        activity(actor, 'MUDANCA_STATUS', reopenReason ?? 'Chamado reaberto.', {
+          before: ticket.status,
+          after: changes.status,
+          reason: reopenReason,
+          previousResolution: {
+            resolvedAt: ticket.resolvedAt?.toISOString() ?? null,
+            completedByRole: ticket.completedByRole,
+          },
+        }),
+      )
+    }
     case 'assume':
     case 'assign': {
       assertPermission(actor, ticket, action.action)

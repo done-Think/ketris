@@ -17,6 +17,7 @@ import {
   useAgencyOverviewUi,
 } from '@modules/agency-dashboard'
 import { useAgendaEvents } from '@modules/agenda/hooks/use-agenda-events'
+import type { AgendaEventApi } from '@modules/agenda/types/agenda-event'
 import { useLeads } from '@modules/crm/hooks/use-leads'
 import { useOpportunities } from '@modules/crm/hooks/use-opportunities'
 
@@ -85,8 +86,10 @@ export function DashboardOverviewPage() {
   const monthEvents = useMemo(
     () =>
       (monthEventsQuery.data ?? []).filter(
-        (event) =>
-          event.status !== 'CANCELLED' && (isAgencyManager || event.responsibleId === userId),
+        (event): event is AgendaEventApi =>
+          event.status !== 'CANCELLED' &&
+          'participantName' in event &&
+          (isAgencyManager || event.responsibleId === userId),
       ),
     [monthEventsQuery.data, isAgencyManager, userId],
   )

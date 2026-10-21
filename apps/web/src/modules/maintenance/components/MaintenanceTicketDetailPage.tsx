@@ -18,7 +18,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useSession } from 'next-auth/react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useFormatter } from 'next-intl'
 import { useSnackbar } from 'notistack'
 
 import { Link } from '@/i18n/navigation'
@@ -32,6 +32,7 @@ import {
 } from '../hooks/use-maintenance'
 import type { MaintenancePriority, MaintenanceStatus } from '../types/maintenance'
 import { MaintenanceWorkflowControls } from './MaintenanceWorkflowControls'
+import { MaintenanceSchedule } from './MaintenanceSchedule'
 import { errorMessage } from '../utils/error-message'
 import {
   mapMaintenancePriorityFromApi,
@@ -80,12 +81,13 @@ function getInitials(name: string | null): string {
 }
 
 export function MaintenanceTicketDetailPage({ ticketId }: MaintenanceTicketDetailPageProps) {
+  const formatter = useFormatter()
   const t = useTranslations('dashboard.maintenance')
   const detailT = useTranslations('dashboard.maintenance.detail')
   const { enqueueSnackbar } = useSnackbar()
   const { data: session } = useSession()
-  const isRenter = session?.papel === 'RENTER'
   const tenantId = session?.tenantId
+  const isRenter = session?.papel === 'RENTER'
   const [message, setMessage] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -217,13 +219,28 @@ export function MaintenanceTicketDetailPage({ ticketId }: MaintenanceTicketDetai
             </Stack>
           </Stack>
         </Stack>
-        <MaintenanceWorkflowControls ticket={ticket} />
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) minmax(0, 1.5fr)' },
+            gap: 3,
+            alignItems: 'start',
+          }}
+        >
+          <MaintenanceWorkflowControls ticket={ticket} />
+          <MaintenanceSchedule ticket={ticket} />
+        </Box>
         {isRenter && ticket.status === 'AGUARDANDO_CONFIRMACAO' && (
           <Typography variant="body2" color="text.secondary">
             {t('renter.resolutionNotice')}
           </Typography>
         )}
-        {isRenter && ['RESOLVIDO', 'CANCELADO', 'FECHADO'].includes(ticket.status) && (
+        {isRenter && ticket.status === 'RESOLVIDO' && !ticket.deletedAt && (
+          <Typography variant="body2" color="text.secondary">
+            {t('renter.resolvedNotice')}
+          </Typography>
+        )}
+        {isRenter && ['CANCELADO', 'FECHADO'].includes(ticket.status) && (
           <Typography variant="body2" color="text.secondary">
             {t('renter.readOnlyNotice')}
           </Typography>
@@ -251,6 +268,15 @@ export function MaintenanceTicketDetailPage({ ticketId }: MaintenanceTicketDetai
                   [t('columns.category'), ticket.category],
                   [detailT('descriptionCard.openedBy'), ticket.openedByName],
                   [t('columns.openedAt'), formatDate(ticket.createdAt)],
+                  [
+                    t('schedule.summaryLabel'),
+                    ticket.scheduledAt
+                      ? formatter.dateTime(new Date(ticket.scheduledAt), {
+                          dateStyle: 'short',
+                          timeStyle: 'short',
+                        })
+                      : t('scheduleNotSet'),
+                  ],
                 ].map(([label, value]) => (
                   <Box key={label}>
                     <Typography sx={labelSx}>{label}</Typography>
@@ -366,7 +392,7 @@ export function MaintenanceTicketDetailPage({ ticketId }: MaintenanceTicketDetai
               <Divider sx={{ my: 1.7 }} />
               <TextField
                 value={message}
-                disabled={!ticket.permissions?.collaborate}
+                disabled={!ticket.permissions?.comment}
                 onChange={(event) => setMessage(event.target.value)}
                 multiline
                 minRows={4}
@@ -403,7 +429,7 @@ export function MaintenanceTicketDetailPage({ ticketId }: MaintenanceTicketDetai
                 <Button
                   variant="contained"
                   disabled={
-                    !ticket.permissions?.collaborate || !message.trim() || addNoteMutation.isPending
+                    !ticket.permissions?.comment || !message.trim() || addNoteMutation.isPending
                   }
                   sx={primaryButtonSx}
                   onClick={handleSendMessage}
