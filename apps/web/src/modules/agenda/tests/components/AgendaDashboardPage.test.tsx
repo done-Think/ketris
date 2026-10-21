@@ -61,8 +61,8 @@ vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))
 
-const today = dayjs().format('YYYY-MM-DD')
-const twoDaysFromNow = dayjs().add(2, 'day').format('YYYY-MM-DD')
+const today = '2026-10-21'
+const twoDaysFromNow = '2026-10-23'
 
 function makeEvent(overrides: Partial<AgendaEventApi> = {}): AgendaEventApi {
   return {
@@ -148,9 +148,9 @@ function renderPage() {
 describe('AgendaDashboardPage', () => {
   afterEach(() => vi.useRealTimers())
   beforeEach(() => {
-    vi.clearAllMocks()
     vi.useFakeTimers({ toFake: ['Date'] })
-    vi.setSystemTime(dayjs().hour(9).minute(0).second(0).millisecond(0).toDate())
+    vi.setSystemTime(new Date(`${today}T13:15:34`))
+    vi.clearAllMocks()
     vi.mocked(useSession).mockReturnValue({
       data: { tenantId: 'tenant-1' },
       status: 'authenticated',
