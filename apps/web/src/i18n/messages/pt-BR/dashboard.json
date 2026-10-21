@@ -3,9 +3,6 @@
     "overview": {
       "metadataTitle": "Ketris | Dashboard"
     },
-    "agencyOverview": {
-      "metadataTitle": "Ketris | Visão Geral da Imobiliária"
-    },
     "agenda": {
       "metadataTitle": "Ketris | Agenda"
     },
@@ -35,12 +32,10 @@
   "overview": {
     "title": "Dashboard",
     "notifications": "Notificações",
-    "performanceTitle": "Desempenho 6 meses",
     "metrics": {
       "leadsActive": { "label": "Leads ativos", "caption": "{count} hoje" },
       "visitsMonth": { "label": "Visitas mês", "caption": "{count} hoje" },
-      "proposals": { "label": "Propostas", "caption": "{count} aguardando resposta" },
-      "revenue": { "label": "Faturamento", "caption": "{amount} em atraso" }
+      "proposals": { "label": "Propostas", "caption": "{count} aguardando resposta" }
     },
     "activityDetail": {
       "close": "Fechar",
@@ -87,18 +82,6 @@
     }
   },
   "agencyOverview": {
-    "agencyName": "Imobiliária Premium SP",
-    "title": "Visão Geral",
-    "subtitle": "Acompanhe movimentação, metas e performance consolidada da imobiliária.",
-    "month": "Setembro, 2024",
-    "report": "Relatório",
-    "navigation": {
-      "overview": "Visão Geral",
-      "team": "Equipe",
-      "portfolio": "Carteira",
-      "finance": "Financeiro",
-      "contracts": "Contratos"
-    },
     "kpis": {
       "portfolio": "Imóveis na carteira",
       "activeBrokers": "Corretores ativos",

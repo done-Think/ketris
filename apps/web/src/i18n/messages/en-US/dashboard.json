@@ -3,9 +3,6 @@
     "overview": {
       "metadataTitle": "Ketris | Dashboard"
     },
-    "agencyOverview": {
-      "metadataTitle": "Ketris | Agency Overview"
-    },
     "agenda": {
       "metadataTitle": "Ketris | Schedule"
     },
@@ -35,12 +32,10 @@
   "overview": {
     "title": "Dashboard",
     "notifications": "Notifications",
-    "performanceTitle": "6-month performance",
     "metrics": {
       "leadsActive": { "label": "Active leads", "caption": "{count} today" },
       "visitsMonth": { "label": "Visits this month", "caption": "{count} today" },
-      "proposals": { "label": "Proposals", "caption": "{count} awaiting response" },
-      "revenue": { "label": "Revenue", "caption": "{amount} overdue" }
+      "proposals": { "label": "Proposals", "caption": "{count} awaiting response" }
     },
     "activityDetail": {
       "close": "Close",
@@ -87,18 +82,6 @@
     }
   },
   "agencyOverview": {
-    "agencyName": "Premium Real Estate SP",
-    "title": "Overview",
-    "subtitle": "Track activity, goals, and consolidated agency performance.",
-    "month": "September, 2024",
-    "report": "Report",
-    "navigation": {
-      "overview": "Overview",
-      "team": "Team",
-      "portfolio": "Portfolio",
-      "finance": "Finance",
-      "contracts": "Contracts"
-    },
     "kpis": {
       "portfolio": "Portfolio listings",
       "activeBrokers": "Active brokers",
