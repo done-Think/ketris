@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
 import { NextRequest } from 'next/server'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
@@ -16,6 +16,10 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
   let eventId: string
 
   beforeAll(async () => {
+    // Relógio fixo: criar evento exige antecedência mínima, e as datas abaixo são fixas.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-10-01T09:00:00.000Z'))
+
     const tenant = await prisma.tenant.create({
       data: { nome: 'Tenant Agenda Cancel', slug: `agenda-cancel-${randomUUID()}` },
     })
@@ -76,6 +80,7 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
   })
 
   afterAll(async () => {
+    vi.useRealTimers()
     if (tenantId) await prisma.tenant.delete({ where: { id: tenantId } })
     await prisma.$disconnect()
   })
