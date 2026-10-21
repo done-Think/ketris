@@ -1,24 +1,46 @@
-import type { EventoAgenda } from '@prisma/client'
+import type { Prisma } from '@prisma/client'
 
 import { prisma } from '@server/db/prisma'
+import { normalizeEmail } from '@server/shared/normalize-email'
 
 import type { AgendaEventRepository } from '../application/ports/agenda-event-repository.port'
+import { canLinkUserToAgendaEvent } from '../domain/agenda-access-rules'
 import type {
   AgendaEvent,
   AgendaEventChanges,
+  AgendaEventLinks,
   AgendaEventListFilters,
   AgendaEventReschedule,
+  AgendaReadScope,
   NewAgendaEvent,
 } from '../domain/agenda-event.entity'
+import { AgendaEventUserLinkUnavailableError } from '../domain/errors'
+
+const linkedUserSelect = { id: true, nome: true, email: true } as const
+
+const agendaEventInclude = {
+  responsavel: { select: { nome: true } },
+  donoUsuario: { select: linkedUserSelect },
+  participantes: {
+    select: { usuario: { select: linkedUserSelect } },
+    orderBy: { createdAt: 'asc' },
+  },
+} satisfies Prisma.EventoAgendaInclude
+
+type EventoAgendaWithLinks = Prisma.EventoAgendaGetPayload<{ include: typeof agendaEventInclude }>
 
 export class PrismaAgendaEventRepository implements AgendaEventRepository {
-  create(event: NewAgendaEvent): Promise<AgendaEvent> {
-    return prisma.eventoAgenda
-      .create({
+  create(event: NewAgendaEvent, links?: AgendaEventLinks): Promise<AgendaEvent> {
+    return prisma.$transaction(async (transaction) => {
+      const linkedUserIds = await resolveLinkedUserIds(transaction, event.tenantId, links)
+      const participantUserIds = toParticipantUserIds(links, linkedUserIds)
+
+      const created = await transaction.eventoAgenda.create({
         data: {
           tenantId: event.tenantId,
           responsavelId: event.responsavelId,
           criadoPorId: event.criadoPorId,
+          donoUsuarioId: links?.donoEmail ? linkedUserIds.get(links.donoEmail) : null,
           imovelId: event.imovelId ?? null,
           referenciaImovelLivre: event.referenciaImovelLivre ?? null,
           titulo: event.titulo,
@@ -28,32 +50,54 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
           participanteNome: event.participanteNome,
           participanteTelefone: event.participanteTelefone,
           notas: event.notas ?? null,
+          participantes: participantUserIds.length
+            ? { create: participantUserIds.map((usuarioId) => ({ usuarioId })) }
+            : undefined,
         },
+        include: agendaEventInclude,
       })
-      .then(mapAgendaEvent)
+
+      return mapAgendaEvent(created)
+    })
   }
 
   list(filters: AgendaEventListFilters): Promise<AgendaEvent[]> {
     return prisma.eventoAgenda
       .findMany({
         where: {
-          tenantId: filters.tenantId,
-          responsavelId: filters.responsavelId,
-          inicio: { lt: filters.to },
-          fim: { gt: filters.from },
+          AND: [
+            readScopeWhere(filters.scope),
+            {
+              responsavelId: filters.responsavelId,
+              inicio: { lt: filters.to },
+              fim: { gt: filters.from },
+            },
+          ],
         },
+        include: agendaEventInclude,
         orderBy: { inicio: 'asc' },
       })
       .then((events) => events.map(mapAgendaEvent))
   }
 
-  findByTenantAndId(tenantId: string, id: string): Promise<AgendaEvent | null> {
+  findByScopeAndId(scope: AgendaReadScope, id: string): Promise<AgendaEvent | null> {
     return prisma.eventoAgenda
-      .findFirst({ where: { tenantId, id } })
+      .findFirst({ where: { AND: [readScopeWhere(scope), { id }] }, include: agendaEventInclude })
       .then((event) => (event ? mapAgendaEvent(event) : null))
   }
 
-  update(tenantId: string, id: string, changes: AgendaEventChanges): Promise<AgendaEvent | null> {
+  findByTenantAndId(tenantId: string, id: string): Promise<AgendaEvent | null> {
+    return prisma.eventoAgenda
+      .findFirst({ where: { tenantId, id }, include: agendaEventInclude })
+      .then((event) => (event ? mapAgendaEvent(event) : null))
+  }
+
+  update(
+    tenantId: string,
+    id: string,
+    changes: AgendaEventChanges,
+    links?: AgendaEventLinks,
+  ): Promise<AgendaEvent | null> {
     return prisma.$transaction(async (transaction) => {
       const existing = await transaction.eventoAgenda.findFirst({
         where: { tenantId, id },
@@ -62,6 +106,20 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
 
       if (!existing) {
         return null
+      }
+
+      const linkedUserIds = await resolveLinkedUserIds(transaction, tenantId, links)
+
+      if (links?.participanteEmails !== undefined) {
+        await transaction.eventoAgendaParticipante.deleteMany({ where: { eventoId: id } })
+
+        const participantUserIds = toParticipantUserIds(links, linkedUserIds)
+
+        if (participantUserIds.length) {
+          await transaction.eventoAgendaParticipante.createMany({
+            data: participantUserIds.map((usuarioId) => ({ eventoId: id, usuarioId })),
+          })
+        }
       }
 
       const updated = await transaction.eventoAgenda.update({
@@ -75,7 +133,14 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
           participanteNome: changes.participanteNome,
           participanteTelefone: changes.participanteTelefone,
           notas: changes.notas,
+          donoUsuarioId:
+            links?.donoEmail === undefined
+              ? undefined
+              : links.donoEmail === null
+                ? null
+                : linkedUserIds.get(links.donoEmail),
         },
+        include: agendaEventInclude,
       })
 
       return mapAgendaEvent(updated)
@@ -104,6 +169,7 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
           fim: reschedule.fim,
           status: 'CONFIRMED',
         },
+        include: agendaEventInclude,
       })
 
       return mapAgendaEvent(updated)
@@ -124,6 +190,7 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
       const updated = await transaction.eventoAgenda.update({
         where: { id },
         data: { status: 'CANCELLED' },
+        include: agendaEventInclude,
       })
 
       return mapAgendaEvent(updated)
@@ -153,12 +220,82 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
   }
 }
 
-function mapAgendaEvent(event: EventoAgenda): AgendaEvent {
+function readScopeWhere(scope: AgendaReadScope): Prisma.EventoAgendaWhereInput {
+  if (scope.kind === 'tenant') {
+    return { tenantId: scope.tenantId }
+  }
+
+  return {
+    OR: [{ donoUsuarioId: scope.userId }, { participantes: { some: { usuarioId: scope.userId } } }],
+  }
+}
+
+/**
+ * Resolves the link e-mails to user ids inside the caller's transaction and rejects the whole
+ * operation on the first e-mail that can't be linked, so the event is never partially written.
+ */
+async function resolveLinkedUserIds(
+  transaction: Prisma.TransactionClient,
+  eventTenantId: string,
+  links: AgendaEventLinks | undefined,
+): Promise<Map<string, string>> {
+  const emails = new Set<string>()
+
+  if (links?.donoEmail) emails.add(links.donoEmail)
+  links?.participanteEmails?.forEach((email) => emails.add(email))
+
+  if (emails.size === 0) {
+    return new Map()
+  }
+
+  const users = await transaction.usuario.findMany({
+    where: {
+      OR: [...emails].map((email) => ({ email: { equals: email, mode: 'insensitive' as const } })),
+    },
+    select: {
+      id: true,
+      email: true,
+      tenantId: true,
+      papel: true,
+      ativo: true,
+      vinculoAprovadoEm: true,
+    },
+  })
+  const usersByEmail = new Map(users.map((user) => [normalizeEmail(user.email), user]))
+  const linkedUserIds = new Map<string, string>()
+
+  for (const email of emails) {
+    const user = usersByEmail.get(email)
+
+    if (!user || !canLinkUserToAgendaEvent(user, eventTenantId)) {
+      throw new AgendaEventUserLinkUnavailableError(email)
+    }
+
+    linkedUserIds.set(email, user.id)
+  }
+
+  return linkedUserIds
+}
+
+function toParticipantUserIds(
+  links: AgendaEventLinks | undefined,
+  linkedUserIds: Map<string, string>,
+): string[] {
+  const userIds = (links?.participanteEmails ?? []).map((email) => linkedUserIds.get(email))
+
+  return [...new Set(userIds.filter((userId): userId is string => Boolean(userId)))]
+}
+
+function mapAgendaEvent(event: EventoAgendaWithLinks): AgendaEvent {
   return {
     id: event.id,
     tenantId: event.tenantId,
     responsavelId: event.responsavelId,
+    responsavelNome: event.responsavel.nome,
     criadoPorId: event.criadoPorId,
+    donoUsuarioId: event.donoUsuarioId,
+    dono: event.donoUsuario,
+    participantes: event.participantes.map((participante) => participante.usuario),
     imovelId: event.imovelId,
     referenciaImovelLivre: event.referenciaImovelLivre,
     titulo: event.titulo,

@@ -5,7 +5,6 @@ import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import {
   Avatar,
   Box,
-  Button,
   ButtonBase,
   IconButton,
   Skeleton,
@@ -61,11 +60,50 @@ export function AppShellSidebar({
         transition: 'width 180ms ease, padding 180ms ease',
       }}
     >
-      <AppLogo
-        src={collapsed ? '/ketris-tab-icon.png' : ketrisLogoFooter}
-        width={collapsed ? 40 : 120}
-        sx={{ alignSelf: 'center', mb: 1.5 }}
-      />
+      <Stack
+        alignItems="center"
+        justifyContent="center"
+        sx={{
+          width: '100%',
+          height: collapsed ? 84 : 48,
+          flexShrink: 0,
+          mb: 1.5,
+          position: 'relative',
+        }}
+      >
+        <AppLogo
+          src={collapsed ? '/ketris-tab-icon.png' : ketrisLogoFooter}
+          width={collapsed ? 40 : 120}
+          sx={{ left: '50%', position: 'absolute', top: 0, transform: 'translateX(-50%)' }}
+        />
+        {showCollapseControl ? (
+          <Tooltip title={collapsed ? t('expandNavigation') : t('collapseMenu')} placement="right">
+            <IconButton
+              aria-label={collapsed ? t('expandNavigation') : t('collapseNavigation')}
+              onClick={onToggleCollapsed}
+              sx={{
+                position: 'absolute',
+                right: collapsed ? '50%' : 0,
+                top: collapsed ? 48 : 2,
+                transform: collapsed ? 'translateX(50%)' : 'none',
+                width: 36,
+                height: 36,
+                borderRadius: `${radius.sm}px`,
+                color: alpha.white[62],
+                '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
+              }}
+            >
+              <KeyboardDoubleArrowLeftRoundedIcon
+                sx={{
+                  fontSize: iconSize.md,
+                  transform: collapsed ? 'rotate(180deg)' : 'none',
+                  transition: 'transform 180ms ease',
+                }}
+              />
+            </IconButton>
+          </Tooltip>
+        ) : null}
+      </Stack>
 
       <Stack
         component="nav"
@@ -157,45 +195,6 @@ export function AppShellSidebar({
               )
             })}
       </Stack>
-
-      <Box sx={{ flexGrow: 1, minHeight: 2 }} />
-
-      {showCollapseControl ? (
-        <Tooltip
-          title={collapsed ? t('expandNavigation') : t('collapseNavigation')}
-          placement="right"
-        >
-          <Button
-            aria-label={collapsed ? t('expandNavigation') : t('collapseNavigation')}
-            onClick={onToggleCollapsed}
-            startIcon={
-              <KeyboardDoubleArrowLeftRoundedIcon
-                sx={{
-                  fontSize: iconSize.md,
-                  transform: collapsed ? 'rotate(180deg)' : 'none',
-                  transition: 'transform 180ms ease',
-                }}
-              />
-            }
-            sx={{
-              alignSelf: collapsed ? 'center' : 'stretch',
-              justifyContent: collapsed ? 'center' : 'flex-start',
-              minWidth: collapsed ? 44 : 0,
-              minHeight: 44,
-              mb: 1.5,
-              px: collapsed ? 0 : 1.5,
-              color: alpha.white[62],
-              fontSize: 13,
-              fontWeight: 600,
-              textTransform: 'none',
-              '& .MuiButton-startIcon': { ml: 0, mr: collapsed ? 0 : 1.25 },
-              '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
-            }}
-          >
-            {collapsed ? null : t('collapseMenu')}
-          </Button>
-        </Tooltip>
-      ) : null}
 
       <Stack
         direction={collapsed ? 'column' : 'row'}
