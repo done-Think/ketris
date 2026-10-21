@@ -104,7 +104,17 @@
       "activeBrokers": "Corretores ativos",
       "receivedLeads": "Leads recebidos",
       "revenue": "Faturamento",
-      "occupancy": "Tx ocupação"
+      "occupancy": "Tx ocupação",
+      "helpers": {
+        "newProperties": "{count, plural, =0 {Nenhum novo este mês} one {+# novo este mês} other {+# novos este mês}}",
+        "leadsIncrease": "+{count, number} vs mês passado",
+        "leadsDecrease": "−{count, number} vs mês passado",
+        "leadsSame": "Igual ao mês passado",
+        "revenueIncrease": "+{percent, number}% vs mês passado",
+        "revenueDecrease": "−{percent, number}% vs mês passado",
+        "revenueSame": "Igual ao mês passado",
+        "revenueNoPrevious": "Mês passado zerado"
+      }
     },
     "performance": {
       "title": "Performance de Faturamento",
