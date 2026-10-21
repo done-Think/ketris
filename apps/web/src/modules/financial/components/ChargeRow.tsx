@@ -45,26 +45,13 @@ export function ChargeRow({
           aria-label={`${labels.view} ${charge.code}`}
           onClick={onView}
           variant="text"
-          sx={{
-            minWidth: 0,
-            p: 0,
-            color: brand.graphite[500],
-            fontSize: 15.5,
-            fontWeight: 900,
-            whiteSpace: 'nowrap',
-          }}
+          sx={{ minWidth: 0, p: 0, color: brand.graphite[500], fontSize: 15.5, fontWeight: 900 }}
         >
           {charge.code}
         </Button>
       </TableCell>
-      {/* Without a max width the nowrap property took the whole row, squeezing the tenant into
-          one word per line and pushing status and actions off a 1440px screen. */}
-      <TableCell sx={{ maxWidth: 200 }} title={charge.tenant}>
-        <Typography noWrap sx={{ fontSize: 15.5 }}>
-          {charge.tenant}
-        </Typography>
-      </TableCell>
-      <TableCell sx={{ maxWidth: 260 }} title={charge.property}>
+      <TableCell>{charge.tenant}</TableCell>
+      <TableCell>
         <Typography noWrap sx={{ color: 'text.secondary', fontSize: 14 }}>
           {charge.property}
         </Typography>
