@@ -37,10 +37,22 @@
     "notifications": "Notifications",
     "performanceTitle": "6-month performance",
     "metrics": {
-      "leadsActive": { "label": "Active leads", "caption": "{count} today" },
-      "visitsMonth": { "label": "Visits this month", "caption": "{count} today" },
-      "proposals": { "label": "Proposals", "caption": "{count} awaiting response" },
-      "revenue": { "label": "Revenue", "caption": "{amount} overdue" }
+      "leadsActive": {
+        "label": "Active leads",
+        "caption": "{count} today"
+      },
+      "visitsMonth": {
+        "label": "Visits this month",
+        "caption": "{count} today"
+      },
+      "proposals": {
+        "label": "Proposals",
+        "caption": "{count} awaiting response"
+      },
+      "revenue": {
+        "label": "Revenue",
+        "caption": "{amount} overdue"
+      }
     },
     "activityDetail": {
       "close": "Close",
@@ -182,7 +194,10 @@
       "inProgress": "In progress",
       "urgent": "Urgent",
       "resolved": "Resolved",
-      "closed": "Closed"
+      "closed": "Closed",
+      "pendingConfirmation": "Pending confirmation",
+      "contested": "Contested",
+      "cancelled": "Cancelled"
     },
     "metrics": {
       "open": "Open",
@@ -200,12 +215,19 @@
       "status": "Status",
       "actions": "Actions"
     },
-    "priorities": { "urgent": "Urgent", "high": "High", "normal": "Normal" },
+    "priorities": {
+      "urgent": "Urgent",
+      "high": "High",
+      "normal": "Normal"
+    },
     "statuses": {
       "inProgress": "In progress",
       "open": "Open",
       "resolved": "Resolved",
-      "closed": "Closed"
+      "closed": "Closed",
+      "pendingConfirmation": "Pending confirmation",
+      "contested": "Contested",
+      "cancelled": "Cancelled"
     },
     "viewTicket": "View ticket {ticket}",
     "showing": "Showing {from}-{to} of {total} tickets",
@@ -222,24 +244,33 @@
         "priority": "Priority",
         "title": "Ticket title",
         "description": "Problem description",
-        "descriptionPlaceholder": "Describe the problem..."
+        "descriptionPlaceholder": "Describe the problem...",
+        "contract": "Contract / property"
       },
       "errors": {
         "propertyRequired": "Select the property",
         "categoryRequired": "Select the category",
         "priorityRequired": "Select the priority",
         "titleRequired": "Enter the ticket title",
-        "descriptionRequired": "Describe the problem"
-      }
+        "descriptionRequired": "Describe the problem",
+        "contractRequired": "Select a contract"
+      },
+      "discardDraft": "Discard draft",
+      "saveDraftAndClose": "Save and close",
+      "discardTitle": "Discard this draft?",
+      "currentContract": "Current contract"
     },
     "actions": {
       "menu": "Actions for ticket {ticket}",
       "edit": "Edit ticket",
       "delete": "Delete ticket",
       "deleteTitle": "Delete ticket?",
-      "deleteDescription": "Do you really want to delete this ticket? This action cannot be undone."
+      "deleteDescription": "The ticket will be archived and can be restored by an administrator."
     },
-    "pagination": { "previous": "Previous", "next": "Next" },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next"
+    },
     "notifications": {
       "createSuccess": "Ticket created successfully.",
       "createError": "Could not create the ticket.",
@@ -287,6 +318,83 @@
         "lastUpdated": "Last updated",
         "dateTime": "{date} at {time}"
       }
+    },
+    "activeTickets": "Active",
+    "archivedTickets": "Archived",
+    "workflow": {
+      "linkContract": "Link contract",
+      "contract": "Ticket contract",
+      "linkContractHelp": "Select the correct contract for this property. Linking preserves the ticket status, resolution date, archive state and history.",
+      "assume": "Take responsibility",
+      "assign": "Assign responsible user",
+      "provider": "Set provider",
+      "requestReplacement": "Request replacement",
+      "start": "Start service",
+      "complete": "Complete service",
+      "confirm": "Confirm resolution",
+      "contest": "Contest resolution",
+      "cancel": "Cancel ticket",
+      "reopen": "Reopen ticket",
+      "restore": "Restore ticket",
+      "approveReplacement": "Approve replacement",
+      "rejectReplacement": "Reject replacement",
+      "reason": "Reason",
+      "responsible": "Responsible user",
+      "providerLabel": "Service provider",
+      "unassigned": "Unassigned",
+      "replacement": "Replacement request",
+      "reopenStatus": "Reopening status",
+      "open": "Open",
+      "inProgress": "In progress",
+      "name": "Person or company name",
+      "phone": "Phone",
+      "email": "Email",
+      "notes": "Notes",
+      "back": "Back",
+      "save": "Confirm",
+      "success": "Action completed.",
+      "error": "Could not complete the action.",
+      "requestStatuses": {
+        "PENDENTE": "Pending",
+        "APROVADA": "Approved",
+        "REJEITADA": "Rejected"
+      },
+      "finish": "Finish ticket",
+      "finishConfirmation": "Do you confirm that the problem is resolved? The ticket will be marked as resolved and its history will be preserved."
+    },
+    "links": {
+      "title": "Regularize links",
+      "contract": "Contract / property",
+      "owner": "Property owner account",
+      "party": "Contract renter party",
+      "renter": "Renter account",
+      "unchanged": "Keep current link",
+      "back": "Back",
+      "save": "Save links",
+      "success": "Links updated.",
+      "error": "Could not update links."
+    },
+    "scheduleNotSet": "Not scheduled yet",
+    "empty": "No tickets found.",
+    "renter": {
+      "subtitle": "Open and track maintenance tickets for properties linked to your contracts.",
+      "resolutionNotice": "If the problem is resolved, you can finish the ticket. If the work was not satisfactory, you can contest it by providing a reason.",
+      "readOnlyNotice": "This ticket is closed and available for viewing only.",
+      "resolvedNotice": "You can add notes or reopen this ticket with a reason. Previously recorded information will be preserved."
+    },
+    "schedule": {
+      "title": "Maintenance scheduling",
+      "dateLabel": "Service date",
+      "hourLabel": "Hour (24h)",
+      "minuteLabel": "Minute",
+      "summaryLabel": "Scheduled service",
+      "save": "Save date",
+      "providerRequired": "Choose a provider to enable scheduling.",
+      "coordinationNotice": "Before recording the service here, agree on the date and time with the selected provider.",
+      "required": "Enter the service date and time.",
+      "invalid": "Enter a valid date and time.",
+      "success": "Service date saved.",
+      "error": "Unable to save the service date."
     }
   },
   "finance": {

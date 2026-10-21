@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { notFound } from 'next/navigation'
-import { Box, CircularProgress, Stack } from '@mui/material'
+import { Box, CircularProgress, Stack, Typography } from '@mui/material'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
@@ -35,10 +35,12 @@ import { PropertyDetailTabs } from './PropertyDetailTabs'
 
 export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashboardPageProps) {
   const t = useTranslations('properties.detail')
+  const renterT = useTranslations('properties.dashboard.renter')
   const { enqueueSnackbar } = useSnackbar()
   const router = useRouter()
   const mappingOptions = useDashboardPropertyMappingOptions()
   const { data: session } = useSession()
+  const isRenter = session?.papel === 'RENTER'
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const { setValue, watch } = useForm<PropertyDetailDashboardFormValues>({
     defaultValues: {
@@ -50,7 +52,7 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
   const publishProperty = usePublishProperty()
   const unpublishProperty = useUnpublishProperty()
   const deleteProperty = useDeleteProperty()
-  const canUseFixtures = process.env.NODE_ENV !== 'production'
+  const canUseFixtures = !isRenter && process.env.NODE_ENV !== 'production'
   const fixtureProperty =
     canUseFixtures && (propertyQuery.isError || !propertyQuery.data)
       ? getDashboardPropertyById(propertyId)
@@ -74,9 +76,10 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
       ? toDashboardProperty(propertyQuery.data, mappingOptions)
       : notFound()
   const canManage =
-    session?.role === 'ADMIN' ||
-    session?.role === 'OWNER' ||
-    session?.user?.id === property.responsibleUserId
+    !isRenter &&
+    (session?.role === 'ADMIN' ||
+      session?.role === 'OWNER' ||
+      session?.user?.id === property.responsibleUserId)
 
   const handlePublish = async () => {
     try {
@@ -133,22 +136,33 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
             onDeleteRequest={() => setIsDeleteDialogOpen(true)}
           />
           <PropertyDetailTabs
+            readOnly={isRenter}
             activeTab={activeTab}
             onTabChange={(tab) => setValue('activeTab', tab)}
           />
-          <PropertyDetailMainPanel property={property} activeTab={activeTab} />
+          {isRenter && (
+            <Typography color="text.secondary" sx={{ mb: 2 }}>
+              {renterT('readOnly')}
+            </Typography>
+          )}
+          <PropertyDetailMainPanel
+            property={property}
+            activeTab={isRenter && activeTab !== 'media' ? 'data' : activeTab}
+          />
         </Box>
 
-        <PropertyDetailSidebar property={property} />
+        {!isRenter && <PropertyDetailSidebar property={property} />}
       </Stack>
 
-      <DeletePropertyDialog
-        open={isDeleteDialogOpen}
-        isPending={deleteProperty.isPending}
-        title={property.title}
-        onClose={() => setIsDeleteDialogOpen(false)}
-        onConfirm={handleDeleteConfirm}
-      />
+      {!isRenter && (
+        <DeletePropertyDialog
+          open={isDeleteDialogOpen}
+          isPending={deleteProperty.isPending}
+          title={property.title}
+          onClose={() => setIsDeleteDialogOpen(false)}
+          onConfirm={handleDeleteConfirm}
+        />
+      )}
     </Box>
   )
 }

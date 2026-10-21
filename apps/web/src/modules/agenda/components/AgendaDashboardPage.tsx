@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, Stack } from '@mui/material'
+import { Box, CircularProgress, Stack, Typography } from '@mui/material'
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
 import 'dayjs/locale/pt-br'
@@ -17,7 +17,6 @@ import {
   useAgendaEvents,
   useCancelAgendaEvent,
   useCreateAgendaEvent,
-  useRescheduleAgendaEvent,
   useUpdateAgendaEvent,
 } from '../hooks/use-agenda-events'
 import { agendaOtherPropertyValue } from '../schemas/agenda-event-form-schema'
@@ -28,7 +27,7 @@ import type {
   AgendaPropertyOption,
 } from '../types/agenda-event'
 import { errorMessage } from '../utils/error-message'
-import { toAgendaEvent } from '../utils/map-agenda-event'
+import { toAgendaEvent, toAgendaAudiencePayload } from '../utils/map-agenda-event'
 import { AgendaDashboardHeader } from './agenda-dashboard/AgendaDashboardHeader'
 import { AgendaWeekCalendar } from './agenda-dashboard/AgendaWeekCalendar'
 import {
@@ -39,17 +38,39 @@ import {
 } from './agenda-dashboard/agenda-dashboard-shared'
 import { AgendaEventDetailDialog } from './AgendaEventDetailDialog'
 import { AgendaEventFormDialog } from './AgendaEventFormDialog'
+import { useAgendaOrganization } from '../hooks/use-agenda-organization'
+import { useAgendaAgents } from '../hooks/use-agenda-agents'
+import { mapAgendaOrganization } from '../utils/map-agenda-organization'
 
 export function AgendaDashboardPage() {
   const t = useTranslations('agenda.dashboard')
+  const organizationT = useTranslations('agenda.organization')
   const locale = useLocale()
   const { enqueueSnackbar } = useSnackbar()
   const { data: session } = useSession()
   const tenantId = session?.tenantId ?? ''
+  const isRenter = session?.papel === 'RENTER'
+  const hasOrganization = isRenter || session?.papel === 'ADMIN'
   const [isEventFormOpen, setIsEventFormOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null)
+  const agentsQuery = useAgendaAgents(isEventFormOpen || Boolean(selectedEvent))
+  const audienceFormProps = {
+    canManageAudience: session?.papel === 'ADMIN',
+    agentOptions: agentsQuery.data,
+    agentsLoading: agentsQuery.isLoading,
+    agentsError: agentsQuery.isError,
+  }
+  const selectedEventReadOnly =
+    isRenter ||
+    (session?.papel !== 'ADMIN' &&
+      Boolean(selectedEvent) &&
+      (selectedEvent?.internal ||
+        selectedEvent?.audience === 'ALL_AGENTS' ||
+        (selectedEvent?.audience === 'ASSIGNED_AGENT' &&
+          (session?.papel !== 'AGENT' || selectedEvent.responsibleId !== session?.user?.id))))
   const today = useMemo(() => dayjs().startOf('day'), [])
   const scheduleHorizonEnd = useMemo(() => today.add(6, 'month').endOf('month'), [today])
+  const scheduleStart = isRenter ? today.subtract(6, 'month') : today
   const [weekStartDate, setWeekStartDate] = useState(() => today)
   const agendaDays = useMemo(
     () => buildAgendaCalendarDays(weekStartDate, locale),
@@ -75,7 +96,7 @@ export function AgendaDashboardPage() {
 
   const eventsQuery = useAgendaEvents(
     tenantId,
-    today.toISOString(),
+    scheduleStart.toISOString(),
     scheduleHorizonEnd.toISOString(),
   )
   const events = useMemo(
@@ -85,9 +106,13 @@ export function AgendaDashboardPage() {
         .map((event) => toAgendaEvent(event, propertiesById)),
     [eventsQuery.data, propertiesById],
   )
+  const { charges, maintenance } = useAgendaOrganization()
+  const organizationItems = useMemo(
+    () => mapAgendaOrganization(isRenter ? (charges.data ?? []) : [], maintenance.data ?? []),
+    [charges.data, maintenance.data, isRenter],
+  )
   const createAgendaEventMutation = useCreateAgendaEvent(tenantId)
   const updateAgendaEventMutation = useUpdateAgendaEvent(tenantId)
-  const rescheduleAgendaEventMutation = useRescheduleAgendaEvent(tenantId)
   const cancelAgendaEventMutation = useCancelAgendaEvent(tenantId)
 
   const weekRange = getAgendaWeekRange(agendaDays)
@@ -97,7 +122,7 @@ export function AgendaDashboardPage() {
   )
   const nextWeekStart = weekStartDate.add(agendaVisibleDayCount, 'day')
   const previousWeekStart = weekStartDate.subtract(agendaVisibleDayCount, 'day')
-  const disablePreviousWeek = !previousWeekStart.isAfter(today.subtract(1, 'day'), 'day')
+  const disablePreviousWeek = !previousWeekStart.isAfter(scheduleStart.subtract(1, 'day'), 'day')
   const disableNextWeek = nextWeekStart.isAfter(scheduleHorizonEnd, 'day')
 
   const closeEventDialog = () => setSelectedEvent(null)
@@ -122,6 +147,7 @@ export function AgendaDashboardPage() {
   }
 
   const createAgendaEvent = async (values: AgendaEventFormValues) => {
+    if (isRenter) return
     const scheduledDate = dayjs(values.scheduledDate)
     const start = dayjs(`${values.scheduledDate}T${values.scheduledTime}`)
     const useCustomProperty = values.propertyId === agendaOtherPropertyValue
@@ -129,11 +155,14 @@ export function AgendaDashboardPage() {
 
     try {
       await createAgendaEventMutation.mutateAsync({
+        ...toAgendaAudiencePayload(values),
         title: values.title,
         kind: values.kind ? (values.kind as AgendaEventApiKind) : undefined,
         ...(useCustomProperty
           ? { propertyReference: customProperty }
-          : { propertyId: values.propertyId }),
+          : values.propertyId
+            ? { propertyId: values.propertyId }
+            : {}),
         start: start.toISOString(),
         durationMinutes: values.durationMinutes,
         participantName: values.participant,
@@ -149,7 +178,7 @@ export function AgendaDashboardPage() {
   }
 
   const editAgendaEvent = async (values: AgendaEventFormValues): Promise<boolean> => {
-    if (!selectedEvent) return false
+    if (!selectedEvent || selectedEventReadOnly) return false
 
     const scheduledDate = dayjs(values.scheduledDate)
     const start = dayjs(`${values.scheduledDate}T${values.scheduledTime}`)
@@ -157,18 +186,17 @@ export function AgendaDashboardPage() {
     const customProperty = values.customProperty.trim()
 
     try {
-      await rescheduleAgendaEventMutation.mutateAsync({
-        id: selectedEvent.id,
-        payload: { start: start.toISOString(), durationMinutes: values.durationMinutes },
-      })
       const updated = await updateAgendaEventMutation.mutateAsync({
         id: selectedEvent.id,
         payload: {
+          start: start.toISOString(),
+          durationMinutes: values.durationMinutes,
+          ...toAgendaAudiencePayload(values),
           title: values.title,
           kind: values.kind ? (values.kind as AgendaEventApiKind) : null,
           ...(useCustomProperty
             ? { propertyId: null, propertyReference: customProperty }
-            : { propertyId: values.propertyId, propertyReference: null }),
+            : { propertyId: values.propertyId || null, propertyReference: null }),
           participantName: values.participant,
           participantPhone: values.phone,
           notes: values.notes.trim() || null,
@@ -185,7 +213,7 @@ export function AgendaDashboardPage() {
   }
 
   const deleteSelectedEvent = async (): Promise<boolean> => {
-    if (!selectedEvent) return false
+    if (!selectedEvent || selectedEventReadOnly) return false
 
     try {
       await cancelAgendaEventMutation.mutateAsync(selectedEvent.id)
@@ -201,6 +229,7 @@ export function AgendaDashboardPage() {
     <Box sx={{ width: '100%', p: 3.5 }}>
       <Stack spacing={2.4}>
         <AgendaDashboardHeader
+          readOnly={isRenter}
           disableNextWeek={disableNextWeek}
           disablePreviousWeek={disablePreviousWeek}
           notifications={notifications}
@@ -211,18 +240,61 @@ export function AgendaDashboardPage() {
           weekRange={weekRange}
         />
 
-        <AgendaWeekCalendar
-          days={agendaDays}
-          events={events}
-          onSelectEvent={setSelectedEvent}
-          timeSlots={agendaTimeSlots}
-        />
+        {hasOrganization ? (
+          <>
+            {(eventsQuery.isLoading ||
+              (isRenter && charges.isLoading) ||
+              maintenance.isLoading) && <CircularProgress aria-label={t('loading')} size={24} />}
+            {eventsQuery.isError && <Typography role="alert">{t('loadError')}</Typography>}
+            {isRenter && charges.isError && (
+              <Typography role="alert">
+                {organizationT('sourceError', { source: organizationT('charges') })}
+              </Typography>
+            )}
+            {maintenance.isError && (
+              <Typography role="alert">
+                {organizationT('sourceError', { source: organizationT('maintenance') })}
+              </Typography>
+            )}
+            {isRenter &&
+              !eventsQuery.isLoading &&
+              !charges.isLoading &&
+              !maintenance.isLoading &&
+              !eventsQuery.isError &&
+              !charges.isError &&
+              !maintenance.isError &&
+              events.length === 0 &&
+              organizationItems.length === 0 && <Typography>{t('empty')}</Typography>}
+          </>
+        ) : eventsQuery.isLoading ? (
+          <Stack alignItems="center" sx={{ p: 4 }}>
+            <CircularProgress aria-label={t('loading')} />
+          </Stack>
+        ) : eventsQuery.isError ? (
+          <Typography role="alert">{t('loadError')}</Typography>
+        ) : null}
+        {(hasOrganization || (!eventsQuery.isLoading && !eventsQuery.isError)) && (
+          <AgendaWeekCalendar
+            days={agendaDays}
+            events={events}
+            organizationItems={hasOrganization ? organizationItems : undefined}
+            onSelectEvent={setSelectedEvent}
+            timeSlots={agendaTimeSlots}
+          />
+        )}
       </Stack>
 
       <AgendaEventDetailDialog
-        event={selectedEvent}
+        {...audienceFormProps}
+        readOnly={selectedEventReadOnly}
+        hidePrivateDetails={isRenter}
+        event={
+          isRenter
+            ? (events.find((event) => event.id === selectedEvent?.id) ?? null)
+            : selectedEvent
+        }
         isDeleting={cancelAgendaEventMutation.isPending}
-        isSaving={updateAgendaEventMutation.isPending || rescheduleAgendaEventMutation.isPending}
+        isSaving={updateAgendaEventMutation.isPending}
         maxDate={scheduleHorizonEnd.format('YYYY-MM-DD')}
         minDate={today.format('YYYY-MM-DD')}
         onClose={closeEventDialog}
@@ -232,14 +304,17 @@ export function AgendaDashboardPage() {
         propertyOptions={propertyOptions}
       />
 
-      <AgendaEventFormDialog
-        maxDate={scheduleHorizonEnd.format('YYYY-MM-DD')}
-        minDate={today.format('YYYY-MM-DD')}
-        onClose={() => setIsEventFormOpen(false)}
-        onCreate={createAgendaEvent}
-        open={isEventFormOpen}
-        propertyOptions={propertyOptions}
-      />
+      {!isRenter && (
+        <AgendaEventFormDialog
+          {...audienceFormProps}
+          maxDate={scheduleHorizonEnd.format('YYYY-MM-DD')}
+          minDate={today.format('YYYY-MM-DD')}
+          onClose={() => setIsEventFormOpen(false)}
+          onCreate={createAgendaEvent}
+          open={isEventFormOpen}
+          propertyOptions={propertyOptions}
+        />
+      )}
     </Box>
   )
 }

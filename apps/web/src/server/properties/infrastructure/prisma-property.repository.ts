@@ -20,6 +20,20 @@ const propertyInclude = {
   midias: { orderBy: { ordem: 'asc' as const } },
 }
 
+function renterPropertyScope(tenantId: string, renterId?: string): Prisma.ImovelWhereInput {
+  return renterId === undefined
+    ? {}
+    : {
+        contratos: {
+          some: {
+            tenantId,
+            status: 'ATIVO',
+            partes: { some: { papel: 'LOCATARIO', usuarioId: renterId } },
+          },
+        },
+      }
+}
+
 export class PrismaPropertyRepository implements PropertyRepository {
   create(property: NewProperty): Promise<Property> {
     return prisma.imovel
@@ -54,6 +68,7 @@ export class PrismaPropertyRepository implements PropertyRepository {
       status: filters.status,
       finalidade: filters.finalidade,
       responsavelId: filters.responsavelId,
+      ...renterPropertyScope(filters.tenantId, filters.renterId),
     }
 
     return prisma.imovel
@@ -65,10 +80,10 @@ export class PrismaPropertyRepository implements PropertyRepository {
       .then((properties) => properties.map(mapProperty))
   }
 
-  findByTenantAndId(tenantId: string, id: string): Promise<Property | null> {
+  findByTenantAndId(tenantId: string, id: string, renterId?: string): Promise<Property | null> {
     return prisma.imovel
       .findFirst({
-        where: { tenantId, id },
+        where: { tenantId, id, ...renterPropertyScope(tenantId, renterId) },
         include: propertyInclude,
       })
       .then((property) => (property ? mapProperty(property) : null))

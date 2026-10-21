@@ -1,5 +1,5 @@
 import { ThemeProvider } from '@mui/material'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -50,7 +50,7 @@ vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))
 
-function mockSession(overrides?: Partial<{ role: 'ADMIN' | 'OWNER' | 'AGENT' }>) {
+function mockSession(overrides?: Partial<{ role: 'ADMIN' | 'OWNER' | 'AGENT' | 'RENTER' }>) {
   vi.mocked(useSession).mockReturnValue({
     data: {
       user: { id: 'user-1', name: 'Ana', email: 'ana@example.com' },
@@ -113,6 +113,43 @@ describe('AppShell access rules', () => {
 })
 
 describe('AppShell navigation per papel', () => {
+  it.each([
+    '/dashboard/agenda',
+    '/dashboard/finance/charges',
+    '/dashboard/finance/charges/[id]',
+    '/dashboard/maintenance',
+    '/dashboard/maintenance/[id]',
+    '/dashboard/properties',
+    '/dashboard/properties/[id]',
+  ] as const)('shows charges, tickets, properties and agenda to RENTER on %s', (pathname) => {
+    mockSession({ papel: 'RENTER' })
+    vi.mocked(usePathname).mockReturnValue(pathname)
+    renderShell()
+    expect(screen.getByText('Conteúdo da rota')).toBeVisible()
+    const links = within(screen.getByRole('navigation')).getAllByRole('link')
+    expect(links).toHaveLength(4)
+    expect(links.map((link) => link.getAttribute('href')).sort()).toEqual([
+      '/dashboard/agenda',
+      '/dashboard/finance/charges',
+      '/dashboard/maintenance',
+      '/dashboard/properties',
+    ])
+  })
+
+  it.each([
+    '/dashboard',
+    '/dashboard/finance',
+    '/dashboard/properties/new',
+    '/dashboard/properties/[id]/edit',
+    '/crm',
+    '/dashboard/contracts',
+  ] as const)('redirects RENTER away from %s without rendering its contents', (pathname) => {
+    mockSession({ papel: 'RENTER' })
+    vi.mocked(usePathname).mockReturnValue(pathname)
+    renderShell()
+    expect(screen.queryByText('Conteúdo da rota')).not.toBeInTheDocument()
+    expect(routerMock.replace).toHaveBeenCalledWith('/pt/dashboard/finance/charges')
+  })
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(usePathname).mockReturnValue('/crm')
