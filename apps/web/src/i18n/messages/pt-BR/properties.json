@@ -95,6 +95,14 @@
         "listingExpires": "Publicação vence",
         "deactivated": "Inativado"
       }
+    },
+    "renter": {
+      "subtitle": "Consulte os imóveis vinculados aos seus contratos ativos.",
+      "emptyTitle": "Nenhum imóvel vinculado",
+      "emptyDescription": "Os imóveis aparecerão aqui quando houver um contrato ativo vinculado ao seu usuário.",
+      "loading": "Carregando seus imóveis",
+      "loadError": "Não foi possível carregar seus imóveis. Tente novamente mais tarde.",
+      "readOnly": "As informações deste imóvel estão disponíveis somente para consulta."
     }
   },
   "detail": {

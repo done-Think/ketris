@@ -38,18 +38,27 @@ import type {
 } from '../types/agenda-event'
 import { AgendaEventFormFields } from './AgendaEventFormFields'
 import { CancelAgendaEventDialog } from './CancelAgendaEventDialog'
+import { useAgendaScheduleConfirmation } from '../hooks/use-agenda-schedule-confirmation'
 
 function buildEditFormValues(event: AgendaEvent): AgendaEventFormValues {
   const hasKnownProperty = Boolean(event.propertyId)
 
   return {
+    outsideBusinessHoursConfirmed: false,
+    internal: event.internal ?? false,
+    audience: event.audience ?? 'LEGACY_TEAM',
+    responsibleId: event.responsibleId ?? '',
     customProperty: hasKnownProperty ? '' : event.property,
     durationMinutes: event.durationMinutes,
     kind: event.apiKind ?? '',
     notes: event.notes,
     participant: event.participant,
     phone: event.phone,
-    propertyId: hasKnownProperty ? (event.propertyId as string) : agendaOtherPropertyValue,
+    propertyId: hasKnownProperty
+      ? (event.propertyId as string)
+      : event.property
+        ? agendaOtherPropertyValue
+        : '',
     scheduledDate: event.scheduledDate,
     scheduledTime: event.time,
     title: event.title,
@@ -57,6 +66,12 @@ function buildEditFormValues(event: AgendaEvent): AgendaEventFormValues {
 }
 
 export function AgendaEventDetailDialog({
+  readOnly = false,
+  hidePrivateDetails = readOnly,
+  canManageAudience = false,
+  agentOptions,
+  agentsLoading,
+  agentsError,
   event,
   isDeleting,
   isSaving,
@@ -71,41 +86,66 @@ export function AgendaEventDetailDialog({
   const locale = useLocale()
   const t = useTranslations('agenda.eventDetail')
   const agendaT = useTranslations('agenda.dashboard')
+  const formT = useTranslations('agenda.eventForm')
   const [mode, setMode] = useState<'view' | 'edit'>('view')
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const editFormSchema = useMemo(
     () =>
-      buildAgendaEventFormSchema((key) => t(`errors.${key}`), {
+      buildAgendaEventFormSchema((key) => formT(`errors.${key}`), {
         unchangedScheduleDate: event?.scheduledDate,
         unchangedScheduleTime: event?.time,
       }),
-    [event?.scheduledDate, event?.time, t],
+    [event?.scheduledDate, event?.time, formT],
   )
-  const { control, handleSubmit, reset } = useForm<AgendaEventFormValues>({
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = useForm<AgendaEventFormValues>({
     defaultValues: event ? buildEditFormValues(event) : undefined,
     resolver: zodResolver(editFormSchema),
   })
+  const {
+    submit: submitEdit,
+    waiting,
+    cancel,
+  } = useAgendaScheduleConfirmation({
+    open: open && mode === 'edit' && !readOnly,
+    scopeKey: event?.id,
+    handleSubmit,
+    unchangedSchedule: event
+      ? {
+          scheduledDate: event.scheduledDate,
+          scheduledTime: event.time,
+          durationMinutes: event.durationMinutes,
+        }
+      : undefined,
+    onSubmit: async (values) => {
+      if (!readOnly && (await onEdit(values))) setMode('view')
+    },
+  })
 
   const closeDialog = () => {
+    cancel()
     setMode('view')
     onClose()
   }
 
   const startEditing = () => {
-    if (!event) return
+    if (!event || readOnly) return
 
     reset(buildEditFormValues(event))
     setMode('edit')
   }
 
-  const cancelEditing = () => setMode('view')
-
-  const submitEdit = async (values: AgendaEventFormValues) => {
-    const success = await onEdit(values)
-    if (success) setMode('view')
+  const cancelEditing = () => {
+    cancel()
+    setMode('view')
   }
 
   const confirmDelete = async () => {
+    if (readOnly) return
     const success = await onDelete()
     setIsDeleteDialogOpen(false)
     if (success) closeDialog()
@@ -119,7 +159,13 @@ export function AgendaEventDetailDialog({
 
   return (
     <>
-      <Dialog open={open} onClose={closeDialog} fullWidth maxWidth="sm">
+      <Dialog
+        open={open}
+        onClose={closeDialog}
+        fullWidth
+        maxWidth="sm"
+        disableEnforceFocus={waiting}
+      >
         <Box component="form" noValidate onSubmit={handleSubmit(submitEdit)}>
           <DialogTitle sx={{ px: { xs: 2, md: 2.8 }, pb: 1.4, pt: 2.4 }}>
             <Stack
@@ -133,7 +179,7 @@ export function AgendaEventDetailDialog({
                   {event.time} · {formattedEventDate}
                 </Typography>
                 <Typography sx={{ color: brand.graphite[500], fontSize: 22, fontWeight: 900 }}>
-                  {mode === 'edit' ? t('editTitle') : event.title}
+                  {!readOnly && mode === 'edit' ? t('editTitle') : event.title}
                 </Typography>
               </Box>
               <IconButton aria-label={t('closeAriaLabel')} onClick={closeDialog}>
@@ -143,8 +189,12 @@ export function AgendaEventDetailDialog({
           </DialogTitle>
 
           <DialogContent sx={{ px: { xs: 2, md: 2.8 }, pb: 2 }}>
-            {mode === 'edit' ? (
+            {!readOnly && mode === 'edit' ? (
               <AgendaEventFormFields
+                canManageAudience={canManageAudience}
+                agentOptions={agentOptions}
+                agentsLoading={agentsLoading}
+                agentsError={agentsError}
                 control={control}
                 maxDate={maxDate}
                 minDate={minDate}
@@ -166,7 +216,7 @@ export function AgendaEventDetailDialog({
                       <HomeWorkOutlinedIcon
                         sx={{ color: brand.magenta[500], fontSize: iconSize.md }}
                       />
-                      {event.property ? (
+                      {event.property && !readOnly ? (
                         <MuiLink
                           component={Link}
                           href={event.propertyHref as LocalizedHref}
@@ -179,20 +229,39 @@ export function AgendaEventDetailDialog({
                         <Typography
                           sx={{ color: brand.neutral[500], fontSize: 15, fontWeight: 700 }}
                         >
-                          {t('noProperty')}
+                          {event.property || t('noProperty')}
                         </Typography>
                       )}
                     </Stack>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <PhoneOutlinedIcon
-                        sx={{ color: brand.neutral[500], fontSize: iconSize.md }}
-                      />
+                    {!hidePrivateDetails && (event.participant || event.phone) && (
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <PhoneOutlinedIcon
+                          sx={{ color: brand.neutral[500], fontSize: iconSize.md }}
+                        />
+                        <Typography
+                          sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 800 }}
+                        >
+                          {[event.participant, event.phone].filter(Boolean).join(' · ')}
+                        </Typography>
+                      </Stack>
+                    )}
+                    {readOnly && event.responsibleName && (
                       <Typography
                         sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 800 }}
                       >
-                        {event.participant} · {event.phone}
+                        {t('responsible', { name: event.responsibleName })}
                       </Typography>
-                    </Stack>
+                    )}
+                    {!hidePrivateDetails && event.audience && event.audience !== 'LEGACY_TEAM' && (
+                      <Typography
+                        sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 800 }}
+                      >
+                        {formT(`audiences.${event.audience}`)}
+                        {event.audience === 'ASSIGNED_AGENT' && event.responsibleName
+                          ? ` · ${event.responsibleName}`
+                          : ''}
+                      </Typography>
+                    )}
                     {event.createdBy && event.createdByRole ? (
                       <Typography sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 700 }}>
                         {t('createdBy', {
@@ -204,62 +273,73 @@ export function AgendaEventDetailDialog({
                   </Stack>
                 </Box>
 
-                <Box>
-                  <Typography
-                    sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 900, mb: 0.8 }}
-                  >
-                    {t('notesTitle')}
-                  </Typography>
-                  <Typography sx={{ color: brand.neutral[500], fontSize: 14, lineHeight: 1.65 }}>
-                    {event.notes}
-                  </Typography>
-                </Box>
+                {!hidePrivateDetails && (
+                  <Box>
+                    <Typography
+                      sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 900, mb: 0.8 }}
+                    >
+                      {t('notesTitle')}
+                    </Typography>
+                    <Typography sx={{ color: brand.neutral[500], fontSize: 14, lineHeight: 1.65 }}>
+                      {event.notes}
+                    </Typography>
+                  </Box>
+                )}
               </Stack>
             )}
           </DialogContent>
 
-          <DialogActions sx={{ px: { xs: 2, md: 2.8 }, pb: 2.5, pt: 0 }}>
-            {mode === 'edit' ? (
-              <Fragment key="edit-actions">
-                <Button type="button" variant="outlined" color="secondary" onClick={cancelEditing}>
-                  {t('cancelEdit')}
-                </Button>
-                <Button type="submit" variant="contained" disabled={isSaving}>
-                  {isSaving ? <CircularProgress size={20} /> : t('save')}
-                </Button>
-              </Fragment>
-            ) : (
-              <Fragment key="view-actions">
-                <Button
-                  type="button"
-                  variant="outlined"
-                  color="error"
-                  startIcon={<DeleteOutlineRoundedIcon sx={{ fontSize: iconSize.sm }} />}
-                  onClick={() => setIsDeleteDialogOpen(true)}
-                >
-                  {t('delete')}
-                </Button>
-                <Button
-                  type="button"
-                  variant="contained"
-                  startIcon={<EditRoundedIcon sx={{ fontSize: iconSize.sm }} />}
-                  onClick={startEditing}
-                >
-                  {t('edit')}
-                </Button>
-              </Fragment>
-            )}
-          </DialogActions>
+          {!readOnly && (
+            <DialogActions sx={{ px: { xs: 2, md: 2.8 }, pb: 2.5, pt: 0 }}>
+              {mode === 'edit' ? (
+                <Fragment key="edit-actions">
+                  <Button
+                    type="button"
+                    variant="outlined"
+                    color="secondary"
+                    onClick={cancelEditing}
+                  >
+                    {t('cancelEdit')}
+                  </Button>
+                  <Button type="submit" variant="contained" disabled={isSaving || isSubmitting}>
+                    {isSaving ? <CircularProgress size={20} /> : t('save')}
+                  </Button>
+                </Fragment>
+              ) : (
+                <Fragment key="view-actions">
+                  <Button
+                    type="button"
+                    variant="outlined"
+                    color="error"
+                    startIcon={<DeleteOutlineRoundedIcon sx={{ fontSize: iconSize.sm }} />}
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                  >
+                    {t('delete')}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="contained"
+                    startIcon={<EditRoundedIcon sx={{ fontSize: iconSize.sm }} />}
+                    onClick={startEditing}
+                  >
+                    {t('edit')}
+                  </Button>
+                </Fragment>
+              )}
+            </DialogActions>
+          )}
         </Box>
       </Dialog>
 
-      <CancelAgendaEventDialog
-        open={isDeleteDialogOpen}
-        isPending={isDeleting}
-        title={event.title}
-        onClose={() => setIsDeleteDialogOpen(false)}
-        onConfirm={confirmDelete}
-      />
+      {!readOnly && (
+        <CancelAgendaEventDialog
+          open={isDeleteDialogOpen}
+          isPending={isDeleting}
+          title={event.title}
+          onClose={() => setIsDeleteDialogOpen(false)}
+          onConfirm={confirmDelete}
+        />
+      )}
     </>
   )
 }

@@ -1,6 +1,6 @@
 import { ThemeProvider } from '@mui/material'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import dayjs from 'dayjs'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -59,6 +59,21 @@ vi.mock('@modules/agenda/hooks/use-agenda-events', () => ({
     data: [
       agendaEvent('own', 'agent-1', 'Visita do próprio corretor'),
       agendaEvent('team', 'agent-2', 'Visita de outro corretor'),
+      {
+        ...agendaEvent('cancelled', 'agent-1', 'Visita cancelada'),
+        status: 'CANCELLED',
+      },
+      {
+        id: 'limited',
+        propertyId: null,
+        propertyReference: null,
+        responsibleName: 'Corretor',
+        title: 'Evento com dados limitados',
+        kind: 'VISIT',
+        status: 'CONFIRMED',
+        start: dayjs().add(1, 'hour').toISOString(),
+        end: dayjs().add(2, 'hour').toISOString(),
+      },
     ],
   }),
 }))
@@ -125,6 +140,11 @@ describe('DashboardOverviewPage', () => {
       expect(screen.getByText('Leads ativos')).toBeInTheDocument()
       expect(screen.getByText('Visita do próprio corretor')).toBeInTheDocument()
       expect(screen.getByText('Visita de outro corretor')).toBeInTheDocument()
+      expect(screen.queryByText('Visita cancelada')).not.toBeInTheDocument()
+      expect(screen.queryByText('Evento com dados limitados')).not.toBeInTheDocument()
+      expect(
+        within(screen.getByText('Visitas mês').parentElement!).getByText('2'),
+      ).toBeInTheDocument()
     },
   )
 
@@ -144,5 +164,10 @@ describe('DashboardOverviewPage', () => {
     expect(screen.getByText('Próximas atividades')).toBeInTheDocument()
     expect(screen.getByText('Visita do próprio corretor')).toBeInTheDocument()
     expect(screen.queryByText('Visita de outro corretor')).not.toBeInTheDocument()
+    expect(screen.queryByText('Visita cancelada')).not.toBeInTheDocument()
+    expect(screen.queryByText('Evento com dados limitados')).not.toBeInTheDocument()
+    expect(
+      within(screen.getByText('Visitas mês').parentElement!).getByText('1'),
+    ).toBeInTheDocument()
   })
 })

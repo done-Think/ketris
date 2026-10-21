@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { theme } from '@shared/theme/theme'
 
 import { AgendaEventFormDialog } from '../../components/AgendaEventFormDialog'
-import type { AgendaPropertyOption } from '../../types/agenda-event'
+import type { AgendaPropertyOption, AgendaEventFormDialogProps } from '../../types/agenda-event'
 
 const propertyOptions: AgendaPropertyOption[] = [
   {
@@ -16,7 +16,7 @@ const propertyOptions: AgendaPropertyOption[] = [
   },
 ]
 
-function renderDialog(onCreate = vi.fn()) {
+function renderDialog(onCreate = vi.fn(), overrides: Partial<AgendaEventFormDialogProps> = {}) {
   render(
     <ThemeProvider theme={theme}>
       <AgendaEventFormDialog
@@ -26,6 +26,7 @@ function renderDialog(onCreate = vi.fn()) {
         onCreate={onCreate}
         open
         propertyOptions={propertyOptions}
+        {...overrides}
       />
     </ThemeProvider>,
   )
@@ -41,6 +42,46 @@ describe('AgendaEventFormDialog', () => {
 
   afterEach(() => {
     vi.useRealTimers()
+  })
+
+  it('creates an internal collective event without client, phone or property', async () => {
+    const user = userEvent.setup({ delay: null })
+    const onCreate = renderDialog(vi.fn(), { canManageAudience: true })
+    await user.click(screen.getByRole('checkbox', { name: 'Evento interno da equipe' }))
+    await user.type(screen.getByLabelText('Título'), 'Reunião da equipe')
+    await user.click(screen.getByRole('button', { name: 'Criar evento' }))
+    await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
+    expect(onCreate.mock.calls[0][0]).toMatchObject({
+      internal: true,
+      audience: 'ALL_AGENTS',
+      participant: '',
+      phone: '',
+      propertyId: '',
+    })
+  })
+
+  it('requires a specific agent when the administrator directs an internal event', async () => {
+    const user = userEvent.setup({ delay: null })
+    const onCreate = renderDialog(vi.fn(), {
+      canManageAudience: true,
+      agentOptions: [{ id: 'agent-1', name: 'Corretor Ana' }],
+    })
+    await user.click(screen.getByRole('checkbox', { name: 'Evento interno da equipe' }))
+    await user.type(screen.getByLabelText('Título'), 'Planejar visitas')
+    await user.click(screen.getByLabelText('Destinatários'))
+    await user.click(screen.getByRole('option', { name: 'Corretor específico' }))
+    await user.click(screen.getByRole('button', { name: 'Criar evento' }))
+    expect(await screen.findByText('Selecione um corretor')).toBeVisible()
+    expect(onCreate).not.toHaveBeenCalled()
+    await user.click(screen.getByLabelText('Corretor'))
+    await user.click(screen.getByRole('option', { name: 'Corretor Ana' }))
+    await user.click(screen.getByRole('button', { name: 'Criar evento' }))
+    await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
+    expect(onCreate.mock.calls[0][0]).toMatchObject({
+      internal: true,
+      audience: 'ASSIGNED_AGENT',
+      responsibleId: 'agent-1',
+    })
   })
 
   it('renders the translated fields and actions', () => {
@@ -103,7 +144,7 @@ describe('AgendaEventFormDialog', () => {
     expect(onCreate.mock.calls[0][0]).toMatchObject({ kind: 'VISIT' })
   })
 
-  it('rejects a visit scheduled for less than 60 minutes', async () => {
+  it('rejects a visit scheduled for less than 30 minutes', async () => {
     const user = userEvent.setup({ delay: null })
     const onCreate = renderDialog()
 
@@ -117,11 +158,11 @@ describe('AgendaEventFormDialog', () => {
 
     const durationField = screen.getByLabelText('Duração')
     await user.clear(durationField)
-    await user.type(durationField, '30')
+    await user.type(durationField, '15')
 
     await user.click(screen.getByRole('button', { name: 'Criar evento' }))
 
-    expect(await screen.findByText('Visitas devem ter duração mínima de 60 minutos')).toBeVisible()
+    expect(await screen.findByText('Visitas devem ter duração mínima de 30 minutos')).toBeVisible()
     expect(onCreate).not.toHaveBeenCalled()
   })
 })

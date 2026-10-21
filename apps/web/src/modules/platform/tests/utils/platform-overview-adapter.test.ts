@@ -7,18 +7,34 @@ import {
 } from '../../utils/platform-overview-adapter'
 
 describe('mapPlatformMetricsToCards', () => {
-  it('maps the real counts to tenants, brokers and properties cards only', () => {
+  it('maps the real counts, MRR and churn to cards', () => {
     const cards = mapPlatformMetricsToCards({
       tenantsCount: 12,
       brokersCount: 48,
       propertiesCount: 230,
+      mrr: 12450,
+      churnRate: 0.025,
     })
 
     expect(cards).toEqual([
       { id: 'tenants', value: 12, format: 'number' },
       { id: 'brokers', value: 48, format: 'number' },
       { id: 'properties', value: 230, format: 'compactNumber' },
+      { id: 'mrr', value: 12450, format: 'compactCurrency' },
+      { id: 'churn', value: 0.025, format: 'percent' },
     ])
+  })
+
+  it('keeps churn empty when there is no base to measure it', () => {
+    const churn = mapPlatformMetricsToCards({
+      tenantsCount: 1,
+      brokersCount: 0,
+      propertiesCount: 0,
+      mrr: 0,
+      churnRate: null,
+    }).find((card) => card.id === 'churn')
+
+    expect(churn?.value).toBeNull()
   })
 })
 
