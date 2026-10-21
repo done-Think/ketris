@@ -53,7 +53,7 @@ function createFinancialSummaryProvider(
   return {
     execute: vi.fn().mockResolvedValue({
       monthlyReceivable: 8500,
-      overdueTotal: 0,
+      overdueTotal: 320,
       defaultRatePercentage: 0,
       monthlySeries: [{ year: 2026, month: 9, total: 8500 }],
       upcomingDues: [],
@@ -101,13 +101,17 @@ describe('GetAgencyOverviewUseCase', () => {
         receivedLeadsPreviousPeriod: 6,
         monthlyReceivable: 8500,
         monthlyReceivablePreviousMonth: 7000,
+        overdueTotal: 320,
         occupancyPercentage: 75,
       },
       revenueSeries: [{ year: 2026, month: 9, total: 8500 }],
       topBrokers: [topBroker],
       recentActivities: [activity],
     })
-    expect(financialSummaryProvider.execute).toHaveBeenCalledWith({ actorTenantId: 'tenant-1' })
+    expect(financialSummaryProvider.execute).toHaveBeenCalledWith({
+      actorTenantId: 'tenant-1',
+      actorPapel: 'OWNER',
+    })
   })
 
   it('permite ADMIN e delega o mesmo tenant do ator para todas as fontes', async () => {

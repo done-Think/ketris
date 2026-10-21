@@ -17,6 +17,7 @@ export const GET = withErrorHandling(async (request: NextRequest, context: Route
 
   const charge = await financialContainer.getChargeUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorPapel: actor.papel as Papel,
     chargeId: (await context.params).id,
   })
 
