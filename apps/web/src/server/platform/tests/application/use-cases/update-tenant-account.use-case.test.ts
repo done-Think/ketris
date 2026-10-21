@@ -22,7 +22,7 @@ function createRepository(tenant: PlatformTenant | null): PlatformTenantReposito
     findById: vi.fn().mockResolvedValue(tenant),
     updateAccount: vi
       .fn()
-      .mockImplementation(async (_id, _expectedStatus, account) => ({ ...tenant, ...account })),
+      .mockImplementation(async (_id, _expected, account) => ({ ...tenant, ...account })),
     findStatusChanges: vi.fn(),
     countUsage: vi.fn(),
   }
@@ -57,7 +57,7 @@ describe('UpdateTenantAccountUseCase', () => {
 
     expect(repository.updateAccount).toHaveBeenCalledWith(
       'tenant-1',
-      'ACTIVE',
+      { accountType: 'AGENCY', status: 'ACTIVE' },
       { accountType: 'BROKER', status: 'ACTIVE', canceledAt: null },
       null,
     )
@@ -77,7 +77,7 @@ describe('UpdateTenantAccountUseCase', () => {
     expect(result.canceledAt).toEqual(now)
     expect(repository.updateAccount).toHaveBeenCalledWith(
       'tenant-1',
-      'ACTIVE',
+      { accountType: 'AGENCY', status: 'ACTIVE' },
       { accountType: 'AGENCY', status: 'CANCELED', canceledAt: now },
       { fromStatus: 'ACTIVE', toStatus: 'CANCELED', changedAt: now, changedById: 'admin-1' },
     )
@@ -98,7 +98,7 @@ describe('UpdateTenantAccountUseCase', () => {
     expect(result.canceledAt).toEqual(canceledAt)
     expect(repository.updateAccount).toHaveBeenCalledWith(
       'tenant-1',
-      'CANCELED',
+      { accountType: 'AGENCY', status: 'CANCELED' },
       { accountType: 'INDIVIDUAL', status: 'CANCELED', canceledAt },
       null,
     )
@@ -122,7 +122,7 @@ describe('UpdateTenantAccountUseCase', () => {
     expect(result.canceledAt).toBeNull()
     expect(repository.updateAccount).toHaveBeenCalledWith(
       'tenant-1',
-      'CANCELED',
+      { accountType: 'AGENCY', status: 'CANCELED' },
       { accountType: 'AGENCY', status: 'ACTIVE', canceledAt: null },
       { fromStatus: 'CANCELED', toStatus: 'ACTIVE', changedAt: now, changedById: 'admin-2' },
     )
@@ -141,7 +141,7 @@ describe('UpdateTenantAccountUseCase', () => {
 
     expect(repository.updateAccount).toHaveBeenCalledWith(
       'tenant-1',
-      'ACTIVE',
+      { accountType: 'AGENCY', status: 'ACTIVE' },
       { accountType: 'AGENCY', status: 'SUSPENDED', canceledAt: null },
       { fromStatus: 'ACTIVE', toStatus: 'SUSPENDED', changedAt: now, changedById: null },
     )
@@ -160,5 +160,21 @@ describe('UpdateTenantAccountUseCase', () => {
         actorId: 'admin-1',
       }),
     ).rejects.toMatchObject({ code: 'TENANT_ACCOUNT_CHANGED_CONCURRENTLY', status: 409 })
+  })
+
+  it('lança TenantNotFoundError quando o tenant foi apagado antes de salvar', async () => {
+    const repository = createRepository(activeTenant)
+    vi.mocked(repository.findById).mockResolvedValueOnce(activeTenant).mockResolvedValueOnce(null)
+    vi.mocked(repository.updateAccount).mockResolvedValue(null)
+    const useCase = new UpdateTenantAccountUseCase(repository, () => now)
+
+    await expect(
+      useCase.execute({
+        tenantId: 'tenant-1',
+        accountType: 'BROKER',
+        status: 'ACTIVE',
+        actorId: 'admin-1',
+      }),
+    ).rejects.toMatchObject({ code: 'TENANT_NOT_FOUND', status: 404 })
   })
 })

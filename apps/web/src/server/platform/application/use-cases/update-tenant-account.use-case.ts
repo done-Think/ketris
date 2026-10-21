@@ -32,7 +32,7 @@ export class UpdateTenantAccountUseCase {
     const statusChanged = tenant.status !== input.status
     const updated = await this.platformTenantRepository.updateAccount(
       tenant.id,
-      tenant.status,
+      { accountType: tenant.accountType, status: tenant.status },
       {
         accountType: input.accountType,
         status: input.status,
@@ -49,6 +49,10 @@ export class UpdateTenantAccountUseCase {
     )
 
     if (!updated) {
+      // Nothing was written: the tenant was deleted meanwhile, or another admin changed it.
+      if (!(await this.platformTenantRepository.findById(tenant.id))) {
+        throw new TenantNotFoundError()
+      }
       throw new TenantAccountChangedConcurrentlyError()
     }
 

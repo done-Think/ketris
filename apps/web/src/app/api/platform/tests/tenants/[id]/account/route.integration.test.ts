@@ -102,6 +102,44 @@ describe('PATCH /api/platform/tenants/[id]/account (integração)', () => {
     expect(response.status).toBe(401)
   })
 
+  it.each([
+    { role: 'AGENT' as const, ativo: true, status: 403 },
+    { role: 'ADMIN_AGENT' as const, ativo: true, status: 403 },
+    { role: 'ADMIN' as const, ativo: false, status: 401 },
+  ])(
+    'retorna $status para platform admin $role (ativo: $ativo) sem gravar nada',
+    async ({ role, ativo, status }) => {
+      const tenant = await createTenant()
+      const admin = await prisma.platformAdmin.create({
+        data: {
+          nome: 'Ator Sem Permissão',
+          email: `ator-${randomUUID()}@ketris.dev`,
+          senhaHash: 'x',
+          role,
+          ativo,
+        },
+      })
+      // The token was issued while the admin still had access: the database decides.
+      const token = await tokenService.sign({ ...admin, role: 'ADMIN', ativo: true })
+
+      try {
+        const response = await patch(
+          { accountType: 'BROKER', status: 'CANCELED' },
+          { id: tenant.id, token },
+        )
+
+        expect(response.status).toBe(status)
+        expect(await prisma.tenant.findUniqueOrThrow({ where: { id: tenant.id } })).toMatchObject({
+          accountType: 'AGENCY',
+          status: 'ACTIVE',
+        })
+        expect(await history(tenant.id)).toEqual([])
+      } finally {
+        await prisma.platformAdmin.delete({ where: { id: admin.id } })
+      }
+    },
+  )
+
   it('retorna 404 para um tenant inexistente', async () => {
     const response = await patch(
       { accountType: 'BROKER', status: 'ACTIVE' },
@@ -208,7 +246,7 @@ describe('PATCH /api/platform/tenants/[id]/account (integração)', () => {
 
     const result = await repository.updateAccount(
       tenant.id,
-      'TRIAL',
+      { accountType: 'AGENCY', status: 'TRIAL' },
       { accountType: 'BROKER', status: 'CANCELED', canceledAt: new Date() },
       { fromStatus: 'TRIAL', toStatus: 'CANCELED', changedAt: new Date(), changedById: actorId },
     )
@@ -220,6 +258,51 @@ describe('PATCH /api/platform/tenants/[id]/account (integração)', () => {
       canceledAt: null,
     })
     expect(await history(tenant.id)).toEqual([])
+  })
+
+  it('não grava nada quando o tipo de conta lido já mudou (conflito)', async () => {
+    const tenant = await createTenant()
+    const repository = new PrismaPlatformTenantRepository()
+
+    const result = await repository.updateAccount(
+      tenant.id,
+      { accountType: 'BROKER', status: 'ACTIVE' },
+      { accountType: 'INDIVIDUAL', status: 'ACTIVE', canceledAt: null },
+      null,
+    )
+
+    expect(result).toBeNull()
+    expect(await prisma.tenant.findUniqueOrThrow({ where: { id: tenant.id } })).toMatchObject({
+      accountType: 'AGENCY',
+    })
+  })
+
+  it('lê só o histórico que o churn do mês precisa', async () => {
+    const tenant = await createTenant()
+    const repository = new PrismaPlatformTenantRepository()
+    const change = (fromStatus: string, toStatus: string, changedAt: string) => ({
+      tenantId: tenant.id,
+      fromStatus: fromStatus as 'ACTIVE',
+      toStatus: toStatus as 'ACTIVE',
+      changedAt: new Date(changedAt),
+    })
+    await prisma.tenantStatusChange.createMany({
+      data: [
+        change('ACTIVE', 'SUSPENDED', '2026-07-10T12:00:00.000Z'),
+        change('SUSPENDED', 'ACTIVE', '2026-08-10T12:00:00.000Z'),
+        change('ACTIVE', 'CANCELED', '2026-09-05T12:00:00.000Z'),
+        change('CANCELED', 'ACTIVE', '2026-09-20T12:00:00.000Z'),
+      ],
+    })
+
+    const changes = await repository.findStatusChanges(new Date('2026-09-01T03:00:00.000Z'))
+
+    // The last change before the month (to rebuild its status at the 1st) and the month's ones.
+    expect(changes.filter((item) => item.tenantId === tenant.id)).toEqual([
+      change('SUSPENDED', 'ACTIVE', '2026-08-10T12:00:00.000Z'),
+      change('ACTIVE', 'CANCELED', '2026-09-05T12:00:00.000Z'),
+      change('CANCELED', 'ACTIVE', '2026-09-20T12:00:00.000Z'),
+    ])
   })
 
   it('mantém o histórico quando o platform admin é removido e apaga junto com o tenant', async () => {

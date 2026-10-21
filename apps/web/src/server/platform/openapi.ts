@@ -366,7 +366,13 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       401: {
-        description: 'Access token de platform admin ausente, inválido ou expirado.',
+        description:
+          'Access token de platform admin ausente, inválido ou expirado, ou admin desativado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description:
+          'Só platform admins com a função ADMIN podem fazer esta alteração (FORBIDDEN).',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       404: {
@@ -401,7 +407,13 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       401: {
-        description: 'Access token de platform admin ausente, inválido ou expirado.',
+        description:
+          'Access token de platform admin ausente, inválido ou expirado, ou admin desativado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description:
+          'Só platform admins com a função ADMIN podem fazer esta alteração (FORBIDDEN).',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       404: {
@@ -410,8 +422,8 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
       },
       409: {
         description:
-          'A situação do tenant foi alterada por outra requisição desde a leitura ' +
-          '(TENANT_ACCOUNT_CHANGED_CONCURRENTLY); recarregue e tente de novo.',
+          'O tipo de conta ou a situação do tenant foi alterado por outra requisição desde a ' +
+          'leitura (TENANT_ACCOUNT_CHANGED_CONCURRENTLY); recarregue e tente de novo.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },

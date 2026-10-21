@@ -1,7 +1,5 @@
-import { groupStatusChangesByTenant } from '../../domain/tenant-status-history'
-import { summarizeBilling } from '../../domain/platform-billing'
 import type { PlatformOverview } from '../../domain/platform-overview.entity'
-import { chargePlatformTenants } from '../../domain/platform-tenant.entity'
+import { loadPlatformBilling } from '../load-platform-billing'
 import type { PlatformOverviewRepository } from '../ports/platform-overview-repository.port'
 import type { PlatformPlanRepository } from '../ports/platform-plan-repository.port'
 import type { PlatformTenantRepository } from '../ports/platform-tenant-repository.port'
@@ -16,18 +14,15 @@ export class GetPlatformOverviewUseCase {
 
   async execute(): Promise<PlatformOverview> {
     const referenceDate = this.now()
-    const [overview, tenants, plans, usage, statusChanges] = await Promise.all([
+    const [overview, billing] = await Promise.all([
       this.platformOverviewRepository.getOverview(referenceDate),
-      this.platformTenantRepository.findMany(),
-      this.platformPlanRepository.findAll(),
-      this.platformTenantRepository.countUsage(),
-      this.platformTenantRepository.findStatusChanges(),
+      loadPlatformBilling(
+        this.platformTenantRepository,
+        this.platformPlanRepository,
+        referenceDate,
+      ),
     ])
-    const { mrr, churnRate } = summarizeBilling(
-      chargePlatformTenants(tenants, plans, usage),
-      groupStatusChangesByTenant(statusChanges),
-      referenceDate,
-    )
+    const { mrr, churnRate } = billing.summary
 
     return { ...overview, metrics: { ...overview.metrics, mrr, churnRate } }
   }

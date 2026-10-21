@@ -40,6 +40,7 @@ const platformOverviewRepository = new PrismaPlatformOverviewRepository()
 
 export const platformContainer = {
   tokenService,
+  platformAdminRepository,
   loginPlatformAdminUseCase: new LoginPlatformAdminUseCase(
     platformAdminRepository,
     passwordHasher,
