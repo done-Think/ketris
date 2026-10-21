@@ -217,12 +217,13 @@ export function ContractsTable({
   onContractSelect,
 }: ContractsTableProps) {
   const t = useTranslations('contracts.table')
+  // Minimum widths add up to about 1050px, so the grid fits a 1366-1440px screen without scrolling.
   const columns: GridColDef<ContractListItem>[] = [
     {
       field: 'property',
       headerName: t('columns.property'),
       flex: 1.45,
-      minWidth: 300,
+      minWidth: 260,
       disableColumnMenu: true,
       hideable: false,
       renderCell: (params) => <ContractIdentityCell {...params} />,
@@ -231,7 +232,7 @@ export function ContractsTable({
       field: 'tenant',
       headerName: t('columns.tenant'),
       flex: 1,
-      minWidth: 200,
+      minWidth: 170,
       disableColumnMenu: true,
       hideable: false,
     },
@@ -239,7 +240,7 @@ export function ContractsTable({
       field: 'amount',
       headerName: t('columns.amount'),
       flex: 0.7,
-      minWidth: 140,
+      minWidth: 130,
       disableColumnMenu: true,
       hideable: false,
       sortComparator: compareAmount,
@@ -248,7 +249,7 @@ export function ContractsTable({
       field: 'startDate',
       headerName: t('columns.startDate'),
       flex: 0.7,
-      minWidth: 130,
+      minWidth: 110,
       disableColumnMenu: true,
       hideable: false,
       sortComparator: compareDate,
@@ -257,7 +258,7 @@ export function ContractsTable({
       field: 'endDate',
       headerName: t('columns.endDate'),
       flex: 0.8,
-      minWidth: 150,
+      minWidth: 120,
       disableColumnMenu: true,
       hideable: false,
       sortComparator: compareDate,
