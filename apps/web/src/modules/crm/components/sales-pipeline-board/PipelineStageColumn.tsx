@@ -38,7 +38,7 @@ export function PipelineStageColumn({
       aria-labelledby={`sales-pipeline-stage-${stage.id}`}
       sx={{
         minWidth: 0,
-        minHeight: { xs: 548, lg: 'calc(100vh - 110px)' },
+        minHeight: { xs: 548, md: 0 },
         scrollSnapAlign: 'start',
       }}
     >
@@ -86,7 +86,19 @@ export function PipelineStageColumn({
         </Box>
       </Stack>
 
-      <Stack spacing={{ xs: 1.5, lg: 1.375 }} sx={{ pt: { xs: 2, lg: 1.75 } }}>
+      <Stack
+        spacing={{ xs: 1.5, lg: 1.375 }}
+        sx={{
+          pt: { xs: 2, lg: 1.75 },
+          pb: { md: 1.5 },
+          mx: { md: -0.5 },
+          px: { md: 0.5 },
+          flex: { md: 1 },
+          minHeight: { md: 0 },
+          overflowY: { md: 'auto' },
+          scrollbarWidth: 'thin',
+        }}
+      >
         {isPipelineLoading
           ? [0, 1].map((index) => (
               <Skeleton

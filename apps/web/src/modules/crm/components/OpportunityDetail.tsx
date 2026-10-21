@@ -360,7 +360,6 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
           },
           gap: 2,
           alignItems: 'stretch',
-          flex: { lg: 1 },
         }}
       >
         <Stack spacing={2} minWidth={0} sx={{ height: '100%' }}>
@@ -384,7 +383,7 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
         </Stack>
       </Box>
 
-      <Box sx={{ mt: 'auto', pt: 2 }}>
+      <Box sx={{ pt: 2 }}>
         <OpportunityActionsFooter
           opportunity={opportunity}
           isMutating={isMutating}
