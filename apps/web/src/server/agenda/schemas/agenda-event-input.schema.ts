@@ -1,9 +1,14 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
+import { AGENDA_MINIMUM_VISIT_MINUTES } from '@shared/lib/utils/agenda-scheduling'
 
 import { agendaEventKindSchema, agendaEventStatusSchema } from './agenda-event.schema'
 
 const durationMinutesSchema = z.number().int().min(15, 'Informe ao menos 15 minutos.')
+const audienceSchema = z.enum(['LEGACY_TEAM', 'ALL_AGENTS', 'ASSIGNED_AGENT'])
+const outsideBusinessHoursConfirmed = z.boolean().optional().openapi({
+  description: 'Confirmação explícita do aviso de evento fora de 08:00–18:00 (America/Sao_Paulo).',
+})
 
 const linkEmailSchema = z.string().trim().email('Informe um e-mail válido.')
 const participantEmailsSchema = z
@@ -18,15 +23,18 @@ const participantEmailsSchema = z
 
 export const createAgendaEventRequestSchema = z
   .object({
+    outsideBusinessHoursConfirmed,
     responsibleId: z.string().trim().min(1).optional(),
+    audience: audienceSchema.default('LEGACY_TEAM'),
+    internal: z.boolean().default(false),
     propertyId: z.string().trim().min(1).optional(),
     propertyReference: z.string().trim().min(1).optional(),
     title: z.string().trim().min(3, 'Informe o título do evento.'),
     kind: agendaEventKindSchema.optional(),
     start: z.coerce.date({ message: 'Informe a data/hora de início.' }),
     durationMinutes: durationMinutesSchema,
-    participantName: z.string().trim().min(2, 'Informe o nome do participante.'),
-    participantPhone: z.string().trim().min(1, 'Informe o telefone do participante.'),
+    participantName: z.string().trim().default(''),
+    participantPhone: z.string().trim().default(''),
     notes: z.string().trim().optional(),
     ownerEmail: linkEmailSchema.optional().openapi({
       description:
@@ -35,25 +43,46 @@ export const createAgendaEventRequestSchema = z
     }),
     participantEmails: participantEmailsSchema.optional(),
   })
-  .refine((value) => Boolean(value.propertyId || value.propertyReference), {
+  .refine((value) => value.internal || Boolean(value.propertyId || value.propertyReference), {
     message: 'Informe o imóvel ou uma referência.',
     path: ['propertyReference'],
   })
-  .refine((value) => value.kind !== 'VISIT' || value.durationMinutes >= 60, {
-    message: 'Visitas devem ter duração mínima de 60 minutos.',
-    path: ['durationMinutes'],
+  .refine((value) => value.internal || value.participantName.length >= 2, {
+    message: 'Informe o nome do participante.',
+    path: ['participantName'],
   })
+  .refine((value) => value.internal || value.participantPhone.length >= 1, {
+    message: 'Informe o telefone do participante.',
+    path: ['participantPhone'],
+  })
+  .refine((value) => !value.internal || value.audience !== 'LEGACY_TEAM', {
+    message: 'Selecione os corretores destinatários do evento interno.',
+    path: ['audience'],
+  })
+  .refine(
+    (value) => value.kind !== 'VISIT' || value.durationMinutes >= AGENDA_MINIMUM_VISIT_MINUTES,
+    {
+      message: 'Visitas devem ter duração mínima de 30 minutos.',
+      path: ['durationMinutes'],
+    },
+  )
   .openapi('CreateAgendaEventRequest')
 
 export const updateAgendaEventRequestSchema = z
   .object({
+    outsideBusinessHoursConfirmed,
+    start: z.coerce.date().optional(),
+    durationMinutes: durationMinutesSchema.optional(),
+    responsibleId: z.string().trim().min(1).optional(),
+    audience: audienceSchema.optional(),
+    internal: z.boolean().optional(),
     title: z.string().trim().min(3, 'Informe o título do evento.').optional(),
     kind: agendaEventKindSchema.nullable().optional(),
     status: agendaEventStatusSchema.optional(),
     propertyId: z.string().trim().min(1).nullable().optional(),
     propertyReference: z.string().trim().min(1).nullable().optional(),
-    participantName: z.string().trim().min(2).optional(),
-    participantPhone: z.string().trim().min(1).optional(),
+    participantName: z.string().trim().optional(),
+    participantPhone: z.string().trim().optional(),
     notes: z.string().trim().nullable().optional(),
     ownerEmail: linkEmailSchema.nullable().optional().openapi({
       description: 'Omitido mantém o dono atual, null remove o dono e um e-mail troca o dono.',
@@ -67,6 +96,7 @@ export const updateAgendaEventRequestSchema = z
 
 export const rescheduleAgendaEventRequestSchema = z
   .object({
+    outsideBusinessHoursConfirmed,
     start: z.coerce.date({ message: 'Informe a nova data/hora de início.' }),
     durationMinutes: durationMinutesSchema.optional(),
   })

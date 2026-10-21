@@ -22,8 +22,9 @@ export function registerAgendaOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Agenda'],
     summary: 'Lista eventos de agenda visíveis ao usuário autenticado num período',
     description:
-      'ADMIN/OWNER/AGENT: retorna todos os eventos do tenant cujo intervalo [start, end) cruza o ' +
-      'período informado (agenda compartilhada do time). RENTER: retorna somente os eventos em ' +
+      'ADMIN: retorna todos os eventos do tenant. AGENT: eventos coletivos e os direcionados ao próprio corretor. ' +
+      'OWNER: eventos não internos vinculados ao usuário ou aos seus imóveis. Eventos legados mantêm o compartilhamento anterior. ' +
+      'O intervalo [start, end) deve cruzar o período informado. RENTER: retorna somente eventos não internos em ' +
       'que ele é o dono explícito ou participante vinculado, combinados com os filtros de período ' +
       'e responsibleId, na visão reduzida RenterAgendaEvent (sem notas, contato do participante, ' +
       'e-mails ou IDs internos).',
@@ -54,7 +55,9 @@ export function registerAgendaOpenApi(registry: OpenAPIRegistry): void {
     description:
       'responsibleId é opcional — quando omitido, o evento é atribuído a quem está autenticado. ' +
       'Informe propertyId (imóvel existente no tenant) ou propertyReference (referência livre). ' +
-      'Eventos do tipo VISIT exigem duração mínima de 60 minutos. O responsável não pode ter outro ' +
+      'Eventos do tipo VISIT exigem duração mínima de 30 minutos e reservam o imóvel vinculado pelo ID durante todo o período, inclusive entre corretores diferentes. ' +
+      'Fora de 08:00–18:00 (America/Sao_Paulo), o período inteiro exige outsideBusinessHoursConfirmed=true após confirmação do aviso. ' +
+      'O responsável não pode ter outro ' +
       'evento (não cancelado) sobreposto ao horário informado. ownerEmail e participantEmails ' +
       '(opcionais) vinculam usuários com acesso de leitura: RENTER ativo (inclusive do tenant ' +
       'compartilhado de locatários) ou membro ativo do tenant do evento. Evento e vínculos são ' +
@@ -70,7 +73,7 @@ export function registerAgendaOpenApi(registry: OpenAPIRegistry): void {
       },
       400: {
         description:
-          'Corpo da requisição inválido (inclui visita com menos de 60 minutos) ou e-mail que não ' +
+          'Corpo da requisição inválido (inclui visita com menos de 30 minutos) ou e-mail que não ' +
           'pode ser vinculado (AGENDA_EVENT_USER_LINK_UNAVAILABLE — mesma resposta para qualquer ' +
           'motivo).',
         content: { 'application/json': { schema: errorResponseSchema } },
@@ -128,8 +131,8 @@ export function registerAgendaOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Agenda'],
     summary: 'Atualiza campos gerais de um evento de agenda (não altera data/hora)',
     description:
-      'Para mudar data/hora, use POST /agenda/events/{id}/reschedule. Marcar kind=VISIT exige que ' +
-      'o evento já tenha duração de pelo menos 60 minutos. ownerEmail: omitido mantém, null ' +
+      'Dados, destinatarios e periodo podem ser atualizados juntos. Para alterar o periodo, informe start e durationMinutes. Marcar kind=VISIT exige que ' +
+      'o evento já tenha duração de pelo menos 30 minutos. ownerEmail: omitido mantém, null ' +
       'remove, e-mail troca o dono. participantEmails: omitido mantém, [] remove todos, lista ' +
       'substitui. Alterações e vínculos são gravados atomicamente.',
     security: [{ bearerAuth: [] }],
@@ -144,7 +147,7 @@ export function registerAgendaOpenApi(registry: OpenAPIRegistry): void {
       },
       400: {
         description:
-          'Corpo da requisição inválido (inclui VISIT com menos de 60 minutos) ou e-mail que não ' +
+          'Corpo da requisição inválido (inclui VISIT com menos de 30 minutos) ou e-mail que não ' +
           'pode ser vinculado (AGENDA_EVENT_USER_LINK_UNAVAILABLE).',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
@@ -166,7 +169,7 @@ export function registerAgendaOpenApi(registry: OpenAPIRegistry): void {
     summary: 'Reagenda um evento (nova data/hora), marcando-o como CONFIRMED',
     description:
       'Sem durationMinutes, mantém a duração atual do evento. Se o evento for do tipo VISIT, a ' +
-      'duração final não pode ficar abaixo de 60 minutos. O novo horário não pode colidir com ' +
+      'duração final não pode ficar abaixo de 30 minutos. Períodos fora de 08:00–18:00 exigem outsideBusinessHoursConfirmed=true. O novo horário não pode colidir com ' +
       'outro evento (não cancelado) do mesmo responsável.',
     security: [{ bearerAuth: [] }],
     request: {
@@ -179,7 +182,7 @@ export function registerAgendaOpenApi(registry: OpenAPIRegistry): void {
         content: { 'application/json': { schema: agendaEventResponseSchema } },
       },
       400: {
-        description: 'Corpo da requisição inválido (inclui VISIT com menos de 60 minutos).',
+        description: 'Corpo da requisição inválido (inclui VISIT com menos de 30 minutos).',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       403: {

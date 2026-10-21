@@ -13,6 +13,7 @@ import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 import type { PropertiesDashboardHeaderProps } from '../types/dashboard-property'
 
 export function PropertiesDashboardHeader({
+  readOnly = false,
   searchQuery,
   onSearchQueryChange,
   onCreateProperty,
@@ -59,12 +60,14 @@ export function PropertiesDashboardHeader({
           }}
         />
       </Box>
-      <DashboardHeaderActionButton
-        startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
-        onClick={onCreateProperty}
-      >
-        {t('create')}
-      </DashboardHeaderActionButton>
+      {!readOnly && (
+        <DashboardHeaderActionButton
+          startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
+          onClick={onCreateProperty}
+        >
+          {t('create')}
+        </DashboardHeaderActionButton>
+      )}
       <Box sx={{ display: { xs: 'none', md: 'block' } }}>
         <DashboardNotificationsButton />
       </Box>
@@ -74,7 +77,7 @@ export function PropertiesDashboardHeader({
   return (
     <DashboardPageHeader
       title={t('title')}
-      subtitle={t('subtitle')}
+      subtitle={t(readOnly ? 'renter.subtitle' : 'subtitle')}
       actions={actions}
       sx={{ mb: 2.2 }}
     />

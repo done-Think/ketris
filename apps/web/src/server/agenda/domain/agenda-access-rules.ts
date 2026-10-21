@@ -1,7 +1,8 @@
 import type { Papel, User } from '@server/auth/domain/user.entity'
 
-import type { AgendaReadScope } from './agenda-event.entity'
+import type { AgendaReadScope, AgendaEvent, AgendaEventAudience } from './agenda-event.entity'
 import { AgendaRenterForbiddenError } from './errors'
+import { ForbiddenError } from '@server/shared/errors'
 
 export interface AgendaReadActor {
   actorTenantId: string
@@ -17,16 +18,49 @@ export function assertCanManageAgenda(papel: Papel): void {
 }
 
 /**
- * Staff reads every event of its own tenant (shared team agenda). A RENTER lives in the shared
- * renters tenant, so its reads are scoped by an explicit link to its own user — owner or
- * participant — never by its tenantId.
+ * Administrators read their tenant; agents and owners use their own visibility scope.
+ * Renters read only explicitly linked, non-internal events, independent of their shared tenant.
  */
 export function resolveAgendaReadScope(actor: AgendaReadActor): AgendaReadScope {
   if (actor.actorPapel === 'RENTER') {
     return { kind: 'linkedUser', userId: actor.actorUserId }
   }
 
+  if (actor.actorPapel === 'AGENT' || actor.actorPapel === 'OWNER') {
+    return {
+      kind: actor.actorPapel === 'AGENT' ? 'agent' : 'owner',
+      tenantId: actor.actorTenantId,
+      userId: actor.actorUserId,
+    }
+  }
+
   return { kind: 'tenant', tenantId: actor.actorTenantId }
+}
+
+export function assertCanManageAgendaEvent(
+  papel: Papel,
+  userId: string | undefined,
+  event: AgendaEvent,
+): void {
+  assertCanManageAgenda(papel)
+  if (papel === 'ADMIN') return
+  if (event.interno || event.destino === 'ALL_AGENTS') throw new ForbiddenError()
+  if (event.destino === 'ASSIGNED_AGENT' && (papel !== 'AGENT' || event.responsavelId !== userId)) {
+    throw new ForbiddenError()
+  }
+}
+
+export function assertCanChooseAgendaAudience(
+  papel: Papel,
+  userId: string | undefined,
+  audience: AgendaEventAudience | undefined,
+  internal: boolean | undefined,
+  responsibleId: string | undefined,
+): void {
+  if (papel === 'ADMIN') return
+  if (internal || audience === 'ALL_AGENTS' || (responsibleId && responsibleId !== userId)) {
+    throw new ForbiddenError()
+  }
 }
 
 /**

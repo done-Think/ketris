@@ -1,4 +1,5 @@
 import { formatDate } from '@shared/lib/utils/format'
+import dayjs from 'dayjs'
 
 import type {
   ApiMaintenanceTicket,
@@ -7,12 +8,14 @@ import type {
   ApiMaintenanceTicketStatus,
   CreateMaintenanceTicketPayload,
   UpdateMaintenanceTicketPayload,
+  MaintenanceAction,
 } from '../types/service'
 import type {
   MaintenanceCreateTicketFormValues,
   MaintenancePriority,
   MaintenanceStatus,
   MaintenanceTicket,
+  MaintenanceScheduleFormValues,
 } from '../types/maintenance'
 
 const statusFromApiMap: Record<ApiMaintenanceTicketStatus, MaintenanceStatus> = {
@@ -20,6 +23,9 @@ const statusFromApiMap: Record<ApiMaintenanceTicketStatus, MaintenanceStatus> = 
   EM_ANDAMENTO: 'inProgress',
   RESOLVIDO: 'resolved',
   FECHADO: 'closed',
+  AGUARDANDO_CONFIRMACAO: 'pendingConfirmation',
+  CONTESTADO: 'contested',
+  CANCELADO: 'cancelled',
 }
 
 const statusToApiMap: Record<MaintenanceStatus, ApiMaintenanceTicketStatus> = {
@@ -27,6 +33,9 @@ const statusToApiMap: Record<MaintenanceStatus, ApiMaintenanceTicketStatus> = {
   inProgress: 'EM_ANDAMENTO',
   resolved: 'RESOLVIDO',
   closed: 'FECHADO',
+  pendingConfirmation: 'AGUARDANDO_CONFIRMACAO',
+  contested: 'CONTESTADO',
+  cancelled: 'CANCELADO',
 }
 
 const priorityFromApiMap: Record<ApiMaintenanceTicketPriority, MaintenancePriority> = {
@@ -66,6 +75,7 @@ export function mapMaintenanceTicketListItemFromApi(
 ): MaintenanceTicket {
   return {
     id: item.id,
+    permissions: item.permissions,
     propertyId: item.propertyId,
     property: item.propertyTitle,
     category: item.category,
@@ -96,6 +106,7 @@ export function mapMaintenanceTicketToFormValues(
   ticket: ApiMaintenanceTicket,
 ): MaintenanceCreateTicketFormValues {
   return {
+    contractId: ticket.contractId ?? '',
     propertyId: ticket.propertyId,
     category: ticket.category,
     priority: mapMaintenancePriorityFromApi(ticket.priority),
@@ -108,6 +119,7 @@ export function buildCreateMaintenanceTicketPayload(
   values: MaintenanceCreateTicketFormValues,
 ): CreateMaintenanceTicketPayload {
   return {
+    contractId: values.contractId ?? '',
     propertyId: values.propertyId,
     category: values.category,
     priority: mapMaintenancePriorityToApi(values.priority),
@@ -120,10 +132,32 @@ export function buildUpdateMaintenanceTicketPayload(
   values: MaintenanceCreateTicketFormValues,
 ): UpdateMaintenanceTicketPayload {
   return {
+    contractId: values.contractId || undefined,
     propertyId: values.propertyId,
     category: values.category,
     priority: mapMaintenancePriorityToApi(values.priority),
     title: values.title,
     description: values.description,
+  }
+}
+
+export function mapMaintenanceScheduleToFormValues(
+  ticket: Pick<ApiMaintenanceTicket, 'scheduledAt'>,
+): MaintenanceScheduleFormValues {
+  return {
+    scheduledDate: ticket.scheduledAt ? dayjs(ticket.scheduledAt).format('YYYY-MM-DD') : '',
+    scheduledHour: ticket.scheduledAt ? dayjs(ticket.scheduledAt).format('HH') : '',
+    scheduledMinute: ticket.scheduledAt ? dayjs(ticket.scheduledAt).format('mm') : '',
+  }
+}
+
+export function buildMaintenanceScheduleAction(
+  values: MaintenanceScheduleFormValues,
+): Extract<MaintenanceAction, { action: 'schedule' }> {
+  return {
+    action: 'schedule',
+    scheduledAt: new Date(
+      `${values.scheduledDate}T${values.scheduledHour}:${values.scheduledMinute}`,
+    ).toISOString(),
   }
 }
