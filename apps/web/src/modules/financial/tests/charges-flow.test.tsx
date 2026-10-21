@@ -8,7 +8,10 @@ import { ChargesPage } from '../components/ChargesPage'
 import { ChargeDetailsPage } from '../components/ChargeDetailsPage'
 import type { ApiCharge, ApiChargeListItem } from '../types/service'
 
-const { push } = vi.hoisted(() => ({ push: vi.fn() }))
+const { push, chargesListSpy } = vi.hoisted(() => ({
+  push: vi.fn(),
+  chargesListSpy: vi.fn(),
+}))
 vi.mock('@/i18n/navigation', () => ({ useRouter: () => ({ push }) }))
 vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar: vi.fn() }) }))
 vi.mock('next-auth/react', () => ({
@@ -229,10 +232,13 @@ const registerChargePaymentMutate = vi.fn()
 const chargeQueryState: Record<string, { data: ApiCharge | undefined; isLoading: boolean }> = {}
 
 vi.mock('../hooks/use-financial', () => ({
-  useCharges: () => ({
-    data: { items: chargeListItems, totalCount: chargeListItems.length },
-    isLoading: false,
-  }),
+  useCharges: (...args: unknown[]) => {
+    chargesListSpy(...args)
+    return {
+      data: { items: chargeListItems, totalCount: chargeListItems.length },
+      isLoading: false,
+    }
+  },
   useCreateCharge: () => ({ mutate: createChargeMutate }),
   useUpdateCharge: () => ({ mutate: updateChargeMutate }),
   useDeleteCharge: () => ({ mutate: deleteChargeMutate }),
@@ -264,6 +270,44 @@ beforeEach(() => {
 })
 
 describe('charges list', () => {
+  it.each(['RENTER', 'AGENT'] as const)('hides all charge management actions from %s', (role) => {
+    vi.mocked(useSession).mockReturnValue({
+      data: { tenantId: 'tenant-1', role },
+      status: 'authenticated',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
+    render(wrap(<ChargesPage />))
+    expect(screen.queryByRole('button', { name: 'Nova Cobrança' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Ações/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+  it('offers only reading actions and requests server pagination for RENTER', async () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: { tenantId: 'tenant-1', role: 'RENTER' },
+      status: 'authenticated',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
+    const user = userEvent.setup()
+    render(wrap(<ChargesPage />))
+    expect(screen.getByText('Consulte as cobranças dos seus contratos.')).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Nova Cobrança' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Ações/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('tab')).not.toBeInTheDocument()
+    expect(chargesListSpy).toHaveBeenLastCalledWith(
+      'tenant-1',
+      expect.objectContaining({ type: 'A_RECEBER', page: 1, pageSize: 6 }),
+    )
+    await user.click(screen.getByRole('button', { name: /next page/i }))
+    expect(chargesListSpy).toHaveBeenLastCalledWith(
+      'tenant-1',
+      expect.objectContaining({ page: 2 }),
+    )
+    await user.click(screen.getByRole('button', { name: 'Pendente' }))
+    expect(chargesListSpy).toHaveBeenLastCalledWith(
+      'tenant-1',
+      expect.objectContaining({ page: 1, status: 'PENDENTE' }),
+    )
+  })
   it('hides charge creation from renters', () => {
     vi.mocked(useSession).mockReturnValue({
       data: { tenantId: 'tenant-1', role: 'RENTER' },
@@ -286,23 +330,20 @@ describe('charges list', () => {
     expect(screen.queryByRole('button', { name: 'Nova Cobrança' })).not.toBeInTheDocument()
   })
 
-  it.each(['ADMIN', 'OWNER', 'AGENT'] as const)(
-    'preserves charge creation for %s',
-    async (role) => {
-      vi.mocked(useSession).mockReturnValue({
-        data: { tenantId: 'tenant-1', role },
-        status: 'authenticated',
-        update: vi.fn(),
-      } as unknown as ReturnType<typeof useSession>)
+  it.each(['ADMIN', 'OWNER'] as const)('preserves charge creation for %s', async (role) => {
+    vi.mocked(useSession).mockReturnValue({
+      data: { tenantId: 'tenant-1', role },
+      status: 'authenticated',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
 
-      const user = userEvent.setup()
-      render(wrap(<ChargesPage />))
-      await user.click(screen.getByRole('button', { name: 'Nova Cobrança' }))
+    const user = userEvent.setup()
+    render(wrap(<ChargesPage />))
+    await user.click(screen.getByRole('button', { name: 'Nova Cobrança' }))
 
-      expect(screen.getByRole('dialog')).toBeVisible()
-      expect(screen.getByRole('button', { name: 'Criar cobrança' })).toBeVisible()
-    },
-  )
+    expect(screen.getByRole('dialog')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Criar cobrança' })).toBeVisible()
+  })
 
   it('removes an open creation dialog when the account changes to renter', async () => {
     const user = userEvent.setup()
@@ -406,6 +447,17 @@ describe('charges list', () => {
 })
 
 describe('charge details', () => {
+  it('lets RENTER read details without registering a payment', () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: { tenantId: 'tenant-1', role: 'RENTER' },
+      status: 'authenticated',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
+    render(detail('0340'))
+    expect(screen.getByText('#COB-2025-0340')).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Registrar pagamento' })).not.toBeInTheDocument()
+    expect(registerChargePaymentMutate).not.toHaveBeenCalled()
+  })
   it('renders charge details fetched from the API', async () => {
     render(detail('0340'))
     expect(await screen.findByText('#COB-2025-0340')).toBeVisible()

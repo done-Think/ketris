@@ -56,6 +56,7 @@ export type MetricProps = {
 }
 
 export type ChargeRowProps = {
+  readOnly?: boolean
   charge: Charge
   locale: string
   zebra: boolean

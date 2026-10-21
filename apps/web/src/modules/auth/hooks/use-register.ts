@@ -69,7 +69,7 @@ export function useRegister() {
         return false
       }
 
-      const destination = body.user.role === 'RENTER' ? '/' : '/dashboard'
+      const destination = body.user.role === 'RENTER' ? '/dashboard/finance/charges' : '/dashboard'
       pendingRedirect.current = getLocalizedPathname(destination, locale)
       setPendingEmailVerification(values.email)
       return true

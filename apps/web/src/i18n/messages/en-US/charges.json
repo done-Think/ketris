@@ -1,4 +1,7 @@
 {
+  "renter": {
+    "subtitle": "View charges for your contracts."
+  },
   "metadata": {
     "title": "Ketris | Charges",
     "description": "Manage receivables and payables.",
