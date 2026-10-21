@@ -7,6 +7,8 @@ export type NavigationItem = {
   href?:
     | '/platform'
     | '/platform/tenants'
+    | '/platform/plans'
+    | '/platform/finance'
     | '/platform/system'
     | '/platform/admins'
     | '/platform/admins/new'
@@ -18,6 +20,8 @@ export type PlatformShellProps = {
 
 export type PlatformPageLayoutProps = {
   title: string
+  subtitle?: string
   action?: ReactNode
+  back?: { href: '/platform/tenants'; label: string }
   children: ReactNode
 }

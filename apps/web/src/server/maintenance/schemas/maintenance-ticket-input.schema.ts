@@ -6,6 +6,12 @@ import {
   maintenanceTicketStatusSchema,
 } from './maintenance-ticket.schema'
 
+const maintenanceScheduleDateSchema = z.string().datetime({ offset: true })
+const optionalMaintenanceScheduleSchema = maintenanceScheduleDateSchema
+  .transform((value) => new Date(value))
+  .nullable()
+  .optional()
+
 export const createMaintenanceTicketRequestSchema = z
   .object({
     contractId: z.string().trim().min(1),
@@ -14,6 +20,7 @@ export const createMaintenanceTicketRequestSchema = z
     priority: maintenanceTicketPrioritySchema,
     title: z.string().trim().min(1),
     description: z.string().trim().min(1),
+    scheduledAt: optionalMaintenanceScheduleSchema,
   })
   .openapi('CreateMaintenanceTicketRequest')
 
@@ -25,6 +32,7 @@ export const updateMaintenanceTicketRequestSchema = z
     priority: maintenanceTicketPrioritySchema.optional(),
     title: z.string().trim().min(1).optional(),
     description: z.string().trim().min(1).optional(),
+    scheduledAt: optionalMaintenanceScheduleSchema,
   })
   .refine((value) => Object.values(value).some((field) => field !== undefined), {
     message: 'Informe ao menos um campo para atualizar.',
@@ -61,14 +69,21 @@ export const maintenanceProviderSchema = z.object({
 
 const reason = z.string().trim().min(1).max(5000)
 export const maintenanceActionSchema = z.discriminatedUnion('action', [
+  z.object({ action: z.literal('linkContract'), contractId: z.string().trim().min(1) }),
+  z.object({ action: z.literal('schedule'), scheduledAt: maintenanceScheduleDateSchema }),
   z.object({ action: z.literal('start') }),
   z.object({ action: z.literal('complete') }),
+  z.object({ action: z.literal('finish') }),
   z.object({ action: z.literal('confirm') }),
   z.object({ action: z.literal('cancel') }),
   z.object({ action: z.literal('assume') }),
   z.object({ action: z.literal('restore') }),
   z.object({ action: z.literal('contest'), reason }),
-  z.object({ action: z.literal('reopen'), status: z.enum(['ABERTO', 'EM_ANDAMENTO']) }),
+  z.object({
+    action: z.literal('reopen'),
+    status: z.enum(['ABERTO', 'EM_ANDAMENTO']),
+    reason: reason.optional(),
+  }),
   z.object({ action: z.literal('assign'), responsibleId: z.string().min(1) }),
   z.object({ action: z.literal('provider'), provider: maintenanceProviderSchema }),
   z.object({ action: z.literal('requestReplacement'), reason }),

@@ -44,7 +44,7 @@ export function useCharges(tenantId: string | null | undefined, filters: ChargeL
     queryKey: [
       ...financialQueryKeys.chargesList(scopedTenantId, filters),
       session?.user?.id,
-      session?.papel,
+      session?.role,
     ],
     queryFn: () => financialService.listCharges(filters),
     enabled: Boolean(tenantId),
@@ -63,7 +63,7 @@ export function useCharge(
     queryKey: [
       ...financialQueryKeys.chargeDetail(scopedTenantId, scopedChargeId),
       session?.user?.id,
-      session?.papel,
+      session?.role,
     ],
     queryFn: () => financialService.getCharge(scopedChargeId),
     enabled: Boolean(tenantId) && Boolean(chargeId),
@@ -132,8 +132,8 @@ export function useFinancialSummary(tenantId: string | null | undefined) {
   const scopedTenantId = tenantId ?? ''
 
   return useQuery({
-    queryKey: financialQueryKeys.summary(scopedTenantId),
+    queryKey: [...financialQueryKeys.summary(scopedTenantId), session?.user?.id, session?.role],
     queryFn: () => financialService.getSummary(),
-    enabled: Boolean(tenantId) && session?.papel !== 'RENTER',
+    enabled: Boolean(tenantId) && (session?.role === 'ADMIN' || session?.role === 'OWNER'),
   })
 }

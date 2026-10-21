@@ -74,13 +74,16 @@ function PropertyStatusCell({
 }
 
 function PropertiesEmptyOverlay({
+  readOnly = false,
   emptyInventory,
   onCreateProperty,
 }: {
+  readOnly?: boolean
   emptyInventory: boolean
   onCreateProperty: () => void
 }) {
   const t = useTranslations('properties.dashboard.table')
+  const renterT = useTranslations('properties.dashboard.renter')
 
   return (
     <Stack
@@ -108,15 +111,15 @@ function PropertiesEmptyOverlay({
       </Box>
       <Box>
         <Typography sx={{ fontSize: 16, fontWeight: 900, color: brand.graphite[500] }}>
-          {emptyInventory ? t('emptyTitle') : t('noRows')}
+          {emptyInventory ? (readOnly ? renterT('emptyTitle') : t('emptyTitle')) : t('noRows')}
         </Typography>
         {emptyInventory ? (
           <Typography sx={{ mt: 0.5, color: brand.neutral[500], fontSize: 13 }}>
-            {t('emptyDescription')}
+            {readOnly ? renterT('emptyDescription') : t('emptyDescription')}
           </Typography>
         ) : null}
       </Box>
-      {emptyInventory ? (
+      {emptyInventory && !readOnly ? (
         <Button
           variant="contained"
           startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
@@ -143,6 +146,7 @@ function PropertiesEmptyOverlay({
 }
 
 export function PropertiesTable({
+  readOnly = false,
   properties,
   totalCount,
   onCreateProperty,
@@ -250,7 +254,13 @@ export function PropertiesTable({
       <DataGrid
         autoHeight
         rows={properties}
-        columns={columns}
+        columns={
+          readOnly
+            ? columns.filter((column) =>
+                ['title', 'type', 'rentalValue', 'actions'].includes(column.field),
+              )
+            : columns
+        }
         rowHeight={82}
         columnHeaderHeight={56}
         disableColumnMenu
@@ -270,6 +280,7 @@ export function PropertiesTable({
         slots={{
           noRowsOverlay: () => (
             <PropertiesEmptyOverlay
+              readOnly={readOnly}
               emptyInventory={emptyInventory}
               onCreateProperty={onCreateProperty}
             />

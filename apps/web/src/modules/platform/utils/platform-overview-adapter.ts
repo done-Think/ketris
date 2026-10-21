@@ -29,6 +29,8 @@ export function mapPlatformMetricsToCards(
     { id: 'tenants', value: metrics.tenantsCount, format: 'number' },
     { id: 'brokers', value: metrics.brokersCount, format: 'number' },
     { id: 'properties', value: metrics.propertiesCount, format: 'compactNumber' },
+    { id: 'mrr', value: metrics.mrr, format: 'compactCurrency' },
+    { id: 'churn', value: metrics.churnRate, format: 'percent' },
   ]
 }
 

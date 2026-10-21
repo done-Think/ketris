@@ -18,6 +18,9 @@ export const agencyOverviewKpisSchema = z
     monthlyReceivablePreviousMonth: z.number().openapi({
       description: 'Mesmo cálculo de monthlyReceivable, aplicado ao mês anterior inteiro.',
     }),
+    overdueTotal: z.number().openapi({
+      description: 'Soma das cobranças a receber vencidas e não pagas (do resumo financeiro).',
+    }),
     occupancyPercentage: z.number(),
   })
   .openapi('AgencyOverviewKpis')

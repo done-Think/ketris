@@ -33,6 +33,10 @@ vi.mock('../../hooks/use-maintenance', () => ({
   useMaintenanceOptions: vi.fn(),
 }))
 
+vi.mock('../../components/MaintenanceLinksDialog', () => ({
+  MaintenanceLinksDialog: () => null,
+}))
+
 vi.mock('@modules/properties/hooks/use-properties', () => ({
   useProperties: vi.fn(),
 }))
@@ -201,6 +205,29 @@ describe('MaintenanceDashboardPage', () => {
     expect(screen.getByText('Hidráulica')).toBeVisible()
     expect(screen.getByText('Bruno Oliveira')).toBeVisible()
     expect(screen.getAllByText('Em andamento').length).toBeGreaterThan(0)
+  })
+
+  it('shows the links and archive controls only to an ADMIN session role', () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: { tenantId: 'tenant-1', role: 'ADMIN' },
+      status: 'authenticated',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
+    const { unmount } = render(<MaintenanceDashboardPage />)
+
+    expect(screen.getByRole('button', { name: 'Regularizar vínculos' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Arquivados' })).toBeVisible()
+    unmount()
+
+    vi.mocked(useSession).mockReturnValue({
+      data: { tenantId: 'tenant-1', role: 'AGENT' },
+      status: 'authenticated',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
+    render(<MaintenanceDashboardPage />)
+
+    expect(screen.queryByRole('button', { name: 'Regularizar vínculos' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Arquivados' })).not.toBeInTheDocument()
   })
 
   it('computes the open and urgent metric cards from the loaded tickets', () => {

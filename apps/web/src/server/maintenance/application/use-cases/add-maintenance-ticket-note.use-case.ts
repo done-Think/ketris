@@ -8,7 +8,7 @@ export class AddMaintenanceTicketNoteUseCase {
   constructor(private readonly repository: MaintenanceTicketRepository) {}
   async execute(input: AddMaintenanceTicketNoteInput) {
     const ticket = await loadTicket(this.repository, input, input.ticketId)
-    assertPermission(input, ticket, 'collaborate')
+    assertPermission(input, ticket, 'comment')
     if (!input.message.trim()) throw new ConflictError('Informe o comentario.')
     return this.repository.addNote(ticket, {
       type: 'NOTA',

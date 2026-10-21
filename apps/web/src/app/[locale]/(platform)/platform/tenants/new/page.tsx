@@ -12,10 +12,14 @@ export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
 
 export default async function PlatformNewTenantPage({ params }: LocaleRoutePageProps) {
   const { locale } = await params
-  const t = await getTranslations({ locale, namespace: 'platform.dashboard' })
+  const t = await getTranslations({ locale, namespace: 'platform.createAccount' })
 
   return (
-    <PlatformPageLayout title={t('newTenant')}>
+    <PlatformPageLayout
+      title={t('title')}
+      subtitle={t('subtitle')}
+      back={{ href: '/platform/tenants', label: t('backToTenants') }}
+    >
       <CreateTenantForm />
     </PlatformPageLayout>
   )

@@ -5,16 +5,25 @@ import type { z } from 'zod'
 import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
 
 import type { buildAgendaEventFormSchema } from '../schemas/agenda-event-form-schema'
+import type { AgendaOrganizationItem } from './agenda-organization'
 
 export type AgendaEventStatus = 'Confirmada' | 'Pendente' | 'Reagendar'
 
 export type AgendaEventTone = 'primary' | 'info' | 'warning'
+export type AgendaEventAudience = 'LEGACY_TEAM' | 'ALL_AGENTS' | 'ASSIGNED_AGENT'
+export interface AgendaAgentOption {
+  id: string
+  name: string
+}
 
 export type AgendaEventCreatorRole = 'colleague' | 'agency'
 
 export type AgendaEventVisualKind = 'followUp' | 'inspection' | 'meeting' | 'signature' | 'visit'
 
 export type AgendaEvent = {
+  audience?: AgendaEventAudience
+  internal?: boolean
+  responsibleId?: string
   id: string
   scheduledDate: string
   time: string
@@ -27,6 +36,7 @@ export type AgendaEvent = {
   participant: string
   phone: string
   notes: string
+  responsibleName?: string
   status: AgendaEventStatus
   tone: AgendaEventTone
   kind?: AgendaEventVisualKind
@@ -60,11 +70,17 @@ export type AgendaEventToneStyle = {
 }
 
 export type AgendaEventCardProps = {
+  lane?: number
+  laneCount?: number
   event: AgendaEvent
   top: number
   height: number
   onSelect: (event: AgendaEvent) => void
 }
+
+export type AgendaCalendarCard = { id: string; top: number; height: number } & (
+  { kind: 'event'; event: AgendaEvent } | { kind: 'organization'; item: AgendaOrganizationItem }
+)
 
 export type AgendaEventFormValues = z.infer<ReturnType<typeof buildAgendaEventFormSchema>>
 
@@ -88,6 +104,10 @@ export type CancelAgendaEventDialogProps = {
 }
 
 export type AgendaEventFormFieldsProps = {
+  canManageAudience?: boolean
+  agentOptions?: AgendaAgentOption[]
+  agentsLoading?: boolean
+  agentsError?: boolean
   control: Control<AgendaEventFormValues>
   maxDate: string
   minDate: string
@@ -95,6 +115,12 @@ export type AgendaEventFormFieldsProps = {
 }
 
 export type AgendaEventDetailDialogProps = {
+  canManageAudience?: boolean
+  agentOptions?: AgendaAgentOption[]
+  agentsLoading?: boolean
+  agentsError?: boolean
+  hidePrivateDetails?: boolean
+  readOnly?: boolean
   event: AgendaEvent | null
   isDeleting: boolean
   isSaving: boolean
@@ -108,6 +134,10 @@ export type AgendaEventDetailDialogProps = {
 }
 
 export type AgendaEventFormDialogProps = {
+  canManageAudience?: boolean
+  agentOptions?: AgendaAgentOption[]
+  agentsLoading?: boolean
+  agentsError?: boolean
   initialValues?: Partial<AgendaEventFormValues>
   maxDate: string
   minDate: string
@@ -118,6 +148,7 @@ export type AgendaEventFormDialogProps = {
 }
 
 export type AgendaDashboardHeaderProps = {
+  readOnly?: boolean
   disableNextWeek: boolean
   disablePreviousWeek: boolean
   notifications: DashboardNotificationItem[]
@@ -129,6 +160,7 @@ export type AgendaDashboardHeaderProps = {
 }
 
 export type AgendaWeekCalendarProps = {
+  organizationItems?: AgendaOrganizationItem[]
   days: AgendaCalendarDay[]
   events: AgendaEvent[]
   onSelectEvent: (event: AgendaEvent) => void
@@ -147,6 +179,9 @@ export type AgendaEventApiKind =
   'VISIT' | 'FOLLOW_UP' | 'MEETING' | 'INSPECTION' | 'SIGNATURE' | 'OTHER'
 
 export interface AgendaEventApi {
+  audience?: AgendaEventAudience
+  internal?: boolean
+  responsibleName?: string
   id: string
   tenantId: string
   responsibleId: string
@@ -169,11 +204,23 @@ export interface AgendaEventResponse {
   event: AgendaEventApi
 }
 
+export type RenterAgendaEventApi = Pick<
+  AgendaEventApi,
+  'id' | 'propertyId' | 'propertyReference' | 'title' | 'kind' | 'status' | 'start' | 'end'
+> & {
+  responsibleName: string
+}
+
+export type AgendaEventReadApi = AgendaEventApi | RenterAgendaEventApi
+
 export interface AgendaEventsResponse {
-  events: AgendaEventApi[]
+  events: AgendaEventReadApi[]
 }
 
 export interface CreateAgendaEventPayload {
+  outsideBusinessHoursConfirmed?: boolean
+  audience?: AgendaEventAudience
+  internal?: boolean
   responsibleId?: string
   propertyId?: string
   propertyReference?: string
@@ -187,11 +234,18 @@ export interface CreateAgendaEventPayload {
 }
 
 export interface RescheduleAgendaEventPayload {
+  outsideBusinessHoursConfirmed?: boolean
   start: string
   durationMinutes?: number
 }
 
 export interface UpdateAgendaEventPayload {
+  outsideBusinessHoursConfirmed?: boolean
+  start?: string
+  durationMinutes?: number
+  audience?: AgendaEventAudience
+  internal?: boolean
+  responsibleId?: string
   title?: string
   kind?: AgendaEventApiKind | null
   status?: AgendaEventApiStatus

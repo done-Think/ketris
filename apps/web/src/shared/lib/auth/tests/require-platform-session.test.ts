@@ -40,7 +40,7 @@ describe('requirePlatformSession', () => {
   })
 
   it('redireciona para /platform/login quando a sessão é de um tenant (não é platform)', async () => {
-    getServerSessionMock.mockResolvedValueOnce({ scope: 'tenant', tenantId: 't1', papel: 'ADMIN' })
+    getServerSessionMock.mockResolvedValueOnce({ scope: 'tenant', tenantId: 't1', role: 'ADMIN' })
 
     const requirePlatformSession = await getRequirePlatformSession()
 

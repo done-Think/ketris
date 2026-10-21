@@ -12,6 +12,7 @@ export class UpdateMaintenanceTicketUseCase {
       priority: input.priority,
       title: input.title,
       description: input.description,
+      ...(input.scheduledAt !== undefined ? { scheduledAt: input.scheduledAt } : {}),
     })
   }
 }

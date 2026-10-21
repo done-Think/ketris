@@ -11,6 +11,7 @@ export interface MaintenanceTicketInput extends MaintenanceActor {
 export type AddMaintenanceTicketNoteInput = MaintenanceActor & { ticketId: string; message: string }
 
 export interface CreateMaintenanceTicketInput extends MaintenanceActor {
+  scheduledAt?: Date | null
   contractId: string
   propertyId?: string
   category: string

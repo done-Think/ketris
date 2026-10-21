@@ -25,11 +25,11 @@ export function useDashboardAgendaNotifications(): DashboardNotificationItem[] {
           params: { from: today.toISOString(), to: horizonEnd.toISOString() },
         })
         .then((data) => data.events),
-    enabled: Boolean(tenantId) && session?.papel !== 'RENTER',
+    enabled: Boolean(tenantId) && session?.role !== 'RENTER',
   })
 
   return useMemo<DashboardNotificationItem[]>(() => {
-    if (session?.papel === 'RENTER') return []
+    if (session?.role === 'RENTER') return []
     const events = eventsQuery.data ?? []
 
     return events
@@ -45,5 +45,5 @@ export function useDashboardAgendaNotifications(): DashboardNotificationItem[] {
           time: dayjs(event.start).format('HH:mm'),
         }),
       }))
-  }, [eventsQuery.data, session?.papel, t])
+  }, [eventsQuery.data, session?.role, t])
 }
