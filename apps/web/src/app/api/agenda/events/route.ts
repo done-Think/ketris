@@ -9,7 +9,10 @@ import {
   createAgendaEventRequestSchema,
   listAgendaEventsQuerySchema,
 } from '@server/agenda/schemas/agenda-event-input.schema'
-import { toAgendaEventResponse } from '@server/agenda/schemas/agenda-event.schema'
+import {
+  toAgendaEventReadResponse,
+  toAgendaEventResponse,
+} from '@server/agenda/schemas/agenda-event.schema'
 import { parseJsonBody, RequestValidationError, withErrorHandling } from '@server/shared/http'
 
 export const GET = withErrorHandling(async (request: NextRequest) => {
@@ -31,14 +34,20 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     throw new RequestValidationError([{ path: 'to', message: '"to" deve ser depois de "from".' }])
   }
 
+  const actorPapel = actor.papel as Papel
   const events = await agendaContainer.listAgendaEventsUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorUserId: actor.sub,
+    actorPapel,
     from: parsed.data.from,
     to: parsed.data.to,
     responsavelId: parsed.data.responsibleId,
   })
 
-  return NextResponse.json({ events: events.map(toAgendaEventResponse) }, { status: 200 })
+  return NextResponse.json(
+    { events: events.map((event) => toAgendaEventReadResponse(event, actorPapel)) },
+    { status: 200 },
+  )
 })
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
@@ -59,6 +68,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     participanteNome: body.participantName,
     participanteTelefone: body.participantPhone,
     notas: body.notes,
+    donoEmail: body.ownerEmail,
+    participanteEmails: body.participantEmails,
   })
 
   return NextResponse.json({ event: toAgendaEventResponse(event) }, { status: 201 })

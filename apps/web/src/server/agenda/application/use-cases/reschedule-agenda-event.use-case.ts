@@ -1,7 +1,6 @@
-import { ForbiddenError } from '@server/shared/errors'
-
 import type { Papel } from '@server/auth/domain/user.entity'
 
+import { assertCanManageAgenda } from '../../domain/agenda-access-rules'
 import { assertWithinAgendaSchedulingWindow } from '../../domain/agenda-scheduling-rules'
 import {
   AgendaEventConflictError,
@@ -22,9 +21,7 @@ export class RescheduleAgendaEventUseCase {
   constructor(private readonly agendaEventRepository: AgendaEventRepository) {}
 
   async execute(input: RescheduleAgendaEventInput) {
-    if (input.actorPapel === 'RENTER') {
-      throw new ForbiddenError('Locatários não podem gerenciar a agenda.')
-    }
+    assertCanManageAgenda(input.actorPapel)
 
     const existing = await this.agendaEventRepository.findByTenantAndId(
       input.actorTenantId,
