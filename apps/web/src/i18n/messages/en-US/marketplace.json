@@ -9,7 +9,6 @@
     "openProfile": "Open profile"
   },
   "profile": {
-    "guestName": "Guest",
     "dialogLabel": "User profile",
     "closeProfile": "Close profile",
     "language": "Language",
@@ -26,7 +25,6 @@
     },
     "actions": {
       "addBroker": "Add new broker",
-      "accessAdmin": "Access admin",
       "becomeBroker": "Become a broker",
       "createAgency": "Create agency",
       "settings": "Settings",
@@ -86,7 +84,7 @@
     "search": {
       "submit": "Search",
       "mobilePlaceholder": "Search by neighborhood or city...",
-      "mobileDialogTitle": "Search properties",
+      "mobileSearchTitle": "Search properties",
       "closeSearch": "Close search",
       "locationPlaceholder": "Enter a city or neighborhood",
       "propertyTypePlaceholder": "Enter the property type",

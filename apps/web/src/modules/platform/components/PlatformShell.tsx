@@ -3,7 +3,6 @@
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
-import KeyboardDoubleArrowLeftRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowLeftRounded'
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline'
@@ -17,7 +16,7 @@ import { useTranslations } from 'next-intl'
 
 import { Link, usePathname } from '@/i18n/navigation'
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
-import { DashboardNotificationsButton } from '@shared/components/layout'
+import { DashboardNotificationsButton, SidebarCollapseButton } from '@shared/components/layout'
 import { AppLogo } from '@shared/components/ui'
 import { useSidebarPreferencesStore } from '@shared/stores/sidebar-preferences-store'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
@@ -201,33 +200,13 @@ export function PlatformShell({ children }: PlatformShellProps) {
         </Stack>
       </Stack>
       {showCollapseControl ? (
-        <Tooltip title={collapsed ? t('expandNavigation') : t('collapseMenu')} placement="right">
-          <IconButton
-            aria-label={collapsed ? t('expandNavigation') : t('collapseNavigation')}
-            onClick={toggleSidebarCollapsed}
-            sx={{
-              position: 'absolute',
-              right: -14,
-              top: 32,
-              zIndex: 1,
-              width: 28,
-              height: 28,
-              bgcolor: brand.graphite[600],
-              border: '1px solid',
-              borderColor: alpha.white[8],
-              color: alpha.white[62],
-              '&:hover': { bgcolor: brand.graphite[600], color: surface.lightText },
-            }}
-          >
-            <KeyboardDoubleArrowLeftRoundedIcon
-              sx={{
-                fontSize: iconSize.sm,
-                transform: collapsed ? 'rotate(180deg)' : 'none',
-                transition: 'transform 180ms ease',
-              }}
-            />
-          </IconButton>
-        </Tooltip>
+        <SidebarCollapseButton
+          collapsed={collapsed}
+          onToggle={toggleSidebarCollapsed}
+          expandLabel={t('expandNavigation')}
+          collapseLabel={t('collapseNavigation')}
+          collapseTooltip={t('collapseMenu')}
+        />
       ) : null}
     </Box>
   )

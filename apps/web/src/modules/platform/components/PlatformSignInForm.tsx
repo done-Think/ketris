@@ -1,20 +1,9 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
-import {
-  Alert,
-  Box,
-  Button,
-  CircularProgress,
-  IconButton,
-  InputAdornment,
-  Stack,
-  Typography,
-} from '@mui/material'
+import { Alert, Box, Button, CircularProgress, Stack, Typography } from '@mui/material'
 import { getSession, signIn, signOut } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
@@ -25,8 +14,8 @@ import {
   authPrimaryButtonSx,
   authTextFieldSx,
 } from '@modules/auth'
-import { RhfTextField } from '@shared/components/form'
-import { brand, componentText } from '@shared/theme/tokens'
+import { RhfPasswordField, RhfTextField } from '@shared/components/form'
+import { componentText } from '@shared/theme/tokens'
 
 import {
   createPlatformSignInSchema,
@@ -37,7 +26,6 @@ export function PlatformSignInForm() {
   const t = useTranslations('platform.login')
   const formsT = useTranslations('platform.forms')
   const loginT = useTranslations('auth.login')
-  const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
   const [formError, setFormError] = useState<string | null>(null)
   const hasAttemptedLocalAutoLogin = useRef(false)
@@ -55,31 +43,34 @@ export function PlatformSignInForm() {
     defaultValues: { email: '', password: '' },
   })
 
-  async function onSubmit(values: PlatformSignInFormValues) {
-    setFormError(null)
+  const onSubmit = useCallback(
+    async (values: PlatformSignInFormValues) => {
+      setFormError(null)
 
-    const result = await signIn('platform-credentials', {
-      email: values.email,
-      password: values.password,
-      redirect: false,
-    })
+      const result = await signIn('platform-credentials', {
+        email: values.email,
+        password: values.password,
+        redirect: false,
+      })
 
-    if (!result || result.error) {
-      setFormError(t('genericError'))
-      return
-    }
+      if (!result || result.error) {
+        setFormError(t('genericError'))
+        return
+      }
 
-    const session = await getSession()
+      const session = await getSession()
 
-    if (session?.scope !== 'platform') {
-      await signOut({ redirect: false })
-      setFormError(t('forbiddenError'))
-      return
-    }
+      if (session?.scope !== 'platform') {
+        await signOut({ redirect: false })
+        setFormError(t('forbiddenError'))
+        return
+      }
 
-    router.push('/platform')
-    router.refresh()
-  }
+      router.push('/platform')
+      router.refresh()
+    },
+    [router, t],
+  )
 
   useEffect(() => {
     const email = process.env.NEXT_PUBLIC_LOCAL_PLATFORM_EMAIL
@@ -129,37 +120,13 @@ export function PlatformSignInForm() {
             label={formsT('password')}
             labelSx={componentText.authBody}
           >
-            <RhfTextField
+            <RhfPasswordField
               id="platform-login-password"
               control={control}
               name="password"
-              type={showPassword ? 'text' : 'password'}
               autoComplete="current-password"
               fullWidth
               sx={[authTextFieldSx, authLoginTextFieldSx]}
-              slotProps={{
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label={
-                          showPassword ? loginT('password.hide') : loginT('password.show')
-                        }
-                        edge="end"
-                        size="small"
-                        onClick={() => setShowPassword((current) => !current)}
-                        sx={{ color: brand.neutral[500] }}
-                      >
-                        {showPassword ? (
-                          <VisibilityOffOutlinedIcon fontSize="small" />
-                        ) : (
-                          <VisibilityOutlinedIcon fontSize="small" />
-                        )}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                },
-              }}
             />
           </AuthFormField>
 

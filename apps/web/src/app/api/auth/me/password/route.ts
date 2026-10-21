@@ -1,21 +1,15 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
-import { z } from 'zod'
 
 import { authContainer } from '@server/auth/container'
 import { UserNotFoundError } from '@server/auth/domain/errors'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
-import { resetPasswordRequestSchema } from '@server/auth/schemas/reset-password.schema'
+import { changeOwnPasswordRequestSchema } from '@server/auth/schemas/change-own-password.schema'
 import { parseJsonBody, withErrorHandling } from '@server/shared/http'
-
-const changeOwnPasswordSchema = z.object({
-  currentPassword: z.string().min(1, 'Senha atual é obrigatória.'),
-  password: resetPasswordRequestSchema.shape.password,
-})
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
   const actor = await requireBearerAuth(request, authContainer.tokenService)
-  const body = await parseJsonBody(request, changeOwnPasswordSchema)
+  const body = await parseJsonBody(request, changeOwnPasswordRequestSchema)
   const user = await authContainer.userRepository.findById(actor.sub)
 
   if (!user || user.tenantId !== actor.tenantId || !user.ativo) {

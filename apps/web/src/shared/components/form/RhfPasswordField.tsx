@@ -15,35 +15,39 @@ import { RhfTextField } from './RhfTextField'
 export function RhfPasswordField<
   TFieldValues extends FieldValues,
   TName extends FieldPath<TFieldValues>,
->({ label, InputProps, ...props }: Omit<RhfTextFieldProps<TFieldValues, TName>, 'type'>) {
+>({ label, slotProps, ...props }: Omit<RhfTextFieldProps<TFieldValues, TName>, 'type'>) {
   const t = useTranslations('common.passwordVisibility')
   const [isVisible, setIsVisible] = useState(false)
   const field = typeof label === 'string' ? label : ''
+  const inputSlotProps = typeof slotProps?.input === 'object' ? slotProps.input : undefined
 
   return (
     <RhfTextField
       {...props}
       label={label}
       type={isVisible ? 'text' : 'password'}
-      InputProps={{
-        ...InputProps,
-        endAdornment: (
-          <InputAdornment position="end">
-            <IconButton
-              aria-label={t(isVisible ? 'hide' : 'show', { field })}
-              aria-pressed={isVisible}
-              edge="end"
-              onClick={() => setIsVisible((current) => !current)}
-              sx={{ color: brand.neutral[500] }}
-            >
-              {isVisible ? (
-                <VisibilityOffOutlinedIcon fontSize="small" />
-              ) : (
-                <VisibilityOutlinedIcon fontSize="small" />
-              )}
-            </IconButton>
-          </InputAdornment>
-        ),
+      slotProps={{
+        ...slotProps,
+        input: {
+          ...inputSlotProps,
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton
+                aria-label={t(isVisible ? 'hide' : 'show', { field })}
+                aria-pressed={isVisible}
+                edge="end"
+                onClick={() => setIsVisible((current) => !current)}
+                sx={{ color: brand.neutral[500] }}
+              >
+                {isVisible ? (
+                  <VisibilityOffOutlinedIcon fontSize="small" />
+                ) : (
+                  <VisibilityOutlinedIcon fontSize="small" />
+                )}
+              </IconButton>
+            </InputAdornment>
+          ),
+        },
       }}
     />
   )

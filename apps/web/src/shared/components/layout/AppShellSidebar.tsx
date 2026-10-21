@@ -1,6 +1,5 @@
 'use client'
 
-import KeyboardDoubleArrowLeftRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowLeftRounded'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import {
   Avatar,
@@ -21,6 +20,7 @@ import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 import type { AppShellSidebarProps } from '@shared/types/app-shell'
 
 import { appShellNavigationItems } from './app-shell-navigation-items'
+import { SidebarCollapseButton } from './SidebarCollapseButton'
 
 export const sidebarExpandedWidth = 272
 export const sidebarCollapsedWidth = 72
@@ -235,33 +235,13 @@ export function AppShellSidebar({
         </Stack>
       </Stack>
       {showCollapseControl ? (
-        <Tooltip title={collapsed ? t('expandNavigation') : t('collapseMenu')} placement="right">
-          <IconButton
-            aria-label={collapsed ? t('expandNavigation') : t('collapseNavigation')}
-            onClick={onToggleCollapsed}
-            sx={{
-              position: 'absolute',
-              right: -14,
-              top: 32,
-              zIndex: 1,
-              width: 28,
-              height: 28,
-              bgcolor: brand.graphite[600],
-              border: '1px solid',
-              borderColor: alpha.white[8],
-              color: alpha.white[62],
-              '&:hover': { bgcolor: brand.graphite[600], color: surface.lightText },
-            }}
-          >
-            <KeyboardDoubleArrowLeftRoundedIcon
-              sx={{
-                fontSize: iconSize.sm,
-                transform: collapsed ? 'rotate(180deg)' : 'none',
-                transition: 'transform 180ms ease',
-              }}
-            />
-          </IconButton>
-        </Tooltip>
+        <SidebarCollapseButton
+          collapsed={collapsed}
+          onToggle={onToggleCollapsed}
+          expandLabel={t('expandNavigation')}
+          collapseLabel={t('collapseNavigation')}
+          collapseTooltip={t('collapseMenu')}
+        />
       ) : null}
     </Box>
   )

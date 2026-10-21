@@ -395,38 +395,40 @@ export function BrokerInviteDialog({
                   autoComplete="off"
                   error={Boolean(errors.password)}
                   helperText={errors.password?.message ?? t('dialogs.invitePasswordHelper')}
-                  InputProps={{
-                    readOnly: true,
-                    sx: { fontFamily: 'monospace', letterSpacing: '0.04em' },
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <Tooltip title={t('dialogs.generatePassword')}>
-                          <IconButton
-                            aria-label={t('dialogs.generatePassword')}
-                            onClick={regeneratePassword}
-                            edge="end"
+                  slotProps={{
+                    input: {
+                      readOnly: true,
+                      sx: { fontFamily: 'monospace', letterSpacing: '0.04em' },
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <Tooltip title={t('dialogs.generatePassword')}>
+                            <IconButton
+                              aria-label={t('dialogs.generatePassword')}
+                              onClick={regeneratePassword}
+                              edge="end"
+                            >
+                              <AutorenewRoundedIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip
+                            title={copied ? t('dialogs.passwordCopied') : t('dialogs.copyPassword')}
                           >
-                            <AutorenewRoundedIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip
-                          title={copied ? t('dialogs.passwordCopied') : t('dialogs.copyPassword')}
-                        >
-                          <IconButton
-                            aria-label={t('dialogs.copyPassword')}
-                            onClick={copyPassword}
-                            edge="end"
-                            sx={{ ml: 0.5, color: copied ? 'success.main' : undefined }}
-                          >
-                            {copied ? (
-                              <CheckRoundedIcon fontSize="small" />
-                            ) : (
-                              <ContentCopyRoundedIcon fontSize="small" />
-                            )}
-                          </IconButton>
-                        </Tooltip>
-                      </InputAdornment>
-                    ),
+                            <IconButton
+                              aria-label={t('dialogs.copyPassword')}
+                              onClick={copyPassword}
+                              edge="end"
+                              sx={{ ml: 0.5, color: copied ? 'success.main' : undefined }}
+                            >
+                              {copied ? (
+                                <CheckRoundedIcon fontSize="small" />
+                              ) : (
+                                <ContentCopyRoundedIcon fontSize="small" />
+                              )}
+                            </IconButton>
+                          </Tooltip>
+                        </InputAdornment>
+                      ),
+                    },
                   }}
                 />
               )}

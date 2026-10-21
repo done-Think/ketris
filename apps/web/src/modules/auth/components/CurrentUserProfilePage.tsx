@@ -14,13 +14,13 @@ import {
   Typography,
 } from '@mui/material'
 import { useSession } from 'next-auth/react'
-import axios from 'axios'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 import { useForm } from 'react-hook-form'
 
 import { RhfMaskedTextField, RhfPasswordField, RhfTextField } from '@shared/components/form'
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
+import { getApiErrorCode } from '@shared/utils/error-message'
 import { getInitials } from '@shared/utils/get-initials'
 
 import {
@@ -120,10 +120,7 @@ export function CurrentUserProfilePage() {
       passwordForm.reset({ currentPassword: '', password: '', passwordConfirmation: '' })
       enqueueSnackbar(t('passwordSuccess'), { variant: 'success' })
     } catch (error) {
-      if (
-        axios.isAxiosError(error) &&
-        error.response?.data?.error?.code === 'INVALID_CURRENT_PASSWORD'
-      ) {
+      if (getApiErrorCode(error) === 'INVALID_CURRENT_PASSWORD') {
         passwordForm.setError('currentPassword', { message: t('errors.currentPasswordIncorrect') })
         return
       }

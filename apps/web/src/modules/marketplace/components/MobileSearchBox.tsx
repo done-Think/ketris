@@ -32,11 +32,11 @@ export function MobileSearchBox({
   setSearchDraft,
 }: MobileSearchBoxProps) {
   const t = useTranslations('marketplace.home.search')
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
-  const closeDialog = () => {
+  const closeDrawer = () => {
     closeSearchMenu()
-    setIsDialogOpen(false)
+    setIsDrawerOpen(false)
   }
 
   return (
@@ -54,7 +54,7 @@ export function MobileSearchBox({
       <Button
         fullWidth
         aria-haspopup="dialog"
-        onClick={() => setIsDialogOpen(true)}
+        onClick={() => setIsDrawerOpen(true)}
         startIcon={<SearchOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
         sx={{
           justifyContent: 'flex-start',
@@ -111,13 +111,13 @@ export function MobileSearchBox({
 
       <Drawer
         anchor="bottom"
-        open={isDialogOpen}
-        onClose={closeDialog}
+        open={isDrawerOpen}
+        onClose={closeDrawer}
         slotProps={{
           paper: {
             role: 'dialog',
             'aria-modal': true,
-            'aria-labelledby': 'mobile-search-dialog-title',
+            'aria-labelledby': 'mobile-search-drawer-title',
             sx: {
               maxHeight: '85vh',
               bgcolor: surface.paper,
@@ -155,13 +155,13 @@ export function MobileSearchBox({
             }}
           >
             <Typography
-              id="mobile-search-dialog-title"
+              id="mobile-search-drawer-title"
               component="h2"
               sx={{ color: 'text.primary', ...componentText.menuTitle }}
             >
-              {t('mobileDialogTitle')}
+              {t('mobileSearchTitle')}
             </Typography>
-            <IconButton aria-label={t('closeSearch')} onClick={closeDialog}>
+            <IconButton aria-label={t('closeSearch')} onClick={closeDrawer}>
               <CloseRoundedIcon />
             </IconButton>
           </Stack>
@@ -227,7 +227,7 @@ export function MobileSearchBox({
             <Box
               component={Link}
               href={searchHref}
-              onClick={closeDialog}
+              onClick={closeDrawer}
               sx={{ display: 'block', textDecoration: 'none' }}
             >
               <Button

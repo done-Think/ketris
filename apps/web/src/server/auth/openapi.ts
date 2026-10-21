@@ -16,6 +16,7 @@ import {
   verifyPasswordResetCodeResponseSchema,
   verifyPasswordResetCodeSchema,
 } from './schemas/password-reset-code.schema'
+import { changeOwnPasswordRequestSchema } from './schemas/change-own-password.schema'
 import { resetPasswordRequestSchema } from './schemas/reset-password.schema'
 import { updateUserRequestSchema, updateUserResponseSchema } from './schemas/update-user.schema'
 import { authenticatedUserSchema } from './schemas/user.schema'
@@ -23,16 +24,6 @@ import { authenticatedUserSchema } from './schemas/user.schema'
 const userIdParamsSchema = z.object({
   id: z.string().openapi({ description: 'ID do usuário.', example: 'clx1y2z3a0000abcd1234efgh' }),
 })
-
-const changeOwnPasswordRequestSchema = z
-  .object({
-    currentPassword: z
-      .string()
-      .min(1)
-      .openapi({ description: 'Senha atual do usuário.', example: 'senha-atual-123' }),
-    password: resetPasswordRequestSchema.shape.password,
-  })
-  .openapi('ChangeOwnPasswordRequest')
 
 export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
   registry.register('AuthenticatedUser', authenticatedUserSchema)
