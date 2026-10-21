@@ -1,4 +1,6 @@
+import type { MaintenanceUserLinkInput } from '../types/service'
 import { BaseService } from '@shared/lib/api/base-service'
+import type { MaintenanceAction, MaintenanceOptions } from '../types/service'
 
 import type {
   ApiMaintenanceActivity,
@@ -19,6 +21,7 @@ export class MaintenanceService extends BaseService {
 
   list(filters: MaintenanceTicketListFilters = {}): Promise<ListMaintenanceTicketsResponse> {
     const params = {
+      ...(filters.archived ? { archived: 'true' } : {}),
       ...(filters.status ? { status: filters.status } : {}),
       ...(filters.priority ? { priority: filters.priority } : {}),
       ...(filters.propertyId ? { propertyId: filters.propertyId } : {}),
@@ -77,6 +80,20 @@ export class MaintenanceService extends BaseService {
         headers: { 'Content-Type': undefined },
       })
       .then((data) => data.attachment)
+  }
+
+  options(): Promise<MaintenanceOptions> {
+    return this.http.get('/maintenance/options')
+  }
+
+  act(id: string, action: MaintenanceAction): Promise<ApiMaintenanceTicket> {
+    return this.http
+      .post<MaintenanceTicketResponse>(`${this.path}/${id}/actions`, action)
+      .then((data) => data.ticket)
+  }
+
+  linkUsers(input: MaintenanceUserLinkInput): Promise<void> {
+    return this.http.post('/maintenance/links', input)
   }
 }
 

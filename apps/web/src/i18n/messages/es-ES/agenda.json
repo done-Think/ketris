@@ -1,5 +1,35 @@
 {
+  "organization": {
+    "allDay": "Todo el día",
+    "charges": "cobros",
+    "maintenance": "solicitudes",
+    "sourceError": "No se pudo cargar {source}. Los demás registros siguen disponibles.",
+    "kinds": {
+      "charge": "Vencimiento del cobro",
+      "ticketOpened": "Apertura de solicitud",
+      "ticketScheduled": "Atención programada"
+    },
+    "chargeStatuses": {
+      "PENDENTE": "Pendiente",
+      "PAGA": "Pagado",
+      "ATRASADA": "Vencido",
+      "AGENDADA": "Programado",
+      "CANCELADA": "Cancelado"
+    },
+    "ticketStatuses": {
+      "ABERTO": "Abierto",
+      "EM_ANDAMENTO": "En curso",
+      "RESOLVIDO": "Resuelto",
+      "FECHADO": "Cerrado",
+      "AGUARDANDO_CONFIRMACAO": "Pendiente de confirmación",
+      "CONTESTADO": "Impugnado",
+      "CANCELADO": "Cancelado"
+    }
+  },
   "dashboard": {
+    "loading": "Cargando agenda",
+    "loadError": "No se pudo cargar la agenda. Inténtalo de nuevo.",
+    "empty": "No hay eventos vinculados a ti en este período.",
     "title": "Agenda",
     "subtitle": "Tus compromisos y tareas organizados",
     "previousWeek": "Semana anterior",
@@ -27,6 +57,14 @@
     "deleteError": "No fue posible eliminar el evento. Inténtalo de nuevo."
   },
   "eventForm": {
+    "audiences": {
+      "LEGACY_TEAM": "Visibilidad actual",
+      "ALL_AGENTS": "Todos los agentes",
+      "ASSIGNED_AGENT": "Agente específico"
+    },
+    "agentsLoading": "Cargando agentes…",
+    "agentsError": "No se pudieron cargar los agentes. Abre el formulario de nuevo para reintentar.",
+    "agentsEmpty": "No hay agentes activos y aprobados disponibles.",
     "kinds": {
       "VISIT": "Visita",
       "FOLLOW_UP": "Seguimiento",
@@ -39,8 +77,16 @@
     "title": "Agregar evento",
     "closeAriaLabel": "Cerrar nuevo evento",
     "fields": {
+      "internal": "Evento interno del equipo",
+      "audience": "Destinatarios",
+      "agent": "Agente",
+      "agentPlaceholder": "Selecciona un agente",
+      "optionalProperty": "Inmueble (opcional)",
+      "noProperty": "Sin inmueble vinculado",
+      "optionalParticipant": "Cliente (opcional)",
+      "optionalPhone": "Teléfono (opcional)",
       "kind": "Tipo de evento",
-      "kindPlaceholder": "Selecciona el tipo",
+      "kindPlaceholder": "Seleccionar (opcional)",
       "title": "Título",
       "property": "Inmueble en cuestión",
       "otherProperty": "Otro",
@@ -50,21 +96,13 @@
       "date": "Fecha",
       "time": "Horario",
       "duration": "Duración",
-      "notes": "Observaciones",
-      "kind": "Tipo de evento",
-      "kindPlaceholder": "Seleccionar (opcional)"
+      "notes": "Observaciones"
     },
     "cancel": "Cancelar",
     "submit": "Crear evento",
-    "kinds": {
-      "VISIT": "Visita",
-      "FOLLOW_UP": "Seguimiento",
-      "MEETING": "Reunión",
-      "INSPECTION": "Inspección",
-      "SIGNATURE": "Firma",
-      "OTHER": "Otro"
-    },
     "errors": {
+      "agentRequired": "Selecciona un agente",
+      "audienceRequired": "Elige todos los agentes o un agente específico",
       "durationTooShort": "Indica al menos 15 minutos",
       "participantRequired": "Indica el nombre de la persona",
       "phoneInvalid": "Indica un teléfono válido",
@@ -73,12 +111,17 @@
       "timeRequired": "Indica el horario",
       "titleRequired": "Indica el título del evento",
       "customPropertyRequired": "Indica el inmueble o referencia",
-      "visitMinimumDuration": "Las visitas deben durar al menos 60 minutos",
-      "minimumAdvanceNotice": "Agenda con al menos 3 horas de anticipación",
-      "outsideBusinessHours": "Agenda dentro del horario comercial (08:00–18:00)"
+      "visitMinimumDuration": "Las visitas deben durar al menos 30 minutos",
+      "minimumAdvanceNotice": "Agenda con al menos 3 horas de anticipación"
+    },
+    "outsideHoursWarning": {
+      "message": "El período de este evento está fuera del horario comercial (08:00–18:00). ¿Quieres continuar?",
+      "continue": "Continuar",
+      "back": "Volver"
     }
   },
   "eventDetail": {
+    "responsible": "Responsable: {name}",
     "closeAriaLabel": "Cerrar detalles del evento",
     "notesTitle": "Observaciones",
     "createdBy": "Agendado por {role} {name}",
@@ -103,9 +146,8 @@
       "timeRequired": "Indica el horario",
       "titleRequired": "Indica el título del evento",
       "customPropertyRequired": "Indica el inmueble o referencia",
-      "visitMinimumDuration": "Las visitas deben durar al menos 60 minutos",
-      "minimumAdvanceNotice": "Agenda con al menos 3 horas de anticipación",
-      "outsideBusinessHours": "Agenda dentro del horario comercial (08:00–18:00)"
+      "visitMinimumDuration": "Las visitas deben durar al menos 30 minutos",
+      "minimumAdvanceNotice": "Agenda con al menos 3 horas de anticipación"
     }
   }
 }

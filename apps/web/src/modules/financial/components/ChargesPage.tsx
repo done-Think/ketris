@@ -62,7 +62,9 @@ export function ChargesPage() {
   const t = useTranslations('charges')
   const locale = useLocale()
   const { enqueueSnackbar } = useSnackbar()
-  const { data: session } = useSession()
+  const { data: session, status: sessionStatus } = useSession()
+  const canCreateCharge =
+    sessionStatus === 'authenticated' && Boolean(session?.role && session.role !== 'RENTER')
   const tenantId = session?.tenantId ?? ''
   const chargesQuery = useCharges(tenantId, { pageSize: 500 })
   const charges = useMemo(
@@ -120,6 +122,7 @@ export function ChargesPage() {
     }
   }
   const addCharge = (values: CreateChargeFormValues) => {
+    if (!canCreateCharge) return
     createChargeMutation.mutate(values, {
       onSuccess: () => {
         setQuery('')
@@ -235,12 +238,14 @@ export function ChargesPage() {
                   '& .MuiInputAdornment-root .MuiSvgIcon-root': { fontSize: iconSize.sm },
                 }}
               />
-              <DashboardHeaderActionButton
-                startIcon={<AddRoundedIcon />}
-                onClick={() => setCreateOpen(true)}
-              >
-                {t('newCharge')}
-              </DashboardHeaderActionButton>
+              {canCreateCharge && (
+                <DashboardHeaderActionButton
+                  startIcon={<AddRoundedIcon />}
+                  onClick={() => setCreateOpen(true)}
+                >
+                  {t('newCharge')}
+                </DashboardHeaderActionButton>
+              )}
               <Box sx={{ display: { xs: 'none', md: 'block' } }}>
                 <DashboardNotificationsButton />
               </Box>
@@ -431,11 +436,13 @@ export function ChargesPage() {
           />
         </Paper>
       </Stack>
-      <CreateChargeDialog
-        open={createOpen}
-        onClose={() => setCreateOpen(false)}
-        onCreate={addCharge}
-      />
+      {canCreateCharge && (
+        <CreateChargeDialog
+          open={createOpen}
+          onClose={() => setCreateOpen(false)}
+          onCreate={addCharge}
+        />
+      )}
       <EditChargeDialog
         charge={editingCharge}
         onClose={() => setEditingChargeId(null)}

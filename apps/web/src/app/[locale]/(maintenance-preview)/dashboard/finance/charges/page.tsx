@@ -1,5 +1,6 @@
 import { createLocalizedMetadata } from '@/i18n/metadata'
 import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
+import { RoleGuard } from '@shared/components/layout'
 import { ChargesPage } from '@modules/financial'
 
 export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
@@ -8,5 +9,9 @@ export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
 }
 
 export default function DashboardChargesPage() {
-  return <ChargesPage />
+  return (
+    <RoleGuard allowedRoles={['ADMIN', 'OWNER']}>
+      <ChargesPage />
+    </RoleGuard>
+  )
 }

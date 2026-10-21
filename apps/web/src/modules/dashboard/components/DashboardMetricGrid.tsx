@@ -11,7 +11,7 @@ export function DashboardMetricGrid({ metrics }: DashboardMetricGridProps) {
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', xl: 'repeat(4, 1fr)' },
+        gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', md: 'repeat(3, minmax(0, 1fr))' },
         gap: { xs: 1.2, md: 1.6 },
       }}
     >

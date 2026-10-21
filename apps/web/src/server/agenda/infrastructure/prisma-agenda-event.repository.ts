@@ -15,6 +15,7 @@ import type {
   NewAgendaEvent,
 } from '../domain/agenda-event.entity'
 import { AgendaEventUserLinkUnavailableError } from '../domain/errors'
+import { assertVisitReservation, lockAgendaEvent } from './agenda-visit-reservation'
 
 const linkedUserSelect = { id: true, nome: true, email: true } as const
 
@@ -32,6 +33,11 @@ type EventoAgendaWithLinks = Prisma.EventoAgendaGetPayload<{ include: typeof age
 export class PrismaAgendaEventRepository implements AgendaEventRepository {
   create(event: NewAgendaEvent, links?: AgendaEventLinks): Promise<AgendaEvent> {
     return prisma.$transaction(async (transaction) => {
+      await assertVisitReservation(transaction, {
+        ...event,
+        imovelId: event.imovelId ?? null,
+        tipo: event.tipo ?? null,
+      })
       const linkedUserIds = await resolveLinkedUserIds(transaction, event.tenantId, links)
       const participantUserIds = toParticipantUserIds(links, linkedUserIds)
 
@@ -45,6 +51,8 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
           referenciaImovelLivre: event.referenciaImovelLivre ?? null,
           titulo: event.titulo,
           tipo: event.tipo ?? null,
+          destino: event.destino,
+          interno: event.interno,
           inicio: event.inicio,
           fim: event.fim,
           participanteNome: event.participanteNome,
@@ -99,14 +107,32 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
     links?: AgendaEventLinks,
   ): Promise<AgendaEvent | null> {
     return prisma.$transaction(async (transaction) => {
+      await lockAgendaEvent(transaction, tenantId, id)
       const existing = await transaction.eventoAgenda.findFirst({
         where: { tenantId, id },
-        select: { id: true },
+        select: {
+          id: true,
+          tenantId: true,
+          imovelId: true,
+          tipo: true,
+          status: true,
+          inicio: true,
+          fim: true,
+        },
       })
 
       if (!existing) {
         return null
       }
+
+      await assertVisitReservation(transaction, {
+        ...existing,
+        imovelId: changes.imovelId === undefined ? existing.imovelId : changes.imovelId,
+        tipo: changes.tipo === undefined ? existing.tipo : changes.tipo,
+        status: changes.status ?? existing.status,
+        inicio: changes.inicio ?? existing.inicio,
+        fim: changes.fim ?? existing.fim,
+      })
 
       const linkedUserIds = await resolveLinkedUserIds(transaction, tenantId, links)
 
@@ -126,7 +152,12 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
         where: { id },
         data: {
           titulo: changes.titulo,
+          inicio: changes.inicio,
+          fim: changes.fim,
           tipo: changes.tipo,
+          destino: changes.destino,
+          interno: changes.interno,
+          responsavelId: changes.responsavelId,
           status: changes.status,
           imovelId: changes.imovelId,
           referenciaImovelLivre: changes.referenciaImovelLivre,
@@ -153,14 +184,25 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
     reschedule: AgendaEventReschedule,
   ): Promise<AgendaEvent | null> {
     return prisma.$transaction(async (transaction) => {
+      await lockAgendaEvent(transaction, tenantId, id)
       const existing = await transaction.eventoAgenda.findFirst({
         where: { tenantId, id },
-        select: { id: true },
+        select: {
+          id: true,
+          tenantId: true,
+          imovelId: true,
+          tipo: true,
+          status: true,
+          inicio: true,
+          fim: true,
+        },
       })
 
       if (!existing) {
         return null
       }
+
+      await assertVisitReservation(transaction, { ...existing, ...reschedule, status: 'CONFIRMED' })
 
       const updated = await transaction.eventoAgenda.update({
         where: { id },
@@ -225,7 +267,31 @@ function readScopeWhere(scope: AgendaReadScope): Prisma.EventoAgendaWhereInput {
     return { tenantId: scope.tenantId }
   }
 
+  if (scope.kind === 'agent') {
+    return {
+      tenantId: scope.tenantId,
+      OR: [
+        { destino: 'LEGACY_TEAM', interno: false },
+        { destino: 'ALL_AGENTS' },
+        { destino: 'ASSIGNED_AGENT', responsavelId: scope.userId },
+      ],
+    }
+  }
+  if (scope.kind === 'owner') {
+    return {
+      tenantId: scope.tenantId,
+      interno: false,
+      OR: [
+        { destino: 'LEGACY_TEAM' },
+        { imovel: { proprietarioId: scope.userId, tenantId: scope.tenantId } },
+        { donoUsuarioId: scope.userId },
+        { participantes: { some: { usuarioId: scope.userId } } },
+      ],
+    }
+  }
+
   return {
+    interno: false,
     OR: [{ donoUsuarioId: scope.userId }, { participantes: { some: { usuarioId: scope.userId } } }],
   }
 }
@@ -300,6 +366,8 @@ function mapAgendaEvent(event: EventoAgendaWithLinks): AgendaEvent {
     referenciaImovelLivre: event.referenciaImovelLivre,
     titulo: event.titulo,
     tipo: event.tipo,
+    destino: event.destino,
+    interno: event.interno,
     status: event.status,
     inicio: event.inicio,
     fim: event.fim,

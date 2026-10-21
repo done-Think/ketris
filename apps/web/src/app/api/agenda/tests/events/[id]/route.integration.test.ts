@@ -178,9 +178,9 @@ describe('/api/agenda/events/{id} (integração)', () => {
     expect(json.event.start).toBe('2026-10-10T13:00:00.000Z')
   })
 
-  it('retorna 400 ao marcar como VISIT um evento com menos de 60 minutos', async () => {
+  it('retorna 400 ao marcar como VISIT um evento com menos de 30 minutos', async () => {
     const response = await PATCH(
-      buildRequest('PATCH', eventId, { kind: 'VISIT' }),
+      buildRequest('PATCH', eventId, { kind: 'VISIT', durationMinutes: 15 }),
       context(eventId),
     )
 

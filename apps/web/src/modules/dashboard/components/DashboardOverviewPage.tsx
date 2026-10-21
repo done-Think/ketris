@@ -1,34 +1,45 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Box, Stack, Typography } from '@mui/material'
+import { Box, Stack } from '@mui/material'
 import dayjs from 'dayjs'
 import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 
 import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/components/layout'
-import { brand } from '@shared/theme/tokens'
 
+import {
+  AgencyExchangeRateNotice,
+  AgencyOverviewKpiGrid,
+  AgencyRecentActivityPanel,
+  AgencyRevenuePerformancePanel,
+  AgencyTopBrokersPanel,
+  useAgencyOverviewUi,
+} from '@modules/agency-dashboard'
 import { useAgendaEvents } from '@modules/agenda/hooks/use-agenda-events'
+import type { AgendaEventApi } from '@modules/agenda/types/agenda-event'
 import { useLeads } from '@modules/crm/hooks/use-leads'
 import { useOpportunities } from '@modules/crm/hooks/use-opportunities'
-import { useFinancialSummary } from '@modules/financial/hooks/use-financial'
 
 import type { DashboardRecentLead, DashboardUpcomingActivity } from '../types/dashboard-overview'
 import { buildDashboardMetrics } from '../utils/build-dashboard-metrics'
-import { buildDashboardPerformance } from '../utils/build-dashboard-performance'
 import { toDashboardUpcomingActivity } from '../utils/map-dashboard-activity'
 import { toDashboardRecentLead } from '../utils/map-dashboard-lead'
 import { ActivityDetailModal } from './ActivityDetailModal'
 import { DashboardMetricGrid } from './DashboardMetricGrid'
-import { DashboardPanel } from './DashboardPanel'
-import { DashboardPerformanceChart } from './DashboardPerformanceChart'
 import { LeadDetailsModal } from './LeadDetailsModal'
 import { RecentLeadsTable } from './RecentLeadsTable'
 import { UpcomingActivitiesPanel } from './UpcomingActivitiesPanel'
 
 const recentLeadsLimit = 5
 const upcomingActivitiesLimit = 5
+
+const twoColumns = {
+  display: 'grid',
+  gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.7fr) minmax(280px, 1fr)' },
+  gap: 1.6,
+  alignItems: 'stretch',
+} as const
 
 function formatDashboardDate(locale: string, date = new Date()) {
   const formattedDate = new Intl.DateTimeFormat(locale, {
@@ -41,12 +52,18 @@ function formatDashboardDate(locale: string, date = new Date()) {
   return formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
 }
 
+// The single dashboard of the CRM, adapted to the signed-in role. Every user sees their own work
+// (leads, visits, proposals, upcoming activities); the agency's owners and admins also see the
+// agency-wide numbers (portfolio, brokers, revenue, top brokers and team activity). The API
+// enforces the same split: agency data answers 403 to agents.
 export function DashboardOverviewPage() {
   const locale = useLocale()
   const t = useTranslations('dashboard.overview')
   const currentDate = formatDashboardDate(locale)
   const { data: session } = useSession()
   const tenantId = session?.tenantId
+  const userId = session?.user?.id
+  const isAgencyManager = session?.role === 'ADMIN' || session?.role === 'OWNER'
   const [selectedActivity, setSelectedActivity] = useState<DashboardUpcomingActivity | null>(null)
   const [selectedLead, setSelectedLead] = useState<DashboardRecentLead | null>(null)
 
@@ -61,15 +78,21 @@ export function DashboardOverviewPage() {
     monthStart.toISOString(),
     monthEnd.toISOString(),
   )
-  const financialSummaryQuery = useFinancialSummary(tenantId)
+  const agency = useAgencyOverviewUi(tenantId, isAgencyManager)
 
   const leads = useMemo(() => leadsQuery.data ?? [], [leadsQuery.data])
   const opportunities = useMemo(() => opportunitiesQuery.data ?? [], [opportunitiesQuery.data])
+  // The agency agenda is shared by the team; an agent's dashboard counts only their own events.
   const monthEvents = useMemo(
-    () => (monthEventsQuery.data ?? []).filter((event) => event.status !== 'CANCELLED'),
-    [monthEventsQuery.data],
+    () =>
+      (monthEventsQuery.data ?? []).filter(
+        (event): event is AgendaEventApi =>
+          event.status !== 'CANCELLED' &&
+          'participantName' in event &&
+          (isAgencyManager || event.responsibleId === userId),
+      ),
+    [monthEventsQuery.data, isAgencyManager, userId],
   )
-  const financialSummary = financialSummaryQuery.data
 
   const recentLeads = useMemo(
     () =>
@@ -91,13 +114,15 @@ export function DashboardOverviewPage() {
   )
 
   const metrics = useMemo(
-    () => buildDashboardMetrics({ leads, opportunities, monthEvents, financialSummary, today, t }),
-    [leads, opportunities, monthEvents, financialSummary, today, t],
+    () => buildDashboardMetrics({ leads, opportunities, monthEvents, today, t }),
+    [leads, opportunities, monthEvents, today, t],
   )
 
-  const performanceData = useMemo(
-    () => buildDashboardPerformance(financialSummary?.monthlySeries ?? []),
-    [financialSummary],
+  const upcomingActivitiesPanel = (
+    <UpcomingActivitiesPanel
+      activities={upcomingActivities}
+      onActivitySelect={setSelectedActivity}
+    />
   )
 
   return (
@@ -113,43 +138,36 @@ export function DashboardOverviewPage() {
           }
         />
 
+        {isAgencyManager ? (
+          <>
+            <AgencyExchangeRateNotice
+              targetCurrency={agency.targetCurrency}
+              exchangeRate={agency.exchangeRate}
+              isPending={agency.isExchangeRatePending}
+            />
+            <AgencyOverviewKpiGrid kpis={agency.overview?.kpis ?? []} />
+          </>
+        ) : null}
+
         <DashboardMetricGrid metrics={metrics} />
 
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.7fr) minmax(280px, 1fr)' },
-            gap: 1.6,
-          }}
-        >
-          <DashboardPanel>
-            <Box
-              sx={{
-                display: 'flex',
-                minHeight: { xs: 330, md: 360 },
-                flexDirection: 'column',
-                p: { xs: 2, md: 2.4 },
-              }}
-            >
-              <Typography
-                sx={{
-                  color: brand.neutral[500],
-                  fontSize: 11,
-                  fontWeight: 900,
-                  textTransform: 'uppercase',
-                }}
-              >
-                {t('performanceTitle')}
-              </Typography>
-              <DashboardPerformanceChart data={performanceData} />
+        {isAgencyManager ? (
+          <>
+            <Box sx={twoColumns}>
+              <AgencyRevenuePerformancePanel
+                revenuePoints={agency.overview?.revenuePoints ?? []}
+                currency={agency.displayCurrency}
+              />
+              <AgencyTopBrokersPanel topBrokers={agency.overview?.topBrokers ?? []} />
             </Box>
-          </DashboardPanel>
-
-          <UpcomingActivitiesPanel
-            activities={upcomingActivities}
-            onActivitySelect={setSelectedActivity}
-          />
-        </Box>
+            <Box sx={twoColumns}>
+              <AgencyRecentActivityPanel activities={agency.overview?.activities ?? []} />
+              {upcomingActivitiesPanel}
+            </Box>
+          </>
+        ) : (
+          upcomingActivitiesPanel
+        )}
 
         <RecentLeadsTable leads={recentLeads} onLeadSelect={setSelectedLead} />
       </Stack>

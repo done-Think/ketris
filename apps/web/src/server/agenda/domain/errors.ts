@@ -39,7 +39,7 @@ export class AgendaEventConflictError extends ConflictError {
 
 export class AgendaVisitMinimumDurationError extends AppError {
   constructor() {
-    super('Visitas devem ter duração mínima de 60 minutos.', {
+    super('Visitas devem ter duração mínima de 30 minutos.', {
       status: 400,
       code: 'AGENDA_VISIT_MINIMUM_DURATION',
     })
@@ -57,9 +57,18 @@ export class AgendaMinimumAdvanceNoticeError extends AppError {
 
 export class AgendaOutsideBusinessHoursError extends AppError {
   constructor() {
-    super('Agende dentro do horário comercial (08:00–18:00).', {
-      status: 400,
-      code: 'AGENDA_OUTSIDE_BUSINESS_HOURS',
-    })
+    super(
+      'O período deste evento está fora do horário comercial (08:00–18:00). Confirme para continuar.',
+      {
+        status: 409,
+        code: 'AGENDA_OUTSIDE_BUSINESS_HOURS',
+      },
+    )
+  }
+}
+
+export class AgendaPropertyVisitConflictError extends ConflictError {
+  constructor() {
+    super('Já existe uma visita reservada para este imóvel nesse período.')
   }
 }

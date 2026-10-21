@@ -14,6 +14,7 @@ const maintenanceTicketRepository = new PrismaMaintenanceTicketRepository()
 const maintenanceAttachmentStorage = new S3MaintenanceAttachmentStorage()
 
 export const maintenanceContainer = {
+  repository: maintenanceTicketRepository,
   createMaintenanceTicketUseCase: new CreateMaintenanceTicketUseCase(maintenanceTicketRepository),
   listMaintenanceTicketsUseCase: new ListMaintenanceTicketsUseCase(maintenanceTicketRepository),
   getMaintenanceTicketUseCase: new GetMaintenanceTicketUseCase(maintenanceTicketRepository),

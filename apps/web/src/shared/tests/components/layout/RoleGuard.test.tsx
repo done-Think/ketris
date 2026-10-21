@@ -14,9 +14,9 @@ vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
 }))
 
-function mockSession(papel: string) {
+function mockSession(role: string) {
   vi.mocked(useSession).mockReturnValue({
-    data: { scope: 'tenant', tenantId: 't1', papel },
+    data: { scope: 'tenant', tenantId: 't1', role },
     status: 'authenticated',
     update: vi.fn(),
   } as unknown as ReturnType<typeof useSession>)

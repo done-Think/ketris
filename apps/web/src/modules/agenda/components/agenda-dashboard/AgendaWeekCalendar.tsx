@@ -6,15 +6,22 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
-import type { AgendaWeekCalendarProps } from '../../types/agenda-event'
+import type {
+  AgendaWeekCalendarProps,
+  AgendaCalendarCard,
+  AgendaEvent,
+} from '../../types/agenda-event'
+import { buildAgendaTimeline } from '../../utils/build-agenda-timeline'
+import { buildAgendaEventSegments, layoutAgendaCards } from '../../utils/layout-agenda-events'
 import { AgendaEventCard } from './AgendaEventCard'
+import { AgendaOrganizationCard } from './AgendaOrganizationCard'
 import {
   agendaEventToneStyles,
   getEventEndTime,
   getEventHeight,
   getEventOffsetTop,
+  getAgendaCardPlacementSx,
   scheduleHourHeight,
-  scheduleTimelineHeight,
 } from './agenda-dashboard-shared'
 
 export function AgendaWeekCalendar({
@@ -22,20 +29,39 @@ export function AgendaWeekCalendar({
   events,
   onSelectEvent,
   timeSlots,
+  organizationItems = [],
 }: AgendaWeekCalendarProps) {
   const t = useTranslations('agenda.dashboard')
+  const organizationT = useTranslations('agenda.organization')
   const [selectedDayKey, setSelectedDayKey] = useState(days[0]?.key ?? '')
   const selectedDay = days.find((day) => day.key === selectedDayKey) ?? days[0]
+  const eventSegments = useMemo(() => buildAgendaEventSegments(days, events), [days, events])
+  const { itemsByDay, firstHour, calendarTimeSlots, hasAllDayItems } = buildAgendaTimeline(
+    days,
+    organizationItems,
+    timeSlots,
+    eventSegments,
+  )
+  const selectedDayItems = itemsByDay[selectedDay?.key ?? '']?.items ?? []
+  const timelineHeight = calendarTimeSlots.length * scheduleHourHeight
   const selectedDayEvents = useMemo(
-    () =>
-      events
-        .filter((event) => event.scheduledDate === selectedDay?.key)
-        .sort((firstEvent, secondEvent) => firstEvent.time.localeCompare(secondEvent.time)),
-    [events, selectedDay?.key],
+    () => eventSegments[selectedDay?.key ?? ''] ?? [],
+    [eventSegments, selectedDay?.key],
   )
-  const firstAvailableSlot = timeSlots.find(
-    (slot) => !selectedDayEvents.some((event) => event.time.startsWith(slot.label)),
-  )
+  const selectEvent = (event: AgendaEvent) =>
+    onSelectEvent(events.find((original) => original.id === event.id) ?? event)
+  const firstAvailableSlot = calendarTimeSlots.find((slot) => {
+    const slotStart = slot.hour * 60
+    const overlaps = (time: string, duration: number) => {
+      const [hour, minute] = time.split(':').map(Number)
+      const start = hour * 60 + minute
+      return start < slotStart + 60 && start + duration > slotStart
+    }
+    return (
+      !selectedDayEvents.some((event) => overlaps(event.time, event.durationMinutes)) &&
+      !selectedDayItems.some((item) => item.time && overlaps(item.time, 60))
+    )
+  })
 
   useEffect(() => {
     const today = days.find((day) => day.today)
@@ -117,6 +143,22 @@ export function AgendaWeekCalendar({
         ) : null}
 
         <Stack spacing={1.2} sx={{ mt: 1.6 }}>
+          {selectedDayItems.map((item) => (
+            <Box
+              key={item.id}
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: '48px minmax(0, 1fr)',
+                gap: 1,
+                alignItems: 'stretch',
+              }}
+            >
+              <Typography sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 900, pt: 1 }}>
+                {item.time ?? organizationT('allDay')}
+              </Typography>
+              <AgendaOrganizationCard item={item} />
+            </Box>
+          ))}
           {firstAvailableSlot ? (
             <Box
               sx={{
@@ -168,7 +210,7 @@ export function AgendaWeekCalendar({
                   component="button"
                   type="button"
                   aria-label={t('openEventAriaLabel', { title: event.title })}
-                  onClick={() => onSelectEvent(event)}
+                  onClick={() => selectEvent(event)}
                   sx={{
                     border: 0,
                     borderLeft: '4px solid',
@@ -218,6 +260,8 @@ export function AgendaWeekCalendar({
       </Box>
 
       <Box
+        role="region"
+        aria-label={t('title')}
         sx={{
           display: { xs: 'none', md: 'grid' },
           gridTemplateColumns: {
@@ -258,15 +302,49 @@ export function AgendaWeekCalendar({
           </Stack>
         ))}
 
+        {hasAllDayItems && (
+          <>
+            <Typography
+              sx={{
+                color: brand.neutral[500],
+                fontSize: 11,
+                fontWeight: 800,
+                borderTop: '1px solid',
+                borderColor: alpha.graphite[8],
+                p: 1.2,
+              }}
+            >
+              {organizationT('allDay')}
+            </Typography>
+            {days.map((day) => (
+              <Stack
+                key={`all-day-${day.key}`}
+                spacing={0.8}
+                sx={{
+                  p: 1,
+                  borderTop: '1px solid',
+                  borderLeft: '1px solid',
+                  borderColor: alpha.graphite[8],
+                  minWidth: 0,
+                }}
+              >
+                {itemsByDay[day.key].allDayItems.map((item) => (
+                  <AgendaOrganizationCard key={item.id} item={item} />
+                ))}
+              </Stack>
+            ))}
+          </>
+        )}
+
         <Box
           sx={{
             position: 'relative',
-            height: scheduleTimelineHeight,
+            height: timelineHeight,
             borderTop: '1px solid',
             borderColor: alpha.graphite[8],
           }}
         >
-          {timeSlots.map((slot, index) => (
+          {calendarTimeSlots.map((slot, index) => (
             <Typography
               key={slot.label}
               sx={{
@@ -283,32 +361,62 @@ export function AgendaWeekCalendar({
           ))}
         </Box>
 
-        {days.map((day) => (
-          <Box
-            key={`timeline-${day.key}`}
-            sx={{
-              position: 'relative',
-              height: scheduleTimelineHeight,
-              borderTop: '1px solid',
-              borderLeft: '1px solid',
-              borderColor: alpha.graphite[8],
-              backgroundImage: `linear-gradient(${alpha.graphite[6]} 1px, ${surface.paper} 1px)`,
-              backgroundSize: `100% ${scheduleHourHeight}px`,
-            }}
-          >
-            {events
-              .filter((event) => event.scheduledDate === day.key)
-              .map((event) => (
-                <AgendaEventCard
-                  key={event.id}
-                  event={event}
-                  height={getEventHeight(event.durationMinutes)}
-                  onSelect={onSelectEvent}
-                  top={getEventOffsetTop(event.time)}
-                />
-              ))}
-          </Box>
-        ))}
+        {days.map((day) => {
+          const cards: AgendaCalendarCard[] = [
+            ...(eventSegments[day.key] ?? []).map((event) => ({
+              kind: 'event' as const,
+              event,
+              id: `event-${event.id}`,
+              top: getEventOffsetTop(event.time, firstHour),
+              height: getEventHeight(event.durationMinutes),
+            })),
+            ...itemsByDay[day.key].timedItems.map((item) => ({
+              kind: 'organization' as const,
+              item,
+              id: item.id,
+              top: getEventOffsetTop(item.time!, firstHour),
+              height: 64,
+            })),
+          ]
+          return (
+            <Box
+              key={`timeline-${day.key}`}
+              sx={{
+                position: 'relative',
+                height: timelineHeight,
+                borderTop: '1px solid',
+                borderLeft: '1px solid',
+                borderColor: alpha.graphite[8],
+                backgroundImage: `linear-gradient(${alpha.graphite[6]} 1px, ${surface.paper} 1px)`,
+                backgroundSize: `100% ${scheduleHourHeight}px`,
+              }}
+            >
+              {layoutAgendaCards(cards).map((card) =>
+                card.kind === 'event' ? (
+                  <AgendaEventCard
+                    key={card.id}
+                    event={card.event}
+                    height={card.height}
+                    onSelect={selectEvent}
+                    top={card.top}
+                    lane={card.lane}
+                    laneCount={card.laneCount}
+                  />
+                ) : (
+                  <Box
+                    key={card.id}
+                    sx={{
+                      ...getAgendaCardPlacementSx(card.top, card.height, card.lane, card.laneCount),
+                      '& > a': { height: '100%', boxSizing: 'border-box' },
+                    }}
+                  >
+                    <AgendaOrganizationCard item={card.item} />
+                  </Box>
+                ),
+              )}
+            </Box>
+          )
+        })}
       </Box>
     </Box>
   )

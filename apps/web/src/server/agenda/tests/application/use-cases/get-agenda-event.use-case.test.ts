@@ -36,7 +36,7 @@ describe('GetAgendaEventUseCase', () => {
 
     expect(result).toBe(event)
     expect(deps.agendaEventRepository.findByScopeAndId).toHaveBeenCalledWith(
-      { kind: 'tenant', tenantId: 'tenant-1' },
+      { kind: 'agent', tenantId: 'tenant-1', userId: 'agent-1' },
       'event-1',
     )
   })

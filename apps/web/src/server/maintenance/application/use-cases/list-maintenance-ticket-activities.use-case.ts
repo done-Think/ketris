@@ -1,23 +1,11 @@
-import { MaintenanceTicketNotFoundError } from '../../domain/errors'
-import type { MaintenanceActivity } from '../../domain/maintenance-ticket.entity'
-import type { MaintenanceTicketRepository } from '../ports/maintenance-ticket-repository.port'
+import type { MaintenanceTicketInput } from '../../types/use-case-inputs'
+import type { MaintenanceTicketRepository } from '../../types/maintenance-ticket-repository'
+import { loadTicket } from '../workflow'
 
 export class ListMaintenanceTicketActivitiesUseCase {
-  constructor(private readonly maintenanceTicketRepository: MaintenanceTicketRepository) {}
-
-  async execute(input: {
-    actorTenantId: string
-    ticketId: string
-  }): Promise<MaintenanceActivity[]> {
-    const existing = await this.maintenanceTicketRepository.findById(
-      input.actorTenantId,
-      input.ticketId,
-    )
-
-    if (!existing) {
-      throw new MaintenanceTicketNotFoundError()
-    }
-
-    return this.maintenanceTicketRepository.findActivities(input.actorTenantId, input.ticketId)
+  constructor(private readonly repository: MaintenanceTicketRepository) {}
+  async execute(input: MaintenanceTicketInput) {
+    await loadTicket(this.repository, input, input.ticketId)
+    return this.repository.findActivities(input.actorTenantId, input.ticketId)
   }
 }

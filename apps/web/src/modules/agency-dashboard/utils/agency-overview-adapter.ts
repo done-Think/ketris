@@ -110,6 +110,13 @@ export function mapKpisToAgencyOverviewKpis(
       ...getRevenueComparison(kpis.monthlyReceivable, kpis.monthlyReceivablePreviousMonth),
     },
     {
+      id: 'overdue',
+      labelKey: 'overdue',
+      value: formatFinancialAmount(kpis.overdueTotal, locale, exchangeRate),
+      helper: { key: kpis.overdueTotal > 0 ? 'overdue' : 'noOverdue' },
+      tone: kpis.overdueTotal > 0 ? 'warning' : 'neutral',
+    },
+    {
       id: 'occupancy',
       labelKey: 'occupancy',
       value: `${formatNumber(kpis.occupancyPercentage)}%`,

@@ -61,6 +61,7 @@ export class GetAgencyOverviewUseCase {
         receivedLeadsPreviousPeriod,
         monthlyReceivable: financialSummary.monthlyReceivable,
         monthlyReceivablePreviousMonth,
+        overdueTotal: financialSummary.overdueTotal,
         occupancyPercentage,
       },
       revenueSeries: financialSummary.monthlySeries,
