@@ -77,8 +77,8 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
       : notFound()
   const canManage =
     !isRenter &&
-    (session?.papel === 'ADMIN' ||
-      session?.papel === 'OWNER' ||
+    (session?.role === 'ADMIN' ||
+      session?.role === 'OWNER' ||
       session?.user?.id === property.responsibleUserId)
 
   const handlePublish = async () => {

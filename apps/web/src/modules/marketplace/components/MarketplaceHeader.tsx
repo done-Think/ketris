@@ -15,15 +15,15 @@ import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { MarketplaceHeaderProps } from '../types/marketplace-header'
 import type { ProfileActionTranslationKey } from '../types/user-profile'
 
-function getSwitchModeAction(papel: string | undefined): {
+function getSwitchModeAction(role: string | undefined): {
   href: LocalizedStringHref
   labelKey: ProfileActionTranslationKey
 } | null {
-  if (papel === 'ADMIN' || papel === 'OWNER') {
+  if (role === 'ADMIN' || role === 'OWNER') {
     return null
   }
 
-  if (papel === 'AGENT') {
+  if (role === 'AGENT') {
     return {
       href: '/register/details?profile=imobiliaria' as LocalizedStringHref,
       labelKey: 'createAgency',
@@ -56,7 +56,7 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
           name: session.user.name ?? session.user.email ?? '',
           email: session.user.email ?? '',
           avatar: session.user.image ?? undefined,
-          role: session.papel,
+          role: session.role,
         }
       : undefined
   const isGuest = status === 'unauthenticated'
@@ -75,7 +75,7 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
     return actions.flatMap((action) => {
       const switchModeAction =
         userProfile && action.labelKey === 'switchMode'
-          ? getSwitchModeAction(session?.papel)
+          ? getSwitchModeAction(session?.role)
           : undefined
 
       if (switchModeAction === null) return []
@@ -96,7 +96,7 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
             : undefined,
       }
     })
-  }, [locale, router, session?.papel, tProfileActions, userProfile])
+  }, [locale, router, session?.role, tProfileActions, userProfile])
 
   return (
     <>
