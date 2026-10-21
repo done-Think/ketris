@@ -5,15 +5,59 @@ import { errorResponseSchema } from '@server/shared/schemas/error-response.schem
 import {
   createContractRequestSchema,
   listContractsQuerySchema,
+  linkContractPartyUserRequestSchema,
 } from './schemas/contract-input.schema'
 import {
   contractIdParamsSchema,
   contractPartyIdParamsSchema,
   contractResponseSchema,
+  contractPartyUserLinkSchema,
   contractsResponseSchema,
 } from './schemas/contract.schema'
 
 export function registerContractsOpenApi(registry: OpenAPIRegistry): void {
+  registry.registerPath({
+    method: 'post',
+    path: '/contracts/{id}/parties/{partyId}/link-user',
+    tags: ['Contracts'],
+    summary: 'Administrador confirma o vínculo de um locatário pelo e-mail da parte',
+    description:
+      'Somente ADMIN do tenant do contrato. Localiza uma conta RENTER ativa pelo e-mail da parte LOCATARIO e persiste seu ID. Não substitui vínculo com outro usuário. A conta pode pertencer ao tenant compartilhado de locatários.',
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: contractPartyIdParamsSchema,
+      body: { content: { 'application/json': { schema: linkContractPartyUserRequestSchema } } },
+    },
+    responses: {
+      200: {
+        description: 'Vínculo confirmado, inclusive quando já existe para o mesmo usuário.',
+        content: { 'application/json': { schema: contractPartyUserLinkSchema } },
+      },
+      400: {
+        description: 'E-mail inválido ou campos não permitidos.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Somente administradores podem confirmar o vínculo.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      404: {
+        description:
+          'Contrato ou parte locatária não encontrados no tenant, ou conta RENTER ativa não encontrada.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      409: {
+        description:
+          'E-mail diferente da parte, vínculo com outro usuário ou alteração concorrente.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
   registry.registerPath({
     method: 'get',
     path: '/contracts',

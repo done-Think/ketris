@@ -6,6 +6,7 @@ import type {
   EligibleOpportunity,
   NewContract,
 } from '../../domain/contract.entity'
+import type { LinkContractPartyUserData } from '../../types/contract-party-user-link'
 
 export interface ContractRepository {
   findEligibleOpportunity(
@@ -26,4 +27,5 @@ export interface ContractRepository {
     partyId: string,
     actorId: string,
   ): Promise<Contract>
+  linkPartyUser(input: LinkContractPartyUserData): Promise<boolean>
 }

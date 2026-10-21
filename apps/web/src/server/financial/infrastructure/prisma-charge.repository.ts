@@ -1,4 +1,4 @@
-import type { Cobranca, Contrato, Imovel, ParteContrato } from '@prisma/client'
+import type { Prisma } from '@prisma/client'
 
 import { prisma } from '@server/db/prisma'
 
@@ -12,18 +12,9 @@ import type {
   FinancialMonthlyTotal,
   NewCharge,
 } from '../domain/charge.entity'
+import type { ChargeReadScope } from '../types/charge-read-scope'
 import type { ChargeRepository } from '../application/ports/charge-repository.port'
-
-type CobrancaWithRelations = Cobranca & {
-  contrato:
-    | (Contrato & {
-        imovel: Pick<Imovel, 'id' | 'titulo'> & {
-          endereco: { logradouro: string; bairro: string; cidade: string } | null
-        }
-        partes: Pick<ParteContrato, 'nome' | 'email'>[]
-      })
-    | null
-}
+import type { CobrancaWithRelations } from '../types/prisma-charge-repository'
 
 function buildPropertyAddress(
   endereco: { logradouro: string; bairro: string; cidade: string } | null,
@@ -95,6 +86,25 @@ function monthRange(referenceDate: Date, monthsBack: number) {
   return { start, end }
 }
 
+function chargeReadWhere(scope: ChargeReadScope): Prisma.CobrancaWhereInput {
+  if (scope.kind === 'renter') {
+    return {
+      tipo: 'A_RECEBER',
+      contrato: {
+        partes: {
+          some: {
+            papel: 'LOCATARIO',
+            usuarioId: scope.userId,
+            usuario: { ativo: true, papel: 'RENTER' },
+          },
+        },
+      },
+    }
+  }
+
+  return { tenantId: scope.tenantId }
+}
+
 export class PrismaChargeRepository implements ChargeRepository {
   async findContractSummary(tenantId: string, contractId: string): Promise<{ id: string } | null> {
     const contrato = await prisma.contrato.findFirst({
@@ -131,7 +141,7 @@ export class PrismaChargeRepository implements ChargeRepository {
     const search = filters.search?.trim()
 
     const where = {
-      tenantId: filters.tenantId,
+      AND: [chargeReadWhere(filters.scope)],
       tipo: filters.type,
       status: filters.status,
       ...(search
@@ -193,8 +203,12 @@ export class PrismaChargeRepository implements ChargeRepository {
   }
 
   async findById(tenantId: string, chargeId: string): Promise<Charge | null> {
+    return this.findReadableById({ kind: 'tenant', tenantId }, chargeId)
+  }
+
+  async findReadableById(scope: ChargeReadScope, chargeId: string): Promise<Charge | null> {
     const cobranca = await prisma.cobranca.findFirst({
-      where: { tenantId, id: chargeId },
+      where: { ...chargeReadWhere(scope), id: chargeId },
       include: chargeInclude,
     })
 

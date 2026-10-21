@@ -39,6 +39,7 @@ const contract: Contract = {
   parties: [
     {
       id: 'party-owner',
+      userId: null,
       role: 'LOCADOR',
       name: 'Bruno Oliveira',
       cpf: '11111111111',
@@ -50,6 +51,7 @@ const contract: Contract = {
     },
     {
       id: 'party-tenant',
+      userId: null,
       role: 'LOCATARIO',
       name: 'Mariana Souza',
       cpf: '22222222222',
@@ -75,6 +77,7 @@ function createRepository(overrides?: Partial<ContractRepository>): ContractRepo
     findMany: vi.fn().mockResolvedValue({ items: [], totalCount: 0 }),
     findById: vi.fn().mockResolvedValue(contract),
     signParty: vi.fn().mockResolvedValue({ ...contract, status: 'ATIVO' }),
+    linkPartyUser: vi.fn().mockResolvedValue(true),
     ...overrides,
   }
 }

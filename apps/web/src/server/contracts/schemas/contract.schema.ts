@@ -33,6 +33,7 @@ export const contractActorSchema = z
 export const contractPartySchema = z
   .object({
     id: z.string(),
+    userId: z.string().nullable(),
     role: contractPartyRoleSchema,
     name: z.string(),
     cpf: z.string(),
@@ -45,6 +46,10 @@ export const contractPartySchema = z
       .openapi({ description: 'Usuário da imobiliária que registrou a assinatura.' }),
   })
   .openapi('ContractParty')
+
+export const contractPartyUserLinkSchema = z
+  .object({ partyId: z.string(), userId: z.string() })
+  .openapi('ContractPartyUserLink')
 
 export const contractDocumentSchema = z
   .object({
