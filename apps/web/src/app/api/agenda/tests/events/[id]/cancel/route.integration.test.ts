@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
 import { NextRequest } from 'next/server'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
@@ -19,6 +19,9 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
   const slotStart = new Date(Date.UTC(new Date().getUTCFullYear() + 1, 0, 15, 13, 0))
 
   beforeAll(async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-10-01T09:00:00.000Z'))
+
     const tenant = await prisma.tenant.create({
       data: { nome: 'Tenant Agenda Cancel', slug: `agenda-cancel-${randomUUID()}` },
     })
@@ -79,6 +82,7 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
   })
 
   afterAll(async () => {
+    vi.useRealTimers()
     if (tenantId) await prisma.tenant.delete({ where: { id: tenantId } })
     await prisma.$disconnect()
   })
@@ -121,6 +125,9 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
 
   it('um evento cancelado libera o horário para um novo agendamento (sem falso conflito)', async () => {
     const { POST: createEvent } = await import('../../../../events/route')
+
+    const cancelResponse = await POST(buildRequest(eventId), context(eventId))
+    expect(cancelResponse.status).toBe(200)
 
     const createRequest = new NextRequest('http://localhost/api/agenda/events', {
       method: 'POST',
