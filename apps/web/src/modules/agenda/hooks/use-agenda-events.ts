@@ -24,10 +24,10 @@ export function useAgendaEvents(tenantId: string | null | undefined, from: strin
     queryKey: [
       ...agendaQueryKeys.range(scopedTenantId, from, to),
       session?.user?.id,
-      session?.papel,
+      session?.role,
     ],
     queryFn: () => agendaService.list(from, to),
-    enabled: Boolean(tenantId) && Boolean(session?.user?.id) && Boolean(session?.papel),
+    enabled: Boolean(tenantId) && Boolean(session?.user?.id) && Boolean(session?.role),
   })
 }
 

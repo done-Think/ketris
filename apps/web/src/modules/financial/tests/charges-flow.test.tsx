@@ -247,7 +247,7 @@ const detail = (id: string) => wrap(<ChargeDetailsPage chargeId={id} />)
 beforeEach(() => {
   vi.clearAllMocks()
   vi.mocked(useSession).mockReturnValue({
-    data: { tenantId: 'tenant-1', papel: 'ADMIN' },
+    data: { tenantId: 'tenant-1', role: 'ADMIN' },
     status: 'authenticated',
     update: vi.fn(),
   } as unknown as ReturnType<typeof useSession>)
@@ -266,7 +266,7 @@ beforeEach(() => {
 describe('charges list', () => {
   it('hides charge creation from renters', () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1', papel: 'RENTER' },
+      data: { tenantId: 'tenant-1', role: 'RENTER' },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
@@ -288,9 +288,9 @@ describe('charges list', () => {
 
   it.each(['ADMIN', 'OWNER', 'AGENT'] as const)(
     'preserves charge creation for %s',
-    async (papel) => {
+    async (role) => {
       vi.mocked(useSession).mockReturnValue({
-        data: { tenantId: 'tenant-1', papel },
+        data: { tenantId: 'tenant-1', role },
         status: 'authenticated',
         update: vi.fn(),
       } as unknown as ReturnType<typeof useSession>)
@@ -311,7 +311,7 @@ describe('charges list', () => {
     expect(screen.getByRole('dialog')).toBeVisible()
 
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1', papel: 'RENTER' },
+      data: { tenantId: 'tenant-1', role: 'RENTER' },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)

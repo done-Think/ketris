@@ -64,7 +64,7 @@ export function ChargesPage() {
   const { enqueueSnackbar } = useSnackbar()
   const { data: session, status: sessionStatus } = useSession()
   const canCreateCharge =
-    sessionStatus === 'authenticated' && Boolean(session?.papel && session.papel !== 'RENTER')
+    sessionStatus === 'authenticated' && Boolean(session?.role && session.role !== 'RENTER')
   const tenantId = session?.tenantId ?? ''
   const chargesQuery = useCharges(tenantId, { pageSize: 500 })
   const charges = useMemo(

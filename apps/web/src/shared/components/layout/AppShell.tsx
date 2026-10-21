@@ -27,7 +27,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   const pathname = usePathname()
   const router = useRouter()
   const { data: session, status } = useSession()
-  const isRenter = session?.scope === 'tenant' && session.papel === 'RENTER'
+  const isRenter = session?.scope === 'tenant' && session.role === 'RENTER'
   const isRenterRoute =
     pathname === '/dashboard/agenda' ||
     /^\/dashboard\/(?:finance\/charges|maintenance)(?:\/[^/]+)?\/?$/.test(pathname) ||
