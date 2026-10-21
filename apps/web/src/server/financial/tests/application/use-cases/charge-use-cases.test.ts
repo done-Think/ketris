@@ -337,12 +337,28 @@ describe('RegisterChargePaymentUseCase', () => {
 })
 
 describe('GetFinancialSummaryUseCase', () => {
-  it('delega para o repositório com a data de referência atual', async () => {
-    const repository = createRepository()
-    const useCase = new GetFinancialSummaryUseCase(repository)
+  it.each(['OWNER', 'ADMIN'] as const)(
+    'delega para o repositório com a data de referência atual para %s',
+    async (actorPapel) => {
+      const repository = createRepository()
+      const useCase = new GetFinancialSummaryUseCase(repository)
 
-    await useCase.execute({ actorTenantId: 'tenant-1' })
+      await useCase.execute({ actorTenantId: 'tenant-1', actorPapel })
 
-    expect(repository.getSummary).toHaveBeenCalledWith('tenant-1', expect.any(Date))
-  })
+      expect(repository.getSummary).toHaveBeenCalledWith('tenant-1', expect.any(Date))
+    },
+  )
+
+  it.each(['AGENT', 'RENTER'] as const)(
+    'lança ForbiddenError para %s sem consultar o repositório',
+    async (actorPapel) => {
+      const repository = createRepository()
+      const useCase = new GetFinancialSummaryUseCase(repository)
+
+      await expect(
+        useCase.execute({ actorTenantId: 'tenant-1', actorPapel }),
+      ).rejects.toMatchObject({ status: 403, code: 'FORBIDDEN' })
+      expect(repository.getSummary).not.toHaveBeenCalled()
+    },
+  )
 })

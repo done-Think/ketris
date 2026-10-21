@@ -107,7 +107,10 @@ describe('GetAgencyOverviewUseCase', () => {
       topBrokers: [topBroker],
       recentActivities: [activity],
     })
-    expect(financialSummaryProvider.execute).toHaveBeenCalledWith({ actorTenantId: 'tenant-1' })
+    expect(financialSummaryProvider.execute).toHaveBeenCalledWith({
+      actorTenantId: 'tenant-1',
+      actorPapel: 'OWNER',
+    })
   })
 
   it('permite ADMIN e delega o mesmo tenant do ator para todas as fontes', async () => {

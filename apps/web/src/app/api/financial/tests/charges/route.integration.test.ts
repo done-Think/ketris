@@ -425,13 +425,64 @@ describe('/api/financial/charges (integração)', () => {
     expect(confirmResponse.status).toBe(404)
   })
 
+  async function createToken(papel: 'OWNER' | 'ADMIN') {
+    const user = await prisma.usuario.create({
+      data: {
+        tenantId,
+        nome: `Usuário ${papel}`,
+        email: `${papel.toLowerCase()}-${randomUUID()}@ketris.dev`,
+        senhaHash: 'hash-fake',
+        papel,
+      },
+    })
+
+    return tokenService.sign({
+      id: user.id,
+      tenantId: user.tenantId,
+      nome: user.nome,
+      email: user.email,
+      papel: user.papel,
+      ativo: user.ativo,
+      vinculoAprovadoEm: user.vinculoAprovadoEm,
+    })
+  }
+
   it('calcula a taxa de ocupação no resumo financeiro a partir dos imóveis de aluguel', async () => {
     const response = await getSummary(
-      buildRequest('http://localhost/api/financial/summary', 'GET', undefined, actorToken),
+      buildRequest(
+        'http://localhost/api/financial/summary',
+        'GET',
+        undefined,
+        await createToken('OWNER'),
+      ),
     )
     const json = await response.json()
 
     expect(response.status).toBe(200)
     expect(json.occupancyRatePercentage).toBe(100)
+  })
+
+  it('libera o resumo financeiro para ADMIN', async () => {
+    const response = await getSummary(
+      buildRequest(
+        'http://localhost/api/financial/summary',
+        'GET',
+        undefined,
+        await createToken('ADMIN'),
+      ),
+    )
+
+    expect(response.status).toBe(200)
+  })
+
+  it.each([
+    ['AGENT', () => actorToken],
+    ['RENTER', () => renterToken],
+  ])('retorna 403 quando um %s pede o resumo financeiro da imobiliária', async (_, token) => {
+    const response = await getSummary(
+      buildRequest('http://localhost/api/financial/summary', 'GET', undefined, token()),
+    )
+
+    expect(response.status).toBe(403)
   })
 })

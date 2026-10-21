@@ -174,6 +174,7 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
     path: '/financial/summary',
     tags: ['Financial'],
     summary: 'Agregação financeira do tenant para o dashboard',
+    description: 'Receita da imobiliária inteira: só OWNER e ADMIN do tenant.',
     security: [{ bearerAuth: [] }],
     responses: {
       200: {
@@ -182,6 +183,10 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
       },
       401: {
         description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Usuário AGENT ou RENTER: o resumo é só de proprietários e administradores.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },
