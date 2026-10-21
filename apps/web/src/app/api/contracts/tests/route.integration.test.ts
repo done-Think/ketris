@@ -600,4 +600,45 @@ describe('/api/contracts (integração)', () => {
     const charges = await prisma.cobranca.findMany({ where: { contratoId: contract.id } })
     expect(charges).toHaveLength(1)
   })
+
+  it('quando as duas últimas partes assinam ao mesmo tempo, o contrato ativa uma única vez', async () => {
+    const opportunity = await prisma.oportunidade.create({
+      data: {
+        tenantId,
+        imovelId: propertyId,
+        interessadoNome: 'Lucas Prado',
+        interessadoEmail: 'lucas@example.com',
+        valorProposto: 2800,
+        status: 'ACEITA',
+      },
+    })
+    const created = await POST(
+      buildRequest(
+        'http://localhost/api/contracts',
+        'POST',
+        { ...createPayload, opportunityId: opportunity.id },
+        actorToken,
+      ),
+    )
+    const { contract } = await created.json()
+    const responses = await Promise.all(
+      contract.parties.map((party: { id: string }) =>
+        signParty(
+          buildRequest(
+            `http://localhost/api/contracts/${contract.id}/parties/${party.id}/sign`,
+            'POST',
+            undefined,
+            adminToken,
+          ),
+          partyContext(contract.id, party.id),
+        ),
+      ),
+    )
+
+    expect(responses.map((response) => response.status)).toEqual([200, 200])
+    const stored = await prisma.contrato.findUniqueOrThrow({ where: { id: contract.id } })
+    expect(stored.status).toBe('ATIVO')
+    const charges = await prisma.cobranca.findMany({ where: { contratoId: contract.id } })
+    expect(charges).toHaveLength(1)
+  })
 })

@@ -281,6 +281,10 @@ export class PrismaContractRepository implements ContractRepository {
     actorId: string,
   ): Promise<Contract> {
     const updated = await prisma.$transaction(async (tx) => {
+      // Locks the contract so signings of its parties run one at a time: otherwise the last two
+      // parties signing together each miss the other's signature and nobody activates it.
+      await tx.$queryRaw`SELECT id FROM "contratos" WHERE id = ${contractId} AND "tenantId" = ${tenantId} FOR UPDATE`
+
       // Conditional on PENDENTE so two concurrent requests for the same party cannot both sign
       // it (the second would overwrite who signed); the loser gets a 409.
       const { count } = await tx.assinatura.updateMany({
