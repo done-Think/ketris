@@ -58,171 +58,178 @@ export function PlatformShell({ children }: PlatformShellProps) {
   const toggleSidebarCollapsed = useSidebarPreferencesStore((state) => state.toggleCollapsed)
 
   const sidebar = (collapsed = false, isMobile = false, showCollapseControl = true) => (
-    <Stack
-      component="aside"
-      sx={{
-        width: collapsed ? sidebarCollapsedWidth : sidebarExpandedWidth,
-        height: '100%',
-        bgcolor: brand.graphite[600],
-        color: surface.lightText,
-        px: collapsed ? 1 : 2,
-        py: 2.5,
-        transition: 'width 180ms ease, padding 180ms ease',
-      }}
-    >
+    <Box sx={{ position: 'relative', height: '100%' }}>
       <Stack
-        alignItems="center"
-        justifyContent="center"
-        sx={{ width: '100%', height: collapsed ? 84 : 48, mb: 1.5, position: 'relative' }}
+        component="aside"
+        sx={{
+          width: collapsed ? sidebarCollapsedWidth : sidebarExpandedWidth,
+          height: '100%',
+          bgcolor: brand.graphite[600],
+          color: surface.lightText,
+          px: collapsed ? 1 : 2,
+          py: 2.5,
+          transition: 'width 180ms ease, padding 180ms ease',
+        }}
       >
-        <AppLogo
-          src={collapsed ? '/ketris-tab-icon.png' : ketrisLogoFooter}
-          width={collapsed ? 40 : 120}
-          sx={{ left: '50%', position: 'absolute', top: 0, transform: 'translateX(-50%)' }}
-        />
-        {showCollapseControl ? (
-          <Tooltip title={collapsed ? t('expandNavigation') : t('collapseMenu')} placement="right">
-            <Button
-              aria-label={collapsed ? t('expandNavigation') : t('collapseNavigation')}
-              onClick={toggleSidebarCollapsed}
-              startIcon={
-                <KeyboardDoubleArrowLeftRoundedIcon
+        <Stack
+          alignItems="center"
+          justifyContent="center"
+          sx={{ width: '100%', height: 48, flexShrink: 0, mb: 1.5, position: 'relative' }}
+        >
+          <AppLogo
+            src={collapsed ? '/ketris-tab-icon.png' : ketrisLogoFooter}
+            width={collapsed ? 40 : 120}
+            sx={{ left: '50%', position: 'absolute', top: 0, transform: 'translateX(-50%)' }}
+          />
+          {isMobile && (
+            <IconButton
+              aria-label={t('closeNavigation')}
+              onClick={() => setMobileOpen(false)}
+              sx={{ color: 'inherit', position: 'absolute', right: 0, top: 0 }}
+            >
+              <CloseRoundedIcon />
+            </IconButton>
+          )}
+        </Stack>
+
+        <Stack
+          component="nav"
+          spacing={0.5}
+          aria-label={t('ariaLabel')}
+          sx={{ mx: collapsed ? 0 : -0.5 }}
+        >
+          {navigationItems.map(({ label, icon: Icon, href }) => {
+            const active =
+              href === pathname ||
+              (href === '/platform/tenants' && pathname.startsWith('/platform/tenants/')) ||
+              (href === '/platform/admins' && pathname.startsWith('/platform/admins'))
+            const content = (
+              <>
+                <Icon sx={{ fontSize: iconSize.md }} />
+                <Typography
                   sx={{
-                    fontSize: iconSize.md,
-                    transform: collapsed ? 'rotate(180deg)' : 'none',
-                    transition: 'transform 180ms ease',
+                    display: collapsed ? 'none' : 'block',
+                    flex: 1,
+                    fontSize: 14,
+                    fontWeight: active ? 600 : 500,
+                    lineHeight: '20px',
                   }}
-                />
-              }
-              sx={{
-                position: 'absolute',
-                right: collapsed ? '50%' : 0,
-                top: collapsed ? 48 : 2,
-                transform: collapsed ? 'translateX(50%)' : 'none',
-                minWidth: 36,
-                minHeight: 36,
-                px: 0,
-                color: alpha.white[62],
-                '& .MuiButton-startIcon': { m: 0 },
-                '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
-              }}
-            />
-          </Tooltip>
-        ) : null}
-        {isMobile && (
-          <IconButton
-            aria-label={t('closeNavigation')}
-            onClick={() => setMobileOpen(false)}
-            sx={{ color: 'inherit', position: 'absolute', right: 0, top: 0 }}
-          >
-            <CloseRoundedIcon />
-          </IconButton>
-        )}
-      </Stack>
+                >
+                  {t(label)}
+                </Typography>
+              </>
+            )
 
-      <Stack
-        component="nav"
-        spacing={0.5}
-        aria-label={t('ariaLabel')}
-        sx={{ mx: collapsed ? 0 : -0.5 }}
-      >
-        {navigationItems.map(({ label, icon: Icon, href }) => {
-          const active =
-            href === pathname ||
-            (href === '/platform/tenants' && pathname.startsWith('/platform/tenants/')) ||
-            (href === '/platform/admins' && pathname.startsWith('/platform/admins'))
-          const content = (
-            <>
-              <Icon sx={{ fontSize: iconSize.md }} />
-              <Typography
-                sx={{
-                  display: collapsed ? 'none' : 'block',
-                  flex: 1,
-                  fontSize: 14,
-                  fontWeight: active ? 600 : 500,
-                  lineHeight: '20px',
-                }}
-              >
-                {t(label)}
-              </Typography>
-            </>
-          )
+            if (href) {
+              return (
+                <Box
+                  key={label}
+                  component={Link}
+                  href={href}
+                  aria-current={active ? 'page' : undefined}
+                  onClick={() => setMobileOpen(false)}
+                  aria-label={collapsed ? t(label) : undefined}
+                  sx={navItemSx(active, collapsed, true)}
+                >
+                  {content}
+                </Box>
+              )
+            }
 
-          if (href) {
             return (
               <Box
                 key={label}
-                component={Link}
-                href={href}
-                aria-current={active ? 'page' : undefined}
-                onClick={() => setMobileOpen(false)}
+                aria-disabled="true"
                 aria-label={collapsed ? t(label) : undefined}
-                sx={navItemSx(active, collapsed)}
+                sx={navItemSx(false, collapsed, false)}
               >
                 {content}
               </Box>
             )
-          }
+          })}
+        </Stack>
 
-          return (
-            <Box
-              key={label}
-              aria-disabled="true"
-              aria-label={collapsed ? t(label) : undefined}
-              sx={navItemSx(false, collapsed)}
-            >
-              {content}
-            </Box>
-          )
-        })}
-      </Stack>
+        <Box sx={{ flexGrow: 1, minHeight: 2 }} />
 
-      <Box sx={{ flexGrow: 1, minHeight: 2 }} />
+        <Tooltip title={commonT('backToMarketplace')} placement="right">
+          <Button
+            component={Link}
+            href="/"
+            aria-label={commonT('backToMarketplace')}
+            startIcon={<LogoutOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+            sx={{
+              alignSelf: collapsed ? 'center' : 'stretch',
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              minWidth: collapsed ? 44 : 0,
+              ...marketplaceActionSx,
+              minHeight: 40,
+              mb: 1.5,
+              px: collapsed ? 0 : 1.5,
+              '& .MuiButton-startIcon': { ml: 0, mr: collapsed ? 0 : 0.75 },
+            }}
+          >
+            {collapsed ? null : commonT('backToMarketplace')}
+          </Button>
+        </Tooltip>
 
-      <Tooltip title={commonT('backToMarketplace')} placement="right">
-        <Button
-          component={Link}
-          href="/"
-          aria-label={commonT('backToMarketplace')}
-          startIcon={<LogoutOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+        <Stack
+          direction="row"
+          alignItems="center"
+          spacing={0.8}
+          justifyContent={collapsed ? 'center' : 'flex-start'}
           sx={{
-            alignSelf: collapsed ? 'center' : 'stretch',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            minWidth: collapsed ? 44 : 0,
-            ...marketplaceActionSx,
-            minHeight: 40,
-            mb: 1.5,
-            px: collapsed ? 0 : 1.5,
-            '& .MuiButton-startIcon': { ml: 0, mr: collapsed ? 0 : 0.75 },
+            pt: 2,
+            px: collapsed ? 0 : 0.9,
+            borderTop: '1px solid',
+            borderColor: alpha.white[8],
           }}
         >
-          {collapsed ? null : commonT('backToMarketplace')}
-        </Button>
-      </Tooltip>
-
-      <Stack
-        direction="row"
-        alignItems="center"
-        spacing={0.8}
-        justifyContent={collapsed ? 'center' : 'flex-start'}
-        sx={{ pt: 2, px: collapsed ? 0 : 0.9, borderTop: '1px solid', borderColor: alpha.white[8] }}
-      >
-        <Box
-          aria-hidden
-          sx={{ width: 8, height: 8, borderRadius: radius.full, bgcolor: brand.semantic.success }}
-        />
-        <Typography
-          sx={{
-            display: collapsed ? 'none' : 'block',
-            color: alpha.white[72],
-            fontSize: 12,
-            fontWeight: 700,
-          }}
-        >
-          {t('online')}
-        </Typography>
+          <Box
+            aria-hidden
+            sx={{ width: 8, height: 8, borderRadius: radius.full, bgcolor: brand.semantic.success }}
+          />
+          <Typography
+            sx={{
+              display: collapsed ? 'none' : 'block',
+              color: alpha.white[72],
+              fontSize: 12,
+              fontWeight: 700,
+            }}
+          >
+            {t('online')}
+          </Typography>
+        </Stack>
       </Stack>
-    </Stack>
+      {showCollapseControl ? (
+        <Tooltip title={collapsed ? t('expandNavigation') : t('collapseMenu')} placement="right">
+          <IconButton
+            aria-label={collapsed ? t('expandNavigation') : t('collapseNavigation')}
+            onClick={toggleSidebarCollapsed}
+            sx={{
+              position: 'absolute',
+              right: -14,
+              top: 32,
+              zIndex: 1,
+              width: 28,
+              height: 28,
+              bgcolor: brand.graphite[600],
+              border: '1px solid',
+              borderColor: alpha.white[8],
+              color: alpha.white[62],
+              '&:hover': { bgcolor: brand.graphite[600], color: surface.lightText },
+            }}
+          >
+            <KeyboardDoubleArrowLeftRoundedIcon
+              sx={{
+                fontSize: iconSize.sm,
+                transform: collapsed ? 'rotate(180deg)' : 'none',
+                transition: 'transform 180ms ease',
+              }}
+            />
+          </IconButton>
+        </Tooltip>
+      ) : null}
+    </Box>
   )
 
   return (
@@ -341,7 +348,7 @@ export function PlatformShell({ children }: PlatformShellProps) {
   )
 }
 
-function navItemSx(active: boolean, collapsed: boolean) {
+function navItemSx(active: boolean, collapsed: boolean, interactive: boolean) {
   return {
     alignItems: 'center',
     justifyContent: collapsed ? 'center' : 'flex-start',
@@ -350,7 +357,7 @@ function navItemSx(active: boolean, collapsed: boolean) {
     borderLeft: '3px solid',
     borderColor: active ? 'primary.main' : 'transparent',
     color: active ? surface.lightText : alpha.white[62],
-    cursor: active ? 'pointer' : 'default',
+    cursor: interactive ? 'pointer' : 'default',
     display: 'flex',
     gap: 1.5,
     minHeight: 44,
@@ -361,6 +368,6 @@ function navItemSx(active: boolean, collapsed: boolean) {
     transition: 'background-color 160ms ease, color 160ms ease',
     '& svg': { color: active ? 'primary.main' : 'inherit' },
     '&:focus-visible': { outline: `2px solid ${brand.magenta[300]}`, outlineOffset: 2 },
-    '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
+    '&:hover': interactive ? { bgcolor: alpha.white[8], color: surface.lightText } : undefined,
   }
 }
