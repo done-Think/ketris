@@ -86,6 +86,8 @@
     "search": {
       "submit": "Buscar",
       "mobilePlaceholder": "Buscar por bairro, cidade...",
+      "mobileDialogTitle": "Buscar imóveis",
+      "closeSearch": "Fechar busca",
       "locationPlaceholder": "Digite cidade ou bairro",
       "propertyTypePlaceholder": "Digite o tipo de imóvel",
       "clearSearch": "Limpar busca",

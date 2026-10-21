@@ -86,6 +86,8 @@
     "search": {
       "submit": "Search",
       "mobilePlaceholder": "Search by neighborhood or city...",
+      "mobileDialogTitle": "Search properties",
+      "closeSearch": "Close search",
       "locationPlaceholder": "Enter a city or neighborhood",
       "propertyTypePlaceholder": "Enter the property type",
       "clearSearch": "Clear search",

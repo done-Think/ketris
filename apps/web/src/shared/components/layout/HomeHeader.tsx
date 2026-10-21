@@ -323,6 +323,10 @@ export function HomeHeader({
             ))}
           </Stack>
 
+          <Divider />
+
+          <LanguageSelector />
+
           {canAnnounceProperty ? (
             <>
               <Divider />

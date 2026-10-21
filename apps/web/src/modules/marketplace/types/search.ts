@@ -212,11 +212,8 @@ export type DesktopSearchBarProps = SearchMenuProps &
     openSearchMenu: (key: SearchFilterKey) => void
   }
 
-export type MobileSearchBoxProps = SearchMenuProps & {
-  activeSearchMenu: SearchFilterKey | null
+export type MobileSearchBoxProps = Omit<DesktopSearchBarProps, 'desktopSearchRef'> & {
   mobileSearchRef: Ref<HTMLDivElement>
-  searchHref: LocalizedHref
-  openSearchMenu: (key: SearchFilterKey) => void
 }
 
 export type HeroSectionProps = DesktopSearchBarProps & {
