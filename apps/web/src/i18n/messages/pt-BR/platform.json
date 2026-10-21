@@ -327,6 +327,11 @@
       "SUSPENDED": "Suspensa",
       "CANCELED": "Cancelada"
     },
+    "errors": {
+      "forbidden": "Só administradores da plataforma com a função Admin podem alterar contas.",
+      "changedConcurrently": "Esta conta foi alterada por outra pessoa. Recarregue e tente novamente.",
+      "notFound": "Esta conta não existe mais."
+    },
     "save": "Salvar",
     "cancel": "Cancelar",
     "updateSuccess": "Conta atualizada.",
@@ -361,7 +366,9 @@
     "chargeWithExtraBrokers": "{base} + {count, plural, one {# corretor extra} other {# corretores extras}} ({extra})",
     "errors": {
       "invalidAmount": "Informe um valor válido, com até duas casas decimais.",
-      "invalidUnits": "Informe um número inteiro."
+      "invalidUnits": "Informe um número inteiro.",
+      "forbidden": "Só administradores da plataforma com a função Admin podem alterar planos.",
+      "notFound": "Este plano não existe."
     },
     "save": "Salvar",
     "cancel": "Cancelar",

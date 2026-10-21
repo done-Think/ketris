@@ -19,9 +19,9 @@ import { Controller, useForm } from 'react-hook-form'
 import { useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 import { useSnackbar } from 'notistack'
-import axios from 'axios'
 
 import { iconSize } from '@shared/theme/tokens'
+import { extractErrorMessage } from '@shared/utils/error-message'
 
 import { useUpdateTenantAccount } from '../hooks/use-update-tenant-account'
 import { createTenantAccountSchema } from '../schemas/tenant-account-schema'
@@ -49,11 +49,15 @@ export function EditTenantAccountDialog({ tenant, onClose }: EditTenantAccountDi
       enqueueSnackbar(t('updateSuccess'), { variant: 'success' })
       onClose()
     } catch (error) {
-      const message =
-        axios.isAxiosError(error) && typeof error.response?.data?.error?.message === 'string'
-          ? error.response.data.error.message
-          : t('updateError')
-      enqueueSnackbar(message, { variant: 'error' })
+      // Server messages are in Portuguese: show the translated text for the known codes.
+      enqueueSnackbar(
+        extractErrorMessage(error, t('updateError'), {
+          FORBIDDEN: t('errors.forbidden'),
+          TENANT_ACCOUNT_CHANGED_CONCURRENTLY: t('errors.changedConcurrently'),
+          TENANT_NOT_FOUND: t('errors.notFound'),
+        }),
+        { variant: 'error' },
+      )
     }
   }
 
