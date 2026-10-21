@@ -90,6 +90,8 @@ export function PropertyDetailHeader({
         </Typography>
       </Box>
 
+      {/* maxWidth lets the buttons wrap onto a second line on phones instead of running past the
+          right edge of the screen. */}
       {canManage ? (
         <Stack
           direction="row"
@@ -97,7 +99,7 @@ export function PropertyDetailHeader({
           alignItems="flex-start"
           useFlexGap
           gap={1.2}
-          sx={{ flexShrink: 0 }}
+          sx={{ flexShrink: 0, maxWidth: '100%' }}
         >
           <Button
             variant="outlined"
