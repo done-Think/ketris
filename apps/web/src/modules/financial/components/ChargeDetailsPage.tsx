@@ -149,8 +149,7 @@ function ChargeDetailsContent({ charge, tenantId }: { charge: Charge; tenantId: 
       sx={{
         width: '100%',
         overflowWrap: 'anywhere',
-        px: { xs: 2, md: 3.6 },
-        py: { xs: 2.4, md: 3 },
+        p: 3.5,
       }}
     >
       <Stack spacing={2.2}>

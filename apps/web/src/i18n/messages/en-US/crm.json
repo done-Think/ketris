@@ -292,8 +292,6 @@
     "loadingAriaLabel": "Loading opportunity",
     "activitiesTitle": "Recent activities",
     "activitiesEmpty": "No recent activity registered",
-    "activitiesViewMore": "View more",
-    "activitiesViewLess": "View less",
     "createdActivityTitle": "Opportunity created",
     "createdActivityDetail": "Record added to the pipeline.",
     "updatedActivityTitle": "Opportunity updated",
@@ -369,8 +367,6 @@
       "title": "Next actions",
       "empty": "No next action registered",
       "dueAt": "Suggested due date",
-      "viewMore": "View more",
-      "viewLess": "View less",
       "completeDraft": {
         "title": "Complete request details",
         "detail": "Review contact, intended value, and property before sending the proposal."

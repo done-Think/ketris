@@ -2,6 +2,8 @@ import { BaseService } from '@shared/lib/api/base-service'
 
 import type {
   ApproveMembershipResponse,
+  CreateTenantUserPayload,
+  CreateTenantUserResponse,
   ListUsersResponse,
   TenantUser,
   UpdateCurrentUserPayload,
@@ -14,6 +16,10 @@ class UserService extends BaseService {
 
   list(): Promise<TenantUser[]> {
     return this.http.get<ListUsersResponse>(this.path).then((data) => data.users)
+  }
+
+  create(payload: CreateTenantUserPayload): Promise<TenantUser> {
+    return this.http.post<CreateTenantUserResponse>(this.path, payload).then((data) => data.user)
   }
 
   approveMembership(id: string): Promise<TenantUser> {
@@ -39,8 +45,8 @@ class UserService extends BaseService {
       .then((data) => data.media.url)
   }
 
-  changeOwnPassword(password: string): Promise<void> {
-    return this.http.post<void>('/auth/me/password', { password })
+  changeOwnPassword(currentPassword: string, password: string): Promise<void> {
+    return this.http.post<void>('/auth/me/password', { currentPassword, password })
   }
 }
 

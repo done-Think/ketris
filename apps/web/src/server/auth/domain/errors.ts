@@ -71,3 +71,11 @@ export class InvalidPasswordResetTokenError extends AppError {
     })
   }
 }
+
+// 400 (e não 401) de propósito: o http-client trata qualquer 401 como sessão expirada e tenta
+// renovar o token, o que esconderia o erro de senha incorreta do usuário.
+export class InvalidCurrentPasswordError extends AppError {
+  constructor() {
+    super('A senha atual está incorreta.', { status: 400, code: 'INVALID_CURRENT_PASSWORD' })
+  }
+}

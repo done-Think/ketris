@@ -26,7 +26,10 @@ export function SalesPipelineKanbanView({
         mx: { xs: -2, sm: -3, lg: -3.5 },
         pl: { xs: 2, sm: 3, lg: 3.5 },
         pr: { xs: 2, sm: 3, lg: 1.75 },
-        pb: 1,
+        pb: { xs: 1, md: 0.25 },
+        display: { md: 'flex' },
+        flex: { md: 1 },
+        minHeight: { md: 0 },
         overflowX: 'auto',
         scrollSnapType: { xs: 'x proximity', lg: 'none' },
         scrollbarWidth: 'thin',
@@ -40,7 +43,9 @@ export function SalesPipelineKanbanView({
             sm: 'repeat(5, 280px)',
             lg: 'repeat(5, minmax(0, 1fr))',
           },
+          gridTemplateRows: { md: 'minmax(0, 1fr)' },
           gap: { xs: 2, lg: 1.75 },
+          flex: { md: 1 },
           minWidth: { xs: 'max-content', lg: 0 },
         }}
       >

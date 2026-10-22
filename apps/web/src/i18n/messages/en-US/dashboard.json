@@ -492,7 +492,22 @@
       "oneOnOneTitle": "1:1 — {name}",
       "internalMeeting": "Internal meeting",
       "scheduled": "1:1 scheduled successfully",
-      "scheduleError": "Could not schedule the 1:1"
+      "scheduleError": "Could not schedule the 1:1",
+      "inviteDescription": "Create the broker's access to your agency. A temporary password is generated automatically: copy it and send it to the broker along with the email.",
+      "inviteName": "Full name",
+      "inviteEmail": "Email",
+      "invitePassword": "Temporary password",
+      "invitePasswordHelper": "Strong password with uppercase, lowercase, number and special character. The broker can change it later in their profile.",
+      "inviteSubmit": "Invite",
+      "inviteNameError": "Enter the broker's name",
+      "inviteEmailError": "Enter a valid email",
+      "invitePasswordError": "Password must have at least 8 characters, including uppercase, lowercase, a number and a special character",
+      "invited": "{name} was added to the team",
+      "inviteError": "Could not invite the broker",
+      "inviteEmailInUse": "This email is already in use",
+      "generatePassword": "Generate new password",
+      "copyPassword": "Copy password",
+      "passwordCopied": "Password copied"
     },
     "actions": {
       "message": "Send message",

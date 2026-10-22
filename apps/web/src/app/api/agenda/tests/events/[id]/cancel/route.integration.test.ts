@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
 import { NextRequest } from 'next/server'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
@@ -14,11 +14,14 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
   let actorToken: string
   let renterToken: string
   let eventId: string
-  // Creating an event needs 3h of notice, so a fixed date breaks the test once it passes.
-  // January 15th of next year at 13:00 UTC (10:00 in São Paulo) stays ahead and in business hours.
-  const slotStart = new Date(Date.UTC(new Date().getUTCFullYear() + 1, 0, 15, 13, 0))
+  // The clock is frozen in October 2026 below; this Friday is in the future and in business hours.
+  const slotStart = new Date('2027-01-15T13:00:00.000Z')
 
   beforeAll(async () => {
+    // Relógio fixo: criar evento exige antecedência mínima, e as datas abaixo são fixas.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-10-01T09:00:00.000Z'))
+
     const tenant = await prisma.tenant.create({
       data: { nome: 'Tenant Agenda Cancel', slug: `agenda-cancel-${randomUUID()}` },
     })
@@ -79,6 +82,7 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
   })
 
   afterAll(async () => {
+    vi.useRealTimers()
     if (tenantId) await prisma.tenant.delete({ where: { id: tenantId } })
     await prisma.$disconnect()
   })

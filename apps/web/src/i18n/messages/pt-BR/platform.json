@@ -7,13 +7,16 @@
       "metadataTitle": "Ketris | Imobiliárias Plataforma"
     },
     "tenants": {
-      "metadataTitle": "Ketris | Tenants da Plataforma"
+      "metadataTitle": "Ketris | Tenants"
     },
     "tenant": {
       "metadataTitle": "Ketris | Imobiliária Plataforma"
     },
     "newTenant": {
       "metadataTitle": "Ketris | Nova conta Plataforma"
+    },
+    "admins": {
+      "metadataTitle": "Ketris | Usuários"
     },
     "newAdmin": {
       "metadataTitle": "Ketris | Administradores da plataforma"

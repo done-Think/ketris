@@ -176,6 +176,13 @@ export function SalesPipelineBoard() {
     <Box
       sx={{
         minHeight: '100vh',
+        ...(viewMode === 'kanban' && !hasPipelineError
+          ? {
+              height: { md: '100vh' },
+              display: { md: 'flex' },
+              flexDirection: { md: 'column' },
+            }
+          : {}),
         p: 3.5,
         bgcolor: surface.app,
         overflow: 'hidden',

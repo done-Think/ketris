@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
+import { InvalidCurrentPasswordError, UserNotFoundError } from '../../../domain/errors'
+
 import type { PasswordHasher } from '../../../application/ports/password-hasher.port'
 import type { RefreshTokenRepository } from '../../../application/ports/refresh-token-repository.port'
 import type { UserRepository } from '../../../application/ports/user-repository.port'
@@ -7,7 +9,7 @@ import { ChangeOwnPasswordUseCase } from '../../../application/use-cases/change-
 
 function createDeps() {
   const userRepository: UserRepository = {
-    findById: vi.fn(),
+    findById: vi.fn().mockResolvedValue({ id: 'user-1', senhaHash: 'hash-atual' }),
     findByEmail: vi.fn(),
     findManyByTenant: vi.fn(),
     create: vi.fn(),
@@ -16,7 +18,7 @@ function createDeps() {
     approveMembership: vi.fn(),
   }
   const passwordHasher: PasswordHasher = {
-    compare: vi.fn(),
+    compare: vi.fn().mockResolvedValue(true),
     hash: vi.fn().mockResolvedValue('hash-novo'),
   }
   const refreshTokenRepository: RefreshTokenRepository = {
@@ -38,10 +40,48 @@ describe('ChangeOwnPasswordUseCase', () => {
       deps.refreshTokenRepository,
     )
 
-    await useCase.execute({ userId: 'user-1', password: 'nova-senha-123' })
+    await useCase.execute({
+      userId: 'user-1',
+      currentPassword: 'senha-atual',
+      password: 'nova-senha-123',
+    })
 
+    expect(deps.passwordHasher.compare).toHaveBeenCalledWith('senha-atual', 'hash-atual')
     expect(deps.passwordHasher.hash).toHaveBeenCalledWith('nova-senha-123')
     expect(deps.userRepository.update).toHaveBeenCalledWith('user-1', { senhaHash: 'hash-novo' })
     expect(deps.refreshTokenRepository.revokeAllForUser).toHaveBeenCalledWith('user-1')
+  })
+
+  it('rejeita a troca quando a senha atual está incorreta, sem alterar nada', async () => {
+    const deps = createDeps()
+    vi.mocked(deps.passwordHasher.compare).mockResolvedValue(false)
+    const useCase = new ChangeOwnPasswordUseCase(
+      deps.userRepository,
+      deps.passwordHasher,
+      deps.refreshTokenRepository,
+    )
+
+    await expect(
+      useCase.execute({ userId: 'user-1', currentPassword: 'errada', password: 'nova-senha-123' }),
+    ).rejects.toBeInstanceOf(InvalidCurrentPasswordError)
+
+    expect(deps.passwordHasher.hash).not.toHaveBeenCalled()
+    expect(deps.userRepository.update).not.toHaveBeenCalled()
+    expect(deps.refreshTokenRepository.revokeAllForUser).not.toHaveBeenCalled()
+  })
+
+  it('rejeita a troca quando o usuário não existe', async () => {
+    const deps = createDeps()
+    vi.mocked(deps.userRepository.findById).mockResolvedValue(null)
+    const useCase = new ChangeOwnPasswordUseCase(
+      deps.userRepository,
+      deps.passwordHasher,
+      deps.refreshTokenRepository,
+    )
+
+    await expect(
+      useCase.execute({ userId: 'user-1', currentPassword: 'x', password: 'nova-senha-123' }),
+    ).rejects.toBeInstanceOf(UserNotFoundError)
+    expect(deps.userRepository.update).not.toHaveBeenCalled()
   })
 })

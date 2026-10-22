@@ -180,6 +180,30 @@ describe('/api/contracts (integração)', () => {
     tenant: { name: 'Mariana Souza', cpf: '22222222222', email: tenantPartyEmail },
   }
 
+  async function createContractForNewOpportunity() {
+    const opportunity = await prisma.oportunidade.create({
+      data: {
+        tenantId,
+        imovelId: propertyId,
+        interessadoNome: 'Teste de sequência',
+        interessadoEmail: `${randomUUID()}@example.com`,
+        valorProposto: 2500,
+        status: 'ACEITA',
+      },
+    })
+    const response = await POST(
+      buildRequest(
+        'http://localhost/api/contracts',
+        'POST',
+        { ...createPayload, opportunityId: opportunity.id },
+        actorToken,
+      ),
+    )
+    expect(response.status).toBe(201)
+    const body = await response.json()
+    return body.contract as { id: string; code: string }
+  }
+
   it('retorna 403 quando um RENTER tenta criar contrato', async () => {
     const response = await POST(
       buildRequest(
@@ -640,5 +664,24 @@ describe('/api/contracts (integração)', () => {
     expect(stored.status).toBe('ATIVO')
     const charges = await prisma.cobranca.findMany({ where: { contratoId: contract.id } })
     expect(charges).toHaveLength(1)
+  })
+
+  it('gera um código livre após excluir um contrato anterior da sequência', async () => {
+    const first = await createContractForNewOpportunity()
+    const second = await createContractForNewOpportunity()
+    await prisma.contrato.delete({ where: { id: first.id } })
+
+    const third = await createContractForNewOpportunity()
+
+    expect(third.code).not.toBe(second.code)
+    expect(third.code).toMatch(/^CTR-\d{4}-\d{4,}$/)
+  })
+
+  it('gera códigos distintos para contratos criados simultaneamente', async () => {
+    const contracts = await Promise.all(
+      Array.from({ length: 6 }, () => createContractForNewOpportunity()),
+    )
+
+    expect(new Set(contracts.map((contract) => contract.code)).size).toBe(6)
   })
 })

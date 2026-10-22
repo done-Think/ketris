@@ -7,13 +7,16 @@
       "metadataTitle": "Ketris | Platform Agencies"
     },
     "tenants": {
-      "metadataTitle": "Ketris | Platform Tenants"
+      "metadataTitle": "Ketris | Tenants"
     },
     "tenant": {
       "metadataTitle": "Ketris | Platform Agency"
     },
     "newTenant": {
       "metadataTitle": "Ketris | New Platform Account"
+    },
+    "admins": {
+      "metadataTitle": "Ketris | Users"
     },
     "newAdmin": {
       "metadataTitle": "Ketris | Platform Admins"

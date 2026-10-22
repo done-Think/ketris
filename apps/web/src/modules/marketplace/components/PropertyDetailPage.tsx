@@ -44,7 +44,15 @@ export function PropertyDetailPage({
   }
 
   return (
-    <Box sx={{ bgcolor: surface.app, minHeight: '100vh', overflowX: 'clip' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        bgcolor: surface.app,
+        minHeight: '100vh',
+        overflowX: 'clip',
+      }}
+    >
       <MarketplaceHeader activeItemId={activeItemId} />
 
       <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
