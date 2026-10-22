@@ -10,7 +10,7 @@ import type {
 export interface PropertyRepository {
   create(property: NewProperty): Promise<Property>
   list(filters: PropertyListFilters): Promise<Property[]>
-  findByTenantAndId(tenantId: string, id: string): Promise<Property | null>
+  findByTenantAndId(tenantId: string, id: string, renterId?: string): Promise<Property | null>
   update(tenantId: string, id: string, changes: PropertyChanges): Promise<Property | null>
   setStatus(
     tenantId: string,

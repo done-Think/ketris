@@ -1,4 +1,7 @@
 {
+  "renter": {
+    "subtitle": "Consulta los cobros de tus contratos."
+  },
   "metadata": {
     "title": "Ketris | Cobros",
     "description": "Gestiona cobros por recibir y pagar.",

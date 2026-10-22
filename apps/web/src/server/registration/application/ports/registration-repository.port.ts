@@ -1,4 +1,5 @@
 import type { User } from '@server/auth/domain/user.entity'
+import type { TenantAccountType, TenantStatus } from '@server/platform/domain/tenant-account'
 import type { TenantSummary } from '@server/platform/domain/tenant-summary.entity'
 
 export interface NewTenantWithAdmin {
@@ -6,6 +7,8 @@ export interface NewTenantWithAdmin {
   adminName: string
   email: string
   senhaHash: string
+  accountType: TenantAccountType
+  status: TenantStatus
 }
 
 export interface RegistrationRepository {

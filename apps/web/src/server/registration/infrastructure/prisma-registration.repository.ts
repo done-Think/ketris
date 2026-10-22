@@ -4,6 +4,7 @@ import { prisma } from '@server/db/prisma'
 import type { User } from '@server/auth/domain/user.entity'
 import { normalizeEmail } from '@server/shared/normalize-email'
 import type { TenantSummary } from '@server/platform/domain/tenant-summary.entity'
+import { buildPublicProfileSlug } from '@shared/utils/public-profile-slug'
 
 import type {
   NewTenantWithAdmin,
@@ -12,17 +13,8 @@ import type {
 
 const MAX_SLUG_ATTEMPTS = 5
 
-function slugify(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-}
-
 async function generateUniqueSlug(tenantName: string): Promise<string> {
-  const base = slugify(tenantName) || 'tenant'
+  const base = buildPublicProfileSlug(tenantName) || 'tenant'
 
   for (let attempt = 0; attempt < MAX_SLUG_ATTEMPTS; attempt += 1) {
     const candidate = attempt === 0 ? base : `${base}-${randomBytes(3).toString('hex')}`
@@ -42,7 +34,12 @@ export class PrismaRegistrationRepository implements RegistrationRepository {
 
     return prisma.$transaction(async (transaction) => {
       const tenant = await transaction.tenant.create({
-        data: { nome: input.tenantName, slug },
+        data: {
+          nome: input.tenantName,
+          slug,
+          accountType: input.accountType,
+          status: input.status,
+        },
       })
 
       const usuario = await transaction.usuario.create({

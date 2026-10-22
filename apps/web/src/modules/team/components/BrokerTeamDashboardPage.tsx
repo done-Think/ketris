@@ -26,6 +26,7 @@ import { useSnackbar } from 'notistack'
 import { useForm, useWatch } from 'react-hook-form'
 
 import { useRouter } from '@/i18n/navigation'
+import { useCreateUser } from '@modules/auth/hooks/use-create-user'
 import { AgendaEventFormDialog } from '@modules/agenda/components/AgendaEventFormDialog'
 import { useCreateAgendaEvent } from '@modules/agenda/hooks/use-agenda-events'
 import { agendaOtherPropertyValue } from '@modules/agenda/schemas/agenda-event-form-schema'
@@ -37,16 +38,19 @@ import {
   DashboardPageHeader,
 } from '@shared/components/layout'
 import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import { extractErrorMessage } from '@shared/utils/error-message'
 
 import { brokerTeamKpis, brokerTeamMembers } from '../data/broker-team'
 import {
   BrokerDeactivateDialog,
   BrokerGoalDialog,
+  BrokerInviteDialog,
   BrokerPerformanceDialog,
   BrokerTransferDialog,
 } from './BrokerTeamActionDialogs'
 import { BrokerTeamCard } from './BrokerTeamCard'
 import type {
+  BrokerInviteFormValues,
   BrokerTransferFormValues,
   BrokerTeamFiltersFormValues,
   BrokerTeamMember,
@@ -83,6 +87,9 @@ export function BrokerTeamDashboardPage() {
   const { enqueueSnackbar } = useSnackbar()
   const { data: session } = useSession()
   const createAgendaEvent = useCreateAgendaEvent(session?.tenantId ?? '')
+  const createUser = useCreateUser()
+  const canInviteBroker = session?.role === 'ADMIN'
+  const [inviteOpen, setInviteOpen] = useState(false)
   const [brokers, setBrokers] = useState<BrokerTeamMember[]>(() => [...brokerTeamMembers])
   const [action, setAction] = useState<{ type: BrokerTeamMenuAction; brokerId: string } | null>(
     null,
@@ -202,6 +209,25 @@ export function BrokerTeamDashboardPage() {
     setAction(null)
     enqueueSnackbar(t('dialogs.deactivated'), { variant: 'success' })
   }
+  const inviteBroker = async (values: BrokerInviteFormValues) => {
+    try {
+      await createUser.mutateAsync({
+        name: values.name.trim(),
+        email: values.email.trim(),
+        password: values.password,
+        role: 'AGENT',
+      })
+      setInviteOpen(false)
+      enqueueSnackbar(t('dialogs.invited', { name: values.name.trim() }), { variant: 'success' })
+    } catch (error) {
+      enqueueSnackbar(
+        extractErrorMessage(error, t('dialogs.inviteError'), {
+          EMAIL_ALREADY_IN_USE: t('dialogs.inviteEmailInUse'),
+        }),
+        { variant: 'error' },
+      )
+    }
+  }
   const scheduleOneOnOne = async (values: AgendaEventFormValues) => {
     try {
       await createAgendaEvent.mutateAsync({
@@ -265,11 +291,14 @@ export function BrokerTeamDashboardPage() {
                   ),
                 }}
               />
-              <DashboardHeaderActionButton
-                startIcon={<PersonAddAlt1OutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-              >
-                {t('inviteBroker')}
-              </DashboardHeaderActionButton>
+              {canInviteBroker ? (
+                <DashboardHeaderActionButton
+                  startIcon={<PersonAddAlt1OutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+                  onClick={() => setInviteOpen(true)}
+                >
+                  {t('inviteBroker')}
+                </DashboardHeaderActionButton>
+              ) : null}
               <Box sx={{ display: { xs: 'none', md: 'block' } }}>
                 <DashboardNotificationsButton />
               </Box>
@@ -398,6 +427,12 @@ export function BrokerTeamDashboardPage() {
             })}
           </Menu>
 
+          <BrokerInviteDialog
+            open={inviteOpen}
+            isPending={createUser.isPending}
+            onClose={() => setInviteOpen(false)}
+            onInvite={inviteBroker}
+          />
           <BrokerPerformanceDialog
             broker={action?.type === 'performance' ? selectedBroker : null}
             onClose={() => setAction(null)}

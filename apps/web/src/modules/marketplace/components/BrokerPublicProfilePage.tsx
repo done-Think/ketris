@@ -23,7 +23,15 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
   const representedListings = buildProfileListings(broker.highlightedListings)
 
   return (
-    <Box sx={{ bgcolor: surface.app, minHeight: '100vh', overflowX: 'clip' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        bgcolor: surface.app,
+        minHeight: '100vh',
+        overflowX: 'clip',
+      }}
+    >
       <MarketplaceHeader activeItemId="brokers" />
 
       <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>

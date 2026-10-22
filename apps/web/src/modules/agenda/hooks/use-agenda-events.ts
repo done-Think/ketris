@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
 
 import { agendaService } from '../services/agenda-service'
 import type {
@@ -16,12 +17,17 @@ export const agendaQueryKeys = {
 }
 
 export function useAgendaEvents(tenantId: string | null | undefined, from: string, to: string) {
+  const { data: session } = useSession()
   const scopedTenantId = tenantId ?? ''
 
   return useQuery({
-    queryKey: agendaQueryKeys.range(scopedTenantId, from, to),
+    queryKey: [
+      ...agendaQueryKeys.range(scopedTenantId, from, to),
+      session?.user?.id,
+      session?.role,
+    ],
     queryFn: () => agendaService.list(from, to),
-    enabled: Boolean(tenantId),
+    enabled: Boolean(tenantId) && Boolean(session?.user?.id) && Boolean(session?.role),
   })
 }
 

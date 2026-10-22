@@ -1,9 +1,9 @@
-import { ForbiddenError } from '@server/shared/errors'
-
 import type { Papel } from '@server/auth/domain/user.entity'
 
 import { ChargeNotFoundError } from '../../domain/errors'
-import type { Charge, ChargeStatus, ChargeType } from '../../domain/charge.entity'
+import type { Charge } from '../../domain/charge.entity'
+import type { ChargeStatus, ChargeType } from '../../types/charge'
+import { assertCanAccessFinance } from '../assert-can-access-finance'
 import type { ChargeRepository } from '../ports/charge-repository.port'
 
 export interface UpdateChargeInput {
@@ -21,9 +21,7 @@ export class UpdateChargeUseCase {
   constructor(private readonly chargeRepository: ChargeRepository) {}
 
   async execute(input: UpdateChargeInput): Promise<Charge> {
-    if (input.actorPapel === 'RENTER') {
-      throw new ForbiddenError('Locatários não podem gerenciar cobranças.')
-    }
+    assertCanAccessFinance(input.actorPapel)
 
     const existing = await this.chargeRepository.findById(input.actorTenantId, input.chargeId)
 

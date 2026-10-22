@@ -1,14 +1,21 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Alert, Button, Stack, Typography } from '@mui/material'
+import { Alert, Box, Button, CircularProgress, Stack, Typography } from '@mui/material'
 import { getSession, signIn, signOut } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
 import { useRouter } from '@/i18n/navigation'
-import { RhfTextField } from '@shared/components/form'
+import {
+  AuthFormField,
+  authLoginTextFieldSx,
+  authPrimaryButtonSx,
+  authTextFieldSx,
+} from '@modules/auth'
+import { RhfPasswordField, RhfTextField } from '@shared/components/form'
+import { componentText } from '@shared/theme/tokens'
 
 import {
   createPlatformSignInSchema,
@@ -18,6 +25,7 @@ import {
 export function PlatformSignInForm() {
   const t = useTranslations('platform.login')
   const formsT = useTranslations('platform.forms')
+  const loginT = useTranslations('auth.login')
   const router = useRouter()
   const [formError, setFormError] = useState<string | null>(null)
   const hasAttemptedLocalAutoLogin = useRef(false)
@@ -35,31 +43,34 @@ export function PlatformSignInForm() {
     defaultValues: { email: '', password: '' },
   })
 
-  async function onSubmit(values: PlatformSignInFormValues) {
-    setFormError(null)
+  const onSubmit = useCallback(
+    async (values: PlatformSignInFormValues) => {
+      setFormError(null)
 
-    const result = await signIn('platform-credentials', {
-      email: values.email,
-      password: values.password,
-      redirect: false,
-    })
+      const result = await signIn('platform-credentials', {
+        email: values.email,
+        password: values.password,
+        redirect: false,
+      })
 
-    if (!result || result.error) {
-      setFormError(t('genericError'))
-      return
-    }
+      if (!result || result.error) {
+        setFormError(t('genericError'))
+        return
+      }
 
-    const session = await getSession()
+      const session = await getSession()
 
-    if (session?.scope !== 'platform') {
-      await signOut({ redirect: false })
-      setFormError(t('forbiddenError'))
-      return
-    }
+      if (session?.scope !== 'platform') {
+        await signOut({ redirect: false })
+        setFormError(t('forbiddenError'))
+        return
+      }
 
-    router.push('/platform')
-    router.refresh()
-  }
+      router.push('/platform')
+      router.refresh()
+    },
+    [router, t],
+  )
 
   useEffect(() => {
     const email = process.env.NEXT_PUBLIC_LOCAL_PLATFORM_EMAIL
@@ -74,34 +85,81 @@ export function PlatformSignInForm() {
   }, [onSubmit])
 
   return (
-    <Stack component="form" onSubmit={handleSubmit(onSubmit)} spacing={2.5}>
-      <RhfTextField
-        control={control}
-        name="email"
-        label={formsT('email')}
-        type="email"
-        autoComplete="username"
-        fullWidth
-        autoFocus
-      />
-      <RhfTextField
-        control={control}
-        name="password"
-        label={formsT('password')}
-        type="password"
-        autoComplete="current-password"
-        fullWidth
-      />
+    <Box>
+      <Box sx={{ mb: { xs: 2, md: 3.25 }, textAlign: { xs: 'center', md: 'left' } }}>
+        <Typography variant="h3" component="h1" sx={{ mb: 0.5, ...componentText.authTitle }}>
+          {t('title')}
+        </Typography>
+        <Typography color="text.secondary" variant="body2" sx={componentText.authBody}>
+          {t('subtitle')}
+        </Typography>
+      </Box>
 
-      {formError ? <Alert severity="error">{formError}</Alert> : null}
+      <Box component="form" noValidate onSubmit={handleSubmit(onSubmit)}>
+        <Stack spacing={{ xs: 1.5, md: 1.75 }}>
+          <AuthFormField
+            htmlFor="platform-login-email"
+            label={formsT('email')}
+            labelSx={componentText.authBody}
+          >
+            <RhfTextField
+              id="platform-login-email"
+              control={control}
+              name="email"
+              placeholder={loginT('email.placeholder')}
+              type="email"
+              autoComplete="username"
+              autoFocus
+              fullWidth
+              sx={[authTextFieldSx, authLoginTextFieldSx]}
+            />
+          </AuthFormField>
 
-      <Button type="submit" variant="contained" size="large" disabled={isSubmitting} fullWidth>
-        {t('submit')}
-      </Button>
+          <AuthFormField
+            htmlFor="platform-login-password"
+            label={formsT('password')}
+            labelSx={componentText.authBody}
+          >
+            <RhfPasswordField
+              id="platform-login-password"
+              control={control}
+              name="password"
+              autoComplete="current-password"
+              fullWidth
+              sx={[authTextFieldSx, authLoginTextFieldSx]}
+            />
+          </AuthFormField>
 
-      <Typography variant="body2" color="text.secondary" textAlign="center">
+          {formError ? (
+            <Alert severity="error" role="alert" sx={{ mt: 0.75 }}>
+              {formError}
+            </Alert>
+          ) : null}
+        </Stack>
+
+        <Button
+          type="submit"
+          variant="contained"
+          size="large"
+          fullWidth
+          disabled={isSubmitting}
+          sx={[
+            authPrimaryButtonSx,
+            { mt: { xs: 2, md: 3.5 }, height: { xs: 36, md: 50 }, ...componentText.authBody },
+          ]}
+        >
+          {isSubmitting ? <CircularProgress color="inherit" size={21} /> : t('submit')}
+        </Button>
+      </Box>
+
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        textAlign="center"
+        sx={{ mt: { xs: 2.5, md: 3 }, ...componentText.authBody }}
+      >
         {t('restrictedAccess')}
       </Typography>
-    </Stack>
+    </Box>
   )
 }

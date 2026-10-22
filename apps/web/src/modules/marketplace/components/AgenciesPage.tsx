@@ -60,6 +60,8 @@ export function AgenciesPage() {
         width: '100%',
         maxWidth: '100vw',
         minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
         overflowX: 'clip',
         bgcolor: surface.app,
       }}

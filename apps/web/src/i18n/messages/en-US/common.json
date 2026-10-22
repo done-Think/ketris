@@ -29,7 +29,6 @@
     "backToMarketplace": "Back to marketplace",
     "logoutToMarketplace": "Sign out and return to marketplace",
     "dashboard": "Dashboard",
-    "agencyOverview": "Agency Overview",
     "pipeline": "Pipeline",
     "contacts": "Contacts",
     "leads": "Leads",
@@ -61,6 +60,10 @@
     },
     "charges": "Charges"
   },
+  "passwordVisibility": {
+    "show": "Show {field}",
+    "hide": "Hide {field}"
+  },
   "profilePage": {
     "title": "Profile",
     "subtitle": "Manage your personal details and access information.",
@@ -73,6 +76,7 @@
     "save": "Save changes",
     "security": "Security",
     "securityDescription": "Change your access password.",
+    "currentPassword": "Current password",
     "newPassword": "New password",
     "confirmPassword": "Confirm new password",
     "changePassword": "Change password",
@@ -86,6 +90,8 @@
       "emailInvalid": "Enter a valid email.",
       "phoneRequired": "Enter your phone number.",
       "phoneInvalid": "Enter a valid phone number.",
+      "currentPasswordRequired": "Enter your current password.",
+      "currentPasswordIncorrect": "Current password is incorrect.",
       "passwordTooShort": "Password must be at least 8 characters.",
       "passwordConfirmationRequired": "Confirm the new password.",
       "passwordMismatch": "Passwords do not match"

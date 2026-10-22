@@ -3,6 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 
 import { authContainer } from '@server/auth/container'
 import { AccountDeactivatedError, InvalidCredentialsError } from '@server/auth/domain/errors'
+import { papelSchema } from '@server/auth/schemas/user.schema'
 import { platformContainer } from '@server/platform/container'
 import { InvalidPlatformCredentialsError } from '@server/platform/domain/errors'
 
@@ -38,7 +39,7 @@ export const authOptions: NextAuthOptions = {
             refreshToken,
             scope: 'tenant',
             tenantId: user.tenantId,
-            papel: user.papel,
+            role: user.papel,
           }
         } catch (error) {
           if (
@@ -76,7 +77,7 @@ export const authOptions: NextAuthOptions = {
             refreshToken: credentials.refreshToken,
             scope: 'tenant',
             tenantId: user.tenantId,
-            papel: user.papel,
+            role: user.papel,
           }
         } catch {
           return null
@@ -122,8 +123,15 @@ export const authOptions: NextAuthOptions = {
         token.refreshToken = user.refreshToken
         token.scope = user.scope
         token.tenantId = user.tenantId
-        token.papel = user.papel
+        token.role = user.role
         return token
+      }
+
+      // Sessions issued before the claim was renamed still carry `papel` instead of `role`.
+      if ('papel' in token) {
+        const legacyRole = papelSchema.safeParse(token.papel)
+        if (token.role === undefined && legacyRole.success) token.role = legacyRole.data
+        delete token.papel
       }
 
       if (trigger === 'update') {
@@ -147,7 +155,7 @@ export const authOptions: NextAuthOptions = {
         if (!currentUser || !currentUser.ativo || currentUser.tenantId !== token.tenantId) {
           token.scope = undefined
           token.tenantId = undefined
-          token.papel = undefined
+          token.role = undefined
         }
       }
 
@@ -158,7 +166,7 @@ export const authOptions: NextAuthOptions = {
       session.refreshToken = token.refreshToken
       session.scope = token.scope
       session.tenantId = token.tenantId
-      session.papel = token.papel
+      session.role = token.role
       if (session.user && token.sub) {
         session.user.id = token.sub
         session.user.name = token.name

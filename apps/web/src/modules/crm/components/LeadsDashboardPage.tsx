@@ -135,7 +135,6 @@ export function LeadsDashboardPage() {
           sx={{
             display: 'flex',
             flexDirection: 'column',
-            minHeight: { xs: 420, md: 360 },
             overflow: 'hidden',
             borderColor: alpha.graphite[6],
             borderRadius: `${radius.sm}px`,

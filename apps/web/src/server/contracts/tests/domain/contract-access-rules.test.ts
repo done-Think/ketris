@@ -1,0 +1,71 @@
+import { describe, expect, it } from 'vitest'
+
+import type { Papel } from '@server/auth/domain/user.entity'
+
+import {
+  resolveContractManageScope,
+  resolveContractReadScope,
+} from '../../domain/contract-access-rules'
+import { ContractRenterForbiddenError } from '../../domain/errors'
+
+describe('resolveContractManageScope', () => {
+  it.each(['ADMIN', 'OWNER'] as const)('libera todos os contratos do tenant para %s', (papel) => {
+    expect(resolveContractManageScope('user-1', papel)).toEqual({})
+  })
+
+  it('limita o AGENT aos contratos dos imóveis pelos quais ele é responsável', () => {
+    expect(resolveContractManageScope('agent-1', 'AGENT')).toEqual({ responsibleId: 'agent-1' })
+  })
+
+  it('bloqueia com 403 um papel desconhecido, em vez de liberar o tenant inteiro', () => {
+    const unknownPapel = 'MANAGER' as unknown as Papel
+
+    expect(() => resolveContractManageScope('user-1', unknownPapel)).toThrow(
+      expect.objectContaining({ status: 403, code: 'FORBIDDEN' }),
+    )
+    expect(() => resolveContractManageScope('user-1', unknownPapel)).not.toThrow(
+      ContractRenterForbiddenError,
+    )
+  })
+
+  it('bloqueia RENTER com 403', () => {
+    expect(() => resolveContractManageScope('renter-1', 'RENTER')).toThrow(
+      ContractRenterForbiddenError,
+    )
+    expect(() => resolveContractManageScope('renter-1', 'RENTER')).toThrow(
+      expect.objectContaining({ status: 403, code: 'FORBIDDEN' }),
+    )
+  })
+})
+
+describe('resolveContractReadScope', () => {
+  it.each(['ADMIN', 'OWNER'] as const)('libera a leitura do tenant inteiro para %s', (papel) => {
+    expect(resolveContractReadScope('tenant-1', 'user-1', papel)).toEqual({
+      kind: 'tenant',
+      tenantId: 'tenant-1',
+    })
+  })
+
+  it('limita a leitura do AGENT aos imóveis pelos quais ele é responsável', () => {
+    expect(resolveContractReadScope('tenant-1', 'agent-1', 'AGENT')).toEqual({
+      kind: 'tenant',
+      tenantId: 'tenant-1',
+      responsibleId: 'agent-1',
+    })
+  })
+
+  it('limita o RENTER aos contratos em que ele é a parte vinculada, sem filtrar pelo tenant dele', () => {
+    expect(resolveContractReadScope('locatarios', 'renter-1', 'RENTER')).toEqual({
+      kind: 'party',
+      userId: 'renter-1',
+    })
+  })
+
+  it('bloqueia com 403 um papel desconhecido', () => {
+    const unknownPapel = 'MANAGER' as unknown as Papel
+
+    expect(() => resolveContractReadScope('tenant-1', 'user-1', unknownPapel)).toThrow(
+      expect.objectContaining({ status: 403, code: 'FORBIDDEN' }),
+    )
+  })
+})

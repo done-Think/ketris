@@ -14,6 +14,7 @@ describe('/api/platform/tenants (integração)', () => {
   let actorToken: string
   let createdTenantId: string
   const existingTenantSlug = `existing-${randomUUID()}`
+  const createdSlugs: string[] = []
 
   beforeAll(async () => {
     const actor = await prisma.platformAdmin.create({
@@ -36,7 +37,9 @@ describe('/api/platform/tenants (integração)', () => {
   })
 
   afterAll(async () => {
-    await prisma.tenant.deleteMany({ where: { slug: { in: [existingTenantSlug] } } })
+    await prisma.tenant.deleteMany({
+      where: { slug: { in: [existingTenantSlug, ...createdSlugs] } },
+    })
     if (createdTenantId)
       await prisma.tenant.delete({ where: { id: createdTenantId } }).catch(() => undefined)
     await prisma.platformAdminRefreshToken.deleteMany({ where: { platformAdminId: actorId } })
@@ -81,6 +84,53 @@ describe('/api/platform/tenants (integração)', () => {
     expect(json.tenant.slug).toBe(slug)
     createdTenantId = json.tenant.id
   })
+
+  it('POST cria como imobiliária ativa por padrão e aceita tipo e situação inicial', async () => {
+    const defaultSlug = `padrao-${randomUUID()}`
+    const brokerSlug = `corretor-${randomUUID()}`
+    createdSlugs.push(defaultSlug, brokerSlug)
+
+    expect(
+      (await POST(buildRequest('POST', { name: 'Padrão', slug: defaultSlug }, actorToken))).status,
+    ).toBe(201)
+    expect(
+      (
+        await POST(
+          buildRequest(
+            'POST',
+            { name: 'Corretor', slug: brokerSlug, accountType: 'BROKER', status: 'TRIAL' },
+            actorToken,
+          ),
+        )
+      ).status,
+    ).toBe(201)
+
+    const created = await prisma.tenant.findMany({
+      where: { slug: { in: [defaultSlug, brokerSlug] } },
+      select: { slug: true, accountType: true, status: true },
+    })
+    expect(created).toEqual(
+      expect.arrayContaining([
+        { slug: defaultSlug, accountType: 'AGENCY', status: 'ACTIVE' },
+        { slug: brokerSlug, accountType: 'BROKER', status: 'TRIAL' },
+      ]),
+    )
+  })
+
+  it.each([[{ accountType: 'GOLD' }], [{ status: 'CANCELED' }]])(
+    'POST retorna 400 para tipo ou situação inicial inválidos: %j',
+    async (extra) => {
+      const response = await POST(
+        buildRequest(
+          'POST',
+          { name: 'Inválido', slug: `invalido-${randomUUID()}`, ...extra },
+          actorToken,
+        ),
+      )
+
+      expect(response.status).toBe(400)
+    },
+  )
 
   it('POST retorna 409 quando o slug já existe', async () => {
     const response = await POST(

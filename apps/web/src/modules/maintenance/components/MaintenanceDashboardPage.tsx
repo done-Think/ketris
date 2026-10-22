@@ -1,5 +1,7 @@
 'use client'
 
+import type { MaintenanceStatusStyle } from '../types/maintenance'
+
 import { useMemo, useState } from 'react'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
@@ -10,6 +12,7 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded'
 import FilterListRoundedIcon from '@mui/icons-material/FilterListRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import LinkRoundedIcon from '@mui/icons-material/LinkRounded'
 import {
   Box,
   Button,
@@ -30,6 +33,8 @@ import {
   TableHead,
   TableRow,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material'
 import dayjs from 'dayjs'
 import { useSession } from 'next-auth/react'
@@ -43,7 +48,6 @@ import {
   DashboardPageHeader,
   DashboardTablePagination,
 } from '@shared/components/layout'
-import { useProperties } from '@modules/properties/hooks/use-properties'
 
 import {
   useCreateMaintenanceTicket,
@@ -51,6 +55,7 @@ import {
   useMaintenanceTicket,
   useMaintenanceTickets,
   useUpdateMaintenanceTicket,
+  useMaintenanceOptions,
 } from '../hooks/use-maintenance'
 import type {
   MaintenanceCreateTicketFormValues,
@@ -69,14 +74,18 @@ import {
 import { errorMessage } from '../utils/error-message'
 import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 import { MaintenanceCreateTicketDialog } from './MaintenanceCreateTicketDialog'
+import { MaintenanceLinksDialog } from './MaintenanceLinksDialog'
 import { MaintenanceStatusFilters } from './MaintenanceStatusFilters'
 import { MetricCard } from './MetricCard'
 
-const statusStyles: Record<MaintenanceStatus, { bgcolor: string; color: string }> = {
+const statusStyles: Record<MaintenanceStatus, MaintenanceStatusStyle> = {
   inProgress: { bgcolor: '#FFF2CC', color: '#D98900' },
   open: { bgcolor: '#E8F1FF', color: '#2877E8' },
   resolved: { bgcolor: '#E5F8ED', color: '#12A150' },
   closed: { bgcolor: '#EFF1F4', color: '#617086' },
+  pendingConfirmation: { bgcolor: '#E8F1FF', color: '#2877E8' },
+  contested: { bgcolor: '#FDE8EB', color: '#B42338' },
+  cancelled: { bgcolor: '#EFF1F4', color: '#617086' },
 }
 const priorityColors: Record<MaintenancePriority, string> = {
   urgent: brand.semantic.error,
@@ -102,8 +111,11 @@ export function MaintenanceDashboardPage() {
   const [deletingTicketId, setDeletingTicketId] = useState<string | null>(null)
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null)
   const [menuTicketId, setMenuTicketId] = useState<string | null>(null)
+  const [archived, setArchived] = useState(false)
+  const [linksOpen, setLinksOpen] = useState(false)
 
   const ticketsQuery = useMaintenanceTickets(tenantId, {
+    archived,
     status:
       activeFilter !== 'all' && activeFilter !== 'urgent'
         ? mapMaintenanceStatusToApi(activeFilter)
@@ -117,16 +129,21 @@ export function MaintenanceDashboardPage() {
   // Fetch pulled separately (unfiltered, capped at the API's max pageSize) only to compute the
   // metric cards and the per-tab counts, which need totals across all tickets, not just the
   // current page/filter.
-  const allTicketsQuery = useMaintenanceTickets(tenantId, { pageSize: 100 })
-  // Waits for the session like the ticket queries: in the local dashboard preview the page renders
-  // before the session loads, and an unauthenticated request here would sign the user out.
-  const propertiesQuery = useProperties({ enabled: Boolean(tenantId) })
+  const allTicketsQuery = useMaintenanceTickets(tenantId, { pageSize: 100, archived })
+  const optionsQuery = useMaintenanceOptions()
   const editTicketQuery = useMaintenanceTicket(tenantId, editingTicketId)
   const createMutation = useCreateMaintenanceTicket(tenantId)
   const updateMutation = useUpdateMaintenanceTicket(tenantId)
   const deleteMutation = useDeleteMaintenanceTicket(tenantId)
 
-  const properties = propertiesQuery.data ?? []
+  const properties = [
+    ...new Map(
+      (optionsQuery.data?.contracts ?? []).map((contract) => [
+        contract.propertyId,
+        { id: contract.propertyId, title: contract.propertyTitle },
+      ]),
+    ).values(),
+  ]
   const pagedTickets = useMemo(
     () => (ticketsQuery.data?.items ?? []).map(mapMaintenanceTicketListItemFromApi),
     [ticketsQuery.data],
@@ -189,8 +206,10 @@ export function MaintenanceDashboardPage() {
       enqueueSnackbar(t('notifications.createSuccess'), { variant: 'success' })
       setCurrentPage(1)
       setIsCreateDialogOpen(false)
+      return true
     } catch (error) {
       enqueueSnackbar(errorMessage(error, t('notifications.createError')), { variant: 'error' })
+      return false
     }
   }
 
@@ -214,8 +233,10 @@ export function MaintenanceDashboardPage() {
       enqueueSnackbar(t('notifications.updateSuccess'), { variant: 'success' })
       setEditingTicketId(null)
       setIsCreateDialogOpen(false)
+      return true
     } catch (error) {
       enqueueSnackbar(errorMessage(error, t('notifications.updateError')), { variant: 'error' })
+      return false
     }
   }
 
@@ -303,6 +324,27 @@ export function MaintenanceDashboardPage() {
       >
         {t('newTicket')}
       </DashboardHeaderActionButton>
+      {session?.role === 'ADMIN' && (
+        <>
+          <Button startIcon={<LinkRoundedIcon />} onClick={() => setLinksOpen(true)}>
+            {t('links.title')}
+          </Button>
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={archived ? 'archived' : 'active'}
+            onChange={(_, value) => {
+              if (value) {
+                setArchived(value === 'archived')
+                setCurrentPage(1)
+              }
+            }}
+          >
+            <ToggleButton value="active">{t('activeTickets')}</ToggleButton>
+            <ToggleButton value="archived">{t('archivedTickets')}</ToggleButton>
+          </ToggleButtonGroup>
+        </>
+      )}
       <Box sx={{ display: { xs: 'none', md: 'block' } }}>
         <DashboardNotificationsButton />
       </Box>
@@ -312,7 +354,11 @@ export function MaintenanceDashboardPage() {
   return (
     <Box sx={{ width: '100%', p: 3.5 }}>
       <Stack spacing={{ xs: 2, md: 2.7 }}>
-        <DashboardPageHeader title={t('title')} subtitle={t('subtitle')} actions={headerActions} />
+        <DashboardPageHeader
+          title={t('title')}
+          subtitle={t(session?.role === 'RENTER' ? 'renter.subtitle' : 'subtitle')}
+          actions={headerActions}
+        />
         <MaintenanceStatusFilters
           activeFilter={activeFilter}
           getFilterCount={getFilterCount}
@@ -450,17 +496,19 @@ export function MaintenanceDashboardPage() {
                       >
                         <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />
                       </IconButton>
-                      <IconButton
-                        aria-label={t('actions.menu', { ticket: ticket.id })}
-                        size="small"
-                        onClick={(event) => {
-                          setMenuAnchor(event.currentTarget)
-                          setMenuTicketId(ticket.id)
-                        }}
-                        sx={{ width: 30, height: 30, color: brand.graphite[500] }}
-                      >
-                        <MoreVertRoundedIcon sx={{ fontSize: 18 }} />
-                      </IconButton>
+                      {(ticket.permissions?.edit || ticket.permissions?.delete) && (
+                        <IconButton
+                          aria-label={t('actions.menu', { ticket: ticket.id })}
+                          size="small"
+                          onClick={(event) => {
+                            setMenuAnchor(event.currentTarget)
+                            setMenuTicketId(ticket.id)
+                          }}
+                          sx={{ width: 30, height: 30, color: brand.graphite[500] }}
+                        >
+                          <MoreVertRoundedIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      )}
                     </Stack>
                   </TableCell>
                 </TableRow>
@@ -468,7 +516,7 @@ export function MaintenanceDashboardPage() {
               {pagedTickets.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={8} align="center" sx={bodyCellSx}>
-                    Nenhum chamado encontrado.
+                    {t('empty')}
                   </TableCell>
                 </TableRow>
               )}
@@ -496,6 +544,9 @@ export function MaintenanceDashboardPage() {
         initialValues={initialValues}
         mode={editingTicketId ? 'edit' : 'create'}
       />
+      {session?.role === 'ADMIN' && (
+        <MaintenanceLinksDialog open={linksOpen} onClose={() => setLinksOpen(false)} />
+      )}
       <Dialog
         open={isFiltersDialogOpen}
         onClose={() => setIsFiltersDialogOpen(false)}
@@ -550,26 +601,30 @@ export function MaintenanceDashboardPage() {
         </DialogContent>
       </Dialog>
       <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={closeMenu}>
-        <MenuItem
-          onClick={() => {
-            setEditingTicketId(menuTicketId)
-            setIsCreateDialogOpen(Boolean(menuTicketId))
-            closeMenu()
-          }}
-        >
-          <EditOutlinedIcon sx={{ mr: 1, fontSize: 18 }} />
-          {t('actions.edit')}
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            setDeletingTicketId(menuTicketId)
-            closeMenu()
-          }}
-          sx={{ color: 'error.main' }}
-        >
-          <DeleteOutlineRoundedIcon sx={{ mr: 1, fontSize: 18 }} />
-          {t('actions.delete')}
-        </MenuItem>
+        {pagedTickets.find((ticket) => ticket.id === menuTicketId)?.permissions?.edit && (
+          <MenuItem
+            onClick={() => {
+              setEditingTicketId(menuTicketId)
+              setIsCreateDialogOpen(Boolean(menuTicketId))
+              closeMenu()
+            }}
+          >
+            <EditOutlinedIcon sx={{ mr: 1, fontSize: 18 }} />
+            {t('actions.edit')}
+          </MenuItem>
+        )}
+        {pagedTickets.find((ticket) => ticket.id === menuTicketId)?.permissions?.delete && (
+          <MenuItem
+            onClick={() => {
+              setDeletingTicketId(menuTicketId)
+              closeMenu()
+            }}
+            sx={{ color: 'error.main' }}
+          >
+            <DeleteOutlineRoundedIcon sx={{ mr: 1, fontSize: 18 }} />
+            {t('actions.delete')}
+          </MenuItem>
+        )}
       </Menu>
       <Dialog open={Boolean(deletingTicketId)} onClose={() => setDeletingTicketId(null)}>
         <DialogTitle>{t('actions.deleteTitle')}</DialogTitle>

@@ -13,6 +13,7 @@ export function createCurrentUserProfileSchema(t: SchemaMessageTranslator) {
 export function createChangeOwnPasswordSchema(t: SchemaMessageTranslator) {
   return z
     .object({
+      currentPassword: z.string().min(1, t('currentPasswordRequired')),
       password: z.string().min(8, t('passwordTooShort')),
       passwordConfirmation: z.string().min(1, t('passwordConfirmationRequired')),
     })

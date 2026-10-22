@@ -27,9 +27,11 @@ export function DashboardStatusFilterButton({
       ]}
     >
       {children}
-      <Box component="span" sx={dashboardStatusFilterCountSx(active)}>
-        {count}
-      </Box>
+      {count !== undefined && (
+        <Box component="span" sx={dashboardStatusFilterCountSx(active)}>
+          {count}
+        </Box>
+      )}
     </Button>
   )
 }

@@ -1,6 +1,6 @@
 import dayjs, { type Dayjs } from 'dayjs'
 
-import { alpha, brand, supportColor } from '@shared/theme/tokens'
+import { alpha, brand, radius, shadows, supportColor, surface } from '@shared/theme/tokens'
 import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
 
 import type {
@@ -14,9 +14,18 @@ import type {
 
 export const agendaVisibleDayCount = 5
 export const scheduleStartHour = 8
-export const scheduleEndHour = 18
 export const scheduleHourHeight = 62
-export const scheduleTimelineHeight = (scheduleEndHour - scheduleStartHour + 1) * scheduleHourHeight
+
+export const agendaCardBaseSx = {
+  border: 0,
+  borderLeft: '3px solid',
+  borderRadius: `${radius.sm}px`,
+  px: 1.1,
+  py: 0.8,
+  overflow: 'hidden',
+  textAlign: 'left',
+  '&:hover, &:focus-visible': { boxShadow: shadows.crmCardHover },
+} as const
 
 export const agendaEventToneStyles: Record<AgendaEventTone, AgendaEventToneStyle> = {
   primary: {
@@ -36,14 +45,43 @@ export const agendaEventToneStyles: Record<AgendaEventTone, AgendaEventToneStyle
   },
 }
 
-export function getEventOffsetTop(time: string) {
+export function getEventOffsetTop(time: string, startHour = scheduleStartHour) {
   const [hour = scheduleStartHour, minute = 0] = time.split(':').map(Number)
 
-  return (hour - scheduleStartHour) * scheduleHourHeight + (minute / 60) * scheduleHourHeight
+  return (hour - startHour) * scheduleHourHeight + (minute / 60) * scheduleHourHeight
 }
 
 export function getEventHeight(durationMinutes: number) {
   return Math.max((durationMinutes / 60) * scheduleHourHeight, 38)
+}
+
+export function getAgendaCardPlacementSx(top: number, height: number, lane = 0, laneCount = 1) {
+  const shift = lane * Math.min(24, 80 / Math.max(1, laneCount - 1))
+  return {
+    position: 'absolute',
+    top,
+    height,
+    left: { xs: `${8 + shift}px`, md: `${16 + shift}px` },
+    right: { xs: 8, md: 16 },
+    zIndex: lane + 1,
+    bgcolor: surface.paper,
+    boxSizing: 'border-box',
+    transition: 'box-shadow 160ms ease, transform 160ms ease',
+    '&:hover, &:focus-within, &:focus-visible': {
+      height: 'auto',
+      minHeight: height,
+      zIndex: 1000,
+      boxShadow: shadows.crmCardHover,
+      transform: 'translateY(-1px)',
+      outline: 'none',
+      '& .MuiTypography-root': {
+        whiteSpace: 'normal',
+        overflow: 'visible',
+        textOverflow: 'clip',
+        overflowWrap: 'anywhere',
+      },
+    },
+  } as const
 }
 
 function resolveDayjsLocale(locale: string) {
