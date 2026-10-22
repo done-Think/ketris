@@ -76,8 +76,6 @@ export function OpportunityPropertyPanel({
               <HomeWorkOutlinedIcon />
             </Box>
           )}
-          {/* The panel is a third of the page, so the price goes under the title; side by side
-              they left the title about 60px wide. */}
           <Stack alignItems="flex-start" spacing={0.6} minWidth={0} flex={1}>
             <Box minWidth={0}>
               <Typography sx={{ fontSize: 14, fontWeight: 800 }}>{property.title}</Typography>

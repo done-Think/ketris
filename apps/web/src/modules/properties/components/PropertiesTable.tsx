@@ -155,9 +155,6 @@ export function PropertiesTable({
   const t = useTranslations('properties.dashboard.table')
   const filterT = useTranslations('properties.dashboard.filters')
   const emptyInventory = totalCount === 0
-  // Minimum widths add up to about 970px, so the grid fits a 1280px screen (about 980px for the
-  // grid next to the side menu) without scrolling. The title cuts with an ellipsis; the other
-  // columns fit their longest value ("Não anunciado", "R$ 12.500/mês", the "Em análise" chip).
   const columns: GridColDef<DashboardProperty>[] = [
     {
       field: 'title',
