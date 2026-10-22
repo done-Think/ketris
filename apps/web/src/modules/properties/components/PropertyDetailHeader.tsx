@@ -33,7 +33,7 @@ export function PropertyDetailHeader({
   const isPublished = property.apiStatus === 'PUBLISHED'
   const { data: session } = useSession()
   const isRented = property.status === 'Alugado'
-  const activeContractQuery = useContracts(isRented ? session?.tenantId : undefined, {
+  const activeContractQuery = useContracts(isRented && canManage ? session?.tenantId : undefined, {
     propertyId: property.id,
     status: 'ATIVO',
   })

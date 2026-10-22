@@ -324,7 +324,7 @@ export function MaintenanceDashboardPage() {
       >
         {t('newTicket')}
       </DashboardHeaderActionButton>
-      {session?.papel === 'ADMIN' && (
+      {session?.role === 'ADMIN' && (
         <>
           <Button startIcon={<LinkRoundedIcon />} onClick={() => setLinksOpen(true)}>
             {t('links.title')}
@@ -356,7 +356,7 @@ export function MaintenanceDashboardPage() {
       <Stack spacing={{ xs: 2, md: 2.7 }}>
         <DashboardPageHeader
           title={t('title')}
-          subtitle={t(session?.papel === 'RENTER' ? 'renter.subtitle' : 'subtitle')}
+          subtitle={t(session?.role === 'RENTER' ? 'renter.subtitle' : 'subtitle')}
           actions={headerActions}
         />
         <MaintenanceStatusFilters
@@ -529,7 +529,7 @@ export function MaintenanceDashboardPage() {
         initialValues={initialValues}
         mode={editingTicketId ? 'edit' : 'create'}
       />
-      {session?.papel === 'ADMIN' && (
+      {session?.role === 'ADMIN' && (
         <MaintenanceLinksDialog open={linksOpen} onClose={() => setLinksOpen(false)} />
       )}
       <Dialog

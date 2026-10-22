@@ -13,13 +13,19 @@
       "metadataTitle": "Ketris | Platform Agency"
     },
     "newTenant": {
-      "metadataTitle": "Ketris | New Platform Agency"
+      "metadataTitle": "Ketris | New Platform Account"
     },
     "newAdmin": {
       "metadataTitle": "Ketris | Platform Admins"
     },
     "system": {
       "metadataTitle": "Ketris | System Health"
+    },
+    "plans": {
+      "metadataTitle": "Ketris | Platform Plans"
+    },
+    "finance": {
+      "metadataTitle": "Ketris | Platform Finance"
     }
   },
   "login": {
@@ -38,7 +44,6 @@
   "dashboard": {
     "title": "Agencies",
     "platformAdmins": "Platform admins",
-    "newTenant": "New agency",
     "loadError": "Could not load agencies.",
     "empty": "No agencies registered yet.",
     "createdAt": "Created at"
@@ -63,8 +68,7 @@
       "finance": "Finance",
       "system": "System",
       "logs": "Logs",
-      "online": "Online",
-      "demoNotice": "Demonstration data. This is not live monitoring."
+      "online": "Online"
     },
     "metrics": {
       "tenants": {
@@ -80,7 +84,7 @@
         "label": "MRR"
       },
       "churn": {
-        "label": "Churn"
+        "label": "Churn (month)"
       },
       "uptime": {
         "label": "Platform uptime"
@@ -110,28 +114,6 @@
       "nov": "Nov",
       "dec": "Dec"
     },
-    "alerts": {
-      "title": "System alerts",
-      "active": "{count} active",
-      "backup": {
-        "title": "Automated backup failed",
-        "description": "S3-us-east-1 write error. A second attempt is scheduled."
-      },
-      "cpu": {
-        "title": "High CPU consumption",
-        "description": "Node-worker-02 is operating at 92% capacity."
-      },
-      "ssl": {
-        "title": "SSL renewed",
-        "description": "The gateway-api certificate was renewed successfully."
-      },
-      "tenant-registration": {
-        "title": "New tenant registration",
-        "description": "Vanguard Hub completed basic setup."
-      },
-      "minutesAgo": "{count} min ago",
-      "hoursAgo": "{count} h ago"
-    },
     "recentTenants": {
       "title": "Recent tenants",
       "tableLabel": "Recent tenants table",
@@ -144,104 +126,87 @@
     }
   },
   "tenant": {
-    "usersTitle": "Agency users",
-    "newAdmin": "New administrator",
-    "usersLoadError": "Could not load users.",
-    "emptyUsers": "No users registered yet."
+    "back": "Back to Tenants",
+    "notFound": "Account not found.",
+    "loadError": "Unable to load the account.",
+    "editAccount": "Edit account",
+    "users": {
+      "title": "Users",
+      "loadError": "Unable to load the users.",
+      "emptyTitle": "No users yet",
+      "emptyDescription": "Add the administrator alongside so the account can start using the platform.",
+      "pendingApproval": "Awaiting approval",
+      "roles": {
+        "ADMIN": "Administrator",
+        "OWNER": "Owner",
+        "AGENT": "Broker",
+        "RENTER": "Renter"
+      }
+    },
+    "account": {
+      "title": "Account",
+      "accountType": "Account type",
+      "status": "Status",
+      "monthlyFee": "Monthly fee",
+      "usage": "Plan usage",
+      "usageProperties": "{usage} of {included} properties",
+      "usageBrokers": "{usage} of {included} brokers",
+      "createdAt": "Created on",
+      "canceledAt": "Canceled on"
+    },
+    "newAdmin": {
+      "title": "New administrator",
+      "description": "Has full access to the account and can invite the team.",
+      "passwordHelper": "At least 8 characters.",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "submit": "Create administrator"
+    }
   },
   "tenants": {
     "title": "Tenants",
-    "searchLabel": "Search tenants",
-    "searchPlaceholder": "Search tenants...",
-    "planFilterLabel": "Filter by plan",
-    "statusFilterLabel": "Filter by status",
-    "newTenant": "New Tenant",
-    "activeBadge": "Active",
-    "metrics": {
-      "total": "Total",
-      "starter": "Starter",
-      "pro": "Pro",
-      "enterprise": "Enterprise"
+    "newTenant": "New account",
+    "subtitle": "Accounts on the platform, with each one’s plan and status.",
+    "search": {
+      "label": "Search accounts",
+      "placeholder": "Search by name or identifier"
     },
-    "tableLabel": "Tenants table",
-    "columns": {
-      "name": "Name",
-      "plan": "Plan",
-      "brokers": "Brokers",
-      "properties": "Properties",
-      "mrr": "MRR",
-      "status": "Status",
-      "createdAt": "Created",
-      "actions": "Actions"
+    "filters": {
+      "statusLabel": "Filter by status",
+      "allStatuses": "All",
+      "typeLabel": "Account type",
+      "allTypes": "All types"
     },
-    "plans": {
-      "all": "All",
-      "starter": "Starter",
-      "pro": "Pro",
-      "enterprise": "Enterprise"
-    },
-    "statuses": {
-      "all": "All",
-      "active": "Active",
-      "trial": "Trial",
-      "suspended": "Suspended"
-    },
-    "planFilterValue": "Plan: {value}",
-    "statusFilterValue": "Status: {value}",
-    "summary": "Showing {start}–{end} of {total} tenants",
-    "previous": "Previous",
-    "next": "Next",
-    "empty": "No tenants found.",
-    "editAction": "Edit {name}",
-    "moreActions": "More actions for {name}",
-    "edit": "Edit",
-    "editTitle": "Edit demo tenant",
-    "editDescription": "Changes are local and will be discarded when you reload the page.",
-    "save": "Save",
-    "cancel": "Cancel",
-    "metricBadge": "Tenants",
-    "errors": {
-      "nameRequired": "Enter a name."
-    }
+    "count": "{count, plural, =0 {No accounts} one {# account} other {# accounts}}",
+    "noResults": "No accounts match these filters.",
+    "clearFilters": "Clear filters"
   },
   "system": {
     "title": "System Health",
-    "autoRefresh": "Auto-refresh (5s)",
-    "networkEyebrow": "NETWORK TRAFFIC",
-    "networkTitle": "Request Volume (24h)",
-    "networkAverage": "Average: {value} req/min",
-    "errorsEyebrow": "ERROR NOTIFICATIONS",
-    "errorsTitle": "Error Occurrences (12h)",
-    "errorsTotal": "Total: {count} failures",
-    "logsTitle": "Recent Cluster Activity (Log Console)",
-    "clearConsole": "Clear Console",
-    "emptyConsole": "Console cleared.",
-    "metrics": {
-      "gateway": {
-        "label": "API Gateway",
-        "status": "Healthy"
-      },
-      "database": {
-        "label": "Database",
-        "status": "Stable Latency"
-      },
-      "storage": {
-        "label": "Storage",
-        "status": "Limited Space"
-      },
-      "queue": {
-        "label": "Task Queue",
-        "status": "Processing"
-      }
+    "checkedAt": "Updated at {time} · refreshes every 30 s",
+    "loadError": "Unable to check the system health right now.",
+    "database": {
+      "label": "Database",
+      "up": "Responding",
+      "down": "Down",
+      "helper": "Response time measured just now."
     },
-    "logMessages": {
-      "authentication": "Successful authentication for tenant 'Silva & Associados'",
-      "rateLimit": "Request rejected because the Starter plan rate limit was exceeded",
-      "payment": "Recurring payment synchronization failed (Billing gateway)",
-      "import": "Completed processing of 140 property records from a spreadsheet",
-      "backup": "Scheduled backup completed successfully on the secondary cluster",
-      "connection": "Critical connection error on the data read replica"
-    }
+    "server": {
+      "label": "Server up for",
+      "helper": "Time since this server last started.",
+      "uptimeHours": "{hours} h {minutes} min",
+      "uptimeDays": "{days, plural, one {# day} other {# days}} {hours} h"
+    },
+    "errors": {
+      "title": "Recent errors (Sentry, last 24 h)",
+      "notConfiguredTitle": "Sentry not configured",
+      "notConfiguredDescription": "To see real errors here, set SENTRY_API_TOKEN (read-only token) in the server environment.",
+      "unavailable": "Unable to reach Sentry right now.",
+      "empty": "No open errors in the last 24 h.",
+      "issueMeta": "{count, plural, one {# event} other {# events}} · last seen {lastSeen}",
+      "openInSentry": "Open in Sentry"
+    },
+    "externalMonitoringNote": "Availability (uptime %) and network traffic require an external monitoring tool, which is not integrated yet."
   },
   "newAdmin": {
     "title": "New platform administrator"
@@ -308,18 +273,14 @@
     "passwordConfirmation": "Confirm password",
     "cancel": "Cancel",
     "slug": "Slug",
-    "slugHelper": "Unique identifier, e.g. example-agency",
+    "slugHelper": "Filled in from the name. Use lowercase letters, numbers and hyphens.",
     "role": "Role",
     "status": "Status",
     "active": "Active",
     "inactive": "Inactive",
-    "createTenantSubmit": "Create agency",
-    "createTenantError": "Could not create the agency. Try again.",
-    "createTenantSuccess": "Agency {name} created successfully.",
     "createPlatformAdminSubmit": "Create platform administrator",
     "createPlatformAdminError": "Could not create the platform administrator. Try again.",
     "createPlatformAdminSuccess": "Platform administrator {email} created successfully.",
-    "createTenantAdminSubmit": "Create agency administrator",
     "createTenantAdminError": "Could not create the agency administrator. Try again.",
     "createTenantAdminSuccess": "Administrator {email} created successfully.",
     "errors": {
@@ -331,12 +292,162 @@
       "passwordsDoNotMatch": "Passwords do not match",
       "slugRequired": "Enter the slug",
       "slugInvalid": "Use only lowercase letters, numbers, and hyphens"
-    }
+    },
+    "namePlaceholder": "E.g. Horizon Real Estate",
+    "slugLabel": "Identifier (slug)",
+    "slugPlaceholder": "horizon-real-estate"
   },
   "table": {
     "first": "First page",
     "last": "Last page",
     "next": "Next page",
     "previous": "Previous page"
+  },
+  "account": {
+    "actions": "Actions",
+    "editAction": "Edit account of {name}",
+    "editTitle": "Account and billing",
+    "closeEditDialog": "Close account editing",
+    "fields": {
+      "accountType": "Account type",
+      "accountTypeHelper": "Defines the plan charged (see Plans).",
+      "status": "Status",
+      "statusHelper": "Only active accounts are charged.",
+      "canceledHelper": "The cancellation date is recorded and counts toward this month’s churn.",
+      "monthlyCharge": "Monthly fee"
+    },
+    "accountTypes": {
+      "INDIVIDUAL": "Individual",
+      "BROKER": "Broker",
+      "AGENCY": "Agency"
+    },
+    "statuses": {
+      "TRIAL": "Trial",
+      "ACTIVE": "Active",
+      "SUSPENDED": "Suspended",
+      "CANCELED": "Canceled"
+    },
+    "errors": {
+      "forbidden": "Only platform admins with the Admin role can change accounts.",
+      "changedConcurrently": "This account was changed by someone else. Reload and try again.",
+      "notFound": "This account no longer exists."
+    },
+    "save": "Save",
+    "cancel": "Cancel",
+    "updateSuccess": "Account updated.",
+    "updateError": "Unable to update the account."
+  },
+  "plans": {
+    "title": "Plans",
+    "subtitle": "Monthly price of each account type and what it includes.",
+    "loadError": "Unable to load the plans.",
+    "perMonth": "/month",
+    "includesProperties": "{count, plural, one {Includes up to # property} other {Includes up to # properties}}",
+    "includesBrokers": "{count, plural, one {Includes up to # active broker} other {Includes up to # active brokers}}",
+    "extraProperties": "{price} per extra property",
+    "extraBrokers": "{price} per extra broker",
+    "activeAccounts": "{count, plural, =0 {No active accounts} one {# active account} other {# active accounts}}",
+    "edit": "Edit",
+    "editAction": "Edit plan {name}",
+    "editTitle": "Edit plan",
+    "closeEditDialog": "Close plan editing",
+    "note": "Amounts in BRL. There is no automatic billing: each account’s monthly fee is calculated from its type’s plan and current usage. Only active accounts count as revenue.",
+    "fields": {
+      "monthlyPrice": "Monthly price",
+      "includedUnitsProperties": "Included properties",
+      "includedUnitsBrokers": "Included active brokers",
+      "extraUnitPriceProperties": "Price per extra property",
+      "extraUnitPriceBrokers": "Price per extra broker"
+    },
+    "exampleProperties": "Example: with {count, plural, one {# property} other {# properties}}, the monthly fee is {total}.",
+    "exampleBrokers": "Example: with {count, plural, one {# active broker} other {# active brokers}}, the monthly fee is {total}.",
+    "chargeBaseOnly": "Plan base price",
+    "chargeWithExtraProperties": "{base} + {count, plural, one {# extra property} other {# extra properties}} ({extra})",
+    "chargeWithExtraBrokers": "{base} + {count, plural, one {# extra broker} other {# extra brokers}} ({extra})",
+    "errors": {
+      "invalidAmount": "Enter a valid amount with up to two decimals.",
+      "invalidUnits": "Enter a whole number.",
+      "forbidden": "Only platform admins with the Admin role can change plans.",
+      "notFound": "This plan does not exist."
+    },
+    "save": "Save",
+    "cancel": "Cancel",
+    "updateSuccess": "Plan updated.",
+    "updateError": "Unable to update the plan."
+  },
+  "finance": {
+    "title": "Finance",
+    "subtitle": "Current MRR at today's plan prices and churn for {month}. Calculated values, with no billing or payment integration.",
+    "loadError": "Unable to load the finance data.",
+    "kpis": {
+      "mrr": "MRR",
+      "payingAccounts": "Paying accounts",
+      "trialAccounts": "On trial",
+      "suspendedAccounts": "{count, plural, =0 {None suspended} one {# suspended} other {# suspended}}",
+      "churn": "Monthly churn",
+      "churnNoBase": "No base at the start of the month",
+      "canceledThisMonth": "{count, plural, =0 {No cancellations} one {# cancellation} other {# cancellations}}"
+    },
+    "byAccountType": {
+      "title": "Revenue by account type",
+      "activeAccounts": "{count, plural, =0 {No active accounts} one {# active account} other {# active accounts}}"
+    },
+    "accounts": {
+      "title": "Monthly fees by account",
+      "empty": "No accounts yet.",
+      "columns": {
+        "account": "Account",
+        "usage": "Plan usage"
+      },
+      "usageProperties": "{usage} of {included} properties",
+      "usageBrokers": "{usage} of {included} brokers",
+      "notBilled": "not in MRR",
+      "extraUnits": "{count, plural, one {+# extra} other {+# extras}}",
+      "includesExtras": "includes {amount} in extras"
+    },
+    "note": "There is no automatic billing: amounts are calculated from each account type’s plan and current usage. Only active accounts count toward MRR."
+  },
+  "createAccount": {
+    "title": "New account",
+    "subtitle": "Register an individual, a broker or an agency so it can start using the platform.",
+    "backToTenants": "Back to Tenants",
+    "pricePerMonth": "{price}/month",
+    "sections": {
+      "accountType": {
+        "title": "Account type",
+        "description": "Defines the plan and the monthly fee charged."
+      },
+      "identity": {
+        "title": "Identification",
+        "description": "Name shown on the platform and the account’s unique identifier."
+      },
+      "status": {
+        "title": "Initial status",
+        "trialLabel": "Start on a trial",
+        "trialHelper": "Trial accounts do not count toward MRR until they are activated in the Tenants list."
+      }
+    },
+    "summary": {
+      "title": "Summary",
+      "namePlaceholder": "Account name",
+      "slugPlaceholder": "identifier",
+      "accountType": "Account type",
+      "status": "Status",
+      "monthlyFee": "Monthly fee",
+      "pricePerMonth": "{price}/month",
+      "extraProperties": "+ {price} per property above {count}",
+      "extraBrokers": "+ {price} per broker above {count}",
+      "trialNotBilled": "Not charged while on trial."
+    },
+    "nextSteps": {
+      "title": "Next steps",
+      "create": "Create the account",
+      "admin": "Add its administrator",
+      "finance": "Follow its billing in Finance"
+    },
+    "submit": "Create account",
+    "cancel": "Cancel",
+    "createSuccess": "Account {name} created.",
+    "createError": "Unable to create the account. Please try again."
   }
 }

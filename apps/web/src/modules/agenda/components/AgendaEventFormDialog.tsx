@@ -24,11 +24,16 @@ import { buildAgendaEventFormSchema } from '../schemas/agenda-event-form-schema'
 import type { AgendaEventFormDialogProps, AgendaEventFormValues } from '../types/agenda-event'
 import { computeEarliestSchedulableSlot } from '../utils/scheduling-window'
 import { AgendaEventFormFields } from './AgendaEventFormFields'
+import { useAgendaScheduleConfirmation } from '../hooks/use-agenda-schedule-confirmation'
 
 function buildDefaultValues(): AgendaEventFormValues {
   const earliestSlot = computeEarliestSchedulableSlot()
 
   return {
+    outsideBusinessHoursConfirmed: false,
+    internal: false,
+    audience: 'LEGACY_TEAM',
+    responsibleId: '',
     customProperty: '',
     durationMinutes: 60,
     kind: '',
@@ -43,6 +48,10 @@ function buildDefaultValues(): AgendaEventFormValues {
 }
 
 export function AgendaEventFormDialog({
+  canManageAudience = false,
+  agentOptions,
+  agentsLoading,
+  agentsError,
   initialValues,
   maxDate,
   minDate,
@@ -69,18 +78,32 @@ export function AgendaEventFormDialog({
   useEffect(() => {
     if (!open) return
 
-    reset({ ...buildDefaultValues(), ...initialValues })
-  }, [initialValues, open, reset])
+    reset({
+      ...buildDefaultValues(),
+      ...(canManageAudience ? { audience: 'ALL_AGENTS' as const } : {}),
+      ...initialValues,
+    })
+  }, [initialValues, open, reset, canManageAudience])
+  const { submit, waiting, cancel } = useAgendaScheduleConfirmation({
+    open,
+    handleSubmit,
+    onSubmit: onCreate,
+  })
+  const closeDialog = () => {
+    cancel()
+    onClose()
+  }
 
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={closeDialog}
+      disableEnforceFocus={waiting}
       fullWidth
       maxWidth="sm"
       PaperProps={{ sx: { minHeight: { sm: 640 } } }}
     >
-      <Box component="form" noValidate onSubmit={handleSubmit(onCreate)}>
+      <Box component="form" noValidate onSubmit={handleSubmit(submit)}>
         <DialogTitle sx={{ px: { xs: 2, md: 2.8 }, pb: 1.4, pt: 2.4 }}>
           <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
             <Box sx={{ minWidth: 0 }}>
@@ -91,7 +114,7 @@ export function AgendaEventFormDialog({
                 {t('title')}
               </Typography>
             </Box>
-            <IconButton aria-label={t('closeAriaLabel')} onClick={onClose}>
+            <IconButton aria-label={t('closeAriaLabel')} onClick={closeDialog}>
               <CloseRoundedIcon sx={{ fontSize: iconSize.lg }} />
             </IconButton>
           </Stack>
@@ -101,6 +124,10 @@ export function AgendaEventFormDialog({
           sx={{ mt: 1.6, overflow: 'visible', px: { xs: 2, md: 2.8 }, pb: 2, pt: 2.4 }}
         >
           <AgendaEventFormFields
+            canManageAudience={canManageAudience}
+            agentOptions={agentOptions}
+            agentsLoading={agentsLoading}
+            agentsError={agentsError}
             control={control}
             maxDate={maxDate}
             minDate={minDate}
@@ -109,7 +136,7 @@ export function AgendaEventFormDialog({
         </DialogContent>
 
         <DialogActions sx={{ px: { xs: 2, md: 2.8 }, pb: 2.5, pt: 0 }}>
-          <Button type="button" variant="outlined" color="secondary" onClick={onClose}>
+          <Button type="button" variant="outlined" color="secondary" onClick={closeDialog}>
             {t('cancel')}
           </Button>
           <Button

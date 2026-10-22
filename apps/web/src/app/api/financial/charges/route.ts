@@ -26,8 +26,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   const result = await financialContainer.listChargesUseCase.execute({
     actorId: actor.sub,
+    actorTenantId: actor.tenantId,
     actorPapel: actor.papel as Papel,
-    tenantId: actor.tenantId,
     type: parsed.data.type,
     status: parsed.data.status,
     search: parsed.data.search,

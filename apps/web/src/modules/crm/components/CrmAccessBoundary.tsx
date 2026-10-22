@@ -18,7 +18,7 @@ export function CrmAccessBoundary({ children }: CrmAccessBoundaryProps) {
   const { data: session, status } = useSession()
   const isAuthenticated =
     status === 'authenticated' && session?.scope === 'tenant' && !!session.tenantId
-  const isRenter = isAuthenticated && session?.papel === 'RENTER'
+  const isRenter = isAuthenticated && session?.role === 'RENTER'
   const isSessionInvalid = !isAuthenticated || isRenter
 
   useEffect(() => {

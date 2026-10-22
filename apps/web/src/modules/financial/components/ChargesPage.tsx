@@ -66,8 +66,10 @@ export function ChargesPage() {
   const t = useTranslations('charges')
   const locale = useLocale()
   const { enqueueSnackbar } = useSnackbar()
-  const { data: session } = useSession()
-  const isRenter = session?.papel === 'RENTER'
+  const { data: session, status: sessionStatus } = useSession()
+  const isRenter = session?.role === 'RENTER'
+  const canCreateCharge =
+    sessionStatus === 'authenticated' && (session?.role === 'ADMIN' || session?.role === 'OWNER')
   const tenantId = session?.tenantId ?? ''
   const createChargeMutation = useCreateCharge(tenantId)
   const updateChargeMutation = useUpdateCharge(tenantId)
@@ -141,6 +143,7 @@ export function ChargesPage() {
     }
   }
   const addCharge = (values: CreateChargeFormValues) => {
+    if (!canCreateCharge) return
     createChargeMutation.mutate(values, {
       onSuccess: () => {
         setQuery('')
@@ -256,7 +259,7 @@ export function ChargesPage() {
                   '& .MuiInputAdornment-root .MuiSvgIcon-root': { fontSize: iconSize.sm },
                 }}
               />
-              {!isRenter && (
+              {canCreateCharge && (
                 <DashboardHeaderActionButton
                   startIcon={<AddRoundedIcon />}
                   onClick={() => setCreateOpen(true)}
@@ -418,7 +421,7 @@ export function ChargesPage() {
               <TableBody>
                 {rows.map((charge, index) => (
                   <ChargeRow
-                    readOnly={isRenter}
+                    readOnly={!canCreateCharge}
                     key={charge.id}
                     charge={charge}
                     locale={locale}
@@ -459,7 +462,7 @@ export function ChargesPage() {
           />
         </Paper>
       </Stack>
-      {!isRenter && (
+      {canCreateCharge && (
         <>
           <CreateChargeDialog
             open={createOpen}

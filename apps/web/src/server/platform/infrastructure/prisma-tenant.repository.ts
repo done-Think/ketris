@@ -30,15 +30,14 @@ export class PrismaTenantRepository implements TenantRepository {
     return tenant ? toDomainTenantSummary(tenant) : null
   }
 
-  async findMany(): Promise<TenantSummary[]> {
-    const tenants = await prisma.tenant.findMany({ orderBy: { createdAt: 'asc' } })
-
-    return tenants.map(toDomainTenantSummary)
-  }
-
   async create(newTenant: NewTenant): Promise<TenantSummary> {
     const tenant = await prisma.tenant.create({
-      data: { nome: newTenant.nome, slug: newTenant.slug },
+      data: {
+        nome: newTenant.nome,
+        slug: newTenant.slug,
+        accountType: newTenant.accountType,
+        status: newTenant.status,
+      },
     })
 
     return toDomainTenantSummary(tenant)

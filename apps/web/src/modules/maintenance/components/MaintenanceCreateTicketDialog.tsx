@@ -78,11 +78,10 @@ export function MaintenanceCreateTicketDialog({
 
   useEffect(() => {
     if (open)
-      reset(
-        initialValues ??
-          (mode === 'create' ? readMaintenanceDraft(draftKey) : null) ??
-          defaultValues,
-      )
+      reset({
+        ...defaultValues,
+        ...(initialValues ?? (mode === 'create' ? readMaintenanceDraft(draftKey) : null) ?? {}),
+      })
   }, [initialValues, open, reset, mode, draftKey])
 
   useEffect(() => {
@@ -156,7 +155,7 @@ export function MaintenanceCreateTicketDialog({
               <RhfTextField
                 control={control}
                 name="contractId"
-                disabled={mode === 'edit' && session?.papel === 'RENTER'}
+                disabled={mode === 'edit' && session?.role === 'RENTER'}
                 label={t('fields.contract')}
                 select
                 fullWidth

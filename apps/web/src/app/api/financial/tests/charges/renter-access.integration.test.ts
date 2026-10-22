@@ -14,6 +14,7 @@ describe('Renter charge isolation (database integration)', () => {
   const tokens = new JoseTokenService()
   let renterToken: string
   let agentToken: string
+  let ownerToken: string
   let ownIds: string[]
   let hiddenIds: string[]
 
@@ -27,7 +28,7 @@ describe('Renter charge isolation (database integration)', () => {
     }
     const tenantId = await tenant()
     const foreignTenantId = await tenant()
-    async function user(tenantId: string, papel: 'RENTER' | 'AGENT') {
+    async function user(tenantId: string, papel: 'RENTER' | 'AGENT' | 'OWNER') {
       return prisma.usuario.create({
         data: {
           tenantId,
@@ -44,6 +45,7 @@ describe('Renter charge isolation (database integration)', () => {
     const foreignAgent = await user(foreignTenantId, 'AGENT')
     renterToken = await tokens.sign(renter)
     agentToken = await tokens.sign(agent)
+    ownerToken = await tokens.sign(await user(tenantId, 'OWNER'))
 
     async function contract(
       tenantId: string,
@@ -117,6 +119,7 @@ describe('Renter charge isolation (database integration)', () => {
     ownIds = [
       (await charge(tenantId, own.id)).id,
       (await charge(tenantId, own.id, 'A_RECEBER', 'ATRASADA')).id,
+      (await charge(foreignTenantId, foreign.id)).id,
     ]
     hiddenIds = [
       (await charge(tenantId, own.id, 'A_PAGAR')).id,
@@ -124,7 +127,6 @@ describe('Renter charge isolation (database integration)', () => {
       (await charge(tenantId, unlinked.id)).id,
       (await charge(tenantId, wrongRole.id)).id,
       (await charge(tenantId, null)).id,
-      (await charge(foreignTenantId, foreign.id)).id,
     ]
   })
 
@@ -148,25 +150,33 @@ describe('Renter charge isolation (database integration)', () => {
   const context = (id: string) => ({ params: Promise.resolve({ id }) })
 
   it('lists only linked receivables and scopes search, counts, status and pagination', async () => {
-    const first = await GET(request('charges?pageSize=1&search=isolation-charge&type=A_PAGAR'))
+    const first = await GET(request('charges?pageSize=1&search=isolation-charge&type=A_RECEBER'))
     expect(first.status).toBe(200)
     const firstBody = await first.json()
-    expect(firstBody.totalCount).toBe(2)
+    expect(firstBody.totalCount).toBe(3)
     expect(firstBody.items).toHaveLength(1)
     expect(ownIds).toContain(firstBody.items[0].id)
     const second = await GET(request('charges?pageSize=1&page=2&search=isolation-charge'))
     const secondBody = await second.json()
-    expect(secondBody.totalCount).toBe(2)
+    expect(secondBody.totalCount).toBe(3)
     expect(secondBody.items).toHaveLength(1)
     expect(secondBody.items[0].id).not.toBe(firstBody.items[0].id)
     expect(ownIds).toContain(secondBody.items[0].id)
+    const third = await GET(request('charges?pageSize=1&page=3&search=isolation-charge'))
+    const thirdBody = await third.json()
+    expect(thirdBody.totalCount).toBe(3)
+    expect([firstBody.items[0].id, secondBody.items[0].id, thirdBody.items[0].id].sort()).toEqual(
+      ownIds.slice().sort(),
+    )
+    const payable = await GET(request('charges?type=A_PAGAR'))
+    expect(await payable.json()).toMatchObject({ items: [], totalCount: 0 })
     const overdue = await GET(request('charges?status=ATRASADA'))
     expect((await overdue.json()).totalCount).toBe(1)
     const noMatch = await GET(request('charges?search=not-present'))
     expect(await noMatch.json()).toMatchObject({ items: [], totalCount: 0 })
   })
 
-  it('reads own details and hides third-party, foreign, unlinked, wrong-role and payable charges', async () => {
+  it('reads linked details across agencies and hides third-party, unlinked, wrong-role and payable charges', async () => {
     for (const id of ownIds) {
       const response = await getCharge(request(`charges/${id}`), context(id))
       expect(response.status).toBe(200)
@@ -205,9 +215,10 @@ describe('Renter charge isolation (database integration)', () => {
     })
   })
 
-  it('preserves the existing tenant scope for agents', async () => {
-    const response = await GET(request('charges', 'GET', undefined, agentToken))
+  it('preserves tenant scope for owners and blocks agents', async () => {
+    const response = await GET(request('charges', 'GET', undefined, ownerToken))
     expect(response.status).toBe(200)
     expect((await response.json()).totalCount).toBe(7)
+    expect((await GET(request('charges', 'GET', undefined, agentToken))).status).toBe(403)
   })
 })

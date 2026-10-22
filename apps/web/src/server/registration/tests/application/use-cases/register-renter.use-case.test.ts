@@ -40,7 +40,6 @@ function createDeps(overrides?: {
   const tenantRepository: TenantRepository = {
     findBySlug: overrides?.findBySlug ?? vi.fn().mockResolvedValue(renterTenant),
     findById: vi.fn(),
-    findMany: vi.fn(),
     create: vi.fn(),
     searchByName: vi.fn(),
   }

@@ -16,6 +16,7 @@ import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 import type { AgendaDashboardHeaderProps } from '../../types/agenda-event'
 
 export function AgendaDashboardHeader({
+  readOnly = false,
   disableNextWeek,
   disablePreviousWeek,
   notifications,
@@ -79,29 +80,33 @@ export function AgendaDashboardHeader({
           </IconButton>
         </span>
       </Tooltip>
-      <Tooltip title={t('newEvent')}>
-        <IconButton
-          aria-label={t('newEvent')}
-          onClick={onNewEvent}
-          sx={{
-            display: { xs: 'inline-flex', md: 'none' },
-            width: 44,
-            height: 44,
-            bgcolor: brand.magenta[500],
-            color: surface.paper,
-            '&:hover': { bgcolor: brand.magenta[600] },
-          }}
-        >
-          <AddRoundedIcon sx={{ fontSize: iconSize.xl }} />
-        </IconButton>
-      </Tooltip>
-      <DashboardHeaderActionButton
-        startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
-        onClick={onNewEvent}
-        sx={{ display: { xs: 'none', md: 'inline-flex' } }}
-      >
-        {t('newEvent')}
-      </DashboardHeaderActionButton>
+      {!readOnly && (
+        <>
+          <Tooltip title={t('newEvent')}>
+            <IconButton
+              aria-label={t('newEvent')}
+              onClick={onNewEvent}
+              sx={{
+                display: { xs: 'inline-flex', md: 'none' },
+                width: 44,
+                height: 44,
+                bgcolor: brand.magenta[500],
+                color: surface.paper,
+                '&:hover': { bgcolor: brand.magenta[600] },
+              }}
+            >
+              <AddRoundedIcon sx={{ fontSize: iconSize.xl }} />
+            </IconButton>
+          </Tooltip>
+          <DashboardHeaderActionButton
+            startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
+            onClick={onNewEvent}
+            sx={{ display: { xs: 'none', md: 'inline-flex' } }}
+          >
+            {t('newEvent')}
+          </DashboardHeaderActionButton>
+        </>
+      )}
       <Box sx={{ display: { xs: 'none', md: 'block' } }}>
         <DashboardNotificationsButton
           notifications={notifications}

@@ -1,4 +1,5 @@
 import { formatDate } from '@shared/lib/utils/format'
+import dayjs from 'dayjs'
 
 import type {
   ApiMaintenanceTicket,
@@ -7,12 +8,14 @@ import type {
   ApiMaintenanceTicketStatus,
   CreateMaintenanceTicketPayload,
   UpdateMaintenanceTicketPayload,
+  MaintenanceAction,
 } from '../types/service'
 import type {
   MaintenanceCreateTicketFormValues,
   MaintenancePriority,
   MaintenanceStatus,
   MaintenanceTicket,
+  MaintenanceScheduleFormValues,
 } from '../types/maintenance'
 
 const statusFromApiMap: Record<ApiMaintenanceTicketStatus, MaintenanceStatus> = {
@@ -135,5 +138,26 @@ export function buildUpdateMaintenanceTicketPayload(
     priority: mapMaintenancePriorityToApi(values.priority),
     title: values.title,
     description: values.description,
+  }
+}
+
+export function mapMaintenanceScheduleToFormValues(
+  ticket: Pick<ApiMaintenanceTicket, 'scheduledAt'>,
+): MaintenanceScheduleFormValues {
+  return {
+    scheduledDate: ticket.scheduledAt ? dayjs(ticket.scheduledAt).format('YYYY-MM-DD') : '',
+    scheduledHour: ticket.scheduledAt ? dayjs(ticket.scheduledAt).format('HH') : '',
+    scheduledMinute: ticket.scheduledAt ? dayjs(ticket.scheduledAt).format('mm') : '',
+  }
+}
+
+export function buildMaintenanceScheduleAction(
+  values: MaintenanceScheduleFormValues,
+): Extract<MaintenanceAction, { action: 'schedule' }> {
+  return {
+    action: 'schedule',
+    scheduledAt: new Date(
+      `${values.scheduledDate}T${values.scheduledHour}:${values.scheduledMinute}`,
+    ).toISOString(),
   }
 }

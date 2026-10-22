@@ -3,9 +3,6 @@
     "overview": {
       "metadataTitle": "Ketris | Dashboard"
     },
-    "agencyOverview": {
-      "metadataTitle": "Ketris | Agency Overview"
-    },
     "agenda": {
       "metadataTitle": "Ketris | Schedule"
     },
@@ -35,12 +32,10 @@
   "overview": {
     "title": "Dashboard",
     "notifications": "Notifications",
-    "performanceTitle": "6-month performance",
     "metrics": {
       "leadsActive": { "label": "Active leads", "caption": "{count} today" },
       "visitsMonth": { "label": "Visits this month", "caption": "{count} today" },
-      "proposals": { "label": "Proposals", "caption": "{count} awaiting response" },
-      "revenue": { "label": "Revenue", "caption": "{amount} overdue" }
+      "proposals": { "label": "Proposals", "caption": "{count} awaiting response" }
     },
     "activityDetail": {
       "close": "Close",
@@ -87,23 +82,12 @@
     }
   },
   "agencyOverview": {
-    "agencyName": "Premium Real Estate SP",
-    "title": "Overview",
-    "subtitle": "Track activity, goals, and consolidated agency performance.",
-    "month": "September, 2024",
-    "report": "Report",
-    "navigation": {
-      "overview": "Overview",
-      "team": "Team",
-      "portfolio": "Portfolio",
-      "finance": "Finance",
-      "contracts": "Contracts"
-    },
     "kpis": {
       "portfolio": "Portfolio listings",
       "activeBrokers": "Active brokers",
       "receivedLeads": "Received leads",
       "revenue": "Revenue",
+      "overdue": "Overdue",
       "occupancy": "Occupancy rate",
       "helpers": {
         "newProperties": "{count, plural, =0 {None new this month} other {+# new this month}}",
@@ -113,7 +97,9 @@
         "revenueIncrease": "+{percent, number}% vs last month",
         "revenueDecrease": "−{percent, number}% vs last month",
         "revenueSame": "Same as last month",
-        "revenueNoPrevious": "Last month was zero"
+        "revenueNoPrevious": "Last month was zero",
+        "overdue": "Past due, unpaid",
+        "noOverdue": "Nothing overdue"
       }
     },
     "performance": {
@@ -166,12 +152,6 @@
   },
   "maintenance": {
     "title": "Maintenance tickets",
-    "empty": "No tickets found.",
-    "renter": {
-      "subtitle": "Open and track maintenance tickets for properties linked to your contracts.",
-      "resolutionNotice": "The administrator or linked owner confirms or contests the resolution. When an owner completes the work, only the administrator can confirm it.",
-      "readOnlyNotice": "This ticket is closed and available for viewing only."
-    },
     "subtitle": "Track repair and maintenance requests",
     "search": "Search ticket...",
     "allProperties": "All properties",
@@ -316,6 +296,9 @@
     "activeTickets": "Active",
     "archivedTickets": "Archived",
     "workflow": {
+      "linkContract": "Link contract",
+      "contract": "Ticket contract",
+      "linkContractHelp": "Select the correct contract for this property. Linking preserves the ticket status, resolution date, archive state and history.",
       "assume": "Take responsibility",
       "assign": "Assign responsible user",
       "provider": "Set provider",
@@ -349,7 +332,9 @@
         "PENDENTE": "Pending",
         "APROVADA": "Approved",
         "REJEITADA": "Rejected"
-      }
+      },
+      "finish": "Finish ticket",
+      "finishConfirmation": "Do you confirm that the problem is resolved? The ticket will be marked as resolved and its history will be preserved."
     },
     "links": {
       "title": "Regularize links",
@@ -362,6 +347,28 @@
       "save": "Save links",
       "success": "Links updated.",
       "error": "Could not update links."
+    },
+    "scheduleNotSet": "Not scheduled yet",
+    "empty": "No tickets found.",
+    "renter": {
+      "subtitle": "Open and track maintenance tickets for properties linked to your contracts.",
+      "resolutionNotice": "If the problem is resolved, you can finish the ticket. If the work was not satisfactory, you can contest it by providing a reason.",
+      "readOnlyNotice": "This ticket is closed and available for viewing only.",
+      "resolvedNotice": "You can add notes or reopen this ticket with a reason. Previously recorded information will be preserved."
+    },
+    "schedule": {
+      "title": "Maintenance scheduling",
+      "dateLabel": "Service date",
+      "hourLabel": "Hour (24h)",
+      "minuteLabel": "Minute",
+      "summaryLabel": "Scheduled service",
+      "save": "Save date",
+      "providerRequired": "Choose a provider to enable scheduling.",
+      "coordinationNotice": "Before recording the service here, agree on the date and time with the selected provider.",
+      "required": "Enter the service date and time.",
+      "invalid": "Enter a valid date and time.",
+      "success": "Service date saved.",
+      "error": "Unable to save the service date."
     }
   },
   "finance": {

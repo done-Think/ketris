@@ -50,6 +50,8 @@ export function registerMaintenanceOpenApi(registry: OpenAPIRegistry): void {
     path: '/maintenance/tickets/{id}/actions',
     tags: ['Maintenance'],
     summary: 'Executa transicoes, atribuicoes, troca de prestador e restauracao autorizadas',
+    description:
+      'linkContract: somente ADMIN do tenant associa explicitamente o chamado a um contrato do mesmo imovel, inclusive encerrados e arquivados, preservando seu ciclo de vida e registrando a alteracao no historico. RENTER vinculado ao contrato pode finalizar chamados ativos e nao arquivados com action=finish, marcando RESOLVIDO diretamente e registrando autor e data. Pode reabrir chamados RESOLVIDO com status ABERTO e reason obrigatorio. A acao schedule exige prestador definido e scheduledAt com data, hora e fuso; permite agendar ou reagendar sem editar os demais campos e registra as datas e o prestador no historico. As permissoes existentes da equipe permanecem.',
     security: [{ bearerAuth: [] }],
     request: {
       params: maintenanceTicketIdParamsSchema,
@@ -202,6 +204,8 @@ export function registerMaintenanceOpenApi(registry: OpenAPIRegistry): void {
     path: '/maintenance/tickets/{id}/notes',
     tags: ['Maintenance'],
     summary: 'Adiciona uma mensagem/nota à linha do tempo do chamado',
+    description:
+      'Requer a permissao comment. RENTER vinculado pode acrescentar notas em chamados RESOLVIDO sem alterar os dados originais ou a resolucao. Isso nao libera anexos, que dependem de collaborate.',
     security: [{ bearerAuth: [] }],
     request: {
       params: maintenanceTicketIdParamsSchema,
