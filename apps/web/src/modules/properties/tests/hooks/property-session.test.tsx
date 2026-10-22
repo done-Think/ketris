@@ -9,7 +9,7 @@ import type { Property } from '../../types/property'
 import { useDashboardPropertyMappingOptions } from '../../hooks/use-dashboard-property-mapping-options'
 
 const { session } = vi.hoisted(() => ({
-  session: { tenantId: 'tenant-1', papel: 'AGENT', user: { id: 'agent-1' } },
+  session: { tenantId: 'tenant-1', role: 'AGENT', user: { id: 'agent-1' } },
 }))
 vi.mock('next-auth/react', () => ({ useSession: () => ({ data: session }) }))
 vi.mock('../../services/properties-service', () => ({
@@ -19,7 +19,7 @@ vi.mock('../../services/properties-service', () => ({
 beforeEach(() => {
   vi.resetAllMocks()
   session.tenantId = 'tenant-1'
-  session.papel = 'AGENT'
+  session.role = 'AGENT'
   session.user.id = 'agent-1'
 })
 
@@ -45,7 +45,7 @@ it('does not reuse another users list or detail cache in the same tenant', async
   await waitFor(() => expect(result.current.list.data).toEqual([property]))
   await waitFor(() => expect(result.current.detail.data).toEqual(property))
   session.user.id = 'renter-1'
-  session.papel = 'RENTER'
+  session.role = 'RENTER'
   rerender()
   expect(result.current.list.data).toBeUndefined()
   expect(result.current.detail.data).toBeUndefined()

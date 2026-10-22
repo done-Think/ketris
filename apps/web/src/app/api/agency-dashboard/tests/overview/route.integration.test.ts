@@ -318,6 +318,79 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     expect(leadActivity?.brokerName).toBe(brokerName)
   })
 
+  it('não mistura dados de outra imobiliária, em nenhum dos dois sentidos', async () => {
+    const before = await (await GET(buildRequest(ownerToken))).json()
+    const otherTenant = await prisma.tenant.create({
+      data: { nome: 'Outra Imobiliária', slug: `outra-imobiliaria-${randomUUID()}` },
+    })
+
+    try {
+      const [otherOwner, otherBroker] = await Promise.all(
+        (['OWNER', 'AGENT'] as const).map((papel) =>
+          prisma.usuario.create({
+            data: {
+              tenantId: otherTenant.id,
+              nome: `Outro ${papel}`,
+              email: `outro-${papel.toLowerCase()}-${randomUUID()}@ketris.dev`,
+              senhaHash: 'hash-fake',
+              papel,
+            },
+          }),
+        ),
+      )
+      await prisma.imovel.create({
+        data: {
+          tenantId: otherTenant.id,
+          responsavelId: otherBroker.id,
+          titulo: 'Imóvel da Outra Imobiliária',
+          finalidade: 'VENDA',
+          tipo: 'casa',
+          valor: 900000,
+          status: 'SOLD',
+        },
+      })
+      await prisma.lead.create({
+        data: {
+          tenantId: otherTenant.id,
+          responsavelId: otherBroker.id,
+          nome: 'Lead da Outra Imobiliária',
+          telefone: '41988880000',
+          interesse: 'Casa',
+          orcamento: '900000',
+          origem: 'Portal Ketris',
+        },
+      })
+
+      const after = await (await GET(buildRequest(ownerToken))).json()
+      expect(after.kpis).toEqual(before.kpis)
+      expect(after.topBrokers).toEqual(before.topBrokers)
+      expect(JSON.stringify(after)).not.toContain('Outra Imobiliária')
+
+      const otherOwnerToken = await tokenService.sign({
+        id: otherOwner.id,
+        tenantId: otherOwner.tenantId,
+        nome: otherOwner.nome,
+        email: otherOwner.email,
+        papel: otherOwner.papel,
+        ativo: otherOwner.ativo,
+        vinculoAprovadoEm: otherOwner.vinculoAprovadoEm,
+      })
+      const other = await (await GET(buildRequest(otherOwnerToken))).json()
+      expect(other.kpis).toMatchObject({
+        portfolioCount: 1,
+        // The owner also counts as an active broker.
+        activeBrokersCount: 2,
+        receivedLeadsThisMonth: 1,
+        monthlyReceivable: 0,
+      })
+      // No closed sales in this tenant: the first tenant's ranking must not leak into it.
+      expect(other.topBrokers).toEqual([])
+      expect(JSON.stringify(other)).not.toContain(brokerName)
+    } finally {
+      await prisma.tenant.delete({ where: { id: otherTenant.id } })
+    }
+  })
+
   it('retorna os dados de comparação com o mês anterior', async () => {
     const now = new Date()
     const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)

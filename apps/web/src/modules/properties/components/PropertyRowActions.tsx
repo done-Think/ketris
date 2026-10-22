@@ -59,9 +59,9 @@ export function PropertyRowActions({ property, onView }: PropertyRowActionsProps
   const deleteProperty = useDeleteProperty()
 
   const canManage =
-    session?.papel !== 'RENTER' &&
-    (session?.papel === 'ADMIN' ||
-      session?.papel === 'OWNER' ||
+    session?.role !== 'RENTER' &&
+    (session?.role === 'ADMIN' ||
+      session?.role === 'OWNER' ||
       session?.user?.id === property.responsibleUserId)
   const isPublished = property.apiStatus === 'PUBLISHED'
   const isMutating =

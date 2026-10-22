@@ -14,7 +14,7 @@ import { createMaintenanceTicketSchema } from '../../schemas/maintenance-ticket-
 
 vi.mock('next-auth/react', () => ({ useSession: vi.fn() }))
 vi.mock('../../hooks/use-maintenance', () => ({ useMaintenanceOptions: vi.fn() }))
-const session = { tenantId: 'tenant-1', user: { id: 'renter-1' }, papel: 'RENTER' }
+const session = { tenantId: 'tenant-1', user: { id: 'renter-1' }, role: 'RENTER' }
 const options = {
   contracts: [
     {
@@ -59,6 +59,10 @@ describe('Maintenance local draft and submission', () => {
     const schema = createMaintenanceTicketSchema((key) => key)
     expect(schema.safeParse({ ...draft, contractId: '' }).success).toBe(false)
     expect(schema.parse({ ...draft, estimatedCost: '100' })).not.toHaveProperty('estimatedCost')
+  })
+  it('does not offer scheduling before a provider can be assigned to the created ticket', () => {
+    render(<MaintenanceCreateTicketDialog open onClose={vi.fn()} onCreate={vi.fn()} />)
+    expect(screen.queryByLabelText('Data e horário do atendimento')).not.toBeInTheDocument()
   })
   it('keeps the contract fixed when a renter edits a ticket', async () => {
     render(

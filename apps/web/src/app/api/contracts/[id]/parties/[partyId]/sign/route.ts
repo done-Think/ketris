@@ -17,6 +17,7 @@ export const POST = withErrorHandling(async (request: NextRequest, context: Rout
 
   const contract = await contractsContainer.signContractPartyUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorId: actor.sub,
     actorPapel: actor.papel as Papel,
     contractId: id,
     partyId,

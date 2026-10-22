@@ -6,6 +6,7 @@
 | `stack.md` | Decisões de stack técnica (frontend definido; backend em aberto) |
 | `design-system.md` | Design system atual (magenta/grafite): cores, tipografia, espaçamento, sombras |
 | `requisitos.md` | Inventário de telas e funcionalidades por módulo, com complexidade estimada |
+| [maintenance-workflow.md](maintenance-workflow.md) | Regularização administrativa de chamados e permissões de confirmação e contestação |
 | `planejamento-produto.md` | Levantamento completo do produto por módulo, com dependências |
 | `ketris-memory.md` | Resumo consolidado do stack (memória de projeto) |
 | `figma/checkpoint.md` | Estado do arquivo Figma na última vez que foi trabalhado |

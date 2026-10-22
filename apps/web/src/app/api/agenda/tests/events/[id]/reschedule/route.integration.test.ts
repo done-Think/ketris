@@ -17,7 +17,7 @@ describe('/api/agenda/events/{id}/reschedule (integração)', () => {
 
   beforeAll(async () => {
     vi.useFakeTimers({ toFake: ['Date'] })
-    vi.setSystemTime(new Date('2026-10-01T09:00:00.000Z'))
+    vi.setSystemTime(new Date('2031-10-01T09:00:00.000Z'))
 
     const tenant = await prisma.tenant.create({
       data: { nome: 'Tenant Agenda Reschedule', slug: `agenda-reschedule-${randomUUID()}` },
@@ -53,8 +53,8 @@ describe('/api/agenda/events/{id}/reschedule (integração)', () => {
         tipo: 'VISIT',
         referenciaImovelLivre: 'Apto teste',
         status: 'PENDING',
-        inicio: new Date('2026-10-12T13:00:00.000Z'),
-        fim: new Date('2026-10-12T14:00:00.000Z'),
+        inicio: new Date('2031-10-12T13:00:00.000Z'),
+        fim: new Date('2031-10-12T14:00:00.000Z'),
         participanteNome: 'Ana',
         participanteTelefone: '11999990000',
       },
@@ -68,8 +68,8 @@ describe('/api/agenda/events/{id}/reschedule (integração)', () => {
         criadoPorId: actorId,
         titulo: 'Outro evento do mesmo responsável',
         referenciaImovelLivre: 'Apto teste 2',
-        inicio: new Date('2026-10-13T13:00:00.000Z'),
-        fim: new Date('2026-10-13T13:30:00.000Z'),
+        inicio: new Date('2031-10-13T13:00:00.000Z'),
+        fim: new Date('2031-10-13T13:30:00.000Z'),
         participanteNome: 'Bruno',
         participanteTelefone: '11988880000',
       },
@@ -96,20 +96,20 @@ describe('/api/agenda/events/{id}/reschedule (integração)', () => {
 
   it('reagenda o evento e marca como CONFIRMED', async () => {
     const response = await POST(
-      buildRequest(eventId, { start: '2026-10-14T13:00:00.000Z' }),
+      buildRequest(eventId, { start: '2031-10-14T13:00:00.000Z' }),
       context(eventId),
     )
     const json = await response.json()
 
     expect(response.status).toBe(200)
     expect(json.event.status).toBe('CONFIRMED')
-    expect(json.event.start).toBe('2026-10-14T13:00:00.000Z')
-    expect(json.event.end).toBe('2026-10-14T14:00:00.000Z')
+    expect(json.event.start).toBe('2031-10-14T13:00:00.000Z')
+    expect(json.event.end).toBe('2031-10-14T14:00:00.000Z')
   })
 
-  it('retorna 400 ao tentar reagendar a visita para menos de 60 minutos', async () => {
+  it('retorna 400 ao tentar reagendar a visita para menos de 30 minutos', async () => {
     const response = await POST(
-      buildRequest(eventId, { start: '2026-10-15T10:00:00.000Z', durationMinutes: 30 }),
+      buildRequest(eventId, { start: '2031-10-15T13:00:00.000Z', durationMinutes: 15 }),
       context(eventId),
     )
 
@@ -118,7 +118,7 @@ describe('/api/agenda/events/{id}/reschedule (integração)', () => {
 
   it('retorna 409 ao reagendar para um horário que colide com outro evento do mesmo responsável', async () => {
     const response = await POST(
-      buildRequest(eventId, { start: '2026-10-13T13:15:00.000Z', durationMinutes: 60 }),
+      buildRequest(eventId, { start: '2031-10-13T13:15:00.000Z', durationMinutes: 60 }),
       context(eventId),
     )
     const json = await response.json()
@@ -129,7 +129,7 @@ describe('/api/agenda/events/{id}/reschedule (integração)', () => {
 
   it('retorna 404 para evento inexistente', async () => {
     const response = await POST(
-      buildRequest('inexistente', { start: '2026-10-16T10:00:00.000Z' }),
+      buildRequest('inexistente', { start: '2031-10-16T10:00:00.000Z' }),
       context('inexistente'),
     )
 
@@ -138,7 +138,7 @@ describe('/api/agenda/events/{id}/reschedule (integração)', () => {
 
   it('não considera o próprio evento como conflito ao reagendar para o mesmo período', async () => {
     const response = await POST(
-      buildRequest(eventId, { start: '2026-10-14T13:00:00.000Z', durationMinutes: 60 }),
+      buildRequest(eventId, { start: '2031-10-14T13:00:00.000Z', durationMinutes: 60 }),
       context(eventId),
     )
 

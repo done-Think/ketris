@@ -16,7 +16,6 @@ function createRepository(findBySlug?: TenantRepository['findBySlug']): TenantRe
   return {
     findBySlug: findBySlug ?? vi.fn().mockResolvedValue(null),
     findById: vi.fn(),
-    findMany: vi.fn(),
     create: vi.fn().mockResolvedValue(createdTenant),
     searchByName: vi.fn(),
   }
@@ -33,6 +32,25 @@ describe('CreateTenantUseCase', () => {
     expect(repository.create).toHaveBeenCalledWith({
       nome: 'Imobiliária Nova',
       slug: 'imobiliaria-nova',
+    })
+  })
+
+  it('repassa o tipo de conta e a situação inicial escolhidos', async () => {
+    const repository = createRepository()
+    const useCase = new CreateTenantUseCase(repository)
+
+    await useCase.execute({
+      nome: 'Corretor Novo',
+      slug: 'corretor-novo',
+      accountType: 'BROKER',
+      status: 'TRIAL',
+    })
+
+    expect(repository.create).toHaveBeenCalledWith({
+      nome: 'Corretor Novo',
+      slug: 'corretor-novo',
+      accountType: 'BROKER',
+      status: 'TRIAL',
     })
   })
 

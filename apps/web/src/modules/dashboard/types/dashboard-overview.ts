@@ -4,7 +4,6 @@ import type { Dayjs } from 'dayjs'
 import type { AgendaEventApi } from '@modules/agenda/types/agenda-event'
 import type { Lead } from '@modules/crm/types/lead'
 import type { Opportunity } from '@modules/crm/types/opportunity'
-import type { FinancialSummary } from '@modules/financial/types/service'
 
 export type DashboardMetricTone = 'success' | 'danger'
 
@@ -23,18 +22,8 @@ export type BuildDashboardMetricsParams = {
   leads: Lead[]
   opportunities: Opportunity[]
   monthEvents: AgendaEventApi[]
-  financialSummary: FinancialSummary | undefined
   today: Dayjs
   t: (key: string, values?: Record<string, string | number>) => string
-}
-
-export type DashboardPerformancePoint = {
-  month: string
-  value: number
-}
-
-export type DashboardPerformanceChartProps = {
-  data: DashboardPerformancePoint[]
 }
 
 export type DashboardActivityAccent = 'magenta' | 'info' | 'warning'

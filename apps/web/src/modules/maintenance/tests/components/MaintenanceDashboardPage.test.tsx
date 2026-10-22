@@ -33,6 +33,10 @@ vi.mock('../../hooks/use-maintenance', () => ({
   useMaintenanceOptions: vi.fn(),
 }))
 
+vi.mock('../../components/MaintenanceLinksDialog', () => ({
+  MaintenanceLinksDialog: () => null,
+}))
+
 vi.mock('@modules/properties/hooks/use-properties', () => ({
   useProperties: vi.fn(),
 }))
@@ -193,9 +197,9 @@ describe('MaintenanceDashboardPage', () => {
     mockDefaults()
   })
 
-  it('offers renter editing only where the API permits it and hides administrative controls', async () => {
+  it('hides renter editing and administrative controls even on open tickets', () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1', papel: 'RENTER', user: { id: 'renter-1' } },
+      data: { tenantId: 'tenant-1', role: 'RENTER', user: { id: 'renter-1' } },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
@@ -203,29 +207,63 @@ describe('MaintenanceDashboardPage', () => {
       data: {
         items: listItems.map((item) => ({
           ...item,
-          permissions: { edit: item.status === 'ABERTO', delete: false },
+          permissions: { edit: false, delete: false },
         })),
         totalCount: listItems.length,
       },
       isLoading: false,
     } as unknown as ReturnType<typeof useMaintenanceTickets>)
-    const user = userEvent.setup()
     render(<MaintenanceDashboardPage />)
     expect(
       screen.getByText('Abra e acompanhe chamados dos imóveis vinculados aos seus contratos.'),
     ).toBeVisible()
     expect(screen.getByRole('button', { name: 'Novo Chamado' })).toBeEnabled()
+    expect(screen.getByRole('link', { name: 'Visualizar chamado MNT-0088' })).toHaveAttribute(
+      'href',
+      '/dashboard/maintenance/MNT-0088',
+    )
     expect(screen.queryByRole('button', { name: 'Arquivados' })).not.toBeInTheDocument()
-    expect(
-      screen.queryByRole('button', { name: 'Ações do chamado MNT-0089' }),
-    ).not.toBeInTheDocument()
-    expect(
-      screen.queryByRole('button', { name: 'Ações do chamado MNT-0086' }),
-    ).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Ações do chamado MNT-0088' }))
-    expect(screen.getByRole('menuitem', { name: 'Editar chamado' })).toBeVisible()
+    expect(screen.queryByRole('button', { name: /Ações do chamado/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Regularizar vínculos' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('menuitem', { name: 'Editar chamado' })).not.toBeInTheDocument()
     expect(screen.queryByRole('menuitem', { name: 'Excluir chamado' })).not.toBeInTheDocument()
   })
+
+  it.each([
+    {
+      role: 'AGENT',
+      permissions: { edit: true, delete: false },
+      allowedAction: 'Editar chamado',
+      hiddenAction: 'Excluir chamado',
+    },
+    {
+      role: 'ADMIN',
+      permissions: { edit: false, delete: true },
+      allowedAction: 'Excluir chamado',
+      hiddenAction: 'Editar chamado',
+    },
+  ])(
+    'shows only the permitted menu actions for $role',
+    async ({ role, permissions, allowedAction, hiddenAction }) => {
+      vi.mocked(useSession).mockReturnValue({
+        data: { tenantId: 'tenant-1', role },
+        status: 'authenticated',
+        update: vi.fn(),
+      } as unknown as ReturnType<typeof useSession>)
+      vi.mocked(useMaintenanceTickets).mockReturnValue({
+        data: {
+          items: listItems.map((item) => ({ ...item, permissions })),
+          totalCount: listItems.length,
+        },
+        isLoading: false,
+      } as unknown as ReturnType<typeof useMaintenanceTickets>)
+      const user = userEvent.setup()
+      render(<MaintenanceDashboardPage />)
+      await user.click(screen.getByRole('button', { name: 'Ações do chamado MNT-0089' }))
+      expect(screen.getByRole('menuitem', { name: allowedAction })).toBeVisible()
+      expect(screen.queryByRole('menuitem', { name: hiddenAction })).not.toBeInTheDocument()
+    },
+  )
 
   it('renders tickets mapped from the API list', () => {
     render(<MaintenanceDashboardPage />)
@@ -235,6 +273,29 @@ describe('MaintenanceDashboardPage', () => {
     expect(screen.getByText('Hidráulica')).toBeVisible()
     expect(screen.getByText('Bruno Oliveira')).toBeVisible()
     expect(screen.getAllByText('Em andamento').length).toBeGreaterThan(0)
+  })
+
+  it('shows the links and archive controls only to an ADMIN session role', () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: { tenantId: 'tenant-1', role: 'ADMIN' },
+      status: 'authenticated',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
+    const { unmount } = render(<MaintenanceDashboardPage />)
+
+    expect(screen.getByRole('button', { name: 'Regularizar vínculos' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Arquivados' })).toBeVisible()
+    unmount()
+
+    vi.mocked(useSession).mockReturnValue({
+      data: { tenantId: 'tenant-1', role: 'AGENT' },
+      status: 'authenticated',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
+    render(<MaintenanceDashboardPage />)
+
+    expect(screen.queryByRole('button', { name: 'Regularizar vínculos' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Arquivados' })).not.toBeInTheDocument()
   })
 
   it('computes the open and urgent metric cards from the loaded tickets', () => {

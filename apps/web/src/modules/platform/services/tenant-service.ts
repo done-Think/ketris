@@ -7,15 +7,24 @@ import type {
   CreateTenantResponse,
   ListTenantsResponse,
   ListTenantUsersResponse,
+  PlatformTenant,
   TenantSummary,
   TenantUser,
+  UpdateTenantAccountPayload,
+  UpdateTenantAccountResponse,
 } from '../types/tenant'
 
 class TenantService extends BaseService {
   private readonly path = '/platform/tenants'
 
-  list(): Promise<TenantSummary[]> {
+  list(): Promise<PlatformTenant[]> {
     return this.http.get<ListTenantsResponse>(this.path).then((data) => data.tenants)
+  }
+
+  updateAccount(tenantId: string, payload: UpdateTenantAccountPayload): Promise<PlatformTenant> {
+    return this.http
+      .patch<UpdateTenantAccountResponse>(`${this.path}/${tenantId}/account`, payload)
+      .then((data) => data.tenant)
   }
 
   create(payload: CreateTenantPayload): Promise<TenantSummary> {

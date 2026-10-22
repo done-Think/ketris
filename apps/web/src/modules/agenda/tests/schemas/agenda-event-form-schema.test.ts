@@ -45,17 +45,14 @@ describe('buildAgendaEventFormSchema', () => {
     }
   })
 
-  it('rejeita um horário fora do horário comercial', () => {
+  it('allows validation outside business hours so the form can request confirmation', () => {
     const result = buildAgendaEventFormSchema(t).safeParse({
       ...baseValues,
       scheduledDate: '2026-09-30',
       scheduledTime: '22:00',
     })
 
-    expect(result.success).toBe(false)
-    if (!result.success) {
-      expect(result.error.issues[0]?.message).toBe('outsideBusinessHours')
-    }
+    expect(result.success).toBe(true)
   })
 
   it('não reaplica a regra quando o horário é o mesmo já salvo (edição sem mudar data/hora)', () => {

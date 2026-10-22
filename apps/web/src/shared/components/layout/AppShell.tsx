@@ -27,8 +27,9 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   const pathname = usePathname()
   const router = useRouter()
   const { data: session, status } = useSession()
-  const isRenter = session?.scope === 'tenant' && session.papel === 'RENTER'
+  const isRenter = session?.scope === 'tenant' && session.role === 'RENTER'
   const isRenterRoute =
+    pathname === '/dashboard/agenda' ||
     /^\/dashboard\/(?:finance\/charges|maintenance)(?:\/[^/]+)?\/?$/.test(pathname) ||
     /^\/dashboard\/properties(?:\/(?!new(?:\/|$))[^/]+)?\/?$/.test(pathname)
   useEffect(() => {
@@ -53,12 +54,13 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
         (item) =>
           item.href === '/dashboard/finance/charges' ||
           item.href === '/dashboard/maintenance' ||
+          item.href === '/dashboard/agenda' ||
           item.href === '/dashboard/properties',
       )
     if (isLocalDashboardPreview) return appShellNavigationItems
 
     return appShellNavigationItems.filter(
-      (item) => !item.roles || (session?.papel && item.roles.includes(session.papel)),
+      (item) => !item.roles || (session?.role && item.roles.includes(session.role)),
     )
   }, [isLocalDashboardPreview, isRenter, session])
   const activeTargetPath = useMemo(() => {
