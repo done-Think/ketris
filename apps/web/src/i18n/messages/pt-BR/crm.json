@@ -292,8 +292,6 @@
     "loadingAriaLabel": "Carregando oportunidade",
     "activitiesTitle": "Atividades recentes",
     "activitiesEmpty": "Nenhuma atividade recente cadastrada",
-    "activitiesViewMore": "Ver mais",
-    "activitiesViewLess": "Ver menos",
     "createdActivityTitle": "Oportunidade criada",
     "createdActivityDetail": "Registro incluído no pipeline.",
     "updatedActivityTitle": "Oportunidade atualizada",
@@ -369,8 +367,6 @@
       "title": "Próximas ações",
       "empty": "Nenhuma próxima ação cadastrada",
       "dueAt": "Prazo sugerido",
-      "viewMore": "Ver mais",
-      "viewLess": "Ver menos",
       "completeDraft": {
         "title": "Completar dados do pedido",
         "detail": "Revise contato, valor pretendido e imóvel antes de enviar a proposta."

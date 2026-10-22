@@ -84,6 +84,9 @@ export function ChargeDetailsPage({ chargeId }: { chargeId: string }) {
 }
 
 function ChargeDetailsContent({ charge, tenantId }: { charge: Charge; tenantId: string }) {
+  const { data: session, status: sessionStatus } = useSession()
+  const canRegisterPayment =
+    sessionStatus === 'authenticated' && (session?.role === 'ADMIN' || session?.role === 'OWNER')
   const t = useTranslations('charges.details')
   const statusT = useTranslations('charges.statuses')
   const locale = useLocale()
@@ -146,8 +149,7 @@ function ChargeDetailsContent({ charge, tenantId }: { charge: Charge; tenantId: 
       sx={{
         width: '100%',
         overflowWrap: 'anywhere',
-        px: { xs: 2, md: 3.6 },
-        py: { xs: 2.4, md: 3 },
+        p: 3.5,
       }}
     >
       <Stack spacing={2.2}>
@@ -197,17 +199,19 @@ function ChargeDetailsContent({ charge, tenantId }: { charge: Charge; tenantId: 
             >
               {t('duplicate')}
             </Button>
-            <Button
-              variant="contained"
-              startIcon={<PaymentRoundedIcon />}
-              onClick={() => {
-                reset({ paymentDate: '', paymentMethod: '' })
-                setPaymentOpen(true)
-              }}
-              disabled={status === 'paid' || status === 'cancelled'}
-            >
-              {t('registerPayment')}
-            </Button>
+            {canRegisterPayment && (
+              <Button
+                variant="contained"
+                startIcon={<PaymentRoundedIcon />}
+                onClick={() => {
+                  reset({ paymentDate: '', paymentMethod: '' })
+                  setPaymentOpen(true)
+                }}
+                disabled={status === 'paid' || status === 'cancelled'}
+              >
+                {t('registerPayment')}
+              </Button>
+            )}
           </Stack>
         </Stack>
         <Box
@@ -356,43 +360,45 @@ function ChargeDetailsContent({ charge, tenantId }: { charge: Charge; tenantId: 
           </Stack>
         </Box>
       </Stack>
-      <Dialog
-        open={paymentOpen}
-        onClose={() => setPaymentOpen(false)}
-        fullWidth
-        maxWidth="xs"
-        slotProps={{ paper: { sx: { borderRadius: `${radius.sm}px` } } }}
-      >
-        <Box component="form" onSubmit={handleSubmit(submitPayment)} noValidate>
-          <DialogTitle>{t('paymentDialog.title')}</DialogTitle>
-          <DialogContent>
-            <Stack spacing={1.5} sx={{ pt: 0.5 }}>
-              <RhfTextField
-                control={control}
-                name="paymentDate"
-                label={t('paymentDialog.date')}
-                type="date"
-                slotProps={{ inputLabel: { shrink: true } }}
-                fullWidth
-              />
-              <RhfTextField
-                control={control}
-                name="paymentMethod"
-                label={t('paymentDialog.method')}
-                fullWidth
-              />
-            </Stack>
-          </DialogContent>
-          <DialogActions sx={{ px: 3, pb: 2.5 }}>
-            <Button variant="outlined" color="secondary" onClick={() => setPaymentOpen(false)}>
-              {t('paymentDialog.cancel')}
-            </Button>
-            <Button type="submit" variant="contained">
-              {t('paymentDialog.confirm')}
-            </Button>
-          </DialogActions>
-        </Box>
-      </Dialog>
+      {canRegisterPayment && (
+        <Dialog
+          open={paymentOpen}
+          onClose={() => setPaymentOpen(false)}
+          fullWidth
+          maxWidth="xs"
+          slotProps={{ paper: { sx: { borderRadius: `${radius.sm}px` } } }}
+        >
+          <Box component="form" onSubmit={handleSubmit(submitPayment)} noValidate>
+            <DialogTitle>{t('paymentDialog.title')}</DialogTitle>
+            <DialogContent>
+              <Stack spacing={1.5} sx={{ pt: 0.5 }}>
+                <RhfTextField
+                  control={control}
+                  name="paymentDate"
+                  label={t('paymentDialog.date')}
+                  type="date"
+                  slotProps={{ inputLabel: { shrink: true } }}
+                  fullWidth
+                />
+                <RhfTextField
+                  control={control}
+                  name="paymentMethod"
+                  label={t('paymentDialog.method')}
+                  fullWidth
+                />
+              </Stack>
+            </DialogContent>
+            <DialogActions sx={{ px: 3, pb: 2.5 }}>
+              <Button variant="outlined" color="secondary" onClick={() => setPaymentOpen(false)}>
+                {t('paymentDialog.cancel')}
+              </Button>
+              <Button type="submit" variant="contained">
+                {t('paymentDialog.confirm')}
+              </Button>
+            </DialogActions>
+          </Box>
+        </Dialog>
+      )}
       <ChargeDocumentDialog
         charge={charge}
         kind="receipt"

@@ -50,13 +50,13 @@ vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))
 
-function mockSession(overrides?: Partial<{ papel: 'ADMIN' | 'OWNER' | 'AGENT' | 'RENTER' }>) {
+function mockSession(overrides?: Partial<{ role: 'ADMIN' | 'OWNER' | 'AGENT' | 'RENTER' }>) {
   vi.mocked(useSession).mockReturnValue({
     data: {
       user: { id: 'user-1', name: 'Ana', email: 'ana@example.com' },
       scope: 'tenant',
       tenantId: 't1',
-      papel: overrides?.papel ?? 'ADMIN',
+      role: overrides?.role ?? 'ADMIN',
     },
     status: 'authenticated',
     update: vi.fn(),
@@ -122,7 +122,7 @@ describe('AppShell navigation per papel', () => {
     '/dashboard/properties',
     '/dashboard/properties/[id]',
   ] as const)('shows charges, tickets, properties and agenda to RENTER on %s', (pathname) => {
-    mockSession({ papel: 'RENTER' })
+    mockSession({ role: 'RENTER' })
     vi.mocked(usePathname).mockReturnValue(pathname)
     renderShell()
     expect(screen.getByText('Conteúdo da rota')).toBeVisible()
@@ -144,7 +144,7 @@ describe('AppShell navigation per papel', () => {
     '/crm',
     '/dashboard/contracts',
   ] as const)('redirects RENTER away from %s without rendering its contents', (pathname) => {
-    mockSession({ papel: 'RENTER' })
+    mockSession({ role: 'RENTER' })
     vi.mocked(usePathname).mockReturnValue(pathname)
     renderShell()
     expect(screen.queryByText('Conteúdo da rota')).not.toBeInTheDocument()
@@ -156,7 +156,7 @@ describe('AppShell navigation per papel', () => {
   })
 
   it('ADMIN vê Dashboard, Perfil da Imobiliária e Financeiro, mas não o Perfil Público do corretor', () => {
-    mockSession({ papel: 'ADMIN' })
+    mockSession({ role: 'ADMIN' })
 
     renderShell()
 
@@ -166,20 +166,24 @@ describe('AppShell navigation per papel', () => {
     expect(screen.queryAllByText('Perfil Público')).toHaveLength(0)
   })
 
-  it('exibe Visão Geral Imob. na navegação para ADMIN', () => {
-    mockSession({ papel: 'ADMIN' })
+  it.each(['ADMIN', 'OWNER'] as const)(
+    'não exibe Visão Geral Imob. na navegação para %s',
+    (role) => {
+      mockSession({ role })
 
-    renderShell()
+      renderShell()
 
-    expect(screen.getAllByText('Visão Geral Imob.').length).toBeGreaterThan(0)
-    expect(screen.getByRole('link', { name: 'Visão Geral Imob.' })).toHaveAttribute(
-      'href',
-      '/dashboard/agency-overview',
-    )
-  })
+      expect(screen.queryAllByText('Visão Geral Imob.')).toHaveLength(0)
+      expect(
+        screen
+          .getAllByRole('link')
+          .some((link) => link.getAttribute('href') === '/dashboard/agency-overview'),
+      ).toBe(false)
+    },
+  )
 
   it('OWNER também vê Dashboard, Perfil da Imobiliária e Financeiro', () => {
-    mockSession({ papel: 'OWNER' })
+    mockSession({ role: 'OWNER' })
 
     renderShell()
 
@@ -189,7 +193,7 @@ describe('AppShell navigation per papel', () => {
   })
 
   it('AGENT não vê Dashboard, Perfil da Imobiliária nem Financeiro, mas vê Perfil Público, Pipeline e Contatos', () => {
-    mockSession({ papel: 'AGENT' })
+    mockSession({ role: 'AGENT' })
 
     renderShell()
 
@@ -209,7 +213,7 @@ describe('AppShell active nav item', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     useSidebarPreferencesStore.getState().setCollapsed(false)
-    mockSession({ papel: 'ADMIN' })
+    mockSession({ role: 'ADMIN' })
   })
 
   function activeLabels() {
@@ -308,7 +312,7 @@ describe('AppShell mobile top bar', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(usePathname).mockReturnValue('/dashboard')
-    mockSession({ papel: 'ADMIN' })
+    mockSession({ role: 'ADMIN' })
   })
 
   it('shows a single notifications bell next to the menu button', () => {
@@ -345,7 +349,7 @@ describe('AppShell collapsible desktop navigation', () => {
     vi.clearAllMocks()
     useSidebarPreferencesStore.getState().setCollapsed(false)
     vi.mocked(usePathname).mockReturnValue('/dashboard/agenda')
-    mockSession({ papel: 'ADMIN' })
+    mockSession({ role: 'ADMIN' })
   })
 
   it('keeps the active navigation item while toggling the desktop sidebar', async () => {
@@ -373,18 +377,15 @@ describe('AppShell collapsible desktop navigation', () => {
     expect(screen.getAllByText('Agenda').length).toBeGreaterThan(0)
   })
 
-  it('renders the collapse control as an icon next to the logo, above the navigation', () => {
+  it('renders the collapse control as an icon on the sidebar edge, outside the aside', () => {
     renderShell()
 
     const collapseButton = screen.getByRole('button', { name: 'Recolher navegação' })
-    const sidebar = collapseButton.closest('aside')
-    const navigation = sidebar?.querySelector('nav')
+    const sidebar = collapseButton.parentElement?.querySelector('aside')
 
     expect(collapseButton).not.toHaveTextContent('Recolher menu')
-    expect(navigation).not.toBeNull()
-    expect(
-      collapseButton.compareDocumentPosition(navigation as Node) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy()
+    expect(collapseButton.closest('aside')).toBeNull()
+    expect(sidebar).not.toBeNull()
   })
 
   it('shows translated tooltips for collapsed navigation icons', async () => {
@@ -421,7 +422,7 @@ describe('AppShell marketplace logout shortcut', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(usePathname).mockReturnValue('/dashboard/properties')
-    mockSession({ papel: 'ADMIN' })
+    mockSession({ role: 'ADMIN' })
   })
 
   it('clears the session before returning to the public marketplace', async () => {

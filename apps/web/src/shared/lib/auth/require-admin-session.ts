@@ -8,7 +8,7 @@ import { authOptions } from './auth-options'
 export async function requireAdminSession(locale: string | undefined): Promise<Session> {
   const session = await getServerSession(authOptions)
 
-  if (!session || session.papel !== 'ADMIN') {
+  if (!session || session.role !== 'ADMIN') {
     redirect(getLocalizedPathname('/backoffice/login', locale))
   }
 

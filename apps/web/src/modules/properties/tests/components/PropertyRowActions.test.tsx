@@ -66,9 +66,9 @@ const property: DashboardProperty = {
   activityHistory: [],
 }
 
-function mockSession(papel: 'ADMIN' | 'AGENT' | 'RENTER' = 'AGENT', userId = 'user-1') {
+function mockSession(role: 'ADMIN' | 'AGENT' | 'RENTER' = 'AGENT', userId = 'user-1') {
   vi.mocked(useSession).mockReturnValue({
-    data: { papel, user: { id: userId } },
+    data: { role, user: { id: userId } },
     status: 'authenticated',
     update: vi.fn(),
   } as unknown as ReturnType<typeof useSession>)

@@ -13,11 +13,14 @@ export function isWithinBusinessHours(date: dayjs.Dayjs, durationMinutes = 0): b
     date.add(durationMinutes, 'minute').toDate(),
   )
 }
+
+function roundUpToNextQuarterHour(date: dayjs.Dayjs): dayjs.Dayjs {
+  const remainder = date.minute() % 15
+  const isExactQuarterHour = remainder === 0 && date.second() === 0 && date.millisecond() === 0
+  const rounded = isExactQuarterHour ? date : date.add(15 - remainder, 'minute')
+  return rounded.second(0).millisecond(0)
+}
+
 export function computeEarliestSchedulableSlot(now: dayjs.Dayjs = dayjs()): dayjs.Dayjs {
-  const candidate = now.add(AGENDA_MINIMUM_ADVANCE_HOURS, 'hour')
-  const extra = candidate.minute() % 15 || candidate.second() || candidate.millisecond()
-  return candidate
-    .add(extra ? 15 - (candidate.minute() % 15) : 0, 'minute')
-    .second(0)
-    .millisecond(0)
+  return roundUpToNextQuarterHour(now.add(AGENDA_MINIMUM_ADVANCE_HOURS, 'hour'))
 }

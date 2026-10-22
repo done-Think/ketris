@@ -1,14 +1,13 @@
 import dayjs from 'dayjs'
 
-import { formatCurrency } from '@shared/lib/utils/format'
-
 import type { BuildDashboardMetricsParams, DashboardMetric } from '../types/dashboard-overview'
 
+// Operational metrics of the signed-in user's work. Leads and opportunities already come scoped
+// by the API (an AGENT only gets their own); revenue is on the agency KPIs, for owners/admins.
 export function buildDashboardMetrics({
   leads,
   opportunities,
   monthEvents,
-  financialSummary,
   today,
   t,
 }: BuildDashboardMetricsParams): DashboardMetric[] {
@@ -26,9 +25,6 @@ export function buildDashboardMetrics({
   const awaitingResponse = pendingOpportunities.filter(
     (opportunity) => opportunity.status === 'ENVIADA',
   ).length
-
-  const monthlyReceivable = financialSummary?.monthlyReceivable ?? 0
-  const overdueTotal = financialSummary?.overdueTotal ?? 0
 
   return [
     {
@@ -48,15 +44,6 @@ export function buildDashboardMetrics({
       value: String(pendingOpportunities.length),
       caption: t('metrics.proposals.caption', { count: awaitingResponse }),
       tone: awaitingResponse > 0 ? 'danger' : 'success',
-    },
-    {
-      label: t('metrics.revenue.label'),
-      value: formatCurrency(monthlyReceivable),
-      caption:
-        overdueTotal > 0
-          ? t('metrics.revenue.caption', { amount: formatCurrency(overdueTotal) })
-          : undefined,
-      tone: overdueTotal > 0 ? 'danger' : 'success',
     },
   ]
 }

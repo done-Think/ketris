@@ -1,5 +1,5 @@
 import { ThemeProvider } from '@mui/material'
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -72,11 +72,20 @@ describe('PlatformOverview', () => {
     id: 'existing',
     name: 'Existing agency',
     slug: 'agency',
+    accountType: 'AGENCY',
+    status: 'ACTIVE',
+    canceledAt: null,
     createdAt: '2024-01-01T00:00:00Z',
   }
 
   const overviewData = {
-    metrics: { tenantsCount: 45, brokersCount: 680, propertiesCount: 12400 },
+    metrics: {
+      tenantsCount: 45,
+      brokersCount: 680,
+      propertiesCount: 12400,
+      mrr: 12450,
+      churnRate: 0.025,
+    },
     growthTrend: [{ year: 2026, month: 10, tenants: 45, contracts: 52 }],
     recentTenants: [
       {
@@ -109,16 +118,73 @@ describe('PlatformOverview', () => {
     })
   })
 
-  it('renders the real metrics, growth chart, alerts and recent tenants', () => {
+  it('renders the real metrics, growth chart and recent tenants', () => {
     renderOverview()
 
     expect(screen.getByRole('heading', { name: 'Visão geral da plataforma' })).toBeVisible()
     expect(screen.getAllByText('45')[0]).toBeVisible()
     expect(screen.getByLabelText('Growth trends chart')).toBeVisible()
-    expect(screen.getByText('4 ativos')).toBeVisible()
-    expect(screen.getByText('Backup automatizado falhou')).toBeVisible()
     expect(screen.getByText('Apex Brokers S/A')).toBeVisible()
     expect(screen.getByText('Nobre Imobiliária')).toBeVisible()
+  })
+
+  it('shows the MRR and the monthly churn calculated from the plans', () => {
+    renderOverview()
+
+    expect(screen.getByText('MRR')).toBeVisible()
+    expect(screen.getByText(/R\$\s*12,5\s*mil/)).toBeVisible()
+    expect(screen.getByText('Churn (mês)')).toBeVisible()
+    expect(screen.getByText('2,5%')).toBeVisible()
+  })
+
+  it('shows a zero MRR without decimals', () => {
+    vi.mocked(usePlatformOverview).mockReturnValue({
+      data: { ...overviewData, metrics: { ...overviewData.metrics, mrr: 0 } },
+      isLoading: false,
+      isError: false,
+    })
+    renderOverview()
+
+    expect(screen.getByText(/^R\$\s*0$/)).toBeVisible()
+  })
+
+  it('shows a dash when churn cannot be measured yet', () => {
+    vi.mocked(usePlatformOverview).mockReturnValue({
+      data: { ...overviewData, metrics: { ...overviewData.metrics, churnRate: null } },
+      isLoading: false,
+      isError: false,
+    })
+    renderOverview()
+
+    const churnCard = screen.getByText('Churn (mês)').parentElement as HTMLElement
+    expect(within(churnCard).getByText('—')).toBeVisible()
+  })
+
+  it('does not show sample system alerts', () => {
+    renderOverview()
+
+    expect(screen.queryByText('Alertas do sistema')).not.toBeInTheDocument()
+    expect(screen.queryByText('Backup automatizado falhou')).not.toBeInTheDocument()
+  })
+
+  it('shows the current UTC time and keeps it updated', () => {
+    vi.useFakeTimers({
+      toFake: ['Date', 'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval'],
+    })
+    try {
+      vi.setSystemTime(new Date('2026-10-14T13:05:10Z'))
+      const view = renderOverview()
+
+      act(() => vi.advanceTimersByTime(0))
+      expect(screen.getByText('UTC ao vivo: 14/10/2026, 13:05')).toBeVisible()
+
+      act(() => vi.advanceTimersByTime(60_000))
+      expect(screen.getByText('UTC ao vivo: 14/10/2026, 13:06')).toBeVisible()
+
+      view.unmount()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('renders both recent tenants in the accessible grid', () => {
@@ -164,6 +230,8 @@ describe('PlatformShell', () => {
     ['/platform', 'Visão geral'],
     ['/platform/tenants', 'Tenants'],
     ['/platform/system', 'Sistema'],
+    ['/platform/plans', 'Planos'],
+    ['/platform/finance', 'Financeiro'],
     ['/platform/tenants/new', 'Tenants'],
     ['/platform/admins/new', 'Usuários'],
   ] as const)('marks the current navigation item for %s', (pathname, name) => {

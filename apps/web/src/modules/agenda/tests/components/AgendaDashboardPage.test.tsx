@@ -61,8 +61,8 @@ vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))
 
-const today = dayjs().format('YYYY-MM-DD')
-const twoDaysFromNow = dayjs().add(2, 'day').format('YYYY-MM-DD')
+const today = '2026-10-21'
+const twoDaysFromNow = '2026-10-23'
 
 function makeEvent(overrides: Partial<AgendaEventApi> = {}): AgendaEventApi {
   return {
@@ -148,6 +148,8 @@ function renderPage() {
 describe('AgendaDashboardPage', () => {
   afterEach(() => vi.useRealTimers())
   beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(`${today}T13:15:34`))
     vi.clearAllMocks()
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(dayjs().hour(9).minute(0).second(0).millisecond(0).toDate())
@@ -184,7 +186,7 @@ describe('AgendaDashboardPage', () => {
 
   it('sends the chosen agent when the agency creates an internal event', async () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1', papel: 'ADMIN', user: { id: 'admin' } },
+      data: { tenantId: 'tenant-1', role: 'ADMIN', user: { id: 'admin' } },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
@@ -220,7 +222,7 @@ describe('AgendaDashboardPage', () => {
 
   it('lets the assigned agent read internal event notes without editing or redirecting it', async () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1', papel: 'AGENT', user: { id: 'agent-1' } },
+      data: { tenantId: 'tenant-1', role: 'AGENT', user: { id: 'agent-1' } },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
@@ -247,7 +249,7 @@ describe('AgendaDashboardPage', () => {
 
   it('shows linked renter events with the reduced API response and no management actions', async () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { scope: 'tenant', tenantId: 'renters', papel: 'RENTER', user: { id: 'renter-1' } },
+      data: { scope: 'tenant', tenantId: 'renters', role: 'RENTER', user: { id: 'renter-1' } },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
@@ -280,7 +282,7 @@ describe('AgendaDashboardPage', () => {
 
   it('explains when a renter has no linked events', () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'renters', papel: 'RENTER', user: { id: 'renter-1' } },
+      data: { tenantId: 'renters', role: 'RENTER', user: { id: 'renter-1' } },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
@@ -294,7 +296,7 @@ describe('AgendaDashboardPage', () => {
 
   it('shows charges and both ticket dates even when appointments fail, with links to the records', async () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1', papel: 'RENTER', user: { id: 'renter-1' } },
+      data: { tenantId: 'tenant-1', role: 'RENTER', user: { id: 'renter-1' } },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
@@ -350,7 +352,7 @@ describe('AgendaDashboardPage', () => {
     'shows administrator ticket dates even when appointments fail: %s',
     (isError) => {
       vi.mocked(useSession).mockReturnValue({
-        data: { tenantId: 'tenant-1', papel: 'ADMIN', user: { id: 'admin-1' } },
+        data: { tenantId: 'tenant-1', role: 'ADMIN', user: { id: 'admin-1' } },
         status: 'authenticated',
         update: vi.fn(),
       } as unknown as ReturnType<typeof useSession>)
@@ -394,7 +396,7 @@ describe('AgendaDashboardPage', () => {
 
   it('shows a maintenance source failure without hiding administrator appointments', () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1', papel: 'ADMIN', user: { id: 'admin-1' } },
+      data: { tenantId: 'tenant-1', role: 'ADMIN', user: { id: 'admin-1' } },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)

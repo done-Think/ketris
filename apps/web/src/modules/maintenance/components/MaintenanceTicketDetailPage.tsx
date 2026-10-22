@@ -87,7 +87,7 @@ export function MaintenanceTicketDetailPage({ ticketId }: MaintenanceTicketDetai
   const { enqueueSnackbar } = useSnackbar()
   const { data: session } = useSession()
   const tenantId = session?.tenantId
-  const isRenter = session?.papel === 'RENTER'
+  const isRenter = session?.role === 'RENTER'
   const [message, setMessage] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 

@@ -15,6 +15,11 @@ const contractPartyInputSchema = z.object({
   phone: z.string().trim().min(1).nullable().optional(),
 })
 
+export const linkContractPartyUserRequestSchema = z
+  .object({ email: z.string().trim().email() })
+  .strict()
+  .openapi('LinkContractPartyUserRequest')
+
 export const createContractRequestSchema = z
   .object({
     opportunityId: z.string().trim().min(1),
@@ -45,6 +50,3 @@ export const listContractsQuerySchema = z
     pageSize: z.coerce.number().int().positive().max(100).optional(),
   })
   .openapi('ListContractsQuery')
-
-export type CreateContractRequestDTO = z.infer<typeof createContractRequestSchema>
-export type ListContractsQueryDTO = z.infer<typeof listContractsQuerySchema>

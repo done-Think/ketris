@@ -3,9 +3,6 @@
     "overview": {
       "metadataTitle": "Ketris | Dashboard"
     },
-    "agencyOverview": {
-      "metadataTitle": "Ketris | Visión General de la Inmobiliaria"
-    },
     "agenda": {
       "metadataTitle": "Ketris | Agenda"
     },
@@ -35,24 +32,10 @@
   "overview": {
     "title": "Dashboard",
     "notifications": "Notificaciones",
-    "performanceTitle": "Desempeño de 6 meses",
     "metrics": {
-      "leadsActive": {
-        "label": "Leads activos",
-        "caption": "{count} hoy"
-      },
-      "visitsMonth": {
-        "label": "Visitas del mes",
-        "caption": "{count} hoy"
-      },
-      "proposals": {
-        "label": "Propuestas",
-        "caption": "{count} esperando respuesta"
-      },
-      "revenue": {
-        "label": "Facturación",
-        "caption": "{amount} en mora"
-      }
+      "leadsActive": { "label": "Leads activos", "caption": "{count} hoy" },
+      "visitsMonth": { "label": "Visitas del mes", "caption": "{count} hoy" },
+      "proposals": { "label": "Propuestas", "caption": "{count} esperando respuesta" }
     },
     "activityDetail": {
       "close": "Cerrar",
@@ -99,23 +82,12 @@
     }
   },
   "agencyOverview": {
-    "agencyName": "Inmobiliaria Premium SP",
-    "title": "Visión General",
-    "subtitle": "Acompaña movimientos, metas y performance consolidada de la inmobiliaria.",
-    "month": "Septiembre, 2024",
-    "report": "Informe",
-    "navigation": {
-      "overview": "Visión General",
-      "team": "Equipo",
-      "portfolio": "Cartera",
-      "finance": "Financiero",
-      "contracts": "Contratos"
-    },
     "kpis": {
       "portfolio": "Inmuebles en cartera",
       "activeBrokers": "Agentes activos",
       "receivedLeads": "Leads recibidos",
       "revenue": "Facturación",
+      "overdue": "En mora",
       "occupancy": "Tasa ocupación",
       "helpers": {
         "newProperties": "{count, plural, =0 {Ninguno nuevo este mes} one {+# nuevo este mes} other {+# nuevos este mes}}",
@@ -125,7 +97,9 @@
         "revenueIncrease": "+{percent, number}% vs mes anterior",
         "revenueDecrease": "−{percent, number}% vs mes anterior",
         "revenueSame": "Igual al mes anterior",
-        "revenueNoPrevious": "Mes anterior en cero"
+        "revenueNoPrevious": "Mes anterior en cero",
+        "overdue": "Vencidos sin pagar",
+        "noOverdue": "Nada en mora"
       }
     },
     "performance": {
@@ -518,7 +492,22 @@
       "oneOnOneTitle": "1:1 — {name}",
       "internalMeeting": "Reunión interna",
       "scheduled": "1:1 programado correctamente",
-      "scheduleError": "No se pudo programar el 1:1"
+      "scheduleError": "No se pudo programar el 1:1",
+      "inviteDescription": "Crea el acceso del corredor a tu inmobiliaria. Se genera una contraseña provisional automáticamente: cópiala y envíala al corredor junto con el correo.",
+      "inviteName": "Nombre completo",
+      "inviteEmail": "Correo electrónico",
+      "invitePassword": "Contraseña provisional",
+      "invitePasswordHelper": "Contraseña fuerte con mayúscula, minúscula, número y carácter especial. El corredor puede cambiarla después en su perfil.",
+      "inviteSubmit": "Invitar",
+      "inviteNameError": "Indica el nombre del corredor",
+      "inviteEmailError": "Indica un correo válido",
+      "invitePasswordError": "La contraseña debe tener al menos 8 caracteres, con mayúscula, minúscula, número y carácter especial",
+      "invited": "{name} fue añadido al equipo",
+      "inviteError": "No se pudo invitar al corredor",
+      "inviteEmailInUse": "Este correo ya está en uso",
+      "generatePassword": "Generar nueva contraseña",
+      "copyPassword": "Copiar contraseña",
+      "passwordCopied": "Contraseña copiada"
     },
     "actions": {
       "message": "Enviar mensaje",

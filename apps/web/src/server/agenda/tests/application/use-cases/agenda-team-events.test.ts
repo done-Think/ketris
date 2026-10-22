@@ -9,7 +9,7 @@ import { UpdateAgendaEventUseCase } from '../../../application/use-cases/update-
 import { RescheduleAgendaEventUseCase } from '../../../application/use-cases/reschedule-agenda-event.use-case'
 import { CancelAgendaEventUseCase } from '../../../application/use-cases/cancel-agenda-event.use-case'
 
-const inicio = new Date(2026, 9, 21, 10)
+const inicio = new Date('2026-10-21T10:00:00-03:00')
 const input = {
   actorTenantId: 'agency',
   actorUserId: 'admin',
@@ -77,7 +77,7 @@ function deps(changes: Partial<AgendaEvent> = {}) {
 describe('Agency event recipients and internal events', () => {
   beforeEach(() => {
     vi.useFakeTimers()
-    vi.setSystemTime(new Date(2026, 9, 20, 6))
+    vi.setSystemTime(new Date('2026-10-20T06:00:00-03:00'))
   })
   afterEach(() => vi.useRealTimers())
 
@@ -173,7 +173,7 @@ describe('Agency event recipients and internal events', () => {
         id: 'event',
         destino: 'ASSIGNED_AGENT',
         responsavelId: 'other-agent',
-        inicio: new Date(2026, 9, 22, 11),
+        inicio: new Date('2026-10-22T11:00:00-03:00'),
       }),
     ).rejects.toMatchObject({ status: 404 })
     expect(d.repository.update).not.toHaveBeenCalled()
@@ -182,7 +182,7 @@ describe('Agency event recipients and internal events', () => {
 
   it('saves details, recipient and time in one update and clears internal links', async () => {
     const d = deps()
-    const start = new Date(2026, 9, 22, 11)
+    const start = new Date('2026-10-22T11:00:00-03:00')
     await new UpdateAgendaEventUseCase(d.repository, d.properties, d.users).execute({
       actorTenantId: 'agency',
       actorPapel: 'ADMIN',

@@ -31,7 +31,7 @@ vi.mock('@shared/lib/auth/clear-client-session', () => ({
 
 function mockSession(overrides?: Record<string, unknown>) {
   vi.mocked(useSession).mockReturnValue({
-    data: { scope: 'tenant', tenantId: 't1', papel: 'AGENT', ...overrides },
+    data: { scope: 'tenant', tenantId: 't1', role: 'AGENT', ...overrides },
     status: 'authenticated',
     update: vi.fn(),
   } as unknown as ReturnType<typeof useSession>)
@@ -60,7 +60,7 @@ describe('CrmAccessBoundary', () => {
   })
 
   it('bloqueia um RENTER e manda pra home, sem derrubar a sessão válida dele', async () => {
-    mockSession({ papel: 'RENTER' })
+    mockSession({ role: 'RENTER' })
 
     renderBoundary()
 

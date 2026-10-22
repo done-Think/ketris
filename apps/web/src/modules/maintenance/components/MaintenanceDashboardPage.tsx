@@ -324,7 +324,7 @@ export function MaintenanceDashboardPage() {
       >
         {t('newTicket')}
       </DashboardHeaderActionButton>
-      {session?.papel === 'ADMIN' && (
+      {session?.role === 'ADMIN' && (
         <>
           <Button startIcon={<LinkRoundedIcon />} onClick={() => setLinksOpen(true)}>
             {t('links.title')}
@@ -354,7 +354,11 @@ export function MaintenanceDashboardPage() {
   return (
     <Box sx={{ width: '100%', p: 3.5 }}>
       <Stack spacing={{ xs: 2, md: 2.7 }}>
-        <DashboardPageHeader title={t('title')} subtitle={t('subtitle')} actions={headerActions} />
+        <DashboardPageHeader
+          title={t('title')}
+          subtitle={t(session?.role === 'RENTER' ? 'renter.subtitle' : 'subtitle')}
+          actions={headerActions}
+        />
         <MaintenanceStatusFilters
           activeFilter={activeFilter}
           getFilterCount={getFilterCount}
@@ -477,17 +481,19 @@ export function MaintenanceDashboardPage() {
                       >
                         <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />
                       </IconButton>
-                      <IconButton
-                        aria-label={t('actions.menu', { ticket: ticket.id })}
-                        size="small"
-                        onClick={(event) => {
-                          setMenuAnchor(event.currentTarget)
-                          setMenuTicketId(ticket.id)
-                        }}
-                        sx={{ width: 30, height: 30, color: brand.graphite[500] }}
-                      >
-                        <MoreVertRoundedIcon sx={{ fontSize: 18 }} />
-                      </IconButton>
+                      {(ticket.permissions?.edit || ticket.permissions?.delete) && (
+                        <IconButton
+                          aria-label={t('actions.menu', { ticket: ticket.id })}
+                          size="small"
+                          onClick={(event) => {
+                            setMenuAnchor(event.currentTarget)
+                            setMenuTicketId(ticket.id)
+                          }}
+                          sx={{ width: 30, height: 30, color: brand.graphite[500] }}
+                        >
+                          <MoreVertRoundedIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      )}
                     </Stack>
                   </TableCell>
                 </TableRow>
@@ -495,7 +501,7 @@ export function MaintenanceDashboardPage() {
               {pagedTickets.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={8} align="center" sx={bodyCellSx}>
-                    Nenhum chamado encontrado.
+                    {t('empty')}
                   </TableCell>
                 </TableRow>
               )}
@@ -523,7 +529,7 @@ export function MaintenanceDashboardPage() {
         initialValues={initialValues}
         mode={editingTicketId ? 'edit' : 'create'}
       />
-      {session?.papel === 'ADMIN' && (
+      {session?.role === 'ADMIN' && (
         <MaintenanceLinksDialog open={linksOpen} onClose={() => setLinksOpen(false)} />
       )}
       <Dialog
@@ -580,28 +586,30 @@ export function MaintenanceDashboardPage() {
         </DialogContent>
       </Dialog>
       <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={closeMenu}>
-        <MenuItem
-          disabled={!pagedTickets.find((ticket) => ticket.id === menuTicketId)?.permissions?.edit}
-          onClick={() => {
-            setEditingTicketId(menuTicketId)
-            setIsCreateDialogOpen(Boolean(menuTicketId))
-            closeMenu()
-          }}
-        >
-          <EditOutlinedIcon sx={{ mr: 1, fontSize: 18 }} />
-          {t('actions.edit')}
-        </MenuItem>
-        <MenuItem
-          disabled={!pagedTickets.find((ticket) => ticket.id === menuTicketId)?.permissions?.delete}
-          onClick={() => {
-            setDeletingTicketId(menuTicketId)
-            closeMenu()
-          }}
-          sx={{ color: 'error.main' }}
-        >
-          <DeleteOutlineRoundedIcon sx={{ mr: 1, fontSize: 18 }} />
-          {t('actions.delete')}
-        </MenuItem>
+        {pagedTickets.find((ticket) => ticket.id === menuTicketId)?.permissions?.edit && (
+          <MenuItem
+            onClick={() => {
+              setEditingTicketId(menuTicketId)
+              setIsCreateDialogOpen(Boolean(menuTicketId))
+              closeMenu()
+            }}
+          >
+            <EditOutlinedIcon sx={{ mr: 1, fontSize: 18 }} />
+            {t('actions.edit')}
+          </MenuItem>
+        )}
+        {pagedTickets.find((ticket) => ticket.id === menuTicketId)?.permissions?.delete && (
+          <MenuItem
+            onClick={() => {
+              setDeletingTicketId(menuTicketId)
+              closeMenu()
+            }}
+            sx={{ color: 'error.main' }}
+          >
+            <DeleteOutlineRoundedIcon sx={{ mr: 1, fontSize: 18 }} />
+            {t('actions.delete')}
+          </MenuItem>
+        )}
       </Menu>
       <Dialog open={Boolean(deletingTicketId)} onClose={() => setDeletingTicketId(null)}>
         <DialogTitle>{t('actions.deleteTitle')}</DialogTitle>
