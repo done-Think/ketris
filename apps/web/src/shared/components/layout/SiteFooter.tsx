@@ -30,7 +30,7 @@ export function SiteFooter({ columns, legalLinks }: SiteFooterProps) {
   const t = useTranslations('marketplace.footer')
 
   return (
-    <Box component="footer" sx={{ bgcolor: surface.dark, color: surface.lightText }}>
+    <Box component="footer" sx={{ mt: 'auto', bgcolor: surface.dark, color: surface.lightText }}>
       <Container maxWidth="xl">
         <Box
           sx={{

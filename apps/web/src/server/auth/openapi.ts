@@ -16,6 +16,7 @@ import {
   verifyPasswordResetCodeResponseSchema,
   verifyPasswordResetCodeSchema,
 } from './schemas/password-reset-code.schema'
+import { changeOwnPasswordRequestSchema } from './schemas/change-own-password.schema'
 import { resetPasswordRequestSchema } from './schemas/reset-password.schema'
 import { updateUserRequestSchema, updateUserResponseSchema } from './schemas/update-user.schema'
 import { authenticatedUserSchema } from './schemas/user.schema'
@@ -23,12 +24,6 @@ import { authenticatedUserSchema } from './schemas/user.schema'
 const userIdParamsSchema = z.object({
   id: z.string().openapi({ description: 'ID do usuário.', example: 'clx1y2z3a0000abcd1234efgh' }),
 })
-
-const changeOwnPasswordRequestSchema = z
-  .object({
-    password: resetPasswordRequestSchema.shape.password,
-  })
-  .openapi('ChangeOwnPasswordRequest')
 
 export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
   registry.register('AuthenticatedUser', authenticatedUserSchema)
@@ -411,8 +406,8 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
     summary: 'Troca a senha do próprio usuário autenticado',
     description:
       'Diferente de POST /auth/reset-password (fluxo de recuperação por e-mail): aqui o usuário ' +
-      'já está autenticado via access token e troca a própria senha diretamente, sem precisar de ' +
-      'código de verificação. Revoga todos os refresh tokens ativos do usuário após a troca.',
+      'já está autenticado via access token e troca a própria senha informando a senha atual, sem ' +
+      'precisar de código de verificação. Revoga todos os refresh tokens ativos do usuário após a troca.',
     security: [{ bearerAuth: [] }],
     request: {
       body: {
@@ -424,7 +419,9 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
         description: 'Senha alterada.',
       },
       400: {
-        description: 'Corpo da requisição inválido (falha de validação Zod).',
+        description:
+          'Corpo da requisição inválido (falha de validação Zod) ou senha atual incorreta ' +
+          '(code INVALID_CURRENT_PASSWORD).',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       401: {

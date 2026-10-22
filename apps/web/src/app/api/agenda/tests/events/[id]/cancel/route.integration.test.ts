@@ -14,10 +14,11 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
   let actorToken: string
   let renterToken: string
   let eventId: string
-  // Creating an event needs 3h of notice, so a fixed date breaks the test once it passes.
-  // January 15th of next year at 13:00 UTC (10:00 in São Paulo) stays ahead and in business hours.
+  // The clock is frozen in October 2026 below; this Friday is in the future and in business hours.
+  const slotStart = new Date('2027-01-15T13:00:00.000Z')
 
   beforeAll(async () => {
+    // Relógio fixo: criar evento exige antecedência mínima, e as datas abaixo são fixas.
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(new Date('2026-10-01T09:00:00.000Z'))
 
@@ -71,8 +72,8 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
         criadoPorId: actor.id,
         titulo: 'Evento para cancelar',
         referenciaImovelLivre: 'Apto teste',
-        inicio: new Date('2031-10-20T13:00:00.000Z'),
-        fim: new Date('2031-10-20T13:30:00.000Z'),
+        inicio: slotStart,
+        fim: new Date(slotStart.getTime() + 30 * 60_000),
         participanteNome: 'Ana',
         participanteTelefone: '11999990000',
       },
@@ -133,7 +134,7 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
       body: JSON.stringify({
         title: 'Novo evento no horário liberado',
         propertyReference: 'Apto teste',
-        start: '2031-10-20T13:00:00.000Z',
+        start: slotStart.toISOString(),
         durationMinutes: 30,
         participantName: 'Novo cliente',
         participantPhone: '11988880000',

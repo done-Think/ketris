@@ -1,6 +1,7 @@
 import type { Prisma } from '@prisma/client'
 
 import { prisma } from '@server/db/prisma'
+import { nextSequentialCode } from '@server/shared/sequential-code'
 
 import type {
   Contract,
@@ -72,13 +73,8 @@ function computeNextDueDate(dueDay: number, from: Date): Date {
   return candidate >= from ? candidate : clampToMonth(from.getFullYear(), from.getMonth() + 1)
 }
 
-async function generateContractCode(): Promise<string> {
-  const year = new Date().getFullYear()
-  const count = await prisma.contrato.count({
-    where: { codigo: { startsWith: `CTR-${year}-` } },
-  })
-
-  return `CTR-${year}-${String(count + 1).padStart(4, '0')}`
+function generateContractCode(tx: Prisma.TransactionClient): Promise<string> {
+  return nextSequentialCode(tx, 'contratos', `CTR-${new Date().getFullYear()}-`)
 }
 
 const usuarioRefSelect = { select: { id: true, nome: true } } as const
@@ -151,36 +147,36 @@ export class PrismaContractRepository implements ContractRepository {
       where: { tenantId: input.tenantId, id: input.opportunityId },
       select: { imovelId: true, valorProposto: true },
     })
-    const codigo = await generateContractCode()
-
-    const contrato = await prisma.contrato.create({
-      data: {
-        tenantId: input.tenantId,
-        imovelId: opportunity.imovelId,
-        oportunidadeOrigemId: input.opportunityId,
-        codigo,
-        tipo: input.type,
-        valor: opportunity.valorProposto,
-        diaVencimento: input.dueDay,
-        dataInicio: input.startDate,
-        dataFim: input.endDate,
-        indiceReajuste: input.adjustmentIndex,
-        tipoGarantia: input.guaranteeType,
-        observacoes: input.notes,
-        status: 'AGUARDANDO_ASSINATURA',
-        partes: {
-          create: input.parties.map((party) => ({
-            papel: party.role,
-            nome: party.name,
-            cpf: party.cpf,
-            email: party.email,
-            telefone: party.phone,
-            assinatura: { create: {} },
-          })),
+    const contrato = await prisma.$transaction(async (tx) =>
+      tx.contrato.create({
+        data: {
+          tenantId: input.tenantId,
+          imovelId: opportunity.imovelId,
+          oportunidadeOrigemId: input.opportunityId,
+          codigo: await generateContractCode(tx),
+          tipo: input.type,
+          valor: opportunity.valorProposto,
+          diaVencimento: input.dueDay,
+          dataInicio: input.startDate,
+          dataFim: input.endDate,
+          indiceReajuste: input.adjustmentIndex,
+          tipoGarantia: input.guaranteeType,
+          observacoes: input.notes,
+          status: 'AGUARDANDO_ASSINATURA',
+          partes: {
+            create: input.parties.map((party) => ({
+              papel: party.role,
+              nome: party.name,
+              cpf: party.cpf,
+              email: party.email,
+              telefone: party.phone,
+              assinatura: { create: {} },
+            })),
+          },
         },
-      },
-      include: contractInclude,
-    })
+        include: contractInclude,
+      }),
+    )
 
     return toDomainContract(contrato)
   }
@@ -315,15 +311,16 @@ export class PrismaContractRepository implements ContractRepository {
           where: { id: contrato.imovelId },
           data: { status: contrato.imovel.finalidade === 'ALUGUEL' ? 'RENTED' : 'SOLD' },
         })
-        const chargeYear = new Date().getFullYear()
-        const chargeCount = await tx.cobranca.count({
-          where: { codigo: { startsWith: `COB-${chargeYear}-` } },
-        })
+        const chargeCode = await nextSequentialCode(
+          tx,
+          'cobrancas',
+          `COB-${new Date().getFullYear()}-`,
+        )
         await tx.cobranca.create({
           data: {
             tenantId,
             contratoId: contractId,
-            codigo: `COB-${chargeYear}-${String(chargeCount + 1).padStart(4, '0')}`,
+            codigo: chargeCode,
             tipo: 'A_RECEBER',
             valor: contrato.valor,
             vencimento: computeNextDueDate(contrato.diaVencimento, new Date()),

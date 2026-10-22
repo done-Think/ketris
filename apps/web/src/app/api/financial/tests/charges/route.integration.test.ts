@@ -298,46 +298,48 @@ describe('/api/financial/charges (integração)', () => {
     expect(json.charge.id).toBe(avulsaChargeId)
   })
 
-  // Renters keep read access to their own charges (see the renter tests); agents have none.
-  it.each([['AGENT', () => agentToken]])(
-    'retorna 403 para %s em todas as rotas de cobrança, sem alterar nada',
-    async (_, token) => {
-      const url = `http://localhost/api/financial/charges/${avulsaChargeId}`
-      const params = { params: Promise.resolve({ id: avulsaChargeId }) }
-      const body = {
-        description: 'Alterada sem permissão',
-        type: 'A_PAGAR',
-        amount: 1,
-        dueDate: '2026-10-15',
-        status: 'PENDENTE',
-      }
-      const before = await prisma.cobranca.findUniqueOrThrow({ where: { id: avulsaChargeId } })
+  it.each([
+    ['AGENT', () => agentToken],
+    ['RENTER', () => renterToken],
+  ])('protege leituras e bloqueia alterações de %s sem alterar nada', async (role, token) => {
+    const url = `http://localhost/api/financial/charges/${avulsaChargeId}`
+    const params = { params: Promise.resolve({ id: avulsaChargeId }) }
+    const body = {
+      description: 'Alterada sem permissão',
+      type: 'A_PAGAR',
+      amount: 1,
+      dueDate: '2026-10-15',
+      status: 'PENDENTE',
+    }
+    const before = await prisma.cobranca.findUniqueOrThrow({ where: { id: avulsaChargeId } })
 
-      const responses = [
-        await GET(
-          buildRequest('http://localhost/api/financial/charges', 'GET', undefined, token()),
+    const responses = [
+      await GET(buildRequest('http://localhost/api/financial/charges', 'GET', undefined, token())),
+      await POST(buildRequest('http://localhost/api/financial/charges', 'POST', body, token())),
+      await getCharge(buildRequest(url, 'GET', undefined, token()), params),
+      await patchCharge(buildRequest(url, 'PATCH', body, token()), params),
+      await registerPayment(
+        buildRequest(
+          `${url}/payment`,
+          'POST',
+          { paidAt: '2026-10-14', paymentMethod: 'Boleto' },
+          token(),
         ),
-        await POST(buildRequest('http://localhost/api/financial/charges', 'POST', body, token())),
-        await getCharge(buildRequest(url, 'GET', undefined, token()), params),
-        await patchCharge(buildRequest(url, 'PATCH', body, token()), params),
-        await registerPayment(
-          buildRequest(
-            `${url}/payment`,
-            'POST',
-            { paidAt: '2026-10-14', paymentMethod: 'Boleto' },
-            token(),
-          ),
-          params,
-        ),
-        await deleteCharge(buildRequest(url, 'DELETE', undefined, token()), params),
-      ]
+        params,
+      ),
+      await deleteCharge(buildRequest(url, 'DELETE', undefined, token()), params),
+    ]
 
-      expect(responses.map((response) => response.status)).toEqual([403, 403, 403, 403, 403, 403])
-      expect(await prisma.cobranca.findUniqueOrThrow({ where: { id: avulsaChargeId } })).toEqual(
-        before,
-      )
-    },
-  )
+    expect(responses.map((response) => response.status)).toEqual(
+      role === 'RENTER' ? [200, 403, 404, 403, 403, 403] : [403, 403, 403, 403, 403, 403],
+    )
+    if (role === 'RENTER') {
+      expect(await responses[0].json()).toMatchObject({ items: [], totalCount: 0 })
+    }
+    expect(await prisma.cobranca.findUniqueOrThrow({ where: { id: avulsaChargeId } })).toEqual(
+      before,
+    )
+  })
 
   it('retorna 404 ao consultar cobrança de outro tenant/id inexistente', async () => {
     const response = await getCharge(

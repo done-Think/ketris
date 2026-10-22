@@ -14,14 +14,6 @@
     }
   },
   "dashboard": {
-    "renter": {
-      "subtitle": "Consulta los inmuebles vinculados a tus contratos activos.",
-      "emptyTitle": "No hay inmuebles vinculados",
-      "emptyDescription": "Los inmuebles aparecerán aquí cuando haya un contrato activo vinculado a tu usuario.",
-      "loading": "Cargando tus inmuebles",
-      "loadError": "No se pudieron cargar tus inmuebles. Inténtalo de nuevo más tarde.",
-      "readOnly": "La información de este inmueble está disponible solo para consulta."
-    },
     "title": "Mis inmuebles",
     "subtitle": "Gestiona tu cartera de inmuebles",
     "searchPlaceholder": "Buscar inmuebles...",

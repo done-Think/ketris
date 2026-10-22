@@ -69,7 +69,7 @@ export function ChargesPage() {
   const { data: session, status: sessionStatus } = useSession()
   const isRenter = session?.role === 'RENTER'
   const canCreateCharge =
-    sessionStatus === 'authenticated' && Boolean(session?.role && session.role !== 'RENTER')
+    sessionStatus === 'authenticated' && (session?.role === 'ADMIN' || session?.role === 'OWNER')
   const tenantId = session?.tenantId ?? ''
   const createChargeMutation = useCreateCharge(tenantId)
   const updateChargeMutation = useUpdateCharge(tenantId)
@@ -421,7 +421,7 @@ export function ChargesPage() {
               <TableBody>
                 {rows.map((charge, index) => (
                   <ChargeRow
-                    readOnly={isRenter}
+                    readOnly={!canCreateCharge}
                     key={charge.id}
                     charge={charge}
                     locale={locale}

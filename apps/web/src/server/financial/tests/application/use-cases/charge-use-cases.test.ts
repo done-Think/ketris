@@ -170,15 +170,18 @@ describe('ListChargesUseCase', () => {
     })
   })
 
-  it('lança ForbiddenError para AGENT sem consultar o repositório', async () => {
-    const repository = createRepository()
-    const useCase = new ListChargesUseCase(repository)
+  it.each(['AGENT'] as const)(
+    'lança ForbiddenError para %s sem consultar o repositório',
+    async (actorPapel) => {
+      const repository = createRepository()
+      const useCase = new ListChargesUseCase(repository)
 
-    await expect(
-      useCase.execute({ actorId: 'agent-1', actorPapel: 'AGENT', actorTenantId: 'tenant-1' }),
-    ).rejects.toMatchObject({ code: 'FORBIDDEN' })
-    expect(repository.findMany).not.toHaveBeenCalled()
-  })
+      await expect(
+        useCase.execute({ actorId: 'agent-1', actorPapel, actorTenantId: 'tenant-1' }),
+      ).rejects.toMatchObject({ code: 'FORBIDDEN' })
+      expect(repository.findMany).not.toHaveBeenCalled()
+    },
+  )
 })
 
 describe('GetChargeUseCase', () => {
@@ -214,8 +217,8 @@ describe('GetChargeUseCase', () => {
 
     await expect(
       useCase.execute({
-        actorTenantId: 'tenant-1',
         actorId: 'owner-1',
+        actorTenantId: 'tenant-1',
         actorPapel: 'OWNER',
         chargeId: 'missing',
       }),
@@ -227,8 +230,8 @@ describe('GetChargeUseCase', () => {
     const useCase = new GetChargeUseCase(repository)
 
     const result = await useCase.execute({
-      actorTenantId: 'tenant-1',
       actorId: 'owner-1',
+      actorTenantId: 'tenant-1',
       actorPapel: 'OWNER',
       chargeId: 'charge-1',
     })
@@ -236,19 +239,20 @@ describe('GetChargeUseCase', () => {
     expect(result).toEqual(charge)
   })
 
-  it('lança ForbiddenError para AGENT', async () => {
+  it.each(['AGENT'] as const)('lança ForbiddenError para %s', async (actorPapel) => {
     const repository = createRepository()
     const useCase = new GetChargeUseCase(repository)
 
     await expect(
       useCase.execute({
-        actorTenantId: 'tenant-1',
         actorId: 'agent-1',
-        actorPapel: 'AGENT',
+        actorTenantId: 'tenant-1',
+        actorPapel,
         chargeId: 'charge-1',
       }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
     expect(repository.findById).not.toHaveBeenCalled()
+    expect(repository.findReadableById).not.toHaveBeenCalled()
   })
 })
 

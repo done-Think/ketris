@@ -22,7 +22,7 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Financial'],
     summary: 'Lista cobranças autorizadas para o usuário autenticado',
     description:
-      'ADMIN e OWNER consultam seu tenant; AGENT recebe 403. RENTER consulta apenas A_RECEBER de contratos com parte LOCATARIO vinculada ao seu ID, inclusive em outros tenants. Contagem e paginação seguem o mesmo escopo. Sem vínculo, retorna lista vazia.',
+      'ADMIN e OWNER consultam seu tenant. AGENT recebe 403. RENTER consulta apenas A_RECEBER de contratos com parte LOCATARIO vinculada ao seu ID, inclusive em outros tenants. Contagem e paginação seguem o mesmo escopo. Sem vínculo, retorna lista vazia.',
     security: [{ bearerAuth: [] }],
     request: { query: listChargesQuerySchema },
     responses: {
@@ -35,7 +35,7 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       403: {
-        description: 'Usuário AGENT. O locatário (RENTER) só vê as próprias cobranças a receber.',
+        description: 'AGENT não pode consultar o financeiro da imobiliária.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },
@@ -81,7 +81,7 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Financial'],
     summary: 'Consulta cobrança no escopo autorizado do usuário',
     description:
-      'AGENT recebe 403. RENTER precisa estar vinculado por ID como LOCATARIO ao contrato e a cobrança deve ser A_RECEBER. Cobranças avulsas, A_PAGAR e contratos sem vínculo não são acessíveis. Ausência de acesso retorna 404.',
+      'ADMIN e OWNER consultam seu tenant; AGENT recebe 403. RENTER precisa estar vinculado por ID como LOCATARIO ao contrato e a cobrança deve ser A_RECEBER. Cobranças avulsas, A_PAGAR e contratos sem vínculo não são acessíveis ao RENTER. Ausência de acesso ao registro retorna 404.',
     security: [{ bearerAuth: [] }],
     request: { params: chargeIdParamsSchema },
     responses: {
@@ -90,11 +90,11 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
         content: { 'application/json': { schema: chargeResponseSchema } },
       },
       404: {
-        description: 'Cobrança não encontrada neste tenant.',
+        description: 'Cobrança não encontrada no escopo autorizado.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       403: {
-        description: 'Usuário AGENT. O locatário (RENTER) só vê as próprias cobranças a receber.',
+        description: 'AGENT não pode consultar o financeiro da imobiliária.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },

@@ -377,18 +377,15 @@ describe('AppShell collapsible desktop navigation', () => {
     expect(screen.getAllByText('Agenda').length).toBeGreaterThan(0)
   })
 
-  it('renders the collapse control as an icon next to the logo, above the navigation', () => {
+  it('renders the collapse control as an icon on the sidebar edge, outside the aside', () => {
     renderShell()
 
     const collapseButton = screen.getByRole('button', { name: 'Recolher navegação' })
-    const sidebar = collapseButton.closest('aside')
-    const navigation = sidebar?.querySelector('nav')
+    const sidebar = collapseButton.parentElement?.querySelector('aside')
 
     expect(collapseButton).not.toHaveTextContent('Recolher menu')
-    expect(navigation).not.toBeNull()
-    expect(
-      collapseButton.compareDocumentPosition(navigation as Node) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy()
+    expect(collapseButton.closest('aside')).toBeNull()
+    expect(sidebar).not.toBeNull()
   })
 
   it('shows translated tooltips for collapsed navigation icons', async () => {

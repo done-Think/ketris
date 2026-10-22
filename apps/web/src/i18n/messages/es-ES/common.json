@@ -60,6 +60,10 @@
     },
     "charges": "Cobros"
   },
+  "passwordVisibility": {
+    "show": "Mostrar {field}",
+    "hide": "Ocultar {field}"
+  },
   "profilePage": {
     "title": "Perfil",
     "subtitle": "Gestiona tus datos personales y la información de acceso.",
@@ -72,6 +76,7 @@
     "save": "Guardar cambios",
     "security": "Seguridad",
     "securityDescription": "Cambia tu contraseña de acceso.",
+    "currentPassword": "Contraseña actual",
     "newPassword": "Nueva contraseña",
     "confirmPassword": "Confirmar nueva contraseña",
     "changePassword": "Cambiar contraseña",
@@ -85,6 +90,8 @@
       "emailInvalid": "Indica un correo electrónico válido.",
       "phoneRequired": "Indica tu teléfono.",
       "phoneInvalid": "Indica un teléfono válido.",
+      "currentPasswordRequired": "Introduce tu contraseña actual.",
+      "currentPasswordIncorrect": "La contraseña actual es incorrecta.",
       "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
       "passwordConfirmationRequired": "Confirma la nueva contraseña.",
       "passwordMismatch": "Las contraseñas no coinciden"

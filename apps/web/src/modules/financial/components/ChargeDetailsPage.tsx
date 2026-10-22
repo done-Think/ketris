@@ -84,8 +84,9 @@ export function ChargeDetailsPage({ chargeId }: { chargeId: string }) {
 }
 
 function ChargeDetailsContent({ charge, tenantId }: { charge: Charge; tenantId: string }) {
-  const { data: session } = useSession()
-  const isRenter = session?.role === 'RENTER'
+  const { data: session, status: sessionStatus } = useSession()
+  const canRegisterPayment =
+    sessionStatus === 'authenticated' && (session?.role === 'ADMIN' || session?.role === 'OWNER')
   const t = useTranslations('charges.details')
   const statusT = useTranslations('charges.statuses')
   const locale = useLocale()
@@ -148,8 +149,7 @@ function ChargeDetailsContent({ charge, tenantId }: { charge: Charge; tenantId: 
       sx={{
         width: '100%',
         overflowWrap: 'anywhere',
-        px: { xs: 2, md: 3.6 },
-        py: { xs: 2.4, md: 3 },
+        p: 3.5,
       }}
     >
       <Stack spacing={2.2}>
@@ -210,7 +210,7 @@ function ChargeDetailsContent({ charge, tenantId }: { charge: Charge; tenantId: 
             >
               {t('duplicate')}
             </Button>
-            {!isRenter && (
+            {canRegisterPayment && (
               <Button
                 variant="contained"
                 startIcon={<PaymentRoundedIcon />}
@@ -371,7 +371,7 @@ function ChargeDetailsContent({ charge, tenantId }: { charge: Charge; tenantId: 
           </Stack>
         </Box>
       </Stack>
-      {!isRenter && (
+      {canRegisterPayment && (
         <Dialog
           open={paymentOpen}
           onClose={() => setPaymentOpen(false)}

@@ -115,8 +115,12 @@ export function HeroSection({
               searchDraft={searchDraft}
               searchHref={searchHref}
               selectedSearch={selectedSearch}
+              priceRange={priceRange}
+              priceRangeLabel={priceRangeLabel}
               openSearchMenu={openSearchMenu}
+              closeSearchMenu={closeSearchMenu}
               selectSearchValue={selectSearchValue}
+              updatePriceRange={updatePriceRange}
               filterSearchOptions={filterSearchOptions}
               getSearchOptionLabel={getSearchOptionLabel}
               setSearchDraft={setSearchDraft}

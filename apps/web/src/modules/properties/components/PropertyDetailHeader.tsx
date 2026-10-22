@@ -40,8 +40,6 @@ export function PropertyDetailHeader({
   const activeContract = activeContractQuery.data?.items[0]
 
   return (
-    // The actions drop below the title whenever the title would get less than 420px, instead of
-    // squeezing it into one word per line (the page also has a right column from lg up).
     <Stack
       direction="row"
       flexWrap="wrap"
@@ -90,8 +88,6 @@ export function PropertyDetailHeader({
         </Typography>
       </Box>
 
-      {/* maxWidth lets the buttons wrap onto a second line on phones instead of running past the
-          right edge of the screen. */}
       {canManage ? (
         <Stack
           direction="row"

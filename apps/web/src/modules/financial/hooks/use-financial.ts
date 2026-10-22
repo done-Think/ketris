@@ -132,8 +132,8 @@ export function useFinancialSummary(tenantId: string | null | undefined) {
   const scopedTenantId = tenantId ?? ''
 
   return useQuery({
-    queryKey: financialQueryKeys.summary(scopedTenantId),
+    queryKey: [...financialQueryKeys.summary(scopedTenantId), session?.user?.id, session?.role],
     queryFn: () => financialService.getSummary(),
-    enabled: Boolean(tenantId) && session?.role !== 'RENTER',
+    enabled: Boolean(tenantId) && (session?.role === 'ADMIN' || session?.role === 'OWNER'),
   })
 }
