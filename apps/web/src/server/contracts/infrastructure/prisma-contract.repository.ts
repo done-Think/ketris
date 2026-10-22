@@ -16,6 +16,7 @@ import type { ContractRepository } from '../application/ports/contract-repositor
 import { ContractPartyAlreadySignedError } from '../domain/errors'
 import type { LinkContractPartyUserData } from '../types/contract-party-user-link'
 import type { ContratoWithRelations, UsuarioRef } from '../types/prisma-contract-repository'
+import { linkContractPartyUser } from './contract-party-user-link'
 
 function toContractActor(usuario: UsuarioRef | null | undefined) {
   return usuario ? { id: usuario.id, name: usuario.nome } : null
@@ -107,19 +108,7 @@ const contractInclude = {
 
 export class PrismaContractRepository implements ContractRepository {
   async linkPartyUser(input: LinkContractPartyUserData): Promise<boolean> {
-    const result = await prisma.parteContrato.updateMany({
-      where: {
-        id: input.partyId,
-        contratoId: input.contractId,
-        contrato: { tenantId: input.tenantId },
-        papel: 'LOCATARIO',
-        email: { equals: input.email, mode: 'insensitive' },
-        OR: [{ usuarioId: null }, { usuarioId: input.userId }],
-      },
-      data: { usuarioId: input.userId },
-    })
-
-    return result.count === 1
+    return linkContractPartyUser(prisma, input)
   }
 
   async findEligibleOpportunity(

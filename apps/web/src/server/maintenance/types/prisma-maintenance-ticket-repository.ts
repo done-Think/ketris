@@ -11,7 +11,7 @@ import type {
 
 export type MaintenanceContractRow = Contrato & {
   imovel: Imovel
-  partes: ParteContrato[]
+  partes: (ParteContrato & { usuario: Pick<Usuario, 'ativo' | 'papel'> | null })[]
 }
 
 export type MaintenanceTicketRow = ChamadoManutencao & {

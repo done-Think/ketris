@@ -5,7 +5,7 @@ import { loadTicket } from '../workflow'
 export class ListMaintenanceTicketActivitiesUseCase {
   constructor(private readonly repository: MaintenanceTicketRepository) {}
   async execute(input: MaintenanceTicketInput) {
-    await loadTicket(this.repository, input, input.ticketId)
-    return this.repository.findActivities(input.actorTenantId, input.ticketId)
+    const ticket = await loadTicket(this.repository, input, input.ticketId)
+    return this.repository.findActivities(ticket.tenantId, ticket.id)
   }
 }

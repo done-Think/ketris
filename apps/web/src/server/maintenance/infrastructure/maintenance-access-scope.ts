@@ -1,0 +1,39 @@
+import type { MaintenanceContractRow } from '../types/prisma-maintenance-ticket-repository'
+import type { Prisma } from '@prisma/client'
+import type { MaintenanceActor } from '../types/maintenance-ticket'
+
+export function maintenanceTicketScope(
+  actor: MaintenanceActor,
+): Prisma.ChamadoManutencaoWhereInput {
+  if (actor.actorPapel === 'RENTER') {
+    return { excluidoEm: null, contrato: { is: renterContractScope(actor.actorId) } }
+  }
+  const base: Prisma.ChamadoManutencaoWhereInput = { tenantId: actor.actorTenantId }
+  if (actor.actorPapel === 'ADMIN') return base
+  base.excluidoEm = null
+  base.contrato = { is: { tenantId: actor.actorTenantId } }
+  if (actor.actorPapel === 'AGENT')
+    base.OR = [
+      { responsavelId: actor.actorId },
+      { imovel: { responsavelId: actor.actorId, tenantId: actor.actorTenantId } },
+    ]
+  else if (actor.actorPapel === 'OWNER')
+    base.OR = [
+      { responsavelId: actor.actorId },
+      { imovel: { proprietarioId: actor.actorId, tenantId: actor.actorTenantId } },
+    ]
+  else base.id = { in: [] }
+  return base
+}
+
+export function renterContractScope(userId: string): Prisma.ContratoWhereInput {
+  return {
+    partes: {
+      some: { papel: 'LOCATARIO', usuarioId: userId, usuario: { ativo: true, papel: 'RENTER' } },
+    },
+  }
+}
+
+export function validContract(row: MaintenanceContractRow): boolean {
+  return row.tenantId === row.imovel.tenantId
+}

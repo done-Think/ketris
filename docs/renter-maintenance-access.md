@@ -12,6 +12,20 @@ Scheduling happens in the existing ticket detail after a provider has been assig
 
 ## Ticket access
 
+Renter accounts may live in the shared renters tenant and have explicitly linked contracts in
+multiple agencies. The account ID authorizes only the linked contracts. Staff remains restricted
+to its own agency; sharing a renter does not share agency data. Ticket, contract and property must
+belong to the same agency. New tickets and attachment storage use that agency's tenant, while
+ticket lists, details, activities and private media all enforce the explicit membership.
+
+Link confirmation requires an administrative API action: either
+`POST /api/contracts/{id}/parties/{partyId}/link-user` with `{ "email": "..." }`, or
+`POST /api/maintenance/links` with `{ "contractId": "...", "partyId": "...", "renterId": "..." }`.
+Both require the contract agency's ADMIN, a LOCATARIO party and an active RENTER with a matching
+normalized email. Repeating the same link is permitted; replacing it is rejected atomically.
+Existing unlinked parties and legacy tickets do not become accessible through login or matching
+email. A legacy ticket also requires the separate administrative `linkContract` action.
+
 - Access requires an active tenant user with an approved membership.
 - The ticket must belong to the same tenant and property as its linked contract.
 - The renter must be explicitly linked through a contract party with role `LOCATARIO` and their user ID. Matching names or email addresses does not grant access.

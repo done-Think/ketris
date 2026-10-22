@@ -15,7 +15,7 @@ export class CreateMaintenanceTicketUseCase {
     if (input.scheduledAt)
       throw new ConflictError('Defina um prestador antes de agendar o atendimento.')
     return this.repository.create({
-      tenantId: input.actorTenantId,
+      tenantId: contract.tenantId,
       contractId: contract.id,
       propertyId: contract.propertyId,
       category: input.category,

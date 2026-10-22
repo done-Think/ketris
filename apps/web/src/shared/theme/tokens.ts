@@ -383,3 +383,15 @@ export const gradients = {
   videoCenterMask:
     'radial-gradient(ellipse at center, #000 38%, rgba(0,0,0,0.68) 52%, rgba(0,0,0,0.18) 66%, transparent 78%)',
 } as const
+
+export const maintenanceColor = {
+  warningBackground: '#FFF2CC',
+  warningText: '#D98900',
+  infoBackground: '#E8F1FF',
+  infoText: '#2877E8',
+  successBackground: '#E5F8ED',
+  neutralBackground: '#EFF1F4',
+  errorBackground: '#FDE8EB',
+  errorText: '#B42338',
+  priorityHigh: '#F59E0B',
+} as const

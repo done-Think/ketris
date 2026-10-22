@@ -16,18 +16,14 @@ import type {
 } from './maintenance-ticket'
 
 export interface MaintenanceTicketRepository {
-  findContract(tenantId: string, contractId: string): Promise<MaintenanceContract | null>
+  findContract(actor: MaintenanceActor, contractId: string): Promise<MaintenanceContract | null>
   findUser(tenantId: string, userId: string): Promise<MaintenanceResponsibleUser | null>
   options(actor: MaintenanceActor): Promise<MaintenanceOptions>
   linkUsers(actor: MaintenanceActor, input: MaintenanceUserLinkInput): Promise<void>
   create(input: NewMaintenanceTicket): Promise<MaintenanceTicket>
   findMany(filters: MaintenanceTicketListFilters): Promise<MaintenanceTicketListResult>
-  findById(
-    tenantId: string,
-    ticketId: string,
-    includeDeleted?: boolean,
-  ): Promise<MaintenanceTicket | null>
-  findAttachmentTicket(tenantId: string, url: string): Promise<MaintenanceTicket | null>
+  findById(actor: MaintenanceActor, ticketId: string): Promise<MaintenanceTicket | null>
+  findAttachmentTicket(actor: MaintenanceActor, url: string): Promise<MaintenanceTicket | null>
   mutate(
     ticket: MaintenanceTicket,
     changes: MaintenanceMutation,

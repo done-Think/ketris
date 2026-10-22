@@ -6,11 +6,11 @@ import type {
   ContractPartyUserLink,
   LinkContractPartyUserInput,
 } from '../../types/contract-party-user-link'
+import { ContractNotFoundError } from '../../domain/errors'
 import {
-  ContractNotFoundError,
-  ContractPartyNotFoundError,
-  ContractRenterUserNotFoundError,
-} from '../../domain/errors'
+  assertContractRenterLink,
+  assertRenterParty,
+} from '../../domain/contract-renter-link-policy'
 import type { ContractRepository } from '../ports/contract-repository.port'
 
 export class LinkContractPartyUserUseCase {
@@ -35,25 +35,12 @@ export class LinkContractPartyUserUseCase {
 
     const party = contract.parties.find((candidate) => candidate.id === input.partyId)
 
-    if (!party || party.role !== 'LOCATARIO') {
-      throw new ContractPartyNotFoundError()
-    }
-
     const email = normalizeEmail(input.email)
-
-    if (normalizeEmail(party.email) !== email) {
-      throw new ConflictError('O e-mail deve corresponder à parte locatária do contrato.')
-    }
+    assertRenterParty(party, email)
 
     const user = await this.userRepository.findByEmail(email)
 
-    if (!user || user.papel !== 'RENTER' || !user.ativo) {
-      throw new ContractRenterUserNotFoundError()
-    }
-
-    if (party.userId && party.userId !== user.id) {
-      throw new ConflictError('Esta parte do contrato já está vinculada a outro usuário.')
-    }
+    assertContractRenterLink(party, user)
 
     const linked = await this.contractRepository.linkPartyUser({
       tenantId: input.actorTenantId,

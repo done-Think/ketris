@@ -165,6 +165,26 @@ describe('Maintenance API authorization and private media', () => {
     expect(requireMaintenanceActor).toHaveBeenCalledWith(expect.anything(), true)
     expect(new Uint8Array(await response.arrayBuffer())).toEqual(new Uint8Array([1, 2, 3]))
   })
+  it('authorizes shared-tenant renter media by ticket membership while staff stays tenant-scoped', async () => {
+    vi.mocked(requireMaintenanceActor).mockResolvedValue({ ...actor, actorTenantId: 'shared' })
+    const mediaContext = { params: Promise.resolve({ key: ['maintenance', 'tenant', 'file.png'] }) }
+    expect(
+      (await readMedia(request('media/maintenance/tenant/file.png'), mediaContext)).status,
+    ).toBe(200)
+    expect(maintenanceContainer.repository.findAttachmentTicket).toHaveBeenCalledWith(
+      { ...actor, actorTenantId: 'shared' },
+      '/api/maintenance/media/maintenance/tenant/file.png',
+    )
+    vi.mocked(requireMaintenanceActor).mockResolvedValue({
+      ...actor,
+      actorTenantId: 'shared',
+      actorPapel: 'ADMIN',
+    })
+    expect(
+      (await readMedia(request('media/maintenance/tenant/file.png'), mediaContext)).status,
+    ).toBe(404)
+    expect(s3Send).toHaveBeenCalledTimes(1)
+  })
   it('blocks archive attachments for renter but permits admin audit', async () => {
     vi.mocked(maintenanceContainer.repository.findAttachmentTicket).mockResolvedValue({
       ...ticket,
