@@ -100,7 +100,14 @@ export function RecentLeadsTable({ leads, onLeadSelect }: RecentLeadsTableProps)
                       </Typography>
                     </TableCell>
                     <TableCell sx={{ borderBottom: 'none', py: 1.1 }}>
-                      <Typography sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 700 }}>
+                      <Typography
+                        sx={{
+                          color: brand.neutral[500],
+                          fontSize: 13,
+                          fontWeight: 700,
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
                         {lead.budget}
                       </Typography>
                     </TableCell>
