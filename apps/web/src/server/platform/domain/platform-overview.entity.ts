@@ -2,6 +2,9 @@ export interface PlatformOverviewMetrics {
   tenantsCount: number
   brokersCount: number
   propertiesCount: number
+  // Same numbers as the finance page (see summarizeBilling).
+  mrr: number
+  churnRate: number | null
 }
 
 export interface PlatformGrowthMonth {

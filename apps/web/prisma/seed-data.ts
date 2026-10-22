@@ -15,6 +15,8 @@ export interface SeedTenantMember {
 export interface SeedTenant {
   slug: string
   name: string
+  // Defaults to AGENCY (agencies, builders and the renters' system tenant).
+  accountType?: 'INDIVIDUAL' | 'BROKER' | 'AGENCY'
   corPrimaria?: string
   corSecundaria?: string
   members: SeedTenantMember[]
@@ -113,6 +115,7 @@ export const seedTenants: SeedTenant[] = [
   },
   {
     slug: 'corretor-autonomo-roberto-lima',
+    accountType: 'BROKER',
     name: 'Roberto Lima — Corretor Autônomo',
     members: [
       {
@@ -126,6 +129,7 @@ export const seedTenants: SeedTenant[] = [
   },
   {
     slug: 'corretor-autonomo-patricia-nogueira',
+    accountType: 'BROKER',
     name: 'Patrícia Nogueira — Corretora Autônoma',
     members: [
       {
@@ -139,6 +143,7 @@ export const seedTenants: SeedTenant[] = [
   },
   {
     slug: 'corretor-autonomo-renato-alves',
+    accountType: 'BROKER',
     name: 'Renato Alves — Corretor Autônomo',
     members: [
       {
@@ -152,6 +157,7 @@ export const seedTenants: SeedTenant[] = [
   },
   {
     slug: 'corretor-autonomo-carlos-souza',
+    accountType: 'BROKER',
     name: 'Carlos Souza — Corretor Autônomo',
     members: [
       {
@@ -165,6 +171,7 @@ export const seedTenants: SeedTenant[] = [
   },
   {
     slug: 'proprietario-joao-mendes',
+    accountType: 'INDIVIDUAL',
     name: 'João Ricardo Mendes',
     members: [
       { name: 'João Ricardo Mendes', email: 'joao.mendes@proprietario.ketris.dev', role: 'ADMIN' },
@@ -172,6 +179,7 @@ export const seedTenants: SeedTenant[] = [
   },
   {
     slug: 'proprietario-fernanda-cavalcanti',
+    accountType: 'INDIVIDUAL',
     name: 'Fernanda Cavalcanti',
     members: [
       {

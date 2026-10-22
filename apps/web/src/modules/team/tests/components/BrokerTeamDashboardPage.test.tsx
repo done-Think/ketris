@@ -10,7 +10,7 @@ const strongPasswordPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9])
 const enqueueSnackbar = vi.fn()
 const mutateAsync = vi.fn().mockResolvedValue({ id: 'event-1' })
 const createUserMutateAsync = vi.fn()
-const session = vi.hoisted(() => ({ tenantId: 'tenant-1', papel: 'ADMIN' }))
+const session = vi.hoisted(() => ({ tenantId: 'tenant-1', role: 'ADMIN' }))
 
 vi.mock('next-auth/react', () => ({ useSession: () => ({ data: session }) }))
 vi.mock('@modules/auth/hooks/use-create-user', () => ({
@@ -236,13 +236,13 @@ describe('invite broker', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 
-  it('hides the invite action from non-admin users', () => {
-    session.papel = 'OWNER'
+  it.each(['OWNER', 'AGENT', 'RENTER'])('hides the invite action from %s', (role) => {
+    session.role = role
     try {
       renderPage()
       expect(screen.queryByRole('button', { name: 'Convidar corretor' })).not.toBeInTheDocument()
     } finally {
-      session.papel = 'ADMIN'
+      session.role = 'ADMIN'
     }
   })
 })

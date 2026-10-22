@@ -1,23 +1,13 @@
-import {
-  MaintenanceAttachmentValidationError,
-  MaintenanceTicketNotFoundError,
-} from '../../domain/errors'
-import type { MaintenanceAttachment } from '../../domain/maintenance-ticket.entity'
-import type { MaintenanceAttachmentStoragePort } from '../ports/maintenance-attachment-storage.port'
-import type { MaintenanceTicketRepository } from '../ports/maintenance-ticket-repository.port'
+import type { UploadMaintenanceTicketAttachmentInput } from '../../types/use-case-inputs'
+import { MaintenanceAttachmentValidationError } from '../../domain/errors'
+import type { MaintenanceAttachment } from '../../types/maintenance-ticket'
+import { loadTicket } from '../workflow'
+import { assertPermission } from '../authorization'
+import type { MaintenanceAttachmentStoragePort } from '../../types/maintenance-attachment-storage'
+import type { MaintenanceTicketRepository } from '../../types/maintenance-ticket-repository'
 
 const allowedContentTypes = new Set(['image/jpeg', 'image/png', 'image/webp'])
 const maxFileSizeBytes = 8 * 1024 * 1024
-
-export interface UploadMaintenanceTicketAttachmentInput {
-  actorTenantId: string
-  actorId: string
-  actorName: string
-  ticketId: string
-  filename: string
-  contentType: string
-  body: Buffer
-}
 
 export class UploadMaintenanceTicketAttachmentUseCase {
   constructor(
@@ -26,14 +16,8 @@ export class UploadMaintenanceTicketAttachmentUseCase {
   ) {}
 
   async execute(input: UploadMaintenanceTicketAttachmentInput): Promise<MaintenanceAttachment> {
-    const existing = await this.maintenanceTicketRepository.findById(
-      input.actorTenantId,
-      input.ticketId,
-    )
-
-    if (!existing) {
-      throw new MaintenanceTicketNotFoundError()
-    }
+    const existing = await loadTicket(this.maintenanceTicketRepository, input, input.ticketId)
+    assertPermission(input, existing, 'collaborate')
 
     if (input.body.byteLength === 0) {
       throw new MaintenanceAttachmentValidationError('Arquivo vazio.')
@@ -56,7 +40,7 @@ export class UploadMaintenanceTicketAttachmentUseCase {
       body: input.body,
     })
 
-    return this.maintenanceTicketRepository.addAttachment(input.actorTenantId, input.ticketId, {
+    return this.maintenanceTicketRepository.addAttachment(existing, {
       name: input.filename,
       url: uploaded.url,
       authorId: input.actorId,

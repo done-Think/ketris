@@ -88,7 +88,7 @@ export function BrokerTeamDashboardPage() {
   const { data: session } = useSession()
   const createAgendaEvent = useCreateAgendaEvent(session?.tenantId ?? '')
   const createUser = useCreateUser()
-  const canInviteBroker = session?.papel === 'ADMIN'
+  const canInviteBroker = session?.role === 'ADMIN'
   const [inviteOpen, setInviteOpen] = useState(false)
   const [brokers, setBrokers] = useState<BrokerTeamMember[]>(() => [...brokerTeamMembers])
   const [action, setAction] = useState<{ type: BrokerTeamMenuAction; brokerId: string } | null>(

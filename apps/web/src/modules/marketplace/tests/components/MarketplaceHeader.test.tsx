@@ -112,7 +112,7 @@ describe('MarketplaceHeader', () => {
   it('RENTER: não mostra o botão de anunciar imóvel e oferece tornar corretor', async () => {
     const user = userEvent.setup()
     vi.mocked(useSession).mockReturnValue({
-      data: { user: { name: 'Maria Locatária', email: 'maria@example.com' }, papel: 'RENTER' },
+      data: { user: { name: 'Maria Locatária', email: 'maria@example.com' }, role: 'RENTER' },
       status: 'authenticated',
     } as unknown as ReturnType<typeof useSession>)
 
@@ -131,7 +131,7 @@ describe('MarketplaceHeader', () => {
   it('AGENT: oferece criar imobiliária no menu de perfil', async () => {
     const user = userEvent.setup()
     vi.mocked(useSession).mockReturnValue({
-      data: { user: { name: 'Carlos Corretor', email: 'carlos@example.com' }, papel: 'AGENT' },
+      data: { user: { name: 'Carlos Corretor', email: 'carlos@example.com' }, role: 'AGENT' },
       status: 'authenticated',
     } as unknown as ReturnType<typeof useSession>)
 
@@ -148,7 +148,7 @@ describe('MarketplaceHeader', () => {
   it('ADMIN: nÃ£o mostra a aÃ§Ã£o de troca de modalidade no menu de perfil', async () => {
     const user = userEvent.setup()
     vi.mocked(useSession).mockReturnValue({
-      data: { user: { name: 'Ana Admin', email: 'ana@example.com' }, papel: 'ADMIN' },
+      data: { user: { name: 'Ana Admin', email: 'ana@example.com' }, role: 'ADMIN' },
       status: 'authenticated',
     } as unknown as ReturnType<typeof useSession>)
 

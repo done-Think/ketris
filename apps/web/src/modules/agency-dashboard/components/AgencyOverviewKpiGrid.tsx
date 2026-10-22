@@ -23,7 +23,8 @@ export function AgencyOverviewKpiGrid({ kpis }: AgencyOverviewKpiGridProps) {
         display: 'grid',
         gridTemplateColumns: {
           xs: 'repeat(2, minmax(0, 1fr))',
-          md: 'repeat(5, minmax(0, 1fr))',
+          md: 'repeat(3, minmax(0, 1fr))',
+          xl: 'repeat(6, minmax(0, 1fr))',
         },
         gap: { xs: 1.2, md: 1.6 },
       }}

@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { UnauthorizedError } from '@server/shared/errors'
+import { InvalidCurrentPasswordError } from '@server/auth/domain/errors'
 
 import { POST } from '../../../me/password/route'
 
@@ -57,6 +58,15 @@ describe('POST /api/auth/me/password', () => {
 
     expect(response.status).toBe(400)
     expect(changeOwnPassword).not.toHaveBeenCalled()
+  })
+
+  it('returns 400 with the specific code when the current password is incorrect', async () => {
+    changeOwnPassword.mockRejectedValueOnce(new InvalidCurrentPasswordError())
+
+    const response = await POST(request('nova-senha-123', 'errada'))
+
+    expect(response.status).toBe(400)
+    expect((await response.json()).error.code).toBe('INVALID_CURRENT_PASSWORD')
   })
 
   it('rejects a user from another tenant without changing a password', async () => {

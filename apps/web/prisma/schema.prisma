@@ -16,14 +16,19 @@ datasource db {
 // ---------------------------------------------------------------------------
 
 model Tenant {
-  id            String   @id @default(cuid())
+  id            String            @id @default(cuid())
   nome          String
-  slug          String   @unique
+  slug          String            @unique
   // White-label: cores do tema sobrescrevem primary/secondary do MUI em runtime (docs/stack.md).
   corPrimaria   String?
   corSecundaria String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  // Tipo de conta define o plano cobrado pela plataforma (ver PlatformPlan); a situação define se
+  // a conta entra no MRR. Não há gateway de pagamento: os dois são mantidos pelo super admin.
+  accountType   TenantAccountType @default(AGENCY)
+  status        TenantStatus      @default(ACTIVE)
+  canceledAt    DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
   usuarios           Usuario[]
   imoveis            Imovel[]
@@ -35,8 +40,54 @@ model Tenant {
   eventosAgenda      EventoAgenda[]
   chamadosManutencao ChamadoManutencao[]
   perfilPublico      PerfilPublicoImobiliaria?
+  statusChanges      TenantStatusChange[]
 
   @@map("tenants")
+}
+
+enum TenantAccountType {
+  INDIVIDUAL
+  BROKER
+  AGENCY
+}
+
+enum TenantStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+  CANCELED
+}
+
+// Histórico das mudanças de situação do tenant, base do churn mensal. É só de inclusão: reativar um
+// tenant cancelado registra uma nova mudança em vez de reescrever o passado, então o churn de um mês
+// já fechado não muda depois. Tenant.canceledAt fica apenas para exibição do cancelamento atual.
+model TenantStatusChange {
+  id          String       @id @default(cuid())
+  tenantId    String
+  fromStatus  TenantStatus
+  toStatus    TenantStatus
+  changedAt   DateTime     @default(now())
+  changedById String?
+
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  changedBy PlatformAdmin? @relation(fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, changedAt])
+  @@index([changedById])
+  @@map("tenant_status_changes")
+}
+
+// Tabela de preços da plataforma, uma linha por tipo de conta, editada pelo super admin.
+// includedUnits conta imóveis (pessoa física e corretor) ou corretores ativos (imobiliária);
+// cada unidade acima disso custa extraUnitPrice.
+model PlatformPlan {
+  accountType    TenantAccountType @id
+  monthlyPrice   Decimal           @db.Decimal(12, 2)
+  includedUnits  Int
+  extraUnitPrice Decimal           @db.Decimal(12, 2)
+  updatedAt      DateTime          @updatedAt
+
+  @@map("platform_plans")
 }
 
 enum PapelUsuario {
@@ -61,10 +112,17 @@ model Usuario {
 
   tenant                   Tenant                             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   imoveisResponsavel       Imovel[]                           @relation("ImovelResponsavel")
+  imoveisProprietario      Imovel[]                           @relation("ImovelProprietario")
+  partesContrato          ParteContrato[]
+  chamadosResponsavel     ChamadoManutencao[]                 @relation("ChamadoResponsavel")
   refreshTokens            RefreshToken[]
   codigosRecuperacaoSenha  PasswordResetCode[]
   eventosAgendaResponsavel EventoAgenda[]                     @relation("EventoAgendaResponsavel")
   eventosAgendaCriados     EventoAgenda[]                     @relation("EventoAgendaCriadoPor")
+  eventosAgendaDono        EventoAgenda[]                     @relation("EventoAgendaDono")
+  participacoesAgenda      EventoAgendaParticipante[]
+  assinaturasRegistradas   Assinatura[]                       @relation("AssinaturaRegistradaPor")
+  contratosAtivados        Contrato[]                         @relation("ContratoAtivadoPor")
   leadsResponsavel         Lead[]                             @relation("LeadResponsavel")
   perfilPublico            PerfilPublicoCorretor?
   destaquesRecebidos       PerfilPublicoImobiliariaDestaque[]
@@ -119,16 +177,17 @@ enum PlatformAdminRole {
 }
 
 model PlatformAdmin {
-  id        String   @id @default(cuid())
+  id        String            @id @default(cuid())
   nome      String
-  email     String   @unique
+  email     String            @unique
   senhaHash String
   role      PlatformAdminRole @default(ADMIN)
-  ativo     Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  ativo     Boolean           @default(true)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
 
-  refreshTokens PlatformAdminRefreshToken[]
+  refreshTokens       PlatformAdminRefreshToken[]
+  tenantStatusChanges TenantStatusChange[]
 
   @@map("platform_admins")
 }
@@ -171,6 +230,7 @@ model Imovel {
   id            String           @id @default(cuid())
   tenantId      String
   responsavelId String
+  proprietarioId String?
   titulo        String
   descricao     String?
   finalidade    FinalidadeImovel
@@ -190,6 +250,7 @@ model Imovel {
 
   tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   responsavel        Usuario             @relation("ImovelResponsavel", fields: [responsavelId], references: [id])
+  proprietario       Usuario?            @relation("ImovelProprietario", fields: [proprietarioId], references: [id], onDelete: SetNull)
   endereco           Endereco?
   midias             Midia[]
   oportunidades      Oportunidade[]
@@ -199,6 +260,7 @@ model Imovel {
 
   @@index([tenantId])
   @@index([tenantId, status])
+  @@index([tenantId, proprietarioId])
   @@map("imoveis")
 }
 
@@ -523,16 +585,20 @@ model Contrato {
   observacoes          String?
   status               StatusContrato @default(RASCUNHO)
   ativadoEm            DateTime?
+  // Quem registrou a última assinatura, que ativou o contrato.
+  ativadoPorId         String?
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
 
   tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  ativadoPor         Usuario?            @relation("ContratoAtivadoPor", fields: [ativadoPorId], references: [id], onDelete: SetNull)
   // Restrict (não Cascade): um contrato nunca pode desaparecer junto com o imóvel excluído.
   imovel             Imovel              @relation(fields: [imovelId], references: [id], onDelete: Restrict)
   oportunidadeOrigem Oportunidade        @relation(fields: [oportunidadeOrigemId], references: [id])
   partes             ParteContrato[]
   cobrancas          Cobranca[]
   documentos         DocumentoContrato[]
+  chamadosManutencao  ChamadoManutencao[]
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -566,11 +632,14 @@ model ParteContrato {
   cpf        String
   email      String
   telefone   String?
+  usuarioId  String?
 
   contrato   Contrato    @relation(fields: [contratoId], references: [id], onDelete: Cascade)
   assinatura Assinatura?
+  usuario    Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
 
   @@index([contratoId])
+  @@index([usuarioId])
   @@map("partes_contrato")
 }
 
@@ -584,8 +653,11 @@ model Assinatura {
   parteContratoId String           @unique // uma assinatura por parte do contrato
   status          StatusAssinatura @default(PENDENTE)
   assinadaEm      DateTime?
+  // Usuário da imobiliária que registrou a assinatura no sistema.
+  assinadaPorId   String?
 
   parteContrato ParteContrato @relation(fields: [parteContratoId], references: [id], onDelete: Cascade)
+  assinadaPor   Usuario?      @relation("AssinaturaRegistradaPor", fields: [assinadaPorId], references: [id], onDelete: SetNull)
 
   @@map("assinaturas")
 }
@@ -610,15 +682,32 @@ enum TipoEventoAgenda {
   OTHER
 }
 
+// Papéis de pessoa no evento (não presumir que coincidam):
+// - responsavelId: quem responde pelo evento na imobiliária (staff do tenant do evento).
+// - criadoPorId: auditoria de quem criou o registro; não concede acesso.
+// - donoUsuarioId: dono explícito do evento para fins de acesso de leitura (pode ser um
+//   RENTER do tenant compartilhado de locatários ou staff do tenant do evento).
+// - participantes (EventoAgendaParticipante): usuários com acesso de leitura ao evento.
+// participanteNome/participanteTelefone são apenas dados de exibição para a equipe e não
+// identificam nem autorizam nenhum usuário.
+enum DestinoEventoAgenda {
+  LEGACY_TEAM
+  ALL_AGENTS
+  ASSIGNED_AGENT
+}
+
 model EventoAgenda {
   id                    String             @id @default(cuid())
   tenantId              String
   responsavelId         String
   criadoPorId           String?
+  donoUsuarioId         String?
   imovelId              String?
   referenciaImovelLivre String?
   titulo                String
   tipo                  TipoEventoAgenda?
+  destino               DestinoEventoAgenda @default(LEGACY_TEAM)
+  interno               Boolean            @default(false)
   status                StatusEventoAgenda @default(CONFIRMED)
   inicio                DateTime
   fim                   DateTime
@@ -631,13 +720,31 @@ model EventoAgenda {
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   responsavel Usuario  @relation("EventoAgendaResponsavel", fields: [responsavelId], references: [id], onDelete: Cascade)
   criadoPor   Usuario? @relation("EventoAgendaCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  donoUsuario Usuario? @relation("EventoAgendaDono", fields: [donoUsuarioId], references: [id], onDelete: SetNull)
   imovel      Imovel?  @relation(fields: [imovelId], references: [id], onDelete: SetNull)
+
+  participantes EventoAgendaParticipante[]
 
   @@index([tenantId])
   @@index([tenantId, inicio])
   @@index([responsavelId])
+  @@index([donoUsuarioId])
   @@index([imovelId])
   @@map("eventos_agenda")
+}
+
+model EventoAgendaParticipante {
+  id        String   @id @default(cuid())
+  eventoId  String
+  usuarioId String
+  createdAt DateTime @default(now())
+
+  evento  EventoAgenda @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+  usuario Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([eventoId, usuarioId])
+  @@index([usuarioId])
+  @@map("eventos_agenda_participantes")
 }
 
 // ---------------------------------------------------------------------------
@@ -695,6 +802,9 @@ enum StatusChamadoManutencao {
   EM_ANDAMENTO
   RESOLVIDO
   FECHADO
+  AGUARDANDO_CONFIRMACAO
+  CONTESTADO
+  CANCELADO
 }
 
 enum PrioridadeChamadoManutencao {
@@ -707,6 +817,16 @@ model ChamadoManutencao {
   id            String                      @id @default(cuid())
   tenantId      String
   imovelId      String
+  contratoId    String?
+  responsavelId String?
+  prestadorNome String?
+  prestadorTelefone String?
+  prestadorEmail String?
+  prestadorObservacoes String?
+  concluidoPorId String?
+  concluidoPorPapel PapelUsuario?
+  excluidoEm DateTime?
+  excluidoPorId String?
   categoria     String
   prioridade    PrioridadeChamadoManutencao @default(NORMAL)
   status        StatusChamadoManutencao     @default(ABERTO)
@@ -715,24 +835,39 @@ model ChamadoManutencao {
   abertoPorId   String
   abertoPorNome String
   resolvidoEm   DateTime?
+  atendimentoEm DateTime?
   createdAt     DateTime                    @default(now())
   updatedAt     DateTime                    @updatedAt
 
   tenant     Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   imovel     Imovel                       @relation(fields: [imovelId], references: [id], onDelete: Restrict)
+  contrato   Contrato?                    @relation(fields: [contratoId], references: [id], onDelete: Restrict)
+  responsavel Usuario?                   @relation("ChamadoResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
+  solicitacoesTroca SolicitacaoTrocaPrestador[]
   atividades AtividadeChamadoManutencao[]
   anexos     AnexoChamadoManutencao[]
 
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([imovelId])
+  @@index([tenantId, excluidoEm])
+  @@index([contratoId])
+  @@index([responsavelId])
   @@map("chamados_manutencao")
+  @@index([tenantId, atendimentoEm])
 }
 
 enum TipoAtividadeChamadoManutencao {
   NOTA
   MUDANCA_STATUS
   ANEXO_ADICIONADO
+  EDICAO
+  RESPONSAVEL_ALTERADO
+  PRESTADOR_ALTERADO
+  TROCA_SOLICITADA
+  TROCA_DECIDIDA
+  EXCLUSAO
+  RESTAURACAO
 }
 
 // Timeline do chamado, mesmo padrão append-only de AtividadeOportunidade — autor opcional/denormalizado
@@ -744,6 +879,7 @@ model AtividadeChamadoManutencao {
   mensagem  String
   autorId   String?
   autorNome String?
+  detalhes  Json?
   createdAt DateTime                       @default(now())
 
   chamado ChamadoManutencao @relation(fields: [chamadoId], references: [id], onDelete: Cascade)
@@ -751,6 +887,29 @@ model AtividadeChamadoManutencao {
   @@index([chamadoId])
   @@index([chamadoId, createdAt])
   @@map("atividades_chamado_manutencao")
+}
+
+enum StatusSolicitacaoTrocaPrestador {
+  PENDENTE
+  APROVADA
+  REJEITADA
+}
+
+model SolicitacaoTrocaPrestador {
+  id String @id @default(cuid())
+  chamadoId String
+  justificativa String
+  solicitanteId String
+  solicitanteNome String
+  status StatusSolicitacaoTrocaPrestador @default(PENDENTE)
+  decisaoJustificativa String?
+  decididoPorId String?
+  decididoPorNome String?
+  decididoEm DateTime?
+  createdAt DateTime @default(now())
+  chamado ChamadoManutencao @relation(fields: [chamadoId], references: [id], onDelete: Cascade)
+  @@index([chamadoId, status])
+  @@map("solicitacoes_troca_prestador")
 }
 
 model AnexoChamadoManutencao {

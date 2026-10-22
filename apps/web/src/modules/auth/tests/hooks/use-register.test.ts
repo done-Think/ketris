@@ -86,7 +86,7 @@ describe('useRegister', () => {
     expect(routerMock.refresh).toHaveBeenCalled()
   })
 
-  it('redireciona pra home pública quando o papel é RENTER, após confirmar o e-mail', async () => {
+  it('redireciona para cobranças quando o papel é RENTER, após confirmar o e-mail', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(
@@ -107,7 +107,7 @@ describe('useRegister', () => {
       result.current.completeEmailVerification()
     })
 
-    expect(routerMock.replace).toHaveBeenCalledWith('/pt')
+    expect(routerMock.replace).toHaveBeenCalledWith('/pt/dashboard/finance/charges')
   })
 
   it('marca pendingApproval e não chama signIn quando o corretor fica pendente', async () => {

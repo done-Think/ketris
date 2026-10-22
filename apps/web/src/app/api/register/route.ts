@@ -39,6 +39,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   }
 
   const result = await registrationContainer.registerTenantOwnerUseCase.execute({
+    profile: body.profile,
     fullName: body.fullName,
     companyName: body.companyName,
     email: body.email,

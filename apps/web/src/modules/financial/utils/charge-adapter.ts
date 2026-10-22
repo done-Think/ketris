@@ -59,6 +59,10 @@ export function mapChargeStatusToUi(status: ApiChargeStatus): ChargeStatus {
   return chargeStatusToUi[status]
 }
 
+export function mapChargeStatusToApi(status: ChargeStatus): ApiChargeStatus {
+  return chargeStatusToApi[status]
+}
+
 export function mapChargeListItemFromApi(item: ApiChargeListItem): Charge {
   return {
     id: item.id,

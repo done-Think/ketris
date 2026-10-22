@@ -1,12 +1,22 @@
 import { ThemeProvider } from '@mui/material'
-import { act, render, screen, within, waitFor } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
 
 import { PlatformTenantsPage } from '../../components/PlatformTenantsPage'
-import { platformTenants } from '../../data/platform-tenants-fixtures'
+
+const { useTenants, mutateAsync, enqueueSnackbar } = vi.hoisted(() => ({
+  useTenants: vi.fn(),
+  mutateAsync: vi.fn(),
+  enqueueSnackbar: vi.fn(),
+}))
+vi.mock('../../hooks/use-tenants', () => ({ useTenants }))
+vi.mock('../../hooks/use-update-tenant-account', () => ({
+  useUpdateTenantAccount: () => ({ mutateAsync, isPending: false }),
+}))
+vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar }) }))
 
 function renderPage() {
   return render(
@@ -17,175 +27,204 @@ function renderPage() {
 }
 
 describe('PlatformTenantsPage', () => {
-  it('has exactly 45 deterministic fixtures with the reference plan totals', () => {
-    expect(platformTenants).toHaveLength(45)
-    expect(new Set(platformTenants.map((tenant) => tenant.id)).size).toBe(45)
-    expect(platformTenants.filter((tenant) => tenant.plan === 'starter')).toHaveLength(18)
-    expect(platformTenants.filter((tenant) => tenant.plan === 'pro')).toHaveLength(20)
-    expect(platformTenants.filter((tenant) => tenant.plan === 'enterprise')).toHaveLength(7)
-    expect(platformTenants.map((tenant) => tenant.mrr)).toEqual(
-      expect.arrayContaining([2450, 1250, 490, 4900, 1840, 4200]),
-    )
-    expect(platformTenants.every((tenant) => typeof tenant.mrr === 'number')).toBe(true)
-    expect(platformTenants.slice(0, 6).map((tenant) => tenant.id)).toEqual([
-      'silva',
-      'nexo',
-      'vanguard',
-      'apex',
-      'orion',
-      'prime',
-    ])
+  beforeEach(() => {
+    vi.mocked(useTenants).mockReturnValue({
+      data: [
+        {
+          id: 'horizonte',
+          name: 'Imobiliária Horizonte',
+          slug: 'horizonte',
+          accountType: 'AGENCY',
+          status: 'ACTIVE',
+          canceledAt: null,
+          createdAt: '2026-09-01T12:00:00Z',
+          monthlyCharge: {
+            usageUnit: 'BROKERS',
+            usage: 4,
+            includedUnits: 10,
+            extraUnits: 0,
+            basePrice: 199.99,
+            extraAmount: 0,
+            total: 199.99,
+          },
+        },
+        {
+          id: 'roberto',
+          name: 'Roberto Lima',
+          slug: 'roberto',
+          accountType: 'BROKER',
+          status: 'TRIAL',
+          canceledAt: null,
+          createdAt: '2026-10-02T12:00:00Z',
+          monthlyCharge: {
+            usageUnit: 'PROPERTIES',
+            usage: 12,
+            includedUnits: 10,
+            extraUnits: 2,
+            basePrice: 99.99,
+            extraAmount: 19.98,
+            total: 119.97,
+          },
+        },
+      ],
+      isLoading: false,
+      isError: false,
+    })
   })
-  it('renders the tenant management header, metrics and first fixture page', () => {
+
+  it('lists the real tenants with links to their detail pages', () => {
     renderPage()
 
     expect(screen.getByRole('heading', { name: 'Tenants' })).toBeVisible()
-    expect(screen.getAllByText('45')[0]).toBeVisible()
-    expect(screen.getByText(/R\$\s*2\.450/)).toBeVisible()
-    expect(screen.getByText('Silva & Corretores Associados')).toBeVisible()
-    expect(screen.getByText('Consultoria Apex Imóveis')).toBeVisible()
-    expect(screen.queryByText('Parque Residencial Ltda')).not.toBeInTheDocument()
-    expect(screen.getByText('Mostrando 1–6 de 45 tenants')).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Imobiliária Horizonte' })).toHaveAttribute(
+      'href',
+      '/platform/tenants/horizonte',
+    )
+    expect(screen.getByRole('link', { name: 'Roberto Lima' })).toHaveAttribute(
+      'href',
+      '/platform/tenants/roberto',
+    )
+    expect(screen.getByText('roberto')).toBeVisible()
   })
 
-  it('keeps the New Tenant control visual only', async () => {
+  it('opens the real tenant creation page from the New Tenant button', () => {
+    renderPage()
+
+    expect(screen.getByRole('link', { name: 'Nova conta' })).toHaveAttribute(
+      'href',
+      '/platform/tenants/new',
+    )
+  })
+
+  it('shows the account type and status of each tenant', () => {
+    renderPage()
+
+    const horizonte = screen.getByRole('row', { name: /Imobiliária Horizonte/ })
+    expect(within(horizonte).getByText('Imobiliária')).toBeVisible()
+    expect(within(horizonte).getByText('Ativa')).toBeVisible()
+
+    const roberto = screen.getByRole('row', { name: /Roberto Lima/ })
+    expect(within(roberto).getByText('Corretor')).toBeVisible()
+    expect(within(roberto).getByText('Em teste')).toBeVisible()
+  })
+
+  it('shows the monthly fee of each tenant with its breakdown', async () => {
     const user = userEvent.setup()
     renderPage()
 
-    const newTenant = screen.getByRole('button', { name: 'Novo Tenant' })
-    expect(newTenant).not.toHaveAttribute('href')
-    await user.click(newTenant)
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    const horizonte = screen.getByRole('row', { name: /Imobiliária Horizonte/ })
+    expect(within(horizonte).getByText(/R\$\s*199,99/)).toBeVisible()
+
+    const roberto = screen.getByRole('row', { name: /Roberto Lima/ })
+    await user.hover(within(roberto).getByText(/R\$\s*119,97/))
+    expect(await screen.findByText(/R\$\s*99,99 \+ 2 imóveis extras \(R\$\s*19,98\)/)).toBeVisible()
   })
 
-  it('filters tenants by search and plan', async () => {
+  it('counts the accounts by status in the tabs and filters by them', async () => {
     const user = userEvent.setup()
     renderPage()
 
-    await user.type(screen.getByLabelText('Buscar tenant'), 'Vanguard')
-    expect(screen.getByText('Vanguard Empreendimentos')).toBeVisible()
-    expect(screen.queryByText('Nexo Imóveis Corporativos')).not.toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: /Todas\s*2/ })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tab', { name: /Ativa\s*1/ })).toBeVisible()
+    expect(screen.getByRole('tab', { name: /Canceladas?\s*0/ })).toBeVisible()
 
-    await user.clear(screen.getByLabelText('Buscar tenant'))
-    await user.click(screen.getByLabelText('Filtrar por plano'))
-    await user.click(screen.getByRole('option', { name: 'Enterprise' }))
+    await user.click(screen.getByRole('tab', { name: /Em teste\s*1/ }))
 
-    expect(screen.getByText('Silva & Corretores Associados')).toBeVisible()
-    expect(screen.getByText('Vanguard Empreendimentos')).toBeVisible()
-    expect(screen.queryByText('Nexo Imóveis Corporativos')).not.toBeInTheDocument()
+    expect(screen.getByRole('row', { name: /Roberto Lima/ })).toBeVisible()
+    expect(screen.queryByRole('row', { name: /Imobiliária Horizonte/ })).not.toBeInTheDocument()
+    expect(screen.getByText('1 conta')).toBeVisible()
   })
 
-  it('combines status filters with search and plan', async () => {
+  it('searches by name or identifier and filters by account type', async () => {
     const user = userEvent.setup()
     renderPage()
 
-    expect(screen.getByLabelText('Filtrar por status')).toHaveTextContent('Status: Todos')
-    expect(screen.queryByText('Aliança Imobiliária Ltda')).not.toBeInTheDocument()
+    await user.type(screen.getByLabelText('Buscar conta'), 'horiz')
+    expect(screen.getByRole('row', { name: /Imobiliária Horizonte/ })).toBeVisible()
+    expect(screen.queryByRole('row', { name: /Roberto Lima/ })).not.toBeInTheDocument()
 
-    await user.click(screen.getByLabelText('Filtrar por status'))
-    await user.click(screen.getByRole('option', { name: 'Trial' }))
-    expect(screen.getByText('Aliança Imobiliária Ltda')).toBeVisible()
-    expect(screen.getByText('Parque Residencial Ltda')).toBeVisible()
-    expect(screen.queryByText('Silva & Corretores Associados')).not.toBeInTheDocument()
+    await user.clear(screen.getByLabelText('Buscar conta'))
+    await user.type(screen.getByLabelText('Buscar conta'), 'roberto')
+    expect(screen.getByRole('row', { name: /Roberto Lima/ })).toBeVisible()
 
-    await user.click(screen.getByLabelText('Filtrar por status'))
-    await user.click(screen.getByRole('option', { name: 'Suspenso' }))
-    expect(screen.getByText('Lumen Real Estate')).toBeVisible()
-    expect(screen.queryByText('Aliança Imobiliária Ltda')).not.toBeInTheDocument()
-
-    await user.click(screen.getByLabelText('Filtrar por status'))
-    await user.click(screen.getByRole('option', { name: 'Todos' }))
-    expect(screen.getByText('Silva & Corretores Associados')).toBeVisible()
-
-    await user.click(screen.getByLabelText('Filtrar por status'))
-    await user.click(screen.getByRole('option', { name: 'Trial' }))
-    await user.click(screen.getByLabelText('Filtrar por plano'))
-    await user.click(screen.getByRole('option', { name: 'Starter' }))
-    expect(screen.getByText('Aliança Imobiliária Ltda')).toBeVisible()
-    expect(screen.getByText('Parque Residencial Ltda')).toBeVisible()
-
-    await user.type(screen.getByLabelText('Buscar tenant'), 'inexistente')
-    expect(screen.getByText('Nenhum tenant encontrado.')).toBeVisible()
-    expect(screen.getByText('Mostrando 0–0 de 0 tenants')).toBeVisible()
+    await user.clear(screen.getByLabelText('Buscar conta'))
+    await user.click(screen.getByRole('combobox', { name: 'Tipo de conta' }))
+    await user.click(await screen.findByRole('option', { name: 'Imobiliária' }))
+    expect(screen.getByRole('row', { name: /Imobiliária Horizonte/ })).toBeVisible()
+    expect(screen.queryByRole('row', { name: /Roberto Lima/ })).not.toBeInTheDocument()
   })
 
-  it('paginates all 45 fixtures, visits pages two and three, and returns', async () => {
+  it('explains when no account matches and clears the filters', async () => {
     const user = userEvent.setup()
     renderPage()
 
-    expect(screen.getByRole('button', { name: 'Página anterior' })).toBeDisabled()
-    await user.click(screen.getByRole('button', { name: 'Próxima página' }))
-    expect(screen.getByText('Aliança Imobiliária Ltda')).toBeVisible()
-    expect(screen.getByText('Mostrando 7–12 de 45 tenants')).toBeVisible()
-    await user.click(screen.getByRole('button', { name: 'Próxima página' }))
-    expect(screen.getByText('Lumen Real Estate')).toBeVisible()
-    expect(screen.getByText('Mostrando 13–18 de 45 tenants')).toBeVisible()
-    await user.click(screen.getByRole('button', { name: 'Página anterior' }))
-    expect(screen.getByText('Mostrando 7–12 de 45 tenants')).toBeVisible()
-    await user.click(screen.getByRole('button', { name: 'Página anterior' }))
-    expect(screen.getByText('Mostrando 1–6 de 45 tenants')).toBeVisible()
+    await user.type(screen.getByLabelText('Buscar conta'), 'inexistente')
+    expect(screen.getByText('Nenhuma conta encontrada com esses filtros.')).toBeVisible()
+
+    await user.click(screen.getByRole('button', { name: 'Limpar filtros' }))
+    expect(screen.getByLabelText('Buscar conta')).toHaveValue('')
+    expect(screen.getAllByRole('row')).toHaveLength(3)
   })
 
-  it('sorts the complete result before pagination and resets the page', async () => {
+  it('edits the account type and status of a tenant', async () => {
     const user = userEvent.setup()
+    mutateAsync.mockResolvedValue({})
     renderPage()
-    await user.click(screen.getByRole('button', { name: 'Próxima página' }))
-    await user.click(screen.getByRole('columnheader', { name: /^Nome/ }))
-    expect(screen.getByText('Mostrando 1–6 de 45 tenants')).toBeVisible()
-    const rows = within(screen.getByRole('grid')).getAllByRole('row')
-    expect(rows[1]).toHaveTextContent('Aliança Imobiliária Ltda')
-    expect(rows[2]).toHaveTextContent('Atlas Negócios')
-    expect(rows).toHaveLength(7)
-  })
 
-  it('combines Pro, active status and Nexo with an accurate total', async () => {
-    const user = userEvent.setup()
-    renderPage()
-    await user.click(screen.getByLabelText('Filtrar por plano'))
-    await user.click(screen.getByRole('option', { name: 'Pro' }))
-    await user.click(screen.getByLabelText('Filtrar por status'))
-    await user.click(screen.getByRole('option', { name: 'Ativos' }))
-    await user.type(screen.getByLabelText('Buscar tenant'), 'Nexo')
-    expect(screen.getByText('Nexo Imóveis Corporativos')).toBeVisible()
-    expect(screen.getByText('Mostrando 1–1 de 1 tenants')).toBeVisible()
-  })
+    await user.click(screen.getByRole('button', { name: 'Editar conta de Roberto Lima' }))
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByText('Roberto Lima')).toBeVisible()
 
-  it('edits demo data locally and preserves fixtures', async () => {
-    const user = userEvent.setup()
-    renderPage()
-    await user.click(screen.getByRole('button', { name: 'Editar Silva & Corretores Associados' }))
-    const dialog = within(screen.getByRole('dialog'))
-    await user.clear(dialog.getByLabelText('Nome'))
-    await user.click(dialog.getByRole('button', { name: 'Salvar' }))
-    expect(await dialog.findByText('Informe o nome.')).toBeVisible()
-    await user.type(dialog.getByLabelText('Nome'), 'Silva Editado')
-    await user.click(dialog.getByRole('button', { name: 'Salvar' }))
-    expect(await screen.findByText('Silva Editado')).toBeVisible()
-    expect(platformTenants[0].name).toBe('Silva & Corretores Associados')
-  })
+    await user.click(within(dialog).getByRole('combobox', { name: 'Tipo de conta' }))
+    await user.click(await screen.findByRole('option', { name: 'Pessoa física' }))
+    await user.click(within(dialog).getByRole('combobox', { name: 'Situação' }))
+    await user.click(await screen.findByRole('option', { name: 'Cancelada' }))
+    expect(
+      within(dialog).getByText('A data de cancelamento é registrada e entra no churn deste mês.'),
+    ).toBeVisible()
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
 
-  it('opens the action menu by keyboard, restores focus, and reuses Edit', async () => {
-    const user = userEvent.setup()
-    renderPage()
-    const trigger = screen.getByRole('button', {
-      name: 'Mais ações para Silva & Corretores Associados',
+    expect(mutateAsync).toHaveBeenCalledWith({
+      tenantId: 'roberto',
+      accountType: 'INDIVIDUAL',
+      status: 'CANCELED',
     })
-    act(() => trigger.focus())
-    await user.keyboard('{Enter}')
-    expect(screen.getByRole('menuitem', { name: 'Editar' })).toHaveFocus()
-    await user.keyboard('{Escape}')
-    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument())
-    expect(trigger).toHaveFocus()
-    await user.click(trigger)
-    const backdrop = document.querySelector('.MuiBackdrop-root')
-    expect(backdrop).not.toBeNull()
-    if (backdrop) await user.click(backdrop)
-    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument())
-    expect(trigger).toHaveFocus()
-    await user.click(trigger)
-    await user.click(screen.getByRole('menuitem', { name: 'Editar' }))
-    expect(await screen.findByRole('dialog', { name: 'Editar tenant demonstrativo' })).toBeVisible()
-    await user.click(screen.getByRole('button', { name: 'Cancelar' }))
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(enqueueSnackbar).toHaveBeenCalledWith('Conta atualizada.', { variant: 'success' })
+  })
+
+  it('does not show the old sample tenants, plans or MRR column', () => {
+    renderPage()
+
+    expect(screen.queryByText('Silva & Corretores Associados')).not.toBeInTheDocument()
+    expect(screen.queryByText('Enterprise')).not.toBeInTheDocument()
+    expect(screen.queryByText('MRR')).not.toBeInTheDocument()
+  })
+
+  it('shows the empty state when there are no tenants', () => {
+    vi.mocked(useTenants).mockReturnValue({ data: [], isLoading: false, isError: false })
+    renderPage()
+
+    expect(screen.getByText('Nenhuma imobiliária cadastrada ainda.')).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Nova conta' })).toBeVisible()
+  })
+
+  it('shows a loading indicator, not the empty state, while the tenants are pending', () => {
+    vi.mocked(useTenants).mockReturnValue({
+      data: undefined,
+      isPending: true,
+      isLoading: false,
+      isError: false,
+    })
+    renderPage()
+
+    expect(screen.getByRole('progressbar')).toBeVisible()
+    expect(screen.queryByText('Nenhuma imobiliária cadastrada ainda.')).not.toBeInTheDocument()
+  })
+
+  it('shows the load error instead of sample data when the request fails', () => {
+    vi.mocked(useTenants).mockReturnValue({ data: undefined, isLoading: false, isError: true })
+    renderPage()
+
+    expect(screen.getByText('Não foi possível carregar as imobiliárias.')).toBeVisible()
   })
 })

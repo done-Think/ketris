@@ -42,8 +42,8 @@ const navigationItems: readonly NavigationItem[] = [
   { label: 'overview', icon: HomeOutlinedIcon, href: '/platform' },
   { label: 'tenants', icon: ApartmentOutlinedIcon, href: '/platform/tenants' },
   { label: 'users', icon: PeopleOutlineIcon, href: '/platform/admins' },
-  { label: 'plans', icon: SellOutlinedIcon },
-  { label: 'finance', icon: AccountBalanceWalletOutlinedIcon },
+  { label: 'plans', icon: SellOutlinedIcon, href: '/platform/plans' },
+  { label: 'finance', icon: AccountBalanceWalletOutlinedIcon, href: '/platform/finance' },
   { label: 'system', icon: SettingsOutlinedIcon, href: '/platform/system' },
   { label: 'logs', icon: ShowChartOutlinedIcon },
 ]
@@ -302,25 +302,14 @@ export function PlatformShell({ children }: PlatformShellProps) {
           pt: { xs: '64px', md: 0 },
           minWidth: 0,
           transition: 'margin-left 180ms ease, width 180ms ease',
-          '& :focus-visible, & .Mui-focusVisible': {
+          // Text fields and selects already show their own focused border; outlining them too
+          // drew a second ring around the field and over its label.
+          '& :focus-visible:not(input, textarea, [role="combobox"]), & .Mui-focusVisible': {
             outline: `2px solid ${brand.magenta[500]}`,
             outlineOffset: 2,
           },
         }}
       >
-        {['/platform', '/platform/tenants', '/platform/system'].includes(pathname) && (
-          <Typography
-            sx={{
-              px: { xs: 2, md: 3, lg: 4 },
-              pt: { xs: 1.5, md: 1 },
-              fontSize: 12,
-              lineHeight: { xs: 1.4, md: 'inherit' },
-              color: brand.neutral[500],
-            }}
-          >
-            {t('demoNotice')}
-          </Typography>
-        )}
         {children}
       </Box>
     </Box>

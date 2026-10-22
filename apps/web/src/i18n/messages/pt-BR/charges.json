@@ -1,4 +1,7 @@
 {
+  "renter": {
+    "subtitle": "Consulte as cobranças dos seus contratos."
+  },
   "metadata": {
     "title": "Ketris | Cobranças",
     "description": "Gerencie cobranças a receber e a pagar.",

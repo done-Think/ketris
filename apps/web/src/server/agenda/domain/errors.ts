@@ -1,4 +1,23 @@
-import { AppError, ConflictError, NotFoundError } from '@server/shared/errors'
+import { AppError, ConflictError, ForbiddenError, NotFoundError } from '@server/shared/errors'
+
+export class AgendaRenterForbiddenError extends ForbiddenError {
+  constructor() {
+    super('Locatários não podem gerenciar a agenda.')
+  }
+}
+
+/**
+ * Same status, code and message for every reason (unknown e-mail, inactive user, staff from
+ * another tenant), so the response never reveals whether or why an account can't be linked.
+ */
+export class AgendaEventUserLinkUnavailableError extends AppError {
+  constructor(email: string) {
+    super(`Não foi possível vincular o e-mail ${email} a este evento.`, {
+      status: 400,
+      code: 'AGENDA_EVENT_USER_LINK_UNAVAILABLE',
+    })
+  }
+}
 
 export class AgendaEventNotFoundError extends NotFoundError {
   constructor() {
@@ -20,7 +39,7 @@ export class AgendaEventConflictError extends ConflictError {
 
 export class AgendaVisitMinimumDurationError extends AppError {
   constructor() {
-    super('Visitas devem ter duração mínima de 60 minutos.', {
+    super('Visitas devem ter duração mínima de 30 minutos.', {
       status: 400,
       code: 'AGENDA_VISIT_MINIMUM_DURATION',
     })
@@ -38,9 +57,18 @@ export class AgendaMinimumAdvanceNoticeError extends AppError {
 
 export class AgendaOutsideBusinessHoursError extends AppError {
   constructor() {
-    super('Agende dentro do horário comercial (08:00–18:00).', {
-      status: 400,
-      code: 'AGENDA_OUTSIDE_BUSINESS_HOURS',
-    })
+    super(
+      'O período deste evento está fora do horário comercial (08:00–18:00). Confirme para continuar.',
+      {
+        status: 409,
+        code: 'AGENDA_OUTSIDE_BUSINESS_HOURS',
+      },
+    )
+  }
+}
+
+export class AgendaPropertyVisitConflictError extends ConflictError {
+  constructor() {
+    super('Já existe uma visita reservada para este imóvel nesse período.')
   }
 }

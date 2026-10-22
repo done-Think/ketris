@@ -51,7 +51,7 @@ export function HomeHeader({
   const { data: session, status } = useSession()
   const showNotifications = status === 'authenticated'
   const announcePropertyHref = status === 'authenticated' ? '/dashboard/properties' : '/login'
-  const canAnnounceProperty = session?.papel !== 'RENTER'
+  const canAnnounceProperty = session?.role !== 'RENTER'
 
   return (
     <Box

@@ -84,12 +84,15 @@ function formatMetricValue(
   metric: PlatformMetric,
   number: ReturnType<typeof useFormatter>['number'],
 ) {
+  if (metric.value === null) return '—'
+
   switch (metric.format) {
     case 'compactNumber':
       return number(metric.value, { notation: 'compact', maximumFractionDigits: 1 })
     case 'compactCurrency':
       return number(metric.value, {
         notation: 'compact',
+        minimumFractionDigits: 0,
         maximumFractionDigits: 1,
         style: 'currency',
         currency: 'BRL',

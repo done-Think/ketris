@@ -26,10 +26,10 @@ describe('/api/financial/charges — sequência de códigos (integração)', () 
     const actor = await prisma.usuario.create({
       data: {
         tenantId,
-        nome: 'Corretor',
+        nome: 'Administrador',
         email: `corretor-codes-${randomUUID()}@ketris.dev`,
         senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        papel: 'ADMIN',
       },
     })
     actorToken = await tokenService.sign({
