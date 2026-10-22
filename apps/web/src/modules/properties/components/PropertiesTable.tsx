@@ -155,7 +155,6 @@ export function PropertiesTable({
   const t = useTranslations('properties.dashboard.table')
   const filterT = useTranslations('properties.dashboard.filters')
   const emptyInventory = totalCount === 0
-  // Minimum widths add up to about 1050px, so the grid fits a 1366-1440px screen without scrolling.
   const columns: GridColDef<DashboardProperty>[] = [
     {
       field: 'title',

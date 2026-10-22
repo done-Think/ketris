@@ -674,7 +674,5 @@ const bodyCellSx = {
   fontWeight: 700,
   whiteSpace: 'nowrap',
 } as const
-// Cells are nowrap, so long ids, property titles and names would stretch the table past a
-// 1440px screen; these cut with an ellipsis and keep the full text in the title.
 const truncatedCellSx = (maxWidth: number) =>
   ({ maxWidth, overflow: 'hidden', textOverflow: 'ellipsis' }) as const
