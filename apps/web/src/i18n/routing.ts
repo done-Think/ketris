@@ -45,7 +45,6 @@ export const routing = defineRouting({
     '/crm/contacts': '/crm/contacts',
     '/crm/opportunities/[id]': '/crm/opportunities/[id]',
     '/dashboard': '/dashboard',
-    '/dashboard/agency-overview': '/dashboard/agency-overview',
     '/dashboard/agenda': {
       'pt-BR': '/dashboard/agenda',
       'en-US': '/dashboard/schedule',
@@ -72,7 +71,9 @@ export const routing = defineRouting({
     '/platform': '/platform',
     '/platform/admins': '/platform/admins',
     '/platform/admins/new': '/platform/admins/new',
+    '/platform/finance': '/platform/finance',
     '/platform/login': '/platform/login',
+    '/platform/plans': '/platform/plans',
     '/platform/system': '/platform/system',
     '/platform/tenants/[id]': '/platform/tenants/[id]',
     '/platform/tenants': '/platform/tenants',

@@ -61,7 +61,9 @@ export function useLogin(callbackUrl: string) {
       }
 
       const destination =
-        user.role === 'RENTER' ? getLocalizedPathname('/', locale) : localizedCallbackUrl
+        user.role === 'RENTER'
+          ? getLocalizedPathname('/dashboard/finance/charges', locale)
+          : localizedCallbackUrl
 
       router.replace(destination)
       router.refresh()

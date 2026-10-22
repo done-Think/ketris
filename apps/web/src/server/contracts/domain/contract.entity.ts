@@ -1,24 +1,20 @@
-export type ContractStatus =
-  | 'RASCUNHO'
-  | 'EM_REVISAO'
-  | 'AGUARDANDO_ASSINATURA'
-  | 'ASSINADO'
-  | 'ATIVO'
-  | 'ENCERRADO'
-  | 'CANCELADO'
+import type {
+  AdjustmentIndex,
+  ContractGuaranteeType,
+  ContractPartyRole,
+  ContractStatus,
+  ContractType,
+  SignatureStatus,
+} from '../types/contract'
 
-export type ContractType = 'RESIDENCIAL' | 'COMERCIAL' | 'TEMPORADA'
-
-export type AdjustmentIndex = 'IPCA' | 'IGPM' | 'INPC'
-
-export type ContractGuaranteeType = 'FIADOR' | 'CAUCAO' | 'SEGURO_FIANCA' | 'TITULO_CAPITALIZACAO'
-
-export type ContractPartyRole = 'LOCADOR' | 'LOCATARIO' | 'FIADOR'
-
-export type SignatureStatus = 'PENDENTE' | 'ASSINADA'
+export interface ContractActor {
+  id: string
+  name: string
+}
 
 export interface ContractParty {
   id: string
+  userId: string | null
   role: ContractPartyRole
   name: string
   cpf: string
@@ -26,6 +22,7 @@ export interface ContractParty {
   phone: string | null
   signatureStatus: SignatureStatus
   signedAt: Date | null
+  signedBy: ContractActor | null
 }
 
 export interface ContractDocument {
@@ -51,6 +48,7 @@ export interface Contract {
   notes: string | null
   status: ContractStatus
   activatedAt: Date | null
+  activatedBy: ContractActor | null
   createdAt: Date
   updatedAt: Date
   parties: ContractParty[]
@@ -78,8 +76,17 @@ export interface NewContract {
   parties: NewContractParty[]
 }
 
+// Limits contract management to properties the actor is responsible for (AGENT).
+export interface ContractManageScope {
+  responsibleId?: string
+}
+
+// Reads stay inside the actor's tenant (and the AGENT's properties), except for a RENTER, who
+// reads only the contracts where it is the linked LOCATARIO party, in any tenant.
+export type ContractReadScope =
+  ({ kind: 'tenant'; tenantId: string } & ContractManageScope) | { kind: 'party'; userId: string }
+
 export interface ContractListFilters {
-  tenantId: string
   status?: ContractStatus
   type?: ContractType
   propertyId?: string

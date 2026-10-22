@@ -75,7 +75,7 @@ describe('useLogin', () => {
     expect(result.current.error).toBeNull()
   })
 
-  it('redireciona um RENTER pra home, mesmo quando o callbackUrl aponta pro dashboard', async () => {
+  it('redireciona um RENTER para suas cobranças, mesmo com callback de outra área', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(
@@ -97,7 +97,7 @@ describe('useLogin', () => {
     const { result } = renderHook(() => useLogin('/dashboard'))
     const success = await login(result, { email: 'maria@ketris.dev', password: 'segredo123' })
 
-    expect(routerMock.replace).toHaveBeenCalledWith('/pt')
+    expect(routerMock.replace).toHaveBeenCalledWith('/pt/dashboard/finance/charges')
     expect(success).toBe(true)
   })
 

@@ -238,7 +238,7 @@ describe('RescheduleAgendaEventUseCase', () => {
     })
   })
 
-  it('lança AgendaVisitMinimumDurationError ao reagendar uma VISIT para menos de 60min', async () => {
+  it('lança AgendaVisitMinimumDurationError ao reagendar uma VISIT para menos de 30min', async () => {
     const deps = createDeps({ findByTenantAndId: vi.fn().mockResolvedValue(existingVisitEvent) })
     const useCase = new RescheduleAgendaEventUseCase(deps.agendaEventRepository)
 
@@ -248,13 +248,13 @@ describe('RescheduleAgendaEventUseCase', () => {
         actorPapel: 'AGENT',
         id: 'visit-1',
         inicio: NEW_VALID_INICIO,
-        durationMinutes: 30,
+        durationMinutes: 15,
       }),
     ).rejects.toThrow(AgendaVisitMinimumDurationError)
     expect(deps.agendaEventRepository.reschedule).not.toHaveBeenCalled()
   })
 
-  it('permite reagendar uma VISIT mantendo 60min ou mais', async () => {
+  it('permite reagendar uma VISIT mantendo 30min ou mais', async () => {
     const deps = createDeps({ findByTenantAndId: vi.fn().mockResolvedValue(existingVisitEvent) })
     const useCase = new RescheduleAgendaEventUseCase(deps.agendaEventRepository)
 

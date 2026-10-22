@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { extractErrorMessage } from '../../utils/error-message'
+import { extractErrorMessage, getApiErrorCode } from '../../utils/error-message'
 
 describe('extractErrorMessage', () => {
   it('uses a localized code mapping instead of the raw API message', () => {
@@ -30,5 +30,21 @@ describe('extractErrorMessage', () => {
     expect(extractErrorMessage(new Error('Mensagem interna'), 'Something went wrong.')).toBe(
       'Something went wrong.',
     )
+  })
+})
+
+describe('getApiErrorCode', () => {
+  it('returns the API error code from an axios error', () => {
+    const error = {
+      isAxiosError: true,
+      response: { data: { error: { code: 'INVALID_CURRENT_PASSWORD' } } },
+    }
+
+    expect(getApiErrorCode(error)).toBe('INVALID_CURRENT_PASSWORD')
+  })
+
+  it('returns undefined for non-axios errors or responses without a code', () => {
+    expect(getApiErrorCode(new Error('network'))).toBeUndefined()
+    expect(getApiErrorCode({ isAxiosError: true, response: { data: {} } })).toBeUndefined()
   })
 })

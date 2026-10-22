@@ -1,4 +1,10 @@
 export { AuthShell } from './components/AuthShell'
+export { AuthFormField } from './components/AuthFormField'
+export {
+  authLoginTextFieldSx,
+  authPrimaryButtonSx,
+  authTextFieldSx,
+} from './components/auth-form.styles'
 export { LoginAccountPrompt } from './components/LoginAccountPrompt'
 export { LoginForm } from './components/LoginForm'
 export { PasswordRecoveryConfirmation } from './components/PasswordRecoveryConfirmation'
@@ -37,6 +43,7 @@ export * from './components/UsersList'
 export * from './types/user'
 export * from './services/user-service'
 export * from './hooks/use-users'
+export * from './hooks/use-create-user'
 export * from './hooks/use-approve-user-membership'
 export * from './hooks/use-register'
 export * from './hooks/use-agency-search'

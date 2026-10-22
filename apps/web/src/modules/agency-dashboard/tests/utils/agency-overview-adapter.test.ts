@@ -17,6 +17,7 @@ const baseKpis: ApiAgencyOverviewKpis = {
   receivedLeadsPreviousPeriod: 7,
   monthlyReceivable: 8500,
   monthlyReceivablePreviousMonth: 8500,
+  overdueTotal: 0,
   occupancyPercentage: 67,
 }
 
@@ -132,6 +133,18 @@ describe('mapKpisToAgencyOverviewKpis', () => {
   it('não mostra comparação para corretores ativos nem ocupação', () => {
     expect(getKpi({}, 'brokers')?.helper).toBeUndefined()
     expect(getKpi({}, 'occupancy')?.helper).toBeUndefined()
+  })
+
+  it('destaca o valor em atraso só quando há cobranças vencidas', () => {
+    expect(getKpi({ overdueTotal: 320 }, 'overdue')).toMatchObject({
+      helper: { key: 'overdue' },
+      tone: 'warning',
+    })
+    expect(normalize(getKpi({ overdueTotal: 320 }, 'overdue')?.value)).toBe('R$ 320,00')
+    expect(getKpi({ overdueTotal: 0 }, 'overdue')).toMatchObject({
+      helper: { key: 'noOverdue' },
+      tone: 'neutral',
+    })
   })
 })
 

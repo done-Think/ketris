@@ -25,20 +25,9 @@ import { brand, componentText, externalBrand, radius, surface } from '@shared/th
 import { authRoutes } from '../config/auth-routes'
 import { useLogin } from '../hooks/use-login'
 import { createLoginSchema, type LoginFormValues } from '../schemas/login-schema'
-import { authPrimaryButtonSx, authTextFieldSx } from './auth-form.styles'
+import { authLoginTextFieldSx, authPrimaryButtonSx, authTextFieldSx } from './auth-form.styles'
 import { AuthFormField } from './AuthFormField'
 import { LoginAccountPrompt } from './LoginAccountPrompt'
-
-const loginTextFieldSx = {
-  '& .MuiOutlinedInput-root': {
-    height: { xs: 36, md: 46 },
-  },
-  '& .MuiInputBase-input': {
-    px: { xs: 1.5, md: 1.75 },
-    py: { xs: 1, md: 1.5 },
-    ...componentText.authBody,
-  },
-} as const
 
 import type { LoginFormProps } from '../types/login'
 
@@ -98,7 +87,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
               type="email"
               autoComplete="email"
               fullWidth
-              sx={[authTextFieldSx, loginTextFieldSx]}
+              sx={[authTextFieldSx, authLoginTextFieldSx]}
             />
           </AuthFormField>
 
@@ -115,7 +104,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 fullWidth
-                sx={[authTextFieldSx, loginTextFieldSx]}
+                sx={[authTextFieldSx, authLoginTextFieldSx]}
                 slotProps={{
                   input: {
                     endAdornment: (

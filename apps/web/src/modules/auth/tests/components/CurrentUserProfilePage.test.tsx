@@ -43,7 +43,7 @@ describe('CurrentUserProfilePage', () => {
     expect(screen.getByRole('img', { name: 'Ana' })).toHaveAttribute('src', '/avatar.png')
     expect(screen.getByLabelText('Nova senha')).toHaveValue('')
     expect(screen.getByLabelText('Confirmar nova senha')).toHaveValue('')
-    expect(screen.queryByLabelText(/senha atual/i)).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Senha atual')).toHaveValue('')
   })
 
   it('allows editing the demonstration phone without sending it to the API', async () => {
@@ -140,6 +140,14 @@ describe('CurrentUserProfilePage', () => {
 
     fireEvent.change(screen.getByLabelText('Nova senha'), { target: { value: 'nova-senha-123' } })
     fireEvent.change(screen.getByLabelText('Confirmar nova senha'), {
+      target: { value: 'nova-senha-123' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Alterar senha' }))
+    await waitFor(() => expect(screen.getByText('Informe sua senha atual.')).toBeVisible())
+    expect(userService.changeOwnPassword).not.toHaveBeenCalled()
+
+    fireEvent.change(screen.getByLabelText('Senha atual'), { target: { value: 'senha-atual' } })
+    fireEvent.change(screen.getByLabelText('Confirmar nova senha'), {
       target: { value: 'diferente-123' },
     })
     fireEvent.click(screen.getByRole('button', { name: 'Alterar senha' }))
@@ -151,14 +159,49 @@ describe('CurrentUserProfilePage', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: 'Alterar senha' }))
     await waitFor(() =>
-      expect(userService.changeOwnPassword).toHaveBeenCalledWith('nova-senha-123'),
+      expect(userService.changeOwnPassword).toHaveBeenCalledWith('senha-atual', 'nova-senha-123'),
     )
     await waitFor(() => expect(screen.getByLabelText('Nova senha')).toHaveValue(''))
+    expect(screen.getByLabelText('Senha atual')).toHaveValue('')
+  })
+
+  it('toggles the visibility of each password field independently', () => {
+    renderPage()
+
+    const currentPassword = screen.getByLabelText('Senha atual')
+    expect(currentPassword).toHaveAttribute('type', 'password')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar Senha atual' }))
+    expect(currentPassword).toHaveAttribute('type', 'text')
+    expect(screen.getByLabelText('Nova senha')).toHaveAttribute('type', 'password')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ocultar Senha atual' }))
+    expect(currentPassword).toHaveAttribute('type', 'password')
+  })
+
+  it('shows an inline error when the current password is incorrect', async () => {
+    vi.mocked(userService.changeOwnPassword).mockRejectedValue({
+      isAxiosError: true,
+      response: { data: { error: { code: 'INVALID_CURRENT_PASSWORD' } } },
+    })
+    renderPage()
+    fireEvent.change(screen.getByLabelText('Senha atual'), { target: { value: 'errada' } })
+    fireEvent.change(screen.getByLabelText('Nova senha'), { target: { value: 'nova-senha-123' } })
+    fireEvent.change(screen.getByLabelText('Confirmar nova senha'), {
+      target: { value: 'nova-senha-123' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Alterar senha' }))
+
+    await waitFor(() => expect(screen.getByText('Senha atual incorreta.')).toBeVisible())
+    expect(screen.queryByText('Não foi possível alterar a senha. Tente novamente.')).toBeNull()
+    expect(screen.getByLabelText('Nova senha')).toHaveValue('nova-senha-123')
+    expect(enqueueSnackbar).not.toHaveBeenCalled()
   })
 
   it('preserves the password form and shows an error if the request fails', async () => {
     vi.mocked(userService.changeOwnPassword).mockRejectedValue(new Error('network'))
     renderPage()
+    fireEvent.change(screen.getByLabelText('Senha atual'), { target: { value: 'senha-atual' } })
     fireEvent.change(screen.getByLabelText('Nova senha'), { target: { value: 'nova-senha-123' } })
     fireEvent.change(screen.getByLabelText('Confirmar nova senha'), {
       target: { value: 'nova-senha-123' },

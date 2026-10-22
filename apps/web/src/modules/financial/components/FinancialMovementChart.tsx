@@ -54,7 +54,6 @@ export function FinancialMovementChart({
               valueFormatter: (value) => formatCurrency(value ?? 0),
             },
           ]}
-          height={300}
           margin={{ left: 12, right: 12, top: 24, bottom: 28 }}
           grid={{ horizontal: false, vertical: false }}
           sx={{

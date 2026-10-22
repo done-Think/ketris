@@ -15,7 +15,6 @@ describe('SearchRegisterableTenantsUseCase', () => {
     const tenantRepository: TenantRepository = {
       findBySlug: vi.fn(),
       findById: vi.fn(),
-      findMany: vi.fn(),
       create: vi.fn(),
       searchByName: vi.fn().mockResolvedValue(results),
     }

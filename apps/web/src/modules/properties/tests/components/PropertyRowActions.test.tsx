@@ -66,9 +66,9 @@ const property: DashboardProperty = {
   activityHistory: [],
 }
 
-function mockSession(papel: 'ADMIN' | 'AGENT' = 'AGENT', userId = 'user-1') {
+function mockSession(role: 'ADMIN' | 'AGENT' | 'RENTER' = 'AGENT', userId = 'user-1') {
   vi.mocked(useSession).mockReturnValue({
-    data: { papel, user: { id: userId } },
+    data: { role, user: { id: userId } },
     status: 'authenticated',
     update: vi.fn(),
   } as unknown as ReturnType<typeof useSession>)
@@ -111,6 +111,13 @@ function renderActions(overrides: Partial<DashboardProperty> = {}) {
 }
 
 describe('PropertyRowActions', () => {
+  it('never offers renter management actions even if responsible user IDs match', () => {
+    mockSession('RENTER', property.responsibleUserId)
+    mockMutations()
+    renderActions()
+    expect(screen.getByRole('button', { name: /Visualizar/ })).toBeVisible()
+    expect(screen.queryByRole('button', { name: /Mais ações/ })).not.toBeInTheDocument()
+  })
   beforeEach(() => {
     vi.clearAllMocks()
     mockSession()

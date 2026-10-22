@@ -6,10 +6,16 @@ import { theme } from '@shared/theme/theme'
 
 import { BrokerTeamDashboardPage } from '../../components/BrokerTeamDashboardPage'
 
+const strongPasswordPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12}$/
 const enqueueSnackbar = vi.fn()
 const mutateAsync = vi.fn().mockResolvedValue({ id: 'event-1' })
+const createUserMutateAsync = vi.fn()
+const session = vi.hoisted(() => ({ tenantId: 'tenant-1', role: 'ADMIN' }))
 
-vi.mock('next-auth/react', () => ({ useSession: () => ({ data: { tenantId: 'tenant-1' } }) }))
+vi.mock('next-auth/react', () => ({ useSession: () => ({ data: session }) }))
+vi.mock('@modules/auth/hooks/use-create-user', () => ({
+  useCreateUser: () => ({ mutateAsync: createUserMutateAsync, isPending: false }),
+}))
 vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar }) }))
 vi.mock('@modules/agenda/hooks/use-agenda-events', () => ({
   useCreateAgendaEvent: () => ({ mutateAsync }),
@@ -56,9 +62,13 @@ vi.mock('@shared/components/layout', () => ({
       {actions}
     </div>
   ),
-  DashboardHeaderActionButton: ({ children }: { children: React.ReactNode }) => (
-    <button>{children}</button>
-  ),
+  DashboardHeaderActionButton: ({
+    children,
+    onClick,
+  }: {
+    children: React.ReactNode
+    onClick?: () => void
+  }) => <button onClick={onClick}>{children}</button>,
   DashboardNotificationsButton: () => null,
 }))
 
@@ -147,5 +157,92 @@ describe('broker team menu actions', () => {
       }),
     )
     expect(screen.getByRole('menuitem', { name: 'Ativar corretor' })).toBeVisible()
+  })
+})
+
+describe('invite broker', () => {
+  function fillInviteForm() {
+    const dialog = screen.getByRole('dialog')
+    fireEvent.change(within(dialog).getByLabelText('Nome completo'), {
+      target: { value: ' Bruno Lima ' },
+    })
+    fireEvent.change(within(dialog).getByLabelText('E-mail'), {
+      target: { value: 'bruno@ketris.dev' },
+    })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Convidar' }))
+  }
+
+  it('validates the form and creates the broker as an AGENT user', async () => {
+    createUserMutateAsync.mockResolvedValueOnce({ id: 'user-1' })
+    renderPage()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Convidar corretor' }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Convidar' }))
+
+    expect(await screen.findByText('Informe o nome do corretor')).toBeInTheDocument()
+    expect(screen.getByText('Informe um e-mail válido')).toBeInTheDocument()
+    expect(createUserMutateAsync).not.toHaveBeenCalled()
+
+    fillInviteForm()
+
+    await waitFor(() =>
+      expect(createUserMutateAsync).toHaveBeenCalledWith({
+        name: 'Bruno Lima',
+        email: 'bruno@ketris.dev',
+        password: expect.stringMatching(strongPasswordPattern),
+        role: 'AGENT',
+      }),
+    )
+    expect(enqueueSnackbar).toHaveBeenCalledWith('Bruno Lima foi adicionado à equipe', {
+      variant: 'success',
+    })
+  })
+
+  it('generates a temporary password that can be regenerated and copied', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+    renderPage()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Convidar corretor' }))
+    const dialog = screen.getByRole('dialog')
+    const passwordInput = within(dialog).getByLabelText('Senha provisória') as HTMLInputElement
+    const firstPassword = passwordInput.value
+
+    expect(firstPassword).toMatch(strongPasswordPattern)
+    expect(passwordInput).toHaveAttribute('readonly')
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Gerar nova senha' }))
+    await waitFor(() => expect(passwordInput.value).not.toBe(firstPassword))
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Copiar senha' }))
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith(passwordInput.value))
+  })
+
+  it('shows a specific message when the e-mail is already in use', async () => {
+    createUserMutateAsync.mockRejectedValueOnce({
+      isAxiosError: true,
+      response: { data: { error: { code: 'EMAIL_ALREADY_IN_USE' } } },
+    })
+    renderPage()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Convidar corretor' }))
+    fillInviteForm()
+
+    await waitFor(() =>
+      expect(enqueueSnackbar).toHaveBeenCalledWith('Este e-mail já está em uso', {
+        variant: 'error',
+      }),
+    )
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
+
+  it.each(['OWNER', 'AGENT', 'RENTER'])('hides the invite action from %s', (role) => {
+    session.role = role
+    try {
+      renderPage()
+      expect(screen.queryByRole('button', { name: 'Convidar corretor' })).not.toBeInTheDocument()
+    } finally {
+      session.role = 'ADMIN'
+    }
   })
 })

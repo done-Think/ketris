@@ -5,7 +5,7 @@ import { PlatformAdminsPage } from '@modules/platform'
 export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
   const { locale } = await params
 
-  return createLocalizedMetadata('platform.metadata.newAdmin', locale)
+  return createLocalizedMetadata('platform.metadata.admins', locale)
 }
 
 export default function PlatformAdminsRoute() {

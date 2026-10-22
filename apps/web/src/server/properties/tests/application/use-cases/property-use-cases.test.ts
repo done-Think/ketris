@@ -125,6 +125,34 @@ describe('properties use cases', () => {
   })
 
   describe('GetPropertyUseCase', () => {
+    it('uses the renter identity when reading a linked property', async () => {
+      const repository = createRepository()
+      await expect(
+        new GetPropertyUseCase(repository).execute({
+          actorTenantId: 'tenant-1',
+          actorId: 'renter-1',
+          actorPapel: 'RENTER',
+          id: 'property-1',
+        }),
+      ).resolves.toEqual(property)
+      expect(repository.findByTenantAndId).toHaveBeenCalledWith(
+        'tenant-1',
+        'property-1',
+        'renter-1',
+      )
+    })
+
+    it('returns an opaque error when no renter property link is found', async () => {
+      const repository = createRepository({ findByTenantAndId: vi.fn().mockResolvedValue(null) })
+      await expect(
+        new GetPropertyUseCase(repository).execute({
+          actorTenantId: 'tenant-1',
+          actorId: 'renter-1',
+          actorPapel: 'RENTER',
+          id: 'foreign',
+        }),
+      ).rejects.toThrow(PropertyNotFoundError)
+    })
     it('retorna o imóvel para o AGENT responsável', async () => {
       const repository = createRepository()
       const useCase = new GetPropertyUseCase(repository)
@@ -204,14 +232,16 @@ describe('properties use cases', () => {
       )
     })
 
-    it('retorna lista vazia sem consultar o repositório quando o ator é RENTER', async () => {
+    it('scopes renter lists to the authenticated user', async () => {
       const repository = createRepository()
       const useCase = new ListPropertiesUseCase(repository)
 
       await expect(
         useCase.execute({ actorTenantId: 'tenant-1', actorId: 'renter-1', actorPapel: 'RENTER' }),
-      ).resolves.toEqual([])
-      expect(repository.list).not.toHaveBeenCalled()
+      ).resolves.toEqual([property])
+      expect(repository.list).toHaveBeenCalledWith(
+        expect.objectContaining({ tenantId: 'tenant-1', renterId: 'renter-1' }),
+      )
     })
   })
 

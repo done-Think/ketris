@@ -20,7 +20,7 @@ async function getRequireAdminSession() {
 
 describe('requireAdminSession', () => {
   it('retorna a sessão quando o usuário está autenticado com papel ADMIN', async () => {
-    const session = { papel: 'ADMIN', tenantId: 'tenant-1' }
+    const session = { role: 'ADMIN', tenantId: 'tenant-1' }
     getServerSessionMock.mockResolvedValueOnce(session)
 
     const requireAdminSession = await getRequireAdminSession()
@@ -40,7 +40,7 @@ describe('requireAdminSession', () => {
   })
 
   it('redireciona para /backoffice/login quando a sessão não é de um ADMIN', async () => {
-    getServerSessionMock.mockResolvedValueOnce({ papel: 'AGENT', tenantId: 'tenant-1' })
+    getServerSessionMock.mockResolvedValueOnce({ role: 'AGENT', tenantId: 'tenant-1' })
 
     const requireAdminSession = await getRequireAdminSession()
 

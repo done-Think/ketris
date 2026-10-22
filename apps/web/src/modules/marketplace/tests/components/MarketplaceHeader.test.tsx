@@ -41,8 +41,7 @@ describe('MarketplaceHeader', () => {
     vi.clearAllMocks()
   })
 
-  it('sem sessão: mostra o menu de visitante com acesso aos fluxos existentes', async () => {
-    const user = userEvent.setup()
+  it('sem sessão: não mostra menu de perfil e deixa o Entrar como último item', () => {
     vi.mocked(useSession).mockReturnValue({
       data: null,
       status: 'unauthenticated',
@@ -50,28 +49,21 @@ describe('MarketplaceHeader', () => {
 
     renderMarketplaceHeader()
 
-    expect(screen.getByRole('button', { name: 'Abrir perfil' })).toBeInTheDocument()
-    expect(screen.queryByText('V')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Abrir perfil' })).not.toBeInTheDocument()
     expect(screen.queryByLabelText('notificações')).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Entrar' })).toHaveAttribute('href', '/login')
     expect(screen.getAllByText('BR')[0]).toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: 'Anunciar Imóvel' })[0]).toHaveAttribute(
       'href',
       '/login',
     )
 
-    await user.click(screen.getByRole('button', { name: 'Abrir perfil' }))
-
-    expect(screen.getAllByRole('link', { name: 'Entrar' })).toHaveLength(1)
-    expect(screen.getByRole('link', { name: 'Suporte' })).toHaveAttribute(
-      'href',
-      '/dashboard/maintenance',
-    )
-    expect(screen.getByRole('link', { name: 'Acessar admin' })).toHaveAttribute(
-      'href',
-      '/platform/login',
-    )
-    expect(screen.queryByRole('link', { name: 'Configurações' })).not.toBeInTheDocument()
+    const signIn = screen.getByRole('link', { name: 'Entrar' })
+    expect(signIn).toHaveAttribute('href', '/login')
+    expect(
+      screen.getAllByText('BR')[0].compareDocumentPosition(signIn) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(screen.queryByRole('separator')).not.toBeInTheDocument()
   })
 
   it('enquanto a sessão carrega: não mostra nem o avatar nem o seletor de idioma (evita flash)', () => {
@@ -120,7 +112,7 @@ describe('MarketplaceHeader', () => {
   it('RENTER: não mostra o botão de anunciar imóvel e oferece tornar corretor', async () => {
     const user = userEvent.setup()
     vi.mocked(useSession).mockReturnValue({
-      data: { user: { name: 'Maria Locatária', email: 'maria@example.com' }, papel: 'RENTER' },
+      data: { user: { name: 'Maria Locatária', email: 'maria@example.com' }, role: 'RENTER' },
       status: 'authenticated',
     } as unknown as ReturnType<typeof useSession>)
 
@@ -139,7 +131,7 @@ describe('MarketplaceHeader', () => {
   it('AGENT: oferece criar imobiliária no menu de perfil', async () => {
     const user = userEvent.setup()
     vi.mocked(useSession).mockReturnValue({
-      data: { user: { name: 'Carlos Corretor', email: 'carlos@example.com' }, papel: 'AGENT' },
+      data: { user: { name: 'Carlos Corretor', email: 'carlos@example.com' }, role: 'AGENT' },
       status: 'authenticated',
     } as unknown as ReturnType<typeof useSession>)
 
@@ -156,7 +148,7 @@ describe('MarketplaceHeader', () => {
   it('ADMIN: nÃ£o mostra a aÃ§Ã£o de troca de modalidade no menu de perfil', async () => {
     const user = userEvent.setup()
     vi.mocked(useSession).mockReturnValue({
-      data: { user: { name: 'Ana Admin', email: 'ana@example.com' }, papel: 'ADMIN' },
+      data: { user: { name: 'Ana Admin', email: 'ana@example.com' }, role: 'ADMIN' },
       status: 'authenticated',
     } as unknown as ReturnType<typeof useSession>)
 

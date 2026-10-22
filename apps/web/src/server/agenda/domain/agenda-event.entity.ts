@@ -1,4 +1,5 @@
 export type AgendaEventStatus = 'CONFIRMED' | 'PENDING' | 'RESCHEDULE' | 'CANCELLED'
+export type AgendaEventAudience = 'LEGACY_TEAM' | 'ALL_AGENTS' | 'ASSIGNED_AGENT'
 
 export type AgendaEventKind =
   'VISIT' | 'FOLLOW_UP' | 'MEETING' | 'INSPECTION' | 'SIGNATURE' | 'OTHER'
@@ -22,6 +23,8 @@ export interface AgendaEvent {
   referenciaImovelLivre: string | null
   titulo: string
   tipo: AgendaEventKind | null
+  destino?: AgendaEventAudience
+  interno?: boolean
   status: AgendaEventStatus
   inicio: Date
   fim: Date
@@ -40,6 +43,8 @@ export interface NewAgendaEvent {
   referenciaImovelLivre?: string | null
   titulo: string
   tipo?: AgendaEventKind | null
+  destino?: AgendaEventAudience
+  interno?: boolean
   inicio: Date
   fim: Date
   participanteNome: string
@@ -48,6 +53,11 @@ export interface NewAgendaEvent {
 }
 
 export interface AgendaEventChanges {
+  inicio?: Date
+  fim?: Date
+  destino?: AgendaEventAudience
+  interno?: boolean
+  responsavelId?: string
   titulo?: string
   tipo?: AgendaEventKind | null
   status?: AgendaEventStatus
@@ -75,7 +85,10 @@ export interface AgendaEventReschedule {
 }
 
 export type AgendaReadScope =
-  { kind: 'tenant'; tenantId: string } | { kind: 'linkedUser'; userId: string }
+  | { kind: 'tenant'; tenantId: string }
+  | { kind: 'agent'; tenantId: string; userId: string }
+  | { kind: 'owner'; tenantId: string; userId: string }
+  | { kind: 'linkedUser'; userId: string }
 
 export interface AgendaEventListFilters {
   scope: AgendaReadScope

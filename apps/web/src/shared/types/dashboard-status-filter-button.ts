@@ -3,7 +3,7 @@ import type { ButtonProps } from '@mui/material'
 
 export type DashboardStatusFilterButtonProps = {
   active: boolean
-  count: number
+  count?: number
   children: ReactNode
   onClick: () => void
   sx?: ButtonProps['sx']

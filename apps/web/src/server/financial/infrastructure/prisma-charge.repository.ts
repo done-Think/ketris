@@ -1,6 +1,7 @@
-import type { Cobranca, Contrato, Imovel, ParteContrato } from '@prisma/client'
+import type { Prisma } from '@prisma/client'
 
 import { prisma } from '@server/db/prisma'
+import { nextSequentialCode } from '@server/shared/sequential-code'
 
 import type {
   Charge,
@@ -12,18 +13,9 @@ import type {
   FinancialMonthlyTotal,
   NewCharge,
 } from '../domain/charge.entity'
+import type { ChargeReadScope } from '../types/charge-read-scope'
 import type { ChargeRepository } from '../application/ports/charge-repository.port'
-
-type CobrancaWithRelations = Cobranca & {
-  contrato:
-    | (Contrato & {
-        imovel: Pick<Imovel, 'id' | 'titulo'> & {
-          endereco: { logradouro: string; bairro: string; cidade: string } | null
-        }
-        partes: Pick<ParteContrato, 'nome' | 'email'>[]
-      })
-    | null
-}
+import type { CobrancaWithRelations } from '../types/prisma-charge-repository'
 
 function buildPropertyAddress(
   endereco: { logradouro: string; bairro: string; cidade: string } | null,
@@ -64,13 +56,8 @@ function toDomainCharge(cobranca: CobrancaWithRelations): Charge {
   }
 }
 
-async function generateChargeCode(): Promise<string> {
-  const year = new Date().getFullYear()
-  const count = await prisma.cobranca.count({
-    where: { codigo: { startsWith: `COB-${year}-` } },
-  })
-
-  return `COB-${year}-${String(count + 1).padStart(4, '0')}`
+function generateChargeCode(tx: Prisma.TransactionClient): Promise<string> {
+  return nextSequentialCode(tx, 'cobrancas', `COB-${new Date().getFullYear()}-`)
 }
 
 const chargeInclude = {
@@ -95,6 +82,25 @@ function monthRange(referenceDate: Date, monthsBack: number) {
   return { start, end }
 }
 
+function chargeReadWhere(scope: ChargeReadScope): Prisma.CobrancaWhereInput {
+  if (scope.kind === 'renter') {
+    return {
+      tipo: 'A_RECEBER',
+      contrato: {
+        partes: {
+          some: {
+            papel: 'LOCATARIO',
+            usuarioId: scope.userId,
+            usuario: { ativo: true, papel: 'RENTER' },
+          },
+        },
+      },
+    }
+  }
+
+  return { tenantId: scope.tenantId }
+}
+
 export class PrismaChargeRepository implements ChargeRepository {
   async findContractSummary(tenantId: string, contractId: string): Promise<{ id: string } | null> {
     const contrato = await prisma.contrato.findFirst({
@@ -106,21 +112,21 @@ export class PrismaChargeRepository implements ChargeRepository {
   }
 
   async create(input: NewCharge): Promise<Charge> {
-    const codigo = await generateChargeCode()
-
-    const cobranca = await prisma.cobranca.create({
-      data: {
-        tenantId: input.tenantId,
-        contratoId: input.contractId,
-        codigo,
-        descricao: input.description,
-        tipo: input.type,
-        valor: input.amount,
-        vencimento: input.dueDate,
-        status: input.status,
-      },
-      include: chargeInclude,
-    })
+    const cobranca = await prisma.$transaction(async (tx) =>
+      tx.cobranca.create({
+        data: {
+          tenantId: input.tenantId,
+          contratoId: input.contractId,
+          codigo: await generateChargeCode(tx),
+          descricao: input.description,
+          tipo: input.type,
+          valor: input.amount,
+          vencimento: input.dueDate,
+          status: input.status,
+        },
+        include: chargeInclude,
+      }),
+    )
 
     return toDomainCharge(cobranca)
   }
@@ -131,7 +137,7 @@ export class PrismaChargeRepository implements ChargeRepository {
     const search = filters.search?.trim()
 
     const where = {
-      tenantId: filters.tenantId,
+      AND: [chargeReadWhere(filters.scope)],
       tipo: filters.type,
       status: filters.status,
       ...(search
@@ -193,8 +199,12 @@ export class PrismaChargeRepository implements ChargeRepository {
   }
 
   async findById(tenantId: string, chargeId: string): Promise<Charge | null> {
+    return this.findReadableById({ kind: 'tenant', tenantId }, chargeId)
+  }
+
+  async findReadableById(scope: ChargeReadScope, chargeId: string): Promise<Charge | null> {
     const cobranca = await prisma.cobranca.findFirst({
-      where: { tenantId, id: chargeId },
+      where: { ...chargeReadWhere(scope), id: chargeId },
       include: chargeInclude,
     })
 

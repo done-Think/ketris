@@ -9,7 +9,6 @@
     "openProfile": "Abrir perfil"
   },
   "profile": {
-    "guestName": "Visitante",
     "dialogLabel": "Perfil del usuario",
     "closeProfile": "Cerrar perfil",
     "language": "Idioma",
@@ -26,7 +25,6 @@
     },
     "actions": {
       "addBroker": "Registrar nuevo corredor",
-      "accessAdmin": "Acceder a administración",
       "becomeBroker": "Convertirme en corredor",
       "createAgency": "Crear inmobiliaria",
       "settings": "Configuración",
@@ -86,6 +84,8 @@
     "search": {
       "submit": "Buscar",
       "mobilePlaceholder": "Buscar por barrio o ciudad...",
+      "mobileSearchTitle": "Buscar inmuebles",
+      "closeSearch": "Cerrar búsqueda",
       "locationPlaceholder": "Ingresa ciudad o barrio",
       "propertyTypePlaceholder": "Ingresa el tipo de inmueble",
       "clearSearch": "Limpiar búsqueda",
