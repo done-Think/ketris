@@ -1,7 +1,4 @@
-import type {
-  DisplayCurrency,
-  FinancialExchangeRate,
-} from '@modules/financial/utils/financial-display-currency'
+import type { DisplayCurrency, FinancialExchangeRate } from '@shared/lib/currency/display-currency'
 
 export type AgencyOverviewKpiTone = 'success' | 'neutral' | 'warning'
 

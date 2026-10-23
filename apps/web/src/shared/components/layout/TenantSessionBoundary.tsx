@@ -10,10 +10,10 @@ import { Link, useRouter } from '@/i18n/navigation'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
 import { alpha, radius, surface } from '@shared/theme/tokens'
 
-import type { CrmAccessBoundaryProps } from '../types/layout'
+import type { TenantSessionBoundaryProps } from '@shared/types/tenant-session-boundary'
 
-export function CrmAccessBoundary({ children }: CrmAccessBoundaryProps) {
-  const t = useTranslations('crm.access')
+export function TenantSessionBoundary({ children }: TenantSessionBoundaryProps) {
+  const t = useTranslations('common.tenantSessionBoundary')
   const router = useRouter()
   const { data: session, status } = useSession()
   const isAuthenticated =

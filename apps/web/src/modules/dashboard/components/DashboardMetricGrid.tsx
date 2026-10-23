@@ -2,9 +2,9 @@ import { Box, Stack, Typography } from '@mui/material'
 import NorthIcon from '@mui/icons-material/North'
 
 import { brand } from '@shared/theme/tokens'
+import { DashboardPanel } from '@shared/components/ui/DashboardPanel'
 
 import type { DashboardMetricGridProps } from '../types/dashboard-overview'
-import { DashboardPanel } from './DashboardPanel'
 
 export function DashboardMetricGrid({ metrics }: DashboardMetricGridProps) {
   return (

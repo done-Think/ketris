@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
 
-import { CrmAccessBoundary } from '../../components/CrmAccessBoundary'
+import { TenantSessionBoundary } from '@shared/components/layout/TenantSessionBoundary'
 
 const routerMock = { replace: vi.fn(), refresh: vi.fn() }
 
@@ -39,13 +39,13 @@ function mockSession(overrides?: Record<string, unknown>) {
 
 function renderBoundary() {
   return render(
-    <CrmAccessBoundary>
+    <TenantSessionBoundary>
       <div>Conteúdo do CRM</div>
-    </CrmAccessBoundary>,
+    </TenantSessionBoundary>,
   )
 }
 
-describe('CrmAccessBoundary', () => {
+describe('TenantSessionBoundary', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })

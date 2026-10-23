@@ -10,7 +10,7 @@ import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { financialStatusStyles } from '../config/financial-status-styles'
 import type { FinancialUpcomingDue, FinancialUpcomingDueListProps } from '../types/financial-entry'
-import { formatFinancialAmount } from '../utils/financial-display-currency'
+import { formatFinancialAmount } from '@shared/lib/currency/display-currency'
 import { FinancialDueHistoryDialog } from './FinancialDueHistoryDialog'
 
 export function FinancialUpcomingDueList({ items, exchangeRate }: FinancialUpcomingDueListProps) {

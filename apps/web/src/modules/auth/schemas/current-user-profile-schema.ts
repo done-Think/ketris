@@ -1,8 +1,8 @@
 import { z } from 'zod'
 
+import { createPhoneSchema } from '@shared/schemas/phone-schema'
 import type { SchemaMessageTranslator } from '@shared/types'
 import { createUpdateCurrentUserProfileSchema } from './update-current-user-profile-schema'
-import { createPhoneSchema } from './registration-details-schema'
 
 export function createCurrentUserProfileSchema(t: SchemaMessageTranslator) {
   return createUpdateCurrentUserProfileSchema(t).extend({

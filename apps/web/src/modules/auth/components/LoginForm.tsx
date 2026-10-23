@@ -25,8 +25,12 @@ import { brand, componentText, externalBrand, radius, surface } from '@shared/th
 import { authRoutes } from '../config/auth-routes'
 import { useLogin } from '../hooks/use-login'
 import { createLoginSchema, type LoginFormValues } from '../schemas/login-schema'
-import { authLoginTextFieldSx, authPrimaryButtonSx, authTextFieldSx } from './auth-form.styles'
-import { AuthFormField } from './AuthFormField'
+import {
+  authLoginTextFieldSx,
+  authPrimaryButtonSx,
+  authTextFieldSx,
+} from '@shared/components/form/auth-form.styles'
+import { AuthFormField } from '@shared/components/form/AuthFormField'
 import { LoginAccountPrompt } from './LoginAccountPrompt'
 
 import type { LoginFormProps } from '../types/login'

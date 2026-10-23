@@ -19,7 +19,7 @@ import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { financialStatusStyles } from '../config/financial-status-styles'
 import type { FinancialDueHistoryDialogProps } from '../types/financial-entry'
-import { formatFinancialAmount } from '../utils/financial-display-currency'
+import { formatFinancialAmount } from '@shared/lib/currency/display-currency'
 
 export function FinancialDueHistoryDialog({
   due,

@@ -1,21 +1,11 @@
 import { z } from 'zod'
 
+import { createPhoneSchema } from '@shared/schemas/phone-schema'
 import type { SchemaMessageTranslator } from '@shared/types'
 
 import { createEmailSchema } from './login-schema'
 
 const NON_BROKER_PROFILE_IDS = ['proprietario', 'imobiliaria', 'construtora', 'locatario'] as const
-
-export function createPhoneSchema(t: SchemaMessageTranslator) {
-  return z
-    .string()
-    .trim()
-    .min(1, t('phoneRequired'))
-    .refine((value) => {
-      const digits = value.replace(/\D/g, '')
-      return digits.length === 10 || digits.length === 11
-    }, t('phoneInvalid'))
-}
 
 export function createRegistrationDetailsSchema(t: SchemaMessageTranslator) {
   const commonDetailsFields = {

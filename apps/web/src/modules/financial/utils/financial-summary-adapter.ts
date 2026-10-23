@@ -1,3 +1,7 @@
+import {
+  formatFinancialAmount,
+  type FinancialExchangeRate,
+} from '@shared/lib/currency/display-currency'
 import { formatDate } from '@shared/lib/utils/format'
 import { defaultLocale } from '@/i18n/routing'
 import type { AppLocale } from '@/i18n/types/locale.types'
@@ -6,21 +10,14 @@ import type {
   FinancialEntry,
   FinancialEntryStatus,
   FinancialKpi,
-  FinancialMonthlyMovement,
   FinancialUpcomingDue,
 } from '../types/financial-entry'
 import type {
   ApiChargeListItem,
   ApiChargeStatus,
-  FinancialMonthlyTotal,
   FinancialSummary,
   FinancialUpcomingCharge,
 } from '../types/service'
-import {
-  convertFinancialAmount,
-  formatFinancialAmount,
-  type FinancialExchangeRate,
-} from './financial-display-currency'
 
 const chargeStatusToEntryStatus: Record<ApiChargeStatus, FinancialEntryStatus> = {
   PENDENTE: 'Pendente',
@@ -75,27 +72,6 @@ export function mapFinancialSummaryToKpis(
       tone: 'success',
     },
   ]
-}
-
-export function mapMonthlySeriesToMovement(
-  series: FinancialMonthlyTotal[],
-  locale: AppLocale = defaultLocale,
-  exchangeRate?: FinancialExchangeRate | null,
-): FinancialMonthlyMovement[] {
-  const monthFormatter = new Intl.DateTimeFormat(locale, {
-    month: 'short',
-    timeZone: 'UTC',
-  })
-
-  return series.map((entry) => ({
-    month:
-      entry.month >= 1 && entry.month <= 12
-        ? monthFormatter
-            .format(new Date(Date.UTC(entry.year, entry.month - 1, 1)))
-            .replace(/\.$/, '')
-        : String(entry.month),
-    revenue: convertFinancialAmount(entry.total, locale, exchangeRate).amount,
-  }))
 }
 
 export function mapUpcomingChargesToDues(

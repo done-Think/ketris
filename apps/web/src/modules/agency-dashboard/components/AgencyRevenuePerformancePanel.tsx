@@ -4,7 +4,7 @@ import { Box, Stack, Typography } from '@mui/material'
 import { LineChart } from '@mui/x-charts/LineChart'
 import { useFormatter, useTranslations } from 'next-intl'
 
-import { DashboardPanel } from '@modules/dashboard/components/DashboardPanel'
+import { DashboardPanel } from '@shared/components/ui/DashboardPanel'
 import { alpha, brand } from '@shared/theme/tokens'
 
 import type { AgencyRevenuePerformancePanelProps } from '../types/agency-overview'

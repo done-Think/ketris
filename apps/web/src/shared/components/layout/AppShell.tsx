@@ -9,8 +9,8 @@ import { useRouter } from 'next/navigation'
 
 import { getLocalizedPathname } from '@/i18n/locale-prefix'
 import { usePathname } from '@/i18n/navigation'
-import { CrmAccessBoundary } from '@modules/crm/components/CrmAccessBoundary'
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
+import { TenantSessionBoundary } from '@shared/components/layout/TenantSessionBoundary'
 import { AppLogo } from '@shared/components/ui'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
 import {
@@ -237,7 +237,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
         {isRenter || isSigningOut || isPublicCrmRoute || isLocalDashboardPreview ? (
           children
         ) : (
-          <CrmAccessBoundary>{children}</CrmAccessBoundary>
+          <TenantSessionBoundary>{children}</TenantSessionBoundary>
         )}
       </Box>
     </Box>

@@ -18,12 +18,6 @@
     "defaultUserContext": "Real estate CRM",
     "openNavigation": "Open navigation"
   },
-  "access": {
-    "loadingSession": "Loading session",
-    "restrictedTitle": "Restricted CRM access",
-    "restrictedDescription": "Sign in with an account linked to a tenant to view opportunities.",
-    "signIn": "Sign in to Ketris"
-  },
   "pipeline": {
     "propertyReference": "Property {id}",
     "title": "Sales Pipeline",
@@ -239,7 +233,6 @@
       "proposedValue": "Proposed value",
       "propertyRequired": "Select a property.",
       "proposedValueInvalid": "Enter a valid value",
-      "propertyRequired": "Select a property.",
       "cancel": "Cancel",
       "confirm": "Convert",
       "success": "Lead converted to opportunity.",

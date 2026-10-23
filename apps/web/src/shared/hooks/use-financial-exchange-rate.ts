@@ -7,7 +7,7 @@ import type { AppLocale } from '@/i18n/types/locale.types'
 import {
   targetCurrencyForLocale,
   type FinancialExchangeRate,
-} from '../utils/financial-display-currency'
+} from '@shared/lib/currency/display-currency'
 
 export function useFinancialExchangeRate(locale: AppLocale) {
   const currency = targetCurrencyForLocale(locale)

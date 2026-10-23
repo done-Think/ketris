@@ -9,7 +9,7 @@ import { useForm, useWatch } from 'react-hook-form'
 
 import { brand, componentText, radius } from '@shared/theme/tokens'
 
-import { authPrimaryButtonSx } from './auth-form.styles'
+import { authPrimaryButtonSx } from '@shared/components/form/auth-form.styles'
 import { VerificationCodeField } from './VerificationCodeField'
 import { createVerificationCodeSchema } from '../schemas/password-recovery-schema'
 import type { EmailVerificationStepProps } from '../types/registration'

@@ -7,14 +7,14 @@ import { useLocale, useTranslations } from 'next-intl'
 import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { DashboardPageHeader } from '@shared/components/layout'
+import { useFinancialExchangeRate } from '@shared/hooks/use-financial-exchange-rate'
+import { targetCurrencyForLocale } from '@shared/lib/currency/display-currency'
+import { mapMonthlySeriesToMovement } from '@shared/lib/currency/monthly-series'
 
 import { useCharges, useFinancialSummary } from '../hooks/use-financial'
-import { useFinancialExchangeRate } from '../hooks/use-financial-exchange-rate'
-import { targetCurrencyForLocale } from '../utils/financial-display-currency'
 import {
   mapChargeListItemToFinancialEntry,
   mapFinancialSummaryToKpis,
-  mapMonthlySeriesToMovement,
   mapUpcomingChargesToDues,
 } from '../utils/financial-summary-adapter'
 import { FinancialDashboardHeaderActions } from './FinancialDashboardHeaderActions'

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import type { FinancialExchangeRate } from '@/modules/financial/utils/financial-display-currency'
+import type { FinancialExchangeRate } from '@shared/lib/currency/display-currency'
 
 type Quotation = {
   cotacaoVenda?: unknown

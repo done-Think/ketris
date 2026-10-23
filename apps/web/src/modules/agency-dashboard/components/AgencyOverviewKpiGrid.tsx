@@ -3,7 +3,7 @@
 import { Box, CircularProgress, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { DashboardPanel } from '@modules/dashboard/components/DashboardPanel'
+import { DashboardPanel } from '@shared/components/ui/DashboardPanel'
 import { brand } from '@shared/theme/tokens'
 
 import type { AgencyOverviewKpiGridProps } from '../types/agency-overview'

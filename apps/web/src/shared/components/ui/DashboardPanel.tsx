@@ -2,7 +2,7 @@ import { Box } from '@mui/material'
 
 import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
 
-import type { DashboardPanelProps } from '../types/dashboard-overview'
+import type { DashboardPanelProps } from '@shared/types/dashboard-panel'
 
 export function DashboardPanel({ children }: DashboardPanelProps) {
   return (
