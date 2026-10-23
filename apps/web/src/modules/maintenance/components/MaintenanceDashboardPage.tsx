@@ -430,7 +430,7 @@ export function MaintenanceDashboardPage() {
                     title={ticket.id}
                     sx={{
                       ...bodyCellSx,
-                      ...truncatedCellSx(130),
+                      ...truncatedCellSx(110),
                       color: 'primary.main',
                       fontWeight: 900,
                     }}
@@ -439,7 +439,7 @@ export function MaintenanceDashboardPage() {
                   </TableCell>
                   <TableCell
                     title={ticket.property}
-                    sx={{ ...bodyCellSx, ...truncatedCellSx(220), fontWeight: 900 }}
+                    sx={{ ...bodyCellSx, ...truncatedCellSx(200), fontWeight: 900 }}
                   >
                     {ticket.property}
                   </TableCell>
@@ -457,7 +457,7 @@ export function MaintenanceDashboardPage() {
                       <span>{t(`priorities.${ticket.priority}`)}</span>
                     </Stack>
                   </TableCell>
-                  <TableCell title={ticket.tenant} sx={{ ...bodyCellSx, ...truncatedCellSx(180) }}>
+                  <TableCell title={ticket.tenant} sx={{ ...bodyCellSx, ...truncatedCellSx(160) }}>
                     {ticket.tenant}
                   </TableCell>
                   <TableCell sx={{ ...bodyCellSx, color: brand.neutral[400] }}>
@@ -653,7 +653,7 @@ const compactFieldSx = {
 } as const
 const headerCellSx = {
   height: 40,
-  px: 1.75,
+  px: 1.25,
   py: 0.8,
   bgcolor: surface.app,
   borderColor: brand.neutral[100],

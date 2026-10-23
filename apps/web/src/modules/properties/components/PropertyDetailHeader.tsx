@@ -95,7 +95,7 @@ export function PropertyDetailHeader({
           alignItems="flex-start"
           useFlexGap
           gap={1.2}
-          sx={{ flexShrink: 0 }}
+          sx={{ flexShrink: 0, maxWidth: '100%' }}
         >
           <Button
             variant="outlined"
