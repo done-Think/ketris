@@ -37,7 +37,7 @@ export function CreatePlatformAdminDialog({ open, onClose }: CreatePlatformAdmin
           </IconButton>
         </Stack>
       </DialogTitle>
-      <DialogContent sx={{ px: { xs: 2, md: 2.8 }, pb: 2.5 }}>
+      <DialogContent sx={{ px: { xs: 2, md: 2.8 }, pb: 2.5, pt: '12px !important' }}>
         <CreatePlatformAdminForm onCancel={onClose} onSuccess={onClose} />
       </DialogContent>
     </Dialog>

@@ -255,8 +255,14 @@ export function MaintenanceDashboardPage() {
   const headerActions = (
     <Stack
       direction={{ xs: 'column', sm: 'row' }}
-      spacing={1.2}
-      sx={{ width: { xs: '100%', lg: 'auto' }, alignItems: { sm: 'center' } }}
+      useFlexGap
+      gap={1.2}
+      sx={{
+        width: { xs: '100%', lg: 'auto' },
+        alignItems: { sm: 'center' },
+        flexWrap: { sm: 'wrap' },
+        justifyContent: { sm: 'flex-end' },
+      }}
     >
       <TextField
         value={search}
@@ -358,6 +364,12 @@ export function MaintenanceDashboardPage() {
           title={t('title')}
           subtitle={t(session?.role === 'RENTER' ? 'renter.subtitle' : 'subtitle')}
           actions={headerActions}
+          sx={{
+            flexWrap: { md: 'wrap' },
+            rowGap: { md: 1.6 },
+            '& > :first-of-type': { minWidth: { md: 240 } },
+            '& > :last-of-type': { ml: { md: 'auto' }, maxWidth: '100%' },
+          }}
         />
         <MaintenanceStatusFilters
           activeFilter={activeFilter}
