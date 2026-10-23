@@ -60,6 +60,19 @@ vi.mock('@modules/agenda/hooks/use-agenda-events', () => ({
       agendaEvent('own', 'agent-1', 'Visita do próprio corretor'),
       agendaEvent('team', 'agent-2', 'Visita de outro corretor'),
       {
+        ...agendaEvent('collective', 'agent-2', 'Visita coletiva da equipe'),
+        audience: 'ALL_AGENTS',
+      },
+      {
+        ...agendaEvent('own-collective', 'agent-1', 'Visita coletiva sob minha responsabilidade'),
+        audience: 'ALL_AGENTS',
+      },
+      {
+        ...agendaEvent('cancelled-collective', 'agent-2', 'Visita coletiva cancelada'),
+        audience: 'ALL_AGENTS',
+        status: 'CANCELLED',
+      },
+      {
         ...agendaEvent('cancelled', 'agent-1', 'Visita cancelada'),
         status: 'CANCELLED',
       },
@@ -140,10 +153,13 @@ describe('DashboardOverviewPage', () => {
       expect(screen.getByText('Leads ativos')).toBeInTheDocument()
       expect(screen.getByText('Visita do próprio corretor')).toBeInTheDocument()
       expect(screen.getByText('Visita de outro corretor')).toBeInTheDocument()
+      expect(screen.getByText('Visita coletiva da equipe')).toBeInTheDocument()
+      expect(screen.getByText('Visita coletiva sob minha responsabilidade')).toBeInTheDocument()
+      expect(screen.queryByText('Visita coletiva cancelada')).not.toBeInTheDocument()
       expect(screen.queryByText('Visita cancelada')).not.toBeInTheDocument()
       expect(screen.queryByText('Evento com dados limitados')).not.toBeInTheDocument()
       expect(
-        within(screen.getByText('Visitas mês').parentElement!).getByText('2'),
+        within(screen.getByText('Visitas mês').parentElement!).getByText('4'),
       ).toBeInTheDocument()
     },
   )
@@ -166,6 +182,18 @@ describe('DashboardOverviewPage', () => {
     expect(screen.queryByText('Visita de outro corretor')).not.toBeInTheDocument()
     expect(screen.queryByText('Visita cancelada')).not.toBeInTheDocument()
     expect(screen.queryByText('Evento com dados limitados')).not.toBeInTheDocument()
+    expect(
+      within(screen.getByText('Visitas mês').parentElement!).getByText('1'),
+    ).toBeInTheDocument()
+  })
+
+  it('mostra eventos coletivos ao corretor sem contabilizá-los nas visitas individuais', () => {
+    renderPage('AGENT')
+
+    expect(screen.getByText('Visita coletiva da equipe')).toBeInTheDocument()
+    expect(screen.getByText('Visita coletiva sob minha responsabilidade')).toBeInTheDocument()
+    expect(screen.queryByText('Visita coletiva cancelada')).not.toBeInTheDocument()
+    expect(screen.queryByText('Visita de outro corretor')).not.toBeInTheDocument()
     expect(
       within(screen.getByText('Visitas mês').parentElement!).getByText('1'),
     ).toBeInTheDocument()

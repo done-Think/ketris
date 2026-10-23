@@ -8,6 +8,7 @@ import type {
 } from '../types/maintenance-ticket'
 
 export function canAccessContract(actor: MaintenanceActor, contract: MaintenanceContract): boolean {
+  if (actor.actorPapel !== 'RENTER' && contract.tenantId !== actor.actorTenantId) return false
   switch (actor.actorPapel) {
     case 'ADMIN':
       return true
@@ -23,7 +24,7 @@ export function canAccessContract(actor: MaintenanceActor, contract: Maintenance
 }
 
 export function canAccessTicket(actor: MaintenanceActor, ticket: MaintenanceTicket): boolean {
-  if (ticket.tenantId !== actor.actorTenantId) return false
+  if (actor.actorPapel !== 'RENTER' && ticket.tenantId !== actor.actorTenantId) return false
   if (actor.actorPapel === 'ADMIN') return true
   if (ticket.deletedAt || !ticket.access.validContract) return false
   switch (actor.actorPapel) {

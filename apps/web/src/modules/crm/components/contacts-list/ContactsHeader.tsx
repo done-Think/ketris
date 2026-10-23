@@ -8,7 +8,7 @@ import {
   DashboardNotificationsButton,
   DashboardPageHeader,
 } from '@shared/components/layout'
-import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import { alpha, brand, dashboardLayout, iconSize, radius, surface } from '@shared/theme/tokens'
 
 import type { ContactsHeaderProps } from '../../types/contact'
 
@@ -19,7 +19,11 @@ export function ContactsHeader({ search, onSearchChange, onNewContact }: Contact
     <Stack
       direction={{ xs: 'column', sm: 'row' }}
       spacing={1.2}
-      sx={{ width: { xs: '100%', md: 'auto' }, alignItems: { xs: 'stretch', sm: 'center' } }}
+      sx={{
+        width: '100%',
+        alignItems: { xs: 'stretch', sm: 'center' },
+        [dashboardLayout.desktopMediaQuery]: { width: 'auto' },
+      }}
     >
       <TextField
         value={search}
@@ -66,7 +70,9 @@ export function ContactsHeader({ search, onSearchChange, onNewContact }: Contact
         {t('newContact')}
       </DashboardHeaderActionButton>
 
-      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+      <Box
+        sx={{ display: { xs: 'none' }, [dashboardLayout.desktopMediaQuery]: { display: 'block' } }}
+      >
         <DashboardNotificationsButton />
       </Box>
     </Stack>

@@ -1,23 +1,19 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Box, GlobalStyles, Paper, Stack, Typography } from '@mui/material'
+import { GlobalStyles } from '@mui/material'
 import { useLocale, useTranslations } from 'next-intl'
 import type { AppLocale } from '@/i18n/types/locale.types'
-
-import { DashboardTablePagination } from '@shared/components/layout'
-import { brand, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { contactFilters } from '../config/contact-filters'
 import { getContactListFixtures, contactsFixtureTotal } from '../fixtures/contact-list-fixtures'
 import type { ContactFilter, ContactsListProps } from '../types/contact'
 import { contactsDefaultPageSize, filterContacts, paginateContacts } from '../utils/contacts'
+import { CrmListLayout } from './CrmListLayout'
 import { ContactsCards } from './contacts-list/ContactsCards'
 import { ContactsHeader } from './contacts-list/ContactsHeader'
 import { ContactsStatusFilters } from './contacts-list/ContactsStatusFilters'
 import { ContactsTable } from './contacts-list/ContactsTable'
-
-const contactsBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
 
 export function ContactsList({
   contacts,
@@ -88,82 +84,52 @@ export function ContactsList({
   }, [page])
 
   return (
-    <Box
-      sx={{
-        width: '100%',
-        p: 3.5,
-        bgcolor: surface.app,
-        fontFamily: contactsBodyFontFamily,
-        '& .MuiTypography-root, & .MuiButton-root, & .MuiInputBase-root, & .MuiTableCell-root': {
-          fontFamily: contactsBodyFontFamily,
-        },
-        '& h1.MuiTypography-root': {
-          fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
-        },
-      }}
-    >
+    <>
       <GlobalStyles styles={{ '.tsqd-parent-container': { display: 'none' } }} />
-
-      <Stack spacing={2}>
-        <ContactsHeader
-          search={search}
-          onSearchChange={handleSearchChange}
-          onNewContact={onNewContact}
-        />
-
-        <ContactsStatusFilters
-          activeFilter={activeFilter}
-          contacts={resolvedContacts}
-          onFilterChange={handleFilterChange}
-        />
-      </Stack>
-
-      <Paper
-        variant="outlined"
-        sx={{
-          display: 'flex',
-          minHeight: { xs: 420, md: 360 },
-          mt: 2.25,
-          overflow: 'hidden',
-          flexDirection: 'column',
-          borderColor: brand.neutral[100],
-          borderRadius: `${radius.lg}px`,
-          bgcolor: surface.paper,
-          boxShadow: shadows.crmListPanel,
-        }}
-      >
-        {visibleContacts.length > 0 ? (
-          <>
-            <ContactsTable
-              contacts={visibleContacts}
-              onEditContact={onEditContact}
-              onOpenInteractions={onOpenInteractions}
-              onOpenMoreOptions={onOpenMoreOptions}
-            />
-            <ContactsCards
-              contacts={visibleContacts}
-              onEditContact={onEditContact}
-              onOpenInteractions={onOpenInteractions}
-              onOpenMoreOptions={onOpenMoreOptions}
-            />
-          </>
-        ) : (
-          <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 240, px: 2 }}>
-            <Typography sx={{ color: 'text.secondary', fontSize: 12.5 }}>{t('empty')}</Typography>
-          </Stack>
-        )}
-
-        <DashboardTablePagination
-          count={resultTotal}
-          page={contactPage.page}
-          rowsPerPage={rowsPerPage}
-          onPageChange={handlePageChange}
-          onRowsPerPageChange={(nextRowsPerPage) => {
+      <CrmListLayout
+        header={
+          <ContactsHeader
+            search={search}
+            onSearchChange={handleSearchChange}
+            onNewContact={onNewContact}
+          />
+        }
+        filters={
+          <ContactsStatusFilters
+            activeFilter={activeFilter}
+            contacts={resolvedContacts}
+            onFilterChange={handleFilterChange}
+          />
+        }
+        table={
+          <ContactsTable
+            contacts={visibleContacts}
+            onEditContact={onEditContact}
+            onOpenInteractions={onOpenInteractions}
+            onOpenMoreOptions={onOpenMoreOptions}
+          />
+        }
+        cards={
+          <ContactsCards
+            contacts={visibleContacts}
+            onEditContact={onEditContact}
+            onOpenInteractions={onOpenInteractions}
+            onOpenMoreOptions={onOpenMoreOptions}
+          />
+        }
+        isEmpty={visibleContacts.length === 0}
+        emptyMessage={t('empty')}
+        pagination={{
+          count: resultTotal,
+          page: contactPage.page,
+          rowsPerPage,
+          onPageChange: handlePageChange,
+          onRowsPerPageChange: (nextRowsPerPage) => {
             setRowsPerPage(nextRowsPerPage)
             resetPage()
-          }}
-        />
-      </Paper>
-    </Box>
+          },
+        }}
+      />
+    </>
   )
 }

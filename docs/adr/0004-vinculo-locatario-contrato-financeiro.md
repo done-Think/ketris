@@ -23,8 +23,8 @@ alterar o e-mail permitiria reivindicar um vínculo sem confirmação da imobili
 - A conta pode estar no tenant compartilhado. A busca global por e-mail ocorre somente depois da
   autorização do administrador e da validação do contrato dentro do tenant dele.
 - Confirmar o mesmo vínculo novamente é idempotente. Outro vínculo não é substituído. A escrita
-  condicional impede sobrescrita concorrente. Correção, remoção de vínculo e interface administrativa
-  ficam para um fluxo posterior; este endpoint apenas confirma associações.
+  condicional impede sobrescrita concorrente. Correção e remoção de vínculo ficam para um fluxo
+  posterior; os endpoints apenas confirmam associações.
 - Novos contratos e novos cadastros também dependem dessa confirmação. Mudanças posteriores de
   e-mail não criam nem removem vínculos automaticamente.
 - ADMIN e OWNER leem as cobranças do tenant autenticado. AGENT recebe 403 no financeiro,
@@ -40,6 +40,27 @@ alterar o e-mail permitiria reivindicar um vínculo sem confirmação da imobili
   Criação, edição, pagamento e exclusão de cobranças permanecem exclusivos de ADMIN e OWNER.
 
 ## Consequências e validação
+
+### Política compartilhada com manutenção
+
+`POST /api/maintenance/links` aplica a mesma política ao receber `contractId`, `partyId` e
+`renterId`: a conta identificada por ID precisa ser RENTER ativa e ter o mesmo e-mail normalizado
+da parte LOCATARIO. O ADMIN deve pertencer ao tenant do contrato; a conta pode pertencer ao tenant
+compartilhado. A validação e a escrita condicional são reutilizadas pelos dois módulos. Não é
+permitido substituir um vínculo por nenhum dos endpoints, mesmo após troca ou reutilização de e-mail.
+A regularização da manutenção preserva a transação com proprietário e histórico: uma falha no vínculo
+do locatário desfaz todas as alterações dessa operação.
+
+As confirmações dependem de ação administrativa explícita via API. O cadastro, login, coincidência
+de e-mail e consultas de opções não confirmam vínculos. A tela existente de regularização chama a
+API de manutenção; as opções de contas são limitadas aos e-mails das partes dos contratos da agência,
+além da equipe local, sem um diretório global de locatários.
+
+O renter vinculado pode acessar os chamados dos seus contratos em mais de uma imobiliária. Contrato,
+imóvel e chamado devem pertencer à mesma imobiliária; o tenant compartilhado da conta não é usado
+como tenant de criação do chamado nem dos anexos. Histórico e mídia privada exigem o mesmo acesso.
+As imobiliárias permanecem isoladas. Chamados antigos sem contrato válido e partes sem usuário
+permanecem inacessíveis ao renter até a regularização administrativa; não há backfill automático.
 
 Todos os locatários vinculados ao mesmo contrato podem consultar suas cobranças `A_RECEBER`; o modelo
 não atribui responsabilidade individual por cobrança. A confirmação administrativa exige conferir a

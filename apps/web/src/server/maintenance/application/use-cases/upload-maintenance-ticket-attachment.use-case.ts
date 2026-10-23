@@ -34,7 +34,7 @@ export class UploadMaintenanceTicketAttachmentUseCase {
     }
 
     const uploaded = await this.attachmentStorage.upload({
-      tenantId: input.actorTenantId,
+      tenantId: existing.tenantId,
       filename: input.filename,
       contentType: input.contentType,
       body: input.body,

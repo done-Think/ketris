@@ -58,6 +58,7 @@ export interface MaintenancePermissions {
 
 export interface MaintenanceContract {
   id: string
+  tenantId: string
   code: string
   propertyId: string
   propertyTitle: string

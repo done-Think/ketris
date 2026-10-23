@@ -13,7 +13,15 @@ import { CrmAccessBoundary } from '@modules/crm/components/CrmAccessBoundary'
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
-import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import {
+  alpha,
+  brand,
+  dashboardLayout,
+  iconSize,
+  radius,
+  shadows,
+  surface,
+} from '@shared/theme/tokens'
 import type { AppShellProps } from '@shared/types/app-shell'
 import { getInitials } from '@shared/utils/get-initials'
 import { useSidebarPreferencesStore } from '@shared/stores/sidebar-preferences-store'
@@ -96,7 +104,8 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: surface.app }}>
       <Box
         sx={{
-          display: { xs: 'none', md: 'block' },
+          display: { xs: 'none' },
+          [dashboardLayout.desktopMediaQuery]: { display: 'block' },
           position: 'fixed',
           inset: '0 auto 0 0',
           width: sidebarCollapsed ? sidebarCollapsedWidth : sidebarExpandedWidth,
@@ -133,7 +142,8 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
         alignItems="center"
         justifyContent="space-between"
         sx={{
-          display: { xs: 'flex', md: 'none' },
+          display: { xs: 'flex' },
+          [dashboardLayout.desktopMediaQuery]: { display: 'none' },
           position: 'fixed',
           inset: '0 0 auto 0',
           zIndex: 20,
@@ -160,7 +170,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           }}
         />
         <Stack direction="row" alignItems="center" spacing={1}>
-          <DashboardNotificationsButton />
+          <DashboardNotificationsButton placement="navigationHeader" />
           <Tooltip title={t('openNavigation')}>
             <IconButton
               aria-label={t('openNavigation')}
@@ -212,14 +222,16 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
       <Box
         component="main"
         sx={{
-          width: {
-            xs: '100%',
-            md: `calc(100% - ${sidebarCollapsed ? sidebarCollapsedWidth : sidebarExpandedWidth}px)`,
-          },
+          width: '100%',
           minWidth: 0,
-          ml: { md: `${sidebarCollapsed ? sidebarCollapsedWidth : sidebarExpandedWidth}px` },
+          ml: 0,
           transition: 'margin-left 180ms ease, width 180ms ease',
-          pt: { xs: '64px', md: 0 },
+          pt: '64px',
+          [dashboardLayout.desktopMediaQuery]: {
+            width: `calc(100% - ${sidebarCollapsed ? sidebarCollapsedWidth : sidebarExpandedWidth}px)`,
+            ml: `${sidebarCollapsed ? sidebarCollapsedWidth : sidebarExpandedWidth}px`,
+            pt: 0,
+          },
         }}
       >
         {isRenter || isSigningOut || isPublicCrmRoute || isLocalDashboardPreview ? (

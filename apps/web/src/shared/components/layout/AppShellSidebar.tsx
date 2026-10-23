@@ -55,10 +55,11 @@ export function AppShellSidebar({
           height: '100%',
           bgcolor: brand.graphite[600],
           color: surface.lightText,
-          overflowX: 'hidden',
+          overflow: 'hidden',
           px: collapsed ? 1 : 2,
           py: 2.5,
           transition: 'width 180ms ease, padding 180ms ease',
+          '@media (max-height: 760px)': { py: 1.5 },
         }}
       >
         <Stack
@@ -70,6 +71,7 @@ export function AppShellSidebar({
             flexShrink: 0,
             mb: 1.5,
             position: 'relative',
+            '@media (max-height: 760px)': { mb: 1 },
           }}
         >
           <AppLogo
@@ -81,9 +83,14 @@ export function AppShellSidebar({
 
         <Stack
           component="nav"
-          spacing={0.5}
           aria-label={t('ariaLabel')}
-          sx={{ mx: collapsed ? 0 : -0.5 }}
+          sx={{
+            mx: collapsed ? 0 : -0.5,
+            flex: 1,
+            minHeight: 0,
+            gap: 0.5,
+            '@media (max-height: 760px)': { gap: 0.25 },
+          }}
         >
           {isLoading
             ? appShellNavigationItems.map((item) => (
@@ -96,6 +103,8 @@ export function AppShellSidebar({
                     bgcolor: alpha.white[8],
                     borderRadius: `${radius.sm}px`,
                     width: collapsed ? 44 : '100%',
+                    flex: '0 1 44px',
+                    minHeight: 24,
                   }}
                 />
               ))
@@ -124,7 +133,8 @@ export function AppShellSidebar({
                         alignItems: 'center',
                         justifyContent: collapsed ? 'center' : 'flex-start',
                         gap: 1.5,
-                        minHeight: 44,
+                        flex: '0 1 44px',
+                        minHeight: 24,
                         px: collapsed ? 0 : 1.5,
                         width: collapsed ? 44 : '100%',
                         alignSelf: collapsed ? 'center' : 'stretch',
@@ -174,7 +184,14 @@ export function AppShellSidebar({
           direction={collapsed ? 'column' : 'row'}
           spacing={1.3}
           alignItems="center"
-          sx={{ mt: 'auto', pt: 2, borderTop: '1px solid', borderColor: alpha.white[8] }}
+          sx={{
+            mt: 'auto',
+            pt: 2,
+            flexShrink: 0,
+            borderTop: '1px solid',
+            borderColor: alpha.white[8],
+            '@media (max-height: 760px)': { pt: 1 },
+          }}
         >
           <ButtonBase
             aria-label={t('editProfile')}

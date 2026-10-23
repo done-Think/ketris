@@ -259,7 +259,7 @@ export function PlatformShell({ children }: PlatformShellProps) {
           }}
         />
         <Stack direction="row" alignItems="center" spacing={1}>
-          <DashboardNotificationsButton notifications={[]} />
+          <DashboardNotificationsButton placement="navigationHeader" notifications={[]} />
           <Tooltip title={t('openNavigation')}>
             <IconButton
               aria-label={t('openNavigation')}

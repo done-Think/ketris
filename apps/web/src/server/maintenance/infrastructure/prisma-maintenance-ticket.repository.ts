@@ -1,17 +1,11 @@
 import type { MaintenanceUserLinkInput } from '../types/maintenance-ticket'
-import type {
-  MaintenanceContractRow,
-  MaintenanceTicketRow,
-} from '../types/prisma-maintenance-ticket-repository'
 import { Prisma } from '@prisma/client'
 import { prisma } from '@server/db/prisma'
 import { ConflictError, ForbiddenError } from '@server/shared/errors'
 import { MaintenancePropertyNotFoundError } from '../domain/errors'
+import { normalizeEmail } from '@server/shared/normalize-email'
 import type {
   MaintenanceActor,
-  MaintenanceActivity,
-  MaintenanceAttachment,
-  MaintenanceContract,
   MaintenanceMutation,
   MaintenanceOptions,
   MaintenanceRequestMutation,
@@ -23,165 +17,36 @@ import type {
   NewMaintenanceTicket,
 } from '../types/maintenance-ticket'
 import type { MaintenanceTicketRepository } from '../types/maintenance-ticket-repository'
-import { assertAdmin, permissionsFor } from '../application/authorization'
-
-const contractInclude = { imovel: true, partes: true } as const
-const ticketInclude = {
-  imovel: true,
-  contrato: { include: contractInclude },
-  responsavel: { select: { nome: true } },
-  atividades: { orderBy: { createdAt: 'asc' as const } },
-  anexos: true,
-  solicitacoesTroca: { orderBy: { createdAt: 'desc' as const } },
-}
-
-function toContract(row: MaintenanceContractRow): MaintenanceContract {
-  return {
-    id: row.id,
-    code: row.codigo,
-    propertyId: row.imovelId,
-    propertyTitle: row.imovel.titulo,
-    agentId: row.imovel.responsavelId,
-    ownerId: row.imovel.proprietarioId,
-    renterIds: row.partes
-      .filter((p) => p.papel === 'LOCATARIO' && p.usuarioId)
-      .map((p) => p.usuarioId!),
-    parties: row.partes.map((p) => ({
-      id: p.id,
-      name: p.nome,
-      role: p.papel,
-      userId: p.usuarioId,
-    })),
-  }
-}
-function toActivity(row: MaintenanceTicketRow['atividades'][number]): MaintenanceActivity {
-  return {
-    id: row.id,
-    ticketId: row.chamadoId,
-    type: row.tipo,
-    message: row.mensagem,
-    authorId: row.autorId,
-    authorName: row.autorNome,
-    createdAt: row.createdAt,
-    details: row.detalhes as Record<string, unknown> | null,
-  }
-}
-function toAttachment(row: MaintenanceTicketRow['anexos'][number]): MaintenanceAttachment {
-  return {
-    id: row.id,
-    ticketId: row.chamadoId,
-    name: row.nome,
-    url: row.url,
-    createdAt: row.createdAt,
-  }
-}
-function toTicket(row: MaintenanceTicketRow): MaintenanceTicket {
-  const contract = row.contrato ? toContract(row.contrato) : null
-  return {
-    id: row.id,
-    tenantId: row.tenantId,
-    propertyId: row.imovelId,
-    propertyTitle: row.imovel.titulo,
-    contractId: row.contratoId,
-    responsibleId: row.responsavelId,
-    responsibleName: row.responsavel?.nome ?? null,
-    provider: row.prestadorNome
-      ? {
-          name: row.prestadorNome,
-          phone: row.prestadorTelefone,
-          email: row.prestadorEmail,
-          notes: row.prestadorObservacoes,
-        }
-      : null,
-    completedByRole: row.concluidoPorPapel,
-    deletedAt: row.excluidoEm,
-    category: row.categoria,
-    priority: row.prioridade,
-    status: row.status,
-    title: row.titulo,
-    description: row.descricao,
-    openedById: row.abertoPorId,
-    openedByName: row.abertoPorNome,
-    resolvedAt: row.resolvidoEm,
-    scheduledAt: row.atendimentoEm,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-    activities: row.atividades.map(toActivity),
-    attachments: row.anexos.map(toAttachment),
-    replacementRequests: row.solicitacoesTroca.map((r) => ({
-      id: r.id,
-      reason: r.justificativa,
-      requestedById: r.solicitanteId,
-      requestedByName: r.solicitanteNome,
-      status: r.status,
-      decisionReason: r.decisaoJustificativa,
-      decidedByName: r.decididoPorNome,
-      decidedAt: r.decididoEm,
-      createdAt: r.createdAt,
-    })),
-    access: {
-      agentId: row.imovel.responsavelId,
-      ownerId: row.imovel.proprietarioId,
-      renterIds: contract?.renterIds ?? [],
-      validContract: Boolean(
-        contract &&
-        contract.propertyId === row.imovelId &&
-        row.contrato?.tenantId === row.tenantId &&
-        row.imovel.tenantId === row.tenantId,
-      ),
-    },
-  }
-}
-export function maintenanceTicketScope(
-  actor: MaintenanceActor,
-): Prisma.ChamadoManutencaoWhereInput {
-  const base: Prisma.ChamadoManutencaoWhereInput = { tenantId: actor.actorTenantId }
-  if (actor.actorPapel === 'ADMIN') return base
-  base.excluidoEm = null
-  base.contrato = { is: { tenantId: actor.actorTenantId } }
-  if (actor.actorPapel === 'AGENT')
-    base.OR = [
-      { responsavelId: actor.actorId },
-      { imovel: { responsavelId: actor.actorId, tenantId: actor.actorTenantId } },
-    ]
-  else if (actor.actorPapel === 'OWNER')
-    base.OR = [
-      { responsavelId: actor.actorId },
-      { imovel: { proprietarioId: actor.actorId, tenantId: actor.actorTenantId } },
-    ]
-  else if (actor.actorPapel === 'RENTER')
-    base.contrato = {
-      is: {
-        tenantId: actor.actorTenantId,
-        partes: { some: { papel: 'LOCATARIO', usuarioId: actor.actorId } },
-      },
-    }
-  else base.id = { in: [] }
-  return base
-}
-function activityData(
-  ticketId: string,
-  activity: NewMaintenanceActivity,
-): Prisma.AtividadeChamadoManutencaoUncheckedCreateInput {
-  return {
-    chamadoId: ticketId,
-    tipo: activity.type,
-    mensagem: activity.message,
-    autorId: activity.authorId,
-    autorNome: activity.authorName,
-    ...(activity.details
-      ? { detalhes: JSON.parse(JSON.stringify(activity.details)) as Prisma.InputJsonObject }
-      : {}),
-  }
-}
+import { permissionsFor } from '../application/authorization'
+import {
+  contractInclude,
+  ticketInclude,
+  toContract,
+  toActivity,
+  toAttachment,
+  toTicket,
+  activityData,
+} from './maintenance-ticket-mapper'
+import {
+  maintenanceTicketScope,
+  renterContractScope,
+  validContract,
+} from './maintenance-access-scope'
+import { regularizeMaintenanceLinks } from './prisma-maintenance-links'
+export { maintenanceTicketScope } from './maintenance-access-scope'
 
 export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepository {
-  async findContract(tenantId: string, contractId: string) {
+  async findContract(actor: MaintenanceActor, contractId: string) {
     const row = await prisma.contrato.findFirst({
-      where: { id: contractId, tenantId, imovel: { tenantId } },
+      where: {
+        id: contractId,
+        ...(actor.actorPapel === 'RENTER'
+          ? renterContractScope(actor.actorId)
+          : { tenantId: actor.actorTenantId, imovel: { tenantId: actor.actorTenantId } }),
+      },
       include: contractInclude,
     })
-    return row ? toContract(row) : null
+    return row && validContract(row) ? toContract(row) : null
   }
   async findUser(tenantId: string, userId: string) {
     const row = await prisma.usuario.findFirst({
@@ -200,98 +65,46 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
     else if (actor.actorPapel === 'OWNER')
       where.imovel = { tenantId: actor.actorTenantId, proprietarioId: actor.actorId }
     else if (actor.actorPapel === 'RENTER')
-      where.partes = { some: { papel: 'LOCATARIO', usuarioId: actor.actorId } }
+      Object.assign(where, {
+        tenantId: undefined,
+        imovel: undefined,
+        ...renterContractScope(actor.actorId),
+      })
     else if (actor.actorPapel !== 'ADMIN') throw new ForbiddenError()
     const contracts = await prisma.contrato.findMany({
       where,
       include: contractInclude,
       orderBy: { codigo: 'asc' },
     })
+    const validContracts = contracts.filter(validContract)
+    const renterEmails = [
+      ...new Set(
+        validContracts.flatMap((c) =>
+          c.partes.filter((p) => p.papel === 'LOCATARIO').map((p) => normalizeEmail(p.email)),
+        ),
+      ),
+    ]
     const users =
       actor.actorPapel === 'ADMIN'
         ? await prisma.usuario.findMany({
-            where: { tenantId: actor.actorTenantId, ativo: true },
+            where: {
+              ativo: true,
+              OR: [
+                { tenantId: actor.actorTenantId, papel: { not: 'RENTER' } },
+                { papel: 'RENTER', email: { in: renterEmails, mode: 'insensitive' } },
+              ],
+            },
             select: { id: true, nome: true, papel: true },
             orderBy: { nome: 'asc' },
           })
         : []
     return {
-      contracts: contracts.map(toContract),
+      contracts: validContracts.map(toContract),
       users: users.map((u) => ({ id: u.id, name: u.nome, role: u.papel })),
     }
   }
   async linkUsers(actor: MaintenanceActor, input: MaintenanceUserLinkInput) {
-    assertAdmin(actor)
-    await prisma.$transaction(
-      async (tx) => {
-        const contract = await tx.contrato.findFirst({
-          where: {
-            id: input.contractId,
-            tenantId: actor.actorTenantId,
-            imovel: { tenantId: actor.actorTenantId },
-          },
-          include: contractInclude,
-        })
-        if (!contract) throw new ForbiddenError()
-        if (input.ownerId) {
-          const user = await tx.usuario.findFirst({
-            where: {
-              id: input.ownerId,
-              tenantId: actor.actorTenantId,
-              papel: 'OWNER',
-              ativo: true,
-            },
-          })
-          if (!user) throw new ForbiddenError('Proprietario invalido.')
-          await tx.imovel.update({
-            where: { id: contract.imovelId },
-            data: { proprietarioId: user.id },
-          })
-        }
-        if (input.renterId && input.partyId) {
-          const user = await tx.usuario.findFirst({
-            where: {
-              id: input.renterId,
-              tenantId: actor.actorTenantId,
-              papel: 'RENTER',
-              ativo: true,
-            },
-          })
-          const party = contract.partes.find(
-            (p) => p.id === input.partyId && p.papel === 'LOCATARIO',
-          )
-          if (!user || !party) throw new ForbiddenError('Vinculo de locatario invalido.')
-          await tx.parteContrato.update({ where: { id: party.id }, data: { usuarioId: user.id } })
-        }
-        const tickets = await tx.chamadoManutencao.findMany({
-          where: { tenantId: actor.actorTenantId, imovelId: contract.imovelId },
-          select: { id: true, updatedAt: true },
-        })
-        for (const ticket of tickets) {
-          await tx.chamadoManutencao.update({
-            where: { id: ticket.id },
-            data: { updatedAt: new Date(Math.max(Date.now(), ticket.updatedAt.getTime() + 1)) },
-          })
-          await tx.atividadeChamadoManutencao.create({
-            data: activityData(ticket.id, {
-              type: 'EDICAO',
-              message: 'Vinculos de acesso regularizados pelo administrador.',
-              authorId: actor.actorId,
-              authorName: actor.actorName,
-              details: {
-                contractId: contract.id,
-                before: {
-                  ownerId: contract.imovel.proprietarioId,
-                  parties: contract.partes.map((p) => ({ id: p.id, userId: p.usuarioId })),
-                },
-                after: input,
-              },
-            }),
-          })
-        }
-      },
-      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
-    )
+    return regularizeMaintenanceLinks(actor, input)
   }
   async create(input: NewMaintenanceTicket) {
     const row = await prisma.chamadoManutencao.create({
@@ -321,16 +134,33 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
   }
   async findMany(filters: MaintenanceTicketListFilters): Promise<MaintenanceTicketListResult> {
     const scope = maintenanceTicketScope(filters.actor)
+    // Match all three stored relationships before pagination/counting; never trust the account's tenant.
+    const renterContracts =
+      filters.actor.actorPapel === 'RENTER'
+        ? await prisma.contrato.findMany({
+            where: renterContractScope(filters.actor.actorId),
+            include: contractInclude,
+          })
+        : null
     const where: Prisma.ChamadoManutencaoWhereInput = {
       AND: [
         scope,
         {
-          tenantId: filters.tenantId,
+          tenantId: filters.actor.actorPapel === 'RENTER' ? undefined : filters.tenantId,
           excluidoEm: filters.archived ? { not: null } : null,
           status: filters.status,
           prioridade: filters.priority,
           imovelId: filters.propertyId,
         },
+        ...(renterContracts
+          ? [
+              {
+                OR: renterContracts
+                  .filter(validContract)
+                  .map((c) => ({ tenantId: c.tenantId, imovelId: c.imovelId, contratoId: c.id })),
+              },
+            ]
+          : []),
         ...(filters.search?.trim()
           ? [
               {
@@ -386,16 +216,16 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
       totalCount,
     }
   }
-  async findById(tenantId: string, ticketId: string, includeDeleted = false) {
+  async findById(actor: MaintenanceActor, ticketId: string) {
     const row = await prisma.chamadoManutencao.findFirst({
-      where: { tenantId, id: ticketId, ...(includeDeleted ? {} : { excluidoEm: null }) },
+      where: { ...maintenanceTicketScope(actor), id: ticketId },
       include: ticketInclude,
     })
     return row ? toTicket(row) : null
   }
-  async findAttachmentTicket(tenantId: string, url: string) {
+  async findAttachmentTicket(actor: MaintenanceActor, url: string) {
     const row = await prisma.chamadoManutencao.findFirst({
-      where: { tenantId, anexos: { some: { url } } },
+      where: { ...maintenanceTicketScope(actor), anexos: { some: { url } } },
       include: ticketInclude,
     })
     return row ? toTicket(row) : null

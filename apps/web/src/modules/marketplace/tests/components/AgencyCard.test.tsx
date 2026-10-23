@@ -64,7 +64,7 @@ function renderAgencyCard() {
 }
 
 describe('AgencyCard', () => {
-  it('keeps the whole agency card linked while preserving featured listing links', () => {
+  it('keeps the whole agency card linked without featured listings', () => {
     renderAgencyCard()
 
     const profileLink = screen.getByRole('link', {
@@ -78,16 +78,8 @@ describe('AgencyCard', () => {
 
     expect(profileClick).toHaveBeenCalledTimes(1)
 
-    const listingLink = screen.getByRole('link', { name: /R\$ 1\.420\.000/i })
-
-    expect(listingLink).toHaveAttribute(
-      'href',
-      '/imoveis/apartamento-jardins-venda?source=agency&sourceHref=%2Fagencies%2Falameda-prime-imoveis%2F38210&sourceName=Alameda+Prime+Im%C3%B3veis',
-    )
-
-    listingLink.addEventListener('click', (event) => event.preventDefault())
-    fireEvent.click(listingLink)
-
-    expect(profileClick).toHaveBeenCalledTimes(1)
+    expect(screen.getAllByRole('link')).toHaveLength(1)
+    expect(screen.queryByText('Imóveis em destaque')).not.toBeInTheDocument()
+    expect(screen.getByText('Ver página pública')).toBeVisible()
   })
 })

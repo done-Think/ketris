@@ -19,10 +19,17 @@ describe('Maintenance repository boundary and atomic writes', () => {
   beforeEach(() => vi.clearAllMocks())
   it('scopes renter lists and counts through explicit contract party ID', () => {
     expect(maintenanceTicketScope(actor)).toEqual({
-      tenantId: 'tenant',
       excluidoEm: null,
       contrato: {
-        is: { tenantId: 'tenant', partes: { some: { papel: 'LOCATARIO', usuarioId: 'renter' } } },
+        is: {
+          partes: {
+            some: {
+              papel: 'LOCATARIO',
+              usuarioId: 'renter',
+              usuario: { ativo: true, papel: 'RENTER' },
+            },
+          },
+        },
       },
     })
   })

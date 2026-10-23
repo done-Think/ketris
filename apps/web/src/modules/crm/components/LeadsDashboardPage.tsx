@@ -1,14 +1,10 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Box, Paper, Stack, Typography } from '@mui/material'
 import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 import type { AppLocale } from '@/i18n/types/locale.types'
 import { useSearchParams } from 'next/navigation'
-
-import { DashboardTablePagination } from '@shared/components/layout'
-import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { getLeadListFixtures } from '../fixtures/lead-list-fixtures'
 import { useLeads, useUpdateLeadStage } from '../hooks/use-leads'
@@ -21,6 +17,7 @@ import type {
 } from '../types/lead'
 import { toDashboardLead } from '../utils/map-dashboard-lead'
 import { filterLeads, leadsDefaultPageSize, paginateLeads, sortLeads } from '../utils/leads'
+import { CrmListLayout } from './CrmListLayout'
 import { ConvertLeadDialog } from './ConvertLeadDialog'
 import { CreateLeadDialog } from './CreateLeadDialog'
 import { LeadContactDialog } from './LeadContactDialog'
@@ -28,8 +25,6 @@ import { LeadsCards } from './leads-list/LeadsCards'
 import { LeadsHeader } from './leads-list/LeadsHeader'
 import { LeadsStatusFilters } from './leads-list/LeadsStatusFilters'
 import { LeadsTable } from './leads-list/LeadsTable'
-
-const leadsBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
 
 export function LeadsDashboardPage() {
   const locale = useLocale() as AppLocale
@@ -104,73 +99,44 @@ export function LeadsDashboardPage() {
   }, [leads, searchParams])
 
   return (
-    <Box
-      sx={{
-        width: '100%',
-        p: 3.5,
-        fontFamily: leadsBodyFontFamily,
-        '& .MuiTypography-root, & .MuiButton-root, & .MuiInputBase-root, & .MuiTableCell-root': {
-          fontFamily: leadsBodyFontFamily,
-        },
-        '& h1.MuiTypography-root': {
-          fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
-        },
-      }}
-    >
-      <Stack spacing={2}>
-        <LeadsHeader
-          search={search}
-          onSearchChange={handleSearchChange}
-          onNewLead={() => setIsCreateLeadDialogOpen(true)}
-        />
-
-        <LeadsStatusFilters
-          activeFilter={activeFilter}
-          leads={leads}
-          onFilterChange={handleFilterChange}
-        />
-
-        <Paper
-          variant="outlined"
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            borderColor: alpha.graphite[6],
-            borderRadius: `${radius.sm}px`,
-            bgcolor: surface.paper,
-            boxShadow: shadows.propertyCard,
-          }}
-        >
-          {leadsPage.items.length > 0 ? (
-            <>
-              <LeadsTable
-                leads={leadsPage.items}
-                sort={sort}
-                onContactLead={setSelectedContactLead}
-                onSortChange={handleSortChange}
-              />
-              <LeadsCards leads={leadsPage.items} onContactLead={setSelectedContactLead} />
-            </>
-          ) : (
-            <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 240, px: 2 }}>
-              <Typography sx={{ color: 'text.secondary', fontSize: 12.5 }}>{t('empty')}</Typography>
-            </Stack>
-          )}
-
-          <DashboardTablePagination
-            count={leadsPage.totalCount}
-            page={leadsPage.page}
-            rowsPerPage={rowsPerPage}
-            onPageChange={setPage}
-            onRowsPerPageChange={(nextRowsPerPage) => {
-              setRowsPerPage(nextRowsPerPage)
-              setPage(1)
-            }}
+    <>
+      <CrmListLayout
+        header={
+          <LeadsHeader
+            search={search}
+            onSearchChange={handleSearchChange}
+            onNewLead={() => setIsCreateLeadDialogOpen(true)}
           />
-        </Paper>
-      </Stack>
-
+        }
+        filters={
+          <LeadsStatusFilters
+            activeFilter={activeFilter}
+            leads={leads}
+            onFilterChange={handleFilterChange}
+          />
+        }
+        table={
+          <LeadsTable
+            leads={leadsPage.items}
+            sort={sort}
+            onContactLead={setSelectedContactLead}
+            onSortChange={handleSortChange}
+          />
+        }
+        cards={<LeadsCards leads={leadsPage.items} onContactLead={setSelectedContactLead} />}
+        isEmpty={leadsPage.items.length === 0}
+        emptyMessage={t('empty')}
+        pagination={{
+          count: leadsPage.totalCount,
+          page: leadsPage.page,
+          rowsPerPage,
+          onPageChange: setPage,
+          onRowsPerPageChange: (nextRowsPerPage) => {
+            setRowsPerPage(nextRowsPerPage)
+            setPage(1)
+          },
+        }}
+      />
       <CreateLeadDialog
         open={isCreateLeadDialogOpen}
         onClose={() => setIsCreateLeadDialogOpen(false)}
@@ -190,6 +156,6 @@ export function LeadsDashboardPage() {
         open={Boolean(convertLead)}
         onClose={() => setConvertLead(null)}
       />
-    </Box>
+    </>
   )
 }

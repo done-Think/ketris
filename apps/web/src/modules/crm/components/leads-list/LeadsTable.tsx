@@ -35,16 +35,16 @@ export function LeadsTable({ leads, sort, onContactLead, onSortChange }: LeadsTa
   const t = useTranslations('crm.leads')
 
   return (
-    <TableContainer sx={{ display: { xs: 'none', md: 'block' }, overflowX: 'auto' }}>
+    <TableContainer sx={{ overflowX: 'auto' }}>
       <Table
         size="small"
         aria-label={t('tableAriaLabel')}
         sx={{
-          minWidth: 900,
+          minWidth: 1100,
           tableLayout: 'fixed',
-          '& .MuiTableCell-root': { borderBottom: 0 },
+          '& .MuiTableCell-root': { borderBottom: 0, overflow: 'hidden' },
           '& .MuiTableHead-root .MuiTableCell-root': {
-            px: 1,
+            px: 1.5,
             py: 0,
             color: brand.neutral[500],
             fontSize: 14,
@@ -63,16 +63,11 @@ export function LeadsTable({ leads, sort, onContactLead, onSortChange }: LeadsTa
             {
               textAlign: 'center',
             },
-          '& .MuiTableHead-root .MuiTableCell-root:nth-of-type(6) .MuiTableSortLabel-root': {
-            justifyContent: 'center',
-            width: '100%',
-          },
-          '& .MuiTableBody-root .MuiTableCell-root:nth-of-type(6) .MuiTypography-root': {
-            textAlign: 'center',
-          },
-          '& .MuiTableHead-root .MuiTableCell-root:nth-of-type(1)': {
-            transform: 'translateX(10px)',
-          },
+          '& .MuiTableHead-root .MuiTableCell-root:nth-of-type(3) .MuiTableSortLabel-root, & .MuiTableHead-root .MuiTableCell-root:nth-of-type(4) .MuiTableSortLabel-root, & .MuiTableHead-root .MuiTableCell-root:nth-of-type(6) .MuiTableSortLabel-root':
+            {
+              justifyContent: 'center',
+              width: '100%',
+            },
           '& .MuiTableSortLabel-root': {
             color: 'inherit',
             font: 'inherit',
@@ -85,7 +80,7 @@ export function LeadsTable({ leads, sort, onContactLead, onSortChange }: LeadsTa
             color: `${brand.neutral[500]} !important`,
           },
           '& .MuiTableBody-root .MuiTableCell-root': {
-            px: 1,
+            px: 1.5,
             py: 0,
             color: brand.graphite[500],
             fontSize: 15.5,
@@ -140,18 +135,26 @@ export function LeadsTable({ leads, sort, onContactLead, onSortChange }: LeadsTa
               <TableCell>
                 <Stack direction="row" alignItems="center" spacing={1.2} sx={{ minWidth: 0 }}>
                   <LeadAvatar lead={lead} />
-                  <Typography noWrap sx={{ fontSize: 16, fontWeight: 650 }}>
+                  <Typography
+                    noWrap
+                    title={lead.name}
+                    sx={{ minWidth: 0, fontSize: 16, fontWeight: 650 }}
+                  >
                     {lead.name}
                   </Typography>
                 </Stack>
               </TableCell>
               <TableCell>
-                <Typography noWrap sx={{ color: 'text.secondary', fontSize: 15.5 }}>
+                <Typography
+                  noWrap
+                  title={lead.interest}
+                  sx={{ color: 'text.secondary', fontSize: 15.5 }}
+                >
                   {lead.interest}
                 </Typography>
               </TableCell>
               <TableCell align="center">
-                <Typography noWrap sx={{ fontSize: 15.5, fontWeight: 800 }}>
+                <Typography noWrap title={lead.budget} sx={{ fontSize: 15.5, fontWeight: 800 }}>
                   {lead.budget}
                 </Typography>
               </TableCell>
@@ -159,12 +162,20 @@ export function LeadsTable({ leads, sort, onContactLead, onSortChange }: LeadsTa
                 <LeadStatusChip stage={lead.stage} />
               </TableCell>
               <TableCell>
-                <Typography noWrap sx={{ color: 'text.secondary', fontSize: 15.5 }}>
+                <Typography
+                  noWrap
+                  title={lead.source}
+                  sx={{ color: 'text.secondary', fontSize: 15.5 }}
+                >
                   {lead.source}
                 </Typography>
               </TableCell>
               <TableCell align="center">
-                <Typography noWrap sx={{ color: 'text.secondary', fontSize: 15.5 }}>
+                <Typography
+                  noWrap
+                  title={lead.lastContact}
+                  sx={{ color: 'text.secondary', fontSize: 15.5 }}
+                >
                   {lead.lastContact}
                 </Typography>
               </TableCell>

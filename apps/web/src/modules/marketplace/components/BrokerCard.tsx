@@ -6,27 +6,16 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
-import {
-  alpha,
-  componentText,
-  iconSize,
-  motion,
-  radius,
-  shadows,
-  surface,
-} from '@shared/theme/tokens'
+import { alpha, componentText, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
 
 import type { BrokerCardProps } from '../types/broker'
 import { buildPublicProfileHref } from '../utils/property-links'
-import { buildProfileListings } from '../utils/profile-listings'
 import { DirectoryCardMetrics } from './directory/DirectoryCardMetrics'
-import { ProfileListingPreviewSection } from './profile/ProfileListingPreviewSection'
 
 export function BrokerCard(brokerCardProps: BrokerCardProps) {
   const t = useTranslations('marketplace.directory.cards')
   const profileLinkRef = useRef<HTMLAnchorElement | null>(null)
   const isListView = brokerCardProps.viewMode === 'list'
-  const highlightedListings = buildProfileListings(brokerCardProps.highlightedListings).slice(0, 2)
 
   function handleCardClick(event: MouseEvent<HTMLElement>) {
     if (event.target instanceof Element && event.target.closest('a')) return
@@ -76,11 +65,6 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
 
       <CardContent
         sx={{
-          display: isListView ? 'grid' : 'block',
-          gridTemplateColumns: {
-            lg: isListView ? 'minmax(0, 1fr) minmax(430px, 0.72fr)' : '1fr',
-          },
-          gap: { xs: 2, lg: 2.4 },
           p: { xs: 2, md: isListView ? 2.6 : 2.4 },
           position: 'relative',
           zIndex: 2,
@@ -170,21 +154,7 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
           />
         </Box>
 
-        {isListView ? (
-          <ProfileListingPreviewSection
-            accentColor="primary.main"
-            backgroundColor={surface.app}
-            hoverBorderColor="primary.main"
-            listings={highlightedListings}
-            source={{
-              href: brokerCardProps.href,
-              name: brokerCardProps.name,
-              type: 'broker',
-            }}
-          />
-        ) : null}
-
-        <Box sx={{ gridColumn: '1 / -1' }}>
+        <Box>
           <Divider sx={{ my: isListView ? 1.6 : 1.8 }} />
 
           <Stack

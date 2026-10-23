@@ -151,6 +151,8 @@ describe('AgendaDashboardPage', () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(new Date(`${today}T13:15:34`))
     vi.clearAllMocks()
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(dayjs().hour(9).minute(0).second(0).millisecond(0).toDate())
     vi.mocked(useSession).mockReturnValue({
       data: { tenantId: 'tenant-1' },
       status: 'authenticated',

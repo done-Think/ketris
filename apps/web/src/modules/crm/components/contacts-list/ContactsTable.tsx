@@ -26,16 +26,16 @@ export function ContactsTable({
   const t = useTranslations('crm.contacts')
 
   return (
-    <TableContainer sx={{ display: { xs: 'none', md: 'block' }, overflowX: 'auto' }}>
+    <TableContainer sx={{ overflowX: 'auto' }}>
       <Table
         size="small"
         aria-label={t('tableAriaLabel')}
         sx={{
-          minWidth: 900,
+          minWidth: 1200,
           tableLayout: 'fixed',
-          '& .MuiTableCell-root': { borderBottom: 0 },
+          '& .MuiTableCell-root': { borderBottom: 0, overflow: 'hidden' },
           '& .MuiTableHead-root .MuiTableCell-root': {
-            px: 1,
+            px: 1.5,
             py: 0,
             color: brand.neutral[500],
             fontSize: 14,
@@ -50,7 +50,7 @@ export function ContactsTable({
             textAlign: 'left',
           },
           '& .MuiTableBody-root .MuiTableCell-root': {
-            px: 1,
+            px: 1.5,
             py: 0,
             color: brand.graphite[500],
             fontSize: 15.5,
@@ -79,13 +79,7 @@ export function ContactsTable({
               { key: 'lastInteraction', label: t('tableColumns.lastInteraction') },
               { key: 'actions', label: t('tableColumns.actions') },
             ].map(({ key, label }) => (
-              <TableCell
-                key={key}
-                scope="col"
-                sx={{
-                  ...(key === 'actions' ? { px: '2px !important' } : {}),
-                }}
-              >
+              <TableCell key={key} scope="col">
                 {label}
               </TableCell>
             ))}
@@ -104,7 +98,11 @@ export function ContactsTable({
               <TableCell>
                 <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
                   <ContactAvatar contact={contact} />
-                  <Typography noWrap sx={{ fontSize: 16, fontWeight: 650 }}>
+                  <Typography
+                    noWrap
+                    title={contact.name}
+                    sx={{ minWidth: 0, fontSize: 16, fontWeight: 650 }}
+                  >
                     {contact.name}
                   </Typography>
                 </Stack>
@@ -120,9 +118,11 @@ export function ContactsTable({
               </TableCell>
               <TableCell align="center">{contact.propertyCount}</TableCell>
               <TableCell align="center" sx={{ color: 'text.secondary' }}>
-                {contact.lastInteraction}
+                <Typography noWrap title={contact.lastInteraction} sx={{ fontSize: 15.5 }}>
+                  {contact.lastInteraction}
+                </Typography>
               </TableCell>
-              <TableCell align="center" sx={{ px: '2px !important' }}>
+              <TableCell align="center">
                 <ContactActions
                   contact={contact}
                   onEditContact={onEditContact}

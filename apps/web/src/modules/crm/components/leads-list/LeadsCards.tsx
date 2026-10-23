@@ -11,11 +11,7 @@ export function LeadsCards({ leads, onContactLead }: LeadsCardsProps) {
   const t = useTranslations('crm.leads')
 
   return (
-    <Stack
-      aria-label={t('mobileListAriaLabel')}
-      spacing={1.2}
-      sx={{ display: { xs: 'flex', md: 'none' }, p: 1.6 }}
-    >
+    <Stack aria-label={t('mobileListAriaLabel')} spacing={1.2} sx={{ p: 1.6 }}>
       {leads.map((lead) => (
         <Box
           key={lead.id}

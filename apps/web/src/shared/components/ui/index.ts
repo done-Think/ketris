@@ -1,5 +1,6 @@
 export { ActionTextLink } from './ActionTextLink'
 export { AppLogo } from './AppLogo'
+export { OverflowTooltipText } from './OverflowTooltipText'
 export { PagePlaceholder } from './PagePlaceholder'
 export { PillBadge } from './PillBadge'
 export { PropertyCard } from './PropertyCard'

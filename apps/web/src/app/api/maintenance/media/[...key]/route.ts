@@ -17,15 +17,16 @@ export const GET = withErrorHandling(
     const objectKey = key.join('/')
     if (
       key[0] !== 'maintenance' ||
-      key[1] !== actor.actorTenantId ||
+      (actor.actorPapel !== 'RENTER' && key[1] !== actor.actorTenantId) ||
       key.some((part) => part === '..' || part === '.')
     )
       throw new MaintenanceTicketNotFoundError()
     const ticket = await maintenanceContainer.repository.findAttachmentTicket(
-      actor.actorTenantId,
+      actor,
       `/api/maintenance/media/${objectKey}`,
     )
     assertTicketAccess(actor, ticket)
+    if (ticket.tenantId !== key[1]) throw new MaintenanceTicketNotFoundError()
 
     try {
       const object = await getS3Client().send(

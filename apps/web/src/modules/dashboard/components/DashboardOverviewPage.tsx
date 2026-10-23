@@ -63,6 +63,7 @@ export function DashboardOverviewPage() {
   const { data: session } = useSession()
   const tenantId = session?.tenantId
   const userId = session?.user?.id
+  const isAgent = session?.role === 'AGENT'
   const isAgencyManager = session?.role === 'ADMIN' || session?.role === 'OWNER'
   const [selectedActivity, setSelectedActivity] = useState<DashboardUpcomingActivity | null>(null)
   const [selectedLead, setSelectedLead] = useState<DashboardRecentLead | null>(null)
@@ -82,16 +83,22 @@ export function DashboardOverviewPage() {
 
   const leads = useMemo(() => leadsQuery.data ?? [], [leadsQuery.data])
   const opportunities = useMemo(() => opportunitiesQuery.data ?? [], [opportunitiesQuery.data])
-  // The agency agenda is shared by the team; an agent's dashboard counts only their own events.
   const monthEvents = useMemo(
     () =>
       (monthEventsQuery.data ?? []).filter(
         (event): event is AgendaEventApi =>
-          event.status !== 'CANCELLED' &&
-          'participantName' in event &&
-          (isAgencyManager || event.responsibleId === userId),
+          event.status !== 'CANCELLED' && 'participantName' in event,
       ),
-    [monthEventsQuery.data, isAgencyManager, userId],
+    [monthEventsQuery.data],
+  )
+
+  const metricEvents = useMemo(
+    () =>
+      monthEvents.filter(
+        (event) =>
+          isAgencyManager || (event.responsibleId === userId && event.audience !== 'ALL_AGENTS'),
+      ),
+    [monthEvents, isAgencyManager, userId],
   )
 
   const recentLeads = useMemo(
@@ -106,16 +113,22 @@ export function DashboardOverviewPage() {
   const upcomingActivities = useMemo(
     () =>
       monthEvents
+        .filter(
+          (event) =>
+            isAgencyManager ||
+            event.responsibleId === userId ||
+            (isAgent && event.audience === 'ALL_AGENTS'),
+        )
         .filter((event) => !dayjs(event.start).isBefore(today))
         .sort((a, b) => dayjs(a.start).valueOf() - dayjs(b.start).valueOf())
         .slice(0, upcomingActivitiesLimit)
         .map(toDashboardUpcomingActivity),
-    [monthEvents, today],
+    [monthEvents, today, isAgencyManager, isAgent, userId],
   )
 
   const metrics = useMemo(
-    () => buildDashboardMetrics({ leads, opportunities, monthEvents, today, t }),
-    [leads, opportunities, monthEvents, today, t],
+    () => buildDashboardMetrics({ leads, opportunities, monthEvents: metricEvents, today, t }),
+    [leads, opportunities, metricEvents, today, t],
   )
 
   const upcomingActivitiesPanel = (

@@ -38,11 +38,18 @@ export function registerMaintenanceOpenApi(registry: OpenAPIRegistry): void {
     path: '/maintenance/links',
     tags: ['Maintenance'],
     summary: 'Admin regulariza vinculos explicitos de proprietario e locatario',
+    description:
+      'O ADMIN do tenant do contrato confirma o vínculo. A parte deve ser LOCATARIO e o usuário RENTER ativo deve ter o mesmo e-mail normalizado, inclusive no tenant compartilhado. O mesmo vínculo é idempotente; outro usuário não pode substituí-lo. O vínculo do chamado ao contrato é uma operação separada. Registros antigos não são vinculados automaticamente.',
     security: [{ bearerAuth: [] }],
     request: { body: { content: { 'application/json': { schema: maintenanceLinksSchema } } } },
     responses: {
       204: { description: 'Vinculos regularizados e auditados.' },
       403: { description: 'Somente admin do tenant.' },
+      404: { description: 'Parte locatária ou conta RENTER ativa não encontrada.' },
+      409: {
+        description:
+          'E-mail divergente, vínculo existente com outro usuário ou alteração concorrente.',
+      },
     },
   })
   registry.registerPath({

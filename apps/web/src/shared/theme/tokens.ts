@@ -56,6 +56,10 @@ export const supportColor = {
   orangeSoft: '#FFF0E6',
 } as const
 
+export const dashboardLayout = {
+  desktopMediaQuery: '@media (min-width: 1024px)',
+} as const
+
 export const radius = {
   sm: 8,
   md: 12,
@@ -382,4 +386,16 @@ export const gradients = {
     'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.06) 10%, rgba(0,0,0,0.42) 24%, #000 34%, #000 66%, rgba(0,0,0,0.42) 76%, rgba(0,0,0,0.06) 90%, transparent 100%), linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.55) 7%, #000 18%, #000 82%, rgba(0,0,0,0.55) 93%, transparent 100%)',
   videoCenterMask:
     'radial-gradient(ellipse at center, #000 38%, rgba(0,0,0,0.68) 52%, rgba(0,0,0,0.18) 66%, transparent 78%)',
+} as const
+
+export const maintenanceColor = {
+  warningBackground: '#FFF2CC',
+  warningText: '#D98900',
+  infoBackground: '#E8F1FF',
+  infoText: '#2877E8',
+  successBackground: '#E5F8ED',
+  neutralBackground: '#EFF1F4',
+  errorBackground: '#FDE8EB',
+  errorText: '#B42338',
+  priorityHigh: '#F59E0B',
 } as const

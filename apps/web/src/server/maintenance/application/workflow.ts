@@ -24,11 +24,7 @@ export async function loadTicket(
   actor: MaintenanceActor,
   ticketId: string,
 ) {
-  const ticket = await repository.findById(
-    actor.actorTenantId,
-    ticketId,
-    actor.actorPapel === 'ADMIN',
-  )
+  const ticket = await repository.findById(actor, ticketId)
   assertTicketAccess(actor, ticket)
   return { ...ticket, permissions: permissionsFor(actor, ticket) }
 }
@@ -39,7 +35,7 @@ export async function validateContract(
   contractId: string,
   propertyId?: string,
 ) {
-  const contract = await repository.findContract(actor.actorTenantId, contractId)
+  const contract = await repository.findContract(actor, contractId)
   if (
     !contract ||
     (propertyId && propertyId !== contract.propertyId) ||

@@ -7,11 +7,11 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { alpha, brand, surface } from '@shared/theme/tokens'
+import { OverflowTooltipText } from '@shared/components/ui'
 
 import type { ProposalsTableProps } from '../../types/proposal-management'
 import { ProposalStatusChip } from '../ProposalStatusChip'
@@ -102,34 +102,34 @@ export function ProposalsTable({
               }}
             >
               <TableCell>
-                <Typography noWrap sx={{ fontSize: 15.5, fontWeight: 800 }}>
+                <OverflowTooltipText sx={{ fontSize: 15.5, fontWeight: 800 }}>
                   {proposal.reference}
-                </Typography>
+                </OverflowTooltipText>
               </TableCell>
               <TableCell>
                 <Stack spacing={0.125} minWidth={0}>
-                  <Typography noWrap sx={{ fontSize: 15.5, fontWeight: 600 }}>
+                  <OverflowTooltipText sx={{ fontSize: 15.5, fontWeight: 600 }}>
                     {proposal.lead.name}
-                  </Typography>
-                  <Typography noWrap sx={{ color: 'text.disabled', fontSize: 14 }}>
+                  </OverflowTooltipText>
+                  <OverflowTooltipText sx={{ color: 'text.disabled', fontSize: 14 }}>
                     {proposal.lead.email}
-                  </Typography>
+                  </OverflowTooltipText>
                 </Stack>
               </TableCell>
               <TableCell>
                 <Stack spacing={0.125} minWidth={0}>
-                  <Typography noWrap sx={{ fontSize: 15.5, fontWeight: 600 }}>
+                  <OverflowTooltipText sx={{ fontSize: 15.5, fontWeight: 600 }}>
                     {proposal.property.title}
-                  </Typography>
-                  <Typography noWrap sx={{ color: 'text.disabled', fontSize: 14 }}>
+                  </OverflowTooltipText>
+                  <OverflowTooltipText sx={{ color: 'text.disabled', fontSize: 14 }}>
                     {proposal.property.address}
-                  </Typography>
+                  </OverflowTooltipText>
                 </Stack>
               </TableCell>
               <TableCell>
-                <Typography noWrap sx={{ fontSize: 15.5, fontWeight: 800 }}>
+                <OverflowTooltipText sx={{ fontSize: 15.5, fontWeight: 800 }}>
                   {proposal.valueLabel}
-                </Typography>
+                </OverflowTooltipText>
               </TableCell>
               <TableCell>
                 <Box sx={{ transform: 'translateX(-10px)' }}>
@@ -137,9 +137,9 @@ export function ProposalsTable({
                 </Box>
               </TableCell>
               <TableCell>
-                <Typography noWrap sx={{ color: 'text.secondary', fontSize: 15.5 }}>
+                <OverflowTooltipText sx={{ color: 'text.secondary', fontSize: 15.5 }}>
                   {proposal.createdLabel}
-                </Typography>
+                </OverflowTooltipText>
               </TableCell>
               <TableCell align="right">
                 <Box sx={{ transform: 'translateX(-30px)' }}>
