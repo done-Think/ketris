@@ -3,8 +3,8 @@
 import { useMemo } from 'react'
 import { useLocale } from 'next-intl'
 
-import { useFinancialExchangeRate } from '@modules/financial/hooks/use-financial-exchange-rate'
-import { targetCurrencyForLocale } from '@modules/financial/utils/financial-display-currency'
+import { useFinancialExchangeRate } from '@shared/hooks/use-financial-exchange-rate'
+import { targetCurrencyForLocale } from '@shared/lib/currency/display-currency'
 import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { mapAgencyOverviewToUi } from '../utils/agency-overview-adapter'

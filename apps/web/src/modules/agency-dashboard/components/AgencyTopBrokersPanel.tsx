@@ -4,7 +4,7 @@ import { Avatar, Box, ButtonBase, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 
-import { DashboardPanel } from '@modules/dashboard/components/DashboardPanel'
+import { DashboardPanel } from '@shared/components/ui/DashboardPanel'
 import { alpha, brand, motion, radius } from '@shared/theme/tokens'
 import { getInitials } from '@shared/utils/get-initials'
 

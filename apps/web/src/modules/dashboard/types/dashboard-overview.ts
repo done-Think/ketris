@@ -59,10 +59,6 @@ export type DashboardRecentLead = {
   notes: string
 }
 
-export type DashboardPanelProps = {
-  children: ReactNode
-}
-
 export type ContactInfoCardProps = {
   label: string
   name: string

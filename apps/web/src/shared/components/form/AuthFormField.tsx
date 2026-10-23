@@ -1,6 +1,6 @@
 import { Box, Typography } from '@mui/material'
 
-import type { AuthFormFieldProps } from '../types/auth-shell'
+import type { AuthFormFieldProps } from '@shared/types/auth-form-field'
 
 export function AuthFormField({
   children,

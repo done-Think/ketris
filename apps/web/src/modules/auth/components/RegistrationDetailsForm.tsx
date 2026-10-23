@@ -22,8 +22,8 @@ import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
 import { brand } from '@shared/theme/tokens'
 
 import { AgencyAutocomplete } from './AgencyAutocomplete'
-import { AuthFormField } from './AuthFormField'
-import { authPrimaryButtonSx, authTextFieldSx } from './auth-form.styles'
+import { AuthFormField } from '@shared/components/form/AuthFormField'
+import { authPrimaryButtonSx, authTextFieldSx } from '@shared/components/form/auth-form.styles'
 import { createRegistrationDetailsSchema } from '../schemas/registration-details-schema'
 import type {
   AgencySearchResult,

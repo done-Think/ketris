@@ -1,4 +1,4 @@
-import type { FinancialExchangeRate } from '../utils/financial-display-currency'
+import type { FinancialExchangeRate } from '@shared/lib/currency/display-currency'
 
 export type FinancialEntryStatus = 'Pago' | 'Pendente' | 'Atrasado'
 

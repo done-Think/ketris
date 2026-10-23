@@ -101,5 +101,11 @@
     "loadingSession": "Loading session",
     "restrictedTitle": "Restricted access",
     "restrictedDescription": "You don't have permission to view this page. Redirecting to the dashboard."
+  },
+  "tenantSessionBoundary": {
+    "loadingSession": "Loading session",
+    "restrictedTitle": "Restricted CRM access",
+    "restrictedDescription": "Sign in with an account linked to a tenant to view opportunities.",
+    "signIn": "Sign in to Ketris"
   }
 }

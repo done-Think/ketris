@@ -10,8 +10,8 @@ import { useTranslations } from 'next-intl'
 import { RhfTextField } from '@shared/components/form'
 import { brand, componentText, radius } from '@shared/theme/tokens'
 
-import { AuthFormField } from './AuthFormField'
-import { authPrimaryButtonSx, authTextFieldSx } from './auth-form.styles'
+import { AuthFormField } from '@shared/components/form/AuthFormField'
+import { authPrimaryButtonSx, authTextFieldSx } from '@shared/components/form/auth-form.styles'
 import type { NewPasswordStepProps, PasswordFieldName } from '../types/password-recovery'
 
 const newPasswordTextFieldSx = {

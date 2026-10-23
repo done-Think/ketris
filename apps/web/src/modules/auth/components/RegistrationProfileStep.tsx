@@ -4,7 +4,7 @@ import { Box, Button, RadioGroup, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 
-import { authPrimaryButtonSx } from './auth-form.styles'
+import { authPrimaryButtonSx } from '@shared/components/form/auth-form.styles'
 import { RegistrationProfileCard } from './RegistrationProfileCard'
 import {
   DEFAULT_REGISTRATION_PROFILE,

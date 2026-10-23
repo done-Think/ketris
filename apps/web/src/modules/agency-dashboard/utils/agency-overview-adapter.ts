@@ -1,8 +1,8 @@
 import {
   formatFinancialAmount,
   type FinancialExchangeRate,
-} from '@modules/financial/utils/financial-display-currency'
-import { mapMonthlySeriesToMovement } from '@modules/financial/utils/financial-summary-adapter'
+} from '@shared/lib/currency/display-currency'
+import { mapMonthlySeriesToMovement } from '@shared/lib/currency/monthly-series'
 import { formatDate } from '@shared/lib/utils/format'
 import { defaultLocale } from '@/i18n/routing'
 import type { AppLocale } from '@/i18n/types/locale.types'

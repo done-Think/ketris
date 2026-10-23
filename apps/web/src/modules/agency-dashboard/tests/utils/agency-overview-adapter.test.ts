@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import type { FinancialExchangeRate } from '@modules/financial/utils/financial-display-currency'
+import type { FinancialExchangeRate } from '@shared/lib/currency/display-currency'
 
 import type { ApiAgencyOverviewKpis, ApiAgencyTopBroker } from '../../types/service'
 import {

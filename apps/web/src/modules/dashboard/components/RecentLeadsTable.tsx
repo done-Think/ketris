@@ -14,13 +14,13 @@ import {
 import { useTranslations } from 'next-intl'
 
 import { brand, supportColor } from '@shared/theme/tokens'
+import { DashboardPanel } from '@shared/components/ui/DashboardPanel'
 
 import type {
   DashboardRecentLeadStatus,
   DashboardStatusStyle,
   RecentLeadsTableProps,
 } from '../types/dashboard-overview'
-import { DashboardPanel } from './DashboardPanel'
 
 const statusStyles: Record<DashboardRecentLeadStatus, DashboardStatusStyle> = {
   new: { bgcolor: brand.magenta[50], color: brand.magenta[600] },

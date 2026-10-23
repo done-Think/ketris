@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
-import { createPhoneSchema } from '@modules/auth/schemas/registration-details-schema'
 import { createCpfSchema, isValidCpf } from '@shared/schemas/cpf-schema'
+import { createPhoneSchema } from '@shared/schemas/phone-schema'
 import type { SchemaMessageTranslator } from '@shared/types'
 
 function addGuarantorTextIssue(

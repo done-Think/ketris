@@ -2,12 +2,12 @@ import { Box, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { alpha, brand, motion, radius, surface } from '@shared/theme/tokens'
+import { DashboardPanel } from '@shared/components/ui/DashboardPanel'
 
 import type {
   DashboardActivityAccent,
   UpcomingActivitiesPanelProps,
 } from '../types/dashboard-overview'
-import { DashboardPanel } from './DashboardPanel'
 
 const activityAccentColor: Record<DashboardActivityAccent, string> = {
   magenta: brand.magenta[500],

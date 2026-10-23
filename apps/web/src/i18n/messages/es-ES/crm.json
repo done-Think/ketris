@@ -18,12 +18,6 @@
     "defaultUserContext": "CRM inmobiliario",
     "openNavigation": "Abrir navegación"
   },
-  "access": {
-    "loadingSession": "Cargando sesión",
-    "restrictedTitle": "Acceso restringido al CRM",
-    "restrictedDescription": "Inicia sesión con una cuenta vinculada a un tenant para ver las oportunidades.",
-    "signIn": "Entrar a Ketris"
-  },
   "pipeline": {
     "propertyReference": "Inmueble {id}",
     "title": "Pipeline de ventas",
@@ -239,7 +233,6 @@
       "proposedValue": "Valor propuesto",
       "propertyRequired": "Selecciona un inmueble.",
       "proposedValueInvalid": "Indica un valor válido",
-      "propertyRequired": "Selecciona un inmueble.",
       "cancel": "Cancelar",
       "confirm": "Convertir",
       "success": "Lead convertido en oportunidad.",

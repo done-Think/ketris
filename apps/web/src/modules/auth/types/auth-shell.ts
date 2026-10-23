@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import type { SxProps, Theme } from '@mui/material/styles'
 
 export type AuthMobileVariant = 'plain' | 'card' | 'backdrop'
 
@@ -35,14 +34,6 @@ export type AuthShellProps = {
 export type AuthBrandPanelProps = {
   description?: string
   mobileBackdrop?: boolean
-}
-
-export type AuthFormFieldProps = {
-  children: ReactNode
-  htmlFor: string
-  label: string
-  labelSx?: SxProps<Theme>
-  required?: boolean
 }
 
 export type AuthScreenLayoutProps = {

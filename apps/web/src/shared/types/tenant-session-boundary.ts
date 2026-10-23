@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
 
-export type CrmAccessBoundaryProps = {
+export type TenantSessionBoundaryProps = {
   children: ReactNode
 }

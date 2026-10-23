@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { brand, componentText, radius } from '@shared/theme/tokens'
 
-import { authPrimaryButtonSx } from './auth-form.styles'
+import { authPrimaryButtonSx } from '@shared/components/form/auth-form.styles'
 import { authRoutes } from '../config/auth-routes'
 
 export function PasswordRecoveryConfirmation() {

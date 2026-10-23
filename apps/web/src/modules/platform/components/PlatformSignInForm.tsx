@@ -13,8 +13,9 @@ import {
   authLoginTextFieldSx,
   authPrimaryButtonSx,
   authTextFieldSx,
-} from '@modules/auth'
-import { RhfPasswordField, RhfTextField } from '@shared/components/form'
+  RhfPasswordField,
+  RhfTextField,
+} from '@shared/components/form'
 import { componentText } from '@shared/theme/tokens'
 
 import {

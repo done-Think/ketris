@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  convertFinancialAmount,
+  formatFinancialAmount,
+} from '@shared/lib/currency/display-currency'
+import { mapMonthlySeriesToMovement } from '@shared/lib/currency/monthly-series'
+
+import {
   mapFinancialSummaryToKpis,
-  mapMonthlySeriesToMovement,
   mapUpcomingChargesToDues,
 } from '../utils/financial-summary-adapter'
-import { convertFinancialAmount, formatFinancialAmount } from '../utils/financial-display-currency'
 
 const euroRate = { currency: 'EUR' as const, brlPerUnit: 6, date: '2026-10-06' }
 const dollarRate = { currency: 'USD' as const, brlPerUnit: 5, date: '2026-10-06' }
