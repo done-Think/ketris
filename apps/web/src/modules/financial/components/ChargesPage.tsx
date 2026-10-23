@@ -93,7 +93,7 @@ export function ChargesPage() {
           page,
           pageSize: rowsPerPage,
         }
-      : { pageSize: 500 },
+      : { pageSize: 100 },
   )
   const charges = useMemo(
     () => (chargesQuery.data?.items ?? []).map(mapChargeListItemFromApi),

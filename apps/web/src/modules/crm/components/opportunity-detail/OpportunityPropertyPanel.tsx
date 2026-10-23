@@ -55,6 +55,7 @@ export function OpportunityPropertyPanel({
               sx={{
                 width: { xs: '100%', sm: 112 },
                 height: { xs: 150, sm: 82 },
+                flexShrink: 0,
                 objectFit: 'cover',
                 borderRadius: `${radius.sm}px`,
               }}
@@ -75,14 +76,7 @@ export function OpportunityPropertyPanel({
               <HomeWorkOutlinedIcon />
             </Box>
           )}
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            alignItems="flex-start"
-            justifyContent="space-between"
-            spacing={1.2}
-            minWidth={0}
-            flex={1}
-          >
+          <Stack alignItems="flex-start" spacing={0.6} minWidth={0} flex={1}>
             <Box minWidth={0}>
               <Typography sx={{ fontSize: 14, fontWeight: 800 }}>{property.title}</Typography>
               <Typography color="text.secondary" sx={{ mt: 0.2, fontSize: 11.5 }}>
@@ -100,8 +94,6 @@ export function OpportunityPropertyPanel({
                 color: 'primary.main',
                 fontSize: 18,
                 fontWeight: 900,
-                flexShrink: 0,
-                textAlign: { xs: 'left', sm: 'right' },
               }}
             >
               {formatCurrency(property.price, locale)}

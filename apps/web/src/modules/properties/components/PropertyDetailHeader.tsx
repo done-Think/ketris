@@ -42,31 +42,38 @@ export function PropertyDetailHeader({
   return (
     <Stack
       direction="row"
-      alignItems="flex-start"
-      justifyContent="space-between"
-      spacing={2}
-      useFlexGap
       flexWrap="wrap"
+      alignItems="center"
+      justifyContent="space-between"
+      useFlexGap
+      gap={2}
       sx={{ mb: 2.6 }}
     >
-      <Box sx={{ flex: '1 1 320px', minWidth: 0 }}>
+      <Box sx={{ flex: '1 1 420px', minWidth: 0 }}>
         <Stack
           direction="row"
-          alignItems="center"
-          spacing={1.6}
-          useFlexGap
           flexWrap="wrap"
+          alignItems="center"
+          useFlexGap
+          columnGap={1.6}
+          rowGap={0.8}
           sx={{ mb: 0.7 }}
         >
           <Typography
             variant="h2"
-            sx={{ fontSize: { xs: 30, md: 42 }, fontWeight: 900, overflowWrap: 'anywhere' }}
+            sx={{
+              minWidth: 0,
+              fontSize: { xs: 30, md: 42 },
+              fontWeight: 900,
+              overflowWrap: 'anywhere',
+            }}
           >
             {property.title}
           </Typography>
           <Chip
             label={statusT(property.status)}
             sx={{
+              flexShrink: 0,
               height: 32,
               borderRadius: `${radius.full}px`,
               bgcolor: status.bgcolor,
@@ -84,11 +91,11 @@ export function PropertyDetailHeader({
       {canManage ? (
         <Stack
           direction="row"
-          alignItems="flex-start"
-          spacing={1.2}
-          useFlexGap
           flexWrap="wrap"
-          sx={{ maxWidth: '100%', flexShrink: 0 }}
+          alignItems="flex-start"
+          useFlexGap
+          gap={1.2}
+          sx={{ flexShrink: 0, maxWidth: '100%' }}
         >
           <Button
             variant="outlined"

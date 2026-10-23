@@ -60,13 +60,13 @@ export function ContactsTable({
         }}
       >
         <colgroup>
-          <col style={{ width: '20%' }} />
+          <col style={{ width: '23%' }} />
           <col style={{ width: '12%' }} />
-          <col style={{ width: '16%' }} />
-          <col style={{ width: '20%' }} />
-          <col style={{ width: '8%' }} />
+          <col style={{ width: '13%' }} />
+          <col style={{ width: '23%' }} />
+          <col style={{ width: '7%' }} />
           <col style={{ width: '15%' }} />
-          <col style={{ width: '9%' }} />
+          <col style={{ width: '7%' }} />
         </colgroup>
         <TableHead>
           <TableRow sx={{ height: 44, bgcolor: surface.app }}>
@@ -110,11 +110,7 @@ export function ContactsTable({
               <TableCell align="center">
                 <ContactTypeChip type={contact.type} />
               </TableCell>
-              <TableCell align="center">
-                <Typography noWrap title={contact.phone} sx={{ fontSize: 15.5 }}>
-                  {contact.phone}
-                </Typography>
-              </TableCell>
+              <TableCell align="center">{contact.phone}</TableCell>
               <TableCell align="center">
                 <Typography noWrap title={contact.email} sx={{ fontSize: 15.5 }}>
                   {contact.email}

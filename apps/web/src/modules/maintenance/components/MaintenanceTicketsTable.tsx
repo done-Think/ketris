@@ -74,10 +74,23 @@ export function MaintenanceTicketsTable({
                 '&:last-child td': { borderBottom: 0 },
               }}
             >
-              <TableCell sx={{ ...bodyCellSx, color: 'primary.main', fontWeight: 900 }}>
+              <TableCell
+                title={ticket.id}
+                sx={{
+                  ...bodyCellSx,
+                  ...truncatedCellSx(110),
+                  color: 'primary.main',
+                  fontWeight: 900,
+                }}
+              >
                 {ticket.id}
               </TableCell>
-              <TableCell sx={{ ...bodyCellSx, fontWeight: 900 }}>{ticket.property}</TableCell>
+              <TableCell
+                title={ticket.property}
+                sx={{ ...bodyCellSx, ...truncatedCellSx(200), fontWeight: 900 }}
+              >
+                {ticket.property}
+              </TableCell>
               <TableCell sx={bodyCellSx}>{ticket.category}</TableCell>
               <TableCell sx={bodyCellSx}>
                 <Stack direction="row" spacing={0.65} alignItems="center">
@@ -92,7 +105,9 @@ export function MaintenanceTicketsTable({
                   <span>{t(`priorities.${ticket.priority}`)}</span>
                 </Stack>
               </TableCell>
-              <TableCell sx={bodyCellSx}>{ticket.tenant}</TableCell>
+              <TableCell title={ticket.tenant} sx={{ ...bodyCellSx, ...truncatedCellSx(160) }}>
+                {ticket.tenant}
+              </TableCell>
               <TableCell sx={{ ...bodyCellSx, color: brand.neutral[400] }}>
                 {ticket.openedAt}
               </TableCell>
@@ -168,7 +183,7 @@ export function MaintenanceTicketsTable({
 }
 const headerCellSx = {
   height: 40,
-  px: 1.75,
+  px: 1.25,
   py: 0.8,
   bgcolor: surface.app,
   borderColor: brand.neutral[100],
@@ -181,7 +196,7 @@ const headerCellSx = {
 } as const
 const bodyCellSx = {
   height: 54,
-  px: 1.75,
+  px: 1.25,
   py: 0.8,
   borderColor: brand.neutral[100],
   color: brand.neutral[600],
@@ -189,3 +204,5 @@ const bodyCellSx = {
   fontWeight: 700,
   whiteSpace: 'nowrap',
 } as const
+const truncatedCellSx = (maxWidth: number) =>
+  ({ maxWidth, overflow: 'hidden', textOverflow: 'ellipsis' }) as const

@@ -55,7 +55,11 @@ export function LeadsTable({ leads, sort, onContactLead, onSortChange }: LeadsTa
             textTransform: 'uppercase',
             whiteSpace: 'nowrap',
           },
-          '& .MuiTableHead-root .MuiTableCell-root:nth-of-type(3), & .MuiTableHead-root .MuiTableCell-root:nth-of-type(4), & .MuiTableHead-root .MuiTableCell-root:nth-of-type(6)':
+          '& .MuiTableHead-root .MuiTableCell-root:nth-of-type(3), & .MuiTableBody-root .MuiTableCell-root:nth-of-type(3), & .MuiTableHead-root .MuiTableCell-root:nth-of-type(4), & .MuiTableBody-root .MuiTableCell-root:nth-of-type(4)':
+            {
+              textAlign: 'center',
+            },
+          '& .MuiTableHead-root .MuiTableCell-root:nth-of-type(6), & .MuiTableBody-root .MuiTableCell-root:nth-of-type(6)':
             {
               textAlign: 'center',
             },
@@ -86,13 +90,13 @@ export function LeadsTable({ leads, sort, onContactLead, onSortChange }: LeadsTa
         }}
       >
         <colgroup>
-          <col style={{ width: '21%' }} />
-          <col style={{ width: '18%' }} />
-          <col style={{ width: '13%' }} />
+          <col style={{ width: '19%' }} />
+          <col style={{ width: '17%' }} />
+          <col style={{ width: '16%' }} />
+          <col style={{ width: '15%' }} />
+          <col style={{ width: '9%' }} />
           <col style={{ width: '14%' }} />
           <col style={{ width: '10%' }} />
-          <col style={{ width: '16%' }} />
-          <col style={{ width: '8%' }} />
         </colgroup>
         <TableHead>
           <TableRow sx={{ height: 44, bgcolor: surface.app }}>
