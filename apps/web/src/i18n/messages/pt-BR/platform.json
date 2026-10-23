@@ -7,19 +7,28 @@
       "metadataTitle": "Ketris | Imobiliárias Plataforma"
     },
     "tenants": {
-      "metadataTitle": "Ketris | Tenants da Plataforma"
+      "metadataTitle": "Ketris | Tenants"
     },
     "tenant": {
       "metadataTitle": "Ketris | Imobiliária Plataforma"
     },
     "newTenant": {
-      "metadataTitle": "Ketris | Nova imobiliária Plataforma"
+      "metadataTitle": "Ketris | Nova conta Plataforma"
+    },
+    "admins": {
+      "metadataTitle": "Ketris | Usuários"
     },
     "newAdmin": {
       "metadataTitle": "Ketris | Administradores da plataforma"
     },
     "system": {
       "metadataTitle": "Ketris | Saúde do Sistema"
+    },
+    "plans": {
+      "metadataTitle": "Ketris | Planos da Plataforma"
+    },
+    "finance": {
+      "metadataTitle": "Ketris | Financeiro da Plataforma"
     }
   },
   "login": {
@@ -38,7 +47,6 @@
   "dashboard": {
     "title": "Imobiliárias",
     "platformAdmins": "Administradores da plataforma",
-    "newTenant": "Nova imobiliária",
     "loadError": "Não foi possível carregar as imobiliárias.",
     "empty": "Nenhuma imobiliária cadastrada ainda.",
     "createdAt": "Criada em"
@@ -63,8 +71,7 @@
       "finance": "Financeiro",
       "system": "Sistema",
       "logs": "Logs",
-      "online": "Online",
-      "demoNotice": "Dados demonstrativos. Não representa monitoramento real."
+      "online": "Online"
     },
     "metrics": {
       "tenants": {
@@ -80,7 +87,7 @@
         "label": "MRR"
       },
       "churn": {
-        "label": "Churn"
+        "label": "Churn (mês)"
       },
       "uptime": {
         "label": "Uptime da plataforma"
@@ -110,28 +117,6 @@
       "nov": "Nov",
       "dec": "Dez"
     },
-    "alerts": {
-      "title": "Alertas do sistema",
-      "active": "{count} ativos",
-      "backup": {
-        "title": "Backup automatizado falhou",
-        "description": "Erro de gravação S3-us-east-1. Segunda tentativa agendada."
-      },
-      "cpu": {
-        "title": "Consumo alto de CPU",
-        "description": "Node-worker-02 operando em 92% da capacidade."
-      },
-      "ssl": {
-        "title": "SSL renovado",
-        "description": "Certificado de gateway-api renovado com sucesso."
-      },
-      "tenant-registration": {
-        "title": "Novo registro de tenant",
-        "description": "Imobiliária \"Vanguard Hub\" concluiu setup básico."
-      },
-      "minutesAgo": "há {count} min",
-      "hoursAgo": "há {count} h"
-    },
     "recentTenants": {
       "title": "Tenants recentes",
       "tableLabel": "Tabela de tenants recentes",
@@ -144,104 +129,87 @@
     }
   },
   "tenant": {
-    "usersTitle": "Usuários da imobiliária",
-    "newAdmin": "Novo administrador",
-    "usersLoadError": "Não foi possível carregar os usuários.",
-    "emptyUsers": "Nenhum usuário cadastrado ainda."
+    "back": "Voltar para Tenants",
+    "notFound": "Conta não encontrada.",
+    "loadError": "Não foi possível carregar a conta.",
+    "editAccount": "Editar conta",
+    "users": {
+      "title": "Usuários",
+      "loadError": "Não foi possível carregar os usuários.",
+      "emptyTitle": "Nenhum usuário ainda",
+      "emptyDescription": "Cadastre o administrador ao lado para a conta começar a usar a plataforma.",
+      "pendingApproval": "Aguardando aprovação",
+      "roles": {
+        "ADMIN": "Administrador",
+        "OWNER": "Dono",
+        "AGENT": "Corretor",
+        "RENTER": "Locatário"
+      }
+    },
+    "account": {
+      "title": "Conta",
+      "accountType": "Tipo de conta",
+      "status": "Situação",
+      "monthlyFee": "Mensalidade",
+      "usage": "Uso do plano",
+      "usageProperties": "{usage} de {included} imóveis",
+      "usageBrokers": "{usage} de {included} corretores",
+      "createdAt": "Criada em",
+      "canceledAt": "Cancelada em"
+    },
+    "newAdmin": {
+      "title": "Novo administrador",
+      "description": "Tem acesso total à conta e pode convidar a equipe.",
+      "passwordHelper": "Mínimo de 8 caracteres.",
+      "showPassword": "Mostrar senha",
+      "hidePassword": "Esconder senha",
+      "submit": "Criar administrador"
+    }
   },
   "tenants": {
     "title": "Tenants",
-    "searchLabel": "Buscar tenant",
-    "searchPlaceholder": "Buscar tenant...",
-    "planFilterLabel": "Filtrar por plano",
-    "statusFilterLabel": "Filtrar por status",
-    "newTenant": "Novo Tenant",
-    "activeBadge": "Ativos",
-    "metrics": {
-      "total": "Total",
-      "starter": "Starter",
-      "pro": "Pro",
-      "enterprise": "Enterprise"
+    "newTenant": "Nova conta",
+    "subtitle": "Contas cadastradas na plataforma, com o plano e a situação de cada uma.",
+    "search": {
+      "label": "Buscar conta",
+      "placeholder": "Buscar por nome ou identificador"
     },
-    "tableLabel": "Tabela de tenants",
-    "columns": {
-      "name": "Nome",
-      "plan": "Plano",
-      "brokers": "Corretores",
-      "properties": "Imóveis",
-      "mrr": "MRR",
-      "status": "Status",
-      "createdAt": "Criação",
-      "actions": "Ações"
+    "filters": {
+      "statusLabel": "Filtrar por situação",
+      "allStatuses": "Todas",
+      "typeLabel": "Tipo de conta",
+      "allTypes": "Todos os tipos"
     },
-    "plans": {
-      "all": "Todos",
-      "starter": "Starter",
-      "pro": "Pro",
-      "enterprise": "Enterprise"
-    },
-    "statuses": {
-      "all": "Todos",
-      "active": "Ativos",
-      "trial": "Trial",
-      "suspended": "Suspenso"
-    },
-    "planFilterValue": "Plano: {value}",
-    "statusFilterValue": "Status: {value}",
-    "summary": "Mostrando {start}–{end} de {total} tenants",
-    "previous": "Anterior",
-    "next": "Próximo",
-    "empty": "Nenhum tenant encontrado.",
-    "editAction": "Editar {name}",
-    "moreActions": "Mais ações para {name}",
-    "edit": "Editar",
-    "editTitle": "Editar tenant demonstrativo",
-    "editDescription": "As alterações são locais e serão descartadas ao recarregar a página.",
-    "save": "Salvar",
-    "cancel": "Cancelar",
-    "metricBadge": "Tenants",
-    "errors": {
-      "nameRequired": "Informe o nome."
-    }
+    "count": "{count, plural, =0 {Nenhuma conta} one {# conta} other {# contas}}",
+    "noResults": "Nenhuma conta encontrada com esses filtros.",
+    "clearFilters": "Limpar filtros"
   },
   "system": {
     "title": "Saúde do Sistema",
-    "autoRefresh": "Atualização automática (5s)",
-    "networkEyebrow": "TRÁFEGO DE REDE",
-    "networkTitle": "Volume de Requisições (24h)",
-    "networkAverage": "Média: {value} req/min",
-    "errorsEyebrow": "NOTIFICAÇÕES DE ERRO",
-    "errorsTitle": "Ocorrência de Erros (12h)",
-    "errorsTotal": "Total: {count} falhas",
-    "logsTitle": "Atividades Recentes do Cluster (Console de Logs)",
-    "clearConsole": "Limpar Console",
-    "emptyConsole": "Console limpo.",
-    "metrics": {
-      "gateway": {
-        "label": "API Gateway",
-        "status": "Saudável"
-      },
-      "database": {
-        "label": "Banco de Dados",
-        "status": "Latência Estável"
-      },
-      "storage": {
-        "label": "Armazenamento",
-        "status": "Espaço Limitado"
-      },
-      "queue": {
-        "label": "Fila de Tarefas",
-        "status": "Processando"
-      }
+    "checkedAt": "Atualizado às {time} · atualiza sozinho a cada 30 s",
+    "loadError": "Não foi possível verificar a saúde do sistema agora.",
+    "database": {
+      "label": "Banco de dados",
+      "up": "Respondendo",
+      "down": "Fora do ar",
+      "helper": "Tempo de resposta medido agora."
     },
-    "logMessages": {
-      "authentication": "Autenticação bem-sucedida para o tenant 'Silva & Associados'",
-      "rateLimit": "Requisição rejeitada devido a limite de taxa excedido no plano Starter",
-      "payment": "Falha na sincronização de pagamento recorrente (Gateway de faturamento)",
-      "import": "Processamento concluído de 140 registros de imóveis via planilha",
-      "backup": "Backup programado efetuado com sucesso no cluster secundário",
-      "connection": "Erro crítico de conexão perdida na réplica de leitura de dados"
-    }
+    "server": {
+      "label": "Servidor no ar há",
+      "helper": "Tempo desde o último início deste servidor.",
+      "uptimeHours": "{hours} h {minutes} min",
+      "uptimeDays": "{days, plural, one {# dia} other {# dias}} {hours} h"
+    },
+    "errors": {
+      "title": "Erros recentes (Sentry, últimas 24 h)",
+      "notConfiguredTitle": "Sentry não configurado",
+      "notConfiguredDescription": "Para ver os erros reais aqui, configure SENTRY_API_TOKEN (token de leitura) no ambiente do servidor.",
+      "unavailable": "Não foi possível consultar o Sentry agora.",
+      "empty": "Nenhum erro aberto nas últimas 24 h.",
+      "issueMeta": "{count, plural, one {# ocorrência} other {# ocorrências}} · última em {lastSeen}",
+      "openInSentry": "Abrir no Sentry"
+    },
+    "externalMonitoringNote": "Disponibilidade (uptime %) e tráfego de rede dependem de uma ferramenta de monitoramento externa, que ainda não está integrada."
   },
   "newAdmin": {
     "title": "Novo administrador da plataforma"
@@ -307,19 +275,15 @@
     "passwordConfirmation": "Confirmar senha",
     "cancel": "Cancelar",
     "slug": "Slug",
-    "slugHelper": "Identificador único, ex.: imobiliaria-exemplo",
+    "slugHelper": "Preenchido a partir do nome. Use letras minúsculas, números e hífens.",
     "role": "Papel",
     "administrator": "Administrador",
     "status": "Status",
     "active": "Ativo",
     "inactive": "Inativo",
-    "createTenantSubmit": "Criar imobiliária",
-    "createTenantError": "Não foi possível criar a imobiliária. Tente novamente.",
-    "createTenantSuccess": "Imobiliária {name} criada com sucesso.",
     "createPlatformAdminSubmit": "Criar administrador da plataforma",
     "createPlatformAdminError": "Não foi possível criar o administrador da plataforma. Tente novamente.",
     "createPlatformAdminSuccess": "Administrador da plataforma {email} criado com sucesso.",
-    "createTenantAdminSubmit": "Criar administrador da imobiliária",
     "createTenantAdminError": "Não foi possível criar o administrador da imobiliária. Tente novamente.",
     "createTenantAdminSuccess": "Administrador {email} criado com sucesso.",
     "errors": {
@@ -331,12 +295,162 @@
       "passwordsDoNotMatch": "As senhas não coincidem",
       "slugRequired": "Informe o slug",
       "slugInvalid": "Use apenas letras minúsculas, números e hífens"
-    }
+    },
+    "namePlaceholder": "Ex.: Imobiliária Horizonte",
+    "slugLabel": "Identificador (slug)",
+    "slugPlaceholder": "imobiliaria-horizonte"
   },
   "table": {
     "first": "Primeira página",
     "last": "Última página",
     "next": "Próxima página",
     "previous": "Página anterior"
+  },
+  "account": {
+    "actions": "Ações",
+    "editAction": "Editar conta de {name}",
+    "editTitle": "Conta e cobrança",
+    "closeEditDialog": "Fechar edição da conta",
+    "fields": {
+      "accountType": "Tipo de conta",
+      "accountTypeHelper": "Define o plano cobrado (ver Planos).",
+      "status": "Situação",
+      "statusHelper": "Só contas ativas são cobradas.",
+      "canceledHelper": "A data de cancelamento é registrada e entra no churn deste mês.",
+      "monthlyCharge": "Mensalidade"
+    },
+    "accountTypes": {
+      "INDIVIDUAL": "Pessoa física",
+      "BROKER": "Corretor",
+      "AGENCY": "Imobiliária"
+    },
+    "statuses": {
+      "TRIAL": "Em teste",
+      "ACTIVE": "Ativa",
+      "SUSPENDED": "Suspensa",
+      "CANCELED": "Cancelada"
+    },
+    "errors": {
+      "forbidden": "Só administradores da plataforma com a função Admin podem alterar contas.",
+      "changedConcurrently": "Esta conta foi alterada por outra pessoa. Recarregue e tente novamente.",
+      "notFound": "Esta conta não existe mais."
+    },
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "updateSuccess": "Conta atualizada.",
+    "updateError": "Não foi possível atualizar a conta."
+  },
+  "plans": {
+    "title": "Planos",
+    "subtitle": "Preço mensal de cada tipo de conta e o que está incluído nele.",
+    "loadError": "Não foi possível carregar os planos.",
+    "perMonth": "/mês",
+    "includesProperties": "{count, plural, one {Inclui até # imóvel} other {Inclui até # imóveis}}",
+    "includesBrokers": "{count, plural, one {Inclui até # corretor ativo} other {Inclui até # corretores ativos}}",
+    "extraProperties": "{price} por imóvel extra",
+    "extraBrokers": "{price} por corretor extra",
+    "activeAccounts": "{count, plural, =0 {Nenhuma conta ativa} one {# conta ativa} other {# contas ativas}}",
+    "edit": "Editar",
+    "editAction": "Editar plano {name}",
+    "editTitle": "Editar plano",
+    "closeEditDialog": "Fechar edição do plano",
+    "note": "Valores em reais. Não há cobrança automática: a mensalidade de cada conta é calculada pelo plano do tipo dela e pelo uso atual. Só contas ativas entram na receita.",
+    "fields": {
+      "monthlyPrice": "Preço mensal",
+      "includedUnitsProperties": "Imóveis incluídos",
+      "includedUnitsBrokers": "Corretores ativos incluídos",
+      "extraUnitPriceProperties": "Valor por imóvel extra",
+      "extraUnitPriceBrokers": "Valor por corretor extra"
+    },
+    "exampleProperties": "Exemplo: com {count, plural, one {# imóvel} other {# imóveis}}, a mensalidade fica {total}.",
+    "exampleBrokers": "Exemplo: com {count, plural, one {# corretor ativo} other {# corretores ativos}}, a mensalidade fica {total}.",
+    "chargeBaseOnly": "Preço base do plano",
+    "chargeWithExtraProperties": "{base} + {count, plural, one {# imóvel extra} other {# imóveis extras}} ({extra})",
+    "chargeWithExtraBrokers": "{base} + {count, plural, one {# corretor extra} other {# corretores extras}} ({extra})",
+    "errors": {
+      "invalidAmount": "Informe um valor válido, com até duas casas decimais.",
+      "invalidUnits": "Informe um número inteiro.",
+      "forbidden": "Só administradores da plataforma com a função Admin podem alterar planos.",
+      "notFound": "Este plano não existe."
+    },
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "updateSuccess": "Plano atualizado.",
+    "updateError": "Não foi possível atualizar o plano."
+  },
+  "finance": {
+    "title": "Financeiro",
+    "subtitle": "MRR atual pelos preços vigentes dos planos e churn de {month}. Valores calculados, sem integração de cobrança ou pagamento.",
+    "loadError": "Não foi possível carregar o financeiro.",
+    "kpis": {
+      "mrr": "MRR",
+      "payingAccounts": "Contas pagantes",
+      "trialAccounts": "Em teste",
+      "suspendedAccounts": "{count, plural, =0 {Nenhuma suspensa} one {# suspensa} other {# suspensas}}",
+      "churn": "Churn do mês",
+      "churnNoBase": "Sem base no início do mês",
+      "canceledThisMonth": "{count, plural, =0 {Nenhum cancelamento} one {# cancelamento} other {# cancelamentos}}"
+    },
+    "byAccountType": {
+      "title": "Receita por tipo de conta",
+      "activeAccounts": "{count, plural, =0 {Nenhuma conta ativa} one {# conta ativa} other {# contas ativas}}"
+    },
+    "accounts": {
+      "title": "Mensalidades por conta",
+      "empty": "Nenhuma conta cadastrada.",
+      "columns": {
+        "account": "Conta",
+        "usage": "Uso do plano"
+      },
+      "usageProperties": "{usage} de {included} imóveis",
+      "usageBrokers": "{usage} de {included} corretores",
+      "notBilled": "fora do MRR",
+      "extraUnits": "{count, plural, one {+# extra} other {+# extras}}",
+      "includesExtras": "inclui {amount} de extras"
+    },
+    "note": "Não há cobrança automática: os valores são calculados pelo plano de cada tipo de conta e pelo uso atual. Só contas ativas entram no MRR."
+  },
+  "createAccount": {
+    "title": "Nova conta",
+    "subtitle": "Cadastre uma pessoa física, um corretor ou uma imobiliária para começar a usar a plataforma.",
+    "backToTenants": "Voltar para Tenants",
+    "pricePerMonth": "{price}/mês",
+    "sections": {
+      "accountType": {
+        "title": "Tipo de conta",
+        "description": "Define o plano e a mensalidade cobrada."
+      },
+      "identity": {
+        "title": "Identificação",
+        "description": "Nome exibido na plataforma e identificador único da conta."
+      },
+      "status": {
+        "title": "Situação inicial",
+        "trialLabel": "Começar em período de teste",
+        "trialHelper": "Contas em teste não entram no MRR até serem ativadas na lista de Tenants."
+      }
+    },
+    "summary": {
+      "title": "Resumo",
+      "namePlaceholder": "Nome da conta",
+      "slugPlaceholder": "identificador",
+      "accountType": "Tipo de conta",
+      "status": "Situação",
+      "monthlyFee": "Mensalidade",
+      "pricePerMonth": "{price}/mês",
+      "extraProperties": "+ {price} por imóvel acima de {count}",
+      "extraBrokers": "+ {price} por corretor acima de {count}",
+      "trialNotBilled": "Não é cobrada enquanto estiver em teste."
+    },
+    "nextSteps": {
+      "title": "Próximos passos",
+      "create": "Criar a conta",
+      "admin": "Cadastrar o administrador",
+      "finance": "Acompanhar a cobrança em Financeiro"
+    },
+    "submit": "Criar conta",
+    "cancel": "Cancelar",
+    "createSuccess": "Conta {name} criada com sucesso.",
+    "createError": "Não foi possível criar a conta. Tente novamente."
   }
 }

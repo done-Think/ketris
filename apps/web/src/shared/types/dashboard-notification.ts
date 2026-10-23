@@ -21,6 +21,7 @@ export type DashboardNotificationItem = {
 }
 
 export type DashboardNotificationsButtonProps = {
+  placement?: 'pageHeader' | 'navigationHeader'
   notifications?: DashboardNotificationItem[]
   onNotificationSelect?: (notification: DashboardNotificationItem) => void
 }

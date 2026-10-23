@@ -27,18 +27,27 @@ export class GetAgencyOverviewUseCase {
 
     const [
       portfolioCount,
+      newPropertiesThisMonth,
       activeBrokersCount,
       receivedLeadsThisMonth,
+      receivedLeadsPreviousPeriod,
+      monthlyReceivablePreviousMonth,
       occupancyPercentage,
       financialSummary,
       topBrokers,
       recentActivities,
     ] = await Promise.all([
       this.repository.getPortfolioCount(input.actorTenantId),
+      this.repository.getNewPropertiesThisMonth(input.actorTenantId, referenceDate),
       this.repository.getActiveBrokersCount(input.actorTenantId),
       this.repository.getReceivedLeadsThisMonth(input.actorTenantId, referenceDate),
+      this.repository.getReceivedLeadsPreviousPeriod(input.actorTenantId, referenceDate),
+      this.repository.getMonthlyReceivablePreviousMonth(input.actorTenantId, referenceDate),
       this.repository.getOccupancyPercentage(input.actorTenantId),
-      this.financialSummaryProvider.execute({ actorTenantId: input.actorTenantId }),
+      this.financialSummaryProvider.execute({
+        actorTenantId: input.actorTenantId,
+        actorPapel: input.actorPapel,
+      }),
       this.repository.getTopBrokers(input.actorTenantId),
       this.repository.getRecentActivities(input.actorTenantId),
     ])
@@ -46,9 +55,13 @@ export class GetAgencyOverviewUseCase {
     return {
       kpis: {
         portfolioCount,
+        newPropertiesThisMonth,
         activeBrokersCount,
         receivedLeadsThisMonth,
+        receivedLeadsPreviousPeriod,
         monthlyReceivable: financialSummary.monthlyReceivable,
+        monthlyReceivablePreviousMonth,
+        overdueTotal: financialSummary.overdueTotal,
         occupancyPercentage,
       },
       revenueSeries: financialSummary.monthlySeries,

@@ -35,6 +35,10 @@ const createdEvent: AgendaEvent = {
   tenantId: 'tenant-1',
   responsavelId: 'agent-1',
   criadoPorId: 'agent-1',
+  responsavelNome: 'Corretor',
+  donoUsuarioId: null,
+  dono: null,
+  participantes: [],
   imovelId: null,
   referenciaImovelLivre: null,
   titulo: 'Visita ao imóvel',
@@ -57,6 +61,7 @@ function createDeps(overrides?: {
   const agendaEventRepository: AgendaEventRepository = {
     create: vi.fn().mockResolvedValue(createdEvent),
     list: vi.fn(),
+    findByScopeAndId: vi.fn(),
     findByTenantAndId: vi.fn(),
     update: vi.fn(),
     reschedule: vi.fn(),
@@ -125,6 +130,7 @@ describe('CreateAgendaEventUseCase', () => {
         inicio: VALID_INICIO,
         fim: VALID_FIM,
       }),
+      { donoEmail: undefined, participanteEmails: undefined },
     )
     expect(deps.userRepository.findById).not.toHaveBeenCalled()
   })
@@ -164,7 +170,7 @@ describe('CreateAgendaEventUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorUserId: 'agent-1',
-        actorPapel: 'AGENT',
+        actorPapel: 'ADMIN',
         responsavelId: 'outro-agente',
         titulo: 'Visita',
         inicio: VALID_INICIO,
@@ -244,5 +250,32 @@ describe('CreateAgendaEventUseCase', () => {
       }),
     ).rejects.toThrow(AgendaEventConflictError)
     expect(deps.agendaEventRepository.create).not.toHaveBeenCalled()
+  })
+
+  it('repassa dono e participantes normalizados e sem duplicatas para gravação atômica', async () => {
+    const deps = createDeps()
+    const useCase = new CreateAgendaEventUseCase(
+      deps.agendaEventRepository,
+      deps.userRepository,
+      deps.propertyRepository,
+    )
+
+    await useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorUserId: 'agent-1',
+      actorPapel: 'AGENT',
+      titulo: 'Vistoria de entrada',
+      inicio: VALID_INICIO,
+      durationMinutes: 60,
+      participanteNome: 'Ana',
+      participanteTelefone: '(11) 99999-0000',
+      donoEmail: ' Locatario@Ketris.dev ',
+      participanteEmails: ['Fiador@ketris.dev', 'fiador@ketris.dev'],
+    })
+
+    expect(deps.agendaEventRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ tenantId: 'tenant-1' }),
+      { donoEmail: 'locatario@ketris.dev', participanteEmails: ['fiador@ketris.dev'] },
+    )
   })
 })

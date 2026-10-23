@@ -26,7 +26,15 @@ export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps
   const representedListings = buildProfileListings(agency.featuredListings)
 
   return (
-    <Box sx={{ bgcolor: surface.app, minHeight: '100vh', overflowX: 'clip' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        bgcolor: surface.app,
+        minHeight: '100vh',
+        overflowX: 'clip',
+      }}
+    >
       <MarketplaceHeader activeItemId="agencies" />
 
       <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>

@@ -6,6 +6,19 @@ export const platformOverviewMetricsSchema = z
     tenantsCount: z.number().int(),
     brokersCount: z.number().int(),
     propertiesCount: z.number().int(),
+    mrr: z.number().openapi({
+      description: 'Soma das mensalidades das contas ACTIVE, em BRL (igual a /platform/finance).',
+      example: 1499.89,
+    }),
+    churnRate: z
+      .number()
+      .nullable()
+      .openapi({
+        description:
+          'Fração (0–1) das contas pagantes (ACTIVE) às 00:00 do dia 1 do mês (fuso ' +
+          'America/Sao_Paulo) que cancelaram no mês, pelo histórico de situações. null sem base.',
+        example: 0.025,
+      }),
   })
   .openapi('PlatformOverviewMetrics')
 

@@ -1,41 +1,28 @@
-import { MaintenancePropertyNotFoundError } from '../../domain/errors'
-import type {
-  MaintenanceTicket,
-  MaintenanceTicketPriority,
-} from '../../domain/maintenance-ticket.entity'
-import type { MaintenanceTicketRepository } from '../ports/maintenance-ticket-repository.port'
-
-export interface CreateMaintenanceTicketInput {
-  actorTenantId: string
-  actorId: string
-  actorName: string
-  propertyId: string
-  category: string
-  priority: MaintenanceTicketPriority
-  title: string
-  description: string
-}
+import type { CreateMaintenanceTicketInput } from '../../types/use-case-inputs'
+import type { MaintenanceTicketRepository } from '../../types/maintenance-ticket-repository'
+import { validateContract } from '../workflow'
+import { ConflictError } from '@server/shared/errors'
 
 export class CreateMaintenanceTicketUseCase {
-  constructor(private readonly maintenanceTicketRepository: MaintenanceTicketRepository) {}
-
-  async execute(input: CreateMaintenanceTicketInput): Promise<MaintenanceTicket> {
-    const property = await this.maintenanceTicketRepository.findPropertyForTenant(
-      input.actorTenantId,
+  constructor(private readonly repository: MaintenanceTicketRepository) {}
+  async execute(input: CreateMaintenanceTicketInput) {
+    const contract = await validateContract(
+      this.repository,
+      input,
+      input.contractId,
       input.propertyId,
     )
-
-    if (!property) {
-      throw new MaintenancePropertyNotFoundError()
-    }
-
-    return this.maintenanceTicketRepository.create({
-      tenantId: input.actorTenantId,
-      propertyId: property.id,
+    if (input.scheduledAt)
+      throw new ConflictError('Defina um prestador antes de agendar o atendimento.')
+    return this.repository.create({
+      tenantId: contract.tenantId,
+      contractId: contract.id,
+      propertyId: contract.propertyId,
       category: input.category,
       priority: input.priority,
       title: input.title,
       description: input.description,
+      ...(input.scheduledAt !== undefined ? { scheduledAt: input.scheduledAt } : {}),
       openedById: input.actorId,
       openedByName: input.actorName,
     })

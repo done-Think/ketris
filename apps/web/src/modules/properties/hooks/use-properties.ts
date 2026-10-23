@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
 
 import { propertiesService } from '../services/properties-service'
 import type { PropertyFormValues } from '../types/property'
@@ -9,17 +10,31 @@ export const propertyQueryKeys = {
 }
 
 export function useProperties() {
+  const { data: session } = useSession()
   return useQuery({
-    queryKey: propertyQueryKeys.all,
+    queryKey: [
+      ...propertyQueryKeys.all,
+      'list',
+      session?.tenantId,
+      session?.user?.id,
+      session?.role,
+    ],
     queryFn: () => propertiesService.list(),
+    enabled: Boolean(session?.tenantId),
   })
 }
 
 export function useProperty(id: string) {
+  const { data: session } = useSession()
   return useQuery({
-    queryKey: propertyQueryKeys.detail(id),
+    queryKey: [
+      ...propertyQueryKeys.detail(id),
+      session?.tenantId,
+      session?.user?.id,
+      session?.role,
+    ],
     queryFn: () => propertiesService.getById(id),
-    enabled: Boolean(id),
+    enabled: Boolean(id) && Boolean(session?.tenantId),
   })
 }
 

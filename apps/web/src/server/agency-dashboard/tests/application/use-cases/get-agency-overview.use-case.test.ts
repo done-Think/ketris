@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 
+import type { ChargeRepository } from '@server/financial/application/ports/charge-repository.port'
+import { GetFinancialSummaryUseCase } from '@server/financial/application/use-cases/get-financial-summary.use-case'
+
 import type { AgencyActivity, AgencyTopBroker } from '../../../domain/agency-overview.entity'
 import type { AgencyOverviewRepository } from '../../../application/ports/agency-overview-repository.port'
 import type { FinancialSummaryProvider } from '../../../application/ports/financial-summary-provider.port'
@@ -35,8 +38,11 @@ const activity: AgencyActivity = {
 function createRepository(overrides?: Partial<AgencyOverviewRepository>): AgencyOverviewRepository {
   return {
     getPortfolioCount: vi.fn().mockResolvedValue(10),
+    getNewPropertiesThisMonth: vi.fn().mockResolvedValue(2),
     getActiveBrokersCount: vi.fn().mockResolvedValue(3),
     getReceivedLeadsThisMonth: vi.fn().mockResolvedValue(4),
+    getReceivedLeadsPreviousPeriod: vi.fn().mockResolvedValue(6),
+    getMonthlyReceivablePreviousMonth: vi.fn().mockResolvedValue(7000),
     getOccupancyPercentage: vi.fn().mockResolvedValue(75),
     getTopBrokers: vi.fn().mockResolvedValue([topBroker]),
     getRecentActivities: vi.fn().mockResolvedValue([activity]),
@@ -50,7 +56,7 @@ function createFinancialSummaryProvider(
   return {
     execute: vi.fn().mockResolvedValue({
       monthlyReceivable: 8500,
-      overdueTotal: 0,
+      overdueTotal: 320,
       defaultRatePercentage: 0,
       monthlySeries: [{ year: 2026, month: 9, total: 8500 }],
       upcomingDues: [],
@@ -60,6 +66,41 @@ function createFinancialSummaryProvider(
 }
 
 describe('GetAgencyOverviewUseCase', () => {
+  it.each(['ADMIN', 'OWNER'] as const)(
+    'combines the real financial summary use case for %s',
+    async (actorPapel) => {
+      const getSummary = vi.fn().mockResolvedValue({
+        monthlyReceivable: 8500,
+        overdueTotal: 0,
+        defaultRatePercentage: 0,
+        occupancyRatePercentage: 75,
+        monthlySeries: [{ year: 2026, month: 9, total: 8500 }],
+        upcomingDues: [],
+      })
+      const chargeRepository: ChargeRepository = {
+        findContractSummary: vi.fn(),
+        create: vi.fn(),
+        findMany: vi.fn(),
+        findById: vi.fn(),
+        findReadableById: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+        registerPayment: vi.fn(),
+        getSummary,
+      }
+      const useCase = new GetAgencyOverviewUseCase(
+        createRepository(),
+        new GetFinancialSummaryUseCase(chargeRepository),
+      )
+
+      const overview = await useCase.execute({ actorTenantId: 'tenant-1', actorPapel })
+
+      expect(overview.kpis.monthlyReceivable).toBe(8500)
+      expect(overview.revenueSeries).toEqual([{ year: 2026, month: 9, total: 8500 }])
+      expect(getSummary).toHaveBeenCalledWith('tenant-1', expect.any(Date))
+    },
+  )
+
   it('lança ForbiddenError quando o ator é AGENT', async () => {
     const useCase = new GetAgencyOverviewUseCase(
       createRepository(),
@@ -92,29 +133,66 @@ describe('GetAgencyOverviewUseCase', () => {
     expect(result).toEqual({
       kpis: {
         portfolioCount: 10,
+        newPropertiesThisMonth: 2,
         activeBrokersCount: 3,
         receivedLeadsThisMonth: 4,
+        receivedLeadsPreviousPeriod: 6,
         monthlyReceivable: 8500,
+        monthlyReceivablePreviousMonth: 7000,
+        overdueTotal: 320,
         occupancyPercentage: 75,
       },
       revenueSeries: [{ year: 2026, month: 9, total: 8500 }],
       topBrokers: [topBroker],
       recentActivities: [activity],
     })
-    expect(financialSummaryProvider.execute).toHaveBeenCalledWith({ actorTenantId: 'tenant-1' })
+    expect(financialSummaryProvider.execute).toHaveBeenCalledWith({
+      actorTenantId: 'tenant-1',
+      actorPapel: 'OWNER',
+    })
   })
 
   it('permite ADMIN e delega o mesmo tenant do ator para todas as fontes', async () => {
     const repository = createRepository()
-    const useCase = new GetAgencyOverviewUseCase(repository, createFinancialSummaryProvider())
+    const financialSummaryProvider = createFinancialSummaryProvider()
+    const useCase = new GetAgencyOverviewUseCase(repository, financialSummaryProvider)
 
     await useCase.execute({ actorTenantId: 'tenant-2', actorPapel: 'ADMIN' })
 
     expect(repository.getPortfolioCount).toHaveBeenCalledWith('tenant-2')
     expect(repository.getActiveBrokersCount).toHaveBeenCalledWith('tenant-2')
     expect(repository.getReceivedLeadsThisMonth).toHaveBeenCalledWith('tenant-2', expect.any(Date))
+    expect(repository.getNewPropertiesThisMonth).toHaveBeenCalledWith('tenant-2', expect.any(Date))
+    expect(repository.getReceivedLeadsPreviousPeriod).toHaveBeenCalledWith(
+      'tenant-2',
+      expect.any(Date),
+    )
+    expect(repository.getMonthlyReceivablePreviousMonth).toHaveBeenCalledWith(
+      'tenant-2',
+      expect.any(Date),
+    )
     expect(repository.getOccupancyPercentage).toHaveBeenCalledWith('tenant-2')
     expect(repository.getTopBrokers).toHaveBeenCalledWith('tenant-2')
     expect(repository.getRecentActivities).toHaveBeenCalledWith('tenant-2')
+    expect(financialSummaryProvider.execute).toHaveBeenCalledWith({
+      actorTenantId: 'tenant-2',
+      actorPapel: 'ADMIN',
+    })
+  })
+
+  it('usa a mesma data de referência para o mês atual e para a comparação com o mês anterior', async () => {
+    const repository = createRepository()
+    const useCase = new GetAgencyOverviewUseCase(repository, createFinancialSummaryProvider())
+
+    await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER' })
+
+    const referenceDate = vi.mocked(repository.getReceivedLeadsThisMonth).mock.calls[0][1]
+    expect(vi.mocked(repository.getReceivedLeadsPreviousPeriod).mock.calls[0][1]).toBe(
+      referenceDate,
+    )
+    expect(vi.mocked(repository.getMonthlyReceivablePreviousMonth).mock.calls[0][1]).toBe(
+      referenceDate,
+    )
+    expect(vi.mocked(repository.getNewPropertiesThisMonth).mock.calls[0][1]).toBe(referenceDate)
   })
 })

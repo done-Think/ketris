@@ -19,12 +19,6 @@ export const appShellNavigationItems: readonly AppShellNavItem[] = [
     icon: BarChartOutlinedIcon,
     roles: ['ADMIN', 'OWNER'],
   },
-  {
-    labelKey: 'agencyOverview',
-    href: '/dashboard/agency-overview',
-    icon: InsertChartOutlinedRoundedIcon,
-    roles: ['ADMIN', 'OWNER'],
-  },
   { labelKey: 'pipeline', href: '/crm', icon: ViewKanbanOutlinedIcon },
   { labelKey: 'contacts', href: '/crm/contacts', icon: PeopleOutlineIcon },
   { labelKey: 'leads', href: '/dashboard/leads', icon: PeopleAltOutlinedIcon },
@@ -53,7 +47,7 @@ export const appShellNavigationItems: readonly AppShellNavItem[] = [
     labelKey: 'maintenance',
     href: '/dashboard/maintenance',
     icon: BuildOutlinedIcon,
-    roles: ['ADMIN', 'OWNER'],
+    roles: ['ADMIN', 'OWNER', 'RENTER'],
   },
   {
     labelKey: 'finance',
@@ -65,6 +59,6 @@ export const appShellNavigationItems: readonly AppShellNavItem[] = [
     labelKey: 'charges',
     href: '/dashboard/finance/charges',
     icon: ReceiptLongOutlinedIcon,
-    roles: ['ADMIN', 'OWNER'],
+    roles: ['ADMIN', 'OWNER', 'RENTER'],
   },
 ]

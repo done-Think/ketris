@@ -1,3 +1,4 @@
+import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
 import { describe, expect, it, vi } from 'vitest'
 
 import { PropertyNotFoundError } from '@server/properties/domain/errors'
@@ -5,7 +6,7 @@ import type { Property } from '@server/properties/types/property'
 import type { PropertyRepository } from '@server/properties/application/ports/property-repository.port'
 
 import { AgendaEventNotFoundError, AgendaVisitMinimumDurationError } from '../../../domain/errors'
-import type { AgendaEvent } from '../../../domain/agenda-event.entity'
+import type { AgendaEvent, AgendaEventLinks } from '../../../domain/agenda-event.entity'
 import type { AgendaEventRepository } from '../../../application/ports/agenda-event-repository.port'
 import { UpdateAgendaEventUseCase } from '../../../application/use-cases/update-agenda-event.use-case'
 
@@ -16,13 +17,17 @@ const shortEvent: AgendaEvent = {
   tenantId: 'tenant-1',
   responsavelId: 'agent-1',
   criadoPorId: 'agent-1',
+  responsavelNome: 'Corretor',
+  donoUsuarioId: null,
+  dono: null,
+  participantes: [],
   imovelId: null,
   referenciaImovelLivre: null,
   titulo: 'Follow-up rápido',
   tipo: 'FOLLOW_UP',
   status: 'CONFIRMED',
   inicio: new Date('2026-10-01T13:00:00.000Z'),
-  fim: new Date('2026-10-01T13:30:00.000Z'),
+  fim: new Date('2026-10-01T13:15:00.000Z'),
   participanteNome: 'Ana',
   participanteTelefone: '11999990000',
   notas: null,
@@ -38,6 +43,7 @@ function createDeps(overrides?: {
   const agendaEventRepository: AgendaEventRepository = {
     create: vi.fn(),
     list: vi.fn(),
+    findByScopeAndId: vi.fn(),
     findByTenantAndId: overrides?.agendaFindByTenantAndId ?? vi.fn().mockResolvedValue(shortEvent),
     update: overrides?.update ?? vi.fn().mockResolvedValue(updatedEvent),
     reschedule: vi.fn(),
@@ -56,7 +62,11 @@ function createDeps(overrides?: {
     delete: vi.fn(),
   }
 
-  return { agendaEventRepository, propertyRepository }
+  return {
+    agendaEventRepository,
+    propertyRepository,
+    userRepository: { findById: vi.fn() } as unknown as UserRepository,
+  }
 }
 
 describe('UpdateAgendaEventUseCase', () => {
@@ -65,6 +75,7 @@ describe('UpdateAgendaEventUseCase', () => {
     const useCase = new UpdateAgendaEventUseCase(
       deps.agendaEventRepository,
       deps.propertyRepository,
+      deps.userRepository,
     )
 
     const result = await useCase.execute({
@@ -79,6 +90,7 @@ describe('UpdateAgendaEventUseCase', () => {
       'tenant-1',
       'event-1',
       expect.objectContaining({ titulo: 'Atualizado' }),
+      { donoEmail: undefined, participanteEmails: undefined },
     )
   })
 
@@ -87,6 +99,7 @@ describe('UpdateAgendaEventUseCase', () => {
     const useCase = new UpdateAgendaEventUseCase(
       deps.agendaEventRepository,
       deps.propertyRepository,
+      deps.userRepository,
     )
 
     await expect(
@@ -105,6 +118,7 @@ describe('UpdateAgendaEventUseCase', () => {
     const useCase = new UpdateAgendaEventUseCase(
       deps.agendaEventRepository,
       deps.propertyRepository,
+      deps.userRepository,
     )
 
     await expect(
@@ -122,6 +136,7 @@ describe('UpdateAgendaEventUseCase', () => {
     const useCase = new UpdateAgendaEventUseCase(
       deps.agendaEventRepository,
       deps.propertyRepository,
+      deps.userRepository,
     )
 
     await expect(
@@ -129,11 +144,12 @@ describe('UpdateAgendaEventUseCase', () => {
     ).rejects.toThrow(AgendaEventNotFoundError)
   })
 
-  it('lança AgendaVisitMinimumDurationError ao marcar como VISIT um evento com menos de 60min', async () => {
+  it('lança AgendaVisitMinimumDurationError ao marcar como VISIT um evento com menos de 30min', async () => {
     const deps = createDeps()
     const useCase = new UpdateAgendaEventUseCase(
       deps.agendaEventRepository,
       deps.propertyRepository,
+      deps.userRepository,
     )
 
     await expect(
@@ -147,15 +163,16 @@ describe('UpdateAgendaEventUseCase', () => {
     expect(deps.agendaEventRepository.update).not.toHaveBeenCalled()
   })
 
-  it('permite marcar como VISIT um evento que já dura 60min ou mais', async () => {
+  it('permite marcar como VISIT um evento que já dura 30min ou mais', async () => {
     const longEvent = {
       ...shortEvent,
-      fim: new Date('2026-10-01T14:00:00.000Z'),
+      fim: new Date('2026-10-01T13:30:00.000Z'),
     }
     const deps = createDeps({ agendaFindByTenantAndId: vi.fn().mockResolvedValue(longEvent) })
     const useCase = new UpdateAgendaEventUseCase(
       deps.agendaEventRepository,
       deps.propertyRepository,
+      deps.userRepository,
     )
 
     await useCase.execute({
@@ -167,4 +184,49 @@ describe('UpdateAgendaEventUseCase', () => {
 
     expect(deps.agendaEventRepository.update).toHaveBeenCalled()
   })
+
+  const linkEditCases: [string, AgendaEventLinks, AgendaEventLinks][] = [
+    [
+      'omitidos mantêm dono e participantes',
+      {},
+      { donoEmail: undefined, participanteEmails: undefined },
+    ],
+    [
+      'null remove o dono e [] remove os participantes',
+      { donoEmail: null, participanteEmails: [] },
+      { donoEmail: null, participanteEmails: [] },
+    ],
+    [
+      'e-mails trocam o dono e substituem os participantes',
+      { donoEmail: 'Novo@Ketris.dev', participanteEmails: ['a@ketris.dev', 'A@ketris.dev'] },
+      { donoEmail: 'novo@ketris.dev', participanteEmails: ['a@ketris.dev'] },
+    ],
+  ]
+
+  it.each(linkEditCases)(
+    'repassa a semântica de edição dos vínculos: %s',
+    async (_, links, expected) => {
+      const deps = createDeps()
+      const useCase = new UpdateAgendaEventUseCase(
+        deps.agendaEventRepository,
+        deps.propertyRepository,
+        deps.userRepository,
+      )
+
+      await useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorPapel: 'AGENT',
+        id: 'event-1',
+        titulo: 'Atualizado',
+        ...links,
+      })
+
+      expect(deps.agendaEventRepository.update).toHaveBeenCalledWith(
+        'tenant-1',
+        'event-1',
+        expect.objectContaining({ titulo: 'Atualizado' }),
+        expected,
+      )
+    },
+  )
 })

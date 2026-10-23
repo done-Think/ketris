@@ -21,6 +21,7 @@ import type { ChargeRowProps } from '../types/charge'
 import { chargeStatusColors as statusColors } from './charge-status-colors'
 
 export function ChargeRow({
+  readOnly = false,
   charge,
   locale,
   zebra,
@@ -92,40 +93,44 @@ export function ChargeRow({
               <VisibilityOutlinedIcon sx={{ fontSize: iconSize.md }} />
             </IconButton>
           </Tooltip>
-          <IconButton
-            aria-label={`${labels.actions} ${charge.code}`}
-            onClick={(event: MouseEvent<HTMLButtonElement>) => setAnchor(event.currentTarget)}
-            size="small"
-            sx={{ color: brand.neutral[500], '&:hover': { color: 'primary.main' } }}
-          >
-            <MoreVertRoundedIcon sx={{ fontSize: iconSize.md }} />
-          </IconButton>
-          <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
-            <MenuItem
-              onClick={() => {
-                onEdit()
-                setAnchor(null)
-              }}
-            >
-              {labels.edit}
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                onArchive()
-                setAnchor(null)
-              }}
-            >
-              {labels.archive}
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                onDelete()
-                setAnchor(null)
-              }}
-            >
-              {labels.delete}
-            </MenuItem>
-          </Menu>
+          {!readOnly && (
+            <>
+              <IconButton
+                aria-label={`${labels.actions} ${charge.code}`}
+                onClick={(event: MouseEvent<HTMLButtonElement>) => setAnchor(event.currentTarget)}
+                size="small"
+                sx={{ color: brand.neutral[500], '&:hover': { color: 'primary.main' } }}
+              >
+                <MoreVertRoundedIcon sx={{ fontSize: iconSize.md }} />
+              </IconButton>
+              <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
+                <MenuItem
+                  onClick={() => {
+                    onEdit()
+                    setAnchor(null)
+                  }}
+                >
+                  {labels.edit}
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    onArchive()
+                    setAnchor(null)
+                  }}
+                >
+                  {labels.archive}
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    onDelete()
+                    setAnchor(null)
+                  }}
+                >
+                  {labels.delete}
+                </MenuItem>
+              </Menu>
+            </>
+          )}
         </Stack>
       </TableCell>
     </TableRow>

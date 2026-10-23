@@ -74,13 +74,16 @@ function PropertyStatusCell({
 }
 
 function PropertiesEmptyOverlay({
+  readOnly = false,
   emptyInventory,
   onCreateProperty,
 }: {
+  readOnly?: boolean
   emptyInventory: boolean
   onCreateProperty: () => void
 }) {
   const t = useTranslations('properties.dashboard.table')
+  const renterT = useTranslations('properties.dashboard.renter')
 
   return (
     <Stack
@@ -108,15 +111,15 @@ function PropertiesEmptyOverlay({
       </Box>
       <Box>
         <Typography sx={{ fontSize: 16, fontWeight: 900, color: brand.graphite[500] }}>
-          {emptyInventory ? t('emptyTitle') : t('noRows')}
+          {emptyInventory ? (readOnly ? renterT('emptyTitle') : t('emptyTitle')) : t('noRows')}
         </Typography>
         {emptyInventory ? (
           <Typography sx={{ mt: 0.5, color: brand.neutral[500], fontSize: 13 }}>
-            {t('emptyDescription')}
+            {readOnly ? renterT('emptyDescription') : t('emptyDescription')}
           </Typography>
         ) : null}
       </Box>
-      {emptyInventory ? (
+      {emptyInventory && !readOnly ? (
         <Button
           variant="contained"
           startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
@@ -143,6 +146,7 @@ function PropertiesEmptyOverlay({
 }
 
 export function PropertiesTable({
+  readOnly = false,
   properties,
   totalCount,
   onCreateProperty,
@@ -156,7 +160,7 @@ export function PropertiesTable({
       field: 'title',
       headerName: t('property'),
       flex: 2.2,
-      minWidth: 360,
+      minWidth: 180,
       resizable: false,
       sortable: true,
       renderCell: (params) => <PropertyIdentityCell {...params} />,
@@ -165,7 +169,7 @@ export function PropertiesTable({
       field: 'type',
       headerName: t('type'),
       flex: 0.9,
-      minWidth: 130,
+      minWidth: 110,
       align: 'center',
       headerAlign: 'center',
       resizable: false,
@@ -174,7 +178,7 @@ export function PropertiesTable({
       field: 'saleValue',
       headerName: t('saleValue'),
       flex: 0.9,
-      minWidth: 130,
+      minWidth: 125,
       align: 'center',
       headerAlign: 'center',
       resizable: false,
@@ -184,7 +188,7 @@ export function PropertiesTable({
       field: 'rentalValue',
       headerName: t('rentalValue'),
       flex: 0.9,
-      minWidth: 130,
+      minWidth: 125,
       align: 'center',
       headerAlign: 'center',
       resizable: false,
@@ -194,7 +198,7 @@ export function PropertiesTable({
       field: 'status',
       headerName: t('status'),
       flex: 0.8,
-      minWidth: 130,
+      minWidth: 120,
       align: 'center',
       headerAlign: 'center',
       resizable: false,
@@ -205,7 +209,7 @@ export function PropertiesTable({
       field: 'broker',
       headerName: t('broker'),
       flex: 1,
-      minWidth: 160,
+      minWidth: 100,
       align: 'center',
       headerAlign: 'center',
       resizable: false,
@@ -214,7 +218,7 @@ export function PropertiesTable({
       field: 'updatedAt',
       headerName: t('updated'),
       flex: 0.9,
-      minWidth: 140,
+      minWidth: 110,
       align: 'center',
       headerAlign: 'center',
       resizable: false,
@@ -250,10 +254,15 @@ export function PropertiesTable({
       <DataGrid
         autoHeight
         rows={properties}
-        columns={columns}
+        columns={
+          readOnly
+            ? columns.filter((column) =>
+                ['title', 'type', 'rentalValue', 'actions'].includes(column.field),
+              )
+            : columns
+        }
         rowHeight={82}
         columnHeaderHeight={56}
-        getRowSpacing={() => ({ top: 0, bottom: 10 })}
         disableColumnMenu
         disableColumnResize
         disableRowSelectionOnClick
@@ -271,6 +280,7 @@ export function PropertiesTable({
         slots={{
           noRowsOverlay: () => (
             <PropertiesEmptyOverlay
+              readOnly={readOnly}
               emptyInventory={emptyInventory}
               onCreateProperty={onCreateProperty}
             />
@@ -283,10 +293,13 @@ export function PropertiesTable({
         sx={{
           border: 0,
           minHeight: emptyInventory ? 360 : 'auto',
-          px: 1.25,
-          pb: 1,
+          overflow: 'hidden',
+          borderRadius: `${radius.sm}px`,
           '& .MuiDataGrid-main': {
-            overflow: 'visible',
+            overflow: 'hidden',
+          },
+          '& .MuiDataGrid-topContainer': {
+            bgcolor: surface.paper,
           },
           '& .MuiDataGrid-columnHeaders': {
             bgcolor: surface.paper,
@@ -317,23 +330,17 @@ export function PropertiesTable({
             outline: 'none',
           },
           '& .MuiDataGrid-cell[data-field="title"]': {
-            borderLeft: '1px solid',
-            borderColor: alpha.graphite[8],
-            borderTopLeftRadius: `${radius.sm}px`,
-            borderBottomLeftRadius: `${radius.sm}px`,
+            borderLeft: 0,
           },
           '& .MuiDataGrid-cell[data-field="actions"]': {
-            borderRight: '1px solid',
-            borderColor: alpha.graphite[8],
-            borderTopRightRadius: `${radius.sm}px`,
-            borderBottomRightRadius: `${radius.sm}px`,
+            borderRight: 0,
           },
           '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': {
             outline: 'none',
           },
           '& .MuiDataGrid-row': {
             cursor: 'pointer',
-            borderRadius: `${radius.sm}px`,
+            borderRadius: 0,
           },
           '& .MuiDataGrid-row.properties-row-base': {
             bgcolor: surface.paper,

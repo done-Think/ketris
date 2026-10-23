@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import { Box, Drawer, IconButton, Stack, Tooltip } from '@mui/material'
 import { useSession } from 'next-auth/react'
@@ -13,7 +13,15 @@ import { CrmAccessBoundary } from '@modules/crm/components/CrmAccessBoundary'
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
-import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import {
+  alpha,
+  brand,
+  dashboardLayout,
+  iconSize,
+  radius,
+  shadows,
+  surface,
+} from '@shared/theme/tokens'
 import type { AppShellProps } from '@shared/types/app-shell'
 import { getInitials } from '@shared/utils/get-initials'
 import { useSidebarPreferencesStore } from '@shared/stores/sidebar-preferences-store'
@@ -27,6 +35,16 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   const pathname = usePathname()
   const router = useRouter()
   const { data: session, status } = useSession()
+  const isRenter = session?.scope === 'tenant' && session.role === 'RENTER'
+  const isRenterRoute =
+    pathname === '/dashboard/agenda' ||
+    /^\/dashboard\/(?:finance\/charges|maintenance)(?:\/[^/]+)?\/?$/.test(pathname) ||
+    /^\/dashboard\/properties(?:\/(?!new(?:\/|$))[^/]+)?\/?$/.test(pathname)
+  useEffect(() => {
+    if (isRenter && !isRenterRoute) {
+      router.replace(getLocalizedPathname('/dashboard/finance/charges', locale))
+    }
+  }, [isRenter, isRenterRoute, locale, router])
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isSigningOut, setIsSigningOut] = useState(false)
   const sidebarCollapsed = useSidebarPreferencesStore((state) => state.isCollapsed)
@@ -39,12 +57,20 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   const userContext = session?.user?.email ?? t('defaultUserContext')
   const userInitials = useMemo(() => getInitials(userName), [userName])
   const visibleItems = useMemo(() => {
+    if (isRenter)
+      return appShellNavigationItems.filter(
+        (item) =>
+          item.href === '/dashboard/finance/charges' ||
+          item.href === '/dashboard/maintenance' ||
+          item.href === '/dashboard/agenda' ||
+          item.href === '/dashboard/properties',
+      )
     if (isLocalDashboardPreview) return appShellNavigationItems
 
     return appShellNavigationItems.filter(
-      (item) => !item.roles || (session?.papel && item.roles.includes(session.papel)),
+      (item) => !item.roles || (session?.role && item.roles.includes(session.role)),
     )
-  }, [isLocalDashboardPreview, session])
+  }, [isLocalDashboardPreview, isRenter, session])
   const activeTargetPath = useMemo(() => {
     if (isPersonalProfileRoute) return null
 
@@ -72,11 +98,14 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
     router.refresh()
   }
 
+  if (isRenter && !isRenterRoute) return null
+
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: surface.app }}>
       <Box
         sx={{
-          display: { xs: 'none', md: 'block' },
+          display: { xs: 'none' },
+          [dashboardLayout.desktopMediaQuery]: { display: 'block' },
           position: 'fixed',
           inset: '0 auto 0 0',
           width: sidebarCollapsed ? sidebarCollapsedWidth : sidebarExpandedWidth,
@@ -94,7 +123,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           userContext={userContext}
           userInitials={userInitials}
           userImage={session?.user?.image ?? undefined}
-          canEditProfile={!!session?.user?.id}
+          canEditProfile={!!session?.user?.id && !isRenter}
           isPersonalProfileRoute={isPersonalProfileRoute}
           isSigningOut={isSigningOut}
           onNavItemClick={() => setMobileOpen(false)}
@@ -113,7 +142,8 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
         alignItems="center"
         justifyContent="space-between"
         sx={{
-          display: { xs: 'flex', md: 'none' },
+          display: { xs: 'flex' },
+          [dashboardLayout.desktopMediaQuery]: { display: 'none' },
           position: 'fixed',
           inset: '0 0 auto 0',
           zIndex: 20,
@@ -140,7 +170,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           }}
         />
         <Stack direction="row" alignItems="center" spacing={1}>
-          <DashboardNotificationsButton />
+          <DashboardNotificationsButton placement="navigationHeader" />
           <Tooltip title={t('openNavigation')}>
             <IconButton
               aria-label={t('openNavigation')}
@@ -176,7 +206,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           userContext={userContext}
           userInitials={userInitials}
           userImage={session?.user?.image ?? undefined}
-          canEditProfile={!!session?.user?.id}
+          canEditProfile={!!session?.user?.id && !isRenter}
           isPersonalProfileRoute={isPersonalProfileRoute}
           isSigningOut={isSigningOut}
           onNavItemClick={() => setMobileOpen(false)}
@@ -192,17 +222,19 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
       <Box
         component="main"
         sx={{
-          width: {
-            xs: '100%',
-            md: `calc(100% - ${sidebarCollapsed ? sidebarCollapsedWidth : sidebarExpandedWidth}px)`,
-          },
+          width: '100%',
           minWidth: 0,
-          ml: { md: `${sidebarCollapsed ? sidebarCollapsedWidth : sidebarExpandedWidth}px` },
+          ml: 0,
           transition: 'margin-left 180ms ease, width 180ms ease',
-          pt: { xs: '64px', md: 0 },
+          pt: '64px',
+          [dashboardLayout.desktopMediaQuery]: {
+            width: `calc(100% - ${sidebarCollapsed ? sidebarCollapsedWidth : sidebarExpandedWidth}px)`,
+            ml: `${sidebarCollapsed ? sidebarCollapsedWidth : sidebarExpandedWidth}px`,
+            pt: 0,
+          },
         }}
       >
-        {isSigningOut || isPublicCrmRoute || isLocalDashboardPreview ? (
+        {isRenter || isSigningOut || isPublicCrmRoute || isLocalDashboardPreview ? (
           children
         ) : (
           <CrmAccessBoundary>{children}</CrmAccessBoundary>

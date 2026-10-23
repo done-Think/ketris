@@ -1,8 +1,12 @@
 export interface AgencyOverviewKpis {
   portfolioCount: number
+  newPropertiesThisMonth: number
   activeBrokersCount: number
   receivedLeadsThisMonth: number
+  receivedLeadsPreviousPeriod: number
   monthlyReceivable: number
+  monthlyReceivablePreviousMonth: number
+  overdueTotal: number
   occupancyPercentage: number
 }
 

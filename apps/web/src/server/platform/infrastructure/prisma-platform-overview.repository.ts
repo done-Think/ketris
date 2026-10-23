@@ -1,11 +1,10 @@
 import { prisma } from '@server/db/prisma'
 
+import type { PlatformGrowthMonth, PlatformRecentTenant } from '../domain/platform-overview.entity'
 import type {
-  PlatformGrowthMonth,
-  PlatformOverview,
-  PlatformRecentTenant,
-} from '../domain/platform-overview.entity'
-import type { PlatformOverviewRepository } from '../application/ports/platform-overview-repository.port'
+  PlatformOverviewCounts,
+  PlatformOverviewRepository,
+} from '../application/ports/platform-overview-repository.port'
 
 const RECENT_TENANTS_LIMIT = 5
 const GROWTH_MONTHS_BACK = 5
@@ -18,7 +17,7 @@ function monthRange(referenceDate: Date, monthsBack: number) {
 }
 
 export class PrismaPlatformOverviewRepository implements PlatformOverviewRepository {
-  async getOverview(referenceDate: Date): Promise<PlatformOverview> {
+  async getOverview(referenceDate: Date): Promise<PlatformOverviewCounts> {
     const seriesWindow = monthRange(referenceDate, GROWTH_MONTHS_BACK)
 
     const [
