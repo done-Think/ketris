@@ -56,6 +56,10 @@ export const supportColor = {
   orangeSoft: '#FFF0E6',
 } as const
 
+export const dashboardLayout = {
+  desktopMediaQuery: '@media (min-width: 1024px)',
+} as const
+
 export const radius = {
   sm: 8,
   md: 12,

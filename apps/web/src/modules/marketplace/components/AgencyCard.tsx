@@ -12,17 +12,13 @@ import { alpha, componentText, iconSize, motion, radius, shadows } from '@shared
 
 import type { AgencyCardProps } from '../types/agency'
 import { buildPublicProfileHref } from '../utils/property-links'
-import { buildProfileListings } from '../utils/profile-listings'
 import { AgencyAdaptiveBrandHeader } from './AgencyAdaptiveBrandHeader'
 import { DirectoryCardMetrics } from './directory/DirectoryCardMetrics'
-import { ProfileListingPreviewSection } from './profile/ProfileListingPreviewSection'
 
 export function AgencyCard(agency: AgencyCardProps) {
   const t = useTranslations('marketplace.directory.cards')
   const profileLinkRef = useRef<HTMLAnchorElement | null>(null)
   const isListView = agency.viewMode === 'list'
-  const featuredListings = buildProfileListings(agency.featuredListings).slice(0, 4)
-  const hasFeaturedListings = featuredListings.length > 0
 
   function handleCardClick(event: MouseEvent<HTMLElement>) {
     if (event.target instanceof Element && event.target.closest('a')) return
@@ -72,11 +68,6 @@ export function AgencyCard(agency: AgencyCardProps) {
 
       <CardContent
         sx={{
-          display: isListView && hasFeaturedListings ? 'grid' : 'block',
-          gridTemplateColumns: {
-            lg: isListView && hasFeaturedListings ? 'minmax(0, 1fr) minmax(480px, 0.58fr)' : '1fr',
-          },
-          gap: { xs: 2, lg: 2 },
           p: { xs: 2, md: isListView ? 2 : 2.2 },
           position: 'relative',
           zIndex: 2,
@@ -166,22 +157,7 @@ export function AgencyCard(agency: AgencyCardProps) {
           </Box>
         </Box>
 
-        {isListView && hasFeaturedListings ? (
-          <ProfileListingPreviewSection
-            accentColor={agency.brand.primaryColor ?? ''}
-            backgroundColor={agency.brand.backgroundColor ?? ''}
-            hoverBorderColor={agency.brand.primaryColor ?? ''}
-            listings={featuredListings}
-            sideBorderBreakpoint="lg"
-            source={{
-              href: agency.href,
-              name: agency.name,
-              type: 'agency',
-            }}
-          />
-        ) : null}
-
-        <Box sx={{ gridColumn: '1 / -1' }}>
+        <Box>
           <Divider sx={{ my: isListView ? 1.6 : 1.8 }} />
 
           <Stack

@@ -57,7 +57,7 @@ function renderBrokerCard() {
 }
 
 describe('BrokerCard', () => {
-  it('keeps the whole broker card linked while preserving featured listing links', () => {
+  it('keeps the whole broker card linked without featured listings', () => {
     renderBrokerCard()
 
     const profileLink = screen.getByRole('link', { name: 'Ver página pública de Marina Costa' })
@@ -69,17 +69,9 @@ describe('BrokerCard', () => {
 
     expect(profileClick).toHaveBeenCalledTimes(1)
 
-    const listingLink = screen.getByRole('link', { name: /R\$ 4\.800 \/ mês/i })
-
-    expect(listingLink).toHaveAttribute(
-      'href',
-      '/imoveis/apartamento-jardins?source=broker&sourceHref=%2Fbrokers%2Fmarina-costa&sourceName=Marina+Costa',
-    )
-
-    listingLink.addEventListener('click', (event) => event.preventDefault())
-    fireEvent.click(listingLink)
-
-    expect(profileClick).toHaveBeenCalledTimes(1)
+    expect(screen.getAllByRole('link')).toHaveLength(1)
+    expect(screen.queryByText('Imóveis em destaque')).not.toBeInTheDocument()
+    expect(screen.getByText('Ver página pública')).toBeVisible()
   })
 
   it('shows the broker region tooltip inside the clickable card', async () => {

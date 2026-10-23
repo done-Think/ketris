@@ -10,7 +10,7 @@ export function PropertyDetailSidebar({ property }: PropertyDetailSidebarProps) 
   const t = useTranslations('properties.detail')
 
   return (
-    <Stack sx={{ width: { xs: '100%', lg: 430 }, flexShrink: 0 }} spacing={2.8}>
+    <Stack sx={{ width: { xs: '100%', lg: 300, xl: 340 }, flexShrink: 0 }} spacing={2.8}>
       <Box
         sx={{
           bgcolor: surface.paper,

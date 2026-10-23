@@ -113,38 +113,38 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
 
   return (
     <Box sx={{ width: '100%', p: 3.5 }}>
+      <PropertyDetailHeader
+        property={property}
+        canManage={canManage}
+        isPublishing={publishProperty.isPending}
+        isUnpublishing={unpublishProperty.isPending}
+        isDeleting={deleteProperty.isPending}
+        onEdit={() =>
+          router.push({
+            pathname: '/dashboard/properties/[id]/edit',
+            params: { id: propertyId },
+          })
+        }
+        onPublish={handlePublish}
+        onUnpublish={handleUnpublish}
+        onDeleteRequest={() => setIsDeleteDialogOpen(true)}
+      />
+      <PropertyDetailTabs
+        readOnly={isRenter}
+        activeTab={activeTab}
+        onTabChange={(tab) => setValue('activeTab', tab)}
+      />
+      {isRenter && (
+        <Typography color="text.secondary" sx={{ mb: 2 }}>
+          {renterT('readOnly')}
+        </Typography>
+      )}
       <Stack
         direction={{ xs: 'column', lg: 'row' }}
         spacing={{ xs: 3, lg: 3.6 }}
         alignItems="flex-start"
       >
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <PropertyDetailHeader
-            property={property}
-            canManage={canManage}
-            isPublishing={publishProperty.isPending}
-            isUnpublishing={unpublishProperty.isPending}
-            isDeleting={deleteProperty.isPending}
-            onEdit={() =>
-              router.push({
-                pathname: '/dashboard/properties/[id]/edit',
-                params: { id: propertyId },
-              })
-            }
-            onPublish={handlePublish}
-            onUnpublish={handleUnpublish}
-            onDeleteRequest={() => setIsDeleteDialogOpen(true)}
-          />
-          <PropertyDetailTabs
-            readOnly={isRenter}
-            activeTab={activeTab}
-            onTabChange={(tab) => setValue('activeTab', tab)}
-          />
-          {isRenter && (
-            <Typography color="text.secondary" sx={{ mb: 2 }}>
-              {renterT('readOnly')}
-            </Typography>
-          )}
+        <Box sx={{ flex: 1, minWidth: 0, width: '100%' }}>
           <PropertyDetailMainPanel
             property={property}
             activeTab={isRenter && activeTab !== 'media' ? 'data' : activeTab}

@@ -9,7 +9,15 @@ import { useState } from 'react'
 
 import { useRouter } from '@/i18n/navigation'
 import { useDashboardAgendaNotifications } from '@shared/hooks/use-dashboard-agenda-notifications'
-import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import {
+  alpha,
+  brand,
+  dashboardLayout,
+  iconSize,
+  radius,
+  shadows,
+  surface,
+} from '@shared/theme/tokens'
 import type {
   DashboardNotificationItem,
   DashboardNotificationsButtonProps,
@@ -21,6 +29,7 @@ const notificationKindIcons = {
 }
 
 export function DashboardNotificationsButton({
+  placement = 'pageHeader',
   notifications,
   onNotificationSelect,
 }: DashboardNotificationsButtonProps) {
@@ -54,6 +63,8 @@ export function DashboardNotificationsButton({
           aria-expanded={isOpen ? 'true' : undefined}
           onClick={(event) => setAnchorEl(event.currentTarget)}
           sx={{
+            display: { xs: placement === 'navigationHeader' ? 'inline-flex' : 'none' },
+            [dashboardLayout.desktopMediaQuery]: { display: 'inline-flex' },
             width: 42,
             height: 42,
             border: '1px solid',

@@ -8,7 +8,7 @@ import {
   DashboardNotificationsButton,
   DashboardPageHeader,
 } from '@shared/components/layout'
-import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import { alpha, brand, dashboardLayout, iconSize, radius, surface } from '@shared/theme/tokens'
 
 import type { LeadsHeaderProps } from '../../types/lead'
 
@@ -19,7 +19,11 @@ export function LeadsHeader({ search, onSearchChange, onNewLead }: LeadsHeaderPr
     <Stack
       direction={{ xs: 'column', sm: 'row' }}
       spacing={1.2}
-      sx={{ width: { xs: '100%', md: 'auto' }, alignItems: { xs: 'stretch', sm: 'center' } }}
+      sx={{
+        width: '100%',
+        alignItems: { xs: 'stretch', sm: 'center' },
+        [dashboardLayout.desktopMediaQuery]: { width: 'auto' },
+      }}
     >
       <TextField
         value={search}
@@ -64,7 +68,9 @@ export function LeadsHeader({ search, onSearchChange, onNewLead }: LeadsHeaderPr
       >
         {t('newLead')}
       </DashboardHeaderActionButton>
-      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+      <Box
+        sx={{ display: { xs: 'none' }, [dashboardLayout.desktopMediaQuery]: { display: 'block' } }}
+      >
         <DashboardNotificationsButton />
       </Box>
     </Stack>

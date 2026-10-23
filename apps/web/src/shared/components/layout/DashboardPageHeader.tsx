@@ -1,18 +1,26 @@
 import { Box, Stack, Typography } from '@mui/material'
 
-import { brand } from '@shared/theme/tokens'
+import { brand, dashboardLayout } from '@shared/theme/tokens'
 import type { DashboardPageHeaderProps } from '@shared/types/dashboard-page-header'
 
 export function DashboardPageHeader({ actions, subtitle, sx, title }: DashboardPageHeaderProps) {
   return (
     <Stack
       component="header"
-      direction={{ xs: 'column', md: 'row' }}
-      alignItems={{ xs: 'stretch', md: 'flex-start' }}
       justifyContent="space-between"
-      spacing={1.6}
       sx={[
-        { pb: 1.75, borderBottom: '1px solid', borderColor: 'divider' },
+        {
+          pb: 1.75,
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+          flexDirection: 'column',
+          alignItems: 'stretch',
+          gap: 1.6,
+          [dashboardLayout.desktopMediaQuery]: {
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+          },
+        },
         ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
       ]}
     >
@@ -37,7 +45,15 @@ export function DashboardPageHeader({ actions, subtitle, sx, title }: DashboardP
       </Box>
 
       {actions ? (
-        <Box sx={{ flexShrink: 0, width: { xs: '100%', md: 'auto' } }}>{actions}</Box>
+        <Box
+          sx={{
+            flexShrink: 0,
+            width: '100%',
+            [dashboardLayout.desktopMediaQuery]: { width: 'auto' },
+          }}
+        >
+          {actions}
+        </Box>
       ) : null}
     </Stack>
   )

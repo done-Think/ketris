@@ -17,7 +17,6 @@ export function ContactsCards({
   return (
     <Stack
       aria-label={t('mobileListAriaLabel')}
-      sx={{ display: { xs: 'flex', md: 'none' } }}
       divider={<Box sx={{ borderTop: 1, borderColor: 'divider' }} />}
     >
       {contacts.map((contact) => (
