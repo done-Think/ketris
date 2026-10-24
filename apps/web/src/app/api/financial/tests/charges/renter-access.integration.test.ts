@@ -59,7 +59,7 @@ describe('Renter charge isolation (database integration)', () => {
           responsavelId: agentId,
           titulo: 'Rental',
           finalidade: 'ALUGUEL',
-          tipo: 'apartamento',
+          tipo: 'APARTAMENTO',
           valor: 1000,
         },
       })

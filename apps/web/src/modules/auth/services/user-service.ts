@@ -39,7 +39,7 @@ class UserService extends BaseService {
     formData.append('file', file)
 
     return this.http
-      .post<UploadAvatarResponse>('/properties/media', formData, {
+      .post<UploadAvatarResponse>('/auth/me/avatar', formData, {
         headers: { 'Content-Type': undefined },
       })
       .then((data) => data.media.url)

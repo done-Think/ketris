@@ -33,17 +33,17 @@ export class ContractNotFoundError extends NotFoundError {
   }
 }
 
-export class PropertyHasLinkedRecordsError extends AppError {
-  constructor() {
-    super('Não é possível excluir um imóvel com propostas ou contratos vinculados.', {
-      status: 409,
-      code: 'PROPERTY_HAS_LINKED_RECORDS',
-    })
-  }
-}
-
 export class PropertyMediaValidationError extends AppError {
   constructor(message: string) {
     super(message, { status: 400, code: 'PROPERTY_MEDIA_VALIDATION_ERROR' })
+  }
+}
+
+export class PropertyOwnerValidationError extends AppError {
+  constructor() {
+    super('Proprietário inválido para este tenant.', {
+      status: 400,
+      code: 'PROPERTY_OWNER_INVALID',
+    })
   }
 }

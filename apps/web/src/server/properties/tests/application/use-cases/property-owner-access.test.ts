@@ -1,3 +1,4 @@
+import { createOwnerDirectory } from '../../fixtures/property-owner-directory'
 import { describe, expect, it, vi } from 'vitest'
 
 import { ForbiddenError } from '@server/shared/errors'
@@ -21,14 +22,16 @@ const property = {
 function createRepository(): PropertyRepository {
   return {
     create: vi.fn(),
-    list: vi.fn().mockResolvedValue([property]),
+    listPage: vi.fn().mockResolvedValue({
+      properties: [property],
+      pagination: { page: 1, pageSize: 25, total: 1, totalPages: 1 },
+      counts: { DRAFT: 1, PUBLISHED: 0, RENTED: 0, SOLD: 0, INACTIVE: 0 },
+    }),
     findByTenantAndId: vi.fn().mockResolvedValue(property),
     update: vi.fn(),
     setStatus: vi.fn(),
     findContractProperty: vi.fn(),
     findRenterContractProperty: vi.fn(),
-    hasLinkedRecords: vi.fn(),
-    delete: vi.fn(),
   }
 }
 
@@ -44,7 +47,7 @@ describe('proprietário do imóvel (PROPERTY_OWNER)', () => {
 
     await new ListPropertiesUseCase(repository).execute(propertyOwner)
 
-    expect(repository.list).toHaveBeenCalledWith(
+    expect(repository.listPage).toHaveBeenCalledWith(
       expect.objectContaining({ tenantId: 'tenant-1', proprietarioId: 'owner-1' }),
     )
   })
@@ -63,16 +66,16 @@ describe('proprietário do imóvel (PROPERTY_OWNER)', () => {
     )
   })
 
-  it('cria o imóvel já como proprietário dele', () => {
+  it('cria o imóvel já como proprietário dele', async () => {
     const repository = createRepository()
 
-    new CreatePropertyUseCase(repository).execute({
+    await new CreatePropertyUseCase(repository, createOwnerDirectory()).execute({
       actorTenantId: 'tenant-1',
       actorUserId: 'owner-1',
       actorPapel: 'PROPERTY_OWNER',
       titulo: 'Casa',
       finalidade: 'ALUGUEL',
-      tipo: 'casa',
+      tipo: 'CASA',
       valor: 1000,
     })
 
@@ -105,13 +108,13 @@ describe('proprietário do imóvel (PROPERTY_OWNER)', () => {
 
   it('o locatário não cria imóveis', () => {
     expect(() =>
-      new CreatePropertyUseCase(createRepository()).execute({
+      new CreatePropertyUseCase(createRepository(), createOwnerDirectory()).execute({
         actorTenantId: 'tenant-1',
         actorUserId: 'renter-1',
         actorPapel: 'RENTER',
         titulo: 'Casa',
         finalidade: 'ALUGUEL',
-        tipo: 'casa',
+        tipo: 'CASA',
         valor: 1000,
       }),
     ).toThrow(ForbiddenError)

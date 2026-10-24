@@ -1,5 +1,7 @@
 'use client'
 
+import { styles } from '../styles/delete-property-dialog.styles'
+
 import {
   Button,
   CircularProgress,
@@ -24,7 +26,7 @@ export function DeletePropertyDialog({
 
   return (
     <Dialog open={open} onClose={() => !isPending && onClose()}>
-      <DialogTitle sx={{ letterSpacing: 0 }}>{t('title')}</DialogTitle>
+      <DialogTitle sx={styles.dialogTitle}>{t('title')}</DialogTitle>
       <DialogContent>
         <Typography color="text.secondary">{t('description', { title })}</Typography>
       </DialogContent>

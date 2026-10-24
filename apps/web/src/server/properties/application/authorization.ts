@@ -3,9 +3,7 @@ import type { Papel } from '@server/auth/domain/user.entity'
 import { ForbiddenError } from '@server/shared/errors'
 
 import { PropertyNotFoundError } from '../domain/errors'
-import type { Property } from '../types/property'
-
-type PropertyAccessTarget = Pick<Property, 'responsavelId' | 'proprietarioId'>
+import type { PropertyAccessTarget } from '../types/property'
 
 export function assertCanEditProperties(actorPapel: Papel): void {
   if (!isAgencyStaff(actorPapel) && !isPropertyOwner(actorPapel)) {

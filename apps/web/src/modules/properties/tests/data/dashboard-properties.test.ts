@@ -1,18 +1,21 @@
+import { createFormatter } from 'next-intl'
 import { describe, expect, it } from 'vitest'
 
 import {
   getDashboardPropertyById,
   localizeDashboardPropertyFixture,
-} from '../../data/dashboard-properties'
+} from '../fixtures/dashboard-properties'
 import type { DashboardPropertyMappingOptions } from '../../types/dashboard-property'
 
 const enOptions: DashboardPropertyMappingOptions = {
   locale: 'en-US',
+  formatter: createFormatter({ locale: 'en-US' }),
   messages: {
     notAnnounced: 'Not announced',
     notInformed: 'Not informed',
     unknownAddress: 'Address not informed',
     monthlySuffix: '/mo',
+    mediaKinds: { photo: 'Photo', floorPlan: 'Floor plan', video: 'Video' },
     purposes: { rent: 'Rent', sale: 'Sale' },
     propertyTypes: {
       apartment: 'Apartment',
@@ -20,6 +23,8 @@ const enOptions: DashboardPropertyMappingOptions = {
       studio: 'Studio',
       penthouse: 'Penthouse',
       commercial: 'Commercial',
+      loft: 'Loft',
+      other: 'Other',
     },
     activity: {
       created: 'Property registration completed',

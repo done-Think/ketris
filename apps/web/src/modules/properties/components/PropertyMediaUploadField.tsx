@@ -1,27 +1,27 @@
+import { styles, getDropzoneStyles } from '../styles/property-media-upload-field.styles'
 import { useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Box, CircularProgress, IconButton, Stack, Typography } from '@mui/material'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined'
-import { Controller, type Control } from 'react-hook-form'
+import { Controller } from 'react-hook-form'
 import { useSnackbar } from 'notistack'
 import { useTranslations } from 'next-intl'
 
-import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import { iconSize } from '@shared/theme/tokens'
 
-import { useUploadPropertyMedia } from '../hooks/use-properties'
-import type { CreateDashboardPropertyFormValues } from '../types/dashboard-property'
+import { useUploadPropertyMediaBatch } from '../hooks/use-properties'
+import type {
+  PropertyMediaUploadFieldProps,
+  PropertyMediaDropzoneProps,
+} from '../types/dashboard-property'
 
 const ACCEPTED_TYPES = { 'image/jpeg': [], 'image/png': [], 'image/webp': [] }
 
-export function PropertyMediaUploadField({
-  control,
-}: {
-  control: Control<CreateDashboardPropertyFormValues>
-}) {
+export function PropertyMediaUploadField({ control }: PropertyMediaUploadFieldProps) {
   const t = useTranslations('properties.create')
   const { enqueueSnackbar } = useSnackbar()
-  const { mutateAsync: uploadMedia, isPending } = useUploadPropertyMedia()
+  const { mutateAsync: uploadMedia, isPending } = useUploadPropertyMediaBatch()
 
   return (
     <Controller
@@ -35,15 +35,19 @@ export function PropertyMediaUploadField({
             items={items}
             isUploading={isPending}
             onDrop={async (files) => {
+              if (isPending || files.length === 0) return
               const baseItems = field.value
-              const results = await Promise.allSettled(files.map((file) => uploadMedia(file)))
+              const results = await uploadMedia(files)
               const uploaded = results.flatMap((result) =>
                 result.status === 'fulfilled' ? [result.value] : [],
               )
 
-              if (results.some((result) => result.status === 'rejected')) {
-                enqueueSnackbar(t('mediaUploadError'), { variant: 'error' })
-              }
+              results.forEach((result, index) => {
+                if (result.status === 'rejected')
+                  enqueueSnackbar(t('mediaUploadFileError', { filename: files[index].name }), {
+                    variant: 'error',
+                  })
+              })
 
               if (uploaded.length > 0) {
                 field.onChange([
@@ -62,20 +66,11 @@ export function PropertyMediaUploadField({
   )
 }
 
-function MediaDropzone({
-  items,
-  isUploading,
-  onDrop,
-  onRemove,
-}: {
-  items: CreateDashboardPropertyFormValues['media']
-  isUploading: boolean
-  onDrop: (files: File[]) => void
-  onRemove: (index: number) => void
-}) {
+function MediaDropzone({ items, isUploading, onDrop, onRemove }: PropertyMediaDropzoneProps) {
   const t = useTranslations('properties.create')
   const handleDrop = useCallback((acceptedFiles: File[]) => onDrop(acceptedFiles), [onDrop])
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    disabled: isUploading,
     onDrop: handleDrop,
     accept: ACCEPTED_TYPES,
     multiple: true,
@@ -83,70 +78,33 @@ function MediaDropzone({
 
   return (
     <Stack spacing={2}>
-      <Box
-        {...getRootProps()}
-        sx={{
-          minHeight: 150,
-          border: '1px dashed',
-          borderColor: isDragActive ? 'primary.main' : 'divider',
-          borderRadius: `${radius.sm}px`,
-          bgcolor: isDragActive ? alpha.magenta[6] : surface.paper,
-          display: 'grid',
-          placeItems: 'center',
-          px: 2,
-          textAlign: 'center',
-          cursor: 'pointer',
-        }}
-      >
-        <input {...getInputProps()} />
+      <Box {...getRootProps()} sx={getDropzoneStyles(isDragActive)}>
+        <input {...getInputProps({ disabled: isUploading })} />
         <Stack spacing={0.8} alignItems="center">
           {isUploading ? (
             <CircularProgress size={iconSize.xl} />
           ) : (
-            <CloudUploadOutlinedIcon sx={{ color: brand.neutral[500], fontSize: iconSize.xl }} />
+            <CloudUploadOutlinedIcon sx={styles.cloudUploadOutlinedIcon} />
           )}
-          <Typography sx={{ color: brand.neutral[500], fontWeight: 900 }}>
+          <Typography sx={styles.typography}>
             {isUploading ? t('mediaUploading') : t('mediaDropzone')}
           </Typography>
         </Stack>
       </Box>
 
       {items.length > 0 ? (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, minmax(0, 1fr))' },
-            gap: 1.6,
-          }}
-        >
+        <Box sx={styles.box}>
           {items.map((item, index) => (
-            <Box key={`${item.url}-${index}`} sx={{ position: 'relative' }}>
-              <Box
-                component="img"
-                src={item.url}
-                alt=""
-                sx={{
-                  display: 'block',
-                  width: '100%',
-                  aspectRatio: '1 / 1',
-                  objectFit: 'cover',
-                  borderRadius: `${radius.sm}px`,
-                }}
-              />
+            <Box key={`${item.url}-${index}`} sx={styles.box2}>
+              <Box component="img" src={item.url} alt="" sx={styles.box3} />
               <IconButton
                 aria-label={t('mediaRemove')}
                 onClick={() => onRemove(index)}
                 size="small"
-                sx={{
-                  position: 'absolute',
-                  top: 4,
-                  right: 4,
-                  bgcolor: 'rgba(0,0,0,0.6)',
-                  color: '#fff',
-                  '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' },
-                }}
+                disabled={isUploading}
+                sx={styles.iconButton}
               >
-                <CloseRoundedIcon sx={{ fontSize: iconSize.sm }} />
+                <CloseRoundedIcon sx={styles.closeRoundedIcon} />
               </IconButton>
             </Box>
           ))}

@@ -52,15 +52,13 @@ function createDeps(overrides?: {
   }
   const propertyRepository: PropertyRepository = {
     create: vi.fn(),
-    list: vi.fn(),
+    listPage: vi.fn(),
     findByTenantAndId:
       overrides?.findByTenantAndId ?? vi.fn().mockResolvedValue({ id: 'property-1' } as Property),
     update: vi.fn(),
     setStatus: vi.fn(),
     findContractProperty: vi.fn(),
     findRenterContractProperty: vi.fn(),
-    hasLinkedRecords: vi.fn(),
-    delete: vi.fn(),
   }
 
   return {

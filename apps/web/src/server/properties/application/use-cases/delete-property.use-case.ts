@@ -1,13 +1,13 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { DeletePropertyInput } from '../../types/use-case-inputs'
 
 import { assertCanEditProperties, assertPropertyAccess } from '../authorization'
-import { PropertyHasLinkedRecordsError, PropertyNotFoundError } from '../../domain/errors'
+import { PropertyNotFoundError } from '../../domain/errors'
 import type { PropertyRepository } from '../ports/property-repository.port'
 
 export class DeletePropertyUseCase {
   constructor(private readonly propertyRepository: PropertyRepository) {}
 
-  async execute(input: { actorTenantId: string; actorId: string; id: string; actorPapel: Papel }) {
+  async execute(input: DeletePropertyInput) {
     assertCanEditProperties(input.actorPapel)
 
     const existing = await this.propertyRepository.findByTenantAndId(input.actorTenantId, input.id)
@@ -18,16 +18,12 @@ export class DeletePropertyUseCase {
 
     assertPropertyAccess(existing, input.actorId, input.actorPapel)
 
-    const hasLinkedRecords = await this.propertyRepository.hasLinkedRecords(
+    const deleted = await this.propertyRepository.setStatus(
       input.actorTenantId,
       input.id,
+      'INACTIVE',
+      existing.publicadoEm,
     )
-
-    if (hasLinkedRecords) {
-      throw new PropertyHasLinkedRecordsError()
-    }
-
-    const deleted = await this.propertyRepository.delete(input.actorTenantId, input.id)
 
     if (!deleted) {
       throw new PropertyNotFoundError()

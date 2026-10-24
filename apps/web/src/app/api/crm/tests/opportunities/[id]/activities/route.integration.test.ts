@@ -54,7 +54,7 @@ describe('/api/crm/opportunities/[id]/activities (integração)', () => {
         responsavelId: responsavel.id,
         titulo: 'Imóvel',
         finalidade: 'ALUGUEL',
-        tipo: 'apartamento',
+        tipo: 'APARTAMENTO',
         valor: 2000,
         status: 'PUBLISHED',
         publicadoEm: new Date(),

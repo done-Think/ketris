@@ -1,20 +1,14 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { PublishPropertyInput } from '../../types/use-case-inputs'
 
 import { assertCanEditProperties, assertPropertyAccess } from '../authorization'
 import { PropertyNotFoundError, PropertyPublishValidationError } from '../../domain/errors'
-import type { Property } from '../../types/property'
+import { getPublishMissingFields } from '../../domain/property-publication'
 import type { PropertyRepository } from '../ports/property-repository.port'
 
 export class PublishPropertyUseCase {
   constructor(private readonly propertyRepository: PropertyRepository) {}
 
-  async execute(input: {
-    actorTenantId: string
-    actorId: string
-    id: string
-    publishedAt?: Date
-    actorPapel: Papel
-  }) {
+  async execute(input: PublishPropertyInput) {
     assertCanEditProperties(input.actorPapel)
 
     const property = await this.propertyRepository.findByTenantAndId(input.actorTenantId, input.id)
@@ -44,16 +38,4 @@ export class PublishPropertyUseCase {
 
     return publishedProperty
   }
-}
-
-function getPublishMissingFields(property: Property): string[] {
-  const missingFields: string[] = []
-
-  if (!property.titulo.trim()) missingFields.push('titulo')
-  if (!property.tipo.trim()) missingFields.push('tipo')
-  if (property.valores.valor <= 0) missingFields.push('valor')
-  if (!property.endereco) missingFields.push('endereco')
-  if (property.midias.length === 0) missingFields.push('midias')
-
-  return missingFields
 }

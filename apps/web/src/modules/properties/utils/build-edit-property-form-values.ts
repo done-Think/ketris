@@ -1,4 +1,4 @@
-import { createPropertySteps, createPropertyTypeOptions } from '../config/dashboard-property-ui'
+import { createPropertyPublishingOptions } from '../config/dashboard-property-ui'
 import type {
   CreateDashboardPropertyFormValues,
   CreatePropertyPurpose,
@@ -6,20 +6,18 @@ import type {
 import type { Property } from '../types/property'
 
 function toDashboardPurpose(purpose: Property['purpose']): CreatePropertyPurpose[] {
-  if (purpose === 'BOTH') return ['Aluguel', 'Venda']
+  if (purpose === 'BOTH') return ['RENT', 'SALE']
 
-  return purpose === 'SALE' ? ['Venda'] : ['Aluguel']
-}
-
-function toDashboardType(type: string): string {
-  return createPropertyTypeOptions.includes(type) ? type : createPropertyTypeOptions[0]
+  return purpose === 'SALE' ? ['SALE'] : ['RENT']
 }
 
 export function buildEditPropertyFormValues(property: Property): CreateDashboardPropertyFormValues {
   return {
-    activeStepIndex: 0,
-    maxVisitedStepIndex: createPropertySteps.length - 1,
-    type: toDashboardType(property.type),
+    ownerUserId: property.ownerUserId ?? '',
+    complement: property.address?.complement ?? '',
+    latitude: property.address?.latitude ?? null,
+    longitude: property.address?.longitude ?? null,
+    type: property.type,
     purpose: toDashboardPurpose(property.purpose),
     title: property.title,
     description: property.description ?? '',
@@ -33,13 +31,20 @@ export function buildEditPropertyFormValues(property: Property): CreateDashboard
     bathrooms: property.characteristics.bathrooms ?? 0,
     parkingSpaces: property.characteristics.parkingSpots ?? 0,
     area: property.characteristics.areaM2 ?? 0,
-    features: [],
+    features: property.listing.amenities,
     media: property.media.map((item) => ({ url: item.url, type: item.type, order: item.order })),
     mainValue: property.values.price,
     rentalValue: property.values.rentalPrice ?? 0,
     condominium: property.values.condoFee ?? 0,
     iptu: property.values.propertyTax ?? 0,
-    negotiationTerm: 'A combinar',
-    publishingOptions: [],
+    negotiationTerm: property.listing.negotiationTerms ?? '',
+    publishingOptions: createPropertyPublishingOptions.filter(
+      (_, index) =>
+        [
+          property.listing.publishAfterReview,
+          property.listing.allowWhatsappContact,
+          property.listing.featured,
+        ][index],
+    ),
   }
 }

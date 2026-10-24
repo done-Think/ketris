@@ -1,11 +1,14 @@
+import { styles, getMenuItemStyles, getCountStyles } from '../styles/property-status-filters.styles'
 import { Box, MenuItem, Stack, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { DashboardStatusFilterButton } from '@shared/components/layout'
-import { alpha, brand, motion, radius, shadows, surface } from '@shared/theme/tokens'
 
-import { propertyStatusFilters } from '../data/dashboard-properties'
-import type { PropertyStatusFiltersProps } from '../types/dashboard-property'
+import { propertyStatusFilters } from '../config/dashboard-property-ui'
+import type {
+  PropertyStatusFiltersProps,
+  PropertyFilterOptionLabelProps,
+} from '../types/dashboard-property'
 
 export function PropertyStatusFilters({
   activeStatusFilter,
@@ -21,35 +24,7 @@ export function PropertyStatusFilters({
         size="small"
         value={activeStatusFilter}
         onChange={(event) => onStatusFilterChange(event.target.value as typeof activeStatusFilter)}
-        sx={{
-          display: { xs: 'block', sm: 'none' },
-          width: '100%',
-          mb: 1.8,
-          '& .MuiOutlinedInput-root': {
-            minHeight: 46,
-            borderRadius: `${radius.sm}px`,
-            bgcolor: surface.paper,
-            color: brand.graphite[500],
-            fontSize: 14,
-            fontWeight: 800,
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-              borderColor: 'transparent',
-              borderWidth: 0,
-            },
-          },
-          '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'transparent',
-            borderWidth: 0,
-          },
-          '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'transparent',
-          },
-          '& .MuiSelect-select': {
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.8,
-          },
-        }}
+        sx={styles.textField}
         SelectProps={{
           renderValue: () => (
             <FilterOptionLabel
@@ -60,11 +35,7 @@ export function PropertyStatusFilters({
           ),
           MenuProps: {
             PaperProps: {
-              sx: {
-                mt: 0.6,
-                borderRadius: `${radius.sm}px`,
-                boxShadow: shadows.popover,
-              },
+              sx: styles.menuPaper,
             },
           },
         }}
@@ -73,17 +44,7 @@ export function PropertyStatusFilters({
           const active = filter.label === activeStatusFilter
 
           return (
-            <MenuItem
-              key={filter.label}
-              value={filter.label}
-              sx={{
-                minHeight: 42,
-                bgcolor: active ? alpha.magenta[8] : 'transparent',
-                '&:hover': {
-                  bgcolor: alpha.magenta[8],
-                },
-              }}
-            >
+            <MenuItem key={filter.label} value={filter.label} sx={getMenuItemStyles(active)}>
               <FilterOptionLabel
                 label={t(filter.label)}
                 count={statusFilterCounts[filter.label]}
@@ -102,7 +63,7 @@ export function PropertyStatusFilters({
         spacing={0.8}
         useFlexGap
         flexWrap="wrap"
-        sx={{ display: { xs: 'none', sm: 'flex' }, mb: 1.8 }}
+        sx={styles.stack}
       >
         {propertyStatusFilters.map((filter) => {
           const active = filter.label === activeStatusFilter
@@ -113,7 +74,7 @@ export function PropertyStatusFilters({
               active={active}
               count={statusFilterCounts[filter.label]}
               onClick={() => onStatusFilterChange(filter.label)}
-              sx={{ transition: motion.transition.bordered }}
+              sx={styles.dashboardStatusFilterButton}
             >
               {t(filter.label)}
             </DashboardStatusFilterButton>
@@ -124,33 +85,11 @@ export function PropertyStatusFilters({
   )
 }
 
-function FilterOptionLabel({
-  active,
-  count,
-  label,
-}: {
-  active: boolean
-  count: number
-  label: string
-}) {
+function FilterOptionLabel({ active, count, label }: PropertyFilterOptionLabelProps) {
   return (
-    <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+    <Box component="span" sx={styles.box}>
       <Box component="span">{label}</Box>
-      <Box
-        component="span"
-        sx={{
-          display: 'grid',
-          minWidth: 26,
-          height: 26,
-          placeItems: 'center',
-          px: 0.6,
-          borderRadius: `${radius.full}px`,
-          bgcolor: active ? brand.magenta[500] : alpha.graphite[6],
-          color: active ? surface.lightText : brand.neutral[500],
-          fontSize: 15,
-          fontWeight: 900,
-        }}
-      >
+      <Box component="span" sx={getCountStyles(active)}>
         {count}
       </Box>
     </Box>

@@ -92,7 +92,7 @@ describe('/api/financial/charges (integração)', () => {
         responsavelId: actor.id,
         titulo: 'Apartamento Batel',
         finalidade: 'ALUGUEL',
-        tipo: 'apartamento',
+        tipo: 'APARTAMENTO',
         valor: 2500,
         status: 'RENTED',
       },

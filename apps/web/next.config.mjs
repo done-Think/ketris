@@ -17,7 +17,11 @@ const nextConfig = {
       '*.webm': { type: 'asset' },
     },
   },
-  webpack(config) {
+  webpack(config, { dev }) {
+    if (dev && config.cache && typeof config.cache === 'object') {
+      config.cache.version = `${config.cache.version ?? ''}:rsc-non-negative-timings-v1`
+    }
+
     config.infrastructureLogging = {
       ...(config.infrastructureLogging ?? {}),
       level: 'error',

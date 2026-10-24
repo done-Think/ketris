@@ -41,14 +41,14 @@
     },
     "filters": {
       "filterAriaLabel": "Filtrar imóveis por status",
-      "Todos": "Todos",
-      "Disponível": "Disponível",
-      "Alugado": "Alugado",
-      "Ativo": "Ativo",
-      "Vendido": "Vendido",
-      "Em análise": "Em análise",
-      "Vencendo": "Vencendo",
-      "Inativo": "Inativo"
+      "all": "Todos",
+      "available": "Disponível",
+      "rented": "Alugado",
+      "active": "Ativo",
+      "sold": "Vendido",
+      "inReview": "Em análise",
+      "expiring": "Vencendo",
+      "inactive": "Inativo"
     },
     "mapping": {
       "notAnnounced": "Não anunciado",
@@ -64,7 +64,9 @@
         "house": "Casa",
         "studio": "Studio",
         "penthouse": "Cobertura",
-        "commercial": "Comercial"
+        "commercial": "Comercial",
+        "loft": "Loft",
+        "other": "Outro"
       },
       "activity": {
         "created": "Cadastro do imóvel efetuado",
@@ -141,19 +143,30 @@
       "history": "Histórico"
     },
     "publish": "Publicar",
-    "delete": "Excluir",
+    "delete": "Inativar",
     "publishSuccess": "Imóvel publicado com sucesso.",
     "publishError": "Não foi possível publicar o imóvel. Tente novamente.",
     "unpublishSuccess": "Imóvel despublicado com sucesso.",
     "unpublishError": "Não foi possível despublicar o imóvel. Tente novamente.",
-    "deleteSuccess": "Imóvel excluído com sucesso.",
-    "deleteError": "Não foi possível excluir o imóvel. Tente novamente.",
+    "deleteSuccess": "Imóvel inativado com sucesso.",
+    "deleteError": "Não foi possível inativar o imóvel. Tente novamente.",
     "deleteDialog": {
-      "title": "Excluir imóvel",
-      "description": "Tem certeza que deseja excluir \"{title}\"? Essa ação é permanente e não pode ser desfeita. Se o imóvel tiver propostas ou contratos vinculados, a exclusão será bloqueada.",
-      "confirm": "Excluir",
+      "title": "Inativar imóvel",
+      "description": "Deseja inativar \"{title}\"? O imóvel deixará de ser anunciado. Seus dados, mídias, propostas e contratos serão preservados.",
+      "confirm": "Inativar",
       "cancel": "Cancelar"
-    }
+    },
+    "mediaKinds": {
+      "photo": "Foto",
+      "floorPlan": "Planta",
+      "video": "Vídeo"
+    },
+    "loadError": "Não foi possível carregar o imóvel. Tente novamente.",
+    "retry": "Tentar novamente",
+    "loading": "Carregando imóvel",
+    "description": "Descrição",
+    "amenities": "Comodidades",
+    "negotiationTerms": "Condições de negociação"
   },
   "create": {
     "title": "Cadastrar imóvel",
@@ -183,7 +196,11 @@
       "iptu": "IPTU mensal",
       "securityDeposit": "Garantia",
       "commission": "Comissão",
-      "commercialTerms": "Condição comercial"
+      "commercialTerms": "Condição comercial",
+      "owner": "Proprietário",
+      "complement": "Complemento",
+      "latitude": "Latitude (opcional)",
+      "longitude": "Longitude (opcional)"
     },
     "steps": {
       "ariaLabel": "Etapas do cadastro",
@@ -196,30 +213,32 @@
       "publishing": "Publicação"
     },
     "purposes": {
-      "Aluguel": "Aluguel",
-      "Venda": "Venda"
+      "RENT": "Aluguel",
+      "SALE": "Venda"
     },
     "propertyTypes": {
-      "Apartamento": "Apartamento",
-      "Casa": "Casa",
-      "Studio": "Studio",
-      "Cobertura": "Cobertura",
-      "Comercial": "Comercial"
+      "apartment": "Apartamento",
+      "house": "Casa",
+      "studio": "Studio",
+      "penthouse": "Cobertura",
+      "commercial": "Comercial",
+      "loft": "Loft",
+      "other": "Outro"
     },
     "features": {
-      "Mobiliado": "Mobiliado",
-      "Varanda gourmet": "Varanda gourmet",
-      "Aceita pets": "Aceita pets",
-      "Portaria 24h": "Portaria 24h"
+      "furnished": "Mobiliado",
+      "gourmetBalcony": "Varanda gourmet",
+      "petFriendly": "Aceita pets",
+      "concierge24h": "Portaria 24h"
     },
     "mediaDropzone": "Arraste imagens aqui ou clique para selecionar",
     "mediaUploading": "Enviando...",
     "mediaRemove": "Remover imagem",
     "mediaUploadError": "Não foi possível enviar a imagem. Tente novamente.",
     "publishingOptions": {
-      "Publicar no marketplace após revisão": "Publicar no marketplace após revisão",
-      "Permitir contato por WhatsApp": "Permitir contato por WhatsApp",
-      "Destacar imóvel na listagem inicial": "Destacar imóvel na listagem inicial"
+      "publishAfterReview": "Publicar no marketplace após revisão",
+      "allowWhatsappContact": "Permitir contato por WhatsApp",
+      "featured": "Destacar imóvel na listagem inicial"
     },
     "createSuccess": "Imóvel cadastrado com sucesso.",
     "createError": "Não foi possível cadastrar o imóvel. Tente novamente.",
@@ -239,8 +258,19 @@
       "mainValueRequired": "Informe o valor principal",
       "negotiationTermRequired": "Informe a condição comercial",
       "rentalValueInvalid": "Informe um valor de aluguel válido",
-      "rentalValueRequired": "Informe o valor do aluguel"
-    }
+      "rentalValueRequired": "Informe o valor do aluguel",
+      "titleTooLong": "O título deve ter no máximo 200 caracteres.",
+      "descriptionTooLong": "A descrição deve ter no máximo 10.000 caracteres.",
+      "negotiationTermTooLong": "A condição comercial deve ter no máximo 2.000 caracteres.",
+      "latitudeInvalid": "Informe uma latitude entre -90 e 90.",
+      "longitudeInvalid": "Informe uma longitude entre -180 e 180.",
+      "integerRequired": "Informe um número inteiro"
+    },
+    "saveDraft": "Salvar rascunho",
+    "noOwner": "Sem proprietário vinculado",
+    "ownerUnavailable": "Proprietário indisponível",
+    "ownersLoadError": "Não foi possível carregar os proprietários.",
+    "mediaUploadFileError": "Não foi possível enviar \"{filename}\". Tente novamente."
   },
   "edit": {
     "title": "Editar imóvel",

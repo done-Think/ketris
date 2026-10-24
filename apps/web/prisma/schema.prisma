@@ -113,8 +113,8 @@ model Usuario {
   tenant                   Tenant                             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   imoveisResponsavel       Imovel[]                           @relation("ImovelResponsavel")
   imoveisProprietario      Imovel[]                           @relation("ImovelProprietario")
-  partesContrato          ParteContrato[]
-  chamadosResponsavel     ChamadoManutencao[]                 @relation("ChamadoResponsavel")
+  partesContrato           ParteContrato[]
+  chamadosResponsavel      ChamadoManutencao[]                @relation("ChamadoResponsavel")
   refreshTokens            RefreshToken[]
   codigosRecuperacaoSenha  PasswordResetCode[]
   eventosAgendaResponsavel EventoAgenda[]                     @relation("EventoAgendaResponsavel")
@@ -226,27 +226,49 @@ enum StatusImovel {
   @@map("StatusImovel")
 }
 
+enum TipoImovel {
+  APARTAMENTO
+  CASA
+  STUDIO
+  COBERTURA
+  COMERCIAL
+  LOFT
+  OUTRO
+}
+
+enum ComodidadeImovel {
+  MOBILIADO
+  VARANDA_GOURMET
+  ACEITA_PETS
+  PORTARIA_24H
+}
+
 model Imovel {
-  id            String           @id @default(cuid())
-  tenantId      String
-  responsavelId String
-  proprietarioId String?
-  titulo        String
-  descricao     String?
-  finalidade    FinalidadeImovel
-  tipo          String
-  quartos       Int?
-  banheiros     Int?
-  vagas         Int?
-  areaM2        Decimal?         @db.Decimal(10, 2)
-  valor         Decimal          @db.Decimal(12, 2)
-  valorAluguel  Decimal?         @db.Decimal(12, 2)
-  condominio    Decimal?         @db.Decimal(10, 2)
-  iptu          Decimal?         @db.Decimal(10, 2)
-  status        StatusImovel     @default(DRAFT)
-  publicadoEm   DateTime?
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
+  id                     String             @id @default(cuid())
+  tenantId               String
+  responsavelId          String
+  proprietarioId         String?
+  titulo                 String
+  descricao              String?
+  finalidade             FinalidadeImovel
+  tipo                   TipoImovel
+  quartos                Int?
+  banheiros              Int?
+  vagas                  Int?
+  areaM2                 Decimal?           @db.Decimal(10, 2)
+  valor                  Decimal            @db.Decimal(12, 2)
+  valorAluguel           Decimal?           @db.Decimal(12, 2)
+  condominio             Decimal?           @db.Decimal(10, 2)
+  iptu                   Decimal?           @db.Decimal(10, 2)
+  comodidades            ComodidadeImovel[] @default([])
+  condicoesNegociacao    String?
+  publicarAposRevisao    Boolean            @default(false)
+  permiteContatoWhatsapp Boolean            @default(false)
+  destaque               Boolean            @default(false)
+  status                 StatusImovel       @default(DRAFT)
+  publicadoEm            DateTime?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
 
   tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   responsavel        Usuario             @relation("ImovelResponsavel", fields: [responsavelId], references: [id])
@@ -276,6 +298,8 @@ model Endereco {
   cep         String
   latitude    Decimal? @db.Decimal(9, 6)
   longitude   Decimal? @db.Decimal(9, 6)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   imovel Imovel @relation(fields: [imovelId], references: [id], onDelete: Cascade)
 
@@ -289,6 +313,7 @@ model Midia {
   tipo      String   @default("foto")
   ordem     Int      @default(0)
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   imovel Imovel @relation(fields: [imovelId], references: [id], onDelete: Cascade)
 
@@ -598,7 +623,7 @@ model Contrato {
   partes             ParteContrato[]
   cobrancas          Cobranca[]
   documentos         DocumentoContrato[]
-  chamadosManutencao  ChamadoManutencao[]
+  chamadosManutencao ChamadoManutencao[]
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -636,7 +661,7 @@ model ParteContrato {
 
   contrato   Contrato    @relation(fields: [contratoId], references: [id], onDelete: Cascade)
   assinatura Assinatura?
-  usuario    Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  usuario    Usuario?    @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
 
   @@index([contratoId])
   @@index([usuarioId])
@@ -697,7 +722,7 @@ enum DestinoEventoAgenda {
 }
 
 model EventoAgenda {
-  id                    String             @id @default(cuid())
+  id                    String              @id @default(cuid())
   tenantId              String
   responsavelId         String
   criadoPorId           String?
@@ -707,15 +732,15 @@ model EventoAgenda {
   titulo                String
   tipo                  TipoEventoAgenda?
   destino               DestinoEventoAgenda @default(LEGACY_TEAM)
-  interno               Boolean            @default(false)
-  status                StatusEventoAgenda @default(CONFIRMED)
+  interno               Boolean             @default(false)
+  status                StatusEventoAgenda  @default(CONFIRMED)
   inicio                DateTime
   fim                   DateTime
   participanteNome      String
   participanteTelefone  String
   notas                 String?
-  createdAt             DateTime           @default(now())
-  updatedAt             DateTime           @updatedAt
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
 
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   responsavel Usuario  @relation("EventoAgendaResponsavel", fields: [responsavelId], references: [id], onDelete: Cascade)
@@ -814,38 +839,38 @@ enum PrioridadeChamadoManutencao {
 }
 
 model ChamadoManutencao {
-  id            String                      @id @default(cuid())
-  tenantId      String
-  imovelId      String
-  contratoId    String?
-  responsavelId String?
-  prestadorNome String?
-  prestadorTelefone String?
-  prestadorEmail String?
+  id                   String                      @id @default(cuid())
+  tenantId             String
+  imovelId             String
+  contratoId           String?
+  responsavelId        String?
+  prestadorNome        String?
+  prestadorTelefone    String?
+  prestadorEmail       String?
   prestadorObservacoes String?
-  concluidoPorId String?
-  concluidoPorPapel PapelUsuario?
-  excluidoEm DateTime?
-  excluidoPorId String?
-  categoria     String
-  prioridade    PrioridadeChamadoManutencao @default(NORMAL)
-  status        StatusChamadoManutencao     @default(ABERTO)
-  titulo        String
-  descricao     String
-  abertoPorId   String
-  abertoPorNome String
-  resolvidoEm   DateTime?
-  atendimentoEm DateTime?
-  createdAt     DateTime                    @default(now())
-  updatedAt     DateTime                    @updatedAt
+  concluidoPorId       String?
+  concluidoPorPapel    PapelUsuario?
+  excluidoEm           DateTime?
+  excluidoPorId        String?
+  categoria            String
+  prioridade           PrioridadeChamadoManutencao @default(NORMAL)
+  status               StatusChamadoManutencao     @default(ABERTO)
+  titulo               String
+  descricao            String
+  abertoPorId          String
+  abertoPorNome        String
+  resolvidoEm          DateTime?
+  atendimentoEm        DateTime?
+  createdAt            DateTime                    @default(now())
+  updatedAt            DateTime                    @updatedAt
 
-  tenant     Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  imovel     Imovel                       @relation(fields: [imovelId], references: [id], onDelete: Restrict)
-  contrato   Contrato?                    @relation(fields: [contratoId], references: [id], onDelete: Restrict)
-  responsavel Usuario?                   @relation("ChamadoResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
+  tenant            Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  imovel            Imovel                       @relation(fields: [imovelId], references: [id], onDelete: Restrict)
+  contrato          Contrato?                    @relation(fields: [contratoId], references: [id], onDelete: Restrict)
+  responsavel       Usuario?                     @relation("ChamadoResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
   solicitacoesTroca SolicitacaoTrocaPrestador[]
-  atividades AtividadeChamadoManutencao[]
-  anexos     AnexoChamadoManutencao[]
+  atividades        AtividadeChamadoManutencao[]
+  anexos            AnexoChamadoManutencao[]
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -853,8 +878,8 @@ model ChamadoManutencao {
   @@index([tenantId, excluidoEm])
   @@index([contratoId])
   @@index([responsavelId])
-  @@map("chamados_manutencao")
   @@index([tenantId, atendimentoEm])
+  @@map("chamados_manutencao")
 }
 
 enum TipoAtividadeChamadoManutencao {
@@ -896,18 +921,19 @@ enum StatusSolicitacaoTrocaPrestador {
 }
 
 model SolicitacaoTrocaPrestador {
-  id String @id @default(cuid())
-  chamadoId String
-  justificativa String
-  solicitanteId String
-  solicitanteNome String
-  status StatusSolicitacaoTrocaPrestador @default(PENDENTE)
+  id                   String                          @id @default(cuid())
+  chamadoId            String
+  justificativa        String
+  solicitanteId        String
+  solicitanteNome      String
+  status               StatusSolicitacaoTrocaPrestador @default(PENDENTE)
   decisaoJustificativa String?
-  decididoPorId String?
-  decididoPorNome String?
-  decididoEm DateTime?
-  createdAt DateTime @default(now())
-  chamado ChamadoManutencao @relation(fields: [chamadoId], references: [id], onDelete: Cascade)
+  decididoPorId        String?
+  decididoPorNome      String?
+  decididoEm           DateTime?
+  createdAt            DateTime                        @default(now())
+  chamado              ChamadoManutencao               @relation(fields: [chamadoId], references: [id], onDelete: Cascade)
+
   @@index([chamadoId, status])
   @@map("solicitacoes_troca_prestador")
 }

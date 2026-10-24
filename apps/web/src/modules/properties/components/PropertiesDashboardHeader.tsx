@@ -1,3 +1,4 @@
+import { styles } from '../styles/properties-dashboard-header.styles'
 import { Box, InputAdornment, Stack, TextField } from '@mui/material'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
@@ -8,7 +9,6 @@ import {
   DashboardNotificationsButton,
   DashboardPageHeader,
 } from '@shared/components/layout'
-import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
 import type { PropertiesDashboardHeaderProps } from '../types/dashboard-property'
 
@@ -21,40 +21,19 @@ export function PropertiesDashboardHeader({
   const t = useTranslations('properties.dashboard')
 
   const actions = (
-    <Stack
-      direction={{ xs: 'column', sm: 'row' }}
-      spacing={1.2}
-      sx={{ width: { xs: '100%', md: 'auto' }, alignItems: { xs: 'stretch', sm: 'center' } }}
-    >
-      <Box
-        sx={{
-          width: { xs: '100%', sm: 280 },
-          flex: { xs: 1, sm: 'initial' },
-        }}
-      >
+    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2} sx={styles.stack}>
+      <Box sx={styles.box}>
         <TextField
           placeholder={t('searchPlaceholder')}
           aria-label={t('searchAriaLabel')}
           value={searchQuery}
           onChange={(event) => onSearchQueryChange(event.target.value)}
           size="small"
-          sx={{
-            width: '100%',
-            '& .MuiInputBase-root': {
-              height: { xs: 40, sm: 32 },
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.paper,
-              color: brand.graphite[500],
-              fontSize: 12,
-            },
-            '& .MuiOutlinedInput-notchedOutline': {
-              borderColor: alpha.graphite[8],
-            },
-          }}
+          sx={styles.textField}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchRoundedIcon sx={{ color: brand.neutral[400], fontSize: iconSize.sm }} />
+                <SearchRoundedIcon sx={styles.searchRoundedIcon} />
               </InputAdornment>
             ),
           }}
@@ -62,13 +41,13 @@ export function PropertiesDashboardHeader({
       </Box>
       {!readOnly && (
         <DashboardHeaderActionButton
-          startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
+          startIcon={<AddRoundedIcon sx={styles.addRoundedIcon} />}
           onClick={onCreateProperty}
         >
           {t('create')}
         </DashboardHeaderActionButton>
       )}
-      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+      <Box sx={styles.box2}>
         <DashboardNotificationsButton />
       </Box>
     </Stack>
@@ -79,7 +58,7 @@ export function PropertiesDashboardHeader({
       title={t('title')}
       subtitle={t(readOnly ? 'renter.subtitle' : 'subtitle')}
       actions={actions}
-      sx={{ mb: 2.2 }}
+      sx={styles.dashboardPageHeader}
     />
   )
 }

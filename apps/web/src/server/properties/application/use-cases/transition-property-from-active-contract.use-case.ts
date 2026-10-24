@@ -1,3 +1,4 @@
+import type { TransitionPropertyFromActiveContractInput } from '../../types/use-case-inputs'
 import { ContractNotFoundError, ContractPropertyTransitionError } from '../../domain/errors'
 import type { PropertyStatus } from '../../types/property'
 import type { PropertyRepository } from '../ports/property-repository.port'
@@ -5,7 +6,7 @@ import type { PropertyRepository } from '../ports/property-repository.port'
 export class TransitionPropertyFromActiveContractUseCase {
   constructor(private readonly propertyRepository: PropertyRepository) {}
 
-  async execute(input: { actorTenantId: string; contractId: string }) {
+  async execute(input: TransitionPropertyFromActiveContractInput) {
     const contractProperty = await this.propertyRepository.findContractProperty(
       input.actorTenantId,
       input.contractId,

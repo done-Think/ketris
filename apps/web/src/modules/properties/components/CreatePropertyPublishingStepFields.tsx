@@ -1,8 +1,7 @@
+import { styles } from '../styles/create-property-publishing-step-fields.styles'
 import { Controller } from 'react-hook-form'
 import { Checkbox, FormControlLabel, Stack } from '@mui/material'
 import { useTranslations } from 'next-intl'
-
-import { radius } from '@shared/theme/tokens'
 
 import { createPropertyPublishingOptions } from '../config/dashboard-property-ui'
 import type { CreatePropertyPublishingStepFieldsProps } from '../types/dashboard-property'
@@ -38,15 +37,7 @@ export function CreatePropertyPublishingStepFields({
                   />
                 }
                 label={t(`publishingOptions.${option}`)}
-                sx={{
-                  minHeight: 44,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: `${radius.sm}px`,
-                  mx: 0,
-                  px: 1,
-                  '& .MuiFormControlLabel-label': { fontSize: 14, fontWeight: 800 },
-                }}
+                sx={styles.formControlLabel}
               />
             )
           }}

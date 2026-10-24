@@ -1,45 +1,26 @@
 'use client'
 
-import { useMemo } from 'react'
-import { useForm } from 'react-hook-form'
+import type { PropertySortField } from '../types/property'
+
+import { styles } from '../styles/properties-dashboard-page.styles'
+
+import { useListState } from '@shared/hooks/use-list-state'
 import { Box, CircularProgress, Stack, Typography } from '@mui/material'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
 import { useRouter } from '@/i18n/navigation'
 import { getRestrictedRoleAccess } from '@shared/lib/auth/restricted-role-access'
-import {
-  dashboardProperties,
-  localizeDashboardPropertyFixture,
-  propertyStatusFilters,
-} from '../data/dashboard-properties'
 import { useDashboardPropertyMappingOptions } from '../hooks/use-dashboard-property-mapping-options'
-import { useProperties } from '../hooks/use-properties'
+import { usePropertyPage } from '../hooks/use-properties'
 import type {
-  DashboardProperty,
   DashboardPropertyFilterKey,
-  PropertiesDashboardFiltersFormValues,
+  PropertiesDashboardFiltersState,
 } from '../types/dashboard-property'
 import { toDashboardProperty } from '../utils/map-dashboard-property'
 import { PropertiesDashboardHeader } from './PropertiesDashboardHeader'
 import { PropertiesTable } from './PropertiesTable'
 import { PropertyStatusFilters } from './PropertyStatusFilters'
-
-function matchesStatusFilter(property: DashboardProperty, filter: DashboardPropertyFilterKey) {
-  if (filter === 'Todos') return true
-  if (filter === 'Vendido') return property.apiStatus === 'SOLD'
-
-  return property.status === filter
-}
-
-function matchesSearchQuery(property: DashboardProperty, query: string) {
-  const normalizedQuery = query.trim().toLocaleLowerCase('pt-BR')
-  if (!normalizedQuery) return true
-
-  return [property.title, property.address, property.location, property.type, property.broker].some(
-    (value) => value.toLocaleLowerCase('pt-BR').includes(normalizedQuery),
-  )
-}
 
 export function PropertiesDashboardPage() {
   const t = useTranslations('properties.dashboard.renter')
@@ -48,92 +29,103 @@ export function PropertiesDashboardPage() {
   const isRestrictedViewer = Boolean(restrictedAccess)
   const isReadOnlyViewer = isRestrictedViewer && !restrictedAccess?.canManageProperties
   const router = useRouter()
-  const propertiesQuery = useProperties()
   const mappingOptions = useDashboardPropertyMappingOptions()
-  const canUseFixtures = !isRestrictedViewer && process.env.NODE_ENV !== 'production'
-  const fixtureMode = canUseFixtures && !propertiesQuery.isLoading && propertiesQuery.isError
-  const properties = useMemo(
-    () =>
-      fixtureMode
-        ? dashboardProperties.map((property) =>
-            localizeDashboardPropertyFixture(property, mappingOptions),
-          )
-        : (propertiesQuery.data ?? []).map((property) =>
-            toDashboardProperty(property, mappingOptions),
-          ),
-    [fixtureMode, mappingOptions, propertiesQuery.data],
-  )
-  const { setValue, watch } = useForm<PropertiesDashboardFiltersFormValues>({
-    defaultValues: {
-      activeStatusFilter: 'Todos',
-      searchQuery: '',
-    },
+  const {
+    filters: { activeStatusFilter, searchQuery, page, pageSize, sortModel },
+    setFilter,
+  } = useListState<PropertiesDashboardFiltersState>({
+    activeStatusFilter: 'all',
+    searchQuery: '',
+    page: 0,
+    pageSize: 5,
+    sortModel: [],
   })
-  const { activeStatusFilter, searchQuery } = watch()
-  const filteredProperties = useMemo(
-    () =>
-      properties.filter(
-        (property) =>
-          (isReadOnlyViewer || matchesStatusFilter(property, activeStatusFilter)) &&
-          matchesSearchQuery(property, searchQuery),
-      ),
-    [properties, activeStatusFilter, isReadOnlyViewer, searchQuery],
+  const statusByFilter = {
+    available: 'PUBLISHED',
+    rented: 'RENTED',
+    sold: 'SOLD',
+    inReview: 'DRAFT',
+    inactive: 'INACTIVE',
+  } as const
+  const propertiesQuery = usePropertyPage({
+    locale: mappingOptions.locale,
+    page: page + 1,
+    pageSize,
+    search: searchQuery,
+    sortBy: sortModel[0]?.field as PropertySortField | undefined,
+    sortOrder: sortModel[0]?.sort ?? undefined,
+    status:
+      isReadOnlyViewer || activeStatusFilter === 'all'
+        ? undefined
+        : statusByFilter[activeStatusFilter],
+  })
+  const properties = (propertiesQuery.data?.properties ?? []).map((property) =>
+    toDashboardProperty(property, mappingOptions),
   )
-  const statusFilterCounts = useMemo(
-    () =>
-      propertyStatusFilters.reduce(
-        (counts, filter) => ({
-          ...counts,
-          [filter.label]: properties.filter((property) =>
-            matchesStatusFilter(property, filter.label),
-          ).length,
-        }),
-        {} as Record<DashboardPropertyFilterKey, number>,
-      ),
-    [properties],
-  )
+  const counts = propertiesQuery.data?.counts
+  const inventoryCount = Object.values(counts ?? {}).reduce((sum, count) => sum + count, 0)
+  const statusFilterCounts: Record<DashboardPropertyFilterKey, number> = {
+    all: inventoryCount,
+    available: counts?.PUBLISHED ?? 0,
+    rented: counts?.RENTED ?? 0,
+    sold: counts?.SOLD ?? 0,
+    inReview: counts?.DRAFT ?? 0,
+    inactive: counts?.INACTIVE ?? 0,
+  }
 
-  if (isRestrictedViewer && propertiesQuery.isLoading) {
+  if (propertiesQuery.isLoading) {
     return (
-      <Stack alignItems="center" sx={{ p: 4 }}>
+      <Stack alignItems="center" sx={styles.stack}>
         <CircularProgress aria-label={t('loading')} />
       </Stack>
     )
   }
-  if (isRestrictedViewer && propertiesQuery.isError) {
+  if (propertiesQuery.isError) {
     return (
-      <Typography role="alert" sx={{ p: 4 }}>
+      <Typography role="alert" sx={styles.typography}>
         {t('loadError')}
       </Typography>
     )
   }
 
   return (
-    <Box sx={{ width: '100%', p: 3.5 }}>
-      <Stack
-        spacing={2}
-        sx={{
-          width: '100%',
-          minHeight: { md: 'calc(100vh - 68px)' },
-        }}
-      >
+    <Box sx={styles.box}>
+      <Stack spacing={2} sx={styles.stack2}>
         <PropertiesDashboardHeader
           readOnly={isReadOnlyViewer}
           searchQuery={searchQuery}
-          onSearchQueryChange={(value) => setValue('searchQuery', value)}
+          onSearchQueryChange={(value) => {
+            setFilter('searchQuery', value)
+            setFilter('page', 0)
+          }}
           onCreateProperty={() => router.push('/dashboard/properties/new')}
         />
         {!isReadOnlyViewer && (
           <PropertyStatusFilters
             activeStatusFilter={activeStatusFilter}
             statusFilterCounts={statusFilterCounts}
-            onStatusFilterChange={(filter) => setValue('activeStatusFilter', filter)}
+            onStatusFilterChange={(filter) => {
+              setFilter('activeStatusFilter', filter)
+              setFilter('page', 0)
+            }}
           />
         )}
         <PropertiesTable
           readOnly={isReadOnlyViewer}
-          properties={filteredProperties}
-          totalCount={properties.length}
+          properties={properties}
+          totalCount={propertiesQuery.data?.pagination.total ?? 0}
+          inventoryCount={inventoryCount}
+          sortModel={sortModel}
+          onSortChange={(model) => {
+            setFilter('sortModel', model)
+            setFilter('page', 0)
+          }}
+          page={page}
+          pageSize={pageSize}
+          onPaginationChange={(model) => {
+            setFilter('page', model.page)
+            setFilter('pageSize', model.pageSize)
+          }}
           onCreateProperty={() => router.push('/dashboard/properties/new')}
           onPropertySelect={(propertyId) =>
             router.push({ pathname: '/dashboard/properties/[id]', params: { id: propertyId } })

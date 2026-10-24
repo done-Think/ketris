@@ -222,7 +222,7 @@ export interface SeedProperty {
   id: string
   title: string
   description: string
-  category: string
+  category: 'APARTAMENTO' | 'CASA' | 'STUDIO' | 'COBERTURA' | 'COMERCIAL' | 'LOFT' | 'OUTRO'
   purpose: 'ALUGUEL' | 'VENDA'
   status?: 'DRAFT' | 'PUBLISHED' | 'RENTED' | 'SOLD' | 'INACTIVE'
   price: number
@@ -256,7 +256,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Apartamento espaçoso com vista para o parque',
     description:
       'Excelente imóvel reformado com acabamento de alto padrão, living amplo integrado à varanda e vista definitiva para a copa das árvores. Suíte master com closet, espaços bem iluminados e planta eficiente para quem busca conforto e praticidade nos Jardins.',
-    category: 'apartamento',
+    category: 'APARTAMENTO',
     purpose: 'ALUGUEL',
     price: 4800,
     bedrooms: 3,
@@ -276,7 +276,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Studio moderno totalmente reformado',
     description:
       'Studio mobiliado, com marcenaria planejada, cozinha integrada e ótima entrada de luz natural. Localização próxima a restaurantes, metrô e serviços essenciais.',
-    category: 'studio',
+    category: 'STUDIO',
     purpose: 'ALUGUEL',
     status: 'RENTED',
     price: 2900,
@@ -302,7 +302,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Cobertura tríplex com piscina privativa',
     description:
       'Cobertura tríplex com área externa privativa, piscina, espaço gourmet e vista aberta. Planta generosa para receber com conforto em uma das regiões mais desejadas da cidade.',
-    category: 'cobertura',
+    category: 'COBERTURA',
     purpose: 'ALUGUEL',
     status: 'DRAFT',
     price: 12500,
@@ -328,7 +328,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Apartamento Garden Remodelado',
     description:
       'Apartamento garden com área externa privativa, ambientes integrados e reforma recente. Uma opção equilibrada para quem quer morar perto de serviços, restaurantes e áreas verdes.',
-    category: 'apartamento',
+    category: 'APARTAMENTO',
     purpose: 'ALUGUEL',
     status: 'INACTIVE',
     price: 6200,
@@ -348,7 +348,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Loft Industrial Finamente Mobiliado',
     description:
       'Loft com pé-direito generoso, mobiliário sob medida e linguagem industrial elegante. Ideal para quem procura uma planta aberta e pronta para morar.',
-    category: 'loft',
+    category: 'LOFT',
     purpose: 'ALUGUEL',
     price: 5500,
     bedrooms: 1,
@@ -367,7 +367,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Casa térrea com jardim privativo',
     description:
       'Casa térrea com jardim privativo, área social integrada e excelente distribuição dos ambientes. Boa opção para famílias que buscam conforto e privacidade.',
-    category: 'casa',
+    category: 'CASA',
     purpose: 'ALUGUEL',
     price: 7200,
     bedrooms: 3,
@@ -386,7 +386,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Sala comercial pronta para operação',
     description:
       'Conjunto comercial pronto para operação, com recepção, salas privativas e infraestrutura para equipes enxutas em endereço estratégico.',
-    category: 'comercial',
+    category: 'COMERCIAL',
     purpose: 'ALUGUEL',
     price: 6600,
     bedrooms: 4,
@@ -405,7 +405,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Apartamento mobiliado perto do parque',
     description:
       'Apartamento mobiliado próximo ao parque, com ambientes claros, cozinha equipada e excelente acesso a serviços do bairro.',
-    category: 'apartamento',
+    category: 'APARTAMENTO',
     purpose: 'ALUGUEL',
     price: 5400,
     bedrooms: 2,
@@ -424,7 +424,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Apartamento pronto para morar perto da Oscar Freire',
     description:
       'Apartamento reformado para venda, com marcenaria planejada, varanda integrada e planta bem distribuída em endereço valorizado dos Jardins.',
-    category: 'apartamento',
+    category: 'APARTAMENTO',
     purpose: 'VENDA',
     status: 'SOLD',
     price: 1420000,
@@ -450,7 +450,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Apartamento ensolarado no Jardim Paulista',
     description:
       'Unidade clara e silenciosa, com sala ampla, cozinha funcional e ótimo potencial de personalização em uma das alamedas mais procuradas da região.',
-    category: 'apartamento',
+    category: 'APARTAMENTO',
     purpose: 'VENDA',
     price: 1180000,
     bedrooms: 2,
@@ -475,7 +475,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Cobertura duplex com área gourmet',
     description:
       'Cobertura duplex à venda com terraço gourmet, suíte master reservada e vista aberta para a zona oeste.',
-    category: 'cobertura',
+    category: 'COBERTURA',
     purpose: 'VENDA',
     price: 2350000,
     bedrooms: 3,
@@ -500,7 +500,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Casa com quintal e escritório independente',
     description:
       'Casa térrea com ambientes integrados, quintal arborizado e edícula preparada para escritório, ideal para famílias que procuram espaço sem sair da cidade.',
-    category: 'casa',
+    category: 'CASA',
     purpose: 'VENDA',
     status: 'DRAFT',
     price: 1980000,
@@ -526,7 +526,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Loft autoral em prédio boutique',
     description:
       'Loft à venda com pé-direito alto, acabamentos contemporâneos e varanda voltada para uma rua calma da Vila Madalena.',
-    category: 'loft',
+    category: 'LOFT',
     purpose: 'VENDA',
     price: 890000,
     bedrooms: 1,
@@ -553,7 +553,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Apartamento com vista panorâmica na Vila Olímpia',
     description:
       'Apartamento de proprietário direto, sem intermediação de imobiliária, com vista panorâmica, varanda gourmet e infraestrutura completa de lazer no condomínio.',
-    category: 'apartamento',
+    category: 'APARTAMENTO',
     purpose: 'ALUGUEL',
     price: 5800,
     bedrooms: 2,
@@ -572,7 +572,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Casa térrea reformada em Perdizes',
     description:
       'Casa térrea de proprietário direto, recém-reformada, com quintal e garagem coberta, em rua tranquila e bem localizada de Perdizes.',
-    category: 'casa',
+    category: 'CASA',
     purpose: 'ALUGUEL',
     price: 6400,
     bedrooms: 3,
@@ -591,7 +591,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Studio compacto no Itaim Bibi',
     description:
       'Studio de proprietário direto, ideal para quem busca praticidade, com armários planejados e localização estratégica no Itaim Bibi.',
-    category: 'studio',
+    category: 'STUDIO',
     purpose: 'ALUGUEL',
     price: 3200,
     bedrooms: 1,
@@ -610,7 +610,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Cobertura duplex em Moema',
     description:
       'Cobertura duplex de proprietário direto, com terraço amplo, churrasqueira e vista livre para o Parque Ibirapuera.',
-    category: 'cobertura',
+    category: 'COBERTURA',
     purpose: 'VENDA',
     price: 1850000,
     bedrooms: 3,
@@ -630,7 +630,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Unidade 501 — Edifício Pedra Azul',
     description:
       'Unidade de lançamento no Edifício Pedra Azul, com planta otimizada, acabamento de entrega premium e vista aberta para a região.',
-    category: 'apartamento',
+    category: 'APARTAMENTO',
     purpose: 'VENDA',
     price: 980000,
     bedrooms: 2,
@@ -649,7 +649,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Unidade 802 — Edifício Pedra Azul',
     description:
       'Unidade de alto andar do Edifício Pedra Azul, com suíte master, varanda gourmet integrada e vista privilegiada.',
-    category: 'apartamento',
+    category: 'APARTAMENTO',
     purpose: 'VENDA',
     price: 1120000,
     bedrooms: 3,
@@ -668,7 +668,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Unidade 1203 — Edifício Pedra Azul',
     description:
       'Cobertura linear do Edifício Pedra Azul, ainda na planta, com terraço privativo e acabamento personalizável.',
-    category: 'cobertura',
+    category: 'COBERTURA',
     purpose: 'VENDA',
     status: 'DRAFT',
     price: 1850000,
@@ -688,7 +688,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Casa 12 — Condomínio Nova Aurora',
     description:
       'Casa em condomínio fechado de lançamento, com quintal privativo, área de lazer completa e segurança 24h.',
-    category: 'casa',
+    category: 'CASA',
     purpose: 'VENDA',
     price: 890000,
     bedrooms: 3,
@@ -707,7 +707,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Casa 24 — Condomínio Nova Aurora',
     description:
       'Casa de esquina no Condomínio Nova Aurora, com quintal amplo, edícula e vaga dupla coberta.',
-    category: 'casa',
+    category: 'CASA',
     purpose: 'VENDA',
     price: 950000,
     bedrooms: 4,
@@ -726,7 +726,7 @@ export const seedProperties: SeedProperty[] = [
     title: 'Cobertura Penthouse — Nova Aurora',
     description:
       'Unidade penthouse do Condomínio Nova Aurora, com terraço panorâmico, piscina privativa e acabamento premium de entrega.',
-    category: 'cobertura',
+    category: 'COBERTURA',
     purpose: 'VENDA',
     price: 1650000,
     bedrooms: 4,

@@ -1,18 +1,29 @@
 'use client'
 
+import { isAppLocale, defaultLocale } from '@/i18n/routing'
+
 import { useMemo } from 'react'
-import { useLocale, useTranslations } from 'next-intl'
+import { useFormatter, useLocale, useTranslations } from 'next-intl'
 
 import type { DashboardPropertyMappingOptions } from '../types/dashboard-property'
 
 export function useDashboardPropertyMappingOptions(): DashboardPropertyMappingOptions {
-  const locale = useLocale()
+  const requestedLocale = useLocale()
+  const locale = isAppLocale(requestedLocale) ? requestedLocale : defaultLocale
+  const formatter = useFormatter()
   const t = useTranslations('properties.dashboard.mapping')
+  const mediaT = useTranslations('properties.detail.mediaKinds')
 
   return useMemo(
     () => ({
       locale,
+      formatter,
       messages: {
+        mediaKinds: {
+          photo: mediaT('photo'),
+          floorPlan: mediaT('floorPlan'),
+          video: mediaT('video'),
+        },
         notAnnounced: t('notAnnounced'),
         notInformed: t('notInformed'),
         unknownAddress: t('unknownAddress'),
@@ -27,6 +38,8 @@ export function useDashboardPropertyMappingOptions(): DashboardPropertyMappingOp
           studio: t('propertyTypes.studio'),
           penthouse: t('propertyTypes.penthouse'),
           commercial: t('propertyTypes.commercial'),
+          loft: t('propertyTypes.loft'),
+          other: t('propertyTypes.other'),
         },
         activity: {
           created: t('activity.created'),
@@ -59,6 +72,6 @@ export function useDashboardPropertyMappingOptions(): DashboardPropertyMappingOp
         },
       },
     }),
-    [locale, t],
+    [locale, formatter, t, mediaT],
   )
 }
