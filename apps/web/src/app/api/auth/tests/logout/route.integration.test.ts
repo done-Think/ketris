@@ -28,7 +28,7 @@ describe('POST /api/auth/logout (integração)', () => {
         nome: 'Logout Teste',
         email,
         senhaHash: await bcrypt.hash(password, 10),
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
   })

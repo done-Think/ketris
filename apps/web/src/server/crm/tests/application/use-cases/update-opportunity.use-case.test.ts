@@ -61,7 +61,7 @@ describe('UpdateOpportunityUseCase', () => {
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       opportunityId: 'op-1',
       changes: { leadName: 'Maria Silva' },
     })
@@ -85,7 +85,7 @@ describe('UpdateOpportunityUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         opportunityId: 'op-1',
         changes: { status: 'ACEITA' },
       }),
@@ -104,7 +104,7 @@ describe('UpdateOpportunityUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       actorId: 'user-1',
       actorName: 'Ana',
       opportunityId: 'op-1',
@@ -135,7 +135,7 @@ describe('UpdateOpportunityUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         opportunityId: 'op-1',
         changes: { status: 'RASCUNHO' },
       }),
@@ -154,7 +154,7 @@ describe('UpdateOpportunityUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       opportunityId: 'op-1',
       changes: { notes: 'Aceita animais.' },
     })

@@ -1,4 +1,5 @@
 import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
+import { isAgencyManager } from '@server/auth/domain/roles'
 import { ConflictError, ForbiddenError } from '@server/shared/errors'
 import { normalizeEmail } from '@server/shared/normalize-email'
 
@@ -20,8 +21,10 @@ export class LinkContractPartyUserUseCase {
   ) {}
 
   async execute(input: LinkContractPartyUserInput): Promise<ContractPartyUserLink> {
-    if (input.actorPapel !== 'ADMIN') {
-      throw new ForbiddenError('Apenas administradores podem vincular locatários a contratos.')
+    if (!isAgencyManager(input.actorPapel)) {
+      throw new ForbiddenError(
+        'Apenas a gestão da imobiliária pode vincular locatários a contratos.',
+      )
     }
 
     const contract = await this.contractRepository.findById(input.contractId, {

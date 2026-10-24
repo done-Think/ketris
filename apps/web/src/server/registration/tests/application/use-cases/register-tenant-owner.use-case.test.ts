@@ -24,7 +24,7 @@ const user: User = {
   nome: 'Dona da Imobiliária',
   email: 'dona@ketris.dev',
   senhaHash: 'hash-novo',
-  papel: 'ADMIN',
+  papel: 'OWNER',
   ativo: true,
   vinculoAprovadoEm: new Date(),
 }
@@ -98,7 +98,7 @@ describe('RegisterTenantOwnerUseCase', () => {
       accountType: 'AGENCY',
       status: 'TRIAL',
     })
-    expect(result.user.papel).toBe('ADMIN')
+    expect(result.user.papel).toBe('OWNER')
     expect(result.accessToken).toBe('jwt-fake')
     expect(typeof result.refreshToken).toBe('string')
     expect(deps.refreshTokenRepository.create).toHaveBeenCalledWith(

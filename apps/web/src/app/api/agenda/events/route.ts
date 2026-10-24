@@ -45,7 +45,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   })
 
   return NextResponse.json(
-    { events: events.map((event) => toAgendaEventReadResponse(event, actorPapel)) },
+    { events: events.map((event) => toAgendaEventReadResponse(event, actorPapel, actor.sub)) },
     { status: 200 },
   )
 })

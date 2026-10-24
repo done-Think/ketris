@@ -34,14 +34,14 @@ describe('Maintenance repository boundary and atomic writes', () => {
     })
   })
   it('scopes agent and owner through assignment OR property relationship, always with contract and tenant', () => {
-    for (const role of ['AGENT', 'OWNER'] as const) {
+    for (const role of ['AGENT', 'PROPERTY_OWNER'] as const) {
       const scope = maintenanceTicketScope({ ...actor, actorPapel: role })
       expect(scope.tenantId).toBe('tenant')
       expect(scope.contrato).toEqual({ is: { tenantId: 'tenant' } })
       expect(scope.OR).toContainEqual({ responsavelId: 'renter' })
       expect(scope.excluidoEm).toBeNull()
     }
-    expect(maintenanceTicketScope({ ...actor, actorPapel: 'ADMIN' })).toEqual({
+    expect(maintenanceTicketScope({ ...actor, actorPapel: 'OWNER' })).toEqual({
       tenantId: 'tenant',
     })
   })

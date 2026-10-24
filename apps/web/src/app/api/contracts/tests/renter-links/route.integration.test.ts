@@ -16,6 +16,8 @@ import { GET as readMedia } from '../../../maintenance/media/[...key]/route'
 import { GET as options } from '../../../maintenance/options/route'
 import { GET as listCharges } from '../../../financial/charges/route'
 import { GET as readCharge } from '../../../financial/charges/[id]/route'
+import { GET as listContracts } from '../../route'
+import { GET as readContract } from '../../[id]/route'
 
 const { upload, s3Send } = vi.hoisted(() => ({ upload: vi.fn(), s3Send: vi.fn() }))
 vi.mock('@server/maintenance/infrastructure/s3-maintenance-attachment-storage', () => ({
@@ -48,7 +50,7 @@ async function tenant() {
   tenantIds.push(row.id)
   return row
 }
-async function user(tenantId: string, papel: 'ADMIN' | 'AGENT' | 'OWNER' | 'RENTER') {
+async function user(tenantId: string, papel: 'AGENT' | 'OWNER' | 'PROPERTY_OWNER' | 'RENTER') {
   const row = await prisma.usuario.create({
     data: {
       tenantId,
@@ -62,9 +64,10 @@ async function user(tenantId: string, papel: 'ADMIN' | 'AGENT' | 'OWNER' | 'RENT
 }
 async function agency(renterEmail: string) {
   const agencyTenant = await tenant()
-  const admin = await user(agencyTenant.id, 'ADMIN')
+  const admin = await user(agencyTenant.id, 'OWNER')
   const agent = await user(agencyTenant.id, 'AGENT')
   const owner = await user(agencyTenant.id, 'OWNER')
+  const propertyOwner = await user(agencyTenant.id, 'PROPERTY_OWNER')
   const property = await prisma.imovel.create({
     data: {
       tenantId: agencyTenant.id,
@@ -137,6 +140,7 @@ async function agency(renterEmail: string) {
     admin,
     agent,
     owner,
+    propertyOwner,
     property,
     contract,
     charge,
@@ -274,7 +278,9 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
       const auditCount = await prisma.atividadeChamadoManutencao.count({
         where: { chamadoId: a.ticket.id },
       })
-      expect((await confirm(path, a, a.admin.token, candidate, a.owner.id)).status).toBe(409)
+      expect((await confirm(path, a, a.admin.token, candidate, a.propertyOwner.id)).status).toBe(
+        409,
+      )
       expect(
         (await prisma.parteContrato.findUniqueOrThrow({ where: { id: a.party.id } })).usuarioId,
       ).toBe(renter.id)
@@ -304,13 +310,17 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
     },
   )
 
-  it.each(paths)('%s accepts only the administrator of the contract agency', async (path) => {
-    for (const actor of [renter, a.agent, a.owner])
+  it.each(paths)('%s accepts only the managers of the contract agency', async (path) => {
+    for (const actor of [renter, a.agent, a.propertyOwner])
       expect((await confirm(path, a, actor.token)).status).toBe(403)
     expect((await confirm(path, a, b.admin.token)).status).toBe(path === 'contracts' ? 404 : 403)
     expect(
       (await prisma.parteContrato.findUniqueOrThrow({ where: { id: a.party.id } })).usuarioId,
     ).toBeNull()
+    expect((await confirm(path, a, a.owner.token)).status).toBe(success(path))
+    expect(
+      (await prisma.parteContrato.findUniqueOrThrow({ where: { id: a.party.id } })).usuarioId,
+    ).toBe(renter.id)
   })
 
   it.each(paths)(
@@ -318,13 +328,43 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
     async (path) => {
       for (const data of [{ ativo: false }, { ativo: true, papel: 'AGENT' as const }]) {
         await prisma.usuario.update({ where: { id: renter.id }, data })
-        expect((await confirm(path, a, a.admin.token, renter, a.owner.id)).status).toBe(404)
+        expect((await confirm(path, a, a.admin.token, renter, a.propertyOwner.id)).status).toBe(404)
         expect(
           (await prisma.imovel.findUniqueOrThrow({ where: { id: a.property.id } })).proprietarioId,
         ).toBeNull()
       }
     },
   )
+
+  it('lets the property owner read only the contracts and charges of their properties', async () => {
+    await prisma.imovel.update({
+      where: { id: a.property.id },
+      data: { proprietarioId: a.propertyOwner.id },
+    })
+    const token = a.propertyOwner.token
+    const contracts = await (await listContracts(request('contracts', token))).json()
+    expect(contracts.items.map((c: { id: string }) => c.id)).toEqual([a.contract.id])
+    expect(
+      (await readContract(request(`contracts/${a.contract.id}`, token), context(a.contract.id)))
+        .status,
+    ).toBe(200)
+    const charges = await (await listCharges(request('financial/charges', token))).json()
+    expect(charges.items.map((c: { id: string }) => c.id)).toEqual([a.charge.id])
+    expect(
+      (await readCharge(request(`financial/charges/${a.charge.id}`, token), context(a.charge.id)))
+        .status,
+    ).toBe(200)
+
+    await prisma.imovel.update({ where: { id: a.property.id }, data: { proprietarioId: null } })
+    expect(
+      (await readCharge(request(`financial/charges/${a.charge.id}`, token), context(a.charge.id)))
+        .status,
+    ).toBe(404)
+    expect(
+      (await readContract(request(`contracts/${a.contract.id}`, token), context(a.contract.id)))
+        .status,
+    ).toBe(404)
+  })
 
   it('creates, schedules, comments and uploads in the linked agency tenant, including private media', async () => {
     expect((await confirm('contracts')).status).toBe(200)

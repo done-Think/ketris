@@ -35,11 +35,11 @@ describe('UnpublishAgencyProfileUseCase', () => {
     const useCase = new UnpublishAgencyProfileUseCase(deps.agencyProfileRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'ADMIN' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER' }),
     ).rejects.toThrow(AgencyProfileNotFoundError)
   })
 
-  it('lança ForbiddenError quando o ator não é ADMIN/OWNER', async () => {
+  it('lança ForbiddenError quando o ator não é OWNER', async () => {
     const deps = createDeps({ status: 'DRAFT' } as AgencyProfile)
     const useCase = new UnpublishAgencyProfileUseCase(deps.agencyProfileRepository)
 

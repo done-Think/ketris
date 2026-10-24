@@ -13,7 +13,7 @@ import type { AgendaEventApi } from '@modules/agenda/types/agenda-event'
 
 import { DashboardOverviewPage } from '../../components/DashboardOverviewPage'
 
-let papel: Papel = 'ADMIN'
+let papel: Papel = 'OWNER'
 
 vi.mock('next-auth/react', () => ({
   useSession: () => ({
@@ -137,7 +137,7 @@ function renderPage(role: Papel) {
 describe('DashboardOverviewPage', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it.each(['ADMIN', 'OWNER'] as const)(
+  it.each(['OWNER'] as const)(
     'mostra os números da imobiliária e a agenda da equipe para %s',
     (role) => {
       renderPage(role)

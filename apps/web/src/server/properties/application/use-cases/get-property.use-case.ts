@@ -1,3 +1,4 @@
+import { isAgencyStaff, isPropertyOwner } from '@server/auth/domain/roles'
 import type { Papel } from '@server/auth/domain/user.entity'
 
 import { assertPropertyAccess } from '../authorization'
@@ -12,14 +13,15 @@ export class GetPropertyUseCase {
       input.actorTenantId,
       input.id,
       input.actorPapel === 'RENTER' ? input.actorId : undefined,
+      input.actorPapel === 'PROPERTY_OWNER' ? input.actorId : undefined,
     )
 
     if (!property) {
       throw new PropertyNotFoundError()
     }
 
-    if (input.actorPapel !== 'RENTER') {
-      assertPropertyAccess(property.responsavelId, input.actorId, input.actorPapel)
+    if (isAgencyStaff(input.actorPapel) || isPropertyOwner(input.actorPapel)) {
+      assertPropertyAccess(property, input.actorId, input.actorPapel)
     }
 
     return property

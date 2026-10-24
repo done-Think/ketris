@@ -68,8 +68,7 @@ export function ChargesPage() {
   const { enqueueSnackbar } = useSnackbar()
   const { data: session, status: sessionStatus } = useSession()
   const isRenter = session?.role === 'RENTER'
-  const canCreateCharge =
-    sessionStatus === 'authenticated' && (session?.role === 'ADMIN' || session?.role === 'OWNER')
+  const canCreateCharge = sessionStatus === 'authenticated' && session?.role === 'OWNER'
   const tenantId = session?.tenantId ?? ''
   const createChargeMutation = useCreateCharge(tenantId)
   const updateChargeMutation = useUpdateCharge(tenantId)

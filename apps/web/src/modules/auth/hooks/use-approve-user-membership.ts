@@ -8,7 +8,7 @@ export function useApproveUserMembership() {
   return useMutation({
     mutationFn: (id: string) => userService.approveMembership(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['backoffice', 'users'] })
+      queryClient.invalidateQueries({ queryKey: ['auth', 'users'] })
     },
   })
 }

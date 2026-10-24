@@ -91,12 +91,11 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
     method: 'post',
     path: '/auth/users',
     tags: ['Auth'],
-    summary: 'Cria um usuário (proprietário ou agente) no tenant do administrador autenticado',
+    summary: 'Cria um usuário (dono, corretor ou proprietário) no tenant do dono autenticado',
     description:
-      'Requer um access token de um usuário com papel ADMIN. O usuário criado sempre pertence ao ' +
-      'mesmo tenant do administrador autenticado (tenantId nunca vem do corpo da requisição). O papel ' +
-      'aceito por este endpoint é restrito a OWNER ou AGENT — administradores são criados por uma via ' +
-      'separada.',
+      'Requer um access token de um usuário com papel OWNER. O usuário criado sempre pertence ao ' +
+      'mesmo tenant do dono autenticado (tenantId nunca vem do corpo da requisição). O papel ' +
+      'aceito por este endpoint é OWNER, AGENT ou PROPERTY_OWNER.',
     security: [{ bearerAuth: [] }],
     request: {
       body: {
@@ -117,7 +116,7 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       403: {
-        description: 'Autenticado, mas sem papel ADMIN.',
+        description: 'Autenticado, mas sem papel OWNER.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       409: {
@@ -131,8 +130,8 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
     method: 'get',
     path: '/auth/users',
     tags: ['Auth'],
-    summary: 'Lista os usuários (proprietários e agentes) do tenant do administrador autenticado',
-    description: 'Requer papel ADMIN. Contas ADMIN nunca aparecem nesta listagem.',
+    summary: 'Lista os usuários do tenant do dono autenticado',
+    description: 'Requer papel OWNER.',
     security: [{ bearerAuth: [] }],
     responses: {
       200: {
@@ -144,7 +143,7 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       403: {
-        description: 'Autenticado, mas sem papel ADMIN.',
+        description: 'Autenticado, mas sem papel OWNER.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },
@@ -154,8 +153,8 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
     method: 'get',
     path: '/auth/users/{id}',
     tags: ['Auth'],
-    summary: 'Consulta um usuário (proprietário ou agente) do tenant do administrador autenticado',
-    description: 'Requer papel ADMIN. Contas ADMIN nunca são retornadas por esta rota.',
+    summary: 'Consulta um usuário do tenant do dono autenticado',
+    description: 'Requer papel OWNER.',
     security: [{ bearerAuth: [] }],
     request: { params: userIdParamsSchema },
     responses: {
@@ -168,7 +167,7 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       403: {
-        description: 'Autenticado, mas sem papel ADMIN.',
+        description: 'Autenticado, mas sem papel OWNER.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       404: {
@@ -184,8 +183,7 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Auth'],
     summary: 'Atualiza nome, e-mail e/ou papel de um usuário (proprietário ou agente)',
     description:
-      'Requer papel ADMIN. O papel só pode ser trocado entre OWNER e AGENT — não é possível promover ' +
-      'um usuário a ADMIN por esta rota.',
+      'Requer papel OWNER. O papel só pode ser trocado entre OWNER, AGENT e PROPERTY_OWNER.',
     security: [{ bearerAuth: [] }],
     request: {
       params: userIdParamsSchema,
@@ -207,7 +205,7 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       403: {
-        description: 'Autenticado, mas sem papel ADMIN.',
+        description: 'Autenticado, mas sem papel OWNER.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       404: {
@@ -227,8 +225,8 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Auth'],
     summary: 'Desativa um usuário (proprietário ou agente) — soft delete',
     description:
-      'Requer papel ADMIN. Não remove o registro do banco: marca a conta como inativa (ativo = false) ' +
-      'e revoga todos os refresh tokens ativos do usuário. Um administrador não pode desativar a própria ' +
+      'Requer papel OWNER. Não remove o registro do banco: marca a conta como inativa (ativo = false) ' +
+      'e revoga todos os refresh tokens ativos do usuário. Um dono não pode desativar a própria ' +
       'conta por esta rota.',
     security: [{ bearerAuth: [] }],
     request: { params: userIdParamsSchema },
@@ -246,7 +244,7 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       403: {
-        description: 'Autenticado, mas sem papel ADMIN.',
+        description: 'Autenticado, mas sem papel OWNER.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       404: {
@@ -262,7 +260,7 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Auth'],
     summary: 'Aprova o vínculo pendente de um usuário (proprietário ou agente) com o tenant',
     description:
-      'Requer papel ADMIN. Usada para aprovar um corretor que se autocadastrou pedindo para ' +
+      'Requer papel OWNER. Usada para aprovar um corretor que se autocadastrou pedindo para ' +
       'entrar num tenant existente — ele não consegue logar até esse vínculo ser aprovado. ' +
       'Idempotente: aprovar um vínculo já aprovado apenas retorna o usuário sem erro.',
     security: [{ bearerAuth: [] }],
@@ -277,7 +275,7 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       403: {
-        description: 'Autenticado, mas sem papel ADMIN.',
+        description: 'Autenticado, mas sem papel OWNER.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       404: {

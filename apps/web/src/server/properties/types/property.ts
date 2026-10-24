@@ -46,6 +46,7 @@ export interface Property {
   id: string
   tenantId: string
   responsavelId: string
+  proprietarioId: string | null
   titulo: string
   descricao: string | null
   finalidade: PropertyPurpose
@@ -63,6 +64,7 @@ export interface Property {
 export interface NewProperty {
   tenantId: string
   responsavelId: string
+  proprietarioId?: string | null
   titulo: string
   descricao?: string | null
   finalidade: PropertyPurpose
@@ -99,9 +101,15 @@ export interface PropertyChanges {
 export interface PropertyListFilters {
   tenantId: string
   renterId?: string
+  proprietarioId?: string
   status?: PropertyStatus
   finalidade?: PropertyPurpose
   responsavelId?: string
+}
+
+export interface RentedProperty {
+  propertyId: string
+  tenantId: string
 }
 
 export interface ActiveContractProperty {

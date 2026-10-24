@@ -42,7 +42,7 @@ describe('ArchiveOpportunityUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       opportunityId: 'op-1',
     })
 
@@ -60,7 +60,7 @@ describe('ArchiveOpportunityUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         opportunityId: 'op-1',
       }),
     ).rejects.toThrow(OpportunityNotFoundError)

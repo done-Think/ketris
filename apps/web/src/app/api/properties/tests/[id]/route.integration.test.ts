@@ -144,7 +144,7 @@ describe('/api/properties/{id} (integração)', () => {
         nome: 'Admin da Imobiliária',
         email: `admin-imobiliaria-${randomUUID()}@ketris.dev`,
         senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
     adminToken = await tokenService.sign({

@@ -91,10 +91,10 @@ model PlatformPlan {
 }
 
 enum PapelUsuario {
-  ADMIN
   OWNER
   AGENT
   RENTER
+  PROPERTY_OWNER
 }
 
 model Usuario {

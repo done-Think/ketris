@@ -428,6 +428,16 @@
     }
   },
   "team": {
+    "membershipRequests": {
+      "title": "Solicitudes de vínculo",
+      "description": "{count, plural, one {# corredor espera tu aprobación para unirse al equipo.} other {# corredores esperan tu aprobación para unirse al equipo.}}",
+      "approve": "Aprobar",
+      "pending": "Esperando aprobación",
+      "approveAriaLabel": "Aprobar el vínculo de {name}",
+      "approveSuccess": "{name} ya forma parte del equipo.",
+      "approveError": "No se pudo aprobar el vínculo.",
+      "loadError": "No se pudieron cargar las solicitudes de vínculo."
+    },
     "title": "Equipo de corredores",
     "subtitle": "Acompaña ventas, retornos y progreso de la meta mensual por representante.",
     "searchPlaceholder": "Buscar corredor...",

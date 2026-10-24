@@ -47,7 +47,7 @@ export interface EditTenantAccountDialogProps {
   onClose: () => void
 }
 
-export type TenantUserRole = 'ADMIN' | 'OWNER' | 'AGENT' | 'RENTER'
+export type TenantUserRole = 'OWNER' | 'AGENT' | 'RENTER' | 'PROPERTY_OWNER'
 
 export interface TenantUser {
   id: string

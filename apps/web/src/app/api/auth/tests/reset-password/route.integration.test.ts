@@ -30,7 +30,7 @@ describe('POST /api/auth/reset-password (integração)', () => {
         nome: 'Reset Teste',
         email,
         senhaHash: await bcrypt.hash(oldPassword, 10),
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
     userId = usuario.id
@@ -125,7 +125,7 @@ describe('POST /api/auth/reset-password (integração)', () => {
         nome: 'Outro Usuário',
         email: `reset-outro-${randomUUID()}@ketris.dev`,
         senhaHash: await bcrypt.hash('senha-qualquer-123', 10),
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
     const resetTokenDeOutroUsuario = await passwordResetTokenService.issue(outroUsuario.id)

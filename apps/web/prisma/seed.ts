@@ -86,11 +86,16 @@ async function main() {
       )
     }
 
+    const proprietarioId = property.proprietarioEmail
+      ? (userIdByEmail.get(property.proprietarioEmail) ?? null)
+      : null
+
     await prisma.imovel.upsert({
       where: { id: `seed-imovel-${property.id}` },
       update: {
         tenantId,
         responsavelId,
+        proprietarioId,
         status: property.status ?? 'PUBLISHED',
         publicadoEm: property.status === 'DRAFT' ? null : new Date(),
       },
@@ -98,6 +103,7 @@ async function main() {
         id: `seed-imovel-${property.id}`,
         tenantId,
         responsavelId,
+        proprietarioId,
         titulo: property.title,
         descricao: property.description,
         finalidade: property.purpose,

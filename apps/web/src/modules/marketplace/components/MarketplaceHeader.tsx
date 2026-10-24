@@ -19,7 +19,7 @@ function getSwitchModeAction(role: string | undefined): {
   href: LocalizedStringHref
   labelKey: ProfileActionTranslationKey
 } | null {
-  if (role === 'ADMIN' || role === 'OWNER') {
+  if (role === 'OWNER') {
     return null
   }
 

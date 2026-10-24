@@ -60,8 +60,8 @@ export function PropertyRowActions({ property, onView }: PropertyRowActionsProps
 
   const canManage =
     session?.role !== 'RENTER' &&
-    (session?.role === 'ADMIN' ||
-      session?.role === 'OWNER' ||
+    (session?.role === 'OWNER' ||
+      session?.role === 'PROPERTY_OWNER' ||
       session?.user?.id === property.responsibleUserId)
   const isPublished = property.apiStatus === 'PUBLISHED'
   const isMutating =

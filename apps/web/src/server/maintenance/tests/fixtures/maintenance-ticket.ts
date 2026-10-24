@@ -8,17 +8,17 @@ import type { MaintenanceTicketRepository } from '../../types/maintenance-ticket
 
 export function actor(
   role: MaintenanceActor['actorPapel'],
-  id = role.toLowerCase(),
+  id = role === 'PROPERTY_OWNER' ? 'owner' : role.toLowerCase(),
   tenantId = 'tenant-1',
 ): MaintenanceActor {
   return { actorId: id, actorPapel: role, actorTenantId: tenantId, actorName: id }
 }
 
-export const admin = actor('ADMIN')
+export const admin = actor('OWNER', 'admin')
 
 export const agent = actor('AGENT')
 
-export const owner = actor('OWNER')
+export const owner = actor('PROPERTY_OWNER')
 
 export const renter = actor('RENTER')
 

@@ -98,12 +98,10 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
     return { params: Promise.resolve({ id }) }
   }
 
-  it('retorna 403 quando um RENTER tenta cancelar', async () => {
+  it('retorna 404 quando um RENTER tenta cancelar evento ao qual não está vinculado', async () => {
     const response = await POST(buildRequest(eventId, renterToken), context(eventId))
-    const json = await response.json()
 
-    expect(response.status).toBe(403)
-    expect(json.error.code).toBe('FORBIDDEN')
+    expect(response.status).toBe(404)
   })
 
   it('cancela o evento (soft — status vira CANCELLED)', async () => {

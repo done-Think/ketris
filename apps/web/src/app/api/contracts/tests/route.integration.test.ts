@@ -85,7 +85,7 @@ describe('/api/contracts (integração)', () => {
     })
     linkedRenterToken = await tokenService.sign(linkedRenter)
 
-    adminToken = await createUserToken('ADMIN')
+    adminToken = await createUserToken('OWNER')
     otherAgentToken = await createUserToken('AGENT')
 
     const property = await prisma.imovel.create({
@@ -126,7 +126,7 @@ describe('/api/contracts (integração)', () => {
     pendingOpportunityId = pendingOpportunity.id
   })
 
-  async function createUserToken(papel: 'ADMIN' | 'AGENT'): Promise<string> {
+  async function createUserToken(papel: 'OWNER' | 'AGENT'): Promise<string> {
     const user = await prisma.usuario.create({
       data: {
         tenantId,
@@ -330,7 +330,7 @@ describe('/api/contracts (integração)', () => {
     expect(ids).toContain(contractId)
   })
 
-  it('lista o contrato para o ADMIN, mesmo sem ser o responsável pelo imóvel', async () => {
+  it('lista o contrato para o OWNER, mesmo sem ser o responsável pelo imóvel', async () => {
     const response = await GET(
       buildRequest('http://localhost/api/contracts', 'GET', undefined, adminToken),
     )
@@ -520,7 +520,7 @@ describe('/api/contracts (integração)', () => {
     expect(json.error.code).toBe('CONTRACT_PARTY_ALREADY_SIGNED')
   })
 
-  it('ativa o contrato, aluga o imóvel e gera a primeira cobrança quando a última parte assina (pelo ADMIN)', async () => {
+  it('ativa o contrato, aluga o imóvel e gera a primeira cobrança quando a última parte assina (pelo OWNER)', async () => {
     const response = await signParty(
       buildRequest(
         `http://localhost/api/contracts/${contractId}/parties/${tenantPartyId}/sign`,
@@ -535,12 +535,12 @@ describe('/api/contracts (integração)', () => {
     expect(response.status).toBe(200)
     expect(json.contract.status).toBe('ATIVO')
     expect(json.contract.activatedAt).not.toBeNull()
-    expect(json.contract.activatedBy).toMatchObject({ name: 'Usuário ADMIN' })
+    expect(json.contract.activatedBy).toMatchObject({ name: 'Usuário OWNER' })
 
     const tenantParty = json.contract.parties.find(
       (party: { id: string }) => party.id === tenantPartyId,
     )
-    expect(tenantParty.signedBy).toMatchObject({ name: 'Usuário ADMIN' })
+    expect(tenantParty.signedBy).toMatchObject({ name: 'Usuário OWNER' })
 
     const property = await prisma.imovel.findUniqueOrThrow({ where: { id: propertyId } })
     expect(property.status).toBe('RENTED')
@@ -566,10 +566,10 @@ describe('/api/contracts (integração)', () => {
         (party: { signatureStatus: string }) => party.signatureStatus === 'ASSINADA',
       ),
     ).toBe(true)
-    expect(json.contract.activatedBy).toMatchObject({ name: 'Usuário ADMIN' })
+    expect(json.contract.activatedBy).toMatchObject({ name: 'Usuário OWNER' })
     expect(
       json.contract.parties.map((party: { signedBy: { name: string } }) => party.signedBy.name),
-    ).toEqual(expect.arrayContaining(['Corretor', 'Usuário ADMIN']))
+    ).toEqual(expect.arrayContaining(['Corretor', 'Usuário OWNER']))
   })
 
   it('quando duas pessoas assinam a mesma parte ao mesmo tempo, só uma assina e o contrato ativa uma vez', async () => {
@@ -613,7 +613,7 @@ describe('/api/contracts (integração)', () => {
 
     expect(responses.map((response) => response.status).sort()).toEqual([200, 409])
     const winnerIndex = responses.findIndex((response) => response.status === 200)
-    const winnerName = winnerIndex === 0 ? 'Corretor' : 'Usuário ADMIN'
+    const winnerName = winnerIndex === 0 ? 'Corretor' : 'Usuário OWNER'
     const { contract: activated } = await responses[winnerIndex].json()
     expect(activated.status).toBe('ATIVO')
     expect(activated.activatedBy).toMatchObject({ name: winnerName })

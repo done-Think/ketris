@@ -81,10 +81,12 @@ export interface ContractManageScope {
   responsibleId?: string
 }
 
-// Reads stay inside the actor's tenant (and the AGENT's properties), except for a RENTER, who
+// Reads stay inside the actor's tenant (the AGENT's properties, the PROPERTY_OWNER's properties), except for a RENTER, who
 // reads only the contracts where it is the linked LOCATARIO party, in any tenant.
 export type ContractReadScope =
-  ({ kind: 'tenant'; tenantId: string } & ContractManageScope) | { kind: 'party'; userId: string }
+  | ({ kind: 'tenant'; tenantId: string } & ContractManageScope)
+  | { kind: 'party'; userId: string }
+  | { kind: 'propertyOwner'; tenantId: string; ownerId: string }
 
 export interface ContractListFilters {
   status?: ContractStatus

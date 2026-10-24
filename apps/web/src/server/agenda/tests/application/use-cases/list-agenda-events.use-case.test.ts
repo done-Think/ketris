@@ -45,7 +45,7 @@ describe('ListAgendaEventsUseCase', () => {
     })
   })
 
-  it.each(['ADMIN', 'OWNER', 'AGENT'] as const)(
+  it.each(['OWNER', 'AGENT', 'PROPERTY_OWNER'] as const)(
     'repassa o escopo de leitura do perfil %s',
     async (papel) => {
       const deps = createDeps()
@@ -63,7 +63,7 @@ describe('ListAgendaEventsUseCase', () => {
       expect(deps.agendaEventRepository.list).toHaveBeenCalledWith(
         expect.objectContaining({
           scope:
-            papel === 'ADMIN'
+            papel === 'OWNER'
               ? { kind: 'tenant', tenantId: 'tenant-1' }
               : {
                   kind: papel === 'AGENT' ? 'agent' : 'owner',

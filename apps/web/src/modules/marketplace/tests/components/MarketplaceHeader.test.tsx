@@ -145,10 +145,10 @@ describe('MarketplaceHeader', () => {
     )
   })
 
-  it('ADMIN: nÃ£o mostra a aÃ§Ã£o de troca de modalidade no menu de perfil', async () => {
+  it('OWNER: nÃ£o mostra a aÃ§Ã£o de troca de modalidade no menu de perfil', async () => {
     const user = userEvent.setup()
     vi.mocked(useSession).mockReturnValue({
-      data: { user: { name: 'Ana Admin', email: 'ana@example.com' }, role: 'ADMIN' },
+      data: { user: { name: 'Ana Admin', email: 'ana@example.com' }, role: 'OWNER' },
       status: 'authenticated',
     } as unknown as ReturnType<typeof useSession>)
 

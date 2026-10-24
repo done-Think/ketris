@@ -114,13 +114,13 @@ describe('Maintenance resolution', () => {
   it('owner cannot confirm an owner-completed repair', async () => {
     await expect(
       actOnTicket(
-        repository({ status: 'AGUARDANDO_CONFIRMACAO', completedByRole: 'OWNER' }),
+        repository({ status: 'AGUARDANDO_CONFIRMACAO', completedByRole: 'PROPERTY_OWNER' }),
         owner,
         ticket.id,
         { action: 'confirm' },
       ),
     ).rejects.toBeInstanceOf(ForbiddenError)
-    const repo = repository({ status: 'AGUARDANDO_CONFIRMACAO', completedByRole: 'OWNER' })
+    const repo = repository({ status: 'AGUARDANDO_CONFIRMACAO', completedByRole: 'PROPERTY_OWNER' })
     await actOnTicket(repo, admin, ticket.id, { action: 'confirm' })
     expect(repo.mutate).toHaveBeenCalledWith(
       expect.anything(),

@@ -38,11 +38,11 @@ function createDeps() {
 }
 
 describe('SaveAgencyProfileUseCase', () => {
-  it('salva o perfil do próprio tenant quando o ator é ADMIN/OWNER', async () => {
+  it('salva o perfil do próprio tenant quando o ator é OWNER', async () => {
     const deps = createDeps()
     const useCase = new SaveAgencyProfileUseCase(deps.agencyProfileRepository)
 
-    await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'ADMIN', ...draft })
+    await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER', ...draft })
 
     expect(deps.agencyProfileRepository.save).toHaveBeenCalledWith('tenant-1', draft)
   })

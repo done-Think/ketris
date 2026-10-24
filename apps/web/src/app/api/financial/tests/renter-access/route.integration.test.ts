@@ -37,7 +37,7 @@ describe('Renter financial authorization (integration)', () => {
     return tenant.id
   }
 
-  async function createUser(tenantId: string, papel: 'ADMIN' | 'AGENT' | 'RENTER') {
+  async function createUser(tenantId: string, papel: 'OWNER' | 'AGENT' | 'RENTER') {
     const user = await prisma.usuario.create({
       data: {
         tenantId,
@@ -150,9 +150,9 @@ describe('Renter financial authorization (integration)', () => {
     agencyId = await createTenant()
     otherAgencyId = await createTenant()
     sharedTenantId = await createTenant()
-    admin = await createUser(agencyId, 'ADMIN')
+    admin = await createUser(agencyId, 'OWNER')
     agent = await createUser(agencyId, 'AGENT')
-    const otherAdmin = await createUser(otherAgencyId, 'ADMIN')
+    const otherAdmin = await createUser(otherAgencyId, 'OWNER')
     renter = await createUser(sharedTenantId, 'RENTER')
     otherRenter = await createUser(sharedTenantId, 'RENTER')
     sameTenantRenter = await createUser(agencyId, 'RENTER')

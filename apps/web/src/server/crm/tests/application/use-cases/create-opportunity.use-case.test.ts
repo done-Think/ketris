@@ -85,7 +85,7 @@ describe('CreateOpportunityUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       actorId: 'user-1',
       actorName: 'Ana',
       propertyId: 'imovel-1',
@@ -115,7 +115,7 @@ describe('CreateOpportunityUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       propertyId: 'imovel-1',
       leadName: 'Maria',
       leadEmail: 'maria@exemplo.com',
@@ -139,7 +139,7 @@ describe('CreateOpportunityUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       propertyId: 'imovel-1',
       leadName: 'Maria',
       leadEmail: 'maria@exemplo.com',
@@ -163,7 +163,7 @@ describe('CreateOpportunityUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         propertyId: 'imovel-de-outro-tenant',
         leadName: 'Maria',
         leadEmail: 'maria@exemplo.com',
@@ -190,7 +190,7 @@ describe('CreateOpportunityUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         propertyId: 'imovel-1',
         contactId: 'contato-de-outro-tenant',
         leadName: 'Maria',
@@ -213,7 +213,7 @@ describe('CreateOpportunityUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       propertyId: 'imovel-1',
       leadName: 'Maria',
       leadEmail: 'maria@exemplo.com',

@@ -351,12 +351,8 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
     })
   })
 
-  describe('gerenciamento continua bloqueado para RENTER', () => {
-    it('RENTER recebe 403 ao criar, editar, reagendar e cancelar, sem alterar o evento', async () => {
-      const create = await createAs(renterOwnerToken, {
-        title: 'Tentativa do locatário',
-        start: '2031-03-06T13:00:00.000Z',
-      })
+  describe('gerenciamento pelo RENTER', () => {
+    it('RENTER não altera evento criado pela equipe, mesmo sendo o dono vinculado', async () => {
       const update = await patchAs(renterOwnerToken, ownedEventId, { title: 'Alterado' })
       const reschedule = await RESCHEDULE(
         request(
@@ -376,14 +372,90 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
         context(ownedEventId),
       )
 
-      expect([create.status, update.status, reschedule.status, cancel.status]).toEqual([
-        403, 403, 403, 403,
-      ])
+      expect([update.status, reschedule.status, cancel.status]).toEqual([403, 403, 403])
 
       const stored = await prisma.eventoAgenda.findUniqueOrThrow({ where: { id: ownedEventId } })
       expect(stored.titulo).toBe('Vistoria do dono')
       expect(stored.status).toBe('CONFIRMED')
       expect(stored.inicio.toISOString()).toBe('2031-03-03T13:00:00.000Z')
+    })
+
+    it('RENTER não cria evento com imóvel avulso, só com o imóvel do contrato', async () => {
+      const create = await createAs(renterOwnerToken, {
+        title: 'Tentativa do locatário',
+        start: '2031-03-06T13:00:00.000Z',
+      })
+
+      expect(create.status).toBe(409)
+    })
+
+    it('RENTER cria evento no imóvel que aluga, na agenda da imobiliária, e edita o que criou', async () => {
+      const property = await prisma.imovel.create({
+        data: {
+          tenantId: agencyTenantId,
+          responsavelId: staff.id,
+          titulo: 'Apto alugado',
+          finalidade: 'ALUGUEL',
+          tipo: 'apartamento',
+          valor: 1000,
+        },
+      })
+      const opportunity = await prisma.oportunidade.create({
+        data: {
+          tenantId: agencyTenantId,
+          imovelId: property.id,
+          interessadoNome: renterOwner.nome,
+          interessadoEmail: renterOwner.email,
+          valorProposto: 1000,
+          status: 'ACEITA',
+        },
+      })
+      await prisma.contrato.create({
+        data: {
+          tenantId: agencyTenantId,
+          imovelId: property.id,
+          oportunidadeOrigemId: opportunity.id,
+          codigo: randomUUID(),
+          valor: 1000,
+          diaVencimento: 5,
+          dataInicio: new Date('2026-01-01'),
+          dataFim: new Date('2032-01-01'),
+          indiceReajuste: 'IPCA',
+          tipoGarantia: 'CAUCAO',
+          status: 'ATIVO',
+          partes: {
+            create: {
+              papel: 'LOCATARIO',
+              nome: renterOwner.nome,
+              cpf: '00000000000',
+              email: renterOwner.email,
+              usuarioId: renterOwner.id,
+            },
+          },
+        },
+      })
+
+      const created = await createAs(renterOwnerToken, {
+        title: 'Vistoria pedida pelo locatário',
+        start: '2031-03-07T13:00:00.000Z',
+        propertyId: property.id,
+        propertyReference: undefined,
+      })
+
+      expect(created.status).toBe(201)
+      expect(created.json.event.tenantId).toBe(agencyTenantId)
+      expect(created.json.event.createdById).toBe(renterOwner.id)
+
+      const updated = await patchAs(renterOwnerToken, created.json.event.id, {
+        title: 'Vistoria remarcada pelo locatário',
+      })
+      expect(updated.status).toBe(200)
+      expect(updated.json.event.title).toBe('Vistoria remarcada pelo locatário')
+
+      const asStaff = await getAs(staffToken, created.json.event.id)
+      expect(asStaff.status).toBe(200)
+
+      await prisma.eventoAgenda.delete({ where: { id: created.json.event.id } })
     })
   })
 

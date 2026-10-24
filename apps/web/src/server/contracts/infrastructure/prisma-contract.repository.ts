@@ -97,6 +97,10 @@ function contractReadWhere(scope: ContractReadScope): Prisma.ContratoWhereInput 
     }
   }
 
+  if (scope.kind === 'propertyOwner') {
+    return { tenantId: scope.tenantId, imovel: { proprietarioId: scope.ownerId } }
+  }
+
   return { tenantId: scope.tenantId, ...scopeWhere(scope) }
 }
 

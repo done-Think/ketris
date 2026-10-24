@@ -361,13 +361,13 @@ describe('authOptions — callbacks.jwt (revalidação contra o banco)', () => {
     const jwt = await getJwtCallback()
 
     const token = await jwt({
-      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', papel: 'ADMIN' },
+      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', papel: 'OWNER' },
       user: undefined,
       trigger: 'update',
       session: { accessToken: 'fresh-access', refreshToken: 'fresh-refresh' },
     } as unknown as Parameters<typeof jwt>[0])
 
-    expect(token).toMatchObject({ role: 'ADMIN', accessToken: 'fresh-access' })
+    expect(token).toMatchObject({ role: 'OWNER', accessToken: 'fresh-access' })
     expect(token).not.toHaveProperty('papel')
   })
 
@@ -378,7 +378,7 @@ describe('authOptions — callbacks.jwt (revalidação contra o banco)', () => {
     const jwt = await getJwtCallback()
 
     const kept = await jwt({
-      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', role: 'AGENT', papel: 'ADMIN' },
+      token: { sub: 'u1', scope: 'tenant', tenantId: 't1', role: 'AGENT', papel: 'OWNER' },
       user: undefined,
     } as unknown as Parameters<typeof jwt>[0])
     const invalid = await jwt({

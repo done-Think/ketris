@@ -66,7 +66,7 @@ describe('RespondToOpportunityUseCase', () => {
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       actorId: 'user-1',
       actorName: 'Ana',
       opportunityId: 'op-1',
@@ -98,7 +98,7 @@ describe('RespondToOpportunityUseCase', () => {
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       opportunityId: 'op-1',
       action: 'RECUSAR',
       message: 'Valor abaixo do mínimo aceito pelo proprietário.',
@@ -123,7 +123,7 @@ describe('RespondToOpportunityUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       opportunityId: 'op-1',
       action: 'SOLICITAR_INFORMACOES',
       message: '   ',
@@ -144,7 +144,7 @@ describe('RespondToOpportunityUseCase', () => {
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       opportunityId: 'op-1',
       action: 'SOLICITAR_INFORMACOES',
     })
@@ -165,7 +165,7 @@ describe('RespondToOpportunityUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         opportunityId: 'op-1',
         action: 'ACEITAR',
       }),
@@ -184,7 +184,7 @@ describe('RespondToOpportunityUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         opportunityId: 'op-1',
         action: 'ACEITAR',
       }),
@@ -203,7 +203,7 @@ describe('RespondToOpportunityUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         opportunityId: 'op-1',
         action: 'RECUSAR',
       }),
@@ -220,7 +220,7 @@ describe('RespondToOpportunityUseCase', () => {
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       opportunityId: 'op-1',
       action: 'SOLICITAR_INFORMACOES',
     })

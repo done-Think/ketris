@@ -23,7 +23,7 @@ const createdAdmin: User = {
   nome: 'Admin da Imobiliária',
   email: 'admin@imobiliaria-a.dev',
   senhaHash: 'hash-novo',
-  papel: 'ADMIN',
+  papel: 'OWNER',
   ativo: true,
   vinculoAprovadoEm: new Date(),
 }
@@ -71,13 +71,13 @@ describe('CreateTenantAdminUseCase', () => {
       password: 'senha-longa-123',
     })
 
-    expect(result.papel).toBe('ADMIN')
+    expect(result.papel).toBe('OWNER')
     expect(deps.userRepository.create).toHaveBeenCalledWith({
       tenantId: tenant.id,
       nome: 'Admin da Imobiliária',
       email: 'admin@imobiliaria-a.dev',
       senhaHash: 'hash-novo',
-      papel: 'ADMIN',
+      papel: 'OWNER',
     })
   })
 

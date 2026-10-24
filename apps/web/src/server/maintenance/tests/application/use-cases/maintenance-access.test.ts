@@ -66,8 +66,8 @@ describe('Maintenance access', () => {
   it.each([
     actor('RENTER', 'other'),
     actor('AGENT', 'other'),
-    actor('OWNER', 'other'),
-    actor('ADMIN', 'admin', 'other-tenant'),
+    actor('PROPERTY_OWNER', 'other'),
+    actor('OWNER', 'admin', 'other-tenant'),
   ])('denies unrelated $actorPapel', async (user) => {
     const repo = repository()
     await expect(
@@ -108,7 +108,10 @@ describe('Maintenance access', () => {
       canAccessTicket(actor('AGENT', 'assigned'), { ...ticket, responsibleId: 'assigned' }),
     ).toBe(true)
     expect(
-      canAccessTicket(actor('OWNER', 'assigned'), { ...ticket, responsibleId: 'assigned' }),
+      canAccessTicket(actor('PROPERTY_OWNER', 'assigned'), {
+        ...ticket,
+        responsibleId: 'assigned',
+      }),
     ).toBe(true)
   })
 

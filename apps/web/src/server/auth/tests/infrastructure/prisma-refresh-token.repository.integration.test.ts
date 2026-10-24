@@ -24,7 +24,7 @@ describe('PrismaRefreshTokenRepository (integração)', () => {
         nome: 'Usuário Refresh Token',
         email: `usuario-${randomUUID()}@ketris.dev`,
         senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
     userId = usuario.id

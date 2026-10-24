@@ -26,7 +26,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     })
     tenantId = tenant.id
 
-    async function createUserAndToken(papel: 'OWNER' | 'ADMIN' | 'AGENT' | 'RENTER', ativo = true) {
+    async function createUserAndToken(papel: 'OWNER' | 'AGENT' | 'RENTER', ativo = true) {
       const user = await prisma.usuario.create({
         data: {
           tenantId,
@@ -53,7 +53,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     const owner = await createUserAndToken('OWNER')
     ownerToken = owner.token
 
-    const admin = await createUserAndToken('ADMIN')
+    const admin = await createUserAndToken('OWNER')
     adminToken = admin.token
 
     const agent = await createUserAndToken('AGENT')
@@ -256,7 +256,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     expect(response.status).toBe(403)
   })
 
-  it('retorna 200 para ADMIN', async () => {
+  it('retorna 200 para OWNER', async () => {
     const response = await GET(buildRequest(adminToken))
 
     expect(response.status).toBe(200)
@@ -269,7 +269,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     expect(response.status).toBe(200)
 
     expect(json.kpis.portfolioCount).toBe(4)
-    expect(json.kpis.activeBrokersCount).toBe(2)
+    expect(json.kpis.activeBrokersCount).toBe(3)
     expect(json.kpis.receivedLeadsThisMonth).toBe(1)
     expect(json.kpis.monthlyReceivable).toBe(1500)
     expect(json.kpis.occupancyPercentage).toBe(67)

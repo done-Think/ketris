@@ -8,7 +8,7 @@ import {
   statusForResponse,
   type OpportunityResponseAction,
 } from '../../domain/opportunity-status'
-import { assertAgentOwnsProperty } from '../authorization'
+import { assertAgentOwnsProperty, assertCrmAccess } from '../authorization'
 import type { ActivityRepository } from '../ports/activity-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
 import type { PropertyLookupPort } from '../ports/property-lookup.port'
@@ -42,6 +42,7 @@ export class RespondToOpportunityUseCase {
   ) {}
 
   async execute(input: RespondToOpportunityInput): Promise<RespondToOpportunityOutput> {
+    assertCrmAccess(input.actorPapel)
     const current = await this.opportunityRepository.findById(input.opportunityId)
 
     if (!current || current.tenantId !== input.actorTenantId) {

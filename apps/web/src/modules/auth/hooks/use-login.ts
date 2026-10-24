@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 
 import { getLocalizedPathname } from '@/i18n/locale-prefix'
+import { getRestrictedRoleAccess } from '@shared/lib/auth/restricted-role-access'
 import type { LoginFormValues } from '../schemas/login-schema'
 import type { LoginErrorBody } from '../types/login'
 
@@ -60,10 +61,10 @@ export function useLogin(callbackUrl: string) {
         return false
       }
 
-      const destination =
-        user.role === 'RENTER'
-          ? getLocalizedPathname('/dashboard/finance/charges', locale)
-          : localizedCallbackUrl
+      const restrictedHome = getRestrictedRoleAccess(user.role)?.home
+      const destination = restrictedHome
+        ? getLocalizedPathname(restrictedHome, locale)
+        : localizedCallbackUrl
 
       router.replace(destination)
       router.refresh()

@@ -1,3 +1,4 @@
+import { isAgencyManager } from '@server/auth/domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
 import type { Papel } from '@server/auth/domain/user.entity'
@@ -9,7 +10,7 @@ export function assertBrokerProfileAccess(actorPapel: Papel): void {
 }
 
 export function assertAgencyProfileAccess(actorPapel: Papel): void {
-  if (actorPapel !== 'ADMIN' && actorPapel !== 'OWNER') {
+  if (!isAgencyManager(actorPapel)) {
     throw new ForbiddenError('Só administradores da imobiliária editam o perfil público dela.')
   }
 }

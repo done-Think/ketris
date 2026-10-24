@@ -106,7 +106,7 @@ describe('Maintenance API authorization and private media', () => {
     const response = await performAction(
       request('tickets/ticket/actions', {
         action: 'cancel',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         actorId: 'admin',
       }),
       context,
@@ -178,7 +178,7 @@ describe('Maintenance API authorization and private media', () => {
     vi.mocked(requireMaintenanceActor).mockResolvedValue({
       ...actor,
       actorTenantId: 'shared',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
     })
     expect(
       (await readMedia(request('media/maintenance/tenant/file.png'), mediaContext)).status,
@@ -194,7 +194,7 @@ describe('Maintenance API authorization and private media', () => {
     expect(
       (await readMedia(request('media/maintenance/tenant/file.png'), mediaContext)).status,
     ).toBe(404)
-    vi.mocked(requireMaintenanceActor).mockResolvedValue({ ...actor, actorPapel: 'ADMIN' })
+    vi.mocked(requireMaintenanceActor).mockResolvedValue({ ...actor, actorPapel: 'OWNER' })
     expect(
       (await readMedia(request('media/maintenance/tenant/file.png'), mediaContext)).status,
     ).toBe(200)

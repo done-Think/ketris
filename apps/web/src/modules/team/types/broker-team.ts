@@ -64,3 +64,7 @@ export type BrokerInviteDialogProps = {
   onClose: () => void
   onInvite: (values: BrokerInviteFormValues) => void
 }
+
+export type TeamMembershipRequestsProps = {
+  enabled: boolean
+}

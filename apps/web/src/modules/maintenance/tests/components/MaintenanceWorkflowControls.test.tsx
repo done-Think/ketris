@@ -43,7 +43,7 @@ const ticket: ApiMaintenanceTicket = {
   attachments: [],
 }
 
-function mockSession(role: 'ADMIN' | 'AGENT') {
+function mockSession(role: 'OWNER' | 'AGENT') {
   vi.mocked(useSession).mockReturnValue({
     data: { tenantId: 'tenant-1', user: { id: 'user-1' }, role },
     status: 'authenticated',
@@ -63,8 +63,8 @@ describe('MaintenanceWorkflowControls', () => {
     } as unknown as ReturnType<typeof useMaintenanceAction>)
   })
 
-  it('lets an ADMIN session role decide a pending replacement request', () => {
-    mockSession('ADMIN')
+  it('lets an OWNER session role decide a pending replacement request', () => {
+    mockSession('OWNER')
     render(<MaintenanceWorkflowControls ticket={ticket} />)
 
     expect(screen.getByRole('button', { name: 'Aprovar troca' })).toBeVisible()

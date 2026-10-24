@@ -53,7 +53,7 @@ const renter: User = {
 
 const input = {
   actorTenantId: 'agency-1',
-  actorPapel: 'ADMIN' as const,
+  actorPapel: 'OWNER' as const,
   contractId: 'contract-1',
   partyId: 'party-1',
   email: ' MARIA@example.com ',
@@ -69,7 +69,7 @@ function setup(foundContract: Contract | null = contract, foundUser: User | null
 }
 
 describe('LinkContractPartyUserUseCase', () => {
-  it.each(['RENTER', 'AGENT', 'OWNER'] as const)(
+  it.each(['RENTER', 'AGENT', 'PROPERTY_OWNER'] as const)(
     'rejects %s before looking up a contract or user',
     async (actorPapel) => {
       const { contracts, users, useCase } = setup()

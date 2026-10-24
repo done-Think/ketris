@@ -35,9 +35,3 @@ export type AuthBrandPanelProps = {
   description?: string
   mobileBackdrop?: boolean
 }
-
-export type AuthScreenLayoutProps = {
-  title: string
-  subtitle: string
-  children: ReactNode
-}

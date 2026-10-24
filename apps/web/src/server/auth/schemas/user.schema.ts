@@ -1,9 +1,9 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
-export const papelSchema = z.enum(['ADMIN', 'OWNER', 'AGENT', 'RENTER'])
+export const papelSchema = z.enum(['OWNER', 'AGENT', 'RENTER', 'PROPERTY_OWNER'])
 
-export const nonAdminPapelSchema = z.enum(['OWNER', 'AGENT'])
+export const tenantMemberPapelSchema = z.enum(['OWNER', 'AGENT', 'PROPERTY_OWNER'])
 
 export const authenticatedUserSchema = z
   .object({

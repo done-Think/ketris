@@ -31,7 +31,7 @@ describe('/api/crm/contacts/[id] (integração)', () => {
         nome: 'Admin',
         email: `admin-${randomUUID()}@ketris.dev`,
         senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
     actorToken = await tokenService.sign({

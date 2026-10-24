@@ -1,15 +1,18 @@
+import { isPropertyOwner } from '@server/auth/domain/roles'
 import type { Papel } from '@server/auth/domain/user.entity'
 import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
 import { PropertyNotFoundError } from '@server/properties/domain/errors'
 import type { PropertyRepository } from '@server/properties/application/ports/property-repository.port'
 
-import {
-  assertCanManageAgenda,
-  assertCanChooseAgendaAudience,
-} from '../../domain/agenda-access-rules'
+import { assertCanChooseAgendaAudience } from '../../domain/agenda-access-rules'
 import { normalizeAgendaEventLinks } from '../../domain/agenda-event-links'
 import { assertWithinAgendaSchedulingWindow } from '../../domain/agenda-scheduling-rules'
-import { AgendaEventConflictError, AgendaResponsibleNotFoundError } from '../../domain/errors'
+import {
+  AgendaEventConflictError,
+  AgendaRenterLinksForbiddenError,
+  AgendaRenterPropertyRequiredError,
+  AgendaResponsibleNotFoundError,
+} from '../../domain/errors'
 import type { AgendaEventKind, AgendaEventAudience } from '../../domain/agenda-event.entity'
 import { ConflictError } from '@server/shared/errors'
 import type { AgendaEventRepository } from '../ports/agenda-event-repository.port'
@@ -46,7 +49,6 @@ export class CreateAgendaEventUseCase {
   ) {}
 
   async execute(input: CreateAgendaEventInput) {
-    assertCanManageAgenda(input.actorPapel)
     assertCanChooseAgendaAudience(
       input.actorPapel,
       input.actorUserId,
@@ -81,22 +83,13 @@ export class CreateAgendaEventUseCase {
       throw new AgendaResponsibleNotFoundError()
     }
 
-    if (input.imovelId) {
-      const property = await this.propertyRepository.findByTenantAndId(
-        input.actorTenantId,
-        input.imovelId,
-      )
-
-      if (!property) {
-        throw new PropertyNotFoundError()
-      }
-    }
+    const tenantId = await this.resolveEventTenant(input)
 
     const inicio = input.inicio
     const fim = new Date(inicio.getTime() + input.durationMinutes * 60_000)
 
     const conflict = await this.agendaEventRepository.hasOverlap(
-      input.actorTenantId,
+      tenantId,
       responsavelId,
       inicio,
       fim,
@@ -113,7 +106,7 @@ export class CreateAgendaEventUseCase {
 
     return this.agendaEventRepository.create(
       {
-        tenantId: input.actorTenantId,
+        tenantId,
         responsavelId,
         criadoPorId: input.actorUserId,
         imovelId: input.imovelId ?? null,
@@ -130,5 +123,36 @@ export class CreateAgendaEventUseCase {
       },
       links,
     )
+  }
+
+  private async resolveEventTenant(input: CreateAgendaEventInput): Promise<string> {
+    if (input.actorPapel === 'RENTER') {
+      if (input.donoEmail || input.participanteEmails?.length) {
+        throw new AgendaRenterLinksForbiddenError()
+      }
+      if (!input.imovelId) throw new AgendaRenterPropertyRequiredError()
+
+      const rented = await this.propertyRepository.findRenterContractProperty(
+        input.actorUserId,
+        input.imovelId,
+      )
+
+      if (!rented) throw new PropertyNotFoundError()
+
+      return rented.tenantId
+    }
+
+    if (input.imovelId) {
+      const property = await this.propertyRepository.findByTenantAndId(
+        input.actorTenantId,
+        input.imovelId,
+        undefined,
+        isPropertyOwner(input.actorPapel) ? input.actorUserId : undefined,
+      )
+
+      if (!property) throw new PropertyNotFoundError()
+    }
+
+    return input.actorTenantId
   }
 }

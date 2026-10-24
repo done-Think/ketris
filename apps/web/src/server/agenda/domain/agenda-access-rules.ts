@@ -1,7 +1,7 @@
+import { isAgencyManager, isPropertyOwner } from '@server/auth/domain/roles'
 import type { Papel, User } from '@server/auth/domain/user.entity'
 
 import type { AgendaReadScope, AgendaEvent, AgendaEventAudience } from './agenda-event.entity'
-import { AgendaRenterForbiddenError } from './errors'
 import { ForbiddenError } from '@server/shared/errors'
 
 export interface AgendaReadActor {
@@ -10,23 +10,12 @@ export interface AgendaReadActor {
   actorPapel: Papel
 }
 
-/** Create, update, reschedule and cancel stay restricted to the agency staff. */
-export function assertCanManageAgenda(papel: Papel): void {
-  if (papel === 'RENTER') {
-    throw new AgendaRenterForbiddenError()
-  }
-}
-
-/**
- * Administrators read their tenant; agents and owners use their own visibility scope.
- * Renters read only explicitly linked, non-internal events, independent of their shared tenant.
- */
 export function resolveAgendaReadScope(actor: AgendaReadActor): AgendaReadScope {
   if (actor.actorPapel === 'RENTER') {
     return { kind: 'linkedUser', userId: actor.actorUserId }
   }
 
-  if (actor.actorPapel === 'AGENT' || actor.actorPapel === 'OWNER') {
+  if (actor.actorPapel === 'AGENT' || actor.actorPapel === 'PROPERTY_OWNER') {
     return {
       kind: actor.actorPapel === 'AGENT' ? 'agent' : 'owner',
       tenantId: actor.actorTenantId,
@@ -42,9 +31,15 @@ export function assertCanManageAgendaEvent(
   userId: string | undefined,
   event: AgendaEvent,
 ): void {
-  assertCanManageAgenda(papel)
-  if (papel === 'ADMIN') return
+  if (isAgencyManager(papel)) return
   if (event.interno || event.destino === 'ALL_AGENTS') throw new ForbiddenError()
+  if (
+    (isPropertyOwner(papel) || papel === 'RENTER') &&
+    event.responsavelId !== userId &&
+    event.criadoPorId !== userId
+  ) {
+    throw new ForbiddenError()
+  }
   if (event.destino === 'ASSIGNED_AGENT' && (papel !== 'AGENT' || event.responsavelId !== userId)) {
     throw new ForbiddenError()
   }
@@ -57,7 +52,7 @@ export function assertCanChooseAgendaAudience(
   internal: boolean | undefined,
   responsibleId: string | undefined,
 ): void {
-  if (papel === 'ADMIN') return
+  if (isAgencyManager(papel)) return
   if (internal || audience === 'ALL_AGENTS' || (responsibleId && responsibleId !== userId)) {
     throw new ForbiddenError()
   }

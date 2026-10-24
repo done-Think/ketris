@@ -110,13 +110,20 @@ describe('RescheduleAgendaEventUseCase', () => {
     })
   })
 
-  it('lança ForbiddenError quando o ator é RENTER', async () => {
+  it('o RENTER não remarca evento criado por outra pessoa', async () => {
     const deps = createDeps()
+    vi.mocked(deps.agendaEventRepository.findByScopeAndId).mockResolvedValue({
+      id: 'event-1',
+      tenantId: 'agency-1',
+      responsavelId: 'agent-1',
+      criadoPorId: 'agent-1',
+    } as AgendaEvent)
     const useCase = new RescheduleAgendaEventUseCase(deps.agendaEventRepository)
 
     await expect(
       useCase.execute({
-        actorTenantId: 'tenant-1',
+        actorTenantId: 'renters',
+        actorUserId: 'renter-1',
         actorPapel: 'RENTER',
         id: 'event-1',
         inicio: new Date(),

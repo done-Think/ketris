@@ -17,6 +17,8 @@ import {
 import type { SxProps, Theme } from '@mui/material/styles'
 import { notFound } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+
+import { getRestrictedRoleAccess } from '@shared/lib/auth/restricted-role-access'
 import { useSnackbar } from 'notistack'
 import type { ReactNode } from 'react'
 
@@ -79,7 +81,7 @@ function formatContractCode(code: string) {
   return code.replace(/^CTR-\d{4}-/, '#')
 }
 
-function ContractHeader({ contract }: { contract: ContractListItem }) {
+function ContractHeader({ contract, readOnly }: { contract: ContractListItem; readOnly: boolean }) {
   const statusStyle = contractStatusStyles[contract.status]
 
   return (
@@ -117,24 +119,26 @@ function ContractHeader({ contract }: { contract: ContractListItem }) {
         </Stack>
       </Box>
 
-      <Stack direction="row" spacing={1.1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
-        <Button variant="outlined" color="secondary" startIcon={<EditOutlinedIcon />}>
-          Editar
-        </Button>
-        <Button variant="outlined" color="secondary" startIcon={<PictureAsPdfOutlinedIcon />}>
-          PDF
-        </Button>
-        <Button
-          variant="outlined"
-          sx={{
-            borderColor: alpha.error[10],
-            color: brand.semantic.error,
-            '&:hover': { borderColor: brand.semantic.error, bgcolor: alpha.error[6] },
-          }}
-        >
-          Rescindir
-        </Button>
-      </Stack>
+      {readOnly ? null : (
+        <Stack direction="row" spacing={1.1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+          <Button variant="outlined" color="secondary" startIcon={<EditOutlinedIcon />}>
+            Editar
+          </Button>
+          <Button variant="outlined" color="secondary" startIcon={<PictureAsPdfOutlinedIcon />}>
+            PDF
+          </Button>
+          <Button
+            variant="outlined"
+            sx={{
+              borderColor: alpha.error[10],
+              color: brand.semantic.error,
+              '&:hover': { borderColor: brand.semantic.error, bgcolor: alpha.error[6] },
+            }}
+          >
+            Rescindir
+          </Button>
+        </Stack>
+      )}
     </Stack>
   )
 }
@@ -252,10 +256,12 @@ function PartiesPanel({
   parties,
   isSigning,
   onSign,
+  readOnly,
 }: {
   parties: ApiContractParty[]
   isSigning: boolean
   onSign: (partyId: string) => void
+  readOnly: boolean
 }) {
   return (
     <DetailPanel title="Partes e Assinaturas" sx={{ flex: 1 }}>
@@ -303,7 +309,7 @@ function PartiesPanel({
                     fontWeight: 900,
                   }}
                 />
-              ) : (
+              ) : readOnly ? null : (
                 <Button
                   size="small"
                   variant="outlined"
@@ -325,6 +331,7 @@ function PartiesPanel({
 export function ContractDetailDashboardPage({ contractId }: ContractDetailDashboardPageProps) {
   const { data: session } = useSession()
   const tenantId = session?.tenantId ?? ''
+  const isReadOnlyViewer = Boolean(getRestrictedRoleAccess(session?.role))
   const { enqueueSnackbar } = useSnackbar()
   const contractQuery = useContract(tenantId, contractId)
   const propertyQuery = useCrmProperty(tenantId, contractQuery.data?.propertyId)
@@ -393,7 +400,7 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
           </Typography>
         </Stack>
 
-        <ContractHeader contract={contract} />
+        <ContractHeader contract={contract} readOnly={isReadOnlyViewer} />
 
         <Stack
           direction={{ xs: 'column', lg: 'row' }}
@@ -422,6 +429,7 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
               parties={contractQuery.data.parties}
               isSigning={signContractParty.isPending}
               onSign={handleSign}
+              readOnly={isReadOnlyViewer}
             />
             <DocumentsPanel documents={contract.documents} />
           </Stack>

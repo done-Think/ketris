@@ -42,7 +42,7 @@ export class CreateTenantAdminUseCase {
       nome: input.nome,
       email: input.email,
       senhaHash,
-      papel: 'ADMIN',
+      papel: 'OWNER',
     })
 
     return toAuthenticatedUser(created)

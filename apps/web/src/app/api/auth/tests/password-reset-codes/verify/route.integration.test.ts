@@ -29,7 +29,7 @@ describe('POST /api/auth/password-reset-codes/verify (integração)', () => {
         nome: 'Verifica Código',
         email,
         senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
     userId = usuario.id

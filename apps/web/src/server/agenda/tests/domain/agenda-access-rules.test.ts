@@ -1,44 +1,67 @@
 import { describe, expect, it } from 'vitest'
 
+import type { AgendaEvent } from '../../domain/agenda-event.entity'
 import {
-  assertCanManageAgenda,
+  assertCanManageAgendaEvent,
   canLinkUserToAgendaEvent,
   resolveAgendaReadScope,
 } from '../../domain/agenda-access-rules'
-import { AgendaRenterForbiddenError } from '../../domain/errors'
 
-describe('assertCanManageAgenda', () => {
-  it.each(['ADMIN', 'OWNER', 'AGENT'] as const)('permite gerenciar para %s', (papel) => {
-    expect(() => assertCanManageAgenda(papel)).not.toThrow()
+const event = (overrides: Partial<AgendaEvent> = {}) =>
+  ({
+    responsavelId: 'agent-1',
+    criadoPorId: 'agent-1',
+    destino: 'LEGACY_TEAM',
+    interno: false,
+    ...overrides,
+  }) as AgendaEvent
+
+describe('assertCanManageAgendaEvent', () => {
+  it('o OWNER gerencia qualquer evento da imobiliária', () => {
+    expect(() =>
+      assertCanManageAgendaEvent('OWNER', 'owner-1', event({ interno: true })),
+    ).not.toThrow()
   })
 
-  it('bloqueia RENTER com 403', () => {
-    expect(() => assertCanManageAgenda('RENTER')).toThrow(AgendaRenterForbiddenError)
-    expect(() => assertCanManageAgenda('RENTER')).toThrow(
-      expect.objectContaining({ status: 403, code: 'FORBIDDEN' }),
-    )
-  })
+  it.each(['RENTER', 'PROPERTY_OWNER'] as const)(
+    '%s gerencia só os eventos que criou ou dos quais é responsável',
+    (papel) => {
+      expect(() =>
+        assertCanManageAgendaEvent(papel, 'user-1', event({ criadoPorId: 'user-1' })),
+      ).not.toThrow()
+      expect(() =>
+        assertCanManageAgendaEvent(papel, 'user-1', event({ responsavelId: 'user-1' })),
+      ).not.toThrow()
+      expect(() => assertCanManageAgendaEvent(papel, 'user-1', event())).toThrow(
+        expect.objectContaining({ status: 403, code: 'FORBIDDEN' }),
+      )
+    },
+  )
 })
 
 describe('resolveAgendaReadScope', () => {
-  it('usa o tenant do ator para ADMIN', () => {
+  it('usa o tenant inteiro para o dono da imobiliária (OWNER)', () => {
     expect(
       resolveAgendaReadScope({
         actorTenantId: 'tenant-1',
         actorUserId: 'user-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
       }),
     ).toEqual({ kind: 'tenant', tenantId: 'tenant-1' })
   })
-  it.each(['AGENT', 'OWNER'] as const)('usa o tenant e o usuário para %s', (actorPapel) => {
-    expect(
-      resolveAgendaReadScope({ actorTenantId: 'tenant-1', actorUserId: 'user-1', actorPapel }),
-    ).toEqual({
-      kind: actorPapel === 'AGENT' ? 'agent' : 'owner',
-      tenantId: 'tenant-1',
-      userId: 'user-1',
-    })
-  })
+
+  it.each(['AGENT', 'PROPERTY_OWNER'] as const)(
+    'usa o tenant e o usuário para %s',
+    (actorPapel) => {
+      expect(
+        resolveAgendaReadScope({ actorTenantId: 'tenant-1', actorUserId: 'user-1', actorPapel }),
+      ).toEqual({
+        kind: actorPapel === 'AGENT' ? 'agent' : 'owner',
+        tenantId: 'tenant-1',
+        userId: 'user-1',
+      })
+    },
+  )
 
   it('usa o vínculo com o próprio usuário (e não o tenant) para RENTER', () => {
     expect(
@@ -77,7 +100,7 @@ describe('canLinkUserToAgendaEvent', () => {
     ).toBe(false)
   })
 
-  it.each(['ADMIN', 'OWNER', 'AGENT'] as const)(
+  it.each(['OWNER', 'AGENT'] as const)(
     'aceita %s ativo e aprovado do tenant do evento',
     (papel) => {
       expect(

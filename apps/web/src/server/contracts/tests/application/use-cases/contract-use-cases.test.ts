@@ -131,7 +131,7 @@ describe('CreateContractFromOpportunityUseCase', () => {
     expect(repository.create).not.toHaveBeenCalled()
   })
 
-  it.each(['ADMIN', 'OWNER'] as const)(
+  it.each(['OWNER'] as const)(
     'deixa %s criar a partir de qualquer oportunidade aceita do tenant',
     async (actorPapel) => {
       const repository = createRepository()
@@ -238,7 +238,7 @@ describe('CreateContractFromOpportunityUseCase', () => {
 })
 
 describe('ListContractsUseCase', () => {
-  it.each(['ADMIN', 'OWNER'] as const)(
+  it.each(['OWNER'] as const)(
     'lista todos os contratos do tenant para %s, sem filtro de responsável',
     async (actorPapel) => {
       const repository = createRepository()
@@ -293,7 +293,7 @@ describe('GetContractUseCase', () => {
   const baseGetInput = {
     actorTenantId: 'tenant-1',
     actorId: 'user-1',
-    actorPapel: 'ADMIN' as const,
+    actorPapel: 'OWNER' as const,
     contractId: 'contract-1',
   }
 
@@ -306,7 +306,7 @@ describe('GetContractUseCase', () => {
     )
   })
 
-  it('retorna o contrato quando encontrado, sem filtro de responsável para ADMIN', async () => {
+  it('retorna o contrato quando encontrado, sem filtro de responsável para OWNER', async () => {
     const repository = createRepository()
     const useCase = new GetContractUseCase(repository)
 
@@ -419,11 +419,11 @@ describe('SignContractPartyUseCase', () => {
     expect(repository.signParty).not.toHaveBeenCalled()
   })
 
-  it('deixa ADMIN e OWNER assinarem qualquer contrato do tenant', async () => {
+  it('deixa o OWNER assinar qualquer contrato do tenant', async () => {
     const repository = createRepository()
     const useCase = new SignContractPartyUseCase(repository)
 
-    await useCase.execute({ ...baseSignInput, actorId: 'admin-1', actorPapel: 'ADMIN' })
+    await useCase.execute({ ...baseSignInput, actorId: 'admin-1', actorPapel: 'OWNER' })
     await useCase.execute({ ...baseSignInput, actorId: 'owner-1', actorPapel: 'OWNER' })
 
     const tenantScope = { kind: 'tenant', tenantId: 'tenant-1' }

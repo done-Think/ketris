@@ -32,7 +32,7 @@ describe('POST /api/crm/opportunities/[id]/respond (integração)', () => {
         nome: 'Admin',
         email: `admin-${randomUUID()}@ketris.dev`,
         senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
     actorToken = await tokenService.sign({

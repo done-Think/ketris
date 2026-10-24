@@ -60,7 +60,7 @@ describe('CreateLeadUseCase', () => {
         budget: 'Até R$ 3.000',
         source: 'WhatsApp',
       }),
-    ).rejects.toThrow('Locatários não podem gerenciar leads.')
+    ).rejects.toThrow('Só a equipe da imobiliária acessa o CRM.')
     expect(create).not.toHaveBeenCalled()
   })
 })

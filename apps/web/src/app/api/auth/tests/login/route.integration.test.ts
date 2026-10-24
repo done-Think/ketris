@@ -25,7 +25,7 @@ describe('POST /api/auth/login (integração)', () => {
         nome: 'Login Teste',
         email,
         senhaHash: await bcrypt.hash(password, 10),
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
 
@@ -65,7 +65,7 @@ describe('POST /api/auth/login (integração)', () => {
       name: 'Login Teste',
       email,
       avatarUrl: null,
-      role: 'ADMIN',
+      role: 'OWNER',
       active: true,
       pendingApproval: false,
     })

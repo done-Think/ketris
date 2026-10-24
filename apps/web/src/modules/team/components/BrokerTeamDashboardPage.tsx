@@ -49,6 +49,7 @@ import {
   BrokerTransferDialog,
 } from './BrokerTeamActionDialogs'
 import { BrokerTeamCard } from './BrokerTeamCard'
+import { TeamMembershipRequests } from './TeamMembershipRequests'
 import type {
   BrokerInviteFormValues,
   BrokerTransferFormValues,
@@ -88,7 +89,7 @@ export function BrokerTeamDashboardPage() {
   const { data: session } = useSession()
   const createAgendaEvent = useCreateAgendaEvent(session?.tenantId ?? '')
   const createUser = useCreateUser()
-  const canInviteBroker = session?.role === 'ADMIN'
+  const canInviteBroker = session?.role === 'OWNER'
   const [inviteOpen, setInviteOpen] = useState(false)
   const [brokers, setBrokers] = useState<BrokerTeamMember[]>(() => [...brokerTeamMembers])
   const [action, setAction] = useState<{ type: BrokerTeamMenuAction; brokerId: string } | null>(
@@ -315,6 +316,8 @@ export function BrokerTeamDashboardPage() {
             },
           }}
         >
+          <TeamMembershipRequests enabled={canInviteBroker} />
+
           <Box
             sx={{
               display: 'grid',

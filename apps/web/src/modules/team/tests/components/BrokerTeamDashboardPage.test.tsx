@@ -10,13 +10,16 @@ const strongPasswordPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9])
 const enqueueSnackbar = vi.fn()
 const mutateAsync = vi.fn().mockResolvedValue({ id: 'event-1' })
 const createUserMutateAsync = vi.fn()
-const session = vi.hoisted(() => ({ tenantId: 'tenant-1', role: 'ADMIN' }))
+const session = vi.hoisted(() => ({ tenantId: 'tenant-1', role: 'OWNER' }))
 
 vi.mock('next-auth/react', () => ({ useSession: () => ({ data: session }) }))
 vi.mock('@modules/auth/hooks/use-create-user', () => ({
   useCreateUser: () => ({ mutateAsync: createUserMutateAsync, isPending: false }),
 }))
 vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar }) }))
+vi.mock('../../components/TeamMembershipRequests', () => ({
+  TeamMembershipRequests: () => null,
+}))
 vi.mock('@modules/agenda/hooks/use-agenda-events', () => ({
   useCreateAgendaEvent: () => ({ mutateAsync }),
 }))
@@ -236,13 +239,13 @@ describe('invite broker', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 
-  it.each(['OWNER', 'AGENT', 'RENTER'])('hides the invite action from %s', (role) => {
+  it.each(['AGENT', 'RENTER', 'PROPERTY_OWNER'])('hides the invite action from %s', (role) => {
     session.role = role
     try {
       renderPage()
       expect(screen.queryByRole('button', { name: 'Convidar corretor' })).not.toBeInTheDocument()
     } finally {
-      session.role = 'ADMIN'
+      session.role = 'OWNER'
     }
   })
 })

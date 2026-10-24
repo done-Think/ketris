@@ -95,10 +95,10 @@ describe('Agency team event visibility and mutations', () => {
     agency = tenants[0]
     const users: Record<string, Usuario> = {}
     for (const [name, role, tenantId] of [
-      ['admin', 'ADMIN', agency],
+      ['admin', 'OWNER', agency],
       ['agent', 'AGENT', agency],
       ['colleague', 'AGENT', agency],
-      ['owner', 'OWNER', agency],
+      ['owner', 'PROPERTY_OWNER', agency],
       ['renter', 'RENTER', agency],
       ['foreign', 'AGENT', tenants[1]],
     ] as const) {

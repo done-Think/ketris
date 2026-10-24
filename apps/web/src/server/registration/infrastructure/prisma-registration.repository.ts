@@ -48,7 +48,7 @@ export class PrismaRegistrationRepository implements RegistrationRepository {
           nome: input.adminName,
           email: normalizeEmail(input.email),
           senhaHash: input.senhaHash,
-          papel: 'ADMIN',
+          papel: 'OWNER',
         },
       })
 

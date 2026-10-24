@@ -2,7 +2,7 @@ import type { Papel } from '@server/auth/domain/user.entity'
 
 import type { Contact, ContactUpdate } from '../../domain/contact.entity'
 import { ContactEmailAlreadyExistsError, ContactNotFoundError } from '../../domain/errors'
-import { assertAgentOwnsContact } from '../authorization'
+import { assertAgentOwnsContact, assertCrmAccess } from '../authorization'
 import type { ContactRepository } from '../ports/contact-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
 
@@ -23,6 +23,7 @@ export class UpdateContactUseCase {
   ) {}
 
   async execute(input: UpdateContactInput): Promise<UpdateContactOutput> {
+    assertCrmAccess(input.actorPapel)
     const contact = await this.contactRepository.findById(input.contactId)
 
     if (!contact || contact.tenantId !== input.actorTenantId) {

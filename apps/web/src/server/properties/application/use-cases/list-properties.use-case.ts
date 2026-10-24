@@ -7,7 +7,10 @@ export class ListPropertiesUseCase {
   constructor(private readonly propertyRepository: PropertyRepository) {}
 
   execute(
-    input: Omit<PropertyListFilters, 'tenantId' | 'responsavelId' | 'renterId'> & {
+    input: Omit<
+      PropertyListFilters,
+      'tenantId' | 'responsavelId' | 'renterId' | 'proprietarioId'
+    > & {
       actorTenantId: string
       actorId: string
       actorPapel: Papel
@@ -19,6 +22,7 @@ export class ListPropertiesUseCase {
       finalidade: input.finalidade,
       responsavelId: input.actorPapel === 'AGENT' ? input.actorId : undefined,
       ...(input.actorPapel === 'RENTER' ? { renterId: input.actorId } : {}),
+      ...(input.actorPapel === 'PROPERTY_OWNER' ? { proprietarioId: input.actorId } : {}),
     })
   }
 }

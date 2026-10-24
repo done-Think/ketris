@@ -33,7 +33,7 @@ describe('POST /api/register (integração)', () => {
         nome: 'Admin da Imobiliária',
         email: existingAgencyEmail,
         senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
   })
@@ -53,7 +53,7 @@ describe('POST /api/register (integração)', () => {
     })
   }
 
-  it('imobiliaria: cria um tenant novo com ADMIN e já retorna sessão logada', async () => {
+  it('imobiliaria: cria um tenant novo com OWNER e já retorna sessão logada', async () => {
     const email = `nova-imobiliaria-${randomUUID()}@ketris.dev`
 
     const response = await POST(
@@ -69,7 +69,7 @@ describe('POST /api/register (integração)', () => {
 
     expect(response.status).toBe(201)
     expect(json.outcome).toBe('REGISTERED')
-    expect(json.user.role).toBe('ADMIN')
+    expect(json.user.role).toBe('OWNER')
     expect(json.user.email).toBe(email)
     expect(typeof json.accessToken).toBe('string')
     expect(typeof json.refreshToken).toBe('string')
@@ -96,7 +96,7 @@ describe('POST /api/register (integração)', () => {
 
     expect(response.status).toBe(201)
     expect(json.outcome).toBe('REGISTERED')
-    expect(json.user.role).toBe('ADMIN')
+    expect(json.user.role).toBe('OWNER')
 
     if (json.user?.tenantId) createdTenantIds.push(json.user.tenantId)
     expect(await prisma.tenant.findUnique({ where: { id: json.user.tenantId } })).toMatchObject({

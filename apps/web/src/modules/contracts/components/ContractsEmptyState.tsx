@@ -44,20 +44,22 @@ export function ContractsEmptyState({ onCreateContract }: ContractsEmptyStatePro
         </Typography>
         <Typography sx={{ color: brand.neutral[500], fontSize: 14 }}>{t('description')}</Typography>
       </Box>
-      <Button
-        variant="contained"
-        startIcon={<AddRoundedIcon />}
-        onClick={onCreateContract}
-        sx={{
-          borderRadius: `${radius.sm}px`,
-          boxShadow: shadows.none,
-          mt: 0.6,
-          textTransform: 'none',
-          fontWeight: 900,
-        }}
-      >
-        {t('cta')}
-      </Button>
+      {onCreateContract ? (
+        <Button
+          variant="contained"
+          startIcon={<AddRoundedIcon />}
+          onClick={onCreateContract}
+          sx={{
+            borderRadius: `${radius.sm}px`,
+            boxShadow: shadows.none,
+            mt: 0.6,
+            textTransform: 'none',
+            fontWeight: 900,
+          }}
+        >
+          {t('cta')}
+        </Button>
+      ) : null}
     </Stack>
   )
 }

@@ -14,7 +14,7 @@ describe('updateUserRequestSchema', () => {
     expect(updateUserRequestSchema.safeParse({ role: 'AGENT' }).success).toBe(true)
   })
 
-  it('rejeita role ADMIN — não é possível promover usuário por esta rota', () => {
+  it('rejeita role ADMIN, que não existe para usuários de imobiliária', () => {
     const result = updateUserRequestSchema.safeParse({ role: 'ADMIN' })
 
     expect(result.success).toBe(false)

@@ -49,7 +49,7 @@ const user = (overrides: Partial<TenantUser>): TenantUser => ({
   name: 'Roberto Lima',
   email: 'roberto@ketris.dev',
   avatarUrl: null,
-  role: 'ADMIN',
+  role: 'OWNER',
   active: true,
   pendingApproval: false,
   ...overrides,
@@ -104,7 +104,7 @@ describe('PlatformTenantDetailPage', () => {
   it('lista os usuários com o papel traduzido e quem aguarda aprovação', () => {
     vi.mocked(useTenantUsers).mockReturnValue({
       data: [
-        user({ id: 'u1', name: 'Roberto Lima', role: 'ADMIN' }),
+        user({ id: 'u1', name: 'Roberto Lima', role: 'OWNER' }),
         user({
           id: 'u2',
           name: 'Ana Souza',
@@ -121,7 +121,7 @@ describe('PlatformTenantDetailPage', () => {
     const users = screen.getByRole('region', { name: /Usuários/ })
     expect(within(users).getByText('2')).toBeVisible()
     const roberto = within(users).getByRole('row', { name: /Roberto Lima/ })
-    expect(within(roberto).getByText('Administrador')).toBeVisible()
+    expect(within(roberto).getByText('Dono da imobiliária')).toBeVisible()
     expect(within(roberto).getByText('Ativo')).toBeVisible()
     const ana = within(users).getByRole('row', { name: /Ana Souza/ })
     expect(within(ana).getByText('Corretor')).toBeVisible()

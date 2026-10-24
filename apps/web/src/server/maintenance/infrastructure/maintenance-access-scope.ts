@@ -1,3 +1,4 @@
+import { isAgencyManager } from '@server/auth/domain/roles'
 import type { MaintenanceContractRow } from '../types/prisma-maintenance-ticket-repository'
 import type { Prisma } from '@prisma/client'
 import type { MaintenanceActor } from '../types/maintenance-ticket'
@@ -9,7 +10,7 @@ export function maintenanceTicketScope(
     return { excluidoEm: null, contrato: { is: renterContractScope(actor.actorId) } }
   }
   const base: Prisma.ChamadoManutencaoWhereInput = { tenantId: actor.actorTenantId }
-  if (actor.actorPapel === 'ADMIN') return base
+  if (isAgencyManager(actor.actorPapel)) return base
   base.excluidoEm = null
   base.contrato = { is: { tenantId: actor.actorTenantId } }
   if (actor.actorPapel === 'AGENT')
@@ -17,7 +18,7 @@ export function maintenanceTicketScope(
       { responsavelId: actor.actorId },
       { imovel: { responsavelId: actor.actorId, tenantId: actor.actorTenantId } },
     ]
-  else if (actor.actorPapel === 'OWNER')
+  else if (actor.actorPapel === 'PROPERTY_OWNER')
     base.OR = [
       { responsavelId: actor.actorId },
       { imovel: { proprietarioId: actor.actorId, tenantId: actor.actorTenantId } },

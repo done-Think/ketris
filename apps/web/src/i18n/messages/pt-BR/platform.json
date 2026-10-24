@@ -140,10 +140,10 @@
       "emptyDescription": "Cadastre o administrador ao lado para a conta começar a usar a plataforma.",
       "pendingApproval": "Aguardando aprovação",
       "roles": {
-        "ADMIN": "Administrador",
-        "OWNER": "Dono",
+        "OWNER": "Dono da imobiliária",
         "AGENT": "Corretor",
-        "RENTER": "Locatário"
+        "RENTER": "Locatário",
+        "PROPERTY_OWNER": "Proprietário do imóvel"
       }
     },
     "account": {

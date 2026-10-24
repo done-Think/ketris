@@ -488,7 +488,7 @@ describe('/api/financial/charges (integração)', () => {
     expect(confirmResponse.status).toBe(404)
   })
 
-  async function createToken(papel: 'OWNER' | 'ADMIN') {
+  async function createToken(papel: 'OWNER' | 'OWNER') {
     const user = await prisma.usuario.create({
       data: {
         tenantId,
@@ -525,13 +525,13 @@ describe('/api/financial/charges (integração)', () => {
     expect(json.occupancyRatePercentage).toBe(100)
   })
 
-  it('libera o resumo financeiro para ADMIN', async () => {
+  it('libera o resumo financeiro para OWNER', async () => {
     const response = await getSummary(
       buildRequest(
         'http://localhost/api/financial/summary',
         'GET',
         undefined,
-        await createToken('ADMIN'),
+        await createToken('OWNER'),
       ),
     )
 

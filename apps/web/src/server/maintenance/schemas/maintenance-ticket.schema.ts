@@ -98,7 +98,7 @@ export const maintenanceTicketSchema = z
     responsibleId: z.string().nullable(),
     responsibleName: z.string().nullable(),
     provider: providerSchema.nullable(),
-    completedByRole: z.enum(['ADMIN', 'AGENT', 'OWNER', 'RENTER']).nullable(),
+    completedByRole: z.enum(['OWNER', 'AGENT', 'RENTER', 'PROPERTY_OWNER']).nullable(),
     deletedAt: z.string().nullable(),
     replacementRequests: z.array(replacementSchema),
     permissions: maintenancePermissionsSchema,
@@ -183,7 +183,7 @@ export const maintenanceOptionsSchema = z.object({
     z.object({
       id: z.string(),
       name: z.string(),
-      role: z.enum(['ADMIN', 'AGENT', 'OWNER', 'RENTER']),
+      role: z.enum(['OWNER', 'AGENT', 'RENTER', 'PROPERTY_OWNER']),
     }),
   ),
 })

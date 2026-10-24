@@ -2,9 +2,10 @@ import { useQuery } from '@tanstack/react-query'
 
 import { userService } from '../services/user-service'
 
-export function useUsers() {
+export function useUsers(enabled = true) {
   return useQuery({
-    queryKey: ['backoffice', 'users'],
+    queryKey: ['auth', 'users'],
     queryFn: () => userService.list(),
+    enabled,
   })
 }

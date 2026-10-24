@@ -7,6 +7,7 @@ import type { ActivityRepository } from '../ports/activity-repository.port'
 import type { ContactRepository } from '../ports/contact-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
 import type { PropertyLookupPort } from '../ports/property-lookup.port'
+import { assertCrmAccess } from '../authorization'
 
 export interface CreateOpportunityInput {
   actorTenantId: string
@@ -34,6 +35,7 @@ export class CreateOpportunityUseCase {
   ) {}
 
   async execute(input: CreateOpportunityInput): Promise<CreateOpportunityOutput> {
+    assertCrmAccess(input.actorPapel)
     const ownsProperty = await this.propertyLookup.existsForTenant(
       input.actorTenantId,
       input.propertyId,

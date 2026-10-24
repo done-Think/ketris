@@ -369,7 +369,7 @@ describe('GET /api/platform/tenants – mensalidade (integração)', () => {
         nome: 'Responsável',
         email: `responsavel-${randomUUID()}@ketris.dev`,
         senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
     // 12 properties count toward the plan; the inactive one does not.

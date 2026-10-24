@@ -38,7 +38,7 @@ describe('createUserRequestSchema', () => {
     }
   })
 
-  it('rejeita role ADMIN — este endpoint nunca cria administradores', () => {
+  it('rejeita role ADMIN, que não existe para usuários de imobiliária', () => {
     const result = createUserRequestSchema.safeParse({
       name: 'Ana Agente',
       email: 'ana@ketris.dev',

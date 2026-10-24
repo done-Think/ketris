@@ -4,12 +4,12 @@ import type { LeadRepository } from '../../../application/ports/lead-repository.
 import { ListLeadsUseCase } from '../../../application/use-cases/list-leads.use-case'
 
 describe('ListLeadsUseCase', () => {
-  it('não restringe por responsavelId quando o ator é ADMIN', async () => {
+  it('não restringe por responsavelId quando o ator é OWNER', async () => {
     const findManyByTenant = vi.fn().mockResolvedValue([])
     const repository = { findManyByTenant } as unknown as LeadRepository
     const useCase = new ListLeadsUseCase(repository)
 
-    await useCase.execute({ actorTenantId: 'tenant-1', actorId: 'admin-1', actorPapel: 'ADMIN' })
+    await useCase.execute({ actorTenantId: 'tenant-1', actorId: 'admin-1', actorPapel: 'OWNER' })
 
     expect(findManyByTenant).toHaveBeenCalledWith('tenant-1', { responsavelId: undefined })
   })

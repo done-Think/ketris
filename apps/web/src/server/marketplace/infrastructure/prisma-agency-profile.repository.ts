@@ -25,7 +25,7 @@ async function buildStats(tenantId: string) {
   const [activeListings, brokersCount, dealsClosed] = await Promise.all([
     prisma.imovel.count({ where: { tenantId, status: 'PUBLISHED' } }),
     prisma.usuario.count({
-      where: { tenantId, ativo: true, papel: { in: ['ADMIN', 'OWNER', 'AGENT'] } },
+      where: { tenantId, ativo: true, papel: { in: ['OWNER', 'AGENT'] } },
     }),
     prisma.contrato.count({ where: { tenantId, status: 'ATIVO' } }),
   ])

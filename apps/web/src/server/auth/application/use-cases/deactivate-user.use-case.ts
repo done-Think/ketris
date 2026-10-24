@@ -1,3 +1,4 @@
+import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
 import { CannotDeactivateSelfError, UserNotFoundError } from '../../domain/errors'
@@ -21,8 +22,8 @@ export class DeactivateUserUseCase {
   ) {}
 
   async execute(input: DeactivateUserInput): Promise<DeactivateUserOutput> {
-    if (input.actorPapel !== 'ADMIN') {
-      throw new ForbiddenError('Apenas administradores podem desativar usuários.')
+    if (!isAgencyManager(input.actorPapel)) {
+      throw new ForbiddenError('Apenas a gestão da imobiliária pode desativar usuários.')
     }
 
     if (input.actorId === input.userId) {
@@ -31,7 +32,7 @@ export class DeactivateUserUseCase {
 
     const target = await this.userRepository.findById(input.userId)
 
-    if (!target || target.tenantId !== input.actorTenantId || target.papel === 'ADMIN') {
+    if (!target || target.tenantId !== input.actorTenantId) {
       throw new UserNotFoundError()
     }
 

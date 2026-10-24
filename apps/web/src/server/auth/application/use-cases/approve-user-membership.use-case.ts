@@ -1,3 +1,4 @@
+import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
 import { UserNotFoundError } from '../../domain/errors'
@@ -16,13 +17,13 @@ export class ApproveUserMembershipUseCase {
   constructor(private readonly userRepository: UserRepository) {}
 
   async execute(input: ApproveUserMembershipInput): Promise<ApproveUserMembershipOutput> {
-    if (input.actorPapel !== 'ADMIN') {
-      throw new ForbiddenError('Apenas administradores podem aprovar vínculos.')
+    if (!isAgencyManager(input.actorPapel)) {
+      throw new ForbiddenError('Apenas a gestão da imobiliária pode aprovar vínculos.')
     }
 
     const target = await this.userRepository.findById(input.userId)
 
-    if (!target || target.tenantId !== input.actorTenantId || target.papel === 'ADMIN') {
+    if (!target || target.tenantId !== input.actorTenantId) {
       throw new UserNotFoundError()
     }
 

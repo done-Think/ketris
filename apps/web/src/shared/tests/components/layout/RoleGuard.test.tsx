@@ -24,7 +24,7 @@ function mockSession(role: string) {
 
 function renderGuard() {
   return render(
-    <RoleGuard allowedRoles={['ADMIN', 'OWNER']}>
+    <RoleGuard allowedRoles={['OWNER']}>
       <div>Conteúdo restrito</div>
     </RoleGuard>,
   )
@@ -36,7 +36,7 @@ describe('RoleGuard', () => {
   })
 
   it('renderiza o conteúdo quando o papel da sessão está na lista permitida', () => {
-    mockSession('ADMIN')
+    mockSession('OWNER')
 
     renderGuard()
 

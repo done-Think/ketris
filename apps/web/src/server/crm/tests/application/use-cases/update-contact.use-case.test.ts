@@ -38,7 +38,7 @@ describe('UpdateContactUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       contactId: 'contato-1',
       changes: { name: 'Carlos Silva' },
     })
@@ -57,7 +57,7 @@ describe('UpdateContactUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         contactId: 'contato-1',
         changes: {},
       }),
@@ -75,7 +75,7 @@ describe('UpdateContactUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       contactId: 'contato-1',
       changes: { email: 'Novo@Exemplo.com' },
     })
@@ -95,7 +95,7 @@ describe('UpdateContactUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         contactId: 'contato-1',
         changes: { email: 'ocupado@exemplo.com' },
       }),

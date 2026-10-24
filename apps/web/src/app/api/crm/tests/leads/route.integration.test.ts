@@ -31,7 +31,7 @@ describe('/api/crm/leads (integração)', () => {
     })
     otherTenantId = other.id
 
-    async function createActor(papel: 'ADMIN' | 'AGENT' | 'RENTER', ownerTenantId: string) {
+    async function createActor(papel: 'OWNER' | 'AGENT' | 'RENTER', ownerTenantId: string) {
       const usuario = await prisma.usuario.create({
         data: {
           tenantId: ownerTenantId,
@@ -55,7 +55,7 @@ describe('/api/crm/leads (integração)', () => {
       return { usuario, token }
     }
 
-    const admin = await createActor('ADMIN', tenantId)
+    const admin = await createActor('OWNER', tenantId)
     adminToken = admin.token
 
     const agentA = await createActor('AGENT', tenantId)
@@ -132,7 +132,7 @@ describe('/api/crm/leads (integração)', () => {
   }
 
   describe('GET', () => {
-    it('ADMIN vê os leads de todos os corretores do tenant', async () => {
+    it('OWNER vê os leads de todos os corretores do tenant', async () => {
       const response = await GET(buildGetRequest(adminToken))
       const json = await response.json()
       const ids = json.leads.map((lead: { id: string }) => lead.id)

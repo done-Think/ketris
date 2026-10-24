@@ -34,7 +34,7 @@ export async function regularizeMaintenanceLinks(
             where: {
               id: input.ownerId,
               tenantId: actor.actorTenantId,
-              papel: 'OWNER',
+              papel: 'PROPERTY_OWNER',
               ativo: true,
             },
           })

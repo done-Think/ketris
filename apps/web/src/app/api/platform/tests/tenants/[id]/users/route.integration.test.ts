@@ -42,7 +42,7 @@ describe('GET /api/platform/tenants/[id]/users (integração)', () => {
         nome: 'Admin do Tenant',
         email: `admin-${randomUUID()}@ketris.dev`,
         senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
     await prisma.usuario.create({
@@ -78,7 +78,7 @@ describe('GET /api/platform/tenants/[id]/users (integração)', () => {
 
     expect(response.status).toBe(200)
     expect(json.users).toHaveLength(2)
-    expect(json.users.some((user: { role: string }) => user.role === 'ADMIN')).toBe(true)
+    expect(json.users.some((user: { role: string }) => user.role === 'OWNER')).toBe(true)
   })
 
   it('retorna 401 sem Authorization header', async () => {
