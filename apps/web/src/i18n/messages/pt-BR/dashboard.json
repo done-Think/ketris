@@ -432,6 +432,7 @@
       "title": "Pedidos de vínculo",
       "description": "{count, plural, one {# corretor aguarda sua aprovação para entrar na equipe.} other {# corretores aguardam sua aprovação para entrar na equipe.}}",
       "approve": "Aprovar",
+      "pending": "Aguardando aprovação",
       "approveAriaLabel": "Aprovar vínculo de {name}",
       "approveSuccess": "{name} agora faz parte da equipe.",
       "approveError": "Não foi possível aprovar o vínculo.",

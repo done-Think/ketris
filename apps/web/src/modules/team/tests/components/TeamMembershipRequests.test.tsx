@@ -54,6 +54,8 @@ describe('TeamMembershipRequests', () => {
 
     expect(screen.getByRole('region', { name: 'Pedidos de vínculo' })).toBeVisible()
     expect(screen.getAllByText('Bruna Corretora')).toHaveLength(1)
+    expect(screen.getByText('Corretor parceiro')).toBeVisible()
+    expect(screen.getByText('Aguardando aprovação')).toBeVisible()
     fireEvent.click(screen.getByRole('button', { name: 'Aprovar vínculo de Bruna Corretora' }))
 
     await waitFor(() => expect(approve).toHaveBeenCalledWith('agent-1'))

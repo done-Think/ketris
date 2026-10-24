@@ -432,6 +432,7 @@
       "title": "Membership requests",
       "description": "{count, plural, one {# broker is waiting for your approval to join the team.} other {# brokers are waiting for your approval to join the team.}}",
       "approve": "Approve",
+      "pending": "Awaiting approval",
       "approveAriaLabel": "Approve {name}'s membership",
       "approveSuccess": "{name} is now part of the team.",
       "approveError": "Could not approve the membership.",

@@ -1,12 +1,14 @@
 'use client'
 
-import { Alert, Button, Paper, Stack, Typography } from '@mui/material'
+import { Alert, Box, Chip, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 
 import { useApproveUserMembership } from '@modules/auth/hooks/use-approve-user-membership'
 import { useUsers } from '@modules/auth/hooks/use-users'
-import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
+import { DashboardHeaderActionButton } from '@shared/components/layout'
+import { DashboardPanel } from '@shared/components/ui/DashboardPanel'
+import { alpha } from '@shared/theme/tokens'
 import { extractErrorMessage } from '@shared/utils/error-message'
 
 import type { TeamMembershipRequestsProps } from '../types/broker-team'
@@ -37,60 +39,56 @@ export function TeamMembershipRequests({ enabled }: TeamMembershipRequestsProps)
   }
 
   return (
-    <Paper
-      component="section"
-      aria-label={t('title')}
-      variant="outlined"
-      sx={{
-        p: { xs: 1.5, md: 2 },
-        borderColor: alpha.graphite[8],
-        borderRadius: `${radius.sm}px`,
-        bgcolor: surface.paper,
-        boxShadow: shadows.crmListPanel,
-      }}
-    >
-      <Stack spacing={1.5}>
-        <Stack spacing={0.4}>
+    <Box component="section" aria-label={t('title')}>
+      <DashboardPanel>
+        <Box sx={{ p: { xs: 2, md: 2.4 } }}>
           <Typography variant="h6" component="h2">
             {t('title')}
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.2 }}>
             {t('description', { count: pendingUsers.length })}
           </Typography>
-        </Stack>
-        {pendingUsers.map((user) => (
-          <Stack
-            key={user.id}
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={1.2}
-            alignItems={{ xs: 'stretch', sm: 'center' }}
-            justifyContent="space-between"
-            sx={{
-              p: 1.2,
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.app,
-            }}
-          >
-            <Stack spacing={0.2} sx={{ minWidth: 0 }}>
-              <Typography variant="body1" noWrap>
-                {user.name}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" noWrap>
-                {user.email} · {roleT(user.role)}
-              </Typography>
-            </Stack>
-            <Button
-              variant="contained"
-              size="small"
-              disabled={approveMembership.isPending}
-              onClick={() => approve(user.id, user.name)}
-              aria-label={t('approveAriaLabel', { name: user.name })}
-            >
-              {t('approve')}
-            </Button>
+
+          <Stack component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+            {pendingUsers.map((user) => (
+              <Stack
+                component="li"
+                key={user.id}
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={1.2}
+                sx={{
+                  alignItems: { xs: 'stretch', sm: 'center' },
+                  justifyContent: 'space-between',
+                  py: 1.2,
+                  borderBottom: '1px solid',
+                  borderColor: alpha.graphite[6],
+                  '&:last-of-type': { borderBottom: 0 },
+                }}
+              >
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography variant="body1" noWrap>
+                    {user.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" noWrap>
+                    {user.email}
+                  </Typography>
+                  <Stack direction="row" spacing={0.8} sx={{ mt: 0.6 }}>
+                    <Chip label={roleT(user.role)} variant="outlined" size="small" />
+                    <Chip label={t('pending')} color="warning" size="small" />
+                  </Stack>
+                </Box>
+                <DashboardHeaderActionButton
+                  disabled={approveMembership.isPending}
+                  onClick={() => approve(user.id, user.name)}
+                  aria-label={t('approveAriaLabel', { name: user.name })}
+                >
+                  {t('approve')}
+                </DashboardHeaderActionButton>
+              </Stack>
+            ))}
           </Stack>
-        ))}
-      </Stack>
-    </Paper>
+        </Box>
+      </DashboardPanel>
+    </Box>
   )
 }
