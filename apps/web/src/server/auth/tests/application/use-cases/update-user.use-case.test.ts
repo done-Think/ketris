@@ -35,14 +35,14 @@ function createDeps(overrides?: {
 }
 
 describe('UpdateUserUseCase', () => {
-  it('atualiza nome/email/papel quando o ator é ADMIN e o alvo existe no tenant', async () => {
+  it('atualiza nome/email/papel quando o ator é OWNER e o alvo existe no tenant', async () => {
     const deps = createDeps()
     const useCase = new UpdateUserUseCase(deps.userRepository)
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'admin-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       userId: owner.id,
       nome: 'Atualizado',
     })
@@ -56,8 +56,8 @@ describe('UpdateUserUseCase', () => {
     })
   })
 
-  it('permite que um ADMIN atualize o próprio perfil sem alterar o papel', async () => {
-    const admin: User = { ...owner, id: 'admin-1', papel: 'ADMIN' }
+  it('permite que um OWNER atualize o próprio perfil sem alterar o papel', async () => {
+    const admin: User = { ...owner, id: 'admin-1', papel: 'OWNER' }
     const deps = createDeps({
       findById: vi.fn().mockResolvedValue(admin),
       update: vi.fn().mockResolvedValue({ ...admin, nome: 'Admin atualizado' }),
@@ -83,7 +83,7 @@ describe('UpdateUserUseCase', () => {
     })
   })
 
-  it('lança ForbiddenError quando o ator não é ADMIN', async () => {
+  it('lança ForbiddenError quando o ator não é OWNER', async () => {
     const deps = createDeps()
     const useCase = new UpdateUserUseCase(deps.userRepository)
 
@@ -99,7 +99,7 @@ describe('UpdateUserUseCase', () => {
     expect(deps.userRepository.update).not.toHaveBeenCalled()
   })
 
-  it('lança UserNotFoundError quando o alvo não existe, é de outro tenant, ou é ADMIN', async () => {
+  it('lança UserNotFoundError quando o alvo não existe, é de outro tenant', async () => {
     const deps = createDeps({ findById: vi.fn().mockResolvedValue(null) })
     const useCase = new UpdateUserUseCase(deps.userRepository)
 
@@ -107,7 +107,7 @@ describe('UpdateUserUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'admin-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         userId: 'x',
         nome: 'X',
       }),
@@ -124,7 +124,7 @@ describe('UpdateUserUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'admin-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         userId: owner.id,
         email: 'em-uso@ketris.dev',
       }),
@@ -139,7 +139,7 @@ describe('UpdateUserUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'admin-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       userId: owner.id,
       email: owner.email,
     })

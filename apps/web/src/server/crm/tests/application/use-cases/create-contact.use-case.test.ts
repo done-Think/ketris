@@ -29,6 +29,7 @@ describe('CreateContactUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorPapel: 'OWNER',
       name: 'Novo Contato',
       email: 'Novo@Exemplo.com',
       phone: null,
@@ -52,6 +53,7 @@ describe('CreateContactUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
+        actorPapel: 'OWNER',
         name: 'Duplicado',
         email: 'carlos@exemplo.com',
         phone: null,

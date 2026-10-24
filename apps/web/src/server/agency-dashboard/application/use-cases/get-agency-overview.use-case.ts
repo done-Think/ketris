@@ -1,3 +1,4 @@
+import { isAgencyManager } from '@server/auth/domain/roles'
 import type { Papel } from '@server/auth/domain/user.entity'
 import { ForbiddenError } from '@server/shared/errors'
 
@@ -17,7 +18,7 @@ export class GetAgencyOverviewUseCase {
   ) {}
 
   async execute(input: GetAgencyOverviewInput): Promise<AgencyOverview> {
-    if (input.actorPapel !== 'OWNER' && input.actorPapel !== 'ADMIN') {
+    if (!isAgencyManager(input.actorPapel)) {
       throw new ForbiddenError(
         'Apenas proprietários ou administradores podem ver a visão geral da agência.',
       )

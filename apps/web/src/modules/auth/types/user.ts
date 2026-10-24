@@ -1,4 +1,4 @@
-import type { Role } from './admin'
+import type { Role } from './role'
 
 export interface TenantUser {
   id: string
@@ -15,7 +15,7 @@ export interface CreateTenantUserPayload {
   name: string
   email: string
   password: string
-  role: 'OWNER' | 'AGENT'
+  role: 'OWNER' | 'AGENT' | 'PROPERTY_OWNER'
 }
 
 export interface CreateTenantUserResponse {

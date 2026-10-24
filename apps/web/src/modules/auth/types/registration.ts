@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { z } from 'zod'
+import type { Papel } from '@server/auth/domain/user.entity'
 
 import type { createRegistrationDetailsSchema } from '../schemas/registration-details-schema'
 
@@ -94,7 +95,7 @@ export interface RegisterErrorBody {
 
 export interface RegisteredBody {
   outcome: 'REGISTERED'
-  user: { role: string }
+  user: { role: Papel }
   accessToken: string
   refreshToken: string
 }

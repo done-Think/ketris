@@ -98,6 +98,10 @@ function chargeReadWhere(scope: ChargeReadScope): Prisma.CobrancaWhereInput {
     }
   }
 
+  if (scope.kind === 'propertyOwner') {
+    return { tenantId: scope.tenantId, contrato: { imovel: { proprietarioId: scope.ownerId } } }
+  }
+
   return { tenantId: scope.tenantId }
 }
 

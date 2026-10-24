@@ -53,7 +53,7 @@ describe('CurrentUserProfilePage', () => {
       name: 'Ana',
       email: 'ana@example.com',
       avatarUrl: '/avatar.png',
-      role: 'ADMIN',
+      role: 'OWNER',
       active: true,
       pendingApproval: false,
     })
@@ -80,7 +80,7 @@ describe('CurrentUserProfilePage', () => {
       name: 'Beatriz',
       email: 'bea@example.com',
       avatarUrl: '/avatar.png',
-      role: 'ADMIN',
+      role: 'OWNER',
       active: true,
       pendingApproval: false,
     })

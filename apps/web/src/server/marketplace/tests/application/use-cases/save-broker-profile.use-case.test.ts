@@ -50,7 +50,7 @@ describe('SaveBrokerProfileUseCase', () => {
     const useCase = new SaveBrokerProfileUseCase(deps.brokerProfileRepository)
 
     await expect(
-      useCase.execute({ actorId: 'usuario-1', actorPapel: 'ADMIN', ...draft }),
+      useCase.execute({ actorId: 'usuario-1', actorPapel: 'OWNER', ...draft }),
     ).rejects.toThrow(ForbiddenError)
     expect(deps.brokerProfileRepository.save).not.toHaveBeenCalled()
   })

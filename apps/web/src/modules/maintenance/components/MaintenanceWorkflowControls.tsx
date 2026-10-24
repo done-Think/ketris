@@ -184,7 +184,7 @@ export function MaintenanceWorkflowControls({ ticket }: MaintenanceWorkflowContr
             </Typography>
           )}
           {request.status === 'PENDENTE' &&
-            session?.role === 'ADMIN' &&
+            session?.role === 'OWNER' &&
             permissions?.collaborate && (
               <Stack direction="row" spacing={1}>
                 <Button

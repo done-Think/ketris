@@ -64,7 +64,7 @@ export function DashboardOverviewPage() {
   const tenantId = session?.tenantId
   const userId = session?.user?.id
   const isAgent = session?.role === 'AGENT'
-  const isAgencyManager = session?.role === 'ADMIN' || session?.role === 'OWNER'
+  const isAgencyManager = session?.role === 'OWNER'
   const [selectedActivity, setSelectedActivity] = useState<DashboardUpcomingActivity | null>(null)
   const [selectedLead, setSelectedLead] = useState<DashboardRecentLead | null>(null)
 

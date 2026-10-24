@@ -83,7 +83,7 @@ export function MaintenanceLinksDialog({ open, onClose }: MaintenanceLinksDialog
             >
               <MenuItem value="">{t('unchanged')}</MenuItem>
               {(options?.users ?? [])
-                .filter((user) => user.role === 'OWNER')
+                .filter((user) => user.role === 'PROPERTY_OWNER')
                 .map((user) => (
                   <MenuItem key={user.id} value={user.id}>
                     {user.name}

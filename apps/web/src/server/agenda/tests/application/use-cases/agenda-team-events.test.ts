@@ -13,7 +13,7 @@ const inicio = new Date('2026-10-21T10:00:00-03:00')
 const input = {
   actorTenantId: 'agency',
   actorUserId: 'admin',
-  actorPapel: 'ADMIN' as Papel,
+  actorPapel: 'OWNER' as Papel,
   titulo: 'Team meeting',
   inicio,
   durationMinutes: 60,
@@ -137,7 +137,7 @@ describe('Agency event recipients and internal events', () => {
     expect(d.repository.create).not.toHaveBeenCalled()
   })
 
-  it.each(['AGENT', 'OWNER', 'RENTER'] as const)(
+  it.each(['AGENT', 'PROPERTY_OWNER', 'RENTER'] as const)(
     'prevents %s from publishing internal or collective events',
     async (actorPapel) => {
       const d = deps()
@@ -168,7 +168,7 @@ describe('Agency event recipients and internal events', () => {
     await expect(
       new UpdateAgendaEventUseCase(d.repository, d.properties, d.users).execute({
         actorTenantId: 'agency',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         actorUserId: 'admin',
         id: 'event',
         destino: 'ASSIGNED_AGENT',
@@ -185,7 +185,7 @@ describe('Agency event recipients and internal events', () => {
     const start = new Date('2026-10-22T11:00:00-03:00')
     await new UpdateAgendaEventUseCase(d.repository, d.properties, d.users).execute({
       actorTenantId: 'agency',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       actorUserId: 'admin',
       id: 'event',
       destino: 'ASSIGNED_AGENT',

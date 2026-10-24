@@ -92,13 +92,13 @@ describe('PrismaUserRepository (integração)', () => {
       nome: 'Usuário Criado',
       email: novoEmail,
       senhaHash: 'hash-fake',
-      papel: 'ADMIN',
+      papel: 'OWNER',
     })
 
     expect(created.id).toEqual(expect.any(String))
     expect(created.email).toBe(novoEmail)
     expect(created.tenantId).toBe(tenantId)
-    expect(created.papel).toBe('ADMIN')
+    expect(created.papel).toBe('OWNER')
     expect(created.ativo).toBe(true)
 
     const persisted = await repository.findByEmail(novoEmail)

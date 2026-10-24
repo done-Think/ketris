@@ -66,6 +66,7 @@ export function toAgendaEvent(
     audience: 'audience' in api ? api.audience : undefined,
     internal: 'internal' in api ? api.internal : undefined,
     responsibleId: 'responsibleId' in api ? api.responsibleId : undefined,
+    createdById: 'createdById' in api ? api.createdById : undefined,
     scheduledDate: start.format('YYYY-MM-DD'),
     time: start.format('HH:mm'),
     durationMinutes: dayjs(api.end).diff(start, 'minute'),

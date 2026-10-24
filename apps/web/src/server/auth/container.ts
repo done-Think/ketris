@@ -1,19 +1,14 @@
 import { ApproveUserMembershipUseCase } from './application/use-cases/approve-user-membership.use-case'
 import { ChangeOwnPasswordUseCase } from './application/use-cases/change-own-password.use-case'
-import { CreateAdminUseCase } from './application/use-cases/create-admin.use-case'
 import { CreateUserUseCase } from './application/use-cases/create-user.use-case'
-import { DeactivateAdminUseCase } from './application/use-cases/deactivate-admin.use-case'
 import { DeactivateUserUseCase } from './application/use-cases/deactivate-user.use-case'
-import { GetAdminUseCase } from './application/use-cases/get-admin.use-case'
 import { GetUserUseCase } from './application/use-cases/get-user.use-case'
-import { ListAdminsUseCase } from './application/use-cases/list-admins.use-case'
 import { ListUsersUseCase } from './application/use-cases/list-users.use-case'
 import { LoginUseCase } from './application/use-cases/login.use-case'
 import { LogoutUseCase } from './application/use-cases/logout.use-case'
 import { RefreshAccessTokenUseCase } from './application/use-cases/refresh-access-token.use-case'
 import { RequestPasswordResetCodeUseCase } from './application/use-cases/request-password-reset-code.use-case'
 import { ResetPasswordUseCase } from './application/use-cases/reset-password.use-case'
-import { UpdateAdminUseCase } from './application/use-cases/update-admin.use-case'
 import { UpdateUserUseCase } from './application/use-cases/update-user.use-case'
 import { VerifyPasswordResetCodeUseCase } from './application/use-cases/verify-password-reset-code.use-case'
 import { BcryptPasswordHasher } from './infrastructure/bcrypt-password-hasher'
@@ -42,16 +37,11 @@ export const authContainer = {
     refreshTokenRepository,
   ),
   createUserUseCase: new CreateUserUseCase(userRepository, passwordHasher),
-  createAdminUseCase: new CreateAdminUseCase(userRepository, passwordHasher),
   listUsersUseCase: new ListUsersUseCase(userRepository),
   getUserUseCase: new GetUserUseCase(userRepository),
   updateUserUseCase: new UpdateUserUseCase(userRepository),
   deactivateUserUseCase: new DeactivateUserUseCase(userRepository, refreshTokenRepository),
   approveUserMembershipUseCase: new ApproveUserMembershipUseCase(userRepository),
-  listAdminsUseCase: new ListAdminsUseCase(userRepository),
-  getAdminUseCase: new GetAdminUseCase(userRepository),
-  updateAdminUseCase: new UpdateAdminUseCase(userRepository),
-  deactivateAdminUseCase: new DeactivateAdminUseCase(userRepository, refreshTokenRepository),
   refreshAccessTokenUseCase: new RefreshAccessTokenUseCase(
     userRepository,
     tokenService,

@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
 import { useRouter } from '@/i18n/navigation'
+import { getRestrictedRoleAccess } from '@shared/lib/auth/restricted-role-access'
 import {
   dashboardProperties,
   localizeDashboardPropertyFixture,
@@ -43,11 +44,13 @@ function matchesSearchQuery(property: DashboardProperty, query: string) {
 export function PropertiesDashboardPage() {
   const t = useTranslations('properties.dashboard.renter')
   const { data: session } = useSession()
-  const isRenter = session?.role === 'RENTER'
+  const restrictedAccess = getRestrictedRoleAccess(session?.role)
+  const isRestrictedViewer = Boolean(restrictedAccess)
+  const isReadOnlyViewer = isRestrictedViewer && !restrictedAccess?.canManageProperties
   const router = useRouter()
   const propertiesQuery = useProperties()
   const mappingOptions = useDashboardPropertyMappingOptions()
-  const canUseFixtures = !isRenter && process.env.NODE_ENV !== 'production'
+  const canUseFixtures = !isRestrictedViewer && process.env.NODE_ENV !== 'production'
   const fixtureMode = canUseFixtures && !propertiesQuery.isLoading && propertiesQuery.isError
   const properties = useMemo(
     () =>
@@ -71,10 +74,10 @@ export function PropertiesDashboardPage() {
     () =>
       properties.filter(
         (property) =>
-          (isRenter || matchesStatusFilter(property, activeStatusFilter)) &&
+          (isReadOnlyViewer || matchesStatusFilter(property, activeStatusFilter)) &&
           matchesSearchQuery(property, searchQuery),
       ),
-    [properties, activeStatusFilter, isRenter, searchQuery],
+    [properties, activeStatusFilter, isReadOnlyViewer, searchQuery],
   )
   const statusFilterCounts = useMemo(
     () =>
@@ -90,14 +93,14 @@ export function PropertiesDashboardPage() {
     [properties],
   )
 
-  if (isRenter && propertiesQuery.isLoading) {
+  if (isRestrictedViewer && propertiesQuery.isLoading) {
     return (
       <Stack alignItems="center" sx={{ p: 4 }}>
         <CircularProgress aria-label={t('loading')} />
       </Stack>
     )
   }
-  if (isRenter && propertiesQuery.isError) {
+  if (isRestrictedViewer && propertiesQuery.isError) {
     return (
       <Typography role="alert" sx={{ p: 4 }}>
         {t('loadError')}
@@ -115,12 +118,12 @@ export function PropertiesDashboardPage() {
         }}
       >
         <PropertiesDashboardHeader
-          readOnly={isRenter}
+          readOnly={isReadOnlyViewer}
           searchQuery={searchQuery}
           onSearchQueryChange={(value) => setValue('searchQuery', value)}
           onCreateProperty={() => router.push('/dashboard/properties/new')}
         />
-        {!isRenter && (
+        {!isReadOnlyViewer && (
           <PropertyStatusFilters
             activeStatusFilter={activeStatusFilter}
             statusFilterCounts={statusFilterCounts}
@@ -128,7 +131,7 @@ export function PropertiesDashboardPage() {
           />
         )}
         <PropertiesTable
-          readOnly={isRenter}
+          readOnly={isReadOnlyViewer}
           properties={filteredProperties}
           totalCount={properties.length}
           onCreateProperty={() => router.push('/dashboard/properties/new')}

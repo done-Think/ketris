@@ -50,7 +50,7 @@ describe('/api/marketplace/profiles/broker (integração)', () => {
         nome: 'Admin da Imobiliária',
         email: `admin-${randomUUID()}@ketris.dev`,
         senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
     adminToken = await tokenService.sign({

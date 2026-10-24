@@ -18,10 +18,10 @@
       "ptBR": "Português"
     },
     "roles": {
-      "ADMIN": "Administrador",
-      "OWNER": "Proprietário",
+      "OWNER": "Dono da imobiliária",
       "AGENT": "Corretor parceiro",
-      "RENTER": "Locatário"
+      "RENTER": "Locatário",
+      "PROPERTY_OWNER": "Proprietário do imóvel"
     },
     "actions": {
       "addBroker": "Cadastrar novo corretor",

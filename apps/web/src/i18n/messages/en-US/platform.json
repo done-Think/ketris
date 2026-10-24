@@ -140,10 +140,10 @@
       "emptyDescription": "Add the administrator alongside so the account can start using the platform.",
       "pendingApproval": "Awaiting approval",
       "roles": {
-        "ADMIN": "Administrator",
-        "OWNER": "Owner",
+        "OWNER": "Agency owner",
         "AGENT": "Broker",
-        "RENTER": "Renter"
+        "RENTER": "Renter",
+        "PROPERTY_OWNER": "Property owner"
       }
     },
     "account": {

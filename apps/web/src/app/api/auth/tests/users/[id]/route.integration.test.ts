@@ -29,7 +29,7 @@ describe('/api/auth/users/[id] (integração)', () => {
         nome: 'Admin Teste',
         email: `admin-${randomUUID()}@ketris.dev`,
         senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
     adminId = admin.id
@@ -97,7 +97,7 @@ describe('/api/auth/users/[id] (integração)', () => {
   }
 
   describe('GET', () => {
-    it('retorna 200 com o usuário quando o ator é ADMIN', async () => {
+    it('retorna 200 com o usuário quando o ator é OWNER', async () => {
       const response = await GET(
         buildRequest('GET', targetId, undefined, adminToken),
         context(targetId),
@@ -119,18 +119,16 @@ describe('/api/auth/users/[id] (integração)', () => {
       expect(json.error.code).toBe('USER_NOT_FOUND')
     })
 
-    it('retorna 404 quando o id é de um ADMIN (invisível pela rota geral)', async () => {
+    it('retorna o outro OWNER do mesmo tenant para o dono autenticado', async () => {
       const response = await GET(
         buildRequest('GET', adminId, undefined, adminToken),
         context(adminId),
       )
-      const json = await response.json()
 
-      expect(response.status).toBe(404)
-      expect(json.error.code).toBe('USER_NOT_FOUND')
+      expect(response.status).toBe(200)
     })
 
-    it('retorna 403 quando o ator não é ADMIN', async () => {
+    it('retorna 403 quando o ator não é OWNER', async () => {
       const response = await GET(
         buildRequest('GET', targetId, undefined, agentToken),
         context(targetId),
@@ -143,7 +141,7 @@ describe('/api/auth/users/[id] (integração)', () => {
   })
 
   describe('PATCH', () => {
-    it('atualiza nome e role quando o ator é ADMIN', async () => {
+    it('atualiza nome e role quando o ator é OWNER', async () => {
       const response = await PATCH(
         buildRequest('PATCH', targetId, { name: 'Alvo Renomeado', role: 'OWNER' }, adminToken),
         context(targetId),
@@ -166,7 +164,7 @@ describe('/api/auth/users/[id] (integração)', () => {
       expect(json.error.code).toBe('VALIDATION_ERROR')
     })
 
-    it('retorna 403 quando o ator não é ADMIN', async () => {
+    it('retorna 403 quando o ator não é OWNER', async () => {
       const response = await PATCH(
         buildRequest('PATCH', targetId, { name: 'X' }, agentToken),
         context(targetId),
@@ -203,7 +201,7 @@ describe('/api/auth/users/[id] (integração)', () => {
       expect(stillExists).not.toBeNull()
     })
 
-    it('retorna 400 quando o ADMIN tenta desativar a própria conta', async () => {
+    it('retorna 400 quando o OWNER tenta desativar a própria conta', async () => {
       const response = await DELETE(
         buildRequest('DELETE', adminId, undefined, adminToken),
         context(adminId),
@@ -214,7 +212,7 @@ describe('/api/auth/users/[id] (integração)', () => {
       expect(json.error.code).toBe('CANNOT_DEACTIVATE_SELF')
     })
 
-    it('retorna 403 quando o ator não é ADMIN', async () => {
+    it('retorna 403 quando o ator não é OWNER', async () => {
       const response = await DELETE(
         buildRequest('DELETE', targetId, undefined, agentToken),
         context(targetId),

@@ -253,7 +253,7 @@ export async function actOnTicket(
       assertPermission(actor, ticket, action.action)
       const responsibleId = action.action === 'assume' ? actor.actorId : action.responsibleId
       const user = await repository.findUser(actor.actorTenantId, responsibleId)
-      if (!user || !['ADMIN', 'AGENT', 'OWNER'].includes(user.role))
+      if (!user || !['OWNER', 'AGENT', 'PROPERTY_OWNER'].includes(user.role))
         throw new ForbiddenError('Responsavel invalido para esta corretora.')
       changes = { responsibleId }
       event = activity(actor, 'RESPONSAVEL_ALTERADO', 'Responsavel interno atualizado.', {

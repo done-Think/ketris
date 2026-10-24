@@ -6,6 +6,8 @@ import { Box, Stack } from '@mui/material'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import { useSession } from 'next-auth/react'
+
+import { getRestrictedRoleAccess } from '@shared/lib/auth/restricted-role-access'
 import { useSnackbar } from 'notistack'
 import { useForm, useWatch } from 'react-hook-form'
 
@@ -87,6 +89,7 @@ export function ContractsDashboardPage() {
   const router = useRouter()
   const { data: session } = useSession()
   const tenantId = session?.tenantId ?? ''
+  const isReadOnlyViewer = Boolean(getRestrictedRoleAccess(session?.role))
   const { enqueueSnackbar } = useSnackbar()
   const [actionDialog, setActionDialog] = useState<ContractActionDialogState>({
     contract: null,
@@ -174,7 +177,10 @@ export function ContractsDashboardPage() {
           minHeight: { md: 'calc(100vh - 68px)' },
         }}
       >
-        <ContractsDashboardHeader control={control} onCreateContract={createContract} />
+        <ContractsDashboardHeader
+          control={control}
+          onCreateContract={isReadOnlyViewer ? undefined : createContract}
+        />
         <ContractsFilters control={control} filterCounts={filterCounts} setValue={setValue} />
         <ContractsSummaryCards metrics={summaryMetrics} />
 
@@ -184,9 +190,10 @@ export function ContractsDashboardPage() {
             totalCount={contracts.length}
             onContractAction={handleContractAction}
             onContractSelect={openContractDetail}
+            readOnly={isReadOnlyViewer}
           />
         ) : !contractsQuery.isLoading ? (
-          <ContractsEmptyState onCreateContract={createContract} />
+          <ContractsEmptyState onCreateContract={isReadOnlyViewer ? undefined : createContract} />
         ) : null}
 
         <ContractActionDialog

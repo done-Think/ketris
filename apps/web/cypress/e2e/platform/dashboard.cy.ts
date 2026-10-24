@@ -89,6 +89,6 @@ describe('Plataforma — sessão e visão cross-tenant (UI)', () => {
 
     cy.reload()
     cy.contains(tenantAdminEmail).should('be.visible')
-    cy.contains('ADMIN').should('be.visible')
+    cy.contains('OWNER').should('be.visible')
   })
 })

@@ -18,10 +18,10 @@
       "ptBR": "Portugués"
     },
     "roles": {
-      "ADMIN": "Administrador",
-      "OWNER": "Propietario",
+      "OWNER": "Dueño de la inmobiliaria",
       "AGENT": "Corredor asociado",
-      "RENTER": "Inquilino"
+      "RENTER": "Inquilino",
+      "PROPERTY_OWNER": "Propietario del inmueble"
     },
     "actions": {
       "addBroker": "Registrar nuevo corredor",

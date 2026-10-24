@@ -47,6 +47,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
   const contact = await crmContainer.createContactUseCase.execute({
     actorTenantId: actor.tenantId,
+    actorPapel: actor.papel as Papel,
     name: body.name,
     email: body.email,
     phone: body.phone ?? null,

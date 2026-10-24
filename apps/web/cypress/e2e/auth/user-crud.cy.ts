@@ -42,7 +42,7 @@ describe('CRUD de usuários (API)', () => {
     }).then((response) => {
       expect(response.status).to.eq(200)
       expect(response.body.users.some((user: { id: string }) => user.id === targetId)).to.eq(true)
-      expect(response.body.users.every((user: { papel: string }) => user.papel !== 'ADMIN')).to.eq(
+      expect(response.body.users.every((user: { papel: string }) => user.papel !== 'OWNER')).to.eq(
         true,
       )
     })
@@ -74,7 +74,7 @@ describe('CRUD de usuários (API)', () => {
       method: 'PATCH',
       url: `/api/auth/users/${targetId}`,
       headers: { Authorization: `Bearer ${adminToken}` },
-      body: { papel: 'ADMIN' },
+      body: { papel: 'OWNER' },
       failOnStatusCode: false,
     }).then((response) => {
       expect(response.status).to.eq(400)

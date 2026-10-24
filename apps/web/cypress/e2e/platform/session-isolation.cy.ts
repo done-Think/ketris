@@ -1,4 +1,4 @@
-describe('Plataforma — sessões de platform admin e de ADMIN de tenant nunca se misturam (UI)', () => {
+describe('Plataforma — sessões de platform admin e do dono da imobiliária nunca se misturam (UI)', () => {
   const tenantSlug = `e2e-session-isolation-${Date.now()}`
   const tenantAdminEmail = `e2e-session-isolation-tenant-admin-${Date.now()}@ketris.dev`
   const tenantAdminPassword = 'senha-correta-123'
@@ -28,25 +28,14 @@ describe('Plataforma — sessões de platform admin e de ADMIN de tenant nunca s
     cy.task('cleanupPlatformAdmin', platformAdminId)
   })
 
-  it('uma sessão de ADMIN de tenant não acessa /platform', () => {
-    cy.visit('/backoffice/login')
+  it('uma sessão do dono da imobiliária não acessa /platform', () => {
+    cy.visit('/pt/login')
     cy.get('input[name="email"]').type(tenantAdminEmail)
     cy.get('input[name="password"]').type(tenantAdminPassword)
     cy.get('button[type="submit"]').click()
-    cy.location('pathname').should('eq', '/backoffice/admins/new')
+    cy.location('pathname').should('eq', '/pt/dashboard')
 
-    cy.visit('/platform')
-    cy.location('pathname').should('eq', '/platform/login')
-  })
-
-  it('uma sessão de platform admin não acessa /backoffice/admins/new', () => {
-    cy.visit('/platform/login')
-    cy.get('input[name="email"]').type(platformAdminEmail)
-    cy.get('input[name="password"]').type(platformAdminPassword)
-    cy.get('button[type="submit"]').click()
-    cy.location('pathname').should('eq', '/platform')
-
-    cy.visit('/backoffice/admins/new')
-    cy.location('pathname').should('eq', '/backoffice/login')
+    cy.visit('/pt/platform')
+    cy.location('pathname').should('eq', '/pt/platform/login')
   })
 })

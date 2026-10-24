@@ -47,7 +47,7 @@ describe('AddOpportunityNoteUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       actorId: 'user-1',
       actorName: 'Ana',
       opportunityId: 'op-1',
@@ -78,7 +78,7 @@ describe('AddOpportunityNoteUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       opportunityId: 'op-1',
       description: 'Falou com o interessado por telefone.',
       type: 'CONTATO_REALIZADO',
@@ -101,7 +101,7 @@ describe('AddOpportunityNoteUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         opportunityId: 'op-1',
         description: 'x',
       }),

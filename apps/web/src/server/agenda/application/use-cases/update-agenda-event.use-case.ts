@@ -1,15 +1,25 @@
+import { isAgencyManager, isPropertyOwner } from '@server/auth/domain/roles'
 import type { Papel } from '@server/auth/domain/user.entity'
 import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
 import { ConflictError, ForbiddenError } from '@server/shared/errors'
 import { PropertyNotFoundError } from '@server/properties/domain/errors'
 import type { PropertyRepository } from '@server/properties/application/ports/property-repository.port'
 
-import { assertCanManageAgenda, assertCanManageAgendaEvent } from '../../domain/agenda-access-rules'
+import { assertCanManageAgendaEvent } from '../../domain/agenda-access-rules'
+import {
+  findManageableAgendaEvent,
+  manageableAgendaEventTenantId,
+} from '../find-manageable-agenda-event'
 import { validateAgendaResponsible } from '../validate-agenda-responsible'
 import { validateAgendaSchedule } from '../validate-agenda-schedule'
 import { AGENDA_MINIMUM_VISIT_MINUTES } from '@shared/lib/utils/agenda-scheduling'
 import { normalizeAgendaEventLinks } from '../../domain/agenda-event-links'
-import { AgendaEventNotFoundError, AgendaVisitMinimumDurationError } from '../../domain/errors'
+import {
+  AgendaEventNotFoundError,
+  AgendaRenterLinksForbiddenError,
+  AgendaRenterPropertyRequiredError,
+  AgendaVisitMinimumDurationError,
+} from '../../domain/errors'
 import type { AgendaEventChanges, AgendaEventLinks } from '../../domain/agenda-event.entity'
 import type { AgendaEventRepository } from '../ports/agenda-event-repository.port'
 
@@ -30,15 +40,11 @@ export class UpdateAgendaEventUseCase {
   ) {}
 
   async execute(input: UpdateAgendaEventInput) {
-    assertCanManageAgenda(input.actorPapel)
-    const existing = await this.agendaEventRepository.findByTenantAndId(
-      input.actorTenantId,
-      input.id,
-    )
+    const existing = await findManageableAgendaEvent(this.agendaEventRepository, input, input.id)
     if (!existing) throw new AgendaEventNotFoundError()
     assertCanManageAgendaEvent(input.actorPapel, input.actorUserId, existing)
     if (
-      input.actorPapel !== 'ADMIN' &&
+      !isAgencyManager(input.actorPapel) &&
       ((input.destino !== undefined && input.destino !== (existing.destino ?? 'LEGACY_TEAM')) ||
         (input.interno !== undefined && input.interno !== Boolean(existing.interno)) ||
         (input.responsavelId !== undefined && input.responsavelId !== existing.responsavelId))
@@ -54,7 +60,7 @@ export class UpdateAgendaEventUseCase {
     ) {
       await validateAgendaResponsible(
         this.userRepository,
-        input.actorTenantId,
+        manageableAgendaEventTenantId(input, existing),
         responsavelId,
         destino === 'ASSIGNED_AGENT',
       )
@@ -77,13 +83,28 @@ export class UpdateAgendaEventUseCase {
     )
       throw new ConflictError('Informe imóvel, cliente e telefone para eventos com cliente.')
 
-    if (input.imovelId) {
-      const property = await this.propertyRepository.findByTenantAndId(
-        input.actorTenantId,
-        input.imovelId,
-      )
+    if (input.actorPapel === 'RENTER') {
+      if (input.donoEmail || input.participanteEmails?.length) {
+        throw new AgendaRenterLinksForbiddenError()
+      }
+      if (input.referenciaImovelLivre) throw new AgendaRenterPropertyRequiredError()
+    }
 
-      if (!property) {
+    if (input.imovelId) {
+      const property =
+        input.actorPapel === 'RENTER'
+          ? await this.propertyRepository.findRenterContractProperty(
+              input.actorUserId ?? '',
+              input.imovelId,
+            )
+          : await this.propertyRepository.findByTenantAndId(
+              manageableAgendaEventTenantId(input, existing),
+              input.imovelId,
+              undefined,
+              isPropertyOwner(input.actorPapel) ? input.actorUserId : undefined,
+            )
+
+      if (!property || property.tenantId !== manageableAgendaEventTenantId(input, existing)) {
         throw new PropertyNotFoundError()
       }
     }
@@ -103,7 +124,7 @@ export class UpdateAgendaEventUseCase {
     }
 
     const event = await this.agendaEventRepository.update(
-      input.actorTenantId,
+      manageableAgendaEventTenantId(input, existing),
       input.id,
       {
         ...schedule,

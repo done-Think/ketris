@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form'
 import { useSnackbar } from 'notistack'
 
 import { useRouter } from '@/i18n/navigation'
+import { getRestrictedRoleAccess } from '@shared/lib/auth/restricted-role-access'
 
 import {
   getDashboardPropertyById,
@@ -40,7 +41,9 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
   const router = useRouter()
   const mappingOptions = useDashboardPropertyMappingOptions()
   const { data: session } = useSession()
-  const isRenter = session?.role === 'RENTER'
+  const restrictedAccess = getRestrictedRoleAccess(session?.role)
+  const isRestrictedViewer = Boolean(restrictedAccess)
+  const isReadOnlyViewer = isRestrictedViewer && !restrictedAccess?.canManageProperties
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const { setValue, watch } = useForm<PropertyDetailDashboardFormValues>({
     defaultValues: {
@@ -52,7 +55,7 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
   const publishProperty = usePublishProperty()
   const unpublishProperty = useUnpublishProperty()
   const deleteProperty = useDeleteProperty()
-  const canUseFixtures = !isRenter && process.env.NODE_ENV !== 'production'
+  const canUseFixtures = !isRestrictedViewer && process.env.NODE_ENV !== 'production'
   const fixtureProperty =
     canUseFixtures && (propertyQuery.isError || !propertyQuery.data)
       ? getDashboardPropertyById(propertyId)
@@ -76,10 +79,9 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
       ? toDashboardProperty(propertyQuery.data, mappingOptions)
       : notFound()
   const canManage =
-    !isRenter &&
-    (session?.role === 'ADMIN' ||
-      session?.role === 'OWNER' ||
-      session?.user?.id === property.responsibleUserId)
+    Boolean(restrictedAccess?.canManageProperties) ||
+    (!isRestrictedViewer &&
+      (session?.role === 'OWNER' || session?.user?.id === property.responsibleUserId))
 
   const handlePublish = async () => {
     try {
@@ -130,11 +132,11 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
         onDeleteRequest={() => setIsDeleteDialogOpen(true)}
       />
       <PropertyDetailTabs
-        readOnly={isRenter}
+        readOnly={isReadOnlyViewer}
         activeTab={activeTab}
         onTabChange={(tab) => setValue('activeTab', tab)}
       />
-      {isRenter && (
+      {isReadOnlyViewer && (
         <Typography color="text.secondary" sx={{ mb: 2 }}>
           {renterT('readOnly')}
         </Typography>
@@ -147,14 +149,14 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
         <Box sx={{ flex: 1, minWidth: 0, width: '100%' }}>
           <PropertyDetailMainPanel
             property={property}
-            activeTab={isRenter && activeTab !== 'media' ? 'data' : activeTab}
+            activeTab={isReadOnlyViewer && activeTab !== 'media' ? 'data' : activeTab}
           />
         </Box>
 
-        {!isRenter && <PropertyDetailSidebar property={property} />}
+        {!isReadOnlyViewer && <PropertyDetailSidebar property={property} />}
       </Stack>
 
-      {!isRenter && (
+      {canManage && (
         <DeletePropertyDialog
           open={isDeleteDialogOpen}
           isPending={deleteProperty.isPending}

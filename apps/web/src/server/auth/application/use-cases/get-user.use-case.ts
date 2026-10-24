@@ -1,3 +1,4 @@
+import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
 import { UserNotFoundError } from '../../domain/errors'
@@ -16,13 +17,13 @@ export class GetUserUseCase {
   constructor(private readonly userRepository: UserRepository) {}
 
   async execute(input: GetUserInput): Promise<GetUserOutput> {
-    if (input.actorPapel !== 'ADMIN') {
-      throw new ForbiddenError('Apenas administradores podem consultar usuários.')
+    if (!isAgencyManager(input.actorPapel)) {
+      throw new ForbiddenError('Apenas a gestão da imobiliária pode consultar usuários.')
     }
 
     const user = await this.userRepository.findById(input.userId)
 
-    if (!user || user.tenantId !== input.actorTenantId || user.papel === 'ADMIN') {
+    if (!user || user.tenantId !== input.actorTenantId) {
       throw new UserNotFoundError()
     }
 

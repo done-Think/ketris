@@ -49,7 +49,8 @@ it('excludes internal events for owners even with an explicit link', async () =>
         tenantId: 'agency',
         interno: false,
         OR: [
-          { destino: 'LEGACY_TEAM' },
+          { responsavelId: 'owner' },
+          { criadoPorId: 'owner' },
           { imovel: { proprietarioId: 'owner', tenantId: 'agency' } },
           { donoUsuarioId: 'owner' },
           { participantes: { some: { usuarioId: 'owner' } } },
@@ -65,7 +66,11 @@ it('excludes internal events for renters even with an explicit link', async () =
     AND: [
       {
         interno: false,
-        OR: [{ donoUsuarioId: 'renter' }, { participantes: { some: { usuarioId: 'renter' } } }],
+        OR: [
+          { criadoPorId: 'renter' },
+          { donoUsuarioId: 'renter' },
+          { participantes: { some: { usuarioId: 'renter' } } },
+        ],
       },
       {},
     ],

@@ -18,10 +18,10 @@
       "ptBR": "Portuguese"
     },
     "roles": {
-      "ADMIN": "Administrator",
-      "OWNER": "Owner",
+      "OWNER": "Agency owner",
       "AGENT": "Partner broker",
-      "RENTER": "Renter"
+      "RENTER": "Renter",
+      "PROPERTY_OWNER": "Property owner"
     },
     "actions": {
       "addBroker": "Add new broker",

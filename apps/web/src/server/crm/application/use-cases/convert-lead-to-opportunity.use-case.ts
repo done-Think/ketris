@@ -5,7 +5,7 @@ import { LeadAlreadyConvertedError, LeadNotFoundError } from '../../domain/error
 import type { Lead } from '../../domain/lead.entity'
 import type { Opportunity } from '../../domain/opportunity.entity'
 import { OpportunityPropertyNotFoundError } from '../../domain/errors'
-import { assertLeadAccess } from '../authorization'
+import { assertLeadAccess, assertCrmAccess } from '../authorization'
 import type { LeadRepository } from '../ports/lead-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
 import type { PropertyLookupPort } from '../ports/property-lookup.port'
@@ -32,6 +32,7 @@ export class ConvertLeadToOpportunityUseCase {
   ) {}
 
   async execute(input: ConvertLeadToOpportunityInput): Promise<ConvertLeadToOpportunityOutput> {
+    assertCrmAccess(input.actorPapel)
     const lead = await this.leadRepository.findById(input.leadId)
 
     if (!lead || lead.tenantId !== input.actorTenantId) {

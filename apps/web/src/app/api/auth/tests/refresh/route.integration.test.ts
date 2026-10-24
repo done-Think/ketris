@@ -27,7 +27,7 @@ describe('POST /api/auth/refresh (integração)', () => {
         nome: 'Refresh Teste',
         email,
         senhaHash: await bcrypt.hash(password, 10),
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
   })

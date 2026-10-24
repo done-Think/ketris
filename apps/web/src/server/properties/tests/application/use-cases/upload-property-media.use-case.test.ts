@@ -43,7 +43,7 @@ describe('UploadPropertyMediaUseCase', () => {
     const useCase = new UploadPropertyMediaUseCase(storage)
 
     await expect(useCase.execute({ ...baseInput, actorPapel: 'RENTER' })).rejects.toThrow(
-      'Locatários não podem gerenciar imóveis.',
+      'Só a equipe da imobiliária e o proprietário gerenciam imóveis.',
     )
     expect(storage.upload).not.toHaveBeenCalled()
   })

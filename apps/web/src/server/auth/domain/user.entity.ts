@@ -1,6 +1,6 @@
-export type Papel = 'ADMIN' | 'OWNER' | 'AGENT' | 'RENTER'
+export type Papel = 'OWNER' | 'AGENT' | 'RENTER' | 'PROPERTY_OWNER'
 
-export type NonAdminPapel = Exclude<Papel, 'ADMIN' | 'RENTER'>
+export type TenantMemberPapel = Exclude<Papel, 'RENTER'>
 
 export interface User {
   id: string

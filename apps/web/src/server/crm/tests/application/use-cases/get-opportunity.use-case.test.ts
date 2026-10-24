@@ -42,13 +42,13 @@ function createUseCase(findResponsavelId?: PropertyLookupPort['findResponsavelId
 }
 
 describe('GetOpportunityUseCase', () => {
-  it('retorna a oportunidade quando pertence ao tenant do ator (ADMIN)', async () => {
+  it('retorna a oportunidade quando pertence ao tenant do ator (OWNER)', async () => {
     const { useCase } = createUseCase()
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       opportunityId: 'op-1',
     })
 
@@ -79,7 +79,7 @@ describe('GetOpportunityUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         opportunityId: 'inexistente',
       }),
     ).rejects.toThrow(OpportunityNotFoundError)
@@ -96,7 +96,7 @@ describe('GetOpportunityUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         opportunityId: 'op-1',
       }),
     ).rejects.toThrow(OpportunityNotFoundError)

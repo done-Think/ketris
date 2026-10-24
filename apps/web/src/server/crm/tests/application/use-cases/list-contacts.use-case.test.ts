@@ -38,14 +38,14 @@ describe('ListContactsUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
     })
 
     expect(result).toEqual([])
     expect(countByContact).not.toHaveBeenCalled()
   })
 
-  it('enriquece cada contato com o total de oportunidades ativas (sem recorte pra ADMIN)', async () => {
+  it('enriquece cada contato com o total de oportunidades ativas (sem recorte pra OWNER)', async () => {
     const findManyByTenant = vi.fn().mockResolvedValue([contactA, contactB])
     const countByContact = vi.fn().mockResolvedValue(new Map([['contato-1', 3]]))
     const contactRepository = { findManyByTenant } as unknown as ContactRepository
@@ -55,7 +55,7 @@ describe('ListContactsUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
     })
 
     expect(findManyByTenant).toHaveBeenCalledWith('tenant-1', {})

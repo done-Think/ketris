@@ -6,14 +6,14 @@ import type { OpportunityRepository } from '../../application/ports/opportunity-
 import type { PropertyLookupPort } from '../../application/ports/property-lookup.port'
 
 describe('assertAgentOwnsProperty', () => {
-  it('não restringe ADMIN nem OWNER', async () => {
+  it('não restringe o OWNER', async () => {
     const propertyLookup: PropertyLookupPort = {
       existsForTenant: vi.fn(),
       findResponsavelId: vi.fn(),
     }
 
     await expect(
-      assertAgentOwnsProperty(propertyLookup, 't1', 'p1', 'actor-1', 'ADMIN'),
+      assertAgentOwnsProperty(propertyLookup, 't1', 'p1', 'actor-1', 'OWNER'),
     ).resolves.toBeUndefined()
     await expect(
       assertAgentOwnsProperty(propertyLookup, 't1', 'p1', 'actor-1', 'OWNER'),
@@ -57,11 +57,11 @@ describe('assertAgentOwnsProperty', () => {
 })
 
 describe('assertAgentOwnsContact', () => {
-  it('não restringe ADMIN nem OWNER', async () => {
+  it('não restringe o OWNER', async () => {
     const opportunityRepository = { existsForAgent: vi.fn() } as unknown as OpportunityRepository
 
     await expect(
-      assertAgentOwnsContact(opportunityRepository, 't1', 'c1', 'actor-1', 'ADMIN'),
+      assertAgentOwnsContact(opportunityRepository, 't1', 'c1', 'actor-1', 'OWNER'),
     ).resolves.toBeUndefined()
     await expect(
       assertAgentOwnsContact(opportunityRepository, 't1', 'c1', 'actor-1', 'OWNER'),

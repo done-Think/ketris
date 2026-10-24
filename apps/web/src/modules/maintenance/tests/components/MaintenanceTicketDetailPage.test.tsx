@@ -93,7 +93,7 @@ const mockTicket: ApiMaintenanceTicket = {
   ],
 }
 
-function mockSession(role: 'ADMIN' | 'RENTER' = 'ADMIN') {
+function mockSession(role: 'OWNER' | 'RENTER' = 'OWNER') {
   vi.mocked(useSession).mockReturnValue({
     data: { tenantId: 'tenant-1', role },
     status: 'authenticated',

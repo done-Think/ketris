@@ -433,10 +433,8 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
     method: 'get',
     path: '/platform/tenants/{id}/users',
     tags: ['Platform'],
-    summary: 'Lista todos os usuários de um tenant, incluindo contas ADMIN',
-    description:
-      'Diferente de GET /auth/users (spec 002), que nunca revela contas ADMIN — um platform admin ' +
-      'enxerga tudo.',
+    summary: 'Lista todos os usuários de um tenant',
+    description: 'Um platform admin enxerga todos os usuários do tenant, de qualquer papel.',
     security: [{ bearerAuth: [] }],
     request: { params: tenantIdParamsSchema },
     responses: {

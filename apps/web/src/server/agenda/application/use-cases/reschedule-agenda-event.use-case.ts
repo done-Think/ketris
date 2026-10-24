@@ -1,6 +1,10 @@
 import type { Papel } from '@server/auth/domain/user.entity'
 
-import { assertCanManageAgenda, assertCanManageAgendaEvent } from '../../domain/agenda-access-rules'
+import { assertCanManageAgendaEvent } from '../../domain/agenda-access-rules'
+import {
+  findManageableAgendaEvent,
+  manageableAgendaEventTenantId,
+} from '../find-manageable-agenda-event'
 import { validateAgendaSchedule } from '../validate-agenda-schedule'
 import { AgendaEventNotFoundError } from '../../domain/errors'
 import type { AgendaEventRepository } from '../ports/agenda-event-repository.port'
@@ -19,12 +23,7 @@ export class RescheduleAgendaEventUseCase {
   constructor(private readonly agendaEventRepository: AgendaEventRepository) {}
 
   async execute(input: RescheduleAgendaEventInput) {
-    assertCanManageAgenda(input.actorPapel)
-
-    const existing = await this.agendaEventRepository.findByTenantAndId(
-      input.actorTenantId,
-      input.id,
-    )
+    const existing = await findManageableAgendaEvent(this.agendaEventRepository, input, input.id)
 
     if (!existing) {
       throw new AgendaEventNotFoundError()
@@ -34,7 +33,7 @@ export class RescheduleAgendaEventUseCase {
     const schedule = await validateAgendaSchedule(this.agendaEventRepository, existing, input)
 
     const event = await this.agendaEventRepository.reschedule(
-      input.actorTenantId,
+      manageableAgendaEventTenantId(input, existing),
       input.id,
       schedule,
     )

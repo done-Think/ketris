@@ -28,7 +28,7 @@ function createOpportunityRepository(existsForAgent?: OpportunityRepository['exi
 }
 
 describe('GetContactUseCase', () => {
-  it('retorna o contato quando pertence ao tenant do ator (ADMIN)', async () => {
+  it('retorna o contato quando pertence ao tenant do ator (OWNER)', async () => {
     const findById = vi.fn().mockResolvedValue(contact)
     const repository = { findById } as unknown as ContactRepository
     const useCase = new GetContactUseCase(repository, createOpportunityRepository())
@@ -36,7 +36,7 @@ describe('GetContactUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       contactId: 'contato-1',
     })
 
@@ -52,7 +52,7 @@ describe('GetContactUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         contactId: 'contato-1',
       }),
     ).rejects.toThrow(ContactNotFoundError)

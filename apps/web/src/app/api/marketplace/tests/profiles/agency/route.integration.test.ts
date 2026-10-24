@@ -37,7 +37,7 @@ describe('/api/marketplace/profiles/agency (integração)', () => {
         nome: 'Admin da Imobiliária',
         email: `admin-${randomUUID()}@ketris.dev`,
         senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
     adminToken = await tokenService.sign({
@@ -104,7 +104,7 @@ describe('/api/marketplace/profiles/agency (integração)', () => {
     expect(json.profile).toBeNull()
   })
 
-  it('PUT retorna 403 quando o ator é AGENT (não ADMIN/OWNER)', async () => {
+  it('PUT retorna 403 quando o ator é AGENT (não OWNER)', async () => {
     const response = await PUT(
       buildRequest(
         'PUT',
@@ -188,7 +188,7 @@ describe('/api/marketplace/profiles/agency (integração)', () => {
         nome: 'Admin Incompleto',
         email: `admin-incompleto-${randomUUID()}@ketris.dev`,
         senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
     const bareAdminToken = await tokenService.sign({

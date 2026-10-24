@@ -65,7 +65,7 @@ describe('POST /api/platform/tenants/[id]/admins (integração)', () => {
     const json = await response.json()
 
     expect(response.status).toBe(201)
-    expect(json.user.role).toBe('ADMIN')
+    expect(json.user.role).toBe('OWNER')
     expect(json.user.tenantId).toBe(tenantId)
   })
 

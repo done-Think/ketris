@@ -25,7 +25,7 @@ describe('/api/auth/users (integração)', () => {
         nome: 'Admin Teste',
         email: `admin-${randomUUID()}@ketris.dev`,
         senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
 
@@ -77,7 +77,7 @@ describe('/api/auth/users (integração)', () => {
   }
 
   describe('POST', () => {
-    it('retorna 201 e o usuário criado (campos em inglês, sem senhaHash) quando o ator é ADMIN', async () => {
+    it('retorna 201 e o usuário criado (campos em inglês, sem senhaHash) quando o ator é OWNER', async () => {
       const email = `nova-${randomUUID()}@ketris.dev`
 
       const response = await POST(
@@ -114,7 +114,7 @@ describe('/api/auth/users (integração)', () => {
       expect(json.error.code).toBe('UNAUTHORIZED')
     })
 
-    it('retorna 403 quando o ator autenticado não é ADMIN', async () => {
+    it('retorna 403 quando o ator autenticado não é OWNER', async () => {
       const response = await POST(
         buildRequest(
           'POST',
@@ -177,17 +177,17 @@ describe('/api/auth/users (integração)', () => {
   })
 
   describe('GET', () => {
-    it('retorna 200 com a lista de usuários do tenant, sem incluir administradores', async () => {
+    it('retorna 200 com todos os usuários do tenant, inclusive o dono', async () => {
       const response = await GET(buildRequest('GET', undefined, adminToken))
       const json = await response.json()
 
       expect(response.status).toBe(200)
       expect(Array.isArray(json.users)).toBe(true)
-      expect(json.users.every((user: { role: string }) => user.role !== 'ADMIN')).toBe(true)
+      expect(json.users.some((user: { role: string }) => user.role === 'OWNER')).toBe(true)
       expect(json.users.some((user: { tenantId: string }) => user.tenantId === tenantId)).toBe(true)
     })
 
-    it('retorna 403 quando o ator autenticado não é ADMIN', async () => {
+    it('retorna 403 quando o ator autenticado não é OWNER', async () => {
       const response = await GET(buildRequest('GET', undefined, agentToken))
       const json = await response.json()
 

@@ -32,7 +32,7 @@ describe('PATCH /api/auth/users/{id}/approve (integração)', () => {
         nome: 'Admin Teste',
         email: `admin-${randomUUID()}@ketris.dev`,
         senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
 
@@ -87,7 +87,7 @@ describe('PATCH /api/auth/users/{id}/approve (integração)', () => {
     return { params: Promise.resolve({ id }) }
   }
 
-  it('retorna 403 quando o ator não é ADMIN', async () => {
+  it('retorna 403 quando o ator não é OWNER', async () => {
     const bcrypt = await import('bcryptjs')
     const pending = await prisma.usuario.create({
       data: {
@@ -107,15 +107,13 @@ describe('PATCH /api/auth/users/{id}/approve (integração)', () => {
     expect(json.error.code).toBe('FORBIDDEN')
   })
 
-  it('retorna 404 quando o alvo é um ADMIN', async () => {
+  it('retorna 200 sem alterar quando o vínculo do alvo já está aprovado', async () => {
     const response = await PATCH(
       buildRequest(adminOnlyTargetId, adminToken),
       context(adminOnlyTargetId),
     )
-    const json = await response.json()
 
-    expect(response.status).toBe(404)
-    expect(json.error.code).toBe('USER_NOT_FOUND')
+    expect(response.status).toBe(200)
   })
 
   it('retorna 404 quando o id não existe', async () => {

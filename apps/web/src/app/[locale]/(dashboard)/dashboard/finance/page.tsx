@@ -11,7 +11,7 @@ export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
 
 export default function DashboardFinancialPage() {
   return (
-    <RoleGuard allowedRoles={['ADMIN', 'OWNER']}>
+    <RoleGuard allowedRoles={['OWNER']}>
       <FinancialDashboardPage />
     </RoleGuard>
   )

@@ -1,10 +1,11 @@
+import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
 import { EmailAlreadyInUseError, UserNotFoundError } from '../../domain/errors'
 import {
   toAuthenticatedUser,
   type AuthenticatedUser,
-  type NonAdminPapel,
+  type TenantMemberPapel,
   type Papel,
 } from '../../domain/user.entity'
 import type { UserRepository } from '../ports/user-repository.port'
@@ -17,7 +18,7 @@ export interface UpdateUserInput {
   nome?: string
   email?: string
   avatarUrl?: string | null
-  papel?: NonAdminPapel
+  papel?: TenantMemberPapel
 }
 
 export type UpdateUserOutput = AuthenticatedUser
@@ -28,17 +29,13 @@ export class UpdateUserUseCase {
   async execute(input: UpdateUserInput): Promise<UpdateUserOutput> {
     const isSelfUpdate = input.actorId === input.userId
 
-    if (!isSelfUpdate && input.actorPapel !== 'ADMIN') {
-      throw new ForbiddenError('Apenas administradores podem editar usuários.')
+    if (!isSelfUpdate && !isAgencyManager(input.actorPapel)) {
+      throw new ForbiddenError('Apenas a gestão da imobiliária pode editar usuários.')
     }
 
     const target = await this.userRepository.findById(input.userId)
 
-    if (
-      !target ||
-      target.tenantId !== input.actorTenantId ||
-      (target.papel === 'ADMIN' && !isSelfUpdate)
-    ) {
+    if (!target || target.tenantId !== input.actorTenantId) {
       throw new UserNotFoundError()
     }
 

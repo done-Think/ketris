@@ -33,6 +33,8 @@ import {
   validContract,
 } from './maintenance-access-scope'
 import { regularizeMaintenanceLinks } from './prisma-maintenance-links'
+import { isAgencyManager } from '@server/auth/domain/roles'
+
 export { maintenanceTicketScope } from './maintenance-access-scope'
 
 export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepository {
@@ -62,7 +64,7 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
     }
     if (actor.actorPapel === 'AGENT')
       where.imovel = { tenantId: actor.actorTenantId, responsavelId: actor.actorId }
-    else if (actor.actorPapel === 'OWNER')
+    else if (actor.actorPapel === 'PROPERTY_OWNER')
       where.imovel = { tenantId: actor.actorTenantId, proprietarioId: actor.actorId }
     else if (actor.actorPapel === 'RENTER')
       Object.assign(where, {
@@ -70,7 +72,7 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
         imovel: undefined,
         ...renterContractScope(actor.actorId),
       })
-    else if (actor.actorPapel !== 'ADMIN') throw new ForbiddenError()
+    else if (!isAgencyManager(actor.actorPapel)) throw new ForbiddenError()
     const contracts = await prisma.contrato.findMany({
       where,
       include: contractInclude,
@@ -84,20 +86,19 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
         ),
       ),
     ]
-    const users =
-      actor.actorPapel === 'ADMIN'
-        ? await prisma.usuario.findMany({
-            where: {
-              ativo: true,
-              OR: [
-                { tenantId: actor.actorTenantId, papel: { not: 'RENTER' } },
-                { papel: 'RENTER', email: { in: renterEmails, mode: 'insensitive' } },
-              ],
-            },
-            select: { id: true, nome: true, papel: true },
-            orderBy: { nome: 'asc' },
-          })
-        : []
+    const users = isAgencyManager(actor.actorPapel)
+      ? await prisma.usuario.findMany({
+          where: {
+            ativo: true,
+            OR: [
+              { tenantId: actor.actorTenantId, papel: { not: 'RENTER' } },
+              { papel: 'RENTER', email: { in: renterEmails, mode: 'insensitive' } },
+            ],
+          },
+          select: { id: true, nome: true, papel: true },
+          orderBy: { nome: 'asc' },
+        })
+      : []
     return {
       contracts: validContracts.map(toContract),
       users: users.map((u) => ({ id: u.id, name: u.nome, role: u.papel })),

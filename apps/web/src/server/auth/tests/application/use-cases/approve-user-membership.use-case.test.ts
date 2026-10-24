@@ -19,13 +19,13 @@ function buildUser(overrides: Partial<User> = {}): User {
 }
 
 describe('ApproveUserMembershipUseCase', () => {
-  it('lança ForbiddenError quando o ator não é ADMIN', async () => {
+  it('lança ForbiddenError quando o ator não é o dono da imobiliária', async () => {
     const userRepository = {} as unknown as UserRepository
     const useCase = new ApproveUserMembershipUseCase(userRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 't1', actorPapel: 'OWNER', userId: 'agent-1' }),
-    ).rejects.toThrow('Apenas administradores podem aprovar vínculos.')
+      useCase.execute({ actorTenantId: 't1', actorPapel: 'AGENT', userId: 'agent-1' }),
+    ).rejects.toThrow('Apenas a gestão da imobiliária pode aprovar vínculos.')
   })
 
   it('lança UserNotFoundError quando o alvo não existe', async () => {
@@ -35,7 +35,7 @@ describe('ApproveUserMembershipUseCase', () => {
     const useCase = new ApproveUserMembershipUseCase(userRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 't1', actorPapel: 'ADMIN', userId: 'inexistente' }),
+      useCase.execute({ actorTenantId: 't1', actorPapel: 'OWNER', userId: 'inexistente' }),
     ).rejects.toThrow('Usuário não encontrado.')
   })
 
@@ -46,20 +46,7 @@ describe('ApproveUserMembershipUseCase', () => {
     const useCase = new ApproveUserMembershipUseCase(userRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 't1', actorPapel: 'ADMIN', userId: 'agent-1' }),
-    ).rejects.toThrow('Usuário não encontrado.')
-  })
-
-  it('lança UserNotFoundError (opaco) quando o alvo é um ADMIN', async () => {
-    const userRepository = {
-      findById: vi
-        .fn()
-        .mockResolvedValue(buildUser({ papel: 'ADMIN', vinculoAprovadoEm: new Date() })),
-    } as unknown as UserRepository
-    const useCase = new ApproveUserMembershipUseCase(userRepository)
-
-    await expect(
-      useCase.execute({ actorTenantId: 't1', actorPapel: 'ADMIN', userId: 'agent-1' }),
+      useCase.execute({ actorTenantId: 't1', actorPapel: 'OWNER', userId: 'agent-1' }),
     ).rejects.toThrow('Usuário não encontrado.')
   })
 
@@ -73,7 +60,7 @@ describe('ApproveUserMembershipUseCase', () => {
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       userId: 'agent-1',
     })
 
@@ -90,7 +77,7 @@ describe('ApproveUserMembershipUseCase', () => {
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       userId: 'agent-1',
     })
 

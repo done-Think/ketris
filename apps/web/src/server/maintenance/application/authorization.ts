@@ -1,3 +1,4 @@
+import { isAgencyManager } from '@server/auth/domain/roles'
 import { ForbiddenError, ConflictError } from '@server/shared/errors'
 import { MaintenanceTicketNotFoundError } from '../domain/errors'
 import type {
@@ -9,12 +10,11 @@ import type {
 
 export function canAccessContract(actor: MaintenanceActor, contract: MaintenanceContract): boolean {
   if (actor.actorPapel !== 'RENTER' && contract.tenantId !== actor.actorTenantId) return false
+  if (isAgencyManager(actor.actorPapel)) return true
   switch (actor.actorPapel) {
-    case 'ADMIN':
-      return true
     case 'AGENT':
       return contract.agentId === actor.actorId
-    case 'OWNER':
+    case 'PROPERTY_OWNER':
       return contract.ownerId === actor.actorId
     case 'RENTER':
       return contract.renterIds.includes(actor.actorId)
@@ -25,12 +25,12 @@ export function canAccessContract(actor: MaintenanceActor, contract: Maintenance
 
 export function canAccessTicket(actor: MaintenanceActor, ticket: MaintenanceTicket): boolean {
   if (actor.actorPapel !== 'RENTER' && ticket.tenantId !== actor.actorTenantId) return false
-  if (actor.actorPapel === 'ADMIN') return true
+  if (isAgencyManager(actor.actorPapel)) return true
   if (ticket.deletedAt || !ticket.access.validContract) return false
   switch (actor.actorPapel) {
     case 'AGENT':
       return ticket.responsibleId === actor.actorId || ticket.access.agentId === actor.actorId
-    case 'OWNER':
+    case 'PROPERTY_OWNER':
       return ticket.responsibleId === actor.actorId || ticket.access.ownerId === actor.actorId
     case 'RENTER':
       return ticket.access.renterIds.includes(actor.actorId)
@@ -47,7 +47,7 @@ export function assertTicketAccess(
 }
 
 export function assertAdmin(actor: MaintenanceActor) {
-  if (actor.actorPapel !== 'ADMIN') throw new ForbiddenError()
+  if (!isAgencyManager(actor.actorPapel)) throw new ForbiddenError()
 }
 
 export function isTerminal(ticket: MaintenanceTicket): boolean {
@@ -59,10 +59,11 @@ export function permissionsFor(
   ticket: MaintenanceTicket,
 ): MaintenancePermissions {
   const access = canAccessTicket(actor, ticket)
-  const admin = access && actor.actorPapel === 'ADMIN'
-  const owner = access && actor.actorPapel === 'OWNER' && ticket.access.ownerId === actor.actorId
+  const admin = access && isAgencyManager(actor.actorPapel)
+  const owner =
+    access && actor.actorPapel === 'PROPERTY_OWNER' && ticket.access.ownerId === actor.actorId
   const renter = access && actor.actorPapel === 'RENTER'
-  const manager = admin || (access && ['AGENT', 'OWNER'].includes(actor.actorPapel))
+  const manager = admin || (access && ['AGENT', 'PROPERTY_OWNER'].includes(actor.actorPapel))
   const responsible = manager && ticket.responsibleId === actor.actorId
   const active = access && !ticket.deletedAt && !isTerminal(ticket)
   const pending = active && ticket.status === 'AGUARDANDO_CONFIRMACAO'
@@ -72,7 +73,8 @@ export function permissionsFor(
     edit: active && manager,
     comment: active || (renter && !ticket.deletedAt && ticket.status === 'RESOLVIDO'),
     collaborate: active,
-    assume: active && !ticket.responsibleId && ['AGENT', 'OWNER'].includes(actor.actorPapel),
+    assume:
+      active && !ticket.responsibleId && ['AGENT', 'PROPERTY_OWNER'].includes(actor.actorPapel),
     assign: active && admin,
     provider: active && (admin || renter || (responsible && actor.actorPapel === 'AGENT')),
     requestReplacement:
@@ -87,7 +89,7 @@ export function permissionsFor(
       ticket.access.validContract &&
       (admin || responsible) &&
       ticket.status === 'EM_ANDAMENTO',
-    confirm: pending && (admin || (owner && ticket.completedByRole !== 'OWNER')),
+    confirm: pending && (admin || (owner && ticket.completedByRole !== 'PROPERTY_OWNER')),
     contest: pending && (admin || owner || renter),
     cancel: active && admin,
     reopen:

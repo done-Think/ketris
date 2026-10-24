@@ -48,7 +48,7 @@ describe('ListOpportunityActivitiesUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       opportunityId: 'op-1',
     })
 
@@ -70,7 +70,7 @@ describe('ListOpportunityActivitiesUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         opportunityId: 'op-1',
       }),
     ).rejects.toThrow(OpportunityNotFoundError)

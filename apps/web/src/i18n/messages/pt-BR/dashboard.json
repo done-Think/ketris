@@ -428,6 +428,15 @@
     }
   },
   "team": {
+    "membershipRequests": {
+      "title": "Pedidos de vínculo",
+      "description": "{count, plural, one {# corretor aguarda sua aprovação para entrar na equipe.} other {# corretores aguardam sua aprovação para entrar na equipe.}}",
+      "approve": "Aprovar",
+      "approveAriaLabel": "Aprovar vínculo de {name}",
+      "approveSuccess": "{name} agora faz parte da equipe.",
+      "approveError": "Não foi possível aprovar o vínculo.",
+      "loadError": "Não foi possível carregar os pedidos de vínculo."
+    },
     "title": "Equipe de Corretores",
     "subtitle": "Acompanhe vendas, retornos e progresso da meta mensal por representante.",
     "searchPlaceholder": "Buscar corretor...",

@@ -21,6 +21,7 @@ const property: Property = {
   id: 'property-1',
   tenantId: 'tenant-1',
   responsavelId: 'user-1',
+  proprietarioId: null,
   titulo: 'Apartamento no centro',
   descricao: 'Imóvel pronto para locação',
   finalidade: 'ALUGUEL',
@@ -70,6 +71,7 @@ function createRepository(overrides?: Partial<PropertyRepository>): PropertyRepo
     findByTenantAndId: vi.fn().mockResolvedValue(property),
     update: vi.fn().mockResolvedValue(property),
     setStatus: vi.fn().mockResolvedValue(property),
+    findRenterContractProperty: vi.fn(),
     findContractProperty: vi.fn().mockResolvedValue({
       contractId: 'contract-1',
       propertyId: property.id,
@@ -90,7 +92,7 @@ describe('properties use cases', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorUserId: 'user-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       titulo: property.titulo,
       finalidade: property.finalidade,
       tipo: property.tipo,
@@ -120,7 +122,7 @@ describe('properties use cases', () => {
         tipo: property.tipo,
         valor: property.valores.valor,
       }),
-    ).toThrow('Locatários não podem gerenciar imóveis.')
+    ).toThrow('Só a equipe da imobiliária e o proprietário gerenciam imóveis.')
     expect(repository.create).not.toHaveBeenCalled()
   })
 
@@ -139,6 +141,7 @@ describe('properties use cases', () => {
         'tenant-1',
         'property-1',
         'renter-1',
+        undefined,
       )
     })
 
@@ -167,7 +170,7 @@ describe('properties use cases', () => {
       ).resolves.toEqual(property)
     })
 
-    it('retorna o imóvel para o ADMIN do tenant mesmo sem ser o responsável', async () => {
+    it('retorna o imóvel para o OWNER do tenant mesmo sem ser o responsável', async () => {
       const repository = createRepository()
       const useCase = new GetPropertyUseCase(repository)
 
@@ -175,7 +178,7 @@ describe('properties use cases', () => {
         useCase.execute({
           actorTenantId: 'tenant-1',
           actorId: 'admin-1',
-          actorPapel: 'ADMIN',
+          actorPapel: 'OWNER',
           id: 'property-1',
         }),
       ).resolves.toEqual(property)
@@ -197,14 +200,14 @@ describe('properties use cases', () => {
   })
 
   describe('ListPropertiesUseCase', () => {
-    it('lista imóveis do tenant sem filtrar por responsável quando o ator é ADMIN', async () => {
+    it('lista imóveis do tenant sem filtrar por responsável quando o ator é OWNER', async () => {
       const repository = createRepository()
       const useCase = new ListPropertiesUseCase(repository)
 
       await useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'admin-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         status: 'DRAFT',
         finalidade: 'ALUGUEL',
       })
@@ -253,7 +256,7 @@ describe('properties use cases', () => {
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
       id: 'property-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       titulo: 'Novo título',
     })
 
@@ -273,7 +276,7 @@ describe('properties use cases', () => {
         actorTenantId: 'tenant-2',
         actorId: 'user-1',
         id: 'property-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         titulo: 'Novo título',
       }),
     ).rejects.toThrow(PropertyNotFoundError)
@@ -291,7 +294,7 @@ describe('properties use cases', () => {
         actorPapel: 'RENTER',
         titulo: 'Novo título',
       }),
-    ).rejects.toThrow('Locatários não podem gerenciar imóveis.')
+    ).rejects.toThrow('Só a equipe da imobiliária e o proprietário gerenciam imóveis.')
     expect(repository.update).not.toHaveBeenCalled()
   })
 
@@ -319,7 +322,7 @@ describe('properties use cases', () => {
       actorTenantId: 'tenant-1',
       actorId: 'admin-1',
       id: 'property-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       titulo: 'Novo título',
     })
 
@@ -335,7 +338,7 @@ describe('properties use cases', () => {
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
       id: 'property-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       publishedAt,
     })
 
@@ -359,7 +362,7 @@ describe('properties use cases', () => {
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
         id: 'property-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
       }),
     ).rejects.toThrow(PropertyPublishValidationError)
     expect(repository.setStatus).not.toHaveBeenCalled()
@@ -376,7 +379,7 @@ describe('properties use cases', () => {
         id: 'property-1',
         actorPapel: 'RENTER',
       }),
-    ).rejects.toThrow('Locatários não podem gerenciar imóveis.')
+    ).rejects.toThrow('Só a equipe da imobiliária e o proprietário gerenciam imóveis.')
     expect(repository.findByTenantAndId).not.toHaveBeenCalled()
   })
 
@@ -403,7 +406,7 @@ describe('properties use cases', () => {
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
       id: 'property-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
     })
 
     expect(repository.setStatus).toHaveBeenCalledWith('tenant-1', 'property-1', 'INACTIVE', null)
@@ -420,7 +423,7 @@ describe('properties use cases', () => {
         id: 'property-1',
         actorPapel: 'RENTER',
       }),
-    ).rejects.toThrow('Locatários não podem gerenciar imóveis.')
+    ).rejects.toThrow('Só a equipe da imobiliária e o proprietário gerenciam imóveis.')
     expect(repository.setStatus).not.toHaveBeenCalled()
   })
 
@@ -451,7 +454,7 @@ describe('properties use cases', () => {
           id: 'property-1',
           actorPapel: 'RENTER',
         }),
-      ).rejects.toThrow('Locatários não podem gerenciar imóveis.')
+      ).rejects.toThrow('Só a equipe da imobiliária e o proprietário gerenciam imóveis.')
       expect(repository.delete).not.toHaveBeenCalled()
     })
 
@@ -492,7 +495,7 @@ describe('properties use cases', () => {
         actorTenantId: 'tenant-1',
         actorId: 'admin-1',
         id: 'property-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
       })
 
       expect(repository.delete).toHaveBeenCalledWith('tenant-1', 'property-1')
@@ -522,7 +525,7 @@ describe('properties use cases', () => {
           actorTenantId: 'tenant-2',
           actorId: 'user-1',
           id: 'property-1',
-          actorPapel: 'ADMIN',
+          actorPapel: 'OWNER',
         }),
       ).rejects.toThrow(PropertyNotFoundError)
     })

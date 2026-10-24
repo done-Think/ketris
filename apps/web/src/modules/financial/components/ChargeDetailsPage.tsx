@@ -85,8 +85,7 @@ export function ChargeDetailsPage({ chargeId }: { chargeId: string }) {
 
 function ChargeDetailsContent({ charge, tenantId }: { charge: Charge; tenantId: string }) {
   const { data: session, status: sessionStatus } = useSession()
-  const canRegisterPayment =
-    sessionStatus === 'authenticated' && (session?.role === 'ADMIN' || session?.role === 'OWNER')
+  const canRegisterPayment = sessionStatus === 'authenticated' && session?.role === 'OWNER'
   const t = useTranslations('charges.details')
   const statusT = useTranslations('charges.statuses')
   const locale = useLocale()

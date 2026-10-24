@@ -1,4 +1,6 @@
+import { isAgencyManager, isAgencyStaff } from '@server/auth/domain/roles'
 import type { Papel } from '@server/auth/domain/user.entity'
+import { ForbiddenError } from '@server/shared/errors'
 
 import { ContactNotFoundError, LeadNotFoundError, OpportunityNotFoundError } from '../domain/errors'
 import type { OpportunityRepository } from './ports/opportunity-repository.port'
@@ -11,7 +13,7 @@ export async function assertAgentOwnsProperty(
   actorId: string,
   actorPapel: Papel,
 ): Promise<void> {
-  if (actorPapel === 'ADMIN' || actorPapel === 'OWNER') return
+  if (isAgencyManager(actorPapel)) return
   if (actorPapel !== 'AGENT') throw new OpportunityNotFoundError()
 
   const responsavelId = await propertyLookup.findResponsavelId(tenantId, propertyId)
@@ -26,7 +28,7 @@ export async function assertAgentOwnsContact(
   actorId: string,
   actorPapel: Papel,
 ): Promise<void> {
-  if (actorPapel === 'ADMIN' || actorPapel === 'OWNER') return
+  if (isAgencyManager(actorPapel)) return
   if (actorPapel !== 'AGENT') throw new ContactNotFoundError()
 
   const hasAccess = await opportunityRepository.existsForAgent(tenantId, contactId, actorId)
@@ -35,8 +37,14 @@ export async function assertAgentOwnsContact(
 }
 
 export function assertLeadAccess(responsavelId: string, actorId: string, actorPapel: Papel): void {
-  if (actorPapel === 'ADMIN' || actorPapel === 'OWNER') return
+  if (isAgencyManager(actorPapel)) return
   if (actorPapel === 'AGENT' && responsavelId === actorId) return
 
   throw new LeadNotFoundError()
+}
+
+export function assertCrmAccess(actorPapel: Papel): void {
+  if (!isAgencyStaff(actorPapel)) {
+    throw new ForbiddenError('Só a equipe da imobiliária acessa o CRM.')
+  }
 }

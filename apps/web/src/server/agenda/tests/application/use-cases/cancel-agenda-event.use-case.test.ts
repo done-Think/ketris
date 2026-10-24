@@ -37,12 +37,46 @@ describe('CancelAgendaEventUseCase', () => {
     expect(deps.agendaEventRepository.cancel).toHaveBeenCalledWith('tenant-1', 'event-1')
   })
 
-  it('lança ForbiddenError quando o ator é RENTER', async () => {
+  it('o RENTER cancela o evento que criou, na agenda da imobiliária', async () => {
     const deps = createDeps()
+    vi.mocked(deps.agendaEventRepository.findByScopeAndId).mockResolvedValue({
+      ...cancelledEvent,
+      tenantId: 'agency-1',
+      criadoPorId: 'renter-1',
+    } as AgendaEvent)
+    const useCase = new CancelAgendaEventUseCase(deps.agendaEventRepository)
+
+    await useCase.execute({
+      actorTenantId: 'renters',
+      actorUserId: 'renter-1',
+      actorPapel: 'RENTER',
+      id: 'event-1',
+    })
+
+    expect(deps.agendaEventRepository.findByScopeAndId).toHaveBeenCalledWith(
+      { kind: 'linkedUser', userId: 'renter-1' },
+      'event-1',
+    )
+    expect(deps.agendaEventRepository.cancel).toHaveBeenCalledWith('agency-1', 'event-1')
+  })
+
+  it('o RENTER não cancela evento criado por outra pessoa', async () => {
+    const deps = createDeps()
+    vi.mocked(deps.agendaEventRepository.findByScopeAndId).mockResolvedValue({
+      ...cancelledEvent,
+      tenantId: 'agency-1',
+      responsavelId: 'agent-1',
+      criadoPorId: 'agent-1',
+    } as AgendaEvent)
     const useCase = new CancelAgendaEventUseCase(deps.agendaEventRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'RENTER', id: 'event-1' }),
+      useCase.execute({
+        actorTenantId: 'renters',
+        actorUserId: 'renter-1',
+        actorPapel: 'RENTER',
+        id: 'event-1',
+      }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
     expect(deps.agendaEventRepository.cancel).not.toHaveBeenCalled()
   })

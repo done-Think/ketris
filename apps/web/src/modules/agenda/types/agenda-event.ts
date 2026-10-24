@@ -41,6 +41,7 @@ export type AgendaEvent = {
   tone: AgendaEventTone
   kind?: AgendaEventVisualKind
   createdBy?: string
+  createdById?: string | null
   createdByRole?: AgendaEventCreatorRole
 }
 

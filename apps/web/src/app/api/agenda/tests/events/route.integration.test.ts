@@ -234,7 +234,7 @@ describe('/api/agenda/events (integração)', () => {
     expect(json.error.code).toBe('CONFLICT')
   })
 
-  it('retorna 403 quando um RENTER tenta criar evento', async () => {
+  it('retorna 404 quando um RENTER tenta agendar em imóvel que não aluga', async () => {
     const response = await POST(
       buildRequest(
         'POST',
@@ -252,8 +252,8 @@ describe('/api/agenda/events (integração)', () => {
     )
     const json = await response.json()
 
-    expect(response.status).toBe(403)
-    expect(json.error.code).toBe('FORBIDDEN')
+    expect(response.status).toBe(404)
+    expect(json.error.code).toBe('NOT_FOUND')
   })
 
   it('lista apenas eventos do tenant do ator dentro do período informado', async () => {

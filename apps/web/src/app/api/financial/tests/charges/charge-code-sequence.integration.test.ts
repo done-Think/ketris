@@ -29,7 +29,7 @@ describe('/api/financial/charges — sequência de códigos (integração)', () 
         nome: 'Administrador',
         email: `corretor-codes-${randomUUID()}@ketris.dev`,
         senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
     })
     actorToken = await tokenService.sign({

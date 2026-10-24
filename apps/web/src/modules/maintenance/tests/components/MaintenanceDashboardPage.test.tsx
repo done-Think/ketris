@@ -237,7 +237,7 @@ describe('MaintenanceDashboardPage', () => {
       hiddenAction: 'Excluir chamado',
     },
     {
-      role: 'ADMIN',
+      role: 'OWNER',
       permissions: { edit: false, delete: true },
       allowedAction: 'Excluir chamado',
       hiddenAction: 'Editar chamado',
@@ -275,9 +275,9 @@ describe('MaintenanceDashboardPage', () => {
     expect(screen.getAllByText('Em andamento').length).toBeGreaterThan(0)
   })
 
-  it('shows the links and archive controls only to an ADMIN session role', () => {
+  it('shows the links and archive controls only to an OWNER session role', () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1', role: 'ADMIN' },
+      data: { tenantId: 'tenant-1', role: 'OWNER' },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)

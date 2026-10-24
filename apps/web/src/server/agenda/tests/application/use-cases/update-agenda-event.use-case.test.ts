@@ -58,6 +58,7 @@ function createDeps(overrides?: {
     update: vi.fn(),
     setStatus: vi.fn(),
     findContractProperty: vi.fn(),
+    findRenterContractProperty: vi.fn(),
     hasLinkedRecords: vi.fn(),
     delete: vi.fn(),
   }
@@ -94,8 +95,14 @@ describe('UpdateAgendaEventUseCase', () => {
     )
   })
 
-  it('lança ForbiddenError quando o ator é RENTER', async () => {
+  it('o RENTER não edita evento criado por outra pessoa', async () => {
     const deps = createDeps()
+    vi.mocked(deps.agendaEventRepository.findByScopeAndId).mockResolvedValue({
+      id: 'event-1',
+      tenantId: 'agency-1',
+      responsavelId: 'agent-1',
+      criadoPorId: 'agent-1',
+    } as AgendaEvent)
     const useCase = new UpdateAgendaEventUseCase(
       deps.agendaEventRepository,
       deps.propertyRepository,
@@ -104,7 +111,8 @@ describe('UpdateAgendaEventUseCase', () => {
 
     await expect(
       useCase.execute({
-        actorTenantId: 'tenant-1',
+        actorTenantId: 'renters',
+        actorUserId: 'renter-1',
         actorPapel: 'RENTER',
         id: 'event-1',
         titulo: 'X',

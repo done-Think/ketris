@@ -16,17 +16,6 @@ const owner: User = {
   vinculoAprovadoEm: new Date(),
 }
 
-const adminEmOutroTenant: User = {
-  id: 'admin-2',
-  tenantId: 'tenant-1',
-  nome: 'Admin',
-  email: 'admin@ketris.dev',
-  senhaHash: 'hash-fake',
-  papel: 'ADMIN',
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
-}
-
 function createDeps(findById?: UserRepository['findById']) {
   const userRepository: UserRepository = {
     findById: findById ?? vi.fn().mockResolvedValue(owner),
@@ -42,13 +31,13 @@ function createDeps(findById?: UserRepository['findById']) {
 }
 
 describe('GetUserUseCase', () => {
-  it('retorna o usuário quando ele existe no tenant do ator e não é ADMIN', async () => {
+  it('retorna o usuário quando ele existe no tenant do ator', async () => {
     const deps = createDeps()
     const useCase = new GetUserUseCase(deps.userRepository)
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       userId: owner.id,
     })
 
@@ -56,7 +45,7 @@ describe('GetUserUseCase', () => {
     expect(result).not.toHaveProperty('senhaHash')
   })
 
-  it('lança ForbiddenError quando o ator não é ADMIN', async () => {
+  it('lança ForbiddenError quando o ator não é o dono da imobiliária', async () => {
     const deps = createDeps()
     const useCase = new GetUserUseCase(deps.userRepository)
 
@@ -70,7 +59,7 @@ describe('GetUserUseCase', () => {
     const useCase = new GetUserUseCase(deps.userRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'ADMIN', userId: 'inexistente' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER', userId: 'inexistente' }),
     ).rejects.toThrow(UserNotFoundError)
   })
 
@@ -79,20 +68,7 @@ describe('GetUserUseCase', () => {
     const useCase = new GetUserUseCase(deps.userRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'ADMIN', userId: owner.id }),
-    ).rejects.toThrow(UserNotFoundError)
-  })
-
-  it('lança UserNotFoundError (opaco) quando o alvo é um ADMIN', async () => {
-    const deps = createDeps(vi.fn().mockResolvedValue(adminEmOutroTenant))
-    const useCase = new GetUserUseCase(deps.userRepository)
-
-    await expect(
-      useCase.execute({
-        actorTenantId: 'tenant-1',
-        actorPapel: 'ADMIN',
-        userId: adminEmOutroTenant.id,
-      }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER', userId: owner.id }),
     ).rejects.toThrow(UserNotFoundError)
   })
 })

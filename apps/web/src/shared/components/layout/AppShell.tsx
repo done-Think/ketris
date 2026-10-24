@@ -13,6 +13,7 @@ import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { TenantSessionBoundary } from '@shared/components/layout/TenantSessionBoundary'
 import { AppLogo } from '@shared/components/ui'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
+import { getRestrictedRoleAccess } from '@shared/lib/auth/restricted-role-access'
 import {
   alpha,
   brand,
@@ -35,16 +36,17 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   const pathname = usePathname()
   const router = useRouter()
   const { data: session, status } = useSession()
+  const restrictedAccess =
+    session?.scope === 'tenant' ? getRestrictedRoleAccess(session.role) : null
   const isRenter = session?.scope === 'tenant' && session.role === 'RENTER'
-  const isRenterRoute =
-    pathname === '/dashboard/agenda' ||
-    /^\/dashboard\/(?:finance\/charges|maintenance)(?:\/[^/]+)?\/?$/.test(pathname) ||
-    /^\/dashboard\/properties(?:\/(?!new(?:\/|$))[^/]+)?\/?$/.test(pathname)
+  const isRestrictedRouteBlocked = Boolean(
+    restrictedAccess && !restrictedAccess.isAllowedPathname(pathname),
+  )
   useEffect(() => {
-    if (isRenter && !isRenterRoute) {
-      router.replace(getLocalizedPathname('/dashboard/finance/charges', locale))
+    if (restrictedAccess && isRestrictedRouteBlocked) {
+      router.replace(getLocalizedPathname(restrictedAccess.home, locale))
     }
-  }, [isRenter, isRenterRoute, locale, router])
+  }, [restrictedAccess, isRestrictedRouteBlocked, locale, router])
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isSigningOut, setIsSigningOut] = useState(false)
   const sidebarCollapsed = useSidebarPreferencesStore((state) => state.isCollapsed)
@@ -57,20 +59,16 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   const userContext = session?.user?.email ?? t('defaultUserContext')
   const userInitials = useMemo(() => getInitials(userName), [userName])
   const visibleItems = useMemo(() => {
-    if (isRenter)
-      return appShellNavigationItems.filter(
-        (item) =>
-          item.href === '/dashboard/finance/charges' ||
-          item.href === '/dashboard/maintenance' ||
-          item.href === '/dashboard/agenda' ||
-          item.href === '/dashboard/properties',
+    if (restrictedAccess)
+      return appShellNavigationItems.filter((item) =>
+        restrictedAccess.navigationHrefs.includes(item.href),
       )
     if (isLocalDashboardPreview) return appShellNavigationItems
 
     return appShellNavigationItems.filter(
       (item) => !item.roles || (session?.role && item.roles.includes(session.role)),
     )
-  }, [isLocalDashboardPreview, isRenter, session])
+  }, [isLocalDashboardPreview, restrictedAccess, session])
   const activeTargetPath = useMemo(() => {
     if (isPersonalProfileRoute) return null
 
@@ -98,7 +96,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
     router.refresh()
   }
 
-  if (isRenter && !isRenterRoute) return null
+  if (isRestrictedRouteBlocked) return null
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: surface.app }}>
@@ -123,7 +121,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           userContext={userContext}
           userInitials={userInitials}
           userImage={session?.user?.image ?? undefined}
-          canEditProfile={!!session?.user?.id && !isRenter}
+          canEditProfile={!!session?.user?.id && (restrictedAccess?.canEditProfile ?? true)}
           isPersonalProfileRoute={isPersonalProfileRoute}
           isSigningOut={isSigningOut}
           onNavItemClick={() => setMobileOpen(false)}
@@ -206,7 +204,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           userContext={userContext}
           userInitials={userInitials}
           userImage={session?.user?.image ?? undefined}
-          canEditProfile={!!session?.user?.id && !isRenter}
+          canEditProfile={!!session?.user?.id && (restrictedAccess?.canEditProfile ?? true)}
           isPersonalProfileRoute={isPersonalProfileRoute}
           isSigningOut={isSigningOut}
           onNavItemClick={() => setMobileOpen(false)}

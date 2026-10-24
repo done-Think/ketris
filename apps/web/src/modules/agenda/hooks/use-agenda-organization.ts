@@ -18,7 +18,7 @@ export function useAgendaOrganization() {
   const maintenance = useQuery({
     queryKey: ['agenda', 'maintenance', ...scope],
     queryFn: () => agendaService.listMaintenance(),
-    enabled: enabled && (isRenter || session?.role === 'ADMIN'),
+    enabled: enabled && (isRenter || session?.role === 'OWNER'),
     staleTime: 0,
     refetchOnWindowFocus: true,
   })

@@ -32,7 +32,7 @@ export default defineConfig({
           const senhaHash = await bcrypt.hash(password, 10)
 
           await prisma.usuario.create({
-            data: { tenantId: tenant.id, nome: 'Usuário E2E', email, senhaHash, papel: 'ADMIN' },
+            data: { tenantId: tenant.id, nome: 'Usuário E2E', email, senhaHash, papel: 'OWNER' },
           })
 
           return tenant.id
@@ -50,7 +50,7 @@ export default defineConfig({
           tenantId: string
           email: string
           password: string
-          papel: 'ADMIN' | 'OWNER' | 'AGENT'
+          papel: 'OWNER' | 'AGENT'
         }) {
           const senhaHash = await bcrypt.hash(password, 10)
 

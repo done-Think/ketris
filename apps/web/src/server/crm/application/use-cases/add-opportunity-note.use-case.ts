@@ -2,7 +2,7 @@ import type { Papel } from '@server/auth/domain/user.entity'
 
 import type { ActivityType, OpportunityActivity } from '../../domain/activity.entity'
 import { OpportunityNotFoundError } from '../../domain/errors'
-import { assertAgentOwnsProperty } from '../authorization'
+import { assertAgentOwnsProperty, assertCrmAccess } from '../authorization'
 import type { ActivityRepository } from '../ports/activity-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
 import type { PropertyLookupPort } from '../ports/property-lookup.port'
@@ -27,6 +27,7 @@ export class AddOpportunityNoteUseCase {
   ) {}
 
   async execute(input: AddOpportunityNoteInput): Promise<AddOpportunityNoteOutput> {
+    assertCrmAccess(input.actorPapel)
     const opportunity = await this.opportunityRepository.findById(input.opportunityId)
 
     if (!opportunity || opportunity.tenantId !== input.actorTenantId) {

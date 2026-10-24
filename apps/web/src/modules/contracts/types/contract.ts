@@ -126,7 +126,7 @@ export type ContractsFiltersFormValues = z.infer<typeof contractsFiltersSchema>
 
 export type ContractsDashboardPageHeaderProps = {
   control: Control<ContractsFiltersFormValues>
-  onCreateContract: () => void
+  onCreateContract?: () => void
 }
 
 export type ContractsSummaryCardsProps = {
@@ -144,6 +144,7 @@ export type ContractsTableProps = {
   totalCount: number
   onContractAction: ContractActionHandler
   onContractSelect: (contract: ContractListItem) => void
+  readOnly?: boolean
 }
 
 export type ContractDetailDashboardPageProps = {
@@ -181,7 +182,7 @@ export type ContractMetricToneStyle = {
 }
 
 export type ContractsEmptyStateProps = {
-  onCreateContract: () => void
+  onCreateContract?: () => void
 }
 
 export type EligibleContractOpportunity = {

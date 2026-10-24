@@ -3,6 +3,7 @@ import type { Papel } from '@server/auth/domain/user.entity'
 import type { ContactListItem } from '../../domain/contact.entity'
 import type { ContactListFilters, ContactRepository } from '../ports/contact-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
+import { assertCrmAccess } from '../authorization'
 
 export interface ListContactsInput {
   actorTenantId: string
@@ -20,6 +21,7 @@ export class ListContactsUseCase {
   ) {}
 
   async execute(input: ListContactsInput): Promise<ListContactsOutput> {
+    assertCrmAccess(input.actorPapel)
     const contacts = await this.contactRepository.findManyByTenant(input.actorTenantId, {
       ...input.filters,
       responsavelId: input.actorPapel === 'AGENT' ? input.actorId : undefined,

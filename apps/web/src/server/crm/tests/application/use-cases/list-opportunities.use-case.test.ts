@@ -4,7 +4,7 @@ import type { OpportunityRepository } from '../../../application/ports/opportuni
 import { ListOpportunitiesUseCase } from '../../../application/use-cases/list-opportunities.use-case'
 
 describe('ListOpportunitiesUseCase', () => {
-  it('delega ao repositório escopado pelo tenant do ator, repassando os filtros (ADMIN sem restrição)', async () => {
+  it('delega ao repositório escopado pelo tenant do ator, repassando os filtros (OWNER sem restrição)', async () => {
     const findManyByTenant = vi.fn().mockResolvedValue([])
     const repository = { findManyByTenant } as unknown as OpportunityRepository
     const useCase = new ListOpportunitiesUseCase(repository)
@@ -12,7 +12,7 @@ describe('ListOpportunitiesUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       filters: { status: 'ENVIADA', includeArchived: true },
     })
 

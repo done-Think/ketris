@@ -22,7 +22,7 @@ const users: User[] = [
     nome: 'Admin',
     email: 'admin@a.dev',
     senhaHash: 'h',
-    papel: 'ADMIN',
+    papel: 'OWNER',
     ativo: true,
     vinculoAprovadoEm: new Date(),
   },
@@ -66,7 +66,7 @@ describe('ListTenantUsersUseCase', () => {
     const result = await useCase.execute({ tenantId: tenant.id })
 
     expect(result).toHaveLength(2)
-    expect(result.some((user) => user.papel === 'ADMIN')).toBe(true)
+    expect(result.some((user) => user.papel === 'OWNER')).toBe(true)
     expect(result.every((user) => !('senhaHash' in user))).toBe(true)
   })
 

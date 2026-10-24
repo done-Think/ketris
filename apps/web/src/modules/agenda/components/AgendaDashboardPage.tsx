@@ -10,6 +10,7 @@ import { useMemo, useState } from 'react'
 import { useSnackbar } from 'notistack'
 
 import { useProperties } from '@modules/properties/hooks/use-properties'
+import { getRestrictedRoleAccess } from '@shared/lib/auth/restricted-role-access'
 import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
 
 import { agendaTimeSlots } from '../data/agenda-events'
@@ -50,19 +51,29 @@ export function AgendaDashboardPage() {
   const { data: session } = useSession()
   const tenantId = session?.tenantId ?? ''
   const isRenter = session?.role === 'RENTER'
-  const hasOrganization = isRenter || session?.role === 'ADMIN'
+  const restrictedAccess = getRestrictedRoleAccess(session?.role)
+  const isReadOnlyViewer = Boolean(restrictedAccess) && !restrictedAccess?.canManageAgenda
+  const hasOrganization = isRenter || session?.role === 'OWNER'
   const [isEventFormOpen, setIsEventFormOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null)
-  const agentsQuery = useAgendaAgents(isEventFormOpen || Boolean(selectedEvent))
+  const agentsQuery = useAgendaAgents(
+    !restrictedAccess && (isEventFormOpen || Boolean(selectedEvent)),
+  )
   const audienceFormProps = {
-    canManageAudience: session?.role === 'ADMIN',
+    canManageAudience: session?.role === 'OWNER',
     agentOptions: agentsQuery.data,
     agentsLoading: agentsQuery.isLoading,
     agentsError: agentsQuery.isError,
   }
+  const isOwnEvent =
+    Boolean(selectedEvent) &&
+    Boolean(session?.user?.id) &&
+    (selectedEvent?.responsibleId === session?.user?.id ||
+      selectedEvent?.createdById === session?.user?.id)
   const selectedEventReadOnly =
-    isRenter ||
-    (session?.role !== 'ADMIN' &&
+    isReadOnlyViewer ||
+    (Boolean(restrictedAccess) && !isOwnEvent) ||
+    (session?.role !== 'OWNER' &&
       Boolean(selectedEvent) &&
       (selectedEvent?.internal ||
         selectedEvent?.audience === 'ALL_AGENTS' ||
@@ -147,7 +158,7 @@ export function AgendaDashboardPage() {
   }
 
   const createAgendaEvent = async (values: AgendaEventFormValues) => {
-    if (isRenter) return
+    if (isReadOnlyViewer) return
     const scheduledDate = dayjs(values.scheduledDate)
     const start = dayjs(`${values.scheduledDate}T${values.scheduledTime}`)
     const useCustomProperty = values.propertyId === agendaOtherPropertyValue
@@ -229,7 +240,7 @@ export function AgendaDashboardPage() {
     <Box sx={{ width: '100%', p: 3.5 }}>
       <Stack spacing={2.4}>
         <AgendaDashboardHeader
-          readOnly={isRenter}
+          readOnly={isReadOnlyViewer}
           disableNextWeek={disableNextWeek}
           disablePreviousWeek={disablePreviousWeek}
           notifications={notifications}
@@ -304,7 +315,7 @@ export function AgendaDashboardPage() {
         propertyOptions={propertyOptions}
       />
 
-      {!isRenter && (
+      {!isReadOnlyViewer && (
         <AgendaEventFormDialog
           {...audienceFormProps}
           maxDate={scheduleHorizonEnd.format('YYYY-MM-DD')}

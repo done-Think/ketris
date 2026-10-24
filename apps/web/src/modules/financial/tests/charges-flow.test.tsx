@@ -253,7 +253,7 @@ const detail = (id: string) => wrap(<ChargeDetailsPage chargeId={id} />)
 beforeEach(() => {
   vi.clearAllMocks()
   vi.mocked(useSession).mockReturnValue({
-    data: { tenantId: 'tenant-1', role: 'ADMIN' },
+    data: { tenantId: 'tenant-1', role: 'OWNER' },
     status: 'authenticated',
     update: vi.fn(),
   } as unknown as ReturnType<typeof useSession>)
@@ -330,7 +330,7 @@ describe('charges list', () => {
     expect(screen.queryByRole('button', { name: 'Nova Cobrança' })).not.toBeInTheDocument()
   })
 
-  it.each(['ADMIN', 'OWNER'] as const)('preserves charge creation for %s', async (role) => {
+  it.each(['OWNER'] as const)('preserves charge creation for %s', async (role) => {
     vi.mocked(useSession).mockReturnValue({
       data: { tenantId: 'tenant-1', role },
       status: 'authenticated',

@@ -5,6 +5,7 @@ import type {
   OpportunityListFilters,
   OpportunityRepository,
 } from '../ports/opportunity-repository.port'
+import { assertCrmAccess } from '../authorization'
 
 export interface ListOpportunitiesInput {
   actorTenantId: string
@@ -19,6 +20,7 @@ export class ListOpportunitiesUseCase {
   constructor(private readonly opportunityRepository: OpportunityRepository) {}
 
   execute(input: ListOpportunitiesInput): Promise<ListOpportunitiesOutput> {
+    assertCrmAccess(input.actorPapel)
     return this.opportunityRepository.findManyByTenant(input.actorTenantId, {
       ...input.filters,
       responsavelId: input.actorPapel === 'AGENT' ? input.actorId : undefined,

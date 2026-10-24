@@ -1,14 +1,14 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
-import { authenticatedUserResponseSchema, nonAdminPapelSchema } from './user.schema'
+import { authenticatedUserResponseSchema, tenantMemberPapelSchema } from './user.schema'
 
 export const updateUserRequestSchema = z
   .object({
     name: z.string().min(1, 'Nome é obrigatório.').optional(),
     email: z.string().email('E-mail inválido.').optional(),
     avatarUrl: z.string().min(1).nullable().optional(),
-    role: nonAdminPapelSchema.optional(),
+    role: tenantMemberPapelSchema.optional(),
   })
   .refine(
     (data) =>

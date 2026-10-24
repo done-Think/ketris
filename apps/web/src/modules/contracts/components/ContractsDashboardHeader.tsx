@@ -56,12 +56,14 @@ export function ContractsDashboardHeader({
           />
         )}
       />
-      <DashboardHeaderActionButton
-        startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
-        onClick={onCreateContract}
-      >
-        {t('newContract')}
-      </DashboardHeaderActionButton>
+      {onCreateContract ? (
+        <DashboardHeaderActionButton
+          startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
+          onClick={onCreateContract}
+        >
+          {t('newContract')}
+        </DashboardHeaderActionButton>
+      ) : null}
       <Box sx={{ display: { xs: 'none', md: 'block' } }}>
         <DashboardNotificationsButton />
       </Box>

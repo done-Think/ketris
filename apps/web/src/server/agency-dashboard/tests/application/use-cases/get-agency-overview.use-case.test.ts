@@ -66,7 +66,7 @@ function createFinancialSummaryProvider(
 }
 
 describe('GetAgencyOverviewUseCase', () => {
-  it.each(['ADMIN', 'OWNER'] as const)(
+  it.each(['OWNER'] as const)(
     'combines the real financial summary use case for %s',
     async (actorPapel) => {
       const getSummary = vi.fn().mockResolvedValue({
@@ -152,12 +152,12 @@ describe('GetAgencyOverviewUseCase', () => {
     })
   })
 
-  it('permite ADMIN e delega o mesmo tenant do ator para todas as fontes', async () => {
+  it('permite OWNER e delega o mesmo tenant do ator para todas as fontes', async () => {
     const repository = createRepository()
     const financialSummaryProvider = createFinancialSummaryProvider()
     const useCase = new GetAgencyOverviewUseCase(repository, financialSummaryProvider)
 
-    await useCase.execute({ actorTenantId: 'tenant-2', actorPapel: 'ADMIN' })
+    await useCase.execute({ actorTenantId: 'tenant-2', actorPapel: 'OWNER' })
 
     expect(repository.getPortfolioCount).toHaveBeenCalledWith('tenant-2')
     expect(repository.getActiveBrokersCount).toHaveBeenCalledWith('tenant-2')
@@ -176,7 +176,7 @@ describe('GetAgencyOverviewUseCase', () => {
     expect(repository.getRecentActivities).toHaveBeenCalledWith('tenant-2')
     expect(financialSummaryProvider.execute).toHaveBeenCalledWith({
       actorTenantId: 'tenant-2',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
     })
   })
 

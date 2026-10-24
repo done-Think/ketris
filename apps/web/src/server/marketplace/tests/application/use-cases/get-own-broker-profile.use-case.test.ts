@@ -27,7 +27,7 @@ describe('GetOwnBrokerProfileUseCase', () => {
     expect(deps.brokerProfileRepository.findByUsuarioId).toHaveBeenCalledWith('usuario-1')
   })
 
-  it.each(['ADMIN', 'OWNER', 'RENTER'] as const)(
+  it.each(['OWNER', 'RENTER'] as const)(
     'lança ForbiddenError quando o ator não é AGENT (%s)',
     async (actorPapel) => {
       const deps = createDeps()

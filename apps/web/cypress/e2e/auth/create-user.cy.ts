@@ -102,7 +102,7 @@ describe('Criar usuário (API)', () => {
         nome: 'Tentativa',
         email: `tentativa-${Date.now()}@ketris.dev`,
         password: 'senha-longa-123',
-        papel: 'ADMIN',
+        papel: 'OWNER',
       },
       failOnStatusCode: false,
     }).then((response) => {

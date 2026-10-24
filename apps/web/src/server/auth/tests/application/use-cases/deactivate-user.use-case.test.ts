@@ -45,7 +45,7 @@ describe('DeactivateUserUseCase', () => {
     const result = await useCase.execute({
       actorId: 'admin-1',
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       userId: agent.id,
     })
 
@@ -54,7 +54,7 @@ describe('DeactivateUserUseCase', () => {
     expect(deps.refreshTokenRepository.revokeAllForUser).toHaveBeenCalledWith(agent.id)
   })
 
-  it('lança ForbiddenError quando o ator não é ADMIN', async () => {
+  it('lança ForbiddenError quando o ator não é OWNER', async () => {
     const deps = createDeps()
     const useCase = new DeactivateUserUseCase(deps.userRepository, deps.refreshTokenRepository)
 
@@ -77,14 +77,14 @@ describe('DeactivateUserUseCase', () => {
       useCase.execute({
         actorId: 'admin-1',
         actorTenantId: 'tenant-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         userId: 'admin-1',
       }),
     ).rejects.toThrow(CannotDeactivateSelfError)
     expect(deps.userRepository.deactivate).not.toHaveBeenCalled()
   })
 
-  it('lança UserNotFoundError quando o alvo não existe, é de outro tenant, ou é ADMIN', async () => {
+  it('lança UserNotFoundError quando o alvo não existe, é de outro tenant', async () => {
     const deps = createDeps({ findById: vi.fn().mockResolvedValue(null) })
     const useCase = new DeactivateUserUseCase(deps.userRepository, deps.refreshTokenRepository)
 
@@ -92,7 +92,7 @@ describe('DeactivateUserUseCase', () => {
       useCase.execute({
         actorId: 'admin-1',
         actorTenantId: 'tenant-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         userId: 'inexistente',
       }),
     ).rejects.toThrow(UserNotFoundError)

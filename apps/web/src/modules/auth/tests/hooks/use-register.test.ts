@@ -59,7 +59,7 @@ describe('useRegister', () => {
       vi.fn().mockResolvedValue(
         mockRegisterResponse(201, {
           outcome: 'REGISTERED',
-          user: { role: 'ADMIN' },
+          user: { role: 'OWNER' },
           accessToken: 'access-fake',
           refreshToken: 'refresh-fake',
         }),
@@ -183,7 +183,7 @@ describe('useRegister', () => {
       vi.fn().mockResolvedValue(
         mockRegisterResponse(201, {
           outcome: 'REGISTERED',
-          user: { role: 'ADMIN' },
+          user: { role: 'OWNER' },
           accessToken: 'access-fake',
           refreshToken: 'refresh-fake',
         }),

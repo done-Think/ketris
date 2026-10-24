@@ -1,8 +1,14 @@
 import { AppError, ConflictError, ForbiddenError, NotFoundError } from '@server/shared/errors'
 
-export class AgendaRenterForbiddenError extends ForbiddenError {
+export class AgendaRenterPropertyRequiredError extends ConflictError {
   constructor() {
-    super('Locatários não podem gerenciar a agenda.')
+    super('Escolha o imóvel do seu contrato de locação para agendar o evento.')
+  }
+}
+
+export class AgendaRenterLinksForbiddenError extends ForbiddenError {
+  constructor() {
+    super('Locatários não vinculam outras pessoas a eventos da agenda.')
   }
 }
 

@@ -8,7 +8,7 @@ export function useAgendaAgents(enabled: boolean) {
     queryKey: ['agenda', 'agents', session?.tenantId, session?.user?.id, session?.role],
     queryFn: () => agendaService.listAgents(),
     enabled:
-      enabled && Boolean(session?.tenantId && session?.user?.id && session?.role === 'ADMIN'),
+      enabled && Boolean(session?.tenantId && session?.user?.id && session?.role === 'OWNER'),
     staleTime: 0,
   })
 }

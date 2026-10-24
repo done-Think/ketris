@@ -1,7 +1,7 @@
 import type { Papel } from '@server/auth/domain/user.entity'
 
 import { OpportunityNotFoundError } from '../../domain/errors'
-import { assertAgentOwnsProperty } from '../authorization'
+import { assertAgentOwnsProperty, assertCrmAccess } from '../authorization'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
 import type { PropertyLookupPort } from '../ports/property-lookup.port'
 
@@ -19,6 +19,7 @@ export class DeleteOpportunityUseCase {
   ) {}
 
   async execute(input: DeleteOpportunityInput): Promise<void> {
+    assertCrmAccess(input.actorPapel)
     const opportunity = await this.opportunityRepository.findById(input.opportunityId)
 
     if (!opportunity || opportunity.tenantId !== input.actorTenantId) {

@@ -12,7 +12,7 @@ const admin: User = {
   nome: 'Admin',
   email: 'admin@ketris.dev',
   senhaHash: 'hash-fake',
-  papel: 'ADMIN',
+  papel: 'OWNER',
   ativo: true,
   vinculoAprovadoEm: new Date(),
 }
@@ -50,7 +50,7 @@ function createDeps(overrides?: {
 }
 
 describe('CreateUserUseCase', () => {
-  it('cria o usuário quando o ator é ADMIN e o e-mail não existe no tenant', async () => {
+  it('cria o usuário quando o ator é OWNER e o e-mail não existe no tenant', async () => {
     const deps = createDeps()
     const useCase = new CreateUserUseCase(deps.userRepository, deps.passwordHasher)
 
@@ -84,7 +84,7 @@ describe('CreateUserUseCase', () => {
     })
   })
 
-  it('lança ForbiddenError quando o ator não é ADMIN', async () => {
+  it('lança ForbiddenError quando o ator não é OWNER', async () => {
     const deps = createDeps()
     const useCase = new CreateUserUseCase(deps.userRepository, deps.passwordHasher)
 
@@ -108,7 +108,7 @@ describe('CreateUserUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: admin.tenantId,
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         nome: 'Ana Agente',
         email: admin.email,
         password: 'senha-longa-123',
@@ -124,7 +124,7 @@ describe('CreateUserUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       nome: 'Ana Agente',
       email: 'ana@ketris.dev',
       password: 'senha-longa-123',

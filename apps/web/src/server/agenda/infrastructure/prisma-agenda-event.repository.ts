@@ -282,7 +282,8 @@ function readScopeWhere(scope: AgendaReadScope): Prisma.EventoAgendaWhereInput {
       tenantId: scope.tenantId,
       interno: false,
       OR: [
-        { destino: 'LEGACY_TEAM' },
+        { responsavelId: scope.userId },
+        { criadoPorId: scope.userId },
         { imovel: { proprietarioId: scope.userId, tenantId: scope.tenantId } },
         { donoUsuarioId: scope.userId },
         { participantes: { some: { usuarioId: scope.userId } } },
@@ -292,7 +293,11 @@ function readScopeWhere(scope: AgendaReadScope): Prisma.EventoAgendaWhereInput {
 
   return {
     interno: false,
-    OR: [{ donoUsuarioId: scope.userId }, { participantes: { some: { usuarioId: scope.userId } } }],
+    OR: [
+      { criadoPorId: scope.userId },
+      { donoUsuarioId: scope.userId },
+      { participantes: { some: { usuarioId: scope.userId } } },
+    ],
   }
 }
 

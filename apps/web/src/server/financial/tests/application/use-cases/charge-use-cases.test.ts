@@ -160,7 +160,7 @@ describe('ListChargesUseCase', () => {
     await useCase.execute({
       actorId: 'admin-1',
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       status: 'PENDENTE',
     })
 
@@ -455,7 +455,7 @@ describe('RegisterChargePaymentUseCase', () => {
 })
 
 describe('GetFinancialSummaryUseCase', () => {
-  it.each(['OWNER', 'ADMIN'] as const)(
+  it.each(['OWNER'] as const)(
     'delega para o repositório com a data de referência atual para %s',
     async (actorPapel) => {
       const repository = createRepository()

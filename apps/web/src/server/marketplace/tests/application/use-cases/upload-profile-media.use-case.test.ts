@@ -61,7 +61,7 @@ describe('UploadProfileMediaUseCase', () => {
     const storage = createStorage()
     const useCase = new UploadProfileMediaUseCase(storage)
 
-    await useCase.execute({ ...baseInput, actorPapel: 'ADMIN', target })
+    await useCase.execute({ ...baseInput, actorPapel: 'OWNER', target })
 
     expect(storage.upload).toHaveBeenCalledWith(
       expect.objectContaining({ keyPrefix: expectedPrefix }),
@@ -73,12 +73,12 @@ describe('UploadProfileMediaUseCase', () => {
     const useCase = new UploadProfileMediaUseCase(storage)
 
     await expect(
-      useCase.execute({ ...baseInput, actorPapel: 'ADMIN', target: 'broker-avatar' }),
+      useCase.execute({ ...baseInput, actorPapel: 'OWNER', target: 'broker-avatar' }),
     ).rejects.toThrow('Só corretores')
     expect(storage.upload).not.toHaveBeenCalled()
   })
 
-  it('bloqueia quem não é ADMIN/OWNER de enviar mídia de imobiliária', async () => {
+  it('bloqueia quem não é OWNER de enviar mídia de imobiliária', async () => {
     const storage = createStorage()
     const useCase = new UploadProfileMediaUseCase(storage)
 

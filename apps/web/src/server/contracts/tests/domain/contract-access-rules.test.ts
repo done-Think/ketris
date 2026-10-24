@@ -9,7 +9,7 @@ import {
 import { ContractRenterForbiddenError } from '../../domain/errors'
 
 describe('resolveContractManageScope', () => {
-  it.each(['ADMIN', 'OWNER'] as const)('libera todos os contratos do tenant para %s', (papel) => {
+  it.each(['OWNER'] as const)('libera todos os contratos do tenant para %s', (papel) => {
     expect(resolveContractManageScope('user-1', papel)).toEqual({})
   })
 
@@ -39,7 +39,7 @@ describe('resolveContractManageScope', () => {
 })
 
 describe('resolveContractReadScope', () => {
-  it.each(['ADMIN', 'OWNER'] as const)('libera a leitura do tenant inteiro para %s', (papel) => {
+  it.each(['OWNER'] as const)('libera a leitura do tenant inteiro para %s', (papel) => {
     expect(resolveContractReadScope('tenant-1', 'user-1', papel)).toEqual({
       kind: 'tenant',
       tenantId: 'tenant-1',
@@ -59,6 +59,17 @@ describe('resolveContractReadScope', () => {
       kind: 'party',
       userId: 'renter-1',
     })
+  })
+
+  it('limita o PROPERTY_OWNER aos contratos dos imóveis dele, só para leitura', () => {
+    expect(resolveContractReadScope('tenant-1', 'owner-1', 'PROPERTY_OWNER')).toEqual({
+      kind: 'propertyOwner',
+      tenantId: 'tenant-1',
+      ownerId: 'owner-1',
+    })
+    expect(() => resolveContractManageScope('owner-1', 'PROPERTY_OWNER')).toThrow(
+      expect.objectContaining({ status: 403 }),
+    )
   })
 
   it('bloqueia com 403 um papel desconhecido', () => {

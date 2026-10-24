@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 
 import { getLocalizedPathname } from '@/i18n/locale-prefix'
+import { getRoleHomePathname } from '@shared/lib/auth/restricted-role-access'
 import type { RegistrationDetailsFormValues } from '../types/registration'
 import type { RegisterErrorBody, RegisterResponseBody } from '../types/registration'
 
@@ -69,7 +70,7 @@ export function useRegister() {
         return false
       }
 
-      const destination = body.user.role === 'RENTER' ? '/dashboard/finance/charges' : '/dashboard'
+      const destination = getRoleHomePathname(body.user.role, '/dashboard')
       pendingRedirect.current = getLocalizedPathname(destination, locale)
       setPendingEmailVerification(values.email)
       return true

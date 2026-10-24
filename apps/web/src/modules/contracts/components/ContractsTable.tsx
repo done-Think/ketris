@@ -215,6 +215,7 @@ export function ContractsTable({
   totalCount,
   onContractAction,
   onContractSelect,
+  readOnly = false,
 }: ContractsTableProps) {
   const t = useTranslations('contracts.table')
   const columns: GridColDef<ContractListItem>[] = [
@@ -301,7 +302,7 @@ export function ContractsTable({
     >
       <DataGrid
         rows={contracts}
-        columns={columns}
+        columns={readOnly ? columns.filter((column) => column.field !== 'actions') : columns}
         autoHeight
         rowHeight={82}
         disableRowSelectionOnClick

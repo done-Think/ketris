@@ -2,6 +2,7 @@ import type { Papel } from '@server/auth/domain/user.entity'
 
 import type { Lead } from '../../domain/lead.entity'
 import type { LeadRepository } from '../ports/lead-repository.port'
+import { assertCrmAccess } from '../authorization'
 
 export interface ListLeadsInput {
   actorTenantId: string
@@ -15,6 +16,7 @@ export class ListLeadsUseCase {
   constructor(private readonly leadRepository: LeadRepository) {}
 
   async execute(input: ListLeadsInput): Promise<ListLeadsOutput> {
+    assertCrmAccess(input.actorPapel)
     return this.leadRepository.findManyByTenant(input.actorTenantId, {
       responsavelId: input.actorPapel === 'AGENT' ? input.actorId : undefined,
     })

@@ -10,7 +10,7 @@ const admin: User = {
   nome: 'Admin',
   email: 'admin@ketris.dev',
   senhaHash: 'hash-fake',
-  papel: 'ADMIN',
+  papel: 'OWNER',
   ativo: true,
   vinculoAprovadoEm: new Date(),
 }
@@ -52,24 +52,22 @@ function createDeps(findManyByTenant?: UserRepository['findManyByTenant']) {
 }
 
 describe('ListUsersUseCase', () => {
-  it('lista os usuários do tenant sem incluir administradores', async () => {
+  it('lista todos os usuários do tenant', async () => {
     const deps = createDeps()
     const useCase = new ListUsersUseCase(deps.userRepository)
 
-    const result = await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'ADMIN' })
+    const result = await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER' })
 
-    expect(result).toHaveLength(2)
-    expect(result.every((user) => user.papel !== 'ADMIN')).toBe(true)
-    expect(result.map((user) => user.id)).toEqual([owner.id, agent.id])
+    expect(result.map((user) => user.id)).toEqual([admin.id, owner.id, agent.id])
     expect(result.every((user) => !('senhaHash' in user))).toBe(true)
   })
 
-  it('lança ForbiddenError quando o ator não é ADMIN', async () => {
+  it('lança ForbiddenError quando o ator não é o dono da imobiliária', async () => {
     const deps = createDeps()
     const useCase = new ListUsersUseCase(deps.userRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'AGENT' }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
     expect(deps.userRepository.findManyByTenant).not.toHaveBeenCalled()
   })

@@ -4,7 +4,7 @@ import type { OpportunityActivity } from '../../domain/activity.entity'
 import { InvalidStatusTransitionError, OpportunityNotFoundError } from '../../domain/errors'
 import type { Opportunity, OpportunityUpdate } from '../../domain/opportunity.entity'
 import { canTransition } from '../../domain/opportunity-status'
-import { assertAgentOwnsProperty } from '../authorization'
+import { assertAgentOwnsProperty, assertCrmAccess } from '../authorization'
 import type { ActivityRepository } from '../ports/activity-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
 import type { PropertyLookupPort } from '../ports/property-lookup.port'
@@ -28,6 +28,7 @@ export class UpdateOpportunityUseCase {
   ) {}
 
   async execute(input: UpdateOpportunityInput): Promise<UpdateOpportunityOutput> {
+    assertCrmAccess(input.actorPapel)
     const current = await this.opportunityRepository.findById(input.opportunityId)
 
     if (!current || current.tenantId !== input.actorTenantId) {

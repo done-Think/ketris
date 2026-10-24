@@ -172,9 +172,9 @@ describe('LoginUseCase', () => {
     )
   })
 
-  it('não bloqueia ADMIN/OWNER sem vinculoAprovadoEm (a checagem só se aplica a AGENT)', async () => {
+  it('não bloqueia OWNER sem vinculoAprovadoEm (a checagem só se aplica a AGENT)', async () => {
     const deps = createDeps({
-      findByEmail: vi.fn().mockResolvedValue({ ...user, papel: 'ADMIN', vinculoAprovadoEm: null }),
+      findByEmail: vi.fn().mockResolvedValue({ ...user, papel: 'OWNER', vinculoAprovadoEm: null }),
     })
     const useCase = buildUseCase(deps)
 

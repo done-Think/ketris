@@ -1,10 +1,11 @@
+import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
 import { EmailAlreadyInUseError } from '../../domain/errors'
 import {
   toAuthenticatedUser,
   type AuthenticatedUser,
-  type NonAdminPapel,
+  type TenantMemberPapel,
   type Papel,
 } from '../../domain/user.entity'
 import type { PasswordHasher } from '../ports/password-hasher.port'
@@ -16,7 +17,7 @@ export interface CreateUserInput {
   nome: string
   email: string
   password: string
-  papel: NonAdminPapel
+  papel: TenantMemberPapel
 }
 
 export type CreateUserOutput = AuthenticatedUser
@@ -28,8 +29,8 @@ export class CreateUserUseCase {
   ) {}
 
   async execute(input: CreateUserInput): Promise<CreateUserOutput> {
-    if (input.actorPapel !== 'ADMIN') {
-      throw new ForbiddenError('Apenas administradores podem criar usuários.')
+    if (!isAgencyManager(input.actorPapel)) {
+      throw new ForbiddenError('Apenas a gestão da imobiliária pode criar usuários.')
     }
 
     const existing = await this.userRepository.findByEmail(input.email)

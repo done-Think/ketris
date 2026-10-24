@@ -33,7 +33,7 @@ describe('Maintenance authenticated actor', () => {
     vi.mocked(requireBearerAuth).mockResolvedValue({
       sub: 'user',
       tenantId: 'tenant',
-      papel: 'ADMIN',
+      papel: 'OWNER',
     })
     vi.mocked(authContainer.userRepository.findById).mockResolvedValue(user)
   })

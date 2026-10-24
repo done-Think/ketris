@@ -27,7 +27,10 @@ export const GET = withErrorHandling(async (request: NextRequest, context: Route
     id: (await context.params).id,
   })
 
-  return NextResponse.json({ event: toAgendaEventReadResponse(event, actorPapel) }, { status: 200 })
+  return NextResponse.json(
+    { event: toAgendaEventReadResponse(event, actorPapel, actor.sub) },
+    { status: 200 },
+  )
 })
 
 export const PATCH = withErrorHandling(async (request: NextRequest, context: RouteContext) => {

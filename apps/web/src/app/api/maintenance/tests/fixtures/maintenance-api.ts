@@ -41,12 +41,12 @@ export function setupMaintenanceIntegration() {
       })
       return { ...user, token: await tokenService.sign(user) }
     }
-    const admin = await user('ADMIN'),
+    const admin = await user('OWNER'),
       agent = await user('AGENT'),
-      owner = await user('OWNER'),
+      owner = await user('PROPERTY_OWNER'),
       renter = await user('RENTER'),
       unrelated = await user('RENTER'),
-      unrelatedOwner = await user('OWNER'),
+      unrelatedOwner = await user('PROPERTY_OWNER'),
       unrelatedAgent = await user('AGENT')
     const property = await prisma.imovel.create({
       data: {

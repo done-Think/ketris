@@ -75,7 +75,7 @@ describe('RegistrationDetailsScreen', () => {
       vi.fn().mockResolvedValue(
         mockResponse(201, {
           outcome: 'REGISTERED',
-          user: { role: 'ADMIN' },
+          user: { role: 'OWNER' },
           accessToken: 'access-fake',
           refreshToken: 'refresh-fake',
         }),

@@ -8,6 +8,6 @@ export function useCreateUser() {
 
   return useMutation({
     mutationFn: (payload: CreateTenantUserPayload) => userService.create(payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['backoffice', 'users'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['auth', 'users'] }),
   })
 }

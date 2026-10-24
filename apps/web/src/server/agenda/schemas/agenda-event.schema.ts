@@ -129,12 +129,15 @@ export function toRenterAgendaEventResponse(event: AgendaEvent): RenterAgendaEve
   }
 }
 
-/** Read endpoints answer the reduced view to a RENTER and the full view to the staff. */
+/** A RENTER reads the reduced view, except for the events it created itself. */
 export function toAgendaEventReadResponse(
   event: AgendaEvent,
   actorPapel: Papel,
+  actorUserId: string,
 ): AgendaEventResponseDTO | RenterAgendaEventResponseDTO {
-  return actorPapel === 'RENTER' ? toRenterAgendaEventResponse(event) : toAgendaEventResponse(event)
+  return actorPapel === 'RENTER' && event.criadoPorId !== actorUserId
+    ? toRenterAgendaEventResponse(event)
+    : toAgendaEventResponse(event)
 }
 
 function toLinkedUserResponse(user: AgendaEventLinkedUser) {

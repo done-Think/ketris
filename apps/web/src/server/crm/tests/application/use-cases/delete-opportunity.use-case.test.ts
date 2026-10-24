@@ -42,7 +42,7 @@ describe('DeleteOpportunityUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'ADMIN',
+      actorPapel: 'OWNER',
       opportunityId: 'op-1',
     })
 
@@ -59,7 +59,7 @@ describe('DeleteOpportunityUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
-        actorPapel: 'ADMIN',
+        actorPapel: 'OWNER',
         opportunityId: 'op-1',
       }),
     ).rejects.toThrow(OpportunityNotFoundError)

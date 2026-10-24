@@ -53,7 +53,7 @@ describe('PublishAgencyProfileUseCase', () => {
     const deps = createDeps()
     const useCase = new PublishAgencyProfileUseCase(deps.agencyProfileRepository)
 
-    const result = await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'ADMIN' })
+    const result = await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER' })
 
     expect(result.status).toBe('PUBLISHED')
   })
@@ -63,7 +63,7 @@ describe('PublishAgencyProfileUseCase', () => {
     const useCase = new PublishAgencyProfileUseCase(deps.agencyProfileRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'ADMIN' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER' }),
     ).rejects.toThrow(ProfilePublishValidationError)
   })
 
@@ -72,7 +72,7 @@ describe('PublishAgencyProfileUseCase', () => {
     const useCase = new PublishAgencyProfileUseCase(deps.agencyProfileRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'ADMIN' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER' }),
     ).rejects.toThrow(ProfilePublishValidationError)
   })
 
@@ -81,7 +81,7 @@ describe('PublishAgencyProfileUseCase', () => {
     const useCase = new PublishAgencyProfileUseCase(deps.agencyProfileRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'ADMIN' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER' }),
     ).rejects.toThrow(ProfilePublishValidationError)
   })
 
@@ -90,7 +90,7 @@ describe('PublishAgencyProfileUseCase', () => {
     const useCase = new PublishAgencyProfileUseCase(deps.agencyProfileRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'ADMIN' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER' }),
     ).rejects.toThrow(ProfilePublishValidationError)
   })
 
@@ -99,11 +99,11 @@ describe('PublishAgencyProfileUseCase', () => {
     const useCase = new PublishAgencyProfileUseCase(deps.agencyProfileRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'ADMIN' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER' }),
     ).rejects.toThrow(AgencyProfileNotFoundError)
   })
 
-  it('lança ForbiddenError quando o ator não é ADMIN/OWNER', async () => {
+  it('lança ForbiddenError quando o ator não é OWNER', async () => {
     const deps = createDeps()
     const useCase = new PublishAgencyProfileUseCase(deps.agencyProfileRepository)
 

@@ -1,8 +1,8 @@
 import type { Papel } from '@server/auth/domain/user.entity'
-import { ForbiddenError } from '@server/shared/errors'
 
 import type { Lead } from '../../domain/lead.entity'
 import type { LeadRepository } from '../ports/lead-repository.port'
+import { assertCrmAccess } from '../authorization'
 
 export interface CreateLeadInput {
   actorTenantId: string
@@ -23,10 +23,7 @@ export class CreateLeadUseCase {
   constructor(private readonly leadRepository: LeadRepository) {}
 
   async execute(input: CreateLeadInput): Promise<CreateLeadOutput> {
-    if (input.actorPapel === 'RENTER') {
-      throw new ForbiddenError('Locatários não podem gerenciar leads.')
-    }
-
+    assertCrmAccess(input.actorPapel)
     return this.leadRepository.create({
       tenantId: input.actorTenantId,
       responsavelId: input.actorId,

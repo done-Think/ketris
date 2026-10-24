@@ -3,7 +3,7 @@
 // independentes, construtoras e locatários — o suficiente para testar papéis, permissões de
 // acesso e vínculos entre tenants sem depender de dados criados manualmente ou por testes.
 
-export type SeedRole = 'ADMIN' | 'OWNER' | 'AGENT' | 'RENTER'
+export type SeedRole = 'OWNER' | 'AGENT' | 'RENTER' | 'PROPERTY_OWNER'
 
 export interface SeedTenantMember {
   name: string
@@ -34,7 +34,12 @@ export const seedTenants: SeedTenant[] = [
       {
         name: 'Imobiliária Horizonte',
         email: 'imobiliariahorizonte@ketris.com.br',
-        role: 'ADMIN',
+        role: 'OWNER',
+      },
+      {
+        name: 'Ricardo Lima',
+        email: 'ricardo.lima@proprietario.ketris.com.br',
+        role: 'PROPERTY_OWNER',
       },
       {
         name: 'Camila Rocha',
@@ -66,7 +71,7 @@ export const seedTenants: SeedTenant[] = [
       {
         name: 'Thiago Santos',
         email: 'thiago@ketris.com.br',
-        role: 'ADMIN',
+        role: 'OWNER',
         avatarUrl:
           'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80',
       },
@@ -93,7 +98,7 @@ export const seedTenants: SeedTenant[] = [
       {
         name: 'Bianca Azevedo',
         email: 'bianca@ketris.com.br',
-        role: 'ADMIN',
+        role: 'OWNER',
         avatarUrl:
           'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80',
       },
@@ -121,7 +126,7 @@ export const seedTenants: SeedTenant[] = [
       {
         name: 'Roberto Lima',
         email: 'roberto@ketris.com.br',
-        role: 'ADMIN',
+        role: 'OWNER',
         avatarUrl:
           'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=120&q=80',
       },
@@ -135,7 +140,7 @@ export const seedTenants: SeedTenant[] = [
       {
         name: 'Patrícia Nogueira',
         email: 'patricia@ketris.com.br',
-        role: 'ADMIN',
+        role: 'OWNER',
         avatarUrl:
           'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=120&q=80',
       },
@@ -149,7 +154,7 @@ export const seedTenants: SeedTenant[] = [
       {
         name: 'Renato Alves',
         email: 'renato@ketris.com.br',
-        role: 'ADMIN',
+        role: 'OWNER',
         avatarUrl:
           'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=120&q=80',
       },
@@ -163,7 +168,7 @@ export const seedTenants: SeedTenant[] = [
       {
         name: 'Carlos Souza',
         email: 'carlos@ketris.com.br',
-        role: 'ADMIN',
+        role: 'OWNER',
         avatarUrl:
           'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80',
       },
@@ -174,7 +179,7 @@ export const seedTenants: SeedTenant[] = [
     accountType: 'INDIVIDUAL',
     name: 'João Ricardo Mendes',
     members: [
-      { name: 'João Ricardo Mendes', email: 'joao.mendes@proprietario.ketris.dev', role: 'ADMIN' },
+      { name: 'João Ricardo Mendes', email: 'joao.mendes@proprietario.ketris.dev', role: 'OWNER' },
     ],
   },
   {
@@ -185,7 +190,7 @@ export const seedTenants: SeedTenant[] = [
       {
         name: 'Fernanda Cavalcanti',
         email: 'fernanda.cavalcanti@proprietario.ketris.dev',
-        role: 'ADMIN',
+        role: 'OWNER',
       },
     ],
   },
@@ -193,14 +198,14 @@ export const seedTenants: SeedTenant[] = [
     slug: 'construtora-pedra-azul',
     name: 'Construtora Pedra Azul',
     members: [
-      { name: 'Construtora Pedra Azul', email: 'contato@pedraazul.ketris.dev', role: 'ADMIN' },
+      { name: 'Construtora Pedra Azul', email: 'contato@pedraazul.ketris.dev', role: 'OWNER' },
     ],
   },
   {
     slug: 'construtora-nova-aurora',
     name: 'Construtora Nova Aurora',
     members: [
-      { name: 'Construtora Nova Aurora', email: 'contato@novaaurora.ketris.dev', role: 'ADMIN' },
+      { name: 'Construtora Nova Aurora', email: 'contato@novaaurora.ketris.dev', role: 'OWNER' },
     ],
   },
   {
@@ -233,6 +238,7 @@ export interface SeedProperty {
   // E-mail do usuário responsável (responsavelId) — corretor, ou o próprio ADMIN quando o
   // responsável é um proprietário/construtora sem corretor dedicado.
   responsavelEmail: string
+  proprietarioEmail?: string
 }
 
 const apartmentGallery = [
@@ -263,6 +269,7 @@ export const seedProperties: SeedProperty[] = [
     longitude: -46.6559,
     images: apartmentGallery,
     responsavelEmail: 'marina@ketris.com.br',
+    proprietarioEmail: 'ricardo.lima@proprietario.ketris.com.br',
   },
   {
     id: 'studio-vila-madalena',

@@ -12,6 +12,7 @@ import type {
   PropertyListFilters,
   PropertyMediaInput,
   PropertyStatus,
+  RentedProperty,
 } from '../types/property'
 import type { PropertyRow, PropertyTransaction } from '../types/prisma-property-repository'
 
@@ -41,6 +42,7 @@ export class PrismaPropertyRepository implements PropertyRepository {
         data: {
           tenantId: property.tenantId,
           responsavelId: property.responsavelId,
+          proprietarioId: property.proprietarioId ?? null,
           titulo: property.titulo,
           descricao: property.descricao ?? null,
           finalidade: property.finalidade,
@@ -68,6 +70,7 @@ export class PrismaPropertyRepository implements PropertyRepository {
       status: filters.status,
       finalidade: filters.finalidade,
       responsavelId: filters.responsavelId,
+      proprietarioId: filters.proprietarioId,
       ...renterPropertyScope(filters.tenantId, filters.renterId),
     }
 
@@ -80,10 +83,15 @@ export class PrismaPropertyRepository implements PropertyRepository {
       .then((properties) => properties.map(mapProperty))
   }
 
-  findByTenantAndId(tenantId: string, id: string, renterId?: string): Promise<Property | null> {
+  findByTenantAndId(
+    tenantId: string,
+    id: string,
+    renterId?: string,
+    proprietarioId?: string,
+  ): Promise<Property | null> {
     return prisma.imovel
       .findFirst({
-        where: { tenantId, id, ...renterPropertyScope(tenantId, renterId) },
+        where: { tenantId, id, proprietarioId, ...renterPropertyScope(tenantId, renterId) },
         include: propertyInclude,
       })
       .then((property) => (property ? mapProperty(property) : null))
@@ -170,6 +178,28 @@ export class PrismaPropertyRepository implements PropertyRepository {
     await prisma.imovel.delete({ where: { id } })
 
     return true
+  }
+
+  async findRenterContractProperty(
+    renterId: string,
+    propertyId: string,
+  ): Promise<RentedProperty | null> {
+    const contract = await prisma.contrato.findFirst({
+      where: {
+        imovelId: propertyId,
+        status: 'ATIVO',
+        partes: {
+          some: {
+            papel: 'LOCATARIO',
+            usuarioId: renterId,
+            usuario: { ativo: true, papel: 'RENTER' },
+          },
+        },
+      },
+      select: { tenantId: true, imovelId: true },
+    })
+
+    return contract ? { propertyId: contract.imovelId, tenantId: contract.tenantId } : null
   }
 
   async findContractProperty(
@@ -288,6 +318,7 @@ function mapProperty(property: PropertyRow): Property {
     id: property.id,
     tenantId: property.tenantId,
     responsavelId: property.responsavelId,
+    proprietarioId: property.proprietarioId,
     titulo: property.titulo,
     descricao: property.descricao,
     finalidade: mapPurpose(property.finalidade),
