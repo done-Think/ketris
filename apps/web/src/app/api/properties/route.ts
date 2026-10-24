@@ -9,32 +9,27 @@ import {
   createPropertyRequestSchema,
   listPropertiesQuerySchema,
 } from '@server/properties/schemas/property-input.schema'
-import { parseJsonBody, RequestValidationError, withErrorHandling } from '@server/shared/http'
+import { parseJsonBody, parseQuery, withErrorHandling } from '@server/shared/http'
 
 export const GET = withErrorHandling(async (request: NextRequest) => {
   const actor = await requireBearerAuth(request, authContainer.tokenService)
-  const parsed = listPropertiesQuerySchema.safeParse(
-    Object.fromEntries(request.nextUrl.searchParams),
-  )
-
-  if (!parsed.success) {
-    throw new RequestValidationError(
-      parsed.error.issues.map((issue) => ({
-        path: issue.path.join('.'),
-        message: issue.message,
-      })),
-    )
-  }
+  const query = parseQuery(request, listPropertiesQuerySchema)
 
   const properties = await propertiesContainer.listPropertiesUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
     actorPapel: actor.papel as Papel,
-    status: parsed.data.status,
-    finalidade: parsed.data.finalidade,
+    locale: query.locale,
+    sortBy: query.sortBy,
+    sortOrder: query.sortOrder,
+    page: query.page,
+    pageSize: query.pageSize,
+    search: query.search,
+    status: query.status,
+    finalidade: query.finalidade,
   })
 
-  return NextResponse.json({ properties }, { status: 200 })
+  return NextResponse.json(properties, { status: 200 })
 })
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
@@ -45,10 +40,12 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     actorTenantId: actor.tenantId,
     actorUserId: actor.sub,
     actorPapel: actor.papel as Papel,
+    proprietarioId: body.proprietarioId,
     titulo: body.titulo,
     descricao: body.descricao ?? null,
     finalidade: body.finalidade,
     tipo: body.tipo,
+    anuncio: body.anuncio,
     quartos: body.quartos ?? null,
     banheiros: body.banheiros ?? null,
     vagas: body.vagas ?? null,

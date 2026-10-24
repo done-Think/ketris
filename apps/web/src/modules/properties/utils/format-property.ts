@@ -1,59 +1,29 @@
-const currencyFormatter = new Intl.NumberFormat('pt-BR', {
-  style: 'currency',
-  currency: 'BRL',
-  maximumFractionDigits: 0,
-})
+import type { PropertyFormatter } from '../types/dashboard-property'
 
-const relativeTimeFormatters = new Map<string, Intl.RelativeTimeFormat>()
-
-function getRelativeTimeFormatter(locale: string): Intl.RelativeTimeFormat {
-  let formatter = relativeTimeFormatters.get(locale)
-
-  if (!formatter) {
-    formatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' })
-    relativeTimeFormatters.set(locale, formatter)
-  }
-
+export function formatPropertyCurrency(value: number, formatter: PropertyFormatter): string {
   return formatter
+    .number(value, {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
+      maximumFractionDigits: 2,
+    })
+    .replace(/\u00a0/g, ' ')
 }
 
-export function formatPropertyCurrency(value: number): string {
-  return currencyFormatter.format(value).replace(/ /g, ' ')
-}
-
-export function formatPropertyArea(value: number | null, fallback = 'Não informado'): string {
-  return value !== null ? `${value}m²` : fallback
+export function formatPropertyArea(
+  value: number | null,
+  fallback: string,
+  formatter: PropertyFormatter,
+): string {
+  return value !== null ? `${formatter.number(value)}m²` : fallback
 }
 
 export function formatPropertyRelativeDate(
   value: string,
-  locale = 'pt-BR',
+  formatter: PropertyFormatter,
   capitalizeFirstLetter = false,
 ): string {
-  const relativeTimeFormatter = getRelativeTimeFormatter(locale)
-  const target = new Date(value)
-  const differenceInSeconds = Math.round((target.getTime() - Date.now()) / 1000)
-  const absoluteSeconds = Math.abs(differenceInSeconds)
-
-  if (absoluteSeconds < 60) {
-    const formatted = relativeTimeFormatter.format(0, 'second')
-
-    return capitalizeFirstLetter
-      ? formatted.charAt(0).toUpperCase() + formatted.slice(1)
-      : formatted
-  }
-
-  const units = [
-    { unit: 'year', seconds: 31_536_000 },
-    { unit: 'month', seconds: 2_592_000 },
-    { unit: 'day', seconds: 86_400 },
-    { unit: 'hour', seconds: 3_600 },
-    { unit: 'minute', seconds: 60 },
-  ] as const
-
-  const selected = units.find(({ seconds }) => absoluteSeconds >= seconds) ?? units.at(-1)!
-  const amount = Math.round(differenceInSeconds / selected.seconds)
-  const formatted = relativeTimeFormatter.format(amount, selected.unit)
-
+  const formatted = formatter.relativeTime(new Date(value), { now: Date.now() })
   return capitalizeFirstLetter ? formatted.charAt(0).toUpperCase() + formatted.slice(1) : formatted
 }

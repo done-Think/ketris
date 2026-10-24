@@ -1,34 +1,24 @@
 import type {
   DashboardProperty,
-  DashboardPropertyFilterKey,
   DashboardPropertyMappingOptions,
-} from '../types/dashboard-property'
-import { translatePropertyType } from '../utils/map-dashboard-property'
-
-export const propertyStatusFilters: Array<{ label: DashboardPropertyFilterKey }> = [
-  { label: 'Todos' },
-  { label: 'Disponível' },
-  { label: 'Alugado' },
-  { label: 'Vendido' },
-  { label: 'Em análise' },
-  { label: 'Inativo' },
-]
+} from '../../types/dashboard-property'
+import { translatePropertyType } from '../../utils/map-dashboard-property'
 
 const apartmentMedia = [
   {
     url: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=900&q=82',
     label: 'Sala integrada',
-    kind: 'Foto',
+    kind: 'photo',
   },
   {
     url: 'https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=900&q=82',
     label: 'Cozinha planejada',
-    kind: 'Foto',
+    kind: 'photo',
   },
   {
     url: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=82',
     label: 'Suíte principal',
-    kind: 'Foto',
+    kind: 'photo',
   },
 ] as const
 
@@ -41,16 +31,24 @@ export const dashboardProperties: DashboardProperty[] = [
     type: 'Apartamento',
     purpose: 'Aluguel',
     price: 'R$ 6.500/mês',
-    status: 'Alugado',
+    status: 'rented',
     responsibleUserId: 'mock-user-id',
     apiStatus: 'RENTED',
+    description: null,
+    listing: {
+      amenities: [],
+      negotiationTerms: null,
+      publishAfterReview: false,
+      allowWhatsappContact: false,
+      featured: false,
+    },
     broker: 'Roberto Souza',
     updatedAt: 'Há 2 horas',
     imageUrl:
       'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=160&q=80',
     heroImageUrl:
       'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1280&q=84',
-    media: [...apartmentMedia, { ...apartmentMedia[0], label: 'Planta baixa', kind: 'Planta' }],
+    media: [...apartmentMedia, { ...apartmentMedia[0], label: 'Planta baixa', kind: 'floorPlan' }],
     summary: {
       bedrooms: '3',
       bathrooms: '2',
@@ -101,9 +99,17 @@ export const dashboardProperties: DashboardProperty[] = [
     type: 'Studio',
     purpose: 'Aluguel',
     price: 'R$ 3.200/mês',
-    status: 'Alugado',
+    status: 'rented',
     responsibleUserId: 'mock-user-id',
     apiStatus: 'RENTED',
+    description: null,
+    listing: {
+      amenities: [],
+      negotiationTerms: null,
+      publishAfterReview: false,
+      allowWhatsappContact: false,
+      featured: false,
+    },
     broker: 'Ana Paula',
     updatedAt: 'Há 1 dia',
     imageUrl:
@@ -114,14 +120,14 @@ export const dashboardProperties: DashboardProperty[] = [
       {
         url: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=82',
         label: 'Ambiente principal',
-        kind: 'Foto',
+        kind: 'photo',
       },
       {
         url: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=82',
         label: 'Quarto mobiliado',
-        kind: 'Foto',
+        kind: 'photo',
       },
-      { ...apartmentMedia[1], label: 'Tour em vídeo', kind: 'Vídeo' },
+      { ...apartmentMedia[1], label: 'Tour em vídeo', kind: 'video' },
     ],
     summary: {
       bedrooms: '1',
@@ -158,9 +164,17 @@ export const dashboardProperties: DashboardProperty[] = [
     type: 'Cobertura',
     purpose: 'Venda',
     price: 'R$ 4.500.000',
-    status: 'Ativo',
+    status: 'active',
     responsibleUserId: 'mock-user-id',
     apiStatus: 'SOLD',
+    description: null,
+    listing: {
+      amenities: [],
+      negotiationTerms: null,
+      publishAfterReview: false,
+      allowWhatsappContact: false,
+      featured: false,
+    },
     broker: 'Roberto Souza',
     updatedAt: 'Há 3 dias',
     imageUrl:
@@ -171,14 +185,14 @@ export const dashboardProperties: DashboardProperty[] = [
       {
         url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=82',
         label: 'Living social',
-        kind: 'Foto',
+        kind: 'photo',
       },
       {
         url: 'https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=900&q=82',
         label: 'Área gourmet',
-        kind: 'Foto',
+        kind: 'photo',
       },
-      { ...apartmentMedia[2], label: 'Planta duplex', kind: 'Planta' },
+      { ...apartmentMedia[2], label: 'Planta duplex', kind: 'floorPlan' },
     ],
     summary: {
       bedrooms: '4',
@@ -215,9 +229,17 @@ export const dashboardProperties: DashboardProperty[] = [
     type: 'Casa',
     purpose: 'Venda',
     price: 'R$ 3.800.000',
-    status: 'Em análise',
+    status: 'inReview',
     responsibleUserId: 'mock-user-id',
     apiStatus: 'DRAFT',
+    description: null,
+    listing: {
+      amenities: [],
+      negotiationTerms: null,
+      publishAfterReview: false,
+      allowWhatsappContact: false,
+      featured: false,
+    },
     broker: 'Marcos Lima',
     updatedAt: 'Há 5 dias',
     imageUrl:
@@ -228,14 +250,14 @@ export const dashboardProperties: DashboardProperty[] = [
       {
         url: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=82',
         label: 'Fachada e jardim',
-        kind: 'Foto',
+        kind: 'photo',
       },
       {
         url: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=82',
         label: 'Área externa',
-        kind: 'Foto',
+        kind: 'photo',
       },
-      { ...apartmentMedia[0], label: 'Planta térrea', kind: 'Planta' },
+      { ...apartmentMedia[0], label: 'Planta térrea', kind: 'floorPlan' },
     ],
     summary: {
       bedrooms: '4',
@@ -271,9 +293,17 @@ export const dashboardProperties: DashboardProperty[] = [
     type: 'Studio',
     purpose: 'Aluguel',
     price: 'R$ 2.400/mês',
-    status: 'Vencendo',
+    status: 'expiring',
     responsibleUserId: 'mock-user-id',
     apiStatus: 'PUBLISHED',
+    description: null,
+    listing: {
+      amenities: [],
+      negotiationTerms: null,
+      publishAfterReview: false,
+      allowWhatsappContact: false,
+      featured: false,
+    },
     broker: 'Ana Paula',
     updatedAt: 'Há 1 semana',
     imageUrl:
@@ -284,14 +314,14 @@ export const dashboardProperties: DashboardProperty[] = [
       {
         url: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=82',
         label: 'Dormitório',
-        kind: 'Foto',
+        kind: 'photo',
       },
       {
         url: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=82',
         label: 'Studio integrado',
-        kind: 'Foto',
+        kind: 'photo',
       },
-      { ...apartmentMedia[1], label: 'Vídeo de apresentação', kind: 'Vídeo' },
+      { ...apartmentMedia[1], label: 'Vídeo de apresentação', kind: 'video' },
     ],
     summary: {
       bedrooms: '1',
@@ -327,9 +357,17 @@ export const dashboardProperties: DashboardProperty[] = [
     type: 'Apartamento',
     purpose: 'Aluguel',
     price: 'R$ 4.800/mês',
-    status: 'Inativo',
+    status: 'inactive',
     responsibleUserId: 'mock-user-id',
     apiStatus: 'INACTIVE',
+    description: null,
+    listing: {
+      amenities: [],
+      negotiationTerms: null,
+      publishAfterReview: false,
+      allowWhatsappContact: false,
+      featured: false,
+    },
     broker: 'Clara G.',
     updatedAt: 'Há 2 semanas',
     imageUrl:
@@ -340,14 +378,14 @@ export const dashboardProperties: DashboardProperty[] = [
       {
         url: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=900&q=82',
         label: 'Sala principal',
-        kind: 'Foto',
+        kind: 'photo',
       },
       {
         url: 'https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?auto=format&fit=crop&w=900&q=82',
         label: 'Cozinha e jantar',
-        kind: 'Foto',
+        kind: 'photo',
       },
-      { ...apartmentMedia[2], label: 'Fotos arquivadas', kind: 'Foto' },
+      { ...apartmentMedia[2], label: 'Fotos arquivadas', kind: 'photo' },
     ],
     summary: {
       bedrooms: '2',

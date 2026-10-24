@@ -65,7 +65,7 @@ describe('Renter property access (database integration)', () => {
               responsavelId: agentId,
               titulo: 'Linked apartment',
               finalidade: 'ALUGUEL',
-              tipo: 'apartamento',
+              tipo: 'APARTAMENTO',
               valor: 1000,
               status: 'DRAFT',
               quartos: 2,
@@ -153,7 +153,7 @@ describe('Renter property access (database integration)', () => {
         responsavelId: agent.id,
         titulo: 'No contract',
         finalidade: 'ALUGUEL',
-        tipo: 'casa',
+        tipo: 'CASA',
         valor: 1000,
       },
     })
@@ -182,9 +182,18 @@ describe('Renter property access (database integration)', () => {
     const response = await GET(request())
     expect(response.status).toBe(200)
     const body = await response.json()
+    expect(
+      body.properties.every(
+        (property: { activeContractId: string | null }) => property.activeContractId === null,
+      ),
+    ).toBe(true)
     expect(body.properties.map((property: { id: string }) => property.id).sort()).toEqual(
       [...ownPropertyIds].sort(),
     )
+    const sorted = await GET(request('?sortBy=status&locale=en-US'))
+    expect(
+      (await sorted.json()).properties.map((property: { id: string }) => property.id).sort(),
+    ).toEqual([...ownPropertyIds].sort())
     const drafts = await GET(request('?status=DRAFT&finalidade=ALUGUEL'))
     expect((await drafts.json()).properties.map((property: { id: string }) => property.id)).toEqual(
       [ownPropertyIds[0]],
@@ -199,6 +208,7 @@ describe('Renter property access (database integration)', () => {
       expect(body.property.endereco.logradouro).toBe('Test Street')
       expect(body.property.caracteristicas.quartos).toBe(2)
       expect(body.property.midias[0].url).toBe('https://example.test/property.png')
+      expect(body.property.activeContractId).toBeNull()
     }
     for (const id of [...hiddenPropertyIds, 'missing']) {
       expect((await getProperty(request(`/${id}`), context(id))).status).toBe(404)
@@ -207,7 +217,7 @@ describe('Renter property access (database integration)', () => {
 
   it('rejects every renter mutation even on an accessible property', async () => {
     const id = ownPropertyIds[0]
-    const payload = { titulo: 'Denied', finalidade: 'ALUGUEL', tipo: 'apartamento', valor: 2000 }
+    const payload = { titulo: 'Denied', finalidade: 'ALUGUEL', tipo: 'APARTAMENTO', valor: 2000 }
     expect((await POST(request('', 'POST', payload))).status).toBe(403)
     expect(
       (await PATCH(request(`/${id}`, 'PATCH', { titulo: 'Denied' }), context(id))).status,

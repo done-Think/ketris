@@ -2,6 +2,7 @@ import type {
   ActiveContractProperty,
   NewProperty,
   Property,
+  PropertyPage,
   PropertyChanges,
   PropertyListFilters,
   PropertyStatus,
@@ -10,7 +11,7 @@ import type {
 
 export interface PropertyRepository {
   create(property: NewProperty): Promise<Property>
-  list(filters: PropertyListFilters): Promise<Property[]>
+  listPage(filters: PropertyListFilters): Promise<PropertyPage>
   findByTenantAndId(
     tenantId: string,
     id: string,
@@ -26,6 +27,4 @@ export interface PropertyRepository {
   ): Promise<Property | null>
   findContractProperty(tenantId: string, contractId: string): Promise<ActiveContractProperty | null>
   findRenterContractProperty(renterId: string, propertyId: string): Promise<RentedProperty | null>
-  hasLinkedRecords(tenantId: string, id: string): Promise<boolean>
-  delete(tenantId: string, id: string): Promise<boolean>
 }

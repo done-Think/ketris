@@ -325,6 +325,10 @@ export const profileThemeColors = {
 } as const
 
 export const alpha = {
+  black: {
+    60: 'rgba(0,0,0,0.6)',
+    80: 'rgba(0,0,0,0.8)',
+  },
   white: {
     8: 'rgba(255,255,255,0.08)',
     50: 'rgba(255,255,255,0.5)',

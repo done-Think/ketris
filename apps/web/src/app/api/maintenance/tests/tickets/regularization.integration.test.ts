@@ -127,7 +127,7 @@ describe('/api/maintenance regularization (database integration)', () => {
         responsavelId: env.fixture.agent.id,
         titulo: 'Another property',
         finalidade: 'ALUGUEL',
-        tipo: 'apartamento',
+        tipo: 'APARTAMENTO',
         valor: 2500,
       },
     })

@@ -9,10 +9,20 @@ const apiProperty = {
   id: 'property-1',
   tenantId: 'tenant-1',
   responsavelId: 'user-1',
+  proprietarioId: null,
+  responsavelNome: 'Corretor responsável',
+  activeContractId: null,
+  anuncio: {
+    comodidades: [],
+    condicoesNegociacao: null,
+    publicarAposRevisao: false,
+    permiteContatoWhatsapp: false,
+    destaque: false,
+  },
   titulo: 'Apartamento Jardins',
   descricao: 'Pronto para morar',
   finalidade: 'ALUGUEL' as const,
-  tipo: 'apartamento',
+  tipo: 'APARTAMENTO',
   status: 'PUBLISHED' as const,
   publicadoEm: '2026-09-01T10:00:00.000Z',
   createdAt: '2026-08-01T10:00:00.000Z',
@@ -45,10 +55,20 @@ const mappedProperty: Property = {
   id: 'property-1',
   tenantId: 'tenant-1',
   responsibleUserId: 'user-1',
+  ownerUserId: null,
+  responsibleName: 'Corretor responsável',
+  activeContractId: null,
+  listing: {
+    amenities: [],
+    negotiationTerms: null,
+    publishAfterReview: false,
+    allowWhatsappContact: false,
+    featured: false,
+  },
   title: 'Apartamento Jardins',
   description: 'Pronto para morar',
   purpose: 'RENT',
-  type: 'apartamento',
+  type: 'apartment',
   status: 'PUBLISHED',
   publishedAt: '2026-09-01T10:00:00.000Z',
   createdAt: '2026-08-01T10:00:00.000Z',
@@ -92,19 +112,27 @@ describe('PropertiesService', () => {
   })
 
   it('lists properties, unwraps the response and translates fields to English', async () => {
-    http.get.mockResolvedValueOnce({ properties: [apiProperty] })
+    http.get.mockResolvedValueOnce({
+      properties: [apiProperty],
+      pagination: { page: 1, pageSize: 100, total: 1, totalPages: 1 },
+      counts: {},
+    })
 
     await expect(service.list()).resolves.toEqual([mappedProperty])
-    expect(http.get).toHaveBeenCalledWith('/properties', { params: {} })
+    expect(http.get).toHaveBeenCalledWith('/properties', { params: { page: 1, pageSize: 100 } })
   })
 
   it('lists properties with status/purpose filters translated to the API shape', async () => {
-    http.get.mockResolvedValueOnce({ properties: [] })
+    http.get.mockResolvedValueOnce({
+      properties: [],
+      pagination: { page: 1, pageSize: 100, total: 0, totalPages: 0 },
+      counts: {},
+    })
 
     await service.list({ status: 'PUBLISHED', purpose: 'SALE' })
 
     expect(http.get).toHaveBeenCalledWith('/properties', {
-      params: { status: 'PUBLISHED', finalidade: 'VENDA' },
+      params: { page: 1, pageSize: 100, status: 'PUBLISHED', finalidade: 'VENDA' },
     })
   })
 
@@ -122,7 +150,7 @@ describe('PropertiesService', () => {
       title: 'Apartamento Jardins',
       description: 'Pronto para morar',
       purpose: 'RENT',
-      type: 'apartamento',
+      type: 'apartment',
       bedrooms: 3,
       bathrooms: 2,
       parkingSpots: 2,
@@ -138,7 +166,7 @@ describe('PropertiesService', () => {
       titulo: 'Apartamento Jardins',
       descricao: 'Pronto para morar',
       finalidade: 'ALUGUEL',
-      tipo: 'apartamento',
+      tipo: 'APARTAMENTO',
       quartos: 3,
       banheiros: 2,
       vagas: 2,
@@ -178,5 +206,56 @@ describe('PropertiesService', () => {
 
     await expect(service.remove('property-1')).resolves.toBeUndefined()
     expect(http.delete).toHaveBeenCalledWith('/properties/property-1')
+  })
+  it('maps stable English identifiers to API enums and restores them on the response', async () => {
+    const anuncio = {
+      comodidades: ['MOBILIADO', 'ACEITA_PETS'],
+      condicoesNegociacao: 'Caução',
+      publicarAposRevisao: true,
+      permiteContatoWhatsapp: false,
+      destaque: true,
+    }
+    const listing: Property['listing'] = {
+      amenities: ['furnished', 'petFriendly'],
+      negotiationTerms: 'Caução',
+      publishAfterReview: true,
+      allowWhatsappContact: false,
+      featured: true,
+    }
+    http.post.mockResolvedValueOnce({ property: { ...apiProperty, tipo: 'OUTRO', anuncio } })
+    const result = await service.create({
+      title: 'Imóvel',
+      purpose: 'SALE',
+      type: 'other',
+      price: 500000,
+      listing,
+    })
+    expect(http.post).toHaveBeenCalledWith(
+      '/properties',
+      expect.objectContaining({ tipo: 'OUTRO', finalidade: 'VENDA', anuncio }),
+    )
+    expect(result.type).toBe('other')
+    expect(result.listing).toEqual(listing)
+  })
+  it('retrieves all pages for consumers that still need the full authorized collection', async () => {
+    const properties = Array.from({ length: 101 }, (_, index) => ({
+      ...apiProperty,
+      id: `property-${index}`,
+    }))
+    http.get
+      .mockResolvedValueOnce({
+        properties: properties.slice(0, 100),
+        pagination: { page: 1, pageSize: 100, total: 101, totalPages: 2 },
+        counts: {},
+      })
+      .mockResolvedValueOnce({
+        properties: properties.slice(100),
+        pagination: { page: 2, pageSize: 100, total: 101, totalPages: 2 },
+        counts: {},
+      })
+    const result = await service.list()
+    expect(result).toHaveLength(101)
+    expect(new Set(result.map((property) => property.id)).size).toBe(101)
+    expect(http.get).toHaveBeenLastCalledWith('/properties', { params: { page: 2, pageSize: 100 } })
   })
 })

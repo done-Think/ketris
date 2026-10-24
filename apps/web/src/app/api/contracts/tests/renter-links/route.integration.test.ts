@@ -74,7 +74,7 @@ async function agency(renterEmail: string) {
       responsavelId: agent.id,
       titulo: 'Property',
       finalidade: 'ALUGUEL',
-      tipo: 'apartamento',
+      tipo: 'APARTAMENTO',
       valor: 1000,
     },
   })

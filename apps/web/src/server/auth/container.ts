@@ -1,3 +1,5 @@
+import { UploadAvatarUseCase } from './application/use-cases/upload-avatar.use-case'
+import { S3AvatarStorage } from './infrastructure/s3-avatar-storage'
 import { ApproveUserMembershipUseCase } from './application/use-cases/approve-user-membership.use-case'
 import { ChangeOwnPasswordUseCase } from './application/use-cases/change-own-password.use-case'
 import { CreateUserUseCase } from './application/use-cases/create-user.use-case'
@@ -28,6 +30,7 @@ const passwordResetTokenService = new JosePasswordResetTokenService()
 const mailer = new SesMailer()
 
 export const authContainer = {
+  uploadAvatarUseCase: new UploadAvatarUseCase(userRepository, new S3AvatarStorage()),
   tokenService,
   userRepository,
   loginUseCase: new LoginUseCase(

@@ -1,32 +1,9 @@
-import { alpha, brand } from '@shared/theme/tokens'
-
 import type {
   CreatePropertyStepKey,
-  DashboardActivityTone,
+  CreateDashboardPropertyFormValues,
   DashboardPropertyDetailTab,
-  DashboardPropertyStatus,
+  DashboardPropertyFilterKey,
 } from '../types/dashboard-property'
-
-export const dashboardPropertyStatusStyles: Record<
-  DashboardPropertyStatus,
-  { color: string; bgcolor: string }
-> = {
-  Disponível: { color: brand.semantic.success, bgcolor: alpha.graphite[6] },
-  Alugado: { color: brand.semantic.info, bgcolor: alpha.graphite[6] },
-  Ativo: { color: brand.semantic.success, bgcolor: alpha.graphite[6] },
-  'Em análise': { color: brand.semantic.warning, bgcolor: alpha.graphite[6] },
-  Vencendo: { color: brand.semantic.warning, bgcolor: alpha.graphite[6] },
-  Inativo: { color: brand.semantic.error, bgcolor: alpha.error[10] },
-}
-
-export const dashboardPropertyActivityToneStyles: Record<DashboardActivityTone, string> = {
-  success: brand.semantic.success,
-  accent: brand.magenta[500],
-  info: brand.semantic.info,
-  warning: brand.semantic.warning,
-  neutral: brand.neutral[500],
-  error: brand.semantic.error,
-}
 
 export const dashboardPropertyTabs: DashboardPropertyDetailTab[] = [
   'data',
@@ -44,19 +21,58 @@ export const createPropertySteps: Array<{ key: CreatePropertyStepKey }> = [
   { key: 'publishing' },
 ]
 
-export const createPropertyTypeOptions = ['Apartamento', 'Casa', 'Studio', 'Cobertura', 'Comercial']
+export const createPropertyTypeOptions = [
+  'apartment',
+  'house',
+  'studio',
+  'penthouse',
+  'commercial',
+  'loft',
+  'other',
+] as const
 
-export const createPropertyPurposeOptions = ['Aluguel', 'Venda'] as const
+export const createPropertyPurposeOptions = ['RENT', 'SALE'] as const
 
 export const createPropertyFeatureOptions = [
-  'Mobiliado',
-  'Varanda gourmet',
-  'Aceita pets',
-  'Portaria 24h',
-]
+  'furnished',
+  'gourmetBalcony',
+  'petFriendly',
+  'concierge24h',
+] as const
 
 export const createPropertyPublishingOptions = [
-  'Publicar no marketplace após revisão',
-  'Permitir contato por WhatsApp',
-  'Destacar imóvel na listagem inicial',
+  'publishAfterReview',
+  'allowWhatsappContact',
+  'featured',
+] as const
+
+export const propertyStatusFilters: Array<{ label: DashboardPropertyFilterKey }> = [
+  { label: 'all' },
+  { label: 'available' },
+  { label: 'rented' },
+  { label: 'sold' },
+  { label: 'inReview' },
+  { label: 'inactive' },
 ]
+
+export const propertyFormStepFields: Record<
+  CreatePropertyStepKey,
+  Array<keyof CreateDashboardPropertyFormValues>
+> = {
+  basic: ['type', 'purpose', 'title', 'description', 'ownerUserId'],
+  address: [
+    'street',
+    'number',
+    'complement',
+    'neighborhood',
+    'city',
+    'state',
+    'zipCode',
+    'latitude',
+    'longitude',
+  ],
+  features: ['bedrooms', 'bathrooms', 'parkingSpaces', 'area', 'features'],
+  media: ['media'],
+  values: ['mainValue', 'rentalValue', 'condominium', 'iptu', 'negotiationTerm'],
+  publishing: ['publishingOptions'],
+}

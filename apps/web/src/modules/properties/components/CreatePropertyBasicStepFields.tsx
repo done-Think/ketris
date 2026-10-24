@@ -1,3 +1,5 @@
+import { PropertyOwnerSelect } from './PropertyOwnerSelect'
+import { styles, getPurposeOptionStyles } from '../styles/create-property-basic-step-fields.styles'
 import { Controller } from 'react-hook-form'
 import {
   Box,
@@ -13,8 +15,6 @@ import {
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
 import { useTranslations } from 'next-intl'
 
-import { brand, iconSize, motion, radius, surface } from '@shared/theme/tokens'
-
 import {
   createPropertyPurposeOptions,
   createPropertyTypeOptions,
@@ -26,32 +26,14 @@ export function CreatePropertyBasicStepFields({ control }: CreatePropertyBasicSt
 
   return (
     <>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) minmax(0, 1fr)' },
-          gap: { xs: 2, md: 2.4 },
-          mb: 2.4,
-        }}
-      >
+      <Box sx={styles.box}>
         <FormControl fullWidth>
-          <Typography sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 800, mb: 0.8 }}>
-            {t('fields.propertyType')}
-          </Typography>
+          <Typography sx={styles.typography}>{t('fields.propertyType')}</Typography>
           <Controller
             control={control}
             name="type"
             render={({ field }) => (
-              <Select
-                {...field}
-                IconComponent={KeyboardArrowDownRoundedIcon}
-                sx={{
-                  height: 44,
-                  borderRadius: `${radius.sm}px`,
-                  bgcolor: surface.paper,
-                  fontSize: 14,
-                }}
-              >
+              <Select {...field} IconComponent={KeyboardArrowDownRoundedIcon} sx={styles.select}>
                 {createPropertyTypeOptions.map((type) => (
                   <MenuItem key={type} value={type}>
                     {t(`propertyTypes.${type}`)}
@@ -63,23 +45,13 @@ export function CreatePropertyBasicStepFields({ control }: CreatePropertyBasicSt
         </FormControl>
 
         <Box>
-          <Box sx={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
-            <Typography sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 800, mb: 0.8 }}>
-              {t('fields.purpose')}
-            </Typography>
+          <Box sx={styles.box2}>
+            <Typography sx={styles.typography2}>{t('fields.purpose')}</Typography>
             <Controller
               control={control}
               name="purpose"
               render={({ field }) => (
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    columnGap: '10px',
-                    rowGap: 0.8,
-                  }}
-                >
+                <Box sx={styles.box3}>
                   {createPropertyPurposeOptions.map((purpose) => {
                     const active = field.value.includes(purpose)
 
@@ -100,29 +72,7 @@ export function CreatePropertyBasicStepFields({ control }: CreatePropertyBasicSt
                           />
                         }
                         label={t(`purposes.${purpose}`)}
-                        sx={{
-                          minHeight: 44,
-                          color: active ? 'primary.main' : 'text.secondary',
-                          mx: 0,
-                          px: 0,
-                          transition: motion.transition.interactive,
-                          '& .MuiCheckbox-root': {
-                            color: active ? 'primary.main' : brand.neutral[400],
-                            p: 0.6,
-                            mr: 0.6,
-                            '& .MuiSvgIcon-root': {
-                              fontSize: iconSize.md,
-                            },
-                          },
-                          '& .MuiFormControlLabel-label': {
-                            fontSize: 14,
-                            fontWeight: 900,
-                            transform: 'translateY(1px)',
-                          },
-                          '&:hover': {
-                            color: 'primary.main',
-                          },
-                        }}
+                        sx={getPurposeOptionStyles(active)}
                       />
                     )
                   })}
@@ -134,6 +84,7 @@ export function CreatePropertyBasicStepFields({ control }: CreatePropertyBasicSt
       </Box>
 
       <Stack spacing={2.2}>
+        <PropertyOwnerSelect control={control} />
         <Controller
           control={control}
           name="title"

@@ -1,3 +1,5 @@
+import { matchingPropertyTypes } from '../domain/property-search'
+import { findPropertyIdsInDisplayOrder } from './property-display-order'
 import type { Endereco, FinalidadeImovel, Prisma, StatusImovel } from '@prisma/client'
 
 import { prisma } from '@server/db/prisma'
@@ -7,6 +9,7 @@ import type {
   ActiveContractProperty,
   NewProperty,
   Property,
+  PropertyPage,
   PropertyAddress,
   PropertyChanges,
   PropertyListFilters,
@@ -17,6 +20,13 @@ import type {
 import type { PropertyRow, PropertyTransaction } from '../types/prisma-property-repository'
 
 const propertyInclude = {
+  responsavel: { select: { nome: true } },
+  contratos: {
+    where: { status: 'ATIVO' as const },
+    select: { id: true },
+    take: 1,
+    orderBy: { updatedAt: 'desc' as const },
+  },
   endereco: true,
   midias: { orderBy: { ordem: 'asc' as const } },
 }
@@ -35,6 +45,47 @@ function renterPropertyScope(tenantId: string, renterId?: string): Prisma.Imovel
       }
 }
 
+function propertySearchWhere(search?: string): Prisma.ImovelWhereInput {
+  if (!search) return {}
+  const matchingTypes = matchingPropertyTypes(search)
+  const parts = search.split(',').map((part) => part.trim())
+  return {
+    OR: [
+      { titulo: { contains: search, mode: 'insensitive' } },
+      { tipo: { in: matchingTypes } },
+      {
+        endereco: {
+          is: {
+            OR: [
+              { logradouro: { contains: search, mode: 'insensitive' } },
+              { numero: { contains: search } },
+              { bairro: { contains: search, mode: 'insensitive' } },
+              { cidade: { contains: search, mode: 'insensitive' } },
+              ...(parts.length === 2
+                ? [
+                    {
+                      AND: [
+                        { logradouro: { contains: parts[0], mode: 'insensitive' as const } },
+                        { numero: { contains: parts[1] } },
+                      ],
+                    },
+                    {
+                      AND: [
+                        { bairro: { contains: parts[0], mode: 'insensitive' as const } },
+                        { cidade: { contains: parts[1], mode: 'insensitive' as const } },
+                      ],
+                    },
+                  ]
+                : []),
+            ],
+          },
+        },
+      },
+      { responsavel: { nome: { contains: search, mode: 'insensitive' } } },
+    ],
+  }
+}
+
 export class PrismaPropertyRepository implements PropertyRepository {
   create(property: NewProperty): Promise<Property> {
     return prisma.imovel
@@ -47,6 +98,11 @@ export class PrismaPropertyRepository implements PropertyRepository {
           descricao: property.descricao ?? null,
           finalidade: property.finalidade,
           tipo: property.tipo,
+          comodidades: property.anuncio?.comodidades ?? [],
+          condicoesNegociacao: property.anuncio?.condicoesNegociacao ?? null,
+          publicarAposRevisao: property.anuncio?.publicarAposRevisao ?? false,
+          permiteContatoWhatsapp: property.anuncio?.permiteContatoWhatsapp ?? false,
+          destaque: property.anuncio?.destaque ?? false,
           quartos: property.quartos ?? null,
           banheiros: property.banheiros ?? null,
           vagas: property.vagas ?? null,
@@ -64,23 +120,78 @@ export class PrismaPropertyRepository implements PropertyRepository {
       .then(mapProperty)
   }
 
-  list(filters: PropertyListFilters): Promise<Property[]> {
-    const where: Prisma.ImovelWhereInput = {
+  listPage(filters: PropertyListFilters): Promise<PropertyPage> {
+    const scope: Prisma.ImovelWhereInput = {
       tenantId: filters.tenantId,
-      status: filters.status,
       finalidade: filters.finalidade,
       responsavelId: filters.responsavelId,
       proprietarioId: filters.proprietarioId,
       ...renterPropertyScope(filters.tenantId, filters.renterId),
     }
-
-    return prisma.imovel
-      .findMany({
-        where,
-        include: propertyInclude,
-        orderBy: { updatedAt: 'desc' },
-      })
-      .then((properties) => properties.map(mapProperty))
+    const where: Prisma.ImovelWhereInput = {
+      ...scope,
+      status: filters.status,
+      ...propertySearchWhere(filters.search),
+    }
+    const page = filters.page ?? 1
+    const pageSize = filters.pageSize ?? 25
+    return prisma.$transaction(
+      async (transaction) => {
+        const direction = filters.sortOrder ?? 'desc'
+        const sortBy = filters.sortBy ?? 'updatedAt'
+        const orderBy: Prisma.ImovelOrderByWithRelationInput =
+          sortBy === 'title'
+            ? { titulo: direction }
+            : sortBy === 'type'
+              ? { tipo: direction }
+              : sortBy === 'status'
+                ? { status: direction }
+                : sortBy === 'broker'
+                  ? { responsavel: { nome: direction } }
+                  : { updatedAt: direction }
+        const customSort = ['saleValue', 'rentalValue', 'type', 'status'].includes(sortBy)
+        const orderedIds = customSort
+          ? await findPropertyIdsInDisplayOrder(transaction, filters)
+          : null
+        const records = await transaction.imovel.findMany({
+          where: orderedIds ? { ...where, id: { in: orderedIds } } : where,
+          include: propertyInclude,
+          ...(orderedIds
+            ? {}
+            : {
+                orderBy: [orderBy, { id: 'asc' as const }],
+                skip: (page - 1) * pageSize,
+                take: pageSize,
+              }),
+        })
+        if (orderedIds) {
+          const position = new Map(orderedIds.map((id, index) => [id, index]))
+          records.sort(
+            (left, right) => (position.get(left.id) ?? 0) - (position.get(right.id) ?? 0),
+          )
+        }
+        const total = await transaction.imovel.count({ where })
+        const grouped = await transaction.imovel.groupBy({
+          by: ['status'],
+          where: scope,
+          _count: { _all: true },
+        })
+        const counts: PropertyPage['counts'] = {
+          DRAFT: 0,
+          PUBLISHED: 0,
+          RENTED: 0,
+          SOLD: 0,
+          INACTIVE: 0,
+        }
+        for (const group of grouped) counts[group.status] = group._count._all
+        return {
+          properties: records.map(mapProperty),
+          pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) },
+          counts,
+        }
+      },
+      { isolationLevel: 'RepeatableRead' },
+    )
   }
 
   findByTenantAndId(
@@ -109,7 +220,7 @@ export class PrismaPropertyRepository implements PropertyRepository {
       }
 
       await transaction.imovel.update({
-        where: { id },
+        where: { id, tenantId },
         data: toPropertyUpdateData(changes),
       })
 
@@ -147,37 +258,13 @@ export class PrismaPropertyRepository implements PropertyRepository {
       }
 
       const property = await transaction.imovel.update({
-        where: { id },
+        where: { id, tenantId },
         data: { status, publicadoEm: publishedAt },
         include: propertyInclude,
       })
 
       return mapProperty(property)
     })
-  }
-
-  async hasLinkedRecords(tenantId: string, id: string): Promise<boolean> {
-    const [oportunidadesCount, contratosCount] = await Promise.all([
-      prisma.oportunidade.count({ where: { tenantId, imovelId: id } }),
-      prisma.contrato.count({ where: { tenantId, imovelId: id } }),
-    ])
-
-    return oportunidadesCount > 0 || contratosCount > 0
-  }
-
-  async delete(tenantId: string, id: string): Promise<boolean> {
-    const existingProperty = await prisma.imovel.findFirst({
-      where: { tenantId, id },
-      select: { id: true },
-    })
-
-    if (!existingProperty) {
-      return false
-    }
-
-    await prisma.imovel.delete({ where: { id } })
-
-    return true
   }
 
   async findRenterContractProperty(
@@ -235,10 +322,21 @@ export class PrismaPropertyRepository implements PropertyRepository {
 
 function toPropertyUpdateData(changes: PropertyChanges): Prisma.ImovelUpdateInput {
   return {
+    proprietario:
+      changes.proprietarioId === undefined
+        ? undefined
+        : changes.proprietarioId === null
+          ? { disconnect: true }
+          : { connect: { id: changes.proprietarioId } },
     titulo: changes.titulo,
     descricao: changes.descricao,
     finalidade: changes.finalidade,
     tipo: changes.tipo,
+    comodidades: changes.anuncio?.comodidades,
+    condicoesNegociacao: changes.anuncio?.condicoesNegociacao,
+    publicarAposRevisao: changes.anuncio?.publicarAposRevisao,
+    permiteContatoWhatsapp: changes.anuncio?.permiteContatoWhatsapp,
+    destaque: changes.anuncio?.destaque,
     quartos: changes.quartos,
     banheiros: changes.banheiros,
     vagas: changes.vagas,
@@ -297,20 +395,29 @@ async function replaceMedia(
   imovelId: string,
   midias: PropertyMediaInput[],
 ) {
-  await transaction.midia.deleteMany({ where: { imovelId } })
+  const existing = await transaction.midia.findMany({ where: { imovelId } })
+  const retainedIds = new Set<string>()
+  const additions: Prisma.MidiaCreateManyInput[] = []
 
-  if (midias.length === 0) {
-    return
+  for (const [index, media] of midias.entries()) {
+    const retained = existing.find((item) => item.url === media.url && !retainedIds.has(item.id))
+    const tipo = media.tipo ?? 'foto'
+    const ordem = media.ordem ?? index
+    if (retained) {
+      retainedIds.add(retained.id)
+      if (retained.tipo !== tipo || retained.ordem !== ordem) {
+        await transaction.midia.update({
+          where: { id: retained.id, imovelId },
+          data: { tipo, ordem },
+        })
+      }
+    } else {
+      additions.push({ imovelId, url: media.url, tipo, ordem })
+    }
   }
 
-  await transaction.midia.createMany({
-    data: midias.map((media, index) => ({
-      imovelId,
-      url: media.url,
-      tipo: media.tipo ?? 'foto',
-      ordem: media.ordem ?? index,
-    })),
-  })
+  await transaction.midia.deleteMany({ where: { imovelId, id: { notIn: [...retainedIds] } } })
+  if (additions.length > 0) await transaction.midia.createMany({ data: additions })
 }
 
 function mapProperty(property: PropertyRow): Property {
@@ -318,11 +425,20 @@ function mapProperty(property: PropertyRow): Property {
     id: property.id,
     tenantId: property.tenantId,
     responsavelId: property.responsavelId,
+    responsavelNome: property.responsavel.nome,
+    activeContractId: property.contratos[0]?.id ?? null,
     proprietarioId: property.proprietarioId,
     titulo: property.titulo,
     descricao: property.descricao,
     finalidade: mapPurpose(property.finalidade),
     tipo: property.tipo,
+    anuncio: {
+      comodidades: property.comodidades,
+      condicoesNegociacao: property.condicoesNegociacao,
+      publicarAposRevisao: property.publicarAposRevisao,
+      permiteContatoWhatsapp: property.permiteContatoWhatsapp,
+      destaque: property.destaque,
+    },
     status: mapStatus(property.status),
     publicadoEm: property.publicadoEm,
     createdAt: property.createdAt,

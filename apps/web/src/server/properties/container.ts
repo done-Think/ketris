@@ -1,3 +1,5 @@
+import { PrismaPropertyOwnerDirectory } from './infrastructure/prisma-property-owner-directory'
+import { ListPropertyOwnersUseCase } from './application/use-cases/list-property-owners.use-case'
 import { CreatePropertyUseCase } from './application/use-cases/create-property.use-case'
 import { DeletePropertyUseCase } from './application/use-cases/delete-property.use-case'
 import { GetPropertyUseCase } from './application/use-cases/get-property.use-case'
@@ -11,13 +13,15 @@ import { PrismaPropertyRepository } from './infrastructure/prisma-property.repos
 import { S3PropertyMediaStorage } from './infrastructure/s3-property-media-storage'
 
 const propertyRepository = new PrismaPropertyRepository()
+const propertyOwnerDirectory = new PrismaPropertyOwnerDirectory()
 const propertyMediaStorage = new S3PropertyMediaStorage()
 
 export const propertiesContainer = {
-  createPropertyUseCase: new CreatePropertyUseCase(propertyRepository),
+  listPropertyOwnersUseCase: new ListPropertyOwnersUseCase(propertyOwnerDirectory),
+  createPropertyUseCase: new CreatePropertyUseCase(propertyRepository, propertyOwnerDirectory),
   listPropertiesUseCase: new ListPropertiesUseCase(propertyRepository),
   getPropertyUseCase: new GetPropertyUseCase(propertyRepository),
-  updatePropertyUseCase: new UpdatePropertyUseCase(propertyRepository),
+  updatePropertyUseCase: new UpdatePropertyUseCase(propertyRepository, propertyOwnerDirectory),
   deletePropertyUseCase: new DeletePropertyUseCase(propertyRepository),
   publishPropertyUseCase: new PublishPropertyUseCase(propertyRepository),
   unpublishPropertyUseCase: new UnpublishPropertyUseCase(propertyRepository),

@@ -79,3 +79,12 @@ export class InvalidCurrentPasswordError extends AppError {
     super('A senha atual está incorreta.', { status: 400, code: 'INVALID_CURRENT_PASSWORD' })
   }
 }
+
+export class AvatarValidationError extends AppError {
+  constructor() {
+    super(
+      'Avatar inválido. Use uma imagem JPEG, PNG ou WebP de até 8 MiB enviada pelo próprio usuário.',
+      { status: 400, code: 'AVATAR_VALIDATION_ERROR' },
+    )
+  }
+}

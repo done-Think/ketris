@@ -381,7 +381,7 @@ describe('GET /api/platform/tenants – mensalidade (integração)', () => {
           responsavelId: owner.id,
           titulo: `Imóvel ${index}`,
           finalidade: 'VENDA',
-          tipo: 'casa',
+          tipo: 'CASA',
           valor: 1000,
           status,
         },

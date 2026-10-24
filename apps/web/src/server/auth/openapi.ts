@@ -1,3 +1,9 @@
+import {
+  avatarUploadSchema,
+  avatarUploadResponseSchema,
+  avatarMediaParamsSchema,
+  avatarBinarySchema,
+} from './schemas/avatar.schema'
 import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi'
 import { z } from 'zod'
 
@@ -29,6 +35,60 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
   registry.register('AuthenticatedUser', authenticatedUserSchema)
   registry.register('ErrorResponse', errorResponseSchema)
 
+  registry.registerPath({
+    method: 'post',
+    path: '/auth/me/avatar',
+    tags: ['Auth'],
+    summary: 'Envia o avatar do usuário autenticado',
+    description:
+      'Qualquer usuário ativo pode enviar o próprio avatar, inclusive RENTER. O destino é definido pela identidade autenticada.',
+    security: [{ bearerAuth: [] }],
+    request: {
+      body: { required: true, content: { 'multipart/form-data': { schema: avatarUploadSchema } } },
+    },
+    responses: {
+      201: {
+        description: 'Avatar enviado para posterior atualização do perfil.',
+        content: { 'application/json': { schema: avatarUploadResponseSchema } },
+      },
+      400: {
+        description: 'Arquivo inválido.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Não autenticado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Usuário desativado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      404: {
+        description: 'Usuário não encontrado no tenant.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+  registry.registerPath({
+    method: 'get',
+    path: '/auth/media/{key}',
+    tags: ['Auth'],
+    summary: 'Consulta imagem pública de avatar',
+    description: 'Serve somente chaves no formato avatars/<tenant>/<usuário>/<arquivo>.',
+    security: [],
+    request: { params: avatarMediaParamsSchema },
+    responses: {
+      200: {
+        description: 'Imagem de avatar.',
+        content: {
+          'image/jpeg': { schema: avatarBinarySchema },
+          'image/png': { schema: avatarBinarySchema },
+          'image/webp': { schema: avatarBinarySchema },
+        },
+      },
+      404: { description: 'Imagem inexistente ou chave inválida.' },
+    },
+  })
   registry.registerPath({
     method: 'post',
     path: '/auth/login',

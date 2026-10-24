@@ -19,6 +19,13 @@ interface RouteContext {
 
 export const GET = withErrorHandling(async (_request: NextRequest, context: RouteContext) => {
   const { key } = await context.params
+  if (
+    !(key[0] === 'profiles' && ['brokers', 'agencies'].includes(key[1]) && key.length >= 4) ||
+    key.some((segment) => !segment || segment === '.' || segment === '..' || /[\\/%]/.test(segment))
+  ) {
+    return new NextResponse(null, { status: 404 })
+  }
+
   const objectKey = key.join('/')
 
   if (shouldUseLocalUploadsStorage()) {

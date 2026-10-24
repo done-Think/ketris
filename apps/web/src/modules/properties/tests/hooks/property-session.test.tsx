@@ -1,9 +1,18 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { beforeEach, expect, it, vi } from 'vitest'
 
-import { useProperties, useProperty } from '../../hooks/use-properties'
+import {
+  useProperties,
+  useProperty,
+  usePropertyPage,
+  useCreateProperty,
+  useUpdateProperty,
+  usePublishProperty,
+  useUnpublishProperty,
+  useDeleteProperty,
+} from '../../hooks/use-properties'
 import { propertiesService } from '../../services/properties-service'
 import type { Property } from '../../types/property'
 import { useDashboardPropertyMappingOptions } from '../../hooks/use-dashboard-property-mapping-options'
@@ -13,7 +22,16 @@ const { session } = vi.hoisted(() => ({
 }))
 vi.mock('next-auth/react', () => ({ useSession: () => ({ data: session }) }))
 vi.mock('../../services/properties-service', () => ({
-  propertiesService: { list: vi.fn(), getById: vi.fn() },
+  propertiesService: {
+    list: vi.fn(),
+    listPage: vi.fn(),
+    getById: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    publish: vi.fn(),
+    unpublish: vi.fn(),
+    remove: vi.fn(),
+  },
 }))
 
 beforeEach(() => {
@@ -70,3 +88,51 @@ it('preserves interpolation templates for property mapping instead of formatting
   expect(result.current.messages.activity.visitScheduled).toContain('{name}')
   expect(result.current.messages.pricingDetails.installmentsDeposit).toContain('{count}')
 })
+
+it('does not keep the previous page when the authenticated user changes', async () => {
+  const page = {
+    properties: [{ id: 'private-property' } as Property],
+    pagination: { page: 1, pageSize: 5, total: 1, totalPages: 1 },
+    counts: { DRAFT: 1, PUBLISHED: 0, RENTED: 0, SOLD: 0, INACTIVE: 0 },
+  }
+  vi.mocked(propertiesService.listPage)
+    .mockResolvedValueOnce(page)
+    .mockImplementationOnce(() => new Promise(() => {}))
+  const { result, rerender } = renderHook(() => usePropertyPage({ page: 1, pageSize: 5 }), {
+    wrapper: wrapper(),
+  })
+  await waitFor(() => expect(result.current.data).toEqual(page))
+  session.user.id = 'other-user'
+  rerender()
+  expect(result.current.data).toBeUndefined()
+})
+
+it.each([
+  ['create', useCreateProperty],
+  ['update', () => useUpdateProperty('property-1')],
+  ['publish', usePublishProperty],
+  ['unpublish', useUnpublishProperty],
+  ['remove', useDeleteProperty],
+] as const)(
+  'invalidates the actual caches of property consumers after %s',
+  async (method, usePropertyMutation) => {
+    const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity } } })
+    const keys = [
+      ['properties', 'page', 'tenant-1'],
+      ['agenda', 'events', 'tenant-1'],
+      ['contracts', 'list', 'tenant-1'],
+      ['marketplace', 'properties', 'search'],
+    ]
+    for (const key of keys) client.setQueryData(key, [])
+    vi.mocked(propertiesService[method]).mockResolvedValue(undefined as never)
+    const { result } = renderHook(() => usePropertyMutation(), {
+      wrapper: ({ children }: { children: ReactNode }) => (
+        <QueryClientProvider client={client}>{children}</QueryClientProvider>
+      ),
+    })
+    await act(async () => {
+      await result.current.mutateAsync('property-1' as never)
+    })
+    for (const key of keys) expect(client.getQueryState(key)?.isInvalidated).toBe(true)
+  },
+)

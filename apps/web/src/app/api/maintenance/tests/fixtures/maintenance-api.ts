@@ -55,7 +55,7 @@ export function setupMaintenanceIntegration() {
         proprietarioId: owner.id,
         titulo: 'Test Property',
         finalidade: 'ALUGUEL',
-        tipo: 'apartamento',
+        tipo: 'APARTAMENTO',
         valor: 2500,
       },
     })

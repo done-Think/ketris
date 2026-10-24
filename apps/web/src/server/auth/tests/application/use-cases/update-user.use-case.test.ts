@@ -71,14 +71,14 @@ describe('UpdateUserUseCase', () => {
         actorPapel: admin.papel,
         userId: admin.id,
         nome: 'Admin atualizado',
-        avatarUrl: 'https://cdn.ketris.dev/avatar.webp',
+        avatarUrl: `/api/auth/media/avatars/${admin.tenantId}/${admin.id}/avatar.webp`,
       }),
     ).resolves.toMatchObject({ nome: 'Admin atualizado' })
 
     expect(deps.userRepository.update).toHaveBeenCalledWith(admin.id, {
       nome: 'Admin atualizado',
       email: undefined,
-      avatarUrl: 'https://cdn.ketris.dev/avatar.webp',
+      avatarUrl: `/api/auth/media/avatars/${admin.tenantId}/${admin.id}/avatar.webp`,
       papel: undefined,
     })
   })

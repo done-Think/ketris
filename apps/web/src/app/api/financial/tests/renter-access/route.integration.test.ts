@@ -62,7 +62,7 @@ describe('Renter financial authorization (integration)', () => {
         responsavelId: responsibleId,
         titulo: `Property ${randomUUID()}`,
         finalidade: 'ALUGUEL',
-        tipo: 'apartamento',
+        tipo: 'APARTAMENTO',
         valor: 1000,
       },
     })

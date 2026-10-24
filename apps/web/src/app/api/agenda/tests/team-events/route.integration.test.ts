@@ -134,7 +134,7 @@ describe('Agency team event visibility and mutations', () => {
           responsavelId: agent.id,
           titulo: 'Visit property',
           finalidade: 'ALUGUEL',
-          tipo: 'apartamento',
+          tipo: 'APARTAMENTO',
           valor: 1000,
           status: 'DRAFT',
         },

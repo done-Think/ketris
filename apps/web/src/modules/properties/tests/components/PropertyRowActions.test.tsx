@@ -33,13 +33,21 @@ const property: DashboardProperty = {
   id: 'property-1',
   responsibleUserId: 'user-1',
   apiStatus: 'DRAFT',
+  description: null,
+  listing: {
+    amenities: [],
+    negotiationTerms: null,
+    publishAfterReview: false,
+    allowWhatsappContact: false,
+    featured: false,
+  },
   title: 'Apartamento Jardins',
   address: 'Alameda Lorena, 1420',
   location: 'Jardins, São Paulo',
   type: 'Apartamento',
   purpose: 'Aluguel',
   price: 'R$ 6.500/mês',
-  status: 'Em análise',
+  status: 'inReview',
   broker: '',
   updatedAt: 'Há 2 horas',
   imageUrl: '',
@@ -138,14 +146,14 @@ describe('PropertyRowActions', () => {
     expect(screen.queryByRole('button', { name: /Mais ações/ })).not.toBeInTheDocument()
   })
 
-  it('shows Editar, Publicar and Excluir for a draft property when the actor can manage it', async () => {
+  it('shows Editar, Publicar and Inativar for a draft property when the actor can manage it', async () => {
     renderActions()
 
     await userEvent.click(screen.getByRole('button', { name: /Mais ações/ }))
 
     expect(screen.getByRole('menuitem', { name: 'Editar' })).toBeVisible()
     expect(screen.getByRole('menuitem', { name: 'Publicar' })).toBeVisible()
-    expect(screen.getByRole('menuitem', { name: 'Excluir' })).toBeVisible()
+    expect(screen.getByRole('menuitem', { name: 'Inativar' })).toBeVisible()
   })
 
   it('shows Despublicar instead of Publicar for a published property', async () => {
@@ -196,12 +204,12 @@ describe('PropertyRowActions', () => {
     renderActions()
 
     await userEvent.click(screen.getByRole('button', { name: /Mais ações/ }))
-    await userEvent.click(screen.getByRole('menuitem', { name: 'Excluir' }))
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Inativar' }))
 
-    const confirmDialog = (await screen.findByText('Excluir imóvel')).closest(
+    const confirmDialog = (await screen.findByText('Inativar imóvel')).closest(
       '[role="dialog"]',
     ) as HTMLElement
-    await userEvent.click(within(confirmDialog).getByRole('button', { name: 'Excluir' }))
+    await userEvent.click(within(confirmDialog).getByRole('button', { name: 'Inativar' }))
 
     await waitFor(() => expect(mutateAsync).toHaveBeenCalledWith('property-1'))
   })

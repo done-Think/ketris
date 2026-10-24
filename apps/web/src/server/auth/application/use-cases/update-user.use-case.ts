@@ -1,3 +1,5 @@
+import { assertAvatarScope } from '../../domain/avatar-policy'
+import { AccountDeactivatedError } from '../../domain/errors'
 import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
@@ -37,6 +39,18 @@ export class UpdateUserUseCase {
 
     if (!target || target.tenantId !== input.actorTenantId) {
       throw new UserNotFoundError()
+    }
+
+    if (input.avatarUrl !== undefined) {
+      if (!isSelfUpdate)
+        throw new ForbiddenError('O avatar só pode ser alterado pelo próprio usuário.')
+      if (!target.ativo) throw new AccountDeactivatedError()
+      assertAvatarScope(
+        input.avatarUrl,
+        input.actorTenantId,
+        input.actorId,
+        target.avatarUrl ?? null,
+      )
     }
 
     if (isSelfUpdate && input.papel !== undefined) {

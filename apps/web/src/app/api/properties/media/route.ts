@@ -5,16 +5,12 @@ import { authContainer } from '@server/auth/container'
 import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { propertiesContainer } from '@server/properties/container'
-import { RequestValidationError, withErrorHandling } from '@server/shared/http'
+import { parseUploadedFile, withErrorHandling } from '@server/shared/http'
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
   const actor = await requireBearerAuth(request, authContainer.tokenService)
   const formData = await request.formData()
-  const file = formData.get('file')
-
-  if (!(file instanceof File)) {
-    throw new RequestValidationError([{ path: 'file', message: 'Envie um arquivo em "file".' }])
-  }
+  const file = parseUploadedFile(formData)
 
   const body = Buffer.from(await file.arrayBuffer())
 

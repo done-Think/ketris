@@ -1,20 +1,17 @@
 'use client'
 
+import { styles } from '../styles/property-detail-dashboard-page.styles'
+
 import { useState } from 'react'
 import { notFound } from 'next/navigation'
-import { Box, CircularProgress, Stack, Typography } from '@mui/material'
+import { Box, Stack, Typography } from '@mui/material'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
-import { useForm } from 'react-hook-form'
 import { useSnackbar } from 'notistack'
 
 import { useRouter } from '@/i18n/navigation'
 import { getRestrictedRoleAccess } from '@shared/lib/auth/restricted-role-access'
 
-import {
-  getDashboardPropertyById,
-  localizeDashboardPropertyFixture,
-} from '../data/dashboard-properties'
 import { useDashboardPropertyMappingOptions } from '../hooks/use-dashboard-property-mapping-options'
 import {
   useDeleteProperty,
@@ -23,10 +20,12 @@ import {
   useUnpublishProperty,
 } from '../hooks/use-properties'
 import type {
-  PropertyDetailDashboardFormValues,
+  DashboardPropertyDetailTab,
   PropertyDetailDashboardPageProps,
 } from '../types/dashboard-property'
-import { errorMessage } from '../utils/error-message'
+import { extractErrorMessage } from '@shared/utils/error-message'
+import { isPropertyNotFound } from '../utils/is-property-not-found'
+import { PropertyQueryFeedback } from './PropertyQueryFeedback'
 import { toDashboardProperty } from '../utils/map-dashboard-property'
 import { DeletePropertyDialog } from './DeletePropertyDialog'
 import { PropertyDetailHeader } from './PropertyDetailHeader'
@@ -45,39 +44,24 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
   const isRestrictedViewer = Boolean(restrictedAccess)
   const isReadOnlyViewer = isRestrictedViewer && !restrictedAccess?.canManageProperties
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const { setValue, watch } = useForm<PropertyDetailDashboardFormValues>({
-    defaultValues: {
-      activeTab: 'data',
-    },
-  })
-  const activeTab = watch('activeTab')
+  const [activeTab, setActiveTab] = useState<DashboardPropertyDetailTab>('data')
   const propertyQuery = useProperty(propertyId)
   const publishProperty = usePublishProperty()
   const unpublishProperty = useUnpublishProperty()
   const deleteProperty = useDeleteProperty()
-  const canUseFixtures = !isRestrictedViewer && process.env.NODE_ENV !== 'production'
-  const fixtureProperty =
-    canUseFixtures && (propertyQuery.isError || !propertyQuery.data)
-      ? getDashboardPropertyById(propertyId)
-      : null
-
-  if (propertyQuery.isLoading && !fixtureProperty) {
+  if (propertyQuery.isError) {
+    if (isPropertyNotFound(propertyQuery.error)) notFound()
     return (
-      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: '55vh' }}>
-        <CircularProgress size={30} />
-      </Stack>
+      <PropertyQueryFeedback
+        onRetry={() => {
+          void propertyQuery.refetch()
+        }}
+      />
     )
   }
+  if (!propertyQuery.data) return <PropertyQueryFeedback loading />
 
-  if (!fixtureProperty && propertyQuery.isError) {
-    notFound()
-  }
-
-  const property = fixtureProperty
-    ? localizeDashboardPropertyFixture(fixtureProperty, mappingOptions)
-    : propertyQuery.data
-      ? toDashboardProperty(propertyQuery.data, mappingOptions)
-      : notFound()
+  const property = toDashboardProperty(propertyQuery.data, mappingOptions)
   const canManage =
     Boolean(restrictedAccess?.canManageProperties) ||
     (!isRestrictedViewer &&
@@ -88,7 +72,7 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
       await publishProperty.mutateAsync(propertyId)
       enqueueSnackbar(t('publishSuccess'), { variant: 'success' })
     } catch (error) {
-      enqueueSnackbar(errorMessage(error, t('publishError')), { variant: 'error' })
+      enqueueSnackbar(extractErrorMessage(error, t('publishError')), { variant: 'error' })
     }
   }
 
@@ -97,7 +81,7 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
       await unpublishProperty.mutateAsync(propertyId)
       enqueueSnackbar(t('unpublishSuccess'), { variant: 'success' })
     } catch (error) {
-      enqueueSnackbar(errorMessage(error, t('unpublishError')), { variant: 'error' })
+      enqueueSnackbar(extractErrorMessage(error, t('unpublishError')), { variant: 'error' })
     }
   }
 
@@ -109,12 +93,12 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
       router.push({ pathname: '/dashboard/properties' })
     } catch (error) {
       setIsDeleteDialogOpen(false)
-      enqueueSnackbar(errorMessage(error, t('deleteError')), { variant: 'error' })
+      enqueueSnackbar(extractErrorMessage(error, t('deleteError')), { variant: 'error' })
     }
   }
 
   return (
-    <Box sx={{ width: '100%', p: 3.5 }}>
+    <Box sx={styles.box}>
       <PropertyDetailHeader
         property={property}
         canManage={canManage}
@@ -134,10 +118,10 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
       <PropertyDetailTabs
         readOnly={isReadOnlyViewer}
         activeTab={activeTab}
-        onTabChange={(tab) => setValue('activeTab', tab)}
+        onTabChange={setActiveTab}
       />
       {isReadOnlyViewer && (
-        <Typography color="text.secondary" sx={{ mb: 2 }}>
+        <Typography color="text.secondary" sx={styles.typography}>
           {renterT('readOnly')}
         </Typography>
       )}
@@ -146,7 +130,7 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
         spacing={{ xs: 3, lg: 3.6 }}
         alignItems="flex-start"
       >
-        <Box sx={{ flex: 1, minWidth: 0, width: '100%' }}>
+        <Box sx={styles.box2}>
           <PropertyDetailMainPanel
             property={property}
             activeTab={isReadOnlyViewer && activeTab !== 'media' ? 'data' : activeTab}

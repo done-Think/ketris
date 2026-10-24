@@ -1,4 +1,4 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UploadPropertyMediaUseCaseInput } from '../../types/use-case-inputs'
 
 import { assertCanEditProperties } from '../authorization'
 import { PropertyMediaValidationError } from '../../domain/errors'
@@ -6,14 +6,6 @@ import type { PropertyMediaStoragePort } from '../ports/property-media-storage.p
 
 const allowedContentTypes = new Set(['image/jpeg', 'image/png', 'image/webp'])
 const maxFileSizeBytes = 8 * 1024 * 1024
-
-export interface UploadPropertyMediaUseCaseInput {
-  actorTenantId: string
-  actorPapel: Papel
-  filename: string
-  contentType: string
-  body: Buffer
-}
 
 export class UploadPropertyMediaUseCase {
   constructor(private readonly mediaStorage: PropertyMediaStoragePort) {}

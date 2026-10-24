@@ -396,7 +396,7 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
           responsavelId: staff.id,
           titulo: 'Apto alugado',
           finalidade: 'ALUGUEL',
-          tipo: 'apartamento',
+          tipo: 'APARTAMENTO',
           valor: 1000,
         },
       })

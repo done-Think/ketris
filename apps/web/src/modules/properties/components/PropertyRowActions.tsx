@@ -1,5 +1,7 @@
 'use client'
 
+import { styles, rowActionButtonStyles } from '../styles/property-row-actions.styles'
+
 import { useState } from 'react'
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
@@ -7,22 +9,12 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import PublishOutlinedIcon from '@mui/icons-material/PublishOutlined'
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
-import {
-  IconButton,
-  ListItemIcon,
-  ListItemText,
-  Menu,
-  MenuItem,
-  Stack,
-  type SxProps,
-  type Theme,
-} from '@mui/material'
+import { IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack } from '@mui/material'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 
 import { useRouter } from '@/i18n/navigation'
-import { alpha, iconSize } from '@shared/theme/tokens'
 
 import {
   useDeleteProperty,
@@ -30,21 +22,8 @@ import {
   useUnpublishProperty,
 } from '../hooks/use-properties'
 import type { PropertyRowActionsProps } from '../types/dashboard-property'
-import { errorMessage } from '../utils/error-message'
+import { extractErrorMessage } from '@shared/utils/error-message'
 import { DeletePropertyDialog } from './DeletePropertyDialog'
-
-const rowActionButtonSx: SxProps<Theme> = {
-  width: 36,
-  height: 36,
-  border: '1px solid',
-  borderColor: 'divider',
-  color: 'text.secondary',
-  '&:hover': {
-    borderColor: 'primary.main',
-    color: 'primary.main',
-    bgcolor: alpha.magenta[6],
-  },
-}
 
 export function PropertyRowActions({ property, onView }: PropertyRowActionsProps) {
   const t = useTranslations('properties.dashboard.table')
@@ -87,7 +66,10 @@ export function PropertyRowActions({ property, onView }: PropertyRowActionsProps
       }
     } catch (error) {
       enqueueSnackbar(
-        errorMessage(error, isPublished ? detailT('unpublishError') : detailT('publishError')),
+        extractErrorMessage(
+          error,
+          isPublished ? detailT('unpublishError') : detailT('publishError'),
+        ),
         { variant: 'error' },
       )
     }
@@ -100,25 +82,21 @@ export function PropertyRowActions({ property, onView }: PropertyRowActionsProps
       enqueueSnackbar(detailT('deleteSuccess'), { variant: 'success' })
     } catch (error) {
       setIsDeleteDialogOpen(false)
-      enqueueSnackbar(errorMessage(error, detailT('deleteError')), { variant: 'error' })
+      enqueueSnackbar(extractErrorMessage(error, detailT('deleteError')), { variant: 'error' })
     }
   }
 
   return (
-    <Stack
-      direction="row"
-      spacing={0.8}
-      sx={{ width: '100%', justifyContent: 'center', alignItems: 'center', height: '100%' }}
-    >
+    <Stack direction="row" spacing={0.8} sx={styles.stack}>
       <IconButton
         aria-label={t('viewAriaLabel', { title: property.title })}
         onClick={(event) => {
           event.stopPropagation()
           onView()
         }}
-        sx={rowActionButtonSx}
+        sx={rowActionButtonStyles}
       >
-        <VisibilityOutlinedIcon sx={{ fontSize: iconSize.md }} />
+        <VisibilityOutlinedIcon sx={styles.visibilityOutlinedIcon} />
       </IconButton>
 
       {canManage ? (
@@ -130,23 +108,23 @@ export function PropertyRowActions({ property, onView }: PropertyRowActionsProps
               setMenuAnchor(event.currentTarget)
             }}
             disabled={isMutating}
-            sx={rowActionButtonSx}
+            sx={rowActionButtonStyles}
           >
-            <MoreVertIcon sx={{ fontSize: iconSize.md }} />
+            <MoreVertIcon sx={styles.moreVertIcon} />
           </IconButton>
           <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={closeMenu}>
             <MenuItem onClick={handleEdit}>
               <ListItemIcon>
-                <EditOutlinedIcon sx={{ fontSize: iconSize.md }} />
+                <EditOutlinedIcon sx={styles.editOutlinedIcon} />
               </ListItemIcon>
               <ListItemText>{detailT('edit')}</ListItemText>
             </MenuItem>
             <MenuItem onClick={handleTogglePublish} disabled={isMutating}>
               <ListItemIcon>
                 {isPublished ? (
-                  <VisibilityOffOutlinedIcon sx={{ fontSize: iconSize.md }} />
+                  <VisibilityOffOutlinedIcon sx={styles.visibilityOffOutlinedIcon} />
                 ) : (
-                  <PublishOutlinedIcon sx={{ fontSize: iconSize.md }} />
+                  <PublishOutlinedIcon sx={styles.publishOutlinedIcon} />
                 )}
               </ListItemIcon>
               <ListItemText>{isPublished ? detailT('unpublish') : detailT('publish')}</ListItemText>
@@ -156,10 +134,10 @@ export function PropertyRowActions({ property, onView }: PropertyRowActionsProps
                 closeMenu()
                 setIsDeleteDialogOpen(true)
               }}
-              sx={{ color: 'error.main' }}
+              sx={styles.menuItem}
             >
               <ListItemIcon>
-                <DeleteOutlineRoundedIcon sx={{ fontSize: iconSize.md, color: 'error.main' }} />
+                <DeleteOutlineRoundedIcon sx={styles.deleteOutlineRoundedIcon} />
               </ListItemIcon>
               <ListItemText>{detailT('delete')}</ListItemText>
             </MenuItem>

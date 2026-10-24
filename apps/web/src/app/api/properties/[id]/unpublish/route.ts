@@ -1,3 +1,5 @@
+import { propertyIdParamsSchema } from '@server/properties/schemas/property.schema'
+import type { PropertyRouteContext } from '@server/properties/types/http'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
@@ -5,21 +7,20 @@ import { authContainer } from '@server/auth/container'
 import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { propertiesContainer } from '@server/properties/container'
-import { withErrorHandling } from '@server/shared/http'
+import { parseRouteParams, withErrorHandling } from '@server/shared/http'
 
-interface RouteContext {
-  params: Promise<{ id: string }>
-}
+export const POST = withErrorHandling(
+  async (request: NextRequest, context: PropertyRouteContext) => {
+    const actor = await requireBearerAuth(request, authContainer.tokenService)
+    const { id } = await parseRouteParams(context.params, propertyIdParamsSchema)
 
-export const POST = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
-  const actor = await requireBearerAuth(request, authContainer.tokenService)
+    const property = await propertiesContainer.unpublishPropertyUseCase.execute({
+      actorTenantId: actor.tenantId,
+      actorId: actor.sub,
+      id,
+      actorPapel: actor.papel as Papel,
+    })
 
-  const property = await propertiesContainer.unpublishPropertyUseCase.execute({
-    actorTenantId: actor.tenantId,
-    actorId: actor.sub,
-    id: (await context.params).id,
-    actorPapel: actor.papel as Papel,
-  })
-
-  return NextResponse.json({ property }, { status: 200 })
-})
+    return NextResponse.json({ property }, { status: 200 })
+  },
+)
