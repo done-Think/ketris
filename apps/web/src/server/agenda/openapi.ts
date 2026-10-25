@@ -1,9 +1,14 @@
+import {
+  agendaPropertyOptionsResponseSchema,
+  listAgendaPropertiesQuerySchema,
+} from './schemas/agenda-property.schema'
 import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi'
 
 import { errorResponseSchema } from '@server/shared/schemas/error-response.schema'
 
 import {
   createAgendaEventRequestSchema,
+  cancelAgendaEventRequestSchema,
   listAgendaEventsQuerySchema,
   rescheduleAgendaEventRequestSchema,
   updateAgendaEventRequestSchema,
@@ -18,18 +23,43 @@ import {
 export function registerAgendaOpenApi(registry: OpenAPIRegistry): void {
   registry.registerPath({
     method: 'get',
+    path: '/agenda/properties',
+    tags: ['Agenda'],
+    summary: 'Busca imóveis autorizados para agendamento, com paginação',
+    description:
+      'Retorna apenas ID e rótulo. OWNER consulta imóveis do tenant; AGENT, os sob sua responsabilidade; PROPERTY_OWNER, os de sua propriedade; RENTER, os vinculados aos seus contratos ativos.',
+    security: [{ bearerAuth: [] }],
+    request: { query: listAgendaPropertiesQuerySchema },
+    responses: {
+      200: {
+        description: 'Página de imóveis autorizados.',
+        content: { 'application/json': { schema: agendaPropertyOptionsResponseSchema } },
+      },
+      400: {
+        description: 'Parâmetros inválidos.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Autenticação necessária.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'get',
     path: '/agenda/events',
     tags: ['Agenda'],
     summary: 'Lista eventos de agenda visíveis ao usuário autenticado num período',
     description:
-      'ADMIN: retorna todos os eventos do tenant. AGENT: eventos coletivos e os direcionados ao próprio corretor. ' +
-      'OWNER: eventos não internos vinculados ao usuário ou aos seus imóveis. Eventos legados mantêm o compartilhamento anterior. ' +
+      'OWNER: retorna todos os eventos do tenant. AGENT: eventos coletivos e os direcionados ao próprio corretor. ' +
+      'PROPERTY_OWNER: eventos não internos vinculados ao usuário ou aos seus imóveis. Eventos legados mantêm o compartilhamento anterior. ' +
       'O intervalo [start, end) deve cruzar o período informado. RENTER: retorna somente eventos não internos em ' +
       'que ele é o dono explícito ou participante vinculado, combinados com os filtros de período ' +
       'e responsibleId, na visão reduzida RenterAgendaEvent (sem notas, contato do participante, ' +
       'e-mails ou IDs internos).',
     security: [{ bearerAuth: [] }],
-    request: { query: listAgendaEventsQuerySchema },
+    request: { query: listAgendaEventsQuerySchema.innerType() },
     responses: {
       200: {
         description:
@@ -83,7 +113,8 @@ export function registerAgendaOpenApi(registry: OpenAPIRegistry): void {
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       403: {
-        description: 'Autenticado como RENTER — não pode gerenciar agenda.',
+        description:
+          'Sem permissão para alterar este evento. O RENTER pode gerenciar os eventos que criou, conforme as regras de acesso.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       404: {
@@ -129,7 +160,7 @@ export function registerAgendaOpenApi(registry: OpenAPIRegistry): void {
     method: 'patch',
     path: '/agenda/events/{id}',
     tags: ['Agenda'],
-    summary: 'Atualiza campos gerais de um evento de agenda (não altera data/hora)',
+    summary: 'Atualiza os dados e o horário de um evento de agenda',
     description:
       'Dados, destinatarios e periodo podem ser atualizados juntos. Para alterar o periodo, informe start e durationMinutes. Marcar kind=VISIT exige que ' +
       'o evento já tenha duração de pelo menos 30 minutos. ownerEmail: omitido mantém, null ' +
@@ -152,7 +183,8 @@ export function registerAgendaOpenApi(registry: OpenAPIRegistry): void {
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       403: {
-        description: 'Autenticado como RENTER — não pode gerenciar agenda.',
+        description:
+          'Sem permissão para alterar este evento. O RENTER pode gerenciar os eventos que criou, conforme as regras de acesso.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       404: {
@@ -186,7 +218,8 @@ export function registerAgendaOpenApi(registry: OpenAPIRegistry): void {
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       403: {
-        description: 'Autenticado como RENTER — não pode gerenciar agenda.',
+        description:
+          'Sem permissão para alterar este evento. O RENTER pode gerenciar os eventos que criou, conforme as regras de acesso.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       404: {
@@ -206,14 +239,25 @@ export function registerAgendaOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Agenda'],
     summary: 'Cancela um evento de agenda (soft — status vira CANCELLED)',
     security: [{ bearerAuth: [] }],
-    request: { params: agendaEventIdParamsSchema },
+    request: {
+      params: agendaEventIdParamsSchema,
+      body: {
+        required: true,
+        content: { 'application/json': { schema: cancelAgendaEventRequestSchema } },
+      },
+    },
     responses: {
+      400: {
+        description: 'Informe um motivo de cancelamento válido.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
       200: {
-        description: 'Evento cancelado.',
+        description: 'Evento cancelado com motivo, autor e data registrados.',
         content: { 'application/json': { schema: agendaEventResponseSchema } },
       },
       403: {
-        description: 'Autenticado como RENTER — não pode gerenciar agenda.',
+        description:
+          'Sem permissão para alterar este evento. O RENTER pode gerenciar os eventos que criou, conforme as regras de acesso.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       404: {

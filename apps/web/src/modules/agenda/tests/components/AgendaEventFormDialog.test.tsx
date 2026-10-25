@@ -1,3 +1,11 @@
+vi.mock('../../hooks/use-agenda-properties', () => ({
+  useAgendaProperties: () => ({
+    data: undefined,
+    isFetching: false,
+    hasNextPage: false,
+    isError: false,
+  }),
+}))
 import { ThemeProvider } from '@mui/material'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -10,7 +18,7 @@ import type { AgendaPropertyOption, AgendaEventFormDialogProps } from '../../typ
 
 const propertyOptions: AgendaPropertyOption[] = [
   {
-    href: '/dashboard/properties/apt-jardins-3q',
+    href: { pathname: '/dashboard/properties/[id]', params: { id: 'apt-jardins-3q' } },
     id: 'apt-jardins-3q',
     label: 'Apartamento Jardins',
   },
@@ -165,4 +173,40 @@ describe('AgendaEventFormDialog', () => {
     expect(await screen.findByText('Visitas devem ter duração mínima de 30 minutos')).toBeVisible()
     expect(onCreate).not.toHaveBeenCalled()
   })
+})
+
+it('preserva a edição local durante rerender e reinicializa somente ao reabrir', async () => {
+  const props = {
+    open: true,
+    propertyOptions,
+    minDate: '2026-01-01',
+    maxDate: '2031-12-31',
+    onClose: vi.fn(),
+    onCreate: vi.fn(),
+    initialValues: { title: 'Valor inicial' },
+  }
+  const { rerender } = render(
+    <ThemeProvider theme={theme}>
+      <AgendaEventFormDialog {...props} />
+    </ThemeProvider>,
+  )
+  await userEvent.clear(screen.getByLabelText('Título'))
+  await userEvent.type(screen.getByLabelText('Título'), 'Edição local')
+  rerender(
+    <ThemeProvider theme={theme}>
+      <AgendaEventFormDialog {...props} initialValues={{ title: 'Valor atualizado no servidor' }} />
+    </ThemeProvider>,
+  )
+  expect(screen.getByLabelText('Título')).toHaveValue('Edição local')
+  rerender(
+    <ThemeProvider theme={theme}>
+      <AgendaEventFormDialog {...props} open={false} />
+    </ThemeProvider>,
+  )
+  rerender(
+    <ThemeProvider theme={theme}>
+      <AgendaEventFormDialog {...props} initialValues={{ title: 'Novo cadastro' }} />
+    </ThemeProvider>,
+  )
+  expect(screen.getByLabelText('Título')).toHaveValue('Novo cadastro')
 })

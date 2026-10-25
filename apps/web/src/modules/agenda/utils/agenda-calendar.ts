@@ -1,49 +1,18 @@
 import dayjs, { type Dayjs } from 'dayjs'
+import { AGENDA_BUSINESS_HOURS_START } from '@shared/lib/utils/agenda-scheduling'
 
-import { alpha, brand, radius, shadows, supportColor, surface } from '@shared/theme/tokens'
 import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
 
 import type {
   AgendaBuildNotificationsOptions,
   AgendaCalendarDay,
   AgendaEvent,
-  AgendaEventTone,
-  AgendaEventToneStyle,
   AgendaWeekRange,
-} from '../../types/agenda-event'
+} from '../types/agenda-event'
 
 export const agendaVisibleDayCount = 5
-export const scheduleStartHour = 8
+export const scheduleStartHour = AGENDA_BUSINESS_HOURS_START
 export const scheduleHourHeight = 62
-
-export const agendaCardBaseSx = {
-  border: 0,
-  borderLeft: '3px solid',
-  borderRadius: `${radius.sm}px`,
-  px: 1.1,
-  py: 0.8,
-  overflow: 'hidden',
-  textAlign: 'left',
-  '&:hover, &:focus-visible': { boxShadow: shadows.crmCardHover },
-} as const
-
-export const agendaEventToneStyles: Record<AgendaEventTone, AgendaEventToneStyle> = {
-  primary: {
-    bgcolor: alpha.magenta[10],
-    borderColor: brand.magenta[500],
-    color: brand.magenta[600],
-  },
-  info: {
-    bgcolor: supportColor.infoSoft,
-    borderColor: brand.semantic.info,
-    color: brand.semantic.info,
-  },
-  warning: {
-    bgcolor: supportColor.warningSoft,
-    borderColor: brand.semantic.warning,
-    color: brand.semantic.warning,
-  },
-}
 
 export function getEventOffsetTop(time: string, startHour = scheduleStartHour) {
   const [hour = scheduleStartHour, minute = 0] = time.split(':').map(Number)
@@ -53,35 +22,6 @@ export function getEventOffsetTop(time: string, startHour = scheduleStartHour) {
 
 export function getEventHeight(durationMinutes: number) {
   return Math.max((durationMinutes / 60) * scheduleHourHeight, 38)
-}
-
-export function getAgendaCardPlacementSx(top: number, height: number, lane = 0, laneCount = 1) {
-  const shift = lane * Math.min(24, 80 / Math.max(1, laneCount - 1))
-  return {
-    position: 'absolute',
-    top,
-    height,
-    left: { xs: `${8 + shift}px`, md: `${16 + shift}px` },
-    right: { xs: 8, md: 16 },
-    zIndex: lane + 1,
-    bgcolor: surface.paper,
-    boxSizing: 'border-box',
-    transition: 'box-shadow 160ms ease, transform 160ms ease',
-    '&:hover, &:focus-within, &:focus-visible': {
-      height: 'auto',
-      minHeight: height,
-      zIndex: 1000,
-      boxShadow: shadows.crmCardHover,
-      transform: 'translateY(-1px)',
-      outline: 'none',
-      '& .MuiTypography-root': {
-        whiteSpace: 'normal',
-        overflow: 'visible',
-        textOverflow: 'clip',
-        overflowWrap: 'anywhere',
-      },
-    },
-  } as const
 }
 
 function resolveDayjsLocale(locale: string) {
@@ -133,11 +73,12 @@ export function getAgendaWeekRange(days: AgendaCalendarDay[]): AgendaWeekRange {
 }
 
 function isVisitEvent(event: AgendaEvent) {
-  return event.title.toLocaleLowerCase('pt-BR').includes('visita')
+  return event.apiKind === 'VISIT'
 }
 
 export function getAgendaNotifications({
   events,
+  currentUserId,
   t,
   today,
 }: AgendaBuildNotificationsOptions): DashboardNotificationItem[] {
@@ -160,14 +101,21 @@ export function getAgendaNotifications({
       })
     }
 
-    if (event.createdBy && event.createdByRole) {
+    if (
+      event.createdBy &&
+      event.createdByRole &&
+      currentUserId &&
+      event.responsibleId === currentUserId &&
+      event.createdById &&
+      event.createdById !== currentUserId
+    ) {
       notifications.push({
         href,
         id: `${event.id}-assigned`,
         kind: 'assignedEvent',
         message: t('assignedEventMessage', {
           name: event.createdBy,
-          role: event.createdByRole,
+          role: t(`creatorRoles.${event.createdByRole}`),
           title: event.title,
         }),
         title: t('assignedEventTitle'),

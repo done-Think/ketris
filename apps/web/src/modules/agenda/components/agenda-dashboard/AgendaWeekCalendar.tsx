@@ -1,10 +1,10 @@
 'use client'
 
+import { styles } from '../../styles/agenda-week-calendar.styles'
+
 import { Box, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
-import { useEffect, useMemo, useState } from 'react'
-
-import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
+import { useMemo, useState } from 'react'
 
 import type {
   AgendaWeekCalendarProps,
@@ -15,14 +15,13 @@ import { buildAgendaTimeline } from '../../utils/build-agenda-timeline'
 import { buildAgendaEventSegments, layoutAgendaCards } from '../../utils/layout-agenda-events'
 import { AgendaEventCard } from './AgendaEventCard'
 import { AgendaOrganizationCard } from './AgendaOrganizationCard'
+import { agendaEventToneStyles } from '../../styles/agenda-calendar.styles'
 import {
-  agendaEventToneStyles,
   getEventEndTime,
   getEventHeight,
   getEventOffsetTop,
-  getAgendaCardPlacementSx,
   scheduleHourHeight,
-} from './agenda-dashboard-shared'
+} from '../../utils/agenda-calendar'
 
 export function AgendaWeekCalendar({
   days,
@@ -34,7 +33,8 @@ export function AgendaWeekCalendar({
   const t = useTranslations('agenda.dashboard')
   const organizationT = useTranslations('agenda.organization')
   const [selectedDayKey, setSelectedDayKey] = useState(days[0]?.key ?? '')
-  const selectedDay = days.find((day) => day.key === selectedDayKey) ?? days[0]
+  const selectedDay =
+    days.find((day) => day.key === selectedDayKey) ?? days.find((day) => day.today) ?? days[0]
   const eventSegments = useMemo(() => buildAgendaEventSegments(days, events), [days, events])
   const { itemsByDay, firstHour, calendarTimeSlots, hasAllDayItems } = buildAgendaTimeline(
     days,
@@ -63,35 +63,10 @@ export function AgendaWeekCalendar({
     )
   })
 
-  useEffect(() => {
-    const today = days.find((day) => day.today)
-
-    setSelectedDayKey((currentDayKey) => {
-      if (days.some((day) => day.key === currentDayKey)) return currentDayKey
-
-      return today?.key ?? days[0]?.key ?? ''
-    })
-  }, [days])
-
   return (
-    <Box
-      sx={{
-        bgcolor: { xs: surface.app, md: surface.paper },
-        border: { xs: 0, md: '1px solid' },
-        borderColor: alpha.graphite[6],
-        borderRadius: `${radius.sm}px`,
-        boxShadow: { xs: shadows.none, md: shadows.crmDetailPanel },
-        overflow: 'hidden',
-      }}
-    >
-      <Box sx={{ display: { xs: 'block', md: 'none' }, px: 1.6, py: 1.8 }}>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))`,
-            gap: 0.8,
-          }}
-        >
+    <Box sx={styles.box}>
+      <Box sx={styles.box2}>
+        <Box sx={styles.box3(days)}>
           {days.map((day) => {
             const selected = day.key === selectedDay?.key
 
@@ -103,37 +78,17 @@ export function AgendaWeekCalendar({
                 aria-pressed={selected}
                 aria-label={`${day.dayLabel}, ${day.dateLabel} ${day.monthLabel}`}
                 onClick={() => setSelectedDayKey(day.key)}
-                sx={{
-                  border: 0,
-                  borderRadius: `${radius.sm}px`,
-                  bgcolor: selected ? brand.magenta[500] : surface.app,
-                  color: selected ? surface.paper : brand.neutral[500],
-                  cursor: 'pointer',
-                  minHeight: 54,
-                  px: 0.8,
-                  py: 0.7,
-                }}
+                sx={styles.box4(selected)}
               >
-                <Typography sx={{ display: 'block', fontSize: 11, fontWeight: 700 }}>
-                  {day.dayLabel}
-                </Typography>
-                <Typography sx={{ display: 'block', fontSize: 14, fontWeight: 900 }}>
-                  {day.dateLabel}
-                </Typography>
+                <Typography sx={styles.typography}>{day.dayLabel}</Typography>
+                <Typography sx={styles.typography2}>{day.dateLabel}</Typography>
               </Box>
             )
           })}
         </Box>
 
         {selectedDay ? (
-          <Typography
-            sx={{
-              color: brand.graphite[500],
-              fontSize: 18,
-              fontWeight: 900,
-              mt: 2.2,
-            }}
-          >
+          <Typography sx={styles.typography3}>
             {t('selectedDayLabel', {
               date: selectedDay.dateLabel,
               day: selectedDay.dayLabel,
@@ -142,49 +97,19 @@ export function AgendaWeekCalendar({
           </Typography>
         ) : null}
 
-        <Stack spacing={1.2} sx={{ mt: 1.6 }}>
+        <Stack spacing={1.2} sx={styles.stack}>
           {selectedDayItems.map((item) => (
-            <Box
-              key={item.id}
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: '48px minmax(0, 1fr)',
-                gap: 1,
-                alignItems: 'stretch',
-              }}
-            >
-              <Typography sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 900, pt: 1 }}>
+            <Box key={item.id} sx={styles.box5}>
+              <Typography sx={styles.typography4}>
                 {item.time ?? organizationT('allDay')}
               </Typography>
               <AgendaOrganizationCard item={item} />
             </Box>
           ))}
           {firstAvailableSlot ? (
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: '48px minmax(0, 1fr)',
-                gap: 1,
-                alignItems: 'stretch',
-              }}
-            >
-              <Typography sx={{ color: brand.neutral[500], fontSize: 14, fontWeight: 900, pt: 1 }}>
-                {firstAvailableSlot.label}
-              </Typography>
-              <Box
-                sx={{
-                  border: '1px dashed',
-                  borderColor: alpha.graphite[8],
-                  borderRadius: `${radius.sm}px`,
-                  color: brand.neutral[400],
-                  fontSize: 13,
-                  fontWeight: 700,
-                  px: 1.4,
-                  py: 1.2,
-                }}
-              >
-                {t('freeSlot')}
-              </Box>
+            <Box sx={styles.box6}>
+              <Typography sx={styles.typography5}>{firstAvailableSlot.label}</Typography>
+              <Box sx={styles.box7}>{t('freeSlot')}</Box>
             </Box>
           ) : null}
 
@@ -192,39 +117,14 @@ export function AgendaWeekCalendar({
             const tone = agendaEventToneStyles[event.tone]
 
             return (
-              <Box
-                key={event.id}
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: '48px minmax(0, 1fr)',
-                  gap: 1,
-                  alignItems: 'stretch',
-                }}
-              >
-                <Typography
-                  sx={{ color: brand.neutral[500], fontSize: 14, fontWeight: 900, pt: 2 }}
-                >
-                  {event.time}
-                </Typography>
+              <Box key={event.id} sx={styles.box8}>
+                <Typography sx={styles.typography6}>{event.time}</Typography>
                 <Box
                   component="button"
                   type="button"
                   aria-label={t('openEventAriaLabel', { title: event.title })}
                   onClick={() => selectEvent(event)}
-                  sx={{
-                    border: 0,
-                    borderLeft: '4px solid',
-                    borderColor: tone.borderColor,
-                    borderRadius: `${radius.sm}px`,
-                    bgcolor: surface.paper,
-                    boxShadow: shadows.crmCardCompact,
-                    cursor: 'pointer',
-                    display: 'grid',
-                    gap: 0.4,
-                    px: 1.4,
-                    py: 1.4,
-                    textAlign: 'left',
-                  }}
+                  sx={styles.box9(tone)}
                 >
                   <Stack
                     direction="row"
@@ -232,26 +132,15 @@ export function AgendaWeekCalendar({
                     justifyContent="space-between"
                     spacing={1}
                   >
-                    <Typography sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 900 }}>
+                    <Typography sx={styles.typography7}>
                       {event.title} - {event.property}
                     </Typography>
-                    <Typography
-                      sx={{
-                        color: brand.neutral[500],
-                        flex: '0 0 auto',
-                        fontSize: 11,
-                        fontWeight: 700,
-                      }}
-                    >
+                    <Typography sx={styles.typography8}>
                       {event.time} - {getEventEndTime(event)}
                     </Typography>
                   </Stack>
-                  <Typography sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 800 }}>
-                    {event.participant}
-                  </Typography>
-                  <Typography sx={{ color: brand.neutral[400], fontSize: 11, fontWeight: 700 }}>
-                    {event.notes}
-                  </Typography>
+                  <Typography sx={styles.typography9}>{event.participant}</Typography>
+                  <Typography sx={styles.typography10}>{event.notes}</Typography>
                 </Box>
               </Box>
             )
@@ -259,75 +148,28 @@ export function AgendaWeekCalendar({
         </Stack>
       </Box>
 
-      <Box
-        role="region"
-        aria-label={t('title')}
-        sx={{
-          display: { xs: 'none', md: 'grid' },
-          gridTemplateColumns: {
-            xs: `48px repeat(${days.length}, minmax(132px, 1fr))`,
-            md: `72px repeat(${days.length}, minmax(0, 1fr))`,
-          },
-          overflowX: 'auto',
-        }}
-      >
-        <Box sx={{ minHeight: 78 }} />
+      <Box role="region" aria-label={t('title')} sx={styles.box10(days)}>
+        <Box sx={styles.box11} />
         {days.map((day) => (
           <Stack
             key={day.key}
             alignItems="center"
             justifyContent="center"
             spacing={0.6}
-            sx={{ minHeight: 78 }}
+            sx={styles.stack2}
           >
-            <Typography
-              sx={{
-                color: day.today ? brand.magenta[500] : brand.graphite[500],
-                fontSize: 13,
-                fontWeight: 900,
-              }}
-            >
+            <Typography sx={styles.typography11(day)}>
               {day.dayLabel} {day.dateLabel}
             </Typography>
-            {day.today ? (
-              <Box
-                sx={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: radius.full,
-                  bgcolor: brand.magenta[500],
-                }}
-              />
-            ) : null}
+            {day.today ? <Box sx={styles.box12} /> : null}
           </Stack>
         ))}
 
         {hasAllDayItems && (
           <>
-            <Typography
-              sx={{
-                color: brand.neutral[500],
-                fontSize: 11,
-                fontWeight: 800,
-                borderTop: '1px solid',
-                borderColor: alpha.graphite[8],
-                p: 1.2,
-              }}
-            >
-              {organizationT('allDay')}
-            </Typography>
+            <Typography sx={styles.typography12}>{organizationT('allDay')}</Typography>
             {days.map((day) => (
-              <Stack
-                key={`all-day-${day.key}`}
-                spacing={0.8}
-                sx={{
-                  p: 1,
-                  borderTop: '1px solid',
-                  borderLeft: '1px solid',
-                  borderColor: alpha.graphite[8],
-                  minWidth: 0,
-                }}
-              >
+              <Stack key={`all-day-${day.key}`} spacing={0.8} sx={styles.stack3}>
                 {itemsByDay[day.key].allDayItems.map((item) => (
                   <AgendaOrganizationCard key={item.id} item={item} />
                 ))}
@@ -336,26 +178,9 @@ export function AgendaWeekCalendar({
           </>
         )}
 
-        <Box
-          sx={{
-            position: 'relative',
-            height: timelineHeight,
-            borderTop: '1px solid',
-            borderColor: alpha.graphite[8],
-          }}
-        >
+        <Box sx={styles.box13(timelineHeight)}>
           {calendarTimeSlots.map((slot, index) => (
-            <Typography
-              key={slot.label}
-              sx={{
-                position: 'absolute',
-                top: index * scheduleHourHeight + 14,
-                left: { xs: 8, md: 18 },
-                color: brand.neutral[500],
-                fontSize: 12,
-                fontWeight: 700,
-              }}
-            >
+            <Typography key={slot.label} sx={styles.typography13(index)}>
               {slot.label}
             </Typography>
           ))}
@@ -379,18 +204,7 @@ export function AgendaWeekCalendar({
             })),
           ]
           return (
-            <Box
-              key={`timeline-${day.key}`}
-              sx={{
-                position: 'relative',
-                height: timelineHeight,
-                borderTop: '1px solid',
-                borderLeft: '1px solid',
-                borderColor: alpha.graphite[8],
-                backgroundImage: `linear-gradient(${alpha.graphite[6]} 1px, ${surface.paper} 1px)`,
-                backgroundSize: `100% ${scheduleHourHeight}px`,
-              }}
-            >
+            <Box key={`timeline-${day.key}`} sx={styles.box14(timelineHeight)}>
               {layoutAgendaCards(cards).map((card) =>
                 card.kind === 'event' ? (
                   <AgendaEventCard
@@ -403,13 +217,7 @@ export function AgendaWeekCalendar({
                     laneCount={card.laneCount}
                   />
                 ) : (
-                  <Box
-                    key={card.id}
-                    sx={{
-                      ...getAgendaCardPlacementSx(card.top, card.height, card.lane, card.laneCount),
-                      '& > a': { height: '100%', boxSizing: 'border-box' },
-                    }}
-                  >
+                  <Box key={card.id} sx={styles.box15(card)}>
                     <AgendaOrganizationCard item={card.item} />
                   </Box>
                 ),

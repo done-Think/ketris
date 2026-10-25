@@ -1,3 +1,11 @@
+vi.mock('../../hooks/use-agenda-properties', () => ({
+  useAgendaProperties: () => ({
+    data: undefined,
+    isFetching: false,
+    hasNextPage: false,
+    isError: false,
+  }),
+}))
 import { ThemeProvider } from '@mui/material'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -10,7 +18,7 @@ import type { AgendaEvent, AgendaPropertyOption } from '../../types/agenda-event
 
 const propertyOptions: AgendaPropertyOption[] = [
   {
-    href: '/dashboard/properties/apt-jardins-3q',
+    href: { pathname: '/dashboard/properties/[id]', params: { id: 'apt-jardins-3q' } },
     id: 'apt-jardins-3q',
     label: 'Apartamento Jardins',
   },
@@ -23,17 +31,17 @@ const event: AgendaEvent = {
   durationMinutes: 60,
   title: 'Visita Jardim Paulista',
   property: 'Apartamento Jardim Paulista',
-  propertyHref: '/dashboard/properties/apt-jardins-3q',
+  propertyHref: { pathname: '/dashboard/properties/[id]', params: { id: 'apt-jardins-3q' } },
   propertyId: 'apt-jardins-3q',
   apiKind: 'VISIT',
   participant: 'Ana Nóbrega',
   phone: '(11) 99842-2109',
   notes: 'Cliente quer validar luminosidade da sala.',
-  status: 'Confirmada',
+  status: 'CONFIRMED',
   tone: 'primary',
   kind: 'visit',
   createdBy: 'Roberto Souza',
-  createdByRole: 'colleague',
+  createdByRole: 'AGENT',
 }
 
 function renderDialog(
@@ -72,10 +80,10 @@ describe('AgendaEventDetailDialog', () => {
 
     expect(screen.getByText(event.title)).toBeVisible()
     expect(screen.getByText(event.notes)).toBeVisible()
-    expect(screen.getByText('Marcado por colega Roberto Souza')).toBeVisible()
+    expect(screen.getByText('Marcado por corretor Roberto Souza')).toBeVisible()
 
     const propertyLink = screen.getByRole('link', { name: event.property })
-    expect(propertyLink).toHaveAttribute('href', event.propertyHref)
+    expect(propertyLink).toHaveAttribute('href', '/dashboard/properties/apt-jardins-3q')
 
     expect(screen.getByRole('button', { name: 'Excluir' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Editar' })).toBeVisible()
@@ -151,6 +159,10 @@ describe('AgendaEventDetailDialog', () => {
     const confirmDialog = (await screen.findByText('Excluir evento')).closest(
       '[role="dialog"]',
     ) as HTMLElement
+    await userEvent.type(
+      within(confirmDialog).getByLabelText('Motivo do cancelamento'),
+      'Cliente indisponível',
+    )
     await userEvent.click(within(confirmDialog).getByRole('button', { name: 'Excluir' }))
 
     await waitFor(() => expect(onDelete).toHaveBeenCalledTimes(1))
@@ -166,9 +178,14 @@ describe('AgendaEventDetailDialog', () => {
     const confirmDialog = (await screen.findByText('Excluir evento')).closest(
       '[role="dialog"]',
     ) as HTMLElement
+    await userEvent.type(
+      within(confirmDialog).getByLabelText('Motivo do cancelamento'),
+      'Cliente indisponível',
+    )
     await userEvent.click(within(confirmDialog).getByRole('button', { name: 'Excluir' }))
 
     await waitFor(() => expect(onDelete).toHaveBeenCalledTimes(1))
     expect(onClose).not.toHaveBeenCalled()
+    expect(screen.getByLabelText('Motivo do cancelamento')).toHaveValue('Cliente indisponível')
   })
 })

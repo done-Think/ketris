@@ -1,9 +1,15 @@
+import {
+  prepareAgendaPropertySummary,
+  withPreparedAgendaPropertySummary,
+} from '../with-agenda-property-summaries'
+import type { AgendaPropertyCatalog } from '../ports/agenda-property-catalog.port'
+import type { UpdateAgendaEventInput } from '../../types/use-case-inputs'
 import { isAgencyManager, isPropertyOwner } from '@server/auth/domain/roles'
-import type { Papel } from '@server/auth/domain/user.entity'
+
 import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
 import { ConflictError, ForbiddenError } from '@server/shared/errors'
-import { PropertyNotFoundError } from '@server/properties/domain/errors'
-import type { PropertyRepository } from '@server/properties/application/ports/property-repository.port'
+import { AgendaPropertyNotFoundError } from '../../domain/errors'
+import type { AgendaPropertyLookup } from '../ports/agenda-property-lookup.port'
 
 import { assertCanManageAgendaEvent } from '../../domain/agenda-access-rules'
 import {
@@ -16,27 +22,20 @@ import { AGENDA_MINIMUM_VISIT_MINUTES } from '@shared/lib/utils/agenda-schedulin
 import { normalizeAgendaEventLinks } from '../../domain/agenda-event-links'
 import {
   AgendaEventNotFoundError,
+  AgendaCancellationReasonRequiredError,
   AgendaRenterLinksForbiddenError,
   AgendaRenterPropertyRequiredError,
   AgendaVisitMinimumDurationError,
 } from '../../domain/errors'
-import type { AgendaEventChanges, AgendaEventLinks } from '../../domain/agenda-event.entity'
-import type { AgendaEventRepository } from '../ports/agenda-event-repository.port'
 
-export interface UpdateAgendaEventInput extends AgendaEventChanges, AgendaEventLinks {
-  outsideBusinessHoursConfirmed?: boolean
-  durationMinutes?: number
-  actorTenantId: string
-  actorPapel: Papel
-  actorUserId?: string
-  id: string
-}
+import type { AgendaEventRepository } from '../ports/agenda-event-repository.port'
 
 export class UpdateAgendaEventUseCase {
   constructor(
     private readonly agendaEventRepository: AgendaEventRepository,
-    private readonly propertyRepository: PropertyRepository,
+    private readonly propertyRepository: AgendaPropertyLookup,
     private readonly userRepository: UserRepository,
+    private readonly propertyCatalog?: AgendaPropertyCatalog,
   ) {}
 
   async execute(input: UpdateAgendaEventInput) {
@@ -45,13 +44,13 @@ export class UpdateAgendaEventUseCase {
     assertCanManageAgendaEvent(input.actorPapel, input.actorUserId, existing)
     if (
       !isAgencyManager(input.actorPapel) &&
-      ((input.destino !== undefined && input.destino !== (existing.destino ?? 'LEGACY_TEAM')) ||
+      ((input.destino !== undefined && input.destino !== (existing.destino ?? 'SHARED_TEAM')) ||
         (input.interno !== undefined && input.interno !== Boolean(existing.interno)) ||
         (input.responsavelId !== undefined && input.responsavelId !== existing.responsavelId))
     )
       throw new ForbiddenError()
 
-    const destino = input.destino ?? existing.destino ?? 'LEGACY_TEAM'
+    const destino = input.destino ?? existing.destino ?? 'SHARED_TEAM'
     const interno = input.interno ?? existing.interno ?? false
     const responsavelId = input.responsavelId ?? existing.responsavelId
     if (
@@ -67,7 +66,7 @@ export class UpdateAgendaEventUseCase {
     }
     if (
       interno &&
-      (destino === 'LEGACY_TEAM' || input.donoEmail || input.participanteEmails?.length)
+      (destino === 'SHARED_TEAM' || input.donoEmail || input.participanteEmails?.length)
     ) {
       throw new ConflictError('Eventos internos são destinados apenas à equipe da imobiliária.')
     }
@@ -75,7 +74,7 @@ export class UpdateAgendaEventUseCase {
       !interno &&
       ((input.participanteNome ?? existing.participanteNome).trim().length < 2 ||
         !(input.participanteTelefone ?? existing.participanteTelefone).trim() ||
-        (destino !== 'LEGACY_TEAM' &&
+        (destino !== 'SHARED_TEAM' &&
           !(input.imovelId !== undefined ? input.imovelId : existing.imovelId) &&
           !(input.referenciaImovelLivre !== undefined
             ? input.referenciaImovelLivre
@@ -93,19 +92,18 @@ export class UpdateAgendaEventUseCase {
     if (input.imovelId) {
       const property =
         input.actorPapel === 'RENTER'
-          ? await this.propertyRepository.findRenterContractProperty(
+          ? await this.propertyRepository.findRentedProperty(
               input.actorUserId ?? '',
               input.imovelId,
             )
-          : await this.propertyRepository.findByTenantAndId(
+          : await this.propertyRepository.findAccessibleProperty(
               manageableAgendaEventTenantId(input, existing),
               input.imovelId,
-              undefined,
               isPropertyOwner(input.actorPapel) ? input.actorUserId : undefined,
             )
 
       if (!property || property.tenantId !== manageableAgendaEventTenantId(input, existing)) {
-        throw new PropertyNotFoundError()
+        throw new AgendaPropertyNotFoundError()
       }
     }
 
@@ -123,6 +121,15 @@ export class UpdateAgendaEventUseCase {
       }
     }
 
+    if (input.status === 'CANCELLED' && !input.motivoCancelamento?.trim())
+      throw new AgendaCancellationReasonRequiredError()
+
+    const propertySummary = await prepareAgendaPropertySummary(
+      this.propertyCatalog,
+      input,
+      input.imovelId === undefined ? existing.imovelId : input.imovelId,
+    )
+
     const event = await this.agendaEventRepository.update(
       manageableAgendaEventTenantId(input, existing),
       input.id,
@@ -134,6 +141,7 @@ export class UpdateAgendaEventUseCase {
         interno: input.interno,
         responsavelId: input.responsavelId,
         status: input.status,
+        motivoCancelamento: input.motivoCancelamento,
         imovelId: input.imovelId,
         referenciaImovelLivre: input.referenciaImovelLivre,
         participanteNome: input.participanteNome,
@@ -144,12 +152,13 @@ export class UpdateAgendaEventUseCase {
         donoEmail: interno ? null : input.donoEmail,
         participanteEmails: interno ? [] : input.participanteEmails,
       }),
+      input.actorUserId,
     )
 
     if (!event) {
       throw new AgendaEventNotFoundError()
     }
 
-    return event
+    return withPreparedAgendaPropertySummary(event, propertySummary)
   }
 }

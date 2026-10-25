@@ -93,6 +93,7 @@ jobs:
       PASSWORD_RESET_TOKEN_SECRET: ci-password-reset-token-secret
       AUTH_RATE_LIMIT_MAX: '1000'
       AUTH_E2E_MAILBOX_PORT: '3101'
+      KETRIS_E2E_ISOLATED_DB: '1'
       AWS_ENDPOINT_URL: http://127.0.0.1:3101
       AWS_ENDPOINT_URL_SES: http://127.0.0.1:3101
       AWS_IGNORE_CONFIGURED_ENDPOINT_URLS: 'false'
@@ -117,7 +118,7 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=4096
         run: npm run build -w @ketris/web
-      - name: Executa os fluxos de Auth com e-mail simulado localmente
+      - name: Executa os fluxos de Auth e Agenda com dados locais isolados
         shell: bash
         run: |
           npm run start -w @ketris/web -- --hostname localhost > /tmp/auth-next.log 2>&1 &
@@ -134,4 +135,4 @@ jobs:
           }
           if (!ready) throw new Error('O servidor de teste Auth não iniciou.')
           JS
-          npm exec -w @ketris/web -- cypress run --browser electron --config baseUrl=http://localhost:3000 --spec 'cypress/e2e/auth/**/*.cy.ts'
+          npm exec -w @ketris/web -- cypress run --browser electron --config baseUrl=http://localhost:3000 --spec 'cypress/e2e/auth/**/*.cy.ts,cypress/e2e/agenda/**/*.cy.ts'

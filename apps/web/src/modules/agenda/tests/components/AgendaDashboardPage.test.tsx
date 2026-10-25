@@ -1,3 +1,11 @@
+vi.mock('../../hooks/use-agenda-properties', () => ({
+  useAgendaProperties: () => ({
+    data: undefined,
+    isFetching: false,
+    hasNextPage: false,
+    isError: false,
+  }),
+}))
 import { useAgendaAgents } from '../../hooks/use-agenda-agents'
 import { ThemeProvider } from '@mui/material'
 import { render, screen, waitFor, within } from '@testing-library/react'
@@ -66,6 +74,16 @@ const twoDaysFromNow = '2026-10-23'
 
 function makeEvent(overrides: Partial<AgendaEventApi> = {}): AgendaEventApi {
   return {
+    audience: 'SHARED_TEAM',
+    internal: false,
+    responsibleName: 'Corretor',
+    owner: null,
+    createdBy: null,
+    participants: [],
+    propertyLabel: null,
+    cancelledAt: null,
+    cancelledById: null,
+    cancellationReason: null,
     id: 'event-1',
     tenantId: 'tenant-1',
     responsibleId: 'user-1',
@@ -154,7 +172,7 @@ describe('AgendaDashboardPage', () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(dayjs().hour(9).minute(0).second(0).millisecond(0).toDate())
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1' },
+      data: { tenantId: 'tenant-1', role: 'AGENT', user: { id: 'user-1' } },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
@@ -254,6 +272,7 @@ describe('AgendaDashboardPage', () => {
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
     const event: RenterAgendaEventApi = {
+      propertyLabel: null,
       id: 'linked-event',
       title: 'Vistoria agendada',
       kind: 'INSPECTION',
@@ -571,6 +590,10 @@ describe('AgendaDashboardPage', () => {
 
     const dialogs = await screen.findAllByRole('dialog')
     const confirmDialog = dialogs[dialogs.length - 1]
+    await userEvent.type(
+      within(confirmDialog).getByLabelText('Motivo do cancelamento'),
+      'Cliente indisponível',
+    )
     await userEvent.click(within(confirmDialog).getByRole('button', { name: 'Excluir' }))
 
     await waitFor(() =>
@@ -579,7 +602,10 @@ describe('AgendaDashboardPage', () => {
         { variant: 'success' },
       ),
     )
-    expect(cancelMutateAsync).toHaveBeenCalledWith('event-1')
+    expect(cancelMutateAsync).toHaveBeenCalledWith({
+      id: 'event-1',
+      payload: { reason: 'Cliente indisponível' },
+    })
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   })
 })

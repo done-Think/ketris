@@ -26,6 +26,7 @@ describe('Agency team event visibility and mutations', () => {
   const tokens: Record<string, string> = {}
 
   function request(method: string, path: string, token: string, body?: unknown) {
+    if (path.endsWith('/cancel') && body === undefined) body = { reason: 'Cliente indisponível' }
     return new NextRequest(`http://localhost/api/agenda/events${path}`, {
       method,
       headers: { authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -44,7 +45,7 @@ describe('Agency team event visibility and mutations', () => {
     tenantId: string,
     responsibleId: string,
     title: string,
-    audience: 'LEGACY_TEAM' | 'ALL_AGENTS' | 'ASSIGNED_AGENT',
+    audience: 'SHARED_TEAM' | 'ALL_AGENTS' | 'ASSIGNED_AGENT',
     internal = true,
   ) {
     return prisma.eventoAgenda.create({
@@ -142,7 +143,7 @@ describe('Agency team event visibility and mutations', () => {
     ).id
     collective = (await createEvent(agency, admin.id, 'Collective', 'ALL_AGENTS')).id
     assigned = (await createEvent(agency, agent.id, 'Directed', 'ASSIGNED_AGENT')).id
-    legacy = (await createEvent(agency, colleague.id, 'Previous event', 'LEGACY_TEAM', false)).id
+    legacy = (await createEvent(agency, colleague.id, 'Previous event', 'SHARED_TEAM', false)).id
     foreign = (await createEvent(tenants[1], foreignAgent.id, 'Other agency', 'ALL_AGENTS')).id
     // Even a pre-existing explicit link must not expose a newly internal event.
     await prisma.eventoAgendaParticipante.createMany({

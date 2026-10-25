@@ -4,6 +4,16 @@ import { toAgendaEvent } from '../../utils/map-agenda-event'
 import type { AgendaEventApi } from '../../types/agenda-event'
 
 const baseApiEvent: AgendaEventApi = {
+  audience: 'SHARED_TEAM',
+  internal: false,
+  responsibleName: 'Corretor',
+  owner: null,
+  createdBy: null,
+  participants: [],
+  propertyLabel: null,
+  cancelledAt: null,
+  cancelledById: null,
+  cancellationReason: null,
   id: 'event-1',
   tenantId: 'tenant-1',
   responsibleId: 'user-1',
@@ -39,10 +49,10 @@ describe('toAgendaEvent', () => {
   })
 
   it.each([
-    ['CONFIRMED', 'Confirmada', 'primary'],
-    ['PENDING', 'Pendente', 'warning'],
-    ['RESCHEDULE', 'Reagendar', 'info'],
-    ['CANCELLED', 'Reagendar', 'info'],
+    ['CONFIRMED', 'CONFIRMED', 'primary'],
+    ['PENDING', 'PENDING', 'warning'],
+    ['RESCHEDULE', 'RESCHEDULE', 'info'],
+    ['CANCELLED', 'CANCELLED', 'info'],
   ] as const)('maps API status %s to status %s and tone %s', (apiStatus, status, tone) => {
     const result = toAgendaEvent({ ...baseApiEvent, status: apiStatus })
 
@@ -72,18 +82,33 @@ describe('toAgendaEvent', () => {
   it('resolves the property label and href from propertyId via the lookup map', () => {
     const result = toAgendaEvent(
       { ...baseApiEvent, propertyId: 'prop-1', propertyReference: null },
-      { 'prop-1': { id: 'prop-1', href: '/dashboard/properties/prop-1', label: 'Apto Jardins' } },
+      {
+        'prop-1': {
+          id: 'prop-1',
+          href: { pathname: '/dashboard/properties/[id]', params: { id: 'prop-1' } },
+          label: 'Apto Jardins',
+        },
+      },
     )
 
     expect(result.property).toBe('Apto Jardins')
-    expect(result.propertyHref).toBe('/dashboard/properties/prop-1')
+    expect(result.propertyHref).toEqual({
+      pathname: '/dashboard/properties/[id]',
+      params: { id: 'prop-1' },
+    })
     expect(result.propertyId).toBe('prop-1')
   })
 
   it('prefers the free-text reference over the resolved property label when both are set', () => {
     const result = toAgendaEvent(
       { ...baseApiEvent, propertyId: 'prop-1', propertyReference: 'Sala comercial centro' },
-      { 'prop-1': { id: 'prop-1', href: '/dashboard/properties/prop-1', label: 'Apto Jardins' } },
+      {
+        'prop-1': {
+          id: 'prop-1',
+          href: { pathname: '/dashboard/properties/[id]', params: { id: 'prop-1' } },
+          label: 'Apto Jardins',
+        },
+      },
     )
 
     expect(result.property).toBe('Sala comercial centro')

@@ -1,16 +1,18 @@
 'use client'
 
+import { styles } from '../../styles/agenda-organization-card.styles'
+
 import { Box, Typography } from '@mui/material'
-import { useLocale, useTranslations } from 'next-intl'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
-import { brand } from '@shared/theme/tokens'
+
 import type { AgendaOrganizationCardProps } from '../../types/agenda-organization'
-import { agendaCardBaseSx, agendaEventToneStyles } from './agenda-dashboard-shared'
+import { agendaEventToneStyles } from '../../styles/agenda-calendar.styles'
 
 export function AgendaOrganizationCard({ item }: AgendaOrganizationCardProps) {
   const t = useTranslations('agenda.organization')
-  const locale = useLocale()
+  const formatter = useFormatter()
   const tone =
     agendaEventToneStyles[
       item.kind === 'charge' ? 'warning' : item.kind === 'ticketOpened' ? 'info' : 'primary'
@@ -25,24 +27,18 @@ export function AgendaOrganizationCard({ item }: AgendaOrganizationCardProps) {
           ? { pathname: '/dashboard/finance/charges/[id]', params: { id: item.sourceId } }
           : { pathname: '/dashboard/maintenance/[id]', params: { id: item.sourceId } }
       }
-      sx={{
-        ...agendaCardBaseSx,
-        display: 'block',
-        borderColor: tone.borderColor,
-        bgcolor: tone.bgcolor,
-        textDecoration: 'none',
-      }}
+      sx={styles.box(tone)}
     >
-      <Typography noWrap sx={{ color: tone.color, fontSize: 10, fontWeight: 800 }}>
+      <Typography noWrap sx={styles.typography(tone)}>
         {t(`kinds.${item.kind}`)} · {item.time ?? t('allDay')}
       </Typography>
-      <Typography noWrap sx={{ color: brand.graphite[500], fontSize: 12, fontWeight: 900 }}>
+      <Typography noWrap sx={styles.typography2}>
         {item.title}
       </Typography>
-      <Typography noWrap sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 700 }}>
+      <Typography noWrap sx={styles.typography3}>
         {status}
         {item.amount !== undefined
-          ? ` · ${new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL' }).format(item.amount)}`
+          ? ` · ${formatter.number(item.amount, { style: 'currency', currency: 'BRL' })}`
           : item.property
             ? ` · ${item.property}`
             : ''}

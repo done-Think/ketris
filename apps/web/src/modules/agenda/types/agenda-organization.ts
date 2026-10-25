@@ -1,30 +1,16 @@
+import type { z } from 'zod'
+import type { chargeListItemSchema } from '@server/financial/schemas/charge.schema'
+import type { maintenanceTicketListItemSchema } from '@server/maintenance/schemas/maintenance-ticket.schema'
 import type { AgendaTimeSlot } from './agenda-event'
 
-export interface AgendaChargeApi {
-  id: string
-  code: string
-  description: string | null
-  dueDate: string
-  amount: number
-  propertyTitle: string | null
-  status: 'PENDENTE' | 'PAGA' | 'ATRASADA' | 'AGENDADA' | 'CANCELADA'
-}
-
-export interface AgendaMaintenanceApi {
-  id: string
-  title: string
-  propertyTitle: string
-  createdAt: string
-  scheduledAt?: string | null
-  status:
-    | 'ABERTO'
-    | 'EM_ANDAMENTO'
-    | 'RESOLVIDO'
-    | 'FECHADO'
-    | 'AGUARDANDO_CONFIRMACAO'
-    | 'CONTESTADO'
-    | 'CANCELADO'
-}
+export type AgendaChargeApi = Pick<
+  z.infer<typeof chargeListItemSchema>,
+  'id' | 'code' | 'description' | 'dueDate' | 'amount' | 'propertyTitle' | 'status'
+>
+export type AgendaMaintenanceApi = Pick<
+  z.infer<typeof maintenanceTicketListItemSchema>,
+  'id' | 'title' | 'propertyTitle' | 'createdAt' | 'scheduledAt' | 'status'
+>
 
 export interface AgendaPage<T> {
   items: T[]

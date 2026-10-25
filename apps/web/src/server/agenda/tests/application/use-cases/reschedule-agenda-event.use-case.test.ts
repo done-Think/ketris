@@ -85,10 +85,15 @@ describe('RescheduleAgendaEventUseCase', () => {
       inicio: novoInicio,
     })
 
-    expect(deps.agendaEventRepository.reschedule).toHaveBeenCalledWith('tenant-1', 'event-1', {
-      inicio: novoInicio,
-      fim: new Date(novoInicio.getTime() + 60 * 60_000),
-    })
+    expect(deps.agendaEventRepository.reschedule).toHaveBeenCalledWith(
+      'tenant-1',
+      'event-1',
+      {
+        inicio: novoInicio,
+        fim: new Date(novoInicio.getTime() + 60 * 60_000),
+      },
+      undefined,
+    )
   })
 
   it('usa a nova duração quando informada', async () => {
@@ -104,10 +109,15 @@ describe('RescheduleAgendaEventUseCase', () => {
       durationMinutes: 30,
     })
 
-    expect(deps.agendaEventRepository.reschedule).toHaveBeenCalledWith('tenant-1', 'event-1', {
-      inicio: novoInicio,
-      fim: new Date(novoInicio.getTime() + 30 * 60_000),
-    })
+    expect(deps.agendaEventRepository.reschedule).toHaveBeenCalledWith(
+      'tenant-1',
+      'event-1',
+      {
+        inicio: novoInicio,
+        fim: new Date(novoInicio.getTime() + 30 * 60_000),
+      },
+      undefined,
+    )
   })
 
   it('o RENTER não remarca evento criado por outra pessoa', async () => {
@@ -239,10 +249,15 @@ describe('RescheduleAgendaEventUseCase', () => {
       durationMinutes: 90,
     })
 
-    expect(deps.agendaEventRepository.reschedule).toHaveBeenCalledWith('tenant-1', 'event-1', {
-      inicio: existingEvent.inicio,
-      fim: new Date(existingEvent.inicio.getTime() + 90 * 60_000),
-    })
+    expect(deps.agendaEventRepository.reschedule).toHaveBeenCalledWith(
+      'tenant-1',
+      'event-1',
+      {
+        inicio: existingEvent.inicio,
+        fim: new Date(existingEvent.inicio.getTime() + 90 * 60_000),
+      },
+      undefined,
+    )
   })
 
   it('lança AgendaVisitMinimumDurationError ao reagendar uma VISIT para menos de 30min', async () => {

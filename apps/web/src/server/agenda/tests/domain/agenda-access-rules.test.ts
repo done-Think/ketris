@@ -11,7 +11,7 @@ const event = (overrides: Partial<AgendaEvent> = {}) =>
   ({
     responsavelId: 'agent-1',
     criadoPorId: 'agent-1',
-    destino: 'LEGACY_TEAM',
+    destino: 'SHARED_TEAM',
     interno: false,
     ...overrides,
   }) as AgendaEvent

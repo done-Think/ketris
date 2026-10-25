@@ -28,13 +28,17 @@ describe('CancelAgendaEventUseCase', () => {
     const useCase = new CancelAgendaEventUseCase(deps.agendaEventRepository)
 
     const result = await useCase.execute({
+      reason: 'Cliente indisponível',
       actorTenantId: 'tenant-1',
       actorPapel: 'AGENT',
       id: 'event-1',
     })
 
     expect(result).toBe(cancelledEvent)
-    expect(deps.agendaEventRepository.cancel).toHaveBeenCalledWith('tenant-1', 'event-1')
+    expect(deps.agendaEventRepository.cancel).toHaveBeenCalledWith('tenant-1', 'event-1', {
+      reason: 'Cliente indisponível',
+      actorUserId: undefined,
+    })
   })
 
   it('o RENTER cancela o evento que criou, na agenda da imobiliária', async () => {
@@ -47,6 +51,7 @@ describe('CancelAgendaEventUseCase', () => {
     const useCase = new CancelAgendaEventUseCase(deps.agendaEventRepository)
 
     await useCase.execute({
+      reason: 'Cliente indisponível',
       actorTenantId: 'renters',
       actorUserId: 'renter-1',
       actorPapel: 'RENTER',
@@ -57,7 +62,10 @@ describe('CancelAgendaEventUseCase', () => {
       { kind: 'linkedUser', userId: 'renter-1' },
       'event-1',
     )
-    expect(deps.agendaEventRepository.cancel).toHaveBeenCalledWith('agency-1', 'event-1')
+    expect(deps.agendaEventRepository.cancel).toHaveBeenCalledWith('agency-1', 'event-1', {
+      reason: 'Cliente indisponível',
+      actorUserId: 'renter-1',
+    })
   })
 
   it('o RENTER não cancela evento criado por outra pessoa', async () => {
@@ -72,6 +80,7 @@ describe('CancelAgendaEventUseCase', () => {
 
     await expect(
       useCase.execute({
+        reason: 'Cliente indisponível',
         actorTenantId: 'renters',
         actorUserId: 'renter-1',
         actorPapel: 'RENTER',
@@ -86,7 +95,12 @@ describe('CancelAgendaEventUseCase', () => {
     const useCase = new CancelAgendaEventUseCase(deps.agendaEventRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'AGENT', id: 'inexistente' }),
+      useCase.execute({
+        reason: 'Cliente indisponível',
+        actorTenantId: 'tenant-1',
+        actorPapel: 'AGENT',
+        id: 'inexistente',
+      }),
     ).rejects.toThrow(AgendaEventNotFoundError)
   })
 })

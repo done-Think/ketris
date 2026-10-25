@@ -12,10 +12,6 @@ export class AgendaRenterLinksForbiddenError extends ForbiddenError {
   }
 }
 
-/**
- * Same status, code and message for every reason (unknown e-mail, inactive user, staff from
- * another tenant), so the response never reveals whether or why an account can't be linked.
- */
 export class AgendaEventUserLinkUnavailableError extends AppError {
   constructor(email: string) {
     super(`Não foi possível vincular o e-mail ${email} a este evento.`, {
@@ -76,5 +72,20 @@ export class AgendaOutsideBusinessHoursError extends AppError {
 export class AgendaPropertyVisitConflictError extends ConflictError {
   constructor() {
     super('Já existe uma visita reservada para este imóvel nesse período.')
+  }
+}
+
+export class AgendaPropertyNotFoundError extends NotFoundError {
+  constructor() {
+    super('Imóvel não encontrado.')
+  }
+}
+
+export class AgendaCancellationReasonRequiredError extends AppError {
+  constructor() {
+    super('Informe o motivo do cancelamento.', {
+      status: 400,
+      code: 'AGENDA_CANCELLATION_REASON_REQUIRED',
+    })
   }
 }

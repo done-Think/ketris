@@ -1,14 +1,10 @@
+import type { AgendaReadActor } from '../types/read-actor'
 import { isAgencyManager, isPropertyOwner } from '@server/auth/domain/roles'
 import type { Papel, User } from '@server/auth/domain/user.entity'
 
-import type { AgendaReadScope, AgendaEvent, AgendaEventAudience } from './agenda-event.entity'
+import type { AgendaEvent } from './agenda-event.entity'
+import type { AgendaReadScope, AgendaEventAudience } from '../types/agenda-event'
 import { ForbiddenError } from '@server/shared/errors'
-
-export interface AgendaReadActor {
-  actorTenantId: string
-  actorUserId: string
-  actorPapel: Papel
-}
 
 export function resolveAgendaReadScope(actor: AgendaReadActor): AgendaReadScope {
   if (actor.actorPapel === 'RENTER') {
@@ -58,11 +54,6 @@ export function assertCanChooseAgendaAudience(
   }
 }
 
-/**
- * Who can be linked to an event as owner or participant: an active RENTER (from any tenant,
- * since renters live in the shared renters tenant) or an active, approved staff member of the
- * event's own tenant.
- */
 export function canLinkUserToAgendaEvent(
   user: Pick<User, 'tenantId' | 'papel' | 'ativo' | 'vinculoAprovadoEm'>,
   eventTenantId: string,

@@ -1,5 +1,7 @@
 'use client'
 
+import { styles } from '../styles/agenda-event-form-dialog.styles'
+
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import {
@@ -15,14 +17,13 @@ import {
 } from '@mui/material'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
-
-import { brand, iconSize } from '@shared/theme/tokens'
 
 import { buildAgendaEventFormSchema } from '../schemas/agenda-event-form-schema'
 import type { AgendaEventFormDialogProps, AgendaEventFormValues } from '../types/agenda-event'
 import { computeEarliestSchedulableSlot } from '../utils/scheduling-window'
+import { AgendaScheduleConfirmationDialog } from './AgendaScheduleConfirmationDialog'
 import { AgendaEventFormFields } from './AgendaEventFormFields'
 import { useAgendaScheduleConfirmation } from '../hooks/use-agenda-schedule-confirmation'
 
@@ -32,7 +33,7 @@ function buildDefaultValues(): AgendaEventFormValues {
   return {
     outsideBusinessHoursConfirmed: false,
     internal: false,
-    audience: 'LEGACY_TEAM',
+    audience: 'SHARED_TEAM',
     responsibleId: '',
     customProperty: '',
     durationMinutes: 60,
@@ -47,7 +48,11 @@ function buildDefaultValues(): AgendaEventFormValues {
   }
 }
 
-export function AgendaEventFormDialog({
+export function AgendaEventFormDialog(props: AgendaEventFormDialogProps) {
+  return props.open ? <AgendaEventFormDialogContent {...props} /> : null
+}
+
+function AgendaEventFormDialogContent({
   canManageAudience = false,
   agentOptions,
   agentsLoading,
@@ -68,23 +73,17 @@ export function AgendaEventFormDialog({
   const {
     control,
     handleSubmit,
-    reset,
     formState: { isSubmitting },
   } = useForm<AgendaEventFormValues>({
-    defaultValues: buildDefaultValues(),
-    resolver: zodResolver(agendaEventFormSchema),
-  })
-
-  useEffect(() => {
-    if (!open) return
-
-    reset({
+    defaultValues: {
       ...buildDefaultValues(),
       ...(canManageAudience ? { audience: 'ALL_AGENTS' as const } : {}),
       ...initialValues,
-    })
-  }, [initialValues, open, reset, canManageAudience])
-  const { submit, waiting, cancel } = useAgendaScheduleConfirmation({
+    },
+    resolver: zodResolver(agendaEventFormSchema),
+  })
+
+  const { submit, confirm, waiting, cancel } = useAgendaScheduleConfirmation({
     open,
     handleSubmit,
     onSubmit: onCreate,
@@ -95,60 +94,66 @@ export function AgendaEventFormDialog({
   }
 
   return (
-    <Dialog
-      open={open}
-      onClose={closeDialog}
-      disableEnforceFocus={waiting}
-      fullWidth
-      maxWidth="sm"
-      PaperProps={{ sx: { minHeight: { sm: 640 } } }}
-    >
-      <Box component="form" noValidate onSubmit={handleSubmit(submit)}>
-        <DialogTitle sx={{ px: { xs: 2, md: 2.8 }, pb: 1.4, pt: 2.4 }}>
-          <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
-            <Box sx={{ minWidth: 0 }}>
-              <Typography sx={{ color: brand.magenta[600], fontSize: 13, fontWeight: 900 }}>
-                {t('eyebrow')}
-              </Typography>
-              <Typography sx={{ color: brand.graphite[500], fontSize: 22, fontWeight: 900 }}>
-                {t('title')}
-              </Typography>
-            </Box>
-            <IconButton aria-label={t('closeAriaLabel')} onClick={closeDialog}>
-              <CloseRoundedIcon sx={{ fontSize: iconSize.lg }} />
-            </IconButton>
-          </Stack>
-        </DialogTitle>
+    <>
+      <Dialog
+        open={open}
+        onClose={closeDialog}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{ sx: styles.paper }}
+      >
+        <Box component="form" noValidate onSubmit={handleSubmit(submit)}>
+          <DialogTitle sx={styles.dialogTitle}>
+            <Stack
+              direction="row"
+              alignItems="flex-start"
+              justifyContent="space-between"
+              spacing={2}
+            >
+              <Box sx={styles.box}>
+                <Typography sx={styles.typography}>{t('eyebrow')}</Typography>
+                <Typography sx={styles.typography2}>{t('title')}</Typography>
+              </Box>
+              <IconButton aria-label={t('closeAriaLabel')} onClick={closeDialog}>
+                <CloseRoundedIcon sx={styles.closeRoundedIcon} />
+              </IconButton>
+            </Stack>
+          </DialogTitle>
 
-        <DialogContent
-          sx={{ mt: 1.6, overflow: 'visible', px: { xs: 2, md: 2.8 }, pb: 2, pt: 2.4 }}
-        >
-          <AgendaEventFormFields
-            canManageAudience={canManageAudience}
-            agentOptions={agentOptions}
-            agentsLoading={agentsLoading}
-            agentsError={agentsError}
-            control={control}
-            maxDate={maxDate}
-            minDate={minDate}
-            propertyOptions={propertyOptions}
-          />
-        </DialogContent>
+          <DialogContent sx={styles.dialogContent}>
+            <AgendaEventFormFields
+              canManageAudience={canManageAudience}
+              agentOptions={agentOptions}
+              agentsLoading={agentsLoading}
+              agentsError={agentsError}
+              control={control}
+              maxDate={maxDate}
+              minDate={minDate}
+              propertyOptions={propertyOptions}
+            />
+          </DialogContent>
 
-        <DialogActions sx={{ px: { xs: 2, md: 2.8 }, pb: 2.5, pt: 0 }}>
-          <Button type="button" variant="outlined" color="secondary" onClick={closeDialog}>
-            {t('cancel')}
-          </Button>
-          <Button
-            type="submit"
-            variant="contained"
-            startIcon={<AddRoundedIcon />}
-            disabled={isSubmitting}
-          >
-            {t('submit')}
-          </Button>
-        </DialogActions>
-      </Box>
-    </Dialog>
+          <DialogActions sx={styles.dialogActions}>
+            <Button type="button" variant="outlined" color="secondary" onClick={closeDialog}>
+              {t('cancel')}
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              startIcon={<AddRoundedIcon />}
+              disabled={isSubmitting}
+            >
+              {t('submit')}
+            </Button>
+          </DialogActions>
+        </Box>
+      </Dialog>
+      <AgendaScheduleConfirmationDialog
+        open={waiting}
+        isPending={isSubmitting}
+        onBack={cancel}
+        onConfirm={confirm}
+      />
+    </>
   )
 }

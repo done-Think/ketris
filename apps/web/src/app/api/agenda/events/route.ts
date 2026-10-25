@@ -2,7 +2,6 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
-import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { agendaContainer } from '@server/agenda/container'
 import {
@@ -12,36 +11,21 @@ import {
 import {
   toAgendaEventReadResponse,
   toAgendaEventResponse,
-} from '@server/agenda/schemas/agenda-event.schema'
-import { parseJsonBody, RequestValidationError, withErrorHandling } from '@server/shared/http'
+} from '@server/agenda/application/agenda-event-response'
+import { parseJsonBody, parseQuery, withErrorHandling } from '@server/shared/http'
 
 export const GET = withErrorHandling(async (request: NextRequest) => {
   const actor = await requireBearerAuth(request, authContainer.tokenService)
-  const parsed = listAgendaEventsQuerySchema.safeParse(
-    Object.fromEntries(request.nextUrl.searchParams),
-  )
+  const query = parseQuery(request, listAgendaEventsQuerySchema)
 
-  if (!parsed.success) {
-    throw new RequestValidationError(
-      parsed.error.issues.map((issue) => ({
-        path: issue.path.join('.'),
-        message: issue.message,
-      })),
-    )
-  }
-
-  if (parsed.data.to <= parsed.data.from) {
-    throw new RequestValidationError([{ path: 'to', message: '"to" deve ser depois de "from".' }])
-  }
-
-  const actorPapel = actor.papel as Papel
+  const actorPapel = actor.papel
   const events = await agendaContainer.listAgendaEventsUseCase.execute({
     actorTenantId: actor.tenantId,
     actorUserId: actor.sub,
     actorPapel,
-    from: parsed.data.from,
-    to: parsed.data.to,
-    responsavelId: parsed.data.responsibleId,
+    from: query.from,
+    to: query.to,
+    responsavelId: query.responsibleId,
   })
 
   return NextResponse.json(
@@ -57,7 +41,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const event = await agendaContainer.createAgendaEventUseCase.execute({
     actorTenantId: actor.tenantId,
     actorUserId: actor.sub,
-    actorPapel: actor.papel as Papel,
+    actorPapel: actor.papel,
     responsavelId: body.responsibleId,
     destino: body.audience,
     interno: body.internal,

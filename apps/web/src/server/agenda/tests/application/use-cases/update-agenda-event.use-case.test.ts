@@ -1,12 +1,13 @@
 import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
 import { describe, expect, it, vi } from 'vitest'
 
-import { PropertyNotFoundError } from '@server/properties/domain/errors'
+import { AgendaPropertyNotFoundError } from '../../../domain/errors'
 import type { Property } from '@server/properties/types/property'
-import type { PropertyRepository } from '@server/properties/application/ports/property-repository.port'
+import type { AgendaPropertyLookup } from '../../../application/ports/agenda-property-lookup.port'
 
 import { AgendaEventNotFoundError, AgendaVisitMinimumDurationError } from '../../../domain/errors'
-import type { AgendaEvent, AgendaEventLinks } from '../../../domain/agenda-event.entity'
+import type { AgendaEvent } from '../../../domain/agenda-event.entity'
+import type { AgendaEventLinks } from '../../../types/agenda-event'
 import type { AgendaEventRepository } from '../../../application/ports/agenda-event-repository.port'
 import { UpdateAgendaEventUseCase } from '../../../application/use-cases/update-agenda-event.use-case'
 
@@ -37,7 +38,7 @@ const shortEvent: AgendaEvent = {
 
 function createDeps(overrides?: {
   update?: AgendaEventRepository['update']
-  findByTenantAndId?: PropertyRepository['findByTenantAndId']
+  findAccessibleProperty?: AgendaPropertyLookup['findAccessibleProperty']
   agendaFindByTenantAndId?: AgendaEventRepository['findByTenantAndId']
 }) {
   const agendaEventRepository: AgendaEventRepository = {
@@ -50,15 +51,11 @@ function createDeps(overrides?: {
     cancel: vi.fn(),
     hasOverlap: vi.fn(),
   }
-  const propertyRepository: PropertyRepository = {
-    create: vi.fn(),
-    listPage: vi.fn(),
-    findByTenantAndId:
-      overrides?.findByTenantAndId ?? vi.fn().mockResolvedValue({ id: 'property-1' } as Property),
-    update: vi.fn(),
-    setStatus: vi.fn(),
-    findContractProperty: vi.fn(),
-    findRenterContractProperty: vi.fn(),
+  const propertyRepository: AgendaPropertyLookup = {
+    findAccessibleProperty:
+      overrides?.findAccessibleProperty ??
+      vi.fn().mockResolvedValue({ id: 'property-1' } as Property),
+    findRentedProperty: vi.fn(),
   }
 
   return {
@@ -90,6 +87,7 @@ describe('UpdateAgendaEventUseCase', () => {
       'event-1',
       expect.objectContaining({ titulo: 'Atualizado' }),
       { donoEmail: undefined, participanteEmails: undefined },
+      undefined,
     )
   })
 
@@ -119,8 +117,8 @@ describe('UpdateAgendaEventUseCase', () => {
     expect(deps.agendaEventRepository.update).not.toHaveBeenCalled()
   })
 
-  it('lança PropertyNotFoundError quando o novo imovelId não existe no tenant', async () => {
-    const deps = createDeps({ findByTenantAndId: vi.fn().mockResolvedValue(null) })
+  it('lança AgendaPropertyNotFoundError quando o novo imovelId não existe no tenant', async () => {
+    const deps = createDeps({ findAccessibleProperty: vi.fn().mockResolvedValue(null) })
     const useCase = new UpdateAgendaEventUseCase(
       deps.agendaEventRepository,
       deps.propertyRepository,
@@ -134,7 +132,7 @@ describe('UpdateAgendaEventUseCase', () => {
         id: 'event-1',
         imovelId: 'inexistente',
       }),
-    ).rejects.toThrow(PropertyNotFoundError)
+    ).rejects.toThrow(AgendaPropertyNotFoundError)
   })
 
   it('lança AgendaEventNotFoundError quando o evento não existe no tenant', async () => {
@@ -232,6 +230,7 @@ describe('UpdateAgendaEventUseCase', () => {
         'event-1',
         expect.objectContaining({ titulo: 'Atualizado' }),
         expected,
+        undefined,
       )
     },
   )

@@ -1,11 +1,7 @@
 import { normalizeEmail } from '@server/shared/normalize-email'
 
-import type { AgendaEventLinks } from './agenda-event.entity'
+import type { AgendaEventLinks } from '../types/agenda-event'
 
-/**
- * Normalizes and de-duplicates the link e-mails while preserving the edit semantics:
- * undefined stays undefined (keep), null stays null (remove owner) and [] stays [] (remove all).
- */
 export function normalizeAgendaEventLinks(links: AgendaEventLinks): AgendaEventLinks {
   return {
     donoEmail:

@@ -1,5 +1,9 @@
 'use client'
 
+import { AgendaPropertyField } from './AgendaPropertyField'
+
+import { styles } from '../styles/agenda-event-form-fields.styles'
+
 import { Alert, Box, FormControlLabel, MenuItem, Stack, Switch } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { Controller, useWatch } from 'react-hook-form'
@@ -32,7 +36,7 @@ export function AgendaEventFormFields({
   const showCustomPropertyField = selectedPropertyId === agendaOtherPropertyValue
 
   return (
-    <Stack spacing={1.6} sx={{ pt: 1 }}>
+    <Stack spacing={1.6} sx={styles.stack}>
       {canManageAudience && (
         <Stack spacing={1.4}>
           <Controller
@@ -58,8 +62,8 @@ export function AgendaEventFormFields({
             select
             fullWidth
           >
-            {audience === 'LEGACY_TEAM' && (
-              <MenuItem value="LEGACY_TEAM">{t('audiences.LEGACY_TEAM')}</MenuItem>
+            {audience === 'SHARED_TEAM' && (
+              <MenuItem value="SHARED_TEAM">{t('audiences.SHARED_TEAM')}</MenuItem>
             )}
             <MenuItem value="ALL_AGENTS">{t('audiences.ALL_AGENTS')}</MenuItem>
             <MenuItem value="ASSIGNED_AGENT">{t('audiences.ASSIGNED_AGENT')}</MenuItem>
@@ -100,21 +104,11 @@ export function AgendaEventFormFields({
             </MenuItem>
           ))}
         </RhfTextField>
-        <RhfTextField
+        <AgendaPropertyField
           control={control}
-          name="propertyId"
-          label={internal ? t('fields.optionalProperty') : t('fields.property')}
-          select
-          fullWidth
-        >
-          {internal && <MenuItem value="">{t('fields.noProperty')}</MenuItem>}
-          {propertyOptions.map((property) => (
-            <MenuItem key={property.id} value={property.id}>
-              {property.label}
-            </MenuItem>
-          ))}
-          <MenuItem value={agendaOtherPropertyValue}>{t('fields.otherProperty')}</MenuItem>
-        </RhfTextField>
+          internal={internal}
+          propertyOptions={propertyOptions}
+        />
         {showCustomPropertyField ? (
           <RhfTextField
             control={control}
@@ -125,13 +119,7 @@ export function AgendaEventFormFields({
         ) : null}
       </Stack>
 
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-          gap: 1.4,
-        }}
-      >
+      <Box sx={styles.box}>
         <RhfTextField
           control={control}
           name="participant"
@@ -147,13 +135,7 @@ export function AgendaEventFormFields({
         />
       </Box>
 
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr 1fr' },
-          gap: 1.4,
-        }}
-      >
+      <Box sx={styles.box2}>
         <RhfTextField
           control={control}
           name="scheduledDate"

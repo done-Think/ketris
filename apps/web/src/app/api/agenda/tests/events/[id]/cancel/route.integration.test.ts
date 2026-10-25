@@ -90,7 +90,8 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
   function buildRequest(id: string, token = actorToken): NextRequest {
     return new NextRequest(`http://localhost/api/agenda/events/${id}/cancel`, {
       method: 'POST',
-      headers: { authorization: `Bearer ${token}` },
+      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ reason: 'Cliente indisponível' }),
     })
   }
 

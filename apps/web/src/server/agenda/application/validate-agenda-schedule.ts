@@ -1,5 +1,7 @@
+import type { AgendaScheduleChanges } from '../types/scheduling'
 import type { AgendaEventRepository } from './ports/agenda-event-repository.port'
-import type { AgendaEvent, AgendaEventKind } from '../domain/agenda-event.entity'
+import type { AgendaEvent } from '../domain/agenda-event.entity'
+
 import { assertWithinAgendaSchedulingWindow } from '../domain/agenda-scheduling-rules'
 import { AgendaEventConflictError, AgendaVisitMinimumDurationError } from '../domain/errors'
 import { AGENDA_MINIMUM_VISIT_MINUTES } from '@shared/lib/utils/agenda-scheduling'
@@ -7,13 +9,7 @@ import { AGENDA_MINIMUM_VISIT_MINUTES } from '@shared/lib/utils/agenda-schedulin
 export async function validateAgendaSchedule(
   repository: AgendaEventRepository,
   existing: AgendaEvent,
-  changes: {
-    inicio?: Date
-    durationMinutes?: number
-    responsavelId?: string
-    tipo?: AgendaEventKind | null
-    outsideBusinessHoursConfirmed?: boolean
-  },
+  changes: AgendaScheduleChanges,
 ) {
   const inicio = changes.inicio ?? existing.inicio
   const durationMinutes =

@@ -2,9 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { User } from '@server/auth/domain/user.entity'
 import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
-import { PropertyNotFoundError } from '@server/properties/domain/errors'
+import { AgendaPropertyNotFoundError } from '../../../domain/errors'
 import type { Property } from '@server/properties/types/property'
-import type { PropertyRepository } from '@server/properties/application/ports/property-repository.port'
+import type { AgendaPropertyLookup } from '../../../application/ports/agenda-property-lookup.port'
 
 import {
   AgendaEventConflictError,
@@ -56,7 +56,7 @@ const createdEvent: AgendaEvent = {
 
 function createDeps(overrides?: {
   findById?: UserRepository['findById']
-  findByTenantAndId?: PropertyRepository['findByTenantAndId']
+  findAccessibleProperty?: AgendaPropertyLookup['findAccessibleProperty']
   hasOverlap?: AgendaEventRepository['hasOverlap']
 }) {
   const agendaEventRepository: AgendaEventRepository = {
@@ -80,15 +80,11 @@ function createDeps(overrides?: {
     deactivate: vi.fn(),
     approveMembership: vi.fn(),
   }
-  const propertyRepository: PropertyRepository = {
-    create: vi.fn(),
-    listPage: vi.fn(),
-    findByTenantAndId:
-      overrides?.findByTenantAndId ?? vi.fn().mockResolvedValue({ id: 'property-1' } as Property),
-    update: vi.fn(),
-    setStatus: vi.fn(),
-    findContractProperty: vi.fn(),
-    findRenterContractProperty: vi.fn(),
+  const propertyRepository: AgendaPropertyLookup = {
+    findAccessibleProperty:
+      overrides?.findAccessibleProperty ??
+      vi.fn().mockResolvedValue({ id: 'property-1' } as Property),
+    findRentedProperty: vi.fn(),
   }
 
   return { agendaEventRepository, userRepository, propertyRepository }
@@ -162,7 +158,7 @@ describe('CreateAgendaEventUseCase', () => {
 
   it('o RENTER cria o evento na agenda da imobiliária do contrato', async () => {
     const deps = createDeps()
-    vi.mocked(deps.propertyRepository.findRenterContractProperty).mockResolvedValue({
+    vi.mocked(deps.propertyRepository.findRentedProperty).mockResolvedValue({
       propertyId: 'property-1',
       tenantId: 'agency-1',
     })
@@ -184,7 +180,7 @@ describe('CreateAgendaEventUseCase', () => {
       participanteTelefone: '11999990000',
     })
 
-    expect(deps.propertyRepository.findRenterContractProperty).toHaveBeenCalledWith(
+    expect(deps.propertyRepository.findRentedProperty).toHaveBeenCalledWith(
       'renter-1',
       'property-1',
     )
@@ -202,7 +198,7 @@ describe('CreateAgendaEventUseCase', () => {
 
   it('o RENTER não agenda em imóvel que não aluga', async () => {
     const deps = createDeps()
-    vi.mocked(deps.propertyRepository.findRenterContractProperty).mockResolvedValue(null)
+    vi.mocked(deps.propertyRepository.findRentedProperty).mockResolvedValue(null)
     const useCase = new CreateAgendaEventUseCase(
       deps.agendaEventRepository,
       deps.userRepository,
@@ -221,7 +217,7 @@ describe('CreateAgendaEventUseCase', () => {
         participanteNome: 'Ana',
         participanteTelefone: '11999990000',
       }),
-    ).rejects.toThrow(PropertyNotFoundError)
+    ).rejects.toThrow(AgendaPropertyNotFoundError)
   })
 
   it('lança AgendaResponsibleNotFoundError quando responsibleId não pertence ao tenant', async () => {
@@ -248,8 +244,8 @@ describe('CreateAgendaEventUseCase', () => {
     expect(deps.agendaEventRepository.create).not.toHaveBeenCalled()
   })
 
-  it('lança PropertyNotFoundError quando propertyId não existe no tenant', async () => {
-    const deps = createDeps({ findByTenantAndId: vi.fn().mockResolvedValue(null) })
+  it('lança AgendaPropertyNotFoundError quando propertyId não existe no tenant', async () => {
+    const deps = createDeps({ findAccessibleProperty: vi.fn().mockResolvedValue(null) })
     const useCase = new CreateAgendaEventUseCase(
       deps.agendaEventRepository,
       deps.userRepository,
@@ -268,7 +264,7 @@ describe('CreateAgendaEventUseCase', () => {
         participanteNome: 'Ana',
         participanteTelefone: '11999990000',
       }),
-    ).rejects.toThrow(PropertyNotFoundError)
+    ).rejects.toThrow(AgendaPropertyNotFoundError)
     expect(deps.agendaEventRepository.create).not.toHaveBeenCalled()
   })
 

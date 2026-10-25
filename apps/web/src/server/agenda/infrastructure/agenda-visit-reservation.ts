@@ -1,10 +1,7 @@
 import type { Prisma } from '@prisma/client'
-import type { AgendaEvent } from '../domain/agenda-event.entity'
+import type { AgendaPropertyReservation } from '../types/reservation'
 import { AGENDA_MINIMUM_VISIT_MINUTES } from '@shared/lib/utils/agenda-scheduling'
 import { AgendaPropertyVisitConflictError, AgendaVisitMinimumDurationError } from '../domain/errors'
-
-type Reservation = Pick<AgendaEvent, 'tenantId' | 'imovelId' | 'tipo' | 'inicio' | 'fim'> &
-  Partial<Pick<AgendaEvent, 'id' | 'status'>>
 
 export async function lockAgendaEvent(
   transaction: Prisma.TransactionClient,
@@ -16,13 +13,13 @@ export async function lockAgendaEvent(
 
 export async function assertVisitReservation(
   transaction: Prisma.TransactionClient,
-  event: Reservation,
+  event: AgendaPropertyReservation,
 ): Promise<void> {
   if (event.tipo !== 'VISIT' || event.status === 'CANCELLED') return
   if (event.fim.getTime() - event.inicio.getTime() < AGENDA_MINIMUM_VISIT_MINUTES * 60000)
     throw new AgendaVisitMinimumDurationError()
   if (!event.imovelId) return
-  // The property lock and check share the write transaction, including across different agents.
+
   const key = `agenda-visit:${event.tenantId}:${event.imovelId}`
   await transaction.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${key}, 0))::text`
   const conflict = await transaction.eventoAgenda.findFirst({
