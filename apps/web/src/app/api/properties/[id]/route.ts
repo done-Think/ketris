@@ -4,7 +4,6 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
-import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { propertiesContainer } from '@server/properties/container'
 import { updatePropertyRequestSchema } from '@server/properties/schemas/property-input.schema'
@@ -18,7 +17,7 @@ export const GET = withErrorHandling(
     const property = await propertiesContainer.getPropertyUseCase.execute({
       actorTenantId: actor.tenantId,
       actorId: actor.sub,
-      actorPapel: actor.papel as Papel,
+      actorPapel: actor.papel,
       id,
     })
 
@@ -36,7 +35,7 @@ export const PATCH = withErrorHandling(
       actorTenantId: actor.tenantId,
       actorId: actor.sub,
       id,
-      actorPapel: actor.papel as Papel,
+      actorPapel: actor.papel,
       ...body,
       endereco: body.endereco
         ? {
@@ -66,7 +65,7 @@ export const DELETE = withErrorHandling(
       actorTenantId: actor.tenantId,
       actorId: actor.sub,
       id,
-      actorPapel: actor.papel as Papel,
+      actorPapel: actor.papel,
     })
 
     return new NextResponse(null, { status: 204 })

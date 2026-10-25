@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -77,5 +77,51 @@ describe('RoleGuard', () => {
 
     expect(screen.queryByText('Conteúdo restrito')).not.toBeInTheDocument()
     expect(routerMock.replace).not.toHaveBeenCalled()
+  })
+  it('does not mount new protected content or redirect when authentication is unavailable', () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: { authUnavailable: true },
+      status: 'authenticated',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
+    renderGuard()
+    expect(screen.queryByText('Conteúdo restrito')).not.toBeInTheDocument()
+    expect(screen.getByText('Autenticação temporariamente indisponível')).toBeInTheDocument()
+    expect(routerMock.replace).not.toHaveBeenCalled()
+  })
+
+  it('keeps an existing draft mounted but inert during an outage and restores it after revalidation', () => {
+    mockSession('OWNER')
+    const view = (
+      <RoleGuard allowedRoles={['OWNER']}>
+        <input aria-label="Draft" defaultValue="initial" />
+      </RoleGuard>
+    )
+    const { rerender } = render(view)
+    const input = screen.getByLabelText('Draft')
+    fireEvent.change(input, { target: { value: 'unsaved draft' } })
+    vi.mocked(useSession).mockReturnValue({
+      data: { authUnavailable: true },
+      status: 'authenticated',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
+    rerender(
+      <RoleGuard allowedRoles={['OWNER']}>
+        <input aria-label="Draft" defaultValue="initial" />
+      </RoleGuard>,
+    )
+    expect(input).toBeInTheDocument()
+    expect(input.closest('[inert]')).not.toBeNull()
+    expect(input).toHaveValue('unsaved draft')
+    expect(routerMock.replace).not.toHaveBeenCalled()
+    mockSession('OWNER')
+    rerender(
+      <RoleGuard allowedRoles={['OWNER']}>
+        <input aria-label="Draft" defaultValue="initial" />
+      </RoleGuard>,
+    )
+    expect(screen.getByLabelText('Draft')).toBe(input)
+    expect(input.closest('[inert]')).toBeNull()
+    expect(input).toHaveValue('unsaved draft')
   })
 })

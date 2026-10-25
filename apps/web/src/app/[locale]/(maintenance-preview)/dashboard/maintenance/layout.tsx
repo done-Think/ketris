@@ -8,6 +8,7 @@ import { getLocalizedPathname } from '@/i18n/locale-prefix'
 import type { LocaleRouteParams } from '@/i18n/types/route.types'
 import { authOptions } from '@shared/lib/auth/auth-options'
 import { AppShell } from '@shared/components/layout/AppShell'
+import { AuthenticationUnavailable } from '@shared/components/layout/AuthenticationUnavailable'
 
 function isLocalDashboardPreview(host: string | null) {
   return process.env.NODE_ENV === 'development' && /^localhost(?::\d+)?$/.test(host ?? '')
@@ -25,6 +26,7 @@ export default async function MaintenancePreviewLayout({
 
   if (!allowLocalDashboardPreview) {
     const session = await getServerSession(authOptions)
+    if (session?.authUnavailable) return <AuthenticationUnavailable />
 
     if (!session || session.scope !== 'tenant') {
       redirect(getLocalizedPathname('/login', locale))

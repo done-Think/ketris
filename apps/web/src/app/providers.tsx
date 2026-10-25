@@ -15,6 +15,7 @@ import { useState } from 'react'
 
 import type { LocaleProvidersProps, ProvidersProps } from '@/i18n/types/provider.types'
 import { HttpClientSessionBridge } from '@shared/components/providers'
+import { AuthAvailabilityBoundary } from '@shared/components/layout/AuthAvailabilityBoundary'
 import { makeQueryClient } from '@shared/lib/query/query-client'
 import { theme } from '@shared/theme/theme'
 
@@ -33,7 +34,7 @@ export function Providers({ children }: ProvidersProps) {
               autoHideDuration={2000}
               anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
-              {children}
+              <AuthAvailabilityBoundary>{children}</AuthAvailabilityBoundary>
             </SnackbarProvider>
             <ReactQueryDevtools initialIsOpen={false} />
           </QueryClientProvider>

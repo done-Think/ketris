@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { EmailAlreadyInUseError, UserNotFoundError } from '../../../domain/errors'
+import { EmailConfirmationRequiredError, UserNotFoundError } from '../../../domain/errors'
 import type { User } from '../../../domain/user.entity'
 import type { UserRepository } from '../../../application/ports/user-repository.port'
 import { UpdateUserUseCase } from '../../../application/use-cases/update-user.use-case'
@@ -22,6 +22,8 @@ function createDeps(overrides?: {
   update?: UserRepository['update']
 }) {
   const userRepository: UserRepository = {
+    findManyByEmail: vi.fn(),
+
     findById: overrides?.findById ?? vi.fn().mockResolvedValue(owner),
     findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(null),
     findManyByTenant: vi.fn(),
@@ -45,12 +47,17 @@ describe('UpdateUserUseCase', () => {
       actorPapel: 'OWNER',
       userId: owner.id,
       nome: 'Atualizado',
+      telefone: '(35) 98888-7777',
+      creci: '12345',
     })
 
     expect(result.nome).toBe('Atualizado')
     expect(deps.userRepository.update).toHaveBeenCalledWith(owner.id, {
+      auditActor: { kind: 'USER', id: 'admin-1' },
       nome: 'Atualizado',
-      email: undefined,
+      tenantId: 'tenant-1',
+      telefone: '(35) 98888-7777',
+      creci: '12345',
       avatarUrl: undefined,
       papel: undefined,
     })
@@ -76,8 +83,11 @@ describe('UpdateUserUseCase', () => {
     ).resolves.toMatchObject({ nome: 'Admin atualizado' })
 
     expect(deps.userRepository.update).toHaveBeenCalledWith(admin.id, {
+      auditActor: { kind: 'USER', id: 'admin-1' },
       nome: 'Admin atualizado',
-      email: undefined,
+      tenantId: 'tenant-1',
+      telefone: undefined,
+      creci: undefined,
       avatarUrl: `/api/auth/media/avatars/${admin.tenantId}/${admin.id}/avatar.webp`,
       papel: undefined,
     })
@@ -114,7 +124,7 @@ describe('UpdateUserUseCase', () => {
     ).rejects.toThrow(UserNotFoundError)
   })
 
-  it('lança EmailAlreadyInUseError quando o novo e-mail já pertence a outro usuário (em qualquer tenant)', async () => {
+  it('exige confirmação antes de alterar e-mail mesmo para gestão', async () => {
     const deps = createDeps({
       findByEmail: vi.fn().mockResolvedValue({ ...owner, id: 'outro-id' }),
     })
@@ -128,7 +138,7 @@ describe('UpdateUserUseCase', () => {
         userId: owner.id,
         email: 'em-uso@ketris.dev',
       }),
-    ).rejects.toThrow(EmailAlreadyInUseError)
+    ).rejects.toThrow(EmailConfirmationRequiredError)
     expect(deps.userRepository.update).not.toHaveBeenCalled()
   })
 
@@ -145,5 +155,43 @@ describe('UpdateUserUseCase', () => {
     })
 
     expect(deps.userRepository.findByEmail).not.toHaveBeenCalled()
+  })
+  it('permite atualizar telefone/CRECI próprios de um corretor sem mudar papel ou e-mail', async () => {
+    const agent: User = { ...owner, id: 'agent-1', papel: 'AGENT' }
+    const deps = createDeps({ findById: vi.fn().mockResolvedValue(agent) })
+    await new UpdateUserUseCase(deps.userRepository).execute({
+      actorId: agent.id,
+      actorTenantId: agent.tenantId,
+      actorPapel: agent.papel,
+      userId: agent.id,
+      telefone: '(35) 98888-7777',
+      creci: '12345',
+    })
+    expect(deps.userRepository.update).toHaveBeenCalledWith(
+      agent.id,
+      expect.objectContaining({
+        tenantId: agent.tenantId,
+        telefone: '(35) 98888-7777',
+        creci: '12345',
+      }),
+    )
+    expect(deps.userRepository.update).not.toHaveBeenCalledWith(
+      agent.id,
+      expect.objectContaining({ email: expect.anything() }),
+    )
+  })
+
+  it('rejeita alteração direta do próprio e-mail com conflito sem gravar', async () => {
+    const deps = createDeps()
+    await expect(
+      new UpdateUserUseCase(deps.userRepository).execute({
+        actorId: owner.id,
+        actorTenantId: owner.tenantId,
+        actorPapel: owner.papel,
+        userId: owner.id,
+        email: 'new@example.com',
+      }),
+    ).rejects.toMatchObject({ code: 'EMAIL_CONFIRMATION_REQUIRED', status: 409 })
+    expect(deps.userRepository.update).not.toHaveBeenCalled()
   })
 })

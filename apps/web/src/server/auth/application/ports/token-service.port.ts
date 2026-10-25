@@ -1,9 +1,10 @@
-import type { AuthenticatedUser } from '../../domain/user.entity'
+import type { AuthenticatedUser, Papel } from '../../domain/user.entity'
 
 export interface AccessTokenPayload {
   sub: string
   tenantId: string
-  papel: string
+  papel: Papel
+  sessionVersion?: number
 }
 
 export interface TokenService {

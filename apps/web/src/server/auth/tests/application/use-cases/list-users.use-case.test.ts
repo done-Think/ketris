@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import type { User } from '../../../domain/user.entity'
-import type { UserRepository } from '../../../application/ports/user-repository.port'
+import type { UserListRepository } from '../../../application/ports/user-list-repository.port'
 import { ListUsersUseCase } from '../../../application/use-cases/list-users.use-case'
 
 const admin: User = {
@@ -37,15 +37,11 @@ const agent: User = {
   vinculoAprovadoEm: new Date(),
 }
 
-function createDeps(findManyByTenant?: UserRepository['findManyByTenant']) {
-  const userRepository: UserRepository = {
-    findById: vi.fn(),
-    findByEmail: vi.fn(),
-    findManyByTenant: findManyByTenant ?? vi.fn().mockResolvedValue([admin, owner, agent]),
-    create: vi.fn(),
-    update: vi.fn(),
-    deactivate: vi.fn(),
-    approveMembership: vi.fn(),
+function createDeps() {
+  const userRepository: UserListRepository = {
+    findPageByTenant: vi
+      .fn()
+      .mockResolvedValue({ users: [admin, owner, agent], total: 3, page: 1, pageSize: 25 }),
   }
 
   return { userRepository }
@@ -58,8 +54,13 @@ describe('ListUsersUseCase', () => {
 
     const result = await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER' })
 
-    expect(result.map((user) => user.id)).toEqual([admin.id, owner.id, agent.id])
-    expect(result.every((user) => !('senhaHash' in user))).toBe(true)
+    expect(result.users.map((user) => user.id)).toEqual([admin.id, owner.id, agent.id])
+    expect(result.users.every((user) => !('senhaHash' in user))).toBe(true)
+    expect(deps.userRepository.findPageByTenant).toHaveBeenCalledWith('tenant-1', {
+      page: 1,
+      pageSize: 25,
+      pendingApproval: undefined,
+    })
   })
 
   it('lança ForbiddenError quando o ator não é o dono da imobiliária', async () => {
@@ -69,6 +70,6 @@ describe('ListUsersUseCase', () => {
     await expect(
       useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'AGENT' }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
-    expect(deps.userRepository.findManyByTenant).not.toHaveBeenCalled()
+    expect(deps.userRepository.findPageByTenant).not.toHaveBeenCalled()
   })
 })

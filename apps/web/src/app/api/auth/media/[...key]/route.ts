@@ -2,7 +2,7 @@ import { avatarMediaSegmentsSchema } from '@server/auth/schemas/avatar.schema'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
-import type { AvatarMediaRouteContext } from '@server/auth/types/avatar'
+import type { AvatarMediaRouteContext } from '@server/auth/types/route-context'
 import { withErrorHandling } from '@server/shared/http'
 import { serveStoredImage } from '@server/shared/http/serve-image'
 

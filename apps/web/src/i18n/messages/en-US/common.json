@@ -94,7 +94,46 @@
       "currentPasswordIncorrect": "Current password is incorrect.",
       "passwordTooShort": "Password must be at least 8 characters.",
       "passwordConfirmationRequired": "Confirm the new password.",
-      "passwordMismatch": "Passwords do not match"
+      "passwordMismatch": "Passwords do not match",
+      "creciRequired": "Enter your CRECI.",
+      "codeInvalid": "Invalid or expired code.",
+      "emailRequired": "Enter your email.",
+      "nameTooLong": "Use at most 200 characters.",
+      "phoneTooLong": "Use at most 32 characters.",
+      "creciTooLong": "Use at most 32 characters.",
+      "emailTooLong": "Use at most 254 characters.",
+      "passwordTooLong": "Password must be at most 72 bytes. Use fewer characters."
+    },
+    "loading": "Loading profile",
+    "retry": "Try again",
+    "loadError": "Unable to load your profile.",
+    "creci": "CRECI",
+    "changeEmail": "Change email",
+    "permissionError": "You do not have permission to update this profile.",
+    "newEmail": "New email",
+    "emailChangeExplanation": "Your current email remains active until you confirm the new address. After confirming, sign in again.",
+    "emailChangeSent": "We sent a code to {email}. It is valid for 10 minutes.",
+    "emailChangeCode": "Confirmation code",
+    "emailChangeConfirm": "Confirm and sign in again",
+    "emailChangeSend": "Send code",
+    "emailChangeRateLimit": "Please wait before requesting another code.",
+    "emailAlreadyInUse": "This email is already in use.",
+    "emailChangeError": "Unable to change your email. Try again.",
+    "emailChange": {
+      "public": {
+        "title": "Confirm your new email",
+        "description": "Enter the six-digit code sent to the new address. Your current email stays in place until you confirm.",
+        "codeLabel": "Confirmation code",
+        "confirm": "Confirm new email",
+        "login": "Go to sign in",
+        "invalidLink": "This confirmation link is invalid. Ask for a new email change request.",
+        "codeInvalid": "Invalid or expired code. Check all six digits or ask for a new request.",
+        "emailInUse": "This email is already in use in this account. Request another change with a different address.",
+        "error": "Unable to confirm the new email. Try again.",
+        "success": "Email confirmed. To access this account again, sign in with the new address.",
+        "emailLinkLabel": "Confirm my new email",
+        "emailInstructions": "Open the confirmation link and enter the six digits. You do not need to be signed in. This code expires in {minutes} minutes."
+      }
     }
   },
   "roleGuard": {
@@ -107,5 +146,11 @@
     "restrictedTitle": "Restricted CRM access",
     "restrictedDescription": "Sign in with an account linked to a tenant to view opportunities.",
     "signIn": "Sign in to Ketris"
+  },
+  "authUnavailable": {
+    "title": "Authentication temporarily unavailable",
+    "description": "We could not verify your session. Your work has been preserved. Try again to continue.",
+    "retry": "Try again",
+    "retrying": "Checking session…"
   }
 }

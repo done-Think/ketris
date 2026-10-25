@@ -1,0 +1,2 @@
+export const INVALID_CREDENTIAL_PASSWORD_HASH =
+  '$2a$10$5a5frJn/chnn9JzG/v3p9uSJez0m85zE/KqdKLIUDsIRBmBnvrBHC'

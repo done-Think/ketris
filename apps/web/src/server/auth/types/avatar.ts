@@ -16,6 +16,3 @@ export interface AvatarStorageInput {
   contentType: string
   body: Buffer
 }
-export interface AvatarMediaRouteContext {
-  params: Promise<{ key: string[] }>
-}

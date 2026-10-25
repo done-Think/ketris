@@ -13,6 +13,7 @@ function createDeps(overrides?: {
   findValidByTokenHash?: RefreshTokenRepository['findValidByTokenHash']
 }) {
   const refreshTokenRepository: RefreshTokenRepository = {
+    rotate: vi.fn().mockResolvedValue(true),
     create: vi.fn().mockResolvedValue(undefined),
     findValidByTokenHash: overrides?.findValidByTokenHash ?? vi.fn().mockResolvedValue(stored),
     revokeById: vi.fn().mockResolvedValue(undefined),

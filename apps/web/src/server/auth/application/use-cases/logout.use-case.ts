@@ -1,9 +1,6 @@
+import type { LogoutInput } from '../../types/use-case-inputs'
 import { hashRefreshToken } from '../../domain/refresh-token'
 import type { RefreshTokenRepository } from '../ports/refresh-token-repository.port'
-
-export interface LogoutInput {
-  refreshToken: string
-}
 
 export class LogoutUseCase {
   constructor(private readonly refreshTokenRepository: RefreshTokenRepository) {}

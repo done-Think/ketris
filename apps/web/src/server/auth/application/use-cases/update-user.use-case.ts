@@ -1,29 +1,13 @@
+import type { UpdateUserOutput } from '../../types/use-case-outputs'
+import type { UpdateUserInput } from '../../types/use-case-inputs'
 import { assertAvatarScope } from '../../domain/avatar-policy'
 import { AccountDeactivatedError } from '../../domain/errors'
 import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
-import { EmailAlreadyInUseError, UserNotFoundError } from '../../domain/errors'
-import {
-  toAuthenticatedUser,
-  type AuthenticatedUser,
-  type TenantMemberPapel,
-  type Papel,
-} from '../../domain/user.entity'
+import { EmailConfirmationRequiredError, UserNotFoundError } from '../../domain/errors'
+import { toAuthenticatedUser } from '../../domain/user.entity'
 import type { UserRepository } from '../ports/user-repository.port'
-
-export interface UpdateUserInput {
-  actorId: string
-  actorTenantId: string
-  actorPapel: Papel
-  userId: string
-  nome?: string
-  email?: string
-  avatarUrl?: string | null
-  papel?: TenantMemberPapel
-}
-
-export type UpdateUserOutput = AuthenticatedUser
 
 export class UpdateUserUseCase {
   constructor(private readonly userRepository: UserRepository) {}
@@ -54,20 +38,19 @@ export class UpdateUserUseCase {
     }
 
     if (isSelfUpdate && input.papel !== undefined) {
-      throw new ForbiddenError('Self updates cannot change roles.')
+      throw new ForbiddenError('O próprio usuário não pode alterar seu papel.')
     }
 
-    if (input.email && input.email !== target.email) {
-      const existing = await this.userRepository.findByEmail(input.email)
-
-      if (existing) {
-        throw new EmailAlreadyInUseError()
-      }
+    if (input.email && input.email.trim().toLowerCase() !== target.email.toLowerCase()) {
+      throw new EmailConfirmationRequiredError()
     }
 
     const updated = await this.userRepository.update(input.userId, {
       nome: input.nome,
-      email: input.email,
+      tenantId: input.actorTenantId,
+      auditActor: { kind: 'USER', id: input.actorId },
+      telefone: input.telefone,
+      creci: input.creci,
       avatarUrl: input.avatarUrl,
       papel: input.papel,
     })

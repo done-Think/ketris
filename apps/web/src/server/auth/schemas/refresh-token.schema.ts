@@ -5,9 +5,8 @@ export const refreshTokenRequestSchema = z
   .object({
     refreshToken: z.string().min(1, 'Refresh token é obrigatório.'),
   })
+  .strict()
   .openapi('RefreshTokenRequest')
-
-export type RefreshTokenRequestDTO = z.infer<typeof refreshTokenRequestSchema>
 
 export const refreshTokenResponseSchema = z
   .object({

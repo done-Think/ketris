@@ -33,6 +33,8 @@ function createDeps(overrides?: {
   create?: UserRepository['create']
 }) {
   const userRepository: UserRepository = {
+    findManyByEmail: vi.fn(),
+
     findById: vi.fn(),
     findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(null),
     findManyByTenant: vi.fn(),
@@ -55,6 +57,7 @@ describe('CreateUserUseCase', () => {
     const useCase = new CreateUserUseCase(deps.userRepository, deps.passwordHasher)
 
     const result = await useCase.execute({
+      actorId: 'admin-1',
       actorTenantId: admin.tenantId,
       actorPapel: admin.papel,
       nome: 'Ana Agente',
@@ -76,6 +79,7 @@ describe('CreateUserUseCase', () => {
     expect(result).not.toHaveProperty('senhaHash')
     expect(deps.passwordHasher.hash).toHaveBeenCalledWith('senha-longa-123')
     expect(deps.userRepository.create).toHaveBeenCalledWith({
+      auditActor: { kind: 'USER', id: 'admin-1' },
       tenantId: admin.tenantId,
       nome: 'Ana Agente',
       email: 'ana@ketris.dev',
@@ -90,6 +94,7 @@ describe('CreateUserUseCase', () => {
 
     await expect(
       useCase.execute({
+        actorId: 'admin-1',
         actorTenantId: admin.tenantId,
         actorPapel: 'AGENT',
         nome: 'Ana Agente',
@@ -101,12 +106,13 @@ describe('CreateUserUseCase', () => {
     expect(deps.userRepository.create).not.toHaveBeenCalled()
   })
 
-  it('lança EmailAlreadyInUseError quando já existe usuário com o e-mail em qualquer tenant', async () => {
+  it('lança EmailAlreadyInUseError quando já existe usuário com o e-mail no mesmo tenant', async () => {
     const deps = createDeps({ findByEmail: vi.fn().mockResolvedValue(admin) })
     const useCase = new CreateUserUseCase(deps.userRepository, deps.passwordHasher)
 
     await expect(
       useCase.execute({
+        actorId: 'admin-1',
         actorTenantId: admin.tenantId,
         actorPapel: 'OWNER',
         nome: 'Ana Agente',
@@ -118,11 +124,12 @@ describe('CreateUserUseCase', () => {
     expect(deps.userRepository.create).not.toHaveBeenCalled()
   })
 
-  it('checa duplicidade globalmente (e-mail é único no sistema todo, não só por tenant)', async () => {
+  it('checa duplicidade somente no tenant do ator', async () => {
     const deps = createDeps()
     const useCase = new CreateUserUseCase(deps.userRepository, deps.passwordHasher)
 
     await useCase.execute({
+      actorId: 'admin-1',
       actorTenantId: 'tenant-1',
       actorPapel: 'OWNER',
       nome: 'Ana Agente',
@@ -131,6 +138,6 @@ describe('CreateUserUseCase', () => {
       papel: 'AGENT',
     })
 
-    expect(deps.userRepository.findByEmail).toHaveBeenCalledWith('ana@ketris.dev')
+    expect(deps.userRepository.findByEmail).toHaveBeenCalledWith('ana@ketris.dev', 'tenant-1')
   })
 })

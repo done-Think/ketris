@@ -57,6 +57,22 @@ const tenantIdParamsSchema = z.object({
 })
 
 export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
+  registry.registerPath({
+    method: 'post',
+    path: '/platform/logout',
+    tags: ['Platform'],
+    summary: 'Revoga o refresh token da sessão de plataforma',
+    request: {
+      body: { content: { 'application/json': { schema: refreshPlatformTokenRequestSchema } } },
+    },
+    responses: {
+      204: { description: 'Sessão revogada, inclusive se o token já estiver inválido.' },
+      400: {
+        description: 'Corpo da requisição inválido.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
   registry.register('AuthenticatedPlatformAdmin', authenticatedPlatformAdminSchema)
   registry.register('TenantSummary', tenantSummarySchema)
   registry.register('PlatformTenant', platformTenantSchema)

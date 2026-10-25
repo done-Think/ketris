@@ -63,3 +63,75 @@ jobs:
 
       - name: Testes de integração
         run: npm run test:integration -w @ketris/web
+
+  auth-e2e:
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ketris
+          POSTGRES_PASSWORD: ketris
+          POSTGRES_DB: ketris
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://ketris:ketris@localhost:55432/ketris?schema=public
+      NEXTAUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_API_URL: ''
+      NEXTAUTH_SECRET: ci-nextauth-secret
+      AUTH_TOKEN_SECRET: ci-auth-token-secret
+      PLATFORM_TOKEN_SECRET: ci-platform-token-secret
+      PASSWORD_RESET_TOKEN_SECRET: ci-password-reset-token-secret
+      AUTH_RATE_LIMIT_MAX: '1000'
+      AUTH_E2E_MAILBOX_PORT: '3101'
+      AWS_ENDPOINT_URL: http://127.0.0.1:3101
+      AWS_ENDPOINT_URL_SES: http://127.0.0.1:3101
+      AWS_IGNORE_CONFIGURED_ENDPOINT_URLS: 'false'
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: ci-local-only
+      AWS_SECRET_ACCESS_KEY: ci-local-only
+      SES_FROM_EMAIL: auth-ci@example.test
+      KETRIS_BUILD_WORKERS: '1'
+      KETRIS_BUILD_LOW_MEMORY: '1'
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run db:deploy -w @ketris/web
+      - name: Valida os tipos dos testes de navegador
+        run: npm exec -- tsc --noEmit -p apps/web/cypress/tsconfig.json
+      - name: Build de produção
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build -w @ketris/web
+      - name: Executa os fluxos de Auth com e-mail simulado localmente
+        shell: bash
+        run: |
+          npm run start -w @ketris/web -- --hostname localhost > /tmp/auth-next.log 2>&1 &
+          auth_server_pid=$!
+          trap 'kill "$auth_server_pid" 2>/dev/null || true' EXIT
+          node --input-type=module <<'JS'
+          let ready = false
+          for (let attempt = 0; attempt < 60; attempt++) {
+            try {
+              const response = await fetch('http://localhost:3000/api/auth/csrf')
+              if (response.ok) { ready = true; break }
+            } catch {}
+            await new Promise((resolve) => setTimeout(resolve, 1000))
+          }
+          if (!ready) throw new Error('O servidor de teste Auth não iniciou.')
+          JS
+          npm exec -w @ketris/web -- cypress run --browser electron --config baseUrl=http://localhost:3000 --spec 'cypress/e2e/auth/**/*.cy.ts'

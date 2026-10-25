@@ -47,4 +47,12 @@ describe('requirePlatformSession', () => {
     await expect(requirePlatformSession('pt-BR')).rejects.toThrow('NEXT_REDIRECT')
     expect(redirectMock).toHaveBeenCalledWith('/pt/platform/login')
   })
+  it('signals temporary unavailability instead of returning authority or redirecting to login', async () => {
+    getServerSessionMock.mockResolvedValueOnce({ authUnavailable: true })
+    const requireSession = await getRequirePlatformSession()
+    await expect(requireSession('pt-BR')).rejects.toMatchObject({
+      status: 503,
+      code: 'AUTH_UNAVAILABLE',
+    })
+  })
 })

@@ -1,8 +1,13 @@
 import { createTranslator } from 'next-intl'
 
+import type { EmailCodeLinkContent } from '../types/public-email-change'
+import { buildEmailChangeLink } from './email-change-link'
+
 import type { AppLocale } from '@/i18n/types/locale.types'
 import type { SendEmailInput } from '@server/shared/email/mailer.port'
 import { PASSWORD_RESET_CODE_TTL_MINUTES } from '../domain/password-reset-code'
+import { EMAIL_VERIFICATION_TTL_MINUTES } from '../domain/email-verification'
+import type { AuthCodeEmailNamespace, EmailVerificationPurpose } from '../types/email-verification'
 
 async function loadAuthMessages(locale: AppLocale) {
   const messages = await import(`@/i18n/messages/${locale}/auth.json`)
@@ -28,16 +33,52 @@ export async function buildPasswordResetEmail(
   code: string,
   locale: AppLocale,
 ): Promise<Omit<SendEmailInput, 'to'>> {
+  return buildCodeEmail(code, locale, 'passwordResetEmail', PASSWORD_RESET_CODE_TTL_MINUTES)
+}
+
+export async function buildEmailVerificationEmail(
+  code: string,
+  locale: AppLocale,
+  purpose: EmailVerificationPurpose,
+  requestId?: string,
+): Promise<Omit<SendEmailInput, 'to'>> {
+  let link: EmailCodeLinkContent | undefined
+  if (purpose === 'EMAIL_CHANGE' && requestId) {
+    const messages = (await import(`@/i18n/messages/${locale}/common.json`)).default
+    const t = createTranslator({ locale, messages, namespace: 'profilePage.emailChange.public' })
+    link = {
+      url: buildEmailChangeLink(requestId, locale),
+      label: t('emailLinkLabel'),
+      instructions: t('emailInstructions', { minutes: EMAIL_VERIFICATION_TTL_MINUTES }),
+    }
+  }
+  return buildCodeEmail(
+    code,
+    locale,
+    purpose === 'SIGNUP' ? 'signupEmail' : 'emailChangeEmail',
+    EMAIL_VERIFICATION_TTL_MINUTES,
+    link,
+  )
+}
+
+async function buildCodeEmail(
+  code: string,
+  locale: AppLocale,
+  namespace: AuthCodeEmailNamespace,
+  minutes: number,
+  link?: EmailCodeLinkContent,
+): Promise<Omit<SendEmailInput, 'to'>> {
   const messages = await loadAuthMessages(locale)
-  const t = createTranslator({ locale, messages, namespace: 'passwordResetEmail' })
-  const minutes = PASSWORD_RESET_CODE_TTL_MINUTES
+  const t = createTranslator({ locale, messages, namespace })
 
   const subject = t('subject')
+  const instructions = link?.instructions ?? t('instructions', { minutes })
   const text = [
     t('greeting'),
     t('intro'),
     `${t('codeLabel')}: ${code}`,
-    t('instructions', { minutes }),
+    ...(link ? [`${link.label}: ${link.url}`] : []),
+    instructions,
     t('noticeTitle'),
     t('noticeBody'),
     t('signOff'),
@@ -96,8 +137,9 @@ export async function buildPasswordResetEmail(
                     </td>
                   </tr>
                 </table>
+                ${link ? `<p style="margin:0 0 24px;"><a href="${link.url}" style="color:${colors.accent};">${link.label}</a></p>` : ''}
                 <p style="margin:0 0 24px; color:${colors.body}; font-size:15px; line-height:1.6;">
-                  ${t('instructions', { minutes })}
+                  ${instructions}
                 </p>
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:${colors.noticeBackground}; border:1px solid ${colors.noticeBorder}; border-radius:8px; margin:0 0 24px;">
                   <tr>

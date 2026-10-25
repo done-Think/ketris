@@ -1,12 +1,16 @@
+import type { UserAccessState } from '../types/user-access'
+
 export type Papel = 'OWNER' | 'AGENT' | 'RENTER' | 'PROPERTY_OWNER'
 
 export type TenantMemberPapel = Exclude<Papel, 'RENTER'>
 
-export interface User {
+export interface User extends UserAccessState {
   id: string
   tenantId: string
   nome: string
   email: string
+  telefone?: string | null
+  creci?: string | null
   senhaHash: string
   avatarUrl?: string | null
   papel: Papel
@@ -22,33 +26,12 @@ export function toAuthenticatedUser(user: User): AuthenticatedUser {
     tenantId: user.tenantId,
     nome: user.nome,
     email: user.email,
+    ...(user.telefone !== undefined ? { telefone: user.telefone } : {}),
+    ...(user.creci !== undefined ? { creci: user.creci } : {}),
     avatarUrl: user.avatarUrl ?? null,
     papel: user.papel,
     ativo: user.ativo,
     vinculoAprovadoEm: user.vinculoAprovadoEm,
-  }
-}
-
-export type AuthenticatedUserResponse = {
-  id: string
-  tenantId: string
-  name: string
-  email: string
-  avatarUrl: string | null
-  role: Papel
-  active: boolean
-  pendingApproval: boolean
-}
-
-export function toAuthenticatedUserResponse(user: AuthenticatedUser): AuthenticatedUserResponse {
-  return {
-    id: user.id,
-    tenantId: user.tenantId,
-    name: user.nome,
-    email: user.email,
-    avatarUrl: user.avatarUrl ?? null,
-    role: user.papel,
-    active: user.ativo,
-    pendingApproval: user.vinculoAprovadoEm === null,
+    ...(user.sessionVersion !== undefined ? { sessionVersion: user.sessionVersion } : {}),
   }
 }

@@ -32,7 +32,7 @@ describe('requirePlatformBearerAuth', () => {
   it('lança UnauthorizedError quando o token é inválido/expirado/de outro escopo', async () => {
     const tokenService: PlatformTokenService = {
       sign: vi.fn(),
-      verify: vi.fn().mockRejectedValue(new Error('token não é de platform admin')),
+      verify: vi.fn().mockRejectedValue(new UnauthorizedError()),
     }
 
     await expect(
@@ -57,5 +57,12 @@ describe('requirePlatformBearerAuth', () => {
 
     expect(result).toEqual(payload)
     expect(tokenService.verify).toHaveBeenCalledWith('token-valido')
+  })
+  it('propagates infrastructure errors so the BFF can return 500 without ending the session', async () => {
+    const error = new Error('database unavailable')
+    const tokens: PlatformTokenService = { sign: vi.fn(), verify: vi.fn().mockRejectedValue(error) }
+    await expect(
+      requirePlatformBearerAuth(buildRequest({ authorization: 'Bearer valid-signature' }), tokens),
+    ).rejects.toBe(error)
   })
 })

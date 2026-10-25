@@ -2,81 +2,79 @@
 
 import MarkEmailReadOutlinedIcon from '@mui/icons-material/MarkEmailReadOutlined'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Box, Button, Link as MuiLink, Stack, Typography } from '@mui/material'
+import { Alert, Box, Button, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
-import { brand, componentText, radius } from '@shared/theme/tokens'
-
+import { Link } from '@/i18n/navigation'
 import { authPrimaryButtonSx } from '@shared/components/form/auth-form.styles'
-import { VerificationCodeField } from './VerificationCodeField'
+import { useSignupVerification } from '../hooks/use-signup-verification'
 import { createVerificationCodeSchema } from '../schemas/password-recovery-schema'
+import { styles } from '../styles/email-verification-step.styles'
 import type { EmailVerificationStepProps } from '../types/registration'
+import { ResendCountdownButton } from './ResendCountdownButton'
+import { VerificationCodeField } from './VerificationCodeField'
 
-export function EmailVerificationStep({ email, onConfirmed }: EmailVerificationStepProps) {
+export function EmailVerificationStep(props: EmailVerificationStepProps) {
   const t = useTranslations('auth.registerDetails.emailVerification')
-  const verificationCodeSchema = useMemo(
-    () => createVerificationCodeSchema((key) => t(`errors.${key}`)),
-    [t],
-  )
+  const { confirm, resend, error, confirmed, isPending } = useSignupVerification(props)
+  const schema = useMemo(() => createVerificationCodeSchema((key) => t(`errors.${key}`)), [t])
   const { control, handleSubmit } = useForm({
-    resolver: zodResolver(verificationCodeSchema),
+    resolver: zodResolver(schema),
     defaultValues: { code: '' },
   })
   const code = useWatch({ control, name: 'code' })
-  const isCodeComplete = /^\d{6}$/.test(code ?? '')
-
-  const confirm = handleSubmit(() => {
-    onConfirmed()
-  })
-
   return (
-    <Box sx={{ textAlign: 'center', mt: 4 }}>
-      <Box
-        aria-hidden="true"
-        sx={{
-          width: 52,
-          height: 52,
-          mx: 'auto',
-          display: 'grid',
-          placeItems: 'center',
-          borderRadius: `${radius.full}px`,
-          bgcolor: brand.magenta[50],
-        }}
-      >
-        <MarkEmailReadOutlinedIcon sx={{ color: 'primary.main', fontSize: 28 }} />
+    <Box sx={styles.box}>
+      <Box aria-hidden="true" sx={styles.box2}>
+        <MarkEmailReadOutlinedIcon sx={styles.markEmailReadOutlinedIcon} />
       </Box>
-
-      <Typography variant="h5" sx={{ mt: 2, mb: 0.5 }}>
+      <Typography variant="h5" sx={styles.typography}>
         {t('title')}
       </Typography>
-      <Typography color="text.secondary" sx={{ maxWidth: 420, mx: 'auto' }}>
-        {t('description', { email })}
+      <Typography color="text.secondary" sx={styles.typography2}>
+        {t('description', { email: props.verification.email })}
       </Typography>
-
-      <Box component="form" noValidate onSubmit={confirm} sx={{ mt: 3, maxWidth: 280, mx: 'auto' }}>
+      <Box
+        component="form"
+        noValidate
+        onSubmit={handleSubmit(({ code }) => confirm(code))}
+        sx={styles.box3}
+      >
         <Stack spacing={2}>
-          <VerificationCodeField control={control} name="code" label={t('code.label')} />
-
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={!isCodeComplete}
-            sx={authPrimaryButtonSx}
-          >
-            {t('submit')}
+          {!props.verification.emailSent && !resend.isSuccess ? (
+            <Alert severity="warning">{t('deliveryFailed')}</Alert>
+          ) : null}
+          {error ? <Alert severity="error">{error}</Alert> : null}
+          {resend.isSuccess ? <Alert severity="info">{t('resendRequested')}</Alert> : null}
+          {!confirmed ? (
+            <>
+              <VerificationCodeField
+                control={control}
+                name="code"
+                label={t('code.label')}
+                disabled={isPending}
+              />
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={!/^\d{6}$/.test(code ?? '') || isPending}
+                sx={authPrimaryButtonSx}
+              >
+                {t('submit')}
+              </Button>
+              <ResendCountdownButton
+                disabled={isPending}
+                onResend={() => {
+                  void resend.mutateAsync().catch(() => undefined)
+                }}
+              />
+            </>
+          ) : null}
+          <Button component={Link} href="/login" disabled={isPending}>
+            {t('backToLogin')}
           </Button>
-
-          <MuiLink
-            component="button"
-            type="button"
-            onClick={onConfirmed}
-            underline="hover"
-            sx={{ color: 'text.secondary', ...componentText.authCompactBody }}
-          >
-            {t('skip')}
-          </MuiLink>
         </Stack>
       </Box>
     </Box>

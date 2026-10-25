@@ -1,11 +1,25 @@
 import { withSentryConfig } from '@sentry/nextjs'
 import createNextIntlPlugin from 'next-intl/plugin'
 
+const configuredBuildWorkers = process.env.KETRIS_BUILD_WORKERS
+  ? Number(process.env.KETRIS_BUILD_WORKERS)
+  : undefined
+if (
+  configuredBuildWorkers !== undefined &&
+  (!Number.isInteger(configuredBuildWorkers) || configuredBuildWorkers < 1)
+) {
+  throw new Error('KETRIS_BUILD_WORKERS deve ser um inteiro positivo.')
+}
+
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    ...(configuredBuildWorkers ? { cpus: configuredBuildWorkers } : {}),
+    ...(process.env.KETRIS_BUILD_LOW_MEMORY === '1' ? { webpackMemoryOptimizations: true } : {}),
+  },
   serverExternalPackages: ['swagger-ui-dist'],
   images: {
     remotePatterns: [],
@@ -54,6 +68,7 @@ export default withSentryConfig(withNextIntl(nextConfig), {
   widenClientFileUpload: true,
 
   sourcemaps: {
+    disable: process.env.KETRIS_BUILD_LOW_MEMORY === '1' && !process.env.SENTRY_AUTH_TOKEN,
     deleteSourcemapsAfterUpload: true,
   },
 

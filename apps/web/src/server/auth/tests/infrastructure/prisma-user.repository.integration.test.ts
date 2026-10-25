@@ -64,24 +64,53 @@ describe('PrismaUserRepository (integração)', () => {
     expect(user).toBeNull()
   })
 
-  it('e-mail é único globalmente — criar em outro tenant com o mesmo e-mail falha', async () => {
+  it('permite o mesmo e-mail em tenants distintos e exige desambiguação', async () => {
     const outroTenant = await prisma.tenant.create({
       data: { nome: 'Outro Tenant', slug: `outro-${randomUUID()}` },
     })
 
     try {
+      const other = await repository.create({
+        tenantId: outroTenant.id,
+        nome: 'Duplicado',
+        email,
+        senhaHash: 'hash-fake',
+        papel: 'AGENT',
+      })
+      expect(other.tenantId).toBe(outroTenant.id)
+      expect(await repository.findByEmail(email)).toBeNull()
+      expect((await repository.findByEmail(email, tenantId))?.tenantId).toBe(tenantId)
+      expect((await repository.findByEmail(email, outroTenant.id))?.id).toBe(other.id)
       await expect(
         repository.create({
-          tenantId: outroTenant.id,
-          nome: 'Duplicado',
+          tenantId,
+          nome: 'Mesmo tenant',
           email,
           senhaHash: 'hash-fake',
           papel: 'AGENT',
         }),
-      ).rejects.toThrow()
+      ).rejects.toMatchObject({ code: 'EMAIL_ALREADY_IN_USE' })
     } finally {
       await prisma.tenant.delete({ where: { id: outroTenant.id } })
     }
+  })
+
+  it('conflitos concorrentes do mesmo e-mail resultam em erro de negócio 409', async () => {
+    const input = {
+      tenantId,
+      nome: 'Concorrente',
+      email: `race-${randomUUID()}@ketris.dev`,
+      senhaHash: 'hash-fake',
+      papel: 'AGENT' as const,
+    }
+    const results = await Promise.allSettled([repository.create(input), repository.create(input)])
+    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1)
+    const rejected = results.find((result) => result.status === 'rejected')
+    expect(rejected?.status === 'rejected' && rejected.reason).toMatchObject({
+      code: 'EMAIL_ALREADY_IN_USE',
+      status: 409,
+    })
+    expect(await prisma.usuario.count({ where: { tenantId, email: input.email } })).toBe(1)
   })
 
   it('create insere um usuário novo e retorna a entidade de domínio mapeada', async () => {
@@ -123,6 +152,56 @@ describe('PrismaUserRepository (integração)', () => {
     }
   })
 
+  it('pagina no tenant e filtra pendentes antes de contar e limitar', async () => {
+    const another = await prisma.tenant.create({
+      data: { nome: 'Fora da lista', slug: `outside-${randomUUID()}` },
+    })
+    try {
+      await prisma.usuario.createMany({
+        data: Array.from({ length: 4 }, (_, index) => ({
+          tenantId,
+          nome: `Pendente ${index}`,
+          email: `pending-${randomUUID()}@ketris.dev`,
+          senhaHash: 'hash-fake',
+          papel: 'AGENT' as const,
+          vinculoAprovadoEm: null,
+        })),
+      })
+      await prisma.usuario.create({
+        data: {
+          tenantId: another.id,
+          nome: 'Outro tenant',
+          email: `outside-${randomUUID()}@ketris.dev`,
+          senhaHash: 'hash-fake',
+          papel: 'AGENT',
+          vinculoAprovadoEm: null,
+        },
+      })
+      const first = await repository.findPageByTenant(tenantId, {
+        page: 1,
+        pageSize: 2,
+        pendingApproval: true,
+      })
+      const second = await repository.findPageByTenant(tenantId, {
+        page: 2,
+        pageSize: 2,
+        pendingApproval: true,
+      })
+      expect(first.total).toBeGreaterThanOrEqual(4)
+      expect(first.total).toBe(second.total)
+      expect(first.users).toHaveLength(2)
+      expect(second.users).toHaveLength(2)
+      expect(
+        [...first.users, ...second.users].every(
+          (user) => user.tenantId === tenantId && user.vinculoAprovadoEm === null,
+        ),
+      ).toBe(true)
+      expect(new Set([...first.users, ...second.users].map((user) => user.id)).size).toBe(4)
+    } finally {
+      await prisma.tenant.delete({ where: { id: another.id } })
+    }
+  })
+
   it('update altera nome, e-mail e papel e retorna a entidade atualizada', async () => {
     const created = await repository.create({
       tenantId,
@@ -142,6 +221,36 @@ describe('PrismaUserRepository (integração)', () => {
     expect(updated.nome).toBe('Depois')
     expect(updated.email).toBe(novoEmail)
     expect(updated.papel).toBe('OWNER')
+  })
+
+  it('troca de credencial incrementa versão e revoga tokens, respeitando o tenant na escrita', async () => {
+    const created = await repository.create({
+      tenantId,
+      nome: 'Credenciais',
+      email: `credential-${randomUUID()}@ketris.dev`,
+      senhaHash: 'hash-atual',
+      papel: 'AGENT',
+    })
+    const token = await prisma.refreshToken.create({
+      data: {
+        userId: created.id,
+        tenantId,
+        tokenHash: randomUUID(),
+        expiresAt: new Date(Date.now() + 60000),
+      },
+    })
+    await expect(
+      repository.update(created.id, { senhaHash: 'nao-deve-persistir', tenantId: 'outro-tenant' }),
+    ).rejects.toMatchObject({ code: 'P2025' })
+    expect((await repository.findById(created.id))?.senhaHash).toBe('hash-atual')
+    expect(
+      (await prisma.refreshToken.findUniqueOrThrow({ where: { id: token.id } })).revokedAt,
+    ).toBeNull()
+    const updated = await repository.update(created.id, { senhaHash: 'novo-hash', tenantId })
+    expect(updated.sessionVersion).toBe(1)
+    expect(
+      (await prisma.refreshToken.findUniqueOrThrow({ where: { id: token.id } })).revokedAt,
+    ).not.toBeNull()
   })
 
   it('deactivate marca ativo como false sem remover o registro', async () => {

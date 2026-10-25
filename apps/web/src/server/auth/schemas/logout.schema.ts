@@ -5,6 +5,5 @@ export const logoutRequestSchema = z
   .object({
     refreshToken: z.string().min(1, 'Refresh token é obrigatório.'),
   })
+  .strict()
   .openapi('LogoutRequest')
-
-export type LogoutRequestDTO = z.infer<typeof logoutRequestSchema>

@@ -1,10 +1,11 @@
 'use client'
 
+import { styles } from '../styles/login-account-prompt.styles'
+
 import { Link as MuiLink, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
-import { componentText } from '@shared/theme/tokens'
 
 import { authRoutes } from '../config/auth-routes'
 
@@ -13,21 +14,10 @@ export function LoginAccountPrompt() {
 
   return (
     <Stack direction="row" justifyContent="center" spacing={0.5} alignItems="center">
-      <Typography
-        variant="body2"
-        sx={{
-          color: 'text.secondary',
-          ...componentText.authPrompt,
-        }}
-      >
+      <Typography variant="body2" sx={styles.typography}>
         {t('question')}
       </Typography>
-      <MuiLink
-        component={Link}
-        href={authRoutes.register}
-        underline="hover"
-        sx={{ color: 'primary.main', ...componentText.authPrompt, fontWeight: 700 }}
-      >
+      <MuiLink component={Link} href={authRoutes.register} underline="hover" sx={styles.muiLink}>
         {t('createAccount')}
       </MuiLink>
     </Stack>

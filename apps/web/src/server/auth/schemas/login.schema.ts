@@ -2,12 +2,20 @@ import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
 import { authenticatedUserResponseSchema } from './user.schema'
+import { locales } from '@/i18n/routing'
+import { pendingEmailVerificationResponseSchema } from './email-verification.schema'
+
+export const tenantSelectionResponseSchema = z.object({
+  outcome: z.literal('SELECT_TENANT'),
+  tenants: z.array(z.object({ id: z.string(), name: z.string(), slug: z.string() })),
+})
 
 export const loginRequestSchema = z
   .object({
     email: z
       .string()
       .trim()
+      .max(254)
       .email('E-mail inválido.')
       .transform((value) => value.toLowerCase())
       .openapi({ example: 'admin@ketris.dev' }),
@@ -15,10 +23,11 @@ export const loginRequestSchema = z
       .string()
       .min(1, 'Senha é obrigatória.')
       .openapi({ example: 'trocar-em-desenvolvimento' }),
+    tenantId: z.string().trim().min(1).optional(),
+    locale: z.enum(locales).default('pt-BR'),
   })
+  .strict()
   .openapi('LoginRequest')
-
-export type LoginRequestDTO = z.infer<typeof loginRequestSchema>
 
 export const loginResponseSchema = z
   .object({
@@ -29,4 +38,6 @@ export const loginResponseSchema = z
         'Token opaco de alta entropia, válido por 30 dias. Use em POST /auth/refresh para obter um novo access token.',
     }),
   })
+  .or(tenantSelectionResponseSchema)
+  .or(pendingEmailVerificationResponseSchema)
   .openapi('LoginResponse')

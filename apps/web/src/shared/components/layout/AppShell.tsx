@@ -26,6 +26,7 @@ import {
 import type { AppShellProps } from '@shared/types/app-shell'
 import { getInitials } from '@shared/utils/get-initials'
 import { useSidebarPreferencesStore } from '@shared/stores/sidebar-preferences-store'
+import { useRetainedAuthContent } from '@shared/hooks/use-retained-auth-content'
 import { appShellNavigationItems } from './app-shell-navigation-items'
 import { AppShellSidebar, sidebarCollapsedWidth, sidebarExpandedWidth } from './AppShellSidebar'
 import { DashboardNotificationsButton } from './DashboardNotificationsButton'
@@ -39,6 +40,11 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   const restrictedAccess =
     session?.scope === 'tenant' ? getRestrictedRoleAccess(session.role) : null
   const isRenter = session?.scope === 'tenant' && session.role === 'RENTER'
+  const retainRenterLayout = useRetainedAuthContent(
+    isRenter,
+    session?.authUnavailable === true,
+    status === 'loading',
+  )
   const isRestrictedRouteBlocked = Boolean(
     restrictedAccess && !restrictedAccess.isAllowedPathname(pathname),
   )
@@ -232,7 +238,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           },
         }}
       >
-        {isRenter || isSigningOut || isPublicCrmRoute || isLocalDashboardPreview ? (
+        {retainRenterLayout || isSigningOut || isPublicCrmRoute || isLocalDashboardPreview ? (
           children
         ) : (
           <TenantSessionBoundary>{children}</TenantSessionBoundary>

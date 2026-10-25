@@ -1,222 +1,217 @@
 import { randomUUID } from 'node:crypto'
-
 import { NextRequest } from 'next/server'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { authContainer } from '@server/auth/container'
 import { prisma } from '@server/db/prisma'
-
+import { SesMailer } from '@server/shared/email/ses-mailer'
+import { POST as register } from '../route'
 import { POST as login } from '../../auth/login/route'
-import { POST } from '../route'
+import { POST as confirm } from '../../auth/email-verification-codes/verify/route'
 
-describe('POST /api/register (integração)', () => {
-  const createdTenantIds: string[] = []
-  let existingAgencyId: string
-  let existingAgencyEmail: string
+const send = vi.spyOn(SesMailer.prototype, 'send').mockResolvedValue(undefined)
+const tenants: string[] = []
+function request(path: string, body: unknown) {
+  return new NextRequest(`http://localhost/api/${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+}
+function details() {
+  return {
+    fullName: `Cadastro ${randomUUID()}`,
+    email: `${randomUUID()}@signup.example.test`,
+    phone: '(11) 99999-9999',
+    password: 'senha-longa-123',
+    acceptTerms: true,
+    locale: 'pt-BR',
+  }
+}
+function latestCode() {
+  const code = send.mock.calls.at(-1)?.[0].text?.match(/\b\d{6}\b/)?.[0]
+  if (!code) throw new Error('E-mail sem código de confirmação')
+  return code
+}
 
-  beforeAll(async () => {
-    await prisma.tenant.upsert({
-      where: { slug: 'locatarios' },
-      update: {},
-      create: { nome: 'Locatários Ketris', slug: 'locatarios' },
+describe('cadastro e primeiro login com confirmação real', () => {
+  beforeEach(() => {
+    send.mockReset()
+    send.mockResolvedValue(undefined)
+  })
+  afterAll(async () => {
+    await prisma.tenant.deleteMany({ where: { id: { in: tenants } } })
+    send.mockRestore()
+  })
+
+  it('persiste telefone e aceite, não emite sessão antecipada e permite confirmar uma única vez', async () => {
+    const input = { ...details(), profile: 'proprietario' }
+    const response = await register(request('register', input))
+    expect(response.status).toBe(201)
+    const body = await response.json()
+    tenants.push(body.tenantId)
+    expect(body.outcome).toBe('PENDING_EMAIL_VERIFICATION')
+    expect(body.emailSent).toBe(true)
+    expect('accessToken' in body).toBe(false)
+    const user = await prisma.usuario.findUniqueOrThrow({
+      where: { tenantId_email: { tenantId: body.tenantId, email: input.email } },
     })
+    expect(user.telefone).toBe(input.phone)
+    expect(user.termosAceitosEm).not.toBeNull()
+    expect(user.emailVerificadoEm).toBeNull()
+    expect(await prisma.refreshToken.count({ where: { userId: user.id } })).toBe(0)
+    const code = latestCode()
+    const unverifiedLogin = await login(
+      request('auth/login', { email: input.email, password: input.password }),
+    )
+    expect((await unverifiedLogin.json()).outcome).toBe('PENDING_EMAIL_VERIFICATION')
+    expect(send).toHaveBeenCalledTimes(1)
+    const verified = await confirm(
+      request('auth/email-verification-codes/verify', {
+        email: input.email,
+        tenantId: body.tenantId,
+        code,
+      }),
+    )
+    expect(verified.status).toBe(200)
+    const result = await verified.json()
+    expect(result.outcome).toBe('REGISTERED')
+    expect(typeof result.accessToken).toBe('string')
+    expect(
+      (
+        await confirm(
+          request('auth/email-verification-codes/verify', {
+            email: input.email,
+            tenantId: body.tenantId,
+            code,
+          }),
+        )
+      ).status,
+    ).toBe(400)
+    expect(await prisma.refreshToken.count({ where: { userId: user.id } })).toBe(1)
+  })
 
+  it('inicializa perfil público do corretor com telefone e CRECI reais sem publicá-lo', async () => {
+    const input = { ...details(), profile: 'corretor', creci: '12345-F' }
+    const response = await register(request('register', input))
+    expect(response.status).toBe(201)
+    const body = await response.json()
+    tenants.push(body.tenantId)
+    const user = await prisma.usuario.findUniqueOrThrow({
+      where: { tenantId_email: { tenantId: body.tenantId, email: input.email } },
+    })
+    const profile = await prisma.perfilPublicoCorretor.findUniqueOrThrow({
+      where: { usuarioId: user.id },
+    })
+    expect(user.creci).toBe(input.creci)
+    expect(profile.telefone).toBe(input.phone)
+    expect(profile.creci).toBe(input.creci)
+    expect(profile.status).toBe('DRAFT')
+  })
+
+  it('exige tanto confirmação de e-mail quanto aprovação para novo vínculo de corretor', async () => {
     const agency = await prisma.tenant.create({
-      data: { nome: 'Imobiliária Existente', slug: `imobiliaria-existente-${randomUUID()}` },
+      data: {
+        nome: 'Imobiliária elegível',
+        slug: `agency-${randomUUID()}`,
+        accountType: 'AGENCY',
+        status: 'ACTIVE',
+      },
     })
-    existingAgencyId = agency.id
-    createdTenantIds.push(agency.id)
+    tenants.push(agency.id)
+    const input = { ...details(), profile: 'corretor', creci: '12345-F', agencyId: agency.id }
+    const response = await register(request('register', input))
+    expect(response.status).toBe(202)
+    const body = await response.json()
+    expect(body.outcome).toBe('PENDING_EMAIL_VERIFICATION')
+    const verified = await confirm(
+      request('auth/email-verification-codes/verify', {
+        email: input.email,
+        tenantId: agency.id,
+        code: latestCode(),
+      }),
+    )
+    expect((await verified.json()).outcome).toBe('PENDING_APPROVAL')
+    const user = await prisma.usuario.findUniqueOrThrow({
+      where: { tenantId_email: { tenantId: agency.id, email: input.email } },
+    })
+    expect(await prisma.refreshToken.count({ where: { userId: user.id } })).toBe(0)
+    expect(user.vinculoAprovadoEm).toBeNull()
+  })
 
-    existingAgencyEmail = `admin-${randomUUID()}@ketris.dev`
-    await prisma.usuario.create({
+  it('também exige confirmação para contas criadas pela gestão', async () => {
+    const agency = await prisma.tenant.create({
+      data: {
+        nome: 'Gestão',
+        slug: `managed-${randomUUID()}`,
+        accountType: 'AGENCY',
+        status: 'ACTIVE',
+      },
+    })
+    tenants.push(agency.id)
+    const input = details()
+    const manager = await prisma.usuario.create({
       data: {
         tenantId: agency.id,
-        nome: 'Admin da Imobiliária',
-        email: existingAgencyEmail,
-        senhaHash: 'hash-fake',
+        nome: 'Gestor',
+        email: `${randomUUID()}@manager.example.test`,
+        senhaHash: 'test-only',
         papel: 'OWNER',
       },
     })
+    const managed = await authContainer.createUserUseCase.execute({
+      actorId: manager.id,
+      actorTenantId: agency.id,
+      actorPapel: 'OWNER',
+      nome: input.fullName,
+      email: input.email,
+      password: input.password,
+      papel: 'PROPERTY_OWNER',
+    })
+    expect(
+      (await prisma.usuario.findUniqueOrThrow({ where: { id: managed.id } })).emailVerificadoEm,
+    ).toBeNull()
+    const response = await login(
+      request('auth/login', { email: input.email, password: input.password }),
+    )
+    expect((await response.json()).outcome).toBe('PENDING_EMAIL_VERIFICATION')
+    expect(await prisma.refreshToken.count({ where: { userId: managed.id } })).toBe(0)
+    const verified = await confirm(
+      request('auth/email-verification-codes/verify', {
+        email: input.email,
+        tenantId: agency.id,
+        code: latestCode(),
+      }),
+    )
+    expect(verified.status).toBe(200)
+    expect((await verified.json()).outcome).toBe('REGISTERED')
   })
 
-  afterAll(async () => {
-    for (const tenantId of createdTenantIds) {
-      await prisma.tenant.delete({ where: { id: tenantId } }).catch(() => {})
+  it('preserva conta e código quando o envio falha, sem fornecer tokens', async () => {
+    send.mockRejectedValueOnce(new Error('Falha de entrega simulada'))
+    const input = { ...details(), profile: 'proprietario' }
+    const response = await register(request('register', input))
+    expect(response.status).toBe(201)
+    const body = await response.json()
+    tenants.push(body.tenantId)
+    expect(body.emailSent).toBe(false)
+    expect('accessToken' in body).toBe(false)
+    expect(
+      await prisma.usuario.count({ where: { tenantId: body.tenantId, email: input.email } }),
+    ).toBe(1)
+    expect(await prisma.emailVerificationCode.count({ where: { tenantId: body.tenantId } })).toBe(1)
+  })
+
+  it('rejeita campos não suportados, ausência de aceite e senha maior que 72 bytes antes de gravar', async () => {
+    const input = { ...details(), profile: 'proprietario' }
+    for (const invalid of [
+      { ...input, acceptTerms: false },
+      { ...input, password: 'é'.repeat(37) },
+      { ...input, passwordConfirmation: input.password },
+    ]) {
+      expect((await register(request('register', invalid))).status).toBe(400)
     }
-    await prisma.$disconnect()
-  })
-
-  function buildRequest(body: unknown): NextRequest {
-    return new NextRequest('http://localhost/api/register', {
-      method: 'POST',
-      body: JSON.stringify(body),
-      headers: { 'Content-Type': 'application/json' },
-    })
-  }
-
-  it('imobiliaria: cria um tenant novo com OWNER e já retorna sessão logada', async () => {
-    const email = `nova-imobiliaria-${randomUUID()}@ketris.dev`
-
-    const response = await POST(
-      buildRequest({
-        profile: 'imobiliaria',
-        fullName: 'Dona da Imobiliária',
-        companyName: 'Imobiliária Nova Ltda',
-        email,
-        password: 'senha-longa-123',
-      }),
-    )
-    const json = await response.json()
-
-    expect(response.status).toBe(201)
-    expect(json.outcome).toBe('REGISTERED')
-    expect(json.user.role).toBe('OWNER')
-    expect(json.user.email).toBe(email)
-    expect(typeof json.accessToken).toBe('string')
-    expect(typeof json.refreshToken).toBe('string')
-
-    const createdTenant = await prisma.tenant.findUnique({ where: { id: json.user.tenantId } })
-    expect(createdTenant).not.toBeNull()
-    if (createdTenant) createdTenantIds.push(createdTenant.id)
-    // Billed as an agency, but only after the platform admin activates the trial.
-    expect(createdTenant).toMatchObject({ accountType: 'AGENCY', status: 'TRIAL' })
-  })
-
-  it('corretor autônomo (sem agencyId): cria um tenant novo de corretor, em teste', async () => {
-    const email = `corretor-autonomo-${randomUUID()}@ketris.dev`
-
-    const response = await POST(
-      buildRequest({
-        profile: 'corretor',
-        fullName: 'Corretor Autônomo',
-        email,
-        password: 'senha-longa-123',
-      }),
-    )
-    const json = await response.json()
-
-    expect(response.status).toBe(201)
-    expect(json.outcome).toBe('REGISTERED')
-    expect(json.user.role).toBe('OWNER')
-
-    if (json.user?.tenantId) createdTenantIds.push(json.user.tenantId)
-    expect(await prisma.tenant.findUnique({ where: { id: json.user.tenantId } })).toMatchObject({
-      accountType: 'BROKER',
-      status: 'TRIAL',
-    })
-  })
-
-  it.each([
-    ['proprietario', 'INDIVIDUAL'],
-    ['construtora', 'AGENCY'],
-  ] as const)('%s: cria o tenant como %s, em teste', async (profile, accountType) => {
-    const response = await POST(
-      buildRequest({
-        profile,
-        fullName: `Cadastro ${profile}`,
-        email: `cadastro-${profile}-${randomUUID()}@ketris.dev`,
-        password: 'senha-longa-123',
-      }),
-    )
-    const json = await response.json()
-
-    expect(response.status).toBe(201)
-    if (json.user?.tenantId) createdTenantIds.push(json.user.tenantId)
-    expect(await prisma.tenant.findUnique({ where: { id: json.user.tenantId } })).toMatchObject({
-      accountType,
-      status: 'TRIAL',
-    })
-  })
-
-  it('corretor com agencyId: cria vínculo pendente, sem sessão, e bloqueia login até aprovação', async () => {
-    const email = `corretor-pendente-${randomUUID()}@ketris.dev`
-    const password = 'senha-longa-123'
-
-    const response = await POST(
-      buildRequest({
-        profile: 'corretor',
-        fullName: 'Corretor Pendente',
-        email,
-        password,
-        agencyId: existingAgencyId,
-      }),
-    )
-    const json = await response.json()
-
-    expect(response.status).toBe(202)
-    expect(json.outcome).toBe('PENDING_APPROVAL')
-    expect(json.email).toBe(email)
-    expect(json.accessToken).toBeUndefined()
-
-    const loginResponse = await login(
-      new NextRequest('http://localhost/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-        headers: { 'Content-Type': 'application/json' },
-      }),
-    )
-    const loginJson = await loginResponse.json()
-    expect(loginResponse.status).toBe(403)
-    expect(loginJson.error.code).toBe('MEMBERSHIP_PENDING_APPROVAL')
-  })
-
-  it('corretor com agencyId inexistente: retorna 404 AGENCY_NOT_FOUND', async () => {
-    const response = await POST(
-      buildRequest({
-        profile: 'corretor',
-        fullName: 'Corretor',
-        email: `corretor-${randomUUID()}@ketris.dev`,
-        password: 'senha-longa-123',
-        agencyId: 'id-que-nao-existe',
-      }),
-    )
-    const json = await response.json()
-
-    expect(response.status).toBe(404)
-    expect(json.error.code).toBe('AGENCY_NOT_FOUND')
-  })
-
-  it('corretor com agencyId: retorna 409 quando já existe alguém com o e-mail nessa imobiliária', async () => {
-    const response = await POST(
-      buildRequest({
-        profile: 'corretor',
-        fullName: 'Duplicado',
-        email: existingAgencyEmail,
-        password: 'senha-longa-123',
-        agencyId: existingAgencyId,
-      }),
-    )
-    const json = await response.json()
-
-    expect(response.status).toBe(409)
-    expect(json.error.code).toBe('EMAIL_ALREADY_IN_USE')
-  })
-
-  it('locatario: entra no tenant compartilhado e já retorna sessão logada', async () => {
-    const email = `locatario-${randomUUID()}@ketris.dev`
-
-    const response = await POST(
-      buildRequest({
-        profile: 'locatario',
-        fullName: 'Maria Locatária',
-        email,
-        password: 'senha-longa-123',
-      }),
-    )
-    const json = await response.json()
-
-    expect(response.status).toBe(201)
-    expect(json.outcome).toBe('REGISTERED')
-    expect(json.user.role).toBe('RENTER')
-
-    const renterTenant = await prisma.tenant.findUnique({ where: { slug: 'locatarios' } })
-    expect(json.user.tenantId).toBe(renterTenant?.id)
-  })
-
-  it('retorna 400 quando o corpo falha na validação Zod', async () => {
-    const response = await POST(buildRequest({ profile: 'locatario', email: 'nao-e-email' }))
-    const json = await response.json()
-
-    expect(response.status).toBe(400)
-    expect(json.error.code).toBe('VALIDATION_ERROR')
+    expect(await prisma.usuario.count({ where: { email: input.email } })).toBe(0)
+    expect(send).not.toHaveBeenCalled()
   })
 })

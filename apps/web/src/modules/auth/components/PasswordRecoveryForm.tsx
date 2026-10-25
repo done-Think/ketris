@@ -1,11 +1,13 @@
 'use client'
 
+import { styles } from '../styles/password-recovery-form.styles'
+
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import { Box, Button, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { RhfTextField } from '@shared/components/form'
-import { brand, componentText, radius } from '@shared/theme/tokens'
+import { componentText } from '@shared/theme/tokens'
 
 import { AuthFormField } from '@shared/components/form/AuthFormField'
 import { authPrimaryButtonSx, authTextFieldSx } from '@shared/components/form/auth-form.styles'
@@ -20,36 +22,22 @@ export function PasswordRecoveryForm({
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-        <Box
-          aria-hidden="true"
-          sx={{
-            width: { xs: 36, md: 60 },
-            height: { xs: 36, md: 60 },
-            display: { xs: 'none', md: 'grid' },
-            placeItems: 'center',
-            borderRadius: `${radius.full}px`,
-            bgcolor: brand.magenta[50],
-          }}
-        >
-          <LockOutlinedIcon sx={{ color: 'primary.main', fontSize: { xs: 18, md: 28 } }} />
+      <Box sx={styles.box}>
+        <Box aria-hidden="true" sx={styles.box2}>
+          <LockOutlinedIcon sx={styles.lockOutlinedIcon} />
         </Box>
       </Box>
 
-      <Box sx={{ mt: { xs: 2, md: 4 }, textAlign: 'center' }}>
+      <Box sx={styles.box3}>
         <Typography variant="h3" sx={componentText.authCompactTitle}>
           {t('title')}
         </Typography>
-        <Typography
-          color="text.secondary"
-          variant="body2"
-          sx={{ mt: 0.5, ...componentText.authCompactBody }}
-        >
+        <Typography color="text.secondary" variant="body2" sx={styles.typography}>
           {t('subtitle')}
         </Typography>
       </Box>
 
-      <Box component="form" noValidate onSubmit={onSubmit} sx={{ mt: { xs: 1.5, md: 2.5 } }}>
+      <Box component="form" noValidate onSubmit={onSubmit} sx={styles.box4}>
         <AuthFormField
           htmlFor="password-recovery-email"
           label={t('email.label')}
@@ -63,17 +51,7 @@ export function PasswordRecoveryForm({
             type="email"
             autoComplete="email"
             fullWidth
-            sx={[
-              authTextFieldSx,
-              {
-                '& .MuiOutlinedInput-root': { height: { xs: 30, md: 42 } },
-                '& .MuiInputBase-input': {
-                  px: { xs: 1.25, md: 1.75 },
-                  py: { xs: 0.75, md: 1.5 },
-                  ...componentText.authCompactBody,
-                },
-              },
-            ]}
+            sx={[authTextFieldSx, styles.emailField]}
           />
         </AuthFormField>
 
@@ -83,14 +61,7 @@ export function PasswordRecoveryForm({
           size="large"
           fullWidth
           disabled={isSubmitting}
-          sx={[
-            authPrimaryButtonSx,
-            {
-              height: { xs: 30, md: 46 },
-              mt: { xs: 2, md: 3.25 },
-              ...componentText.authCompactBody,
-            },
-          ]}
+          sx={[authPrimaryButtonSx, styles.submitButton]}
         >
           {t('submit')}
         </Button>

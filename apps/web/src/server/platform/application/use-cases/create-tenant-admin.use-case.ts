@@ -7,6 +7,7 @@ import { TenantNotFoundError } from '../../domain/errors'
 import type { TenantRepository } from '../ports/tenant-repository.port'
 
 export interface CreateTenantAdminInput {
+  actorId?: string
   tenantId: string
   nome: string
   email: string
@@ -29,7 +30,7 @@ export class CreateTenantAdminUseCase {
       throw new TenantNotFoundError()
     }
 
-    const existing = await this.userRepository.findByEmail(input.email)
+    const existing = await this.userRepository.findByEmail(input.email, input.tenantId)
 
     if (existing) {
       throw new EmailAlreadyInUseError()
@@ -43,6 +44,9 @@ export class CreateTenantAdminUseCase {
       email: input.email,
       senhaHash,
       papel: 'OWNER',
+      auditActor: input.actorId
+        ? { kind: 'PLATFORM_ADMIN', id: input.actorId }
+        : { kind: 'SYSTEM' },
     })
 
     return toAuthenticatedUser(created)

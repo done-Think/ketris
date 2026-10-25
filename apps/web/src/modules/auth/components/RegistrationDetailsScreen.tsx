@@ -1,14 +1,14 @@
 'use client'
 
+import { styles } from '../styles/registration-details-screen.styles'
+
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
 import { Alert, Box, Button, Typography } from '@mui/material'
-import { alpha as muiAlpha } from '@mui/material/styles'
+
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
-import { brand, radius } from '@shared/theme/tokens'
 
-import { authPrimaryButtonSx } from '@shared/components/form/auth-form.styles'
 import { EmailVerificationStep } from './EmailVerificationStep'
 import { RegistrationDetailsForm } from './RegistrationDetailsForm'
 import { authRoutes } from '../config/auth-routes'
@@ -28,7 +28,7 @@ export function RegistrationDetailsScreen({ profile }: RegistrationDetailsScreen
   if (pendingEmailVerification) {
     return (
       <EmailVerificationStep
-        email={pendingEmailVerification}
+        verification={pendingEmailVerification}
         onConfirmed={completeEmailVerification}
       />
     )
@@ -36,35 +36,19 @@ export function RegistrationDetailsScreen({ profile }: RegistrationDetailsScreen
 
   if (pendingApproval) {
     return (
-      <Box sx={{ textAlign: 'center', mt: 4 }}>
-        <Box
-          aria-hidden="true"
-          sx={{
-            width: 52,
-            height: 52,
-            mx: 'auto',
-            display: 'grid',
-            placeItems: 'center',
-            borderRadius: `${radius.full}px`,
-            bgcolor: muiAlpha(brand.semantic.success, 0.08),
-          }}
-        >
-          <CheckRoundedIcon sx={{ color: brand.semantic.success, fontSize: 28 }} />
+      <Box sx={styles.box}>
+        <Box aria-hidden="true" sx={styles.box2}>
+          <CheckRoundedIcon sx={styles.checkRoundedIcon} />
         </Box>
 
-        <Typography variant="h5" sx={{ mt: 2, mb: 0.5 }}>
+        <Typography variant="h5" sx={styles.typography}>
           {t('pendingApproval.title')}
         </Typography>
-        <Typography color="text.secondary" sx={{ maxWidth: 420, mx: 'auto' }}>
+        <Typography color="text.secondary" sx={styles.typography2}>
           {t('pendingApproval.description')}
         </Typography>
 
-        <Button
-          component={Link}
-          href={authRoutes.login}
-          variant="contained"
-          sx={{ ...authPrimaryButtonSx, mt: 3 }}
-        >
+        <Button component={Link} href={authRoutes.login} variant="contained" sx={styles.button}>
           {t('pendingApproval.backToLogin')}
         </Button>
       </Box>
@@ -74,7 +58,7 @@ export function RegistrationDetailsScreen({ profile }: RegistrationDetailsScreen
   return (
     <>
       {error ? (
-        <Alert severity="error" sx={{ mt: 3 }}>
+        <Alert severity="error" sx={styles.alert}>
           {error}
         </Alert>
       ) : null}

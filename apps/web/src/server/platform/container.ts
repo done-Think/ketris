@@ -14,6 +14,8 @@ import { ListTenantUsersUseCase } from './application/use-cases/list-tenant-user
 import { ListPlatformPlansUseCase } from './application/use-cases/list-platform-plans.use-case'
 import { ListTenantsUseCase } from './application/use-cases/list-tenants.use-case'
 import { LoginPlatformAdminUseCase } from './application/use-cases/login-platform-admin.use-case'
+import { LogoutPlatformAdminUseCase } from './application/use-cases/logout-platform-admin.use-case'
+import { ValidatePlatformSessionTokensUseCase } from './application/use-cases/validate-platform-session-tokens.use-case'
 import { RefreshPlatformAdminTokenUseCase } from './application/use-cases/refresh-platform-admin-token.use-case'
 import { UpdatePlatformAdminUseCase } from './application/use-cases/update-platform-admin.use-case'
 import { UpdatePlatformPlanUseCase } from './application/use-cases/update-platform-plan.use-case'
@@ -41,6 +43,12 @@ const platformOverviewRepository = new PrismaPlatformOverviewRepository()
 export const platformContainer = {
   tokenService,
   platformAdminRepository,
+  logoutPlatformAdminUseCase: new LogoutPlatformAdminUseCase(refreshTokenRepository),
+  validatePlatformSessionTokensUseCase: new ValidatePlatformSessionTokensUseCase(
+    tokenService,
+    platformAdminRepository,
+    refreshTokenRepository,
+  ),
   loginPlatformAdminUseCase: new LoginPlatformAdminUseCase(
     platformAdminRepository,
     passwordHasher,

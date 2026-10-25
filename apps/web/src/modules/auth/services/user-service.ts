@@ -1,3 +1,5 @@
+import type { AppLocale } from '@/i18n/types/locale.types'
+
 import { BaseService } from '@shared/lib/api/base-service'
 
 import type {
@@ -11,11 +13,36 @@ import type {
   UploadAvatarResponse,
 } from '../types/user'
 
-class UserService extends BaseService {
+export class UserService extends BaseService {
   private readonly path = '/auth/users'
 
-  list(): Promise<TenantUser[]> {
-    return this.http.get<ListUsersResponse>(this.path).then((data) => data.users)
+  get(id: string): Promise<TenantUser> {
+    return this.http.get<UpdateUserResponse>(`${this.path}/${id}`).then((data) => data.user)
+  }
+
+  requestEmailChange(email: string, locale: AppLocale): Promise<void> {
+    return this.http.post<void>('/auth/me/email-change', { email, locale })
+  }
+
+  confirmEmailChange(email: string, code: string): Promise<void> {
+    return this.http.post<void>('/auth/me/email-change/verify', { email, code })
+  }
+
+  async list(pendingApproval?: boolean): Promise<TenantUser[]> {
+    const users: TenantUser[] = []
+    let page = 1
+    while (true) {
+      const result = await this.http.get<ListUsersResponse>(this.path, {
+        params: {
+          page,
+          pageSize: 100,
+          ...(pendingApproval === undefined ? {} : { pendingApproval }),
+        },
+      })
+      users.push(...result.users)
+      if (result.users.length === 0 || page * result.pageSize >= result.total) return users
+      page += 1
+    }
   }
 
   create(payload: CreateTenantUserPayload): Promise<TenantUser> {

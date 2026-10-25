@@ -1,4 +1,5 @@
 import axios, {
+  AxiosError,
   type AxiosInstance,
   type AxiosResponse,
   type InternalAxiosRequestConfig,
@@ -16,6 +17,7 @@ export class HttpClient {
   protected instance: AxiosInstance
   private unauthorizedHandler: UnauthorizedHandler | null = null
   private refreshPromise: Promise<string | null> | null = null
+  private authUnavailable = false
 
   constructor(baseURL: string = env.apiUrl) {
     this.instance = axios.create({
@@ -30,6 +32,8 @@ export class HttpClient {
   private setupInterceptors(): void {
     this.instance.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
+        if (this.authUnavailable)
+          throw new AxiosError('AUTH_UNAVAILABLE', 'AUTH_UNAVAILABLE', config)
         return config
       },
       (error) => Promise.reject(error),
@@ -77,6 +81,10 @@ export class HttpClient {
 
   setUnauthorizedHandler(handler: UnauthorizedHandler | null): void {
     this.unauthorizedHandler = handler
+  }
+
+  setAuthUnavailable(unavailable: boolean): void {
+    this.authUnavailable = unavailable
   }
 
   setAuthToken(token: string | null): void {

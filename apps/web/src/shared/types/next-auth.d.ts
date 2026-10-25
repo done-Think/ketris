@@ -13,9 +13,11 @@ declare module 'next-auth' {
     scope: SessionScope
     tenantId?: string
     role?: Papel
+    sessionVersion?: number
   }
 
   interface Session {
+    authUnavailable?: boolean
     accessToken?: string
     refreshToken?: string
     scope?: SessionScope
@@ -27,10 +29,14 @@ declare module 'next-auth' {
 
 declare module 'next-auth/jwt' {
   interface JWT {
+    authUnavailable?: boolean
+    pendingAccessToken?: string
+    pendingRefreshToken?: string
     accessToken?: string
     refreshToken?: string
     scope?: SessionScope
     tenantId?: string
     role?: Papel
+    sessionVersion?: number
   }
 }

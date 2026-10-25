@@ -11,6 +11,5 @@ export const changeOwnPasswordRequestSchema = z
       .openapi({ description: 'Senha atual do usuário.', example: 'senha-atual-123' }),
     password: resetPasswordRequestSchema.shape.password,
   })
+  .strict()
   .openapi('ChangeOwnPasswordRequest')
-
-export type ChangeOwnPasswordRequestDTO = z.infer<typeof changeOwnPasswordRequestSchema>

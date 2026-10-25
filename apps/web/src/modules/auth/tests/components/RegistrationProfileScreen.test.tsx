@@ -28,11 +28,13 @@ describe('RegistrationProfileScreen', () => {
     vi.useRealTimers()
   })
 
-  it('anima o progresso antes de abrir a segunda etapa', () => {
+  it('anima o progresso antes de abrir a segunda etapa', async () => {
     render(<RegistrationProfileScreen />)
 
     fireEvent.click(screen.getByRole('radio', { name: 'Corretor' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
+    })
 
     expect(screen.getByRole('progressbar', { name: 'Etapa 2 de 3' })).toBeInTheDocument()
     expect(pushMock).not.toHaveBeenCalled()

@@ -1,82 +1,63 @@
 'use client'
 
-import { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import { useLocale, useTranslations } from 'next-intl'
-import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
 
-import { getLocalizedPathname } from '@/i18n/locale-prefix'
-import { getRestrictedRoleAccess } from '@shared/lib/auth/restricted-role-access'
-import type { LoginFormValues } from '../schemas/login-schema'
-import type { LoginErrorBody } from '../types/login'
+import type { AppLocale } from '@/i18n/types/locale.types'
+import { getApiErrorCode } from '@shared/utils/error-message'
+
+import { authService } from '../services/auth-service'
+import type { LoginFormValues } from '../types/login'
+import { useEstablishAuthSession } from './use-establish-auth-session'
 
 export function useLogin(callbackUrl: string) {
   const t = useTranslations('auth.login')
-  const locale = useLocale()
-  const router = useRouter()
-  const [error, setError] = useState<string | null>(null)
-  const localizedCallbackUrl = getLocalizedPathname(callbackUrl, locale)
+  const locale = useLocale() as AppLocale
+  const completion = useEstablishAuthSession(callbackUrl)
+  const mutation = useMutation({
+    mutationKey: ['auth', 'login'],
+    mutationFn: async (values: LoginFormValues) => {
+      const response = await authService.login({ ...values, locale })
+      if ('outcome' in response) return response
+      await completion.mutateAsync({ ...response, outcome: 'REGISTERED' })
+      return response
+    },
+  })
 
-  function messageForErrorCode(code: string | undefined) {
-    if (code === 'ACCOUNT_DEACTIVATED') return t('accountDeactivated')
-    if (code === 'RATE_LIMIT_EXCEEDED') return t('rateLimited')
-
-    return t('genericError')
+  async function login(values: LoginFormValues): Promise<boolean> {
+    try {
+      const response = await mutation.mutateAsync(values)
+      return !('outcome' in response)
+    } catch {
+      return false
+    }
   }
 
-  const login = async (values: LoginFormValues) => {
-    setError(null)
-
-    let loginResponse: Response
-
-    try {
-      loginResponse = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
-      })
-    } catch {
-      setError(t('genericError'))
-      return false
-    }
-
-    if (!loginResponse.ok) {
-      const body = (await loginResponse.json().catch(() => null)) as LoginErrorBody | null
-      setError(messageForErrorCode(body?.error?.code))
-      return false
-    }
-
-    const { user, accessToken, refreshToken } = await loginResponse.json()
-
-    try {
-      const result = await signIn('token-session', {
-        accessToken,
-        refreshToken,
-        callbackUrl: localizedCallbackUrl,
-        redirect: false,
-      })
-
-      if (!result || result.error) {
-        setError(t('genericError'))
-        return false
-      }
-
-      const restrictedHome = getRestrictedRoleAccess(user.role)?.home
-      const destination = restrictedHome
-        ? getLocalizedPathname(restrictedHome, locale)
-        : localizedCallbackUrl
-
-      router.replace(destination)
-      router.refresh()
-      return true
-    } catch {
-      setError(t('genericError'))
-      return false
-    }
+  const code = getApiErrorCode(mutation.error)
+  const errorMessages: Record<string, string> = {
+    ACCOUNT_DEACTIVATED: t('accountDeactivated'),
+    RATE_LIMIT_EXCEEDED: t('rateLimited'),
+    TENANT_ACCESS_BLOCKED: t('tenantBlocked'),
+    MEMBERSHIP_PENDING_APPROVAL: t('membershipPending'),
+    EMAIL_NOT_VERIFIED: t('emailNotVerified'),
   }
 
   return {
-    error,
+    error: mutation.isError ? (code && errorMessages[code]) || t('genericError') : null,
+    tenants:
+      mutation.data && 'outcome' in mutation.data && mutation.data.outcome === 'SELECT_TENANT'
+        ? mutation.data.tenants
+        : [],
+    pendingEmailVerification:
+      mutation.data &&
+      'outcome' in mutation.data &&
+      mutation.data.outcome === 'PENDING_EMAIL_VERIFICATION'
+        ? mutation.data
+        : null,
+    pendingApproval: completion.data?.outcome === 'PENDING_APPROVAL',
+    completeEmailVerification: completion.mutateAsync,
+    resetLogin: mutation.reset,
+    isPending: mutation.isPending,
     login,
   }
 }

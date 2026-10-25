@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { createNewPasswordSchema } from '@shared/schemas/new-password-schema'
 import { createPhoneSchema } from '@shared/schemas/phone-schema'
 import type { SchemaMessageTranslator } from '@shared/types'
 
@@ -9,10 +10,10 @@ const NON_BROKER_PROFILE_IDS = ['proprietario', 'imobiliaria', 'construtora', 'l
 
 export function createRegistrationDetailsSchema(t: SchemaMessageTranslator) {
   const commonDetailsFields = {
-    fullName: z.string().trim().min(3, t('fullNameRequired')),
-    email: createEmailSchema(t),
-    phone: createPhoneSchema(t),
-    password: z.string().min(8, t('passwordTooShort')),
+    fullName: z.string().trim().min(3, t('fullNameRequired')).max(200, t('fullNameTooLong')),
+    email: createEmailSchema(t).pipe(z.string().max(254, t('emailTooLong'))),
+    phone: createPhoneSchema(t).pipe(z.string().max(32, t('phoneTooLong'))),
+    password: createNewPasswordSchema(t),
     passwordConfirmation: z.string().min(1, t('passwordConfirmationRequired')),
     acceptTerms: z.boolean().refine((accepted) => accepted, {
       message: t('acceptTermsRequired'),
@@ -25,13 +26,13 @@ export function createRegistrationDetailsSchema(t: SchemaMessageTranslator) {
       z.object({
         ...commonDetailsFields,
         profile: z.literal('corretor'),
-        creci: z.string().trim().min(1, t('creciRequired')),
+        creci: z.string().trim().min(1, t('creciRequired')).max(32, t('creciTooLong')),
         agencyId: z.string().min(1).optional(),
       }),
       z.object({
         ...commonDetailsFields,
         profile: z.enum(NON_BROKER_PROFILE_IDS),
-        creci: z.string().trim(),
+        creci: z.string().trim().max(32, t('creciTooLong')),
       }),
     ])
     .superRefine((values, context) => {

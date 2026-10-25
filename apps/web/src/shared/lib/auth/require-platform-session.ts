@@ -4,9 +4,11 @@ import { redirect } from 'next/navigation'
 
 import { getLocalizedPathname } from '@/i18n/locale-prefix'
 import { authOptions } from './auth-options'
+import { AuthenticationUnavailableError } from './authentication-unavailable-error'
 
 export async function requirePlatformSession(locale: string | undefined): Promise<Session> {
   const session = await getServerSession(authOptions)
+  if (session?.authUnavailable) throw new AuthenticationUnavailableError()
 
   if (!session || session.scope !== 'platform') {
     redirect(getLocalizedPathname('/platform/login', locale))

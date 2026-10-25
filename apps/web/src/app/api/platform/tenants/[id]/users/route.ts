@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
-import { toAuthenticatedUserResponse } from '@server/auth/domain/user.entity'
+import { toAuthenticatedUserResponse } from '@server/auth/application/user-response'
 import { platformContainer } from '@server/platform/container'
 import { requirePlatformBearerAuth } from '@server/platform/require-platform-bearer-auth'
 import { withErrorHandling } from '@server/shared/http'

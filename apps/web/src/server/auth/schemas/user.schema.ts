@@ -22,6 +22,8 @@ export const authenticatedUserResponseSchema = z
     id: z.string(),
     tenantId: z.string(),
     name: z.string(),
+    phone: z.string().nullable(),
+    creci: z.string().nullable(),
     email: z.string().email(),
     avatarUrl: z.string().min(1).nullable(),
     role: papelSchema,

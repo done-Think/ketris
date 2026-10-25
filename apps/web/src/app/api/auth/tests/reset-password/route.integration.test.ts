@@ -61,7 +61,7 @@ describe('POST /api/auth/reset-password (integração)', () => {
       },
     })
 
-    const resetToken = await passwordResetTokenService.issue(userId)
+    const resetToken = await passwordResetTokenService.issue(userId, 0)
 
     const response = await resetPassword(
       buildRequest('http://localhost/api/auth/reset-password', {
@@ -90,9 +90,18 @@ describe('POST /api/auth/reset-password (integração)', () => {
       buildRequest('http://localhost/api/auth/login', { email, password: oldPassword }),
     )
     expect(loginWithOldPassword.status).toBe(401)
+    const replay = await resetPassword(
+      buildRequest('http://localhost/api/auth/reset-password', {
+        email,
+        password: 'replayed-password',
+        resetToken,
+      }),
+    )
+    expect(replay.status).toBe(401)
+    expect((await prisma.usuario.findUniqueOrThrow({ where: { id: userId } })).versaoSessao).toBe(1)
   })
 
-  it('retorna 204 mesmo para um e-mail que não existe (anti-enumeração)', async () => {
+  it('retorna o mesmo erro de token inválido independentemente do e-mail', async () => {
     const response = await resetPassword(
       buildRequest('http://localhost/api/auth/reset-password', {
         email: 'nao-existe@ketris.dev',
@@ -101,7 +110,7 @@ describe('POST /api/auth/reset-password (integração)', () => {
       }),
     )
 
-    expect(response.status).toBe(204)
+    expect(response.status).toBe(401)
   })
 
   it('retorna 400 quando o corpo falha na validação Zod', async () => {
@@ -128,7 +137,7 @@ describe('POST /api/auth/reset-password (integração)', () => {
         papel: 'OWNER',
       },
     })
-    const resetTokenDeOutroUsuario = await passwordResetTokenService.issue(outroUsuario.id)
+    const resetTokenDeOutroUsuario = await passwordResetTokenService.issue(outroUsuario.id, 0)
 
     const response = await resetPassword(
       buildRequest('http://localhost/api/auth/reset-password', {

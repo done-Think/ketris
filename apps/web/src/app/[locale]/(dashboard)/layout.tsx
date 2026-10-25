@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { getLocalizedPathname } from '@/i18n/locale-prefix'
 import type { LocaleRouteParams } from '@/i18n/types/route.types'
 import { authOptions } from '@shared/lib/auth/auth-options'
+import { AuthenticationUnavailable } from '@shared/components/layout/AuthenticationUnavailable'
 
 export default async function DashboardLayout({
   children,
@@ -16,6 +17,7 @@ export default async function DashboardLayout({
 }) {
   const { locale } = await params
   const session = await getServerSession(authOptions)
+  if (session?.authUnavailable) return <AuthenticationUnavailable />
 
   if (!session || session.scope !== 'tenant') {
     redirect(getLocalizedPathname('/login', locale))

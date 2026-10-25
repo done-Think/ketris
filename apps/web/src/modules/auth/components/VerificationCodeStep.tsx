@@ -1,12 +1,14 @@
 'use client'
 
+import { styles } from '../styles/verification-code-step.styles'
+
 import { useEffect } from 'react'
 import MarkEmailReadOutlinedIcon from '@mui/icons-material/MarkEmailReadOutlined'
 import { Alert, Box, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { useWatch } from 'react-hook-form'
 
-import { brand, componentText, radius } from '@shared/theme/tokens'
+import { componentText } from '@shared/theme/tokens'
 
 import { ResendCountdownButton } from './ResendCountdownButton'
 import { VerificationCodeField } from './VerificationCodeField'
@@ -30,36 +32,22 @@ export function VerificationCodeStep({
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-        <Box
-          aria-hidden="true"
-          sx={{
-            width: { xs: 36, md: 60 },
-            height: { xs: 36, md: 60 },
-            display: { xs: 'none', md: 'grid' },
-            placeItems: 'center',
-            borderRadius: `${radius.full}px`,
-            bgcolor: brand.magenta[50],
-          }}
-        >
-          <MarkEmailReadOutlinedIcon sx={{ color: 'primary.main', fontSize: { xs: 18, md: 28 } }} />
+      <Box sx={styles.box}>
+        <Box aria-hidden="true" sx={styles.box2}>
+          <MarkEmailReadOutlinedIcon sx={styles.markEmailReadOutlinedIcon} />
         </Box>
       </Box>
 
-      <Box sx={{ mt: { xs: 2, md: 4 }, textAlign: 'center' }}>
+      <Box sx={styles.box3}>
         <Typography variant="h3" sx={componentText.authCompactTitle}>
           {t('code.title')}
         </Typography>
-        <Typography
-          color="text.secondary"
-          variant="body2"
-          sx={{ mt: 0.5, ...componentText.authCompactBody }}
-        >
+        <Typography color="text.secondary" variant="body2" sx={styles.typography}>
           {t('code.description')}
         </Typography>
       </Box>
 
-      <Stack spacing={1.5} sx={{ mt: { xs: 2, md: 3 } }}>
+      <Stack spacing={1.5} sx={styles.stack}>
         {error ? <Alert severity="error">{error}</Alert> : null}
         <VerificationCodeField
           control={control}

@@ -25,6 +25,7 @@ function createDeps(overrides?: { findById?: PlatformAdminRepository['findById']
     deactivate: vi.fn().mockResolvedValue({ ...target, ativo: false }),
   }
   const refreshTokenRepository: PlatformRefreshTokenRepository = {
+    rotate: vi.fn().mockResolvedValue(true),
     create: vi.fn(),
     findValidByTokenHash: vi.fn(),
     revokeById: vi.fn(),

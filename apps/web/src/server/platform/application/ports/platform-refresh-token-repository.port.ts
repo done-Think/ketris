@@ -9,8 +9,14 @@ export interface StoredPlatformRefreshToken {
   platformAdminId: string
 }
 
+export interface PlatformRefreshTokenRotation {
+  previous: StoredPlatformRefreshToken
+  replacement: NewPlatformRefreshToken
+}
+
 export interface PlatformRefreshTokenRepository {
   create(input: NewPlatformRefreshToken): Promise<void>
+  rotate(input: PlatformRefreshTokenRotation): Promise<boolean>
   findValidByTokenHash(tokenHash: string): Promise<StoredPlatformRefreshToken | null>
   revokeById(id: string): Promise<void>
   revokeAllForPlatformAdmin(platformAdminId: string): Promise<void>

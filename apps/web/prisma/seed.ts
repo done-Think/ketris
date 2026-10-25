@@ -46,25 +46,43 @@ async function main() {
     tenantIdBySlug.set(seedTenant.slug, tenant.id)
 
     for (const member of seedTenant.members) {
-      const user = await prisma.usuario.upsert({
-        where: { email: member.email },
-        update: {
-          tenantId: tenant.id,
-          nome: member.name,
-          papel: member.role,
-          avatarUrl: member.avatarUrl,
-          senhaHash,
-          ativo: true,
-          vinculoAprovadoEm: new Date(),
-        },
-        create: {
-          tenantId: tenant.id,
-          nome: member.name,
-          email: member.email,
-          avatarUrl: member.avatarUrl,
-          senhaHash,
-          papel: member.role,
-        },
+      const user = await prisma.$transaction(async (tx) => {
+        const previous = await tx.usuario.findUnique({
+          where: { tenantId_email: { tenantId: tenant.id, email: member.email } },
+          select: { id: true },
+        })
+        const saved = await tx.usuario.upsert({
+          where: { tenantId_email: { tenantId: tenant.id, email: member.email } },
+          update: {
+            tenantId: tenant.id,
+            nome: member.name,
+            papel: member.role,
+            avatarUrl: member.avatarUrl,
+            senhaHash,
+            ativo: true,
+            vinculoAprovadoEm: new Date(),
+          },
+          create: {
+            tenantId: tenant.id,
+            nome: member.name,
+            email: member.email,
+            avatarUrl: member.avatarUrl,
+            senhaHash,
+            papel: member.role,
+          },
+        })
+        await tx.userAuditEvent.create({
+          data: {
+            userId: saved.id,
+            tenantId: tenant.id,
+            action: previous ? 'UPDATED' : 'CREATED',
+            actorType: 'SYSTEM',
+            changedFields: previous
+              ? ['name', 'role', 'avatarUrl', 'password', 'active', 'pendingApproval']
+              : [],
+          },
+        })
+        return saved
       })
       tenantIdByEmail.set(member.email, tenant.id)
       userIdByEmail.set(member.email, user.id)

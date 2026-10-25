@@ -117,15 +117,19 @@ especificamente — mantida como está para os `services/` do frontend, que são
 - A revisitar: se `container.ts` de um domínio crescer demais (muitos use-cases, muitas dependências), gera
   o gatilho pra reconsiderar a Option B (DI runtime).
 
-## Nota: resolução de tenant no login (simplificação assumida)
+## Nota: resolução de tenant no login
 
-O schema Prisma tem `@@unique([tenantId, email])` — ou seja, e-mail só é único dentro de um tenant. A
-resolução completa de tenant por subdomínio (`specs/002-fundacao-bff-banco/tasks.md`, T022) ainda não foi
-implementada. Para o login funcionar agora, o `PrismaUserRepository.findByEmail` busca por e-mail
-globalmente (`findFirst`, sem filtro de tenant) — assumindo, por ora, que e-mails são únicos na prática
-entre os poucos tenants de desenvolvimento. Isso é uma simplificação deliberada, não um esquecimento:
-documentada aqui e em `specs/002-fundacao-bff-banco/tasks.md` (T022), sem comentário correspondente no
-código (ver convenção de não comentar código nesta seção, abaixo).
+A unicidade de e-mail é composta por tenant (`@@unique([tenantId, email])`). Contas com o mesmo
+endereço em imobiliárias distintas mantêm senhas, permissões e sessões independentes.
+O login compara a senha com as contas desse e-mail antes de retornar as opções de imobiliária;
+somente contas com credenciais correspondentes são apresentadas. A escolha não concede sessão:
+o backend revalida credenciais, tenant, aprovação, atividade e confirmação do e-mail.
+
+A recuperação comprova primeiro o acesso à caixa postal por código de uso único. Somente então
+apresenta as contas para escolher uma. O token de redefinição identifica esse usuário e sua versão
+de sessão; a troca de senha e a revogação dos refresh tokens são atômicas. O registro global do
+código de prova de e-mail antecede a escolha de tenant e não representa uma conta global.
+A resolução opcional por subdomínio (T022) continua independente desse fluxo.
 
 ## Nota: refresh token (opaco + persistido, com rotação)
 
@@ -202,5 +206,5 @@ inglês.
 
 1. [x] Implementar o módulo `auth` (login) seguindo esta convenção
 2. [ ] Aplicar a mesma convenção em `properties`, `crm`, `contracts`, `financial` conforme cada um for
-   implementado (specs/002 tasks.md)
-3. [ ] Implementar resolução de tenant por subdomínio (T022) — remove a simplificação descrita acima
+       implementado (specs/002 tasks.md)
+3. [ ] Implementar resolução de tenant por subdomínio (T022) — pode complementar a seleção explícita de tenant

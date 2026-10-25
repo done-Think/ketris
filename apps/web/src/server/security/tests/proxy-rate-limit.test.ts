@@ -1,11 +1,25 @@
 import { NextRequest } from 'next/server'
-import { describe, expect, it, vi } from 'vitest'
-
-import { proxy } from '../../../proxy'
+import type { RateLimitInput } from '../types/rate-limit.types'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // O roteamento de idioma não participa das rotas /api e o build ESM do next-intl não resolve
 // `next/server` no Vitest.
 vi.mock('next-intl/middleware', () => ({ default: () => () => new Response(null) }))
+
+const { unavailable } = vi.hoisted(() => ({ unavailable: vi.fn() }))
+vi.mock('../postgres-rate-limit-store', async () => {
+  const { InMemoryRateLimitStore } =
+    await vi.importActual<typeof import('../rate-limit')>('../rate-limit')
+  return {
+    PostgresRateLimitStore: class {
+      private readonly store = new InMemoryRateLimitStore()
+      async consume(input: RateLimitInput) {
+        unavailable()
+        return this.store.consume(input)
+      }
+    },
+  }
+})
 
 function postFrom(ip: string, pathname: string) {
   return new NextRequest(`http://localhost${pathname}`, {
@@ -15,21 +29,110 @@ function postFrom(ip: string, pathname: string) {
 }
 
 describe('proxy rate limit', () => {
-  it('applies the strict auth policy to the change-password route', () => {
-    const ip = '203.0.113.10'
-    const statuses = Array.from(
-      { length: 11 },
-      () => proxy(postFrom(ip, '/api/auth/me/password')).status,
-    )
-
-    expect(statuses.slice(0, 10).every((status) => status !== 429)).toBe(true)
-    expect(statuses[10]).toBe(429)
+  beforeEach(() => {
+    vi.resetModules()
+    unavailable.mockReset()
+    vi.stubEnv('AUTH_TOKEN_SECRET', 'test-rate-limit-key-secret')
+    vi.stubEnv('VERCEL', '')
+    vi.stubEnv('AUTH_RATE_LIMIT_MAX', '10')
+    vi.stubEnv('AUTH_RATE_LIMIT_WINDOW_MS', '900000')
   })
 
-  it('keeps regular API routes on the permissive policy', () => {
-    const ip = '203.0.113.11'
-    const statuses = Array.from({ length: 11 }, () => proxy(postFrom(ip, '/api/crm/leads')).status)
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    vi.useRealTimers()
+  })
 
-    expect(statuses).not.toContain(429)
+  it.each([
+    '/api/auth/me/password',
+    '/api/auth/email-verification-codes',
+    '/api/auth/email-verification-codes/verify',
+    '/api/auth/me/email-change',
+    '/api/auth/me/email-change/verify',
+    '/api/auth/callback/credentials',
+    '/api/auth/callback/platform-credentials',
+    '/api/auth/callback/token-session',
+    '/api/auth/callback/platform-credentials/',
+    '/api/auth/callback/platform-credentials/extra-segment',
+    '/api/auth/callback/%70latform-credentials',
+    '/api/auth/%63allback/platform-credentials',
+  ])('applies the strict auth policy to %s', async (pathname) => {
+    const { proxy } = await import('../../../proxy')
+    const ip = '203.0.113.10'
+    const responses = await Promise.all(
+      Array.from({ length: 11 }, () => proxy(postFrom(ip, pathname))),
+    )
+
+    expect(responses.slice(0, 10).every((response) => response.status !== 429)).toBe(true)
+    expect(responses[10].status).toBe(429)
+    expect(responses[10].headers.get('RateLimit-Limit')).toBe('10')
+    expect(responses[10].headers.get('Retry-After')).toBe('900')
+  })
+
+  it.each(['/api/crm/leads', '/api/auth/session', '/api/auth/csrf'])(
+    'keeps %s on the permissive policy',
+    async (pathname) => {
+      const { proxy } = await import('../../../proxy')
+      const responses = await Promise.all(
+        Array.from({ length: 11 }, () => proxy(postFrom('203.0.113.11', pathname))),
+      )
+      const statuses = responses.map((response) => response.status)
+
+      expect(statuses).not.toContain(429)
+    },
+  )
+
+  it('shares the auth budget between the REST login and NextAuth callbacks', async () => {
+    const { proxy } = await import('../../../proxy')
+    const ip = '203.0.113.12'
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const pathname = attempt % 2 ? '/api/platform/login' : '/api/auth/login'
+      expect((await proxy(postFrom(ip, pathname))).status).not.toBe(429)
+    }
+
+    expect((await proxy(postFrom(ip, '/api/auth/callback/platform-credentials'))).status).toBe(429)
+    expect((await proxy(postFrom(ip, '/api/auth/callback/credentials'))).status).toBe(429)
+  })
+
+  it('uses the configured auth limit and window and allows attempts after expiration', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-10-24T12:00:00Z'))
+    vi.stubEnv('AUTH_RATE_LIMIT_MAX', '2')
+    vi.stubEnv('AUTH_RATE_LIMIT_WINDOW_MS', '5000')
+    const { proxy } = await import('../../../proxy')
+    const ip = '203.0.113.11'
+    const request = () => postFrom(ip, '/api/auth/callback/platform-credentials')
+
+    expect((await proxy(request())).headers.get('RateLimit-Limit')).toBe('2')
+    expect((await proxy(request())).status).not.toBe(429)
+    const blocked = await proxy(request())
+    expect(blocked.status).toBe(429)
+    expect(blocked.headers.get('Retry-After')).toBe('5')
+
+    vi.advanceTimersByTime(5000)
+    expect((await proxy(request())).status).not.toBe(429)
+  })
+  it('fails closed with 503 when the auth counter is unavailable, while regular APIs remain available', async () => {
+    unavailable.mockImplementation(() => {
+      throw new Error('database unavailable')
+    })
+    const { proxy } = await import('../../../proxy')
+    const response = await proxy(
+      postFrom('203.0.113.10', '/api/auth/callback/platform-credentials'),
+    )
+    expect(response.status).toBe(503)
+    expect(response.headers.get('Retry-After')).toBe('60')
+    expect(await response.json()).toMatchObject({ error: { code: 'AUTH_RATE_LIMIT_UNAVAILABLE' } })
+    expect((await proxy(postFrom('203.0.113.10', '/api/crm/leads'))).status).toBe(200)
+  })
+
+  it('does not let forged forwarding headers create fresh auth budgets outside Vercel', async () => {
+    const { proxy } = await import('../../../proxy')
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      expect((await proxy(postFrom(`203.0.113.${attempt}`, '/api/auth/login'))).status).not.toBe(
+        429,
+      )
+    }
+    expect((await proxy(postFrom('198.51.100.1', '/api/auth/login'))).status).toBe(429)
   })
 })
