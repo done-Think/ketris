@@ -1,36 +1,38 @@
 'use client'
 
+import { styles } from '../styles/registration-profile-step.styles'
+
 import { Box, Button, RadioGroup, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
-import { Controller, useForm, useWatch } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Controller, useForm } from 'react-hook-form'
 
-import { authPrimaryButtonSx } from '@shared/components/form/auth-form.styles'
 import { RegistrationProfileCard } from './RegistrationProfileCard'
+import { registrationProfileSchema } from '../schemas/registration-profile-schema'
 import {
   DEFAULT_REGISTRATION_PROFILE,
   REGISTRATION_PROFILES,
 } from '../config/registration-profiles'
 import type {
   RegistrationProfileFormValues,
-  RegistrationProfileId,
   RegistrationProfileStepProps,
 } from '../types/registration'
 
 export function RegistrationProfileStep({ isAdvancing, onContinue }: RegistrationProfileStepProps) {
   const t = useTranslations('auth.register.profileStep')
   const profilesT = useTranslations('auth.register.profiles')
-  const { control } = useForm<RegistrationProfileFormValues>({
+  const { control, handleSubmit } = useForm<RegistrationProfileFormValues>({
+    resolver: zodResolver(registrationProfileSchema),
     defaultValues: { profile: DEFAULT_REGISTRATION_PROFILE },
   })
-  const selectedProfile = useWatch({ control, name: 'profile' })
 
   return (
-    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ mt: { xs: 4, sm: 5 }, textAlign: 'center' }}>
+    <Box sx={styles.box}>
+      <Box sx={styles.box2}>
         <Typography component="h1" variant="h2">
           {t('title')}
         </Typography>
-        <Typography color="text.secondary" sx={{ mt: 0.75 }}>
+        <Typography color="text.secondary" sx={styles.typography}>
           {t('subtitle')}
         </Typography>
       </Box>
@@ -44,15 +46,8 @@ export function RegistrationProfileStep({ isAdvancing, onContinue }: Registratio
             name={field.name}
             value={field.value}
             onBlur={field.onBlur}
-            onChange={(event) => field.onChange(event.target.value as RegistrationProfileId)}
-            sx={{
-              mt: { xs: 4, sm: 5.5 },
-              display: 'flex',
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              justifyContent: 'center',
-              gap: 2,
-            }}
+            onChange={(event) => field.onChange(event.target.value)}
+            sx={styles.radioGroup}
           >
             {REGISTRATION_PROFILES.map((profile) => (
               <RegistrationProfileCard
@@ -72,14 +67,8 @@ export function RegistrationProfileStep({ isAdvancing, onContinue }: Registratio
         variant="contained"
         aria-busy={isAdvancing}
         disabled={isAdvancing}
-        onClick={() => onContinue(selectedProfile)}
-        sx={{
-          ...authPrimaryButtonSx,
-          width: '100%',
-          maxWidth: 334,
-          mt: { xs: 5, md: 'auto' },
-          mx: 'auto',
-        }}
+        onClick={handleSubmit(({ profile }) => onContinue(profile))}
+        sx={styles.button}
       >
         {t('continue')}
       </Button>

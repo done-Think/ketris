@@ -4,24 +4,45 @@ import { useEffect } from 'react'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import { Box, CircularProgress, Stack, Typography } from '@mui/material'
 import { useSession } from 'next-auth/react'
+import { useInertContent } from '@shared/hooks/use-inert-content'
 import { useTranslations } from 'next-intl'
 
 import { useRouter } from '@/i18n/navigation'
 import { alpha, radius } from '@shared/theme/tokens'
-import type { Papel } from '@server/auth/domain/user.entity'
 import type { RoleGuardProps } from '@shared/types/role-guard'
+import { useRetainedAuthContent } from '@shared/hooks/use-retained-auth-content'
+import { AuthenticationUnavailable } from './AuthenticationUnavailable'
+import { AuthAvailabilityContent } from './auth-availability.styles'
 
 export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
   const t = useTranslations('common.roleGuard')
   const router = useRouter()
   const { data: session, status } = useSession()
+  const unavailable = session?.authUnavailable === true
+  const inertRef = useInertContent(unavailable)
   const isAllowed =
-    status === 'authenticated' && !!session?.role && allowedRoles.includes(session.role as Papel)
+    !unavailable &&
+    status === 'authenticated' &&
+    !!session?.role &&
+    allowedRoles.includes(session.role)
+  const retainContent = useRetainedAuthContent(isAllowed, unavailable, status === 'loading')
 
   useEffect(() => {
-    if (status === 'loading') return
+    if (status === 'loading' || unavailable) return
     if (!isAllowed) router.replace('/dashboard')
-  }, [status, isAllowed, router])
+  }, [status, isAllowed, router, unavailable])
+
+  if (retainContent) {
+    return (
+      <>
+        <AuthAvailabilityContent aria-hidden={unavailable || undefined} ref={inertRef}>
+          {children}
+        </AuthAvailabilityContent>
+        {unavailable && <AuthenticationUnavailable />}
+      </>
+    )
+  }
+  if (unavailable) return <AuthenticationUnavailable />
 
   if (status === 'loading') {
     return (

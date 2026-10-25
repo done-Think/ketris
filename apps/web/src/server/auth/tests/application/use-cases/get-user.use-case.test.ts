@@ -18,6 +18,8 @@ const owner: User = {
 
 function createDeps(findById?: UserRepository['findById']) {
   const userRepository: UserRepository = {
+    findManyByEmail: vi.fn(),
+
     findById: findById ?? vi.fn().mockResolvedValue(owner),
     findByEmail: vi.fn(),
     findManyByTenant: vi.fn(),
@@ -31,6 +33,29 @@ function createDeps(findById?: UserRepository['findById']) {
 }
 
 describe('GetUserUseCase', () => {
+  it('permite consultar o próprio perfil sem acesso de gestão', async () => {
+    const deps = createDeps(vi.fn().mockResolvedValue({ ...owner, papel: 'AGENT' }))
+    const result = await new GetUserUseCase(deps.userRepository).execute({
+      actorId: owner.id,
+      actorPapel: 'AGENT',
+      actorTenantId: owner.tenantId,
+      userId: owner.id,
+    })
+    expect(result.id).toBe(owner.id)
+  })
+
+  it('mantém isolamento de tenant na leitura do próprio perfil', async () => {
+    const deps = createDeps()
+    await expect(
+      new GetUserUseCase(deps.userRepository).execute({
+        actorId: owner.id,
+        actorPapel: 'AGENT',
+        actorTenantId: 'other',
+        userId: owner.id,
+      }),
+    ).rejects.toThrow(UserNotFoundError)
+  })
+
   it('retorna o usuário quando ele existe no tenant do ator', async () => {
     const deps = createDeps()
     const useCase = new GetUserUseCase(deps.userRepository)

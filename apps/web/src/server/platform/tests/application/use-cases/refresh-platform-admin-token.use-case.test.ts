@@ -39,6 +39,7 @@ function createDeps(overrides?: {
     verify: vi.fn(),
   }
   const refreshTokenRepository: PlatformRefreshTokenRepository = {
+    rotate: vi.fn().mockResolvedValue(true),
     create: vi.fn().mockResolvedValue(undefined),
     findValidByTokenHash: overrides?.findValidByTokenHash ?? vi.fn().mockResolvedValue(stored),
     revokeById: vi.fn().mockResolvedValue(undefined),
@@ -61,10 +62,15 @@ describe('RefreshPlatformAdminTokenUseCase', () => {
 
     expect(result.accessToken).toBe('jwt-novo')
     expect(result.refreshToken).not.toBe('token-original')
-    expect(deps.refreshTokenRepository.revokeById).toHaveBeenCalledWith(stored.id)
-    expect(deps.refreshTokenRepository.create).toHaveBeenCalledWith(
-      expect.objectContaining({ platformAdminId: admin.id }),
-    )
+    expect(deps.refreshTokenRepository.rotate).toHaveBeenCalledWith({
+      previous: stored,
+      replacement: expect.objectContaining({
+        platformAdminId: admin.id,
+        tokenHash: hashPlatformRefreshToken(result.refreshToken),
+      }),
+    })
+    expect(deps.refreshTokenRepository.revokeById).not.toHaveBeenCalled()
+    expect(deps.refreshTokenRepository.create).not.toHaveBeenCalled()
   })
 
   it('procura pelo hash do token, nunca pelo valor em texto puro', async () => {
@@ -108,5 +114,48 @@ describe('RefreshPlatformAdminTokenUseCase', () => {
       InvalidPlatformRefreshTokenError,
     )
     expect(deps.tokenService.sign).not.toHaveBeenCalled()
+  })
+  it('rejects replay when another request already consumed the refresh token', async () => {
+    const deps = createDeps()
+    vi.mocked(deps.refreshTokenRepository.rotate).mockResolvedValueOnce(false)
+    const useCase = new RefreshPlatformAdminTokenUseCase(
+      deps.platformAdminRepository,
+      deps.tokenService,
+      deps.refreshTokenRepository,
+    )
+    await expect(useCase.execute({ refreshToken: 'token-original' })).rejects.toThrow(
+      InvalidPlatformRefreshTokenError,
+    )
+    expect(deps.refreshTokenRepository.create).not.toHaveBeenCalled()
+  })
+
+  it('does not consume the old refresh token if signing fails', async () => {
+    const deps = createDeps()
+    vi.mocked(deps.tokenService.sign).mockRejectedValueOnce(new Error('signing unavailable'))
+    const useCase = new RefreshPlatformAdminTokenUseCase(
+      deps.platformAdminRepository,
+      deps.tokenService,
+      deps.refreshTokenRepository,
+    )
+    await expect(useCase.execute({ refreshToken: 'token-original' })).rejects.toThrow(
+      'signing unavailable',
+    )
+    expect(deps.refreshTokenRepository.rotate).not.toHaveBeenCalled()
+    expect(deps.refreshTokenRepository.revokeById).not.toHaveBeenCalled()
+  })
+
+  it('propagates a failed transactional rotation without returning tokens', async () => {
+    const deps = createDeps()
+    vi.mocked(deps.refreshTokenRepository.rotate).mockRejectedValueOnce(
+      new Error('write unavailable'),
+    )
+    const useCase = new RefreshPlatformAdminTokenUseCase(
+      deps.platformAdminRepository,
+      deps.tokenService,
+      deps.refreshTokenRepository,
+    )
+    await expect(useCase.execute({ refreshToken: 'token-original' })).rejects.toThrow(
+      'write unavailable',
+    )
   })
 })

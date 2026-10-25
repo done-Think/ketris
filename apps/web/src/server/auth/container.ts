@@ -16,22 +16,65 @@ import { VerifyPasswordResetCodeUseCase } from './application/use-cases/verify-p
 import { BcryptPasswordHasher } from './infrastructure/bcrypt-password-hasher'
 import { JosePasswordResetTokenService } from './infrastructure/jose-password-reset-token.service'
 import { JoseTokenService } from './infrastructure/jose-token.service'
-import { PrismaPasswordResetCodeRepository } from './infrastructure/prisma-password-reset-code.repository'
+import { PrismaEmailOwnershipCodeRepository } from './infrastructure/prisma-email-ownership-code.repository'
+import { PrismaPasswordResetAccountRepository } from './infrastructure/prisma-password-reset-account.repository'
 import { PrismaRefreshTokenRepository } from './infrastructure/prisma-refresh-token.repository'
 import { PrismaUserRepository } from './infrastructure/prisma-user.repository'
 import { SesMailer } from '@server/shared/email/ses-mailer'
+import { ValidateAccessTokenUseCase } from './application/use-cases/validate-access-token.use-case'
+import { ValidateSessionTokensUseCase } from './application/use-cases/validate-session-tokens.use-case'
+import { ValidatedTokenService } from './infrastructure/validated-token.service'
+import { PrismaEmailVerificationRepository } from './infrastructure/prisma-email-verification.repository'
+import { RequestSignupVerificationUseCase } from './application/use-cases/request-signup-verification.use-case'
+import { ConfirmSignupVerificationUseCase } from './application/use-cases/confirm-signup-verification.use-case'
+import { RequestEmailChangeUseCase } from './application/use-cases/request-email-change.use-case'
+import { ConfirmPublicEmailChangeUseCase } from './application/use-cases/confirm-public-email-change.use-case'
+import { ConfirmEmailChangeUseCase } from './application/use-cases/confirm-email-change.use-case'
 
 const userRepository = new PrismaUserRepository()
 const passwordHasher = new BcryptPasswordHasher()
-const tokenService = new JoseTokenService()
+const jwtService = new JoseTokenService()
+const validateAccessTokenUseCase = new ValidateAccessTokenUseCase(jwtService, userRepository)
+const tokenService = new ValidatedTokenService(jwtService, validateAccessTokenUseCase)
 const refreshTokenRepository = new PrismaRefreshTokenRepository()
-const passwordResetCodeRepository = new PrismaPasswordResetCodeRepository()
+const emailOwnershipCodeRepository = new PrismaEmailOwnershipCodeRepository()
+const passwordResetAccountRepository = new PrismaPasswordResetAccountRepository()
 const passwordResetTokenService = new JosePasswordResetTokenService()
 const mailer = new SesMailer()
+const emailVerificationRepository = new PrismaEmailVerificationRepository()
 
 export const authContainer = {
+  confirmPublicEmailChangeUseCase: new ConfirmPublicEmailChangeUseCase(
+    userRepository,
+    emailVerificationRepository,
+  ),
+  requestEmailChangeUseCase: new RequestEmailChangeUseCase(
+    userRepository,
+    emailVerificationRepository,
+    mailer,
+  ),
+  confirmEmailChangeUseCase: new ConfirmEmailChangeUseCase(
+    userRepository,
+    emailVerificationRepository,
+  ),
+  requestSignupVerificationUseCase: new RequestSignupVerificationUseCase(
+    userRepository,
+    emailVerificationRepository,
+    mailer,
+  ),
+  confirmSignupVerificationUseCase: new ConfirmSignupVerificationUseCase(
+    userRepository,
+    emailVerificationRepository,
+    tokenService,
+    refreshTokenRepository,
+  ),
   uploadAvatarUseCase: new UploadAvatarUseCase(userRepository, new S3AvatarStorage()),
   tokenService,
+  validateAccessTokenUseCase,
+  validateSessionTokensUseCase: new ValidateSessionTokensUseCase(
+    tokenService,
+    refreshTokenRepository,
+  ),
   userRepository,
   loginUseCase: new LoginUseCase(
     userRepository,
@@ -43,7 +86,7 @@ export const authContainer = {
   listUsersUseCase: new ListUsersUseCase(userRepository),
   getUserUseCase: new GetUserUseCase(userRepository),
   updateUserUseCase: new UpdateUserUseCase(userRepository),
-  deactivateUserUseCase: new DeactivateUserUseCase(userRepository, refreshTokenRepository),
+  deactivateUserUseCase: new DeactivateUserUseCase(userRepository),
   approveUserMembershipUseCase: new ApproveUserMembershipUseCase(userRepository),
   refreshAccessTokenUseCase: new RefreshAccessTokenUseCase(
     userRepository,
@@ -51,25 +94,21 @@ export const authContainer = {
     refreshTokenRepository,
   ),
   logoutUseCase: new LogoutUseCase(refreshTokenRepository),
-  changeOwnPasswordUseCase: new ChangeOwnPasswordUseCase(
-    userRepository,
-    passwordHasher,
-    refreshTokenRepository,
-  ),
+  changeOwnPasswordUseCase: new ChangeOwnPasswordUseCase(userRepository, passwordHasher),
   requestPasswordResetCodeUseCase: new RequestPasswordResetCodeUseCase(
     userRepository,
-    passwordResetCodeRepository,
+    emailOwnershipCodeRepository,
     mailer,
   ),
   verifyPasswordResetCodeUseCase: new VerifyPasswordResetCodeUseCase(
     userRepository,
-    passwordResetCodeRepository,
+    emailOwnershipCodeRepository,
     passwordResetTokenService,
   ),
   resetPasswordUseCase: new ResetPasswordUseCase(
     userRepository,
     passwordHasher,
-    refreshTokenRepository,
+    passwordResetAccountRepository,
     passwordResetTokenService,
   ),
 }

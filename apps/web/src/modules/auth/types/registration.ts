@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import type { z } from 'zod'
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { ConfirmSignupVerificationResponseDTO } from '@server/auth/types/http'
+import type { PendingEmailVerificationOutput } from '@server/auth/types/pending-email-verification'
+import type { RegisterResponseDTO } from '@server/registration/types/http'
 
 import type { createRegistrationDetailsSchema } from '../schemas/registration-details-schema'
 
@@ -85,24 +87,12 @@ export type RegistrationDetailsScreenProps = {
 }
 
 export type EmailVerificationStepProps = {
-  email: string
-  onConfirmed: () => void
+  verification: PendingEmailVerificationOutput
+  onConfirmed: (response: ConfirmSignupVerificationResponseDTO) => Promise<unknown>
 }
 
 export interface RegisterErrorBody {
   error?: { code?: string }
 }
 
-export interface RegisteredBody {
-  outcome: 'REGISTERED'
-  user: { role: Papel }
-  accessToken: string
-  refreshToken: string
-}
-
-export interface PendingApprovalBody {
-  outcome: 'PENDING_APPROVAL'
-  email: string
-}
-
-export type RegisterResponseBody = RegisteredBody | PendingApprovalBody
+export type RegisterResponseBody = RegisterResponseDTO

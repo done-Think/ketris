@@ -1,9 +1,9 @@
 'use client'
 
+import { styles } from '../styles/resend-countdown-button.styles'
+
 import { Button } from '@mui/material'
 import { useTranslations } from 'next-intl'
-
-import { brand, componentText, radius } from '@shared/theme/tokens'
 
 import { useResendCountdown } from '../hooks/use-resend-countdown'
 import type { ResendCountdownButtonProps } from '../types/password-recovery'
@@ -39,16 +39,7 @@ export function ResendCountdownButton({
       disabled={isCountingDown || disabled}
       aria-live="polite"
       onClick={resend}
-      sx={{
-        height: { xs: 30, md: 46 },
-        borderRadius: `${radius.sm}px`,
-        borderColor: brand.neutral[100],
-        ...componentText.authCompactBody,
-        '&.Mui-disabled': {
-          borderColor: brand.neutral[100],
-          color: 'text.secondary',
-        },
-      }}
+      sx={styles.button}
     >
       {isCountingDown
         ? t('resendCountdown', { time: formatCountdown(remainingSeconds) })

@@ -1,7 +1,6 @@
+import { getStyles } from '../styles/registration-progress.styles'
 import { Box, Stack } from '@mui/material'
 import { useTranslations } from 'next-intl'
-
-import { brand, motion, radius } from '@shared/theme/tokens'
 
 import type { RegistrationProgressProps } from '../types/registration'
 
@@ -20,22 +19,9 @@ export function RegistrationProgress({ currentStep, totalSteps }: RegistrationPr
     >
       {Array.from({ length: totalSteps }, (_, index) => {
         const isCurrentStep = index === currentStep - 1
+        const styles = getStyles(isCurrentStep)
 
-        return (
-          <Box
-            key={index}
-            sx={{
-              width: isCurrentStep ? 32 : 8,
-              height: 8,
-              borderRadius: `${radius.full}px`,
-              bgcolor: isCurrentStep ? brand.magenta[500] : brand.neutral[100],
-              transition: motion.transition.progressStep,
-              '@media (prefers-reduced-motion: reduce)': {
-                transition: 'none',
-              },
-            }}
-          />
-        )
+        return <Box key={index} sx={styles.box} />
       })}
     </Stack>
   )

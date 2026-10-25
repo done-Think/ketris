@@ -5,8 +5,11 @@ import createMiddleware from 'next-intl/middleware'
 import { routing } from './i18n/routing'
 import { createRateLimitPolicy, InMemoryRateLimitStore } from '@server/security/rate-limit'
 import type { RateLimitPolicy, RateLimitResult } from '@server/security/types/rate-limit.types'
+import { getAuthRateLimitKey, getTrustedClientAddress } from '@server/security/client-key'
+import { PostgresRateLimitStore } from '@server/security/postgres-rate-limit-store'
 
 const store = new InMemoryRateLimitStore()
+const authStore = new PostgresRateLimitStore()
 const handleI18nRouting = createMiddleware(routing)
 
 const apiPolicy = createRateLimitPolicy(
@@ -30,19 +33,37 @@ const authPaths = new Set([
   '/api/auth/reset-password',
   '/api/auth/password-reset-codes',
   '/api/auth/password-reset-codes/verify',
+  '/api/auth/email-verification-codes',
+  '/api/auth/email-verification-codes/verify',
+  '/api/auth/me/email-change',
+  '/api/auth/me/email-change/verify',
+  '/api/auth/email-change/verify',
   '/api/auth/me/password',
 ])
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   if (!request.nextUrl.pathname.startsWith('/api')) {
     return handleI18nRouting(request)
   }
 
   const policy = selectPolicy(request.nextUrl.pathname)
-  const result = store.consume({
-    key: getClientKey(request),
-    policy,
-  })
+  let result: RateLimitResult
+  try {
+    result =
+      policy === authPolicy
+        ? await authStore.consume({ key: getAuthRateLimitKey(request.headers), policy })
+        : store.consume({ key: getTrustedClientAddress(request.headers), policy })
+  } catch {
+    return NextResponse.json(
+      {
+        error: {
+          code: 'AUTH_RATE_LIMIT_UNAVAILABLE',
+          message: 'Serviço temporariamente indisponível.',
+        },
+      },
+      { status: 503, headers: { 'Retry-After': '60' } },
+    )
+  }
 
   if (!result.allowed) {
     return withRateLimitHeaders(
@@ -67,14 +88,17 @@ export const config = {
 }
 
 function selectPolicy(pathname: string): RateLimitPolicy {
-  return authPaths.has(pathname) ? authPolicy : apiPolicy
-}
+  let normalizedPathname = pathname
+  try {
+    normalizedPathname = decodeURIComponent(pathname)
+  } catch {}
+  normalizedPathname = normalizedPathname.replace(/\/+$/, '')
 
-function getClientKey(request: NextRequest): string {
-  const forwardedFor = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-  const realIp = request.headers.get('x-real-ip')?.trim()
-
-  return forwardedFor || realIp || 'unknown'
+  return authPaths.has(normalizedPathname) ||
+    normalizedPathname.startsWith('/api/auth/callback/') ||
+    /^\/api\/auth\/users\/[^/]+\/email-change$/.test(normalizedPathname)
+    ? authPolicy
+    : apiPolicy
 }
 
 function withRateLimitHeaders(response: NextResponse, result: RateLimitResult): NextResponse {

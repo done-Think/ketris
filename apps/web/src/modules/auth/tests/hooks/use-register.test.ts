@@ -1,24 +1,20 @@
-import { act, renderHook } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { signIn } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useRegister } from '../../hooks/use-register'
+import { registrationService } from '../../services/registration-service'
 import type { RegistrationDetailsFormValues } from '../../types/registration'
+import { AuthQueryTestProvider } from '../fixtures/auth-query-provider'
 
-const routerMock = {
-  replace: vi.fn(),
-  refresh: vi.fn(),
-}
-
-vi.mock('next-auth/react', () => ({
-  signIn: vi.fn(),
+const router = vi.hoisted(() => ({ replace: vi.fn(), refresh: vi.fn() }))
+vi.mock('@/i18n/navigation', () => ({ useRouter: () => router }))
+vi.mock('next-auth/react', () => ({ signIn: vi.fn() }))
+vi.mock('../../services/registration-service', () => ({
+  registrationService: { register: vi.fn() },
 }))
 
-vi.mock('next/navigation', () => ({
-  useRouter: () => routerMock,
-}))
-
-const proprietarioValues: RegistrationDetailsFormValues = {
+const values: RegistrationDetailsFormValues = {
   profile: 'proprietario',
   fullName: 'Ana Proprietária',
   email: 'ana@ketris.dev',
@@ -28,180 +24,92 @@ const proprietarioValues: RegistrationDetailsFormValues = {
   creci: '',
   acceptTerms: true,
 }
-
-function mockRegisterResponse(status: number, body: unknown) {
-  return {
-    ok: status >= 200 && status < 300,
-    status,
-    json: () => Promise.resolve(body),
-  } as Response
+const verification = {
+  outcome: 'PENDING_EMAIL_VERIFICATION' as const,
+  email: values.email,
+  tenantId: 't1',
+  emailSent: true,
 }
-
-async function register(
-  result: { current: ReturnType<typeof useRegister> },
-  values: RegistrationDetailsFormValues,
-): Promise<boolean> {
-  let success = false
-  await act(async () => {
-    success = await result.current.register(values)
-  })
-  return success
+function renderRegister() {
+  return renderHook(() => useRegister(), { wrapper: AuthQueryTestProvider })
 }
 
 describe('useRegister', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-  })
-
-  it('cria a conta e estabelece a sessão, mas só redireciona depois de confirmar o e-mail', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(
-        mockRegisterResponse(201, {
-          outcome: 'REGISTERED',
-          user: { role: 'OWNER' },
-          accessToken: 'access-fake',
-          refreshToken: 'refresh-fake',
-        }),
-      ),
-    )
+    vi.mocked(registrationService.register).mockResolvedValue(verification)
     vi.mocked(signIn).mockResolvedValue({ error: null, ok: true, status: 200, url: null })
-
-    const { result } = renderHook(() => useRegister())
-    const success = await register(result, proprietarioValues)
-
-    expect(signIn).toHaveBeenCalledWith(
-      'token-session',
-      expect.objectContaining({ accessToken: 'access-fake', refreshToken: 'refresh-fake' }),
-    )
-    expect(success).toBe(true)
-    expect(result.current.pendingEmailVerification).toBe('ana@ketris.dev')
-    expect(routerMock.replace).not.toHaveBeenCalled()
-
-    act(() => {
-      result.current.completeEmailVerification()
-    })
-
-    expect(routerMock.replace).toHaveBeenCalledWith('/pt/dashboard')
-    expect(routerMock.refresh).toHaveBeenCalled()
   })
-
-  it('redireciona para cobranças quando o papel é RENTER, após confirmar o e-mail', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(
-        mockRegisterResponse(201, {
-          outcome: 'REGISTERED',
-          user: { role: 'RENTER' },
-          accessToken: 'access-fake',
-          refreshToken: 'refresh-fake',
-        }),
-      ),
-    )
-    vi.mocked(signIn).mockResolvedValue({ error: null, ok: true, status: 200, url: null })
-
-    const { result } = renderHook(() => useRegister())
-    await register(result, { ...proprietarioValues, profile: 'locatario' })
-
-    act(() => {
-      result.current.completeEmailVerification()
+  it('preserva telefone e aceite, omite confirmação de senha e aguarda prova do e-mail sem criar sessão', async () => {
+    const { result } = renderRegister()
+    await act(async () => {
+      expect(await result.current.register(values)).toBe(true)
     })
-
-    expect(routerMock.replace).toHaveBeenCalledWith('/pt/dashboard/finance/charges')
-  })
-
-  it('marca pendingApproval e não chama signIn quando o corretor fica pendente', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(
-          mockRegisterResponse(202, { outcome: 'PENDING_APPROVAL', email: 'corretor@ketris.dev' }),
-        ),
-    )
-
-    const { result } = renderHook(() => useRegister())
-    const success = await register(result, { ...proprietarioValues, profile: 'corretor' })
-
+    expect(registrationService.register).toHaveBeenCalledWith({
+      profile: values.profile,
+      fullName: values.fullName,
+      email: values.email,
+      phone: values.phone,
+      password: values.password,
+      acceptTerms: true,
+      locale: 'pt-BR',
+    })
+    await waitFor(() => expect(result.current.pendingEmailVerification).toEqual(verification))
     expect(signIn).not.toHaveBeenCalled()
-    expect(success).toBe(true)
-    expect(result.current.pendingApproval).toBe(true)
-    expect(result.current.pendingEmailVerification).toBeNull()
+    expect(router.replace).not.toHaveBeenCalled()
   })
-
-  it('mostra a mensagem específica quando a imobiliária não é encontrada', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(mockRegisterResponse(404, { error: { code: 'AGENCY_NOT_FOUND' } })),
-    )
-
-    const { result } = renderHook(() => useRegister())
-    await register(result, proprietarioValues)
-
-    expect(result.current.error).toBe('Imobiliária não encontrada. Tente buscar novamente.')
-  })
-
-  it('mostra a mensagem específica quando o e-mail já está em uso', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(mockRegisterResponse(409, { error: { code: 'EMAIL_ALREADY_IN_USE' } })),
-    )
-
-    const { result } = renderHook(() => useRegister())
-    await register(result, proprietarioValues)
-
-    expect(result.current.error).toBe('Já existe uma conta com este e-mail.')
-  })
-
-  it('mostra a mensagem genérica para códigos de erro desconhecidos', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(mockRegisterResponse(500, { error: { code: 'INTERNAL_ERROR' } })),
-    )
-
-    const { result } = renderHook(() => useRegister())
-    await register(result, proprietarioValues)
-
-    expect(result.current.error).toBe('Não foi possível concluir o cadastro. Tente novamente.')
-  })
-
-  it('mostra a mensagem genérica quando a requisição falha por rede', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network down')))
-
-    const { result } = renderHook(() => useRegister())
-    const success = await register(result, proprietarioValues)
-
-    expect(success).toBe(false)
-    expect(result.current.error).toBe('Não foi possível concluir o cadastro. Tente novamente.')
-  })
-
-  it('mostra a mensagem genérica quando o REST cria a conta mas a sessão não é estabelecida', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(
-        mockRegisterResponse(201, {
-          outcome: 'REGISTERED',
-          user: { role: 'OWNER' },
-          accessToken: 'access-fake',
-          refreshToken: 'refresh-fake',
-        }),
-      ),
-    )
-    vi.mocked(signIn).mockResolvedValue({
-      error: 'CredentialsSignin',
-      ok: false,
-      status: 401,
-      url: null,
+  it('preserva CRECI e imobiliária selecionada para o corretor', async () => {
+    const { result } = renderRegister()
+    await act(async () => {
+      await result.current.register({
+        ...values,
+        profile: 'corretor',
+        agencyId: 'agency-1',
+        creci: '12345-F',
+      })
     })
-
-    const { result } = renderHook(() => useRegister())
-    const success = await register(result, proprietarioValues)
-
-    expect(success).toBe(false)
-    expect(routerMock.replace).not.toHaveBeenCalled()
+    expect(registrationService.register).toHaveBeenCalledWith(
+      expect.objectContaining({ agencyId: 'agency-1', creci: '12345-F' }),
+    )
+  })
+  it('mostra aprovação pendente somente após a confirmação real, sem conceder sessão', async () => {
+    const { result } = renderRegister()
+    await act(async () => {
+      await result.current.register(values)
+    })
+    await act(async () => {
+      await result.current.completeEmailVerification({
+        outcome: 'PENDING_APPROVAL',
+        email: values.email,
+      })
+    })
+    await waitFor(() => expect(result.current.pendingApproval).toBe(true))
     expect(result.current.pendingEmailVerification).toBeNull()
-    expect(result.current.error).toBe('Não foi possível concluir o cadastro. Tente novamente.')
+    expect(signIn).not.toHaveBeenCalled()
+  })
+  it('preserva a conta criada se o provedor de e-mail falhar e permite reenviar na etapa de confirmação', async () => {
+    vi.mocked(registrationService.register).mockResolvedValue({ ...verification, emailSent: false })
+    const { result } = renderRegister()
+    await act(async () => {
+      expect(await result.current.register(values)).toBe(true)
+    })
+    await waitFor(() => expect(result.current.pendingEmailVerification?.emailSent).toBe(false))
+    expect(signIn).not.toHaveBeenCalled()
+  })
+  it.each([
+    ['AGENCY_NOT_FOUND', 'Imobiliária não encontrada. Tente buscar novamente.'],
+    ['EMAIL_ALREADY_IN_USE', 'Já existe uma conta com este e-mail.'],
+    ['UNKNOWN', 'Não foi possível concluir o cadastro. Tente novamente.'],
+  ])('traduz erro %s pelo código', async (code, message) => {
+    vi.mocked(registrationService.register).mockRejectedValue({
+      isAxiosError: true,
+      response: { data: { error: { code } } },
+    })
+    const { result } = renderRegister()
+    await act(async () => {
+      expect(await result.current.register(values)).toBe(false)
+    })
+    await waitFor(() => expect(result.current.error).toBe(message))
+    expect(signIn).not.toHaveBeenCalled()
   })
 })

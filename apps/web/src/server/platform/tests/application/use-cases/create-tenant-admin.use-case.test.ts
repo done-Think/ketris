@@ -39,6 +39,8 @@ function createDeps(overrides?: {
     searchByName: vi.fn(),
   }
   const userRepository: UserRepository = {
+    findManyByEmail: vi.fn(),
+
     findById: vi.fn(),
     findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(null),
     findManyByTenant: vi.fn(),
@@ -73,6 +75,7 @@ describe('CreateTenantAdminUseCase', () => {
 
     expect(result.papel).toBe('OWNER')
     expect(deps.userRepository.create).toHaveBeenCalledWith({
+      auditActor: { kind: 'SYSTEM' },
       tenantId: tenant.id,
       nome: 'Admin da Imobiliária',
       email: 'admin@imobiliaria-a.dev',
@@ -100,7 +103,7 @@ describe('CreateTenantAdminUseCase', () => {
     expect(deps.userRepository.create).not.toHaveBeenCalled()
   })
 
-  it('lança EmailAlreadyInUseError quando o e-mail já existe em qualquer tenant', async () => {
+  it('lança EmailAlreadyInUseError quando o e-mail já existe no tenant escolhido', async () => {
     const deps = createDeps({ findByEmail: vi.fn().mockResolvedValue(createdAdmin) })
     const useCase = new CreateTenantAdminUseCase(
       deps.tenantRepository,

@@ -1,52 +1,37 @@
-import { EmailAlreadyInUseError } from '@server/auth/domain/errors'
-import type { PasswordHasher } from '@server/auth/application/ports/password-hasher.port'
-import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
-import type { TenantRepository } from '@server/platform/application/ports/tenant-repository.port'
-
-import { AgencyNotFoundError } from '../../domain/errors'
-
-export interface RegisterTenantAgentInput {
-  agencyId: string
-  fullName: string
-  email: string
-  password: string
-}
-
-export interface RegisterTenantAgentOutput {
-  email: string
-}
+import { RegistrationEmailAlreadyInUseError } from '../../domain/errors'
+import {
+  assertAgencyCanReceiveMembers,
+  assertTermsAccepted,
+} from '../../domain/registration-policy'
+import type { RegisterTenantAgentInput } from '../../types/use-case-inputs'
+import type { RegisterTenantAgentOutput } from '../../types/use-case-outputs'
+import type { RegistrationPasswordHasher } from '../ports/registration-password-hasher.port'
+import type { RegistrationRepository } from '../ports/registration-repository.port'
 
 export class RegisterTenantAgentUseCase {
   constructor(
-    private readonly tenantRepository: TenantRepository,
-    private readonly userRepository: UserRepository,
-    private readonly passwordHasher: PasswordHasher,
+    private readonly accounts: RegistrationRepository,
+    private readonly passwords: RegistrationPasswordHasher,
   ) {}
 
   async execute(input: RegisterTenantAgentInput): Promise<RegisterTenantAgentOutput> {
-    const agency = await this.tenantRepository.findById(input.agencyId)
-
-    if (!agency) {
-      throw new AgencyNotFoundError()
-    }
-
-    const existing = await this.userRepository.findByEmail(input.email)
-
-    if (existing) {
-      throw new EmailAlreadyInUseError()
-    }
-
-    const senhaHash = await this.passwordHasher.hash(input.password)
-
-    const created = await this.userRepository.create({
+    assertTermsAccepted(input.acceptTerms)
+    const agency = await this.accounts.findTenantById(input.agencyId)
+    assertAgencyCanReceiveMembers(agency)
+    if (await this.accounts.findAccountByEmail(agency.id, input.email))
+      throw new RegistrationEmailAlreadyInUseError()
+    const user = await this.accounts.createMember({
       tenantId: agency.id,
       nome: input.fullName,
       email: input.email,
-      senhaHash,
+      senhaHash: await this.passwords.hash(input.password),
       papel: 'AGENT',
-      vinculoAprovadoEm: null,
+      pendingApproval: true,
+      telefone: input.phone,
+      creci: input.creci,
+      termosAceitosEm: new Date(),
+      createBrokerProfile: true,
     })
-
-    return { email: created.email }
+    return { email: user.email, tenantId: user.tenantId, pendingApproval: true }
   }
 }

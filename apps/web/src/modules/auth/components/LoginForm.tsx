@@ -1,5 +1,7 @@
 'use client'
 
+import { getStyles } from '../styles/login-form.styles'
+
 import { zodResolver } from '@hookform/resolvers/zod'
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
@@ -15,12 +17,13 @@ import {
   Typography,
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useMemo, useState } from 'react'
+import type { FormEvent } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
 
 import { Link } from '@/i18n/navigation'
 import { RhfTextField } from '@shared/components/form'
-import { brand, componentText, externalBrand, radius, surface } from '@shared/theme/tokens'
+import { componentText } from '@shared/theme/tokens'
 
 import { authRoutes } from '../config/auth-routes'
 import { useLogin } from '../hooks/use-login'
@@ -32,18 +35,30 @@ import {
 } from '@shared/components/form/auth-form.styles'
 import { AuthFormField } from '@shared/components/form/AuthFormField'
 import { LoginAccountPrompt } from './LoginAccountPrompt'
+import { EmailVerificationStep } from './EmailVerificationStep'
+import { LoginTenantSelect } from './LoginTenantSelect'
 
 import type { LoginFormProps } from '../types/login'
 
 export function LoginForm({ callbackUrl }: LoginFormProps) {
   const t = useTranslations('auth.login')
+  const registrationText = useTranslations('auth.registerDetails.pendingApproval')
   const [showPassword, setShowPassword] = useState(false)
-  const { error, login } = useLogin(callbackUrl)
-  const hasAttemptedLocalAutoLogin = useRef(false)
+  const {
+    error,
+    login,
+    tenants = [],
+    pendingEmailVerification,
+    pendingApproval,
+    completeEmailVerification,
+    resetLogin,
+  } = useLogin(callbackUrl)
+  const styles = getStyles(Boolean(error))
   const loginSchema = useMemo(() => createLoginSchema((key) => t(`errors.${key}`)), [t])
   const {
     control,
     handleSubmit,
+    resetField,
     formState: { isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -52,23 +67,31 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
       password: '',
     },
   })
+  const selectedTenantId = useWatch({ control, name: 'tenantId' })
 
-  useEffect(() => {
-    const email = process.env.NEXT_PUBLIC_LOCAL_DEMO_EMAIL
-    const password = process.env.NEXT_PUBLIC_LOCAL_DEMO_PASSWORD
-    const isLocalDevelopment =
-      process.env.NODE_ENV === 'development' && window.location.hostname === 'localhost'
+  function clearTenantSelection(event: FormEvent<HTMLFormElement>) {
+    const input = event.target
+    if (!(input instanceof HTMLInputElement)) return
+    if (input.name !== 'email' && input.name !== 'password') return
+    if (tenants.length === 0 && !selectedTenantId) return
 
-    if (!isLocalDevelopment || !email || !password || hasAttemptedLocalAutoLogin.current) return
+    resetField('tenantId', { defaultValue: '' })
+    resetLogin()
+  }
 
-    hasAttemptedLocalAutoLogin.current = true
-    void login({ email, password })
-  }, [login])
+  if (pendingApproval) return <Alert severity="info">{registrationText('description')}</Alert>
+  if (pendingEmailVerification)
+    return (
+      <EmailVerificationStep
+        verification={pendingEmailVerification}
+        onConfirmed={completeEmailVerification}
+      />
+    )
 
   return (
     <Box>
-      <Box sx={{ mb: { xs: 2, md: 3.25 }, textAlign: { xs: 'center', md: 'left' } }}>
-        <Typography variant="h3" sx={{ mb: 0.5, ...componentText.authTitle }}>
+      <Box sx={styles.box}>
+        <Typography variant="h3" sx={styles.typography}>
           {t('title')}
         </Typography>
         <Typography color="text.secondary" variant="body2" sx={componentText.authBody}>
@@ -76,7 +99,12 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
         </Typography>
       </Box>
 
-      <Box component="form" noValidate onSubmit={handleSubmit(login)}>
+      <Box
+        component="form"
+        noValidate
+        onSubmit={handleSubmit(login)}
+        onChange={clearTenantSelection}
+      >
         <Stack spacing={{ xs: 1.5, md: 1.75 }}>
           <AuthFormField
             htmlFor="login-email"
@@ -90,6 +118,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
               placeholder={t('email.placeholder')}
               type="email"
               autoComplete="email"
+              slotProps={{ htmlInput: { readOnly: isSubmitting } }}
               fullWidth
               sx={[authTextFieldSx, authLoginTextFieldSx]}
             />
@@ -110,6 +139,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
                 fullWidth
                 sx={[authTextFieldSx, authLoginTextFieldSx]}
                 slotProps={{
+                  htmlInput: { readOnly: isSubmitting },
                   input: {
                     endAdornment: (
                       <InputAdornment position="end">
@@ -118,7 +148,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
                           edge="end"
                           size="small"
                           onClick={() => setShowPassword((current) => !current)}
-                          sx={{ color: brand.neutral[500] }}
+                          sx={styles.iconButton}
                         >
                           {showPassword ? (
                             <VisibilityOffOutlinedIcon fontSize="small" />
@@ -133,54 +163,35 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
               />
             </AuthFormField>
 
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: { xs: 0.75, md: 1 } }}>
-              <Typography
-                component={Link}
-                href={authRoutes.forgotPassword}
-                sx={{
-                  color: 'primary.main',
-                  ...componentText.authInlineLink,
-                  fontWeight: 700,
-                  textDecoration: 'none',
-                  '&:hover': { textDecoration: 'underline' },
-                }}
-              >
+            <Box sx={styles.box2}>
+              <Typography component={Link} href={authRoutes.forgotPassword} sx={styles.typography2}>
                 {t('forgotPassword')}
               </Typography>
             </Box>
           </Box>
 
+          <LoginTenantSelect control={control} tenants={tenants} />
+
           {error && (
-            <Alert severity="error" role="alert" sx={{ mt: 0.75 }}>
+            <Alert severity="error" role="alert" sx={styles.alert}>
               {error}
             </Alert>
           )}
         </Stack>
 
-        <Stack
-          spacing={{ xs: 1.25, md: 1.75 }}
-          sx={{ mt: error ? { xs: 2, md: 2.5 } : { xs: 2, md: 3.5 } }}
-        >
+        <Stack spacing={{ xs: 1.25, md: 1.75 }} sx={styles.stack}>
           <Button
             type="submit"
             variant="contained"
             size="large"
             fullWidth
-            disabled={isSubmitting}
-            sx={[authPrimaryButtonSx, { height: { xs: 36, md: 50 }, ...componentText.authBody }]}
+            disabled={isSubmitting || (tenants.length > 0 && !selectedTenantId)}
+            sx={[authPrimaryButtonSx, styles.submitButton]}
           >
             {isSubmitting ? <CircularProgress color="inherit" size={21} /> : t('submit')}
           </Button>
 
-          <Divider
-            sx={{
-              color: 'text.secondary',
-              typography: 'caption',
-              '&::before, &::after': { borderColor: brand.neutral[100] },
-            }}
-          >
-            {t('separator')}
-          </Divider>
+          <Divider sx={styles.divider}>{t('separator')}</Divider>
 
           <Button
             type="button"
@@ -191,42 +202,18 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
             disabled
             aria-label={t('google.ariaLabel')}
             startIcon={
-              <Box
-                aria-hidden="true"
-                sx={{
-                  width: 20,
-                  height: 20,
-                  borderRadius: '50%',
-                  bgcolor: externalBrand.google,
-                  color: 'common.white',
-                  display: 'grid',
-                  placeItems: 'center',
-                  fontSize: 11,
-                  fontWeight: 700,
-                  lineHeight: 1,
-                }}
-              >
+              <Box aria-hidden="true" sx={styles.box3}>
                 G
               </Box>
             }
-            sx={{
-              height: { xs: 36, md: 50 },
-              borderRadius: `${radius.md}px`,
-              bgcolor: surface.paper,
-              borderColor: brand.neutral[100],
-              ...componentText.authBody,
-              '&.Mui-disabled': {
-                borderColor: brand.neutral[100],
-                color: 'text.primary',
-              },
-            }}
+            sx={styles.button}
           >
             {t('google.label')}
           </Button>
         </Stack>
       </Box>
 
-      <Box sx={{ mt: { xs: 2.5, md: 3 }, display: 'flex', justifyContent: 'center' }}>
+      <Box sx={styles.box4}>
         <LoginAccountPrompt />
       </Box>
     </Box>

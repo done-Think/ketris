@@ -4,6 +4,7 @@ import {
   AccountDeactivatedError,
   InvalidCredentialsError,
   MembershipPendingApprovalError,
+  TenantAccessBlockedError,
 } from '../../../domain/errors'
 import type { User } from '../../../domain/user.entity'
 import type { PasswordHasher } from '../../../application/ports/password-hasher.port'
@@ -28,6 +29,11 @@ function createDeps(overrides?: {
   compare?: PasswordHasher['compare']
 }) {
   const userRepository: UserRepository = {
+    findManyByEmail: async (email) => {
+      const current = await userRepository.findByEmail(email)
+      return current ? [current] : []
+    },
+
     findById: vi.fn().mockResolvedValue(user),
     findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(user),
     findManyByTenant: vi.fn(),
@@ -45,6 +51,7 @@ function createDeps(overrides?: {
     verify: vi.fn(),
   }
   const refreshTokenRepository: RefreshTokenRepository = {
+    rotate: vi.fn().mockResolvedValue(true),
     create: vi.fn().mockResolvedValue(undefined),
     findValidByTokenHash: vi.fn(),
     revokeById: vi.fn(),
@@ -64,6 +71,79 @@ function buildUseCase(deps: ReturnType<typeof createDeps>): LoginUseCase {
 }
 
 describe('LoginUseCase', () => {
+  it('returns only tenants whose accounts match the supplied password and does not issue a session before selection', async () => {
+    const deps = createDeps()
+    const second = { ...user, id: 'user-2', tenantId: 'tenant-2', tenantName: 'Outra' }
+    const unrelated = { ...user, id: 'user-3', tenantId: 'tenant-3', senhaHash: 'another-password' }
+    vi.spyOn(deps.userRepository, 'findManyByEmail').mockResolvedValue([user, second, unrelated])
+    vi.mocked(deps.passwordHasher.compare).mockImplementation(
+      async (_password, hash) => hash !== 'another-password',
+    )
+    const promise = buildUseCase(deps).execute({ email: user.email, password: 'correct' })
+    await expect(promise).rejects.toMatchObject({
+      code: 'TENANT_SELECTION_REQUIRED',
+      tenants: [
+        { id: user.tenantId, name: user.tenantId, slug: user.tenantId },
+        { id: 'tenant-2', name: 'Outra', slug: 'tenant-2' },
+      ],
+    })
+    expect(deps.tokenService.sign).not.toHaveBeenCalled()
+    expect(deps.refreshTokenRepository.create).not.toHaveBeenCalled()
+  })
+
+  it('issues a session only for the selected account after checking its credentials again', async () => {
+    const deps = createDeps()
+    const second = { ...user, id: 'user-2', tenantId: 'tenant-2' }
+    vi.spyOn(deps.userRepository, 'findManyByEmail').mockResolvedValue([user, second])
+    const result = await buildUseCase(deps).execute({
+      email: user.email,
+      password: 'correct',
+      tenantId: 'tenant-2',
+    })
+    expect(result.user.id).toBe('user-2')
+    expect(result.user.tenantId).toBe('tenant-2')
+    expect(deps.refreshTokenRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: 'user-2', tenantId: 'tenant-2' }),
+    )
+  })
+
+  it('does not offer tenant selection when only one account matches the password', async () => {
+    const deps = createDeps()
+    vi.spyOn(deps.userRepository, 'findManyByEmail').mockResolvedValue([
+      user,
+      { ...user, id: 'other', tenantId: 'other', senhaHash: 'different' },
+    ])
+    vi.mocked(deps.passwordHasher.compare).mockImplementation(
+      async (_password, hash) => hash === user.senhaHash,
+    )
+    await expect(
+      buildUseCase(deps).execute({ email: user.email, password: 'correct' }),
+    ).resolves.toMatchObject({ user: { tenantId: user.tenantId } })
+  })
+
+  it('rejects a selected tenant outside the accounts matching the supplied password', async () => {
+    const deps = createDeps()
+    await expect(
+      buildUseCase(deps).execute({
+        email: user.email,
+        password: 'correct',
+        tenantId: 'other-tenant',
+      }),
+    ).rejects.toThrow(InvalidCredentialsError)
+    expect(deps.tokenService.sign).not.toHaveBeenCalled()
+  })
+
+  it.each(['SUSPENDED', 'CANCELED'] as const)(
+    'does not create a session for a tenant with status %s',
+    async (tenantStatus) => {
+      const deps = createDeps({ findByEmail: vi.fn().mockResolvedValue({ ...user, tenantStatus }) })
+      await expect(
+        buildUseCase(deps).execute({ email: user.email, password: 'correct' }),
+      ).rejects.toThrow(TenantAccessBlockedError)
+      expect(deps.tokenService.sign).not.toHaveBeenCalled()
+    },
+  )
+
   it('retorna usuário autenticado (sem senhaHash), access token e refresh token em credenciais válidas', async () => {
     const deps = createDeps()
     const useCase = buildUseCase(deps)

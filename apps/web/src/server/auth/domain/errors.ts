@@ -1,4 +1,75 @@
 import { AppError } from '@server/shared/errors'
+import type { TenantLoginChoice } from '../types/tenant-login'
+import type { EmailVerificationIdentity } from '../types/pending-email-verification'
+
+export class EmailDeliveryFailedError extends AppError {
+  constructor() {
+    super('Não foi possível enviar o código de confirmação. Solicite um novo envio.', {
+      status: 502,
+      code: 'EMAIL_DELIVERY_FAILED',
+    })
+  }
+}
+
+export class PasswordTooLongError extends AppError {
+  constructor() {
+    super('A senha excede o limite de 72 bytes.', { status: 400, code: 'PASSWORD_TOO_LONG' })
+  }
+}
+
+export class EmailConfirmationRequiredError extends AppError {
+  constructor() {
+    super('Confirme o novo e-mail antes de alterá-lo.', {
+      status: 409,
+      code: 'EMAIL_CONFIRMATION_REQUIRED',
+    })
+  }
+}
+
+export class InvalidEmailVerificationCodeError extends AppError {
+  constructor() {
+    super('Código de confirmação inválido ou expirado.', {
+      status: 400,
+      code: 'INVALID_EMAIL_VERIFICATION_CODE',
+    })
+  }
+}
+
+export class EmailVerificationRateLimitError extends AppError {
+  constructor() {
+    super('Aguarde antes de solicitar outro código.', {
+      status: 429,
+      code: 'RATE_LIMIT_EXCEEDED',
+    })
+  }
+}
+
+export class TenantSelectionRequiredError extends AppError {
+  constructor(readonly tenants: TenantLoginChoice[]) {
+    super('Selecione a conta que deseja acessar.', {
+      status: 409,
+      code: 'TENANT_SELECTION_REQUIRED',
+    })
+  }
+}
+
+export class TenantAccessBlockedError extends AppError {
+  constructor() {
+    super('O acesso desta conta está suspenso ou cancelado.', {
+      status: 403,
+      code: 'TENANT_ACCESS_BLOCKED',
+    })
+  }
+}
+
+export class EmailNotVerifiedError extends AppError {
+  constructor(readonly verification?: EmailVerificationIdentity) {
+    super('Confirme seu e-mail antes de acessar sua conta.', {
+      status: 403,
+      code: 'EMAIL_NOT_VERIFIED',
+    })
+  }
+}
 
 export class InvalidCredentialsError extends AppError {
   constructor() {

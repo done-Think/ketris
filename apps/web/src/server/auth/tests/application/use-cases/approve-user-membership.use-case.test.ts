@@ -24,7 +24,12 @@ describe('ApproveUserMembershipUseCase', () => {
     const useCase = new ApproveUserMembershipUseCase(userRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 't1', actorPapel: 'AGENT', userId: 'agent-1' }),
+      useCase.execute({
+        actorId: 'admin-1',
+        actorTenantId: 't1',
+        actorPapel: 'AGENT',
+        userId: 'agent-1',
+      }),
     ).rejects.toThrow('Apenas a gestão da imobiliária pode aprovar vínculos.')
   })
 
@@ -35,7 +40,12 @@ describe('ApproveUserMembershipUseCase', () => {
     const useCase = new ApproveUserMembershipUseCase(userRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 't1', actorPapel: 'OWNER', userId: 'inexistente' }),
+      useCase.execute({
+        actorId: 'admin-1',
+        actorTenantId: 't1',
+        actorPapel: 'OWNER',
+        userId: 'inexistente',
+      }),
     ).rejects.toThrow('Usuário não encontrado.')
   })
 
@@ -46,7 +56,12 @@ describe('ApproveUserMembershipUseCase', () => {
     const useCase = new ApproveUserMembershipUseCase(userRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 't1', actorPapel: 'OWNER', userId: 'agent-1' }),
+      useCase.execute({
+        actorId: 'admin-1',
+        actorTenantId: 't1',
+        actorPapel: 'OWNER',
+        userId: 'agent-1',
+      }),
     ).rejects.toThrow('Usuário não encontrado.')
   })
 
@@ -59,12 +74,16 @@ describe('ApproveUserMembershipUseCase', () => {
     const useCase = new ApproveUserMembershipUseCase(userRepository)
 
     const result = await useCase.execute({
+      actorId: 'admin-1',
       actorTenantId: 'tenant-1',
       actorPapel: 'OWNER',
       userId: 'agent-1',
     })
 
-    expect(userRepository.approveMembership).toHaveBeenCalledWith('agent-1')
+    expect(userRepository.approveMembership).toHaveBeenCalledWith('agent-1', 'tenant-1', {
+      kind: 'USER',
+      id: 'admin-1',
+    })
     expect(result.vinculoAprovadoEm).not.toBeNull()
   })
 
@@ -76,6 +95,7 @@ describe('ApproveUserMembershipUseCase', () => {
     const useCase = new ApproveUserMembershipUseCase(userRepository)
 
     const result = await useCase.execute({
+      actorId: 'admin-1',
       actorTenantId: 'tenant-1',
       actorPapel: 'OWNER',
       userId: 'agent-1',

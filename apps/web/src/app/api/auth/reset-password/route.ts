@@ -10,6 +10,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
   await authContainer.resetPasswordUseCase.execute({
     email: body.email,
+    tenantId: body.tenantId,
     password: body.password,
     resetToken: body.resetToken,
   })

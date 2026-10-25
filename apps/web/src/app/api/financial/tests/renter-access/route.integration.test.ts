@@ -286,9 +286,10 @@ describe('Renter financial authorization (integration)', () => {
   it('denies reads for an inactive linked renter even with an existing token', async () => {
     await prisma.usuario.update({ where: { id: renter.id }, data: { ativo: false } })
     try {
-      expect((await detail(owned.chargeId)).status).toBe(404)
+      expect((await detail(owned.chargeId)).status).toBe(403)
       const response = await listCharges(request('/financial/charges', renter.token))
-      expect(await response.json()).toMatchObject({ items: [], totalCount: 0 })
+      expect(response.status).toBe(403)
+      expect(await response.json()).toMatchObject({ error: { code: 'ACCOUNT_DEACTIVATED' } })
     } finally {
       await prisma.usuario.update({ where: { id: renter.id }, data: { ativo: true } })
     }

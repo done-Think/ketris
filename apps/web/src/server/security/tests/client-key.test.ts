@@ -1,0 +1,55 @@
+import { afterEach, describe, expect, it, vi } from 'vitest'
+
+import { getAuthRateLimitKey, getTrustedClientAddress } from '../client-key'
+
+afterEach(() => vi.unstubAllEnvs())
+
+describe('trusted auth rate-limit identity', () => {
+  it('ignores all caller-supplied forwarding headers outside Vercel', () => {
+    vi.stubEnv('VERCEL', '')
+    expect(
+      getTrustedClientAddress(
+        new Headers({
+          'x-forwarded-for': '203.0.113.1',
+          'x-real-ip': '203.0.113.2',
+          'x-vercel-forwarded-for': '203.0.113.3',
+        }),
+      ),
+    ).toBe('local')
+  })
+
+  it('only trusts the Vercel-managed header on Vercel', () => {
+    vi.stubEnv('VERCEL', '1')
+    expect(
+      getTrustedClientAddress(
+        new Headers({
+          'x-forwarded-for': '203.0.113.1',
+          'x-real-ip': '203.0.113.2',
+          'x-vercel-forwarded-for': '203.0.113.3',
+        }),
+      ),
+    ).toBe('203.0.113.3')
+    expect(getTrustedClientAddress(new Headers({ 'x-forwarded-for': '203.0.113.1' }))).toBe(
+      'unknown',
+    )
+    expect(getTrustedClientAddress(new Headers({ 'x-vercel-forwarded-for': 'forged' }))).toBe(
+      'unknown',
+    )
+  })
+
+  it('stores a stable secret HMAC rather than a raw IP or unsalted hash', () => {
+    vi.stubEnv('VERCEL', '1')
+    vi.stubEnv('AUTH_TOKEN_SECRET', 'test-secret-one')
+    const headers = new Headers({ 'x-vercel-forwarded-for': '203.0.113.1' })
+    const first = getAuthRateLimitKey(headers)
+    expect(first).toMatch(/^[a-f0-9]{64}$/)
+    expect(getAuthRateLimitKey(headers)).toBe(first)
+    vi.stubEnv('AUTH_TOKEN_SECRET', 'test-secret-two')
+    expect(getAuthRateLimitKey(headers)).not.toBe(first)
+  })
+
+  it('requires a configured secret', () => {
+    vi.stubEnv('AUTH_TOKEN_SECRET', '')
+    expect(() => getAuthRateLimitKey(new Headers())).toThrow()
+  })
+})

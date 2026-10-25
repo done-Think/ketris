@@ -97,11 +97,50 @@ enum PapelUsuario {
   PROPERTY_OWNER
 }
 
+enum UserAuditAction {
+  CREATED
+  UPDATED
+  MEMBERSHIP_APPROVED
+  DEACTIVATED
+}
+
+enum UserAuditActorType {
+  USER
+  PLATFORM_ADMIN
+  SELF_REGISTRATION
+  SYSTEM
+}
+
+model UserAuditEvent {
+  id                   String             @id @default(cuid())
+  tenantId             String
+  userId               String
+  action               UserAuditAction
+  actorType            UserAuditActorType
+  actorUserId          String?
+  actorPlatformAdminId String?
+  changedFields        String[]           @default([])
+  createdAt            DateTime           @default(now())
+  user                 Usuario            @relation("UserAuditTarget", fields: [userId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  actorUser            Usuario?           @relation("UserAuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  actorPlatformAdmin   PlatformAdmin?     @relation(fields: [actorPlatformAdminId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, userId, createdAt])
+  @@index([actorUserId])
+  @@index([actorPlatformAdminId])
+  @@map("auth_user_audit_events")
+}
+
 model Usuario {
   id                String       @id @default(cuid())
   tenantId          String
   nome              String
-  email             String       @unique
+  email             String
+  telefone          String?
+  creci             String?
+  emailVerificadoEm DateTime?    @default(now())
+  versaoSessao      Int          @default(0)
+  termosAceitosEm   DateTime?
   senhaHash         String
   avatarUrl         String?
   papel             PapelUsuario @default(AGENT)
@@ -117,6 +156,9 @@ model Usuario {
   chamadosResponsavel      ChamadoManutencao[]                @relation("ChamadoResponsavel")
   refreshTokens            RefreshToken[]
   codigosRecuperacaoSenha  PasswordResetCode[]
+  codigosVerificacaoEmail  EmailVerificationCode[]
+  auditEvents              UserAuditEvent[]                   @relation("UserAuditTarget")
+  authoredAuditEvents      UserAuditEvent[]                   @relation("UserAuditActor")
   eventosAgendaResponsavel EventoAgenda[]                     @relation("EventoAgendaResponsavel")
   eventosAgendaCriados     EventoAgenda[]                     @relation("EventoAgendaCriadoPor")
   eventosAgendaDono        EventoAgenda[]                     @relation("EventoAgendaDono")
@@ -127,6 +169,9 @@ model Usuario {
   perfilPublico            PerfilPublicoCorretor?
   destaquesRecebidos       PerfilPublicoImobiliariaDestaque[]
 
+  @@unique([tenantId, email])
+  @@unique([id, tenantId])
+  @@index([email])
   @@index([tenantId])
   @@map("usuarios")
 }
@@ -139,8 +184,9 @@ model RefreshToken {
   expiresAt DateTime
   revokedAt DateTime?
   createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
 
-  usuario Usuario @relation(fields: [userId], references: [id], onDelete: Cascade)
+  usuario Usuario @relation(fields: [userId, tenantId], references: [id, tenantId], onDelete: Cascade)
 
   @@index([userId])
   @@index([tenantId])
@@ -156,12 +202,62 @@ model PasswordResetCode {
   expiresAt  DateTime
   consumedAt DateTime?
   createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
 
-  usuario Usuario @relation(fields: [userId], references: [id], onDelete: Cascade)
+  usuario Usuario @relation(fields: [userId, tenantId], references: [id, tenantId], onDelete: Cascade)
 
   @@index([userId])
   @@index([tenantId])
   @@map("password_reset_codes")
+}
+
+enum EmailVerificationPurpose {
+  SIGNUP
+  EMAIL_CHANGE
+}
+
+model EmailVerificationCode {
+  id          String                   @id @default(cuid())
+  userId      String
+  tenantId    String
+  targetEmail String
+  purpose     EmailVerificationPurpose
+  codeHash    String
+  attempts    Int                      @default(0)
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @default(now()) @updatedAt
+
+  usuario Usuario @relation(fields: [userId, tenantId], references: [id, tenantId], onDelete: Cascade)
+
+  @@index([userId, tenantId, purpose, createdAt])
+  @@map("email_verification_codes")
+}
+
+model EmailOwnershipCode {
+  id         String    @id @default(cuid())
+  email      String
+  codeHash   String
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
+
+  @@index([email, createdAt])
+  @@map("email_ownership_codes")
+}
+
+model AuthRateLimitBucket {
+  key       String   @id
+  count     Int
+  resetAt   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([resetAt])
+  @@map("auth_rate_limit_buckets")
 }
 
 // ---------------------------------------------------------------------------
@@ -188,6 +284,7 @@ model PlatformAdmin {
 
   refreshTokens       PlatformAdminRefreshToken[]
   tenantStatusChanges TenantStatusChange[]
+  userAuditEvents     UserAuditEvent[]
 
   @@map("platform_admins")
 }

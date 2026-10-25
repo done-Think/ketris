@@ -65,6 +65,8 @@ describe('POST /api/auth/login (integração)', () => {
       name: 'Login Teste',
       email,
       avatarUrl: null,
+      phone: null,
+      creci: null,
       role: 'OWNER',
       active: true,
       pendingApproval: false,

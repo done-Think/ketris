@@ -3,6 +3,7 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import bcrypt from 'bcryptjs'
 import { defineConfig } from 'cypress'
 
+import { createAuthMailbox } from './cypress/support/auth-mailbox'
 import { getDatabaseUrl } from './src/server/db/database-url'
 
 export default defineConfig({
@@ -11,12 +12,37 @@ export default defineConfig({
     supportFile: 'cypress/support/e2e.ts',
     specPattern: 'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',
     video: false,
-    setupNodeEvents(on) {
+    async setupNodeEvents(on, config) {
+      const mailboxPort = Number(process.env.AUTH_E2E_MAILBOX_PORT ?? 0)
+      const mailbox = mailboxPort ? createAuthMailbox(mailboxPort) : null
+      if (mailbox) {
+        const database = new URL(getDatabaseUrl())
+        const endpoint = new URL(
+          process.env.AWS_ENDPOINT_URL_SES ?? process.env.AWS_ENDPOINT_URL ?? '',
+        )
+        const app = new URL(config.baseUrl ?? '')
+        const localHosts = ['localhost', '127.0.0.1', '[::1]']
+        if (
+          ![database.hostname, endpoint.hostname, app.hostname].every((host) =>
+            localHosts.includes(host),
+          )
+        )
+          throw new Error('O simulador de e-mail E2E exige aplicação, banco e endpoint AWS locais.')
+        if (Number(endpoint.port) !== mailboxPort)
+          throw new Error('A porta do endpoint AWS deve coincidir com AUTH_E2E_MAILBOX_PORT.')
+        await mailbox.start()
+      }
+      config.env.AUTH_MAILBOX_ENABLED = Boolean(mailbox)
       const prisma = new PrismaClient({
         adapter: new PrismaPg({ connectionString: getDatabaseUrl() }),
       })
 
       on('task', {
+        readAuthEmail(email: string) {
+          if (!mailbox)
+            throw new Error('O simulador de e-mail Auth não foi habilitado para esta execução.')
+          return mailbox.read(email)
+        },
         async seedAuthUser({
           email,
           password,
@@ -80,7 +106,9 @@ export default defineConfig({
 
       on('after:run', async () => {
         await prisma.$disconnect()
+        if (mailbox) await mailbox.stop()
       })
+      return config
     },
   },
 })

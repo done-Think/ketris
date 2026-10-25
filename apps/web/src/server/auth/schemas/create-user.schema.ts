@@ -1,21 +1,30 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
+import { resetPasswordRequestSchema } from './reset-password.schema'
 import { authenticatedUserResponseSchema, tenantMemberPapelSchema } from './user.schema'
 
 export const createUserRequestSchema = z
   .object({
-    name: z.string().min(1, 'Nome é obrigatório.').openapi({ example: 'Ana Agente' }),
-    email: z.string().email('E-mail inválido.').openapi({ example: 'ana@ketris.dev' }),
-    password: z
+    name: z
       .string()
-      .min(8, 'Senha deve ter pelo menos 8 caracteres.')
-      .openapi({ example: 'trocar-em-desenvolvimento' }),
+      .trim()
+      .min(1, 'Nome é obrigatório.')
+      .max(200)
+      .openapi({ example: 'Ana Agente' }),
+    email: z
+      .string()
+      .trim()
+      .max(254)
+      .email('E-mail inválido.')
+      .openapi({ example: 'ana@ketris.dev' }),
+    password: resetPasswordRequestSchema.shape.password.openapi({
+      example: 'trocar-em-desenvolvimento',
+    }),
     role: tenantMemberPapelSchema.default('AGENT'),
   })
+  .strict()
   .openapi('CreateUserRequest')
-
-export type CreateUserRequestDTO = z.infer<typeof createUserRequestSchema>
 
 export const createUserResponseSchema = z
   .object({

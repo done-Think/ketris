@@ -35,6 +35,7 @@ export const routing = defineRouting({
     '/register': '/register',
     '/register/details': '/register/details',
     '/forgot-password': '/forgot-password',
+    '/confirm-email-change': '/confirm-email-change',
     '/crm': '/crm',
     '/crm/contacts': '/crm/contacts',
     '/crm/opportunities/[id]': '/crm/opportunities/[id]',

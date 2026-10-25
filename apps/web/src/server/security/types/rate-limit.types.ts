@@ -19,5 +19,11 @@ export interface RateLimitResult {
 }
 
 export interface RateLimitStore {
-  consume(input: RateLimitInput): RateLimitResult
+  consume(input: RateLimitInput): RateLimitResult | Promise<RateLimitResult>
+}
+
+export interface StoredRateLimitBucket {
+  count: number
+  resetAt: Date
+  observedAt: Date
 }

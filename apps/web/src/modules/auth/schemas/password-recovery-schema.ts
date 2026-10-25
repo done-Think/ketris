@@ -1,11 +1,12 @@
 import { z } from 'zod'
 
+import { createNewPasswordSchema } from '@shared/schemas/new-password-schema'
 import { createEmailSchema } from '@shared/schemas/email-schema'
 import type { SchemaMessageTranslator } from '@shared/types'
 
 export function createPasswordRecoverySchema(t: SchemaMessageTranslator) {
   return z.object({
-    email: createEmailSchema(t),
+    email: createEmailSchema(t).pipe(z.string().max(254, t('emailInvalid'))),
   })
 }
 
@@ -18,11 +19,15 @@ export function createVerificationCodeSchema(t: SchemaMessageTranslator) {
 export function createPasswordResetSchema(t: SchemaMessageTranslator) {
   return createVerificationCodeSchema(t)
     .extend({
-      password: z.string().min(8, t('passwordTooShort')),
+      password: createNewPasswordSchema(t),
       passwordConfirmation: z.string().min(1, t('passwordConfirmationRequired')),
     })
     .refine((data) => data.password === data.passwordConfirmation, {
       message: t('passwordMismatch'),
       path: ['passwordConfirmation'],
     })
+}
+
+export function createRecoveryTenantSchema(t: SchemaMessageTranslator) {
+  return z.object({ tenantId: z.string().min(1, t('tenantRequired')) })
 }

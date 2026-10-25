@@ -1,5 +1,8 @@
 import { jwtVerify, SignJWT } from 'jose'
 
+import { passwordResetTokenClaimsSchema } from '../schemas/password-reset-token.schema'
+import type { PasswordResetClaims } from '../types/password-reset'
+
 import { PASSWORD_RESET_TOKEN_TTL_MINUTES } from '../domain/password-reset-code'
 import { InvalidPasswordResetTokenError } from '../domain/errors'
 import type { PasswordResetTokenService } from '../application/ports/password-reset-token.port'
@@ -19,8 +22,8 @@ function getSecretKey(): Uint8Array {
 }
 
 export class JosePasswordResetTokenService implements PasswordResetTokenService {
-  async issue(userId: string): Promise<string> {
-    return new SignJWT({ purpose: PASSWORD_RESET_TOKEN_PURPOSE })
+  async issue(userId: string, sessionVersion: number): Promise<string> {
+    return new SignJWT({ purpose: PASSWORD_RESET_TOKEN_PURPOSE, sessionVersion })
       .setProtectedHeader({ alg: 'HS256' })
       .setSubject(userId)
       .setIssuedAt()
@@ -28,15 +31,12 @@ export class JosePasswordResetTokenService implements PasswordResetTokenService 
       .sign(getSecretKey())
   }
 
-  async verify(token: string): Promise<string> {
+  async verify(token: string): Promise<PasswordResetClaims> {
     try {
-      const { payload } = await jwtVerify(token, getSecretKey())
+      const { payload } = await jwtVerify(token, getSecretKey(), { algorithms: ['HS256'] })
 
-      if (payload.purpose !== PASSWORD_RESET_TOKEN_PURPOSE || !payload.sub) {
-        throw new InvalidPasswordResetTokenError()
-      }
-
-      return payload.sub
+      const claims = passwordResetTokenClaimsSchema.parse(payload)
+      return { userId: claims.sub, sessionVersion: claims.sessionVersion }
     } catch {
       throw new InvalidPasswordResetTokenError()
     }

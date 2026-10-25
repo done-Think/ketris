@@ -1,16 +1,19 @@
-import type { User } from '@server/auth/domain/user.entity'
-import type { TenantAccountType, TenantStatus } from '@server/platform/domain/tenant-account'
-import type { TenantSummary } from '@server/platform/domain/tenant-summary.entity'
+import type {
+  NewRegistrationMember,
+  NewTenantWithAdmin,
+  RegistrationAccount,
+  RegistrationTenant,
+} from '../../types/account'
 
-export interface NewTenantWithAdmin {
-  tenantName: string
-  adminName: string
-  email: string
-  senhaHash: string
-  accountType: TenantAccountType
-  status: TenantStatus
-}
+export type { NewTenantWithAdmin } from '../../types/account'
 
 export interface RegistrationRepository {
-  createTenantWithAdmin(input: NewTenantWithAdmin): Promise<{ tenant: TenantSummary; user: User }>
+  createTenantWithAdmin(
+    input: NewTenantWithAdmin,
+  ): Promise<{ tenant: RegistrationTenant; user: RegistrationAccount }>
+  createMember(input: NewRegistrationMember): Promise<RegistrationAccount>
+  findAccountByEmail(tenantId: string, email: string): Promise<RegistrationAccount | null>
+  findTenantById(id: string): Promise<RegistrationTenant | null>
+  findTenantBySlug(slug: string): Promise<RegistrationTenant | null>
+  searchByName(query: string, excludeSlugs: string[]): Promise<RegistrationTenant[]>
 }

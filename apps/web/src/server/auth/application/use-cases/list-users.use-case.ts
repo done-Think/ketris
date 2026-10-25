@@ -1,26 +1,25 @@
+import type { ListUsersOutput } from '../../types/use-case-outputs'
+import type { ListUsersInput } from '../../types/use-case-inputs'
 import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
-import { toAuthenticatedUser, type AuthenticatedUser, type Papel } from '../../domain/user.entity'
-import type { UserRepository } from '../ports/user-repository.port'
-
-export interface ListUsersInput {
-  actorTenantId: string
-  actorPapel: Papel
-}
-
-export type ListUsersOutput = AuthenticatedUser[]
+import { toAuthenticatedUser } from '../../domain/user.entity'
+import type { UserListRepository } from '../ports/user-list-repository.port'
 
 export class ListUsersUseCase {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(private readonly userRepository: UserListRepository) {}
 
   async execute(input: ListUsersInput): Promise<ListUsersOutput> {
     if (!isAgencyManager(input.actorPapel)) {
       throw new ForbiddenError('Apenas a gestão da imobiliária pode listar usuários.')
     }
 
-    const users = await this.userRepository.findManyByTenant(input.actorTenantId)
+    const result = await this.userRepository.findPageByTenant(input.actorTenantId, {
+      page: input.page ?? 1,
+      pageSize: input.pageSize ?? 25,
+      pendingApproval: input.pendingApproval,
+    })
 
-    return users.map(toAuthenticatedUser)
+    return { ...result, users: result.users.map(toAuthenticatedUser) }
   }
 }

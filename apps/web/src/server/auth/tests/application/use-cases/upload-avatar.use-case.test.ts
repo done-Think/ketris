@@ -26,6 +26,8 @@ const input = {
 
 function dependencies(currentUser = user) {
   const users: UserRepository = {
+    findManyByEmail: vi.fn(),
+
     findById: vi.fn().mockResolvedValue(currentUser),
     findByEmail: vi.fn(),
     findManyByTenant: vi.fn(),

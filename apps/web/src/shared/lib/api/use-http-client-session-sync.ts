@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import { isAxiosError } from 'axios'
 
 import { useRouter } from '@/i18n/navigation'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
@@ -17,8 +18,9 @@ export function useHttpClientSessionSync() {
   const clearTenant = useTenantStore((state) => state.clearTenant)
 
   useEffect(() => {
-    httpClient.setAuthToken(session?.accessToken ?? null)
-  }, [session?.accessToken])
+    httpClient.setAuthUnavailable(session?.authUnavailable === true)
+    httpClient.setAuthToken(session?.authUnavailable ? null : (session?.accessToken ?? null))
+  }, [session?.accessToken, session?.authUnavailable])
 
   useEffect(() => {
     const tenantId = session?.tenantId ?? null
@@ -34,38 +36,45 @@ export function useHttpClientSessionSync() {
 
   useEffect(() => {
     const currentRefreshToken = session?.refreshToken
+    const isPlatform = session?.scope === 'platform'
+    const loginPath = isPlatform ? '/platform/login' : '/login'
 
     httpClient.setUnauthorizedHandler(async () => {
+      if (session?.authUnavailable) return null
       if (!currentRefreshToken) {
         await clearClientSession()
-        router.replace('/login')
+        router.replace(loginPath)
         router.refresh()
         return null
       }
 
       try {
-        const response = await fetch('/api/auth/refresh', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refreshToken: currentRefreshToken }),
-        })
+        const tokens = await httpClient.post<RefreshTokenResponse>(
+          isPlatform ? '/platform/refresh' : '/auth/refresh',
+          { refreshToken: currentRefreshToken },
+          { skipUnauthorizedHandling: true },
+        )
 
-        if (!response.ok) throw new Error('refresh failed')
-
-        const tokens = (await response.json()) as RefreshTokenResponse
-
-        await update(tokens)
+        const updatedSession = await update(tokens)
+        if (updatedSession?.authUnavailable) {
+          httpClient.setAuthUnavailable(true)
+          httpClient.setAuthToken(null)
+          return null
+        }
+        if (updatedSession?.accessToken !== tokens.accessToken) return null
         httpClient.setAuthToken(tokens.accessToken)
 
         return tokens.accessToken
-      } catch {
+      } catch (error) {
+        const status = isAxiosError(error) ? error.response?.status : undefined
+        if (status !== 401 && status !== 403) return null
         await clearClientSession()
-        router.replace('/login')
+        router.replace(loginPath)
         router.refresh()
         return null
       }
     })
 
     return () => httpClient.setUnauthorizedHandler(null)
-  }, [router, session?.refreshToken, update])
+  }, [router, session?.refreshToken, session?.scope, session?.authUnavailable, update])
 }

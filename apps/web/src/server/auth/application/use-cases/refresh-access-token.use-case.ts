@@ -1,3 +1,5 @@
+import type { RefreshAccessTokenOutput } from '../../types/use-case-outputs'
+import type { RefreshAccessTokenInput } from '../../types/use-case-inputs'
 import { InvalidRefreshTokenError } from '../../domain/errors'
 import {
   generateRefreshToken,
@@ -5,18 +7,10 @@ import {
   refreshTokenExpiryDate,
 } from '../../domain/refresh-token'
 import { toAuthenticatedUser } from '../../domain/user.entity'
+import { assertUserCanAuthenticate } from '../../domain/user-access-policy'
 import type { RefreshTokenRepository } from '../ports/refresh-token-repository.port'
 import type { TokenService } from '../ports/token-service.port'
 import type { UserRepository } from '../ports/user-repository.port'
-
-export interface RefreshAccessTokenInput {
-  refreshToken: string
-}
-
-export interface RefreshAccessTokenOutput {
-  accessToken: string
-  refreshToken: string
-}
 
 export class RefreshAccessTokenUseCase {
   constructor(
@@ -35,22 +29,30 @@ export class RefreshAccessTokenUseCase {
 
     const user = await this.userRepository.findById(stored.userId)
 
-    if (!user || !user.ativo) {
+    if (!user || user.tenantId !== stored.tenantId) {
       throw new InvalidRefreshTokenError()
     }
-
-    await this.refreshTokenRepository.revokeById(stored.id)
+    try {
+      assertUserCanAuthenticate(user)
+    } catch {
+      throw new InvalidRefreshTokenError()
+    }
 
     const authenticatedUser = toAuthenticatedUser(user)
     const accessToken = await this.tokenService.sign(authenticatedUser)
     const newRefreshToken = generateRefreshToken()
 
-    await this.refreshTokenRepository.create({
-      userId: authenticatedUser.id,
-      tenantId: authenticatedUser.tenantId,
-      tokenHash: hashRefreshToken(newRefreshToken),
-      expiresAt: refreshTokenExpiryDate(),
+    const rotated = await this.refreshTokenRepository.rotate({
+      previous: stored,
+      expectedSessionVersion: user.sessionVersion ?? 0,
+      replacement: {
+        userId: authenticatedUser.id,
+        tenantId: authenticatedUser.tenantId,
+        tokenHash: hashRefreshToken(newRefreshToken),
+        expiresAt: refreshTokenExpiryDate(),
+      },
     })
+    if (!rotated) throw new InvalidRefreshTokenError()
 
     return { accessToken, refreshToken: newRefreshToken }
   }

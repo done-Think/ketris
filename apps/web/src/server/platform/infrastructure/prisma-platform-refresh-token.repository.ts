@@ -1,12 +1,41 @@
 import { prisma } from '@server/db/prisma'
+import type { PlatformAdmin } from '../domain/platform-admin.entity'
 
 import type {
   NewPlatformRefreshToken,
   PlatformRefreshTokenRepository,
+  PlatformRefreshTokenRotation,
   StoredPlatformRefreshToken,
 } from '../application/ports/platform-refresh-token-repository.port'
 
 export class PrismaPlatformRefreshTokenRepository implements PlatformRefreshTokenRepository {
+  async rotate(input: PlatformRefreshTokenRotation): Promise<boolean> {
+    const { previous, replacement } = input
+    if (replacement.platformAdminId !== previous.platformAdminId) return false
+
+    return prisma.$transaction(async (transaction) => {
+      const [admin] = await transaction.$queryRaw<Pick<PlatformAdmin, 'id'>[]>`
+        SELECT "id" FROM "platform_admins"
+        WHERE "id" = ${previous.platformAdminId} AND "ativo" = true
+        FOR UPDATE
+      `
+      if (!admin) return false
+      const now = new Date()
+      const claimed = await transaction.platformAdminRefreshToken.updateMany({
+        where: {
+          id: previous.id,
+          platformAdminId: previous.platformAdminId,
+          revokedAt: null,
+          expiresAt: { gt: now },
+        },
+        data: { revokedAt: now },
+      })
+      if (claimed.count !== 1) return false
+      await transaction.platformAdminRefreshToken.create({ data: replacement })
+      return true
+    })
+  }
+
   async create(input: NewPlatformRefreshToken): Promise<void> {
     await prisma.platformAdminRefreshToken.create({
       data: {

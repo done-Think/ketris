@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { CannotDeactivateSelfError, UserNotFoundError } from '../../../domain/errors'
 import type { User } from '../../../domain/user.entity'
-import type { RefreshTokenRepository } from '../../../application/ports/refresh-token-repository.port'
 import type { UserRepository } from '../../../application/ports/user-repository.port'
 import { DeactivateUserUseCase } from '../../../application/use-cases/deactivate-user.use-case'
 
@@ -19,6 +18,8 @@ const agent: User = {
 
 function createDeps(overrides?: { findById?: UserRepository['findById'] }) {
   const userRepository: UserRepository = {
+    findManyByEmail: vi.fn(),
+
     findById: overrides?.findById ?? vi.fn().mockResolvedValue(agent),
     findByEmail: vi.fn(),
     findManyByTenant: vi.fn(),
@@ -27,20 +28,14 @@ function createDeps(overrides?: { findById?: UserRepository['findById'] }) {
     deactivate: vi.fn().mockResolvedValue({ ...agent, ativo: false }),
     approveMembership: vi.fn(),
   }
-  const refreshTokenRepository: RefreshTokenRepository = {
-    create: vi.fn(),
-    findValidByTokenHash: vi.fn(),
-    revokeById: vi.fn(),
-    revokeAllForUser: vi.fn().mockResolvedValue(undefined),
-  }
 
-  return { userRepository, refreshTokenRepository }
+  return { userRepository }
 }
 
 describe('DeactivateUserUseCase', () => {
   it('desativa o usuário e revoga todos os refresh tokens dele', async () => {
     const deps = createDeps()
-    const useCase = new DeactivateUserUseCase(deps.userRepository, deps.refreshTokenRepository)
+    const useCase = new DeactivateUserUseCase(deps.userRepository)
 
     const result = await useCase.execute({
       actorId: 'admin-1',
@@ -50,13 +45,15 @@ describe('DeactivateUserUseCase', () => {
     })
 
     expect(result.ativo).toBe(false)
-    expect(deps.userRepository.deactivate).toHaveBeenCalledWith(agent.id)
-    expect(deps.refreshTokenRepository.revokeAllForUser).toHaveBeenCalledWith(agent.id)
+    expect(deps.userRepository.deactivate).toHaveBeenCalledWith(agent.id, 'tenant-1', {
+      kind: 'USER',
+      id: 'admin-1',
+    })
   })
 
   it('lança ForbiddenError quando o ator não é OWNER', async () => {
     const deps = createDeps()
-    const useCase = new DeactivateUserUseCase(deps.userRepository, deps.refreshTokenRepository)
+    const useCase = new DeactivateUserUseCase(deps.userRepository)
 
     await expect(
       useCase.execute({
@@ -71,7 +68,7 @@ describe('DeactivateUserUseCase', () => {
 
   it('lança CannotDeactivateSelfError quando o ator tenta desativar a própria conta', async () => {
     const deps = createDeps()
-    const useCase = new DeactivateUserUseCase(deps.userRepository, deps.refreshTokenRepository)
+    const useCase = new DeactivateUserUseCase(deps.userRepository)
 
     await expect(
       useCase.execute({
@@ -86,7 +83,7 @@ describe('DeactivateUserUseCase', () => {
 
   it('lança UserNotFoundError quando o alvo não existe, é de outro tenant', async () => {
     const deps = createDeps({ findById: vi.fn().mockResolvedValue(null) })
-    const useCase = new DeactivateUserUseCase(deps.userRepository, deps.refreshTokenRepository)
+    const useCase = new DeactivateUserUseCase(deps.userRepository)
 
     await expect(
       useCase.execute({
@@ -96,6 +93,5 @@ describe('DeactivateUserUseCase', () => {
         userId: 'inexistente',
       }),
     ).rejects.toThrow(UserNotFoundError)
-    expect(deps.refreshTokenRepository.revokeAllForUser).not.toHaveBeenCalled()
   })
 })

@@ -1,25 +1,14 @@
+import type { DeactivateUserOutput } from '../../types/use-case-outputs'
+import type { DeactivateUserInput } from '../../types/use-case-inputs'
 import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
 import { CannotDeactivateSelfError, UserNotFoundError } from '../../domain/errors'
-import { toAuthenticatedUser, type AuthenticatedUser, type Papel } from '../../domain/user.entity'
-import type { RefreshTokenRepository } from '../ports/refresh-token-repository.port'
+import { toAuthenticatedUser } from '../../domain/user.entity'
 import type { UserRepository } from '../ports/user-repository.port'
 
-export interface DeactivateUserInput {
-  actorId: string
-  actorTenantId: string
-  actorPapel: Papel
-  userId: string
-}
-
-export type DeactivateUserOutput = AuthenticatedUser
-
 export class DeactivateUserUseCase {
-  constructor(
-    private readonly userRepository: UserRepository,
-    private readonly refreshTokenRepository: RefreshTokenRepository,
-  ) {}
+  constructor(private readonly userRepository: UserRepository) {}
 
   async execute(input: DeactivateUserInput): Promise<DeactivateUserOutput> {
     if (!isAgencyManager(input.actorPapel)) {
@@ -36,8 +25,10 @@ export class DeactivateUserUseCase {
       throw new UserNotFoundError()
     }
 
-    const deactivated = await this.userRepository.deactivate(input.userId)
-    await this.refreshTokenRepository.revokeAllForUser(input.userId)
+    const deactivated = await this.userRepository.deactivate(input.userId, input.actorTenantId, {
+      kind: 'USER',
+      id: input.actorId,
+    })
 
     return toAuthenticatedUser(deactivated)
   }

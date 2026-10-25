@@ -81,4 +81,12 @@ describe('TenantSessionBoundary', () => {
     expect(screen.queryByText('Conteúdo do CRM')).not.toBeInTheDocument()
     await waitFor(() => expect(routerMock.replace).toHaveBeenCalledWith('/login'))
   })
+  it('shows temporary unavailability without treating the preserved session as logged out', () => {
+    mockSession({ authUnavailable: true, scope: undefined, tenantId: undefined, role: undefined })
+    renderBoundary()
+    expect(screen.queryByText('Conteúdo do CRM')).not.toBeInTheDocument()
+    expect(screen.getByText('Autenticação temporariamente indisponível')).toBeInTheDocument()
+    expect(clearClientSession).not.toHaveBeenCalled()
+    expect(routerMock.replace).not.toHaveBeenCalled()
+  })
 })

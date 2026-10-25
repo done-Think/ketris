@@ -89,4 +89,15 @@ describe('Authenticated dashboard layouts', () => {
     ).rejects.toThrow('NEXT_REDIRECT')
     expect(redirectMock).toHaveBeenCalledWith('/pt/login')
   })
+  it('returns an unavailable screen without rendering protected children or redirecting to login', async () => {
+    getServerSessionMock.mockResolvedValueOnce({ authUnavailable: true, user: { id: 'u1' } })
+    const result = await DashboardLayout({
+      params: Promise.resolve({ locale: 'pt-BR' }),
+      children: <div>Private fresh data</div>,
+    })
+    render(<ThemeProvider theme={theme}>{result}</ThemeProvider>)
+    expect(screen.getByText('Autenticação temporariamente indisponível')).toBeInTheDocument()
+    expect(screen.queryByText('Private fresh data')).not.toBeInTheDocument()
+    expect(redirectMock).not.toHaveBeenCalled()
+  })
 })

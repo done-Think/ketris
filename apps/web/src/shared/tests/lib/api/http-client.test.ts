@@ -3,7 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { HttpClient } from '../../../lib/api/http-client'
 
-vi.mock('axios', () => {
+vi.mock('axios', async () => {
+  const { AxiosError } = await vi.importActual<typeof import('axios')>('axios')
   const interceptors = {
     request: { use: vi.fn() },
     response: { use: vi.fn() },
@@ -19,6 +20,7 @@ vi.mock('axios', () => {
   })
 
   return {
+    AxiosError,
     default: {
       create: vi.fn(() => instance),
     },
@@ -148,5 +150,15 @@ describe('HttpClient — refresh de token em respostas 401', () => {
     await Promise.all([firstCall, secondCall])
 
     expect(handler).toHaveBeenCalledTimes(1)
+  })
+  it('blocks new requests until authentication can be revalidated', () => {
+    const client = new HttpClient()
+    const instance = vi.mocked(axios.create).mock.results.at(-1)?.value
+    const onRequest = instance.interceptors.request.use.mock.calls.at(-1)[0]
+    const config = { url: '/private-data', headers: {} }
+    client.setAuthUnavailable(true)
+    expect(() => onRequest(config)).toThrow('AUTH_UNAVAILABLE')
+    client.setAuthUnavailable(false)
+    expect(onRequest(config)).toBe(config)
   })
 })

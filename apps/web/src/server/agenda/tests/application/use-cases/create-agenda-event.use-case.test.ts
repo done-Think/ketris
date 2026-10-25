@@ -70,6 +70,8 @@ function createDeps(overrides?: {
     hasOverlap: overrides?.hasOverlap ?? vi.fn().mockResolvedValue(false),
   }
   const userRepository: UserRepository = {
+    findManyByEmail: vi.fn(),
+
     findById: overrides?.findById ?? vi.fn().mockResolvedValue(actor),
     findByEmail: vi.fn(),
     findManyByTenant: vi.fn(),

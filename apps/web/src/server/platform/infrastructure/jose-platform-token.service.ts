@@ -1,4 +1,5 @@
 import { jwtVerify, SignJWT } from 'jose'
+import { UnauthorizedError } from '@server/shared/errors'
 
 import type { AuthenticatedPlatformAdmin } from '../domain/platform-admin.entity'
 import type {
@@ -31,10 +32,10 @@ export class JosePlatformTokenService implements PlatformTokenService {
   }
 
   async verify(token: string): Promise<PlatformAccessTokenPayload> {
-    const { payload } = await jwtVerify(token, getSecretKey())
+    const { payload } = await jwtVerify(token, getSecretKey(), { algorithms: ['HS256'] })
 
-    if (payload.scope !== 'platform') {
-      throw new Error('Token não é um token de platform admin.')
+    if (payload.scope !== 'platform' || typeof payload.sub !== 'string' || !payload.sub.trim()) {
+      throw new UnauthorizedError()
     }
 
     return {

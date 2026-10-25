@@ -2,6 +2,8 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { AuthQueryTestProvider } from '../fixtures/auth-query-provider'
+
 import { PasswordRecoveryScreen } from '../../components/PasswordRecoveryScreen'
 import { passwordRecoveryService } from '../../services/password-recovery-service'
 
@@ -42,12 +44,18 @@ describe('PasswordRecoveryScreen', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(passwordRecoveryService.requestCode).mockResolvedValue(undefined)
-    vi.mocked(passwordRecoveryService.verifyCode).mockResolvedValue('reset-token-123')
+    vi.mocked(passwordRecoveryService.verifyCode).mockResolvedValue({
+      resetToken: 'reset-token-123',
+    })
     vi.mocked(passwordRecoveryService.resetPassword).mockResolvedValue(undefined)
   })
 
   it('exibe a composição principal da recuperação de senha', () => {
-    render(<PasswordRecoveryScreen />)
+    render(
+      <AuthQueryTestProvider>
+        <PasswordRecoveryScreen />
+      </AuthQueryTestProvider>,
+    )
 
     expect(screen.getByRole('heading', { name: 'Recuperar senha' })).toBeInTheDocument()
     expect(screen.getByLabelText('E-mail')).toHaveAttribute('placeholder', 'seu@email.com')
@@ -56,7 +64,11 @@ describe('PasswordRecoveryScreen', () => {
 
   it('valida o e-mail antes de avançar, sem pedir código nenhum', async () => {
     const user = userEvent.setup()
-    render(<PasswordRecoveryScreen />)
+    render(
+      <AuthQueryTestProvider>
+        <PasswordRecoveryScreen />
+      </AuthQueryTestProvider>,
+    )
 
     await user.click(screen.getByRole('button', { name: 'Enviar código' }))
 
@@ -67,7 +79,11 @@ describe('PasswordRecoveryScreen', () => {
 
   it('pede o código por e-mail e avança pro passo do código, sem os campos de nova senha juntos', async () => {
     const user = userEvent.setup()
-    render(<PasswordRecoveryScreen />)
+    render(
+      <AuthQueryTestProvider>
+        <PasswordRecoveryScreen />
+      </AuthQueryTestProvider>,
+    )
 
     await goToCodeStep(user)
 
@@ -84,7 +100,11 @@ describe('PasswordRecoveryScreen', () => {
     )
 
     const user = userEvent.setup()
-    render(<PasswordRecoveryScreen />)
+    render(
+      <AuthQueryTestProvider>
+        <PasswordRecoveryScreen />
+      </AuthQueryTestProvider>,
+    )
 
     await user.type(screen.getByLabelText('E-mail'), 'usuario@email.com')
     await user.click(screen.getByRole('button', { name: 'Enviar código' }))
@@ -99,11 +119,19 @@ describe('PasswordRecoveryScreen', () => {
 
   it('verifica o código automaticamente ao completar os 6 dígitos e avança pra nova senha', async () => {
     const user = userEvent.setup()
-    render(<PasswordRecoveryScreen />)
+    render(
+      <AuthQueryTestProvider>
+        <PasswordRecoveryScreen />
+      </AuthQueryTestProvider>,
+    )
 
     await completeCodeStep(user)
 
-    expect(passwordRecoveryService.verifyCode).toHaveBeenCalledWith('usuario@email.com', '123456')
+    expect(passwordRecoveryService.verifyCode).toHaveBeenCalledWith(
+      'usuario@email.com',
+      '123456',
+      undefined,
+    )
     expect(screen.getByLabelText('Nova senha')).toBeInTheDocument()
     expect(screen.getByLabelText('Confirmar nova senha')).toBeInTheDocument()
     expect(screen.queryAllByLabelText(/Código de verificação/)).toHaveLength(0)
@@ -116,7 +144,11 @@ describe('PasswordRecoveryScreen', () => {
     )
 
     const user = userEvent.setup()
-    render(<PasswordRecoveryScreen />)
+    render(
+      <AuthQueryTestProvider>
+        <PasswordRecoveryScreen />
+      </AuthQueryTestProvider>,
+    )
 
     await goToCodeStep(user)
     const boxes = screen.getAllByLabelText(/Código de verificação/)
@@ -133,7 +165,11 @@ describe('PasswordRecoveryScreen', () => {
 
   it('exige pelo menos 8 caracteres na nova senha', async () => {
     const user = userEvent.setup()
-    render(<PasswordRecoveryScreen />)
+    render(
+      <AuthQueryTestProvider>
+        <PasswordRecoveryScreen />
+      </AuthQueryTestProvider>,
+    )
 
     await completeCodeStep(user)
     await user.type(screen.getByLabelText('Nova senha'), '123')
@@ -146,7 +182,11 @@ describe('PasswordRecoveryScreen', () => {
 
   it('rejeita quando as senhas não coincidem', async () => {
     const user = userEvent.setup()
-    render(<PasswordRecoveryScreen />)
+    render(
+      <AuthQueryTestProvider>
+        <PasswordRecoveryScreen />
+      </AuthQueryTestProvider>,
+    )
 
     await completeCodeStep(user)
     await user.type(screen.getByLabelText('Nova senha'), 'senha-longa-123')
@@ -159,7 +199,11 @@ describe('PasswordRecoveryScreen', () => {
 
   it('permite mostrar e ocultar a senha digitada, em cada campo de forma independente', async () => {
     const user = userEvent.setup()
-    render(<PasswordRecoveryScreen />)
+    render(
+      <AuthQueryTestProvider>
+        <PasswordRecoveryScreen />
+      </AuthQueryTestProvider>,
+    )
 
     await completeCodeStep(user)
 
@@ -178,7 +222,11 @@ describe('PasswordRecoveryScreen', () => {
 
   it('redefine a senha com sucesso, enviando o resetToken obtido na verificação, e mostra a confirmação', async () => {
     const user = userEvent.setup()
-    render(<PasswordRecoveryScreen />)
+    render(
+      <AuthQueryTestProvider>
+        <PasswordRecoveryScreen />
+      </AuthQueryTestProvider>,
+    )
 
     await completeCodeStep(user)
     await user.type(screen.getByLabelText('Nova senha'), 'senha-longa-123')
@@ -201,7 +249,11 @@ describe('PasswordRecoveryScreen', () => {
     )
 
     const user = userEvent.setup()
-    render(<PasswordRecoveryScreen />)
+    render(
+      <AuthQueryTestProvider>
+        <PasswordRecoveryScreen />
+      </AuthQueryTestProvider>,
+    )
 
     await completeCodeStep(user)
     await user.type(screen.getByLabelText('Nova senha'), 'senha-longa-123')
@@ -214,5 +266,68 @@ describe('PasswordRecoveryScreen', () => {
       ),
     ).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Senha redefinida!' })).not.toBeInTheDocument()
+  })
+  it('only displays accounts after validating the code, then resets the selected account', async () => {
+    vi.mocked(passwordRecoveryService.verifyCode)
+      .mockResolvedValueOnce({
+        outcome: 'SELECT_TENANT',
+        tenants: [
+          { id: 'tenant-1', name: 'First account', slug: 'first' },
+          { id: 'tenant-2', name: 'Second account', slug: 'second' },
+        ],
+      })
+      .mockResolvedValueOnce({ resetToken: 'selected-account-token' })
+    const user = userEvent.setup()
+    render(
+      <AuthQueryTestProvider>
+        <PasswordRecoveryScreen />
+      </AuthQueryTestProvider>,
+    )
+    expect(screen.queryByText('First account')).not.toBeInTheDocument()
+    await goToCodeStep(user)
+    expect(screen.queryByText('First account')).not.toBeInTheDocument()
+    const boxes = screen.getAllByLabelText(/Código de verificação/)
+    await user.type(boxes[0], '123456')
+    await screen.findByRole('heading', { name: 'Escolha sua conta' })
+    expect(passwordRecoveryService.verifyCode).toHaveBeenCalledTimes(1)
+    expect(screen.queryByLabelText('Nova senha')).not.toBeInTheDocument()
+    await user.click(screen.getByLabelText('Conta'))
+    await user.click(screen.getByRole('option', { name: 'Second account' }))
+    await user.click(screen.getByRole('button', { name: 'Continuar' }))
+    await screen.findByRole('heading', { name: 'Crie uma nova senha' })
+    expect(passwordRecoveryService.verifyCode).toHaveBeenLastCalledWith(
+      'usuario@email.com',
+      '123456',
+      'tenant-2',
+    )
+    await user.type(screen.getByLabelText('Nova senha'), 'new-password')
+    await user.type(screen.getByLabelText('Confirmar nova senha'), 'new-password')
+    await user.click(screen.getByRole('button', { name: 'Redefinir senha' }))
+    await screen.findByRole('heading', { name: 'Senha redefinida!' })
+    expect(passwordRecoveryService.resetPassword).toHaveBeenCalledWith({
+      email: 'usuario@email.com',
+      password: 'new-password',
+      resetToken: 'selected-account-token',
+      tenantId: 'tenant-2',
+    })
+  })
+  it('requests fresh proof when the scoped reset token expires', async () => {
+    vi.mocked(passwordRecoveryService.resetPassword).mockRejectedValue(
+      axiosErrorWithCode('INVALID_RESET_TOKEN'),
+    )
+    const user = userEvent.setup()
+    render(
+      <AuthQueryTestProvider>
+        <PasswordRecoveryScreen />
+      </AuthQueryTestProvider>,
+    )
+    await completeCodeStep(user)
+    await user.type(screen.getByLabelText('Nova senha'), 'new-password')
+    await user.type(screen.getByLabelText('Confirmar nova senha'), 'new-password')
+    await user.click(screen.getByRole('button', { name: 'Redefinir senha' }))
+    await user.click(await screen.findByRole('button', { name: 'Reenviar código' }))
+    await screen.findByRole('heading', { name: 'Verifique seu e-mail' })
+    expect(passwordRecoveryService.requestCode).toHaveBeenCalledTimes(2)
+    expect(screen.getAllByLabelText(/Código de verificação/)[0]).toHaveValue('')
   })
 })

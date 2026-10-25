@@ -1,17 +1,11 @@
+import type { ApproveUserMembershipOutput } from '../../types/use-case-outputs'
+import type { ApproveUserMembershipInput } from '../../types/use-case-inputs'
 import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
 import { UserNotFoundError } from '../../domain/errors'
-import { toAuthenticatedUser, type AuthenticatedUser, type Papel } from '../../domain/user.entity'
+import { toAuthenticatedUser } from '../../domain/user.entity'
 import type { UserRepository } from '../ports/user-repository.port'
-
-export interface ApproveUserMembershipInput {
-  actorTenantId: string
-  actorPapel: Papel
-  userId: string
-}
-
-export type ApproveUserMembershipOutput = AuthenticatedUser
 
 export class ApproveUserMembershipUseCase {
   constructor(private readonly userRepository: UserRepository) {}
@@ -31,7 +25,11 @@ export class ApproveUserMembershipUseCase {
       return toAuthenticatedUser(target)
     }
 
-    const approved = await this.userRepository.approveMembership(input.userId)
+    const approved = await this.userRepository.approveMembership(
+      input.userId,
+      input.actorTenantId,
+      { kind: 'USER', id: input.actorId },
+    )
 
     return toAuthenticatedUser(approved)
   }

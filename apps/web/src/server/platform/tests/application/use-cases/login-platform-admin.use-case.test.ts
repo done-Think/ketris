@@ -39,6 +39,7 @@ function createDeps(overrides?: {
     verify: vi.fn(),
   }
   const refreshTokenRepository: PlatformRefreshTokenRepository = {
+    rotate: vi.fn().mockResolvedValue(true),
     create: vi.fn().mockResolvedValue(undefined),
     findValidByTokenHash: vi.fn(),
     revokeById: vi.fn(),

@@ -1,26 +1,12 @@
+import type { CreateUserOutput } from '../../types/use-case-outputs'
+import type { CreateUserInput } from '../../types/use-case-inputs'
 import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
 import { EmailAlreadyInUseError } from '../../domain/errors'
-import {
-  toAuthenticatedUser,
-  type AuthenticatedUser,
-  type TenantMemberPapel,
-  type Papel,
-} from '../../domain/user.entity'
+import { toAuthenticatedUser } from '../../domain/user.entity'
 import type { PasswordHasher } from '../ports/password-hasher.port'
 import type { UserRepository } from '../ports/user-repository.port'
-
-export interface CreateUserInput {
-  actorTenantId: string
-  actorPapel: Papel
-  nome: string
-  email: string
-  password: string
-  papel: TenantMemberPapel
-}
-
-export type CreateUserOutput = AuthenticatedUser
 
 export class CreateUserUseCase {
   constructor(
@@ -33,7 +19,7 @@ export class CreateUserUseCase {
       throw new ForbiddenError('Apenas a gestão da imobiliária pode criar usuários.')
     }
 
-    const existing = await this.userRepository.findByEmail(input.email)
+    const existing = await this.userRepository.findByEmail(input.email, input.actorTenantId)
 
     if (existing) {
       throw new EmailAlreadyInUseError()
@@ -43,6 +29,7 @@ export class CreateUserUseCase {
 
     const created = await this.userRepository.create({
       tenantId: input.actorTenantId,
+      auditActor: { kind: 'USER', id: input.actorId },
       nome: input.nome,
       email: input.email,
       senhaHash,
