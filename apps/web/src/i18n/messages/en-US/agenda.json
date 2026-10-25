@@ -47,8 +47,10 @@
     "freeSlot": "Free slot",
     "selectedDayLabel": "{day}, {month} {date}",
     "creatorRoles": {
-      "agency": "agency",
-      "colleague": "colleague"
+      "OWNER": "agency manager",
+      "AGENT": "broker",
+      "PROPERTY_OWNER": "property owner",
+      "RENTER": "renter"
     },
     "createError": "Could not create the event. Please try again.",
     "editSuccess": "{title} updated successfully.",
@@ -58,7 +60,7 @@
   },
   "eventForm": {
     "audiences": {
-      "LEGACY_TEAM": "Current sharing",
+      "SHARED_TEAM": "Shared with the team",
       "ALL_AGENTS": "All agents",
       "ASSIGNED_AGENT": "Specific agent"
     },
@@ -96,7 +98,8 @@
       "date": "Date",
       "time": "Time",
       "duration": "Duration",
-      "notes": "Notes"
+      "notes": "Notes",
+      "currentProperty": "Property linked to the event"
     },
     "cancel": "Cancel",
     "submit": "Create event",
@@ -112,13 +115,28 @@
       "titleRequired": "Enter the event title",
       "customPropertyRequired": "Enter the property or reference",
       "visitMinimumDuration": "Visits must last at least 30 minutes",
-      "minimumAdvanceNotice": "Schedule at least 3 hours in advance"
+      "minimumAdvanceNotice": "Schedule at least 3 hours in advance",
+      "durationInteger": "Enter the duration in whole minutes",
+      "titleTooLong": "Use no more than 200 characters for the title",
+      "participantTooLong": "Use no more than 200 characters for the name",
+      "phoneTooLong": "Use no more than 32 characters for the phone number",
+      "propertyReferenceTooLong": "Use no more than 500 characters for the property reference",
+      "notesTooLong": "Use no more than 10,000 characters for notes"
     },
     "outsideHoursWarning": {
       "message": "This event falls outside business hours (08:00–18:00). Would you like to continue?",
       "continue": "Continue",
-      "back": "Go back"
-    }
+      "back": "Go back",
+      "title": "Confirm the schedule"
+    },
+    "propertyOpen": "Open properties",
+    "propertyClose": "Close properties",
+    "propertyClear": "Clear property",
+    "propertiesLoading": "Searching properties…",
+    "propertiesEmpty": "No properties found",
+    "propertiesError": "Properties could not be loaded.",
+    "propertiesRetry": "Try again",
+    "propertiesMore": "Load more properties"
   },
   "eventDetail": {
     "responsible": "Responsible: {name}",
@@ -135,7 +153,10 @@
       "title": "Delete event",
       "description": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
       "confirm": "Delete",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "reason": "Cancellation reason",
+      "reasonRequired": "Enter the cancellation reason",
+      "reasonTooLong": "Use no more than 10,000 characters for the reason"
     },
     "errors": {
       "durationTooShort": "Enter at least 15 minutes",
@@ -149,5 +170,17 @@
       "visitMinimumDuration": "Visits must last at least 30 minutes",
       "minimumAdvanceNotice": "Schedule at least 3 hours in advance"
     }
+  },
+  "errors": {
+    "minimumAdvanceNotice": "Schedule at least 3 hours in advance.",
+    "outsideBusinessHours": "Confirm the period outside business hours to continue.",
+    "visitMinimumDuration": "Visits must last at least 30 minutes.",
+    "userUnavailable": "One of the people could not be linked to the event.",
+    "cancellationReasonRequired": "Enter the cancellation reason.",
+    "forbidden": "You do not have permission to change this event.",
+    "notFound": "The event or one of its links is unavailable. Refresh the agenda.",
+    "conflict": "The schedule conflicts with the current data. Check the time and linked records.",
+    "invalidFields": "Review the fields before continuing.",
+    "rateLimit": "Too many attempts. Please wait and try again."
   }
 }

@@ -6,6 +6,16 @@ import { AgendaService } from '../../services/agenda-service'
 import type { AgendaEventApi } from '../../types/agenda-event'
 
 const event: AgendaEventApi = {
+  audience: 'SHARED_TEAM',
+  internal: false,
+  responsibleName: 'Corretor',
+  owner: null,
+  createdBy: null,
+  participants: [],
+  propertyLabel: null,
+  cancelledAt: null,
+  cancelledById: null,
+  cancellationReason: null,
   id: 'event-1',
   tenantId: 'tenant-1',
   responsibleId: 'user-1',
@@ -40,6 +50,9 @@ describe('AgendaService', () => {
 
   it('offers only active approved agents from the tenant-scoped user endpoint', async () => {
     http.get.mockResolvedValue({
+      total: 4,
+      page: 1,
+      pageSize: 100,
       users: [
         { id: 'agent', name: 'Ana', role: 'AGENT', active: true, pendingApproval: false },
         { id: 'inactive', role: 'AGENT', active: false, pendingApproval: false },
@@ -48,7 +61,7 @@ describe('AgendaService', () => {
       ],
     })
     expect(await service.listAgents()).toEqual([{ id: 'agent', name: 'Ana' }])
-    expect(http.get).toHaveBeenCalledWith('/auth/users')
+    expect(http.get).toHaveBeenCalledWith('/auth/users', { params: { page: 1, pageSize: 100 } })
   })
 
   it('loads every page of authorized charges and tickets instead of truncating the agenda', async () => {
@@ -126,7 +139,33 @@ describe('AgendaService', () => {
   it('cancels an event and unwraps the response', async () => {
     http.post.mockResolvedValueOnce({ event })
 
-    await expect(service.cancel(event.id)).resolves.toEqual(event)
-    expect(http.post).toHaveBeenCalledWith(`/agenda/events/${event.id}/cancel`)
+    await expect(service.cancel(event.id, { reason: 'Cliente indisponível' })).resolves.toEqual(
+      event,
+    )
+    expect(http.post).toHaveBeenCalledWith(`/agenda/events/${event.id}/cancel`, {
+      reason: 'Cliente indisponível',
+    })
   })
+})
+
+it('carrega corretores aprovados das páginas seguintes, mantendo a filtragem dos inativos', async () => {
+  const get = vi
+    .fn()
+    .mockResolvedValueOnce({
+      users: [{ id: 'inactive', role: 'AGENT', active: false, pendingApproval: false }],
+      total: 2,
+      page: 1,
+      pageSize: 1,
+    })
+    .mockResolvedValueOnce({
+      users: [
+        { id: 'agent-2', name: 'Bruna', role: 'AGENT', active: true, pendingApproval: false },
+      ],
+      total: 2,
+      page: 2,
+      pageSize: 1,
+    })
+  const service = new AgendaService({ get } as unknown as HttpClient)
+  expect(await service.listAgents()).toEqual([{ id: 'agent-2', name: 'Bruna' }])
+  expect(get).toHaveBeenNthCalledWith(2, '/auth/users', { params: { page: 2, pageSize: 100 } })
 })

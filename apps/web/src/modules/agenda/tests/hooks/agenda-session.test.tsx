@@ -70,6 +70,7 @@ it('does not reuse agenda data between renters sharing a tenant or between roles
     propertyId: null,
     propertyReference: 'Apartment',
     responsibleName: 'Ana',
+    propertyLabel: null,
   }
   vi.mocked(agendaService.list).mockResolvedValueOnce([event]).mockResolvedValue([])
   const { result, rerender } = renderHook(

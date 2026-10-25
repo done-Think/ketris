@@ -35,6 +35,16 @@ function agendaEvent(id: string, responsibleId: string, title: string): AgendaEv
   const start = dayjs().add(1, 'hour')
 
   return {
+    audience: 'SHARED_TEAM',
+    internal: false,
+    responsibleName: 'Corretor',
+    owner: null,
+    createdBy: null,
+    participants: [],
+    propertyLabel: null,
+    cancelledAt: null,
+    cancelledById: null,
+    cancellationReason: null,
     id,
     tenantId: 'tenant-1',
     responsibleId,

@@ -1,3 +1,11 @@
+vi.mock('../../hooks/use-agenda-properties', () => ({
+  useAgendaProperties: () => ({
+    data: undefined,
+    isFetching: false,
+    hasNextPage: false,
+    isError: false,
+  }),
+}))
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SnackbarProvider } from 'notistack'
@@ -78,7 +86,8 @@ it('cancels the pending submission when the form closes', async () => {
   const { onCreate, onClose } = createForm()
   await userEvent.click(screen.getByRole('button', { name: 'Criar evento' }))
   await screen.findByRole('button', { name: 'Continuar' })
-  await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Voltar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Cancelar' }))
   expect(onClose).toHaveBeenCalledTimes(1)
   expect(onCreate).not.toHaveBeenCalled()
 })
@@ -111,13 +120,13 @@ it('warns when an edited duration extends past business hours', async () => {
     durationMinutes: 30,
     title: 'Meeting',
     property: '',
-    propertyHref: '',
+    propertyHref: '/dashboard/properties',
     propertyId: null,
     apiKind: 'MEETING',
     participant: '',
     phone: '',
     notes: '',
-    status: 'Confirmada',
+    status: 'CONFIRMED',
     tone: 'info',
     audience: 'ALL_AGENTS',
     internal: true,

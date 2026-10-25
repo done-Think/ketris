@@ -2,7 +2,7 @@
 import { beforeEach, expect, it, vi } from 'vitest'
 import { prisma } from '@server/db/prisma'
 import { PrismaAgendaEventRepository } from '../../infrastructure/prisma-agenda-event.repository'
-import type { AgendaReadScope } from '../../domain/agenda-event.entity'
+import type { AgendaReadScope } from '../../types/agenda-event'
 
 vi.mock('@server/db/prisma', () => ({
   prisma: { eventoAgenda: { findMany: vi.fn(), findFirst: vi.fn() } },
@@ -30,7 +30,7 @@ it('combines the agent tenant with collective, legacy and personally assigned ev
   const expected = {
     tenantId: 'agency',
     OR: [
-      { destino: 'LEGACY_TEAM', interno: false },
+      { destino: 'SHARED_TEAM', interno: false },
       { destino: 'ALL_AGENTS' },
       { destino: 'ASSIGNED_AGENT', responsavelId: 'agent' },
     ],

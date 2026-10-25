@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import dayjs from 'dayjs'
 import { layoutAgendaCards, buildAgendaEventSegments } from '../../utils/layout-agenda-events'
-import { buildAgendaCalendarDays } from '../../components/agenda-dashboard/agenda-dashboard-shared'
+import { buildAgendaCalendarDays } from '../../utils/agenda-calendar'
 import { buildAgendaTimeline } from '../../utils/build-agenda-timeline'
-import { agendaTimeSlots } from '../../data/agenda-events'
+import { agendaTimeSlots } from '../../config/agenda-scheduling'
 import type { AgendaEvent } from '../../types/agenda-event'
 
 describe('overlapping agenda cards', () => {

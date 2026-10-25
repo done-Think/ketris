@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { User, Papel } from '@server/auth/domain/user.entity'
 import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
-import type { PropertyRepository } from '@server/properties/application/ports/property-repository.port'
+import type { AgendaPropertyLookup } from '../../../application/ports/agenda-property-lookup.port'
 import type { AgendaEvent } from '../../../domain/agenda-event.entity'
 import type { AgendaEventRepository } from '../../../application/ports/agenda-event-repository.port'
 import { CreateAgendaEventUseCase } from '../../../application/use-cases/create-agenda-event.use-case'
@@ -70,7 +70,7 @@ function deps(changes: Partial<AgendaEvent> = {}) {
     vinculoAprovadoEm: inicio,
   }
   const users = { findById: vi.fn().mockResolvedValue(agent) } as unknown as UserRepository
-  const properties = { findByTenantAndId: vi.fn() } as unknown as PropertyRepository
+  const properties = { findByTenantAndId: vi.fn() } as unknown as AgendaPropertyLookup
   return { event, agent, repository, users, properties }
 }
 
@@ -205,6 +205,7 @@ describe('Agency event recipients and internal events', () => {
         titulo: 'Changed meeting',
       }),
       { donoEmail: null, participanteEmails: [] },
+      'admin',
     )
     expect(d.repository.reschedule).not.toHaveBeenCalled()
   })
@@ -226,7 +227,12 @@ describe('Agency event recipients and internal events', () => {
     await expect(
       new RescheduleAgendaEventUseCase(d.repository).execute({ ...actor, inicio }),
     ).rejects.toMatchObject({ status: 403 })
-    await expect(new CancelAgendaEventUseCase(d.repository).execute(actor)).rejects.toMatchObject({
+    await expect(
+      new CancelAgendaEventUseCase(d.repository).execute({
+        ...actor,
+        reason: 'Cliente indisponível',
+      }),
+    ).rejects.toMatchObject({
       status: 403,
     })
     expect(d.repository.update).not.toHaveBeenCalled()
@@ -242,7 +248,7 @@ describe('Agency event recipients and internal events', () => {
         actorPapel: 'AGENT',
         actorUserId: 'agent',
         id: 'event',
-        destino: 'LEGACY_TEAM',
+        destino: 'SHARED_TEAM',
       }),
     ).rejects.toMatchObject({ status: 403 })
     expect(d.repository.update).not.toHaveBeenCalled()

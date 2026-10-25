@@ -4,8 +4,8 @@ import dayjs from 'dayjs'
 import { expect, it, vi } from 'vitest'
 
 import { AgendaWeekCalendar } from '../../components/agenda-dashboard/AgendaWeekCalendar'
-import { buildAgendaCalendarDays } from '../../components/agenda-dashboard/agenda-dashboard-shared'
-import { agendaTimeSlots } from '../../data/agenda-events'
+import { buildAgendaCalendarDays } from '../../utils/agenda-calendar'
+import { agendaTimeSlots } from '../../config/agenda-scheduling'
 import type { AgendaOrganizationItem } from '../../types/agenda-organization'
 import type { AgendaEvent } from '../../types/agenda-event'
 
@@ -81,13 +81,13 @@ it('keeps overlapping cards separately focusable and opens the correct record', 
     durationMinutes: 60,
     title: 'First event',
     property: 'Apartment',
-    propertyHref: '',
+    propertyHref: '/dashboard/properties',
     propertyId: null,
     apiKind: 'MEETING',
     participant: 'Client',
     phone: '',
     notes: '',
-    status: 'Confirmada',
+    status: 'CONFIRMED',
     tone: 'primary',
   }
   const other = { ...base, id: 'two', title: 'Second event' }
@@ -121,13 +121,13 @@ it('opens the original booking when selecting its continuation after midnight', 
     durationMinutes: 90,
     title: 'Night meeting',
     property: '',
-    propertyHref: '',
+    propertyHref: '/dashboard/properties',
     propertyId: null,
     apiKind: 'MEETING',
     participant: '',
     phone: '',
     notes: '',
-    status: 'Confirmada',
+    status: 'CONFIRMED',
     tone: 'info',
   }
   const onSelect = vi.fn()
@@ -157,13 +157,13 @@ it('keeps the whole booked duration out of the mobile free-slot suggestion', () 
     durationMinutes: 150,
     title: 'Long meeting',
     property: '',
-    propertyHref: '',
+    propertyHref: '/dashboard/properties',
     propertyId: null,
     apiKind: 'MEETING',
     participant: '',
     phone: '',
     notes: '',
-    status: 'Confirmada',
+    status: 'CONFIRMED',
     tone: 'info',
   }
   render(

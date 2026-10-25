@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -34,8 +34,9 @@ describe('CancelAgendaEventDialog', () => {
       />,
     )
 
+    await user.type(screen.getByLabelText('Motivo do cancelamento'), 'Cliente indisponível')
     await user.click(screen.getByRole('button', { name: 'Excluir' }))
-    expect(onConfirm).toHaveBeenCalledOnce()
+    await waitFor(() => expect(onConfirm).toHaveBeenCalledOnce())
 
     await user.click(screen.getByRole('button', { name: 'Cancelar' }))
     expect(onClose).toHaveBeenCalledOnce()
@@ -54,4 +55,20 @@ describe('CancelAgendaEventDialog', () => {
 
     expect(screen.getByRole('button', { name: 'Cancelar' })).toBeDisabled()
   })
+})
+
+it('exige motivo antes de confirmar um novo cancelamento', async () => {
+  const onConfirm = vi.fn()
+  render(
+    <CancelAgendaEventDialog
+      open
+      isPending={false}
+      title="Visita"
+      onClose={vi.fn()}
+      onConfirm={onConfirm}
+    />,
+  )
+  await userEvent.click(screen.getByRole('button', { name: 'Excluir' }))
+  expect(await screen.findByText('Informe o motivo do cancelamento')).toBeVisible()
+  expect(onConfirm).not.toHaveBeenCalled()
 })

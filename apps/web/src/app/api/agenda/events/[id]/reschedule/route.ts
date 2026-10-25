@@ -1,27 +1,25 @@
+import type { AgendaRouteContext } from '@server/agenda/types/route-context'
+import { agendaEventIdParamsSchema } from '@server/agenda/schemas/agenda-event.schema'
+import { parseRouteParams } from '@server/shared/http'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
-import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { agendaContainer } from '@server/agenda/container'
 import { rescheduleAgendaEventRequestSchema } from '@server/agenda/schemas/agenda-event-input.schema'
-import { toAgendaEventResponse } from '@server/agenda/schemas/agenda-event.schema'
+import { toAgendaEventResponse } from '@server/agenda/application/agenda-event-response'
 import { parseJsonBody, withErrorHandling } from '@server/shared/http'
 
-interface RouteContext {
-  params: Promise<{ id: string }>
-}
-
-export const POST = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
+export const POST = withErrorHandling(async (request: NextRequest, context: AgendaRouteContext) => {
   const actor = await requireBearerAuth(request, authContainer.tokenService)
   const body = await parseJsonBody(request, rescheduleAgendaEventRequestSchema)
 
   const event = await agendaContainer.rescheduleAgendaEventUseCase.execute({
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel as Papel,
+    actorPapel: actor.papel,
     actorUserId: actor.sub,
-    id: (await context.params).id,
+    id: (await parseRouteParams(context.params, agendaEventIdParamsSchema)).id,
     inicio: body.start,
     outsideBusinessHoursConfirmed: body.outsideBusinessHoursConfirmed,
     durationMinutes: body.durationMinutes,

@@ -18,6 +18,7 @@ const RENTER_VIEW_KEYS = [
   'kind',
   'propertyId',
   'propertyReference',
+  'propertyLabel',
   'responsibleName',
   'start',
   'status',
@@ -122,6 +123,7 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
   }
 
   function request(method: string, url: string, token: string, body?: unknown) {
+    if (url.endsWith('/cancel') && body === undefined) body = { reason: 'Cliente indisponível' }
     return new NextRequest(url, {
       method,
       ...(body ? { body: JSON.stringify(body) } : {}),
@@ -482,15 +484,18 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
       expect(asParticipant.status).toBe(200)
     })
 
-    it('ignora o tenantId enviado no corpo e usa o tenant autenticado', async () => {
+    it('rejeita tenantId forjado como campo desconhecido no corpo', async () => {
       const { status, json } = await createAs(staffToken, {
         title: 'Evento com tenant forjado',
         start: '2031-03-06T15:00:00.000Z',
         tenantId: otherAgencyTenantId,
       })
 
-      expect(status).toBe(201)
-      expect(json.event.tenantId).toBe(agencyTenantId)
+      expect(status).toBe(400)
+      expect(json.error.code).toBe('VALIDATION_ERROR')
+      expect(
+        await prisma.eventoAgenda.count({ where: { titulo: 'Evento com tenant forjado' } }),
+      ).toBe(0)
     })
 
     it('rejeita com a MESMA resposta e-mail inexistente, usuário inativo e equipe de outro tenant', async () => {

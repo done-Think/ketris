@@ -71,7 +71,8 @@ Respostas bloqueadas retornam 429 (`RATE_LIMIT_EXCEEDED`) com headers `RateLimit
 atômico e limpeza limitada de janelas expiradas. Na Vercel, a identidade usa apenas o cabeçalho de IP
 controlado pela plataforma; fora dela, ignora cabeçalhos forjáveis e usa o agrupamento local. Uma falha
 do contador de Auth retorna 503 sem liberar a tentativa. A política geral da API mantém armazenamento
-em memória. Nenhum serviço Redis/Upstash é necessário.
+em memória; sua substituição foi reservada para uma [branch de infraestrutura](../../../../docs/technical-debt/api-distributed-rate-limit.md)
+por decisão do produto na revisão de Agenda (T23). Nenhum serviço Redis/Upstash é necessário.
 
 ## Autenticação: access token + refresh token
 
@@ -230,10 +231,42 @@ suas escritas dentro da transação. Não existe endpoint para alterar eventos. 
 ciclo de vida já adotado: inativar preserva usuários e histórico; exclusão física do tenant mantém o
 comportamento de cascata existente, e referências a autores fisicamente removidos ficam nulas.
 
-## Validação de Auth em navegador
+## Agenda
 
-O job `auth-e2e` do CI aplica migrations em PostgreSQL efêmero, produz o build e executa somente
-`cypress/e2e/auth/**/*.cy.ts`. As mensagens são recebidas por um simulador SES local na porta 3101, com
+Agenda mantém seis operações de eventos (`GET/POST /agenda/events`, `GET/PATCH /agenda/events/{id}`,
+`POST /agenda/events/{id}/reschedule` e `POST /agenda/events/{id}/cancel`) e o catálogo
+`GET /agenda/properties`. Schemas e OpenAPI descrevem os contratos; os mapeadores ficam em
+`agenda/application/`, e os tipos auxiliares em `agenda/types/`.
+
+O catálogo recebe busca, página e tamanho de página (padrão 25, máximo 100). Retorna somente ID e
+rótulo dos imóveis autorizados: tenant para gestores, responsável para corretores, proprietário para
+proprietários e contratos ativos para locatários. A listagem de eventos inclui os rótulos autorizados,
+sem exigir que o calendário carregue o cadastro completo de imóveis. O formulário consulta o catálogo
+sob demanda. Locatários escolhem somente imóveis de seus contratos ativos.
+
+A resposta completa inclui nome e papel reais do criador. A visão reduzida do locatário preserva a
+omissão dos contatos, notas privadas e dados do criador. Ao resolver vínculos por e-mail, a conta
+elegível do tenant do evento tem prioridade; fora dele, somente um locatário elegível único pode ser
+vinculado. Ambiguidades são recusadas.
+
+Novos cancelamentos exigem motivo, inclusive quando solicitados por edição de status. Autor e data
+são obtidos no servidor. `agenda_event_audit` registra criação, edição, reagendamento e cancelamento
+na mesma transação da alteração, com autor e nomes dos campos alterados. Os cancelamentos e eventos
+antigos não recebem autoria ou motivos inventados. Reservas de horário usam bloqueio transacional
+por tenant/responsável e conferência de sobreposição antes da escrita.
+
+A migration `20261025010000_agenda_history_and_shared_team` renomeia `LEGACY_TEAM` para
+`SHARED_TEAM`, preservando a visibilidade compartilhada anterior. Também impede excluir fisicamente
+um responsável com eventos vinculados (`NO ACTION`); a inativação continua disponível e a exclusão
+completa do tenant mantém o ciclo de vida em cascata. Referências a autores fisicamente removidos
+ficam nulas.
+
+## Validação de Auth e Agenda em navegador
+
+O job `auth-e2e` do CI aplica migrations em PostgreSQL efêmero, produz o build e executa
+`cypress/e2e/auth/**/*.cy.ts` e `cypress/e2e/agenda/**/*.cy.ts`. O identificador do job permanece estável.
+As fixtures de Agenda exigem banco local e `KETRIS_E2E_ISOLATED_DB=1`; criam e removem somente seus
+tenants de teste. As mensagens são recebidas por um simulador SES local na porta 3101, com
 credenciais fictícias; nenhuma credencial AWS de staging é usada. O simulador está disponível somente
 no processo de testes quando `AUTH_E2E_MAILBOX_PORT` estiver configurado. A aplicação usa o endpoint
 local através de `AWS_ENDPOINT_URL_SES`. Sem esse simulador, os cenários que precisariam de envio

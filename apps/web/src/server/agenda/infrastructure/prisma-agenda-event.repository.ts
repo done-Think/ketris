@@ -1,38 +1,30 @@
+import { agendaEventInclude } from './agenda-event-query'
+import type { EventoAgendaWithLinks } from '../types/prisma-agenda-event'
+import { assertResponsibleReservation } from './agenda-responsible-reservation'
+import { recordAgendaAudit } from './agenda-audit'
+import type { AgendaCancellation } from '../types/audit'
 import type { Prisma } from '@prisma/client'
 
 import { prisma } from '@server/db/prisma'
-import { normalizeEmail } from '@server/shared/normalize-email'
 
 import type { AgendaEventRepository } from '../application/ports/agenda-event-repository.port'
-import { canLinkUserToAgendaEvent } from '../domain/agenda-access-rules'
+import { selectAgendaLinkedUser } from '../domain/select-agenda-linked-user'
+import type { AgendaEvent } from '../domain/agenda-event.entity'
 import type {
-  AgendaEvent,
   AgendaEventChanges,
   AgendaEventLinks,
   AgendaEventListFilters,
   AgendaEventReschedule,
   AgendaReadScope,
   NewAgendaEvent,
-} from '../domain/agenda-event.entity'
+} from '../types/agenda-event'
 import { AgendaEventUserLinkUnavailableError } from '../domain/errors'
 import { assertVisitReservation, lockAgendaEvent } from './agenda-visit-reservation'
-
-const linkedUserSelect = { id: true, nome: true, email: true } as const
-
-const agendaEventInclude = {
-  responsavel: { select: { nome: true } },
-  donoUsuario: { select: linkedUserSelect },
-  participantes: {
-    select: { usuario: { select: linkedUserSelect } },
-    orderBy: { createdAt: 'asc' },
-  },
-} satisfies Prisma.EventoAgendaInclude
-
-type EventoAgendaWithLinks = Prisma.EventoAgendaGetPayload<{ include: typeof agendaEventInclude }>
 
 export class PrismaAgendaEventRepository implements AgendaEventRepository {
   create(event: NewAgendaEvent, links?: AgendaEventLinks): Promise<AgendaEvent> {
     return prisma.$transaction(async (transaction) => {
+      await assertResponsibleReservation(transaction, event)
       await assertVisitReservation(transaction, {
         ...event,
         imovelId: event.imovelId ?? null,
@@ -65,6 +57,12 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
         include: agendaEventInclude,
       })
 
+      await recordAgendaAudit(transaction, {
+        tenantId: created.tenantId,
+        eventId: created.id,
+        actorUserId: event.criadoPorId,
+        action: 'CREATED',
+      })
       return mapAgendaEvent(created)
     })
   }
@@ -105,6 +103,7 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
     id: string,
     changes: AgendaEventChanges,
     links?: AgendaEventLinks,
+    actorUserId?: string,
   ): Promise<AgendaEvent | null> {
     return prisma.$transaction(async (transaction) => {
       await lockAgendaEvent(transaction, tenantId, id)
@@ -113,6 +112,7 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
         select: {
           id: true,
           tenantId: true,
+          responsavelId: true,
           imovelId: true,
           tipo: true,
           status: true,
@@ -123,6 +123,21 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
 
       if (!existing) {
         return null
+      }
+
+      if (
+        changes.inicio !== undefined ||
+        changes.fim !== undefined ||
+        changes.responsavelId !== undefined ||
+        (existing.status === 'CANCELLED' && changes.status && changes.status !== 'CANCELLED')
+      ) {
+        await assertResponsibleReservation(transaction, {
+          ...existing,
+          responsavelId: changes.responsavelId ?? existing.responsavelId,
+          inicio: changes.inicio ?? existing.inicio,
+          fim: changes.fim ?? existing.fim,
+          status: changes.status ?? existing.status,
+        })
       }
 
       await assertVisitReservation(transaction, {
@@ -149,7 +164,7 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
       }
 
       const updated = await transaction.eventoAgenda.update({
-        where: { id },
+        where: { id, tenantId },
         data: {
           titulo: changes.titulo,
           inicio: changes.inicio,
@@ -159,6 +174,13 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
           interno: changes.interno,
           responsavelId: changes.responsavelId,
           status: changes.status,
+          ...(changes.status === 'CANCELLED'
+            ? {
+                canceladoEm: new Date(),
+                canceladoPorId: actorUserId ?? null,
+                motivoCancelamento: changes.motivoCancelamento,
+              }
+            : {}),
           imovelId: changes.imovelId,
           referenciaImovelLivre: changes.referenciaImovelLivre,
           participanteNome: changes.participanteNome,
@@ -174,6 +196,21 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
         include: agendaEventInclude,
       })
 
+      const changedFields = [
+        ...Object.entries(changes)
+          .filter(([, value]) => value !== undefined)
+          .map(([field]) => agendaChangeFieldNames[field] ?? field),
+        ...(links?.donoEmail !== undefined ? ['ownerEmail'] : []),
+        ...(links?.participanteEmails !== undefined ? ['participantEmails'] : []),
+      ]
+      await recordAgendaAudit(transaction, {
+        tenantId,
+        eventId: id,
+        actorUserId,
+        action: changes.status === 'CANCELLED' ? 'CANCELLED' : 'UPDATED',
+        changedFields,
+        cancellationReason: changes.status === 'CANCELLED' ? changes.motivoCancelamento : null,
+      })
       return mapAgendaEvent(updated)
     })
   }
@@ -182,6 +219,7 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
     tenantId: string,
     id: string,
     reschedule: AgendaEventReschedule,
+    actorUserId?: string,
   ): Promise<AgendaEvent | null> {
     return prisma.$transaction(async (transaction) => {
       await lockAgendaEvent(transaction, tenantId, id)
@@ -190,6 +228,7 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
         select: {
           id: true,
           tenantId: true,
+          responsavelId: true,
           imovelId: true,
           tipo: true,
           status: true,
@@ -202,6 +241,11 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
         return null
       }
 
+      await assertResponsibleReservation(transaction, {
+        ...existing,
+        ...reschedule,
+        status: 'CONFIRMED',
+      })
       await assertVisitReservation(transaction, { ...existing, ...reschedule, status: 'CONFIRMED' })
 
       const updated = await transaction.eventoAgenda.update({
@@ -214,12 +258,24 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
         include: agendaEventInclude,
       })
 
+      await recordAgendaAudit(transaction, {
+        tenantId,
+        eventId: id,
+        actorUserId,
+        action: 'RESCHEDULED',
+        changedFields: ['start', 'end', 'status'],
+      })
       return mapAgendaEvent(updated)
     })
   }
 
-  cancel(tenantId: string, id: string): Promise<AgendaEvent | null> {
+  cancel(
+    tenantId: string,
+    id: string,
+    cancellation: AgendaCancellation,
+  ): Promise<AgendaEvent | null> {
     return prisma.$transaction(async (transaction) => {
+      await lockAgendaEvent(transaction, tenantId, id)
       const existing = await transaction.eventoAgenda.findFirst({
         where: { tenantId, id },
         select: { id: true },
@@ -231,10 +287,23 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
 
       const updated = await transaction.eventoAgenda.update({
         where: { id },
-        data: { status: 'CANCELLED' },
+        data: {
+          status: 'CANCELLED',
+          canceladoEm: new Date(),
+          canceladoPorId: cancellation.actorUserId ?? null,
+          motivoCancelamento: cancellation.reason,
+        },
         include: agendaEventInclude,
       })
 
+      await recordAgendaAudit(transaction, {
+        tenantId,
+        eventId: id,
+        actorUserId: cancellation.actorUserId,
+        action: 'CANCELLED',
+        changedFields: ['status', 'cancellationReason'],
+        cancellationReason: cancellation.reason,
+      })
       return mapAgendaEvent(updated)
     })
   }
@@ -271,7 +340,7 @@ function readScopeWhere(scope: AgendaReadScope): Prisma.EventoAgendaWhereInput {
     return {
       tenantId: scope.tenantId,
       OR: [
-        { destino: 'LEGACY_TEAM', interno: false },
+        { destino: 'SHARED_TEAM', interno: false },
         { destino: 'ALL_AGENTS' },
         { destino: 'ASSIGNED_AGENT', responsavelId: scope.userId },
       ],
@@ -301,10 +370,6 @@ function readScopeWhere(scope: AgendaReadScope): Prisma.EventoAgendaWhereInput {
   }
 }
 
-/**
- * Resolves the link e-mails to user ids inside the caller's transaction and rejects the whole
- * operation on the first e-mail that can't be linked, so the event is never partially written.
- */
 async function resolveLinkedUserIds(
   transaction: Prisma.TransactionClient,
   eventTenantId: string,
@@ -332,13 +397,12 @@ async function resolveLinkedUserIds(
       vinculoAprovadoEm: true,
     },
   })
-  const usersByEmail = new Map(users.map((user) => [normalizeEmail(user.email), user]))
   const linkedUserIds = new Map<string, string>()
 
   for (const email of emails) {
-    const user = usersByEmail.get(email)
+    const user = selectAgendaLinkedUser(users, email, eventTenantId)
 
-    if (!user || !canLinkUserToAgendaEvent(user, eventTenantId)) {
+    if (!user) {
       throw new AgendaEventUserLinkUnavailableError(email)
     }
 
@@ -364,6 +428,7 @@ function mapAgendaEvent(event: EventoAgendaWithLinks): AgendaEvent {
     responsavelId: event.responsavelId,
     responsavelNome: event.responsavel.nome,
     criadoPorId: event.criadoPorId,
+    criadoPor: event.criadoPor,
     donoUsuarioId: event.donoUsuarioId,
     dono: event.donoUsuario,
     participantes: event.participantes.map((participante) => participante.usuario),
@@ -379,7 +444,27 @@ function mapAgendaEvent(event: EventoAgendaWithLinks): AgendaEvent {
     participanteNome: event.participanteNome,
     participanteTelefone: event.participanteTelefone,
     notas: event.notas,
+    canceladoEm: event.canceladoEm,
+    canceladoPorId: event.canceladoPorId,
+    motivoCancelamento: event.motivoCancelamento,
     createdAt: event.createdAt,
     updatedAt: event.updatedAt,
   }
+}
+
+const agendaChangeFieldNames: Record<string, string> = {
+  inicio: 'start',
+  fim: 'end',
+  destino: 'audience',
+  interno: 'internal',
+  responsavelId: 'responsibleId',
+  titulo: 'title',
+  tipo: 'kind',
+  status: 'status',
+  imovelId: 'propertyId',
+  referenciaImovelLivre: 'propertyReference',
+  participanteNome: 'participantName',
+  participanteTelefone: 'participantPhone',
+  notas: 'notes',
+  motivoCancelamento: 'cancellationReason',
 }

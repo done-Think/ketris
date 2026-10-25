@@ -5,7 +5,7 @@ import {
   listAgendaEventsQuerySchema,
   rescheduleAgendaEventRequestSchema,
   updateAgendaEventRequestSchema,
-} from './agenda-event-input.schema'
+} from '../../schemas/agenda-event-input.schema'
 
 describe('createAgendaEventRequestSchema', () => {
   const base = {

@@ -1,13 +1,7 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { AgendaManageActor } from '../types/manage-actor'
 
 import type { AgendaEvent } from '../domain/agenda-event.entity'
 import type { AgendaEventRepository } from './ports/agenda-event-repository.port'
-
-export interface AgendaManageActor {
-  actorTenantId: string
-  actorUserId?: string
-  actorPapel: Papel
-}
 
 export function findManageableAgendaEvent(
   repository: Pick<AgendaEventRepository, 'findByScopeAndId' | 'findByTenantAndId'>,

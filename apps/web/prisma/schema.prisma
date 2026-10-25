@@ -168,6 +168,8 @@ model Usuario {
   leadsResponsavel         Lead[]                             @relation("LeadResponsavel")
   perfilPublico            PerfilPublicoCorretor?
   destaquesRecebidos       PerfilPublicoImobiliariaDestaque[]
+  agendaAuditEvents        AgendaEventAudit[]
+  eventosAgendaCancelados  EventoAgenda[]                     @relation("EventoAgendaCanceladoPor")
 
   @@unique([tenantId, email])
   @@unique([id, tenantId])
@@ -813,9 +815,33 @@ enum TipoEventoAgenda {
 // participanteNome/participanteTelefone são apenas dados de exibição para a equipe e não
 // identificam nem autorizam nenhum usuário.
 enum DestinoEventoAgenda {
-  LEGACY_TEAM
+  SHARED_TEAM
   ALL_AGENTS
   ASSIGNED_AGENT
+}
+
+enum AgendaAuditAction {
+  CREATED
+  UPDATED
+  RESCHEDULED
+  CANCELLED
+}
+
+model AgendaEventAudit {
+  id                 String            @id @default(cuid())
+  tenantId           String
+  eventId            String
+  actorUserId        String?
+  action             AgendaAuditAction
+  changedFields      String[]          @default([])
+  cancellationReason String?
+  createdAt          DateTime          @default(now())
+  event              EventoAgenda      @relation(fields: [eventId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  actor              Usuario?          @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, eventId, createdAt])
+  @@index([actorUserId])
+  @@map("agenda_event_audit")
 }
 
 model EventoAgenda {
@@ -828,7 +854,7 @@ model EventoAgenda {
   referenciaImovelLivre String?
   titulo                String
   tipo                  TipoEventoAgenda?
-  destino               DestinoEventoAgenda @default(LEGACY_TEAM)
+  destino               DestinoEventoAgenda @default(SHARED_TEAM)
   interno               Boolean             @default(false)
   status                StatusEventoAgenda  @default(CONFIRMED)
   inicio                DateTime
@@ -836,17 +862,23 @@ model EventoAgenda {
   participanteNome      String
   participanteTelefone  String
   notas                 String?
+  canceladoEm           DateTime?
+  canceladoPorId        String?
+  motivoCancelamento    String?
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
 
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  responsavel Usuario  @relation("EventoAgendaResponsavel", fields: [responsavelId], references: [id], onDelete: Cascade)
+  responsavel Usuario  @relation("EventoAgendaResponsavel", fields: [responsavelId], references: [id], onDelete: NoAction)
   criadoPor   Usuario? @relation("EventoAgendaCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
   donoUsuario Usuario? @relation("EventoAgendaDono", fields: [donoUsuarioId], references: [id], onDelete: SetNull)
   imovel      Imovel?  @relation(fields: [imovelId], references: [id], onDelete: SetNull)
 
+  canceladoPor  Usuario?                   @relation("EventoAgendaCanceladoPor", fields: [canceladoPorId], references: [id], onDelete: SetNull)
+  auditEvents   AgendaEventAudit[]
   participantes EventoAgendaParticipante[]
 
+  @@unique([id, tenantId])
   @@index([tenantId])
   @@index([tenantId, inicio])
   @@index([responsavelId])
