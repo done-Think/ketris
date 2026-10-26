@@ -2,11 +2,7 @@ import { Prisma } from '@prisma/client'
 
 import { prisma } from '@server/db/prisma'
 
-import type {
-  AgencyActivity,
-  AgencyBrokerSale,
-  AgencyTopBroker,
-} from '../domain/agency-overview.entity'
+import type { AgencyActivity, AgencyBrokerSale, AgencyTopBroker } from '../types/agency-overview'
 import type { AgencyOverviewRepository } from '../application/ports/agency-overview-repository.port'
 import {
   currentMonthRange,
@@ -62,8 +58,6 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
     })
   }
 
-  // Mirrors FinancialSummary.monthlyReceivable (A_RECEBER, PENDENTE or PAGA, due in the month) so the
-  // revenue KPI is compared against the same metric one month earlier.
   async getMonthlyReceivablePreviousMonth(tenantId: string, referenceDate: Date): Promise<number> {
     const { start, end } = previousMonthDueDateRange(referenceDate)
     const aggregate = await prisma.cobranca.aggregate({
@@ -88,9 +82,6 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
     return listedCount > 0 ? Math.round((occupiedCount / listedCount) * 100) : 0
   }
 
-  // Ranks in the database (sum and count per broker, top 5) instead of loading every active
-  // contract; only the recent sales of those 5 brokers are fetched. Ties go to the broker with the
-  // most recent activation.
   async getTopBrokers(tenantId: string): Promise<AgencyTopBroker[]> {
     const ranking = await prisma.$queryRaw<
       { brokerId: string; salesCount: number; revenueTotal: Prisma.Decimal | number | string }[]

@@ -1,4 +1,4 @@
-import type { AgencyActivity, AgencyTopBroker } from '../../domain/agency-overview.entity'
+import type { AgencyActivity, AgencyTopBroker } from '../../types/agency-overview'
 
 export interface AgencyOverviewRepository {
   getPortfolioCount(tenantId: string): Promise<number>
