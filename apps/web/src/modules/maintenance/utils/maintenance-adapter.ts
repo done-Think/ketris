@@ -108,7 +108,6 @@ export function mapMaintenanceTicketToFormValues(
 ): MaintenanceCreateTicketFormValues {
   return {
     contractId: ticket.contractId ?? '',
-    propertyId: ticket.propertyId,
     category: ticket.category,
     priority: mapMaintenancePriorityFromApi(ticket.priority),
     title: ticket.title,
@@ -121,7 +120,6 @@ export function buildCreateMaintenanceTicketPayload(
 ): CreateMaintenanceTicketPayload {
   return {
     contractId: values.contractId ?? '',
-    propertyId: values.propertyId,
     // The form schema only accepts category codes.
     category: values.category as ApiMaintenanceTicketCategory,
     priority: mapMaintenancePriorityToApi(values.priority),
@@ -135,7 +133,6 @@ export function buildUpdateMaintenanceTicketPayload(
 ): UpdateMaintenanceTicketPayload {
   return {
     contractId: values.contractId || undefined,
-    propertyId: values.propertyId,
     // The form schema only accepts category codes.
     category: values.category as ApiMaintenanceTicketCategory,
     priority: mapMaintenancePriorityToApi(values.priority),

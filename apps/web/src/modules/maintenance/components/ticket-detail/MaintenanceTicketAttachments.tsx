@@ -2,7 +2,7 @@
 
 import { Box, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
-import { brand, radius, surface } from '@shared/theme/tokens'
+import { alpha, brand, radius, surface } from '@shared/theme/tokens'
 import type { MaintenanceTicketSectionProps } from '../../types/maintenance-detail'
 import { cardSx, cardTitleSx } from './styles'
 
@@ -34,7 +34,7 @@ export function MaintenanceTicketAttachments({ ticket }: MaintenanceTicketSectio
                   inset: 'auto 0 0',
                   px: 0.8,
                   py: 0.35,
-                  bgcolor: 'rgba(13,15,20,.62)',
+                  bgcolor: alpha.graphite[62],
                   color: surface.lightText,
                   fontSize: 10,
                 }}

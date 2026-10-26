@@ -363,7 +363,7 @@ describe('MaintenanceDashboardPage', () => {
 
     await waitFor(() =>
       expect(createMutation.mutateAsync).toHaveBeenCalledWith(
-        expect.objectContaining({ propertyId: 'p1', category: 'PLUMBING' }),
+        expect.objectContaining({ contractId: 'c-p1', category: 'PLUMBING' }),
       ),
     )
     await waitFor(() => {

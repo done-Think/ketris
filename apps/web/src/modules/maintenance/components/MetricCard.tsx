@@ -3,17 +3,32 @@ import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined'
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded'
 import { Box, Stack, Typography } from '@mui/material'
 
-import { brand, radius, shadows, surface } from '@shared/theme/tokens'
+import {
+  brand,
+  maintenanceColor,
+  radius,
+  shadows,
+  supportColor,
+  surface,
+} from '@shared/theme/tokens'
 
 import type { MetricCardProps } from '../types/maintenance'
 
 export function MetricCard({ label, value, tone }: MetricCardProps) {
   const config =
     tone === 'open'
-      ? { Icon: FolderOpenOutlinedIcon, bg: '#E5F3FF', color: '#2877E8' }
+      ? {
+          Icon: FolderOpenOutlinedIcon,
+          bg: supportColor.infoSoft,
+          color: maintenanceColor.infoText,
+        }
       : tone === 'urgent'
-        ? { Icon: WarningAmberRoundedIcon, bg: '#FDEBEC', color: brand.semantic.error }
-        : { Icon: AccessTimeOutlinedIcon, bg: '#FFF5D8', color: '#D98900' }
+        ? { Icon: WarningAmberRoundedIcon, bg: supportColor.errorSoft, color: brand.semantic.error }
+        : {
+            Icon: AccessTimeOutlinedIcon,
+            bg: supportColor.warningSoft,
+            color: maintenanceColor.warningText,
+          }
   return (
     <Stack
       direction={{ xs: 'column', sm: 'row' }}

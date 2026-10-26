@@ -10,11 +10,20 @@ export type MaintenancePriority = 'urgent' | 'high' | 'normal'
 
 export type MaintenanceCreateTicketFormValues = {
   contractId?: string
-  propertyId: string
   category: string
   priority: MaintenancePriority
   title: string
   description: string
+}
+
+export interface MaintenanceTicketFormProps {
+  mode: 'create' | 'edit'
+  initialValues?: MaintenanceCreateTicketFormValues | null
+  draftKey: string | null
+  submitting: boolean
+  onSubmit: (values: MaintenanceCreateTicketFormValues) => Promise<boolean>
+  onClose: () => void
+  onDiscard: () => void
 }
 
 export type MaintenanceCreateTicketDialogProps = {
@@ -45,6 +54,28 @@ export interface MaintenanceTicket {
 export interface MaintenanceMetric {
   label: 'open' | 'urgent' | 'averageResolution'
   value: string
+}
+
+export interface MaintenanceDashboardFilters {
+  status: MaintenanceFilter['value']
+  search: string
+  propertyId: string
+  category: ApiMaintenanceTicketCategory | 'all'
+  archived: boolean
+  page: number
+  rowsPerPage: number
+}
+
+export type MaintenanceDashboardDialog =
+  | { kind: 'create' }
+  | { kind: 'edit'; ticketId: string }
+  | { kind: 'delete'; ticketId: string }
+  | { kind: 'filters' }
+  | { kind: 'links' }
+
+export interface MaintenanceTicketMenu {
+  anchor: HTMLElement
+  ticketId: string
 }
 
 export interface MaintenanceFilter {
@@ -86,6 +117,13 @@ export interface MaintenanceLinksDialogProps {
   onClose: () => void
 }
 
+export interface MaintenanceLinksFormValues {
+  contractId: string
+  ownerId: string
+  partyId: string
+  renterId: string
+}
+
 export interface MaintenanceWorkflowControlsProps {
   ticket: ApiMaintenanceTicket
 }
@@ -112,3 +150,27 @@ export interface MaintenanceWorkflowControl {
 }
 
 export type MaintenanceWorkflowAction = Exclude<MaintenanceAction['action'], 'schedule'>
+
+export interface MaintenanceWorkflowRequirements {
+  reason: boolean
+  responsible: boolean
+  contract: boolean
+  provider: boolean
+}
+
+export interface MaintenanceWorkflowFormValues {
+  reason: string
+  responsibleId: string
+  contractId: string
+  status: 'ABERTO' | 'EM_ANDAMENTO'
+  providerName: string
+  providerPhone: string
+  providerEmail: string
+  providerNotes: string
+}
+
+export interface MaintenanceWorkflowFormProps {
+  ticket: ApiMaintenanceTicket
+  selection: MaintenanceWorkflowSelection
+  onDone: () => void
+}

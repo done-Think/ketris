@@ -345,7 +345,11 @@
         "REJEITADA": "Rejected"
       },
       "finish": "Finish ticket",
-      "finishConfirmation": "Do you confirm that the problem is resolved? The ticket will be marked as resolved and its history will be preserved."
+      "finishConfirmation": "Do you confirm that the problem is resolved? The ticket will be marked as resolved and its history will be preserved.",
+      "errors": {
+        "required": "Required field",
+        "emailInvalid": "Enter a valid email"
+      }
     },
     "links": {
       "title": "Regularize links",
@@ -357,7 +361,12 @@
       "back": "Back",
       "save": "Save links",
       "success": "Links updated.",
-      "error": "Could not update links."
+      "error": "Could not update links.",
+      "errors": {
+        "contractRequired": "Select the contract",
+        "renterRequired": "Select the renter account",
+        "nothingToLink": "Choose the owner or the renter party"
+      }
     },
     "scheduleNotSet": "Not scheduled yet",
     "empty": "No tickets found.",

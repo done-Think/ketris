@@ -14,7 +14,7 @@ export function readMaintenanceDraft(key: string | null): MaintenanceCreateTicke
     if (!data || typeof data !== 'object') return null
     const draft = data as Record<string, unknown>
     if (
-      !['contractId', 'propertyId', 'category', 'title', 'description'].every(
+      !['contractId', 'category', 'title', 'description'].every(
         (field) => typeof draft[field] === 'string',
       ) ||
       !['normal', 'high', 'urgent'].includes(String(draft.priority))
@@ -22,7 +22,6 @@ export function readMaintenanceDraft(key: string | null): MaintenanceCreateTicke
       return null
     return {
       contractId: String(draft.contractId),
-      propertyId: String(draft.propertyId),
       category: normalizeDraftCategory(String(draft.category)),
       title: String(draft.title),
       description: String(draft.description),

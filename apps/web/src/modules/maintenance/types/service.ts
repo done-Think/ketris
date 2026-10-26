@@ -108,7 +108,6 @@ export interface MaintenanceTicketListFilters {
 export interface CreateMaintenanceTicketPayload {
   scheduledAt?: string | null
   contractId: string
-  propertyId: string
   category: ApiMaintenanceTicketCategory
   priority: ApiMaintenanceTicketPriority
   title: string

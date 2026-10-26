@@ -1,24 +1,26 @@
 'use client'
 
-import type { MaintenanceTicketDetailPageProps } from '../types/maintenance'
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
 import { Box, Button, Chip, Stack, Typography } from '@mui/material'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
+
 import { Link } from '@/i18n/navigation'
 import { brand } from '@shared/theme/tokens'
+
 import { useMaintenanceTicket } from '../hooks/use-maintenance'
-import { MaintenanceWorkflowControls } from './MaintenanceWorkflowControls'
-import { MaintenanceSchedule } from './MaintenanceSchedule'
+import type { MaintenanceTicketDetailPageProps } from '../types/maintenance'
 import {
   mapMaintenancePriorityFromApi,
   mapMaintenanceStatusFromApi,
 } from '../utils/maintenance-adapter'
 import { statusStyles, priorityColors } from '../utils/maintenance-presentation'
-import { MaintenanceTicketDescription } from './ticket-detail/MaintenanceTicketDescription'
+import { MaintenanceSchedule } from './MaintenanceSchedule'
+import { MaintenanceWorkflowControls } from './MaintenanceWorkflowControls'
 import { MaintenanceTicketAttachments } from './ticket-detail/MaintenanceTicketAttachments'
-import { MaintenanceTicketTimeline } from './ticket-detail/MaintenanceTicketTimeline'
+import { MaintenanceTicketDescription } from './ticket-detail/MaintenanceTicketDescription'
 import { MaintenanceTicketInformation } from './ticket-detail/MaintenanceTicketInformation'
+import { MaintenanceTicketTimeline } from './ticket-detail/MaintenanceTicketTimeline'
 
 export function MaintenanceTicketDetailPage({ ticketId }: MaintenanceTicketDetailPageProps) {
   const t = useTranslations('dashboard.maintenance')

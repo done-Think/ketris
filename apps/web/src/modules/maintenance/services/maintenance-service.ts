@@ -1,6 +1,4 @@
-import type { MaintenanceUserLinkInput } from '../types/service'
 import { BaseService } from '@shared/lib/api/base-service'
-import type { MaintenanceAction, MaintenanceOptions } from '../types/service'
 
 import type {
   ApiMaintenanceActivity,
@@ -8,10 +6,13 @@ import type {
   ApiMaintenanceTicket,
   CreateMaintenanceTicketPayload,
   ListMaintenanceTicketsResponse,
+  MaintenanceAction,
   MaintenanceActivitiesResponse,
   MaintenanceActivityResponse,
+  MaintenanceOptions,
   MaintenanceTicketListFilters,
   MaintenanceTicketResponse,
+  MaintenanceUserLinkInput,
   UpdateMaintenanceTicketPayload,
   UploadMaintenanceTicketAttachmentResponse,
 } from '../types/service'

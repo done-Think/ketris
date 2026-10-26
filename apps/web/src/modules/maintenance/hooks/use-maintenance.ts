@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
-import type { MaintenanceAction } from '../types/service'
 
 import { maintenanceService } from '../services/maintenance-service'
 import type { MaintenanceCreateTicketFormValues } from '../types/maintenance'
 import type {
+  MaintenanceAction,
   MaintenanceTicketListFilters,
+  MaintenanceUserLinkInput,
   UpdateMaintenanceTicketVariables,
 } from '../types/service'
 import { buildCreateMaintenanceTicketPayload } from '../utils/maintenance-adapter'
@@ -14,6 +15,7 @@ function normalizeFilters(filters: MaintenanceTicketListFilters) {
   return {
     status: filters.status ?? null,
     priority: filters.priority ?? null,
+    category: filters.category ?? null,
     propertyId: filters.propertyId ?? null,
     search: filters.search ?? null,
     page: filters.page ?? null,
@@ -175,5 +177,17 @@ export function useMaintenanceAction(tenantId: string | undefined, ticketId: str
     mutationFn: (action: MaintenanceAction) => maintenanceService.act(ticketId, action),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: maintenanceQueryKeys.tenant(tenantId ?? '') }),
+  })
+}
+
+export function useLinkMaintenanceUsers() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: MaintenanceUserLinkInput) => maintenanceService.linkUsers(input),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['maintenance-options'] }),
+        queryClient.invalidateQueries({ queryKey: maintenanceQueryKeys.all }),
+      ]),
   })
 }

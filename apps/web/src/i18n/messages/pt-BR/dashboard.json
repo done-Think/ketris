@@ -345,7 +345,11 @@
         "REJEITADA": "Rejeitada"
       },
       "finish": "Finalizar chamado",
-      "finishConfirmation": "Você confirma que o problema foi resolvido? O chamado será marcado como resolvido e o histórico será preservado."
+      "finishConfirmation": "Você confirma que o problema foi resolvido? O chamado será marcado como resolvido e o histórico será preservado.",
+      "errors": {
+        "required": "Campo obrigatório",
+        "emailInvalid": "Informe um e-mail válido"
+      }
     },
     "links": {
       "title": "Regularizar vínculos",
@@ -357,7 +361,12 @@
       "back": "Voltar",
       "save": "Salvar vínculos",
       "success": "Vínculos atualizados.",
-      "error": "Não foi possível atualizar os vínculos."
+      "error": "Não foi possível atualizar os vínculos.",
+      "errors": {
+        "contractRequired": "Selecione o contrato",
+        "renterRequired": "Selecione a conta do locatário",
+        "nothingToLink": "Escolha o proprietário ou a parte locatária"
+      }
     },
     "scheduleNotSet": "Ainda não agendado",
     "empty": "Nenhum chamado encontrado.",

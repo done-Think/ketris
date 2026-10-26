@@ -43,45 +43,32 @@ export function MaintenanceDashboardPage() {
   const {
     t,
     session,
-    activeFilter,
-    search,
+    filters,
     setSearch,
-    propertyFilter,
-    categoryFilter,
-    currentPage,
-    setCurrentPage,
-    rowsPerPage,
-    setRowsPerPage,
-    isCreateDialogOpen,
-    setIsCreateDialogOpen,
-    isFiltersDialogOpen,
-    setIsFiltersDialogOpen,
-    editingTicketId,
-    setEditingTicketId,
-    deletingTicketId,
-    setDeletingTicketId,
-    menuAnchor,
-    setMenuAnchor,
-    menuTicketId,
-    setMenuTicketId,
-    archived,
+    setActiveFilter,
+    setPropertyFilter,
+    setCategoryFilter,
     setArchived,
-    linksOpen,
-    setLinksOpen,
+    setRowsPerPage,
+    setCurrentPage,
+    dialog,
+    openDialog,
+    closeDialog,
+    menu,
+    openMenu,
+    closeMenu,
+    editingTicketId,
     properties,
     pagedTickets,
     totalCount,
     metrics,
     getFilterCount,
-    handleActiveFilterChange,
-    handlePropertyFilterChange,
-    handleCategoryFilterChange,
     handleCreateTicket,
-    closeMenu,
     initialValues,
     handleSaveTicket,
     handleDeleteTicket,
   } = useMaintenanceDashboard()
+  const menuTicket = pagedTickets.find((ticket) => ticket.id === menu?.ticketId)
   const headerActions = (
     <Stack
       direction={{ xs: 'column', sm: 'row' }}
@@ -95,11 +82,8 @@ export function MaintenanceDashboardPage() {
       }}
     >
       <TextField
-        value={search}
-        onChange={(event) => {
-          setSearch(event.target.value)
-          setCurrentPage(1)
-        }}
+        value={filters.search}
+        onChange={(event) => setSearch(event.target.value)}
         placeholder={t('search')}
         size="small"
         sx={compactFieldSx}
@@ -115,8 +99,8 @@ export function MaintenanceDashboardPage() {
       />
       <TextField
         select
-        value={propertyFilter}
-        onChange={(event) => handlePropertyFilterChange(event.target.value)}
+        value={filters.propertyId}
+        onChange={(event) => setPropertyFilter(event.target.value)}
         size="small"
         sx={{
           ...compactFieldSx,
@@ -139,9 +123,9 @@ export function MaintenanceDashboardPage() {
       </TextField>
       <TextField
         select
-        value={categoryFilter}
+        value={filters.category}
         onChange={(event) =>
-          handleCategoryFilterChange(event.target.value as ApiMaintenanceTicketCategory | 'all')
+          setCategoryFilter(event.target.value as ApiMaintenanceTicketCategory | 'all')
         }
         size="small"
         aria-label={t('filterDialog.category')}
@@ -161,7 +145,7 @@ export function MaintenanceDashboardPage() {
       <Button
         variant="outlined"
         startIcon={<FilterListRoundedIcon sx={{ fontSize: 16 }} />}
-        onClick={() => setIsFiltersDialogOpen(true)}
+        onClick={() => openDialog({ kind: 'filters' })}
         aria-label={t('filterDialog.open')}
         sx={{
           display: { xs: 'inline-flex', md: 'none' },
@@ -177,24 +161,21 @@ export function MaintenanceDashboardPage() {
       </Button>
       <DashboardHeaderActionButton
         startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
-        onClick={() => setIsCreateDialogOpen(true)}
+        onClick={() => openDialog({ kind: 'create' })}
       >
         {t('newTicket')}
       </DashboardHeaderActionButton>
       {session?.role === 'OWNER' && (
         <>
-          <Button startIcon={<LinkRoundedIcon />} onClick={() => setLinksOpen(true)}>
+          <Button startIcon={<LinkRoundedIcon />} onClick={() => openDialog({ kind: 'links' })}>
             {t('links.title')}
           </Button>
           <ToggleButtonGroup
             size="small"
             exclusive
-            value={archived ? 'archived' : 'active'}
+            value={filters.archived ? 'archived' : 'active'}
             onChange={(_, value) => {
-              if (value) {
-                setArchived(value === 'archived')
-                setCurrentPage(1)
-              }
+              if (value) setArchived(value === 'archived')
             }}
           >
             <ToggleButton value="active">{t('activeTickets')}</ToggleButton>
@@ -223,9 +204,9 @@ export function MaintenanceDashboardPage() {
           }}
         />
         <MaintenanceStatusFilters
-          activeFilter={activeFilter}
+          activeFilter={filters.status}
           getFilterCount={getFilterCount}
-          onChange={handleActiveFilterChange}
+          onChange={setActiveFilter}
           isDesktop
         />
         <Box
@@ -250,35 +231,26 @@ export function MaintenanceDashboardPage() {
         <MaintenanceTicketsTable
           pagedTickets={pagedTickets}
           totalCount={totalCount}
-          currentPage={currentPage}
-          rowsPerPage={rowsPerPage}
+          currentPage={filters.page}
+          rowsPerPage={filters.rowsPerPage}
           setCurrentPage={setCurrentPage}
-          onRowsPerPageChange={(rows) => {
-            setRowsPerPage(rows)
-            setCurrentPage(1)
-          }}
-          onOpenMenu={(anchor, id) => {
-            setMenuAnchor(anchor)
-            setMenuTicketId(id)
-          }}
+          onRowsPerPageChange={setRowsPerPage}
+          onOpenMenu={openMenu}
         />
       </Stack>
       <MaintenanceCreateTicketDialog
-        open={isCreateDialogOpen}
-        onClose={() => {
-          setIsCreateDialogOpen(false)
-          setEditingTicketId(null)
-        }}
+        open={dialog?.kind === 'create' || dialog?.kind === 'edit'}
+        onClose={closeDialog}
         onCreate={editingTicketId ? handleSaveTicket : handleCreateTicket}
         initialValues={initialValues}
         mode={editingTicketId ? 'edit' : 'create'}
       />
       {session?.role === 'OWNER' && (
-        <MaintenanceLinksDialog open={linksOpen} onClose={() => setLinksOpen(false)} />
+        <MaintenanceLinksDialog open={dialog?.kind === 'links'} onClose={closeDialog} />
       )}
       <Dialog
-        open={isFiltersDialogOpen}
-        onClose={() => setIsFiltersDialogOpen(false)}
+        open={dialog?.kind === 'filters'}
+        onClose={closeDialog}
         fullWidth
         maxWidth="xs"
         aria-labelledby="maintenance-filters-title"
@@ -296,10 +268,7 @@ export function MaintenanceDashboardPage() {
           sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}
         >
           {t('filterDialog.title')}
-          <IconButton
-            aria-label={t('filterDialog.close')}
-            onClick={() => setIsFiltersDialogOpen(false)}
-          >
+          <IconButton aria-label={t('filterDialog.close')} onClick={closeDialog}>
             <CloseRoundedIcon />
           </IconButton>
         </DialogTitle>
@@ -308,8 +277,8 @@ export function MaintenanceDashboardPage() {
             <TextField
               select
               label={t('filterDialog.property')}
-              value={propertyFilter}
-              onChange={(event) => handlePropertyFilterChange(event.target.value)}
+              value={filters.propertyId}
+              onChange={(event) => setPropertyFilter(event.target.value)}
               fullWidth
               sx={compactFieldSx}
             >
@@ -323,11 +292,9 @@ export function MaintenanceDashboardPage() {
             <TextField
               select
               label={t('filterDialog.category')}
-              value={categoryFilter}
+              value={filters.category}
               onChange={(event) =>
-                handleCategoryFilterChange(
-                  event.target.value as ApiMaintenanceTicketCategory | 'all',
-                )
+                setCategoryFilter(event.target.value as ApiMaintenanceTicketCategory | 'all')
               }
               fullWidth
               sx={compactFieldSx}
@@ -340,20 +307,19 @@ export function MaintenanceDashboardPage() {
               ))}
             </TextField>
             <MaintenanceStatusFilters
-              activeFilter={activeFilter}
+              activeFilter={filters.status}
               direction="column"
               getFilterCount={getFilterCount}
-              onChange={handleActiveFilterChange}
+              onChange={setActiveFilter}
             />
           </Stack>
         </DialogContent>
       </Dialog>
-      <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={closeMenu}>
-        {pagedTickets.find((ticket) => ticket.id === menuTicketId)?.permissions?.edit && (
+      <Menu anchorEl={menu?.anchor} open={Boolean(menu)} onClose={closeMenu}>
+        {menuTicket?.permissions?.edit && (
           <MenuItem
             onClick={() => {
-              setEditingTicketId(menuTicketId)
-              setIsCreateDialogOpen(Boolean(menuTicketId))
+              openDialog({ kind: 'edit', ticketId: menuTicket.id })
               closeMenu()
             }}
           >
@@ -361,10 +327,10 @@ export function MaintenanceDashboardPage() {
             {t('actions.edit')}
           </MenuItem>
         )}
-        {pagedTickets.find((ticket) => ticket.id === menuTicketId)?.permissions?.delete && (
+        {menuTicket?.permissions?.delete && (
           <MenuItem
             onClick={() => {
-              setDeletingTicketId(menuTicketId)
+              openDialog({ kind: 'delete', ticketId: menuTicket.id })
               closeMenu()
             }}
             sx={{ color: 'error.main' }}
@@ -374,11 +340,11 @@ export function MaintenanceDashboardPage() {
           </MenuItem>
         )}
       </Menu>
-      <Dialog open={Boolean(deletingTicketId)} onClose={() => setDeletingTicketId(null)}>
+      <Dialog open={dialog?.kind === 'delete'} onClose={closeDialog}>
         <DialogTitle>{t('actions.deleteTitle')}</DialogTitle>
         <DialogContent>{t('actions.deleteDescription')}</DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeletingTicketId(null)}>{t('createDialog.cancel')}</Button>
+          <Button onClick={closeDialog}>{t('createDialog.cancel')}</Button>
           <Button color="error" variant="contained" onClick={handleDeleteTicket}>
             {t('actions.delete')}
           </Button>

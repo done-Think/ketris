@@ -33,7 +33,6 @@ const options = {
 const key = maintenanceDraftKey(session.tenantId, session.user.id)!
 const draft: MaintenanceCreateTicketFormValues = {
   contractId: 'c1',
-  propertyId: 'p1',
   category: 'PLUMBING',
   priority: 'normal',
   title: 'Leak',
@@ -80,12 +79,12 @@ describe('Maintenance local draft and submission', () => {
     )
     expect(screen.getByLabelText('Título do Chamado')).toHaveValue('Leak')
   })
-  it('shows only available contract options and derives the property', async () => {
+  it('shows only available contract options and keeps the chosen contract in the draft', async () => {
     const user = userEvent.setup()
     render(<MaintenanceCreateTicketDialog open onClose={vi.fn()} onCreate={vi.fn()} />)
     await user.click(screen.getByLabelText('Contrato / imóvel', { exact: false }))
     await user.click(await screen.findByRole('option', { name: 'C-1 - Property' }))
-    await waitFor(() => expect(readMaintenanceDraft(key)?.propertyId).toBe('p1'))
+    await waitFor(() => expect(readMaintenanceDraft(key)?.contractId).toBe('c1'))
   })
   it('saves locally and recovers after closing and reopening', async () => {
     const user = userEvent.setup()

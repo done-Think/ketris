@@ -333,7 +333,7 @@ describe('MaintenanceTicketDetailPage', () => {
     await waitFor(() =>
       expect(
         vi.mocked(useMaintenanceAction).mock.results[0].value.mutateAsync,
-      ).toHaveBeenCalledWith({ action: 'reopen', status: 'ABERTO', reason: '   Leak returned' }),
+      ).toHaveBeenCalledWith({ action: 'reopen', status: 'ABERTO', reason: 'Leak returned' }),
     )
   })
   it('lets a linked renter contest with a mandatory reason while confirmation stays unavailable', async () => {
@@ -367,7 +367,7 @@ describe('MaintenanceTicketDetailPage', () => {
     await waitFor(() =>
       expect(
         vi.mocked(useMaintenanceAction).mock.results[0].value.mutateAsync,
-      ).toHaveBeenCalledWith({ action: 'contest', reason: '   Still leaking' }),
+      ).toHaveBeenCalledWith({ action: 'contest', reason: 'Still leaking' }),
     )
   })
 

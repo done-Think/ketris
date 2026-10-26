@@ -7,7 +7,6 @@ import { isMaintenanceCategory } from '../utils/maintenance-category'
 export function createMaintenanceTicketSchema(t: SchemaMessageTranslator) {
   return z.object({
     contractId: z.string().min(1, t('contractRequired')),
-    propertyId: z.string().min(1, t('propertyRequired')),
     category: z.string().refine(isMaintenanceCategory, t('categoryRequired')),
     priority: z.enum(['normal', 'high', 'urgent'], { message: t('priorityRequired') }),
     title: z.string().trim().min(1, t('titleRequired')),

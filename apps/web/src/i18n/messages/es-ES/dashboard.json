@@ -345,7 +345,11 @@
         "REJEITADA": "Rechazada"
       },
       "finish": "Finalizar solicitud",
-      "finishConfirmation": "¿Confirma que el problema está resuelto? La solicitud se marcará como resuelta y se conservará su historial."
+      "finishConfirmation": "¿Confirma que el problema está resuelto? La solicitud se marcará como resuelta y se conservará su historial.",
+      "errors": {
+        "required": "Campo obligatorio",
+        "emailInvalid": "Introduce un correo válido"
+      }
     },
     "links": {
       "title": "Regularizar vínculos",
@@ -357,7 +361,12 @@
       "back": "Volver",
       "save": "Guardar vínculos",
       "success": "Vínculos actualizados.",
-      "error": "No se pudieron actualizar los vínculos."
+      "error": "No se pudieron actualizar los vínculos.",
+      "errors": {
+        "contractRequired": "Selecciona el contrato",
+        "renterRequired": "Selecciona la cuenta del inquilino",
+        "nothingToLink": "Elige el propietario o la parte inquilina"
+      }
     },
     "scheduleNotSet": "Aún sin programar",
     "empty": "No se encontraron solicitudes.",
