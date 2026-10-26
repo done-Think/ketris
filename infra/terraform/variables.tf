@@ -49,3 +49,18 @@ variable "db_allocated_storage" {
   type        = number
   default     = 20
 }
+
+variable "contract_document_allowed_origins" {
+  description = "Origens exatas da aplicação autorizadas para transferência privada de PDFs de Contracts."
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition = alltrue([
+      for origin in var.contract_document_allowed_origins :
+      can(regex("^https://[A-Za-z0-9][A-Za-z0-9.-]*(:[0-9]+)?$", origin)) ||
+      can(regex("^http://(localhost|127\\.0\\.0\\.1)(:[0-9]+)?$", origin))
+    ])
+    error_message = "Informe origens HTTPS exatas, sem caminho ou curinga; HTTP é permitido apenas para localhost."
+  }
+}

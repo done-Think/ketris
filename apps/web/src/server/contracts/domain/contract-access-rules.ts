@@ -1,8 +1,7 @@
 import { isAgencyManager, isPropertyOwner } from '@server/auth/domain/roles'
 import type { Papel } from '@server/auth/domain/user.entity'
 import { ForbiddenError } from '@server/shared/errors'
-
-import type { ContractManageScope, ContractReadScope } from './contract.entity'
+import type { ContractManageScope, ContractReadScope } from '../types/contract-entity'
 import { ContractRenterForbiddenError } from './errors'
 
 export function resolveContractManageScope(actorId: string, papel: Papel): ContractManageScope {

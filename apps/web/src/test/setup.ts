@@ -9,6 +9,7 @@ async function loadRealMessages() {
   const locale = defaultLocale
   const namespaces = [
     'common',
+    'contracts',
     'agenda',
     'auth',
     'crm',

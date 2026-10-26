@@ -44,6 +44,11 @@ export const contractPartySchema = z
     signedBy: contractActorSchema
       .nullable()
       .openapi({ description: 'Usuário da imobiliária que registrou a assinatura.' }),
+    signatureMethod: z.enum(['MANUAL', 'PROVIDER']).nullable(),
+    signatureDocumentId: z.string().nullable(),
+    signatureDocumentHash: z.string().nullable(),
+    createdAt: z.string().nullable(),
+    updatedAt: z.string().nullable(),
   })
   .openapi('ContractParty')
 
@@ -57,13 +62,21 @@ export const contractDocumentSchema = z
     name: z.string(),
     url: z.string().nullable(),
     createdAt: z.string(),
+    updatedAt: z.string().nullable(),
+    sha256: z.string().nullable(),
+    size: z.number().int().nullable(),
+    uploadedBy: contractActorSchema.nullable(),
+    contractRevision: z.number().int().nullable(),
+    canDownload: z.boolean(),
   })
   .openapi('ContractDocument')
 
 export const contractSchema = z
   .object({
     id: z.string(),
+    tenantId: z.string(),
     propertyId: z.string(),
+    property: z.object({ title: z.string(), address: z.string() }),
     opportunityId: z.string(),
     code: z.string(),
     type: contractTypeSchema,
@@ -81,6 +94,14 @@ export const contractSchema = z
       .openapi({ description: 'Usuário que registrou a última assinatura e ativou o contrato.' }),
     createdAt: z.string(),
     updatedAt: z.string(),
+    dataRevision: z.number().int().nonnegative(),
+    createdBy: contractActorSchema.nullable(),
+    cancelledAt: z.string().nullable(),
+    cancelledBy: contractActorSchema.nullable(),
+    cancellationReason: z.string().nullable(),
+    closedAt: z.string().nullable(),
+    closedBy: contractActorSchema.nullable(),
+    closingReason: z.string().nullable(),
     parties: z.array(contractPartySchema),
     documents: z.array(contractDocumentSchema),
   })
@@ -88,6 +109,7 @@ export const contractSchema = z
 
 export const contractListItemSchema = z
   .object({
+    canEdit: z.boolean(),
     id: z.string(),
     code: z.string(),
     opportunityId: z.string(),
@@ -116,5 +138,15 @@ export const contractResponseSchema = z
   .openapi('ContractResponse')
 
 export const contractsResponseSchema = z
-  .object({ items: z.array(contractListItemSchema), totalCount: z.number() })
+  .object({
+    items: z.array(contractListItemSchema),
+    totalCount: z.number(),
+    summary: z.object({
+      total: z.number(),
+      active: z.number(),
+      expiring30: z.number(),
+      expiring90: z.number(),
+      closed: z.number(),
+    }),
+  })
   .openapi('ContractsResponse')

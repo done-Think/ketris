@@ -1,41 +1,21 @@
 import type {
+  ContractActor,
+  ContractParty,
+  ContractDocument,
+  ContractPropertySummary,
+} from '../types/contract-entity'
+import type {
   AdjustmentIndex,
   ContractGuaranteeType,
-  ContractPartyRole,
   ContractStatus,
   ContractType,
-  SignatureStatus,
 } from '../types/contract'
-
-export interface ContractActor {
-  id: string
-  name: string
-}
-
-export interface ContractParty {
-  id: string
-  userId: string | null
-  role: ContractPartyRole
-  name: string
-  cpf: string
-  email: string
-  phone: string | null
-  signatureStatus: SignatureStatus
-  signedAt: Date | null
-  signedBy: ContractActor | null
-}
-
-export interface ContractDocument {
-  id: string
-  name: string
-  url: string | null
-  createdAt: Date
-}
 
 export interface Contract {
   id: string
   tenantId: string
   propertyId: string
+  property: ContractPropertySummary
   opportunityId: string
   code: string
   type: ContractType
@@ -51,77 +31,14 @@ export interface Contract {
   activatedBy: ContractActor | null
   createdAt: Date
   updatedAt: Date
+  dataRevision: number
+  createdBy: ContractActor | null
+  cancelledAt: Date | null
+  cancelledBy: ContractActor | null
+  cancellationReason: string | null
+  closedAt: Date | null
+  closedBy: ContractActor | null
+  closingReason: string | null
   parties: ContractParty[]
   documents: ContractDocument[]
-}
-
-export interface NewContractParty {
-  role: ContractPartyRole
-  name: string
-  cpf: string
-  email: string
-  phone: string | null
-}
-
-export interface NewContract {
-  tenantId: string
-  opportunityId: string
-  type: ContractType
-  dueDay: number
-  startDate: Date
-  endDate: Date
-  adjustmentIndex: AdjustmentIndex
-  guaranteeType: ContractGuaranteeType
-  notes: string | null
-  parties: NewContractParty[]
-}
-
-// Limits contract management to properties the actor is responsible for (AGENT).
-export interface ContractManageScope {
-  responsibleId?: string
-}
-
-// Reads stay inside the actor's tenant (the AGENT's properties, the PROPERTY_OWNER's properties), except for a RENTER, who
-// reads only the contracts where it is the linked LOCATARIO party, in any tenant.
-export type ContractReadScope =
-  | ({ kind: 'tenant'; tenantId: string } & ContractManageScope)
-  | { kind: 'party'; userId: string }
-  | { kind: 'propertyOwner'; tenantId: string; ownerId: string }
-
-export interface ContractListFilters {
-  status?: ContractStatus
-  type?: ContractType
-  propertyId?: string
-  search?: string
-  page?: number
-  pageSize?: number
-}
-
-export interface ContractListItem {
-  id: string
-  code: string
-  opportunityId: string
-  propertyId: string
-  propertyTitle: string
-  propertyAddress: string
-  ownerName: string | null
-  tenantName: string | null
-  status: ContractStatus
-  type: ContractType
-  amount: number
-  startDate: Date
-  endDate: Date
-  updatedAt: Date
-}
-
-export interface ContractListResult {
-  items: ContractListItem[]
-  totalCount: number
-}
-
-export interface EligibleOpportunity {
-  id: string
-  propertyId: string
-  status: string
-  hasContract: boolean
 }

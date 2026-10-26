@@ -1,5 +1,4 @@
-import type { Papel } from '@server/auth/domain/user.entity'
-
+import type { SignContractPartyInput } from '../../types/use-case-inputs'
 import { resolveContractManageScope } from '../../domain/contract-access-rules'
 import {
   ContractNotFoundError,
@@ -8,14 +7,6 @@ import {
 } from '../../domain/errors'
 import type { Contract } from '../../domain/contract.entity'
 import type { ContractRepository } from '../ports/contract-repository.port'
-
-export interface SignContractPartyInput {
-  actorTenantId: string
-  actorId: string
-  actorPapel: Papel
-  contractId: string
-  partyId: string
-}
 
 export class SignContractPartyUseCase {
   constructor(private readonly contractRepository: ContractRepository) {}
@@ -47,6 +38,8 @@ export class SignContractPartyUseCase {
       input.contractId,
       input.partyId,
       input.actorId,
+      { documentId: input.documentId, clientIp: input.clientIp, userAgent: input.userAgent },
+      scope,
     )
   }
 }

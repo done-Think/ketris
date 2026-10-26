@@ -5,13 +5,16 @@ export interface ContractPartyUserLink {
   userId: string
 }
 
-export interface LinkContractPartyUserInput {
+interface ContractPartyUserLinkActor {
   actorTenantId: string
+  actorId: string
   actorPapel: Papel
   contractId: string
   partyId: string
-  email: string
 }
+
+export type LinkContractPartyUserInput = ContractPartyUserLinkActor &
+  ({ email: string; userId?: never } | { userId: string; email?: never })
 
 export interface LinkContractPartyUserData {
   tenantId: string
@@ -19,6 +22,10 @@ export interface LinkContractPartyUserData {
   partyId: string
   userId: string
   email: string
+}
+
+export interface AuditedContractPartyUserLinkData extends LinkContractPartyUserData {
+  actorId: string
 }
 
 export interface LinkContractPartyUserRouteContext {

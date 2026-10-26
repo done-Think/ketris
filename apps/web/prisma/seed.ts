@@ -3,6 +3,7 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import bcrypt from 'bcryptjs'
 
 import { getDatabaseUrl } from '../src/server/db/database-url'
+import { protectLegacyContractCpfs } from '../src/server/contracts/infrastructure/protect-legacy-contract-cpfs'
 import { seedContacts, seedOpportunities, seedProperties, seedTenants } from './seed-data'
 
 // Seed de desenvolvimento local: várias imobiliárias, corretores autônomos, proprietários
@@ -25,6 +26,8 @@ const prisma = new PrismaClient({
 })
 
 async function main() {
+  const protectedCount = await protectLegacyContractCpfs(prisma)
+  console.log(`Proteção de CPFs concluída: ${protectedCount} registros atualizados.`)
   const senhaHash = await bcrypt.hash('trocar-em-desenvolvimento', SALT_ROUNDS)
 
   const tenantIdByEmail = new Map<string, string>()

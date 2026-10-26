@@ -1,8 +1,10 @@
+import { parseContractFormDate } from '../../utils/contract-date'
+import { contractOptionMessage } from '../../utils/contract-option-message'
+import { styles } from '../../styles/review-step.styles'
 import { Box, Typography } from '@mui/material'
-import { useTranslations } from 'next-intl'
-
-import { alpha, brand, radius } from '@shared/theme/tokens'
-
+import { useFormatter, useTranslations } from 'next-intl'
+import { useWatch } from 'react-hook-form'
+import { createContractDefaultValues } from '../../schemas/create-contract-schema'
 import type {
   ContractReviewItemProps,
   ContractReviewPanelProps,
@@ -13,34 +15,17 @@ import { SectionTitle } from './shared'
 export function ReviewItem({ label, value }: ContractReviewItemProps) {
   return (
     <Box>
-      <Typography sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 700 }}>
-        {label}
-      </Typography>
-      <Typography sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 900 }}>
-        {value || '-'}
-      </Typography>
+      <Typography sx={styles.typography}>{label}</Typography>
+      <Typography sx={styles.typography2}>{value || '-'}</Typography>
     </Box>
   )
 }
 
 export function ReviewPanel({ title, items }: ContractReviewPanelProps) {
   return (
-    <Box
-      sx={{
-        border: '1px solid',
-        borderColor: alpha.graphite[8],
-        borderRadius: `${radius.sm}px`,
-        p: { xs: 2, md: 2.4 },
-      }}
-    >
+    <Box sx={styles.box}>
       <SectionTitle>{title}</SectionTitle>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
-          gap: 1.8,
-        }}
-      >
+      <Box sx={styles.box2}>
         {items.map((item) => (
           <ReviewItem key={`${title}-${item.label}`} {...item} />
         ))}
@@ -49,9 +34,15 @@ export function ReviewPanel({ title, items }: ContractReviewPanelProps) {
   )
 }
 
-export function ReviewStep({ values }: ContractStepReviewProps) {
+export function ReviewStep({ control }: ContractStepReviewProps) {
+  const values = { ...createContractDefaultValues, ...useWatch({ control }) }
   const t = useTranslations('contracts.wizard.review')
   const tConditions = useTranslations('contracts.wizard.conditions')
+  const formatter = useFormatter()
+  function dateLabel(value: string) {
+    const date = parseContractFormDate(value)
+    return date ? formatter.dateTime(date, { dateStyle: 'short', timeZone: 'UTC' }) : value
+  }
   const hasActiveGuarantor = values.hasGuarantor || values.guaranteeType === 'FIADOR'
 
   const partiesItems = [
@@ -68,20 +59,18 @@ export function ReviewStep({ values }: ContractStepReviewProps) {
   ]
 
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, minmax(0, 1fr))' },
-        gap: { xs: 2, md: 2.4 },
-      }}
-    >
+    <Box sx={styles.box3}>
       <ReviewPanel title={t('partiesTitle')} items={partiesItems} />
       <ReviewPanel
         title={t('conditionsTitle')}
         items={[
           {
+            label: t('labels.amount'),
+            value: formatter.number(values.amount, { style: 'currency', currency: 'BRL' }),
+          },
+          {
             label: t('labels.contract'),
-            value: tConditions(`contractTypeOptions.${values.contractType}`),
+            value: tConditions(contractOptionMessage('contractTypeOptions', values.contractType)),
           },
           {
             label: t('labels.dueDay'),
@@ -89,18 +78,20 @@ export function ReviewStep({ values }: ContractStepReviewProps) {
           },
           {
             label: t('labels.guarantee'),
-            value: tConditions(`guaranteeTypeOptions.${values.guaranteeType}`),
+            value: tConditions(contractOptionMessage('guaranteeTypeOptions', values.guaranteeType)),
           },
         ]}
       />
       <ReviewPanel
         title={t('termTitle')}
         items={[
-          { label: t('labels.start'), value: values.startDate },
-          { label: t('labels.end'), value: values.endDate },
+          { label: t('labels.start'), value: dateLabel(values.startDate) },
+          { label: t('labels.end'), value: dateLabel(values.endDate) },
           {
             label: t('labels.adjustment'),
-            value: tConditions(`adjustmentIndexOptions.${values.adjustmentIndex}`),
+            value: tConditions(
+              contractOptionMessage('adjustmentIndexOptions', values.adjustmentIndex),
+            ),
           },
           { label: t('labels.notes'), value: values.notes },
         ]}

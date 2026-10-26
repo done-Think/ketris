@@ -1,13 +1,10 @@
 import { Box, Stack } from '@mui/material'
+import { ContractAmountField } from '../ContractAmountField'
 import { useTranslations } from 'next-intl'
-
 import type { ContractStepControlProps } from '../../types/contract'
-import { FieldGrid, SectionTitle, conditionsStepFieldsMeta, toFieldConfig } from './shared'
-
-export const conditionsStepFieldNames = [
-  ...conditionsStepFieldsMeta.map((field) => field.name),
-  'notes' as const,
-]
+import { FieldGrid, SectionTitle } from './shared'
+import { toFieldConfig } from '../../utils/contract-fields'
+import { conditionsStepFieldsMeta } from '../../config/contract-fields'
 
 export function ConditionsStep({ control }: ContractStepControlProps) {
   const t = useTranslations('contracts.wizard.conditions')
@@ -16,6 +13,7 @@ export function ConditionsStep({ control }: ContractStepControlProps) {
     <Stack spacing={3}>
       <Box>
         <SectionTitle>{t('title')}</SectionTitle>
+        <ContractAmountField control={control} />
         <FieldGrid
           control={control}
           fields={[

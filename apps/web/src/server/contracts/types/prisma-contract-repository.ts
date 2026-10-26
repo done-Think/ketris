@@ -1,11 +1,14 @@
-import type { Assinatura, Contrato, ParteContrato } from '@prisma/client'
+import type { Prisma, Usuario } from '@prisma/client'
+import type { contractInclude } from '../infrastructure/contract-query'
 
-export type UsuarioRef = { id: string; nome: string }
+export type UsuarioRef = Pick<Usuario, 'id' | 'nome'>
+export type ContratoWithRelations = Prisma.ContratoGetPayload<{ include: typeof contractInclude }>
 
-export type ContratoWithRelations = Contrato & {
-  ativadoPor: UsuarioRef | null
-  partes: (ParteContrato & {
-    assinatura: (Assinatura & { assinadaPor: UsuarioRef | null }) | null
-  })[]
-  documentos: { id: string; nome: string; url: string | null; createdAt: Date }[]
+export type DocumentoWithRelations = ContratoWithRelations['documentos'][number]
+
+export interface ContractIdRow {
+  id: string
+}
+export interface ContractCodeSequenceRow {
+  max: number | bigint | null
 }

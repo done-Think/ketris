@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
+import { createVerifiedContractProof } from '@server/contracts/tests/fixtures/workflow-database'
 
 import { POST as linkPartyUser } from '../[id]/parties/[partyId]/link-user/route'
 import { POST as signParty } from '../[id]/parties/[partyId]/sign/route'
@@ -14,6 +15,8 @@ import { GET, POST } from '../route'
 describe('/api/contracts (integração)', () => {
   const tokenService = new JoseTokenService()
   let tenantId: string
+  let actorId: string
+  let proofId: string
   let actorToken: string
   let renterToken: string
   let sharedTenantId: string
@@ -40,6 +43,7 @@ describe('/api/contracts (integração)', () => {
         papel: 'AGENT',
       },
     })
+    actorId = actor.id
     actorToken = await tokenService.sign({
       id: actor.id,
       tenantId: actor.tenantId,
@@ -176,8 +180,18 @@ describe('/api/contracts (integração)', () => {
     endDate: '2027-10-01',
     adjustmentIndex: 'IGPM',
     guaranteeType: 'CAUCAO',
-    owner: { name: 'Bruno Oliveira', cpf: '11111111111', email: 'bruno@example.com' },
-    tenant: { name: 'Mariana Souza', cpf: '22222222222', email: tenantPartyEmail },
+    owner: {
+      name: 'Bruno Oliveira',
+      cpf: '52998224725',
+      email: 'bruno@example.com',
+      phone: '11999999999',
+    },
+    tenant: {
+      name: 'Mariana Souza',
+      cpf: '98765432100',
+      email: tenantPartyEmail,
+      phone: '11999999999',
+    },
   }
 
   async function createContractForNewOpportunity() {
@@ -293,6 +307,7 @@ describe('/api/contracts (integração)', () => {
     ).toBe(true)
 
     contractId = json.contract.id
+    proofId = (await createVerifiedContractProof(contractId, actorId)).id
     ownerPartyId = json.contract.parties.find(
       (party: { role: string }) => party.role === 'LOCADOR',
     ).id
@@ -425,7 +440,7 @@ describe('/api/contracts (integração)', () => {
       buildRequest(
         `http://localhost/api/contracts/${contractId}/parties/${tenantPartyId}/sign`,
         'POST',
-        undefined,
+        { documentId: proofId },
         linkedRenterToken,
       ),
       partyContext(contractId, tenantPartyId),
@@ -448,7 +463,7 @@ describe('/api/contracts (integração)', () => {
       buildRequest(
         `http://localhost/api/contracts/${contractId}/parties/${ownerPartyId}/sign`,
         'POST',
-        undefined,
+        { documentId: proofId },
         otherAgentToken,
       ),
       partyContext(contractId, ownerPartyId),
@@ -469,7 +484,7 @@ describe('/api/contracts (integração)', () => {
       buildRequest(
         `http://localhost/api/contracts/${contractId}/parties/${ownerPartyId}/sign`,
         'POST',
-        undefined,
+        { documentId: proofId },
         renterToken,
       ),
       partyContext(contractId, ownerPartyId),
@@ -484,7 +499,7 @@ describe('/api/contracts (integração)', () => {
       buildRequest(
         `http://localhost/api/contracts/${contractId}/parties/${ownerPartyId}/sign`,
         'POST',
-        undefined,
+        { documentId: proofId },
         actorToken,
       ),
       partyContext(contractId, ownerPartyId),
@@ -509,7 +524,7 @@ describe('/api/contracts (integração)', () => {
       buildRequest(
         `http://localhost/api/contracts/${contractId}/parties/${ownerPartyId}/sign`,
         'POST',
-        undefined,
+        { documentId: proofId },
         actorToken,
       ),
       partyContext(contractId, ownerPartyId),
@@ -525,7 +540,7 @@ describe('/api/contracts (integração)', () => {
       buildRequest(
         `http://localhost/api/contracts/${contractId}/parties/${tenantPartyId}/sign`,
         'POST',
-        undefined,
+        { documentId: proofId },
         adminToken,
       ),
       partyContext(contractId, tenantPartyId),
@@ -594,12 +609,13 @@ describe('/api/contracts (integração)', () => {
     const { contract } = await created.json()
     const owner = contract.parties.find((party: { role: string }) => party.role === 'LOCADOR')
     const tenant = contract.parties.find((party: { role: string }) => party.role === 'LOCATARIO')
+    const proof = await createVerifiedContractProof(contract.id, actorId)
     const signAs = (partyId: string, token: string) =>
       signParty(
         buildRequest(
           `http://localhost/api/contracts/${contract.id}/parties/${partyId}/sign`,
           'POST',
-          undefined,
+          { documentId: proof.id },
           token,
         ),
         partyContext(contract.id, partyId),
@@ -645,13 +661,14 @@ describe('/api/contracts (integração)', () => {
       ),
     )
     const { contract } = await created.json()
+    const proof = await createVerifiedContractProof(contract.id, actorId)
     const responses = await Promise.all(
       contract.parties.map((party: { id: string }) =>
         signParty(
           buildRequest(
             `http://localhost/api/contracts/${contract.id}/parties/${party.id}/sign`,
             'POST',
-            undefined,
+            { documentId: proof.id },
             adminToken,
           ),
           partyContext(contract.id, party.id),
@@ -664,6 +681,34 @@ describe('/api/contracts (integração)', () => {
     expect(stored.status).toBe('ATIVO')
     const charges = await prisma.cobranca.findMany({ where: { contratoId: contract.id } })
     expect(charges).toHaveLength(1)
+  })
+
+  it('recusa a segunda criação simultânea para a mesma proposta com conflito', async () => {
+    const opportunity = await prisma.oportunidade.create({
+      data: {
+        tenantId,
+        imovelId: propertyId,
+        interessadoNome: 'Concorrência',
+        interessadoEmail: 'concurrent@example.test',
+        valorProposto: 2500,
+        status: 'ACEITA',
+      },
+    })
+    const create = () =>
+      POST(
+        buildRequest(
+          'http://localhost/api/contracts',
+          'POST',
+          {
+            ...createPayload,
+            opportunityId: opportunity.id,
+          },
+          actorToken,
+        ),
+      )
+    const responses = await Promise.all([create(), create()])
+    expect(responses.map((response) => response.status).sort()).toEqual([201, 409])
+    expect(await prisma.contrato.count({ where: { oportunidadeOrigemId: opportunity.id } })).toBe(1)
   })
 
   it('gera um código livre após excluir um contrato anterior da sequência', async () => {

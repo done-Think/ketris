@@ -1,439 +1,246 @@
 'use client'
 
-import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined'
-import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined'
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
-import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined'
+import { useState } from 'react'
 import {
+  Alert,
   Box,
   Button,
-  Chip,
   CircularProgress,
-  IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Link as MuiLink,
   Stack,
   Typography,
 } from '@mui/material'
-import type { SxProps, Theme } from '@mui/material/styles'
-import { notFound } from 'next/navigation'
+import { notFound, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-
-import { getRestrictedRoleAccess } from '@shared/lib/auth/restricted-role-access'
+import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
-import type { ReactNode } from 'react'
-
 import { Link } from '@/i18n/navigation'
+import { styles } from '../styles/contract-detail-dashboard-page.styles'
+import { ContractDetailPanel } from './contract-detail/ContractDetailPanel'
+import { ContractDetailHeader } from './contract-detail/ContractDetailHeader'
+import { ContractInfoPanel } from './contract-detail/ContractInfoPanel'
+import { ContractDocumentsPanel } from './contract-detail/ContractDocumentsPanel'
+import { ContractPartiesPanel } from './contract-detail/ContractPartiesPanel'
+import { ContractDocumentUpload } from './contract-detail/ContractDocumentUpload'
+import { ContractManualSignatureDialog } from './contract-detail/ContractManualSignatureDialog'
+import { ContractTransitionDialog } from './contract-detail/ContractTransitionDialog'
+import { ContractEditDialog } from './contract-detail/ContractEditDialog'
+import { ContractHistoryPanel } from './contract-detail/ContractHistoryPanel'
 import {
-  alpha,
-  brand,
-  iconSize,
-  radius,
-  shadows,
-  supportColor,
-  surface,
-} from '@shared/theme/tokens'
-
-import { useCrmProperty } from '@modules/crm/hooks/use-opportunities'
-
-import { contractStatusStyles } from '../config/contract-ui'
-import { useContract, useSignContractParty } from '../hooks/use-contracts'
-import type {
-  ContractDetailDashboardPageProps,
-  ContractDocumentItem,
-  ContractListItem,
-} from '../types/contract'
-import type { ApiContractParty } from '../types/service'
+  useContract,
+  useSignContractParty,
+  useTransitionContract,
+  useLinkContractParty,
+} from '../hooks/use-contracts'
+import { useContractPresentation } from '../hooks/use-contract-presentation'
 import { mapContractFromApi } from '../utils/contract-adapter'
-import { errorMessage } from '../utils/error-message'
-
-function DetailPanel({
-  title,
-  children,
-  sx,
-}: {
-  title: string
-  children: ReactNode
-  sx?: SxProps<Theme>
-}) {
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        bgcolor: surface.paper,
-        border: '1px solid',
-        borderColor: alpha.graphite[8],
-        borderRadius: `${radius.sm}px`,
-        boxShadow: shadows.crmCardCompact,
-        p: { xs: 2, md: 3 },
-        ...sx,
-      }}
-    >
-      <Typography sx={{ mb: 2.8, color: brand.graphite[500], fontSize: 18, fontWeight: 900 }}>
-        {title}
-      </Typography>
-      {children}
-    </Box>
-  )
-}
-
-function formatContractCode(code: string) {
-  return code.replace(/^CTR-\d{4}-/, '#')
-}
-
-function ContractHeader({ contract, readOnly }: { contract: ContractListItem; readOnly: boolean }) {
-  const statusStyle = contractStatusStyles[contract.status]
-
-  return (
-    <Stack
-      direction={{ xs: 'column', md: 'row' }}
-      justifyContent="space-between"
-      alignItems={{ xs: 'flex-start', md: 'center' }}
-      spacing={2}
-      sx={{ mb: 2.8 }}
-    >
-      <Box sx={{ minWidth: 0 }}>
-        <Stack
-          direction="row"
-          alignItems="center"
-          spacing={1.6}
-          sx={{ flexWrap: 'wrap', rowGap: 1, mb: 0.8 }}
-        >
-          <Typography
-            variant="h1"
-            sx={{ color: brand.graphite[500], fontSize: { xs: 30, md: 36 }, fontWeight: 900 }}
-          >
-            Contrato {formatContractCode(contract.code)}
-          </Typography>
-          <Chip
-            label={contract.status}
-            sx={{
-              height: { xs: 38, md: 44 },
-              borderRadius: `${radius.sm}px`,
-              bgcolor: statusStyle.bgcolor,
-              color: statusStyle.color,
-              fontSize: { xs: 30, md: 36 },
-              fontWeight: 900,
-            }}
-          />
-        </Stack>
-      </Box>
-
-      {readOnly ? null : (
-        <Stack direction="row" spacing={1.1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
-          <Button variant="outlined" color="secondary" startIcon={<EditOutlinedIcon />}>
-            Editar
-          </Button>
-          <Button variant="outlined" color="secondary" startIcon={<PictureAsPdfOutlinedIcon />}>
-            PDF
-          </Button>
-          <Button
-            variant="outlined"
-            sx={{
-              borderColor: alpha.error[10],
-              color: brand.semantic.error,
-              '&:hover': { borderColor: brand.semantic.error, bgcolor: alpha.error[6] },
-            }}
-          >
-            Rescindir
-          </Button>
-        </Stack>
-      )}
-    </Stack>
-  )
-}
-
-const infoRowSx = {
-  py: { xs: 1.35, md: 1.65 },
-  borderBottom: '1px solid',
-  borderColor: alpha.graphite[8],
-  '&:last-child': { borderBottom: 0 },
-} as const
-
-const infoLabelSx = { color: brand.neutral[500], fontSize: 15, fontWeight: 700 } as const
-
-const infoValueSx = {
-  color: brand.graphite[500],
-  fontSize: 15,
-  fontWeight: 900,
-  textAlign: 'right',
-} as const
-
-function ContractInfoPanel({ contract }: { contract: ContractListItem }) {
-  const rows = [
-    { label: 'Locatario', value: contract.tenant },
-    { label: 'Valor', value: `${contract.amount}/mes` },
-    { label: 'Reajuste', value: contract.adjustment },
-    { label: 'Inicio', value: contract.startDate },
-    { label: 'Vencimento', value: contract.endDate },
-    { label: 'Dia pagamento', value: contract.paymentDay },
-    { label: 'Garantia', value: contract.guarantee },
-  ]
-
-  return (
-    <DetailPanel title="Dados do Contrato" sx={{ height: '100%' }}>
-      <Stack sx={{ flex: 1, justifyContent: 'space-between' }}>
-        <Stack direction="row" justifyContent="space-between" spacing={2} sx={infoRowSx}>
-          <Typography sx={infoLabelSx}>Imovel</Typography>
-          <MuiLink
-            component={Link}
-            href={{ pathname: '/dashboard/properties/[id]', params: { id: contract.propertyId } }}
-            underline="hover"
-            sx={{ color: brand.magenta[500], fontSize: 15, fontWeight: 900 }}
-          >
-            {contract.property}
-          </MuiLink>
-        </Stack>
-        {rows.map((row) => (
-          <Stack
-            key={row.label}
-            direction="row"
-            justifyContent="space-between"
-            spacing={2}
-            sx={infoRowSx}
-          >
-            <Typography sx={infoLabelSx}>{row.label}</Typography>
-            <Typography sx={infoValueSx}>{row.value}</Typography>
-          </Stack>
-        ))}
-      </Stack>
-    </DetailPanel>
-  )
-}
-
-function DocumentsPanel({ documents }: { documents: ContractDocumentItem[] }) {
-  return (
-    <DetailPanel title="Documentos" sx={{ flex: 1 }}>
-      <Stack spacing={1.6} sx={{ flex: 1, justifyContent: 'space-between' }}>
-        {documents.map((document) => (
-          <Stack
-            key={document.name}
-            direction="row"
-            alignItems="center"
-            spacing={1.3}
-            sx={{
-              minHeight: { xs: 58, md: 72 },
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.app,
-              px: 1.6,
-            }}
-          >
-            <ArticleOutlinedIcon sx={{ color: brand.magenta[500], fontSize: iconSize.xl }} />
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography noWrap sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 900 }}>
-                {document.name}
-              </Typography>
-              <Typography noWrap sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 700 }}>
-                {document.sentAt}
-              </Typography>
-            </Box>
-            <IconButton
-              aria-label={`Baixar ${document.name}`}
-              sx={{
-                width: 34,
-                height: 34,
-                borderRadius: `${radius.sm}px`,
-                bgcolor: surface.paper,
-                color: brand.graphite[500],
-              }}
-            >
-              <DownloadOutlinedIcon sx={{ fontSize: iconSize.md }} />
-            </IconButton>
-          </Stack>
-        ))}
-      </Stack>
-    </DetailPanel>
-  )
-}
-
-const partyRoleLabels: Record<ApiContractParty['role'], string> = {
-  LOCADOR: 'Locador',
-  LOCATARIO: 'Locatário',
-  FIADOR: 'Fiador',
-}
-
-function PartiesPanel({
-  parties,
-  isSigning,
-  onSign,
-  readOnly,
-}: {
-  parties: ApiContractParty[]
-  isSigning: boolean
-  onSign: (partyId: string) => void
-  readOnly: boolean
-}) {
-  return (
-    <DetailPanel title="Partes e Assinaturas" sx={{ flex: 1 }}>
-      <Stack spacing={1.6}>
-        {parties.map((party) => {
-          const isSigned = party.signatureStatus === 'ASSINADA'
-
-          return (
-            <Stack
-              key={party.id}
-              direction="row"
-              alignItems="center"
-              spacing={1.3}
-              sx={{
-                minHeight: 58,
-                borderRadius: `${radius.sm}px`,
-                bgcolor: surface.app,
-                px: 1.6,
-              }}
-            >
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography
-                  noWrap
-                  sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 900 }}
-                >
-                  {party.name}
-                </Typography>
-                <Typography
-                  noWrap
-                  sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 700 }}
-                >
-                  {partyRoleLabels[party.role]}
-                </Typography>
-              </Box>
-              {isSigned ? (
-                <Chip
-                  label="Assinado"
-                  size="small"
-                  sx={{
-                    height: 26,
-                    borderRadius: `${radius.sm}px`,
-                    bgcolor: supportColor.successSoft,
-                    color: brand.semantic.success,
-                    fontSize: 11,
-                    fontWeight: 900,
-                  }}
-                />
-              ) : readOnly ? null : (
-                <Button
-                  size="small"
-                  variant="outlined"
-                  disabled={isSigning}
-                  onClick={() => onSign(party.id)}
-                  sx={{ borderRadius: `${radius.sm}px`, fontSize: 11, fontWeight: 900 }}
-                >
-                  Marcar como assinado
-                </Button>
-              )}
-            </Stack>
-          )
-        })}
-      </Stack>
-    </DetailPanel>
-  )
-}
+import { contractError, isContractNotFound } from '../utils/contract-error'
+import type { ContractDetailDashboardPageProps } from '../types/contract'
+import type { ApiContractParty } from '../types/service'
 
 export function ContractDetailDashboardPage({ contractId }: ContractDetailDashboardPageProps) {
   const { data: session } = useSession()
   const tenantId = session?.tenantId ?? ''
-  const isReadOnlyViewer = Boolean(getRestrictedRoleAccess(session?.role))
+  const t = useTranslations('contracts.detail')
+  const errors = useTranslations('contracts.errors')
   const { enqueueSnackbar } = useSnackbar()
-  const contractQuery = useContract(tenantId, contractId)
-  const propertyQuery = useCrmProperty(tenantId, contractQuery.data?.propertyId)
-  const signContractParty = useSignContractParty(tenantId, contractId)
+  const presentation = useContractPresentation()
+  const query = useContract(tenantId, contractId)
+  const signature = useSignContractParty(tenantId, contractId)
+  const transition = useTransitionContract(tenantId, contractId)
+  const link = useLinkContractParty(tenantId, contractId)
+  const [signParty, setSignParty] = useState<ApiContractParty | null>(null)
+  const [linkParty, setLinkParty] = useState<ApiContractParty | null>(null)
+  const [transitionAction, setTransitionAction] = useState<'cancel' | 'close' | null>(null)
+  const searchParams = useSearchParams()
+  const [editing, setEditing] = useState(() => searchParams.get('edit') === '1')
+  const [uploading, setUploading] = useState(false)
+  const canManage = session?.role === 'OWNER' || session?.role === 'AGENT'
+  const canLink = session?.role === 'OWNER'
 
-  if (contractQuery.isLoading || propertyQuery.isLoading) {
+  if (query.isPending)
     return (
-      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: '60vh' }}>
+      <Stack alignItems="center" justifyContent="center" sx={styles.stack}>
         <CircularProgress />
       </Stack>
     )
-  }
+  if (isContractNotFound(query.error)) notFound()
+  if (!query.data)
+    return (
+      <Alert
+        severity="error"
+        action={<Button onClick={() => query.refetch()}>{t('retry')}</Button>}
+      >
+        {t('loadError')}
+      </Alert>
+    )
 
-  if (contractQuery.isError || !contractQuery.data) notFound()
-
-  const property = propertyQuery.data
-    ? {
-        title: propertyQuery.data.title,
-        address: propertyQuery.data.address
-          ? [
-              propertyQuery.data.address.street,
-              propertyQuery.data.address.neighborhood,
-              propertyQuery.data.address.city,
-            ]
-              .filter(Boolean)
-              .join(', ')
-          : '',
-      }
-    : undefined
-  const contract = mapContractFromApi(contractQuery.data, property)
-
-  function handleSign(partyId: string) {
-    signContractParty.mutate(partyId, {
-      onError: (error) => {
-        enqueueSnackbar(errorMessage(error, 'Não foi possível registrar a assinatura.'), {
-          variant: 'error',
-        })
-      },
-    })
-  }
+  const data = query.data
+  const contract = mapContractFromApi(data, presentation)
+  const beforeActivation = ['RASCUNHO', 'EM_REVISAO', 'AGUARDANDO_ASSINATURA', 'ASSINADO'].includes(
+    data.status,
+  )
+  const canEdit =
+    ['RASCUNHO', 'EM_REVISAO', 'AGUARDANDO_ASSINATURA'].includes(data.status) &&
+    !data.parties.some((party) => party.signatureStatus === 'ASSINADA')
+  const busy = uploading || signature.isPending || transition.isPending || link.isPending
 
   return (
-    <Box sx={{ width: '100%', p: 3.5 }}>
-      <Box sx={{ width: '100%' }}>
-        <Stack
-          direction="row"
-          spacing={0.8}
-          sx={{ mb: 2, color: brand.neutral[500], fontSize: 13 }}
-        >
+    <Box sx={styles.box}>
+      <Box sx={styles.box2}>
+        <Stack direction="row" spacing={0.8} sx={styles.stack2}>
           <MuiLink component={Link} href="/dashboard/contracts" underline="hover" color="inherit">
-            Contratos
+            {t('contracts')}
           </MuiLink>
-          <Typography sx={{ fontSize: 13 }}>›</Typography>
-          <MuiLink
-            component={Link}
-            href={{ pathname: '/dashboard/properties/[id]', params: { id: contract.propertyId } }}
-            underline="hover"
-            color="inherit"
-            sx={{ fontSize: 13 }}
-          >
-            {contract.property}
-          </MuiLink>
-          <Typography sx={{ fontSize: 13 }}>›</Typography>
-          <Typography sx={{ color: brand.magenta[500], fontSize: 13, fontWeight: 900 }}>
-            Contrato {formatContractCode(contract.code)}
-          </Typography>
+          <Typography sx={styles.typography}>›</Typography>
+          <Typography sx={styles.typography3}>{data.code}</Typography>
         </Stack>
-
-        <ContractHeader contract={contract} readOnly={isReadOnlyViewer} />
-
+        <ContractDetailHeader
+          contract={contract}
+          readOnly={!canManage}
+          canEdit={canEdit}
+          canCancel={beforeActivation}
+          canClose={data.status === 'ATIVO'}
+          busy={busy}
+          onEdit={() => setEditing(true)}
+          onCancel={() => {
+            transition.reset()
+            setTransitionAction('cancel')
+          }}
+          onClose={() => {
+            transition.reset()
+            setTransitionAction('close')
+          }}
+        />
+        {uploading && <Alert severity="info">{t('uploadBusy')}</Alert>}
+        {query.isError && (
+          <Alert
+            severity="error"
+            action={<Button onClick={() => query.refetch()}>{t('retry')}</Button>}
+          >
+            {t('loadError')}
+          </Alert>
+        )}
         <Stack
           direction={{ xs: 'column', lg: 'row' }}
           spacing={3}
           alignItems="stretch"
-          sx={{ minHeight: { lg: 'calc(100vh - 210px)' } }}
+          sx={styles.stack3}
         >
-          <Stack spacing={3} sx={{ flex: 1.25, minWidth: 0 }}>
+          <Stack spacing={3} sx={styles.stack4}>
             <ContractInfoPanel contract={contract} />
-            <DetailPanel title="Clausulas e Observacoes" sx={{ flex: 1 }}>
-              <Typography
-                sx={{
-                  color: brand.neutral[500],
-                  fontSize: 15,
-                  lineHeight: 1.8,
-                  fontWeight: 700,
-                }}
-              >
-                {contract.notes}
-              </Typography>
-            </DetailPanel>
+            <ContractDetailPanel title={t('notes')} sx={styles.contractDetailPanel}>
+              <Typography sx={styles.typography4}>{contract.notes || t('emptyNotes')}</Typography>
+            </ContractDetailPanel>
+            <Box id="history">
+              <ContractHistoryPanel tenantId={tenantId} contractId={contractId} />
+            </Box>
           </Stack>
-
-          <Stack spacing={3} sx={{ flex: 1, minWidth: 0 }}>
-            <PartiesPanel
-              parties={contractQuery.data.parties}
-              isSigning={signContractParty.isPending}
-              onSign={handleSign}
-              readOnly={isReadOnlyViewer}
+          <Stack spacing={3} sx={styles.stack5}>
+            <ContractPartiesPanel
+              parties={data.parties}
+              isSigning={busy}
+              readOnly={!canManage}
+              canSign={beforeActivation}
+              canLink={canLink}
+              onSign={(id) => {
+                signature.reset()
+                setSignParty(data.parties.find((party) => party.id === id) ?? null)
+              }}
+              onLink={(party) => {
+                link.reset()
+                setLinkParty(party)
+              }}
             />
-            <DocumentsPanel documents={contract.documents} />
+            <Box id="documents">
+              <ContractDocumentsPanel
+                documents={data.documents}
+                dataRevision={data.dataRevision}
+                contractId={contractId}
+              />
+            </Box>
+            {canManage && (
+              <ContractDocumentUpload
+                contractId={contractId}
+                tenantId={tenantId}
+                onBusyChange={setUploading}
+              />
+            )}
           </Stack>
         </Stack>
+        {signParty && (
+          <ContractManualSignatureDialog
+            party={signParty}
+            documents={data.documents}
+            dataRevision={data.dataRevision}
+            pending={signature.isPending}
+            error={signature.error}
+            onClose={() => setSignParty(null)}
+            onConfirm={(documentId) =>
+              signature.mutate(
+                { partyId: signParty.id, documentId },
+                { onSuccess: () => setSignParty(null) },
+              )
+            }
+          />
+        )}
+        {transitionAction && (
+          <ContractTransitionDialog
+            action={transitionAction}
+            pending={transition.isPending}
+            error={transition.error}
+            onClose={() => setTransitionAction(null)}
+            onConfirm={(reason) =>
+              transition.mutate(
+                { action: transitionAction, reason },
+                { onSuccess: () => setTransitionAction(null) },
+              )
+            }
+          />
+        )}
+        {editing && canManage && canEdit && (
+          <ContractEditDialog
+            contract={data}
+            tenantId={tenantId}
+            onClose={() => setEditing(false)}
+          />
+        )}
+        <Dialog
+          open={Boolean(linkParty)}
+          onClose={link.isPending ? undefined : () => setLinkParty(null)}
+        >
+          <DialogTitle>{t('link')}</DialogTitle>
+          <DialogContent>
+            <Typography>{t('linkNotice', { email: linkParty?.email ?? '' })}</Typography>
+            {link.isError && <Alert severity="error">{contractError(link.error, errors)}</Alert>}
+          </DialogContent>
+          <DialogActions>
+            <Button disabled={link.isPending} onClick={() => setLinkParty(null)}>
+              {t('back')}
+            </Button>
+            <Button
+              disabled={link.isPending}
+              onClick={() => {
+                if (linkParty)
+                  link.mutate(
+                    { partyId: linkParty.id, email: linkParty.email },
+                    {
+                      onSuccess: () => {
+                        setLinkParty(null)
+                        enqueueSnackbar(t('linkSuccess'), { variant: 'success' })
+                      },
+                    },
+                  )
+              }}
+            >
+              {t('link')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </Box>
   )

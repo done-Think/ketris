@@ -1,4 +1,11 @@
 import {
+  seedContractFixtures,
+  cleanupContractFixtures,
+  readContractEvidence,
+} from './cypress/support/contracts-fixtures'
+import type { ContractFixtureSeedInput } from './cypress/types/contracts-fixtures'
+import { startPrivateS3Server } from './src/server/contracts/tests/fixtures/private-s3-server'
+import {
   seedAgendaFixtures,
   cleanupAgendaFixtures,
   readAgendaAudit,
@@ -38,12 +45,35 @@ export default defineConfig({
           throw new Error('A porta do endpoint AWS deve coincidir com AUTH_E2E_MAILBOX_PORT.')
         await mailbox.start()
       }
+      const storagePort = Number(process.env.CONTRACTS_E2E_STORAGE_PORT ?? 0)
+      let contractStorage: Awaited<ReturnType<typeof startPrivateS3Server>> | null = null
+      if (storagePort) {
+        const database = new URL(getDatabaseUrl())
+        const endpoint = new URL(process.env.AWS_ENDPOINT_URL_S3 ?? '')
+        const app = new URL(config.baseUrl ?? '')
+        const localHosts = ['localhost', '127.0.0.1', '[::1]']
+        if (
+          process.env.KETRIS_E2E_ISOLATED_DB !== '1' ||
+          ![database.hostname, endpoint.hostname, app.hostname].every((host) =>
+            localHosts.includes(host),
+          ) ||
+          Number(endpoint.port) !== storagePort
+        )
+          throw new Error('O simulador de PDFs exige aplicação, banco isolado e storage locais.')
+        contractStorage = await startPrivateS3Server(storagePort, app.origin)
+      }
+      config.env.CONTRACTS_STORAGE_ENABLED = Boolean(contractStorage)
       config.env.AUTH_MAILBOX_ENABLED = Boolean(mailbox)
       const prisma = new PrismaClient({
         adapter: new PrismaPg({ connectionString: getDatabaseUrl() }),
       })
 
       on('task', {
+        seedContractFixtures: (input: ContractFixtureSeedInput) =>
+          seedContractFixtures(prisma, input),
+        cleanupContractFixtures: (tenantIds: string[]) =>
+          cleanupContractFixtures(prisma, tenantIds),
+        readContractEvidence: (contractId: string) => readContractEvidence(prisma, contractId),
         seedAgendaFixtures: (input: AgendaFixtureSeedInput) => seedAgendaFixtures(prisma, input),
         cleanupAgendaFixtures: (tenantIds: string[]) => cleanupAgendaFixtures(prisma, tenantIds),
         readAgendaAudit: (eventId: string) => readAgendaAudit(prisma, eventId),
@@ -116,6 +146,7 @@ export default defineConfig({
       on('after:run', async () => {
         await prisma.$disconnect()
         if (mailbox) await mailbox.stop()
+        if (contractStorage) await contractStorage.close()
       })
       return config
     },

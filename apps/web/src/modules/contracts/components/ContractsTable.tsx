@@ -1,15 +1,15 @@
 'use client'
 
+import { contractStatusMessageKeys } from '../config/contract-labels'
+
+import { styles } from '../styles/contracts-table.styles'
 import { useState, type MouseEvent } from 'react'
+import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined'
-import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined'
 import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined'
 import EditNoteOutlinedIcon from '@mui/icons-material/EditNoteOutlined'
 import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined'
-import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined'
-import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined'
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded'
-import SendOutlinedIcon from '@mui/icons-material/SendOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import {
   Box,
@@ -25,13 +25,16 @@ import {
   Typography,
 } from '@mui/material'
 import type { GridColDef, GridRowParams } from '@mui/x-data-grid'
+import { enUS, ptBR, esES } from '@mui/x-data-grid/locales'
 import { DataGrid } from '@mui/x-data-grid'
-import dayjs from 'dayjs'
-import { useTranslations } from 'next-intl'
-
-import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
-
-import { contractActionMenuOptions, contractStatusStyles } from '../config/contract-ui'
+import { useLocale, useTranslations } from 'next-intl'
+import { contractActionMenuOptions } from '../config/contract-ui'
+import { contractStatusStyles } from '../styles/contract-status.styles'
+import {
+  contractIconButtonSx,
+  contractMenuSlotProps,
+  contractMenuTextProps,
+} from '../styles/contracts-table.styles'
 import type {
   ContractActionMenuIconKey,
   ContractActionsCellProps,
@@ -41,39 +44,17 @@ import type {
   ContractStatusCellProps,
 } from '../types/contract'
 
-function parseAmountValue(amount: string): number {
-  const digitsOnly = amount.replace(/\D/g, '')
-  return digitsOnly ? Number(digitsOnly) : 0
-}
-
-function compareAmount(a: string, b: string): number {
-  return parseAmountValue(a) - parseAmountValue(b)
-}
-
-function compareDate(a: string, b: string): number {
-  return dayjs(a, 'DD/MM/YYYY').valueOf() - dayjs(b, 'DD/MM/YYYY').valueOf()
-}
-
 function ContractIdentityCell({ row }: ContractIdentityCellProps) {
   return (
-    <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0, height: '100%' }}>
-      <Box
-        component="img"
-        src={row.propertyImageUrl}
-        alt={row.property}
-        sx={{
-          width: 56,
-          height: 56,
-          borderRadius: `${radius.sm}px`,
-          objectFit: 'cover',
-          flexShrink: 0,
-        }}
-      />
-      <Stack justifyContent="center" spacing={0.2} sx={{ minWidth: 0 }}>
-        <Typography noWrap sx={{ color: brand.graphite[500], fontSize: 15, fontWeight: 900 }}>
+    <Stack direction="row" alignItems="center" spacing={2} sx={styles.stack}>
+      <Box sx={styles.box}>
+        <HomeWorkOutlinedIcon fontSize="large" aria-hidden />
+      </Box>
+      <Stack justifyContent="center" spacing={0.2} sx={styles.stack2}>
+        <Typography noWrap sx={styles.typography}>
           {row.property}
         </Typography>
-        <Typography noWrap sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 700 }}>
+        <Typography noWrap sx={styles.typography2}>
           {row.propertyAddress}
         </Typography>
       </Stack>
@@ -86,18 +67,7 @@ function ContractStatusCell({ status }: ContractStatusCellProps) {
   const statusStyle = contractStatusStyles[status]
 
   return (
-    <Chip
-      label={t(status)}
-      size="small"
-      sx={{
-        height: 30,
-        borderRadius: `${radius.full}px`,
-        bgcolor: statusStyle.bgcolor,
-        color: statusStyle.color,
-        fontSize: 13,
-        fontWeight: 900,
-      }}
-    />
+    <Chip label={t(contractStatusMessageKeys[status])} size="small" sx={styles.chip(statusStyle)} />
   )
 }
 
@@ -105,11 +75,7 @@ const contractActionMenuIcons: Record<ContractActionMenuIconKey, typeof Visibili
   summary: ArticleOutlinedIcon,
   history: HistoryOutlinedIcon,
   edit: EditNoteOutlinedIcon,
-  duplicate: ContentCopyOutlinedIcon,
   pdf: DownloadOutlinedIcon,
-  draft: InsertDriveFileOutlinedIcon,
-  send: SendOutlinedIcon,
-  link: LinkOutlinedIcon,
 }
 
 function ContractActionsCell({ contract, onContractAction }: ContractActionsCellProps) {
@@ -127,23 +93,14 @@ function ContractActionsCell({ contract, onContractAction }: ContractActionsCell
   }
 
   return (
-    <Stack
-      direction="row"
-      sx={{
-        width: '100%',
-        height: '100%',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        transform: 'translateX(-40px)',
-      }}
-    >
+    <Stack direction="row" sx={styles.stack3}>
       <Tooltip title={t('actionsTooltip')}>
         <IconButton
           aria-label={t('actionsAriaLabel', { code: contract.code })}
           onClick={openMenu}
           sx={contractIconButtonSx}
         >
-          <MoreHorizRoundedIcon sx={{ fontSize: iconSize.md }} />
+          <MoreHorizRoundedIcon sx={styles.moreHorizRoundedIcon} />
         </IconButton>
       </Tooltip>
       <Menu
@@ -153,40 +110,30 @@ function ContractActionsCell({ contract, onContractAction }: ContractActionsCell
         onClick={(event) => event.stopPropagation()}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        slotProps={{
-          paper: {
-            sx: {
-              mt: 0.8,
-              minWidth: 220,
-              borderRadius: `${radius.sm}px`,
-              border: '1px solid',
-              borderColor: alpha.graphite[8],
-              boxShadow: shadows.popover,
-            },
-          },
-        }}
+        slotProps={contractMenuSlotProps}
       >
         {Object.entries(contractActionMenuOptions).map(([groupKey, options], groupIndex) => (
           <Box key={groupKey}>
-            {groupIndex > 0 ? <Divider sx={{ borderColor: alpha.graphite[8] }} /> : null}
+            {groupIndex > 0 ? <Divider sx={styles.divider} /> : null}
             {options.map((option) => {
               const OptionIcon = contractActionMenuIcons[option.icon]
 
               return (
                 <MenuItem
                   key={option.action}
+                  disabled={option.action === 'edit-data' && !contract.canEdit}
                   onClick={() => {
                     onContractAction(contract, option.action)
                     closeMenu()
                   }}
-                  sx={{ minHeight: 48, gap: 1.2 }}
+                  sx={styles.menuItem}
                 >
-                  <ListItemIcon sx={{ minWidth: 32, color: brand.neutral[500] }}>
-                    <OptionIcon sx={{ fontSize: iconSize.sm }} />
+                  <ListItemIcon sx={styles.listItemIcon}>
+                    <OptionIcon sx={styles.optionIcon} />
                   </ListItemIcon>
                   <ListItemText
                     primary={t(`menu.${option.action}`)}
-                    primaryTypographyProps={{ fontSize: 16, fontWeight: 800 }}
+                    primaryTypographyProps={contractMenuTextProps}
                   />
                 </MenuItem>
               )
@@ -198,26 +145,21 @@ function ContractActionsCell({ contract, onContractAction }: ContractActionsCell
   )
 }
 
-const contractIconButtonSx = {
-  width: 38,
-  height: 38,
-  borderRadius: `${radius.sm}px`,
-  color: brand.graphite[500],
-  bgcolor: brand.neutral[50],
-  '&:hover': {
-    color: brand.magenta[500],
-    bgcolor: alpha.magenta[8],
-  },
-} as const
-
 export function ContractsTable({
   contracts,
   totalCount,
   onContractAction,
   onContractSelect,
   readOnly = false,
+  loading,
+  paginationModel,
+  onPaginationModelChange,
+  sortModel,
+  onSortModelChange,
 }: ContractsTableProps) {
   const t = useTranslations('contracts.table')
+  const locale = useLocale()
+  const gridLocale = locale === 'en-US' ? enUS : locale === 'es-ES' ? esES : ptBR
   const columns: GridColDef<ContractListItem>[] = [
     {
       field: 'property',
@@ -243,7 +185,6 @@ export function ContractsTable({
       minWidth: 140,
       disableColumnMenu: true,
       hideable: false,
-      sortComparator: compareAmount,
     },
     {
       field: 'startDate',
@@ -252,7 +193,6 @@ export function ContractsTable({
       minWidth: 130,
       disableColumnMenu: true,
       hideable: false,
-      sortComparator: compareDate,
     },
     {
       field: 'endDate',
@@ -261,7 +201,6 @@ export function ContractsTable({
       minWidth: 150,
       disableColumnMenu: true,
       hideable: false,
-      sortComparator: compareDate,
     },
     {
       field: 'status',
@@ -291,17 +230,17 @@ export function ContractsTable({
   ]
 
   return (
-    <Box
-      sx={{
-        bgcolor: surface.paper,
-        borderRadius: `${radius.sm}px`,
-        boxShadow: shadows.crmCardCompact,
-        width: '100%',
-        minWidth: 0,
-      }}
-    >
+    <Box sx={styles.box2}>
       <DataGrid
         rows={contracts}
+        rowCount={totalCount}
+        loading={loading}
+        paginationMode="server"
+        sortingMode="server"
+        paginationModel={paginationModel}
+        onPaginationModelChange={onPaginationModelChange}
+        sortModel={sortModel}
+        onSortModelChange={onSortModelChange}
         columns={readOnly ? columns.filter((column) => column.field !== 'actions') : columns}
         autoHeight
         rowHeight={82}
@@ -319,56 +258,20 @@ export function ContractsTable({
               actions: true,
             },
           },
-          pagination: { paginationModel: { pageSize: 5 } },
         }}
         localeText={{
+          ...gridLocale.components.MuiDataGrid.defaultProps.localeText,
           noRowsLabel: t('noRowsLabel'),
           footerTotalRows: t('totalRows'),
           MuiTablePagination: {
             labelRowsPerPage: t('rowsPerPage'),
+            getItemAriaLabel: (type) => t('paginationAria.' + type),
             labelDisplayedRows: ({ from, to }) =>
               t('displayedRows', { from, to, total: totalCount }),
           },
         }}
         onRowClick={(params: GridRowParams<ContractListItem>) => onContractSelect(params.row)}
-        sx={{
-          border: 0,
-          minHeight: 400,
-          color: brand.graphite[500],
-          '& .MuiDataGrid-columnHeaders': {
-            bgcolor: surface.app,
-            color: brand.neutral[500],
-            fontSize: 12,
-            fontWeight: 900,
-            textTransform: 'uppercase',
-          },
-          '& .MuiDataGrid-cell': {
-            borderColor: brand.neutral[100],
-            outline: 'none',
-          },
-          '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': {
-            outline: 'none',
-          },
-          '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': {
-            outline: 'none',
-          },
-          '& .contracts-actions-column .MuiDataGrid-columnHeaderTitleContainer': {
-            transform: 'translateX(-40px)',
-          },
-          '& .MuiDataGrid-row': {
-            bgcolor: surface.paper,
-            cursor: 'pointer',
-          },
-          '& .MuiDataGrid-row:nth-of-type(even)': {
-            bgcolor: surface.app,
-          },
-          '& .MuiDataGrid-row:hover': {
-            bgcolor: alpha.magenta[6],
-          },
-          '& .MuiDataGrid-footerContainer': {
-            borderColor: brand.neutral[100],
-          },
-        }}
+        sx={styles.dataGrid}
       />
     </Box>
   )

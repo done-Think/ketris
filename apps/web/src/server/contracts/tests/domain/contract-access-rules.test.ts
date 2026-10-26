@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest'
-
 import type { Papel } from '@server/auth/domain/user.entity'
-
 import {
   resolveContractManageScope,
   resolveContractReadScope,

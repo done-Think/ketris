@@ -1,5 +1,4 @@
-import type { Papel } from '@server/auth/domain/user.entity'
-
+import type { CreateContractFromOpportunityInput } from '../../types/use-case-inputs'
 import { resolveContractManageScope } from '../../domain/contract-access-rules'
 import {
   GuarantorPartyRequiredError,
@@ -7,26 +6,9 @@ import {
   OpportunityNotAcceptedError,
   OpportunityNotFoundError,
 } from '../../domain/errors'
-import type { Contract, NewContractParty } from '../../domain/contract.entity'
-import type { AdjustmentIndex, ContractGuaranteeType, ContractType } from '../../types/contract'
+import type { Contract } from '../../domain/contract.entity'
+import type { NewContractParty } from '../../types/contract-entity'
 import type { ContractRepository } from '../ports/contract-repository.port'
-
-export interface CreateContractFromOpportunityInput {
-  actorTenantId: string
-  actorId: string
-  actorPapel: Papel
-  opportunityId: string
-  type: ContractType
-  dueDay: number
-  startDate: Date
-  endDate: Date
-  adjustmentIndex: AdjustmentIndex
-  guaranteeType: ContractGuaranteeType
-  notes: string | null
-  owner: Omit<NewContractParty, 'role'>
-  tenant: Omit<NewContractParty, 'role'>
-  guarantor: Omit<NewContractParty, 'role'> | null
-}
 
 export class CreateContractFromOpportunityUseCase {
   constructor(private readonly contractRepository: ContractRepository) {}
@@ -65,17 +47,22 @@ export class CreateContractFromOpportunityUseCase {
       parties.push({ ...input.guarantor, role: 'FIADOR' })
     }
 
-    return this.contractRepository.create({
-      tenantId: input.actorTenantId,
-      opportunityId: input.opportunityId,
-      type: input.type,
-      dueDay: input.dueDay,
-      startDate: input.startDate,
-      endDate: input.endDate,
-      adjustmentIndex: input.adjustmentIndex,
-      guaranteeType: input.guaranteeType,
-      notes: input.notes,
-      parties,
-    })
+    return this.contractRepository.create(
+      {
+        tenantId: input.actorTenantId,
+        actorId: input.actorId,
+        opportunityId: input.opportunityId,
+        amount: input.amount,
+        type: input.type,
+        dueDay: input.dueDay,
+        startDate: input.startDate,
+        endDate: input.endDate,
+        adjustmentIndex: input.adjustmentIndex,
+        guaranteeType: input.guaranteeType,
+        notes: input.notes,
+        parties,
+      },
+      scope,
+    )
   }
 }

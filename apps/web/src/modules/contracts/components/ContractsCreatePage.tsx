@@ -1,5 +1,6 @@
 'use client'
 
+import { styles } from '../styles/contracts-create-page.styles'
 import { useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -17,36 +18,24 @@ import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 import { useForm } from 'react-hook-form'
-
 import { Link, useRouter } from '@/i18n/navigation'
-import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
-
 import { createContractSteps } from '../config/contract-ui'
 import {
   createContractDefaultValues,
   createContractSchema,
 } from '../schemas/create-contract-schema'
+import { useContractWizard } from '../hooks/use-contract-wizard'
 import { useCreateContract } from '../hooks/use-contracts'
-import type { CreateContractFieldName, CreateContractFormValues } from '../types/contract'
-import { errorMessage } from '../utils/error-message'
+import type { CreateContractFormValues } from '../types/contract'
+import { contractError } from '../utils/contract-error'
 import { ContractActions } from './ContractActions'
-import {
-  ContractStepFields,
-  conditionsStepFieldNames,
-  opportunityStepFieldNames,
-  partiesStepFieldNames,
-} from './ContractStepFields'
+import { ContractStepFields } from './ContractStepFields'
+import { stepValidationFields } from '../config/contract-fields'
 import { ContractStepsNav } from './ContractStepsNav'
-
-const stepValidationFields: Record<number, CreateContractFieldName[]> = {
-  0: opportunityStepFieldNames,
-  1: partiesStepFieldNames,
-  2: conditionsStepFieldNames,
-  3: [],
-}
 
 export function ContractsCreatePage() {
   const t = useTranslations('contracts.wizard')
+  const errors = useTranslations('contracts.errors')
   const router = useRouter()
   const { data: session } = useSession()
   const tenantId = session?.tenantId ?? ''
@@ -60,16 +49,14 @@ export function ContractsCreatePage() {
     handleSubmit,
     setValue,
     trigger,
-    watch,
   } = useForm<CreateContractFormValues>({
     defaultValues: createContractDefaultValues,
     resolver: zodResolver(contractSchema),
     mode: 'onBlur',
   })
 
-  const values = watch()
-  const activeStepIndex = values.activeStepIndex
-  const maxStepIndex = values.maxStepIndex
+  const wizard = useContractWizard()
+  const { activeStepIndex, maxStepIndex } = wizard
   const activeStep = createContractSteps[activeStepIndex]
   const firstStep = activeStepIndex === 0
   const lastStep = activeStepIndex === createContractSteps.length - 1
@@ -80,7 +67,7 @@ export function ContractsCreatePage() {
       enqueueSnackbar(t('successMessage', { code: contract.code }), { variant: 'success' })
       router.push('/dashboard/contracts')
     } catch (error) {
-      enqueueSnackbar(errorMessage(error, t('errorMessage')), { variant: 'error' })
+      enqueueSnackbar(contractError(error, errors), { variant: 'error' })
     }
   }
 
@@ -95,7 +82,7 @@ export function ContractsCreatePage() {
       return
     }
 
-    setValue('activeStepIndex', Math.max(activeStepIndex - 1, 0), { shouldDirty: true })
+    wizard.previous()
   }
 
   const goToNextStep = async () => {
@@ -107,42 +94,28 @@ export function ContractsCreatePage() {
     const validStep = await trigger(stepValidationFields[activeStepIndex], { shouldFocus: true })
     if (!validStep) return
 
-    const nextStepIndex = Math.min(activeStepIndex + 1, createContractSteps.length - 1)
-
-    setValue('activeStepIndex', nextStepIndex, { shouldDirty: true })
-    setValue('maxStepIndex', Math.max(maxStepIndex, nextStepIndex), { shouldDirty: true })
+    wizard.next()
   }
 
-  const goToStep = (stepIndex: number) => {
-    if (stepIndex > maxStepIndex) return
-
-    setValue('activeStepIndex', stepIndex, { shouldDirty: true })
-  }
+  const goToStep = wizard.select
 
   return (
-    <Box
-      sx={{
-        width: '100%',
-        p: 3.5,
-      }}
-    >
-      <Box sx={{ width: '100%', maxWidth: 1540, mx: 'auto' }}>
-        <Stack spacing={0.7} sx={{ mb: { xs: 3, md: 4.5 } }}>
+    <Box sx={styles.box}>
+      <Box sx={styles.box2}>
+        <Stack spacing={0.7} sx={styles.stack}>
           <Stack direction="row" alignItems="center" spacing={0.8}>
             <MuiLink
               component={Link}
               href="/dashboard/contracts"
               underline="hover"
-              sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 700 }}
+              sx={styles.muiLink}
             >
               {t('breadcrumbContracts')}
             </MuiLink>
-            <Typography sx={{ color: brand.neutral[400], fontSize: 12 }}>›</Typography>
-            <Typography sx={{ color: brand.magenta[500], fontSize: 12, fontWeight: 900 }}>
-              {t('breadcrumbNew')}
-            </Typography>
+            <Typography sx={styles.typography}>›</Typography>
+            <Typography sx={styles.typography2}>{t('breadcrumbNew')}</Typography>
           </Stack>
-          <Typography variant="h3" sx={{ fontSize: { xs: 20, md: 24 }, fontWeight: 800 }}>
+          <Typography variant="h3" sx={styles.typography3}>
             {t('title')}
           </Typography>
         </Stack>
@@ -153,20 +126,8 @@ export function ContractsCreatePage() {
           onStepSelect={goToStep}
         />
 
-        <Box
-          component="form"
-          onSubmit={handleSubmit(createContract)}
-          sx={{
-            bgcolor: surface.paper,
-            border: '1px solid',
-            borderColor: alpha.graphite[6],
-            borderRadius: `${radius.sm}px`,
-            boxShadow: shadows.propertyCard,
-            px: { xs: 2, md: 3.6, xl: 4.4 },
-            py: { xs: 2.6, md: 3.4, xl: 4 },
-          }}
-        >
-          <Typography sx={{ color: brand.graphite[500], fontSize: 20, fontWeight: 900, mb: 2.4 }}>
+        <Box component="form" onSubmit={handleSubmit(createContract)} sx={styles.box3}>
+          <Typography sx={styles.typography4}>
             {activeStep.key === 'review'
               ? t('stepFormTitleReview')
               : t('stepFormTitle', { step: t(`steps.${activeStep.key}`) })}
@@ -176,7 +137,6 @@ export function ContractsCreatePage() {
             activeStepKey={activeStep.key}
             control={control}
             setValue={setValue}
-            values={values}
           />
         </Box>
 
@@ -189,7 +149,7 @@ export function ContractsCreatePage() {
       </Box>
 
       <Dialog open={discardDialogOpen} onClose={() => setDiscardDialogOpen(false)}>
-        <DialogTitle sx={{ letterSpacing: 0 }}>{t('discardDialog.title')}</DialogTitle>
+        <DialogTitle sx={styles.dialogTitle}>{t('discardDialog.title')}</DialogTitle>
         <DialogContent>
           <Typography color="text.secondary">{t('discardDialog.description')}</Typography>
         </DialogContent>

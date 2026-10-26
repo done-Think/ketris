@@ -1,5 +1,5 @@
 import { z } from 'zod'
-
+import { parseContractFormDate } from '../utils/contract-date'
 import { createCpfSchema, isValidCpf } from '@shared/schemas/cpf-schema'
 import { createPhoneSchema } from '@shared/schemas/phone-schema'
 import type { SchemaMessageTranslator } from '@shared/types'
@@ -40,35 +40,64 @@ function addGuarantorPhoneIssue(
 }
 
 export function createContractSchema(t: SchemaMessageTranslator) {
-  const requiredText = (key: string) => z.string().min(1, t(key))
+  const requiredText = (key: string) => z.string().trim().min(1, t(key))
 
   return z
     .object({
-      activeStepIndex: z.number().int().min(0).default(0),
-      maxStepIndex: z.number().int().min(0).max(3).default(0),
       opportunityId: requiredText('opportunityRequired'),
-      ownerName: requiredText('ownerNameRequired'),
+      amount: z.coerce
+        .number()
+        .min(0.01, t('amountRequired'))
+        .max(9999999999.99, t('amountTooLarge'))
+        .multipleOf(0.01, t('amountPrecision')),
+      ownerName: requiredText('ownerNameRequired').max(200, t('nameTooLong')),
       ownerCpf: createCpfSchema(t),
-      ownerEmail: z.string().email(t('emailInvalid')),
-      ownerPhone: createPhoneSchema(t),
-      tenantName: requiredText('tenantNameRequired'),
+      ownerEmail: z.string().trim().email(t('emailInvalid')).max(254, t('emailTooLong')),
+      ownerPhone: createPhoneSchema(t).refine((phone) => phone.length <= 32, t('phoneTooLong')),
+      tenantName: requiredText('tenantNameRequired').max(200, t('nameTooLong')),
       tenantCpf: createCpfSchema(t),
-      tenantEmail: z.string().email(t('emailInvalid')),
-      tenantPhone: createPhoneSchema(t),
+      tenantEmail: z.string().trim().email(t('emailInvalid')).max(254, t('emailTooLong')),
+      tenantPhone: createPhoneSchema(t).refine((phone) => phone.length <= 32, t('phoneTooLong')),
       hasGuarantor: z.boolean().default(false),
-      guarantorName: z.string().default(''),
+      guarantorName: z.string().trim().max(200, t('nameTooLong')).default(''),
       guarantorCpf: z.string().default(''),
-      guarantorEmail: z.string().default(''),
-      guarantorPhone: z.string().default(''),
-      contractType: requiredText('contractTypeRequired'),
-      dueDay: requiredText('dueDayRequired'),
-      startDate: requiredText('startDateRequired'),
-      endDate: requiredText('endDateRequired'),
-      guaranteeType: requiredText('guaranteeTypeRequired'),
-      adjustmentIndex: requiredText('adjustmentIndexRequired'),
-      notes: z.string().default(''),
+      guarantorEmail: z.string().trim().max(254, t('emailTooLong')).default(''),
+      guarantorPhone: z.string().max(32, t('phoneTooLong')).default(''),
+      contractType: requiredText('contractTypeRequired').refine(
+        (value) => ['RESIDENCIAL', 'COMERCIAL', 'TEMPORADA'].includes(value),
+        t('contractTypeRequired'),
+      ),
+      dueDay: requiredText('dueDayRequired').refine(
+        (value) => /^\d{1,2}$/.test(value) && Number(value) >= 1 && Number(value) <= 31,
+        t('dueDayInvalid'),
+      ),
+      startDate: requiredText('startDateRequired').refine(
+        (value) => parseContractFormDate(value) !== null,
+        t('dateInvalid'),
+      ),
+      endDate: requiredText('endDateRequired').refine(
+        (value) => parseContractFormDate(value) !== null,
+        t('dateInvalid'),
+      ),
+      guaranteeType: requiredText('guaranteeTypeRequired').refine(
+        (value) => ['FIADOR', 'CAUCAO', 'SEGURO_FIANCA', 'TITULO_CAPITALIZACAO'].includes(value),
+        t('guaranteeTypeRequired'),
+      ),
+      adjustmentIndex: requiredText('adjustmentIndexRequired').refine(
+        (value) => ['IPCA', 'IGPM', 'INPC'].includes(value),
+        t('adjustmentIndexRequired'),
+      ),
+      notes: z.string().max(10000, t('notesTooLong')).default(''),
     })
     .superRefine((values, context) => {
+      const start = parseContractFormDate(values.startDate)
+      const end = parseContractFormDate(values.endDate)
+      if (start && end && end <= start)
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t('endAfterStart'),
+          path: ['endDate'],
+        })
       if (!values.hasGuarantor && values.guaranteeType !== 'FIADOR') return
 
       addGuarantorTextIssue(
@@ -100,9 +129,8 @@ export function createContractSchema(t: SchemaMessageTranslator) {
 }
 
 export const createContractDefaultValues = {
-  activeStepIndex: 0,
-  maxStepIndex: 0,
   opportunityId: '',
+  amount: 0,
   ownerName: '',
   ownerCpf: '',
   ownerEmail: '',

@@ -1,8 +1,6 @@
+import { styles } from '../styles/contract-actions.styles'
 import { Button, CircularProgress, Stack } from '@mui/material'
 import { useTranslations } from 'next-intl'
-
-import { brand, radius, shadows } from '@shared/theme/tokens'
-
 import type { ContractActionsProps } from '../types/contract'
 
 export function ContractActions({
@@ -19,22 +17,9 @@ export function ContractActions({
       justifyContent="space-between"
       alignItems="center"
       spacing={2}
-      sx={{ mt: { xs: 3, md: 5.2 } }}
+      sx={styles.stack}
     >
-      <Button
-        variant="outlined"
-        onClick={onPreviousStep}
-        sx={{
-          borderColor: brand.neutral[200],
-          color: brand.graphite[500],
-          borderRadius: `${radius.sm}px`,
-          px: 2.4,
-          py: 1,
-          fontSize: 12,
-          fontWeight: 900,
-          textTransform: 'none',
-        }}
-      >
+      <Button variant="outlined" onClick={onPreviousStep} sx={styles.button}>
         {t('back')}
       </Button>
       <Button
@@ -42,15 +27,7 @@ export function ContractActions({
         onClick={onNextStep}
         disabled={lastStep && isSubmitting}
         startIcon={lastStep && isSubmitting ? <CircularProgress size={16} color="inherit" /> : null}
-        sx={{
-          borderRadius: `${radius.sm}px`,
-          boxShadow: shadows.none,
-          px: { xs: 2.4, md: 3 },
-          py: 1.1,
-          fontSize: 12,
-          fontWeight: 900,
-          textTransform: 'none',
-        }}
+        sx={styles.button2}
       >
         {lastStep ? t('generate') : t('next')}
       </Button>
