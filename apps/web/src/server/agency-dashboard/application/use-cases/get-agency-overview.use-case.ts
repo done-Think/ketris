@@ -1,15 +1,7 @@
-import { isAgencyManager } from '@server/auth/domain/roles'
-import type { Papel } from '@server/auth/domain/user.entity'
-import { ForbiddenError } from '@server/shared/errors'
-
-import type { AgencyOverview } from '../../domain/agency-overview.entity'
+import { assertCanViewAgencyOverview } from '../../domain/agency-overview-access'
+import type { AgencyOverview, GetAgencyOverviewInput } from '../../types/agency-overview'
 import type { AgencyOverviewRepository } from '../ports/agency-overview-repository.port'
 import type { FinancialSummaryProvider } from '../ports/financial-summary-provider.port'
-
-export interface GetAgencyOverviewInput {
-  actorTenantId: string
-  actorPapel: Papel
-}
 
 export class GetAgencyOverviewUseCase {
   constructor(
@@ -18,11 +10,7 @@ export class GetAgencyOverviewUseCase {
   ) {}
 
   async execute(input: GetAgencyOverviewInput): Promise<AgencyOverview> {
-    if (!isAgencyManager(input.actorPapel)) {
-      throw new ForbiddenError(
-        'Apenas proprietários ou administradores podem ver a visão geral da agência.',
-      )
-    }
+    assertCanViewAgencyOverview(input.actorPapel)
 
     const referenceDate = new Date()
 

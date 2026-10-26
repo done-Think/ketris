@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { ChargeRepository } from '@server/financial/application/ports/charge-repository.port'
 import { GetFinancialSummaryUseCase } from '@server/financial/application/use-cases/get-financial-summary.use-case'
 
-import type { AgencyActivity, AgencyTopBroker } from '../../../domain/agency-overview.entity'
+import type { AgencyActivity, AgencyTopBroker } from '../../../types/agency-overview'
 import type { AgencyOverviewRepository } from '../../../application/ports/agency-overview-repository.port'
 import type { FinancialSummaryProvider } from '../../../application/ports/financial-summary-provider.port'
 import { GetAgencyOverviewUseCase } from '../../../application/use-cases/get-agency-overview.use-case'

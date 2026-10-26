@@ -1,3 +1,5 @@
+import type { Papel } from '@server/auth/domain/user.entity'
+
 export interface AgencyOverviewKpis {
   portfolioCount: number
   newPropertiesThisMonth: number
@@ -50,4 +52,9 @@ export interface AgencyOverview {
   revenueSeries: AgencyRevenueMonth[]
   topBrokers: AgencyTopBroker[]
   recentActivities: AgencyActivity[]
+}
+
+export interface GetAgencyOverviewInput {
+  actorTenantId: string
+  actorPapel: Papel
 }
