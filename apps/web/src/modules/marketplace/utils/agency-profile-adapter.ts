@@ -7,7 +7,7 @@ import type {
   PublicAgencyProfile,
 } from '../types/public-agency-profile'
 import { formatCompactCurrency } from './search-results'
-import type { PropertyText } from './property-presentation'
+import type { PropertyText } from '../types/search'
 
 function buildListingLocation(listing: PublicAgencyListingSummary): string {
   return [listing.neighborhood, listing.city].filter(Boolean).join(', ')

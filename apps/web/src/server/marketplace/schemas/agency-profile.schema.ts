@@ -1,6 +1,8 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
+import { profileDirectoryPageSchema } from './profile-directory.schema'
+
 const optionalTextSchema = z.string().trim().min(1).nullable().optional()
 
 export const saveAgencyProfileTeamMemberSchema = z
@@ -88,7 +90,7 @@ export const publicAgencyProfileSchema = z
   .openapi('PublicAgencyProfile')
 
 export const listAgenciesResponseSchema = z
-  .object({ agencies: z.array(publicAgencyProfileSchema) })
+  .object({ agencies: z.array(publicAgencyProfileSchema), ...profileDirectoryPageSchema })
   .openapi('ListAgenciesResponse')
 
 export const getAgencyProfileResponseSchema = z

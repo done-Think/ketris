@@ -1,4 +1,4 @@
-export { HomePageClient } from './components/HomePageClient'
+export { HomePage } from './components/HomePage'
 export { SearchResultsPage } from './components/SearchResultsPage'
 export { BrokersPage } from './components/BrokersPage'
 export { BrokerPublicProfilePage } from './components/BrokerPublicProfilePage'

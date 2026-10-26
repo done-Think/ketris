@@ -1,9 +1,9 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
 import { Avatar, Box, Typography } from '@mui/material'
 
-import { componentText, radius } from '@shared/theme/tokens'
+import { useElementOverflow } from '@shared/hooks'
+import { alpha, componentText, gradients, radius } from '@shared/theme/tokens'
 
 import type {
   AgencyAdaptiveBrandHeaderProps,
@@ -64,36 +64,15 @@ export function AgencyAdaptiveBrandHeader({
   showBanner = false,
   showHeadquarters = false,
 }: AgencyAdaptiveBrandHeaderProps) {
-  const logoSlotRef = useRef<HTMLDivElement | null>(null)
-  const logoImageRef = useRef<HTMLImageElement | null>(null)
-  const [logoOverflow, setLogoOverflow] = useState(0)
   const config = brandHeaderConfig[variant]
   const logoUrl = agency.brand.logoUrl
-
-  const updateLogoOverflow = useCallback(() => {
-    const logoSlot = logoSlotRef.current
-    const logoImage = logoImageRef.current
-
-    if (!logoSlot || !logoImage) {
-      setLogoOverflow(0)
-      return
-    }
-
-    setLogoOverflow(Math.max(0, logoImage.getBoundingClientRect().width - logoSlot.clientWidth))
-  }, [])
-
-  useEffect(() => {
-    updateLogoOverflow()
-
-    if (!window.ResizeObserver) return
-
-    const resizeObserver = new ResizeObserver(updateLogoOverflow)
-
-    if (logoSlotRef.current) resizeObserver.observe(logoSlotRef.current)
-    if (logoImageRef.current) resizeObserver.observe(logoImageRef.current)
-
-    return () => resizeObserver.disconnect()
-  }, [logoUrl, variant, updateLogoOverflow])
+  // A wide logo spills past its slot; the title column moves right by the same amount.
+  const {
+    containerRef: logoSlotRef,
+    contentRef: logoImageRef,
+    overflow: logoOverflow,
+    measure: measureLogoOverflow,
+  } = useElementOverflow<HTMLDivElement, HTMLImageElement>([logoUrl, variant])
 
   return (
     <Box
@@ -131,7 +110,7 @@ export function AgencyAdaptiveBrandHeader({
             ref={logoImageRef}
             src={logoUrl}
             alt={agency.name}
-            onLoad={updateLogoOverflow}
+            onLoad={measureLogoOverflow}
             sx={{
               position: 'absolute',
               top: '50%',
@@ -184,10 +163,8 @@ export function AgencyAdaptiveBrandHeader({
             sx={{
               position: 'absolute',
               inset: 0,
-              bgcolor: agency.bannerUrl ? 'rgba(255, 255, 255, 0.72)' : 'transparent',
-              background: agency.bannerUrl
-                ? 'linear-gradient(90deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.74) 64%, rgba(255, 255, 255, 0.5) 100%)'
-                : undefined,
+              bgcolor: agency.bannerUrl ? alpha.white[72] : 'transparent',
+              background: agency.bannerUrl ? gradients.agencyBannerVeil : undefined,
             }}
           />
         ) : null}

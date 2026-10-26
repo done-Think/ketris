@@ -1,5 +1,5 @@
-import { HomePageClient } from '@modules/marketplace'
+import { HomePage } from '@modules/marketplace'
 
-export default function HomePage() {
-  return <HomePageClient />
+export default function Page() {
+  return <HomePage />
 }

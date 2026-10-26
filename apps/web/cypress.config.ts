@@ -17,6 +17,12 @@ import {
   readAgendaAudit,
 } from './cypress/support/agenda-fixtures'
 import type { AgendaFixtureSeedInput } from './cypress/types/agenda-fixtures'
+import {
+  seedMarketplaceFixtures,
+  cleanupMarketplaceFixtures,
+  readMarketplaceInquiries,
+} from './cypress/support/marketplace-fixtures'
+import type { MarketplaceFixtureInput } from './cypress/types/marketplace-fixtures'
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import bcrypt from 'bcryptjs'
@@ -87,6 +93,12 @@ export default defineConfig({
         seedAgendaFixtures: (input: AgendaFixtureSeedInput) => seedAgendaFixtures(prisma, input),
         cleanupAgendaFixtures: (tenantIds: string[]) => cleanupAgendaFixtures(prisma, tenantIds),
         readAgendaAudit: (eventId: string) => readAgendaAudit(prisma, eventId),
+        seedMarketplaceFixtures: (input: MarketplaceFixtureInput) =>
+          seedMarketplaceFixtures(prisma, input),
+        cleanupMarketplaceFixtures: (tenantIds: string[]) =>
+          cleanupMarketplaceFixtures(prisma, tenantIds),
+        readMarketplaceInquiries: (input: { tenantId: string; propertyId: string }) =>
+          readMarketplaceInquiries(prisma, input),
         readAuthEmail(email: string) {
           if (!mailbox)
             throw new Error('O simulador de e-mail Auth não foi habilitado para esta execução.')

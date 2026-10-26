@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, Stack } from '@mui/material'
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded'
@@ -29,35 +29,24 @@ export function SearchResultsFilters({
 
 export function SearchResultsFilterButton(props: SearchResultsFilterButtonProps) {
   const t = useTranslations('marketplace.searchResults.filters')
+  const [open, setOpen] = useState(false)
   const searchResultsFiltersDialogFormSchema = useMemo(
     () => createSearchResultsFiltersDialogFormSchema((key) => t(`errors.${key}`)),
     [t],
   )
-  const { getValues, handleSubmit, setValue, watch } =
-    useForm<SearchResultsFiltersDialogFormValues>({
-      defaultValues: {
-        isFiltersOpen: false,
-        propertyTypeFilter: props.propertyTypeFilter,
-        priceFilterIndex: props.priceFilterIndex,
-        customMaxPrice: props.customMaxPrice,
-        bedroomFilterIndex: props.bedroomFilterIndex,
-        areaFilterIndex: props.areaFilterIndex,
-        customMinArea: props.customMinArea,
-        onlyWithParking: props.onlyWithParking,
-      },
-      resolver: zodResolver(searchResultsFiltersDialogFormSchema),
-    })
-  const formValues = watch()
-
-  const syncDraftWithAppliedFilters = () => {
-    setValue('propertyTypeFilter', props.propertyTypeFilter)
-    setValue('priceFilterIndex', props.priceFilterIndex)
-    setValue('customMaxPrice', props.customMaxPrice)
-    setValue('bedroomFilterIndex', props.bedroomFilterIndex)
-    setValue('areaFilterIndex', props.areaFilterIndex)
-    setValue('customMinArea', props.customMinArea)
-    setValue('onlyWithParking', props.onlyWithParking)
+  const appliedFilters: SearchResultsFiltersDialogFormValues = {
+    propertyTypeFilter: props.propertyTypeFilter,
+    priceFilterIndex: props.priceFilterIndex,
+    customMaxPrice: props.customMaxPrice,
+    bedroomFilterIndex: props.bedroomFilterIndex,
+    areaFilterIndex: props.areaFilterIndex,
+    customMinArea: props.customMinArea,
+    onlyWithParking: props.onlyWithParking,
   }
+  const { control, handleSubmit, reset, setValue } = useForm<SearchResultsFiltersDialogFormValues>({
+    defaultValues: appliedFilters,
+    resolver: zodResolver(searchResultsFiltersDialogFormSchema),
+  })
 
   const activeFiltersCount = [
     props.propertyTypeFilter,
@@ -67,34 +56,32 @@ export function SearchResultsFilterButton(props: SearchResultsFilterButtonProps)
     props.onlyWithParking,
   ].filter(Boolean).length
 
-  const closeFiltersDialog = () => {
-    setValue('isFiltersOpen', false)
-  }
-
+  // The dialog edits a draft: it starts from the applied filters every time it opens.
   const openFiltersDialog = () => {
-    syncDraftWithAppliedFilters()
-    setValue('isFiltersOpen', true)
+    reset(appliedFilters)
+    setOpen(true)
   }
 
-  const clearDraftFilters = () => {
-    setValue('propertyTypeFilter', '')
-    setValue('priceFilterIndex', 0)
-    setValue('customMaxPrice', '')
-    setValue('bedroomFilterIndex', 0)
-    setValue('areaFilterIndex', 0)
-    setValue('customMinArea', '')
-    setValue('onlyWithParking', false)
-  }
+  const clearDraftFilters = () =>
+    reset({
+      propertyTypeFilter: '',
+      priceFilterIndex: 0,
+      customMaxPrice: '',
+      bedroomFilterIndex: 0,
+      areaFilterIndex: 0,
+      customMinArea: '',
+      onlyWithParking: false,
+    })
 
-  const applyDraftFilters = () => {
-    props.setPropertyTypeFilter(getValues('propertyTypeFilter'))
-    props.setPriceFilterIndex(getValues('priceFilterIndex'))
-    props.setCustomMaxPrice(getValues('customMaxPrice'))
-    props.setBedroomFilterIndex(getValues('bedroomFilterIndex'))
-    props.setAreaFilterIndex(getValues('areaFilterIndex'))
-    props.setCustomMinArea(getValues('customMinArea'))
-    props.setOnlyWithParking(getValues('onlyWithParking'))
-    closeFiltersDialog()
+  const applyDraftFilters = (values: SearchResultsFiltersDialogFormValues) => {
+    props.setPropertyTypeFilter(values.propertyTypeFilter)
+    props.setPriceFilterIndex(values.priceFilterIndex)
+    props.setCustomMaxPrice(values.customMaxPrice)
+    props.setBedroomFilterIndex(values.bedroomFilterIndex)
+    props.setAreaFilterIndex(values.areaFilterIndex)
+    props.setCustomMinArea(values.customMinArea)
+    props.setOnlyWithParking(values.onlyWithParking)
+    setOpen(false)
   }
 
   return (
@@ -130,31 +117,12 @@ export function SearchResultsFilterButton(props: SearchResultsFilterButtonProps)
       </Stack>
 
       <SearchResultsFilterDialog
-        {...formValues}
+        control={control}
+        setValue={setValue}
+        open={open}
         clearDraftFilters={clearDraftFilters}
-        closeFiltersDialog={closeFiltersDialog}
+        closeFiltersDialog={() => setOpen(false)}
         onSubmitFilters={handleSubmit(applyDraftFilters)}
-        setAreaFilterIndex={(value) =>
-          setValue('areaFilterIndex', value, { shouldDirty: true, shouldValidate: true })
-        }
-        setBedroomFilterIndex={(value) =>
-          setValue('bedroomFilterIndex', value, { shouldDirty: true, shouldValidate: true })
-        }
-        setCustomMaxPrice={(value) =>
-          setValue('customMaxPrice', value, { shouldDirty: true, shouldValidate: true })
-        }
-        setCustomMinArea={(value) =>
-          setValue('customMinArea', value, { shouldDirty: true, shouldValidate: true })
-        }
-        setOnlyWithParking={(value) =>
-          setValue('onlyWithParking', value, { shouldDirty: true, shouldValidate: true })
-        }
-        setPriceFilterIndex={(value) =>
-          setValue('priceFilterIndex', value, { shouldDirty: true, shouldValidate: true })
-        }
-        setPropertyTypeFilter={(value) =>
-          setValue('propertyTypeFilter', value, { shouldDirty: true, shouldValidate: true })
-        }
       />
     </>
   )

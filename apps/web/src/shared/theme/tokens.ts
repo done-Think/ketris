@@ -386,6 +386,7 @@ export const shadows = {
 export const gradients = {
   heroBackground: (imageUrl: string) =>
     `linear-gradient(100deg, rgba(13, 15, 20, 0.98) 0%, rgba(13, 15, 20, 0.9) 48%, rgba(83, 9, 50, 0.72) 100%), url("${imageUrl}")`,
+  agencyBannerVeil: `linear-gradient(90deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.74) 64%, ${alpha.white[50]} 100%)`,
   miniPropertyImage: (imageUrl: string) =>
     `linear-gradient(180deg, rgba(33,38,49,0.02), ${alpha.graphite[18]}), url("${imageUrl}")`,
   authBrandOverlay:

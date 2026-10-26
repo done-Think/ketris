@@ -1,4 +1,5 @@
 import type { Dispatch, FormEventHandler, ReactNode, Ref, SetStateAction } from 'react'
+import type { Control, UseFormSetValue } from 'react-hook-form'
 import type { z } from 'zod'
 
 import type { LocalizedHref } from '@shared/types/localized-href'
@@ -102,18 +103,19 @@ export type SearchResultsFilterMenuProps = {
   setPropertyTypeFilter: (value: string) => void
 }
 
-export type SearchResultsFilterDialogProps = SearchResultsFiltersDialogFormValues & {
+export type SearchResultsFilterDialogProps = {
+  control: Control<SearchResultsFiltersDialogFormValues>
+  setValue: UseFormSetValue<SearchResultsFiltersDialogFormValues>
+  open: boolean
   clearDraftFilters: () => void
   closeFiltersDialog: () => void
   onSubmitFilters: FormEventHandler<HTMLFormElement>
-  setAreaFilterIndex: (index: number) => void
-  setBedroomFilterIndex: (index: number) => void
-  setCustomMaxPrice: (value: string) => void
-  setCustomMinArea: (value: string) => void
-  setOnlyWithParking: (value: boolean) => void
-  setPriceFilterIndex: (index: number) => void
-  setPropertyTypeFilter: (value: string) => void
 }
+
+export type SearchResultsFilterFieldProps = Pick<
+  SearchResultsFilterDialogProps,
+  'control' | 'setValue'
+>
 
 export type SearchResultsMapProps = {
   properties: SearchResultProperty[]
@@ -219,3 +221,8 @@ export type MobileSearchBoxProps = Omit<DesktopSearchBarProps, 'desktopSearchRef
 export type HeroSectionProps = DesktopSearchBarProps & {
   mobileSearchRef: Ref<HTMLDivElement>
 }
+
+export type PropertyText = (
+  key: 'bedrooms' | 'bathrooms' | 'parking' | 'monthly',
+  values: { count: number } | { price: string },
+) => string

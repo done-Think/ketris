@@ -1,3 +1,5 @@
+import { Prisma } from '@prisma/client'
+
 import { prisma } from '@server/db/prisma'
 
 import type { BrokerProfileRepository } from '../application/ports/broker-profile-repository.port'
@@ -7,6 +9,16 @@ import type {
   BrokerProfileDraft,
 } from '../types/broker-profile'
 import type { DecimalLike, UsuarioWithPerfilRow } from '../types/prisma-broker-profile-repository'
+import type {
+  ProfileDirectoryFilters,
+  ProfileDirectoryPage,
+  ProfileDirectoryResult,
+} from '../types/profile-directory'
+import {
+  orderByIds,
+  profileSearchCondition,
+  PUBLISHED_PROFILE_STATUS,
+} from './profile-directory-search'
 
 const usuarioWithPerfilInclude = {
   tenant: { select: { nome: true } },
@@ -104,14 +116,30 @@ export class PrismaBrokerProfileRepository implements BrokerProfileRepository {
     return toBrokerProfile(usuario)
   }
 
-  async listPublished(): Promise<BrokerProfile[]> {
+  async listPublished(
+    { q }: ProfileDirectoryFilters,
+    { page, pageSize }: ProfileDirectoryPage,
+  ): Promise<ProfileDirectoryResult<BrokerProfile>> {
+    const where = Prisma.sql`p.status::text = ${PUBLISHED_PROFILE_STATUS} AND ${profileSearchCondition(
+      Prisma.sql`concat_ws(' ', p."displayName", p.creci, p.regiao, array_to_string(p.bairros, ' '), array_to_string(p.especialidades, ' '))`,
+      q,
+    )}`
+    const [rows, [{ total }]] = await Promise.all([
+      prisma.$queryRaw<{ id: string }[]>`
+        SELECT p."usuarioId" AS id FROM perfis_publicos_corretor p WHERE ${where}
+        ORDER BY p."publicadoEm" DESC NULLS LAST, p."usuarioId"
+        LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}`,
+      prisma.$queryRaw<{ total: number }[]>`
+        SELECT count(*)::int AS total FROM perfis_publicos_corretor p WHERE ${where}`,
+    ])
+    const ids = rows.map((row) => row.id)
     const usuarios = await prisma.usuario.findMany({
-      where: { perfilPublico: { status: 'PUBLISHED' } },
+      where: { id: { in: ids } },
       include: usuarioWithPerfilInclude,
-      orderBy: { perfilPublico: { publicadoEm: 'desc' } },
     })
+    const profiles = await Promise.all(usuarios.map((usuario) => toBrokerProfile(usuario)))
 
-    return Promise.all(usuarios.map((usuario) => toBrokerProfile(usuario)))
+    return { items: orderByIds(ids, profiles, (profile) => profile.id), totalCount: total }
   }
 
   async save(usuarioId: string, draft: BrokerProfileDraft): Promise<BrokerProfile> {
