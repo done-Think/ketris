@@ -31,6 +31,7 @@ import {
 } from '../utils/maintenance-draft'
 
 import { createMaintenanceTicketSchema } from '../schemas/maintenance-ticket-schema'
+import { MAINTENANCE_CATEGORIES } from '../utils/maintenance-category'
 import type {
   MaintenanceCreateTicketDialogProps,
   MaintenanceCreateTicketFormValues,
@@ -44,8 +45,6 @@ const defaultValues: MaintenanceCreateTicketFormValues = {
   title: '',
   description: '',
 }
-
-const categoryOptions = ['Hidráulica', 'Elétrica', 'Estrutural', 'Pintura'] as const
 
 export function MaintenanceCreateTicketDialog({
   open,
@@ -179,9 +178,9 @@ export function MaintenanceCreateTicketDialog({
                 select
                 fullWidth
               >
-                {categoryOptions.map((category) => (
+                {MAINTENANCE_CATEGORIES.map((category) => (
                   <MenuItem key={category} value={category}>
-                    {category}
+                    {maintenanceT(`categories.${category}`)}
                   </MenuItem>
                 ))}
               </RhfTextField>

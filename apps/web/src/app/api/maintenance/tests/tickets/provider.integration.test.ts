@@ -29,7 +29,7 @@ describe('/api/maintenance provider (database integration)', () => {
         name: 'Chosen provider',
         phone: '51999990000',
         email: 'provider@example.test',
-        notes: 'Plumbing',
+        notes: 'PLUMBING',
       }
       const response = await action(id, env.fixture.renter.token, {
         action: 'provider',

@@ -13,6 +13,10 @@ import {
 import {
   maintenanceActivitiesResponseSchema,
   maintenanceActivityResponseSchema,
+  maintenanceAttachmentResponseSchema,
+  maintenanceAttachmentUploadRequestSchema,
+  maintenanceMediaBinarySchema,
+  maintenanceMediaKeyParamsSchema,
   maintenanceTicketIdParamsSchema,
   maintenanceTicketResponseSchema,
   maintenanceTicketsResponseSchema,
@@ -79,6 +83,8 @@ export function registerMaintenanceOpenApi(registry: OpenAPIRegistry): void {
     path: '/maintenance/tickets',
     tags: ['Maintenance'],
     summary: 'Lista chamados de manutenção do tenant autenticado',
+    description:
+      'category filtra pelo código da categoria (PLUMBING, ELECTRICAL, STRUCTURAL, PAINTING, OTHER). A busca textual não considera a categoria.',
     security: [{ bearerAuth: [] }],
     request: { query: listMaintenanceTicketsQuerySchema },
     responses: {
@@ -188,6 +194,7 @@ export function registerMaintenanceOpenApi(registry: OpenAPIRegistry): void {
     path: '/maintenance/tickets/{id}/resolve',
     tags: ['Maintenance'],
     summary: 'Conclui atendimento e solicita confirmacao da resolucao',
+    description: 'Não recebe corpo. Equivale à ação complete em /maintenance/tickets/{id}/actions.',
     security: [{ bearerAuth: [] }],
     request: { params: maintenanceTicketIdParamsSchema },
     responses: {
@@ -250,6 +257,61 @@ export function registerMaintenanceOpenApi(registry: OpenAPIRegistry): void {
         description: 'Chamado não encontrado neste tenant.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
+    },
+  })
+
+  registry.registerPath({
+    method: 'post',
+    path: '/maintenance/tickets/{id}/attachments',
+    tags: ['Maintenance'],
+    summary: 'Anexa uma imagem ao chamado',
+    description:
+      'Requer a permissao collaborate. O arquivo fica privado e é servido por /maintenance/media/{key}.',
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: maintenanceTicketIdParamsSchema,
+      body: {
+        required: true,
+        content: { 'multipart/form-data': { schema: maintenanceAttachmentUploadRequestSchema } },
+      },
+    },
+    responses: {
+      201: {
+        description: 'Anexo registrado no chamado.',
+        content: { 'application/json': { schema: maintenanceAttachmentResponseSchema } },
+      },
+      400: {
+        description: 'Arquivo ausente, vazio, maior que 8 MiB ou de tipo não suportado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: { description: 'Anexos nao permitidos para este usuario ou estado.' },
+      404: {
+        description: 'Chamado não encontrado neste tenant.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'get',
+    path: '/maintenance/media/{key}',
+    tags: ['Maintenance'],
+    summary: 'Consulta uma imagem privada anexada a um chamado',
+    description:
+      'Aceita o token ou o cookie de sessão, para uso em <img>. Serve somente chaves sob maintenance/ de anexos de chamados que o usuário pode ver; outras chaves retornam 404 antes da consulta ao armazenamento.',
+    security: [{ bearerAuth: [] }],
+    request: { params: maintenanceMediaKeyParamsSchema },
+    responses: {
+      200: {
+        description: 'Conteúdo binário sem cache compartilhado (private, no-store).',
+        content: {
+          'image/jpeg': { schema: maintenanceMediaBinarySchema },
+          'image/png': { schema: maintenanceMediaBinarySchema },
+          'image/webp': { schema: maintenanceMediaBinarySchema },
+          'application/octet-stream': { schema: maintenanceMediaBinarySchema },
+        },
+      },
+      404: { description: 'Anexo inexistente ou fora do escopo do usuário.' },
     },
   })
 }

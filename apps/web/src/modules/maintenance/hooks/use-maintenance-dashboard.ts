@@ -26,6 +26,7 @@ import {
   mapMaintenanceTicketListItemFromApi,
   mapMaintenanceTicketToFormValues,
 } from '../utils/maintenance-adapter'
+import type { ApiMaintenanceTicketCategory } from '../types/service'
 import { errorMessage } from '../utils/error-message'
 
 const ticketsPerPage = 5
@@ -44,6 +45,8 @@ export function useMaintenanceDashboard() {
   const [search, setSearch] = useState('')
 
   const [propertyFilter, setPropertyFilter] = useState('all')
+
+  const [categoryFilter, setCategoryFilter] = useState<ApiMaintenanceTicketCategory | 'all'>('all')
 
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -72,6 +75,7 @@ export function useMaintenanceDashboard() {
         ? mapMaintenanceStatusToApi(activeFilter)
         : undefined,
     priority: activeFilter === 'urgent' ? mapMaintenancePriorityToApi('urgent') : undefined,
+    category: categoryFilter === 'all' ? undefined : categoryFilter,
     propertyId: propertyFilter === 'all' ? undefined : propertyFilter,
     search: search.trim() || undefined,
     page: currentPage,
@@ -157,6 +161,11 @@ export function useMaintenanceDashboard() {
     setCurrentPage(1)
   }
 
+  function handleCategoryFilterChange(value: ApiMaintenanceTicketCategory | 'all') {
+    setCategoryFilter(value)
+    setCurrentPage(1)
+  }
+
   async function handleCreateTicket(values: MaintenanceCreateTicketFormValues) {
     try {
       await createMutation.mutateAsync(values)
@@ -215,6 +224,7 @@ export function useMaintenanceDashboard() {
     search,
     setSearch,
     propertyFilter,
+    categoryFilter,
     currentPage,
     setCurrentPage,
     rowsPerPage,
@@ -242,6 +252,7 @@ export function useMaintenanceDashboard() {
     getFilterCount,
     handleActiveFilterChange,
     handlePropertyFilterChange,
+    handleCategoryFilterChange,
     handleCreateTicket,
     closeMenu,
     initialValues,

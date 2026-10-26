@@ -1,4 +1,5 @@
 import type { MaintenanceCreateTicketFormValues } from '../types/maintenance'
+import { normalizeDraftCategory } from './maintenance-category'
 
 export function maintenanceDraftKey(tenantId?: string, userId?: string) {
   return tenantId && userId ? `maintenance-draft:v1:${tenantId}:${userId}` : null
@@ -22,7 +23,7 @@ export function readMaintenanceDraft(key: string | null): MaintenanceCreateTicke
     return {
       contractId: String(draft.contractId),
       propertyId: String(draft.propertyId),
-      category: String(draft.category),
+      category: normalizeDraftCategory(String(draft.category)),
       title: String(draft.title),
       description: String(draft.description),
       priority: draft.priority as MaintenanceCreateTicketFormValues['priority'],

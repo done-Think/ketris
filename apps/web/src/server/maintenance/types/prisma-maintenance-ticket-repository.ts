@@ -1,4 +1,5 @@
 import type {
+  Prisma,
   AnexoChamadoManutencao,
   AtividadeChamadoManutencao,
   ChamadoManutencao,
@@ -21,4 +22,19 @@ export type MaintenanceTicketRow = ChamadoManutencao & {
   atividades: AtividadeChamadoManutencao[]
   anexos: AnexoChamadoManutencao[]
   solicitacoesTroca: SolicitacaoTrocaPrestador[]
+}
+
+export interface MaintenanceContractPartyLinkInput {
+  actorTenantId: string
+  actorId: string
+  actorPapel: Usuario['papel']
+  contractId: string
+  partyId: string
+  userId: string
+}
+
+// Links a contract party to a renter inside the maintenance transaction. Wired by the container
+// (contracts owns the rule), so maintenance infrastructure never imports the contracts module.
+export type MaintenanceContractPartyLinkerFactory = (tx: Prisma.TransactionClient) => {
+  execute(input: MaintenanceContractPartyLinkInput): Promise<unknown>
 }

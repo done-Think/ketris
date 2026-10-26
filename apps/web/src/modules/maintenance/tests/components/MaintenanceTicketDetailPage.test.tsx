@@ -52,7 +52,7 @@ const mockTicket: ApiMaintenanceTicket = {
   id: 'MNT-0089',
   propertyId: 'p1',
   propertyTitle: 'Apt Jardins 3q',
-  category: 'Hidráulica',
+  category: 'PLUMBING',
   priority: 'URGENTE',
   status: 'EM_ANDAMENTO',
   title: 'Vazamento na cozinha',

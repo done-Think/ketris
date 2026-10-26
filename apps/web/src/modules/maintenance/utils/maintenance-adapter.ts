@@ -3,6 +3,7 @@ import dayjs from 'dayjs'
 
 import type {
   ApiMaintenanceTicket,
+  ApiMaintenanceTicketCategory,
   ApiMaintenanceTicketListItem,
   ApiMaintenanceTicketPriority,
   ApiMaintenanceTicketStatus,
@@ -121,7 +122,8 @@ export function buildCreateMaintenanceTicketPayload(
   return {
     contractId: values.contractId ?? '',
     propertyId: values.propertyId,
-    category: values.category,
+    // The form schema only accepts category codes.
+    category: values.category as ApiMaintenanceTicketCategory,
     priority: mapMaintenancePriorityToApi(values.priority),
     title: values.title,
     description: values.description,
@@ -134,7 +136,8 @@ export function buildUpdateMaintenanceTicketPayload(
   return {
     contractId: values.contractId || undefined,
     propertyId: values.propertyId,
-    category: values.category,
+    // The form schema only accepts category codes.
+    category: values.category as ApiMaintenanceTicketCategory,
     priority: mapMaintenancePriorityToApi(values.priority),
     title: values.title,
     description: values.description,

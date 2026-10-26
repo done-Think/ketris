@@ -5,12 +5,15 @@ import {
   MaintenanceAttachmentValidationError,
 } from '../../../domain/errors'
 import { UploadMaintenanceTicketAttachmentUseCase } from '../../../application/use-cases/upload-maintenance-ticket-attachment.use-case'
-import { permissionsFor } from '../../../application/authorization'
+import { permissionsFor } from '../../../domain/maintenance-access-rules'
 import { admin, renter, ticket, repository } from '../../fixtures/maintenance-ticket'
 
 describe('Maintenance attachments', () => {
   it('blocks attachment uploads before storage access when unauthorized or terminal', async () => {
-    const storage = { upload: vi.fn().mockResolvedValue({ url: 'file', contentType: 'image/png' }) }
+    const storage = {
+      upload: vi.fn().mockResolvedValue({ url: 'file', contentType: 'image/png' }),
+      download: vi.fn(),
+    }
     const input = {
       ...renter,
       ticketId: ticket.id,
@@ -38,7 +41,7 @@ describe('Maintenance attachments', () => {
     { body: Buffer.alloc(8 * 1024 * 1024 + 1), contentType: 'image/png' },
     { body: Buffer.from('text'), contentType: 'text/plain' },
   ])('keeps attachment format and size validation', async (invalid) => {
-    const storage = { upload: vi.fn() }
+    const storage = { upload: vi.fn(), download: vi.fn() }
     const useCase = new UploadMaintenanceTicketAttachmentUseCase(repository(), storage)
     await expect(
       useCase.execute({ ...renter, ticketId: ticket.id, filename: 'photo.png', ...invalid }),
@@ -48,7 +51,10 @@ describe('Maintenance attachments', () => {
 
   it('allows linked renter to attach even on calls opened by admin', async () => {
     const repo = repository({ openedById: 'admin' })
-    const storage = { upload: vi.fn().mockResolvedValue({ url: 'file', contentType: 'image/png' }) }
+    const storage = {
+      upload: vi.fn().mockResolvedValue({ url: 'file', contentType: 'image/png' }),
+      download: vi.fn(),
+    }
     await new UploadMaintenanceTicketAttachmentUseCase(repo, storage).execute({
       ...renter,
       ticketId: ticket.id,

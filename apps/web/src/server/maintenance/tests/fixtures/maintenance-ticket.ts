@@ -4,7 +4,7 @@ import type {
   MaintenanceTicket,
   MaintenanceContract,
 } from '../../types/maintenance-ticket'
-import type { MaintenanceTicketRepository } from '../../types/maintenance-ticket-repository'
+import type { MaintenanceTicketRepository } from '../../application/ports/maintenance-ticket-repository.port'
 
 export function actor(
   role: MaintenanceActor['actorPapel'],
@@ -46,7 +46,7 @@ export const ticket: MaintenanceTicket = {
   completedByRole: null,
   deletedAt: null,
   replacementRequests: [],
-  category: 'Plumbing',
+  category: 'PLUMBING',
   priority: 'URGENTE',
   status: 'ABERTO',
   title: 'Leak',

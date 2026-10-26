@@ -1,4 +1,7 @@
-import type { MaintenanceResponsibleUser, MaintenanceUserLinkInput } from './maintenance-ticket'
+import type {
+  MaintenanceResponsibleUser,
+  MaintenanceUserLinkInput,
+} from '../../types/maintenance-ticket'
 import type {
   MaintenanceActor,
   MaintenanceActivity,
@@ -13,7 +16,7 @@ import type {
   NewMaintenanceActivity,
   NewMaintenanceAttachment,
   NewMaintenanceTicket,
-} from './maintenance-ticket'
+} from '../../types/maintenance-ticket'
 
 export interface MaintenanceTicketRepository {
   findContract(actor: MaintenanceActor, contractId: string): Promise<MaintenanceContract | null>

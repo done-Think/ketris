@@ -7,6 +7,7 @@ import { GET as readMedia } from '../media/[...key]/route'
 import { POST as performAction } from '../tickets/[id]/actions/route'
 import { POST as linkUsers } from '../links/route'
 import { GET as options } from '../options/route'
+import type { MaintenanceTicketRepository } from '@server/maintenance/application/ports/maintenance-ticket-repository.port'
 import type {
   MaintenanceActor,
   MaintenanceTicket,
@@ -16,17 +17,39 @@ const s3Send = vi.hoisted(() => vi.fn())
 vi.mock('@server/maintenance/require-maintenance-actor', () => ({
   requireMaintenanceActor: vi.fn(),
 }))
-vi.mock('@server/maintenance/container', () => ({
-  maintenanceContainer: {
-    repository: {
-      findById: vi.fn(),
-      findAttachmentTicket: vi.fn(),
-      mutate: vi.fn(),
-      linkUsers: vi.fn(),
-      options: vi.fn(),
+// Real use cases and S3 adapter over a mocked repository, so the routes run their whole stack.
+vi.mock('@server/maintenance/container', async () => {
+  const { ActOnMaintenanceTicketUseCase } =
+    await import('@server/maintenance/application/use-cases/act-on-maintenance-ticket.use-case')
+  const { GetMaintenanceAttachmentUseCase } =
+    await import('@server/maintenance/application/use-cases/get-maintenance-attachment.use-case')
+  const { GetMaintenanceOptionsUseCase } =
+    await import('@server/maintenance/application/use-cases/get-maintenance-options.use-case')
+  const { LinkMaintenanceUsersUseCase } =
+    await import('@server/maintenance/application/use-cases/link-maintenance-users.use-case')
+  const { S3MaintenanceAttachmentStorage } =
+    await import('@server/maintenance/infrastructure/s3-maintenance-attachment-storage')
+  const repository = {
+    findById: vi.fn(),
+    findAttachmentTicket: vi.fn(),
+    mutate: vi.fn(),
+    linkUsers: vi.fn(),
+    options: vi.fn(),
+  }
+  const port = repository as unknown as MaintenanceTicketRepository
+  return {
+    maintenanceContainer: {
+      repository,
+      actOnMaintenanceTicketUseCase: new ActOnMaintenanceTicketUseCase(port),
+      getMaintenanceOptionsUseCase: new GetMaintenanceOptionsUseCase(port),
+      linkMaintenanceUsersUseCase: new LinkMaintenanceUsersUseCase(port),
+      getMaintenanceAttachmentUseCase: new GetMaintenanceAttachmentUseCase(
+        port,
+        new S3MaintenanceAttachmentStorage(),
+      ),
     },
-  },
-}))
+  }
+})
 vi.mock('@server/shared/storage/s3-client', () => ({
   getS3Client: () => ({ send: s3Send }),
   getUploadsBucketName: () => 'bucket',
@@ -51,7 +74,7 @@ const ticket: MaintenanceTicket = {
   replacementRequests: [],
   title: 'Leak',
   description: 'Leak',
-  category: 'Plumbing',
+  category: 'PLUMBING',
   priority: 'NORMAL',
   status: 'ABERTO',
   openedById: 'renter',

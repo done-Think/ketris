@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { ConflictError, ForbiddenError } from '@server/shared/errors'
 import { MaintenanceTicketNotFoundError } from '../../../domain/errors'
 import { actOnTicket } from '../../../application/workflow'
-import { permissionsFor } from '../../../application/authorization'
+import { permissionsFor } from '../../../domain/maintenance-access-rules'
 import {
   actor,
   admin,

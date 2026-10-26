@@ -16,8 +16,9 @@ import type {
   NewMaintenanceAttachment,
   NewMaintenanceTicket,
 } from '../types/maintenance-ticket'
-import type { MaintenanceTicketRepository } from '../types/maintenance-ticket-repository'
-import { permissionsFor } from '../application/authorization'
+import type { MaintenanceTicketRepository } from '../application/ports/maintenance-ticket-repository.port'
+import { permissionsFor } from '../domain/maintenance-access-rules'
+import type { MaintenanceContractPartyLinkerFactory } from '../types/prisma-maintenance-ticket-repository'
 import {
   contractInclude,
   ticketInclude,
@@ -38,6 +39,8 @@ import { isAgencyManager } from '@server/auth/domain/roles'
 export { maintenanceTicketScope } from './maintenance-access-scope'
 
 export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepository {
+  constructor(private readonly contractPartyLinker: MaintenanceContractPartyLinkerFactory) {}
+
   async findContract(actor: MaintenanceActor, contractId: string) {
     const row = await prisma.contrato.findFirst({
       where: {
@@ -105,7 +108,7 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
     }
   }
   async linkUsers(actor: MaintenanceActor, input: MaintenanceUserLinkInput) {
-    return regularizeMaintenanceLinks(actor, input)
+    return regularizeMaintenanceLinks(actor, input, this.contractPartyLinker)
   }
   async create(input: NewMaintenanceTicket) {
     const row = await prisma.chamadoManutencao.create({
@@ -151,6 +154,7 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
           excluidoEm: filters.archived ? { not: null } : null,
           status: filters.status,
           prioridade: filters.priority,
+          categoria: filters.category,
           imovelId: filters.propertyId,
         },
         ...(renterContracts
@@ -167,7 +171,6 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
               {
                 OR: [
                   { titulo: { contains: filters.search.trim(), mode: 'insensitive' as const } },
-                  { categoria: { contains: filters.search.trim(), mode: 'insensitive' as const } },
                   {
                     imovel: {
                       titulo: { contains: filters.search.trim(), mode: 'insensitive' as const },

@@ -29,7 +29,7 @@ const ticket: ApiMaintenanceTicket = {
       createdAt: '2025-02-20T00:00:00.000Z',
     },
   ],
-  category: 'Hidráulica',
+  category: 'PLUMBING',
   priority: 'URGENTE',
   status: 'EM_ANDAMENTO',
   title: 'Vazamento na cozinha',

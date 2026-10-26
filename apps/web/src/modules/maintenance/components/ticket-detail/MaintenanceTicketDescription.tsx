@@ -25,7 +25,7 @@ export function MaintenanceTicketDescription({ ticket }: MaintenanceTicketSectio
       >
         {[
           [t('columns.property'), ticket.propertyTitle],
-          [t('columns.category'), ticket.category],
+          [t('columns.category'), t(`categories.${ticket.category}`)],
           [detailT('descriptionCard.openedBy'), ticket.openedByName],
           [t('columns.openedAt'), formatDate(ticket.createdAt)],
           [

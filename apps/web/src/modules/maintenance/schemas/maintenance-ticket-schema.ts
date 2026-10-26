@@ -2,11 +2,13 @@ import { z } from 'zod'
 
 import type { SchemaMessageTranslator } from '@shared/types'
 
+import { isMaintenanceCategory } from '../utils/maintenance-category'
+
 export function createMaintenanceTicketSchema(t: SchemaMessageTranslator) {
   return z.object({
     contractId: z.string().min(1, t('contractRequired')),
     propertyId: z.string().min(1, t('propertyRequired')),
-    category: z.string().min(1, t('categoryRequired')),
+    category: z.string().refine(isMaintenanceCategory, t('categoryRequired')),
     priority: z.enum(['normal', 'high', 'urgent'], { message: t('priorityRequired') }),
     title: z.string().trim().min(1, t('titleRequired')),
     description: z.string().trim().min(1, t('descriptionRequired')),

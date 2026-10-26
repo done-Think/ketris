@@ -1,5 +1,10 @@
 import type { ReactNode } from 'react'
-import type { ApiMaintenanceTicket, MaintenanceAction, MaintenancePermissions } from './service'
+import type {
+  ApiMaintenanceTicket,
+  ApiMaintenanceTicketCategory,
+  MaintenanceAction,
+  MaintenancePermissions,
+} from './service'
 
 export type MaintenancePriority = 'urgent' | 'high' | 'normal'
 
@@ -28,7 +33,7 @@ export interface MaintenanceTicket {
   id: string
   propertyId: string
   property: string
-  category: string
+  category: ApiMaintenanceTicketCategory
   priority: MaintenancePriority
   tenant: string
   openedAt: string

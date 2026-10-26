@@ -36,6 +36,8 @@ import { MaintenanceStatusFilters } from './MaintenanceStatusFilters'
 import { MetricCard } from './MetricCard'
 import { useMaintenanceDashboard } from '../hooks/use-maintenance-dashboard'
 import { MaintenanceTicketsTable } from './MaintenanceTicketsTable'
+import type { ApiMaintenanceTicketCategory } from '../types/service'
+import { MAINTENANCE_CATEGORIES } from '../utils/maintenance-category'
 
 export function MaintenanceDashboardPage() {
   const {
@@ -45,6 +47,7 @@ export function MaintenanceDashboardPage() {
     search,
     setSearch,
     propertyFilter,
+    categoryFilter,
     currentPage,
     setCurrentPage,
     rowsPerPage,
@@ -72,6 +75,7 @@ export function MaintenanceDashboardPage() {
     getFilterCount,
     handleActiveFilterChange,
     handlePropertyFilterChange,
+    handleCategoryFilterChange,
     handleCreateTicket,
     closeMenu,
     initialValues,
@@ -130,6 +134,27 @@ export function MaintenanceDashboardPage() {
         {properties.map((property) => (
           <MenuItem key={property.id} value={property.id}>
             {property.title}
+          </MenuItem>
+        ))}
+      </TextField>
+      <TextField
+        select
+        value={categoryFilter}
+        onChange={(event) =>
+          handleCategoryFilterChange(event.target.value as ApiMaintenanceTicketCategory | 'all')
+        }
+        size="small"
+        aria-label={t('filterDialog.category')}
+        sx={{
+          ...compactFieldSx,
+          width: { xs: '100%', sm: 170 },
+          display: { xs: 'none', md: 'block' },
+        }}
+      >
+        <MenuItem value="all">{t('allCategories')}</MenuItem>
+        {MAINTENANCE_CATEGORIES.map((category) => (
+          <MenuItem key={category} value={category}>
+            {t(`categories.${category}`)}
           </MenuItem>
         ))}
       </TextField>
@@ -292,6 +317,25 @@ export function MaintenanceDashboardPage() {
               {properties.map((property) => (
                 <MenuItem key={property.id} value={property.id}>
                   {property.title}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              select
+              label={t('filterDialog.category')}
+              value={categoryFilter}
+              onChange={(event) =>
+                handleCategoryFilterChange(
+                  event.target.value as ApiMaintenanceTicketCategory | 'all',
+                )
+              }
+              fullWidth
+              sx={compactFieldSx}
+            >
+              <MenuItem value="all">{t('allCategories')}</MenuItem>
+              {MAINTENANCE_CATEGORIES.map((category) => (
+                <MenuItem key={category} value={category}>
+                  {t(`categories.${category}`)}
                 </MenuItem>
               ))}
             </TextField>

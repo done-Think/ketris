@@ -1,3 +1,5 @@
+import type { MaintenanceAttachmentObject } from '../../types/maintenance-ticket'
+
 export interface UploadMaintenanceAttachmentInput {
   tenantId: string
   filename: string
@@ -12,4 +14,5 @@ export interface UploadedMaintenanceAttachment {
 
 export interface MaintenanceAttachmentStoragePort {
   upload(input: UploadMaintenanceAttachmentInput): Promise<UploadedMaintenanceAttachment>
+  download(objectKey: string): Promise<MaintenanceAttachmentObject | null>
 }

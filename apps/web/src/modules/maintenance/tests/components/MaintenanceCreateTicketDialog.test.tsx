@@ -34,7 +34,7 @@ const key = maintenanceDraftKey(session.tenantId, session.user.id)!
 const draft: MaintenanceCreateTicketFormValues = {
   contractId: 'c1',
   propertyId: 'p1',
-  category: 'Hidráulica',
+  category: 'PLUMBING',
   priority: 'normal',
   title: 'Leak',
   description: 'Kitchen leak',

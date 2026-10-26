@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { ForbiddenError } from '@server/shared/errors'
 import { MaintenancePropertyNotFoundError } from '../../../domain/errors'
 import { actOnTicket, deleteTicket } from '../../../application/workflow'
-import { canAccessTicket, permissionsFor } from '../../../application/authorization'
+import { canAccessTicket, permissionsFor } from '../../../domain/maintenance-access-rules'
 import {
   admin,
   agent,

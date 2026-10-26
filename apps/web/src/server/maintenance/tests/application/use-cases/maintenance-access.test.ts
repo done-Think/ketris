@@ -11,7 +11,8 @@ import { AddMaintenanceTicketNoteUseCase } from '../../../application/use-cases/
 import { UploadMaintenanceTicketAttachmentUseCase } from '../../../application/use-cases/upload-maintenance-ticket-attachment.use-case'
 import { ListMaintenanceTicketActivitiesUseCase } from '../../../application/use-cases/list-maintenance-ticket-activities.use-case'
 import { deleteTicket, updateTicket } from '../../../application/workflow'
-import { canAccessTicket, publicTicket } from '../../../application/authorization'
+import { toPublicMaintenanceTicket } from '../../../application/maintenance-ticket-response'
+import { canAccessTicket } from '../../../domain/maintenance-access-rules'
 import {
   actor,
   admin,
@@ -33,7 +34,7 @@ describe('Maintenance access', () => {
       contractId: contract.id,
       title: 'Leak',
       description: 'Details',
-      category: 'Plumbing',
+      category: 'PLUMBING',
       priority: 'NORMAL',
     })
     expect(repo.create).toHaveBeenCalledWith(
@@ -46,6 +47,7 @@ describe('Maintenance access', () => {
     expect(repo.findActivities).toHaveBeenCalledWith(ticket.tenantId, ticket.id)
     const storage = {
       upload: vi.fn().mockResolvedValue({ url: 'private.png', contentType: 'image/png' }),
+      download: vi.fn(),
     }
     await new UploadMaintenanceTicketAttachmentUseCase(repo, storage).execute({
       ...sharedRenter,
@@ -136,7 +138,7 @@ describe('Maintenance access', () => {
         ...user,
         contractId: contract.id,
         title: 'Leak',
-        category: 'Plumbing',
+        category: 'PLUMBING',
         description: 'Leak',
         priority: 'NORMAL',
       })
@@ -159,7 +161,7 @@ describe('Maintenance access', () => {
           ...input,
           contractId: contract.id,
           title: 'Leak',
-          category: 'Plumbing',
+          category: 'PLUMBING',
           description: 'Leak',
           priority: 'NORMAL',
         }),
@@ -220,7 +222,7 @@ describe('Maintenance access', () => {
   )
 
   it('strips internal membership data from responses', () => {
-    expect(publicTicket(ticket, renter)).not.toHaveProperty('access')
-    expect(publicTicket(ticket, renter).permissions.edit).toBe(false)
+    expect(toPublicMaintenanceTicket(ticket, renter)).not.toHaveProperty('access')
+    expect(toPublicMaintenanceTicket(ticket, renter).permissions.edit).toBe(false)
   })
 })

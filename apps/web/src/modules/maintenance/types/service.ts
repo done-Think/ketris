@@ -59,7 +59,7 @@ export interface ApiMaintenanceTicket {
     decidedByName: string | null
     createdAt: string
   }[]
-  category: string
+  category: ApiMaintenanceTicketCategory
   priority: ApiMaintenanceTicketPriority
   status: ApiMaintenanceTicketStatus
   title: string
@@ -73,6 +73,9 @@ export interface ApiMaintenanceTicket {
   attachments: ApiMaintenanceAttachment[]
 }
 
+export type ApiMaintenanceTicketCategory =
+  'PLUMBING' | 'ELECTRICAL' | 'STRUCTURAL' | 'PAINTING' | 'OTHER'
+
 export interface ApiMaintenanceTicketListItem {
   scheduledAt?: string | null
   id: string
@@ -81,7 +84,7 @@ export interface ApiMaintenanceTicketListItem {
   contractId?: string | null
   deletedAt?: string | null
   permissions?: MaintenancePermissions
-  category: string
+  category: ApiMaintenanceTicketCategory
   priority: ApiMaintenanceTicketPriority
   status: ApiMaintenanceTicketStatus
   title: string
@@ -95,6 +98,7 @@ export interface MaintenanceTicketListFilters {
   archived?: boolean
   status?: ApiMaintenanceTicketStatus
   priority?: ApiMaintenanceTicketPriority
+  category?: ApiMaintenanceTicketCategory
   propertyId?: string
   search?: string
   page?: number
@@ -105,7 +109,7 @@ export interface CreateMaintenanceTicketPayload {
   scheduledAt?: string | null
   contractId: string
   propertyId: string
-  category: string
+  category: ApiMaintenanceTicketCategory
   priority: ApiMaintenanceTicketPriority
   title: string
   description: string
@@ -115,7 +119,7 @@ export interface UpdateMaintenanceTicketPayload {
   scheduledAt?: string | null
   contractId?: string
   propertyId?: string
-  category?: string
+  category?: ApiMaintenanceTicketCategory
   priority?: ApiMaintenanceTicketPriority
   title?: string
   description?: string

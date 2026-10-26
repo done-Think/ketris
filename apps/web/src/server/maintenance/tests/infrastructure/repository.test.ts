@@ -15,6 +15,7 @@ const actor: MaintenanceActor = {
   actorPapel: 'RENTER',
   actorName: 'Renter',
 }
+const unusedContractPartyLinker = () => ({ execute: vi.fn() })
 describe('Maintenance repository boundary and atomic writes', () => {
   beforeEach(() => vi.clearAllMocks())
   it('scopes renter lists and counts through explicit contract party ID', () => {
@@ -63,7 +64,7 @@ describe('Maintenance repository boundary and atomic writes', () => {
       deletedAt: null,
       updatedAt: new Date('2026-10-14T00:00:00Z'),
     } as MaintenanceTicket
-    const repository = new PrismaMaintenanceTicketRepository()
+    const repository = new PrismaMaintenanceTicketRepository(unusedContractPartyLinker)
     await expect(
       repository.mutate(
         ticket,
@@ -101,7 +102,7 @@ describe('Maintenance repository boundary and atomic writes', () => {
       updatedAt: new Date(),
     } as MaintenanceTicket
     await expect(
-      new PrismaMaintenanceTicketRepository().mutate(
+      new PrismaMaintenanceTicketRepository(unusedContractPartyLinker).mutate(
         ticket,
         { provider: { name: 'New' } },
         { type: 'TROCA_DECIDIDA', message: 'Approved', authorId: 'admin', authorName: 'Admin' },

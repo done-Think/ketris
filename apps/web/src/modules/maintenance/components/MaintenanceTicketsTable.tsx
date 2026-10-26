@@ -91,7 +91,7 @@ export function MaintenanceTicketsTable({
               >
                 {ticket.property}
               </TableCell>
-              <TableCell sx={bodyCellSx}>{ticket.category}</TableCell>
+              <TableCell sx={bodyCellSx}>{t(`categories.${ticket.category}`)}</TableCell>
               <TableCell sx={bodyCellSx}>
                 <Stack direction="row" spacing={0.65} alignItems="center">
                   <Box

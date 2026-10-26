@@ -20,11 +20,21 @@ import { GET as listContracts } from '../../route'
 import { GET as readContract } from '../../[id]/route'
 
 const { upload, s3Send } = vi.hoisted(() => ({ upload: vi.fn(), s3Send: vi.fn() }))
-vi.mock('@server/maintenance/infrastructure/s3-maintenance-attachment-storage', () => ({
-  S3MaintenanceAttachmentStorage: class {
-    upload = upload
+// Only uploads are stubbed; downloads keep the real adapter over the mocked S3 client.
+vi.mock(
+  '@server/maintenance/infrastructure/s3-maintenance-attachment-storage',
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import('@server/maintenance/infrastructure/s3-maintenance-attachment-storage')
+      >()
+    return {
+      S3MaintenanceAttachmentStorage: class extends actual.S3MaintenanceAttachmentStorage {
+        override upload = upload
+      },
+    }
   },
-}))
+)
 vi.mock('@server/shared/storage/s3-client', () => ({
   getS3Client: () => ({ send: s3Send }),
   getUploadsBucketName: () => 'test-bucket',
@@ -132,7 +142,7 @@ async function agency(renterEmail: string) {
       abertoPorNome: admin.nome,
       titulo: 'Leak',
       descricao: 'Leak',
-      categoria: 'Plumbing',
+      categoria: 'PLUMBING',
     },
   })
   return {
@@ -173,8 +183,9 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
   })
   afterAll(async () => {
     // Fixtures only: agency tenants precede the shared user tenants during cleanup.
+    // Ticket authors are Restrict FKs and may live in another tenant, so tickets go first.
+    await prisma.chamadoManutencao.deleteMany({ where: { tenantId: { in: tenantIds } } })
     for (const tenantId of [...tenantIds].reverse()) {
-      await prisma.solicitacaoTrocaPrestador.deleteMany({ where: { chamado: { tenantId } } })
       await prisma.tenant.delete({ where: { id: tenantId } })
     }
     await prisma.$disconnect()
@@ -374,7 +385,7 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
         propertyId: a.property.id,
         title: 'New leak',
         description: 'Details',
-        category: 'Plumbing',
+        category: 'PLUMBING',
         priority: 'NORMAL',
       }),
     )
@@ -457,7 +468,7 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
             contractId: a.contract.id,
             title: 'Denied',
             description: 'Denied',
-            category: 'Plumbing',
+            category: 'PLUMBING',
             priority: 'NORMAL',
           }),
         )

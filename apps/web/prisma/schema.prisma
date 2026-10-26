@@ -158,6 +158,12 @@ model Usuario {
   imoveisProprietario          Imovel[]                           @relation("ImovelProprietario")
   partesContrato               ParteContrato[]
   chamadosResponsavel          ChamadoManutencao[]                @relation("ChamadoResponsavel")
+  chamadosAbertos              ChamadoManutencao[]                @relation("ChamadoAbertoPor")
+  chamadosConcluidos           ChamadoManutencao[]                @relation("ChamadoConcluidoPor")
+  chamadosExcluidos            ChamadoManutencao[]                @relation("ChamadoExcluidoPor")
+  atividadesChamadoAutoria     AtividadeChamadoManutencao[]       @relation("AtividadeChamadoAutor")
+  solicitacoesTrocaFeitas      SolicitacaoTrocaPrestador[]        @relation("SolicitacaoTrocaSolicitante")
+  solicitacoesTrocaDecididas   SolicitacaoTrocaPrestador[]        @relation("SolicitacaoTrocaDecididoPor")
   refreshTokens                RefreshToken[]
   codigosRecuperacaoSenha      PasswordResetCode[]
   codigosVerificacaoEmail      EmailVerificationCode[]
@@ -1131,6 +1137,14 @@ enum PrioridadeChamadoManutencao {
   URGENTE
 }
 
+enum CategoriaChamadoManutencao {
+  PLUMBING
+  ELECTRICAL
+  STRUCTURAL
+  PAINTING
+  OTHER
+}
+
 model ChamadoManutencao {
   id                   String                      @id @default(cuid())
   tenantId             String
@@ -1145,7 +1159,7 @@ model ChamadoManutencao {
   concluidoPorPapel    PapelUsuario?
   excluidoEm           DateTime?
   excluidoPorId        String?
-  categoria            String
+  categoria            CategoriaChamadoManutencao
   prioridade           PrioridadeChamadoManutencao @default(NORMAL)
   status               StatusChamadoManutencao     @default(ABERTO)
   titulo               String
@@ -1161,6 +1175,9 @@ model ChamadoManutencao {
   imovel            Imovel                       @relation(fields: [imovelId], references: [id], onDelete: Restrict)
   contrato          Contrato?                    @relation(fields: [contratoId], references: [id], onDelete: Restrict)
   responsavel       Usuario?                     @relation("ChamadoResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
+  abertoPor         Usuario                      @relation("ChamadoAbertoPor", fields: [abertoPorId], references: [id], onDelete: Restrict)
+  concluidoPor      Usuario?                     @relation("ChamadoConcluidoPor", fields: [concluidoPorId], references: [id], onDelete: Restrict)
+  excluidoPor       Usuario?                     @relation("ChamadoExcluidoPor", fields: [excluidoPorId], references: [id], onDelete: Restrict)
   solicitacoesTroca SolicitacaoTrocaPrestador[]
   atividades        AtividadeChamadoManutencao[]
   anexos            AnexoChamadoManutencao[]
@@ -1172,6 +1189,9 @@ model ChamadoManutencao {
   @@index([contratoId])
   @@index([responsavelId])
   @@index([tenantId, atendimentoEm])
+  @@index([abertoPorId])
+  @@index([concluidoPorId])
+  @@index([excluidoPorId])
   @@map("chamados_manutencao")
 }
 
@@ -1201,9 +1221,11 @@ model AtividadeChamadoManutencao {
   createdAt DateTime                       @default(now())
 
   chamado ChamadoManutencao @relation(fields: [chamadoId], references: [id], onDelete: Cascade)
+  autor   Usuario?          @relation("AtividadeChamadoAutor", fields: [autorId], references: [id], onDelete: Restrict)
 
   @@index([chamadoId])
   @@index([chamadoId, createdAt])
+  @@index([autorId])
   @@map("atividades_chamado_manutencao")
 }
 
@@ -1226,8 +1248,12 @@ model SolicitacaoTrocaPrestador {
   decididoEm           DateTime?
   createdAt            DateTime                        @default(now())
   chamado              ChamadoManutencao               @relation(fields: [chamadoId], references: [id], onDelete: Cascade)
+  solicitante          Usuario                         @relation("SolicitacaoTrocaSolicitante", fields: [solicitanteId], references: [id], onDelete: Restrict)
+  decididoPor          Usuario?                        @relation("SolicitacaoTrocaDecididoPor", fields: [decididoPorId], references: [id], onDelete: Restrict)
 
   @@index([chamadoId, status])
+  @@index([solicitanteId])
+  @@index([decididoPorId])
   @@map("solicitacoes_troca_prestador")
 }
 

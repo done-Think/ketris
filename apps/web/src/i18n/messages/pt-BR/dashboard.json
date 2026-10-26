@@ -164,12 +164,14 @@
     "subtitle": "Acompanhe solicitações de reparo e manutenção",
     "search": "Buscar chamado...",
     "allProperties": "Todos os Imóveis",
+    "allCategories": "Todas as categorias",
     "newTicket": "Novo Chamado",
     "filterDialog": {
       "open": "Filtros",
       "title": "Filtros",
       "close": "Fechar filtros",
-      "property": "Imóvel"
+      "property": "Imóvel",
+      "category": "Categoria"
     },
     "filters": {
       "all": "Todos",
@@ -378,6 +380,13 @@
       "invalid": "Informe uma data e um horário válidos.",
       "success": "Data do atendimento salva.",
       "error": "Não foi possível salvar a data do atendimento."
+    },
+    "categories": {
+      "PLUMBING": "Hidráulica",
+      "ELECTRICAL": "Elétrica",
+      "STRUCTURAL": "Estrutural",
+      "PAINTING": "Pintura",
+      "OTHER": "Outros"
     }
   },
   "finance": {

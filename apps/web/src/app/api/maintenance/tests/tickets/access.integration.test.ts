@@ -125,6 +125,43 @@ describe('/api/maintenance access (database integration)', () => {
   it('requires authentication', async () =>
     expect((await GET(request('tickets', 'GET'))).status).toBe(401))
 
+  it('filters the list by category code and rejects unknown categories', async () => {
+    const plumbing = await create()
+    const electrical = await POST(
+      request('tickets', 'POST', env.fixture.renter.token, {
+        ...payload,
+        category: 'ELECTRICAL',
+        contractId: env.fixture.contract.id,
+      }),
+    )
+    expect(electrical.status).toBe(201)
+    const electricalId = (await electrical.json()).ticket.id as string
+    const ids = async (query: string) =>
+      (
+        await (await GET(request(`tickets?${query}`, 'GET', env.fixture.admin.token))).json()
+      ).items.map((item: Pick<MaintenanceTicketListItem, 'id'>) => item.id)
+    const onlyElectrical = await ids('category=ELECTRICAL')
+    expect(onlyElectrical).toContain(electricalId)
+    expect(onlyElectrical).not.toContain(plumbing)
+    const onlyPlumbing = await ids('category=PLUMBING')
+    expect(onlyPlumbing).toContain(plumbing)
+    expect(onlyPlumbing).not.toContain(electricalId)
+    expect(
+      (await GET(request('tickets?category=Hidraulica', 'GET', env.fixture.admin.token))).status,
+    ).toBe(400)
+    expect(
+      (
+        await POST(
+          request('tickets', 'POST', env.fixture.renter.token, {
+            ...payload,
+            category: 'Hidraulica',
+            contractId: env.fixture.contract.id,
+          }),
+        )
+      ).status,
+    ).toBe(400)
+  })
+
   it('creates for all linked roles and refuses another tenants contract', async () => {
     for (const user of [
       env.fixture.admin,

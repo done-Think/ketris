@@ -2,6 +2,7 @@ import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
 import {
+  maintenanceTicketCategorySchema,
   maintenanceTicketPrioritySchema,
   maintenanceTicketStatusSchema,
 } from './maintenance-ticket.schema'
@@ -16,7 +17,7 @@ export const createMaintenanceTicketRequestSchema = z
   .object({
     contractId: z.string().trim().min(1),
     propertyId: z.string().trim().min(1).optional(),
-    category: z.string().trim().min(1),
+    category: maintenanceTicketCategorySchema,
     priority: maintenanceTicketPrioritySchema,
     title: z.string().trim().min(1),
     description: z.string().trim().min(1),
@@ -28,7 +29,7 @@ export const updateMaintenanceTicketRequestSchema = z
   .object({
     propertyId: z.string().trim().min(1).optional(),
     contractId: z.string().trim().min(1).optional(),
-    category: z.string().trim().min(1).optional(),
+    category: maintenanceTicketCategorySchema.optional(),
     priority: maintenanceTicketPrioritySchema.optional(),
     title: z.string().trim().min(1).optional(),
     description: z.string().trim().min(1).optional(),
@@ -49,6 +50,7 @@ export const listMaintenanceTicketsQuerySchema = z
   .object({
     status: maintenanceTicketStatusSchema.optional(),
     priority: maintenanceTicketPrioritySchema.optional(),
+    category: maintenanceTicketCategorySchema.optional(),
     propertyId: z.string().trim().min(1).optional(),
     search: z.string().trim().min(1).optional(),
     page: z.coerce.number().int().positive().optional(),
@@ -110,3 +112,7 @@ export const maintenanceLinksSchema = z
     (input) => Boolean(input.partyId) === Boolean(input.renterId),
     'Informe a parte e o usuario locatario juntos.',
   )
+
+export const maintenanceMediaParamsSchema = z.object({
+  key: z.array(z.string().min(1)).min(1),
+})

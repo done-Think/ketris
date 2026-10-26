@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -46,7 +46,7 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     id: 'MNT-0089',
     propertyId: 'p1',
     propertyTitle: 'Apt Jardins 3q',
-    category: 'Hidráulica',
+    category: 'PLUMBING',
     priority: 'URGENTE',
     status: 'EM_ANDAMENTO',
     title: 'Vazamento na cozinha',
@@ -59,7 +59,7 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     id: 'MNT-0088',
     propertyId: 'p2',
     propertyTitle: 'Studio Pinheiros',
-    category: 'Elétrica',
+    category: 'ELECTRICAL',
     priority: 'ALTA',
     status: 'ABERTO',
     title: 'Tomada com defeito',
@@ -72,7 +72,7 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     id: 'MNT-0087',
     propertyId: 'p3',
     propertyTitle: 'Casa Vila Madalena',
-    category: 'Estrutural',
+    category: 'STRUCTURAL',
     priority: 'ALTA',
     status: 'EM_ANDAMENTO',
     title: 'Rachadura na parede',
@@ -85,7 +85,7 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     id: 'MNT-0086',
     propertyId: 'p4',
     propertyTitle: 'Cobertura Moema',
-    category: 'Pintura',
+    category: 'PAINTING',
     priority: 'NORMAL',
     status: 'RESOLVIDO',
     title: 'Pintura descascando',
@@ -108,7 +108,7 @@ const fullTicket: ApiMaintenanceTicket = {
   id: 'MNT-0089',
   propertyId: 'p1',
   propertyTitle: 'Apt Jardins 3q',
-  category: 'Hidráulica',
+  category: 'PLUMBING',
   priority: 'URGENTE',
   status: 'EM_ANDAMENTO',
   title: 'Vazamento na cozinha',
@@ -135,6 +135,7 @@ function mockDefaults() {
         (!filters.status || item.status === filters.status) &&
         (!filters.priority || item.priority === filters.priority) &&
         (!filters.propertyId || item.propertyId === filters.propertyId) &&
+        (!filters.category || item.category === filters.category) &&
         (!filters.search ||
           item.title.toLocaleLowerCase().includes(filters.search.toLocaleLowerCase())),
     )
@@ -322,6 +323,19 @@ describe('MaintenanceDashboardPage', () => {
     expect(screen.queryByText('MNT-0089')).not.toBeInTheDocument()
   })
 
+  it('filters tickets by category code and shows translated category labels', async () => {
+    const user = userEvent.setup()
+    render(<MaintenanceDashboardPage />)
+
+    const [, categorySelect] = screen.getAllByRole('combobox')
+    await user.click(categorySelect)
+    expect(await screen.findByRole('option', { name: 'Todas as categorias' })).toBeVisible()
+    await user.click(await screen.findByRole('option', { name: 'Pintura' }))
+
+    expect(screen.getByText('MNT-0086')).toBeVisible()
+    expect(screen.queryByText('MNT-0087')).not.toBeInTheDocument()
+  })
+
   it('filters tickets by status', async () => {
     const user = userEvent.setup()
     render(<MaintenanceDashboardPage />)
@@ -341,7 +355,7 @@ describe('MaintenanceDashboardPage', () => {
     await user.click(screen.getByRole('button', { name: 'Novo Chamado' }))
     await user.click(screen.getByLabelText('Contrato / imóvel'))
     await user.click(await screen.findByRole('option', { name: 'C-p1 - Apt Jardins 3q' }))
-    await user.click(screen.getByLabelText('Categoria'))
+    await user.click(within(screen.getByRole('dialog')).getByLabelText('Categoria'))
     await user.click(await screen.findByRole('option', { name: 'Hidráulica' }))
     await user.type(screen.getByLabelText('Título do Chamado'), 'Vazamento na cozinha')
     await user.type(screen.getByLabelText('Relato do Problema'), 'A pia está vazando.')
@@ -349,7 +363,7 @@ describe('MaintenanceDashboardPage', () => {
 
     await waitFor(() =>
       expect(createMutation.mutateAsync).toHaveBeenCalledWith(
-        expect.objectContaining({ propertyId: 'p1', category: 'Hidráulica' }),
+        expect.objectContaining({ propertyId: 'p1', category: 'PLUMBING' }),
       ),
     )
     await waitFor(() => {

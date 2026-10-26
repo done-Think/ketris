@@ -1,6 +1,6 @@
 import { isAgencyManager } from '@server/auth/domain/roles'
 import { ForbiddenError, ConflictError } from '@server/shared/errors'
-import { MaintenanceTicketNotFoundError } from '../domain/errors'
+import { MaintenanceTicketNotFoundError } from './errors'
 import type {
   MaintenanceActor,
   MaintenanceContract,
@@ -113,10 +113,4 @@ export function assertPermission(
       throw new ConflictError('O chamado esta arquivado ou encerrado.')
     throw new ForbiddenError('Acao nao permitida para este usuario ou status.')
   }
-}
-
-export function publicTicket(ticket: MaintenanceTicket, actor: MaintenanceActor) {
-  const result: Partial<MaintenanceTicket> = { ...ticket }
-  delete result.access
-  return { ...result, permissions: permissionsFor(actor, ticket) }
 }

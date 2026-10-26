@@ -164,12 +164,14 @@
     "subtitle": "Track repair and maintenance requests",
     "search": "Search ticket...",
     "allProperties": "All properties",
+    "allCategories": "All categories",
     "newTicket": "New ticket",
     "filterDialog": {
       "open": "Filters",
       "title": "Filters",
       "close": "Close filters",
-      "property": "Property"
+      "property": "Property",
+      "category": "Category"
     },
     "filters": {
       "all": "All",
@@ -378,6 +380,13 @@
       "invalid": "Enter a valid date and time.",
       "success": "Service date saved.",
       "error": "Unable to save the service date."
+    },
+    "categories": {
+      "PLUMBING": "Plumbing",
+      "ELECTRICAL": "Electrical",
+      "STRUCTURAL": "Structural",
+      "PAINTING": "Painting",
+      "OTHER": "Other"
     }
   },
   "finance": {

@@ -22,7 +22,7 @@ describe('Maintenance scheduling', () => {
         ...renter,
         contractId: contract.id,
         title: 'Leak',
-        category: 'Plumbing',
+        category: 'PLUMBING',
         description: 'Leak',
         priority: 'NORMAL',
         scheduledAt,

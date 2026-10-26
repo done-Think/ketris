@@ -3,7 +3,7 @@ import { ConflictError, ForbiddenError } from '@server/shared/errors'
 import { MaintenanceTicketNotFoundError } from '../../../domain/errors'
 import type { MaintenanceAction } from '../../../types/maintenance-ticket'
 import { actOnTicket } from '../../../application/workflow'
-import { permissionsFor } from '../../../application/authorization'
+import { permissionsFor } from '../../../domain/maintenance-access-rules'
 import {
   actor,
   admin,
@@ -32,7 +32,7 @@ describe('Maintenance provider', () => {
         name: 'Chosen provider',
         phone: '51999990000',
         email: 'provider@example.test',
-        notes: 'Plumbing',
+        notes: 'PLUMBING',
       }
       const repo = repository({ status, openedById: 'admin', provider: previous })
       expect(permissionsFor(renter, { ...ticket, status }).provider).toBe(true)

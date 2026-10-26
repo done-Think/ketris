@@ -2,7 +2,7 @@ import type { MaintenanceTicketStatus } from '@server/maintenance/types/maintena
 import { randomUUID } from 'node:crypto'
 import { NextRequest } from 'next/server'
 import { afterAll, beforeAll, expect, vi } from 'vitest'
-import type { UploadMaintenanceAttachmentInput } from '@server/maintenance/types/maintenance-attachment-storage'
+import type { UploadMaintenanceAttachmentInput } from '@server/maintenance/application/ports/maintenance-attachment-storage.port'
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
 import type { Papel } from '@server/auth/domain/user.entity'
@@ -10,11 +10,21 @@ import { POST } from '../../tickets/route'
 import { POST as act } from '../../tickets/[id]/actions/route'
 
 const { uploadToStorage } = vi.hoisted(() => ({ uploadToStorage: vi.fn() }))
-vi.mock('@server/maintenance/infrastructure/s3-maintenance-attachment-storage', () => ({
-  S3MaintenanceAttachmentStorage: class {
-    upload = uploadToStorage
+// Only uploads are stubbed; downloads keep the real adapter over the mocked S3 client.
+vi.mock(
+  '@server/maintenance/infrastructure/s3-maintenance-attachment-storage',
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import('@server/maintenance/infrastructure/s3-maintenance-attachment-storage')
+      >()
+    return {
+      S3MaintenanceAttachmentStorage: class extends actual.S3MaintenanceAttachmentStorage {
+        override upload = uploadToStorage
+      },
+    }
   },
-}))
+)
 export function setupMaintenanceIntegration() {
   const tokenService = new JoseTokenService()
 
@@ -119,7 +129,8 @@ export function setupMaintenanceIntegration() {
 
   afterAll(async () => {
     for (const tenantId of tenantIds) {
-      await prisma.solicitacaoTrocaPrestador.deleteMany({ where: { chamado: { tenantId } } })
+      // Ticket authors are Restrict FKs, so tickets (and their cascaded rows) go before users.
+      await prisma.chamadoManutencao.deleteMany({ where: { tenantId } })
       await prisma.tenant.delete({ where: { id: tenantId } })
     }
     await prisma.$disconnect()
@@ -141,7 +152,7 @@ export function setupMaintenanceIntegration() {
   const payload = {
     title: 'Leak',
     description: 'Kitchen leak',
-    category: 'Plumbing',
+    category: 'PLUMBING',
     priority: 'NORMAL',
   }
 
@@ -171,7 +182,7 @@ export function setupMaintenanceIntegration() {
       data: {
         tenantId: fixture.tenant.id,
         imovelId: fixture.property.id,
-        categoria: 'Plumbing',
+        categoria: 'PLUMBING',
         titulo: 'Legacy ticket',
         descricao: 'Existing record',
         abertoPorId: fixture.admin.id,

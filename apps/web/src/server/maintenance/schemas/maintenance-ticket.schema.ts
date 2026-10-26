@@ -13,6 +13,10 @@ export const maintenanceTicketStatusSchema = z.enum([
 
 export const maintenanceTicketPrioritySchema = z.enum(['NORMAL', 'ALTA', 'URGENTE'])
 
+export const maintenanceTicketCategorySchema = z
+  .enum(['PLUMBING', 'ELECTRICAL', 'STRUCTURAL', 'PAINTING', 'OTHER'])
+  .openapi('MaintenanceTicketCategory')
+
 export const maintenanceActivityTypeSchema = z.enum([
   'NOTA',
   'MUDANCA_STATUS',
@@ -88,6 +92,28 @@ export const maintenanceAttachmentSchema = z
   })
   .openapi('MaintenanceAttachment')
 
+export const maintenanceAttachmentResponseSchema = z
+  .object({ attachment: maintenanceAttachmentSchema })
+  .openapi('MaintenanceAttachmentResponse')
+
+export const maintenanceAttachmentUploadRequestSchema = z
+  .object({
+    file: z
+      .string()
+      .openapi({ format: 'binary', description: 'Imagem JPEG, PNG ou WebP até 8 MiB.' }),
+  })
+  .openapi('MaintenanceAttachmentUploadRequest')
+
+// The route receives the key as a catch-all segment; the contract documents it as one path value.
+export const maintenanceMediaKeyParamsSchema = z.object({
+  key: z.string().openapi({
+    description: 'Chave completa do objeto sob maintenance/<tenant>/<arquivo>.',
+    example: 'maintenance/tenant-id/image.jpg',
+  }),
+})
+
+export const maintenanceMediaBinarySchema = z.string().openapi({ format: 'binary' })
+
 export const maintenanceTicketSchema = z
   .object({
     scheduledAt: z.string().nullable(),
@@ -102,7 +128,7 @@ export const maintenanceTicketSchema = z
     deletedAt: z.string().nullable(),
     replacementRequests: z.array(replacementSchema),
     permissions: maintenancePermissionsSchema,
-    category: z.string(),
+    category: maintenanceTicketCategorySchema,
     priority: maintenanceTicketPrioritySchema,
     status: maintenanceTicketStatusSchema,
     title: z.string(),
@@ -128,7 +154,7 @@ export const maintenanceTicketListItemSchema = z
     responsibleName: z.string().nullable(),
     deletedAt: z.string().nullable(),
     permissions: maintenancePermissionsSchema,
-    category: z.string(),
+    category: maintenanceTicketCategorySchema,
     priority: maintenanceTicketPrioritySchema,
     status: maintenanceTicketStatusSchema,
     title: z.string(),
@@ -140,7 +166,7 @@ export const maintenanceTicketListItemSchema = z
   .openapi('MaintenanceTicketListItem')
 
 export const maintenanceTicketIdParamsSchema = z
-  .object({ id: z.string() })
+  .object({ id: z.string().trim().min(1) })
   .openapi('MaintenanceTicketIdParams')
 
 export const maintenanceTicketResponseSchema = z

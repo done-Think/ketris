@@ -8,7 +8,7 @@ import {
 it('accepts optional service dates with an explicit timezone and rejects invalid appointments', () => {
   const ticket = {
     contractId: 'contract',
-    category: 'Plumbing',
+    category: 'PLUMBING',
     priority: 'NORMAL',
     title: 'Leak',
     description: 'Kitchen leak',
