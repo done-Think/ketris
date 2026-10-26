@@ -78,7 +78,7 @@
     },
     "upcomingActivities": {
       "title": "Próximas atividades",
-      "empty": "Nenhuma atividade agendada para este mês."
+      "empty": "Nenhuma atividade agendada."
     }
   },
   "agencyOverview": {
@@ -113,9 +113,9 @@
       "sales": "{count} Vendas",
       "details": {
         "eyebrow": "Desempenho do corretor",
-        "summary": "{sales} vendas no periodo - {revenue} em receita",
-        "recentSales": "Ultimas vendas",
-        "openProfile": "Ver perfil publico",
+        "summary": "{sales} vendas no período - {revenue} em receita",
+        "recentSales": "Últimas vendas",
+        "openProfile": "Ver perfil público",
         "close": "Fechar"
       }
     },

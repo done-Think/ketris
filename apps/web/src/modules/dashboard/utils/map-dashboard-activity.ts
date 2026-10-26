@@ -31,5 +31,14 @@ export function toDashboardUpcomingActivity(
     notes: event.notes ?? '',
     propertyId: event.propertyId,
     propertyReference: event.propertyReference,
+    property: event.property
+      ? {
+          title: event.property.title,
+          price: event.property.price,
+          address: event.property.address
+            ? `${event.property.address.street}, ${event.property.address.number} - ${event.property.address.neighborhood}, ${event.property.address.city}`
+            : null,
+        }
+      : null,
   }
 }

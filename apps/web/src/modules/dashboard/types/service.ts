@@ -24,6 +24,18 @@ export interface ApiDashboardRecentLead {
 export type ApiDashboardActivityKind =
   'VISIT' | 'FOLLOW_UP' | 'MEETING' | 'INSPECTION' | 'SIGNATURE' | 'OTHER'
 
+export interface ApiDashboardActivityProperty {
+  id: string
+  title: string
+  price: number
+  address: {
+    street: string
+    number: string
+    neighborhood: string
+    city: string
+  } | null
+}
+
 export interface ApiDashboardUpcomingActivity {
   id: string
   title: string
@@ -35,6 +47,7 @@ export interface ApiDashboardUpcomingActivity {
   notes: string | null
   propertyId: string | null
   propertyReference: string | null
+  property: ApiDashboardActivityProperty | null
 }
 
 export interface ApiDashboardOverview {

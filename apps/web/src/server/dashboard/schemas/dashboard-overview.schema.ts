@@ -38,6 +38,25 @@ export const dashboardRecentLeadSchema = z
   })
   .openapi('DashboardRecentLead')
 
+export const dashboardActivityPropertySchema = z
+  .object({
+    id: z.string(),
+    title: z.string(),
+    price: z.number(),
+    address: z
+      .object({
+        street: z.string(),
+        number: z.string(),
+        neighborhood: z.string(),
+        city: z.string(),
+      })
+      .nullable(),
+  })
+  .openapi('DashboardActivityProperty', {
+    description:
+      'Resumo do imóvel vinculado ao evento. Só vem preenchido quando o imóvel está publicado.',
+  })
+
 export const dashboardUpcomingActivitySchema = z
   .object({
     id: z.string(),
@@ -50,6 +69,7 @@ export const dashboardUpcomingActivitySchema = z
     notes: z.string().nullable(),
     propertyId: z.string().nullable(),
     propertyReference: z.string().nullable(),
+    property: dashboardActivityPropertySchema.nullable(),
   })
   .openapi('DashboardUpcomingActivity')
 

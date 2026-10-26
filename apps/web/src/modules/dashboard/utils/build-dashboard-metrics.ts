@@ -1,7 +1,5 @@
 import type { BuildDashboardMetricsParams, DashboardMetric } from '../types/dashboard-overview'
 
-// The API already counts in the business time zone and scopes by role (an AGENT only gets their
-// own work); this only turns the counts into the cards.
 export function buildDashboardMetrics({
   metrics,
   t,

@@ -78,7 +78,7 @@
     },
     "upcomingActivities": {
       "title": "Próximas actividades",
-      "empty": "No hay actividades programadas para este mes."
+      "empty": "No hay actividades programadas."
     }
   },
   "agencyOverview": {
@@ -112,10 +112,10 @@
       "subtitle": "Destacados por volumen de cierres",
       "sales": "{count} Ventas",
       "details": {
-        "eyebrow": "Desempeno del agente",
+        "eyebrow": "Desempeño del agente",
         "summary": "{sales} ventas en el periodo - {revenue} en ingresos",
-        "recentSales": "Ultimas ventas",
-        "openProfile": "Ver perfil publico",
+        "recentSales": "Últimas ventas",
+        "openProfile": "Ver perfil público",
         "close": "Cerrar"
       }
     },

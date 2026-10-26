@@ -12,30 +12,10 @@ import {
 import CloseIcon from '@mui/icons-material/Close'
 import { useTranslations } from 'next-intl'
 
-import { alpha, brand, radius } from '@shared/theme/tokens'
-
-import type { LeadBriefingItemProps, LeadDetailsModalProps } from '../types/dashboard-overview'
+import type { LeadDetailsModalProps } from '../types/dashboard-overview'
 import { ContactInfoCard } from './ContactInfoCard'
-
-function LeadBriefingItem({ label, value }: LeadBriefingItemProps) {
-  return (
-    <Box
-      sx={{
-        border: '1px solid',
-        borderColor: alpha.graphite[6],
-        borderRadius: `${radius.sm}px`,
-        p: 1.4,
-      }}
-    >
-      <Typography sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 900 }}>
-        {label}
-      </Typography>
-      <Typography sx={{ color: brand.graphite[500], fontSize: 13, fontWeight: 800, mt: 0.6 }}>
-        {value}
-      </Typography>
-    </Box>
-  )
-}
+import { LeadBriefingItem } from './LeadBriefingItem'
+import { styles } from '../styles/lead-details-modal.styles'
 
 export function LeadDetailsModal({ lead, onClose }: LeadDetailsModalProps) {
   const t = useTranslations('dashboard.overview.leadDetails')
@@ -48,30 +28,22 @@ export function LeadDetailsModal({ lead, onClose }: LeadDetailsModalProps) {
       maxWidth="sm"
       slotProps={{
         paper: {
-          sx: {
-            borderRadius: `${radius.sm}px`,
-            overflow: 'hidden',
-          },
+          sx: styles.paper,
         },
       }}
     >
       {lead ? (
         <>
-          <DialogTitle sx={{ px: { xs: 2, md: 2.6 }, py: 2 }}>
+          <DialogTitle sx={styles.dialogTitle}>
             <Stack
               direction="row"
               alignItems="flex-start"
               justifyContent="space-between"
               spacing={2}
             >
-              <Box sx={{ minWidth: 0 }}>
-                <Typography sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 900 }}>
-                  {t('title')}
-                </Typography>
-                <Typography
-                  noWrap
-                  sx={{ color: brand.graphite[500], fontSize: { xs: 20, md: 24 }, fontWeight: 900 }}
-                >
+              <Box sx={styles.box2}>
+                <Typography sx={styles.typography}>{t('title')}</Typography>
+                <Typography noWrap sx={styles.typography3}>
                   {lead.name}
                 </Typography>
               </Box>
@@ -81,47 +53,20 @@ export function LeadDetailsModal({ lead, onClose }: LeadDetailsModalProps) {
             </Stack>
           </DialogTitle>
 
-          <DialogContent sx={{ px: { xs: 2, md: 2.6 }, pb: 2.6 }}>
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' },
-                gap: 1,
-              }}
-            >
+          <DialogContent sx={styles.dialogContent}>
+            <Box sx={styles.box3}>
               <ContactInfoCard label={t('client')} name={lead.name} phone={lead.phone} />
               <LeadBriefingItem label={t('interest')} value={lead.interest} />
               <LeadBriefingItem label={t('budget')} value={lead.budget} />
             </Box>
 
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                gap: 1,
-                mt: 1,
-              }}
-            >
+            <Box sx={styles.box4}>
               <LeadBriefingItem label={t('origin')} value={lead.source} />
             </Box>
 
-            <Box
-              sx={{
-                border: '1px solid',
-                borderColor: alpha.graphite[6],
-                borderRadius: `${radius.sm}px`,
-                p: 1.4,
-                mt: 1,
-              }}
-            >
-              <Typography sx={{ color: brand.neutral[500], fontSize: 11, fontWeight: 900 }}>
-                {t('notes')}
-              </Typography>
-              <Typography
-                sx={{ color: brand.graphite[500], fontSize: 13, fontWeight: 700, mt: 0.6 }}
-              >
-                {lead.notes || t('noNotes')}
-              </Typography>
+            <Box sx={styles.box5}>
+              <Typography sx={styles.typography}>{t('notes')}</Typography>
+              <Typography sx={styles.typography4}>{lead.notes || t('noNotes')}</Typography>
             </Box>
           </DialogContent>
         </>

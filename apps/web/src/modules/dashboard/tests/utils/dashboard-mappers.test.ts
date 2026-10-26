@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 import { buildDashboardMetrics } from '../../utils/build-dashboard-metrics'
 import { toDashboardUpcomingActivity } from '../../utils/map-dashboard-activity'
-import { toDashboardRecentLead } from '../../utils/map-dashboard-lead'
+import { toDashboardRecentLead } from '../../utils/map-dashboard-recent-lead'
+import { apiDashboardOverview } from '../fixtures/dashboard'
 
 const t = (key: string, values?: Record<string, string | number>) =>
   values ? `${key}:${JSON.stringify(values)}` : key
@@ -63,7 +64,24 @@ describe('mapeadores do dashboard', () => {
         notes: null,
         propertyId: null,
         propertyReference: null,
+        property: null,
       }),
-    ).toMatchObject({ accent: 'info', contact: 'Ana', notes: '' })
+    ).toMatchObject({ accent: 'info', contact: 'Ana', notes: '', property: null })
+  })
+
+  it('monta o endereço do imóvel publicado em uma linha', () => {
+    expect(
+      toDashboardUpcomingActivity(apiDashboardOverview.upcomingActivities[0]).property,
+    ).toEqual({
+      title: 'Apartamento Batel',
+      price: 3200,
+      address: 'Rua Bispo, 10 - Batel, Curitiba',
+    })
+    expect(
+      toDashboardUpcomingActivity({
+        ...apiDashboardOverview.upcomingActivities[0],
+        property: { id: 'p', title: 'Sem endereço', price: 1, address: null },
+      }).property,
+    ).toEqual({ title: 'Sem endereço', price: 1, address: null })
   })
 })
