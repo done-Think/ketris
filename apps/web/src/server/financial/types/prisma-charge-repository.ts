@@ -1,6 +1,10 @@
-import type { Cobranca, Contrato, Imovel, ParteContrato } from '@prisma/client'
+import type { Cobranca, ComprovanteCobranca, Contrato, Imovel, ParteContrato } from '@prisma/client'
 
 export type CobrancaWithRelations = Cobranca & {
+  comprovanteAtual: Pick<
+    ComprovanteCobranca,
+    'id' | 'nomeArquivo' | 'tipoConteudo' | 'tamanhoBytes' | 'createdAt'
+  > | null
   contrato:
     | (Contrato & {
         imovel: Pick<Imovel, 'id' | 'titulo'> & {

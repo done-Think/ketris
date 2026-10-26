@@ -1,7 +1,4 @@
 {
-  "renter": {
-    "subtitle": "Consulta los cobros de tus contratos."
-  },
   "metadata": {
     "title": "Ketris | Cobros",
     "description": "Gestiona cobros por recibir y pagar.",
@@ -9,17 +6,24 @@
     "metadataDescription": "Gestiona cobros por recibir y pagar."
   },
   "title": "Cobros",
-  "subtitle": "Gestiona cobros por recibir y pagar",
-  "searchPlaceholder": "Buscar inquilino o inmueble...",
+  "subtitle": "Gestiona cobros por cobrar y por pagar",
+  "renter": {
+    "subtitle": "Consulta los cobros de tus contratos."
+  },
+  "searchPlaceholder": "Buscar inquilino, inmueble o código...",
   "newCharge": "Nuevo cobro",
-  "tabs": { "receivable": "Por recibir", "payable": "Por pagar" },
+  "filtersLabel": "Filtrar cobros por estado",
+  "tabs": {
+    "receivable": "A cobrar",
+    "payable": "A pagar"
+  },
   "kpis": {
-    "receivable": "Por recibir este mes",
-    "overdue": "Vencidos",
+    "receivable": "A cobrar este mes",
+    "overdue": "Vencido",
     "defaultRate": "Tasa de morosidad"
   },
   "statuses": {
-    "all": "Todas",
+    "all": "Todos",
     "pending": "Pendiente",
     "overdue": "Vencido",
     "paid": "Pagado",
@@ -30,134 +34,180 @@
     "code": "Cobro",
     "tenant": "Inquilino",
     "property": "Inmueble",
-    "amount": "Valor",
+    "amount": "Importe",
     "dueDate": "Vencimiento",
     "status": "Estado",
-    "actions": "Acciones"
+    "actions": "Acciones",
+    "empty": "No se encontraron cobros."
   },
-  "actions": { "edit": "Editar", "archive": "Archivar", "delete": "Eliminar" },
+  "actions": {
+    "view": "Ver detalles",
+    "edit": "Editar",
+    "cancel": "Cancelar cobro",
+    "delete": "Eliminar"
+  },
   "feedback": {
+    "created": "Cobro creado",
     "updated": "Cobro actualizado",
-    "updateError": "No fue posible actualizar el cobro.",
-    "archived": "Cobro archivado",
-    "archiveError": "No fue posible archivar el cobro.",
+    "cancelled": "Cobro cancelado",
     "deleted": "Cobro eliminado",
-    "deleteError": "No fue posible eliminar el cobro."
+    "paymentRegistered": "Pago registrado",
+    "paymentReversed": "Pago revertido"
   },
-  "pagination": { "summary": "Mostrando {from}-{to} de {total} cobros" },
-  "createDialog": {
-    "title": "Nuevo cobro",
+  "errors": {
+    "createFailed": "No se pudo crear el cobro.",
+    "updateFailed": "No se pudo actualizar el cobro.",
+    "cancelFailed": "No se pudo cancelar el cobro.",
+    "deleteFailed": "No se pudo eliminar el cobro.",
+    "paymentFailed": "No se pudo registrar el pago.",
+    "reverseFailed": "No se pudo revertir el pago.",
+    "downloadFailed": "No se pudo descargar el comprobante.",
+    "exportFailed": "No se pudieron exportar los cobros.",
+    "notFound": "Cobro no encontrado.",
+    "contractNotFound": "Contrato no encontrado.",
+    "alreadySettled": "Este cobro ya fue pagado o cancelado.",
+    "notPaid": "Solo un cobro pagado puede revertirse.",
+    "locked": "Un cobro pagado o cancelado solo permite cambiar la descripción.",
+    "hasMovement": "Solo se pueden eliminar cobros pendientes o programados sin movimientos. Usa \"Cancelar cobro\".",
+    "concurrentChange": "Otra persona modificó el cobro. Recarga e inténtalo de nuevo.",
+    "receiptNotFound": "Comprobante no encontrado.",
+    "receiptInvalid": "El archivo enviado no corresponde al comprobante.",
+    "receiptUnavailable": "Servicio de comprobantes no disponible. Inténtalo más tarde o registra sin comprobante.",
+    "receiptExpired": "El envío del comprobante caducó. Inténtalo de nuevo.",
+    "validation": "Revisa los datos informados.",
+    "forbidden": "No tienes permiso para esta acción."
+  },
+  "formDialog": {
+    "createTitle": "Nuevo cobro",
+    "editTitle": "Editar cobro",
     "close": "Cerrar",
     "cancel": "Cancelar",
-    "submit": "Crear cobro",
-    "success": "Cobro creado",
-    "error": "No fue posible crear el cobro.",
-    "fields": {
-      "description": "Descripción",
-      "amount": "Valor",
-      "dueDate": "Vencimiento",
-      "direction": "Tipo",
-      "status": "Estado"
-    },
-    "directions": { "receivable": "Por recibir", "payable": "Por pagar" },
-    "statuses": { "pending": "Pendiente", "scheduled": "Programado" },
-    "errors": {
-      "descriptionRequired": "Indica la descripción",
-      "amountPositive": "El valor debe ser mayor que cero",
-      "dateInvalid": "Indica una fecha válida"
-    }
-  },
-  "editDialog": {
-    "paymentHint": "Para marcar como pagado, registra el pago en los detalles.",
-    "title": "Editar cobro",
-    "close": "Cerrar",
-    "cancel": "Cancelar",
+    "create": "Crear cobro",
     "save": "Guardar cambios",
+    "createHint": "El estado cambia con las acciones del cobro: registrar pago, revertir o cancelar.",
+    "editHint": "Para cambiar el estado, registra un pago o cancela el cobro.",
+    "lockedHint": "Cobro pagado o cancelado: solo se puede cambiar la descripción.",
     "fields": {
       "description": "Descripción",
-      "amount": "Valor",
+      "amount": "Importe",
       "dueDate": "Vencimiento",
       "direction": "Tipo",
-      "status": "Estado"
+      "status": "Estado inicial"
+    },
+    "directions": {
+      "receivable": "A cobrar",
+      "payable": "A pagar"
+    },
+    "statuses": {
+      "pending": "Pendiente",
+      "scheduled": "Programado"
     },
     "errors": {
       "descriptionRequired": "Indica la descripción",
-      "amountPositive": "El valor debe ser mayor que cero",
+      "descriptionTooLong": "Usa hasta 500 caracteres",
+      "amountPositive": "El importe debe ser mayor que cero",
+      "amountTooHigh": "Importe superior al límite",
       "dateInvalid": "Indica una fecha válida"
     }
   },
-  "archiveDialog": {
-    "title": "¿Archivar cobro?",
-    "description": "El cobro se marcará como cancelado.",
-    "cancel": "Cancelar",
-    "confirm": "Archivar"
+  "reasonDialog": {
+    "cancel": {
+      "title": "Cancelar cobro",
+      "description": "El cobro quedará cancelado y no podrá reabrirse. El motivo queda en el historial.",
+      "reason": "Motivo de la cancelación",
+      "cancel": "Volver",
+      "confirm": "Cancelar cobro"
+    },
+    "reverse": {
+      "title": "Revertir pago",
+      "description": "El cobro vuelve a pendiente. El pago y el comprobante quedan en el historial.",
+      "reason": "Motivo de la reversión",
+      "cancel": "Volver",
+      "confirm": "Revertir pago"
+    },
+    "errors": {
+      "reasonRequired": "Indica el motivo (mínimo 3 caracteres)",
+      "reasonTooLong": "Usa hasta 500 caracteres"
+    }
   },
   "deleteDialog": {
     "title": "¿Eliminar cobro?",
-    "description": "Esta acción es permanente y no se puede deshacer.",
+    "description": "Solo se pueden eliminar cobros pendientes o programados sin movimientos. La eliminación queda registrada en el historial.",
     "cancel": "Cancelar",
     "confirm": "Eliminar"
   },
-  "detailsDialog": {
-    "title": "Detalles del cobro",
-    "close": "Cerrar"
+  "paymentDialog": {
+    "title": "Registrar pago",
+    "date": "Fecha de pago",
+    "method": "Forma de pago",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar pago",
+    "sending": "Enviando...",
+    "attachReceipt": "Adjuntar comprobante",
+    "replaceReceipt": "Cambiar archivo",
+    "removeReceipt": "Quitar",
+    "noReceiptSelected": "Ningún comprobante adjunto (opcional)",
+    "receiptHint": "PDF, JPG o PNG hasta 10 MB.",
+    "errors": {
+      "dateInvalid": "Indica una fecha válida",
+      "paymentMethodRequired": "Indica la forma de pago",
+      "paymentMethodTooLong": "Usa hasta 100 caracteres",
+      "receiptType": "Envía un PDF, JPG o PNG",
+      "receiptSize": "El archivo debe tener hasta 10 MB"
+    }
   },
   "details": {
     "missing": "Cobro no encontrado.",
-    "noReceipt": "Este cobro no tiene comprobante.",
-    "demoDocument": "Documento demostrativo — no válido para pago.",
-    "closeDocument": "Cerrar documento",
-    "back": "Volver a cobros",
-    "summary": "Alquiler — Marzo 2025",
-    "duplicate": "Emitir duplicado",
-    "duplicateSuccess": "Duplicado demostrativo preparado localmente",
+    "loadFailed": "No se pudo cargar el cobro.",
+    "retry": "Reintentar",
+    "back": "Volver a Cobros",
     "registerPayment": "Registrar pago",
-    "paymentSuccess": "Pago registrado",
-    "paymentError": "No fue posible registrar el pago.",
+    "reversePayment": "Revertir pago",
+    "cancelCharge": "Cancelar cobro",
     "detailsTitle": "Detalles del cobro",
     "receiptTitle": "Comprobante",
     "linkingTitle": "Vinculación",
     "historyTitle": "Historial",
-    "receivable": "Alquiler mensual",
-    "payable": "Pago",
     "notPaid": "No pagado",
     "notAvailable": "—",
-    "fields": {
-      "type": "Tipo",
-      "competence": "Competencia",
-      "amount": "Valor",
-      "dueDate": "Vencimiento",
-      "payment": "Pago",
-      "method": "Forma",
-      "fees": "Multa/Intereses"
-    },
-    "receiptFile": "comprobante_pix_040325.pdf",
-    "receiptMeta": "Enviado el 04/03/2025 a las 14:15 · 142 KB",
-    "viewReceipt": "Ver comprobante",
-    "receiptPreview": "Vista previa demostrativa disponible localmente.",
+    "noReceipt": "Ningún comprobante adjunto.",
+    "receiptMeta": "Enviado el {date} · {size}",
+    "downloadReceipt": "Descargar {name}",
     "contract": "CONTRATO",
     "property": "INMUEBLE",
     "tenant": "INQUILINO",
-    "address": "Alameda Lorena, 1420 - Jardins, São Paulo - SP",
-    "contact": "bruno.oliveira@email.com",
+    "directions": {
+      "receivable": "A cobrar",
+      "payable": "A pagar"
+    },
+    "fields": {
+      "type": "Tipo",
+      "description": "Descripción",
+      "competence": "Periodo",
+      "amount": "Importe",
+      "dueDate": "Vencimiento",
+      "payment": "Pago",
+      "method": "Forma",
+      "cancelledAt": "Cancelado el",
+      "cancellationReason": "Motivo de la cancelación"
+    },
     "history": {
-      "updated": "Cobro actualizado",
-      "generated": "Cobro generado",
-      "generatedDate": "25/02/2025 a las 09:00",
-      "issued": "Boleto emitido",
-      "issuedDate": "25/02/2025 a las 09:30",
-      "received": "Pago recibido"
-    },
-    "paymentDialog": {
-      "title": "Registrar pago",
-      "date": "Fecha de pago",
-      "method": "Forma de pago",
-      "cancel": "Cancelar",
-      "confirm": "Confirmar pago"
-    },
-    "errors": {
-      "dateInvalid": "Indica una fecha válida",
-      "paymentMethodRequired": "Indica la forma de pago"
+      "CREATED": "Cobro creado",
+      "UPDATED": "Cobro editado",
+      "PAYMENT_REGISTERED": "Pago registrado",
+      "PAYMENT_REVERSED": "Pago revertido",
+      "CANCELLED": "Cobro cancelado",
+      "DELETED": "Cobro eliminado",
+      "system": "Sistema",
+      "changed": "Cambió: {fields}",
+      "reason": "Motivo: {reason}",
+      "empty": "Sin eventos registrados.",
+      "fields": {
+        "description": "descripción",
+        "type": "tipo",
+        "amount": "importe",
+        "dueDate": "vencimiento"
+      }
     }
   }
 }

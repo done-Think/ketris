@@ -27,7 +27,7 @@ describe('useAgencyOverview', () => {
     expect(result.current.overview).toBeNull()
   })
 
-  it('converte o resumo da imobiliária e fica em BRL no pt-BR', async () => {
+  it('converte o resumo da imobiliária ', async () => {
     const { result } = renderHook(() => useAgencyOverview(true), {
       wrapper: DashboardTestProviders,
     })
@@ -35,7 +35,5 @@ describe('useAgencyOverview', () => {
     await waitFor(() => expect(result.current.overview).not.toBeNull())
     expect(result.current.overview?.kpis[0]).toMatchObject({ id: 'portfolio', value: '42' })
     expect(result.current.overview?.activities[0]).toMatchObject({ broker: 'Bruna', tone: 'lead' })
-    expect(result.current.targetCurrency).toBe('BRL')
-    expect(result.current.displayCurrency).toBe('BRL')
   })
 })

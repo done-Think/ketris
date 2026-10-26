@@ -33,9 +33,18 @@
     "title": "Dashboard",
     "notifications": "Notificações",
     "metrics": {
-      "leadsActive": { "label": "Leads ativos", "caption": "{count} hoje" },
-      "visitsMonth": { "label": "Visitas mês", "caption": "{count} hoje" },
-      "proposals": { "label": "Propostas", "caption": "{count} aguardando resposta" }
+      "leadsActive": {
+        "label": "Leads ativos",
+        "caption": "{count} hoje"
+      },
+      "visitsMonth": {
+        "label": "Visitas mês",
+        "caption": "{count} hoje"
+      },
+      "proposals": {
+        "label": "Propostas",
+        "caption": "{count} aguardando resposta"
+      }
     },
     "activityDetail": {
       "close": "Fechar",
@@ -104,7 +113,7 @@
     },
     "performance": {
       "title": "Performance de Faturamento",
-      "subtitle": "Receita mensal recebida pela imobiliária",
+      "subtitle": "Receita mensal a receber pela imobiliária",
       "revenue": "Receita"
     },
     "topBrokers": {
@@ -374,13 +383,6 @@
   "finance": {
     "title": "Financeiro",
     "subtitle": "Movimentação financeira mensal e registros de venda/comissão.",
-    "exchangeRateNotice": "Valores estimados em {currency} pela PTAX de fechamento de {date} (1 {currency} = R$ {rate}). Lançamentos permanecem em BRL.",
-    "exchangeRateLoading": "Consultando a cotação PTAX. Valores exibidos em BRL por enquanto.",
-    "exchangeRateUnavailable": "Cotação indisponível. Valores exibidos em BRL.",
-    "movementTitle": "Movimentação mensal",
-    "movementSubtitle": "Entradas de vendas e comissões por mês.",
-    "sales": "Vendas",
-    "commissions": "Comissões",
     "table": {
       "type": "Tipo",
       "description": "Lançamento",
@@ -394,37 +396,15 @@
       "title": "Movimentações recentes",
       "date": "Data"
     },
-    "statuses": {
-      "Recebido": "Recebido",
-      "Previsto": "Previsto",
-      "Atrasado": "Atrasado",
-      "Pago": "Pago",
-      "Pendente": "Pendente"
-    },
-    "selectedMonth": "Julho 2025",
     "export": "Exportar",
-    "revenueChartTitle": "Faturamento (6 meses)",
-    "revenue": "Faturamento",
+    "revenueChartTitle": "A receber (6 meses)",
+    "revenue": "A receber",
     "upcomingDuesTitle": "Próximos vencimentos",
     "kpis": {
       "receivable": "A receber",
       "delinquency": "Inadimplência",
       "defaultRate": "Taxa de inadimplência",
       "occupancyRate": "Taxa de ocupação"
-    },
-    "history": {
-      "eyebrow": "Histórico financeiro",
-      "close": "Fechar histórico",
-      "propertyLabel": "Imóvel",
-      "clientLabel": "Cliente"
-    },
-    "entryDetail": {
-      "eyebrow": "Registro financeiro",
-      "close": "Fechar registro financeiro",
-      "propertyLabel": "Imóvel",
-      "clientLabel": "Cliente",
-      "amountLabel": "Valor",
-      "receiptsTitle": "Comprovantes"
     }
   },
   "team": {

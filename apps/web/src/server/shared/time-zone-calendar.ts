@@ -91,3 +91,12 @@ export function calendarMonthDateRange({ year, month }: CalendarMonth, monthOffs
     end: new Date(Date.UTC(year, month + monthOffset + 1, 1)),
   }
 }
+
+export function calendarDateInTimeZone(
+  referenceDate: Date,
+  timeZone: string = BUSINESS_TIME_ZONE,
+): Date {
+  const { year, month, day } = zonedParts(referenceDate.getTime(), timeZone)
+
+  return new Date(Date.UTC(year, month, day))
+}

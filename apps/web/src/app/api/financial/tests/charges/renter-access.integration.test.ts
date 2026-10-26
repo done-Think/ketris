@@ -101,24 +101,24 @@ describe('Renter charge isolation (database integration)', () => {
       tenantId: string,
       contratoId: string | null,
       tipo: 'A_RECEBER' | 'A_PAGAR' = 'A_RECEBER',
-      status: 'PENDENTE' | 'ATRASADA' = 'PENDENTE',
+      overdue = false,
     ) {
       return prisma.cobranca.create({
         data: {
           tenantId,
           contratoId,
           tipo,
-          status,
+          status: 'PENDENTE',
           codigo: randomUUID(),
           descricao: 'isolation-charge',
           valor: 1000,
-          vencimento: new Date('2026-10-05'),
+          vencimento: new Date(overdue ? '2026-10-05' : '2099-10-05'),
         },
       })
     }
     ownIds = [
       (await charge(tenantId, own.id)).id,
-      (await charge(tenantId, own.id, 'A_RECEBER', 'ATRASADA')).id,
+      (await charge(tenantId, own.id, 'A_RECEBER', true)).id,
       (await charge(foreignTenantId, foreign.id)).id,
     ]
     hiddenIds = [
@@ -198,7 +198,9 @@ describe('Renter charge isolation (database integration)', () => {
       status: 'PENDENTE',
     }
     expect((await POST(request('charges', 'POST', body))).status).toBe(403)
-    expect((await PATCH(request(`charges/${id}`, 'PATCH', body), context(id))).status).toBe(403)
+    expect(
+      (await PATCH(request(`charges/${id}`, 'PATCH', { amount: 100 }), context(id))).status,
+    ).toBe(403)
     expect((await DELETE(request(`charges/${id}`, 'DELETE'), context(id))).status).toBe(403)
     expect(
       (

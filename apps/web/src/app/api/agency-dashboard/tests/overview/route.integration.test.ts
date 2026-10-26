@@ -435,7 +435,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
       [1000, 'PAGA'],
       [400, 'PENDENTE'],
       [999, 'CANCELADA'],
-      [700, 'ATRASADA'],
+      [700, 'AGENDADA'],
     ] as const) {
       await prisma.cobranca.create({
         data: {
@@ -458,7 +458,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     expect(json.kpis.receivedLeadsThisMonth).toBe(1)
     expect(json.kpis.receivedLeadsPreviousPeriod).toBe(1)
     expect(json.kpis.monthlyReceivable).toBe(1500)
-    expect(json.kpis.monthlyReceivablePreviousMonth).toBe(1400)
+    expect(json.kpis.monthlyReceivablePreviousMonth).toBe(2100)
   })
 
   describe('limites dos períodos de comparação (relógio em 13/01/2027 14:00)', () => {
@@ -533,7 +533,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
         [8000, 'A_RECEBER', 'PAGA', calendarDate(2026, 10, 30)],
         [16000, 'A_PAGAR', 'PAGA', calendarDate(2026, 11, 15)],
         [32000, 'A_RECEBER', 'AGENDADA', calendarDate(2026, 11, 15)],
-        [64000, 'A_RECEBER', 'ATRASADA', calendarDate(2026, 11, 15)],
+        [64000, 'A_RECEBER', 'PENDENTE', calendarDate(2026, 11, 15)],
         [128000, 'A_RECEBER', 'CANCELADA', calendarDate(2026, 11, 15)],
       ] as const) {
         await prisma.cobranca.create({
@@ -583,11 +583,11 @@ describe('/api/agency-dashboard/overview (integração)', () => {
       expect(json.kpis.newPropertiesThisMonth).toBe(2)
     })
 
-    it('soma no mês anterior só cobranças a receber pendentes ou pagas com vencimento em dezembro', async () => {
+    it('soma no mês anterior as cobranças a receber não canceladas com vencimento em dezembro', async () => {
       const json = await (await GET(buildRequest(frozenOwnerToken))).json()
 
       expect(json.kpis.monthlyReceivable).toBe(4000)
-      expect(json.kpis.monthlyReceivablePreviousMonth).toBe(300)
+      expect(json.kpis.monthlyReceivablePreviousMonth).toBe(96300)
     })
   })
 })

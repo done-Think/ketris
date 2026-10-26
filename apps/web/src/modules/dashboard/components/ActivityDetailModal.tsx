@@ -13,7 +13,9 @@ import {
 import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined'
 import CloseIcon from '@mui/icons-material/Close'
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+
+import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { formatCurrency } from '@shared/lib/utils/format'
 
@@ -23,6 +25,7 @@ import { styles } from '../styles/activity-detail-modal.styles'
 
 export function ActivityDetailModal({ activity, onClose }: ActivityDetailModalProps) {
   const t = useTranslations('dashboard.overview.activityDetail')
+  const locale = useLocale() as AppLocale
   const property = activity?.property ?? null
 
   return (
@@ -104,7 +107,9 @@ export function ActivityDetailModal({ activity, onClose }: ActivityDetailModalPr
                   {property.address ? (
                     <Typography sx={styles.typography7}>{property.address}</Typography>
                   ) : null}
-                  <Typography sx={styles.typography8}>{formatCurrency(property.price)}</Typography>
+                  <Typography sx={styles.typography8}>
+                    {formatCurrency(property.price, locale)}
+                  </Typography>
                 </Box>
               ) : null}
             </Stack>

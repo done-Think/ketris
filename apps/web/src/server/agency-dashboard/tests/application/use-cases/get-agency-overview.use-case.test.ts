@@ -83,9 +83,15 @@ describe('GetAgencyOverviewUseCase', () => {
         findMany: vi.fn(),
         findById: vi.fn(),
         findReadableById: vi.fn(),
+        hasMovement: vi.fn(),
         update: vi.fn(),
-        delete: vi.fn(),
         registerPayment: vi.fn(),
+        reversePayment: vi.fn(),
+        cancel: vi.fn(),
+        delete: vi.fn(),
+        listHistory: vi.fn(),
+        findReceipt: vi.fn(),
+        findForExport: vi.fn(),
         getSummary,
       }
       const useCase = new GetAgencyOverviewUseCase(
@@ -97,7 +103,7 @@ describe('GetAgencyOverviewUseCase', () => {
 
       expect(overview.kpis.monthlyReceivable).toBe(8500)
       expect(overview.revenueSeries).toEqual([{ year: 2026, month: 9, total: 8500 }])
-      expect(getSummary).toHaveBeenCalledWith('tenant-1', expect.any(Date))
+      expect(getSummary).toHaveBeenCalledWith('tenant-1', expect.any(Object), expect.any(Date))
     },
   )
 

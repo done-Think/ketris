@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest'
 
-import type { FinancialExchangeRate } from '@shared/lib/currency/display-currency'
-
 import type { ApiAgencyOverviewKpis, ApiAgencyTopBroker } from '../../types/agency-service'
 import {
   mapKpisToAgencyOverviewKpis,
@@ -151,9 +149,6 @@ describe('mapKpisToAgencyOverviewKpis', () => {
 // Intl uses non-breaking spaces in currencies (e.g. "R$ 1,00"); normalize them for readable asserts.
 const normalize = (value: string | undefined) => value?.replace(/\s/g, ' ')
 
-const eurRate: FinancialExchangeRate = { currency: 'EUR', brlPerUnit: 6, date: '2026-10-13' }
-const usdRate: FinancialExchangeRate = { currency: 'USD', brlPerUnit: 5, date: '2026-10-13' }
-
 describe('formatação por idioma', () => {
   const bigKpis: ApiAgencyOverviewKpis = {
     ...baseKpis,
@@ -183,30 +178,13 @@ describe('formatação por idioma', () => {
     expect(valuesOf(bigKpis, 'es-ES')).toMatchObject({ portfolio: '25.000', leads: '2500' })
   })
 
-  it('mostra o faturamento em reais por padrão em português', () => {
+  it('mostra sempre reais, só mudando a formatação pelo idioma', () => {
     expect(valuesOf(bigKpis).revenue).toBe('R$ 9.000,00')
-    expect(valuesOf(bigKpis, 'pt-BR', eurRate).revenue).toBe('R$ 9.000,00')
-  })
-
-  it('converte o faturamento para euro em espanhol e dólar em inglês quando há cotação', () => {
-    expect(valuesOf(bigKpis, 'es-ES', eurRate).revenue).toBe('1500,00 €')
-    expect(valuesOf(bigKpis, 'en-US', usdRate).revenue).toBe('$1,800.00')
-  })
-
-  it('mantém reais quando a cotação não está disponível', () => {
-    expect(valuesOf(bigKpis, 'es-ES', null).revenue).toBe('9000,00 BRL')
     expect(valuesOf(bigKpis, 'en-US').revenue).toBe('R$9,000.00')
+    expect(valuesOf(bigKpis, 'es-ES').revenue).toMatch(/^9000,00\sBRL$/)
   })
 
-  it('não muda a comparação de faturamento ao converter a moeda', () => {
-    const kpis = { ...baseKpis, monthlyReceivable: 11200, monthlyReceivablePreviousMonth: 10000 }
-
-    expect(
-      mapKpisToAgencyOverviewKpis(kpis, 'es-ES', eurRate).find((kpi) => kpi.id === 'revenue'),
-    ).toMatchObject({ helper: { key: 'revenueIncrease', values: { percent: 12 } } })
-  })
-
-  it('traduz os meses do gráfico e converte os valores para a moeda do idioma', () => {
+  it('traduz os meses do gráfico sem converter os valores', () => {
     const series = [
       { year: 2026, month: 5, total: 600 },
       { year: 2026, month: 8, total: 1200 },
@@ -218,9 +196,9 @@ describe('formatação por idioma', () => {
       { month: 'ago', revenue: 1200 },
       { month: 'out', revenue: 0 },
     ])
-    expect(mapRevenueSeriesToAgencyRevenuePoints(series, 'es-ES', eurRate)).toEqual([
-      { month: 'may', revenue: 100 },
-      { month: 'ago', revenue: 200 },
+    expect(mapRevenueSeriesToAgencyRevenuePoints(series, 'es-ES')).toEqual([
+      { month: 'may', revenue: 600 },
+      { month: 'ago', revenue: 1200 },
       { month: 'oct', revenue: 0 },
     ])
     expect(
@@ -228,7 +206,7 @@ describe('formatação por idioma', () => {
     ).toEqual(['May', 'Aug', 'Oct'])
   })
 
-  it('converte os valores dos corretores destaque para a moeda do idioma', () => {
+  it('mostra os valores dos corretores destaque em reais em qualquer idioma', () => {
     const broker: ApiAgencyTopBroker = {
       id: 'broker-1',
       name: 'Marina Souza',
@@ -252,8 +230,8 @@ describe('formatação por idioma', () => {
     expect(normalize(ptBroker.revenue)).toBe('R$ 12.000,00')
     expect(normalize(ptBroker.recentSales[0].value)).toBe('R$ 6.000,00')
 
-    const [esBroker] = mapTopBrokersToAgencyTopBrokers([broker], 'es-ES', eurRate)
-    expect(normalize(esBroker.revenue)).toBe('2000,00 €')
-    expect(normalize(esBroker.recentSales[0].value)).toBe('1000,00 €')
+    const [esBroker] = mapTopBrokersToAgencyTopBrokers([broker], 'es-ES')
+    expect(normalize(esBroker.revenue)).toBe('12.000,00 BRL')
+    expect(normalize(esBroker.recentSales[0].value)).toBe('6000,00 BRL')
   })
 })

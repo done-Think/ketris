@@ -66,7 +66,7 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
         tenantId,
         tipo: 'A_RECEBER',
         vencimento: { gte: start, lt: end },
-        status: { in: ['PENDENTE', 'PAGA'] },
+        status: { not: 'CANCELADA' },
       },
     })
 

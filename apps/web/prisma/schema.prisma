@@ -30,19 +30,21 @@ model Tenant {
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 
-  usuarios           Usuario[]
-  imoveis            Imovel[]
-  oportunidades      Oportunidade[]
-  leads              Lead[]
-  contratos          Contrato[]
-  cobrancas          Cobranca[]
-  contatos           Contato[]
-  eventosAgenda      EventoAgenda[]
-  chamadosManutencao ChamadoManutencao[]
-  perfilPublico      PerfilPublicoImobiliaria?
-  statusChanges      TenantStatusChange[]
+  usuarios             Usuario[]
+  imoveis              Imovel[]
+  oportunidades        Oportunidade[]
+  leads                Lead[]
+  contratos            Contrato[]
+  cobrancas            Cobranca[]
+  chargeAuditEvents    ChargeAuditEvent[]
+  comprovantesCobranca ComprovanteCobranca[]
+  contatos             Contato[]
+  eventosAgenda        EventoAgenda[]
+  chamadosManutencao   ChamadoManutencao[]
+  perfilPublico        PerfilPublicoImobiliaria?
+  statusChanges        TenantStatusChange[]
 
-  crmAuditEvents     CrmAuditEvent[]
+  crmAuditEvents CrmAuditEvent[]
 
   @@map("tenants")
 }
@@ -151,32 +153,37 @@ model Usuario {
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 
-  tenant                     Tenant                             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  imoveisResponsavel         Imovel[]                           @relation("ImovelResponsavel")
-  imoveisProprietario        Imovel[]                           @relation("ImovelProprietario")
-  partesContrato             ParteContrato[]
-  chamadosResponsavel        ChamadoManutencao[]                @relation("ChamadoResponsavel")
-  refreshTokens              RefreshToken[]
-  codigosRecuperacaoSenha    PasswordResetCode[]
-  codigosVerificacaoEmail    EmailVerificationCode[]
-  auditEvents                UserAuditEvent[]                   @relation("UserAuditTarget")
-  authoredAuditEvents        UserAuditEvent[]                   @relation("UserAuditActor")
-  eventosAgendaResponsavel   EventoAgenda[]                     @relation("EventoAgendaResponsavel")
-  eventosAgendaCriados       EventoAgenda[]                     @relation("EventoAgendaCriadoPor")
-  eventosAgendaDono          EventoAgenda[]                     @relation("EventoAgendaDono")
-  participacoesAgenda        EventoAgendaParticipante[]
-  assinaturasRegistradas     Assinatura[]                       @relation("AssinaturaRegistradaPor")
-  contratosAtivados          Contrato[]                         @relation("ContratoAtivadoPor")
-  leadsResponsavel           Lead[]                             @relation("LeadResponsavel")
-  perfilPublico              PerfilPublicoCorretor?
-  destaquesRecebidos         PerfilPublicoImobiliariaDestaque[]
-  agendaAuditEvents          AgendaEventAudit[]
-  eventosAgendaCancelados    EventoAgenda[]                     @relation("EventoAgendaCanceladoPor")
-  contratosCriados           Contrato[]                         @relation("ContratoCriadoPor")
-  contratosCancelados        Contrato[]                         @relation("ContratoCanceladoPor")
-  contratosEncerrados        Contrato[]                         @relation("ContratoEncerradoPor")
-  documentosContratoEnviados DocumentoContrato[]
-  contractAuditEvents        ContractAuditEvent[]
+  tenant                       Tenant                             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  imoveisResponsavel           Imovel[]                           @relation("ImovelResponsavel")
+  imoveisProprietario          Imovel[]                           @relation("ImovelProprietario")
+  partesContrato               ParteContrato[]
+  chamadosResponsavel          ChamadoManutencao[]                @relation("ChamadoResponsavel")
+  refreshTokens                RefreshToken[]
+  codigosRecuperacaoSenha      PasswordResetCode[]
+  codigosVerificacaoEmail      EmailVerificationCode[]
+  auditEvents                  UserAuditEvent[]                   @relation("UserAuditTarget")
+  authoredAuditEvents          UserAuditEvent[]                   @relation("UserAuditActor")
+  eventosAgendaResponsavel     EventoAgenda[]                     @relation("EventoAgendaResponsavel")
+  eventosAgendaCriados         EventoAgenda[]                     @relation("EventoAgendaCriadoPor")
+  eventosAgendaDono            EventoAgenda[]                     @relation("EventoAgendaDono")
+  participacoesAgenda          EventoAgendaParticipante[]
+  assinaturasRegistradas       Assinatura[]                       @relation("AssinaturaRegistradaPor")
+  contratosAtivados            Contrato[]                         @relation("ContratoAtivadoPor")
+  leadsResponsavel             Lead[]                             @relation("LeadResponsavel")
+  perfilPublico                PerfilPublicoCorretor?
+  destaquesRecebidos           PerfilPublicoImobiliariaDestaque[]
+  agendaAuditEvents            AgendaEventAudit[]
+  eventosAgendaCancelados      EventoAgenda[]                     @relation("EventoAgendaCanceladoPor")
+  contratosCriados             Contrato[]                         @relation("ContratoCriadoPor")
+  contratosCancelados          Contrato[]                         @relation("ContratoCanceladoPor")
+  contratosEncerrados          Contrato[]                         @relation("ContratoEncerradoPor")
+  documentosContratoEnviados   DocumentoContrato[]
+  contractAuditEvents          ContractAuditEvent[]
+  cobrancasPagas               Cobranca[]                         @relation("CobrancaPagaPor")
+  cobrancasCanceladas          Cobranca[]                         @relation("CobrancaCanceladaPor")
+  cobrancasCriadas             Cobranca[]                         @relation("CobrancaCriadaPor")
+  comprovantesCobrancaEnviados ComprovanteCobranca[]              @relation("ComprovanteCobrancaEnviadoPor")
+  chargeAuditEvents            ChargeAuditEvent[]                 @relation("ChargeAuditActor")
 
   @@unique([tenantId, email])
   @@unique([id, tenantId])
@@ -996,38 +1003,112 @@ enum TipoCobranca {
 enum StatusCobranca {
   PENDENTE
   PAGA
-  ATRASADA
   AGENDADA
   CANCELADA
 }
 
+enum ChargeAuditAction {
+  CREATED
+  UPDATED
+  PAYMENT_REGISTERED
+  PAYMENT_REVERSED
+  CANCELLED
+  DELETED
+}
+
+enum ChargeAuditActorType {
+  USER
+  SYSTEM
+}
+
 model Cobranca {
-  id             String         @id @default(cuid())
-  tenantId       String
+  id                 String         @id @default(cuid())
+  tenantId           String
   // Opcional: cobranças avulsas (contas a pagar de fornecedor, sem contrato de locação por trás)
   // não têm contrato — ver módulo `financial`.
-  contratoId     String?
-  codigo         String         @unique
+  contratoId         String?
+  codigo             String
   // Só usado quando contratoId é nulo (cobrança avulsa) — identifica o fornecedor/finalidade sem
   // depender de contrato/imóvel.
-  descricao      String?
-  tipo           TipoCobranca   @default(A_RECEBER)
-  valor          Decimal        @db.Decimal(12, 2)
-  vencimento     DateTime
-  formaPagamento String?
-  comprovanteUrl String?
-  status         StatusCobranca @default(PENDENTE)
-  pagoEm         DateTime?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  descricao          String?
+  tipo               TipoCobranca   @default(A_RECEBER)
+  valor              Decimal        @db.Decimal(12, 2)
+  vencimento         DateTime
+  formaPagamento     String?
+  status             StatusCobranca @default(PENDENTE)
+  pagoEm             DateTime?
+  pagoPorId          String?
+  comprovanteAtualId String?        @unique
+  canceladoEm        DateTime?
+  canceladoPorId     String?
+  motivoCancelamento String?
+  criadoPorId        String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
 
-  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  contrato Contrato? @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+  tenant           Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  // NoAction (não Cascade): o banco recusa apagar um contrato que tenha cobranças.
+  contrato         Contrato?             @relation(fields: [contratoId], references: [id], onDelete: NoAction)
+  pagoPor          Usuario?              @relation("CobrancaPagaPor", fields: [pagoPorId], references: [id], onDelete: SetNull)
+  canceladoPor     Usuario?              @relation("CobrancaCanceladaPor", fields: [canceladoPorId], references: [id], onDelete: SetNull)
+  criadoPor        Usuario?              @relation("CobrancaCriadaPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  comprovanteAtual ComprovanteCobranca?  @relation("CobrancaComprovanteAtual", fields: [comprovanteAtualId], references: [id], onDelete: SetNull)
+  comprovantes     ComprovanteCobranca[] @relation("CobrancaComprovantes")
+  auditEvents      ChargeAuditEvent[]
 
+  @@unique([tenantId, codigo])
+  @@unique([id, tenantId])
   @@index([tenantId])
   @@index([tenantId, status])
+  @@index([tenantId, vencimento])
   @@index([contratoId])
   @@map("cobrancas")
+}
+
+model ComprovanteCobranca {
+  id           String   @id @default(cuid())
+  tenantId     String
+  cobrancaId   String
+  objectKey    String   @unique
+  nomeArquivo  String
+  tipoConteudo String
+  tamanhoBytes Int
+  sha256       String
+  enviadoPorId String?
+  createdAt    DateTime @default(now())
+
+  cobranca   Cobranca  @relation("CobrancaComprovantes", fields: [cobrancaId, tenantId], references: [id, tenantId], onDelete: NoAction)
+  enviadoPor Usuario?  @relation("ComprovanteCobrancaEnviadoPor", fields: [enviadoPorId], references: [id], onDelete: SetNull)
+  atualDe    Cobranca? @relation("CobrancaComprovanteAtual")
+  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, cobrancaId])
+  @@map("comprovantes_cobranca")
+}
+
+model ChargeAuditEvent {
+  id            String               @id @default(cuid())
+  tenantId      String
+  chargeId      String?
+  chargeCode    String
+  actorUserId   String?
+  actorType     ChargeAuditActorType @default(USER)
+  action        ChargeAuditAction
+  changedFields String[]             @default([])
+  fromStatus    StatusCobranca?
+  toStatus      StatusCobranca?
+  reason        String?
+  receiptId     String?
+  snapshot      Json?
+  createdAt     DateTime             @default(now())
+
+  tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  charge Cobranca? @relation(fields: [chargeId], references: [id], onDelete: SetNull)
+  actor  Usuario?  @relation("ChargeAuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, chargeId, createdAt])
+  @@index([actorUserId])
+  @@map("charge_audit_events")
 }
 
 // ---------------------------------------------------------------------------
@@ -1164,16 +1245,16 @@ model AnexoChamadoManutencao {
 }
 
 model CrmAuditEvent {
-  id            String   @id @default(cuid())
+  id            String       @id @default(cuid())
   tenantId      String
   entityType    String
   entityId      String
   actorUserId   String?
   actorRole     PapelUsuario
   action        String
-  changedFields String[] @default([])
-  createdAt     DateTime @default(now())
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  changedFields String[]     @default([])
+  createdAt     DateTime     @default(now())
+  tenant        Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, entityType, entityId, createdAt])
   @@map("crm_audit_events")

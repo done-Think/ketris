@@ -152,6 +152,7 @@ export async function createVerifiedContractProof(contractId: string, actorId: s
 }
 
 export async function cleanupContractWorkflowFixture(tenantId: string) {
+  await prisma.cobranca.deleteMany({ where: { tenantId } })
   await prisma.contrato.deleteMany({ where: { tenantId } })
   await prisma.tenant.delete({ where: { id: tenantId } })
 }
