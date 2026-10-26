@@ -3,3 +3,9 @@ export interface TimeRange {
   start: Date
   end: Date
 }
+
+export interface CalendarMonth {
+  year: number
+  // 0-11, like Date#getMonth.
+  month: number
+}

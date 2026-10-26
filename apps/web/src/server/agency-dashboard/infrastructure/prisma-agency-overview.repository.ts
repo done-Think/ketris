@@ -1,3 +1,5 @@
+import { Prisma } from '@prisma/client'
+
 import { prisma } from '@server/db/prisma'
 
 import type {
@@ -8,7 +10,7 @@ import type {
 import type { AgencyOverviewRepository } from '../application/ports/agency-overview-repository.port'
 import {
   currentMonthRange,
-  previousMonthRange,
+  previousMonthDueDateRange,
   previousMonthSamePeriodRange,
 } from '../domain/agency-overview-periods'
 
@@ -63,7 +65,7 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
   // Mirrors FinancialSummary.monthlyReceivable (A_RECEBER, PENDENTE or PAGA, due in the month) so the
   // revenue KPI is compared against the same metric one month earlier.
   async getMonthlyReceivablePreviousMonth(tenantId: string, referenceDate: Date): Promise<number> {
-    const { start, end } = previousMonthRange(referenceDate)
+    const { start, end } = previousMonthDueDateRange(referenceDate)
     const aggregate = await prisma.cobranca.aggregate({
       _sum: { valor: true },
       where: {
@@ -86,80 +88,81 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
     return listedCount > 0 ? Math.round((occupiedCount / listedCount) * 100) : 0
   }
 
+  // Ranks in the database (sum and count per broker, top 5) instead of loading every active
+  // contract; only the recent sales of those 5 brokers are fetched. Ties go to the broker with the
+  // most recent activation.
   async getTopBrokers(tenantId: string): Promise<AgencyTopBroker[]> {
-    const activeContracts = await prisma.contrato.findMany({
-      where: { tenantId, status: 'ATIVO' },
-      orderBy: { ativadoEm: 'desc' },
-      include: {
-        imovel: {
-          select: {
-            id: true,
-            titulo: true,
-            endereco: { select: { bairro: true, cidade: true } },
-            responsavel: {
-              select: {
-                id: true,
-                nome: true,
-                avatarUrl: true,
-                perfilPublico: { select: { status: true } },
+    const ranking = await prisma.$queryRaw<
+      { brokerId: string; salesCount: number; revenueTotal: Prisma.Decimal | number | string }[]
+    >(Prisma.sql`
+      SELECT i."responsavelId" AS "brokerId",
+             COUNT(*)::int AS "salesCount",
+             SUM(c."valor") AS "revenueTotal"
+      FROM "contratos" c
+      JOIN "imoveis" i ON i."id" = c."imovelId"
+      WHERE c."tenantId" = ${tenantId} AND c."status" = 'ATIVO'
+      GROUP BY i."responsavelId"
+      ORDER BY "revenueTotal" DESC, MAX(COALESCE(c."ativadoEm", c."createdAt")) DESC
+      LIMIT ${TOP_BROKERS_LIMIT}
+    `)
+
+    if (ranking.length === 0) return []
+
+    const brokerIds = ranking.map((entry) => entry.brokerId)
+    const [brokers, recentSalesByBroker] = await Promise.all([
+      prisma.usuario.findMany({
+        where: { id: { in: brokerIds } },
+        select: {
+          id: true,
+          nome: true,
+          avatarUrl: true,
+          perfilPublico: { select: { status: true } },
+        },
+      }),
+      Promise.all(
+        brokerIds.map((brokerId) =>
+          prisma.contrato.findMany({
+            where: { tenantId, status: 'ATIVO', imovel: { responsavelId: brokerId } },
+            orderBy: { ativadoEm: 'desc' },
+            take: RECENT_SALES_PER_BROKER_LIMIT,
+            include: {
+              imovel: {
+                select: {
+                  id: true,
+                  titulo: true,
+                  endereco: { select: { bairro: true, cidade: true } },
+                },
               },
             },
-          },
+          }),
+        ),
+      ),
+    ])
+    const brokersById = new Map(brokers.map((broker) => [broker.id, broker]))
+
+    return ranking.flatMap((entry, index) => {
+      const broker = brokersById.get(entry.brokerId)
+      if (!broker) return []
+
+      return [
+        {
+          id: broker.id,
+          name: broker.nome,
+          avatarUrl: broker.avatarUrl,
+          hasPublicProfile: broker.perfilPublico?.status === 'PUBLISHED',
+          salesCount: entry.salesCount,
+          revenueTotal: Number(entry.revenueTotal),
+          recentSales: recentSalesByBroker[index].map((contrato): AgencyBrokerSale => ({
+            id: contrato.id,
+            propertyId: contrato.imovel.id,
+            propertyTitle: contrato.imovel.titulo,
+            location: buildLocation(contrato.imovel.endereco),
+            value: contrato.valor.toNumber(),
+            closedAt: contrato.ativadoEm ?? contrato.createdAt,
+          })),
         },
-      },
+      ]
     })
-
-    const brokerAggregates = new Map<
-      string,
-      {
-        id: string
-        name: string
-        avatarUrl: string | null
-        hasPublicProfile: boolean
-        salesCount: number
-        revenueTotal: number
-        sales: AgencyBrokerSale[]
-      }
-    >()
-
-    for (const contrato of activeContracts) {
-      const broker = contrato.imovel.responsavel
-      const existing = brokerAggregates.get(broker.id) ?? {
-        id: broker.id,
-        name: broker.nome,
-        avatarUrl: broker.avatarUrl,
-        hasPublicProfile: broker.perfilPublico?.status === 'PUBLISHED',
-        salesCount: 0,
-        revenueTotal: 0,
-        sales: [],
-      }
-
-      existing.salesCount += 1
-      existing.revenueTotal += contrato.valor.toNumber()
-      existing.sales.push({
-        id: contrato.id,
-        propertyId: contrato.imovel.id,
-        propertyTitle: contrato.imovel.titulo,
-        location: buildLocation(contrato.imovel.endereco),
-        value: contrato.valor.toNumber(),
-        closedAt: contrato.ativadoEm ?? contrato.createdAt,
-      })
-
-      brokerAggregates.set(broker.id, existing)
-    }
-
-    return Array.from(brokerAggregates.values())
-      .sort((a, b) => b.revenueTotal - a.revenueTotal)
-      .slice(0, TOP_BROKERS_LIMIT)
-      .map((entry) => ({
-        id: entry.id,
-        name: entry.name,
-        avatarUrl: entry.avatarUrl,
-        hasPublicProfile: entry.hasPublicProfile,
-        salesCount: entry.salesCount,
-        revenueTotal: entry.revenueTotal,
-        recentSales: entry.sales.slice(0, RECENT_SALES_PER_BROKER_LIMIT),
-      }))
   }
 
   async getRecentActivities(tenantId: string): Promise<AgencyActivity[]> {

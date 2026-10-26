@@ -5,8 +5,17 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
+import { calendarMonthInTimeZone } from '@server/shared/time-zone-calendar'
 
 import { GET } from '../../overview/route'
+
+// Instante em horário de São Paulo (UTC-3, sem horário de verão desde 2019): os meses do
+// dashboard seguem esse fuso, qualquer que seja o fuso da máquina que roda o teste.
+const saoPaulo = (year: number, month: number, day: number, hour = 0, minute = 0, second = 0) =>
+  new Date(Date.UTC(year, month, day, hour + 3, minute, second))
+// Data de calendário (vencimento, início de contrato): gravada às 00:00 UTC.
+const calendarDate = (year: number, month: number, day: number) =>
+  new Date(Date.UTC(year, month, day))
 
 describe('/api/agency-dashboard/overview (integração)', () => {
   const tokenService = new JoseTokenService()
@@ -66,10 +75,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
 
     await createUserAndToken('AGENT', false)
 
-    const currentDate = new Date()
-    const currentYear = currentDate.getFullYear()
-    const currentMonth = currentDate.getMonth()
-    const currentMonthDate = (day: number) => new Date(currentYear, currentMonth, day)
+    const { year: currentYear, month: currentMonth } = calendarMonthInTimeZone(new Date())
 
     await prisma.imovel.create({
       data: {
@@ -152,7 +158,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
         interesse: 'Casa',
         orcamento: '1000-2000',
         origem: 'Indicação',
-        createdAt: new Date(new Date().getFullYear(), new Date().getMonth() - 2, 10),
+        createdAt: saoPaulo(currentYear, currentMonth - 2, 10, 12),
       },
     })
 
@@ -177,8 +183,8 @@ describe('/api/agency-dashboard/overview (integração)', () => {
           tipo: 'RESIDENCIAL',
           valor,
           diaVencimento: 5,
-          dataInicio: currentMonthDate(1),
-          dataFim: new Date(currentYear + 1, currentMonth, 1),
+          dataInicio: calendarDate(currentYear, currentMonth, 1),
+          dataFim: calendarDate(currentYear + 1, currentMonth, 1),
           indiceReajuste: 'IGPM',
           tipoGarantia: 'CAUCAO',
           status: 'ATIVO',
@@ -190,9 +196,13 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     const contractWithAddress = await activateContract(
       propertyWithAddressId,
       3000,
-      currentMonthDate(20),
+      saoPaulo(currentYear, currentMonth, 20, 12),
     )
-    await activateContract(propertyWithoutAddressId, 2000, currentMonthDate(10))
+    await activateContract(
+      propertyWithoutAddressId,
+      2000,
+      saoPaulo(currentYear, currentMonth, 10, 12),
+    )
 
     await prisma.cobranca.create({
       data: {
@@ -201,7 +211,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
         codigo: `COB-${randomUUID()}`,
         tipo: 'A_RECEBER',
         valor: 1500,
-        vencimento: currentMonthDate(25),
+        vencimento: calendarDate(currentYear, currentMonth, 25),
         status: 'PENDENTE',
       },
     })
@@ -274,11 +284,10 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     expect(json.kpis.monthlyReceivable).toBe(1500)
     expect(json.kpis.occupancyPercentage).toBe(67)
 
-    const currentYear = new Date().getFullYear()
-    const currentMonth = new Date().getMonth() + 1
+    const { year: currentYear, month: currentMonth } = calendarMonthInTimeZone(new Date())
     const currentMonthEntry = json.revenueSeries.find(
       (entry: { year: number; month: number }) =>
-        entry.year === currentYear && entry.month === currentMonth,
+        entry.year === currentYear && entry.month === currentMonth + 1,
     )
     expect(currentMonthEntry?.total).toBe(1500)
     expect(json.revenueSeries.every((entry: unknown) => !('target' in (entry as object)))).toBe(
@@ -392,9 +401,9 @@ describe('/api/agency-dashboard/overview (integração)', () => {
   })
 
   it('retorna os dados de comparação com o mês anterior', async () => {
-    const now = new Date()
-    const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-    const previousMonthDate = (day: number) => new Date(now.getFullYear(), now.getMonth() - 1, day)
+    const { year, month } = calendarMonthInTimeZone(new Date())
+    const previousMonthStart = saoPaulo(year, month - 1, 1)
+    const previousMonthDate = (day: number) => calendarDate(year, month - 1, day)
 
     await prisma.imovel.create({
       data: {
@@ -405,7 +414,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
         tipo: 'CASA',
         valor: 1000,
         status: 'DRAFT',
-        createdAt: new Date(now.getFullYear(), now.getMonth() - 2, 5),
+        createdAt: saoPaulo(year, month - 2, 5),
       },
     })
 
@@ -476,13 +485,13 @@ describe('/api/agency-dashboard/overview (integração)', () => {
 
     async function seedComparisonData(tenantId: string, ownerId: string) {
       for (const [index, createdAt] of [
-        new Date(2026, 11, 1, 0, 0),
-        new Date(2026, 11, 13, 13, 59),
-        new Date(2026, 11, 13, 14, 0),
-        new Date(2026, 11, 20),
-        new Date(2026, 10, 30, 23, 59),
-        new Date(2027, 0, 2),
-        new Date(2027, 0, 13, 13, 0),
+        saoPaulo(2026, 11, 1, 0, 0),
+        saoPaulo(2026, 11, 13, 13, 59),
+        saoPaulo(2026, 11, 13, 14, 0),
+        saoPaulo(2026, 11, 20),
+        saoPaulo(2026, 10, 30, 23, 59),
+        saoPaulo(2027, 0, 2),
+        saoPaulo(2027, 0, 13, 13, 0),
       ].entries()) {
         await prisma.lead.create({
           data: {
@@ -499,9 +508,9 @@ describe('/api/agency-dashboard/overview (integração)', () => {
       }
 
       for (const [index, createdAt] of [
-        new Date(2027, 0, 1, 0, 0),
-        new Date(2026, 11, 31, 23, 59, 59),
-        new Date(2027, 0, 10),
+        saoPaulo(2027, 0, 1, 0, 0),
+        saoPaulo(2026, 11, 31, 23, 59, 59),
+        saoPaulo(2027, 0, 10),
       ].entries()) {
         await prisma.imovel.create({
           data: {
@@ -518,14 +527,14 @@ describe('/api/agency-dashboard/overview (integração)', () => {
       }
 
       for (const [valor, tipo, status, vencimento] of [
-        [100, 'A_RECEBER', 'PAGA', new Date(2026, 11, 1, 0, 0)],
-        [200, 'A_RECEBER', 'PENDENTE', new Date(2026, 11, 31, 23, 59)],
-        [4000, 'A_RECEBER', 'PENDENTE', new Date(2027, 0, 1, 0, 0)],
-        [8000, 'A_RECEBER', 'PAGA', new Date(2026, 10, 30, 23, 59)],
-        [16000, 'A_PAGAR', 'PAGA', new Date(2026, 11, 15)],
-        [32000, 'A_RECEBER', 'AGENDADA', new Date(2026, 11, 15)],
-        [64000, 'A_RECEBER', 'ATRASADA', new Date(2026, 11, 15)],
-        [128000, 'A_RECEBER', 'CANCELADA', new Date(2026, 11, 15)],
+        [100, 'A_RECEBER', 'PAGA', calendarDate(2026, 11, 1)],
+        [200, 'A_RECEBER', 'PENDENTE', calendarDate(2026, 11, 31)],
+        [4000, 'A_RECEBER', 'PENDENTE', calendarDate(2027, 0, 1)],
+        [8000, 'A_RECEBER', 'PAGA', calendarDate(2026, 10, 30)],
+        [16000, 'A_PAGAR', 'PAGA', calendarDate(2026, 11, 15)],
+        [32000, 'A_RECEBER', 'AGENDADA', calendarDate(2026, 11, 15)],
+        [64000, 'A_RECEBER', 'ATRASADA', calendarDate(2026, 11, 15)],
+        [128000, 'A_RECEBER', 'CANCELADA', calendarDate(2026, 11, 15)],
       ] as const) {
         await prisma.cobranca.create({
           data: { tenantId, codigo: `COB-${randomUUID()}`, tipo, valor, vencimento, status },
@@ -535,7 +544,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
 
     beforeAll(async () => {
       vi.useFakeTimers({ toFake: ['Date'] })
-      vi.setSystemTime(new Date(2027, 0, 13, 14, 0))
+      vi.setSystemTime(saoPaulo(2027, 0, 13, 14, 0))
 
       const { tenant, owner } = await createTenantWithOwner('frozen')
       await seedComparisonData(tenant.id, owner.id)
