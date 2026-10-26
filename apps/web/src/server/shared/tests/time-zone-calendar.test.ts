@@ -1,0 +1,49 @@
+import { describe, expect, it } from 'vitest'
+
+import { dayBoundsInTimeZone, monthBoundsInTimeZone } from '../time-zone-calendar'
+
+const iso = ({ start, end }: { start: Date; end: Date }) => ({
+  start: start.toISOString(),
+  end: end.toISOString(),
+})
+
+describe('dayBoundsInTimeZone', () => {
+  it('usa o dia de São Paulo por padrão, de 00:00 a 00:00 do dia seguinte', () => {
+    expect(iso(dayBoundsInTimeZone(new Date('2026-10-15T15:00:00.000Z')))).toEqual({
+      start: '2026-10-15T03:00:00.000Z',
+      end: '2026-10-16T03:00:00.000Z',
+    })
+  })
+
+  it('às 23:30 em São Paulo (02:30 UTC do dia seguinte) ainda é o dia anterior', () => {
+    expect(iso(dayBoundsInTimeZone(new Date('2026-10-16T02:30:00.000Z')))).toEqual({
+      start: '2026-10-15T03:00:00.000Z',
+      end: '2026-10-16T03:00:00.000Z',
+    })
+  })
+
+  it('vira o mês e o ano no último dia', () => {
+    expect(iso(dayBoundsInTimeZone(new Date('2026-12-31T20:00:00.000Z')))).toEqual({
+      start: '2026-12-31T03:00:00.000Z',
+      end: '2027-01-01T03:00:00.000Z',
+    })
+  })
+
+  it('respeita outro fuso quando informado', () => {
+    expect(
+      iso(dayBoundsInTimeZone(new Date('2026-10-15T15:00:00.000Z'), 'America/New_York')),
+    ).toEqual({
+      start: '2026-10-15T04:00:00.000Z',
+      end: '2026-10-16T04:00:00.000Z',
+    })
+  })
+})
+
+describe('monthBoundsInTimeZone', () => {
+  it('continua calculando o mês de São Paulo', () => {
+    expect(iso(monthBoundsInTimeZone(new Date('2026-11-01T02:59:59.999Z')))).toEqual({
+      start: '2026-10-01T03:00:00.000Z',
+      end: '2026-11-01T03:00:00.000Z',
+    })
+  })
+})
