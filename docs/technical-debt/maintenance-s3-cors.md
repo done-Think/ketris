@@ -1,17 +1,32 @@
-# Maintenance: recuperar acesso AWS e aplicar CORS do storage
+# Maintenance: CORS do storage configurado
 
-Pendência de implantação informada pelo responsável: as credenciais locais foram perdidas após a formatação do computador. O responsável não tem backup conhecido do estado do Terraform nem confirmação de backend remoto. A busca em `infra/terraform` não encontrou arquivos de estado. O ambiente de desenvolvimento não tem bucket ou credenciais AWS configurados. Não foi executada nenhuma alteração na AWS nesta branch.
+Pendência operacional de CORS resolvida em 26/10/2026 no bucket privado
+`ketris-staging-uploads`, após recuperar a autenticação IAM local e reimportar os recursos existentes
+para o estado do Terraform. O plano aprovado criou somente a configuração de CORS, sem alterar RDS,
+rede, chaves ou bloqueios de acesso público.
 
-O upload direto de imagens de até 8 MB exige CORS no bucket privado. Sem esse ajuste, a autorização da API pode funcionar, mas o PUT do navegador falha e o anexo não é confirmado. O cadastro, listagem, catálogo e demais ações dos chamados continuam independentes desse CORS.
+Origens autorizadas para GET, HEAD e PUT:
 
-A configuração já preparada para Contracts em `infra/terraform/s3.tf` atende também Maintenance: PUT/GET/HEAD, origens explícitas e cabeçalhos de tipo, tamanho e checksum SHA-256. A variável existente é `contract_document_allowed_origins`; não há necessidade de um segundo recurso de CORS que substituiria o primeiro.
+- `https://ketris-web-x9bk.vercel.app`
+- `https://www.ketris.com.br`
+- `http://localhost:3000`
 
-Para concluir:
+Os cabeçalhos permitidos são `content-type`, `content-length` e `x-amz-checksum-sha256`. A configuração
+compartilhada atende os uploads diretos de Contracts e Maintenance e permanece declarada em
+`infra/terraform/s3.tf`, controlada por `contract_document_allowed_origins`.
 
-1. Recuperar o acesso à conta AWS e o perfil de operação do Terraform. Chaves e segredos devem permanecer fora do Git.
-2. Recuperar o estado do Terraform. O código atual configura estado local, ignorado pelo Git; confirmar a existência de backup ou backend utilizado. Se o estado foi perdido, reconciliar os recursos existentes antes de qualquer aplicação.
-3. Identificar o bucket e as origens exatas de staging/produção e configurar a variável existente, preservando as origens necessárias para Contracts.
-4. Revisar o plano concreto do Terraform e aplicar somente a mudança de CORS necessária, preservando os recursos existentes e a privacidade do bucket.
-5. Pelo navegador em uma origem autorizada, enviar uma imagem de 8 MB, confirmar o anexo, visualizá-lo com sessão autorizada e verificar a recusa a um usuário sem acesso ao chamado.
+## Validação realizada
 
-Os testes automatizados cobrem o protocolo, checksum, tamanho, permissões e redirecionamento privado usando storage local. A validação da AWS real permanece pendente, assim como a [configuração de Contracts](contracts-s3-cors.md).
+A configuração foi lida novamente pela API S3. Os preflights de PUT com tipo e checksum retornaram
+HTTP 200 e a origem correspondente para os três endereços aprovados. Uma origem não autorizada
+retornou HTTP 403 sem permissão de origem. Os quatro bloqueios de acesso público permaneceram
+habilitados. O RDS continuou disponível em PostgreSQL 16.13, sem mudanças pendentes.
+
+O fluxo completo de Maintenance com arquivo de 8 MB foi validado anteriormente no E2E local com
+storage simulado. A verificação na AWS confirmou o CORS real; ela não representa um deploy do código
+nem um teste de upload pela aplicação publicada. O ambiente da aplicação ainda precisa da versão
+correspondente e de suas credenciais de storage configuradas.
+
+O estado recuperado, seus backups e as credenciais permanecem fora do Git, com acesso local restrito.
+A análise dos metadados do RDS e o procedimento de recuperação estão registrados na branch
+`fix/aws-terraform-recovery`, separados das correções de Maintenance.
