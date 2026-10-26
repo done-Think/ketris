@@ -1,3 +1,4 @@
+import type { MaintenanceCategory } from '@shared/lib/utils/maintenance-categories'
 import type { MaintenanceTicket } from './maintenance'
 export interface MaintenanceTicketsTableProps {
   pagedTickets: MaintenanceTicket[]
@@ -13,7 +14,7 @@ export interface MaintenanceDashboardFilters {
   activeFilter: import('./maintenance').MaintenanceFilter['value']
   search: string
   propertyFilter: string
-  categoryFilter: string
+  categoryFilter: MaintenanceCategory | 'all'
   currentPage: number
   rowsPerPage: number
   archived: boolean
@@ -30,7 +31,7 @@ export interface MaintenanceDashboardMenu {
 }
 
 export interface MaintenanceCategoryFilterProps {
-  value: string
-  onChange: (value: string) => void
+  value: MaintenanceDashboardFilters['categoryFilter']
+  onChange: (value: MaintenanceDashboardFilters['categoryFilter']) => void
   compact?: boolean
 }

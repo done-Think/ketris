@@ -24,7 +24,6 @@ const authPolicy = createRateLimitPolicy(
   toPositiveInteger(process.env.AUTH_RATE_LIMIT_WINDOW_MS, 15 * 60_000),
 )
 
-// Public proposals become CRM leads, so each client address gets a small, shared budget.
 const inquiryPolicy = createRateLimitPolicy(
   'marketplace-inquiry',
   toPositiveInteger(process.env.MARKETPLACE_INQUIRY_RATE_LIMIT_MAX, 5),

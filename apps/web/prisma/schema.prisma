@@ -186,6 +186,16 @@ model Usuario {
   cobrancasCriadas             Cobranca[]                         @relation("CobrancaCriadaPor")
   comprovantesCobrancaEnviados ComprovanteCobranca[]              @relation("ComprovanteCobrancaEnviadoPor")
   chargeAuditEvents            ChargeAuditEvent[]                 @relation("ChargeAuditActor")
+  chamadosAbertos              ChamadoManutencao[]                @relation("ChamadoAbertoPor")
+  chamadosConcluidos           ChamadoManutencao[]                @relation("ChamadoConcluidoPor")
+  chamadosExcluidos            ChamadoManutencao[]                @relation("ChamadoExcluidoPor")
+  atividadesChamado            AtividadeChamadoManutencao[]       @relation("AtividadeChamadoAutor")
+  trocasPrestadorSolicitadas   SolicitacaoTrocaPrestador[]        @relation("TrocaPrestadorSolicitante")
+  trocasPrestadorDecididas     SolicitacaoTrocaPrestador[]        @relation("TrocaPrestadorDecididoPor")
+  prestadoresCriados           PrestadorManutencao[]              @relation("PrestadorCriadoPor")
+  prestadoresAtualizados       PrestadorManutencao[]              @relation("PrestadorAtualizadoPor")
+  atividadesPrestador          AtividadePrestadorManutencao[]     @relation("AtividadePrestadorAutor")
+  atividadesOportunidade       AtividadeOportunidade[]            @relation("AtividadeOportunidadeAutor")
 
   @@unique([tenantId, email])
   @@unique([id, tenantId])
@@ -673,7 +683,9 @@ model AtividadeOportunidade {
   createdAt      DateTime                  @default(now())
 
   oportunidade Oportunidade @relation(fields: [oportunidadeId], references: [id], onDelete: Cascade)
+  autor        Usuario?     @relation("AtividadeOportunidadeAutor", fields: [autorId], references: [id], onDelete: SetNull)
 
+  @@index([autorId])
   @@index([oportunidadeId])
   @@index([oportunidadeId, createdAt])
   @@map("atividades_oportunidade")
@@ -1127,6 +1139,14 @@ enum StatusChamadoManutencao {
   CANCELADO
 }
 
+enum CategoriaChamadoManutencao {
+  PLUMBING
+  ELECTRICAL
+  STRUCTURAL
+  PAINTING
+  OTHER
+}
+
 enum PrioridadeChamadoManutencao {
   NORMAL
   ALTA
@@ -1148,12 +1168,12 @@ model ChamadoManutencao {
   concluidoPorPapel    PapelUsuario?
   excluidoEm           DateTime?
   excluidoPorId        String?
-  categoria            String
+  categoria            CategoriaChamadoManutencao
   prioridade           PrioridadeChamadoManutencao @default(NORMAL)
   status               StatusChamadoManutencao     @default(ABERTO)
   titulo               String
   descricao            String
-  abertoPorId          String
+  abertoPorId          String?
   abertoPorNome        String
   resolvidoEm          DateTime?
   atendimentoEm        DateTime?
@@ -1168,7 +1188,13 @@ model ChamadoManutencao {
   solicitacoesTroca SolicitacaoTrocaPrestador[]
   atividades        AtividadeChamadoManutencao[]
   anexos            AnexoChamadoManutencao[]
+  abertoPor         Usuario?                     @relation("ChamadoAbertoPor", fields: [abertoPorId], references: [id], onDelete: SetNull)
+  concluidoPor      Usuario?                     @relation("ChamadoConcluidoPor", fields: [concluidoPorId], references: [id], onDelete: SetNull)
+  excluidoPor       Usuario?                     @relation("ChamadoExcluidoPor", fields: [excluidoPorId], references: [id], onDelete: SetNull)
 
+  @@index([abertoPorId])
+  @@index([concluidoPorId])
+  @@index([excluidoPorId])
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([imovelId])
@@ -1207,7 +1233,9 @@ model AtividadeChamadoManutencao {
   createdAt    DateTime                       @default(now())
 
   chamado ChamadoManutencao @relation(fields: [chamadoId], references: [id], onDelete: Cascade)
+  autor   Usuario?          @relation("AtividadeChamadoAutor", fields: [autorId], references: [id], onDelete: SetNull)
 
+  @@index([autorId])
   @@index([chamadoId])
   @@index([chamadoId, createdAt])
   @@map("atividades_chamado_manutencao")
@@ -1223,7 +1251,7 @@ model SolicitacaoTrocaPrestador {
   id                   String                          @id @default(cuid())
   chamadoId            String
   justificativa        String
-  solicitanteId        String
+  solicitanteId        String?
   solicitanteNome      String
   status               StatusSolicitacaoTrocaPrestador @default(PENDENTE)
   decisaoJustificativa String?
@@ -1232,7 +1260,11 @@ model SolicitacaoTrocaPrestador {
   decididoEm           DateTime?
   createdAt            DateTime                        @default(now())
   chamado              ChamadoManutencao               @relation(fields: [chamadoId], references: [id], onDelete: Cascade)
+  solicitante          Usuario?                        @relation("TrocaPrestadorSolicitante", fields: [solicitanteId], references: [id], onDelete: SetNull)
+  decididoPor          Usuario?                        @relation("TrocaPrestadorDecididoPor", fields: [decididoPorId], references: [id], onDelete: SetNull)
 
+  @@index([solicitanteId])
+  @@index([decididoPorId])
   @@index([chamadoId, status])
   @@map("solicitacoes_troca_prestador")
 }
@@ -1284,8 +1316,12 @@ model PrestadorManutencao {
   tenant     Tenant                         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   chamados   ChamadoManutencao[]
   atividades AtividadePrestadorManutencao[]
+  createdBy  Usuario?                       @relation("PrestadorCriadoPor", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy  Usuario?                       @relation("PrestadorAtualizadoPor", fields: [updatedById], references: [id], onDelete: SetNull)
 
   @@unique([tenantId, fingerprint])
+  @@index([createdById])
+  @@index([updatedById])
   @@index([tenantId, ativo, nome])
   @@map("prestadores_manutencao")
 }
@@ -1302,7 +1338,9 @@ model AtividadePrestadorManutencao {
 
   tenant    Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   prestador PrestadorManutencao @relation(fields: [prestadorId], references: [id], onDelete: Cascade)
+  actorUser Usuario?            @relation("AtividadePrestadorAutor", fields: [actorUserId], references: [id], onDelete: SetNull)
 
+  @@index([actorUserId])
   @@index([tenantId, prestadorId, createdAt])
   @@map("atividades_prestador_manutencao")
 }

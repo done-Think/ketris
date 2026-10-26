@@ -1,3 +1,4 @@
+import type { MaintenanceCategory } from '@shared/lib/utils/maintenance-categories'
 import type {
   MaintenanceActor,
   MaintenanceTicketPriority,
@@ -14,7 +15,7 @@ export interface CreateMaintenanceTicketInput extends MaintenanceActor {
   scheduledAt?: Date | null
   contractId: string
   propertyId?: string
-  category: string
+  category: MaintenanceCategory
   priority: MaintenanceTicketPriority
   title: string
   description: string

@@ -136,7 +136,7 @@ export function setupMaintenanceIntegration() {
   const payload = {
     title: 'Leak',
     description: 'Kitchen leak',
-    category: 'Plumbing',
+    category: 'PLUMBING',
     priority: 'NORMAL',
   }
 
@@ -166,7 +166,7 @@ export function setupMaintenanceIntegration() {
       data: {
         tenantId: fixture.tenant.id,
         imovelId: fixture.property.id,
-        categoria: 'Plumbing',
+        categoria: 'PLUMBING',
         titulo: 'Legacy ticket',
         descricao: 'Existing record',
         abertoPorId: fixture.admin.id,

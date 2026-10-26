@@ -69,6 +69,11 @@ sensíveis de autenticação e cadastro usam uma política mais restrita que a A
   envio público de proposta (`POST /api/marketplace/properties/{id}/inquiries`), por endereço do cliente e
   com contador no PostgreSQL, como o de Auth.
 
+O endereço do cliente vem de `x-vercel-forwarded-for` na Vercel. Fora da Vercel, só é confiável o
+cabeçalho que o proxy da frente do app define e sobrescreve (ex.: `CloudFront-Viewer-Address` no
+CloudFront, `X-Real-IP` num Nginx próprio), informado em `TRUSTED_CLIENT_IP_HEADER`. Sem essa variável,
+todos os clientes dividem o mesmo contador (`local`), o que só serve para desenvolvimento.
+
 Respostas bloqueadas retornam 429 (`RATE_LIMIT_EXCEEDED`) com headers `RateLimit-Limit`,
 `RateLimit-Remaining`, `RateLimit-Reset` e `Retry-After`. Os contadores de Auth ficam no PostgreSQL e são compartilhados entre instâncias, com incremento
 atômico e limpeza limitada de janelas expiradas. Na Vercel, a identidade usa apenas o cabeçalho de IP

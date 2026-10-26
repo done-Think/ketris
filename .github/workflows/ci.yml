@@ -140,4 +140,4 @@ jobs:
           }
           if (!ready) throw new Error('O servidor de teste Auth não iniciou.')
           JS
-          npm exec -w @ketris/web -- cypress run --browser electron --config baseUrl=http://localhost:3000 --spec 'cypress/e2e/auth/**/*.cy.ts,cypress/e2e/agenda/**/*.cy.ts,cypress/e2e/contracts/**/*.cy.ts,cypress/e2e/crm/**/*.cy.ts,cypress/e2e/maintenance/**/*.cy.ts'
+          npm exec -w @ketris/web -- cypress run --browser electron --config baseUrl=http://localhost:3000 --spec 'cypress/e2e/auth/**/*.cy.ts,cypress/e2e/agenda/**/*.cy.ts,cypress/e2e/contracts/**/*.cy.ts,cypress/e2e/crm/**/*.cy.ts,cypress/e2e/maintenance/**/*.cy.ts,cypress/e2e/financial/**/*.cy.ts,cypress/e2e/properties/**/*.cy.ts,cypress/e2e/login.cy.ts'

@@ -1,13 +1,11 @@
 import {
+  type MaintenanceCategory,
   maintenanceCategoryKeys,
-  normalizeMaintenanceCategory,
-} from '@server/maintenance/constants/maintenance-categories'
+} from '@shared/lib/utils/maintenance-categories'
 
 export function formatMaintenanceCategory(
-  value: string,
+  value: MaintenanceCategory,
   translate: (key: string) => string,
 ): string {
-  const code = normalizeMaintenanceCategory(value)
-  const key = Object.entries(maintenanceCategoryKeys).find(([key]) => key === code)?.[1]
-  return key ? translate(key) : value
+  return translate(maintenanceCategoryKeys[value])
 }

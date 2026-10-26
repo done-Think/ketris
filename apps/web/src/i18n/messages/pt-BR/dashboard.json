@@ -238,7 +238,6 @@
         "titleRequired": "Informe o título do chamado",
         "descriptionRequired": "Descreva o problema",
         "contractRequired": "Selecione o contrato",
-        "categoryTooLong": "Use até 100 caracteres.",
         "titleTooLong": "Use até 200 caracteres.",
         "descriptionTooLong": "Use até 10.000 caracteres."
       },
@@ -444,7 +443,8 @@
       "plumbing": "Hidráulica",
       "electrical": "Elétrica",
       "structural": "Estrutural",
-      "painting": "Pintura"
+      "painting": "Pintura",
+      "other": "Outra"
     },
     "errors": {
       "forbidden": "Você não tem permissão para esta ação.",

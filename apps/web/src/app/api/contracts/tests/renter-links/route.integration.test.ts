@@ -129,7 +129,7 @@ async function agency(renterEmail: string) {
       abertoPorNome: admin.nome,
       titulo: 'Leak',
       descricao: 'Leak',
-      categoria: 'Plumbing',
+      categoria: 'PLUMBING',
     },
   })
   return {
@@ -368,7 +368,7 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
         propertyId: a.property.id,
         title: 'New leak',
         description: 'Details',
-        category: 'Plumbing',
+        category: 'PLUMBING',
         priority: 'NORMAL',
       }),
     )
@@ -451,7 +451,7 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
             contractId: a.contract.id,
             title: 'Denied',
             description: 'Denied',
-            category: 'Plumbing',
+            category: 'PLUMBING',
             priority: 'NORMAL',
           }),
         )

@@ -46,7 +46,7 @@ export const ticket: MaintenanceTicket = {
   completedByRole: null,
   deletedAt: null,
   replacementRequests: [],
-  category: 'Plumbing',
+  category: 'PLUMBING',
   priority: 'URGENTE',
   status: 'ABERTO',
   title: 'Leak',

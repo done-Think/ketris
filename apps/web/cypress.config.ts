@@ -5,6 +5,12 @@ import {
 } from './cypress/support/maintenance-fixtures'
 import type { MaintenanceFixtureInput } from './cypress/types/maintenance-fixtures'
 import {
+  seedFinancialFixtures,
+  cleanupFinancialFixtures,
+  readFinancialEvidence,
+} from './cypress/support/financial-fixtures'
+import type { FinancialFixtureInput } from './cypress/types/financial-fixtures'
+import {
   seedCrmFixtures,
   cleanupCrmFixtures,
   readCrmEvidence,
@@ -86,6 +92,11 @@ export default defineConfig({
         cleanupMaintenanceFixtures: (tenantIds: string[]) =>
           cleanupMaintenanceFixtures(prisma, tenantIds),
         readMaintenanceEvidence: (id: string) => readMaintenanceEvidence(prisma, id),
+        seedFinancialFixtures: (input: FinancialFixtureInput) =>
+          seedFinancialFixtures(prisma, input),
+        cleanupFinancialFixtures: (tenantIds: string[]) =>
+          cleanupFinancialFixtures(prisma, tenantIds),
+        readFinancialEvidence: (chargeId: string) => readFinancialEvidence(prisma, chargeId),
         seedCrmFixtures: (input: CrmFixtureInput) => seedCrmFixtures(prisma, input),
         cleanupCrmFixtures: (tenantIds: string[]) => cleanupCrmFixtures(prisma, tenantIds),
         readCrmEvidence: (input: { tenantId: string; contactId: string }) =>

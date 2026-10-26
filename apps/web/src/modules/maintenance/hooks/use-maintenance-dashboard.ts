@@ -193,7 +193,8 @@ export function useMaintenanceDashboard() {
     handleActiveFilterChange: (value: MaintenanceFilter['value']) =>
       changeFilter('activeFilter', value),
     handlePropertyFilterChange: (value: string) => changeFilter('propertyFilter', value),
-    handleCategoryFilterChange: (value: string) => changeFilter('categoryFilter', value),
+    handleCategoryFilterChange: (value: MaintenanceDashboardFilters['categoryFilter']) =>
+      changeFilter('categoryFilter', value),
     openDialog,
     closeDialog,
     closeMenu,

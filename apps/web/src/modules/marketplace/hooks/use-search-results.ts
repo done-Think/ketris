@@ -245,7 +245,6 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
     sortOption,
   ])
 
-  // The API already returns one page; only the development fixtures are paginated here.
   const resultCount = fixtureMode ? fixtureResults.length : (propertiesQuery.data?.totalCount ?? 0)
   const totalPages = Math.max(1, Math.ceil(resultCount / searchResultsPageSize))
   const safeCurrentPage = Math.min(currentPage, totalPages)
