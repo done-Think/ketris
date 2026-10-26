@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { join, relative, sep } from 'node:path'
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi'
 import { describe, expect, it } from 'vitest'
 
@@ -30,7 +30,10 @@ describe('Auth OpenAPI', () => {
     const files = routeFiles(authRoutesDirectory).filter((file) => !file.includes('[...nextauth]'))
 
     for (const file of files) {
-      const path = `/auth/${relative(authRoutesDirectory, file).replace(/\/route\.ts$/, '')}`
+      const path = `/auth/${relative(authRoutesDirectory, file)
+        .split(sep)
+        .join('/')
+        .replace(/\/route\.ts$/, '')}`
         .replace(/\[\.\.\.(\w+)\]/g, '{$1}')
         .replace(/\[(\w+)\]/g, '{$1}')
       const methods = readFileSync(file, 'utf8').matchAll(
