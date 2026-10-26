@@ -1,4 +1,10 @@
 import {
+  seedMaintenanceFixtures,
+  cleanupMaintenanceFixtures,
+  readMaintenanceEvidence,
+} from './cypress/support/maintenance-fixtures'
+import type { MaintenanceFixtureInput } from './cypress/types/maintenance-fixtures'
+import {
   seedCrmFixtures,
   cleanupCrmFixtures,
   readCrmEvidence,
@@ -75,6 +81,11 @@ export default defineConfig({
       })
 
       on('task', {
+        seedMaintenanceFixtures: (input: MaintenanceFixtureInput) =>
+          seedMaintenanceFixtures(prisma, input),
+        cleanupMaintenanceFixtures: (tenantIds: string[]) =>
+          cleanupMaintenanceFixtures(prisma, tenantIds),
+        readMaintenanceEvidence: (id: string) => readMaintenanceEvidence(prisma, id),
         seedCrmFixtures: (input: CrmFixtureInput) => seedCrmFixtures(prisma, input),
         cleanupCrmFixtures: (tenantIds: string[]) => cleanupCrmFixtures(prisma, tenantIds),
         readCrmEvidence: (input: { tenantId: string; contactId: string }) =>

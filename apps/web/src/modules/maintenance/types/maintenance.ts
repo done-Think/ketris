@@ -5,7 +5,7 @@ export type MaintenancePriority = 'urgent' | 'high' | 'normal'
 
 export type MaintenanceCreateTicketFormValues = {
   contractId?: string
-  propertyId: string
+  propertyId?: string
   category: string
   priority: MaintenancePriority
   title: string
@@ -18,6 +18,8 @@ export type MaintenanceCreateTicketDialogProps = {
   onCreate: (values: MaintenanceCreateTicketFormValues) => Promise<boolean | void> | void
   initialValues?: MaintenanceCreateTicketFormValues
   mode?: 'create' | 'edit'
+  loadError?: boolean
+  onRetry?: () => void
 }
 
 export type MaintenanceStatus =

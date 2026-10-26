@@ -48,6 +48,7 @@ export const maintenancePermissionsSchema = z.object({
 })
 
 const providerSchema = z.object({
+  id: z.string().optional(),
   name: z.string(),
   phone: z.string().nullable().optional(),
   email: z.string().nullable().optional(),
@@ -71,6 +72,7 @@ export const maintenanceActivitySchema = z
     ticketId: z.string(),
     type: maintenanceActivityTypeSchema,
     message: z.string(),
+    systemAction: z.string().nullable().optional(),
     authorId: z.string().nullable(),
     authorName: z.string().nullable(),
     details: z.record(z.unknown()).nullable().optional(),
@@ -140,7 +142,8 @@ export const maintenanceTicketListItemSchema = z
   .openapi('MaintenanceTicketListItem')
 
 export const maintenanceTicketIdParamsSchema = z
-  .object({ id: z.string() })
+  .object({ id: z.string().trim().min(1) })
+  .strict()
   .openapi('MaintenanceTicketIdParams')
 
 export const maintenanceTicketResponseSchema = z
@@ -148,7 +151,22 @@ export const maintenanceTicketResponseSchema = z
   .openapi('MaintenanceTicketResponse')
 
 export const maintenanceTicketsResponseSchema = z
-  .object({ items: z.array(maintenanceTicketListItemSchema), totalCount: z.number() })
+  .object({
+    items: z.array(maintenanceTicketListItemSchema),
+    totalCount: z.number(),
+    pagination: z.object({
+      page: z.number().int(),
+      pageSize: z.number().int(),
+      pageCount: z.number().int(),
+      totalCount: z.number().int(),
+    }),
+    summary: z.object({
+      totalCount: z.number().int(),
+      urgentCount: z.number().int(),
+      byStatus: z.record(maintenanceTicketStatusSchema, z.number().int()),
+      averageResolutionDays: z.number().nullable(),
+    }),
+  })
   .openapi('MaintenanceTicketsResponse')
 
 export const maintenanceActivityResponseSchema = z

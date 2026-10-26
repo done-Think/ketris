@@ -1,5 +1,5 @@
 import type { MaintenanceTicketInput } from '../../types/use-case-inputs'
-import type { MaintenanceTicketRepository } from '../../types/maintenance-ticket-repository'
+import type { MaintenanceTicketRepository } from '../ports/maintenance-ticket-repository.port'
 import { loadTicket } from '../workflow'
 
 export class ListMaintenanceTicketActivitiesUseCase {

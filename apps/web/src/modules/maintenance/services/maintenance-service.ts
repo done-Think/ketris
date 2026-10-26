@@ -1,6 +1,18 @@
-import type { MaintenanceUserLinkInput } from '../types/service'
+import type { MaintenancePrepareUploadResponseDTO } from '@server/maintenance/types/dto'
 import { BaseService } from '@shared/lib/api/base-service'
-import type { MaintenanceAction, MaintenanceOptions } from '../types/service'
+import type {
+  CreateMaintenanceProviderPayload,
+  MaintenanceProviderFilters,
+  MaintenanceProviderOption,
+  MaintenanceProvidersResponse,
+  UpdateMaintenanceProviderPayload,
+} from '../types/maintenance-provider'
+import type {
+  MaintenanceAction,
+  MaintenanceOptions,
+  MaintenanceUserLinkInput,
+} from '../types/service'
+import { maintenanceFileSha256, validateMaintenanceFile } from '../utils/maintenance-file'
 
 import type {
   ApiMaintenanceActivity,
@@ -21,9 +33,11 @@ export class MaintenanceService extends BaseService {
 
   list(filters: MaintenanceTicketListFilters = {}): Promise<ListMaintenanceTicketsResponse> {
     const params = {
+      ...(filters.locale ? { locale: filters.locale } : {}),
       ...(filters.archived ? { archived: 'true' } : {}),
       ...(filters.status ? { status: filters.status } : {}),
       ...(filters.priority ? { priority: filters.priority } : {}),
+      ...(filters.category ? { category: filters.category } : {}),
       ...(filters.propertyId ? { propertyId: filters.propertyId } : {}),
       ...(filters.search ? { search: filters.search } : {}),
       ...(filters.page ? { page: String(filters.page) } : {}),
@@ -71,13 +85,27 @@ export class MaintenanceService extends BaseService {
       .then((data) => data.activities)
   }
 
-  uploadAttachment(id: string, file: File): Promise<ApiMaintenanceAttachment> {
-    const formData = new FormData()
-    formData.append('file', file)
-
+  async uploadAttachment(id: string, file: File): Promise<ApiMaintenanceAttachment> {
+    validateMaintenanceFile(file)
+    const prepared = await this.http.post<MaintenancePrepareUploadResponseDTO>(
+      `${this.path}/${id}/attachments/upload`,
+      {
+        filename: file.name,
+        size: file.size,
+        contentType: file.type,
+        sha256: await maintenanceFileSha256(file),
+      },
+    )
+    const uploaded = await fetch(prepared.upload.url, {
+      method: 'PUT',
+      headers: prepared.upload.headers,
+      body: file,
+      credentials: 'omit',
+    })
+    if (!uploaded.ok) throw new Error('Storage upload failed')
     return this.http
-      .post<UploadMaintenanceTicketAttachmentResponse>(`${this.path}/${id}/attachments`, formData, {
-        headers: { 'Content-Type': undefined },
+      .post<UploadMaintenanceTicketAttachmentResponse>(`${this.path}/${id}/attachments/complete`, {
+        token: prepared.token,
       })
       .then((data) => data.attachment)
   }
@@ -90,6 +118,30 @@ export class MaintenanceService extends BaseService {
     return this.http
       .post<MaintenanceTicketResponse>(`${this.path}/${id}/actions`, action)
       .then((data) => data.ticket)
+  }
+
+  listProviders(filters: MaintenanceProviderFilters = {}): Promise<MaintenanceProvidersResponse> {
+    const params = {
+      ...filters,
+      includeInactive:
+        filters.includeInactive === undefined ? undefined : String(filters.includeInactive),
+    }
+    return this.http.get('/maintenance/providers', { params })
+  }
+
+  createProvider(payload: CreateMaintenanceProviderPayload): Promise<MaintenanceProviderOption> {
+    return this.http
+      .post<{ provider: MaintenanceProviderOption }>('/maintenance/providers', payload)
+      .then((data) => data.provider)
+  }
+
+  updateProvider(
+    id: string,
+    payload: UpdateMaintenanceProviderPayload,
+  ): Promise<MaintenanceProviderOption> {
+    return this.http
+      .patch<{ provider: MaintenanceProviderOption }>(`/maintenance/providers/${id}`, payload)
+      .then((data) => data.provider)
   }
 
   linkUsers(input: MaintenanceUserLinkInput): Promise<void> {

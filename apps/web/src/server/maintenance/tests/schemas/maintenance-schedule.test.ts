@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest'
 import {
   createMaintenanceTicketRequestSchema,
-  updateMaintenanceTicketRequestSchema,
   maintenanceActionSchema,
+  updateMaintenanceTicketRequestSchema,
 } from '../../schemas/maintenance-ticket-input.schema'
 
 it('accepts optional service dates with an explicit timezone and rejects invalid appointments', () => {

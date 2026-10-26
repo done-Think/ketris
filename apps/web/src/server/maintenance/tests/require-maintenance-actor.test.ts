@@ -1,11 +1,11 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { NextRequest } from 'next/server'
-import { getServerSession } from 'next-auth'
 import { authContainer } from '@server/auth/container'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
-import { requireMaintenanceActor } from '../require-maintenance-actor'
 import { UnauthorizedError } from '@server/shared/errors'
+import { getServerSession } from 'next-auth'
+import { NextRequest } from 'next/server'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { requireMaintenanceActor } from '../require-maintenance-actor'
 
 vi.mock('next-auth', () => ({ getServerSession: vi.fn() }))
 vi.mock('@shared/lib/auth/auth-options', () => ({ authOptions: {} }))

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -9,12 +9,13 @@ import { MaintenanceDashboardPage } from '../../components/MaintenanceDashboardP
 import {
   useCreateMaintenanceTicket,
   useDeleteMaintenanceTicket,
+  useMaintenanceOptions,
   useMaintenanceTicket,
   useMaintenanceTickets,
   useUpdateMaintenanceTicket,
-  useMaintenanceOptions,
 } from '../../hooks/use-maintenance'
 import type { ApiMaintenanceTicket, ApiMaintenanceTicketListItem } from '../../types/service'
+import { normalizeMaintenanceCategory } from '@server/maintenance/constants/maintenance-categories'
 
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
@@ -134,6 +135,7 @@ function mockDefaults() {
       (item) =>
         (!filters.status || item.status === filters.status) &&
         (!filters.priority || item.priority === filters.priority) &&
+        (!filters.category || normalizeMaintenanceCategory(item.category) === filters.category) &&
         (!filters.propertyId || item.propertyId === filters.propertyId) &&
         (!filters.search ||
           item.title.toLocaleLowerCase().includes(filters.search.toLocaleLowerCase())),
@@ -143,6 +145,18 @@ function mockDefaults() {
       data: {
         items: filtered.map((item) => ({ ...item, permissions: { edit: true, delete: true } })),
         totalCount: filtered.length,
+        pagination: {
+          page: filters.page ?? 1,
+          pageSize: filters.pageSize ?? 5,
+          totalCount: filtered.length,
+          pageCount: 1,
+        },
+        summary: {
+          totalCount: 4,
+          urgentCount: 1,
+          byStatus: { ABERTO: 1, EM_ANDAMENTO: 2, RESOLVIDO: 1 },
+          averageResolutionDays: 1,
+        },
       },
       isLoading: false,
     } as unknown as ReturnType<typeof useMaintenanceTickets>
@@ -298,7 +312,7 @@ describe('MaintenanceDashboardPage', () => {
     expect(screen.queryByRole('button', { name: 'Arquivados' })).not.toBeInTheDocument()
   })
 
-  it('computes the open and urgent metric cards from the loaded tickets', () => {
+  it('computes the open and urgent metric cards from server-wide summaries', () => {
     render(<MaintenanceDashboardPage />)
 
     const openCard = screen.getByText('Abertos').closest('div')!.parentElement!
@@ -307,7 +321,7 @@ describe('MaintenanceDashboardPage', () => {
     const urgentCard = screen.getByText('Urgentes').closest('div')!.parentElement!
     expect(urgentCard).toHaveTextContent('1')
 
-    expect(screen.getByText('1.0 dias')).toBeVisible()
+    expect(screen.getByText('1,0 dias')).toBeVisible()
   })
 
   it('filters tickets by property', async () => {
@@ -332,6 +346,23 @@ describe('MaintenanceDashboardPage', () => {
     expect(screen.queryByText('MNT-0089')).not.toBeInTheDocument()
   })
 
+  it('filters by category through the shared controls and preserves global metrics', async () => {
+    const user = userEvent.setup()
+    render(<MaintenanceDashboardPage />)
+    await user.click(screen.getByRole('button', { name: 'Filtros' }))
+    const dialog = screen.getByRole('dialog', { name: 'Filtros' })
+    await user.click(within(dialog).getByLabelText('Filtrar por categoria'))
+    await user.click(await screen.findByRole('option', { name: 'Elétrica' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Fechar filtros' }))
+    expect(screen.getByText('MNT-0088')).toBeVisible()
+    expect(screen.queryByText('MNT-0089')).not.toBeInTheDocument()
+    expect(useMaintenanceTickets).toHaveBeenLastCalledWith(
+      'tenant-1',
+      expect.objectContaining({ category: 'ELECTRICAL', page: 1 }),
+    )
+    expect(screen.getByText('1,0 dias')).toBeVisible()
+  })
+
   it('creates a ticket through the mutation and closes the dialog on success', async () => {
     const user = userEvent.setup()
     render(<MaintenanceDashboardPage />)
@@ -349,7 +380,7 @@ describe('MaintenanceDashboardPage', () => {
 
     await waitFor(() =>
       expect(createMutation.mutateAsync).toHaveBeenCalledWith(
-        expect.objectContaining({ propertyId: 'p1', category: 'Hidráulica' }),
+        expect.objectContaining({ contractId: 'c-p1', category: 'PLUMBING' }),
       ),
     )
     await waitFor(() => {

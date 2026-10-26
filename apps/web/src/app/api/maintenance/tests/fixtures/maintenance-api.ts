@@ -1,20 +1,15 @@
-import type { MaintenanceTicketStatus } from '@server/maintenance/types/maintenance-ticket'
-import { randomUUID } from 'node:crypto'
-import { NextRequest } from 'next/server'
-import { afterAll, beforeAll, expect, vi } from 'vitest'
-import type { UploadMaintenanceAttachmentInput } from '@server/maintenance/types/maintenance-attachment-storage'
+import type { Papel } from '@server/auth/domain/user.entity'
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
-import type { Papel } from '@server/auth/domain/user.entity'
-import { POST } from '../../tickets/route'
+import type { UploadMaintenanceAttachmentInput } from '@server/maintenance/types/maintenance-attachment-storage'
+import type { MaintenanceTicketStatus } from '@server/maintenance/types/maintenance-ticket'
+import { NextRequest } from 'next/server'
+import { randomUUID } from 'node:crypto'
+import { afterAll, beforeAll, expect } from 'vitest'
 import { POST as act } from '../../tickets/[id]/actions/route'
+import { POST } from '../../tickets/route'
+import { uploadToStorage } from './maintenance-storage'
 
-const { uploadToStorage } = vi.hoisted(() => ({ uploadToStorage: vi.fn() }))
-vi.mock('@server/maintenance/infrastructure/s3-maintenance-attachment-storage', () => ({
-  S3MaintenanceAttachmentStorage: class {
-    upload = uploadToStorage
-  },
-}))
 export function setupMaintenanceIntegration() {
   const tokenService = new JoseTokenService()
 

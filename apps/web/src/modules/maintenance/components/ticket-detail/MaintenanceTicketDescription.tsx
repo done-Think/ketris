@@ -1,11 +1,12 @@
 'use client'
 
+import * as maintenanceStyles from '../../styles/maintenance-ticket-description.styles'
+
 import { Box, Divider, Typography } from '@mui/material'
-import { useTranslations, useFormatter } from 'next-intl'
-import { formatDate } from '@shared/lib/utils/format'
-import { brand } from '@shared/theme/tokens'
+import { useFormatter, useTranslations } from 'next-intl'
+import { cardSx, cardTitleSx, labelSx } from '../../styles/maintenance-ticket-detail.styles'
 import type { MaintenanceTicketSectionProps } from '../../types/maintenance-detail'
-import { cardSx, labelSx, cardTitleSx } from './styles'
+import { formatMaintenanceCategory } from '../../utils/maintenance-category'
 
 export function MaintenanceTicketDescription({ ticket }: MaintenanceTicketSectionProps) {
   const t = useTranslations('dashboard.maintenance')
@@ -15,19 +16,15 @@ export function MaintenanceTicketDescription({ ticket }: MaintenanceTicketSectio
   return (
     <Box sx={cardSx}>
       <Typography sx={cardTitleSx}>{detailT('descriptionCard.title')}</Typography>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' },
-          gap: 1.5,
-          mt: 1.7,
-        }}
-      >
+      <Box sx={maintenanceStyles.boxSx}>
         {[
           [t('columns.property'), ticket.propertyTitle],
-          [t('columns.category'), ticket.category],
+          [
+            t('columns.category'),
+            formatMaintenanceCategory(ticket.category, (key) => t(`categories.${key}`)),
+          ],
           [detailT('descriptionCard.openedBy'), ticket.openedByName],
-          [t('columns.openedAt'), formatDate(ticket.createdAt)],
+          [t('columns.openedAt'), formatter.dateTime(new Date(ticket.createdAt), 'short')],
           [
             t('schedule.summaryLabel'),
             ticket.scheduledAt
@@ -40,19 +37,13 @@ export function MaintenanceTicketDescription({ ticket }: MaintenanceTicketSectio
         ].map(([label, value]) => (
           <Box key={label}>
             <Typography sx={labelSx}>{label}</Typography>
-            <Typography
-              sx={{ mt: 0.35, color: brand.graphite[500], fontSize: 12, fontWeight: 900 }}
-            >
-              {value}
-            </Typography>
+            <Typography sx={maintenanceStyles.typographySx}>{value}</Typography>
           </Box>
         ))}
       </Box>
-      <Divider sx={{ my: 1.8 }} />
+      <Divider sx={maintenanceStyles.dividerSx} />
       <Typography sx={labelSx}>{detailT('descriptionCard.report')}</Typography>
-      <Typography sx={{ mt: 0.7, color: brand.neutral[600], fontSize: 13, lineHeight: 1.5 }}>
-        {ticket.description}
-      </Typography>
+      <Typography sx={maintenanceStyles.typographySx2}>{ticket.description}</Typography>
     </Box>
   )
 }

@@ -1,31 +1,56 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { NextRequest } from 'next/server'
 import { requireMaintenanceActor } from '@server/maintenance/require-maintenance-actor'
-import { maintenanceContainer } from '@server/maintenance/container'
-import { GET as readMedia } from '../media/[...key]/route'
-import { POST as performAction } from '../tickets/[id]/actions/route'
-import { POST as linkUsers } from '../links/route'
-import { GET as options } from '../options/route'
 import type {
   MaintenanceActor,
   MaintenanceTicket,
 } from '@server/maintenance/types/maintenance-ticket'
+import { NextRequest } from 'next/server'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { POST as linkUsers } from '../links/route'
+import { GET as readMedia } from '../media/[...key]/route'
+import { GET as options } from '../options/route'
+import { POST as performAction } from '../tickets/[id]/actions/route'
 
 const s3Send = vi.hoisted(() => vi.fn())
 vi.mock('@server/maintenance/require-maintenance-actor', () => ({
   requireMaintenanceActor: vi.fn(),
 }))
-vi.mock('@server/maintenance/container', () => ({
-  maintenanceContainer: {
-    repository: {
-      findById: vi.fn(),
-      findAttachmentTicket: vi.fn(),
-      mutate: vi.fn(),
-      linkUsers: vi.fn(),
-      options: vi.fn(),
+const repository = vi.hoisted(() => ({
+  findById: vi.fn(),
+  findAttachmentTicket: vi.fn(),
+  mutate: vi.fn(),
+  linkUsers: vi.fn(),
+  options: vi.fn(),
+}))
+vi.mock('@server/maintenance/container', async () => {
+  const { ActOnMaintenanceTicketUseCase } =
+    await import('@server/maintenance/application/use-cases/act-on-maintenance-ticket.use-case')
+  const { GetMaintenanceAttachmentUseCase } =
+    await import('@server/maintenance/application/use-cases/get-maintenance-attachment.use-case')
+  const { RegularizeMaintenanceLinksUseCase } =
+    await import('@server/maintenance/application/use-cases/regularize-maintenance-links.use-case')
+  const { ListMaintenanceOptionsUseCase } =
+    await import('@server/maintenance/application/use-cases/list-maintenance-options.use-case')
+  const { S3MaintenanceAttachmentStorage } =
+    await import('@server/maintenance/infrastructure/s3-maintenance-attachment-storage')
+  const port =
+    repository as unknown as import('@server/maintenance/application/ports/maintenance-ticket-repository.port').MaintenanceTicketRepository
+  return {
+    maintenanceContainer: {
+      actOnMaintenanceTicketUseCase: new ActOnMaintenanceTicketUseCase(port),
+      getMaintenanceAttachmentUseCase: new GetMaintenanceAttachmentUseCase(
+        port,
+        new S3MaintenanceAttachmentStorage(),
+      ),
+      regularizeMaintenanceLinksUseCase: new RegularizeMaintenanceLinksUseCase(port),
+      listMaintenanceOptionsUseCase: new ListMaintenanceOptionsUseCase(port),
     },
-  },
+  }
+})
+vi.mock('@aws-sdk/s3-request-presigner', () => ({
+  getSignedUrl: vi
+    .fn()
+    .mockResolvedValue('https://private-storage.example.test/file?signature=test'),
 }))
 vi.mock('@server/shared/storage/s3-client', () => ({
   getS3Client: () => ({ send: s3Send }),
@@ -76,8 +101,8 @@ describe('Maintenance API authorization and private media', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(requireMaintenanceActor).mockResolvedValue(actor)
-    vi.mocked(maintenanceContainer.repository.findById).mockResolvedValue(ticket)
-    vi.mocked(maintenanceContainer.repository.findAttachmentTicket).mockResolvedValue(ticket)
+    vi.mocked(repository.findById).mockResolvedValue(ticket)
+    vi.mocked(repository.findAttachmentTicket).mockResolvedValue(ticket)
     s3Send.mockResolvedValue({
       Body: { transformToByteArray: async () => new Uint8Array([1, 2, 3]) },
       ContentType: 'image/png',
@@ -100,7 +125,7 @@ describe('Maintenance API authorization and private media', () => {
         )
       ).status,
     ).toBe(400)
-    expect(maintenanceContainer.repository.mutate).not.toHaveBeenCalled()
+    expect(repository.mutate).not.toHaveBeenCalled()
   })
   it('refuses forged actor fields in a renter action', async () => {
     const response = await performAction(
@@ -111,22 +136,22 @@ describe('Maintenance API authorization and private media', () => {
       }),
       context,
     )
-    expect(response.status).toBe(403)
-    expect(maintenanceContainer.repository.mutate).not.toHaveBeenCalled()
+    expect(response.status).toBe(400)
+    expect(repository.mutate).not.toHaveBeenCalled()
   })
   it('only admin may regularize links', async () => {
     expect(
       (await linkUsers(request('links', { contractId: 'contract', ownerId: 'owner' }))).status,
     ).toBe(403)
-    expect(maintenanceContainer.repository.linkUsers).not.toHaveBeenCalled()
+    expect(repository.linkUsers).not.toHaveBeenCalled()
   })
   it('passes only the authenticated actor to options lookup', async () => {
-    vi.mocked(maintenanceContainer.repository.options).mockResolvedValue({
+    vi.mocked(repository.options).mockResolvedValue({
       contracts: [],
       users: [],
     })
     expect((await options(request('options?tenantId=other'))).status).toBe(200)
-    expect(maintenanceContainer.repository.options).toHaveBeenCalledWith(actor)
+    expect(repository.options).toHaveBeenCalledWith(actor)
   })
   it('rejects foreign storage keys before contacting S3', async () => {
     const response = await readMedia(request('media/maintenance/other/file.png'), {
@@ -146,7 +171,7 @@ describe('Maintenance API authorization and private media', () => {
     expect(s3Send).not.toHaveBeenCalled()
   })
   it('checks ticket membership even for a same-tenant storage key', async () => {
-    vi.mocked(maintenanceContainer.repository.findAttachmentTicket).mockResolvedValue({
+    vi.mocked(repository.findAttachmentTicket).mockResolvedValue({
       ...ticket,
       access: { ...ticket.access, renterIds: [] },
     })
@@ -160,18 +185,20 @@ describe('Maintenance API authorization and private media', () => {
     const response = await readMedia(request('media/maintenance/tenant/file.png'), {
       params: Promise.resolve({ key: ['maintenance', 'tenant', 'file.png'] }),
     })
-    expect(response.status).toBe(200)
+    expect(response.status).toBe(302)
     expect(response.headers.get('cache-control')).toBe('private, no-store')
     expect(requireMaintenanceActor).toHaveBeenCalledWith(expect.anything(), true)
-    expect(new Uint8Array(await response.arrayBuffer())).toEqual(new Uint8Array([1, 2, 3]))
+    expect(response.headers.get('location')).toBe(
+      'https://private-storage.example.test/file?signature=test',
+    )
   })
   it('authorizes shared-tenant renter media by ticket membership while staff stays tenant-scoped', async () => {
     vi.mocked(requireMaintenanceActor).mockResolvedValue({ ...actor, actorTenantId: 'shared' })
     const mediaContext = { params: Promise.resolve({ key: ['maintenance', 'tenant', 'file.png'] }) }
     expect(
       (await readMedia(request('media/maintenance/tenant/file.png'), mediaContext)).status,
-    ).toBe(200)
-    expect(maintenanceContainer.repository.findAttachmentTicket).toHaveBeenCalledWith(
+    ).toBe(302)
+    expect(repository.findAttachmentTicket).toHaveBeenCalledWith(
       { ...actor, actorTenantId: 'shared' },
       '/api/maintenance/media/maintenance/tenant/file.png',
     )
@@ -186,7 +213,7 @@ describe('Maintenance API authorization and private media', () => {
     expect(s3Send).toHaveBeenCalledTimes(1)
   })
   it('blocks archive attachments for renter but permits admin audit', async () => {
-    vi.mocked(maintenanceContainer.repository.findAttachmentTicket).mockResolvedValue({
+    vi.mocked(repository.findAttachmentTicket).mockResolvedValue({
       ...ticket,
       deletedAt: new Date(),
     })
@@ -197,6 +224,6 @@ describe('Maintenance API authorization and private media', () => {
     vi.mocked(requireMaintenanceActor).mockResolvedValue({ ...actor, actorPapel: 'OWNER' })
     expect(
       (await readMedia(request('media/maintenance/tenant/file.png'), mediaContext)).status,
-    ).toBe(200)
+    ).toBe(302)
   })
 })

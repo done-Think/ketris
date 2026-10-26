@@ -22,3 +22,9 @@ export type MaintenanceTicketRow = ChamadoManutencao & {
   anexos: AnexoChamadoManutencao[]
   solicitacoesTroca: SolicitacaoTrocaPrestador[]
 }
+
+export type MaintenanceContractPartyLink = (
+  transaction: import('@prisma/client').Prisma.TransactionClient,
+  actor: import('./maintenance-ticket').MaintenanceActor,
+  input: { contractId: string; partyId: string; renterId: string },
+) => Promise<unknown>

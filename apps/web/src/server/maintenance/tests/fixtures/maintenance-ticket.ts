@@ -1,8 +1,8 @@
 import { vi } from 'vitest'
 import type {
   MaintenanceActor,
-  MaintenanceTicket,
   MaintenanceContract,
+  MaintenanceTicket,
 } from '../../types/maintenance-ticket'
 import type { MaintenanceTicketRepository } from '../../types/maintenance-ticket-repository'
 

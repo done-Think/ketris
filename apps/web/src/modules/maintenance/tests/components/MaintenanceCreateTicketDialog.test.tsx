@@ -4,13 +4,13 @@ import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { MaintenanceCreateTicketDialog } from '../../components/MaintenanceCreateTicketDialog'
 import { useMaintenanceOptions } from '../../hooks/use-maintenance'
+import { createMaintenanceTicketSchema } from '../../schemas/maintenance-ticket-schema'
+import type { MaintenanceCreateTicketFormValues } from '../../types/maintenance'
 import {
   maintenanceDraftKey,
   readMaintenanceDraft,
   writeMaintenanceDraft,
 } from '../../utils/maintenance-draft'
-import type { MaintenanceCreateTicketFormValues } from '../../types/maintenance'
-import { createMaintenanceTicketSchema } from '../../schemas/maintenance-ticket-schema'
 
 vi.mock('next-auth/react', () => ({ useSession: vi.fn() }))
 vi.mock('../../hooks/use-maintenance', () => ({ useMaintenanceOptions: vi.fn() }))
@@ -85,7 +85,7 @@ describe('Maintenance local draft and submission', () => {
     render(<MaintenanceCreateTicketDialog open onClose={vi.fn()} onCreate={vi.fn()} />)
     await user.click(screen.getByLabelText('Contrato / imóvel', { exact: false }))
     await user.click(await screen.findByRole('option', { name: 'C-1 - Property' }))
-    await waitFor(() => expect(readMaintenanceDraft(key)?.propertyId).toBe('p1'))
+    await waitFor(() => expect(readMaintenanceDraft(key)?.contractId).toBe('c1'))
   })
   it('saves locally and recovers after closing and reopening', async () => {
     const user = userEvent.setup()

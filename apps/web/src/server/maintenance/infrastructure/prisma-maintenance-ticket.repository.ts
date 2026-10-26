@@ -1,9 +1,11 @@
-import type { MaintenanceUserLinkInput } from '../types/maintenance-ticket'
 import { Prisma } from '@prisma/client'
+import { isAgencyManager } from '@server/auth/domain/roles'
 import { prisma } from '@server/db/prisma'
 import { ConflictError, ForbiddenError } from '@server/shared/errors'
-import { MaintenancePropertyNotFoundError } from '../domain/errors'
 import { normalizeEmail } from '@server/shared/normalize-email'
+import { permissionsFor } from '../application/authorization'
+import { MaintenancePropertyNotFoundError } from '../domain/errors'
+import type { MaintenanceSummaryRow } from '../types/maintenance-summary'
 import type {
   MaintenanceActor,
   MaintenanceMutation,
@@ -12,32 +14,36 @@ import type {
   MaintenanceTicket,
   MaintenanceTicketListFilters,
   MaintenanceTicketListResult,
+  MaintenanceUserLinkInput,
   NewMaintenanceActivity,
   NewMaintenanceAttachment,
   NewMaintenanceTicket,
 } from '../types/maintenance-ticket'
 import type { MaintenanceTicketRepository } from '../types/maintenance-ticket-repository'
-import { permissionsFor } from '../application/authorization'
-import {
-  contractInclude,
-  ticketInclude,
-  toContract,
-  toActivity,
-  toAttachment,
-  toTicket,
-  activityData,
-} from './maintenance-ticket-mapper'
+import type { MaintenanceContractPartyLink } from '../types/prisma-maintenance-ticket-repository'
 import {
   maintenanceTicketScope,
   renterContractScope,
   validContract,
 } from './maintenance-access-scope'
+import { maintenanceListQuery } from './maintenance-list-query'
+import {
+  activityData,
+  contractInclude,
+  ticketInclude,
+  toActivity,
+  toAttachment,
+  toContract,
+  toTicket,
+} from './maintenance-ticket-mapper'
 import { regularizeMaintenanceLinks } from './prisma-maintenance-links'
-import { isAgencyManager } from '@server/auth/domain/roles'
+import { resolveMaintenanceProvider } from './prisma-maintenance-provider.repository'
 
 export { maintenanceTicketScope } from './maintenance-access-scope'
 
 export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepository {
+  constructor(private readonly linkParty?: MaintenanceContractPartyLink) {}
+
   async findContract(actor: MaintenanceActor, contractId: string) {
     const row = await prisma.contrato.findFirst({
       where: {
@@ -105,7 +111,8 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
     }
   }
   async linkUsers(actor: MaintenanceActor, input: MaintenanceUserLinkInput) {
-    return regularizeMaintenanceLinks(actor, input)
+    if (!this.linkParty) throw new Error('Integração de vínculos contratuais não configurada.')
+    return regularizeMaintenanceLinks(actor, input, this.linkParty)
   }
   async create(input: NewMaintenanceTicket) {
     const row = await prisma.chamadoManutencao.create({
@@ -124,6 +131,7 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
           create: {
             tipo: 'NOTA',
             mensagem: 'Chamado aberto.',
+            systemAction: 'TICKET_CREATED',
             autorId: input.openedById,
             autorNome: input.openedByName,
           },
@@ -134,65 +142,55 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
     return toTicket(row)
   }
   async findMany(filters: MaintenanceTicketListFilters): Promise<MaintenanceTicketListResult> {
-    const scope = maintenanceTicketScope(filters.actor)
-    // Match all three stored relationships before pagination/counting; never trust the account's tenant.
-    const renterContracts =
-      filters.actor.actorPapel === 'RENTER'
-        ? await prisma.contrato.findMany({
-            where: renterContractScope(filters.actor.actorId),
-            include: contractInclude,
-          })
-        : null
-    const where: Prisma.ChamadoManutencaoWhereInput = {
-      AND: [
-        scope,
-        {
-          tenantId: filters.actor.actorPapel === 'RENTER' ? undefined : filters.tenantId,
-          excluidoEm: filters.archived ? { not: null } : null,
-          status: filters.status,
-          prioridade: filters.priority,
-          imovelId: filters.propertyId,
-        },
-        ...(renterContracts
-          ? [
-              {
-                OR: renterContracts
-                  .filter(validContract)
-                  .map((c) => ({ tenantId: c.tenantId, imovelId: c.imovelId, contratoId: c.id })),
-              },
-            ]
-          : []),
-        ...(filters.search?.trim()
-          ? [
-              {
-                OR: [
-                  { titulo: { contains: filters.search.trim(), mode: 'insensitive' as const } },
-                  { categoria: { contains: filters.search.trim(), mode: 'insensitive' as const } },
-                  {
-                    imovel: {
-                      titulo: { contains: filters.search.trim(), mode: 'insensitive' as const },
-                    },
-                  },
-                ],
-              },
-            ]
-          : []),
-      ],
-    }
-    const page = Math.max(1, filters.page ?? 1)
-    const pageSize = Math.min(100, Math.max(1, filters.pageSize ?? 10))
-    const [rows, totalCount] = await prisma.$transaction([
-      prisma.chamadoManutencao.findMany({
-        where,
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        orderBy: { updatedAt: 'desc' },
-        include: ticketInclude,
-      }),
-      prisma.chamadoManutencao.count({ where }),
-    ])
+    const query = maintenanceListQuery(filters)
+    const result = await prisma.$transaction(
+      async (tx) => {
+        const [count] = await tx.$queryRaw<{ count: bigint }[]>(
+          Prisma.sql`SELECT count(*) AS count FROM ${query.from} WHERE ${query.filter}`,
+        )
+        const totalCount = Number(count.count)
+        const pageSize = Math.min(100, Math.max(1, filters.pageSize ?? 10))
+        const pageCount = Math.max(1, Math.ceil(totalCount / pageSize))
+        const page = Math.min(Math.max(1, filters.page ?? 1), pageCount)
+        const ids = await tx.$queryRaw<{ id: string }[]>(
+          Prisma.sql`SELECT c.id FROM ${query.from} WHERE ${query.filter} ORDER BY c."updatedAt" DESC, c.id ASC LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}`,
+        )
+        const rows = await tx.chamadoManutencao.findMany({
+          where: { id: { in: ids.map((item) => item.id) } },
+          include: ticketInclude,
+        })
+        const groups = await tx.$queryRaw<MaintenanceSummaryRow[]>(
+          Prisma.sql`SELECT c.status::text AS status, count(*) AS count, count(*) FILTER (WHERE c.prioridade = 'URGENTE') AS urgent, sum(EXTRACT(EPOCH FROM (c."resolvidoEm" - c."createdAt")) / 86400) AS "resolutionDays", count(c."resolvidoEm") AS resolved FROM ${query.from} WHERE ${query.base} GROUP BY c.status`,
+        )
+        const byId = new Map(rows.map((row) => [row.id, row]))
+        const ordered = ids.flatMap((item) => {
+          const row = byId.get(item.id)
+          return row ? [row] : []
+        })
+        const resolvedCount = groups.reduce((sum, group) => sum + Number(group.resolved), 0)
+        return {
+          rows: ordered,
+          totalCount,
+          pagination: { page, pageSize, pageCount, totalCount },
+          summary: {
+            totalCount: groups.reduce((sum, group) => sum + Number(group.count), 0),
+            urgentCount: groups.reduce((sum, group) => sum + Number(group.urgent), 0),
+            byStatus: Object.fromEntries(
+              groups.map((group) => [group.status, Number(group.count)]),
+            ),
+            averageResolutionDays: resolvedCount
+              ? groups.reduce((sum, group) => sum + Number(group.resolutionDays ?? 0), 0) /
+                resolvedCount
+              : null,
+          },
+        }
+      },
+      { isolationLevel: 'RepeatableRead' },
+    )
     return {
-      items: rows.map((row) => {
+      pagination: result.pagination,
+      summary: result.summary,
+      items: result.rows.map((row) => {
         const ticket = toTicket(row)
         return {
           id: ticket.id,
@@ -214,7 +212,7 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
           permissions: permissionsFor(filters.actor, ticket),
         }
       }),
-      totalCount,
+      totalCount: result.totalCount,
     }
   }
   async findById(actor: MaintenanceActor, ticketId: string) {
@@ -236,6 +234,7 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
     ticket: MaintenanceTicket,
     changes: Prisma.ChamadoManutencaoUncheckedUpdateManyInput = {},
   ) {
+    const nextVersion = new Date(Math.max(Date.now(), ticket.updatedAt.getTime() + 1))
     const result = await tx.chamadoManutencao.updateMany({
       where: {
         id: ticket.id,
@@ -245,11 +244,12 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
       },
       data: {
         ...changes,
-        updatedAt: new Date(Math.max(Date.now(), ticket.updatedAt.getTime() + 1)),
+        updatedAt: nextVersion,
       },
     })
     if (result.count !== 1)
       throw new ConflictError('O chamado foi alterado. Atualize a tela e tente novamente.')
+    return nextVersion
   }
   async mutate(
     ticket: MaintenanceTicket,
@@ -270,7 +270,7 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
         })
         if (!contract) throw new MaintenancePropertyNotFoundError()
       }
-      await this.lockTicket(tx, ticket, {
+      const version = await this.lockTicket(tx, ticket, {
         imovelId: changes.propertyId,
         contratoId: changes.contractId,
         responsavelId: changes.responsibleId,
@@ -285,14 +285,6 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
         concluidoPorPapel: changes.completedByRole,
         excluidoEm: changes.deletedAt,
         excluidoPorId: changes.deletedById,
-        ...(changes.provider
-          ? {
-              prestadorNome: changes.provider.name,
-              prestadorTelefone: changes.provider.phone ?? null,
-              prestadorEmail: changes.provider.email ?? null,
-              prestadorObservacoes: changes.provider.notes ?? null,
-            }
-          : {}),
       })
       if (request?.kind === 'request') {
         const pending = await tx.solicitacaoTrocaPrestador.count({
@@ -320,7 +312,43 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
         })
         if (result.count !== 1) throw new ConflictError('A solicitacao ja foi decidida.')
       }
-      await tx.atividadeChamadoManutencao.create({ data: activityData(ticket.id, activity) })
+      let activityToRecord = activity
+      if (changes.provider) {
+        if (!activity.authorId || !activity.authorRole) throw new ForbiddenError()
+        const record = await resolveMaintenanceProvider(
+          tx,
+          {
+            actorId: activity.authorId,
+            actorName: activity.authorName ?? '',
+            actorTenantId: ticket.tenantId,
+            actorPapel: activity.authorRole,
+          },
+          ticket.tenantId,
+          changes.provider,
+        )
+        const snapshot = {
+          id: record.id,
+          name: record.name,
+          phone: record.phone ?? null,
+          email: record.email ?? null,
+          notes: record.notes ?? null,
+        }
+        await tx.chamadoManutencao.updateMany({
+          where: { id: ticket.id, tenantId: ticket.tenantId, updatedAt: version },
+          data: {
+            prestadorId: record.id,
+            prestadorNome: snapshot.name,
+            prestadorTelefone: snapshot.phone,
+            prestadorEmail: snapshot.email,
+            prestadorObservacoes: snapshot.notes,
+            updatedAt: version,
+          },
+        })
+        activityToRecord = { ...activity, details: { ...activity.details, after: snapshot } }
+      }
+      await tx.atividadeChamadoManutencao.create({
+        data: activityData(ticket.id, activityToRecord),
+      })
       return toTicket(
         await tx.chamadoManutencao.findUniqueOrThrow({
           where: { id: ticket.id },
@@ -339,13 +367,29 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
   }
   async addAttachment(ticket: MaintenanceTicket, attachment: NewMaintenanceAttachment) {
     return prisma.$transaction(async (tx) => {
+      if (attachment.uploadId) {
+        const existing = await tx.anexoChamadoManutencao.findUnique({
+          where: { uploadId: attachment.uploadId },
+        })
+        if (existing) {
+          if (existing.chamadoId !== ticket.id)
+            throw new ConflictError('Autorização de envio já utilizada.')
+          return toAttachment(existing)
+        }
+      }
       await this.lockTicket(tx, ticket)
       const row = await tx.anexoChamadoManutencao.create({
-        data: { chamadoId: ticket.id, nome: attachment.name, url: attachment.url },
+        data: {
+          chamadoId: ticket.id,
+          nome: attachment.name,
+          url: attachment.url,
+          uploadId: attachment.uploadId,
+        },
       })
       await tx.atividadeChamadoManutencao.create({
         data: activityData(ticket.id, {
           type: 'ANEXO_ADICIONADO',
+          systemAction: 'ATTACHMENT_ADDED',
           message: attachment.name,
           authorId: attachment.authorId,
           authorName: attachment.authorName,

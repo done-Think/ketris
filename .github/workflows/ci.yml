@@ -123,7 +123,7 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=4096
         run: npm run build -w @ketris/web
-      - name: Executa os fluxos de Auth, Agenda e Contracts com dados locais isolados
+      - name: Executa os fluxos dos módulos com dados locais isolados
         shell: bash
         run: |
           npm run start -w @ketris/web -- --hostname localhost > /tmp/auth-next.log 2>&1 &
@@ -140,4 +140,4 @@ jobs:
           }
           if (!ready) throw new Error('O servidor de teste Auth não iniciou.')
           JS
-          npm exec -w @ketris/web -- cypress run --browser electron --config baseUrl=http://localhost:3000 --spec 'cypress/e2e/auth/**/*.cy.ts,cypress/e2e/agenda/**/*.cy.ts,cypress/e2e/contracts/**/*.cy.ts,cypress/e2e/crm/**/*.cy.ts'
+          npm exec -w @ketris/web -- cypress run --browser electron --config baseUrl=http://localhost:3000 --spec 'cypress/e2e/auth/**/*.cy.ts,cypress/e2e/agenda/**/*.cy.ts,cypress/e2e/contracts/**/*.cy.ts,cypress/e2e/crm/**/*.cy.ts,cypress/e2e/maintenance/**/*.cy.ts'

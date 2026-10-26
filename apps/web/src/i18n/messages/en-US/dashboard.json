@@ -169,7 +169,8 @@
       "open": "Filters",
       "title": "Filters",
       "close": "Close filters",
-      "property": "Property"
+      "property": "Property",
+      "category": "Filter by category"
     },
     "filters": {
       "all": "All",
@@ -236,12 +237,18 @@
         "priorityRequired": "Select the priority",
         "titleRequired": "Enter the ticket title",
         "descriptionRequired": "Describe the problem",
-        "contractRequired": "Select a contract"
+        "contractRequired": "Select a contract",
+        "categoryTooLong": "Use up to 100 characters.",
+        "titleTooLong": "Use up to 200 characters.",
+        "descriptionTooLong": "Use up to 10,000 characters."
       },
       "discardDraft": "Discard draft",
       "saveDraftAndClose": "Save and close",
       "discardTitle": "Discard this draft?",
-      "currentContract": "Current contract"
+      "currentContract": "Current contract",
+      "loadError": "Unable to load the ticket.",
+      "retry": "Try again",
+      "loading": "Loading ticket…"
     },
     "actions": {
       "menu": "Actions for ticket {ticket}",
@@ -294,13 +301,19 @@
         "title": "Timeline and updates",
         "empty": "No updates recorded yet.",
         "placeholder": "Write a message or update about the ticket...",
-        "systemAuthor": "System"
+        "systemAuthor": "System",
+        "validation": {
+          "required": "Enter a message.",
+          "tooLong": "Use up to 10,000 characters."
+        }
       },
       "info": {
         "title": "General information",
         "lastUpdated": "Last updated",
         "dateTime": "{date} at {time}"
-      }
+      },
+      "loadError": "Unable to load the ticket.",
+      "retry": "Try again"
     },
     "activeTickets": "Active",
     "archivedTickets": "Archived",
@@ -343,7 +356,16 @@
         "REJEITADA": "Rejected"
       },
       "finish": "Finish ticket",
-      "finishConfirmation": "Do you confirm that the problem is resolved? The ticket will be marked as resolved and its history will be preserved."
+      "finishConfirmation": "Do you confirm that the problem is resolved? The ticket will be marked as resolved and its history will be preserved.",
+      "validation": {
+        "required": "This field is required.",
+        "reasonTooLong": "Use up to 5,000 characters.",
+        "nameTooLong": "Use up to 200 characters.",
+        "phoneTooLong": "Use up to 50 characters.",
+        "emailTooLong": "Use up to 254 characters.",
+        "notesTooLong": "Use up to 5,000 characters.",
+        "emailInvalid": "Enter a valid email address."
+      }
     },
     "links": {
       "title": "Regularize links",
@@ -355,7 +377,11 @@
       "back": "Back",
       "save": "Save links",
       "success": "Links updated.",
-      "error": "Could not update links."
+      "error": "Could not update links.",
+      "validation": {
+        "required": "This field is required.",
+        "linkRequired": "Select an owner or a renter link."
+      }
     },
     "scheduleNotSet": "Not scheduled yet",
     "empty": "No tickets found.",
@@ -378,7 +404,87 @@
       "invalid": "Enter a valid date and time.",
       "success": "Service date saved.",
       "error": "Unable to save the service date."
-    }
+    },
+    "providers": {
+      "title": "Agency providers",
+      "createTitle": "Add provider",
+      "editTitle": "Edit provider",
+      "name": "Provider name",
+      "phone": "Phone",
+      "email": "Email",
+      "notes": "Notes",
+      "cancel": "Cancel",
+      "save": "Save",
+      "close": "Close",
+      "search": "Search providers",
+      "includeInactive": "Include inactive",
+      "loading": "Loading providers…",
+      "retry": "Try again",
+      "loadError": "Unable to load providers.",
+      "empty": "No providers found.",
+      "success": "Provider saved successfully.",
+      "error": "Unable to save the provider.",
+      "inactive": "(inactive)",
+      "edit": "Edit",
+      "inactivate": "Deactivate",
+      "reactivate": "Reactivate",
+      "pagination": "{from}–{to} of {count}",
+      "select": "Select a registered provider",
+      "selectHelp": "Select a provider or enter the details below to add a new one.",
+      "open": "Open options",
+      "closeOptions": "Close options",
+      "clear": "Clear selection",
+      "loadMore": "Load more",
+      "previousPage": "Previous page",
+      "nextPage": "Next page",
+      "firstPage": "First page",
+      "lastPage": "Last page"
+    },
+    "categories": {
+      "plumbing": "Plumbing",
+      "electrical": "Electrical",
+      "structural": "Structural",
+      "painting": "Painting"
+    },
+    "errors": {
+      "forbidden": "You do not have permission for this action.",
+      "unauthorized": "Sign in again to continue.",
+      "conflict": "The ticket or provider changed, or this action is unavailable in its current state. Refresh and try again.",
+      "validation": "Review the information you entered.",
+      "ticketNotFound": "Ticket not found or access unavailable.",
+      "propertyNotFound": "Contract or property not found for this user.",
+      "alreadyResolved": "This ticket is already closed.",
+      "attachmentInvalid": "Use a JPEG, PNG or WebP image up to 8 MB.",
+      "providerNotFound": "Provider not found in this agency.",
+      "providerInactive": "This provider is inactive. Ask agency management to reactivate it.",
+      "providerExists": "A provider with these details already exists in this agency.",
+      "storageUnavailable": "Attachment storage is unavailable. Try again later.",
+      "uploadExpired": "The upload authorization expired. Upload the file again.",
+      "uploadInvalid": "Unable to confirm this upload. Upload the file again."
+    },
+    "listLoading": "Loading tickets…",
+    "listError": "Unable to load tickets.",
+    "retry": "Try again",
+    "activityMessages": {
+      "created": "Ticket opened.",
+      "updated": "Ticket details updated.",
+      "archived": "Ticket archived.",
+      "contractLinked": "Contract linked to the ticket.",
+      "scheduled": "Service scheduled with the provider.",
+      "renterFinished": "Ticket completed by the renter.",
+      "statusChanged": "Status changed from {before} to {after}.",
+      "contested": "Resolution contested.",
+      "reopened": "Ticket reopened.",
+      "responsibleUpdated": "Internal assignee updated.",
+      "restored": "Ticket restored.",
+      "providerUpdated": "Provider updated.",
+      "replacementRequested": "Provider replacement requested.",
+      "replacementApproved": "Provider replacement approved.",
+      "replacementRejected": "Provider replacement rejected.",
+      "linksRegularized": "Access links regularized by management.",
+      "attachmentAdded": "Attachment added."
+    },
+    "allCategories": "All categories"
   },
   "finance": {
     "title": "Finance",

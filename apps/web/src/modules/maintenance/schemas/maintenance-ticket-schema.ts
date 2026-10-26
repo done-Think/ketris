@@ -5,11 +5,14 @@ import type { SchemaMessageTranslator } from '@shared/types'
 export function createMaintenanceTicketSchema(t: SchemaMessageTranslator) {
   return z.object({
     contractId: z.string().min(1, t('contractRequired')),
-    propertyId: z.string().min(1, t('propertyRequired')),
-    category: z.string().min(1, t('categoryRequired')),
+    category: z.string().min(1, t('categoryRequired')).max(100, t('categoryTooLong')),
     priority: z.enum(['normal', 'high', 'urgent'], { message: t('priorityRequired') }),
-    title: z.string().trim().min(1, t('titleRequired')),
-    description: z.string().trim().min(1, t('descriptionRequired')),
+    title: z.string().trim().min(1, t('titleRequired')).max(200, t('titleTooLong')),
+    description: z
+      .string()
+      .trim()
+      .min(1, t('descriptionRequired'))
+      .max(10000, t('descriptionTooLong')),
   })
 }
 

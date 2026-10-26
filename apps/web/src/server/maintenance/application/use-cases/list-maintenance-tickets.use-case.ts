@@ -1,7 +1,7 @@
 import { isAgencyManager } from '@server/auth/domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 import type { MaintenanceTicketListFilters } from '../../types/maintenance-ticket'
-import type { MaintenanceTicketRepository } from '../../types/maintenance-ticket-repository'
+import type { MaintenanceTicketRepository } from '../ports/maintenance-ticket-repository.port'
 
 export class ListMaintenanceTicketsUseCase {
   constructor(private readonly repository: MaintenanceTicketRepository) {}
