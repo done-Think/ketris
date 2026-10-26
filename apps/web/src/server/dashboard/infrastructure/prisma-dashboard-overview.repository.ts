@@ -3,6 +3,7 @@ import type { Prisma } from '@prisma/client'
 import { prisma } from '@server/db/prisma'
 import type { TimeRange } from '@server/shared/types/time-zone-calendar'
 
+import { toVisibleActivityProperty } from '../domain/dashboard-activity-property'
 import type { DashboardOverviewRepository } from '../application/ports/dashboard-overview-repository.port'
 import type {
   DashboardRecentLead,
@@ -21,8 +22,6 @@ function startsIn(range: TimeRange): Prisma.DateTimeFilter {
   return { gte: range.start, lt: range.end }
 }
 
-// The agent's own events, with the same visibility the agenda gives an AGENT (internal team events
-// and events assigned to another agent stay hidden). Events for all agents are not "own work".
 function ownEventsWhere(agentId: string): Prisma.EventoAgendaWhereInput {
   return {
     responsavelId: agentId,
@@ -106,6 +105,17 @@ export class PrismaDashboardOverviewRepository implements DashboardOverviewRepos
       },
       orderBy: { inicio: 'asc' },
       take: limit,
+      include: {
+        imovel: {
+          select: {
+            id: true,
+            titulo: true,
+            valor: true,
+            status: true,
+            endereco: { select: { logradouro: true, numero: true, bairro: true, cidade: true } },
+          },
+        },
+      },
     })
 
     return rows.map((row) => ({
@@ -119,6 +129,24 @@ export class PrismaDashboardOverviewRepository implements DashboardOverviewRepos
       notes: row.notas,
       propertyId: row.imovelId,
       propertyReference: row.referenciaImovelLivre,
+      property: toVisibleActivityProperty(
+        row.imovel
+          ? {
+              id: row.imovel.id,
+              title: row.imovel.titulo,
+              price: row.imovel.valor.toNumber(),
+              status: row.imovel.status,
+              address: row.imovel.endereco
+                ? {
+                    street: row.imovel.endereco.logradouro,
+                    number: row.imovel.endereco.numero,
+                    neighborhood: row.imovel.endereco.bairro,
+                    city: row.imovel.endereco.cidade,
+                  }
+                : null,
+            }
+          : null,
+      ),
     }))
   }
 }

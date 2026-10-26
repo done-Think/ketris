@@ -2,7 +2,6 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
-import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { toDashboardOverviewResponse } from '@server/dashboard/application/dashboard-overview-response'
 import { dashboardContainer } from '@server/dashboard/container'
@@ -14,7 +13,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const overview = await dashboardContainer.getDashboardOverviewUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel as Papel,
+    actorPapel: actor.papel,
   })
 
   return NextResponse.json(toDashboardOverviewResponse(overview), { status: 200 })

@@ -78,7 +78,7 @@
     },
     "upcomingActivities": {
       "title": "Upcoming activities",
-      "empty": "No activities scheduled for this month."
+      "empty": "No upcoming activities."
     }
   },
   "agencyOverview": {

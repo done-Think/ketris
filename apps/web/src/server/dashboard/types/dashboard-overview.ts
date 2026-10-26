@@ -1,7 +1,6 @@
 import type { Papel } from '@server/auth/domain/user.entity'
 import type { TimeRange } from '@server/shared/types/time-zone-calendar'
 
-// `agentId` null means the whole agency (OWNER); otherwise only the agent's own work.
 export interface DashboardScope {
   tenantId: string
   agentId: string | null
@@ -39,6 +38,26 @@ export interface DashboardRecentLead {
 export type DashboardActivityKind =
   'VISIT' | 'FOLLOW_UP' | 'MEETING' | 'INSPECTION' | 'SIGNATURE' | 'OTHER'
 
+export interface DashboardActivityPropertyAddress {
+  street: string
+  number: string
+  neighborhood: string
+  city: string
+}
+
+export interface DashboardActivityProperty {
+  id: string
+  title: string
+  price: number
+  address: DashboardActivityPropertyAddress | null
+}
+
+export type DashboardPropertyStatus = 'DRAFT' | 'PUBLISHED' | 'RENTED' | 'SOLD' | 'INACTIVE'
+
+export interface DashboardActivityPropertySource extends DashboardActivityProperty {
+  status: DashboardPropertyStatus
+}
+
 export interface DashboardUpcomingActivity {
   id: string
   title: string
@@ -50,6 +69,7 @@ export interface DashboardUpcomingActivity {
   notes: string | null
   propertyId: string | null
   propertyReference: string | null
+  property: DashboardActivityProperty | null
 }
 
 export interface DashboardOverview {

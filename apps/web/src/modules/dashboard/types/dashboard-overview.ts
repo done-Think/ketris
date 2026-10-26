@@ -2,6 +2,12 @@ import type { ReactNode } from 'react'
 
 import type { ApiDashboardMetrics } from './service'
 
+export type DashboardActivityProperty = {
+  title: string
+  address: string | null
+  price: number
+}
+
 export type DashboardMetricTone = 'success' | 'danger'
 
 export type DashboardMetric = {
@@ -33,6 +39,7 @@ export type DashboardUpcomingActivity = {
   notes: string
   propertyId: string | null
   propertyReference: string | null
+  property: DashboardActivityProperty | null
 }
 
 export type DashboardRecentLeadStatus = 'new' | 'inProgress' | 'qualified' | 'pending'
@@ -53,6 +60,12 @@ export type DashboardRecentLead = {
   notes: string
 }
 
+export type DashboardOverviewView = {
+  metrics: ApiDashboardMetrics
+  recentLeads: DashboardRecentLead[]
+  upcomingActivities: DashboardUpcomingActivity[]
+}
+
 export type ContactInfoCardProps = {
   label: string
   name: string
@@ -61,7 +74,6 @@ export type ContactInfoCardProps = {
 
 export type ActivityDetailModalProps = {
   activity: DashboardUpcomingActivity | null
-  tenantId: string | null | undefined
   onClose: () => void
 }
 

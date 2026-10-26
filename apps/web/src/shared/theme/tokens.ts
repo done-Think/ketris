@@ -56,6 +56,11 @@ export const supportColor = {
   orangeSoft: '#FFF0E6',
 } as const
 
+export const rankingMedal = {
+  gold: '#FFD635',
+  bronze: '#C77C2D',
+} as const
+
 export const dashboardLayout = {
   desktopMediaQuery: '@media (min-width: 1024px)',
 } as const
