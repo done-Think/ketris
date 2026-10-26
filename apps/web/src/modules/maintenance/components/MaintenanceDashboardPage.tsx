@@ -37,6 +37,7 @@ import {
 } from '@shared/components/layout'
 import { useMaintenanceDashboard } from '../hooks/use-maintenance-dashboard'
 import { MaintenanceCreateTicketDialog } from './MaintenanceCreateTicketDialog'
+import { MaintenanceCategoryFilter } from './MaintenanceCategoryFilter'
 import { MaintenanceLinksDialog } from './MaintenanceLinksDialog'
 import { MaintenanceStatusFilters } from './MaintenanceStatusFilters'
 import { MaintenanceTicketsTable } from './MaintenanceTicketsTable'
@@ -50,6 +51,7 @@ export function MaintenanceDashboardPage() {
     search,
     setSearch,
     propertyFilter,
+    categoryFilter,
     currentPage,
     setCurrentPage,
     rowsPerPage,
@@ -77,6 +79,7 @@ export function MaintenanceDashboardPage() {
     getFilterCount,
     handleActiveFilterChange,
     handlePropertyFilterChange,
+    handleCategoryFilterChange,
     handleCreateTicket,
     closeMenu,
     initialValues,
@@ -130,6 +133,11 @@ export function MaintenanceDashboardPage() {
           </MenuItem>
         ))}
       </TextField>
+      <MaintenanceCategoryFilter
+        value={categoryFilter}
+        onChange={handleCategoryFilterChange}
+        compact
+      />
       <Button
         variant="outlined"
         startIcon={<FilterListRoundedIcon sx={maintenanceStyles.filterListRoundedIconSx} />}
@@ -276,6 +284,10 @@ export function MaintenanceDashboardPage() {
                 </MenuItem>
               ))}
             </TextField>
+            <MaintenanceCategoryFilter
+              value={categoryFilter}
+              onChange={handleCategoryFilterChange}
+            />
             <MaintenanceStatusFilters
               activeFilter={activeFilter}
               direction="column"

@@ -20,6 +20,12 @@ export const stackSx: SxProps<Theme> = {
   justifyContent: { sm: 'flex-end' },
 }
 
+export const categoryFilterSx: SxProps<Theme> = {
+  ...compactFieldSx,
+  width: { xs: '100%', sm: 180 },
+  display: { xs: 'none', md: 'block' },
+}
+
 export const searchRoundedIconSx: SxProps<Theme> = { fontSize: 16, color: brand.neutral[400] }
 
 export const apartmentOutlinedIconSx: SxProps<Theme> = { fontSize: 17 }

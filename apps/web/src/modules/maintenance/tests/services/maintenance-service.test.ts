@@ -26,6 +26,14 @@ describe('MaintenanceService direct upload', () => {
     vi.stubGlobal('fetch', put)
     return { service: new MaintenanceService(http), post, put }
   }
+  it('passes category filtering and pagination to the server without losing custom categories', async () => {
+    const http = new HttpClient()
+    const get = vi.spyOn(http, 'get').mockResolvedValue({ items: [], totalCount: 0 })
+    await new MaintenanceService(http).list({ category: 'Serralheria', page: 2, pageSize: 5 })
+    expect(get).toHaveBeenCalledWith('/maintenance/tickets', {
+      params: { category: 'Serralheria', page: '2', pageSize: '5' },
+    })
+  })
   it('sends the file straight to storage without application credentials and confirms afterward', async () => {
     const { service, post, put } = setup()
     const file = new File(['image'], 'repair.png', { type: 'image/png' })

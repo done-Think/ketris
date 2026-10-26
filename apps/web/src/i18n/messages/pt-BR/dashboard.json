@@ -169,7 +169,8 @@
       "open": "Filtros",
       "title": "Filtros",
       "close": "Fechar filtros",
-      "property": "Imóvel"
+      "property": "Imóvel",
+      "category": "Filtrar por categoria"
     },
     "filters": {
       "all": "Todos",
@@ -482,7 +483,8 @@
       "replacementRejected": "Troca de prestador rejeitada.",
       "linksRegularized": "Vínculos de acesso regularizados pela gestão.",
       "attachmentAdded": "Anexo adicionado."
-    }
+    },
+    "allCategories": "Todas as categorias"
   },
   "finance": {
     "title": "Financeiro",

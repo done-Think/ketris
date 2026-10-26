@@ -15,6 +15,7 @@ function normalizeFilters(filters: MaintenanceTicketListFilters) {
   return {
     status: filters.status ?? null,
     priority: filters.priority ?? null,
+    category: filters.category ?? null,
     propertyId: filters.propertyId ?? null,
     search: filters.search ?? null,
     page: filters.page ?? null,

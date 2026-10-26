@@ -171,6 +171,7 @@ export interface MaintenanceTicketListFilters {
   archived?: boolean
   status?: MaintenanceTicketStatus
   priority?: MaintenanceTicketPriority
+  category?: string
   propertyId?: string
   search?: string
   page?: number

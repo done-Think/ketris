@@ -169,7 +169,8 @@
       "open": "Filtros",
       "title": "Filtros",
       "close": "Cerrar filtros",
-      "property": "Inmueble"
+      "property": "Inmueble",
+      "category": "Filtrar por categoría"
     },
     "filters": {
       "all": "Todos",
@@ -482,7 +483,8 @@
       "replacementRejected": "Cambio de prestador rechazado.",
       "linksRegularized": "Vínculos de acceso regularizados por la gestión.",
       "attachmentAdded": "Archivo adjunto agregado."
-    }
+    },
+    "allCategories": "Todas las categorías"
   },
   "finance": {
     "title": "Finanzas",

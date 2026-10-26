@@ -10,6 +10,7 @@ import {
   createMaintenanceTicketRequestSchema,
   maintenanceActionSchema,
   maintenanceLinksSchema,
+  listMaintenanceTicketsQuerySchema,
   updateMaintenanceTicketRequestSchema,
 } from '../../schemas/maintenance-ticket-input.schema'
 import {
@@ -70,6 +71,21 @@ describe('Maintenance input contracts', () => {
         systemAction: 'TICKET_CREATED',
       }).success,
     ).toBe(false)
+  })
+  it('filters by normalized or legacy category without accepting unknown query fields', () => {
+    expect(listMaintenanceTicketsQuerySchema.parse({ category: 'Hidráulica' })).toEqual({
+      category: 'PLUMBING',
+    })
+    expect(listMaintenanceTicketsQuerySchema.parse({ category: 'Serralheria' })).toEqual({
+      category: 'Serralheria',
+    })
+    for (const payload of [
+      { category: '' },
+      { category: 'x'.repeat(101) },
+      { actorId: 'forged' },
+    ]) {
+      expect(listMaintenanceTicketsQuerySchema.safeParse(payload).success).toBe(false)
+    }
   })
   it.each([
     ['title', 201],

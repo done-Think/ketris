@@ -37,6 +37,7 @@ const initialFilters: MaintenanceDashboardFilters = {
   activeFilter: 'all',
   search: '',
   propertyFilter: 'all',
+  categoryFilter: 'all',
   currentPage: 1,
   rowsPerPage: 5,
   archived: false,
@@ -51,7 +52,8 @@ export function useMaintenanceDashboard() {
   const { data: session } = useSession()
   const tenantId = session?.tenantId
   const { filters, setFilter } = useListState(initialFilters)
-  const { activeFilter, propertyFilter, currentPage, rowsPerPage, archived } = filters
+  const { activeFilter, propertyFilter, categoryFilter, currentPage, rowsPerPage, archived } =
+    filters
   const search = useDebouncedValue(filters.search, 300)
   const [dialog, openDialog] = useState<MaintenanceDashboardDialog>(null)
   const [menu, setMenu] = useState<MaintenanceDashboardMenu | null>(null)
@@ -66,6 +68,7 @@ export function useMaintenanceDashboard() {
         : undefined,
     priority: activeFilter === 'urgent' ? mapMaintenancePriorityToApi('urgent') : undefined,
     propertyId: propertyFilter === 'all' ? undefined : propertyFilter,
+    category: categoryFilter === 'all' ? undefined : categoryFilter,
     search: search.trim() || undefined,
     page: currentPage,
     pageSize: rowsPerPage,
@@ -190,6 +193,7 @@ export function useMaintenanceDashboard() {
     handleActiveFilterChange: (value: MaintenanceFilter['value']) =>
       changeFilter('activeFilter', value),
     handlePropertyFilterChange: (value: string) => changeFilter('propertyFilter', value),
+    handleCategoryFilterChange: (value: string) => changeFilter('categoryFilter', value),
     openDialog,
     closeDialog,
     closeMenu,

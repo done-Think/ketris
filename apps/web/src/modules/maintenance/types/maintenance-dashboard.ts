@@ -13,6 +13,7 @@ export interface MaintenanceDashboardFilters {
   activeFilter: import('./maintenance').MaintenanceFilter['value']
   search: string
   propertyFilter: string
+  categoryFilter: string
   currentPage: number
   rowsPerPage: number
   archived: boolean
@@ -26,4 +27,10 @@ export type MaintenanceDashboardDialog =
 export interface MaintenanceDashboardMenu {
   anchor: HTMLElement
   ticketId: string
+}
+
+export interface MaintenanceCategoryFilterProps {
+  value: string
+  onChange: (value: string) => void
+  compact?: boolean
 }

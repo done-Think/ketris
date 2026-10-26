@@ -2,7 +2,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import type { PropsWithChildren } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useMaintenanceAction, useMaintenanceTicket } from '../../hooks/use-maintenance'
+import {
+  useMaintenanceAction,
+  useMaintenanceTicket,
+  useMaintenanceTickets,
+} from '../../hooks/use-maintenance'
 import { useMaintenanceProviderOptions } from '../../hooks/use-maintenance-providers'
 import { maintenanceService } from '../../services/maintenance-service'
 const auth = vi.hoisted(() => ({ id: 'user-1', role: 'OWNER' }))
@@ -13,7 +17,7 @@ vi.mock('next-auth/react', () => ({
   }),
 }))
 vi.mock('../../services/maintenance-service', () => ({
-  maintenanceService: { get: vi.fn(), listProviders: vi.fn(), act: vi.fn() },
+  maintenanceService: { get: vi.fn(), list: vi.fn(), listProviders: vi.fn(), act: vi.fn() },
 }))
 
 describe('Maintenance query isolation and paging', () => {
@@ -61,6 +65,50 @@ describe('Maintenance query isolation and paging', () => {
     })
     await result.current.mutateAsync({ action: 'provider', provider: { name: 'New provider' } })
     expect(client.getQueryState(['maintenance-providers', 'tenant-1'])?.isInvalidated).toBe(true)
+    unmount()
+    client.clear()
+  })
+  it('keeps a separate list cache for each category and restores the previous selection', async () => {
+    const plumbing: Awaited<ReturnType<typeof maintenanceService.list>> = {
+      items: [
+        {
+          id: 'plumbing',
+          propertyId: 'property',
+          propertyTitle: 'Property',
+          category: 'PLUMBING',
+          priority: 'NORMAL',
+          status: 'ABERTO',
+          title: 'Leak',
+          openedByName: 'Renter',
+          resolvedAt: null,
+          createdAt: '2026-01-01T12:00:00Z',
+          updatedAt: '2026-01-01T12:00:00Z',
+        },
+      ],
+      totalCount: 1,
+      pagination: { page: 1, pageSize: 5, pageCount: 1, totalCount: 1 },
+      summary: {
+        totalCount: 1,
+        urgentCount: 0,
+        byStatus: { ABERTO: 1 },
+        averageResolutionDays: null,
+      },
+    }
+    vi.mocked(maintenanceService.list)
+      .mockResolvedValueOnce(plumbing)
+      .mockResolvedValueOnce({ ...plumbing, items: [], totalCount: 0 })
+    const { wrapper, client } = setup()
+    const { result, rerender, unmount } = renderHook(
+      ({ category }) => useMaintenanceTickets('tenant-1', { category }),
+      { wrapper, initialProps: { category: 'PLUMBING' } },
+    )
+    await waitFor(() => expect(result.current.data).toEqual(plumbing))
+    rerender({ category: 'ELECTRICAL' })
+    await waitFor(() => expect(result.current.data?.items).toEqual([]))
+    expect(maintenanceService.list).toHaveBeenLastCalledWith({ category: 'ELECTRICAL' })
+    rerender({ category: 'PLUMBING' })
+    await waitFor(() => expect(result.current.data).toEqual(plumbing))
+    expect(maintenanceService.list).toHaveBeenCalledTimes(2)
     unmount()
     client.clear()
   })

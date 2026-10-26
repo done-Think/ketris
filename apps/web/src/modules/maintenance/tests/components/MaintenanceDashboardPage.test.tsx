@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -15,6 +15,7 @@ import {
   useUpdateMaintenanceTicket,
 } from '../../hooks/use-maintenance'
 import type { ApiMaintenanceTicket, ApiMaintenanceTicketListItem } from '../../types/service'
+import { normalizeMaintenanceCategory } from '@server/maintenance/constants/maintenance-categories'
 
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
@@ -134,6 +135,7 @@ function mockDefaults() {
       (item) =>
         (!filters.status || item.status === filters.status) &&
         (!filters.priority || item.priority === filters.priority) &&
+        (!filters.category || normalizeMaintenanceCategory(item.category) === filters.category) &&
         (!filters.propertyId || item.propertyId === filters.propertyId) &&
         (!filters.search ||
           item.title.toLocaleLowerCase().includes(filters.search.toLocaleLowerCase())),
@@ -342,6 +344,23 @@ describe('MaintenanceDashboardPage', () => {
 
     expect(screen.getByText('MNT-0088')).toBeVisible()
     expect(screen.queryByText('MNT-0089')).not.toBeInTheDocument()
+  })
+
+  it('filters by category through the shared controls and preserves global metrics', async () => {
+    const user = userEvent.setup()
+    render(<MaintenanceDashboardPage />)
+    await user.click(screen.getByRole('button', { name: 'Filtros' }))
+    const dialog = screen.getByRole('dialog', { name: 'Filtros' })
+    await user.click(within(dialog).getByLabelText('Filtrar por categoria'))
+    await user.click(await screen.findByRole('option', { name: 'Elétrica' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Fechar filtros' }))
+    expect(screen.getByText('MNT-0088')).toBeVisible()
+    expect(screen.queryByText('MNT-0089')).not.toBeInTheDocument()
+    expect(useMaintenanceTickets).toHaveBeenLastCalledWith(
+      'tenant-1',
+      expect.objectContaining({ category: 'ELECTRICAL', page: 1 }),
+    )
+    expect(screen.getByText('1,0 dias')).toBeVisible()
   })
 
   it('creates a ticket through the mutation and closes the dialog on success', async () => {

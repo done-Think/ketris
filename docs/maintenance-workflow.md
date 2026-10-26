@@ -69,6 +69,10 @@ Os identificadores históricos dos autores são preservados sem chave estrangeir
 
 A API pagina os chamados e calcula indicadores e contagens sobre todos os registros autorizados, separando ativos e arquivados. Busca e filtros restringem os resultados da tabela, sem restringir os indicadores globais. Lista, indicadores e detalhe exigem a mesma coerência entre chamado, contrato, imóvel e tenant para os usuários que não são da gestão; legados sem contrato e registros inconsistentes permanecem acessíveis somente à gestão.
 
+O filtro de categoria é aplicado no servidor junto da paginação. Aceita os códigos padrão e os valores legados preservados; os quatro rótulos antigos são normalizados para seus códigos. Os controles de desktop e do diálogo compartilham a seleção e retornam à primeira página quando ela muda.
+
+A regularização administrativa de vínculos executa a alteração e seu histórico em transação serializável. Conflitos de serialização (`P2034`) repetem a transação completa até três tentativas; outras falhas são devolvidas sem repetição. Após esgotar as tentativas, a API retorna conflito para revisão dos dados.
+
 Os formulários usam RHF/Zod e limites alinhados com a API. O imóvel é derivado do contrato selecionado. Atualizações em segundo plano preservam a edição local do agendamento. Somente HTTP 404 mostra chamado não encontrado; outras falhas permitem nova tentativa.
 
 ## Anexos privados de até 8 MB
@@ -79,4 +83,4 @@ O navegador valida JPEG, PNG ou WebP e calcula SHA-256. `POST /api/maintenance/t
 
 A URL persistida continua sendo a rota autenticada `/api/maintenance/media/...`. Após autorizar o acesso pelo chamado, essa rota redireciona para uma URL privada de leitura com validade de 60 segundos e cache desabilitado. Assim, o corpo do arquivo não atravessa a função da Vercel nem no envio nem na leitura. A rota multipart antiga permanece para compatibilidade, mas está sujeita ao limite de payload da infraestrutura.
 
-A configuração AWS de CORS ainda precisa ser aplicada após recuperar as credenciais e o estado do Terraform. Consulte a [pendência operacional de Maintenance](technical-debt/maintenance-s3-cors.md). Os testes locais usam PostgreSQL e simulador S3 isolados; não validam o bucket real.
+A configuração AWS de CORS foi aplicada e validada em 26/10/2026 para as origens aprovadas. Consulte o [registro da configuração de Maintenance](technical-debt/maintenance-s3-cors.md). O fluxo completo de 8 MB foi validado com PostgreSQL e simulador S3 isolados; na AWS foram validados o CORS e os preflights reais.

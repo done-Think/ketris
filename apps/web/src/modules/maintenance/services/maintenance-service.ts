@@ -37,6 +37,7 @@ export class MaintenanceService extends BaseService {
       ...(filters.archived ? { archived: 'true' } : {}),
       ...(filters.status ? { status: filters.status } : {}),
       ...(filters.priority ? { priority: filters.priority } : {}),
+      ...(filters.category ? { category: filters.category } : {}),
       ...(filters.propertyId ? { propertyId: filters.propertyId } : {}),
       ...(filters.search ? { search: filters.search } : {}),
       ...(filters.page ? { page: String(filters.page) } : {}),

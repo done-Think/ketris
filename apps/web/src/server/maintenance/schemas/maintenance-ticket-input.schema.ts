@@ -53,6 +53,7 @@ export const listMaintenanceTicketsQuerySchema = z
   .object({
     status: maintenanceTicketStatusSchema.optional(),
     priority: maintenanceTicketPrioritySchema.optional(),
+    category: z.string().trim().min(1).max(100).transform(normalizeMaintenanceCategory).optional(),
     propertyId: z.string().trim().min(1).optional(),
     search: z.string().trim().min(1).max(500).optional(),
     page: z.coerce.number().int().positive().optional(),

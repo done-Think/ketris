@@ -8,6 +8,54 @@ describe('/api/maintenance full summaries and consistent access', () => {
   const env = setupMaintenanceIntegration()
   const { request, context, payload } = env
 
+  it('filters exact categories while preserving legacy values, global metrics and access', async () => {
+    const ids = new Map<string, string>()
+    try {
+      for (const category of ['PLUMBING', 'ELECTRICAL', 'Serralheria, portões e grades']) {
+        const response = await createTicket(
+          request('tickets', 'POST', env.fixture.admin.token, {
+            ...payload,
+            contractId: env.fixture.contract.id,
+            category,
+          }),
+        )
+        expect(response.status).toBe(201)
+        ids.set(category, (await response.json()).ticket.id)
+      }
+      const global = await (
+        await listTickets(request('tickets', 'GET', env.fixture.admin.token))
+      ).json()
+      for (const [query, category] of [
+        ['Hidráulica', 'PLUMBING'],
+        ['ELECTRICAL', 'ELECTRICAL'],
+        ['Serralheria, portões e grades', 'Serralheria, portões e grades'],
+      ]) {
+        const response = await listTickets(
+          request(
+            `tickets?category=${encodeURIComponent(query)}&pageSize=5`,
+            'GET',
+            env.fixture.admin.token,
+          ),
+        )
+        expect(response.status).toBe(200)
+        expect(await response.json()).toMatchObject({
+          items: [{ id: ids.get(category), category }],
+          totalCount: 1,
+          summary: global.summary,
+        })
+      }
+      const denied = await listTickets(
+        request('tickets?category=ELECTRICAL', 'GET', env.fixture.unrelated.token),
+      )
+      expect(await denied.json()).toMatchObject({ items: [], totalCount: 0 })
+      expect(
+        (await listTickets(request('tickets?category=', 'GET', env.fixture.admin.token))).status,
+      ).toBe(400)
+    } finally {
+      await prisma.chamadoManutencao.deleteMany({ where: { id: { in: [...ids.values()] } } })
+    }
+  })
+
   it('aggregates every authorized ticket independently of pagination and filters', async () => {
     await prisma.chamadoManutencao.createMany({
       data: Array.from({ length: 125 }, (_value, index) => ({

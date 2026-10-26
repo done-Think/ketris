@@ -169,7 +169,8 @@
       "open": "Filters",
       "title": "Filters",
       "close": "Close filters",
-      "property": "Property"
+      "property": "Property",
+      "category": "Filter by category"
     },
     "filters": {
       "all": "All",
@@ -482,7 +483,8 @@
       "replacementRejected": "Provider replacement rejected.",
       "linksRegularized": "Access links regularized by management.",
       "attachmentAdded": "Attachment added."
-    }
+    },
+    "allCategories": "All categories"
   },
   "finance": {
     "title": "Finance",

@@ -54,6 +54,7 @@ export function maintenanceListQuery(filters: MaintenanceTicketListFilters) {
   const filtered = [...conditions]
   if (filters.status) filtered.push(Prisma.sql`c.status::text = ${filters.status}`)
   if (filters.priority) filtered.push(Prisma.sql`c.prioridade::text = ${filters.priority}`)
+  if (filters.category) filtered.push(Prisma.sql`c.categoria = ${filters.category}`)
   if (filters.propertyId) filtered.push(Prisma.sql`c."imovelId" = ${filters.propertyId}`)
   if (filters.search?.trim()) {
     const term = '%' + normalized(filters.search.trim()).replace(/[\\%_]/g, '\\$&') + '%'
