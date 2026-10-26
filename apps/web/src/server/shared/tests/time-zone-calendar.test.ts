@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { dayBoundsInTimeZone, monthBoundsInTimeZone } from '../time-zone-calendar'
+import {
+  calendarMonthDateRange,
+  calendarMonthInTimeZone,
+  dayBoundsInTimeZone,
+  monthBoundsInTimeZone,
+} from '../time-zone-calendar'
 
 const iso = ({ start, end }: { start: Date; end: Date }) => ({
   start: start.toISOString(),
@@ -44,6 +49,31 @@ describe('monthBoundsInTimeZone', () => {
     expect(iso(monthBoundsInTimeZone(new Date('2026-11-01T02:59:59.999Z')))).toEqual({
       start: '2026-10-01T03:00:00.000Z',
       end: '2026-11-01T03:00:00.000Z',
+    })
+  })
+})
+
+describe('calendarMonthInTimeZone', () => {
+  it('às 22h do dia 31 em São Paulo ainda é outubro, embora já seja novembro em UTC', () => {
+    expect(calendarMonthInTimeZone(new Date('2026-11-01T01:00:00.000Z'))).toEqual({
+      year: 2026,
+      month: 9,
+    })
+  })
+})
+
+describe('calendarMonthDateRange', () => {
+  it('cobre as datas do mês às 00:00 UTC, sem converter fuso', () => {
+    expect(iso(calendarMonthDateRange({ year: 2026, month: 9 }))).toEqual({
+      start: '2026-10-01T00:00:00.000Z',
+      end: '2026-11-01T00:00:00.000Z',
+    })
+  })
+
+  it('desloca meses e vira o ano', () => {
+    expect(iso(calendarMonthDateRange({ year: 2026, month: 0 }, -1))).toEqual({
+      start: '2025-12-01T00:00:00.000Z',
+      end: '2026-01-01T00:00:00.000Z',
     })
   })
 })

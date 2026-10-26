@@ -1,4 +1,4 @@
-import type { TimeRange } from './types/time-zone-calendar'
+import type { CalendarMonth, TimeRange } from './types/time-zone-calendar'
 
 // Business periods (day, month) are computed in the business time zone, never in the server's:
 // on a UTC host an event at 22:00 on the last day of the month (São Paulo) would otherwise fall
@@ -70,5 +70,24 @@ export function dayBoundsInTimeZone(
   return {
     start: startOfZonedDay(year, month, day, timeZone),
     end: startOfZonedDay(year, month, day + 1, timeZone),
+  }
+}
+
+export function calendarMonthInTimeZone(
+  referenceDate: Date,
+  timeZone: string = BUSINESS_TIME_ZONE,
+): CalendarMonth {
+  const { year, month } = zonedParts(referenceDate.getTime(), timeZone)
+
+  return { year, month }
+}
+
+// Date-only columns (e.g. due dates sent as YYYY-MM-DD) are stored at 00:00 UTC, so a calendar
+// month of them is a UTC-midnight range: converting them to a time zone would move the 1st of the
+// month into the previous one.
+export function calendarMonthDateRange({ year, month }: CalendarMonth, monthOffset = 0): TimeRange {
+  return {
+    start: new Date(Date.UTC(year, month + monthOffset, 1)),
+    end: new Date(Date.UTC(year, month + monthOffset + 1, 1)),
   }
 }

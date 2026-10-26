@@ -2,6 +2,7 @@ import type { Prisma } from '@prisma/client'
 
 import { prisma } from '@server/db/prisma'
 import { nextSequentialCode } from '@server/shared/sequential-code'
+import { calendarMonthDateRange, calendarMonthInTimeZone } from '@server/shared/time-zone-calendar'
 
 import type {
   Charge,
@@ -75,11 +76,15 @@ const chargeInclude = {
   },
 } as const
 
+// The current month is São Paulo's; due dates are date-only (00:00 UTC), so the range and the
+// buckets compare calendar dates, never instants converted to a time zone.
 function monthRange(referenceDate: Date, monthsBack: number) {
-  const start = new Date(referenceDate.getFullYear(), referenceDate.getMonth() - monthsBack, 1)
-  const end = new Date(referenceDate.getFullYear(), referenceDate.getMonth() + 1, 1)
+  const currentMonth = calendarMonthInTimeZone(referenceDate)
 
-  return { start, end }
+  return {
+    start: calendarMonthDateRange(currentMonth, -monthsBack).start,
+    end: calendarMonthDateRange(currentMonth).end,
+  }
 }
 
 function chargeReadWhere(scope: ChargeReadScope): Prisma.CobrancaWhereInput {
@@ -326,15 +331,15 @@ export class PrismaChargeRepository implements ChargeRepository {
       listedPropertiesCount > 0 ? (rentedPropertiesCount / listedPropertiesCount) * 100 : 0
 
     const monthlySeries: FinancialMonthlyTotal[] = Array.from({ length: 6 }, (_, index) => {
-      const date = new Date(referenceDate.getFullYear(), referenceDate.getMonth() - (5 - index), 1)
-      return { year: date.getFullYear(), month: date.getMonth() + 1, total: 0 }
+      const date = calendarMonthDateRange(calendarMonthInTimeZone(referenceDate), index - 5).start
+      return { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1, total: 0 }
     })
 
     for (const row of seriesRows) {
       const bucket = monthlySeries.find(
         (entry) =>
-          entry.year === row.vencimento.getFullYear() &&
-          entry.month === row.vencimento.getMonth() + 1,
+          entry.year === row.vencimento.getUTCFullYear() &&
+          entry.month === row.vencimento.getUTCMonth() + 1,
       )
       if (bucket) {
         bucket.total += row.valor.toNumber()
