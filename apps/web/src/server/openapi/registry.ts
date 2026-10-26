@@ -5,6 +5,7 @@ import { registerAgendaOpenApi } from '@server/agenda/openapi'
 import { registerAuthOpenApi } from '@server/auth/openapi'
 import { registerContractsOpenApi } from '@server/contracts/openapi'
 import { registerCrmOpenApi } from '@server/crm/openapi'
+import { registerDashboardOpenApi } from '@server/dashboard/openapi'
 import { registerFinancialOpenApi } from '@server/financial/openapi'
 import { registerMaintenanceOpenApi } from '@server/maintenance/openapi'
 import { registerMarketplaceOpenApi } from '@server/marketplace/openapi'
@@ -32,6 +33,7 @@ registerContractsOpenApi(registry)
 registerFinancialOpenApi(registry)
 registerMaintenanceOpenApi(registry)
 registerAgencyDashboardOpenApi(registry)
+registerDashboardOpenApi(registry)
 
 export function generateOpenApiDocument() {
   const generator = new OpenApiGeneratorV3(registry.definitions)

@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from 'react'
 import { Box, Stack } from '@mui/material'
-import dayjs from 'dayjs'
 import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 
@@ -16,12 +15,10 @@ import {
   AgencyTopBrokersPanel,
   useAgencyOverviewUi,
 } from '@modules/agency-dashboard'
-import { useAgendaEvents } from '@modules/agenda/hooks/use-agenda-events'
-import type { AgendaEventApi } from '@modules/agenda/types/agenda-event'
-import { useLeads } from '@modules/crm/hooks/use-leads'
-import { useOpportunities } from '@modules/crm/hooks/use-opportunities'
 
+import { useDashboardOverview } from '../hooks/use-dashboard-overview'
 import type { DashboardRecentLead, DashboardUpcomingActivity } from '../types/dashboard-overview'
+import type { ApiDashboardMetrics } from '../types/service'
 import { buildDashboardMetrics } from '../utils/build-dashboard-metrics'
 import { toDashboardUpcomingActivity } from '../utils/map-dashboard-activity'
 import { toDashboardRecentLead } from '../utils/map-dashboard-lead'
@@ -31,8 +28,14 @@ import { LeadDetailsModal } from './LeadDetailsModal'
 import { RecentLeadsTable } from './RecentLeadsTable'
 import { UpcomingActivitiesPanel } from './UpcomingActivitiesPanel'
 
-const recentLeadsLimit = 5
-const upcomingActivitiesLimit = 5
+const emptyMetrics: ApiDashboardMetrics = {
+  activeLeads: 0,
+  activeLeadsCreatedToday: 0,
+  visitsThisMonth: 0,
+  visitsToday: 0,
+  openProposals: 0,
+  proposalsAwaitingResponse: 0,
+}
 
 const twoColumns = {
   display: 'grid',
@@ -63,72 +66,24 @@ export function DashboardOverviewPage() {
   const { data: session } = useSession()
   const tenantId = session?.tenantId
   const userId = session?.user?.id
-  const isAgent = session?.role === 'AGENT'
   const isAgencyManager = session?.role === 'OWNER'
   const [selectedActivity, setSelectedActivity] = useState<DashboardUpcomingActivity | null>(null)
   const [selectedLead, setSelectedLead] = useState<DashboardRecentLead | null>(null)
 
-  const today = useMemo(() => dayjs(), [])
-  const monthStart = useMemo(() => today.startOf('month'), [today])
-  const monthEnd = useMemo(() => today.endOf('month'), [today])
-
-  const leadsQuery = useLeads(tenantId)
-  const opportunitiesQuery = useOpportunities(tenantId)
-  const monthEventsQuery = useAgendaEvents(
-    tenantId,
-    monthStart.toISOString(),
-    monthEnd.toISOString(),
-  )
+  const overviewQuery = useDashboardOverview(tenantId, userId)
   const agency = useAgencyOverviewUi(tenantId, isAgencyManager)
 
-  const leads = useMemo(() => leadsQuery.data ?? [], [leadsQuery.data])
-  const opportunities = useMemo(() => opportunitiesQuery.data ?? [], [opportunitiesQuery.data])
-  const monthEvents = useMemo(
-    () =>
-      (monthEventsQuery.data ?? []).filter(
-        (event): event is AgendaEventApi =>
-          event.status !== 'CANCELLED' && 'participantName' in event,
-      ),
-    [monthEventsQuery.data],
-  )
-
-  const metricEvents = useMemo(
-    () =>
-      monthEvents.filter(
-        (event) =>
-          isAgencyManager || (event.responsibleId === userId && event.audience !== 'ALL_AGENTS'),
-      ),
-    [monthEvents, isAgencyManager, userId],
-  )
-
   const recentLeads = useMemo(
-    () =>
-      [...leads]
-        .sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf())
-        .slice(0, recentLeadsLimit)
-        .map(toDashboardRecentLead),
-    [leads],
+    () => (overviewQuery.data?.recentLeads ?? []).map(toDashboardRecentLead),
+    [overviewQuery.data],
   )
-
   const upcomingActivities = useMemo(
-    () =>
-      monthEvents
-        .filter(
-          (event) =>
-            isAgencyManager ||
-            event.responsibleId === userId ||
-            (isAgent && event.audience === 'ALL_AGENTS'),
-        )
-        .filter((event) => !dayjs(event.start).isBefore(today))
-        .sort((a, b) => dayjs(a.start).valueOf() - dayjs(b.start).valueOf())
-        .slice(0, upcomingActivitiesLimit)
-        .map(toDashboardUpcomingActivity),
-    [monthEvents, today, isAgencyManager, isAgent, userId],
+    () => (overviewQuery.data?.upcomingActivities ?? []).map(toDashboardUpcomingActivity),
+    [overviewQuery.data],
   )
-
   const metrics = useMemo(
-    () => buildDashboardMetrics({ leads, opportunities, monthEvents: metricEvents, today, t }),
-    [leads, opportunities, metricEvents, today, t],
+    () => buildDashboardMetrics({ metrics: overviewQuery.data?.metrics ?? emptyMetrics, t }),
+    [overviewQuery.data, t],
   )
 
   const upcomingActivitiesPanel = (

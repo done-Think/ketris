@@ -1,49 +1,29 @@
-import dayjs from 'dayjs'
-
 import type { BuildDashboardMetricsParams, DashboardMetric } from '../types/dashboard-overview'
 
-// Operational metrics of the signed-in user's work. Leads and opportunities already come scoped
-// by the API (an AGENT only gets their own); revenue is on the agency KPIs, for owners/admins.
+// The API already counts in the business time zone and scopes by role (an AGENT only gets their
+// own work); this only turns the counts into the cards.
 export function buildDashboardMetrics({
-  leads,
-  opportunities,
-  monthEvents,
-  today,
+  metrics,
   t,
 }: BuildDashboardMetricsParams): DashboardMetric[] {
-  const activeLeads = leads.filter((lead) => lead.opportunityId === null)
-  const leadsCreatedToday = activeLeads.filter((lead) =>
-    dayjs(lead.createdAt).isSame(today, 'day'),
-  ).length
-
-  const visitEvents = monthEvents.filter((event) => event.kind === 'VISIT')
-  const visitsToday = visitEvents.filter((event) => dayjs(event.start).isSame(today, 'day')).length
-
-  const pendingOpportunities = opportunities.filter(
-    (opportunity) => opportunity.status === 'ENVIADA' || opportunity.status === 'EM_NEGOCIACAO',
-  )
-  const awaitingResponse = pendingOpportunities.filter(
-    (opportunity) => opportunity.status === 'ENVIADA',
-  ).length
-
   return [
     {
       label: t('metrics.leadsActive.label'),
-      value: String(activeLeads.length),
-      caption: t('metrics.leadsActive.caption', { count: leadsCreatedToday }),
+      value: String(metrics.activeLeads),
+      caption: t('metrics.leadsActive.caption', { count: metrics.activeLeadsCreatedToday }),
       tone: 'success',
     },
     {
       label: t('metrics.visitsMonth.label'),
-      value: String(visitEvents.length),
-      caption: t('metrics.visitsMonth.caption', { count: visitsToday }),
+      value: String(metrics.visitsThisMonth),
+      caption: t('metrics.visitsMonth.caption', { count: metrics.visitsToday }),
       tone: 'success',
     },
     {
       label: t('metrics.proposals.label'),
-      value: String(pendingOpportunities.length),
-      caption: t('metrics.proposals.caption', { count: awaitingResponse }),
-      tone: awaitingResponse > 0 ? 'danger' : 'success',
+      value: String(metrics.openProposals),
+      caption: t('metrics.proposals.caption', { count: metrics.proposalsAwaitingResponse }),
+      tone: metrics.proposalsAwaitingResponse > 0 ? 'danger' : 'success',
     },
   ]
 }
