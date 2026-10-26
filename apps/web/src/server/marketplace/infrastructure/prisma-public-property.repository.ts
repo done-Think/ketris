@@ -5,6 +5,8 @@ import { prisma } from '@server/db/prisma'
 
 import type {
   PropertySearchFilters,
+  PropertySearchPage,
+  PropertySearchResult,
   PublicPropertyRepository,
 } from '../application/ports/public-property-repository.port'
 import type {
@@ -83,7 +85,10 @@ const sortOrderBy: Record<
 }
 
 export class PrismaPublicPropertyRepository implements PublicPropertyRepository {
-  async search(filters: PropertySearchFilters): Promise<PublishedPropertySummary[]> {
+  async search(
+    filters: PropertySearchFilters,
+    { page, pageSize }: PropertySearchPage,
+  ): Promise<PropertySearchResult> {
     const where: Prisma.ImovelWhereInput = { status: 'PUBLISHED' }
 
     if (filters.purpose) {
@@ -91,7 +96,8 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
     }
     if (filters.propertyType) {
       const propertyType = filters.propertyType.trim().toUpperCase()
-      if (!Object.values(TipoImovel).includes(propertyType as TipoImovel)) return []
+      if (!Object.values(TipoImovel).includes(propertyType as TipoImovel))
+        return { items: [], totalCount: 0 }
       where.tipo = propertyType as TipoImovel
     }
     if (filters.minBedrooms !== undefined) where.quartos = { gte: filters.minBedrooms }
@@ -127,29 +133,38 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
       ]
     }
 
-    const imoveis = await prisma.imovel.findMany({
-      where,
-      orderBy: sortOrderBy[filters.sortBy ?? 'recent'],
-      select: {
-        id: true,
-        titulo: true,
-        finalidade: true,
-        tipo: true,
-        valor: true,
-        condominio: true,
-        iptu: true,
-        quartos: true,
-        banheiros: true,
-        vagas: true,
-        areaM2: true,
-        publicadoEm: true,
-        endereco: { select: { cidade: true, bairro: true, latitude: true, longitude: true } },
-        responsavel: { select: { nome: true, avatarUrl: true } },
-        midias: { orderBy: { ordem: 'asc' }, take: 1, select: { url: true } },
-      },
-    })
+    // The id tiebreaker keeps pages stable when several properties share the sort value.
+    const [imoveis, totalCount] = await prisma.$transaction([
+      prisma.imovel.findMany({
+        where,
+        orderBy: [sortOrderBy[filters.sortBy ?? 'recent'], { id: 'asc' }],
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        select: {
+          id: true,
+          titulo: true,
+          finalidade: true,
+          tipo: true,
+          valor: true,
+          condominio: true,
+          iptu: true,
+          quartos: true,
+          banheiros: true,
+          vagas: true,
+          areaM2: true,
+          publicadoEm: true,
+          endereco: { select: { cidade: true, bairro: true, latitude: true, longitude: true } },
+          responsavel: { select: { nome: true, avatarUrl: true } },
+          midias: { orderBy: { ordem: 'asc' }, take: 1, select: { url: true } },
+        },
+      }),
+      prisma.imovel.count({ where }),
+    ])
 
-    return imoveis.map((imovel) => toSummary(imovel as unknown as ImovelSummaryRow))
+    return {
+      items: imoveis.map((imovel) => toSummary(imovel as unknown as ImovelSummaryRow)),
+      totalCount,
+    }
   }
 
   async findPublishedById(id: string): Promise<PublishedPropertyDetail | null> {

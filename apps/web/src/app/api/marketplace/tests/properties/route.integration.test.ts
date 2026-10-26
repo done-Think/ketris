@@ -113,8 +113,10 @@ describe('GET /api/marketplace/properties (integração)', () => {
     return new NextRequest(`http://localhost/api/marketplace/properties${query}`)
   }
 
+  // Searches are scoped to this file's neighbourhood: the result is paginated and the database
+  // holds published properties from other tests.
   it('retorna 200 e lista apenas imóveis publicados (rascunho não aparece)', async () => {
-    const response = await GET(buildRequest())
+    const response = await GET(buildRequest(`?location=${bairro}`))
     const json = await response.json()
 
     expect(response.status).toBe(200)
@@ -152,7 +154,7 @@ describe('GET /api/marketplace/properties (integração)', () => {
   })
 
   it('filtra por faixa de preço (exclui imóveis fora do teto)', async () => {
-    const response = await GET(buildRequest('?maxPrice=1000'))
+    const response = await GET(buildRequest(`?location=${bairro}&maxPrice=1000`))
     const json = await response.json()
 
     expect(json.properties.some((property: { id: string }) => property.id === publishedId)).toBe(
@@ -161,7 +163,7 @@ describe('GET /api/marketplace/properties (integração)', () => {
   })
 
   it('filtra por minArea', async () => {
-    const response = await GET(buildRequest('?minArea=80'))
+    const response = await GET(buildRequest(`?location=${bairro}&minArea=80`))
     const json = await response.json()
 
     const ids = json.properties.map((property: { id: string }) => property.id)
@@ -170,7 +172,7 @@ describe('GET /api/marketplace/properties (integração)', () => {
   })
 
   it('filtra por hasParking=true', async () => {
-    const response = await GET(buildRequest('?hasParking=true'))
+    const response = await GET(buildRequest(`?location=${bairro}&hasParking=true`))
     const json = await response.json()
 
     const ids = json.properties.map((property: { id: string }) => property.id)
@@ -184,6 +186,25 @@ describe('GET /api/marketplace/properties (integração)', () => {
 
     const ids = json.properties.map((property: { id: string }) => property.id)
     expect(ids.indexOf(noParkingId)).toBeLessThan(ids.indexOf(publishedId))
+  })
+
+  it('pagina o resultado e informa o total que atende aos filtros', async () => {
+    const pages = await Promise.all(
+      [1, 2, 3].map(async (page) =>
+        (
+          await GET(buildRequest(`?location=${bairro}&sortBy=priceAsc&pageSize=1&page=${page}`))
+        ).json(),
+      ),
+    )
+
+    expect(pages.map((page) => page.totalCount)).toEqual([2, 2, 2])
+    expect(pages.map((page) => page.properties.map((p: { id: string }) => p.id))).toEqual([
+      [noParkingId],
+      [publishedId],
+      [],
+    ])
+    expect(pages[0]).toMatchObject({ page: 1, pageSize: 1 })
+    expect((await GET(buildRequest('?pageSize=51'))).status).toBe(400)
   })
 
   it('retorna 400 quando purpose é inválido', async () => {

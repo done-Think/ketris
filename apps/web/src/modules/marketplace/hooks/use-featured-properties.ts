@@ -12,19 +12,18 @@ export function useFeaturedProperties() {
   const tFeatures = useTranslations('marketplace.propertyFeatures')
   const query = useQuery({
     queryKey: ['marketplace', 'properties', 'featured'],
-    queryFn: () => marketplaceService.searchProperties({ sortBy: 'recent' }),
+    queryFn: () =>
+      marketplaceService.searchProperties({ sortBy: 'recent', pageSize: featuredPropertiesCount }),
   })
 
-  const featuredProperties = (query.data ?? [])
-    .slice(0, featuredPropertiesCount)
-    .map((summary) =>
-      mapSummaryToSearchResult(
-        summary,
-        summary.purpose === 'ALUGUEL' ? 'alugar' : 'comprar',
-        locale,
-        tFeatures,
-      ),
-    )
+  const featuredProperties = (query.data?.properties ?? []).map((summary) =>
+    mapSummaryToSearchResult(
+      summary,
+      summary.purpose === 'ALUGUEL' ? 'alugar' : 'comprar',
+      locale,
+      tFeatures,
+    ),
+  )
 
   return { featuredProperties, isLoading: query.isLoading, isError: query.isError }
 }

@@ -250,6 +250,7 @@
       "submit": "Enviar",
       "success": "Mensagem enviada! O corretor vai entrar em contato em breve.",
       "error": "Não foi possível enviar sua mensagem. Tente novamente.",
+      "rateLimited": "Você enviou muitas mensagens em pouco tempo. Aguarde alguns minutos e tente novamente.",
       "errors": {
         "nameRequired": "Informe seu nome",
         "emailInvalid": "Informe um e-mail válido",

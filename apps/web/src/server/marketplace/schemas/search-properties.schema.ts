@@ -3,6 +3,9 @@ import { z } from 'zod'
 
 import { propertyPurposeSchema, publicPropertySummarySchema } from './property.schema'
 
+export const DEFAULT_SEARCH_PAGE_SIZE = 12
+export const MAX_SEARCH_PAGE_SIZE = 50
+
 export const propertySortSchema = z.enum(['recent', 'priceAsc', 'priceDesc'])
 
 export const searchPropertiesQuerySchema = z
@@ -21,11 +24,21 @@ export const searchPropertiesQuerySchema = z
       .optional(),
     sortBy: propertySortSchema.optional(),
     q: z.string().min(1).optional(),
+    page: z.coerce.number().int().min(1).max(1000000).default(1),
+    pageSize: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(MAX_SEARCH_PAGE_SIZE)
+      .default(DEFAULT_SEARCH_PAGE_SIZE),
   })
   .openapi('SearchPropertiesQuery')
 
 export const searchPropertiesResponseSchema = z
   .object({
     properties: z.array(publicPropertySummarySchema),
+    totalCount: z.number().int().nonnegative(),
+    page: z.number().int().positive(),
+    pageSize: z.number().int().positive(),
   })
   .openapi('SearchPropertiesResponse')

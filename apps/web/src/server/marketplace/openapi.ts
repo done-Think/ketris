@@ -17,6 +17,12 @@ import {
 } from './schemas/broker-profile.schema'
 import { getPropertyResponseSchema } from './schemas/get-property.schema'
 import {
+  profileMediaBinarySchema,
+  profileMediaKeyParamsSchema,
+  profileMediaUploadRequestSchema,
+  profileMediaUploadResponseSchema,
+} from './schemas/profile-media.schema'
+import {
   searchPropertiesQuerySchema,
   searchPropertiesResponseSchema,
 } from './schemas/search-properties.schema'
@@ -52,13 +58,15 @@ export function registerMarketplaceOpenApi(registry: OpenAPIRegistry): void {
       'tenants (é o marketplace público da Ketris — exceção documentada ao isolamento por tenant do ' +
       'Princípio II). Aceita filtros opcionais por finalidade (purpose), tipo de imóvel, cidade ' +
       '(match exato) ou localização (location, substring em bairro/cidade), faixa de preço, número ' +
-      'mínimo de quartos, área mínima, vaga de garagem, ordenação e busca textual.',
+      'mínimo de quartos, área mínima, vaga de garagem, ordenação e busca textual. Resultado ' +
+      'paginado: page (padrão 1) e pageSize (padrão 12, máximo 50); totalCount traz o total ' +
+      'de imóveis que atendem aos filtros.',
     request: {
       query: searchPropertiesQuerySchema,
     },
     responses: {
       200: {
-        description: 'Lista de imóveis publicados que atendem aos filtros.',
+        description: 'Página de imóveis publicados que atendem aos filtros.',
         content: { 'application/json': { schema: searchPropertiesResponseSchema } },
       },
       400: {
@@ -373,6 +381,67 @@ export function registerMarketplaceOpenApi(registry: OpenAPIRegistry): void {
         description: 'Perfil ainda não foi salvo nenhuma vez.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
+    },
+  })
+
+  registry.registerPath({
+    method: 'post',
+    path: '/marketplace/profiles/media',
+    tags: ['Marketplace'],
+    summary: 'Envia imagem do perfil público (avatar, banner ou logo)',
+    description:
+      'broker-avatar e broker-banner exigem perfil de corretor; agency-logo e agency-banner exigem ' +
+      'gestor da imobiliária. A chave é derivada do usuário ou do tenant autenticado. Devolve a URL ' +
+      'pública para salvar no perfil.',
+    security: [{ bearerAuth: [] }],
+    request: {
+      body: {
+        required: true,
+        content: { 'multipart/form-data': { schema: profileMediaUploadRequestSchema } },
+      },
+    },
+    responses: {
+      201: {
+        description: 'Imagem enviada.',
+        content: { 'application/json': { schema: profileMediaUploadResponseSchema } },
+      },
+      400: {
+        description:
+          'Arquivo ausente, vazio, maior que 8 MiB, de tipo não suportado ou destino inválido.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Papel sem permissão para o destino informado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'get',
+    path: '/marketplace/media/{key}',
+    tags: ['Marketplace'],
+    summary: 'Consulta uma imagem pública de perfil',
+    description:
+      'Rota pública. Serve somente chaves sob profiles/brokers/ e profiles/agencies/; outros ' +
+      'prefixos e segmentos inválidos retornam 404 antes da consulta ao armazenamento.',
+    security: [],
+    request: { params: profileMediaKeyParamsSchema },
+    responses: {
+      200: {
+        description: 'Conteúdo binário com cache público imutável por um ano.',
+        content: {
+          'image/jpeg': { schema: profileMediaBinarySchema },
+          'image/png': { schema: profileMediaBinarySchema },
+          'image/webp': { schema: profileMediaBinarySchema },
+          'application/octet-stream': { schema: profileMediaBinarySchema },
+        },
+      },
+      404: { description: 'Imagem inexistente ou chave fora do escopo permitido.' },
     },
   })
 }

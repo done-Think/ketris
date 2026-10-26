@@ -86,7 +86,7 @@ export function SearchResultsPage({ initialLocation = '', purpose }: SearchResul
                 setPropertyTypeFilter={results.setPropertyTypeFilter}
               />
             }
-            resultCount={results.filteredResults.length}
+            resultCount={results.resultCount}
             setSortOption={results.setSortOption}
             setViewMode={results.setViewMode}
             sortOption={results.sortOption}

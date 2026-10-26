@@ -20,7 +20,17 @@ export interface PropertySearchFilters {
   q?: string
 }
 
+export interface PropertySearchPage {
+  page: number
+  pageSize: number
+}
+
+export interface PropertySearchResult {
+  items: PublishedPropertySummary[]
+  totalCount: number
+}
+
 export interface PublicPropertyRepository {
-  search(filters: PropertySearchFilters): Promise<PublishedPropertySummary[]>
+  search(filters: PropertySearchFilters, page: PropertySearchPage): Promise<PropertySearchResult>
   findPublishedById(id: string): Promise<PublishedPropertyDetail | null>
 }

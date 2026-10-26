@@ -24,6 +24,9 @@ export interface PublicPropertySummary {
 
 export interface ListPropertiesResponse {
   properties: PublicPropertySummary[]
+  totalCount: number
+  page: number
+  pageSize: number
 }
 
 export interface PublicPropertyAddress {
@@ -66,6 +69,8 @@ export interface SearchPropertiesFilters {
   minArea?: number
   hasParking?: boolean
   sortBy?: PropertySortOption
+  page?: number
+  pageSize?: number
 }
 
 export interface SubmitInquiryPayload {

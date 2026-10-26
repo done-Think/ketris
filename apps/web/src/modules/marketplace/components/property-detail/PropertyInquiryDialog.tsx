@@ -18,6 +18,7 @@ import { useTranslations } from 'next-intl'
 import { Controller, useForm } from 'react-hook-form'
 
 import { radius } from '@shared/theme/tokens'
+import { getApiErrorCode } from '@shared/utils/error-message'
 
 import { useSubmitPropertyInquiry } from '../../hooks/use-submit-property-inquiry'
 import { createPropertyInquirySchema } from '../../schemas/property-inquiry-schema'
@@ -64,7 +65,7 @@ export function PropertyInquiryDialog({
         leadName: values.leadName,
         leadEmail: values.leadEmail,
         leadPhone: values.leadPhone || undefined,
-        proposedValue: mode === 'proposal' ? values.proposedValue || undefined : undefined,
+        proposedValue: mode === 'proposal' ? values.proposedValue : undefined,
         notes: values.notes || undefined,
       },
       {
@@ -72,8 +73,9 @@ export function PropertyInquiryDialog({
           enqueueSnackbar(t('success'), { variant: 'success' })
           onClose()
         },
-        onError: () => {
-          enqueueSnackbar(t('error'), { variant: 'error' })
+        onError: (error) => {
+          const rateLimited = getApiErrorCode(error) === 'RATE_LIMIT_EXCEEDED'
+          enqueueSnackbar(t(rateLimited ? 'rateLimited' : 'error'), { variant: 'error' })
         },
       },
     )
