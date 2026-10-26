@@ -35,3 +35,15 @@ export interface UploadMaintenanceTicketAttachmentInput extends MaintenanceActor
   contentType: string
   body: Buffer
 }
+
+export interface MaintenanceActionInput extends MaintenanceTicketInput {
+  action: import('./maintenance-ticket').MaintenanceAction
+}
+
+export interface RegularizeMaintenanceLinksInput extends MaintenanceActor {
+  links: import('./maintenance-ticket').MaintenanceUserLinkInput
+}
+
+export interface GetMaintenanceAttachmentInput extends MaintenanceActor {
+  key: string[]
+}

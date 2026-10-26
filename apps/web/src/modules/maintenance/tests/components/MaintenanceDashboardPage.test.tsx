@@ -9,10 +9,10 @@ import { MaintenanceDashboardPage } from '../../components/MaintenanceDashboardP
 import {
   useCreateMaintenanceTicket,
   useDeleteMaintenanceTicket,
+  useMaintenanceOptions,
   useMaintenanceTicket,
   useMaintenanceTickets,
   useUpdateMaintenanceTicket,
-  useMaintenanceOptions,
 } from '../../hooks/use-maintenance'
 import type { ApiMaintenanceTicket, ApiMaintenanceTicketListItem } from '../../types/service'
 
@@ -143,6 +143,18 @@ function mockDefaults() {
       data: {
         items: filtered.map((item) => ({ ...item, permissions: { edit: true, delete: true } })),
         totalCount: filtered.length,
+        pagination: {
+          page: filters.page ?? 1,
+          pageSize: filters.pageSize ?? 5,
+          totalCount: filtered.length,
+          pageCount: 1,
+        },
+        summary: {
+          totalCount: 4,
+          urgentCount: 1,
+          byStatus: { ABERTO: 1, EM_ANDAMENTO: 2, RESOLVIDO: 1 },
+          averageResolutionDays: 1,
+        },
       },
       isLoading: false,
     } as unknown as ReturnType<typeof useMaintenanceTickets>
@@ -298,7 +310,7 @@ describe('MaintenanceDashboardPage', () => {
     expect(screen.queryByRole('button', { name: 'Arquivados' })).not.toBeInTheDocument()
   })
 
-  it('computes the open and urgent metric cards from the loaded tickets', () => {
+  it('computes the open and urgent metric cards from server-wide summaries', () => {
     render(<MaintenanceDashboardPage />)
 
     const openCard = screen.getByText('Abertos').closest('div')!.parentElement!
@@ -307,7 +319,7 @@ describe('MaintenanceDashboardPage', () => {
     const urgentCard = screen.getByText('Urgentes').closest('div')!.parentElement!
     expect(urgentCard).toHaveTextContent('1')
 
-    expect(screen.getByText('1.0 dias')).toBeVisible()
+    expect(screen.getByText('1,0 dias')).toBeVisible()
   })
 
   it('filters tickets by property', async () => {
@@ -349,7 +361,7 @@ describe('MaintenanceDashboardPage', () => {
 
     await waitFor(() =>
       expect(createMutation.mutateAsync).toHaveBeenCalledWith(
-        expect.objectContaining({ propertyId: 'p1', category: 'Hidráulica' }),
+        expect.objectContaining({ contractId: 'c-p1', category: 'PLUMBING' }),
       ),
     )
     await waitFor(() => {

@@ -8,3 +8,22 @@ export interface MaintenanceTicketsTableProps {
   onRowsPerPageChange: (rows: number) => void
   onOpenMenu: (anchor: HTMLElement, ticketId: string) => void
 }
+
+export interface MaintenanceDashboardFilters {
+  activeFilter: import('./maintenance').MaintenanceFilter['value']
+  search: string
+  propertyFilter: string
+  currentPage: number
+  rowsPerPage: number
+  archived: boolean
+}
+
+export type MaintenanceDashboardDialog =
+  | { kind: 'create' | 'filters' | 'links' | 'providers' }
+  | { kind: 'edit' | 'delete'; ticketId: string }
+  | null
+
+export interface MaintenanceDashboardMenu {
+  anchor: HTMLElement
+  ticketId: string
+}

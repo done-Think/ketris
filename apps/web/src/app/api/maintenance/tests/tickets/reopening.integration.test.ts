@@ -1,8 +1,8 @@
-import { setupMaintenanceIntegration } from '../fixtures/maintenance-api'
-import { describe, expect, it } from 'vitest'
 import { prisma } from '@server/db/prisma'
-import { PATCH } from '../../tickets/[id]/route'
+import { describe, expect, it } from 'vitest'
 import { POST as addNote } from '../../tickets/[id]/notes/route'
+import { PATCH } from '../../tickets/[id]/route'
+import { setupMaintenanceIntegration } from '../fixtures/maintenance-api'
 
 describe('/api/maintenance reopening (database integration)', () => {
   const env = setupMaintenanceIntegration()

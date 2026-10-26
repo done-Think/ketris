@@ -10,6 +10,8 @@ export interface UploadedMaintenanceAttachment {
   contentType: string
 }
 
-export interface MaintenanceAttachmentStoragePort {
-  upload(input: UploadMaintenanceAttachmentInput): Promise<UploadedMaintenanceAttachment>
+export type { MaintenanceAttachmentStoragePort } from '../application/ports/maintenance-attachment-storage.port'
+
+export interface DownloadedMaintenanceAttachment {
+  url: string
 }

@@ -32,3 +32,27 @@ export class MaintenanceAttachmentValidationError extends AppError {
     super(message, { status: 400, code: 'MAINTENANCE_ATTACHMENT_VALIDATION_ERROR' })
   }
 }
+
+export class MaintenanceProviderNotFoundError extends AppError {
+  constructor() {
+    super('Prestador não encontrado.', { status: 404, code: 'MAINTENANCE_PROVIDER_NOT_FOUND' })
+  }
+}
+
+export class MaintenanceProviderInactiveError extends AppError {
+  constructor() {
+    super('O prestador está inativo. Solicite a reativação à gestão.', {
+      status: 409,
+      code: 'MAINTENANCE_PROVIDER_INACTIVE',
+    })
+  }
+}
+
+export class MaintenanceProviderAlreadyExistsError extends AppError {
+  constructor() {
+    super('Já existe um prestador com esses dados nesta imobiliária.', {
+      status: 409,
+      code: 'MAINTENANCE_PROVIDER_ALREADY_EXISTS',
+    })
+  }
+}

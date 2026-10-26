@@ -4,7 +4,8 @@
 
 - `src/modules/maintenance/hooks/use-maintenance-dashboard.ts`: consultas, filtros, paginação e ações da lista.
 - `src/modules/maintenance/components/MaintenanceTicketsTable.tsx`: tabela e paginação visual; os blocos do detalhe ficam em `components/ticket-detail`.
-- `src/modules/maintenance/utils/maintenance-presentation.ts`: estilos de status e prioridade compartilhados pela lista e pelo detalhe, usando os tokens do tema.
+- `src/modules/maintenance/styles/`: estilos dos componentes e apresentação de status/prioridade, usando os tokens do tema.
+- `src/server/maintenance/domain/`: permissões e planejamento das ações; `application/ports/`: contratos de persistência, storage e autorizações de upload. As rotas chamam casos de uso, que aplicam também a projeção pública do chamado.
 - `src/server/maintenance/infrastructure/maintenance-ticket-mapper.ts`: conversão dos registros Prisma; `maintenance-access-scope.ts`: filtros de acesso; `prisma-maintenance-links.ts`: transação de regularização dos vínculos. O repositório coordena essas responsabilidades.
 - `src/server/contracts/types/contract-renter-link.ts`: tipos da política compartilhada de vínculo do locatário.
 - Os testes de casos de uso ficam separados por assunto em `src/server/maintenance/tests/application/use-cases`, com dados comuns em `tests/fixtures`. Os testes de API seguem a mesma divisão em `src/app/api/maintenance/tests/tickets`, com preparação e limpeza isoladas por suíte em `tests/fixtures`.
@@ -53,3 +54,29 @@ O responsável interno ou o ADMIN conclui o atendimento em andamento, levando o 
 | RENTER                           | Não                                            | Sim, com justificativa |
 
 A confirmação altera o status para `RESOLVIDO` e registra a data de resolução. A contestação exige justificativa, altera o status para `CONTESTADO` e permite a retomada do atendimento pelo responsável ou ADMIN. Quando um OWNER conclui o reparo, a confirmação cabe ao ADMIN. O RENTER vinculado pode contestar e pode finalizar diretamente chamados ativos com `finish`, conforme o fluxo atual da 149. A confirmação administrativa do vínculo de acesso é uma operação distinta da confirmação de resolução.
+
+## Categorias, catálogo e histórico
+
+As categorias padrão são armazenadas como `PLUMBING`, `ELECTRICAL`, `STRUCTURAL` e `PAINTING`, com rótulos traduzidos. A migration preserva outras categorias legadas; elas continuam disponíveis ao editar o chamado.
+
+O catálogo pertence à imobiliária do chamado. Quem já pode definir seu prestador pode selecionar um cadastro ativo ou cadastrar um novo. A gestão edita, inativa e reativa o catálogo. Um cadastro idêntico a um prestador inativo exige reativação pela gestão. A importação dos prestadores antigos unifica somente nome, telefone, e-mail e observações exatamente iguais dentro da mesma imobiliária.
+
+A atribuição guarda o ID do prestador e uma cópia dos seus dados no chamado. Editar ou inativar o catálogo não altera chamados ou atividades anteriores. Cadastro/edição/inativação do catálogo e seu histórico são transacionais; o cadastro feito durante uma atribuição participa da mesma transação do chamado.
+
+Os identificadores históricos dos autores são preservados sem chave estrangeira, de acordo com a decisão adotada para os históricos de Auth, CRM e Contracts. A gravação usa o autor autenticado validado pelo servidor. Registros importados não recebem autoria fictícia. Eventos de sistema novos têm códigos para tradução; notas e justificativas humanas e mensagens legadas continuam com o texto original.
+
+## Listagem e formulários
+
+A API pagina os chamados e calcula indicadores e contagens sobre todos os registros autorizados, separando ativos e arquivados. Busca e filtros restringem os resultados da tabela, sem restringir os indicadores globais. Lista, indicadores e detalhe exigem a mesma coerência entre chamado, contrato, imóvel e tenant para os usuários que não são da gestão; legados sem contrato e registros inconsistentes permanecem acessíveis somente à gestão.
+
+Os formulários usam RHF/Zod e limites alinhados com a API. O imóvel é derivado do contrato selecionado. Atualizações em segundo plano preservam a edição local do agendamento. Somente HTTP 404 mostra chamado não encontrado; outras falhas permitem nova tentativa.
+
+## Anexos privados de até 8 MB
+
+O navegador valida JPEG, PNG ou WebP e calcula SHA-256. `POST /api/maintenance/tickets/{id}/attachments/upload` autoriza o usuário no chamado e emite uma autorização individual de dez minutos, vinculada ao usuário, chamado, tenant e metadados. O arquivo segue por PUT direto ao S3 privado, sem enviar o bearer token da aplicação ao storage.
+
+`POST /api/maintenance/tickets/{id}/attachments/complete` revalida o acesso e o estado do chamado, verifica tamanho, tipo e checksum no S3 e registra o anexo e sua atividade transacionalmente. Repetir a confirmação não duplica o anexo. Arquivos sem confirmação não aparecem no chamado.
+
+A URL persistida continua sendo a rota autenticada `/api/maintenance/media/...`. Após autorizar o acesso pelo chamado, essa rota redireciona para uma URL privada de leitura com validade de 60 segundos e cache desabilitado. Assim, o corpo do arquivo não atravessa a função da Vercel nem no envio nem na leitura. A rota multipart antiga permanece para compatibilidade, mas está sujeita ao limite de payload da infraestrutura.
+
+A configuração AWS de CORS ainda precisa ser aplicada após recuperar as credenciais e o estado do Terraform. Consulte a [pendência operacional de Maintenance](technical-debt/maintenance-s3-cors.md). Os testes locais usam PostgreSQL e simulador S3 isolados; não validam o bucket real.

@@ -19,15 +19,12 @@ import { GET as readCharge } from '../../../financial/charges/[id]/route'
 import { GET as listContracts } from '../../route'
 import { GET as readContract } from '../../[id]/route'
 
-const { upload, s3Send } = vi.hoisted(() => ({ upload: vi.fn(), s3Send: vi.fn() }))
+const { upload, download } = vi.hoisted(() => ({ upload: vi.fn(), download: vi.fn() }))
 vi.mock('@server/maintenance/infrastructure/s3-maintenance-attachment-storage', () => ({
   S3MaintenanceAttachmentStorage: class {
     upload = upload
+    download = download
   },
-}))
-vi.mock('@server/shared/storage/s3-client', () => ({
-  getS3Client: () => ({ send: s3Send }),
-  getUploadsBucketName: () => 'test-bucket',
 }))
 
 type ConfirmationPath = 'contracts' | 'maintenance'
@@ -166,10 +163,7 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
       url: `/api/maintenance/media/maintenance/${tenantId}/${randomUUID()}.png`,
       contentType: 'image/png',
     }))
-    s3Send.mockResolvedValue({
-      Body: { transformToByteArray: async () => new Uint8Array([1, 2, 3]) },
-      ContentType: 'image/png',
-    })
+    download.mockResolvedValue({ url: 'https://private.example.test/temporary-image' })
   })
   afterAll(async () => {
     // Fixtures only: agency tenants precede the shared user tenants during cleanup.
@@ -442,14 +436,14 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
     }
     expect(
       (await readMedia(request(url.slice('/api/'.length), renter.token), mediaContext)).status,
-    ).toBe(200)
-    expect(s3Send).toHaveBeenCalledTimes(1)
+    ).toBe(302)
+    expect(download).toHaveBeenCalledTimes(1)
     for (const denied of [unrelated, b.admin]) {
       expect(
         (await readMedia(request(url.slice('/api/'.length), denied.token), mediaContext)).status,
       ).toBe(404)
     }
-    expect(s3Send).toHaveBeenCalledTimes(1)
+    expect(download).toHaveBeenCalledTimes(1)
     expect(
       (
         await createTicket(

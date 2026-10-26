@@ -1,15 +1,15 @@
-import type { MaintenanceUserLinkInput } from '../types/maintenance-ticket'
 import { Prisma } from '@prisma/client'
 import { prisma } from '@server/db/prisma'
 import { ConflictError, ForbiddenError } from '@server/shared/errors'
-import { contractsContainer } from '@server/contracts/container'
-import type { MaintenanceActor } from '../types/maintenance-ticket'
 import { assertAdmin } from '../application/authorization'
-import { contractInclude, activityData } from './maintenance-ticket-mapper'
+import type { MaintenanceActor, MaintenanceUserLinkInput } from '../types/maintenance-ticket'
+import type { MaintenanceContractPartyLink } from '../types/prisma-maintenance-ticket-repository'
+import { activityData, contractInclude } from './maintenance-ticket-mapper'
 
 export async function regularizeMaintenanceLinks(
   actor: MaintenanceActor,
   input: MaintenanceUserLinkInput,
+  linkParty: MaintenanceContractPartyLink,
 ) {
   assertAdmin(actor)
   await prisma
@@ -41,13 +41,10 @@ export async function regularizeMaintenanceLinks(
           })
         }
         if (input.renterId && input.partyId) {
-          await contractsContainer.createContractPartyLinkUseCase(tx).execute({
-            actorTenantId: actor.actorTenantId,
-            actorId: actor.actorId,
-            actorPapel: actor.actorPapel,
+          await linkParty(tx, actor, {
             contractId: contract.id,
             partyId: input.partyId,
-            userId: input.renterId,
+            renterId: input.renterId,
           })
         }
         const tickets = await tx.chamadoManutencao.findMany({
@@ -62,6 +59,7 @@ export async function regularizeMaintenanceLinks(
           await tx.atividadeChamadoManutencao.create({
             data: activityData(ticket.id, {
               type: 'EDICAO',
+              systemAction: 'LINKS_REGULARIZED',
               message: 'Vinculos de acesso regularizados pelo administrador.',
               authorId: actor.actorId,
               authorName: actor.actorName,

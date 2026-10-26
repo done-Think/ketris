@@ -1,8 +1,8 @@
 import { brand, maintenanceColor } from '@shared/theme/tokens'
 import type {
+  MaintenancePriority,
   MaintenanceStatus,
   MaintenanceStatusStyle,
-  MaintenancePriority,
 } from '../types/maintenance'
 
 export const statusStyles: Record<MaintenanceStatus, MaintenanceStatusStyle> = {
@@ -17,6 +17,7 @@ export const statusStyles: Record<MaintenanceStatus, MaintenanceStatusStyle> = {
   contested: { bgcolor: maintenanceColor.errorBackground, color: maintenanceColor.errorText },
   cancelled: { bgcolor: maintenanceColor.neutralBackground, color: brand.neutral[500] },
 }
+
 export const priorityColors: Record<MaintenancePriority, string> = {
   urgent: brand.semantic.error,
   high: maintenanceColor.priorityHigh,

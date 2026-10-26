@@ -1,149 +1,71 @@
 import type {
-  MaintenanceAction,
-  MaintenancePermissions,
-  MaintenanceProvider,
-  MaintenanceOptions,
-} from '@server/maintenance/types/maintenance-ticket'
-export type { MaintenanceAction, MaintenancePermissions, MaintenanceProvider, MaintenanceOptions }
+  CreateMaintenanceTicketRequestDTO,
+  ListMaintenanceTicketsQueryDTO,
+  MaintenanceActionDTO,
+  MaintenanceActivityDTO,
+  MaintenanceActivityTypeDTO,
+  MaintenanceAttachmentDTO,
+  MaintenanceLinksDTO,
+  MaintenanceOptionsDTO,
+  MaintenancePermissionsDTO,
+  MaintenanceTicketDTO,
+  MaintenanceTicketListItemDTO,
+  MaintenanceTicketListResponseDTO,
+  MaintenanceTicketPriorityDTO,
+  MaintenanceTicketStatusDTO,
+  UpdateMaintenanceTicketRequestDTO,
+} from '@server/maintenance/types/dto'
 
-export type ApiMaintenanceTicketStatus =
-  | 'ABERTO'
-  | 'EM_ANDAMENTO'
-  | 'AGUARDANDO_CONFIRMACAO'
-  | 'RESOLVIDO'
-  | 'CONTESTADO'
-  | 'CANCELADO'
-  | 'FECHADO'
+export type MaintenanceAction = MaintenanceActionDTO
+export type MaintenancePermissions = MaintenancePermissionsDTO
+export type MaintenanceOptions = MaintenanceOptionsDTO
+export type MaintenanceProvider = NonNullable<MaintenanceTicketDTO['provider']>
+export type ApiMaintenanceTicketStatus = MaintenanceTicketStatusDTO
+export type ApiMaintenanceTicketPriority = MaintenanceTicketPriorityDTO
+export type ApiMaintenanceActivityType = MaintenanceActivityTypeDTO
+export type ApiMaintenanceActivity = MaintenanceActivityDTO
+export type ApiMaintenanceAttachment = MaintenanceAttachmentDTO
 
-export type ApiMaintenanceTicketPriority = 'NORMAL' | 'ALTA' | 'URGENTE'
+type OptionalTicketFields =
+  | 'scheduledAt'
+  | 'contractId'
+  | 'responsibleId'
+  | 'responsibleName'
+  | 'provider'
+  | 'deletedAt'
+  | 'permissions'
+  | 'replacementRequests'
+  | 'completedByRole'
+export type ApiMaintenanceTicket = Omit<MaintenanceTicketDTO, OptionalTicketFields> &
+  Partial<Pick<MaintenanceTicketDTO, OptionalTicketFields>>
 
-export type ApiMaintenanceActivityType =
-  import('@server/maintenance/types/maintenance-ticket').MaintenanceActivityType
+type OptionalListItemFields =
+  'scheduledAt' | 'contractId' | 'responsibleId' | 'responsibleName' | 'deletedAt' | 'permissions'
+export type ApiMaintenanceTicketListItem = Omit<
+  MaintenanceTicketListItemDTO,
+  OptionalListItemFields
+> &
+  Partial<Pick<MaintenanceTicketListItemDTO, OptionalListItemFields>>
 
-export interface ApiMaintenanceActivity {
-  id: string
-  ticketId: string
-  type: ApiMaintenanceActivityType
-  message: string
-  authorId: string | null
-  authorName: string | null
-  details?: Record<string, unknown> | null
-  createdAt: string
-}
-
-export interface ApiMaintenanceAttachment {
-  id: string
-  ticketId: string
-  name: string
-  url: string
-  createdAt: string
-}
-
-export interface ApiMaintenanceTicket {
-  scheduledAt?: string | null
-  id: string
-  propertyId: string
-  propertyTitle: string
-  contractId?: string | null
-  responsibleId?: string | null
-  responsibleName?: string | null
-  provider?: MaintenanceProvider | null
-  deletedAt?: string | null
-  permissions?: MaintenancePermissions
-  replacementRequests?: {
-    id: string
-    reason: string
-    status: 'PENDENTE' | 'APROVADA' | 'REJEITADA'
-    requestedByName: string
-    decisionReason: string | null
-    decidedByName: string | null
-    createdAt: string
-  }[]
-  category: string
-  priority: ApiMaintenanceTicketPriority
-  status: ApiMaintenanceTicketStatus
-  title: string
-  description: string
-  openedById: string
-  openedByName: string
-  resolvedAt: string | null
-  createdAt: string
-  updatedAt: string
-  activities: ApiMaintenanceActivity[]
-  attachments: ApiMaintenanceAttachment[]
-}
-
-export interface ApiMaintenanceTicketListItem {
-  scheduledAt?: string | null
-  id: string
-  propertyId: string
-  propertyTitle: string
-  contractId?: string | null
-  deletedAt?: string | null
-  permissions?: MaintenancePermissions
-  category: string
-  priority: ApiMaintenanceTicketPriority
-  status: ApiMaintenanceTicketStatus
-  title: string
-  openedByName: string
-  resolvedAt: string | null
-  createdAt: string
-  updatedAt: string
-}
-
-export interface MaintenanceTicketListFilters {
-  archived?: boolean
-  status?: ApiMaintenanceTicketStatus
-  priority?: ApiMaintenanceTicketPriority
-  propertyId?: string
-  search?: string
-  page?: number
-  pageSize?: number
-}
-
-export interface CreateMaintenanceTicketPayload {
-  scheduledAt?: string | null
-  contractId: string
-  propertyId: string
-  category: string
-  priority: ApiMaintenanceTicketPriority
-  title: string
-  description: string
-}
-
-export interface UpdateMaintenanceTicketPayload {
-  scheduledAt?: string | null
-  contractId?: string
-  propertyId?: string
-  category?: string
-  priority?: ApiMaintenanceTicketPriority
-  title?: string
-  description?: string
-}
-
-export interface ListMaintenanceTicketsResponse {
+export type MaintenanceTicketListFilters = Partial<ListMaintenanceTicketsQueryDTO>
+export type CreateMaintenanceTicketPayload = CreateMaintenanceTicketRequestDTO
+export type UpdateMaintenanceTicketPayload = UpdateMaintenanceTicketRequestDTO
+export type ListMaintenanceTicketsResponse = Omit<MaintenanceTicketListResponseDTO, 'items'> & {
   items: ApiMaintenanceTicketListItem[]
-  totalCount: number
 }
-
 export interface MaintenanceTicketResponse {
   ticket: ApiMaintenanceTicket
 }
-
 export interface MaintenanceActivityResponse {
   activity: ApiMaintenanceActivity
 }
-
 export interface MaintenanceActivitiesResponse {
   activities: ApiMaintenanceActivity[]
 }
-
 export interface UploadMaintenanceTicketAttachmentResponse {
   attachment: ApiMaintenanceAttachment
 }
-
-export type { MaintenanceUserLinkInput } from '@server/maintenance/types/maintenance-ticket'
-
+export type MaintenanceUserLinkInput = MaintenanceLinksDTO
 export interface UpdateMaintenanceTicketVariables {
   id: string
   payload: UpdateMaintenanceTicketPayload

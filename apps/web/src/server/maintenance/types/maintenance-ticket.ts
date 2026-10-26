@@ -17,6 +17,7 @@ export interface MaintenanceActor {
 }
 
 export interface MaintenanceProvider {
+  id?: string
   name: string
   phone?: string | null
   email?: string | null
@@ -88,6 +89,7 @@ export type MaintenanceActivityType =
   | 'RESTAURACAO'
 
 export interface MaintenanceActivity {
+  systemAction?: string | null
   id: string
   ticketId: string
   type: MaintenanceActivityType
@@ -156,11 +158,14 @@ export interface MaintenanceTicketListItem {
 }
 
 export interface MaintenanceTicketListResult {
+  summary: import('./maintenance-summary').MaintenanceSummary
+  pagination: import('./maintenance-summary').MaintenancePagination
   items: MaintenanceTicketListItem[]
   totalCount: number
 }
 
 export interface MaintenanceTicketListFilters {
+  locale?: 'pt-BR' | 'en-US' | 'es-ES'
   tenantId: string
   actor: MaintenanceActor
   archived?: boolean
@@ -196,6 +201,8 @@ export interface MaintenanceTicketUpdate {
 }
 
 export interface NewMaintenanceActivity {
+  systemAction?: string
+  authorRole?: Papel
   type: MaintenanceActivityType
   message: string
   authorId: string | null
@@ -241,6 +248,7 @@ export type MaintenanceAction =
   | { action: 'rejectReplacement'; requestId: string; reason: string }
 
 export interface NewMaintenanceAttachment {
+  uploadId?: string
   name: string
   url: string
   authorId: string | null

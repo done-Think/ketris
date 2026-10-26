@@ -1,12 +1,12 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { prisma } from '@server/db/prisma'
+import { ConflictError } from '@server/shared/errors'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   PrismaMaintenanceTicketRepository,
   maintenanceTicketScope,
 } from '../../infrastructure/prisma-maintenance-ticket.repository'
 import type { MaintenanceActor, MaintenanceTicket } from '../../types/maintenance-ticket'
-import { ConflictError } from '@server/shared/errors'
 
 vi.mock('@server/db/prisma', () => ({ prisma: { $transaction: vi.fn() } }))
 const actor: MaintenanceActor = {

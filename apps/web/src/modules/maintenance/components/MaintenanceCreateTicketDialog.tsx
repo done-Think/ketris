@@ -1,12 +1,15 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { useSession } from 'next-auth/react'
+import * as maintenanceStyles from '../styles/maintenance-create-ticket-dialog.styles'
+
+import { zodResolver } from '@hookform/resolvers/zod'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import {
+  Alert,
   Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -16,16 +19,22 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
+import {
+  maintenanceCategoryKeys,
+  normalizeMaintenanceCategory,
+} from '@server/maintenance/constants/maintenance-categories'
+
 import { RhfTextField } from '@shared/components/form'
-import { iconSize, brand, radius } from '@shared/theme/tokens'
 
 import { useMaintenanceOptions } from '../hooks/use-maintenance'
 import {
   maintenanceDraftKey,
+  parseMaintenanceDraft,
   readMaintenanceDraft,
   writeMaintenanceDraft,
 } from '../utils/maintenance-draft'
@@ -38,16 +47,38 @@ import type {
 
 const defaultValues: MaintenanceCreateTicketFormValues = {
   contractId: '',
-  propertyId: '',
   category: '',
   priority: 'normal',
   title: '',
   description: '',
 }
 
-const categoryOptions = ['Hidráulica', 'Elétrica', 'Estrutural', 'Pintura'] as const
+const categoryOptions = Object.entries(maintenanceCategoryKeys)
 
-export function MaintenanceCreateTicketDialog({
+export function MaintenanceCreateTicketDialog(props: MaintenanceCreateTicketDialogProps) {
+  const t = useTranslations('dashboard.maintenance.createDialog')
+  if (!props.open) return null
+  if (props.mode === 'edit' && !props.initialValues)
+    return (
+      <Dialog open onClose={props.onClose} fullWidth maxWidth="sm">
+        <DialogContent>
+          {props.loadError ? (
+            <Alert severity="error" action={<Button onClick={props.onRetry}>{t('retry')}</Button>}>
+              {t('loadError')}
+            </Alert>
+          ) : (
+            <CircularProgress aria-label={t('loading')} />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={props.onClose}>{t('cancel')}</Button>
+        </DialogActions>
+      </Dialog>
+    )
+  return <MaintenanceCreateTicketForm {...props} />
+}
+
+function MaintenanceCreateTicketForm({
   open,
   onClose,
   onCreate,
@@ -59,35 +90,28 @@ export function MaintenanceCreateTicketDialog({
   const { data: options } = useMaintenanceOptions()
   const { data: session } = useSession()
   const draftKey = maintenanceDraftKey(session?.tenantId, session?.user?.id)
-  const [submitting, setSubmitting] = useState(false)
   const [discardOpen, setDiscardOpen] = useState(false)
   const maintenanceTicketSchema = useMemo(
     () => createMaintenanceTicketSchema((key) => t(`errors.${key}`)),
     [t],
   )
-  const { control, handleSubmit, reset, watch, setValue } =
-    useForm<MaintenanceCreateTicketFormValues>({
-      defaultValues,
-      resolver: zodResolver(maintenanceTicketSchema),
-    })
-  const selectedContractId = watch('contractId')
-  useEffect(() => {
-    const contract = options?.contracts.find((item) => item.id === selectedContractId)
-    if (contract) setValue('propertyId', contract.propertyId)
-  }, [selectedContractId, options, setValue])
-
-  useEffect(() => {
-    if (open)
-      reset({
-        ...defaultValues,
-        ...(initialValues ?? (mode === 'create' ? readMaintenanceDraft(draftKey) : null) ?? {}),
-      })
-  }, [initialValues, open, reset, mode, draftKey])
-
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { isSubmitting: submitting },
+  } = useForm<MaintenanceCreateTicketFormValues>({
+    defaultValues:
+      parseMaintenanceDraft(
+        initialValues ?? (mode === 'create' ? readMaintenanceDraft(draftKey) : null),
+      ) ?? defaultValues,
+    resolver: zodResolver(maintenanceTicketSchema),
+  })
   useEffect(() => {
     if (!open || mode !== 'create') return
     const subscription = watch((values) =>
-      writeMaintenanceDraft(draftKey, values as MaintenanceCreateTicketFormValues),
+      writeMaintenanceDraft(draftKey, parseMaintenanceDraft(values)),
     )
     return () => subscription.unsubscribe()
   }, [draftKey, mode, open, watch])
@@ -99,15 +123,10 @@ export function MaintenanceCreateTicketDialog({
 
   async function handleCreate(values: MaintenanceCreateTicketFormValues) {
     if (submitting) return
-    setSubmitting(true)
-    try {
-      const result = await onCreate(values)
-      if (result !== false) {
-        reset(defaultValues)
-        if (mode === 'create') writeMaintenanceDraft(draftKey, null)
-      }
-    } finally {
-      setSubmitting(false)
+    const result = await onCreate(values)
+    if (result !== false) {
+      reset(defaultValues)
+      if (mode === 'create') writeMaintenanceDraft(draftKey, null)
     }
   }
 
@@ -120,38 +139,28 @@ export function MaintenanceCreateTicketDialog({
         maxWidth="sm"
         slotProps={{
           paper: {
-            sx: {
-              borderRadius: `${radius.sm}px`,
-              maxHeight: { xs: 'calc(100% - 32px)', sm: 'calc(100% - 64px)' },
-            },
+            sx: maintenanceStyles.extraStyleSx1,
           },
         }}
       >
         <Box component="form" noValidate onSubmit={handleSubmit(handleCreate)}>
-          <DialogTitle sx={{ px: { xs: 2, md: 2.8 }, pb: 1.4, pt: 2.4 }}>
+          <DialogTitle sx={maintenanceStyles.dialogTitleSx}>
             <Stack
               direction="row"
               alignItems="flex-start"
               justifyContent="space-between"
               spacing={2}
             >
-              <Typography sx={{ color: brand.graphite[500], fontSize: 22, fontWeight: 900 }}>
+              <Typography sx={maintenanceStyles.typographySx}>
                 {mode === 'edit' ? t('editTitle') : t('title')}
               </Typography>
               <IconButton aria-label={t('close')} onClick={handleClose}>
-                <CloseRoundedIcon sx={{ fontSize: iconSize.lg }} />
+                <CloseRoundedIcon sx={maintenanceStyles.closeRoundedIconSx} />
               </IconButton>
             </Stack>
           </DialogTitle>
-          <DialogContent sx={{ px: { xs: 2, md: 2.8 }, pb: 2 }}>
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
-                gap: 1.6,
-                pt: 0.5,
-              }}
-            >
+          <DialogContent sx={maintenanceStyles.dialogContentSx}>
+            <Box sx={maintenanceStyles.boxSx}>
               <RhfTextField
                 control={control}
                 name="contractId"
@@ -179,9 +188,13 @@ export function MaintenanceCreateTicketDialog({
                 select
                 fullWidth
               >
-                {categoryOptions.map((category) => (
+                {initialValues?.category &&
+                  !Object.keys(maintenanceCategoryKeys).includes(
+                    normalizeMaintenanceCategory(initialValues.category),
+                  ) && <MenuItem value={initialValues.category}>{initialValues.category}</MenuItem>}
+                {categoryOptions.map(([category, key]) => (
                   <MenuItem key={category} value={category}>
-                    {category}
+                    {maintenanceT(`categories.${key}`)}
                   </MenuItem>
                 ))}
               </RhfTextField>
@@ -201,7 +214,7 @@ export function MaintenanceCreateTicketDialog({
                 name="title"
                 label={t('fields.title')}
                 fullWidth
-                sx={{ gridColumn: { sm: '1 / -1' } }}
+                sx={maintenanceStyles.rhfTextFieldSx}
               />
               <RhfTextField
                 control={control}
@@ -211,11 +224,11 @@ export function MaintenanceCreateTicketDialog({
                 multiline
                 minRows={4}
                 fullWidth
-                sx={{ gridColumn: { sm: '1 / -1' } }}
+                sx={maintenanceStyles.rhfTextFieldSx}
               />
             </Box>
           </DialogContent>
-          <DialogActions sx={{ px: { xs: 2, md: 2.8 }, pb: 2.5, pt: 0, flexWrap: 'wrap', gap: 1 }}>
+          <DialogActions sx={maintenanceStyles.dialogActionsSx}>
             {mode === 'create' && (
               <Button color="error" disabled={submitting} onClick={() => setDiscardOpen(true)}>
                 {t('discardDraft')}

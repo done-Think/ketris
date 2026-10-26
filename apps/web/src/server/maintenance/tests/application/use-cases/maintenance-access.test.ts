@@ -1,26 +1,26 @@
-import { describe, expect, it, vi } from 'vitest'
 import { ConflictError, ForbiddenError } from '@server/shared/errors'
+import { describe, expect, it, vi } from 'vitest'
+import { canAccessTicket, publicTicket } from '../../../application/authorization'
+import { AddMaintenanceTicketNoteUseCase } from '../../../application/use-cases/add-maintenance-ticket-note.use-case'
+import { CreateMaintenanceTicketUseCase } from '../../../application/use-cases/create-maintenance-ticket.use-case'
+import { GetMaintenanceTicketUseCase } from '../../../application/use-cases/get-maintenance-ticket.use-case'
+import { ListMaintenanceTicketActivitiesUseCase } from '../../../application/use-cases/list-maintenance-ticket-activities.use-case'
+import { ListMaintenanceTicketsUseCase } from '../../../application/use-cases/list-maintenance-tickets.use-case'
+import { UploadMaintenanceTicketAttachmentUseCase } from '../../../application/use-cases/upload-maintenance-ticket-attachment.use-case'
+import { deleteTicket, updateTicket } from '../../../application/workflow'
 import {
   MaintenancePropertyNotFoundError,
   MaintenanceTicketNotFoundError,
 } from '../../../domain/errors'
-import { CreateMaintenanceTicketUseCase } from '../../../application/use-cases/create-maintenance-ticket.use-case'
-import { GetMaintenanceTicketUseCase } from '../../../application/use-cases/get-maintenance-ticket.use-case'
-import { ListMaintenanceTicketsUseCase } from '../../../application/use-cases/list-maintenance-tickets.use-case'
-import { AddMaintenanceTicketNoteUseCase } from '../../../application/use-cases/add-maintenance-ticket-note.use-case'
-import { UploadMaintenanceTicketAttachmentUseCase } from '../../../application/use-cases/upload-maintenance-ticket-attachment.use-case'
-import { ListMaintenanceTicketActivitiesUseCase } from '../../../application/use-cases/list-maintenance-ticket-activities.use-case'
-import { deleteTicket, updateTicket } from '../../../application/workflow'
-import { canAccessTicket, publicTicket } from '../../../application/authorization'
 import {
   actor,
   admin,
   agent,
+  contract,
   owner,
   renter,
-  contract,
-  ticket,
   repository,
+  ticket,
 } from '../../fixtures/maintenance-ticket'
 
 describe('Maintenance access', () => {

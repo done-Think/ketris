@@ -1,11 +1,11 @@
-import { setupMaintenanceIntegration } from '../fixtures/maintenance-api'
+import { prisma } from '@server/db/prisma'
 import type { MaintenanceTicketListItem } from '@server/maintenance/types/maintenance-ticket'
 import { describe, expect, it } from 'vitest'
-import { prisma } from '@server/db/prisma'
-import { GET } from '../../tickets/route'
-import { GET as getTicket } from '../../tickets/[id]/route'
-import { GET as listActivities } from '../../tickets/[id]/activities/route'
 import { POST as links } from '../../links/route'
+import { GET as listActivities } from '../../tickets/[id]/activities/route'
+import { GET as getTicket } from '../../tickets/[id]/route'
+import { GET } from '../../tickets/route'
+import { setupMaintenanceIntegration } from '../fixtures/maintenance-api'
 
 describe('/api/maintenance regularization (database integration)', () => {
   const env = setupMaintenanceIntegration()

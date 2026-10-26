@@ -1,7 +1,3 @@
-import type {
-  MaintenanceContractRow,
-  MaintenanceTicketRow,
-} from '../types/prisma-maintenance-ticket-repository'
 import type { Prisma } from '@prisma/client'
 import type {
   MaintenanceActivity,
@@ -10,6 +6,10 @@ import type {
   MaintenanceTicket,
   NewMaintenanceActivity,
 } from '../types/maintenance-ticket'
+import type {
+  MaintenanceContractRow,
+  MaintenanceTicketRow,
+} from '../types/prisma-maintenance-ticket-repository'
 
 export const contractInclude = {
   imovel: true,
@@ -58,6 +58,7 @@ export function toActivity(row: MaintenanceTicketRow['atividades'][number]): Mai
     ticketId: row.chamadoId,
     type: row.tipo,
     message: row.mensagem,
+    systemAction: row.systemAction,
     authorId: row.autorId,
     authorName: row.autorNome,
     createdAt: row.createdAt,
@@ -87,6 +88,7 @@ export function toTicket(row: MaintenanceTicketRow): MaintenanceTicket {
     responsibleName: row.responsavel?.nome ?? null,
     provider: row.prestadorNome
       ? {
+          ...(row.prestadorId ? { id: row.prestadorId } : {}),
           name: row.prestadorNome,
           phone: row.prestadorTelefone,
           email: row.prestadorEmail,
@@ -141,6 +143,7 @@ export function activityData(
     chamadoId: ticketId,
     tipo: activity.type,
     mensagem: activity.message,
+    systemAction: activity.systemAction,
     autorId: activity.authorId,
     autorNome: activity.authorName,
     ...(activity.details

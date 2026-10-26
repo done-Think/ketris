@@ -1,48 +1,46 @@
 'use client'
 
+import * as maintenanceStyles from '../../styles/maintenance-ticket-information.styles'
+
 import { Box, Stack, Typography } from '@mui/material'
-import { useTranslations } from 'next-intl'
-import { formatDate } from '@shared/lib/utils/format'
-import { brand } from '@shared/theme/tokens'
+import { useFormatter, useTranslations } from 'next-intl'
+import { cardSx, cardTitleSx } from '../../styles/maintenance-ticket-detail.styles'
 import type { MaintenanceTicketSectionProps } from '../../types/maintenance-detail'
-import { cardSx, cardTitleSx } from './styles'
 
 export function MaintenanceTicketInformation({ ticket }: MaintenanceTicketSectionProps) {
   const t = useTranslations('dashboard.maintenance')
+  const formatter = useFormatter()
   const detailT = useTranslations('dashboard.maintenance.detail')
 
   return (
     <Box sx={cardSx}>
       <Typography sx={cardTitleSx}>{detailT('info.title')}</Typography>
-      <Stack spacing={1.1} sx={{ mt: 1.6 }}>
+      <Stack spacing={1.1} sx={maintenanceStyles.stackSx}>
         {[
           [
             t('columns.openedAt'),
             detailT('info.dateTime', {
-              date: formatDate(ticket.createdAt),
-              time: formatDate(ticket.createdAt, 'HH:mm'),
+              date: formatter.dateTime(new Date(ticket.createdAt), 'short'),
+              time: formatter.dateTime(new Date(ticket.createdAt), {
+                hour: '2-digit',
+                minute: '2-digit',
+              }),
             }),
           ],
           [
             detailT('info.lastUpdated'),
             detailT('info.dateTime', {
-              date: formatDate(ticket.updatedAt),
-              time: formatDate(ticket.updatedAt, 'HH:mm'),
+              date: formatter.dateTime(new Date(ticket.updatedAt), 'short'),
+              time: formatter.dateTime(new Date(ticket.updatedAt), {
+                hour: '2-digit',
+                minute: '2-digit',
+              }),
             }),
           ],
         ].map(([label, value]) => (
           <Stack key={label} direction="row" justifyContent="space-between" spacing={1}>
-            <Typography sx={{ fontSize: 11, color: brand.neutral[500] }}>{label}</Typography>
-            <Typography
-              sx={{
-                fontSize: 11,
-                color: brand.graphite[500],
-                fontWeight: 800,
-                textAlign: 'right',
-              }}
-            >
-              {value}
-            </Typography>
+            <Typography sx={maintenanceStyles.typographySx}>{label}</Typography>
+            <Typography sx={maintenanceStyles.typographySx2}>{value}</Typography>
           </Stack>
         ))}
       </Stack>

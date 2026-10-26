@@ -9,6 +9,7 @@ import type {
   UpdateMaintenanceTicketVariables,
 } from '../types/service'
 import { buildCreateMaintenanceTicketPayload } from '../utils/maintenance-adapter'
+import { maintenanceProviderQueryKeys } from './use-maintenance-providers'
 
 function normalizeFilters(filters: MaintenanceTicketListFilters) {
   return {
@@ -19,6 +20,7 @@ function normalizeFilters(filters: MaintenanceTicketListFilters) {
     page: filters.page ?? null,
     pageSize: filters.pageSize ?? null,
     archived: filters.archived ?? false,
+    locale: filters.locale ?? 'pt-BR',
   }
 }
 
@@ -173,7 +175,23 @@ export function useMaintenanceAction(tenantId: string | undefined, ticketId: str
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (action: MaintenanceAction) => maintenanceService.act(ticketId, action),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: maintenanceQueryKeys.tenant(tenantId ?? '') }),
+    onSuccess: async (_ticket, action) => {
+      await queryClient.invalidateQueries({ queryKey: maintenanceQueryKeys.tenant(tenantId ?? '') })
+      if (action.action === 'provider' || action.action === 'approveReplacement') {
+        await queryClient.invalidateQueries({ queryKey: maintenanceProviderQueryKeys.all })
+      }
+    },
+  })
+}
+
+export function useRegularizeMaintenanceLinks() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: import('../types/service').MaintenanceUserLinkInput) =>
+      maintenanceService.linkUsers(input),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['maintenance-options'] })
+      await queryClient.invalidateQueries({ queryKey: maintenanceQueryKeys.all })
+    },
   })
 }

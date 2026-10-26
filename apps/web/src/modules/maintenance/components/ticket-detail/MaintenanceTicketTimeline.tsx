@@ -1,32 +1,38 @@
 'use client'
 
-import type { ChangeEvent } from 'react'
-import { useRef, useState } from 'react'
+import * as maintenanceStyles from '../../styles/maintenance-ticket-timeline.styles'
+
+import { formatMaintenanceActivity } from '../../utils/maintenance-activity'
+
+import { zodResolver } from '@hookform/resolvers/zod'
 import AttachFileRoundedIcon from '@mui/icons-material/AttachFileRounded'
-import {
-  Avatar,
-  Box,
-  Button,
-  CircularProgress,
-  Divider,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { Avatar, Box, Button, CircularProgress, Divider, Stack, Typography } from '@mui/material'
+import { RhfTextField } from '@shared/components/form'
 import { useSession } from 'next-auth/react'
-import { useTranslations } from 'next-intl'
+import { useFormatter, useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
-import { formatDate } from '@shared/lib/utils/format'
-import { alpha, brand, surface } from '@shared/theme/tokens'
+import type { ChangeEvent } from 'react'
+import { useMemo, useRef } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
 import {
   useAddMaintenanceTicketNote,
   useUploadMaintenanceTicketAttachment,
 } from '../../hooks/use-maintenance'
-import { errorMessage } from '../../utils/error-message'
-import type { MaintenanceTicketSectionProps } from '../../types/maintenance-detail'
-import { cardSx, cardTitleSx, secondaryButtonSx, primaryButtonSx } from './styles'
+import { useMaintenanceErrorMessage } from '../../hooks/use-maintenance-error-message'
+import { createMaintenanceNoteSchema } from '../../schemas/maintenance-note-schema'
+import {
+  cardSx,
+  cardTitleSx,
+  primaryButtonSx,
+  secondaryButtonSx,
+} from '../../styles/maintenance-ticket-detail.styles'
+import type {
+  MaintenanceNoteFormValues,
+  MaintenanceTicketSectionProps,
+} from '../../types/maintenance-detail'
 
 export function MaintenanceTicketTimeline({ ticket }: MaintenanceTicketSectionProps) {
+  const errorMessage = useMaintenanceErrorMessage()
   const t = useTranslations('dashboard.maintenance')
   const detailT = useTranslations('dashboard.maintenance.detail')
   const ticketId = ticket.id
@@ -34,7 +40,16 @@ export function MaintenanceTicketTimeline({ ticket }: MaintenanceTicketSectionPr
   const tenantId = session?.tenantId
   const { enqueueSnackbar } = useSnackbar()
 
-  const [message, setMessage] = useState('')
+  const formatter = useFormatter()
+  const schema = useMemo(
+    () => createMaintenanceNoteSchema((key) => detailT(`timeline.validation.${key}`)),
+    [detailT],
+  )
+  const { control, handleSubmit, reset } = useForm<MaintenanceNoteFormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { message: '' },
+  })
+  const message = useWatch({ control, name: 'message' })
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -57,14 +72,13 @@ export function MaintenanceTicketTimeline({ ticket }: MaintenanceTicketSectionPr
     }
   }
 
-  async function handleSendMessage() {
-    const trimmedMessage = message.trim()
-    if (!trimmedMessage) return
+  async function handleSendMessage(values: MaintenanceNoteFormValues) {
+    if (!ticket.permissions?.comment || addNoteMutation.isPending) return
 
     try {
-      await addNoteMutation.mutateAsync(trimmedMessage)
+      await addNoteMutation.mutateAsync(values.message)
       enqueueSnackbar(t('notifications.noteSuccess'), { variant: 'success' })
-      setMessage('')
+      reset()
     } catch (error) {
       enqueueSnackbar(errorMessage(error, t('notifications.noteError')), { variant: 'error' })
     }
@@ -77,20 +91,10 @@ export function MaintenanceTicketTimeline({ ticket }: MaintenanceTicketSectionPr
     <Box sx={cardSx}>
       <Typography sx={cardTitleSx}>{detailT('timeline.title')}</Typography>
       {sortedActivities.length > 0 ? (
-        <Stack spacing={1.7} sx={{ mt: 1.7 }}>
+        <Stack spacing={1.7} sx={maintenanceStyles.stackSx}>
           {sortedActivities.map((activity) => (
             <Stack key={activity.id} direction="row" spacing={1.2}>
-              <Avatar
-                sx={{
-                  width: 34,
-                  height: 34,
-                  bgcolor: brand.graphite[400],
-                  fontSize: 11,
-                  fontWeight: 900,
-                }}
-              >
-                {getInitials(activity.authorName)}
-              </Avatar>
+              <Avatar sx={maintenanceStyles.avatarSx}>{getInitials(activity.authorName)}</Avatar>
               <Box>
                 <Stack
                   direction="row"
@@ -99,47 +103,39 @@ export function MaintenanceTicketTimeline({ ticket }: MaintenanceTicketSectionPr
                   useFlexGap
                   alignItems="baseline"
                 >
-                  <Typography sx={{ fontSize: 12, color: brand.graphite[500], fontWeight: 900 }}>
+                  <Typography sx={maintenanceStyles.typographySx}>
                     {activity.authorName ?? detailT('timeline.systemAuthor')}
                   </Typography>
-                  <Typography sx={{ fontSize: 10.5, color: brand.neutral[400] }}>
-                    • {formatDate(activity.createdAt, 'DD/MM/YYYY HH:mm')}
+                  <Typography sx={maintenanceStyles.typographySx2}>
+                    •{' '}
+                    {formatter.dateTime(new Date(activity.createdAt), {
+                      dateStyle: 'short',
+                      timeStyle: 'short',
+                    })}
                   </Typography>
                 </Stack>
-                <Typography
-                  sx={{
-                    mt: 0.45,
-                    color: brand.neutral[600],
-                    fontSize: 12,
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {activity.message}
+                <Typography sx={maintenanceStyles.typographySx3}>
+                  {formatMaintenanceActivity(activity, (key, values) => t(key, values))}
                 </Typography>
               </Box>
             </Stack>
           ))}
         </Stack>
       ) : (
-        <Typography sx={{ mt: 1.7, color: brand.neutral[400], fontSize: 12 }}>
-          {detailT('timeline.empty')}
-        </Typography>
+        <Typography sx={maintenanceStyles.typographySx4}>{detailT('timeline.empty')}</Typography>
       )}
-      <Divider sx={{ my: 1.7 }} />
-      <TextField
-        value={message}
-        disabled={!ticket.permissions?.comment}
-        onChange={(event) => setMessage(event.target.value)}
+      <Divider sx={maintenanceStyles.dividerSx} />
+      <RhfTextField
+        control={control}
+        name="message"
+        disabled={!ticket.permissions?.comment || addNoteMutation.isPending}
         multiline
         minRows={4}
         placeholder={detailT('timeline.placeholder')}
         fullWidth
-        sx={{
-          '& .MuiInputBase-root': { bgcolor: surface.app, fontSize: 12, lineHeight: 1.5 },
-          '& .MuiOutlinedInput-notchedOutline': { borderColor: alpha.graphite[8] },
-        }}
+        sx={maintenanceStyles.rhfTextFieldSx}
       />
-      <Stack direction="row" justifyContent="space-between" sx={{ mt: 1 }}>
+      <Stack direction="row" justifyContent="space-between" sx={maintenanceStyles.stackSx2}>
         <input
           ref={fileInputRef}
           type="file"
@@ -166,7 +162,7 @@ export function MaintenanceTicketTimeline({ ticket }: MaintenanceTicketSectionPr
           variant="contained"
           disabled={!ticket.permissions?.comment || !message.trim() || addNoteMutation.isPending}
           sx={primaryButtonSx}
-          onClick={handleSendMessage}
+          onClick={handleSubmit(handleSendMessage)}
         >
           {detailT('actions.sendMessage')}
         </Button>

@@ -1,14 +1,19 @@
 'use client'
 
+import * as maintenanceStyles from '../styles/maintenance-dashboard-page.styles'
+
+import { MaintenanceProvidersDialog } from './MaintenanceProvidersDialog'
+
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
-import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded'
-import FilterListRoundedIcon from '@mui/icons-material/FilterListRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded'
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
+import FilterListRoundedIcon from '@mui/icons-material/FilterListRounded'
 import LinkRoundedIcon from '@mui/icons-material/LinkRounded'
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import {
+  Alert,
   Box,
   Button,
   Dialog,
@@ -17,8 +22,9 @@ import {
   DialogTitle,
   IconButton,
   InputAdornment,
-  MenuItem,
+  LinearProgress,
   Menu,
+  MenuItem,
   Stack,
   TextField,
   ToggleButton,
@@ -29,13 +35,12 @@ import {
   DashboardNotificationsButton,
   DashboardPageHeader,
 } from '@shared/components/layout'
-import { alpha, brand, radius, surface } from '@shared/theme/tokens'
+import { useMaintenanceDashboard } from '../hooks/use-maintenance-dashboard'
 import { MaintenanceCreateTicketDialog } from './MaintenanceCreateTicketDialog'
 import { MaintenanceLinksDialog } from './MaintenanceLinksDialog'
 import { MaintenanceStatusFilters } from './MaintenanceStatusFilters'
-import { MetricCard } from './MetricCard'
-import { useMaintenanceDashboard } from '../hooks/use-maintenance-dashboard'
 import { MaintenanceTicketsTable } from './MaintenanceTicketsTable'
+import { MetricCard } from './MetricCard'
 
 export function MaintenanceDashboardPage() {
   const {
@@ -50,31 +55,33 @@ export function MaintenanceDashboardPage() {
     rowsPerPage,
     setRowsPerPage,
     isCreateDialogOpen,
-    setIsCreateDialogOpen,
     isFiltersDialogOpen,
-    setIsFiltersDialogOpen,
     editingTicketId,
-    setEditingTicketId,
     deletingTicketId,
-    setDeletingTicketId,
     menuAnchor,
-    setMenuAnchor,
     menuTicketId,
-    setMenuTicketId,
     archived,
     setArchived,
     linksOpen,
-    setLinksOpen,
+    providersOpen,
+    openDialog,
+    closeDialog,
+    openMenu,
     properties,
     pagedTickets,
     totalCount,
     metrics,
+    isLoading,
+    isError,
+    retry,
     getFilterCount,
     handleActiveFilterChange,
     handlePropertyFilterChange,
     handleCreateTicket,
     closeMenu,
     initialValues,
+    isEditError,
+    retryEdit,
     handleSaveTicket,
     handleDeleteTicket,
   } = useMaintenanceDashboard()
@@ -83,12 +90,7 @@ export function MaintenanceDashboardPage() {
       direction={{ xs: 'column', sm: 'row' }}
       useFlexGap
       gap={1.2}
-      sx={{
-        width: { xs: '100%', lg: 'auto' },
-        alignItems: { sm: 'center' },
-        flexWrap: { sm: 'wrap' },
-        justifyContent: { sm: 'flex-end' },
-      }}
+      sx={maintenanceStyles.stackSx}
     >
       <TextField
         value={search}
@@ -98,12 +100,12 @@ export function MaintenanceDashboardPage() {
         }}
         placeholder={t('search')}
         size="small"
-        sx={compactFieldSx}
+        sx={maintenanceStyles.compactFieldSx}
         slotProps={{
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <SearchRoundedIcon sx={{ fontSize: 16, color: brand.neutral[400] }} />
+                <SearchRoundedIcon sx={maintenanceStyles.searchRoundedIconSx} />
               </InputAdornment>
             ),
           },
@@ -114,16 +116,11 @@ export function MaintenanceDashboardPage() {
         value={propertyFilter}
         onChange={(event) => handlePropertyFilterChange(event.target.value)}
         size="small"
-        sx={{
-          ...compactFieldSx,
-          width: { xs: '100%', sm: 180 },
-          display: { xs: 'none', md: 'block' },
-          '& .MuiSelect-select': { pr: 4.5 },
-        }}
+        sx={maintenanceStyles.extraStyleSx2}
       >
         <MenuItem value="all">
           <Stack direction="row" spacing={0.7} alignItems="center">
-            <ApartmentOutlinedIcon sx={{ fontSize: 17 }} />
+            <ApartmentOutlinedIcon sx={maintenanceStyles.apartmentOutlinedIconSx} />
             <span>{t('allProperties')}</span>
           </Stack>
         </MenuItem>
@@ -135,32 +132,25 @@ export function MaintenanceDashboardPage() {
       </TextField>
       <Button
         variant="outlined"
-        startIcon={<FilterListRoundedIcon sx={{ fontSize: 16 }} />}
-        onClick={() => setIsFiltersDialogOpen(true)}
+        startIcon={<FilterListRoundedIcon sx={maintenanceStyles.filterListRoundedIconSx} />}
+        onClick={() => openDialog({ kind: 'filters' })}
         aria-label={t('filterDialog.open')}
-        sx={{
-          display: { xs: 'inline-flex', md: 'none' },
-          height: { xs: 40, sm: 32 },
-          px: 1.5,
-          borderRadius: `${radius.sm}px`,
-          fontSize: 12,
-          fontWeight: 700,
-          whiteSpace: 'nowrap',
-        }}
+        sx={maintenanceStyles.buttonSx}
       >
         {t('filterDialog.open')}
       </Button>
       <DashboardHeaderActionButton
-        startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
-        onClick={() => setIsCreateDialogOpen(true)}
+        startIcon={<AddRoundedIcon sx={maintenanceStyles.filterListRoundedIconSx} />}
+        onClick={() => openDialog({ kind: 'create' })}
       >
         {t('newTicket')}
       </DashboardHeaderActionButton>
       {session?.role === 'OWNER' && (
         <>
-          <Button startIcon={<LinkRoundedIcon />} onClick={() => setLinksOpen(true)}>
+          <Button startIcon={<LinkRoundedIcon />} onClick={() => openDialog({ kind: 'links' })}>
             {t('links.title')}
           </Button>
+          <Button onClick={() => openDialog({ kind: 'providers' })}>{t('providers.title')}</Button>
           <ToggleButtonGroup
             size="small"
             exclusive
@@ -177,25 +167,20 @@ export function MaintenanceDashboardPage() {
           </ToggleButtonGroup>
         </>
       )}
-      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+      <Box sx={maintenanceStyles.boxSx}>
         <DashboardNotificationsButton />
       </Box>
     </Stack>
   )
 
   return (
-    <Box sx={{ width: '100%', p: 3.5 }}>
+    <Box sx={maintenanceStyles.boxSx2}>
       <Stack spacing={{ xs: 2, md: 2.7 }}>
         <DashboardPageHeader
           title={t('title')}
           subtitle={t(session?.role === 'RENTER' ? 'renter.subtitle' : 'subtitle')}
           actions={headerActions}
-          sx={{
-            flexWrap: { md: 'wrap' },
-            rowGap: { md: 1.6 },
-            '& > :first-of-type': { minWidth: { md: 240 } },
-            '& > :last-of-type': { ml: { md: 'auto' }, maxWidth: '100%' },
-          }}
+          sx={maintenanceStyles.dashboardPageHeaderSx}
         />
         <MaintenanceStatusFilters
           activeFilter={activeFilter}
@@ -203,16 +188,7 @@ export function MaintenanceDashboardPage() {
           onChange={handleActiveFilterChange}
           isDesktop
         />
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: 'repeat(3, minmax(0, 1fr))',
-              sm: 'repeat(3, minmax(0, 1fr))',
-            },
-            gap: { xs: 0.8, sm: 1.8 },
-          }}
-        >
+        <Box sx={maintenanceStyles.boxSx3}>
           {metrics.map((metric) => (
             <MetricCard
               key={metric.label}
@@ -222,6 +198,12 @@ export function MaintenanceDashboardPage() {
             />
           ))}
         </Box>
+        {isLoading && <LinearProgress aria-label={t('listLoading')} />}
+        {isError && (
+          <Alert severity="error" action={<Button onClick={() => retry()}>{t('retry')}</Button>}>
+            {t('listError')}
+          </Alert>
+        )}
         <MaintenanceTicketsTable
           pagedTickets={pagedTickets}
           totalCount={totalCount}
@@ -233,60 +215,59 @@ export function MaintenanceDashboardPage() {
             setCurrentPage(1)
           }}
           onOpenMenu={(anchor, id) => {
-            setMenuAnchor(anchor)
-            setMenuTicketId(id)
+            openMenu(anchor, id)
           }}
         />
       </Stack>
       <MaintenanceCreateTicketDialog
+        key={`${session?.tenantId}:${session?.user?.id}:${editingTicketId ?? 'new'}`}
         open={isCreateDialogOpen}
         onClose={() => {
-          setIsCreateDialogOpen(false)
-          setEditingTicketId(null)
+          closeDialog()
         }}
         onCreate={editingTicketId ? handleSaveTicket : handleCreateTicket}
         initialValues={initialValues}
+        loadError={isEditError}
+        onRetry={retryEdit}
         mode={editingTicketId ? 'edit' : 'create'}
       />
       {session?.role === 'OWNER' && (
-        <MaintenanceLinksDialog open={linksOpen} onClose={() => setLinksOpen(false)} />
+        <MaintenanceLinksDialog open={linksOpen} onClose={() => closeDialog()} />
+      )}
+      {session?.role === 'OWNER' && (
+        <MaintenanceProvidersDialog
+          key={`${session.tenantId}:${session.user?.id}`}
+          open={providersOpen}
+          onClose={closeDialog}
+        />
       )}
       <Dialog
         open={isFiltersDialogOpen}
-        onClose={() => setIsFiltersDialogOpen(false)}
+        onClose={() => closeDialog()}
         fullWidth
         maxWidth="xs"
         aria-labelledby="maintenance-filters-title"
         slotProps={{
           paper: {
-            sx: {
-              borderRadius: `${radius.sm}px`,
-              maxHeight: 'calc(100% - 32px)',
-            },
+            sx: maintenanceStyles.extraStyleSx1,
           },
         }}
       >
-        <DialogTitle
-          id="maintenance-filters-title"
-          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}
-        >
+        <DialogTitle id="maintenance-filters-title" sx={maintenanceStyles.dialogTitleSx}>
           {t('filterDialog.title')}
-          <IconButton
-            aria-label={t('filterDialog.close')}
-            onClick={() => setIsFiltersDialogOpen(false)}
-          >
+          <IconButton aria-label={t('filterDialog.close')} onClick={() => closeDialog()}>
             <CloseRoundedIcon />
           </IconButton>
         </DialogTitle>
         <DialogContent dividers>
-          <Stack spacing={2} sx={{ pt: 0.5 }}>
+          <Stack spacing={2} sx={maintenanceStyles.stackSx2}>
             <TextField
               select
               label={t('filterDialog.property')}
               value={propertyFilter}
               onChange={(event) => handlePropertyFilterChange(event.target.value)}
               fullWidth
-              sx={compactFieldSx}
+              sx={maintenanceStyles.compactFieldSx}
             >
               <MenuItem value="all">{t('allProperties')}</MenuItem>
               {properties.map((property) => (
@@ -308,33 +289,34 @@ export function MaintenanceDashboardPage() {
         {pagedTickets.find((ticket) => ticket.id === menuTicketId)?.permissions?.edit && (
           <MenuItem
             onClick={() => {
-              setEditingTicketId(menuTicketId)
-              setIsCreateDialogOpen(Boolean(menuTicketId))
+              if (menuTicketId) openDialog({ kind: 'edit', ticketId: menuTicketId })
               closeMenu()
             }}
           >
-            <EditOutlinedIcon sx={{ mr: 1, fontSize: 18 }} />
+            <EditOutlinedIcon sx={maintenanceStyles.editOutlinedIconSx} />
             {t('actions.edit')}
           </MenuItem>
         )}
         {pagedTickets.find((ticket) => ticket.id === menuTicketId)?.permissions?.delete && (
           <MenuItem
             onClick={() => {
-              setDeletingTicketId(menuTicketId)
+              if (menuTicketId) {
+                openDialog({ kind: 'delete', ticketId: menuTicketId })
+              }
               closeMenu()
             }}
-            sx={{ color: 'error.main' }}
+            sx={maintenanceStyles.menuItemSx}
           >
-            <DeleteOutlineRoundedIcon sx={{ mr: 1, fontSize: 18 }} />
+            <DeleteOutlineRoundedIcon sx={maintenanceStyles.editOutlinedIconSx} />
             {t('actions.delete')}
           </MenuItem>
         )}
       </Menu>
-      <Dialog open={Boolean(deletingTicketId)} onClose={() => setDeletingTicketId(null)}>
+      <Dialog open={Boolean(deletingTicketId)} onClose={() => closeDialog()}>
         <DialogTitle>{t('actions.deleteTitle')}</DialogTitle>
         <DialogContent>{t('actions.deleteDescription')}</DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeletingTicketId(null)}>{t('createDialog.cancel')}</Button>
+          <Button onClick={() => closeDialog()}>{t('createDialog.cancel')}</Button>
           <Button color="error" variant="contained" onClick={handleDeleteTicket}>
             {t('actions.delete')}
           </Button>
@@ -343,14 +325,3 @@ export function MaintenanceDashboardPage() {
     </Box>
   )
 }
-const compactFieldSx = {
-  width: { xs: '100%', sm: 200 },
-  '& .MuiInputBase-root': {
-    height: { xs: 40, sm: 32 },
-    borderRadius: `${radius.sm}px`,
-    bgcolor: surface.paper,
-    fontSize: 12,
-    color: brand.neutral[600],
-  },
-  '& .MuiOutlinedInput-notchedOutline': { borderColor: alpha.graphite[8] },
-} as const

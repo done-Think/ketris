@@ -1,16 +1,16 @@
-import { describe, expect, it } from 'vitest'
 import { ConflictError, ForbiddenError } from '@server/shared/errors'
-import { MaintenanceTicketNotFoundError } from '../../../domain/errors'
+import { describe, expect, it } from 'vitest'
 import { CreateMaintenanceTicketUseCase } from '../../../application/use-cases/create-maintenance-ticket.use-case'
 import { UpdateMaintenanceTicketUseCase } from '../../../application/use-cases/update-maintenance-ticket.use-case'
 import { actOnTicket, updateTicket } from '../../../application/workflow'
+import { MaintenanceTicketNotFoundError } from '../../../domain/errors'
 import {
   actor,
   admin,
-  renter,
   contract,
-  ticket,
+  renter,
   repository,
+  ticket,
 } from '../../fixtures/maintenance-ticket'
 
 describe('Maintenance scheduling', () => {
