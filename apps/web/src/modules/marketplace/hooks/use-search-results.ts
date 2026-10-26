@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { useLocale, useTranslations } from 'next-intl'
 import type { AppLocale } from '@/i18n/types/locale.types'
@@ -203,17 +203,20 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
     minArea: minArea ?? undefined,
     hasParking: onlyWithParking || undefined,
     sortBy: sortByOption[sortOption],
+    page: currentPage,
+    pageSize: searchResultsPageSize,
   }
 
   const propertiesQuery = useQuery({
     queryKey: ['marketplace', 'properties', 'search', searchFilters],
     queryFn: () => marketplaceService.searchProperties(searchFilters),
+    placeholderData: keepPreviousData,
   })
   const canUseFixtures = process.env.NODE_ENV !== 'production'
   const fixtureMode =
     canUseFixtures &&
     !propertiesQuery.isLoading &&
-    (propertiesQuery.isError || (propertiesQuery.data ?? []).length === 0)
+    (propertiesQuery.isError || (propertiesQuery.data?.totalCount ?? 0) === 0)
 
   const fixtureResults = useMemo(() => {
     const matchedResults = propertyDetails
@@ -242,25 +245,31 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
     sortOption,
   ])
 
-  const filteredResults = useMemo(() => {
-    if (fixtureMode) {
-      return fixtureResults.map((property) =>
-        localizeFixtureSearchResult(property, locale, tFeatures),
-      )
-    }
-
-    return (propertiesQuery.data ?? []).map((summary) =>
-      mapSummaryToSearchResult(summary, purpose, locale, tFeatures),
-    )
-  }, [fixtureMode, fixtureResults, propertiesQuery.data, purpose, locale, tFeatures])
-
-  const totalPages = Math.max(1, Math.ceil(filteredResults.length / searchResultsPageSize))
+  // The API already returns one page; only the development fixtures are paginated here.
+  const resultCount = fixtureMode ? fixtureResults.length : (propertiesQuery.data?.totalCount ?? 0)
+  const totalPages = Math.max(1, Math.ceil(resultCount / searchResultsPageSize))
   const safeCurrentPage = Math.min(currentPage, totalPages)
   const paginatedResults = useMemo(() => {
-    const startIndex = (safeCurrentPage - 1) * searchResultsPageSize
+    if (fixtureMode) {
+      const startIndex = (safeCurrentPage - 1) * searchResultsPageSize
 
-    return filteredResults.slice(startIndex, startIndex + searchResultsPageSize)
-  }, [filteredResults, safeCurrentPage])
+      return fixtureResults
+        .slice(startIndex, startIndex + searchResultsPageSize)
+        .map((property) => localizeFixtureSearchResult(property, locale, tFeatures))
+    }
+
+    return (propertiesQuery.data?.properties ?? []).map((summary) =>
+      mapSummaryToSearchResult(summary, purpose, locale, tFeatures),
+    )
+  }, [
+    fixtureMode,
+    fixtureResults,
+    locale,
+    propertiesQuery.data,
+    purpose,
+    safeCurrentPage,
+    tFeatures,
+  ])
 
   useEffect(() => {
     if (currentPage === safeCurrentPage) return
@@ -304,7 +313,7 @@ export function useSearchResults({ purpose, initialLocation = '' }: SearchResult
     clearPriceFilter,
     customMaxPrice,
     customMinArea,
-    filteredResults,
+    resultCount,
     currentPage: safeCurrentPage,
     isError: propertiesQuery.isError && !fixtureMode,
     isLoading: propertiesQuery.isLoading,

@@ -41,6 +41,16 @@ describe('searchPropertiesQuerySchema', () => {
     expect(result.success).toBe(false)
   })
 
+  it('pagina por padrão em 12 itens e limita a página a 50', () => {
+    expect(searchPropertiesQuerySchema.parse({})).toMatchObject({ page: 1, pageSize: 12 })
+    expect(searchPropertiesQuerySchema.parse({ page: '2', pageSize: '50' })).toMatchObject({
+      page: 2,
+      pageSize: 50,
+    })
+    expect(searchPropertiesQuerySchema.safeParse({ pageSize: '51' }).success).toBe(false)
+    expect(searchPropertiesQuerySchema.safeParse({ page: '0' }).success).toBe(false)
+  })
+
   it('rejeita preço negativo', () => {
     const result = searchPropertiesQuerySchema.safeParse({ minPrice: '-1' })
 
