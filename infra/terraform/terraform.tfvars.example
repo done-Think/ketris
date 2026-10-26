@@ -4,6 +4,10 @@
 aws_region  = "us-east-1"
 db_username = "ketris"
 
+# Preencha com as origens reais da aplicação (sem caminho, barra final ou curinga).
+# Sem esta configuração, o upload direto de PDFs de Contracts não estará habilitado no navegador.
+contract_document_allowed_origins = ["https://preview.seu-dominio.example"]
+
 # db_password: NÃO defina aqui. Use uma das duas opções:
 #   1) export TF_VAR_db_password="sua-senha-forte-aqui"   (antes de rodar terraform)
 #   2) gere e cole em terraform.tfvars (arquivo git-ignorado), nunca neste .example

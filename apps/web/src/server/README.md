@@ -261,10 +261,10 @@ um responsável com eventos vinculados (`NO ACTION`); a inativação continua di
 completa do tenant mantém o ciclo de vida em cascata. Referências a autores fisicamente removidos
 ficam nulas.
 
-## Validação de Auth e Agenda em navegador
+## Validação de Auth, Agenda e Contracts em navegador
 
 O job `auth-e2e` do CI aplica migrations em PostgreSQL efêmero, produz o build e executa
-`cypress/e2e/auth/**/*.cy.ts` e `cypress/e2e/agenda/**/*.cy.ts`. O identificador do job permanece estável.
+`cypress/e2e/auth/**/*.cy.ts`, `cypress/e2e/agenda/**/*.cy.ts` e `cypress/e2e/contracts/**/*.cy.ts`. O identificador do job permanece estável.
 As fixtures de Agenda exigem banco local e `KETRIS_E2E_ISOLATED_DB=1`; criam e removem somente seus
 tenants de teste. As mensagens são recebidas por um simulador SES local na porta 3101, com
 credenciais fictícias; nenhuma credencial AWS de staging é usada. O simulador está disponível somente
@@ -282,3 +282,13 @@ por IP; o limite padrão e seus testes concorrentes permanecem os mesmos. Os con
 do build de validação, sem mudar os padrões de builds que não definem essas opções. Source maps não
 são gerados nesse modo quando não há credencial de upload Sentry. Os processos de validação local
 devem ser executados em sequência.
+
+## Contracts
+
+Os contratos podem ser editados antes da primeira assinatura, mantendo proposta de origem e imóvel fixos. A edição efetiva invalida o PDF anterior para novos registros de assinatura; o arquivo continua no histórico. Trocar o e-mail do locatário remove o vínculo de acesso até nova confirmação explícita da gestão.
+
+O registro temporário de assinatura é manual e exige PDF comprobatório da revisão atual, com autoria e evidências técnicas. Cancelamento antes da ativação e encerramento de contrato ativo exigem motivo, usam o instante do servidor e preservam o financeiro. O histórico é gravado na mesma transação das alterações.
+
+Listagem, busca, paginação, ordenação e indicadores usam todo o conjunto autorizado. O indicador considera 30 dias e a aba Vencendo, 90. Dados de seleção e resumo de imóvel vêm dos endpoints próprios de Contracts. O cache inclui tenant, usuário e papel; mutações invalidam os dados relacionados.
+
+Consulte [operação de Contracts](../../../../docs/contracts-operations.md) para chave de criptografia, migrations/backfill, upload privado, CORS, recuperação e débitos aprovados. As fixtures de PDFs usam simulador local na porta 3102 quando CONTRACTS_E2E_STORAGE_PORT está configurada, com AWS_ENDPOINT_URL_S3 local e bucket fictício. Exigem banco isolado; nenhum teste usa S3 real.

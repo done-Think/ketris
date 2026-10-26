@@ -1,7 +1,31 @@
 import { ConflictError } from '@server/shared/errors'
 import { normalizeEmail } from '@server/shared/normalize-email'
 import { ContractPartyNotFoundError, ContractRenterUserNotFoundError } from './errors'
-import type { RenterParty, RenterAccount } from '../types/contract-renter-link'
+import type {
+  RenterParty,
+  RenterAccount,
+  ContractRenterCandidate,
+} from '../types/contract-renter-link'
+
+export function selectContractRenterAccount(
+  users: ContractRenterCandidate[],
+  tenantId: string,
+  party: RenterParty,
+): ContractRenterCandidate | null {
+  const candidates = users.filter(
+    (user) =>
+      user.ativo &&
+      user.papel === 'RENTER' &&
+      normalizeEmail(user.email) === normalizeEmail(party.email),
+  )
+  const linked = party.userId ? candidates.find((user) => user.id === party.userId) : null
+  if (linked) return linked
+  const local = candidates.filter((user) => user.tenantId === tenantId)
+  const eligible = local.length ? local : candidates
+  if (eligible.length > 1)
+    throw new ConflictError('Há mais de uma conta de locatário elegível para este e-mail.')
+  return eligible[0] ?? null
+}
 
 export function assertRenterParty(
   party: RenterParty | undefined,

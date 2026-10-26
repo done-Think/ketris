@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest'
-
 import {
   ContractNotFoundError,
   ContractPartyAlreadySignedError,
@@ -19,8 +18,17 @@ import { SignContractPartyUseCase } from '../../../application/use-cases/sign-co
 
 const contract: Contract = {
   id: 'contract-1',
+  dataRevision: 0,
+  createdBy: null,
+  cancelledAt: null,
+  cancelledBy: null,
+  cancellationReason: null,
+  closedAt: null,
+  closedBy: null,
+  closingReason: null,
   tenantId: 'tenant-1',
   propertyId: 'property-1',
+  property: { title: 'Apartamento', address: 'Rua do contrato' },
   opportunityId: 'opportunity-1',
   code: 'CTR-2026-0001',
   type: 'RESIDENCIAL',
@@ -45,6 +53,11 @@ const contract: Contract = {
       cpf: '11111111111',
       email: 'bruno@example.com',
       phone: null,
+      signatureMethod: null,
+      signatureDocumentId: null,
+      signatureDocumentHash: null,
+      createdAt: null,
+      updatedAt: null,
       signatureStatus: 'PENDENTE',
       signedAt: null,
       signedBy: null,
@@ -57,6 +70,11 @@ const contract: Contract = {
       cpf: '22222222222',
       email: 'mariana@example.com',
       phone: null,
+      signatureMethod: null,
+      signatureDocumentId: null,
+      signatureDocumentHash: null,
+      createdAt: null,
+      updatedAt: null,
       signatureStatus: 'ASSINADA',
       signedAt: new Date('2026-09-29T00:00:00.000Z'),
       signedBy: { id: 'agent-1', name: 'Camila Rocha' },
@@ -77,7 +95,6 @@ function createRepository(overrides?: Partial<ContractRepository>): ContractRepo
     findMany: vi.fn().mockResolvedValue({ items: [], totalCount: 0 }),
     findById: vi.fn().mockResolvedValue(contract),
     signParty: vi.fn().mockResolvedValue({ ...contract, status: 'ATIVO' }),
-    linkPartyUser: vi.fn().mockResolvedValue(true),
     ...overrides,
   }
 }
@@ -210,6 +227,7 @@ describe('CreateContractFromOpportunityUseCase', () => {
           expect.objectContaining({ role: 'LOCATARIO', name: 'Mariana Souza' }),
         ],
       }),
+      { responsibleId: 'agent-1' },
     )
   })
 
@@ -233,6 +251,7 @@ describe('CreateContractFromOpportunityUseCase', () => {
           expect.objectContaining({ role: 'FIADOR', name: 'Carlos Fiador' }),
         ],
       }),
+      { responsibleId: 'agent-1' },
     )
   })
 })
@@ -375,6 +394,9 @@ describe('SignContractPartyUseCase', () => {
     actorPapel: 'AGENT' as const,
     contractId: 'contract-1',
     partyId: 'party-owner',
+    documentId: 'proof-1',
+    clientIp: null,
+    userAgent: 'Contracts unit test',
   }
 
   it('lança 403 quando o ator é RENTER, sem consultar o repositório', async () => {
@@ -461,6 +483,8 @@ describe('SignContractPartyUseCase', () => {
       'contract-1',
       'party-owner',
       'agent-1',
+      { documentId: 'proof-1', clientIp: null, userAgent: 'Contracts unit test' },
+      { responsibleId: 'agent-1' },
     )
     expect(result.status).toBe('ATIVO')
   })

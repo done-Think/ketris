@@ -22,6 +22,7 @@ jobs:
       PLATFORM_ADMIN_NAME: ${{ secrets.PLATFORM_ADMIN_NAME }}
       PLATFORM_ADMIN_EMAIL: ${{ secrets.PLATFORM_ADMIN_EMAIL }}
       PLATFORM_ADMIN_PASSWORD: ${{ secrets.PLATFORM_ADMIN_PASSWORD }}
+      CONTRACTS_DATA_ENCRYPTION_KEY: ${{ secrets.CONTRACTS_DATA_ENCRYPTION_KEY }}
 
     steps:
       - uses: actions/checkout@v4
@@ -32,6 +33,15 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      - name: Valida a chave de proteção de Contracts antes de resetar o banco
+        run: |
+          node --input-type=module <<'JS'
+          const key = process.env.CONTRACTS_DATA_ENCRYPTION_KEY ?? ''
+          if (!/^[A-Za-z0-9+/]+={0,2}$/.test(key) || Buffer.from(key, 'base64').length !== 32) {
+            throw new Error('Configure CONTRACTS_DATA_ENCRYPTION_KEY com 32 bytes em base64.')
+          }
+          JS
 
       - name: Reseta o schema (apaga TODOS os dados atuais e reaplica as migrations)
         run: npm exec -w @ketris/web -- prisma migrate reset --force

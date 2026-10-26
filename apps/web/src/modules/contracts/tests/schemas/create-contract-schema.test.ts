@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest'
-
 import { createContractSchema } from '../../schemas/create-contract-schema'
 
 const schema = createContractSchema((key) => key)
 
 const validValues = {
-  activeStepIndex: 0,
-  maxStepIndex: 0,
   opportunityId: 'opportunity-1',
+  amount: 2450.75,
   ownerName: 'Carlos Eduardo Mendes',
   ownerCpf: '529.982.247-25',
   ownerEmail: 'carlos@example.com',
@@ -122,5 +120,35 @@ describe('createContractSchema', () => {
     expect(result.success ? undefined : result.error.issues[0]?.message).toBe(
       'translated:opportunityRequired',
     )
+  })
+  it.each([
+    { dueDay: '1.5' },
+    { dueDay: '0' },
+    { dueDay: '32' },
+    { startDate: '31/02/2026' },
+    { endDate: '31/02/2027' },
+    { endDate: '01/09/2026' },
+    { endDate: '31/08/2026' },
+    { amount: 1.005 },
+    { amount: 10000000000 },
+    { amount: 0.001 },
+    { ownerName: 'a'.repeat(201) },
+    { notes: 'a'.repeat(10001) },
+    { contractType: 'UNKNOWN' },
+    { guaranteeType: 'UNKNOWN' },
+    { adjustmentIndex: 'UNKNOWN' },
+  ])('rejeita dados incompatíveis com as regras da API: %o', (invalid) => {
+    expect(schema.safeParse({ ...validValues, ...invalid }).success).toBe(false)
+  })
+
+  it('preserva o valor máximo com centavos e datas válidas em ano bissexto', () => {
+    const result = schema.safeParse({
+      ...validValues,
+      amount: 9999999999.99,
+      startDate: '29/02/2028',
+      endDate: '01/03/2028',
+    })
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.data.amount).toBe(9999999999.99)
   })
 })

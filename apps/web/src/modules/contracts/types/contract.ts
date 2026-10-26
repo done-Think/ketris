@@ -1,66 +1,25 @@
+import type { ApiContractStatus, ApiContractType } from './service'
 import type { Control, FieldPath, UseFormSetValue } from 'react-hook-form'
-import type { GridRenderCellParams } from '@mui/x-data-grid'
+import type { GridPaginationModel, GridSortModel, GridRenderCellParams } from '@mui/x-data-grid'
 import type { z } from 'zod'
-
 import type { contractsFiltersSchema } from '../schemas/contracts-filters-schema'
 import type { createContractSchema } from '../schemas/create-contract-schema'
 
-export type ContractStatus =
-  | 'Rascunho'
-  | 'Em revisão'
-  | 'Aguardando assinatura'
-  | 'Assinado'
-  | 'Ativo'
-  | 'Encerrado'
-  | 'Cancelado'
+export type ContractStatus = ApiContractStatus
 
-export type ContractType = 'Residencial' | 'Comercial' | 'Temporada'
+export type ContractType = ApiContractType
 
-export type ContractStatusFilter = 'Todos' | ContractStatus
+export type ContractStatusFilter = 'ALL' | ContractStatus
 
-export type ContractActionMenuKey = 'view' | 'edit' | 'download' | 'send'
+export type ContractActionMenuKey = 'view' | 'edit' | 'download'
 
-export type ContractTableAction =
-  | 'view-summary'
-  | 'view-history'
-  | 'edit-data'
-  | 'duplicate'
-  | 'download-pdf'
-  | 'download-draft'
-  | 'send-signature'
-  | 'copy-signature-link'
+export type ContractTableAction = 'view-summary' | 'view-history' | 'edit-data' | 'view-documents'
 
-export type ContractActionMenuIconKey =
-  'summary' | 'history' | 'edit' | 'duplicate' | 'pdf' | 'draft' | 'send' | 'link'
+export type ContractActionMenuIconKey = 'summary' | 'history' | 'edit' | 'pdf'
 
 export type ContractActionMenuOption = {
   action: ContractTableAction
-  label: string
   icon: ContractActionMenuIconKey
-}
-
-export type ContractActionMockItem = {
-  label: string
-  value: string
-}
-
-export type ContractActionMockSection = {
-  title: string
-  items: ContractActionMockItem[]
-}
-
-export type ContractActionMockContent = {
-  title: string
-  description: string
-  statusLabel: string
-  primaryActionLabel: string
-  successMessage: string
-  sections: ContractActionMockSection[]
-}
-
-export type ContractActionDialogState = {
-  contract: ContractListItem | null
-  action: ContractTableAction | null
 }
 
 export type ContractActionHandler = (
@@ -82,12 +41,12 @@ export type ContractFilterTab = {
 }
 
 export type ContractListItem = {
+  canEdit: boolean
   id: string
   code: string
   title: string
   property: string
   propertyAddress: string
-  propertyImageUrl: string
   propertyId: string
   owner: string
   tenant: string
@@ -100,21 +59,7 @@ export type ContractListItem = {
   paymentDay: string
   guarantee: string
   notes: string
-  paymentHistory: ContractPaymentHistoryItem[]
-  documents: ContractDocumentItem[]
   updatedAt: string
-}
-
-export type ContractPaymentHistoryItem = {
-  period: string
-  amount: string
-  status: 'Pago' | 'Pendente'
-  date: string
-}
-
-export type ContractDocumentItem = {
-  name: string
-  sentAt: string
 }
 
 export type ContractStatusStyle = {
@@ -145,6 +90,11 @@ export type ContractsTableProps = {
   onContractAction: ContractActionHandler
   onContractSelect: (contract: ContractListItem) => void
   readOnly?: boolean
+  loading: boolean
+  paginationModel: GridPaginationModel
+  onPaginationModelChange: (model: GridPaginationModel) => void
+  sortModel: GridSortModel
+  onSortModelChange: (model: GridSortModel) => void
 }
 
 export type ContractDetailDashboardPageProps = {
@@ -162,19 +112,6 @@ export type ContractActionsCellProps = {
   onContractAction: ContractActionHandler
 }
 
-export type ContractActionDialogProps = ContractActionDialogState & {
-  onClose: () => void
-  onConfirm: () => void
-}
-
-export type ContractActionSummaryProps = {
-  contract: ContractListItem
-}
-
-export type ContractActionSectionProps = {
-  section: ContractActionMockSection
-}
-
 export type ContractMetricToneStyle = {
   bgcolor: string
   color: string
@@ -185,22 +122,10 @@ export type ContractsEmptyStateProps = {
   onCreateContract?: () => void
 }
 
-export type EligibleContractOpportunity = {
-  id: string
-  leadName: string
-  leadEmail: string
-  leadPhone: string | null
-  propertyId: string
-  propertyTitle: string
-  propertyAddress: string
-  amountLabel: string
-}
-
 export type CreateContractStepKey = 'opportunity' | 'parties' | 'conditions' | 'review'
 
 export type CreateContractStep = {
   key: CreateContractStepKey
-  label: string
 }
 
 export type CreateContractFormValues = z.infer<ReturnType<typeof createContractSchema>>
@@ -234,22 +159,15 @@ export type ContractStepFieldsProps = {
   activeStepKey: CreateContractStepKey
   control: Control<CreateContractFormValues>
   setValue: UseFormSetValue<CreateContractFormValues>
-  values: CreateContractFormValues
 }
 
 export type ContractStepControlProps = Pick<ContractStepFieldsProps, 'control'>
 
-export type ContractOpportunityStepProps = Pick<
-  ContractStepFieldsProps,
-  'control' | 'setValue' | 'values'
->
+export type ContractOpportunityStepProps = Pick<ContractStepFieldsProps, 'control' | 'setValue'>
 
-export type ContractPartiesStepProps = Pick<
-  ContractStepFieldsProps,
-  'control' | 'setValue' | 'values'
->
+export type ContractPartiesStepProps = Pick<ContractStepFieldsProps, 'control' | 'setValue'>
 
-export type ContractStepReviewProps = Pick<ContractStepFieldsProps, 'values'>
+export type ContractStepReviewProps = Pick<ContractStepFieldsProps, 'control'>
 
 export type ContractFieldProps = {
   control: ContractStepFieldsProps['control']
@@ -282,4 +200,14 @@ export type ContractActionsProps = {
   isSubmitting: boolean
   onPreviousStep: () => void
   onNextStep: () => void
+}
+
+export interface ContractListPagingState {
+  filterKey: string
+  model: GridPaginationModel
+}
+
+export interface ContractTableState {
+  sort: GridSortModel
+  paging: ContractListPagingState
 }

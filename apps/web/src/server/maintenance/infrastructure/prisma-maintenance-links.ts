@@ -2,12 +2,7 @@ import type { MaintenanceUserLinkInput } from '../types/maintenance-ticket'
 import { Prisma } from '@prisma/client'
 import { prisma } from '@server/db/prisma'
 import { ConflictError, ForbiddenError } from '@server/shared/errors'
-import {
-  assertContractRenterLink,
-  assertRenterParty,
-} from '@server/contracts/domain/contract-renter-link-policy'
-import { linkContractPartyUser } from '@server/contracts/infrastructure/contract-party-user-link'
-import { normalizeEmail } from '@server/shared/normalize-email'
+import { contractsContainer } from '@server/contracts/container'
 import type { MaintenanceActor } from '../types/maintenance-ticket'
 import { assertAdmin } from '../application/authorization'
 import { contractInclude, activityData } from './maintenance-ticket-mapper'
@@ -20,6 +15,7 @@ export async function regularizeMaintenanceLinks(
   await prisma
     .$transaction(
       async (tx) => {
+        await tx.$queryRaw`SELECT id FROM "contratos" WHERE id = ${input.contractId} AND "tenantId" = ${actor.actorTenantId} FOR UPDATE`
         const contract = await tx.contrato.findFirst({
           where: {
             id: input.contractId,
@@ -45,26 +41,14 @@ export async function regularizeMaintenanceLinks(
           })
         }
         if (input.renterId && input.partyId) {
-          const row = contract.partes.find((p) => p.id === input.partyId)
-          const party = row && { role: row.papel, email: row.email, userId: row.usuarioId }
-          assertRenterParty(party)
-          const user = await tx.usuario.findFirst({
-            where: {
-              id: input.renterId,
-            },
-          })
-          assertContractRenterLink(party, user)
-          const linked = await linkContractPartyUser(tx, {
-            tenantId: actor.actorTenantId,
+          await contractsContainer.createContractPartyLinkUseCase(tx).execute({
+            actorTenantId: actor.actorTenantId,
+            actorId: actor.actorId,
+            actorPapel: actor.actorPapel,
             contractId: contract.id,
             partyId: input.partyId,
-            userId: user.id,
-            email: normalizeEmail(user.email),
+            userId: input.renterId,
           })
-          if (!linked)
-            throw new ConflictError(
-              'A parte do contrato foi alterada. Revise o vínculo e tente novamente.',
-            )
         }
         const tickets = await tx.chamadoManutencao.findMany({
           where: { tenantId: actor.actorTenantId, imovelId: contract.imovelId },

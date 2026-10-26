@@ -1,5 +1,4 @@
-# Bucket de uploads futuro (fotos de imóvel). Só provisiona o bucket + credencial — a rota de
-# upload em si ainda não existe no código (fora de escopo deste plano de infra).
+# Bucket privado de uploads. PDFs de contratos usam URLs temporárias após autorização na aplicação.
 resource "aws_s3_bucket" "uploads" {
   bucket = "${var.project_name}-${var.environment}-uploads"
 
@@ -22,5 +21,19 @@ resource "aws_s3_bucket_versioning" "uploads" {
 
   versioning_configuration {
     status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_cors_configuration" "contract_documents" {
+  count  = length(var.contract_document_allowed_origins) > 0 ? 1 : 0
+  bucket = aws_s3_bucket.uploads.id
+
+  cors_rule {
+    id              = "contract-documents"
+    allowed_methods = ["GET", "HEAD", "PUT"]
+    allowed_origins = var.contract_document_allowed_origins
+    allowed_headers = ["content-type", "content-length", "x-amz-checksum-sha256"]
+    expose_headers  = ["ETag", "x-amz-checksum-sha256"]
+    max_age_seconds = 300
   }
 }
