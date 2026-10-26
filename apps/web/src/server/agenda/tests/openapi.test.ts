@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { join, relative, sep } from 'node:path'
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi'
 import { expect, it } from 'vitest'
 import { registerAgendaOpenApi } from '../openapi'
@@ -20,6 +20,8 @@ it('documenta cada método HTTP real de Agenda, incluindo a busca de imóveis e 
   const directory = join(process.cwd(), 'src/app/api/agenda')
   for (const file of routeFiles(directory)) {
     const path = `/agenda/${relative(directory, file)
+      .split(sep)
+      .join('/')
       .replace(/\/route\.ts$/, '')
       .replace(/\[(\w+)\]/g, '{$1}')}`
     for (const [, method] of readFileSync(file, 'utf8').matchAll(
