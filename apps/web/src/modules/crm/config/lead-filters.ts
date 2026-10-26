@@ -5,9 +5,9 @@ export const leadFilters: readonly {
   labelKey: LeadFilterKey
   stage: LeadStage | null
 }[] = [
-  { label: 'Todos', labelKey: 'all', stage: null },
-  { label: 'Novo', labelKey: 'new', stage: 'Novo' },
-  { label: 'Em contato', labelKey: 'contacted', stage: 'Em contato' },
-  { label: 'Visita marcada', labelKey: 'visitScheduled', stage: 'Visita marcada' },
-  { label: 'Proposta', labelKey: 'proposal', stage: 'Proposta' },
+  { label: 'ALL', labelKey: 'all', stage: null },
+  { label: 'NOVO', labelKey: 'new', stage: 'NOVO' },
+  { label: 'EM_CONTATO', labelKey: 'contacted', stage: 'EM_CONTATO' },
+  { label: 'VISITA_MARCADA', labelKey: 'visitScheduled', stage: 'VISITA_MARCADA' },
+  { label: 'PROPOSTA', labelKey: 'proposal', stage: 'PROPOSTA' },
 ]

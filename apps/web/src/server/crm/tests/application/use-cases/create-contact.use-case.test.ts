@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { ContactEmailAlreadyExistsError } from '../../../domain/errors'
-import type { Contact } from '../../../domain/contact.entity'
 import type { ContactRepository } from '../../../application/ports/contact-repository.port'
 import { CreateContactUseCase } from '../../../application/use-cases/create-contact.use-case'
+import type { Contact } from '../../../domain/contact.entity'
+import { ContactEmailAlreadyExistsError } from '../../../domain/errors'
 
 const existing: Contact = {
   id: 'contato-1',

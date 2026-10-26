@@ -1,20 +1,18 @@
-import type { Opportunity } from '../types/opportunity'
-import type { PublicPropertyDetail, PublicPropertySummary } from '../types/property'
-import { formatCurrency, formatDate, formatMonthlyCurrency } from './formatters'
 import { defaultLocale } from '@/i18n/routing'
 import type { AppLocale } from '@/i18n/types/locale.types'
+import type { CrmFormatters } from '../types/formatters'
+import type { Opportunity } from '../types/opportunity'
+import type { CrmPropertyDetail, CrmPropertySummary } from '../types/property'
+import { formatCurrency, formatDate, formatMonthlyCurrency } from './formatters'
 
 import type {
   ProposalManagementListItem,
   ProposalManagementProperty,
-  ProposalManagementStatusCounts,
-  ProposalManagementSummary,
   ProposalTransactionKind,
 } from '../types/proposal-management'
-import { proposalManagementStatuses } from '../config/proposal-statuses'
 
 function toTransactionKind(
-  property: PublicPropertyDetail | PublicPropertySummary | undefined,
+  property: CrmPropertyDetail | CrmPropertySummary | undefined,
 ): ProposalTransactionKind {
   return property?.purpose === 'ALUGUEL' ? 'rent' : 'sale'
 }
@@ -35,7 +33,7 @@ function toReference(opportunityId: string): string {
 
 function toProperty(
   propertyId: string,
-  property: PublicPropertyDetail | PublicPropertySummary | undefined,
+  property: CrmPropertyDetail | CrmPropertySummary | undefined,
   fallbackAddressLabel: string,
 ): ProposalManagementProperty {
   if (!property) {
@@ -59,9 +57,10 @@ function toProperty(
 
 export function mapOpportunityToProposalListItem(
   opportunity: Opportunity,
-  property: PublicPropertyDetail | PublicPropertySummary | undefined,
+  property: CrmPropertyDetail | CrmPropertySummary | undefined,
   fallbackAddressLabel: string,
   locale: AppLocale = defaultLocale,
+  format?: CrmFormatters,
 ): ProposalManagementListItem {
   const transactionKind = toTransactionKind(property)
 
@@ -76,35 +75,11 @@ export function mapOpportunityToProposalListItem(
     property: toProperty(opportunity.propertyId, property, fallbackAddressLabel),
     amount: opportunity.proposedValue,
     transactionKind,
-    valueLabel: toValueLabel(opportunity.proposedValue, transactionKind, locale),
+    valueLabel:
+      format?.money(opportunity.proposedValue, transactionKind === 'rent') ??
+      toValueLabel(opportunity.proposedValue, transactionKind, locale),
     status: opportunity.status,
     createdAt: opportunity.createdAt,
-    createdLabel: formatDate(opportunity.createdAt, locale),
-  }
-}
-
-export function buildProposalManagementSummary(
-  items: readonly ProposalManagementListItem[],
-  locale: AppLocale = defaultLocale,
-): ProposalManagementSummary {
-  const statusCounts = Object.fromEntries(
-    proposalManagementStatuses.map((status) => [
-      status,
-      items.filter((item) => item.status === status).length,
-    ]),
-  ) as ProposalManagementStatusCounts
-
-  const acceptedItems = items.filter((item) => item.status === 'ACEITA')
-  const acceptedTotalAmount = acceptedItems.reduce((total, item) => total + item.amount, 0)
-  const conversionRate = items.length > 0 ? acceptedItems.length / items.length : 0
-
-  return {
-    totalCount: items.length,
-    statusCounts,
-    negotiationCount: statusCounts.EM_NEGOCIACAO,
-    acceptedTotalAmount,
-    acceptedTotalLabel: formatCurrency(acceptedTotalAmount, locale),
-    conversionRate,
-    conversionRateLabel: `${Math.round(conversionRate * 100)}%`,
+    createdLabel: format?.date(opportunity.createdAt) ?? formatDate(opportunity.createdAt, locale),
   }
 }

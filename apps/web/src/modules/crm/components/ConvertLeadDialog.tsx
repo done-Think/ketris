@@ -1,7 +1,9 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import * as crmStyles from '../styles/convert-lead-dialog.styles'
+
 import { zodResolver } from '@hookform/resolvers/zod'
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import {
   Box,
   Button,
@@ -14,72 +16,58 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import { useSession } from 'next-auth/react'
-import { useLocale, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
+import { useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-
-import {
-  formatIntegerCurrencyInput,
-  parseIntegerCurrencyInput,
-} from '@shared/lib/utils/currency-input'
-import { brand, iconSize } from '@shared/theme/tokens'
 
 import { useConvertLeadToOpportunity } from '../hooks/use-leads'
 import { createConvertLeadSchema } from '../schemas/convert-lead-schema'
 import type { ConvertLeadDialogProps, ConvertLeadFormValues } from '../types/lead'
-import type { PublicPropertySummary } from '../types/property'
 import { errorMessage } from '../utils/error-message'
 import { PropertyAutocomplete } from './opportunity-detail/PropertyAutocomplete'
 
-export function ConvertLeadDialog({ lead, onClose, open }: ConvertLeadDialogProps) {
+export function ConvertLeadDialog(props: ConvertLeadDialogProps) {
+  return props.open && props.lead ? <ConvertLeadForm {...props} /> : null
+}
+
+function ConvertLeadForm({ lead, onClose, open }: ConvertLeadDialogProps) {
   const t = useTranslations('crm.leads.convert')
-  const locale = useLocale()
   const { enqueueSnackbar } = useSnackbar()
   const { data: session } = useSession()
   const tenantId = session?.tenantId ?? ''
   const convertLead = useConvertLeadToOpportunity(tenantId)
-  const [property, setProperty] = useState<PublicPropertySummary | null>(null)
   const schema = useMemo(() => createConvertLeadSchema(t), [t])
   const {
     control,
-    formState: { errors, isValid },
+    formState: { isValid },
     handleSubmit,
-    reset,
-    setValue,
   } = useForm<ConvertLeadFormValues>({
     defaultValues: {
-      propertyId: '',
+      property: null,
+      email: lead?.email ?? '',
       proposedValue: 0,
     },
     mode: 'onChange',
     resolver: zodResolver(schema),
   })
 
-  useEffect(() => {
-    if (!open) return
-
-    setProperty(null)
-    reset({ propertyId: '', proposedValue: 0 })
-  }, [open, reset])
-
   if (!lead) return null
 
-  const canSubmit = Boolean(property) && isValid && !convertLead.isPending
-
-  function handlePropertyChange(nextProperty: PublicPropertySummary | null) {
-    setProperty(nextProperty)
-    setValue('propertyId', nextProperty?.id ?? '', { shouldDirty: true, shouldValidate: true })
-  }
+  const canSubmit = isValid && !convertLead.isPending
 
   function submit(values: ConvertLeadFormValues) {
-    if (!property) return
+    if (!values.property) return
 
     convertLead.mutate(
       {
         leadId: lead!.id,
-        payload: { propertyId: property.id, proposedValue: values.proposedValue },
+        payload: {
+          propertyId: values.property.id,
+          proposedValue: values.proposedValue,
+          email: values.email,
+        },
       },
       {
         onSuccess: () => {
@@ -95,30 +83,46 @@ export function ConvertLeadDialog({ lead, onClose, open }: ConvertLeadDialogProp
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle sx={{ px: { xs: 2, md: 2.8 }, pb: 1.4, pt: 2.4 }}>
+      <DialogTitle sx={crmStyles.dialogTitleSx}>
         <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
-          <Box sx={{ minWidth: 0 }}>
-            <Typography sx={{ color: brand.magenta[600], fontSize: 13, fontWeight: 900 }}>
-              {t('eyebrow')}
-            </Typography>
-            <Typography sx={{ color: brand.graphite[500], fontSize: 22, fontWeight: 900 }}>
-              {t('title', { name: lead.name })}
-            </Typography>
+          <Box sx={crmStyles.boxSx}>
+            <Typography sx={crmStyles.typographySx}>{t('eyebrow')}</Typography>
+            <Typography sx={crmStyles.typographySx2}>{t('title', { name: lead.name })}</Typography>
           </Box>
           <IconButton aria-label={t('close')} onClick={onClose}>
-            <CloseRoundedIcon sx={{ fontSize: iconSize.lg }} />
+            <CloseRoundedIcon sx={crmStyles.closeRoundedIconSx} />
           </IconButton>
         </Stack>
       </DialogTitle>
 
-      <DialogContent sx={{ px: { xs: 2, md: 2.8 }, pb: 2 }}>
+      <DialogContent sx={crmStyles.dialogContentSx}>
         <Stack spacing={2}>
-          <PropertyAutocomplete
-            tenantId={tenantId}
-            value={property}
-            onChange={handlePropertyChange}
-            error={Boolean(errors.propertyId)}
-            helperText={errors.propertyId?.message}
+          <Controller
+            control={control}
+            name="property"
+            render={({ field, fieldState }) => (
+              <PropertyAutocomplete
+                tenantId={tenantId}
+                value={field.value}
+                onChange={field.onChange}
+                error={Boolean(fieldState.error)}
+                helperText={fieldState.error?.message}
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="email"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                type="email"
+                required
+                label={t('email')}
+                error={Boolean(fieldState.error)}
+                helperText={fieldState.error?.message}
+              />
+            )}
           />
           <Controller
             control={control}
@@ -130,13 +134,14 @@ export function ConvertLeadDialog({ lead, onClose, open }: ConvertLeadDialogProp
                 inputRef={field.ref}
                 label={t('proposedValue')}
                 fullWidth
-                value={formatIntegerCurrencyInput(field.value, locale)}
-                onChange={(event) =>
-                  field.onChange(parseIntegerCurrencyInput(event.target.value, locale))
-                }
+                type="number"
+                value={field.value || ''}
+                onChange={(event) => field.onChange(Number(event.target.value))}
                 slotProps={{
                   htmlInput: {
-                    inputMode: 'numeric',
+                    inputMode: 'decimal',
+                    min: 0.01,
+                    step: 0.01,
                   },
                 }}
                 error={Boolean(fieldState.error)}
@@ -147,7 +152,7 @@ export function ConvertLeadDialog({ lead, onClose, open }: ConvertLeadDialogProp
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ px: { xs: 2, md: 2.8 }, pb: 2.5, pt: 0 }}>
+      <DialogActions sx={crmStyles.dialogActionsSx}>
         <Button type="button" variant="outlined" color="secondary" onClick={onClose}>
           {t('cancel')}
         </Button>

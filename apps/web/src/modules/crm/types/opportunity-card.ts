@@ -1,9 +1,9 @@
 import type { Opportunity } from './opportunity'
-import type { PublicPropertySummary } from './property'
+import type { CrmPropertySummary } from './property'
 
 export type OpportunityCardProps = {
   opportunity: Opportunity
-  property?: PublicPropertySummary
+  property?: CrmPropertySummary
   density?: 'regular' | 'compact'
   presentation?: {
     indicatorColor?: string

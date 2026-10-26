@@ -1,26 +1,12 @@
-import type { Prisma } from '@prisma/client'
+import type { CrmPage } from '../types/pagination'
+import { crmChangedFields } from './crm-changed-fields'
+import { readCrmPage } from './read-crm-page'
 
-import { prisma } from '@server/db/prisma'
+import type { CrmDatabase, CrmScope, LeadRow } from '../types/prisma'
+import { recordCrmAudit } from './record-crm-audit'
 
-import type { Lead, LeadUpdate, NewLead } from '../domain/lead.entity'
 import type { LeadListFilters, LeadRepository } from '../application/ports/lead-repository.port'
-
-type LeadRow = {
-  id: string
-  tenantId: string
-  responsavelId: string
-  nome: string
-  telefone: string
-  email: string | null
-  interesse: string
-  orcamento: string
-  origem: string
-  estagio: Lead['stage']
-  observacoes: string | null
-  oportunidadeId: string | null
-  createdAt: Date
-  updatedAt: Date
-}
+import type { Lead, LeadUpdate, NewLead } from '../domain/lead.entity'
 
 function toDomain(row: LeadRow): Lead {
   return {
@@ -42,10 +28,15 @@ function toDomain(row: LeadRow): Lead {
 }
 
 export class PrismaLeadRepository implements LeadRepository {
+  constructor(
+    private readonly db: CrmDatabase,
+    private readonly scope: CrmScope,
+  ) {}
+
   async create(lead: NewLead): Promise<Lead> {
-    const row = await prisma.lead.create({
+    const row = await this.db.lead.create({
       data: {
-        tenantId: lead.tenantId,
+        tenantId: this.scope.actorTenantId,
         responsavelId: lead.responsavelId,
         nome: lead.name,
         telefone: lead.phone,
@@ -57,43 +48,74 @@ export class PrismaLeadRepository implements LeadRepository {
       },
     })
 
-    return toDomain(row as unknown as LeadRow)
+    await recordCrmAudit(this.db, this.scope, 'LEAD', row.id, 'CREATED', [])
+    return toDomain(row)
   }
 
-  async findManyByTenant(tenantId: string, filters?: LeadListFilters): Promise<Lead[]> {
-    const where: Prisma.LeadWhereInput = { tenantId }
-
-    if (filters?.responsavelId) where.responsavelId = filters.responsavelId
-
-    const rows = await prisma.lead.findMany({ where, orderBy: { createdAt: 'desc' } })
-
-    return rows.map((row) => toDomain(row as unknown as LeadRow))
+  async findManyByTenant(tenantId: string, filters?: LeadListFilters): Promise<CrmPage<Lead>> {
+    const page = await readCrmPage(this.db, this.scope, 'lead', filters)
+    const rows = await this.db.lead.findMany({
+      where: { id: { in: page.ids }, tenantId: this.scope.actorTenantId },
+      include: { responsavel: { select: { nome: true } } },
+    })
+    const byId = new Map(
+      rows.map((row) => [row.id, { ...toDomain(row), responsibleName: row.responsavel.nome }]),
+    )
+    return {
+      pagination: page.pagination,
+      groups: page.groups,
+      items: page.ids.flatMap((id) => {
+        const item = byId.get(id)
+        return item ? [item] : []
+      }),
+    }
   }
 
   async findById(id: string): Promise<Lead | null> {
-    const row = await prisma.lead.findUnique({ where: { id } })
+    const row = await this.db.lead.findFirst({
+      where: {
+        id,
+        tenantId: this.scope.actorTenantId,
+        ...(this.scope.actorPapel === 'AGENT' ? { responsavelId: this.scope.actorId ?? '' } : {}),
+      },
+    })
 
-    return row ? toDomain(row as unknown as LeadRow) : null
+    return row ? toDomain(row) : null
   }
 
   async update(id: string, changes: LeadUpdate): Promise<Lead> {
-    const row = await prisma.lead.update({
-      where: { id },
+    const current = await this.findById(id)
+    const changedFields = current ? crmChangedFields(current, changes) : []
+    const row = await this.db.lead.update({
+      where: {
+        id,
+        tenantId: this.scope.actorTenantId,
+        ...(this.scope.actorPapel === 'AGENT' ? { responsavelId: this.scope.actorId ?? '' } : {}),
+      },
       data: {
         estagio: changes.stage,
         observacoes: changes.notes,
       },
     })
 
-    return toDomain(row as unknown as LeadRow)
+    await recordCrmAudit(this.db, this.scope, 'LEAD', row.id, 'UPDATED', changedFields)
+    return toDomain(row)
   }
 
-  async markConverted(id: string, opportunityId: string): Promise<Lead> {
-    const row = await prisma.lead.update({
-      where: { id },
-      data: { estagio: 'PROPOSTA', oportunidadeId: opportunityId },
+  async markConverted(id: string, opportunityId: string, email?: string): Promise<Lead> {
+    const row = await this.db.lead.update({
+      where: {
+        id,
+        tenantId: this.scope.actorTenantId,
+        ...(this.scope.actorPapel === 'AGENT' ? { responsavelId: this.scope.actorId ?? '' } : {}),
+      },
+      data: { estagio: 'PROPOSTA', oportunidadeId: opportunityId, email },
     })
 
-    return toDomain(row as unknown as LeadRow)
+    await recordCrmAudit(this.db, this.scope, 'LEAD', row.id, 'CONVERTED', [
+      'stage',
+      'opportunityId',
+    ])
+    return toDomain(row)
   }
 }

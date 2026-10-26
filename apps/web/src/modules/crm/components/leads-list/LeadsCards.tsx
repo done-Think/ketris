@@ -1,7 +1,6 @@
 import { Box, Button, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
-
-import { brand, radius, shadows, surface } from '@shared/theme/tokens'
+import * as crmStyles from '../../styles/leads-cards.styles'
 
 import type { LeadsCardsProps } from '../../types/lead'
 import { LeadAvatar } from './LeadAvatar'
@@ -11,28 +10,18 @@ export function LeadsCards({ leads, onContactLead }: LeadsCardsProps) {
   const t = useTranslations('crm.leads')
 
   return (
-    <Stack aria-label={t('mobileListAriaLabel')} spacing={1.2} sx={{ p: 1.6 }}>
+    <Stack aria-label={t('mobileListAriaLabel')} spacing={1.2} sx={crmStyles.stackSx}>
       {leads.map((lead) => (
-        <Box
-          key={lead.id}
-          sx={{
-            bgcolor: surface.paper,
-            border: '1px solid',
-            borderColor: brand.neutral[100],
-            borderRadius: `${radius.sm}px`,
-            boxShadow: shadows.crmCard,
-            p: 1.6,
-          }}
-        >
+        <Box key={lead.id} sx={crmStyles.boxSx}>
           <Stack spacing={1.4}>
             <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1.2}>
-              <Stack direction="row" alignItems="center" spacing={1.1} sx={{ minWidth: 0 }}>
+              <Stack direction="row" alignItems="center" spacing={1.1} sx={crmStyles.stackSx2}>
                 <LeadAvatar lead={lead} />
-                <Box sx={{ minWidth: 0 }}>
-                  <Typography noWrap sx={{ fontSize: 17, fontWeight: 800 }}>
+                <Box sx={crmStyles.stackSx2}>
+                  <Typography noWrap sx={crmStyles.typographySx}>
                     {lead.name}
                   </Typography>
-                  <Typography noWrap sx={{ color: 'text.secondary', fontSize: 15 }}>
+                  <Typography noWrap sx={crmStyles.typographySx2}>
                     {lead.source}
                   </Typography>
                 </Box>
@@ -41,24 +30,20 @@ export function LeadsCards({ leads, onContactLead }: LeadsCardsProps) {
             </Stack>
 
             <Box>
-              <Typography sx={{ color: brand.neutral[500], fontSize: 15, fontWeight: 700 }}>
-                {t('tableColumns.interest')}
-              </Typography>
-              <Typography sx={{ fontSize: 17, fontWeight: 700 }}>{lead.interest}</Typography>
+              <Typography sx={crmStyles.typographySx3}>{t('tableColumns.interest')}</Typography>
+              <Typography sx={crmStyles.typographySx4}>{lead.interest}</Typography>
             </Box>
 
             <Stack direction="row" justifyContent="space-between" spacing={1.2}>
               <Box>
-                <Typography sx={{ color: brand.neutral[500], fontSize: 15, fontWeight: 700 }}>
-                  {t('tableColumns.budget')}
-                </Typography>
-                <Typography sx={{ fontSize: 17, fontWeight: 800 }}>{lead.budget}</Typography>
+                <Typography sx={crmStyles.typographySx3}>{t('tableColumns.budget')}</Typography>
+                <Typography sx={crmStyles.typographySx}>{lead.budget}</Typography>
               </Box>
-              <Box sx={{ textAlign: 'right' }}>
-                <Typography sx={{ color: brand.neutral[500], fontSize: 15, fontWeight: 700 }}>
+              <Box sx={crmStyles.boxSx2}>
+                <Typography sx={crmStyles.typographySx3}>
                   {t('tableColumns.lastContact')}
                 </Typography>
-                <Typography sx={{ fontSize: 17, fontWeight: 700 }}>{lead.lastContact}</Typography>
+                <Typography sx={crmStyles.typographySx4}>{lead.lastContact}</Typography>
               </Box>
             </Stack>
 
@@ -68,7 +53,7 @@ export function LeadsCards({ leads, onContactLead }: LeadsCardsProps) {
               fullWidth
               disabled={!onContactLead}
               onClick={() => onContactLead?.(lead)}
-              sx={{ borderRadius: `${radius.sm}px`, fontSize: 16, fontWeight: 800 }}
+              sx={crmStyles.buttonSx}
             >
               {t('contactAction')}
             </Button>

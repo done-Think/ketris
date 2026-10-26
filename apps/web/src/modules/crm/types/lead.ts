@@ -1,52 +1,35 @@
+import type {
+  ConvertLeadRequestDTO,
+  CreateLeadRequestDTO,
+  LeadDTO,
+  PatchLeadRequestDTO,
+} from '@server/crm/types/dto'
 import type { Control } from 'react-hook-form'
 import type { z } from 'zod'
 
 import type { createConvertLeadSchema } from '../schemas/convert-lead-schema'
 import type { createLeadSchema } from '../schemas/create-lead-schema'
 
-export type LeadStage = 'Novo' | 'Em contato' | 'Visita marcada' | 'Proposta'
+export type LeadStage = 'NOVO' | 'EM_CONTATO' | 'VISITA_MARCADA' | 'PROPOSTA'
 
 export type LeadApiStage = 'NOVO' | 'EM_CONTATO' | 'VISITA_MARCADA' | 'PROPOSTA'
 
-export interface Lead {
-  id: string
-  tenantId: string
-  responsavelId: string
-  name: string
-  phone: string
-  email: string | null
-  interest: string
-  budget: string
-  source: string
-  stage: LeadApiStage
-  notes: string | null
-  opportunityId: string | null
-  createdAt: string
-  updatedAt: string
-}
+export type Lead = LeadDTO
 
-export interface CreateLeadPayload {
-  name: string
-  phone: string
-  email?: string | null
-  interest: string
-  budget: string
-  source: string
-  notes?: string | null
-}
+export type CreateLeadPayload = CreateLeadRequestDTO
 
-export interface UpdateLeadStagePayload {
-  stage: LeadApiStage
-}
+export type UpdateLeadStagePayload = Pick<PatchLeadRequestDTO, 'stage'>
 
-export interface ConvertLeadPayload {
-  propertyId: string
-  proposedValue: number
-}
+export type ConvertLeadPayload = ConvertLeadRequestDTO
 
-export type LeadFilter = 'Todos' | LeadStage
+export type LeadFilter = 'ALL' | LeadStage
 
 export type LeadTableSortField = 'name' | 'interest' | 'budget' | 'stage' | 'source' | 'lastContact'
+
+export type LeadTableColumn = {
+  key: 'name' | 'interest' | 'budget' | 'status' | 'source' | 'lastContact' | 'actions'
+  sortField?: LeadTableSortField
+}
 
 export type LeadTableSortDirection = 'asc' | 'desc'
 
@@ -115,7 +98,7 @@ export type LeadsHeaderProps = {
 
 export type LeadsStatusFiltersProps = {
   activeFilter: LeadFilter
-  leads: readonly DashboardLead[]
+  counts: Partial<Record<LeadFilter, number>>
   onFilterChange: (filter: LeadFilter) => void
 }
 
@@ -204,3 +187,5 @@ export type LeadsListProps = {
   onLeadContactSelect: (lead: DashboardLead) => void
   totalCount?: number
 }
+
+export type LeadListFilters = import('@server/crm/types/dto').LeadListQueryDTO

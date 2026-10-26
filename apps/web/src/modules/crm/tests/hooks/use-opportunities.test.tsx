@@ -1,16 +1,22 @@
-import type { ReactNode } from 'react'
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({
+    status: 'authenticated',
+    data: { tenantId: 'tenant-1', user: { id: 'user-1' }, role: 'OWNER' },
+  }),
+}))
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { crmService } from '../../services/crm-service'
-import type { Opportunity } from '../../types/opportunity'
 import {
   crmQueryKeys,
   useCrmProperties,
   useOpportunities,
   useUpdateOpportunity,
 } from '../../hooks/use-opportunities'
+import { crmService } from '../../services/crm-service'
+import type { Opportunity } from '../../types/opportunity'
 
 vi.mock('../../services/crm-service', () => ({
   crmService: {
@@ -26,6 +32,7 @@ vi.mock('../../services/crm-service', () => ({
 const opportunity: Opportunity = {
   id: 'opportunity-1',
   tenantId: 'tenant-1',
+  contactId: null,
   propertyId: 'property-1',
   leadName: 'Maria Silva',
   leadEmail: 'maria@example.com',
@@ -68,6 +75,7 @@ describe('CRM query keys and hooks', () => {
       'opportunities',
       'tenant-1',
       'list',
+      [],
       { status: 'ENVIADA', includeArchived: false },
     ])
     expect(crmQueryKeys.list('tenant-2', { includeArchived: true })).not.toEqual(
@@ -76,7 +84,11 @@ describe('CRM query keys and hooks', () => {
   })
 
   it('loads a filtered tenant opportunity list', async () => {
-    vi.mocked(crmService.list).mockResolvedValueOnce([opportunity])
+    vi.mocked(crmService.list).mockResolvedValueOnce({
+      opportunities: [opportunity],
+      pagination: { page: 1, pageSize: 5, pageCount: 1, totalCount: 1 },
+      groups: [],
+    })
     const queryClient = createQueryClient()
     const filters = { status: 'ENVIADA' as const }
     const { result } = renderHook(() => useOpportunities('tenant-1', filters), {
@@ -86,20 +98,25 @@ describe('CRM query keys and hooks', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
     expect(crmService.list).toHaveBeenCalledWith(filters)
-    expect(queryClient.getQueryData(crmQueryKeys.list('tenant-1', filters))).toEqual([opportunity])
+    expect(
+      queryClient.getQueryData(crmQueryKeys.list('tenant-1', filters, ['user-1', 'OWNER'])),
+    ).toMatchObject({ opportunities: [opportunity] })
   })
 
   it('scopes public property queries by the active CRM tenant', async () => {
-    vi.mocked(crmService.listProperties).mockResolvedValueOnce([])
+    vi.mocked(crmService.listProperties).mockResolvedValueOnce({
+      properties: [],
+      pagination: { page: 1, pageSize: 10, pageCount: 1, totalCount: 0 },
+    })
     const queryClient = createQueryClient()
-    const filters = { purpose: 'ALUGUEL' as const, q: 'Jardins' }
+    const filters = { q: 'Jardins' }
     const { result } = renderHook(() => useCrmProperties('tenant-1', filters), {
       wrapper: createWrapper(queryClient),
     })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-    expect(crmService.listProperties).toHaveBeenCalledWith(filters)
+    expect(crmService.listProperties).toHaveBeenCalledWith({ ...filters, page: 1, pageSize: 10 })
     expect(crmQueryKeys.propertyList('tenant-1', filters)).not.toEqual(
       crmQueryKeys.propertyList('tenant-2', filters),
     )
@@ -132,9 +149,11 @@ describe('CRM query keys and hooks', () => {
       })
     })
 
-    expect(queryClient.getQueryData(crmQueryKeys.detail('tenant-1', opportunity.id))).toEqual(
-      updated,
-    )
+    expect(
+      queryClient.getQueryData(
+        crmQueryKeys.detail('tenant-1', opportunity.id, ['user-1', 'OWNER']),
+      ),
+    ).toEqual(updated)
     expect(queryClient.getQueryState(listKey)?.isInvalidated).toBe(true)
   })
 })

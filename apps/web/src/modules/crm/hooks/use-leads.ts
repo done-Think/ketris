@@ -1,16 +1,23 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCrmCacheScope } from './use-crm-cache-scope'
 
 import { crmService } from '../services/crm-service'
-import type { ConvertLeadPayload, CreateLeadPayload, LeadApiStage } from '../types/lead'
+import type {
+  ConvertLeadPayload,
+  CreateLeadPayload,
+  LeadApiStage,
+  LeadListFilters,
+} from '../types/lead'
 import { crmQueryKeys } from './use-opportunities'
 
-export function useLeads(tenantId: string | null | undefined) {
+export function useLeads(tenantId: string | null | undefined, filters: LeadListFilters = {}) {
+  const scope = useCrmCacheScope(tenantId)
   const scopedTenantId = tenantId ?? ''
 
   return useQuery({
-    queryKey: crmQueryKeys.leadsList(scopedTenantId),
-    queryFn: () => crmService.listLeads(),
-    enabled: Boolean(tenantId),
+    queryKey: crmQueryKeys.leadsList(scopedTenantId, filters, scope.actorKey),
+    queryFn: () => crmService.listLeads(filters),
+    enabled: scope.enabled,
   })
 }
 
@@ -47,5 +54,14 @@ export function useConvertLeadToOpportunity(tenantId: string) {
       queryClient.invalidateQueries({ queryKey: crmQueryKeys.leadsTenant(tenantId) })
       queryClient.invalidateQueries({ queryKey: crmQueryKeys.lists(tenantId) })
     },
+  })
+}
+
+export function useLead(tenantId: string, leadId: string | null) {
+  const scope = useCrmCacheScope(tenantId)
+  return useQuery({
+    queryKey: [...crmQueryKeys.leadsTenant(tenantId), 'detail', leadId, scope.actorKey],
+    queryFn: () => crmService.getLead(leadId!),
+    enabled: scope.enabled && Boolean(leadId),
   })
 }

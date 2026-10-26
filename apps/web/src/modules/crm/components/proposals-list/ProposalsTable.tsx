@@ -9,8 +9,8 @@ import {
   TableRow,
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
+import * as crmStyles from '../../styles/proposals-table.styles'
 
-import { alpha, brand, surface } from '@shared/theme/tokens'
 import { OverflowTooltipText } from '@shared/components/ui'
 
 import type { ProposalsTableProps } from '../../types/proposal-management'
@@ -35,52 +35,19 @@ export function ProposalsTable({
 }: ProposalsTableProps) {
   const t = useTranslations('crm.proposalManagement')
   return (
-    <TableContainer sx={{ display: { xs: 'none', md: 'block' }, overflowX: 'auto' }}>
-      <Table
-        size="small"
-        aria-label={t('tableAriaLabel')}
-        sx={{
-          minWidth: 780,
-          tableLayout: 'fixed',
-          '& .MuiTableCell-root': { borderColor: 'divider' },
-          '& .MuiTableHead-root .MuiTableCell-root': {
-            px: 1.25,
-            py: 0,
-            color: brand.neutral[500],
-            fontSize: 14,
-            fontWeight: 700,
-            lineHeight: 1.2,
-            letterSpacing: '0.01em',
-            textTransform: 'uppercase',
-            whiteSpace: 'nowrap',
-          },
-          '& .MuiTableBody-root .MuiTableCell-root': {
-            px: 1.25,
-            py: 0,
-            color: brand.graphite[500],
-            fontSize: 15.5,
-            lineHeight: 1.3,
-          },
-          '& .MuiTableHead-root .MuiTableCell-root:last-of-type, & .MuiTableBody-root .MuiTableCell-root:last-of-type':
-            {
-              px: 0.75,
-            },
-        }}
-      >
+    <TableContainer sx={crmStyles.tableContainerSx}>
+      <Table size="small" aria-label={t('tableAriaLabel')} sx={crmStyles.tableSx}>
         <colgroup>
           {proposalTableColumnWidths.map((width, index) => (
-            <Box component="col" key={`${width}-${index}`} sx={{ width }} />
+            <Box component="col" key={`${width}-${index}`} sx={crmStyles.getBoxSx(width)} />
           ))}
         </colgroup>
         <TableHead>
-          <TableRow sx={{ height: 44, bgcolor: surface.app }}>
+          <TableRow sx={crmStyles.tableRowSx}>
             {proposalColumnKeys.map((key) => (
               <TableCell key={key} scope="col" align={key === 'actions' ? 'right' : 'left'}>
                 {key === 'actions' ? (
-                  <Box
-                    component="span"
-                    sx={{ display: 'inline-block', transform: 'translateX(-45px)' }}
-                  >
+                  <Box component="span" sx={crmStyles.boxSx}>
                     {t(`columns.${key}`)}
                   </Box>
                 ) : (
@@ -92,57 +59,49 @@ export function ProposalsTable({
         </TableHead>
         <TableBody>
           {proposals.map((proposal, index) => (
-            <TableRow
-              key={proposal.id}
-              sx={{
-                height: 58,
-                bgcolor: index % 2 === 1 ? surface.app : surface.paper,
-                transition: 'background-color 160ms ease',
-                '&:hover': { bgcolor: alpha.graphite[6] },
-              }}
-            >
+            <TableRow key={proposal.id} sx={crmStyles.getTableRowSx(index)}>
               <TableCell>
-                <OverflowTooltipText sx={{ fontSize: 15.5, fontWeight: 800 }}>
+                <OverflowTooltipText sx={crmStyles.overflowTooltipTextSx}>
                   {proposal.reference}
                 </OverflowTooltipText>
               </TableCell>
               <TableCell>
                 <Stack spacing={0.125} minWidth={0}>
-                  <OverflowTooltipText sx={{ fontSize: 15.5, fontWeight: 600 }}>
+                  <OverflowTooltipText sx={crmStyles.overflowTooltipTextSx2}>
                     {proposal.lead.name}
                   </OverflowTooltipText>
-                  <OverflowTooltipText sx={{ color: 'text.disabled', fontSize: 14 }}>
+                  <OverflowTooltipText sx={crmStyles.overflowTooltipTextSx3}>
                     {proposal.lead.email}
                   </OverflowTooltipText>
                 </Stack>
               </TableCell>
               <TableCell>
                 <Stack spacing={0.125} minWidth={0}>
-                  <OverflowTooltipText sx={{ fontSize: 15.5, fontWeight: 600 }}>
+                  <OverflowTooltipText sx={crmStyles.overflowTooltipTextSx2}>
                     {proposal.property.title}
                   </OverflowTooltipText>
-                  <OverflowTooltipText sx={{ color: 'text.disabled', fontSize: 14 }}>
+                  <OverflowTooltipText sx={crmStyles.overflowTooltipTextSx3}>
                     {proposal.property.address}
                   </OverflowTooltipText>
                 </Stack>
               </TableCell>
               <TableCell>
-                <OverflowTooltipText sx={{ fontSize: 15.5, fontWeight: 800 }}>
+                <OverflowTooltipText sx={crmStyles.overflowTooltipTextSx}>
                   {proposal.valueLabel}
                 </OverflowTooltipText>
               </TableCell>
               <TableCell>
-                <Box sx={{ transform: 'translateX(-10px)' }}>
+                <Box sx={crmStyles.boxSx2}>
                   <ProposalStatusChip status={proposal.status} />
                 </Box>
               </TableCell>
               <TableCell>
-                <OverflowTooltipText sx={{ color: 'text.secondary', fontSize: 15.5 }}>
+                <OverflowTooltipText sx={crmStyles.overflowTooltipTextSx4}>
                   {proposal.createdLabel}
                 </OverflowTooltipText>
               </TableCell>
               <TableCell align="right">
-                <Box sx={{ transform: 'translateX(-30px)' }}>
+                <Box sx={crmStyles.boxSx3}>
                   <ProposalActions
                     proposal={proposal}
                     onViewProposal={onViewProposal}

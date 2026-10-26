@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 
+import type { LeadRepository } from '../../../application/ports/lead-repository.port'
+import type { OpportunityRepository } from '../../../application/ports/opportunity-repository.port'
+import type { PropertyLookupPort } from '../../../application/ports/property-lookup.port'
+import { ConvertLeadToOpportunityUseCase } from '../../../application/use-cases/convert-lead-to-opportunity.use-case'
 import {
   LeadAlreadyConvertedError,
   LeadNotFoundError,
@@ -7,10 +11,6 @@ import {
 } from '../../../domain/errors'
 import type { Lead } from '../../../domain/lead.entity'
 import type { Opportunity } from '../../../domain/opportunity.entity'
-import type { LeadRepository } from '../../../application/ports/lead-repository.port'
-import type { OpportunityRepository } from '../../../application/ports/opportunity-repository.port'
-import type { PropertyLookupPort } from '../../../application/ports/property-lookup.port'
-import { ConvertLeadToOpportunityUseCase } from '../../../application/use-cases/convert-lead-to-opportunity.use-case'
 
 const lead: Lead = {
   id: 'lead-1',
@@ -88,7 +88,11 @@ describe('ConvertLeadToOpportunityUseCase', () => {
         status: 'RASCUNHO',
       }),
     )
-    expect(leadRepository.markConverted).toHaveBeenCalledWith('lead-1', 'opportunity-1')
+    expect(leadRepository.markConverted).toHaveBeenCalledWith(
+      'lead-1',
+      'opportunity-1',
+      'maria@exemplo.com',
+    )
     expect(result.opportunity).toEqual(opportunity)
   })
 

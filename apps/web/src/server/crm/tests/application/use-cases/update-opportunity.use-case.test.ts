@@ -1,11 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
+import type { ContactRepository } from '../../../application/ports/contact-repository.port'
 
-import { InvalidStatusTransitionError, OpportunityNotFoundError } from '../../../domain/errors'
-import type { Opportunity } from '../../../domain/opportunity.entity'
 import type { ActivityRepository } from '../../../application/ports/activity-repository.port'
 import type { OpportunityRepository } from '../../../application/ports/opportunity-repository.port'
 import type { PropertyLookupPort } from '../../../application/ports/property-lookup.port'
 import { UpdateOpportunityUseCase } from '../../../application/use-cases/update-opportunity.use-case'
+import { InvalidStatusTransitionError, OpportunityNotFoundError } from '../../../domain/errors'
+import type { Opportunity } from '../../../domain/opportunity.entity'
 
 const opportunity: Opportunity = {
   id: 'op-1',
@@ -57,6 +58,7 @@ describe('UpdateOpportunityUseCase', () => {
       deps.opportunityRepository,
       deps.activityRepository,
       deps.propertyLookup,
+      {} as ContactRepository,
     )
 
     const result = await useCase.execute({
@@ -80,6 +82,7 @@ describe('UpdateOpportunityUseCase', () => {
       deps.opportunityRepository,
       deps.activityRepository,
       deps.propertyLookup,
+      {} as ContactRepository,
     )
 
     await expect(
@@ -100,6 +103,7 @@ describe('UpdateOpportunityUseCase', () => {
       deps.opportunityRepository,
       deps.activityRepository,
       deps.propertyLookup,
+      {} as ContactRepository,
     )
 
     await useCase.execute({
@@ -130,6 +134,7 @@ describe('UpdateOpportunityUseCase', () => {
       deps.opportunityRepository,
       deps.activityRepository,
       deps.propertyLookup,
+      {} as ContactRepository,
     )
 
     await expect(
@@ -150,6 +155,7 @@ describe('UpdateOpportunityUseCase', () => {
       deps.opportunityRepository,
       deps.activityRepository,
       deps.propertyLookup,
+      {} as ContactRepository,
     )
 
     await useCase.execute({
@@ -169,6 +175,7 @@ describe('UpdateOpportunityUseCase', () => {
       deps.opportunityRepository,
       deps.activityRepository,
       deps.propertyLookup,
+      {} as ContactRepository,
     )
 
     await useCase.execute({
@@ -192,6 +199,7 @@ describe('UpdateOpportunityUseCase', () => {
       deps.opportunityRepository,
       deps.activityRepository,
       deps.propertyLookup,
+      {} as ContactRepository,
     )
 
     await expect(

@@ -2,12 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { HttpClient } from '@shared/lib/api/http-client'
 
-import type { Opportunity } from '../../types/opportunity'
 import { CrmService } from '../../services/crm-service'
+import type { Opportunity } from '../../types/opportunity'
 
 const opportunity: Opportunity = {
   id: 'opportunity-1',
   tenantId: 'tenant-1',
+  contactId: null,
   propertyId: 'property-1',
   leadName: 'Maria Silva',
   leadEmail: 'maria@example.com',
@@ -60,10 +61,10 @@ describe('CrmService', () => {
     http.get.mockResolvedValueOnce({ opportunities: [opportunity] })
 
     await expect(service.list({ status: 'EM_NEGOCIACAO', includeArchived: true })).resolves.toEqual(
-      [opportunity],
+      { opportunities: [opportunity] },
     )
     expect(http.get).toHaveBeenCalledWith('/crm/opportunities', {
-      params: { status: 'EM_NEGOCIACAO', includeArchived: 'true' },
+      params: { status: 'EM_NEGOCIACAO', includeArchived: 'true', statuses: undefined },
     })
   })
 
@@ -113,10 +114,10 @@ describe('CrmService', () => {
 
   it('lists public properties through the existing marketplace endpoint', async () => {
     http.get.mockResolvedValueOnce({ properties: [property] })
-    const filters = { purpose: 'ALUGUEL' as const, q: 'Jardins' }
+    const filters = { q: 'Jardins' }
 
-    await expect(service.listProperties(filters)).resolves.toEqual([property])
-    expect(http.get).toHaveBeenCalledWith('/marketplace/properties', { params: filters })
+    await expect(service.listProperties(filters)).resolves.toEqual({ properties: [property] })
+    expect(http.get).toHaveBeenCalledWith('/crm/properties', { params: filters })
   })
 
   it('gets public property detail through the existing marketplace endpoint', async () => {
@@ -124,7 +125,7 @@ describe('CrmService', () => {
     http.get.mockResolvedValueOnce({ property: detail })
 
     await expect(service.getProperty(property.id)).resolves.toEqual(detail)
-    expect(http.get).toHaveBeenCalledWith(`/marketplace/properties/${property.id}`)
+    expect(http.get).toHaveBeenCalledWith(`/crm/properties/${property.id}`)
   })
 
   it('responds to an opportunity and returns both the opportunity and the logged activity', async () => {
@@ -178,5 +179,11 @@ describe('CrmService', () => {
     expect(http.post).toHaveBeenCalledWith(`/crm/opportunities/${opportunity.id}/activities`, {
       description: 'Ligou para confirmar a visita.',
     })
+  })
+  it('preserves the published property lookup used by Dashboard', async () => {
+    const detail = { ...property, description: null, address: null, media: [] }
+    http.get.mockResolvedValueOnce({ property: detail })
+    expect(await service.getPublishedProperty(property.id)).toEqual(detail)
+    expect(http.get).toHaveBeenCalledWith(`/marketplace/properties/${property.id}`)
   })
 })

@@ -2,43 +2,32 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
-import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { crmContainer } from '@server/crm/container'
 import {
   createContactRequestSchema,
   listContactsQuerySchema,
 } from '@server/crm/schemas/contact.schema'
-import { parseJsonBody, RequestValidationError, withErrorHandling } from '@server/shared/http'
+import { parseJsonBody, parseQuery, withErrorHandling } from '@server/shared/http'
 
 export const dynamic = 'force-dynamic'
 
 export const GET = withErrorHandling(async (request: NextRequest) => {
   const actor = await requireBearerAuth(request, authContainer.tokenService)
 
-  const parsed = listContactsQuerySchema.safeParse(Object.fromEntries(request.nextUrl.searchParams))
+  const filters = parseQuery(request, listContactsQuerySchema)
 
-  if (!parsed.success) {
-    throw new RequestValidationError(
-      parsed.error.issues.map((issue) => ({
-        path: issue.path.join('.'),
-        message: issue.message,
-      })),
-    )
-  }
-
-  const contacts = await crmContainer.listContactsUseCase.execute({
+  const page = await crmContainer.listContactsUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel as Papel,
-    filters: {
-      type: parsed.data.type,
-      q: parsed.data.q,
-      includeArchived: parsed.data.includeArchived,
-    },
+    actorPapel: actor.papel,
+    filters,
   })
 
-  return NextResponse.json({ contacts }, { status: 200 })
+  return NextResponse.json(
+    { contacts: page.items, pagination: page.pagination, groups: page.groups },
+    { status: 200 },
+  )
 })
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
@@ -47,7 +36,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
   const contact = await crmContainer.createContactUseCase.execute({
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel as Papel,
+    actorPapel: actor.papel,
+    actorId: actor.sub,
     name: body.name,
     email: body.email,
     phone: body.phone ?? null,

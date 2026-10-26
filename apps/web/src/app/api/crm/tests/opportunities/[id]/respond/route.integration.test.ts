@@ -121,7 +121,8 @@ describe('POST /api/crm/opportunities/[id]/respond (integração)', () => {
       where: { id: json.activity.id },
     })
     expect(persisted).not.toBeNull()
-    expect(persisted?.descricao).toBe('Proposta aceita.')
+    expect(persisted?.descricao).toBe('')
+    expect(persisted?.systemAction).toBe('ACEITAR')
   })
 
   it('RECUSAR com mensagem customizada usa a mensagem como descrição da atividade', async () => {

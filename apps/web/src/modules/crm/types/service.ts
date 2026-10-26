@@ -1,54 +1,36 @@
-import type { ApiContact, ApiContactListItem } from './contact'
-import type { Lead } from './lead'
-import type { Opportunity, OpportunityActivityRecord } from './opportunity'
-import type { PublicPropertyDetail, PublicPropertySummary } from './property'
+import type {
+  ActivityResponseDTO,
+  ContactResponseDTO,
+  ConvertLeadResponseDTO,
+  LeadResponseDTO,
+  ListActivitiesResponseDTO,
+  ListContactsResponseDTO,
+  ListLeadsResponseDTO,
+  ListOpportunitiesResponseDTO,
+  OpportunityResponseDTO,
+  RespondOpportunityResponseDTO,
+} from '@server/crm/types/dto'
 
-export interface ListOpportunitiesResponse {
-  opportunities: Opportunity[]
-}
+export type ListOpportunitiesResponse = ListOpportunitiesResponseDTO
 
-export interface OpportunityResponse {
-  opportunity: Opportunity
-}
+export type OpportunityResponse = OpportunityResponseDTO
 
-export interface RespondOpportunityResponse {
-  opportunity: Opportunity
-  activity: OpportunityActivityRecord
-}
+export type RespondOpportunityResponse = RespondOpportunityResponseDTO
 
-export interface ListActivitiesResponse {
-  activities: OpportunityActivityRecord[]
-}
+export type ListActivitiesResponse = ListActivitiesResponseDTO
 
-export interface ActivityResponse {
-  activity: OpportunityActivityRecord
-}
+export type ActivityResponse = ActivityResponseDTO
 
-export interface ListPropertiesResponse {
-  properties: PublicPropertySummary[]
-}
+export type ListPropertiesResponse = import('@server/crm/types/property').CrmPropertyPage
 
-export interface PropertyResponse {
-  property: PublicPropertyDetail
-}
+export type PropertyResponse = import('@server/crm/types/property').CrmPropertyResponse
 
-export interface ListContactsResponse {
-  contacts: ApiContactListItem[]
-}
+export type ListContactsResponse = ListContactsResponseDTO
 
-export interface ContactResponse {
-  contact: ApiContact
-}
+export type ContactResponse = ContactResponseDTO
 
-export interface ListLeadsResponse {
-  leads: Lead[]
-}
+export type ListLeadsResponse = ListLeadsResponseDTO
 
-export interface LeadResponse {
-  lead: Lead
-}
+export type LeadResponse = LeadResponseDTO
 
-export interface ConvertLeadResponse {
-  lead: Lead
-  opportunityId: string
-}
+export type ConvertLeadResponse = ConvertLeadResponseDTO

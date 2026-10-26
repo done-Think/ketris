@@ -21,7 +21,7 @@ export const salesPipelineStages: readonly SalesPipelineStage[] = [
   },
   {
     id: 'proposal',
-    label: 'Proposta',
+    label: 'PROPOSTA',
     labelKey: 'proposal',
     statuses: ['ENVIADA'],
     color: brand.semantic.warning,
@@ -44,7 +44,3 @@ export const salesPipelineStages: readonly SalesPipelineStage[] = [
     softColor: supportColor.successSoft,
   },
 ] as const
-
-export const visibleSalesPipelineStatuses = new Set(
-  salesPipelineStages.flatMap((stage) => stage.statuses),
-)

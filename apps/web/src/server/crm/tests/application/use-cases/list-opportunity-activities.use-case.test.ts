@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { OpportunityNotFoundError } from '../../../domain/errors'
-import type { Opportunity } from '../../../domain/opportunity.entity'
 import type { ActivityRepository } from '../../../application/ports/activity-repository.port'
 import type { OpportunityRepository } from '../../../application/ports/opportunity-repository.port'
 import type { PropertyLookupPort } from '../../../application/ports/property-lookup.port'
 import { ListOpportunityActivitiesUseCase } from '../../../application/use-cases/list-opportunity-activities.use-case'
+import { OpportunityNotFoundError } from '../../../domain/errors'
+import type { Opportunity } from '../../../domain/opportunity.entity'
 
 const opportunity: Opportunity = {
   id: 'op-1',

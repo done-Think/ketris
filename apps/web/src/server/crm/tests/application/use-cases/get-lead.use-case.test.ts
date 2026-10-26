@@ -2,10 +2,10 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { ForbiddenError } from '@server/shared/errors'
 
-import { LeadNotFoundError } from '../../../domain/errors'
-import type { Lead } from '../../../domain/lead.entity'
 import type { LeadRepository } from '../../../application/ports/lead-repository.port'
 import { GetLeadUseCase } from '../../../application/use-cases/get-lead.use-case'
+import { LeadNotFoundError } from '../../../domain/errors'
+import type { Lead } from '../../../domain/lead.entity'
 
 const lead: Lead = {
   id: 'lead-1',

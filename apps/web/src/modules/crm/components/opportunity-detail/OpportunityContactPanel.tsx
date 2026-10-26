@@ -1,60 +1,27 @@
 import { Box, Chip, Divider, Paper, Stack, Typography } from '@mui/material'
-import { useLocale, useTranslations } from 'next-intl'
-import type { AppLocale } from '@/i18n/types/locale.types'
+import { crmGuaranteeKey, crmStatusKey } from '@server/crm/constants/translation-keys'
+import { useTranslations } from 'next-intl'
+import { useCrmFormatter } from '../../hooks/use-crm-formatter'
+import * as crmStyles from '../../styles/opportunity-contact-panel.styles'
 
 import type { OpportunityContactPanelProps } from '../../types/opportunity-detail'
-import { formatDate } from '../../utils/formatters'
 import { DetailItem } from './DetailItem'
-import { labelSx, panelSx } from './opportunity-detail.styles'
-
-const detailGridSx = {
-  display: 'grid',
-  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
-  columnGap: 1.4,
-  rowGap: 1,
-  '& > :nth-of-type(even)': {
-    pl: { sm: 3.65, md: 4.45 },
-  },
-} as const
-
-const sectionTitleSx = {
-  mb: 0.45,
-  color: 'text.secondary',
-  fontSize: 12,
-  fontWeight: 800,
-  letterSpacing: 0,
-  textAlign: 'center',
-  textTransform: 'uppercase',
-} as const
 
 export function OpportunityContactPanel({ opportunity }: OpportunityContactPanelProps) {
-  const locale = useLocale() as AppLocale
+  const format = useCrmFormatter()
   const t = useTranslations('crm.opportunityDetail')
 
   return (
-    <Paper
-      component="section"
-      elevation={0}
-      sx={{
-        ...panelSx,
-        height: '100%',
-        pl: { xs: 3.65, md: 4.45 },
-        pr: { xs: 2.4, md: 3.2 },
-        py: { xs: 2, md: 2.5 },
-      }}
-    >
-      <Typography
-        component="h2"
-        sx={{ mb: 1.35, fontSize: 16, fontWeight: 800, textAlign: 'center' }}
-      >
+    <Paper component="section" elevation={0} sx={crmStyles.paperSx}>
+      <Typography component="h2" sx={crmStyles.typographySx}>
         {t('contactInterestTitle')}
       </Typography>
 
       <Box>
-        <Typography component="h3" sx={sectionTitleSx}>
+        <Typography component="h3" sx={crmStyles.sectionTitleSx}>
           {t('leadSectionTitle')}
         </Typography>
-        <Box sx={detailGridSx}>
+        <Box sx={crmStyles.detailGridSx}>
           <DetailItem label={t('fields.name')} value={opportunity.leadName} />
           <DetailItem label={t('fields.email')} value={opportunity.leadEmail} />
           <DetailItem
@@ -63,16 +30,13 @@ export function OpportunityContactPanel({ opportunity }: OpportunityContactPanel
           />
           <DetailItem
             label={t('fields.currentStatus')}
-            value={t(`statuses.${opportunity.status}`)}
+            value={t(`statuses.${crmStatusKey(opportunity.status)}`)}
           />
           <DetailItem
             label={t('fields.linkedContact')}
             value={opportunity.contactId ? t('fields.linked') : t('fields.notLinked')}
           />
-          <DetailItem
-            label={t('fields.createdAt')}
-            value={formatDate(opportunity.createdAt, locale)}
-          />
+          <DetailItem label={t('fields.createdAt')} value={format.date(opportunity.createdAt)} />
           <DetailItem
             label={t('fields.archiveStatus')}
             value={opportunity.archivedAt ? t('fields.archived') : t('fields.active')}
@@ -80,13 +44,13 @@ export function OpportunityContactPanel({ opportunity }: OpportunityContactPanel
         </Box>
       </Box>
 
-      <Divider sx={{ my: 1.25 }} />
+      <Divider sx={crmStyles.dividerSx} />
 
       <Box>
-        <Typography component="h3" sx={sectionTitleSx}>
+        <Typography component="h3" sx={crmStyles.sectionTitleSx}>
           {t('proposalSectionTitle')}
         </Typography>
-        <Box sx={detailGridSx}>
+        <Box sx={crmStyles.detailGridSx}>
           <DetailItem
             label={t('fields.contractTermLabel')}
             value={
@@ -99,18 +63,15 @@ export function OpportunityContactPanel({ opportunity }: OpportunityContactPanel
             label={t('fields.intendedStart')}
             value={
               opportunity.desiredStartDate
-                ? formatDate(opportunity.desiredStartDate, locale)
+                ? format.date(opportunity.desiredStartDate)
                 : t('fields.notInformed')
             }
           />
           <DetailItem
             label={t('fields.guarantee')}
-            value={t(`guarantees.${opportunity.guaranteeType}`)}
+            value={t(`guarantees.${crmGuaranteeKey(opportunity.guaranteeType)}`)}
           />
-          <DetailItem
-            label={t('fields.updatedAt')}
-            value={formatDate(opportunity.updatedAt, locale)}
-          />
+          <DetailItem label={t('fields.updatedAt')} value={format.date(opportunity.updatedAt)} />
           <DetailItem label={t('fields.reference')} value={opportunity.id.slice(0, 8)} />
           <DetailItem
             label={t('fields.specialConditionsCount')}
@@ -123,14 +84,14 @@ export function OpportunityContactPanel({ opportunity }: OpportunityContactPanel
 
       {(opportunity.specialConditions.length > 0 || opportunity.notes) && (
         <>
-          <Divider sx={{ my: 1.25 }} />
+          <Divider sx={crmStyles.dividerSx} />
           <Box>
-            <Typography component="h3" sx={sectionTitleSx}>
+            <Typography component="h3" sx={crmStyles.sectionTitleSx}>
               {t('conditionsSectionTitle')}
             </Typography>
             {opportunity.specialConditions.length > 0 && (
-              <Box sx={{ mb: opportunity.notes ? 2 : 0 }}>
-                <Typography sx={{ ...labelSx, textAlign: 'center' }}>
+              <Box sx={crmStyles.getBoxSx(opportunity)}>
+                <Typography sx={crmStyles.typographySx2}>
                   {t('fields.specialConditions')}
                 </Typography>
                 <Stack
@@ -138,7 +99,7 @@ export function OpportunityContactPanel({ opportunity }: OpportunityContactPanel
                   justifyContent="center"
                   gap={0.7}
                   flexWrap="wrap"
-                  sx={{ mt: 0.8 }}
+                  sx={crmStyles.stackSx}
                 >
                   {opportunity.specialConditions.map((condition) => (
                     <Chip key={condition} label={condition} size="small" variant="outlined" />

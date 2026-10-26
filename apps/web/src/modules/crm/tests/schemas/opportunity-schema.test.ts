@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { property } from '../fixtures/property'
 
 import {
   createEditOpportunityFormSchema,
@@ -38,7 +39,12 @@ describe('opportunity schemas', () => {
   it('accepts a complete manual creation form', () => {
     expect(
       opportunityFormSchema.safeParse({
-        propertyId: 'property-1',
+        property,
+        contractTermMonths: '',
+        desiredStartDate: '',
+        guaranteeType: 'NENHUMA',
+        specialConditions: [],
+        contact: null,
         leadName: 'Maria Silva',
         leadEmail: 'maria@example.com',
         leadPhone: '',
@@ -52,7 +58,12 @@ describe('opportunity schemas', () => {
   it('rejects a manual creation form without a selected property', () => {
     expect(
       opportunityFormSchema.safeParse({
-        propertyId: '',
+        property: null,
+        contractTermMonths: '',
+        desiredStartDate: '',
+        guaranteeType: 'NENHUMA',
+        specialConditions: [],
+        contact: null,
         leadName: 'Maria Silva',
         leadEmail: 'maria@example.com',
         leadPhone: '',
@@ -66,7 +77,12 @@ describe('opportunity schemas', () => {
   it('rejects a non-positive proposed value', () => {
     expect(
       opportunityFormSchema.safeParse({
-        propertyId: 'property-1',
+        property,
+        contractTermMonths: '',
+        desiredStartDate: '',
+        guaranteeType: 'NENHUMA',
+        specialConditions: [],
+        contact: null,
         leadName: 'Maria Silva',
         leadEmail: 'maria@example.com',
         leadPhone: '',
@@ -80,6 +96,7 @@ describe('opportunity schemas', () => {
   it('accepts a complete opportunity edit form', () => {
     expect(
       editOpportunityFormSchema.safeParse({
+        contact: null,
         leadName: 'Maria Silva',
         leadEmail: 'maria@example.com',
         leadPhone: '',
@@ -87,7 +104,7 @@ describe('opportunity schemas', () => {
         contractTermMonths: '',
         desiredStartDate: '',
         guaranteeType: 'NENHUMA',
-        specialConditions: '',
+        specialConditions: [],
         notes: '',
       }).success,
     ).toBe(true)
@@ -96,6 +113,7 @@ describe('opportunity schemas', () => {
   it('rejects an invalid contract term on the edit form', () => {
     expect(
       editOpportunityFormSchema.safeParse({
+        contact: null,
         leadName: 'Maria Silva',
         leadEmail: 'maria@example.com',
         leadPhone: '',
@@ -103,7 +121,7 @@ describe('opportunity schemas', () => {
         contractTermMonths: '-3',
         desiredStartDate: '',
         guaranteeType: 'NENHUMA',
-        specialConditions: '',
+        specialConditions: [],
         notes: '',
       }).success,
     ).toBe(false)
@@ -112,7 +130,8 @@ describe('opportunity schemas', () => {
   it('routes each validation message through the translator with the right key', () => {
     const translated = createOpportunityFormSchema((key) => `translated:${key}`)
     const result = translated.safeParse({
-      propertyId: '',
+      property: null,
+      contact: null,
       leadName: 'Maria Silva',
       leadEmail: 'maria@example.com',
       leadPhone: '',

@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type { Lead } from '../../../domain/lead.entity'
 import type { LeadRepository } from '../../../application/ports/lead-repository.port'
 import { CreateLeadUseCase } from '../../../application/use-cases/create-lead.use-case'
+import type { Lead } from '../../../domain/lead.entity'
 
 const created: Lead = {
   id: 'lead-1',

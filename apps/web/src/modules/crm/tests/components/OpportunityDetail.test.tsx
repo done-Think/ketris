@@ -1,3 +1,6 @@
+vi.mock('../../hooks/use-contacts', () => ({
+  useCrmContactOptions: () => ({ data: [], isFetching: false }),
+}))
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -7,11 +10,12 @@ import { theme } from '@shared/theme/theme'
 
 import { OpportunityDetail } from '../../components/OpportunityDetail'
 import type { Opportunity } from '../../types/opportunity'
-import type { PublicPropertyDetail } from '../../types/property'
+import type { CrmPropertyDetail } from '../../types/property'
 
 const mocks = vi.hoisted(() => ({
   useOpportunity: vi.fn(),
-  useCrmProperty: vi.fn(),
+  useOpportunityActivities: vi.fn(),
+  useCrmAuthorizedProperty: vi.fn(),
   useUpdateOpportunity: vi.fn(),
   useArchiveOpportunity: vi.fn(),
   update: vi.fn(),
@@ -48,7 +52,8 @@ vi.mock('notistack', () => ({
 
 vi.mock('../../hooks/use-opportunities', () => ({
   useOpportunity: mocks.useOpportunity,
-  useCrmProperty: mocks.useCrmProperty,
+  useOpportunityActivities: mocks.useOpportunityActivities,
+  useCrmAuthorizedProperty: mocks.useCrmAuthorizedProperty,
   useUpdateOpportunity: mocks.useUpdateOpportunity,
   useArchiveOpportunity: mocks.useArchiveOpportunity,
 }))
@@ -56,6 +61,7 @@ vi.mock('../../hooks/use-opportunities', () => ({
 const opportunity: Opportunity = {
   id: 'opportunity-1',
   tenantId: 'tenant-1',
+  contactId: null,
   propertyId: 'property-1',
   leadName: 'Ricardo Mendes',
   leadEmail: 'ricardo@example.com',
@@ -72,7 +78,7 @@ const opportunity: Opportunity = {
   updatedAt: '2026-08-12T10:00:00.000Z',
 }
 
-const property: PublicPropertyDetail = {
+const property: CrmPropertyDetail = {
   id: 'property-1',
   title: 'Apartamento Jardins',
   purpose: 'ALUGUEL',
@@ -108,13 +114,14 @@ function renderDetail(opportunityId = opportunity.id) {
 describe('OpportunityDetail', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mocks.useOpportunityActivities.mockReturnValue({ data: [], isLoading: false, isError: false })
     mocks.useOpportunity.mockReturnValue({
       data: opportunity,
       isLoading: false,
       isError: false,
       refetch: mocks.refetchOpportunity,
     })
-    mocks.useCrmProperty.mockReturnValue({
+    mocks.useCrmAuthorizedProperty.mockReturnValue({
       data: property,
       isLoading: false,
       isError: false,
@@ -141,14 +148,14 @@ describe('OpportunityDetail', () => {
     expect(screen.getAllByText('Ricardo Mendes').length).toBeGreaterThan(0)
     expect(screen.getByText('ricardo@example.com')).toBeInTheDocument()
     expect(screen.getByText('Apartamento Jardins')).toBeInTheDocument()
-    expect(screen.getByText('Oportunidade atualizada')).toBeInTheDocument()
-    expect(screen.getByText('Oportunidade criada')).toBeInTheDocument()
+    expect(screen.queryByText('Oportunidade atualizada')).not.toBeInTheDocument()
+    expect(screen.queryByText('Oportunidade criada')).not.toBeInTheDocument()
 
     expect(screen.getByText('Alinhar retorno do proprietário')).toBeInTheDocument()
     expect(screen.getByText('Fazer follow-up da proposta')).toBeInTheDocument()
     expect(screen.getByText('Validar documentos')).toBeInTheDocument()
     expect(screen.getByText('Agendar visita ou chamada')).toBeInTheDocument()
-    expect(screen.getByText('Oportunidade criada')).toBeInTheDocument()
+    expect(screen.queryByText('Oportunidade criada')).not.toBeInTheDocument()
     expect(screen.queryByText(/imóveis sugeridos/i)).not.toBeInTheDocument()
   })
   it('confirms and persists a status change through PATCH', async () => {
@@ -241,5 +248,88 @@ describe('OpportunityDetail', () => {
     expect(screen.getByText('Não foi possível carregar esta oportunidade.')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
     expect(mocks.refetchOpportunity).toHaveBeenCalled()
+  })
+  it('preserves unsaved edits through refetches and mutation-state changes', async () => {
+    const user = userEvent.setup()
+    const { rerender } = renderDetail()
+    await user.click(screen.getByRole('button', { name: 'Editar dados' }))
+    const notes = screen.getByLabelText('Observações')
+    await user.clear(notes)
+    await user.type(notes, 'Edição local ainda não salva')
+    mocks.useOpportunity.mockReturnValue({
+      data: { ...opportunity, notes: 'Nova versão no servidor' },
+      isError: true,
+      isLoading: false,
+      refetch: mocks.refetchOpportunity,
+    })
+    rerender(
+      <ThemeProvider theme={theme}>
+        <OpportunityDetail opportunityId={opportunity.id} />
+      </ThemeProvider>,
+    )
+    expect(screen.getByLabelText('Observações')).toHaveValue('Edição local ainda não salva')
+    await user.click(screen.getByRole('button', { name: 'Salvar alterações' }))
+    await waitFor(() =>
+      expect(mocks.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          changes: expect.objectContaining({ notes: 'Edição local ainda não salva' }),
+        }),
+      ),
+    )
+  })
+
+  it('preserves commas and line breaks inside separate special conditions', async () => {
+    const conditions = ['Pets, mediante vistoria', 'Desconto inicial\nRevisão em janeiro']
+    mocks.useOpportunity.mockReturnValue({
+      data: { ...opportunity, specialConditions: conditions },
+      isError: false,
+      isLoading: false,
+    })
+    const user = userEvent.setup()
+    renderDetail()
+    await user.click(screen.getByRole('button', { name: 'Editar dados' }))
+    expect(screen.getByLabelText('Condição 1')).toHaveValue(conditions[0])
+    expect(screen.getByLabelText('Condição 2')).toHaveValue(conditions[1])
+    await user.click(screen.getByRole('button', { name: 'Salvar alterações' }))
+    await waitFor(() =>
+      expect(mocks.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          changes: expect.objectContaining({ specialConditions: conditions }),
+        }),
+      ),
+    )
+  })
+
+  it('renders the actual timeline and translates system statuses without inventing earlier activities', () => {
+    mocks.useOpportunityActivities.mockReturnValue({
+      data: [
+        {
+          id: 'real-activity',
+          type: 'MUDANCA_STATUS',
+          systemAction: 'STATUS_CHANGED',
+          previousStatus: 'ENVIADA',
+          newStatus: 'ACEITA',
+          description: '',
+          createdAt: '2026-10-25T12:00:00.000Z',
+        },
+      ],
+      isLoading: false,
+      isError: false,
+    })
+    renderDetail()
+    expect(screen.getByText('Status alterado de Enviada para Aceita.')).toBeVisible()
+    expect(screen.queryByText('Oportunidade criada')).not.toBeInTheDocument()
+    expect(document.querySelectorAll('time')).toHaveLength(1)
+  })
+
+  it('disables transitions forbidden by the same backend state machine', () => {
+    mocks.useOpportunity.mockReturnValue({
+      data: { ...opportunity, status: 'ACEITA' },
+      isError: false,
+      isLoading: false,
+    })
+    renderDetail()
+    expect(screen.getByRole('button', { name: 'Mover de etapa' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Descartar lead' })).toBeDisabled()
   })
 })

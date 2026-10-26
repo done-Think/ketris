@@ -1,19 +1,9 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UpdateLeadInput, UpdateLeadOutput } from '../../types/update-lead.use-case.types'
+export type { UpdateLeadInput, UpdateLeadOutput } from '../../types/update-lead.use-case.types'
 
-import type { Lead, LeadUpdate } from '../../domain/lead.entity'
-import { LeadNotFoundError } from '../../domain/errors'
-import { assertLeadAccess, assertCrmAccess } from '../authorization'
+import { LeadNotFoundError, LeadStageLockedError } from '../../domain/errors'
+import { assertCrmAccess, assertLeadAccess } from '../authorization'
 import type { LeadRepository } from '../ports/lead-repository.port'
-
-export interface UpdateLeadInput {
-  actorTenantId: string
-  actorId: string
-  actorPapel: Papel
-  leadId: string
-  changes: LeadUpdate
-}
-
-export type UpdateLeadOutput = Lead
 
 export class UpdateLeadUseCase {
   constructor(private readonly leadRepository: LeadRepository) {}
@@ -27,6 +17,9 @@ export class UpdateLeadUseCase {
     }
 
     assertLeadAccess(lead.responsavelId, input.actorId, input.actorPapel)
+
+    if (lead.opportunityId && input.changes.stage && input.changes.stage !== 'PROPOSTA')
+      throw new LeadStageLockedError()
 
     return this.leadRepository.update(lead.id, input.changes)
   }

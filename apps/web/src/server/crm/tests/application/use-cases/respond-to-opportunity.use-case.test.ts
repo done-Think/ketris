@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { OpportunityNotAnswerableError, OpportunityNotFoundError } from '../../../domain/errors'
-import type { Opportunity } from '../../../domain/opportunity.entity'
 import type { ActivityRepository } from '../../../application/ports/activity-repository.port'
 import type { OpportunityRepository } from '../../../application/ports/opportunity-repository.port'
 import type { PropertyLookupPort } from '../../../application/ports/property-lookup.port'
 import { RespondToOpportunityUseCase } from '../../../application/use-cases/respond-to-opportunity.use-case'
+import { OpportunityNotAnswerableError, OpportunityNotFoundError } from '../../../domain/errors'
+import type { Opportunity } from '../../../domain/opportunity.entity'
 
 const opportunity: Opportunity = {
   id: 'op-1',
@@ -78,7 +78,8 @@ describe('RespondToOpportunityUseCase', () => {
       expect.objectContaining({
         opportunityId: 'op-1',
         type: 'PROPOSTA_RESPONDIDA',
-        description: 'Proposta aceita.',
+        description: '',
+        systemAction: 'ACEITAR',
         previousStatus: 'ENVIADA',
         newStatus: 'ACEITA',
         authorId: 'user-1',
@@ -130,7 +131,7 @@ describe('RespondToOpportunityUseCase', () => {
     })
 
     expect(deps.activityRepository.create).toHaveBeenCalledWith(
-      expect.objectContaining({ description: 'Solicitadas mais informações ao interessado.' }),
+      expect.objectContaining({ description: '', systemAction: 'SOLICITAR_INFORMACOES' }),
     )
   })
 

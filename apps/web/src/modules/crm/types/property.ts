@@ -1,19 +1,10 @@
-import type { z } from 'zod'
-
-import type {
-  createPublicPropertySearchFiltersSchema,
-  publicPropertyAddressSchema,
-  publicPropertyDetailSchema,
-  publicPropertyMediaSchema,
-  publicPropertyPurposeSchema,
-  publicPropertySummarySchema,
-} from '../schemas/property-schema'
-
-export type PublicPropertyPurpose = z.infer<typeof publicPropertyPurposeSchema>
-export type PublicPropertySearchFilters = z.infer<
-  ReturnType<typeof createPublicPropertySearchFiltersSchema>
+export type CrmPropertySummary = import('@server/crm/types/property').CrmPropertySummary
+export type CrmPropertyDetail = import('@server/crm/types/property').CrmPropertyDetail
+export type CrmPropertySearchFilters = Partial<
+  import('@server/crm/types/property').CrmPropertyFilters
 >
-export type PublicPropertySummary = z.infer<typeof publicPropertySummarySchema>
-export type PublicPropertyAddress = z.infer<typeof publicPropertyAddressSchema>
-export type PublicPropertyMedia = z.infer<typeof publicPropertyMediaSchema>
-export type PublicPropertyDetail = z.infer<typeof publicPropertyDetailSchema>
+export type CrmPropertyPurpose = CrmPropertySummary['purpose']
+export type CrmPropertyAddress = NonNullable<CrmPropertyDetail['address']>
+export type CrmPropertyMedia = CrmPropertyDetail['media'][number]
+
+export type PublicPropertyAddress = CrmPropertyAddress

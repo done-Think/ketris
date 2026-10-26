@@ -5,8 +5,8 @@ export const contactFilters: readonly {
   labelKey: ContactFilterKey
   type: ContactType | null
 }[] = [
-  { label: 'Todos', labelKey: 'all', type: null },
-  { label: 'Proprietários', labelKey: 'owners', type: 'Proprietário' },
-  { label: 'Locatários', labelKey: 'tenants', type: 'Locatário' },
-  { label: 'Corretores', labelKey: 'brokers', type: 'Corretor' },
+  { label: 'ALL', labelKey: 'all', type: null },
+  { label: 'PROPRIETARIO', labelKey: 'owners', type: 'PROPRIETARIO' },
+  { label: 'LOCATARIO', labelKey: 'tenants', type: 'LOCATARIO' },
+  { label: 'CORRETOR', labelKey: 'brokers', type: 'CORRETOR' },
 ]

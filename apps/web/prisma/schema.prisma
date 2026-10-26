@@ -42,6 +42,8 @@ model Tenant {
   perfilPublico      PerfilPublicoImobiliaria?
   statusChanges      TenantStatusChange[]
 
+  crmAuditEvents     CrmAuditEvent[]
+
   @@map("tenants")
 }
 
@@ -613,6 +615,7 @@ enum TipoContato {
 // Agenda de relacionamento do tenant. Independente de `Usuario`: um contato é alguém com quem o
 // tenant se relaciona (proprietário, locatário, corretor parceiro), não alguém que loga no sistema.
 model Contato {
+  createdById     String?
   id              String      @id @default(cuid())
   tenantId        String
   nome            String
@@ -630,6 +633,7 @@ model Contato {
   oportunidades Oportunidade[]
 
   @@unique([tenantId, email])
+  @@index([tenantId, createdById])
   @@index([tenantId])
   @@index([tenantId, tipo])
   @@index([tenantId, arquivadoEm])
@@ -650,6 +654,7 @@ model AtividadeOportunidade {
   oportunidadeId String
   tipo           TipoAtividadeOportunidade
   descricao      String
+  systemAction   String?
   // Autor é opcional porque atividades também nascem de eventos do sistema (ex.: proposta recebida
   // pelo marketplace, sem usuário autenticado por trás).
   autorId        String?
@@ -1156,4 +1161,20 @@ model AnexoChamadoManutencao {
 
   @@index([chamadoId])
   @@map("anexos_chamado_manutencao")
+}
+
+model CrmAuditEvent {
+  id            String   @id @default(cuid())
+  tenantId      String
+  entityType    String
+  entityId      String
+  actorUserId   String?
+  actorRole     PapelUsuario
+  action        String
+  changedFields String[] @default([])
+  createdAt     DateTime @default(now())
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, entityType, entityId, createdAt])
+  @@map("crm_audit_events")
 }

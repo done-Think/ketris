@@ -1,10 +1,14 @@
-import type { ReactNode } from 'react'
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({
+    status: 'authenticated',
+    data: { tenantId: 'tenant-1', user: { id: 'user-1' }, role: 'OWNER' },
+  }),
+}))
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { crmService } from '../../services/crm-service'
-import type { ApiContactListItem } from '../../types/contact'
 import {
   crmContactQueryKeys,
   useArchiveContact,
@@ -12,6 +16,8 @@ import {
   useCreateContact,
   useUpdateContact,
 } from '../../hooks/use-contacts'
+import { crmService } from '../../services/crm-service'
+import type { ApiContactListItem } from '../../types/contact'
 
 vi.mock('../../services/crm-service', () => ({
   crmService: {
@@ -65,6 +71,7 @@ describe('CRM contact query keys and hooks', () => {
       'contacts',
       'tenant-1',
       'list',
+      [],
       { type: 'LOCATARIO', q: null, includeArchived: false },
     ])
     expect(crmContactQueryKeys.list('tenant-2', { includeArchived: true })).not.toEqual(
@@ -73,7 +80,11 @@ describe('CRM contact query keys and hooks', () => {
   })
 
   it('loads a filtered tenant contact list', async () => {
-    vi.mocked(crmService.listContacts).mockResolvedValueOnce([contact])
+    vi.mocked(crmService.listContacts).mockResolvedValueOnce({
+      contacts: [contact],
+      pagination: { page: 1, pageSize: 5, pageCount: 1, totalCount: 1 },
+      groups: [],
+    })
     const queryClient = createQueryClient()
     const filters = { type: 'LOCATARIO' as const }
     const { result } = renderHook(() => useContacts('tenant-1', filters), {
@@ -83,9 +94,9 @@ describe('CRM contact query keys and hooks', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
     expect(crmService.listContacts).toHaveBeenCalledWith(filters)
-    expect(queryClient.getQueryData(crmContactQueryKeys.list('tenant-1', filters))).toEqual([
-      contact,
-    ])
+    expect(
+      queryClient.getQueryData(crmContactQueryKeys.list('tenant-1', filters, ['user-1', 'OWNER'])),
+    ).toMatchObject({ contacts: [contact] })
   })
 
   it('does not request contacts without a tenant', () => {
@@ -128,9 +139,11 @@ describe('CRM contact query keys and hooks', () => {
       await result.current.mutateAsync({ id: contact.id, changes: { name: 'Maria S.' } })
     })
 
-    expect(queryClient.getQueryData(crmContactQueryKeys.detail('tenant-1', contact.id))).toEqual(
-      updated,
-    )
+    expect(
+      queryClient.getQueryData(
+        crmContactQueryKeys.detail('tenant-1', contact.id, ['user-1', 'OWNER']),
+      ),
+    ).toEqual(updated)
     expect(queryClient.getQueryState(listKey)?.isInvalidated).toBe(true)
   })
 
@@ -148,9 +161,11 @@ describe('CRM contact query keys and hooks', () => {
       await result.current.mutateAsync(contact.id)
     })
 
-    expect(queryClient.getQueryData(crmContactQueryKeys.detail('tenant-1', contact.id))).toEqual(
-      archived,
-    )
+    expect(
+      queryClient.getQueryData(
+        crmContactQueryKeys.detail('tenant-1', contact.id, ['user-1', 'OWNER']),
+      ),
+    ).toEqual(archived)
     expect(queryClient.getQueryState(listKey)?.isInvalidated).toBe(true)
   })
 })

@@ -1,5 +1,7 @@
 'use client'
 
+import * as crmStyles from '../../styles/opportunity-detail-header.styles'
+
 import { Breadcrumbs, Chip, Link, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
@@ -13,11 +15,7 @@ export function OpportunityDetailHeader({ opportunity, stage }: OpportunityDetai
 
   return (
     <>
-      <Breadcrumbs
-        aria-label={t('breadcrumbAriaLabel')}
-        separator="›"
-        sx={{ mb: 1.2, '& .MuiBreadcrumbs-separator': { color: 'text.disabled' } }}
-      >
+      <Breadcrumbs aria-label={t('breadcrumbAriaLabel')} separator="›" sx={crmStyles.breadcrumbsSx}>
         <Link component={LocalizedLink} href="/crm" underline="hover" color="text.secondary">
           {t('pipelineLink')}
         </Link>
@@ -32,17 +30,13 @@ export function OpportunityDetailHeader({ opportunity, stage }: OpportunityDetai
         alignItems={{ xs: 'flex-start', sm: 'center' }}
         justifyContent="space-between"
         gap={1.5}
-        sx={{ mb: 2.5 }}
+        sx={crmStyles.stackSx}
       >
         <Stack direction="row" alignItems="center" spacing={1.2} flexWrap="wrap" useFlexGap>
-          <Typography component="h1" sx={{ fontSize: { xs: 27, md: 31 }, fontWeight: 800 }}>
+          <Typography component="h1" sx={crmStyles.typographySx}>
             {opportunity.leadName}
           </Typography>
-          <Chip
-            size="small"
-            label={stageLabel}
-            sx={{ bgcolor: stage.softColor, color: stage.color, fontWeight: 800 }}
-          />
+          <Chip size="small" label={stageLabel} sx={crmStyles.getChipSx(stage)} />
         </Stack>
       </Stack>
     </>

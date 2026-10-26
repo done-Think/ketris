@@ -1,5 +1,6 @@
 import { Box, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
+import * as crmStyles from '../../styles/contacts-cards.styles'
 
 import type { ContactsCardsProps } from '../../types/contact'
 import { ContactActions } from './ContactActions'
@@ -15,19 +16,16 @@ export function ContactsCards({
   const t = useTranslations('crm.contacts')
 
   return (
-    <Stack
-      aria-label={t('mobileListAriaLabel')}
-      divider={<Box sx={{ borderTop: 1, borderColor: 'divider' }} />}
-    >
+    <Stack aria-label={t('mobileListAriaLabel')} divider={<Box sx={crmStyles.boxSx} />}>
       {contacts.map((contact) => (
-        <Stack key={contact.id} spacing={1.25} sx={{ p: 2 }}>
+        <Stack key={contact.id} spacing={1.25} sx={crmStyles.stackSx}>
           <Stack direction="row" alignItems="center" spacing={1}>
             <ContactAvatar contact={contact} />
-            <Box sx={{ minWidth: 0, flex: 1 }}>
-              <Typography noWrap sx={{ fontSize: 17, fontWeight: 700 }}>
+            <Box sx={crmStyles.boxSx2}>
+              <Typography noWrap sx={crmStyles.typographySx}>
                 {contact.name}
               </Typography>
-              <Typography noWrap sx={{ color: 'text.secondary', fontSize: 15 }}>
+              <Typography noWrap sx={crmStyles.typographySx2}>
                 {contact.email}
               </Typography>
             </Box>
@@ -41,14 +39,12 @@ export function ContactsCards({
 
           <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
             <ContactTypeChip type={contact.type} />
-            <Typography sx={{ color: 'text.secondary', fontSize: 15 }}>
-              {contact.lastInteraction}
-            </Typography>
+            <Typography sx={crmStyles.typographySx2}>{contact.lastInteraction}</Typography>
           </Stack>
 
           <Stack direction="row" justifyContent="space-between" spacing={2}>
-            <Typography sx={{ fontSize: 15.5 }}>{contact.phone}</Typography>
-            <Typography sx={{ fontSize: 15.5, fontWeight: 600 }}>
+            <Typography sx={crmStyles.typographySx3}>{contact.phone}</Typography>
+            <Typography sx={crmStyles.typographySx4}>
               {t('propertyCount', { count: contact.propertyCount })}
             </Typography>
           </Stack>

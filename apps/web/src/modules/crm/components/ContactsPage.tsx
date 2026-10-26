@@ -1,10 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useCrmFormatter } from '../hooks/use-crm-formatter'
+
+import { useDebouncedValue } from '@shared/hooks/use-debounced-value'
+import { useListState } from '@shared/hooks/use-list-state'
+import type { ContactFilter } from '../types/contact'
+import { crmPageCounts } from '../utils/page-counts'
+
+import type { AppLocale } from '@/i18n/types/locale.types'
 import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
-import type { AppLocale } from '@/i18n/types/locale.types'
 import { useSnackbar } from 'notistack'
+import { useState } from 'react'
 
 import {
   useArchiveContact,
@@ -12,9 +19,7 @@ import {
   useCreateContact,
   useUpdateContact,
 } from '../hooks/use-contacts'
-import { getContactListFixtures, contactsFixtureTotal } from '../fixtures/contact-list-fixtures'
-import type { ContactFormValues } from '../types/contact'
-import type { ApiContactListItem, ContactListItem } from '../types/contact'
+import type { ApiContactListItem, ContactFormValues, ContactListItem } from '../types/contact'
 import { mapContactToListItem } from '../utils/contact-adapter'
 import { errorMessage } from '../utils/error-message'
 import { ContactsList } from './ContactsList'
@@ -22,13 +27,26 @@ import { ArchiveContactDialog } from './contacts-list/ArchiveContactDialog'
 import { ContactFormDialog } from './contacts-list/ContactFormDialog'
 
 export function ContactsPage() {
+  const format = useCrmFormatter()
   const locale = useLocale() as AppLocale
   const t = useTranslations('crm.contacts')
   const { data: session } = useSession()
   const tenantId = session?.tenantId ?? ''
   const { enqueueSnackbar } = useSnackbar()
 
-  const contactsQuery = useContacts(tenantId)
+  const { filters: list, setFilter } = useListState({
+    search: '',
+    type: 'ALL' as ContactFilter,
+    page: 1,
+    pageSize: 5,
+  })
+  const query = useDebouncedValue(list.search)
+  const contactsQuery = useContacts(tenantId, {
+    q: query || undefined,
+    type: list.type === 'ALL' ? undefined : list.type,
+    page: list.page,
+    pageSize: list.pageSize,
+  })
   const createContact = useCreateContact(tenantId)
   const updateContact = useUpdateContact(tenantId)
   const archiveContact = useArchiveContact(tenantId)
@@ -37,15 +55,9 @@ export function ContactsPage() {
   const [editingContact, setEditingContact] = useState<ApiContactListItem | null>(null)
   const [archivingContact, setArchivingContact] = useState<ApiContactListItem | null>(null)
 
-  const apiContacts = contactsQuery.data ?? []
-  const fixtureMode =
-    process.env.NODE_ENV !== 'production' &&
-    !contactsQuery.isLoading &&
-    (contactsQuery.isError || apiContacts.length === 0)
-  const contacts = fixtureMode
-    ? getContactListFixtures(locale)
-    : apiContacts.map((contact) => mapContactToListItem(contact, locale))
-  const totalCount = fixtureMode ? contactsFixtureTotal : contacts.length
+  const apiContacts = contactsQuery.data?.contacts ?? []
+  const contacts = apiContacts.map((contact) => mapContactToListItem(contact, locale, format))
+  const totalCount = contactsQuery.data?.pagination.totalCount ?? 0
 
   function findRawContact(item: ContactListItem): ApiContactListItem | undefined {
     return apiContacts.find((contact) => contact.id === item.id)
@@ -124,14 +136,36 @@ export function ContactsPage() {
   return (
     <>
       <ContactsList
+        isLoading={contactsQuery.isLoading}
+        error={contactsQuery.isError}
+        onRetry={() => void contactsQuery.refetch()}
         contacts={contacts}
         totalCount={totalCount}
+        search={list.search}
+        activeFilter={list.type}
+        counts={crmPageCounts(contactsQuery.data?.groups)}
+        page={contactsQuery.data?.pagination.page ?? list.page}
+        rowsPerPage={list.pageSize}
+        onSearchChange={(value) => {
+          setFilter('search', value)
+          setFilter('page', 1)
+        }}
+        onFilterChange={(value) => {
+          setFilter('type', value)
+          setFilter('page', 1)
+        }}
+        onPageChange={(value) => setFilter('page', value)}
+        onRowsPerPageChange={(value) => {
+          setFilter('pageSize', value)
+          setFilter('page', 1)
+        }}
         onNewContact={openCreateDialog}
-        onEditContact={fixtureMode ? undefined : openEditDialog}
-        onOpenMoreOptions={fixtureMode ? undefined : openArchiveDialog}
+        onEditContact={openEditDialog}
+        onOpenMoreOptions={openArchiveDialog}
       />
 
       <ContactFormDialog
+        key={editingContact?.id ?? 'new'}
         open={formOpen}
         initialValues={initialFormValues}
         isPending={createContact.isPending || updateContact.isPending}

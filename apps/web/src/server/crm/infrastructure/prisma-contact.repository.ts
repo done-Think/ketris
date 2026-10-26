@@ -1,32 +1,21 @@
-import type { Prisma } from '@prisma/client'
+import type { CrmPage } from '../types/pagination'
+import { crmChangedFields } from './crm-changed-fields'
+import { readCrmPage } from './read-crm-page'
 
-import { prisma } from '@server/db/prisma'
+import type { ContatoRow, CrmDatabase, CrmScope } from '../types/prisma'
+import { recordCrmAudit } from './record-crm-audit'
 
-import type { Contact, ContactUpdate, NewContact } from '../domain/contact.entity'
 import type {
   ContactListFilters,
   ContactRepository,
 } from '../application/ports/contact-repository.port'
-
-type ContatoRow = {
-  id: string
-  tenantId: string
-  nome: string
-  email: string
-  telefone: string | null
-  tipo: Contact['type']
-  avatarUrl: string | null
-  observacoes: string | null
-  ultimaInteracao: Date | null
-  arquivadoEm: Date | null
-  createdAt: Date
-  updatedAt: Date
-}
+import type { Contact, ContactUpdate, NewContact } from '../domain/contact.entity'
 
 function toDomain(row: ContatoRow): Contact {
   return {
     id: row.id,
     tenantId: row.tenantId,
+    createdById: row.createdById,
     name: row.nome,
     email: row.email,
     phone: row.telefone,
@@ -41,10 +30,16 @@ function toDomain(row: ContatoRow): Contact {
 }
 
 export class PrismaContactRepository implements ContactRepository {
+  constructor(
+    private readonly db: CrmDatabase,
+    private readonly scope: CrmScope,
+  ) {}
+
   async create(contact: NewContact): Promise<Contact> {
-    const row = await prisma.contato.create({
+    const row = await this.db.contato.create({
       data: {
-        tenantId: contact.tenantId,
+        tenantId: this.scope.actorTenantId,
+        createdById: this.scope.actorId ?? null,
         nome: contact.name,
         email: contact.email,
         telefone: contact.phone,
@@ -54,47 +49,86 @@ export class PrismaContactRepository implements ContactRepository {
       },
     })
 
-    return toDomain(row as unknown as ContatoRow)
+    await recordCrmAudit(this.db, this.scope, 'CONTACT', row.id, 'CREATED', [])
+    return toDomain(row)
   }
 
-  async findManyByTenant(tenantId: string, filters?: ContactListFilters): Promise<Contact[]> {
-    const where: Prisma.ContatoWhereInput = { tenantId }
-
-    if (filters?.type) where.tipo = filters.type
-    if (!filters?.includeArchived) where.arquivadoEm = null
-    if (filters?.responsavelId) {
-      where.oportunidades = { some: { imovel: { responsavelId: filters.responsavelId } } }
+  async findManyByTenant(
+    tenantId: string,
+    filters?: ContactListFilters,
+  ): Promise<CrmPage<Contact>> {
+    const page = await readCrmPage(this.db, this.scope, 'contact', filters)
+    const rows = await this.db.contato.findMany({
+      where: { id: { in: page.ids }, tenantId: this.scope.actorTenantId },
+    })
+    const byId = new Map(rows.map((row) => [row.id, toDomain(row)]))
+    return {
+      pagination: page.pagination,
+      groups: page.groups,
+      items: page.ids.flatMap((id) => {
+        const item = byId.get(id)
+        return item ? [item] : []
+      }),
     }
-
-    if (filters?.q) {
-      where.OR = [
-        { nome: { contains: filters.q, mode: 'insensitive' } },
-        { email: { contains: filters.q, mode: 'insensitive' } },
-      ]
-    }
-
-    const rows = await prisma.contato.findMany({ where, orderBy: { nome: 'asc' } })
-
-    return rows.map((row) => toDomain(row as unknown as ContatoRow))
   }
 
   async findById(id: string): Promise<Contact | null> {
-    const row = await prisma.contato.findUnique({ where: { id } })
+    const row = await this.db.contato.findFirst({
+      where: {
+        id,
+        tenantId: this.scope.actorTenantId,
+        ...(this.scope.actorPapel === 'AGENT'
+          ? {
+              OR: [
+                { createdById: this.scope.actorId ?? '' },
+                {
+                  oportunidades: {
+                    some: {
+                      tenantId: this.scope.actorTenantId,
+                      imovel: { responsavelId: this.scope.actorId ?? '' },
+                    },
+                  },
+                },
+              ],
+            }
+          : {}),
+      },
+    })
 
-    return row ? toDomain(row as unknown as ContatoRow) : null
+    return row ? toDomain(row) : null
   }
 
   async findByEmail(tenantId: string, email: string): Promise<Contact | null> {
-    const row = await prisma.contato.findUnique({
+    const row = await this.db.contato.findUnique({
       where: { tenantId_email: { tenantId, email } },
     })
 
-    return row ? toDomain(row as unknown as ContatoRow) : null
+    return row ? toDomain(row) : null
   }
 
   async update(id: string, changes: ContactUpdate): Promise<Contact> {
-    const row = await prisma.contato.update({
-      where: { id },
+    const current = await this.findById(id)
+    const changedFields = current ? crmChangedFields(current, changes) : []
+    const row = await this.db.contato.update({
+      where: {
+        id,
+        tenantId: this.scope.actorTenantId,
+        ...(this.scope.actorPapel === 'AGENT'
+          ? {
+              OR: [
+                { createdById: this.scope.actorId ?? '' },
+                {
+                  oportunidades: {
+                    some: {
+                      tenantId: this.scope.actorTenantId,
+                      imovel: { responsavelId: this.scope.actorId ?? '' },
+                    },
+                  },
+                },
+              ],
+            }
+          : {}),
+      },
       data: {
         nome: changes.name,
         email: changes.email,
@@ -106,15 +140,35 @@ export class PrismaContactRepository implements ContactRepository {
       },
     })
 
-    return toDomain(row as unknown as ContatoRow)
+    await recordCrmAudit(this.db, this.scope, 'CONTACT', row.id, 'UPDATED', changedFields)
+    return toDomain(row)
   }
 
   async archive(id: string): Promise<Contact> {
-    const row = await prisma.contato.update({
-      where: { id },
+    const row = await this.db.contato.update({
+      where: {
+        id,
+        tenantId: this.scope.actorTenantId,
+        ...(this.scope.actorPapel === 'AGENT'
+          ? {
+              OR: [
+                { createdById: this.scope.actorId ?? '' },
+                {
+                  oportunidades: {
+                    some: {
+                      tenantId: this.scope.actorTenantId,
+                      imovel: { responsavelId: this.scope.actorId ?? '' },
+                    },
+                  },
+                },
+              ],
+            }
+          : {}),
+      },
       data: { arquivadoEm: new Date() },
     })
 
-    return toDomain(row as unknown as ContatoRow)
+    await recordCrmAudit(this.db, this.scope, 'CONTACT', row.id, 'ARCHIVED', ['archivedAt'])
+    return toDomain(row)
   }
 }

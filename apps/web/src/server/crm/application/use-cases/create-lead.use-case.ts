@@ -1,23 +1,8 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { CreateLeadInput, CreateLeadOutput } from '../../types/create-lead.use-case.types'
+export type { CreateLeadInput, CreateLeadOutput } from '../../types/create-lead.use-case.types'
 
-import type { Lead } from '../../domain/lead.entity'
-import type { LeadRepository } from '../ports/lead-repository.port'
 import { assertCrmAccess } from '../authorization'
-
-export interface CreateLeadInput {
-  actorTenantId: string
-  actorId: string
-  actorPapel: Papel
-  name: string
-  phone: string
-  email?: string | null
-  interest: string
-  budget: string
-  source: string
-  notes?: string | null
-}
-
-export type CreateLeadOutput = Lead
+import type { LeadRepository } from '../ports/lead-repository.port'
 
 export class CreateLeadUseCase {
   constructor(private readonly leadRepository: LeadRepository) {}

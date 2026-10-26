@@ -2,14 +2,14 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { ForbiddenError } from '@server/shared/errors'
 
-import { ContactNotFoundError, OpportunityPropertyNotFoundError } from '../../../domain/errors'
-import type { Contact } from '../../../domain/contact.entity'
-import type { Opportunity } from '../../../domain/opportunity.entity'
 import type { ActivityRepository } from '../../../application/ports/activity-repository.port'
 import type { ContactRepository } from '../../../application/ports/contact-repository.port'
 import type { OpportunityRepository } from '../../../application/ports/opportunity-repository.port'
 import type { PropertyLookupPort } from '../../../application/ports/property-lookup.port'
 import { CreateOpportunityUseCase } from '../../../application/use-cases/create-opportunity.use-case'
+import type { Contact } from '../../../domain/contact.entity'
+import { ContactNotFoundError, OpportunityPropertyNotFoundError } from '../../../domain/errors'
+import type { Opportunity } from '../../../domain/opportunity.entity'
 
 const created: Opportunity = {
   id: 'op-1',
@@ -123,7 +123,11 @@ describe('CreateOpportunityUseCase', () => {
     })
 
     expect(deps.activityRepository.create).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'NOTA', description: 'Oportunidade criada manualmente.' }),
+      expect.objectContaining({
+        type: 'NOTA',
+        description: '',
+        systemAction: 'OPPORTUNITY_CREATED',
+      }),
     )
   })
 

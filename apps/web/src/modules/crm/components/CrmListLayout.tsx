@@ -1,13 +1,14 @@
-import { Box, Paper, Stack, Typography } from '@mui/material'
+import { Alert, Box, Button, CircularProgress, Paper, Stack, Typography } from '@mui/material'
+import * as crmStyles from '../styles/crm-list-layout.styles'
 
 import { DashboardTablePagination } from '@shared/components/layout'
-import { alpha, dashboardLayout, radius, shadows, surface } from '@shared/theme/tokens'
+
+import { useTranslations } from 'next-intl'
 
 import type { CrmListLayoutProps } from '../types/crm-list-layout'
 
-const bodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
-
 export function CrmListLayout({
+  embedded = false,
   header,
   filters,
   table,
@@ -15,61 +16,41 @@ export function CrmListLayout({
   isEmpty,
   emptyMessage,
   pagination,
+  isLoading,
+  error,
+  onRetry,
 }: CrmListLayoutProps) {
+  const t = useTranslations('crm.pipeline')
   return (
-    <Box
-      sx={{
-        width: '100%',
-        p: 3.5,
-        bgcolor: surface.app,
-        fontFamily: bodyFontFamily,
-        '& .MuiTypography-root, & .MuiButton-root, & .MuiInputBase-root, & .MuiTableCell-root': {
-          fontFamily: bodyFontFamily,
-        },
-        '& h1.MuiTypography-root': {
-          fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
-        },
-      }}
-    >
+    <Box sx={embedded ? crmStyles.embeddedBoxSx : crmStyles.boxSx}>
       <Stack spacing={2}>
         {header}
+        {error && (
+          <Alert
+            severity="error"
+            action={
+              <Button color="inherit" onClick={onRetry}>
+                {t('retry')}
+              </Button>
+            }
+          >
+            {t('dataLoadError')}
+          </Alert>
+        )}
         {filters}
-        <Paper
-          variant="outlined"
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            borderColor: alpha.graphite[6],
-            borderRadius: `${radius.sm}px`,
-            bgcolor: surface.paper,
-            boxShadow: shadows.propertyCard,
-          }}
-        >
-          {isEmpty ? (
-            <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 240, px: 2 }}>
-              <Typography sx={{ color: 'text.secondary', fontSize: 12.5 }}>
-                {emptyMessage}
-              </Typography>
+        <Paper variant="outlined" sx={crmStyles.paperSx}>
+          {isLoading ? (
+            <Stack alignItems="center" justifyContent="center" sx={crmStyles.stackSx}>
+              <CircularProgress size={28} />
+            </Stack>
+          ) : isEmpty ? (
+            <Stack alignItems="center" justifyContent="center" sx={crmStyles.stackSx2}>
+              <Typography sx={crmStyles.typographySx}>{emptyMessage}</Typography>
             </Stack>
           ) : (
             <>
-              <Box
-                sx={{
-                  display: { xs: 'none' },
-                  [dashboardLayout.desktopMediaQuery]: { display: 'block' },
-                }}
-              >
-                {table}
-              </Box>
-              <Box
-                sx={{
-                  display: { xs: 'block' },
-                  [dashboardLayout.desktopMediaQuery]: { display: 'none' },
-                }}
-              >
-                {cards}
-              </Box>
+              <Box sx={crmStyles.boxSx2}>{table}</Box>
+              <Box sx={crmStyles.boxSx3}>{cards}</Box>
             </>
           )}
           <DashboardTablePagination {...pagination} />

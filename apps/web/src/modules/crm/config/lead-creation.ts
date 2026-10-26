@@ -27,8 +27,8 @@ export const leadSourceOptions: LeadSourceOption[] = [
 ]
 
 export const leadStageOptions: LeadStageOption[] = [
-  { value: 'Novo', labelKey: 'new' },
-  { value: 'Em contato', labelKey: 'contacted' },
-  { value: 'Visita marcada', labelKey: 'visitScheduled' },
-  { value: 'Proposta', labelKey: 'proposal' },
+  { value: 'NOVO', labelKey: 'new' },
+  { value: 'EM_CONTATO', labelKey: 'contacted' },
+  { value: 'VISITA_MARCADA', labelKey: 'visitScheduled' },
+  { value: 'PROPOSTA', labelKey: 'proposal' },
 ]

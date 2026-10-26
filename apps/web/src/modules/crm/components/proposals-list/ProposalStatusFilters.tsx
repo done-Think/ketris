@@ -1,11 +1,8 @@
-import { Box, MenuItem, Stack, TextField } from '@mui/material'
+import { crmStatusKey } from '@server/crm/constants/translation-keys'
 import { useTranslations } from 'next-intl'
-
-import { DashboardStatusFilterButton } from '@shared/components/layout'
-import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
-
 import { proposalStatusFilters } from '../../config/proposal-statuses'
 import type { ProposalStatusFiltersProps } from '../../types/proposal-management'
+import { CrmStatusFilters } from '../CrmStatusFilters'
 
 export function ProposalStatusFilters({
   activeStatus,
@@ -14,154 +11,16 @@ export function ProposalStatusFilters({
 }: ProposalStatusFiltersProps) {
   const t = useTranslations('crm.proposalManagement')
   const tStatus = useTranslations('crm.opportunityDetail.statuses')
-  const activeOption =
-    proposalStatusFilters.find((filter) => filter.id === activeStatus) ?? proposalStatusFilters[0]
-  const activeCount =
-    activeStatus === 'all' ? summary.totalCount : summary.statusCounts[activeStatus]
-
   return (
-    <>
-      <TextField
-        select
-        size="small"
-        value={activeStatus}
-        onChange={(event) => onStatusChange(event.target.value as typeof activeStatus)}
-        sx={{
-          display: { xs: 'block', sm: 'none' },
-          width: '100%',
-          mt: 2,
-          '& .MuiOutlinedInput-root': {
-            minHeight: 46,
-            borderRadius: `${radius.sm}px`,
-            bgcolor: surface.paper,
-            color: brand.graphite[500],
-            fontSize: 17,
-            fontWeight: 800,
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-              borderColor: 'transparent',
-              borderWidth: 0,
-            },
-          },
-          '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'transparent',
-            borderWidth: 0,
-          },
-          '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'transparent',
-          },
-          '& .MuiSelect-select': {
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.8,
-          },
-        }}
-        SelectProps={{
-          inputProps: { 'aria-label': t('filterByStatus') },
-          renderValue: () => (
-            <FilterOptionLabel
-              label={activeOption.id === 'all' ? t('allStatuses') : tStatus(activeOption.id)}
-              count={activeCount}
-              active
-            />
-          ),
-          MenuProps: {
-            PaperProps: {
-              sx: {
-                mt: 0.6,
-                borderRadius: `${radius.sm}px`,
-                boxShadow: shadows.popover,
-              },
-            },
-          },
-        }}
-      >
-        {proposalStatusFilters.map(({ id }) => {
-          const active = id === activeStatus
-          const count = id === 'all' ? summary.totalCount : summary.statusCounts[id]
-          const label = id === 'all' ? t('allStatuses') : tStatus(id)
-
-          return (
-            <MenuItem
-              key={id}
-              value={id}
-              sx={{
-                minHeight: 42,
-                bgcolor: active ? alpha.magenta[8] : 'transparent',
-                '&:hover': {
-                  bgcolor: alpha.magenta[8],
-                },
-              }}
-            >
-              <FilterOptionLabel label={label} count={count} active={active} />
-            </MenuItem>
-          )
-        })}
-      </TextField>
-
-      <Stack
-        component="div"
-        role="group"
-        aria-label={t('filterByStatus')}
-        direction="row"
-        spacing={0.8}
-        sx={{
-          display: { xs: 'none', sm: 'flex' },
-          mt: 2,
-          overflowX: 'auto',
-          pb: 0.25,
-          scrollbarWidth: 'thin',
-        }}
-      >
-        {proposalStatusFilters.map(({ id }) => {
-          const active = id === activeStatus
-          const count = id === 'all' ? summary.totalCount : summary.statusCounts[id]
-          const label = id === 'all' ? t('allStatuses') : tStatus(id)
-
-          return (
-            <DashboardStatusFilterButton
-              key={id}
-              active={active}
-              count={count}
-              onClick={() => onStatusChange(id)}
-            >
-              {label}
-            </DashboardStatusFilterButton>
-          )
-        })}
-      </Stack>
-    </>
-  )
-}
-
-function FilterOptionLabel({
-  active,
-  count,
-  label,
-}: {
-  active: boolean
-  count: number
-  label: string
-}) {
-  return (
-    <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-      <Box component="span">{label}</Box>
-      <Box
-        component="span"
-        sx={{
-          display: 'grid',
-          minWidth: 22,
-          height: 22,
-          placeItems: 'center',
-          px: 0.6,
-          borderRadius: `${radius.full}px`,
-          bgcolor: active ? brand.magenta[500] : alpha.graphite[6],
-          color: active ? surface.lightText : brand.neutral[500],
-          fontSize: 14,
-          fontWeight: 900,
-        }}
-      >
-        {count}
-      </Box>
-    </Box>
+    <CrmStatusFilters
+      value={activeStatus}
+      counts={{ all: summary.totalCount, ...summary.statusCounts }}
+      onChange={onStatusChange}
+      ariaLabel={t('filterByStatus')}
+      options={proposalStatusFilters.map(({ id }) => ({
+        value: id,
+        label: id === 'all' ? t('allStatuses') : tStatus(crmStatusKey(id)),
+      }))}
+    />
   )
 }

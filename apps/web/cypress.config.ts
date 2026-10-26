@@ -1,4 +1,10 @@
 import {
+  seedCrmFixtures,
+  cleanupCrmFixtures,
+  readCrmEvidence,
+} from './cypress/support/crm-fixtures'
+import type { CrmFixtureInput } from './cypress/types/crm-fixtures'
+import {
   seedContractFixtures,
   cleanupContractFixtures,
   readContractEvidence,
@@ -69,6 +75,10 @@ export default defineConfig({
       })
 
       on('task', {
+        seedCrmFixtures: (input: CrmFixtureInput) => seedCrmFixtures(prisma, input),
+        cleanupCrmFixtures: (tenantIds: string[]) => cleanupCrmFixtures(prisma, tenantIds),
+        readCrmEvidence: (input: { tenantId: string; contactId: string }) =>
+          readCrmEvidence(prisma, input),
         seedContractFixtures: (input: ContractFixtureSeedInput) =>
           seedContractFixtures(prisma, input),
         cleanupContractFixtures: (tenantIds: string[]) =>

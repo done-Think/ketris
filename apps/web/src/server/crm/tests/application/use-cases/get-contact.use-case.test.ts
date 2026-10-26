@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { ContactNotFoundError } from '../../../domain/errors'
-import type { Contact } from '../../../domain/contact.entity'
 import type { ContactRepository } from '../../../application/ports/contact-repository.port'
 import type { OpportunityRepository } from '../../../application/ports/opportunity-repository.port'
 import { GetContactUseCase } from '../../../application/use-cases/get-contact.use-case'
+import type { Contact } from '../../../domain/contact.entity'
+import { ContactNotFoundError } from '../../../domain/errors'
 
 const contact: Contact = {
   id: 'contato-1',

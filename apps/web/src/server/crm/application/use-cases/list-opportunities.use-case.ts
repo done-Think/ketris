@@ -1,20 +1,14 @@
-import type { Papel } from '@server/auth/domain/user.entity'
-
-import type { Opportunity } from '../../domain/opportunity.entity'
 import type {
-  OpportunityListFilters,
-  OpportunityRepository,
-} from '../ports/opportunity-repository.port'
+  ListOpportunitiesInput,
+  ListOpportunitiesOutput,
+} from '../../types/list-opportunities.use-case.types'
+export type {
+  ListOpportunitiesInput,
+  ListOpportunitiesOutput,
+} from '../../types/list-opportunities.use-case.types'
+
 import { assertCrmAccess } from '../authorization'
-
-export interface ListOpportunitiesInput {
-  actorTenantId: string
-  actorId: string
-  actorPapel: Papel
-  filters?: OpportunityListFilters
-}
-
-export type ListOpportunitiesOutput = Opportunity[]
+import type { OpportunityRepository } from '../ports/opportunity-repository.port'
 
 export class ListOpportunitiesUseCase {
   constructor(private readonly opportunityRepository: OpportunityRepository) {}
