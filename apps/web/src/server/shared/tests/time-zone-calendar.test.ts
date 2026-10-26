@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  calendarDateInTimeZone,
   calendarMonthDateRange,
   calendarMonthInTimeZone,
   dayBoundsInTimeZone,
@@ -75,5 +76,16 @@ describe('calendarMonthDateRange', () => {
       start: '2025-12-01T00:00:00.000Z',
       end: '2026-01-01T00:00:00.000Z',
     })
+  })
+})
+
+describe('calendarDateInTimeZone', () => {
+  it('devolve o dia de São Paulo como data à meia-noite UTC', () => {
+    expect(calendarDateInTimeZone(new Date('2026-10-27T02:30:00.000Z')).toISOString()).toBe(
+      '2026-10-26T00:00:00.000Z',
+    )
+    expect(calendarDateInTimeZone(new Date('2026-10-27T03:30:00.000Z')).toISOString()).toBe(
+      '2026-10-27T00:00:00.000Z',
+    )
   })
 })

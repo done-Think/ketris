@@ -1,41 +1,11 @@
-import {
-  formatFinancialAmount,
-  type FinancialExchangeRate,
-} from '@shared/lib/currency/display-currency'
-import { formatDate } from '@shared/lib/utils/format'
-import { defaultLocale } from '@/i18n/routing'
-import type { AppLocale } from '@/i18n/types/locale.types'
-
-import type {
-  FinancialEntry,
-  FinancialEntryStatus,
-  FinancialKpi,
-  FinancialUpcomingDue,
-} from '../types/financial-entry'
-import type {
-  ApiChargeListItem,
-  ApiChargeStatus,
-  FinancialSummary,
-  FinancialUpcomingCharge,
-} from '../types/service'
-
-const chargeStatusToEntryStatus: Record<ApiChargeStatus, FinancialEntryStatus> = {
-  PENDENTE: 'Pendente',
-  PAGA: 'Pago',
-  ATRASADA: 'Atrasado',
-  AGENDADA: 'Pendente',
-  CANCELADA: 'Pendente',
-}
-
-function formatShortDueDate(value: string, locale: AppLocale) {
-  const formatted = formatDate(value, 'DD/MMM', locale)
-  return formatted.replace(/\/(\p{L})/u, (_match, letter: string) => `/${letter.toUpperCase()}`)
-}
+import { apiStatusToUi } from '../config/charge-status'
+import type { FinancialEntry, FinancialKpi, FinancialUpcomingDue } from '../types/financial-entry'
+import type { ApiChargeListItem, FinancialSummary, FinancialUpcomingCharge } from '../types/service'
 
 export function mapFinancialSummaryToKpis(
   summary: FinancialSummary | undefined,
-  locale: AppLocale = defaultLocale,
-  exchangeRate?: FinancialExchangeRate | null,
+  formatCurrency: (value: number) => string,
+  formatPercent: (value: number) => string,
 ): FinancialKpi[] {
   if (!summary) return []
 
@@ -43,65 +13,59 @@ export function mapFinancialSummaryToKpis(
     {
       id: 'receivable',
       labelKey: 'receivable',
-      value: formatFinancialAmount(summary.monthlyReceivable, locale, exchangeRate),
-      helper: '',
+      value: formatCurrency(summary.monthlyReceivable),
       tone: 'info',
     },
     {
       id: 'delinquency',
       labelKey: 'delinquency',
-      value: formatFinancialAmount(summary.overdueTotal, locale, exchangeRate),
-      helper: '',
+      value: formatCurrency(summary.overdueTotal),
       tone: 'error',
     },
     {
       id: 'defaultRate',
       labelKey: 'defaultRate',
-      value: `${new Intl.NumberFormat(locale, {
-        minimumFractionDigits: 1,
-        maximumFractionDigits: 1,
-      }).format(summary.defaultRatePercentage)}%`,
-      helper: '',
+      value: formatPercent(summary.defaultRatePercentage),
       tone: 'warning',
     },
     {
       id: 'occupancyRate',
       labelKey: 'occupancyRate',
-      value: `${summary.occupancyRatePercentage.toFixed(1)}%`,
-      helper: '',
+      value: formatPercent(summary.occupancyRatePercentage),
       tone: 'success',
     },
   ]
 }
 
-export function mapUpcomingChargesToDues(
-  items: FinancialUpcomingCharge[],
-  locale: AppLocale = defaultLocale,
-): FinancialUpcomingDue[] {
+export function mapUpcomingChargesToDues(items: FinancialUpcomingCharge[]): FinancialUpcomingDue[] {
   return items.map((item) => ({
     id: item.id,
-    propertyId: item.propertyId ?? '',
     property: item.propertyTitle ?? item.description ?? '—',
-    contactId: '',
     client: item.payerName ?? item.description ?? '—',
-    dueDate: formatShortDueDate(item.dueDate, locale),
+    dueDate: item.dueDate.slice(0, 10),
     amountValue: item.amount,
-    status: chargeStatusToEntryStatus[item.status],
-    history: [],
+    status: apiStatusToUi[item.status],
   }))
 }
 
 export function mapChargeListItemToFinancialEntry(item: ApiChargeListItem): FinancialEntry {
   return {
     id: item.id,
-    propertyId: '',
-    date: formatDate(item.dueDate),
+    date: item.dueDate.slice(0, 10),
     description: item.description ?? item.code,
     property: item.propertyTitle ?? '—',
     client: item.payerName ?? '—',
-    contactId: '',
     amountValue: item.type === 'A_PAGAR' ? -item.amount : item.amount,
-    status: chargeStatusToEntryStatus[item.status],
-    receipts: [],
+    status: apiStatusToUi[item.status],
   }
+}
+
+export function mapMonthlySeriesToMovement(
+  series: FinancialSummary['monthlySeries'],
+  formatMonth: (year: number, month: number) => string,
+) {
+  return series.map((entry) => ({
+    month: formatMonth(entry.year, entry.month),
+    revenue: entry.total,
+  }))
 }

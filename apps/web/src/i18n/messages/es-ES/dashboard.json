@@ -33,9 +33,18 @@
     "title": "Dashboard",
     "notifications": "Notificaciones",
     "metrics": {
-      "leadsActive": { "label": "Leads activos", "caption": "{count} hoy" },
-      "visitsMonth": { "label": "Visitas del mes", "caption": "{count} hoy" },
-      "proposals": { "label": "Propuestas", "caption": "{count} esperando respuesta" }
+      "leadsActive": {
+        "label": "Leads activos",
+        "caption": "{count} hoy"
+      },
+      "visitsMonth": {
+        "label": "Visitas del mes",
+        "caption": "{count} hoy"
+      },
+      "proposals": {
+        "label": "Propuestas",
+        "caption": "{count} esperando respuesta"
+      }
     },
     "activityDetail": {
       "close": "Cerrar",
@@ -104,7 +113,7 @@
     },
     "performance": {
       "title": "Performance de Facturación",
-      "subtitle": "Ingresos mensuales recibidos por la inmobiliaria",
+      "subtitle": "Ingresos mensuales a cobrar por la inmobiliaria",
       "revenue": "Ingresos"
     },
     "topBrokers": {
@@ -374,13 +383,6 @@
   "finance": {
     "title": "Finanzas",
     "subtitle": "Movimiento financiero mensual y registros de ventas/comisiones.",
-    "exchangeRateNotice": "Importes estimados en {currency} con la PTAX de cierre del {date} (1 {currency} = BRL {rate}). Los registros permanecen en BRL.",
-    "exchangeRateLoading": "Consultando la cotización PTAX. Los importes se muestran en BRL por ahora.",
-    "exchangeRateUnavailable": "Cotización no disponible. Los importes se muestran en BRL.",
-    "movementTitle": "Movimiento mensual",
-    "movementSubtitle": "Entradas de ventas y comisiones por mes.",
-    "sales": "Ventas",
-    "commissions": "Comisiones",
     "table": {
       "type": "Tipo",
       "description": "Movimiento",
@@ -394,37 +396,15 @@
       "title": "Movimientos recientes",
       "date": "Fecha"
     },
-    "statuses": {
-      "Recebido": "Recibido",
-      "Previsto": "Previsto",
-      "Atrasado": "Atrasado",
-      "Pago": "Pagado",
-      "Pendente": "Pendiente"
-    },
-    "selectedMonth": "Julio 2025",
     "export": "Exportar",
-    "revenueChartTitle": "Facturación (6 meses)",
-    "revenue": "Facturación",
+    "revenueChartTitle": "Por cobrar (6 meses)",
+    "revenue": "Por cobrar",
     "upcomingDuesTitle": "Próximos vencimientos",
     "kpis": {
       "receivable": "Por cobrar",
       "delinquency": "Morosidad",
       "defaultRate": "Tasa de morosidad",
       "occupancyRate": "Tasa de ocupación"
-    },
-    "history": {
-      "eyebrow": "Historial financiero",
-      "close": "Cerrar historial",
-      "propertyLabel": "Inmueble",
-      "clientLabel": "Cliente"
-    },
-    "entryDetail": {
-      "eyebrow": "Registro financiero",
-      "close": "Cerrar registro financiero",
-      "propertyLabel": "Inmueble",
-      "clientLabel": "Cliente",
-      "amountLabel": "Valor",
-      "receiptsTitle": "Comprobantes"
     }
   },
   "team": {

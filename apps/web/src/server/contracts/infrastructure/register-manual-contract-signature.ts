@@ -1,6 +1,6 @@
 import type { ContractDataProtector } from '../application/ports/contract-data-protector.port'
 import type { ContractManualSignatureEvidence, ContractWorkflowScope } from '../types/workflow'
-import { nextSequentialCode } from '@server/shared/sequential-code'
+import { insertCharge } from '@server/financial/infrastructure/charge-writes'
 import {
   ContractDocumentNotFoundError,
   ContractDocumentOutdatedError,
@@ -84,16 +84,16 @@ export function registerManualContractSignature(
         where: { id: contract.imovelId, tenantId: scope.tenantId },
         data: { status: property.finalidade === 'ALUGUEL' ? 'RENTED' : 'SOLD' },
       })
-      await tx.cobranca.create({
-        data: {
-          tenantId: scope.tenantId,
-          contratoId: contractId,
-          codigo: await nextSequentialCode(tx, 'cobrancas', `COB-${new Date().getFullYear()}-`),
-          tipo: 'A_RECEBER',
-          valor: contract.valor,
-          vencimento: computeNextDueDate(contract.diaVencimento, new Date()),
-          status: 'PENDENTE',
-        },
+      await insertCharge(tx, {
+        tenantId: scope.tenantId,
+        contractId,
+        description: null,
+        type: 'A_RECEBER',
+        amount: contract.valor,
+        dueDate: computeNextDueDate(contract.diaVencimento, new Date()),
+        status: 'PENDENTE',
+        createdById: scope.actorId,
+        actorType: 'SYSTEM',
       })
     }
     await recordContractAudit(tx, {

@@ -1,9 +1,5 @@
-import {
-  formatFinancialAmount,
-  type FinancialExchangeRate,
-} from '@shared/lib/currency/display-currency'
 import { mapMonthlySeriesToMovement } from '@shared/lib/currency/monthly-series'
-import { formatDate } from '@shared/lib/utils/format'
+import { formatCurrency, formatDate } from '@shared/lib/utils/format'
 import { defaultTimeZone } from '@/i18n/formats'
 import { defaultLocale } from '@/i18n/routing'
 import type { AppLocale } from '@/i18n/types/locale.types'
@@ -78,7 +74,6 @@ function getRevenueComparison(current: number, previous: number): KpiComparison 
 export function mapKpisToAgencyOverviewKpis(
   kpis: ApiAgencyOverviewKpis,
   locale: AppLocale = defaultLocale,
-  exchangeRate?: FinancialExchangeRate | null,
 ): AgencyOverviewKpi[] {
   const formatNumber = new Intl.NumberFormat(locale).format
 
@@ -104,13 +99,13 @@ export function mapKpisToAgencyOverviewKpis(
     {
       id: 'revenue',
       labelKey: 'revenue',
-      value: formatFinancialAmount(kpis.monthlyReceivable, locale, exchangeRate),
+      value: formatCurrency(kpis.monthlyReceivable, locale),
       ...getRevenueComparison(kpis.monthlyReceivable, kpis.monthlyReceivablePreviousMonth),
     },
     {
       id: 'overdue',
       labelKey: 'overdue',
-      value: formatFinancialAmount(kpis.overdueTotal, locale, exchangeRate),
+      value: formatCurrency(kpis.overdueTotal, locale),
       helper: { key: kpis.overdueTotal > 0 ? 'overdue' : 'noOverdue' },
       tone: kpis.overdueTotal > 0 ? 'warning' : 'neutral',
     },
@@ -127,15 +122,13 @@ export function mapKpisToAgencyOverviewKpis(
 export function mapRevenueSeriesToAgencyRevenuePoints(
   series: ApiAgencyRevenueMonth[],
   locale: AppLocale = defaultLocale,
-  exchangeRate?: FinancialExchangeRate | null,
 ): AgencyRevenuePoint[] {
-  return mapMonthlySeriesToMovement(series, locale, exchangeRate)
+  return mapMonthlySeriesToMovement(series, locale)
 }
 
 export function mapTopBrokersToAgencyTopBrokers(
   topBrokers: ApiAgencyTopBroker[],
   locale: AppLocale = defaultLocale,
-  exchangeRate?: FinancialExchangeRate | null,
 ): AgencyTopBroker[] {
   return topBrokers.map((broker) => ({
     id: broker.id,
@@ -143,14 +136,14 @@ export function mapTopBrokersToAgencyTopBrokers(
     profileId: broker.id,
     hasPublicProfile: broker.hasPublicProfile,
     sales: broker.salesCount,
-    revenue: formatFinancialAmount(broker.revenueTotal, locale, exchangeRate),
+    revenue: formatCurrency(broker.revenueTotal, locale),
     avatarUrl: broker.avatarUrl,
     recentSales: broker.recentSales.map((sale) => ({
       id: sale.id,
       propertyId: sale.propertyId,
       property: sale.propertyTitle,
       location: sale.location,
-      value: formatFinancialAmount(sale.value, locale, exchangeRate),
+      value: formatCurrency(sale.value, locale),
       closedAt: formatDate(sale.closedAt, undefined, locale),
     })),
   }))
@@ -178,16 +171,11 @@ export function mapActivitiesToAgencyActivities(
 export function mapAgencyOverviewToUi(
   overview: ApiAgencyOverview,
   locale: AppLocale = defaultLocale,
-  exchangeRate?: FinancialExchangeRate | null,
 ): AgencyOverviewView {
   return {
-    kpis: mapKpisToAgencyOverviewKpis(overview.kpis, locale, exchangeRate),
-    revenuePoints: mapRevenueSeriesToAgencyRevenuePoints(
-      overview.revenueSeries,
-      locale,
-      exchangeRate,
-    ),
-    topBrokers: mapTopBrokersToAgencyTopBrokers(overview.topBrokers, locale, exchangeRate),
+    kpis: mapKpisToAgencyOverviewKpis(overview.kpis, locale),
+    revenuePoints: mapRevenueSeriesToAgencyRevenuePoints(overview.revenueSeries, locale),
+    topBrokers: mapTopBrokersToAgencyTopBrokers(overview.topBrokers, locale),
     activities: mapActivitiesToAgencyActivities(overview.recentActivities, locale),
   }
 }

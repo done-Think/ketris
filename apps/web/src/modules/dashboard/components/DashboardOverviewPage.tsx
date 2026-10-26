@@ -14,7 +14,6 @@ import type { DashboardRecentLead, DashboardUpcomingActivity } from '../types/da
 import { buildDashboardMetrics } from '../utils/build-dashboard-metrics'
 import { formatDashboardDate } from '../utils/format-dashboard-date'
 import { ActivityDetailModal } from './ActivityDetailModal'
-import { AgencyExchangeRateNotice } from './AgencyExchangeRateNotice'
 import { AgencyOverviewKpiGrid } from './AgencyOverviewKpiGrid'
 import { AgencyRecentActivityPanel } from './AgencyRecentActivityPanel'
 import { AgencyRevenuePerformancePanel } from './AgencyRevenuePerformancePanel'
@@ -59,11 +58,6 @@ export function DashboardOverviewPage() {
 
         {isAgencyManager ? (
           <>
-            <AgencyExchangeRateNotice
-              targetCurrency={agency.targetCurrency}
-              exchangeRate={agency.exchangeRate}
-              isPending={agency.isExchangeRatePending}
-            />
             <AgencyOverviewKpiGrid kpis={agency.overview?.kpis ?? []} />
           </>
         ) : null}
@@ -73,10 +67,7 @@ export function DashboardOverviewPage() {
         {isAgencyManager ? (
           <>
             <Box sx={styles.twoColumns}>
-              <AgencyRevenuePerformancePanel
-                revenuePoints={agency.overview?.revenuePoints ?? []}
-                currency={agency.displayCurrency}
-              />
+              <AgencyRevenuePerformancePanel revenuePoints={agency.overview?.revenuePoints ?? []} />
               <AgencyTopBrokersPanel topBrokers={agency.overview?.topBrokers ?? []} />
             </Box>
             <Box sx={styles.twoColumns}>

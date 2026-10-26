@@ -10,7 +10,7 @@ import {
   readContractEvidence,
 } from './cypress/support/contracts-fixtures'
 import type { ContractFixtureSeedInput } from './cypress/types/contracts-fixtures'
-import { startPrivateS3Server } from './src/server/contracts/tests/fixtures/private-s3-server'
+import { startPrivateS3Server } from './src/server/shared/tests/fixtures/private-s3-server'
 import {
   seedAgendaFixtures,
   cleanupAgendaFixtures,

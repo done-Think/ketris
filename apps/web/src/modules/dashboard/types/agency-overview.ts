@@ -1,5 +1,3 @@
-import type { DisplayCurrency, FinancialExchangeRate } from '@shared/lib/currency/display-currency'
-
 export type AgencyOverviewKpiTone = 'success' | 'neutral' | 'warning'
 
 export type AgencyOverviewKpiHelper = {
@@ -74,7 +72,6 @@ export type AgencyOverviewKpiGridProps = {
 
 export type AgencyRevenuePerformancePanelProps = {
   revenuePoints: readonly AgencyRevenuePoint[]
-  currency?: DisplayCurrency
 }
 
 export type AgencyTopBrokersPanelProps = {
@@ -83,12 +80,6 @@ export type AgencyTopBrokersPanelProps = {
 
 export type AgencyRecentActivityPanelProps = {
   activities: readonly AgencyActivity[]
-}
-
-export type AgencyExchangeRateNoticeProps = {
-  targetCurrency: DisplayCurrency
-  exchangeRate: FinancialExchangeRate | undefined
-  isPending: boolean
 }
 
 export type AgencyOverviewView = {

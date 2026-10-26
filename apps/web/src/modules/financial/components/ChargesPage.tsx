@@ -1,275 +1,104 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import AddRoundedIcon from '@mui/icons-material/AddRounded'
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
-import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded'
-import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded'
-import {
-  Box,
-  InputAdornment,
-  Paper,
-  Stack,
-  Tab,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Tabs,
-  TextField,
-} from '@mui/material'
-import { useSnackbar } from 'notistack'
-import { useTranslations, useLocale } from 'next-intl'
+import { Box, Stack, Tab, Tabs } from '@mui/material'
 import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
+import { useSnackbar } from 'notistack'
 
 import { useRouter } from '@/i18n/navigation'
+import { DashboardPageHeader } from '@shared/components/layout'
+
+import { chargeDirections } from '../config/charge-status'
 import {
-  DashboardHeaderActionButton,
-  DashboardNotificationsButton,
-  DashboardPageHeader,
-  DashboardStatusFilterButton,
-  DashboardTablePagination,
-} from '@shared/components/layout'
-import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
-import { formatCurrency } from '@shared/lib/utils/format'
-import {
+  useCancelCharge,
   useCharges,
   useCreateCharge,
   useDeleteCharge,
   useUpdateCharge,
 } from '../hooks/use-financial'
-import {
-  getMonthlyReceivable,
-  mapChargeListItemFromApi,
-  mapChargeStatusToApi,
-} from '../utils/charge-adapter'
-import { errorMessage } from '../utils/error-message'
-import type {
-  ChargeDirection,
-  ChargeStatus,
-  CreateChargeFormValues,
-  UpdateChargeFormValues,
-} from '../types/charge'
-import { ArchiveChargeDialog } from './ArchiveChargeDialog'
-import { ChargeRow } from './ChargeRow'
-import { CreateChargeDialog } from './CreateChargeDialog'
+import { useChargesPageState } from '../hooks/use-charges-page-state'
+import { useFinancialError } from '../hooks/use-financial-error'
+import { styles } from '../styles/charges-page.styles'
+import type { ChargeFormValues, ChargeListRow, ReasonFormValues } from '../types/charge'
+import { mapChargeListItemFromApi, mapStatusCountsFromApi } from '../utils/charge-adapter'
+import { ChargeFormDialog } from './ChargeFormDialog'
+import { ChargeReasonDialog } from './ChargeReasonDialog'
+import { ChargesHeaderActions } from './ChargesHeaderActions'
+import { ChargesKpis } from './ChargesKpis'
+import { ChargeStatusFilters } from './ChargeStatusFilters'
+import { ChargesTable } from './ChargesTable'
 import { DeleteChargeDialog } from './DeleteChargeDialog'
-import { EditChargeDialog } from './EditChargeDialog'
-import { Metric } from './Metric'
-
-const defaultRowsPerPage = 6
-const statusKeys: Array<'all' | ChargeStatus> = ['all', 'pending', 'overdue', 'paid', 'scheduled']
 
 export function ChargesPage() {
   const t = useTranslations('charges')
-  const locale = useLocale()
   const { enqueueSnackbar } = useSnackbar()
-  const { data: session, status: sessionStatus } = useSession()
-  const isRenter = session?.role === 'RENTER'
-  const canCreateCharge = sessionStatus === 'authenticated' && session?.role === 'OWNER'
-  const tenantId = session?.tenantId ?? ''
-  const createChargeMutation = useCreateCharge(tenantId)
-  const updateChargeMutation = useUpdateCharge(tenantId)
-  const deleteChargeMutation = useDeleteCharge(tenantId)
-  const [direction, setDirection] = useState<ChargeDirection>('receivable')
-  const [status, setStatus] = useState<'all' | ChargeStatus>('all')
-  const [query, setQuery] = useState('')
-  const [page, setPage] = useState(1)
-  const [rowsPerPage, setRowsPerPage] = useState(defaultRowsPerPage)
-  const [createOpen, setCreateOpen] = useState(false)
-  const [editingChargeId, setEditingChargeId] = useState<string | null>(null)
-  const [archivingChargeId, setArchivingChargeId] = useState<string | null>(null)
-  const [deletingChargeId, setDeletingChargeId] = useState<string | null>(null)
-  const chargesQuery = useCharges(
-    tenantId,
-    isRenter
-      ? {
-          type: 'A_RECEBER',
-          status: status === 'all' ? undefined : mapChargeStatusToApi(status),
-          search: query.trim() || undefined,
-          page,
-          pageSize: rowsPerPage,
-        }
-      : { pageSize: 100 },
-  )
-  const charges = useMemo(
-    () => (chargesQuery.data?.items ?? []).map(mapChargeListItemFromApi),
-    [chargesQuery.data],
-  )
+  const errorMessage = useFinancialError()
   const router = useRouter()
-  const normalized = query.trim().toLocaleLowerCase(locale)
-  const visible = useMemo(
-    () =>
-      isRenter
-        ? charges
-        : charges.filter(
-            (charge) =>
-              charge.direction === direction &&
-              (status === 'all' || charge.status === status) &&
-              (!normalized ||
-                [charge.code, charge.tenant, charge.property].some((item) =>
-                  item.toLocaleLowerCase(locale).includes(normalized),
-                )),
-          ),
-    [charges, direction, isRenter, locale, normalized, status],
-  )
-  const totalCount = isRenter ? (chargesQuery.data?.totalCount ?? 0) : visible.length
-  const pageCount = Math.max(1, Math.ceil(totalCount / rowsPerPage))
-  const currentPage = Math.min(page, pageCount)
-  const rows = isRenter
-    ? visible
-    : visible.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)
-  const editingCharge = charges.find((charge) => charge.id === editingChargeId) ?? null
-  const receivables = charges.filter((charge) => charge.direction === 'receivable')
-  const due = getMonthlyReceivable(charges)
-  const overdue = receivables
-    .filter((charge) => charge.status === 'overdue')
-    .reduce((sum, charge) => sum + charge.amount, 0)
-  const total = receivables
-    .filter((charge) => charge.status !== 'cancelled')
-    .reduce((sum, charge) => sum + charge.amount, 0)
-  const selectStatus = (next: 'all' | ChargeStatus) => {
-    setStatus(next)
-    setPage(1)
-  }
-  const changeDirection = (_: unknown, next: ChargeDirection) => {
-    if (next) {
-      setDirection(next)
-      setStatus('all')
-      setPage(1)
+  const { data: session } = useSession()
+  const isOwner = session?.role === 'OWNER'
+  const isRenter = session?.role === 'RENTER'
+  const state = useChargesPageState(isRenter)
+  const chargesQuery = useCharges(state.query)
+  const createCharge = useCreateCharge()
+  const updateCharge = useUpdateCharge()
+  const cancelCharge = useCancelCharge()
+  const deleteCharge = useDeleteCharge()
+  const rows = (chargesQuery.data?.items ?? []).map(mapChargeListItemFromApi)
+  const counts = chargesQuery.data
+    ? mapStatusCountsFromApi(chargesQuery.data.statusCounts)
+    : undefined
+  const dialog = state.dialog
+  const feedback = (successKey: string, fallbackKey: string) => ({
+    onSuccess: () => {
+      state.closeDialog()
+      enqueueSnackbar(t(`feedback.${successKey}`), { variant: 'success' })
+    },
+    onError: (error: unknown) =>
+      enqueueSnackbar(errorMessage(error, fallbackKey), { variant: 'error' }),
+  })
+
+  const submitForm = (values: ChargeFormValues) => {
+    if (dialog?.kind === 'edit') {
+      updateCharge.mutate({ charge: dialog.charge, values }, feedback('updated', 'updateFailed'))
+      return
     }
-  }
-  const addCharge = (values: CreateChargeFormValues) => {
-    if (!canCreateCharge) return
-    createChargeMutation.mutate(values, {
+    createCharge.mutate(values, {
+      ...feedback('created', 'createFailed'),
       onSuccess: () => {
-        setQuery('')
-        setDirection(values.direction)
-        setStatus('all')
-        setPage(1)
-        setCreateOpen(false)
-        enqueueSnackbar(t('createDialog.success'), { variant: 'success' })
-      },
-      onError: (error) => {
-        enqueueSnackbar(errorMessage(error, t('createDialog.error')), { variant: 'error' })
+        state.closeDialog()
+        state.setDirection(values.direction)
+        enqueueSnackbar(t('feedback.created'), { variant: 'success' })
       },
     })
   }
-  const updateCharge = (id: string, values: UpdateChargeFormValues) => {
-    updateChargeMutation.mutate(
-      { id, values },
-      {
-        onSuccess: () => {
-          setEditingChargeId(null)
-          enqueueSnackbar(t('feedback.updated'), { variant: 'success' })
-        },
-        onError: (error) => {
-          enqueueSnackbar(errorMessage(error, t('feedback.updateError')), { variant: 'error' })
-        },
-      },
+  const submitCancel = (values: ReasonFormValues) => {
+    if (dialog?.kind !== 'cancel') return
+    cancelCharge.mutate(
+      { chargeId: dialog.charge.id, values },
+      feedback('cancelled', 'cancelFailed'),
     )
   }
-  const archiveCharge = () => {
-    if (!archivingChargeId) return
-    const charge = charges.find((item) => item.id === archivingChargeId)
-    if (!charge) return
-    updateChargeMutation.mutate(
-      {
-        id: charge.id,
-        values: {
-          description: charge.description ?? '',
-          amount: charge.amount,
-          dueDate: charge.dueDate,
-          direction: charge.direction,
-          status: 'cancelled',
-        },
-      },
-      {
-        onSuccess: () => {
-          setArchivingChargeId(null)
-          enqueueSnackbar(t('feedback.archived'), { variant: 'success' })
-        },
-        onError: (error) => {
-          enqueueSnackbar(errorMessage(error, t('feedback.archiveError')), { variant: 'error' })
-        },
-      },
-    )
+  const confirmDelete = () => {
+    if (dialog?.kind !== 'delete') return
+    deleteCharge.mutate(dialog.charge.id, feedback('deleted', 'deleteFailed'))
   }
-  const deleteCharge = () => {
-    if (!deletingChargeId) return
-    deleteChargeMutation.mutate(deletingChargeId, {
-      onSuccess: () => {
-        setDeletingChargeId(null)
-        enqueueSnackbar(t('feedback.deleted'), { variant: 'success' })
-      },
-      onError: (error) => {
-        enqueueSnackbar(errorMessage(error, t('feedback.deleteError')), { variant: 'error' })
-      },
-    })
-  }
+  const view = (charge: ChargeListRow) =>
+    router.push({ pathname: '/dashboard/finance/charges/[id]', params: { id: charge.id } })
+
   return (
-    <Box sx={{ width: '100%', p: 3.5 }}>
+    <Box sx={styles.page}>
       <Stack spacing={{ xs: 2, md: 2.7 }}>
         <DashboardPageHeader
           title={t('title')}
           subtitle={t(isRenter ? 'renter.subtitle' : 'subtitle')}
-          sx={{ pb: 1.75, borderBottom: '1px solid', borderColor: 'divider' }}
+          sx={styles.header}
           actions={
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={1.2}
-              sx={{
-                width: { xs: '100%', md: 'auto' },
-                alignItems: { xs: 'stretch', sm: 'center' },
-              }}
-            >
-              <TextField
-                value={query}
-                onChange={(event) => {
-                  setQuery(event.target.value)
-                  setPage(1)
-                }}
-                placeholder={t('searchPlaceholder')}
-                size="small"
-                slotProps={{
-                  htmlInput: { 'aria-label': t('searchPlaceholder') },
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchRoundedIcon fontSize="small" />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                sx={{
-                  width: { xs: '100%', sm: 250 },
-                  '& .MuiInputBase-root': {
-                    height: { xs: 40, sm: 32 },
-                    borderRadius: `${radius.sm}px`,
-                    bgcolor: surface.paper,
-                    color: brand.graphite[500],
-                    fontSize: 12,
-                  },
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: alpha.graphite[8],
-                  },
-                  '& .MuiInputAdornment-root .MuiSvgIcon-root': { fontSize: iconSize.sm },
-                }}
-              />
-              {canCreateCharge && (
-                <DashboardHeaderActionButton
-                  startIcon={<AddRoundedIcon />}
-                  onClick={() => setCreateOpen(true)}
-                >
-                  {t('newCharge')}
-                </DashboardHeaderActionButton>
-              )}
-              <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                <DashboardNotificationsButton />
-              </Box>
-            </Stack>
+            <ChargesHeaderActions
+              search={state.filters.search}
+              canCreate={isOwner}
+              onSearchChange={state.setSearch}
+              onCreate={() => state.openDialog({ kind: 'create' })}
+            />
           }
         />
         <Stack
@@ -277,214 +106,64 @@ export function ChargesPage() {
           justifyContent="space-between"
           alignItems={{ xs: 'stretch', md: 'center' }}
           spacing={1.2}
-          sx={{ mt: { xs: '14px !important', md: '14px !important' } }}
+          sx={styles.toolbar}
         >
-          <Stack
-            component="div"
-            role="group"
-            aria-label="Filtrar cobrancas por status"
-            direction="row"
-            spacing={0.8}
-            useFlexGap
-            flexWrap="wrap"
-            sx={{
-              minWidth: 0,
-            }}
-          >
-            {statusKeys.map((item) => {
-              const active = status === item
-              const count = charges.filter(
-                (charge) =>
-                  charge.direction === direction && (item === 'all' || charge.status === item),
-              ).length
-              return (
-                <DashboardStatusFilterButton
-                  key={item}
-                  active={active}
-                  count={isRenter ? undefined : count}
-                  onClick={() => selectStatus(item)}
-                >
-                  {t(`statuses.${item}`)}
-                </DashboardStatusFilterButton>
-              )
-            })}
-          </Stack>
-          {!isRenter && (
+          <ChargeStatusFilters
+            value={state.filters.status}
+            counts={counts}
+            onChange={state.setStatus}
+          />
+          {isRenter ? null : (
             <Tabs
-              value={direction}
-              onChange={changeDirection}
-              sx={{
-                minHeight: 36,
-                alignSelf: { xs: 'stretch', md: 'flex-end' },
-                '& .MuiTabs-flexContainer': {
-                  justifyContent: { xs: 'stretch', md: 'flex-end' },
-                },
-                '& .MuiTab-root': {
-                  minHeight: 36,
-                  px: { xs: 0, sm: 2 },
-                  flex: { xs: 1, md: 'initial' },
-                  whiteSpace: 'nowrap',
-                  textTransform: 'none',
-                  color: brand.neutral[500],
-                  fontSize: 12,
-                  fontWeight: 700,
-                },
-                '& .Mui-selected': { color: 'primary.main' },
-                '& .MuiTabs-indicator': { height: 2 },
-              }}
+              value={state.filters.direction}
+              onChange={(_, direction) => state.setDirection(direction)}
+              sx={styles.tabs}
             >
-              <Tab value="receivable" label={t('tabs.receivable')} />
-              <Tab value="payable" label={t('tabs.payable')} />
+              {chargeDirections.map((direction) => (
+                <Tab key={direction} value={direction} label={t(`tabs.${direction}`)} />
+              ))}
             </Tabs>
           )}
         </Stack>
-        {!isRenter && (
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: 'minmax(0, 1fr)',
-                lg: 'repeat(3, minmax(0, 1fr))',
-              },
-              gap: { xs: 1.4, md: 1.8 },
-            }}
-          >
-            <Metric
-              label={t('kpis.receivable')}
-              value={formatCurrency(due)}
-              icon={<TrendingUpRoundedIcon />}
-              tone="success"
-            />
-            <Metric
-              label={t('kpis.overdue')}
-              value={formatCurrency(overdue)}
-              icon={<TrendingDownRoundedIcon />}
-              tone="error"
-            />
-            <Metric
-              label={t('kpis.defaultRate')}
-              value={total ? `${((overdue / total) * 100).toFixed(1)}%` : '0%'}
-              icon={<TrendingDownRoundedIcon />}
-              tone="warning"
-            />
-          </Box>
-        )}
-        <Paper
-          variant="outlined"
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            borderColor: alpha.graphite[6],
-            borderRadius: `${radius.sm}px`,
-            bgcolor: surface.paper,
-            boxShadow: shadows.propertyCard,
-          }}
-        >
-          <TableContainer sx={{ overflowX: 'auto' }}>
-            <Table
-              size="small"
-              sx={{
-                width: '100%',
-                minWidth: 840,
-                '& .MuiTableCell-root': { borderColor: 'divider' },
-                '& .MuiTableHead-root .MuiTableCell-root': {
-                  px: 1.5,
-                  py: 0,
-                  color: brand.neutral[500],
-                  fontSize: 14,
-                  fontWeight: 700,
-                  lineHeight: 1.2,
-                  letterSpacing: '0.01em',
-                  textTransform: 'uppercase',
-                  whiteSpace: 'nowrap',
-                },
-                '& .MuiTableHead-root .MuiTableCell-root:last-of-type': { textAlign: 'center' },
-                '& .MuiTableBody-root .MuiTableCell-root': {
-                  px: 1.5,
-                  py: 0,
-                  fontSize: 15.5,
-                  lineHeight: 1.3,
-                },
-              }}
-            >
-              <TableHead>
-                <TableRow sx={{ height: 44, bgcolor: surface.app }}>
-                  {['code', 'tenant', 'property', 'amount', 'dueDate', 'status', 'actions'].map(
-                    (key) => (
-                      <TableCell key={key}>{t(`table.${key}`)}</TableCell>
-                    ),
-                  )}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows.map((charge, index) => (
-                  <ChargeRow
-                    readOnly={!canCreateCharge}
-                    key={charge.id}
-                    charge={charge}
-                    locale={locale}
-                    zebra={index % 2 === 1}
-                    labels={{
-                      actions: t('table.actions'),
-                      view: t('detailsDialog.title'),
-                      edit: t('actions.edit'),
-                      archive: t('actions.archive'),
-                      delete: t('actions.delete'),
-                      status: t(`statuses.${charge.status}`),
-                    }}
-                    onEdit={() => setEditingChargeId(charge.id)}
-                    onArchive={() => setArchivingChargeId(charge.id)}
-                    onDelete={() => setDeletingChargeId(charge.id)}
-                    onView={() =>
-                      router.push({
-                        pathname: '/dashboard/finance/charges/[id]',
-                        params: { id: charge.id },
-                      })
-                    }
-                  />
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-
-          <DashboardTablePagination
-            count={totalCount}
-            page={currentPage}
-            rowsPerPage={rowsPerPage}
-            rowsPerPageOptions={[6, 10, 25]}
-            onPageChange={setPage}
-            onRowsPerPageChange={(nextRowsPerPage) => {
-              setRowsPerPage(nextRowsPerPage)
-              setPage(1)
-            }}
-          />
-        </Paper>
+        {isOwner ? <ChargesKpis /> : null}
+        <ChargesTable
+          rows={rows}
+          readOnly={!isOwner}
+          totalCount={chargesQuery.data?.totalCount ?? 0}
+          page={state.filters.page}
+          rowsPerPage={state.filters.rowsPerPage}
+          onPageChange={state.setPage}
+          onRowsPerPageChange={state.setRowsPerPage}
+          onView={view}
+          onEdit={(charge) => state.openDialog({ kind: 'edit', charge })}
+          onCancel={(charge) => state.openDialog({ kind: 'cancel', charge })}
+          onDelete={(charge) => state.openDialog({ kind: 'delete', charge })}
+        />
       </Stack>
-      {canCreateCharge && (
+      {isOwner ? (
         <>
-          <CreateChargeDialog
-            open={createOpen}
-            onClose={() => setCreateOpen(false)}
-            onCreate={addCharge}
+          <ChargeFormDialog
+            open={dialog?.kind === 'create' || dialog?.kind === 'edit'}
+            charge={dialog?.kind === 'edit' ? dialog.charge : null}
+            pending={createCharge.isPending || updateCharge.isPending}
+            onClose={state.closeDialog}
+            onSubmit={submitForm}
           />
-          <EditChargeDialog
-            charge={editingCharge}
-            onClose={() => setEditingChargeId(null)}
-            onSave={updateCharge}
-          />
-          <ArchiveChargeDialog
-            open={Boolean(archivingChargeId)}
-            onClose={() => setArchivingChargeId(null)}
-            onConfirm={archiveCharge}
+          <ChargeReasonDialog
+            open={dialog?.kind === 'cancel'}
+            kind="cancel"
+            pending={cancelCharge.isPending}
+            onClose={state.closeDialog}
+            onSubmit={submitCancel}
           />
           <DeleteChargeDialog
-            open={Boolean(deletingChargeId)}
-            onClose={() => setDeletingChargeId(null)}
-            onConfirm={deleteCharge}
+            open={dialog?.kind === 'delete'}
+            pending={deleteCharge.isPending}
+            onClose={state.closeDialog}
+            onConfirm={confirmDelete}
           />
         </>
-      )}
+      ) : null}
     </Box>
   )
 }

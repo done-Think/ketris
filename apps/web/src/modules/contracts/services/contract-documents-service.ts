@@ -1,5 +1,6 @@
 import { BaseService } from '@shared/lib/api/base-service'
 import { HttpClient, httpClient } from '@shared/lib/api/http-client'
+import { sha256Hex } from '@shared/utils/sha256-hex'
 import type {
   ContractDocumentDownload,
   ContractDocumentResponse,
@@ -15,10 +16,7 @@ export class ContractDocumentsService extends BaseService {
   }
 
   async upload(contractId: string, file: File, onProgress: (percent: number) => void) {
-    const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer())
-    const sha256 = Array.from(new Uint8Array(digest), (byte) =>
-      byte.toString(16).padStart(2, '0'),
-    ).join('')
+    const sha256 = await sha256Hex(file)
     const path = '/contracts/' + contractId + '/documents'
     const authorization = await this.http.post<ContractDocumentUploadAuthorization>(
       path + '/uploads',

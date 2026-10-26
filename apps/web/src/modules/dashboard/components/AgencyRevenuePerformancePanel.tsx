@@ -13,11 +13,11 @@ import { ChartLegendDot } from './ChartLegendDot'
 
 export function AgencyRevenuePerformancePanel({
   revenuePoints,
-  currency = 'BRL',
 }: AgencyRevenuePerformancePanelProps) {
   const t = useTranslations('dashboard.agencyOverview.performance')
   const format = useFormatter()
-  const formatCurrency = (value: number) => format.number(value, { style: 'currency', currency })
+  const formatCurrency = (value: number) =>
+    format.number(value, { style: 'currency', currency: 'BRL' })
   const chartDataset = [...revenuePoints]
 
   return (

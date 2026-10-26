@@ -126,6 +126,9 @@ export async function seedContractFixtures(
 export async function cleanupContractFixtures(prisma: PrismaClient, tenantIds: string[]) {
   assertIsolatedContractDatabase()
   if (tenantIds.length) {
+    await prisma.cobranca.deleteMany({
+      where: { tenantId: { in: tenantIds }, tenant: { slug: { startsWith: 'contracts-e2e-' } } },
+    })
     await prisma.contrato.deleteMany({
       where: { tenantId: { in: tenantIds }, tenant: { slug: { startsWith: 'contracts-e2e-' } } },
     })

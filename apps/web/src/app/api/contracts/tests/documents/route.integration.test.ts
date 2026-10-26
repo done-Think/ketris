@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { afterAll, afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest'
 import { prisma } from '@server/db/prisma'
-import { startPrivateS3Server } from '@server/contracts/tests/fixtures/private-s3-server'
+import { startPrivateS3Server } from '@server/shared/tests/fixtures/private-s3-server'
 import {
   contractRequest,
   createContractWorkflowFixture,
