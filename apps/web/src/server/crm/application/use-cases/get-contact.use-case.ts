@@ -1,19 +1,10 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { GetContactInput, GetContactOutput } from '../../types/get-contact.use-case.types'
+export type { GetContactInput, GetContactOutput } from '../../types/get-contact.use-case.types'
 
-import type { Contact } from '../../domain/contact.entity'
 import { ContactNotFoundError } from '../../domain/errors'
 import { assertAgentOwnsContact, assertCrmAccess } from '../authorization'
 import type { ContactRepository } from '../ports/contact-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
-
-export interface GetContactInput {
-  actorTenantId: string
-  actorId: string
-  actorPapel: Papel
-  contactId: string
-}
-
-export type GetContactOutput = Contact
 
 export class GetContactUseCase {
   constructor(
@@ -35,6 +26,7 @@ export class GetContactUseCase {
       contact.id,
       input.actorId,
       input.actorPapel,
+      contact.createdById,
     )
 
     return contact

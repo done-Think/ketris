@@ -9,6 +9,7 @@ import { theme } from '@shared/theme/theme'
 import { ConvertLeadDialog } from '../../components/ConvertLeadDialog'
 import { useConvertLeadToOpportunity } from '../../hooks/use-leads'
 import type { DashboardLead } from '../../types/lead'
+import { property } from '../fixtures/property'
 
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
@@ -26,19 +27,9 @@ vi.mock('../../components/opportunity-detail/PropertyAutocomplete', () => ({
   PropertyAutocomplete: ({
     onChange,
   }: {
-    onChange: (property: { id: string; title: string; price: number; purpose: 'VENDA' }) => void
+    onChange: (property: typeof import('../fixtures/property').property) => void
   }) => (
-    <button
-      type="button"
-      onClick={() =>
-        onChange({
-          id: 'property-1',
-          title: 'Casa Jardim',
-          price: 365000000,
-          purpose: 'VENDA',
-        })
-      }
-    >
+    <button type="button" onClick={() => onChange(property)}>
       Selecionar imóvel
     </button>
   ),
@@ -55,7 +46,7 @@ const lead: DashboardLead = {
   interest: 'Casa residencial',
   source: 'Marketplace',
   broker: 'Thiago Santos',
-  stage: 'Proposta',
+  stage: 'PROPOSTA',
   opportunityId: null,
 }
 
@@ -80,7 +71,7 @@ describe('ConvertLeadDialog', () => {
     } as unknown as ReturnType<typeof useConvertLeadToOpportunity>)
   })
 
-  it('formats the proposed value with locale separators and submits the numeric amount', async () => {
+  it('preserves cents and submits the selected property and email', async () => {
     const user = userEvent.setup()
     const mutate = vi.fn()
     vi.mocked(useConvertLeadToOpportunity).mockReturnValue({
@@ -90,11 +81,11 @@ describe('ConvertLeadDialog', () => {
     renderDialog()
 
     fireEvent.change(screen.getByLabelText('Valor proposto'), {
-      target: { value: '365000000' },
+      target: { value: '365000000.25' },
     })
     await user.click(screen.getByRole('button', { name: 'Selecionar imóvel' }))
 
-    expect(screen.getByLabelText('Valor proposto')).toHaveValue('365.000.000')
+    expect(screen.getByLabelText('Valor proposto')).toHaveValue(365000000.25)
 
     await user.click(screen.getByRole('button', { name: 'Converter' }))
 
@@ -103,7 +94,8 @@ describe('ConvertLeadDialog', () => {
         leadId: 'lead-1',
         payload: {
           propertyId: 'property-1',
-          proposedValue: 365000000,
+          proposedValue: 365000000.25,
+          email: lead.email,
         },
       },
       expect.anything(),

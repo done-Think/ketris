@@ -8,6 +8,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
+import * as crmStyles from '../../styles/status-change-dialog.styles'
 
 import { opportunityStageByStatus } from '../../config/opportunity-stages'
 import type { StatusChangeDialogProps } from '../../types/opportunity-detail'
@@ -29,7 +30,7 @@ export function StatusChangeDialog({
 
   return (
     <Dialog open={Boolean(nextStatus)} onClose={() => !isPending && onClose()}>
-      <DialogTitle sx={{ letterSpacing: 0 }}>{t('confirmStageTitle')}</DialogTitle>
+      <DialogTitle sx={crmStyles.dialogTitleSx}>{t('confirmStageTitle')}</DialogTitle>
       <DialogContent>
         <Typography color="text.secondary">
           {nextStatus

@@ -1,23 +1,10 @@
-import { Box, Skeleton, Stack, Typography } from '@mui/material'
-import { useLocale, useTranslations } from 'next-intl'
-import type { AppLocale } from '@/i18n/types/locale.types'
-
-import { brand, radius, surface } from '@shared/theme/tokens'
+import { Box, Button, Skeleton, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
+import { useCrmFormatter } from '../../hooks/use-crm-formatter'
+import * as crmStyles from '../../styles/pipeline-stage-column.styles'
 
 import type { PipelineStageColumnProps } from '../../types/sales-pipeline'
-import { formatCurrency } from '../../utils/formatters'
 import { OpportunityCard } from '../OpportunityCard'
-
-const pipelineBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'
-const pipelineStageLabelSx = {
-  fontFamily: pipelineBodyFontFamily,
-  fontSize: 14.5,
-  fontWeight: 700,
-  lineHeight: '18px',
-  letterSpacing: 0,
-  fontSynthesis: 'none',
-  textTransform: 'uppercase',
-} as const
 
 export function PipelineStageColumn({
   stage,
@@ -26,8 +13,12 @@ export function PipelineStageColumn({
   isPipelineLoading,
   hasPipelineError,
   propertiesById,
+  totalCount = opportunities.length,
+  hasNextPage,
+  isFetchingNextPage,
+  onLoadMore,
 }: PipelineStageColumnProps) {
-  const locale = useLocale() as AppLocale
+  const format = useCrmFormatter()
   const t = useTranslations('crm.pipeline')
   const stageLabel = t(`stages.${stage.labelKey}`)
 
@@ -36,77 +27,26 @@ export function PipelineStageColumn({
       component="section"
       role="region"
       aria-labelledby={`sales-pipeline-stage-${stage.id}`}
-      sx={{
-        minWidth: 0,
-        minHeight: { xs: 548, md: 0 },
-        scrollSnapAlign: 'start',
-      }}
+      sx={crmStyles.stackSx}
     >
-      <Stack
-        direction="row"
-        alignItems="center"
-        sx={{
-          minHeight: 38,
-          pb: 0.75,
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-        }}
-      >
-        <Box
-          aria-hidden="true"
-          sx={{
-            width: 7,
-            height: 7,
-            mr: 0.75,
-            flexShrink: 0,
-            borderRadius: `${radius.full}px`,
-            bgcolor: stage.color,
-          }}
-        />
-        <Typography id={`sales-pipeline-stage-${stage.id}`} noWrap sx={pipelineStageLabelSx}>
+      <Stack direction="row" alignItems="center" sx={crmStyles.stackSx2}>
+        <Box aria-hidden="true" sx={crmStyles.getBoxSx(stage)} />
+        <Typography
+          id={`sales-pipeline-stage-${stage.id}`}
+          noWrap
+          sx={crmStyles.pipelineStageLabelSx}
+        >
           {stageLabel}
         </Typography>
-        <Box
-          component="span"
-          sx={{
-            display: 'inline-grid',
-            placeItems: 'center',
-            minWidth: 24,
-            height: 22,
-            ml: 'auto',
-            px: 0.625,
-            borderRadius: `${radius.full}px`,
-            bgcolor: stage.softColor,
-            color: stage.color,
-            fontSize: 14.5,
-            fontWeight: 700,
-          }}
-        >
-          {isPipelineLoading ? '-' : opportunities.length}
+        <Box component="span" sx={crmStyles.getBoxSx2(stage)}>
+          {isPipelineLoading ? '-' : totalCount}
         </Box>
       </Stack>
 
-      <Stack
-        spacing={{ xs: 1.5, lg: 1.375 }}
-        sx={{
-          pt: { xs: 2, lg: 1.75 },
-          pb: { md: 1.5 },
-          mx: { md: -0.5 },
-          px: { md: 0.5 },
-          flex: { md: 1 },
-          minHeight: { md: 0 },
-          overflowY: { md: 'auto' },
-          scrollbarWidth: 'thin',
-        }}
-      >
+      <Stack spacing={{ xs: 1.5, lg: 1.375 }} sx={crmStyles.stackSx3}>
         {isPipelineLoading
           ? [0, 1].map((index) => (
-              <Skeleton
-                key={index}
-                variant="rounded"
-                height={124}
-                sx={{ borderRadius: `${radius.md}px` }}
-              />
+              <Skeleton key={index} variant="rounded" height={124} sx={crmStyles.skeletonSx} />
             ))
           : opportunities.map((opportunity) => (
               <OpportunityCard
@@ -118,56 +58,32 @@ export function PipelineStageColumn({
             ))}
 
         {!isPipelineLoading && !hasPipelineError && opportunities.length === 0 ? (
-          <Stack
-            alignItems="center"
-            justifyContent="center"
-            sx={{
-              minHeight: 124,
-              px: 1.5,
-              border: '1px dashed',
-              borderColor: brand.neutral[200],
-              borderRadius: `${radius.md}px`,
-              bgcolor: surface.paper,
-              textAlign: 'center',
-            }}
-          >
-            <Typography color="text.secondary" sx={{ fontSize: 15.5 }}>
+          <Stack alignItems="center" justifyContent="center" sx={crmStyles.stackSx4}>
+            <Typography color="text.secondary" sx={crmStyles.typographySx}>
               {t('emptyStage')}
             </Typography>
           </Stack>
         ) : null}
       </Stack>
 
+      {hasNextPage && (
+        <Button onClick={onLoadMore} disabled={isFetchingNextPage}>
+          {t('loadMore')}
+        </Button>
+      )}
+
       <Box
         role="group"
         aria-label={t('projectedTotalAriaLabel', { stage: stageLabel })}
-        sx={{
-          mt: 'auto',
-          pt: { xs: 1.25, lg: 1.5 },
-          borderTop: '1px solid',
-          borderColor: 'divider',
-        }}
+        sx={crmStyles.boxSx}
       >
-        <Typography
-          sx={{
-            color: 'text.disabled',
-            fontSize: 13,
-            fontWeight: 700,
-            lineHeight: 1.2,
-            letterSpacing: '0.01em',
-            textTransform: 'uppercase',
-          }}
-        >
-          {t('projectedTotal')}
-        </Typography>
+        <Typography sx={crmStyles.typographySx2}>{t('projectedTotal')}</Typography>
         {isPipelineLoading ? (
           <Skeleton width={92} />
         ) : projectedTotals.length === 0 ? (
-          <Typography sx={{ mt: 0.25, fontSize: 17, fontWeight: 800, lineHeight: 1.3 }}>
-            {formatCurrency(0, locale)}
-          </Typography>
+          <Typography sx={crmStyles.typographySx3}>{format.money(0)}</Typography>
         ) : (
-          <Stack spacing={0.25} sx={{ mt: 0.25, minHeight: projectedTotals.length > 1 ? 36 : 0 }}>
+          <Stack spacing={0.25} sx={crmStyles.getStackSx(projectedTotals)}>
             {projectedTotals.map((total) => (
               <Stack
                 key={total.labelKey}
@@ -177,13 +93,11 @@ export function PipelineStageColumn({
                 gap={1}
               >
                 {projectedTotals.length > 1 ? (
-                  <Typography sx={{ color: 'text.secondary', fontSize: 13.5, lineHeight: 1.2 }}>
+                  <Typography sx={crmStyles.typographySx4}>
                     {t(`totalLabels.${total.labelKey}`)}
                   </Typography>
                 ) : null}
-                <Typography sx={{ fontSize: 17, fontWeight: 800, lineHeight: 1.3 }}>
-                  {total.value}
-                </Typography>
+                <Typography sx={crmStyles.typographySx5}>{total.value}</Typography>
               </Stack>
             ))}
           </Stack>

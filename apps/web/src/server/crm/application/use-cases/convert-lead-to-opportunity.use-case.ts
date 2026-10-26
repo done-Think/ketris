@@ -1,28 +1,23 @@
-import type { Papel } from '@server/auth/domain/user.entity'
 import { ForbiddenError } from '@server/shared/errors'
+import type {
+  ConvertLeadToOpportunityInput,
+  ConvertLeadToOpportunityOutput,
+} from '../../types/convert-lead-to-opportunity.use-case.types'
+export type {
+  ConvertLeadToOpportunityInput,
+  ConvertLeadToOpportunityOutput,
+} from '../../types/convert-lead-to-opportunity.use-case.types'
 
-import { LeadAlreadyConvertedError, LeadNotFoundError } from '../../domain/errors'
-import type { Lead } from '../../domain/lead.entity'
-import type { Opportunity } from '../../domain/opportunity.entity'
-import { OpportunityPropertyNotFoundError } from '../../domain/errors'
-import { assertLeadAccess, assertCrmAccess } from '../authorization'
+import {
+  LeadAlreadyConvertedError,
+  LeadEmailRequiredError,
+  LeadNotFoundError,
+  OpportunityPropertyNotFoundError,
+} from '../../domain/errors'
+import { assertCrmAccess, assertLeadAccess } from '../authorization'
 import type { LeadRepository } from '../ports/lead-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
 import type { PropertyLookupPort } from '../ports/property-lookup.port'
-
-export interface ConvertLeadToOpportunityInput {
-  actorTenantId: string
-  actorId: string
-  actorPapel: Papel
-  leadId: string
-  propertyId: string
-  proposedValue: number
-}
-
-export interface ConvertLeadToOpportunityOutput {
-  lead: Lead
-  opportunity: Opportunity
-}
 
 export class ConvertLeadToOpportunityUseCase {
   constructor(
@@ -63,18 +58,21 @@ export class ConvertLeadToOpportunityUseCase {
       }
     }
 
+    const email = (input.email ?? lead.email)?.trim().toLowerCase()
+    if (!email) throw new LeadEmailRequiredError()
+
     const opportunity = await this.opportunityRepository.create({
       tenantId: input.actorTenantId,
       propertyId: input.propertyId,
       leadName: lead.name,
-      leadEmail: lead.email ?? '',
+      leadEmail: email,
       leadPhone: lead.phone,
       proposedValue: input.proposedValue,
       notes: lead.notes,
       status: 'RASCUNHO',
     })
 
-    const convertedLead = await this.leadRepository.markConverted(lead.id, opportunity.id)
+    const convertedLead = await this.leadRepository.markConverted(lead.id, opportunity.id, email)
 
     return { lead: convertedLead, opportunity }
   }

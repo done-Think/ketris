@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { LeadNotFoundError } from '../../../domain/errors'
-import type { Lead } from '../../../domain/lead.entity'
 import type { LeadRepository } from '../../../application/ports/lead-repository.port'
 import { UpdateLeadUseCase } from '../../../application/use-cases/update-lead.use-case'
+import { LeadNotFoundError } from '../../../domain/errors'
+import type { Lead } from '../../../domain/lead.entity'
 
 const lead: Lead = {
   id: 'lead-1',

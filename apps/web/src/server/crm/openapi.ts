@@ -1,5 +1,11 @@
 import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi'
 import { z } from 'zod'
+import { listLeadsQuerySchema } from './schemas/lead.schema'
+import {
+  crmPropertyPageSchema,
+  crmPropertyQuerySchema,
+  crmPropertyResponseSchema,
+} from './schemas/property.schema'
 
 import { errorResponseSchema } from '@server/shared/schemas/error-response.schema'
 
@@ -16,19 +22,6 @@ import {
   patchContactRequestSchema,
 } from './schemas/contact.schema'
 import {
-  createOpportunityRequestSchema,
-  listOpportunitiesQuerySchema,
-  listOpportunitiesResponseSchema,
-  opportunityResponseSchema,
-  patchOpportunityRequestSchema,
-  putOpportunityRequestSchema,
-  deleteOpportunityQuerySchema,
-} from './schemas/opportunity.schema'
-import {
-  respondOpportunityRequestSchema,
-  respondOpportunityResponseSchema,
-} from './schemas/respond-opportunity.schema'
-import {
   convertLeadRequestSchema,
   convertLeadResponseSchema,
   createLeadRequestSchema,
@@ -36,6 +29,18 @@ import {
   listLeadsResponseSchema,
   patchLeadRequestSchema,
 } from './schemas/lead.schema'
+import {
+  createOpportunityRequestSchema,
+  deleteOpportunityQuerySchema,
+  listOpportunitiesQuerySchema,
+  listOpportunitiesResponseSchema,
+  opportunityResponseSchema,
+  patchOpportunityRequestSchema,
+} from './schemas/opportunity.schema'
+import {
+  respondOpportunityRequestSchema,
+  respondOpportunityResponseSchema,
+} from './schemas/respond-opportunity.schema'
 
 const opportunityIdParamsSchema = z.object({
   id: z.string().openapi({
@@ -57,12 +62,12 @@ export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
     method: 'get',
     path: '/crm/opportunities',
     tags: ['CRM'],
-    summary: 'Lista as oportunidades do tenant autenticado',
+    summary: 'Lista uma página das oportunidades autorizadas do tenant',
     description:
       'Requer autenticação (Bearer). Retorna apenas as oportunidades do próprio tenant do ator. Por ' +
       'padrão exclui as arquivadas (soft delete); use includeArchived=true para incluí-las. Filtra ' +
       'por status e/ou por contato vinculado. Quando o ator tem papel AGENT, a listagem é restrita ' +
-      'às oportunidades de imóveis dos quais o ator é responsável; ADMIN e OWNER veem todo o tenant.',
+      'às oportunidades de imóveis dos quais o ator é responsável; gestores da imobiliária veem todo o tenant.',
     security: [{ bearerAuth: [] }],
     request: { query: listOpportunitiesQuerySchema },
     responses: {
@@ -93,7 +98,7 @@ export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
       '(prospecção) — pode nascer em ENVIADA quando o corretor está registrando uma proposta já feita ' +
       'fora do sistema. Não aceita ACEITA/EM_NEGOCIACAO/RECUSADA como estado inicial: essas transições ' +
       'só acontecem através da timeline (PATCH ou /respond). Um ator com papel AGENT só pode criar ' +
-      'oportunidades em imóveis dos quais é responsável (403 caso contrário); ADMIN e OWNER podem ' +
+      'oportunidades em imóveis dos quais é responsável (403 caso contrário); gestores da imobiliária podem ' +
       'usar qualquer imóvel do tenant.',
     security: [{ bearerAuth: [] }],
     request: {
@@ -151,52 +156,13 @@ export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
   })
 
   registry.registerPath({
-    method: 'put',
-    path: '/crm/opportunities/{id}',
-    tags: ['CRM'],
-    summary: 'Substitui (atualização completa) uma oportunidade',
-    description:
-      'Requer autenticação (Bearer). Semântica de representação total: os campos-núcleo são ' +
-      'obrigatórios e os opcionais omitidos são redefinidos para o valor padrão. A mudança de status ' +
-      'é validada pela máquina de estados do funil — uma transição inválida (ex.: reabrir uma ' +
-      'oportunidade ACEITA) responde 409.',
-    security: [{ bearerAuth: [] }],
-    request: {
-      params: opportunityIdParamsSchema,
-      body: { content: { 'application/json': { schema: putOpportunityRequestSchema } } },
-    },
-    responses: {
-      200: {
-        description: 'Oportunidade atualizada.',
-        content: { 'application/json': { schema: opportunityResponseSchema } },
-      },
-      400: {
-        description: 'Corpo da requisição inválido (falha de validação Zod).',
-        content: { 'application/json': { schema: errorResponseSchema } },
-      },
-      401: {
-        description: 'Access token ausente, inválido ou expirado.',
-        content: { 'application/json': { schema: errorResponseSchema } },
-      },
-      404: {
-        description: 'Oportunidade não encontrada neste tenant.',
-        content: { 'application/json': { schema: errorResponseSchema } },
-      },
-      409: {
-        description: 'Transição de status inválida para o funil.',
-        content: { 'application/json': { schema: errorResponseSchema } },
-      },
-    },
-  })
-
-  registry.registerPath({
     method: 'patch',
     path: '/crm/opportunities/{id}',
     tags: ['CRM'],
     summary: 'Atualiza parcialmente uma oportunidade',
     description:
       'Requer autenticação (Bearer). Atualiza apenas os campos informados; ao menos um campo deve ' +
-      'ser enviado. Mesma validação de transição de status do PUT.',
+      'ser enviado. Aplica a máquina de estados do CRM e preserva campos omitidos. Quando há contato vinculado, as alterações do interessado também atualizam o cadastro e as demais oportunidades vinculadas.',
     security: [{ bearerAuth: [] }],
     request: {
       params: opportunityIdParamsSchema,
@@ -357,13 +323,13 @@ export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
     method: 'get',
     path: '/crm/contacts',
     tags: ['CRM'],
-    summary: 'Lista os contatos do tenant autenticado',
+    summary: 'Lista uma página dos contatos autorizados do tenant',
     description:
       'Requer autenticação (Bearer). Cada contato traz `propertyCount`: quantas oportunidades ativas ' +
       'estão vinculadas a ele (contagem sempre do tenant inteiro, não recortada por corretor). Aceita ' +
       'filtro por tipo e busca textual por nome/e-mail. Quando o ator tem papel AGENT, a listagem é ' +
       'restrita aos contatos com pelo menos uma oportunidade em imóvel do qual o ator é responsável; ' +
-      'ADMIN e OWNER veem todo o tenant.',
+      'gestores da imobiliária veem todo o tenant.',
     security: [{ bearerAuth: [] }],
     request: { query: listContactsQuerySchema },
     responses: {
@@ -505,8 +471,9 @@ export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
     description:
       'Requer autenticação (Bearer). Um lead é um contato bruto, ainda sem imóvel específico nem ' +
       'valor proposto — antes de virar uma Oportunidade formal. Quando o ator tem papel AGENT, a ' +
-      'listagem é restrita aos leads dos quais o ator é responsável; ADMIN e OWNER veem todo o tenant.',
+      'listagem é restrita aos leads dos quais o ator é responsável; gestores da imobiliária veem todo o tenant.',
     security: [{ bearerAuth: [] }],
+    request: { query: listLeadsQuerySchema },
     responses: {
       200: {
         description: 'Lista de leads do tenant.',
@@ -648,6 +615,65 @@ export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
       },
       409: {
         description: 'O lead já foi convertido em oportunidade.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+  registry.registerPath({
+    method: 'get',
+    path: '/crm/properties',
+    tags: ['CRM'],
+    summary: 'Seleciona imóveis autorizados para negociação no CRM',
+    description:
+      'Requer equipe autenticada. Inclui imóveis publicados ou não; restringe o tenant e, para AGENT, o responsável pelo imóvel. Busca e paginação são feitas no servidor.',
+    security: [{ bearerAuth: [] }],
+    request: { query: crmPropertyQuerySchema },
+    responses: {
+      200: {
+        description: 'Página de imóveis autorizados.',
+        content: { 'application/json': { schema: crmPropertyPageSchema } },
+      },
+      400: {
+        description: 'Consulta inválida.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Autenticação inválida.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Perfil sem acesso ao CRM.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+  registry.registerPath({
+    method: 'get',
+    path: '/crm/properties/{id}',
+    tags: ['CRM'],
+    summary: 'Consulta o imóvel autorizado de uma oportunidade',
+    description: 'Aplica as mesmas permissões da seleção de imóveis, inclusive aos não publicados.',
+    security: [{ bearerAuth: [] }],
+    request: { params: opportunityIdParamsSchema },
+    responses: {
+      200: {
+        description: 'Detalhe autorizado do imóvel.',
+        content: { 'application/json': { schema: crmPropertyResponseSchema } },
+      },
+      400: {
+        description: 'Identificador inválido.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Autenticação inválida.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Perfil sem acesso ao CRM.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      404: {
+        description: 'Imóvel inexistente ou sem autorização.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },

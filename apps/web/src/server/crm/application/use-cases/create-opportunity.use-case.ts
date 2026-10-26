@@ -1,30 +1,19 @@
-import type { Papel } from '@server/auth/domain/user.entity'
 import { ForbiddenError } from '@server/shared/errors'
+import type {
+  CreateOpportunityInput,
+  CreateOpportunityOutput,
+} from '../../types/create-opportunity.use-case.types'
+export type {
+  CreateOpportunityInput,
+  CreateOpportunityOutput,
+} from '../../types/create-opportunity.use-case.types'
 
 import { ContactNotFoundError, OpportunityPropertyNotFoundError } from '../../domain/errors'
-import type { Opportunity } from '../../domain/opportunity.entity'
+import { assertCrmAccess } from '../authorization'
 import type { ActivityRepository } from '../ports/activity-repository.port'
 import type { ContactRepository } from '../ports/contact-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
 import type { PropertyLookupPort } from '../ports/property-lookup.port'
-import { assertCrmAccess } from '../authorization'
-
-export interface CreateOpportunityInput {
-  actorTenantId: string
-  actorId?: string | null
-  actorPapel: Papel
-  actorName?: string | null
-  propertyId: string
-  contactId?: string | null
-  leadName: string
-  leadEmail: string
-  leadPhone?: string | null
-  proposedValue: number
-  notes?: string | null
-  status?: 'RASCUNHO' | 'ENVIADA'
-}
-
-export type CreateOpportunityOutput = Opportunity
 
 export class CreateOpportunityUseCase {
   constructor(
@@ -54,11 +43,17 @@ export class CreateOpportunityUseCase {
       }
     }
 
+    let contactDetails = {}
     if (input.contactId) {
       const contact = await this.contactRepository.findById(input.contactId)
 
       if (!contact || contact.tenantId !== input.actorTenantId) {
         throw new ContactNotFoundError()
+      }
+      contactDetails = {
+        leadName: contact.name,
+        leadEmail: contact.email,
+        leadPhone: contact.phone,
       }
     }
 
@@ -72,12 +67,18 @@ export class CreateOpportunityUseCase {
       proposedValue: input.proposedValue,
       notes: input.notes ?? null,
       status: input.status ?? 'RASCUNHO',
+      contractTermMonths: input.contractTermMonths,
+      desiredStartDate: input.desiredStartDate,
+      guaranteeType: input.guaranteeType,
+      specialConditions: input.specialConditions,
+      ...contactDetails,
     })
 
     await this.activityRepository.create({
       opportunityId: opportunity.id,
       type: 'NOTA',
-      description: 'Oportunidade criada manualmente.',
+      description: '',
+      systemAction: 'OPPORTUNITY_CREATED',
       authorId: input.actorId ?? null,
       authorName: input.actorName ?? null,
       previousStatus: null,

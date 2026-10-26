@@ -4,13 +4,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { PropertyAutocomplete } from '../../components/opportunity-detail/PropertyAutocomplete'
 import { useCrmProperties } from '../../hooks/use-opportunities'
-import type { PublicPropertySummary } from '../../types/property'
+import type { CrmPropertySummary } from '../../types/property'
 
 vi.mock('../../hooks/use-opportunities', () => ({
   useCrmProperties: vi.fn(),
 }))
 
-const property: PublicPropertySummary = {
+const property: CrmPropertySummary = {
   id: 'property-1',
   title: 'Apartamento Jardins',
   purpose: 'ALUGUEL',
@@ -77,7 +77,7 @@ describe('PropertyAutocomplete', () => {
 
     await user.click(screen.getByLabelText(/^Imóvel/))
 
-    expect(await screen.findByText('Nenhum imóvel encontrado.')).toBeVisible()
+    expect(await screen.findByText('Nenhum resultado.')).toBeVisible()
   })
 
   it('shows a validation error message when provided', () => {

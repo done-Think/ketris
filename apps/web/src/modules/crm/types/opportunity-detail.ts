@@ -7,7 +7,7 @@ import type {
   OpportunityStatus,
 } from './opportunity'
 import type { OpportunityStage } from './opportunity-stage'
-import type { PublicPropertyDetail, PublicPropertySummary } from './property'
+import type { CrmPropertyDetail, CrmPropertySummary } from './property'
 
 export type OpportunityDetailProps = {
   opportunityId: string
@@ -38,7 +38,7 @@ export type OpportunityContactPanelProps = {
 
 export type OpportunityPropertyPanelProps = {
   opportunity: Opportunity
-  property?: PublicPropertyDetail
+  property?: CrmPropertyDetail
   propertyLocation: string
   isLoading: boolean
   isError: boolean
@@ -46,6 +46,7 @@ export type OpportunityPropertyPanelProps = {
 }
 
 export type OpportunityActivitiesPanelProps = {
+  isLoading?: boolean
   activities: OpportunityActivity[]
 }
 
@@ -53,8 +54,13 @@ export type OpportunityNextAction = {
   key: string
   title: string
   detail: string
-  dueAt: string
   tone: 'info' | 'warning' | 'success'
+}
+
+export type OpportunityNextActionItemProps = {
+  action: OpportunityNextAction
+  expanded: boolean
+  onToggle: () => void
 }
 
 export type OpportunityNextActionsPanelProps = {
@@ -111,8 +117,8 @@ export type CreateOpportunityDialogProps = {
 
 export type PropertyAutocompleteProps = {
   tenantId: string
-  value: PublicPropertySummary | null
-  onChange: (property: PublicPropertySummary | null) => void
+  value: CrmPropertySummary | null
+  onChange: (property: CrmPropertySummary | null) => void
   error?: boolean
   helperText?: string
 }

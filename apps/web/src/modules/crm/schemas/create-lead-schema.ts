@@ -1,24 +1,37 @@
 import { z } from 'zod'
 
+import { CRM_LIMITS } from '@server/crm/constants/validation'
 import type { SchemaMessageTranslator } from '@shared/types'
 
 export function createLeadSchema(t: SchemaMessageTranslator) {
   return z.object({
-    activeStepIndex: z.number().int().min(0).max(2),
-    maxVisitedStepIndex: z.number().int().min(0).max(2),
-    name: z.string().trim().min(2, t('nameRequired')),
-    phone: z.string().trim().min(14, t('phoneInvalid')),
-    email: z.string().trim().min(1, t('emailInvalid')).email(t('emailInvalid')),
-    interest: z.string().trim().min(3, t('interestRequired')),
-    budget: z.string().trim().min(2, t('budgetRequired')),
-    source: z.string().trim().min(2, t('sourceRequired')),
-    notes: z.string().trim(),
+    name: z.string().trim().min(2, t('nameRequired')).max(CRM_LIMITS.name, t('textTooLong')),
+    phone: z.string().trim().min(14, t('phoneInvalid')).max(CRM_LIMITS.phone, t('textTooLong')),
+    email: z
+      .string()
+      .trim()
+      .max(CRM_LIMITS.email, t('emailInvalid'))
+      .refine((value) => !value || z.string().email().safeParse(value).success, t('emailInvalid')),
+    interest: z
+      .string()
+      .trim()
+      .min(3, t('interestRequired'))
+      .max(CRM_LIMITS.shortText, t('textTooLong')),
+    budget: z
+      .string()
+      .trim()
+      .min(2, t('budgetRequired'))
+      .max(CRM_LIMITS.shortText, t('textTooLong')),
+    source: z
+      .string()
+      .trim()
+      .min(2, t('sourceRequired'))
+      .max(CRM_LIMITS.shortText, t('textTooLong')),
+    notes: z.string().trim().max(CRM_LIMITS.notes, t('textTooLong')),
   })
 }
 
 export const createLeadDefaultValues = {
-  activeStepIndex: 0,
-  maxVisitedStepIndex: 0,
   name: '',
   phone: '',
   email: '',

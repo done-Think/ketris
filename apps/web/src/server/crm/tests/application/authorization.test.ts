@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { assertAgentOwnsContact, assertAgentOwnsProperty } from '../../application/authorization'
-import { ContactNotFoundError, OpportunityNotFoundError } from '../../domain/errors'
 import type { OpportunityRepository } from '../../application/ports/opportunity-repository.port'
 import type { PropertyLookupPort } from '../../application/ports/property-lookup.port'
+import { ContactNotFoundError, OpportunityNotFoundError } from '../../domain/errors'
 
 describe('assertAgentOwnsProperty', () => {
   it('não restringe o OWNER', async () => {

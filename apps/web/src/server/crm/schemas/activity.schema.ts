@@ -13,6 +13,7 @@ export const opportunityActivitySchema = z
     opportunityId: z.string(),
     type: activityTypeSchema,
     description: z.string(),
+    systemAction: z.string().nullable(),
     authorId: z.string().nullable(),
     authorName: z.string().nullable(),
     previousStatus: opportunityStatusSchema.nullable(),
@@ -30,10 +31,9 @@ export const createActivityRequestSchema = z
     description: z.string().min(1, 'Descrição é obrigatória.').max(2000),
     type: z.enum(['NOTA', 'CONTATO_REALIZADO']).optional(),
   })
+  .strict()
   .openapi('CreateOpportunityActivityRequest')
 
 export const activityResponseSchema = z
   .object({ activity: opportunityActivitySchema })
   .openapi('OpportunityActivityResponse')
-
-export type CreateActivityRequestDTO = z.infer<typeof createActivityRequestSchema>

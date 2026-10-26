@@ -1,4 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCrmCacheScope } from './use-crm-cache-scope'
 
 import { crmService } from '../services/crm-service'
 import type {
@@ -6,24 +7,13 @@ import type {
   OpportunityFilters,
   UpdateOpportunityInput,
 } from '../types/opportunity'
-import type { PublicPropertySearchFilters } from '../types/property'
+import type { CrmPropertySearchFilters } from '../types/property'
 
 function normalizeFilters(filters: OpportunityFilters) {
   return {
+    ...filters,
     status: filters.status ?? null,
     includeArchived: filters.includeArchived ?? false,
-  }
-}
-
-function normalizePropertyFilters(filters: PublicPropertySearchFilters) {
-  return {
-    purpose: filters.purpose ?? null,
-    propertyType: filters.propertyType ?? null,
-    city: filters.city ?? null,
-    minPrice: filters.minPrice ?? null,
-    maxPrice: filters.maxPrice ?? null,
-    minBedrooms: filters.minBedrooms ?? null,
-    q: filters.q ?? null,
   }
 }
 
@@ -32,35 +22,40 @@ export const crmQueryKeys = {
   opportunities: () => [...crmQueryKeys.all, 'opportunities'] as const,
   tenant: (tenantId: string) => [...crmQueryKeys.opportunities(), tenantId] as const,
   lists: (tenantId: string) => [...crmQueryKeys.tenant(tenantId), 'list'] as const,
-  list: (tenantId: string, filters: OpportunityFilters = {}) =>
-    [...crmQueryKeys.lists(tenantId), normalizeFilters(filters)] as const,
+  list: (tenantId: string, filters: OpportunityFilters = {}, actorKey: readonly string[] = []) =>
+    [...crmQueryKeys.lists(tenantId), actorKey, normalizeFilters(filters)] as const,
   details: (tenantId: string) => [...crmQueryKeys.tenant(tenantId), 'detail'] as const,
-  detail: (tenantId: string, opportunityId: string) =>
-    [...crmQueryKeys.details(tenantId), opportunityId] as const,
+  detail: (tenantId: string, opportunityId: string, actorKey: readonly string[] = []) =>
+    [...crmQueryKeys.details(tenantId), opportunityId, actorKey] as const,
   properties: () => [...crmQueryKeys.all, 'properties'] as const,
   propertyTenant: (tenantId: string) => [...crmQueryKeys.properties(), tenantId] as const,
   propertyLists: (tenantId: string) => [...crmQueryKeys.propertyTenant(tenantId), 'list'] as const,
-  propertyList: (tenantId: string, filters: PublicPropertySearchFilters = {}) =>
-    [...crmQueryKeys.propertyLists(tenantId), normalizePropertyFilters(filters)] as const,
+  propertyList: (
+    tenantId: string,
+    filters: CrmPropertySearchFilters = {},
+    actorKey: readonly string[] = [],
+  ) => [...crmQueryKeys.propertyLists(tenantId), actorKey, filters] as const,
   propertyDetails: (tenantId: string) =>
     [...crmQueryKeys.propertyTenant(tenantId), 'detail'] as const,
-  propertyDetail: (tenantId: string, propertyId: string) =>
-    [...crmQueryKeys.propertyDetails(tenantId), propertyId] as const,
+  propertyDetail: (tenantId: string, propertyId: string, actorKey: readonly string[] = []) =>
+    [...crmQueryKeys.propertyDetails(tenantId), propertyId, actorKey] as const,
   leads: () => [...crmQueryKeys.all, 'leads'] as const,
   leadsTenant: (tenantId: string) => [...crmQueryKeys.leads(), tenantId] as const,
-  leadsList: (tenantId: string) => [...crmQueryKeys.leadsTenant(tenantId), 'list'] as const,
+  leadsList: (tenantId: string, filters = {}, actorKey: readonly string[] = []) =>
+    [...crmQueryKeys.leadsTenant(tenantId), 'list', actorKey, filters] as const,
 }
 
 export function useOpportunities(
   tenantId: string | null | undefined,
   filters: OpportunityFilters = {},
 ) {
+  const scope = useCrmCacheScope(tenantId)
   const scopedTenantId = tenantId ?? ''
 
   return useQuery({
-    queryKey: crmQueryKeys.list(scopedTenantId, filters),
+    queryKey: crmQueryKeys.list(scopedTenantId, filters, scope.actorKey),
     queryFn: () => crmService.list(filters),
-    enabled: Boolean(tenantId),
+    enabled: scope.enabled,
   })
 }
 
@@ -68,13 +63,14 @@ export function useOpportunity(
   tenantId: string | null | undefined,
   opportunityId: string | null | undefined,
 ) {
+  const scope = useCrmCacheScope(tenantId)
   const scopedTenantId = tenantId ?? ''
   const scopedOpportunityId = opportunityId ?? ''
 
   return useQuery({
-    queryKey: crmQueryKeys.detail(scopedTenantId, scopedOpportunityId),
+    queryKey: crmQueryKeys.detail(scopedTenantId, scopedOpportunityId, scope.actorKey),
     queryFn: () => crmService.getById(scopedOpportunityId),
-    enabled: Boolean(tenantId && opportunityId),
+    enabled: scope.enabled && Boolean(opportunityId),
   })
 }
 
@@ -84,45 +80,106 @@ export function useCreateOpportunity(tenantId: string) {
   return useMutation({
     mutationFn: (payload: CreateOpportunityPayload) => crmService.create(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: crmQueryKeys.lists(tenantId) })
+      queryClient.invalidateQueries({ queryKey: crmQueryKeys.tenant(tenantId) })
+      queryClient.invalidateQueries({ queryKey: ['crm', 'contacts', tenantId] })
+      queryClient.invalidateQueries({ queryKey: ['contracts'] })
     },
   })
 }
 
 export function useUpdateOpportunity(tenantId: string) {
+  const scope = useCrmCacheScope(tenantId)
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: ({ id, changes }: UpdateOpportunityInput) => crmService.update(id, changes),
     onSuccess: (opportunity) => {
-      queryClient.setQueryData(crmQueryKeys.detail(tenantId, opportunity.id), opportunity)
-      queryClient.invalidateQueries({ queryKey: crmQueryKeys.lists(tenantId) })
+      queryClient.setQueryData(
+        crmQueryKeys.detail(tenantId, opportunity.id, scope.actorKey),
+        opportunity,
+      )
+      queryClient.invalidateQueries({ queryKey: crmQueryKeys.tenant(tenantId) })
+      queryClient.invalidateQueries({ queryKey: ['crm', 'contacts', tenantId] })
+      queryClient.invalidateQueries({ queryKey: ['contracts'] })
     },
   })
 }
 
 export function useArchiveOpportunity(tenantId: string) {
+  const scope = useCrmCacheScope(tenantId)
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (opportunityId: string) => crmService.archive(opportunityId),
     onSuccess: (opportunity) => {
-      queryClient.setQueryData(crmQueryKeys.detail(tenantId, opportunity.id), opportunity)
-      queryClient.invalidateQueries({ queryKey: crmQueryKeys.lists(tenantId) })
+      queryClient.setQueryData(
+        crmQueryKeys.detail(tenantId, opportunity.id, scope.actorKey),
+        opportunity,
+      )
+      queryClient.invalidateQueries({ queryKey: crmQueryKeys.tenant(tenantId) })
+      queryClient.invalidateQueries({ queryKey: ['crm', 'contacts', tenantId] })
+      queryClient.invalidateQueries({ queryKey: ['contracts'] })
     },
   })
 }
 
 export function useCrmProperties(
   tenantId: string | null | undefined,
-  filters: PublicPropertySearchFilters = {},
+  filters: CrmPropertySearchFilters = {},
 ) {
+  const scope = useCrmCacheScope(tenantId)
+  return useInfiniteQuery({
+    queryKey: crmQueryKeys.propertyList(tenantId ?? '', filters, scope.actorKey),
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      crmService.listProperties({ ...filters, page: pageParam, pageSize: 10 }),
+    getNextPageParam: (page) =>
+      page.pagination.page < page.pagination.pageCount ? page.pagination.page + 1 : undefined,
+    select: (data) => data.pages.flatMap((page) => page.properties),
+    enabled: scope.enabled,
+  })
+}
+
+export function useCrmAuthorizedProperty(
+  tenantId: string | null | undefined,
+  propertyId: string | null | undefined,
+) {
+  const scope = useCrmCacheScope(tenantId)
   const scopedTenantId = tenantId ?? ''
+  const scopedPropertyId = propertyId ?? ''
 
   return useQuery({
-    queryKey: crmQueryKeys.propertyList(scopedTenantId, filters),
-    queryFn: () => crmService.listProperties(filters),
-    enabled: Boolean(tenantId),
+    queryKey: crmQueryKeys.propertyDetail(scopedTenantId, scopedPropertyId, scope.actorKey),
+    queryFn: () => crmService.getProperty(scopedPropertyId),
+    enabled: scope.enabled && Boolean(propertyId),
+  })
+}
+
+export function useOpportunityActivities(
+  tenantId: string | null | undefined,
+  opportunityId: string,
+) {
+  const scope = useCrmCacheScope(tenantId)
+  return useQuery({
+    queryKey: [...crmQueryKeys.detail(tenantId ?? '', opportunityId, scope.actorKey), 'activities'],
+    queryFn: () => crmService.listActivities(opportunityId),
+    enabled: scope.enabled && Boolean(opportunityId),
+  })
+}
+
+export function useInfiniteOpportunities(
+  tenantId: string,
+  filters: OpportunityFilters,
+  enabled = true,
+) {
+  const scope = useCrmCacheScope(tenantId)
+  return useInfiniteQuery({
+    queryKey: [...crmQueryKeys.list(tenantId, filters, scope.actorKey), 'infinite'],
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) => crmService.list({ ...filters, page: pageParam }),
+    getNextPageParam: (page) =>
+      page.pagination.page < page.pagination.pageCount ? page.pagination.page + 1 : undefined,
+    enabled: scope.enabled && enabled,
   })
 }
 
@@ -130,12 +187,10 @@ export function useCrmProperty(
   tenantId: string | null | undefined,
   propertyId: string | null | undefined,
 ) {
-  const scopedTenantId = tenantId ?? ''
-  const scopedPropertyId = propertyId ?? ''
-
+  const scope = useCrmCacheScope(tenantId)
   return useQuery({
-    queryKey: crmQueryKeys.propertyDetail(scopedTenantId, scopedPropertyId),
-    queryFn: () => crmService.getProperty(scopedPropertyId),
-    enabled: Boolean(tenantId && propertyId),
+    queryKey: ['crm', 'published-property', tenantId ?? '', propertyId ?? '', scope.actorKey],
+    queryFn: () => crmService.getPublishedProperty(propertyId!),
+    enabled: scope.enabled && Boolean(propertyId),
   })
 }

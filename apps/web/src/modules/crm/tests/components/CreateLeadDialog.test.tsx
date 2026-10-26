@@ -80,7 +80,7 @@ describe('CreateLeadDialog', () => {
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
 
     expect(await screen.findByText('Informe o nome do lead')).toBeVisible()
-    expect(screen.getByText('Informe um e-mail válido')).toBeVisible()
+    expect(screen.queryByText('Informe um e-mail válido')).not.toBeInTheDocument()
     expect(screen.queryByLabelText('Imóvel ou interesse')).not.toBeInTheDocument()
   })
 
@@ -169,5 +169,17 @@ describe('CreateLeadDialog', () => {
 
     expect(onClose).toHaveBeenCalledOnce()
     expect(mutate).not.toHaveBeenCalled()
+  })
+  it('requires validated Next navigation before visiting a new step', async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await user.click(screen.getByText('Revisão'))
+    expect(screen.getByLabelText('Nome')).toBeVisible()
+    expect(screen.queryByLabelText('Imóvel ou interesse')).not.toBeInTheDocument()
+    await fillContactStep(user)
+    await user.click(screen.getByRole('button', { name: 'Próximo' }))
+    expect(screen.getByLabelText('Imóvel ou interesse')).toBeVisible()
+    await user.click(screen.getByText('Revisão'))
+    expect(screen.getByLabelText('Imóvel ou interesse')).toBeVisible()
   })
 })

@@ -73,3 +73,39 @@ export class LeadAlreadyConvertedError extends AppError {
     })
   }
 }
+
+export class LeadEmailRequiredError extends AppError {
+  constructor() {
+    super('Informe um e-mail válido antes de converter o lead.', {
+      status: 400,
+      code: 'LEAD_EMAIL_REQUIRED',
+    })
+  }
+}
+
+export class OpportunityLinkedToContractError extends AppError {
+  constructor() {
+    super(
+      'Uma oportunidade com contrato vinculado deve ser arquivada para preservar o histórico.',
+      { status: 409, code: 'OPPORTUNITY_HAS_CONTRACT' },
+    )
+  }
+}
+
+export class LeadStageLockedError extends AppError {
+  constructor() {
+    super('O estágio de um lead convertido deve permanecer em Proposta.', {
+      status: 409,
+      code: 'LEAD_STAGE_LOCKED',
+    })
+  }
+}
+
+export class CrmRecordNotFoundError extends AppError {
+  constructor() {
+    super('Registro não encontrado no escopo autorizado do CRM.', {
+      status: 404,
+      code: 'CRM_RECORD_NOT_FOUND',
+    })
+  }
+}

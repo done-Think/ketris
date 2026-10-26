@@ -1,5 +1,14 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
+import {
+  crmEmailSchema,
+  crmNameSchema,
+  crmNotesSchema,
+  crmPhoneSchema,
+  crmProposedValueSchema,
+  crmShortTextSchema,
+} from './crm-input.schema'
+import { crmGroupsSchema, crmListQuerySchema, crmPaginationSchema } from './pagination.schema'
 
 export const leadStageSchema = z
   .enum(['NOVO', 'EM_CONTATO', 'VISITA_MARCADA', 'PROPOSTA'])
@@ -10,6 +19,7 @@ export const leadSchema = z
     id: z.string(),
     tenantId: z.string(),
     responsavelId: z.string(),
+    responsibleName: z.string().optional(),
     name: z.string(),
     phone: z.string(),
     email: z.string().nullable(),
@@ -24,29 +34,40 @@ export const leadSchema = z
   })
   .openapi('Lead')
 
+export const listLeadsQuerySchema = crmListQuerySchema
+  .extend({
+    stage: leadStageSchema.optional(),
+    sortBy: z
+      .enum(['name', 'interest', 'budget', 'stage', 'source', 'lastContact', 'createdAt'])
+      .optional(),
+  })
+  .strict()
+
 export const listLeadsResponseSchema = z
-  .object({ leads: z.array(leadSchema) })
+  .object({ leads: z.array(leadSchema), pagination: crmPaginationSchema, groups: crmGroupsSchema })
   .openapi('ListLeadsResponse')
 
 export const leadResponseSchema = z.object({ lead: leadSchema }).openapi('LeadResponse')
 
 export const createLeadRequestSchema = z
   .object({
-    name: z.string().trim().min(1, 'Nome é obrigatório.'),
-    phone: z.string().trim().min(1, 'Telefone é obrigatório.'),
-    email: z.string().trim().email('E-mail inválido.').nullable().optional(),
-    interest: z.string().trim().min(1, 'Interesse é obrigatório.'),
-    budget: z.string().trim().min(1, 'Orçamento é obrigatório.'),
-    source: z.string().trim().min(1, 'Origem é obrigatória.'),
-    notes: z.string().trim().min(1).nullable().optional(),
+    name: crmNameSchema,
+    phone: crmPhoneSchema,
+    email: crmEmailSchema.nullable().optional(),
+    interest: crmShortTextSchema,
+    budget: crmShortTextSchema,
+    source: crmShortTextSchema,
+    notes: crmNotesSchema.nullable().optional(),
   })
+  .strict()
   .openapi('CreateLeadRequest')
 
 export const patchLeadRequestSchema = z
   .object({
     stage: leadStageSchema.optional(),
-    notes: z.string().trim().min(1).nullable().optional(),
+    notes: crmNotesSchema.nullable().optional(),
   })
+  .strict()
   .refine((data) => Object.values(data).some((value) => value !== undefined), {
     message: 'Informe ao menos um campo para atualizar.',
   })
@@ -55,14 +76,12 @@ export const patchLeadRequestSchema = z
 export const convertLeadRequestSchema = z
   .object({
     propertyId: z.string().trim().min(1, 'Selecione um imóvel.'),
-    proposedValue: z.number().positive('Valor proposto deve ser positivo.'),
+    proposedValue: crmProposedValueSchema,
+    email: crmEmailSchema.optional(),
   })
+  .strict()
   .openapi('ConvertLeadRequest')
 
 export const convertLeadResponseSchema = z
   .object({ lead: leadSchema, opportunityId: z.string() })
   .openapi('ConvertLeadResponse')
-
-export type CreateLeadRequestDTO = z.infer<typeof createLeadRequestSchema>
-export type PatchLeadRequestDTO = z.infer<typeof patchLeadRequestSchema>
-export type ConvertLeadRequestDTO = z.infer<typeof convertLeadRequestSchema>

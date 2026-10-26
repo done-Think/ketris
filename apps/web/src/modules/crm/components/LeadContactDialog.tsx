@@ -1,5 +1,7 @@
 'use client'
 
+import * as crmStyles from '../styles/lead-contact-dialog.styles'
+
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import EmailRoundedIcon from '@mui/icons-material/EmailRounded'
 import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded'
@@ -20,11 +22,8 @@ import {
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
-
 import { leadStageOptions } from '../config/lead-creation'
 import type { LeadContactDialogProps } from '../types/lead'
-import { apiStageByStage } from '../utils/map-dashboard-lead'
 
 function getPhoneDigits(phone: string) {
   return phone.replace(/\D/g, '')
@@ -56,16 +55,12 @@ export function LeadContactDialog({
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
-      <DialogTitle sx={{ px: { xs: 2, md: 2.6 }, pb: 1, pt: 2.4 }}>
+      <DialogTitle sx={crmStyles.dialogTitleSx}>
         <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
-          <Stack spacing={1.4} sx={{ flex: 1, minWidth: 0 }}>
-            <Box sx={{ minWidth: 0 }}>
-              <Typography sx={{ color: brand.magenta[600], fontSize: 13, fontWeight: 900 }}>
-                {t('eyebrow')}
-              </Typography>
-              <Typography sx={{ color: brand.graphite[500], fontSize: 22, fontWeight: 900 }}>
-                {lead.name}
-              </Typography>
+          <Stack spacing={1.4} sx={crmStyles.stackSx}>
+            <Box sx={crmStyles.boxSx}>
+              <Typography sx={crmStyles.typographySx}>{t('eyebrow')}</Typography>
+              <Typography sx={crmStyles.typographySx2}>{lead.name}</Typography>
             </Box>
             <TextField
               select
@@ -76,7 +71,7 @@ export function LeadContactDialog({
               slotProps={{ inputLabel: { shrink: true } }}
               onChange={(event) => {
                 const nextStage = event.target.value as (typeof leadStageOptions)[number]['value']
-                onStageChange(lead.id, apiStageByStage[nextStage])
+                onStageChange(lead.id, nextStage)
               }}
             >
               {leadStageOptions.map((option) => (
@@ -87,52 +82,21 @@ export function LeadContactDialog({
             </TextField>
           </Stack>
           <IconButton aria-label={t('close')} onClick={onClose}>
-            <CloseRoundedIcon sx={{ fontSize: iconSize.lg }} />
+            <CloseRoundedIcon sx={crmStyles.closeRoundedIconSx} />
           </IconButton>
         </Stack>
       </DialogTitle>
 
-      <DialogContent sx={{ px: { xs: 2, md: 2.6 }, pb: 2, pt: 1 }}>
+      <DialogContent sx={crmStyles.dialogContentSx}>
         <Stack spacing={1.6}>
-          <Box
-            sx={{
-              border: '1px solid',
-              borderColor: alpha.graphite[8],
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.app,
-              p: 1.6,
-            }}
-          >
-            <Typography sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 800 }}>
-              {t('phoneLabel')}
-            </Typography>
-            <Typography sx={{ color: brand.graphite[500], fontSize: 22, fontWeight: 900 }}>
-              {lead.phone}
-            </Typography>
+          <Box sx={crmStyles.boxSx2}>
+            <Typography sx={crmStyles.typographySx3}>{t('phoneLabel')}</Typography>
+            <Typography sx={crmStyles.typographySx2}>{lead.phone}</Typography>
           </Box>
 
-          <Box
-            sx={{
-              border: '1px solid',
-              borderColor: alpha.graphite[8],
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.paper,
-              p: 1.6,
-            }}
-          >
-            <Typography sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 800 }}>
-              {t('emailLabel')}
-            </Typography>
-            <Typography
-              sx={{
-                color: brand.graphite[500],
-                fontSize: 16,
-                fontWeight: 900,
-                overflowWrap: 'anywhere',
-              }}
-            >
-              {lead.email}
-            </Typography>
+          <Box sx={crmStyles.boxSx3}>
+            <Typography sx={crmStyles.typographySx3}>{t('emailLabel')}</Typography>
+            <Typography sx={crmStyles.typographySx4}>{lead.email}</Typography>
           </Box>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2}>
@@ -141,8 +105,8 @@ export function LeadContactDialog({
               href={`tel:${getPhoneDigits(lead.phone)}`}
               variant="contained"
               fullWidth
-              startIcon={<PhoneRoundedIcon sx={{ fontSize: iconSize.sm }} />}
-              sx={{ borderRadius: `${radius.sm}px`, fontWeight: 900 }}
+              startIcon={<PhoneRoundedIcon sx={crmStyles.phoneRoundedIconSx} />}
+              sx={crmStyles.buttonSx}
             >
               {t('call')}
             </Button>
@@ -151,8 +115,8 @@ export function LeadContactDialog({
               href={`mailto:${lead.email}`}
               variant="outlined"
               fullWidth
-              startIcon={<EmailRoundedIcon sx={{ fontSize: iconSize.sm }} />}
-              sx={{ borderRadius: `${radius.sm}px`, fontWeight: 900 }}
+              startIcon={<EmailRoundedIcon sx={crmStyles.phoneRoundedIconSx} />}
+              sx={crmStyles.buttonSx}
             >
               {t('email')}
             </Button>
@@ -163,8 +127,8 @@ export function LeadContactDialog({
               rel="noreferrer"
               variant="outlined"
               fullWidth
-              startIcon={<WhatsAppIcon sx={{ fontSize: iconSize.sm }} />}
-              sx={{ borderRadius: `${radius.sm}px`, fontWeight: 900 }}
+              startIcon={<WhatsAppIcon sx={crmStyles.phoneRoundedIconSx} />}
+              sx={crmStyles.buttonSx}
             >
               {t('whatsApp')}
             </Button>
@@ -172,7 +136,7 @@ export function LeadContactDialog({
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ px: { xs: 2, md: 2.6 }, pb: 2.4, pt: 0 }}>
+      <DialogActions sx={crmStyles.dialogActionsSx}>
         <Button type="button" variant="outlined" color="secondary" onClick={onClose}>
           {t('cancel')}
         </Button>
@@ -180,7 +144,7 @@ export function LeadContactDialog({
           type="button"
           variant="contained"
           disabled={isConverted}
-          startIcon={<SwapHorizRoundedIcon sx={{ fontSize: iconSize.sm }} />}
+          startIcon={<SwapHorizRoundedIcon sx={crmStyles.phoneRoundedIconSx} />}
           onClick={() => onConvertRequest(lead)}
         >
           {isConverted ? t('alreadyConverted') : t('convert')}

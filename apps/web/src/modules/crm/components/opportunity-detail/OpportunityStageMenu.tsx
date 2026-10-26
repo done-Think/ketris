@@ -1,7 +1,7 @@
 import { Box, Menu, MenuItem } from '@mui/material'
+import { canTransition } from '@server/crm/domain/opportunity-status'
 import { useTranslations } from 'next-intl'
-
-import { radius } from '@shared/theme/tokens'
+import * as crmStyles from '../../styles/opportunity-stage-menu.styles'
 
 import { opportunityStages } from '../../config/opportunity-stages'
 import type { OpportunityStageMenuProps } from '../../types/opportunity-detail'
@@ -17,18 +17,13 @@ export function OpportunityStageMenu({
   return (
     <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onClose}>
       {opportunityStages
-        .filter(({ status }) => status !== opportunity.status)
+        .filter(
+          ({ status }) =>
+            status !== opportunity.status && canTransition(opportunity.status, status),
+        )
         .map((option) => (
           <MenuItem key={option.status} onClick={() => onRequestStatusChange(option.status)}>
-            <Box
-              sx={{
-                width: 8,
-                height: 8,
-                mr: 1.2,
-                borderRadius: `${radius.full}px`,
-                bgcolor: option.color,
-              }}
-            />
+            <Box sx={crmStyles.stageMarkerSx(option.color)} />
             {t(`stages.${option.labelKey}`)}
           </MenuItem>
         ))}

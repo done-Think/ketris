@@ -1,5 +1,6 @@
 import { Box } from '@mui/material'
 import { useTranslations } from 'next-intl'
+import * as crmStyles from '../../styles/create-lead-contact-step.styles'
 
 import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
 
@@ -11,7 +12,7 @@ export function CreateLeadContactStep({ control }: CreateLeadContactStepProps) {
   const t = useTranslations('crm.leads')
 
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 1.4 }}>
+    <Box sx={crmStyles.boxSx}>
       <RhfTextField control={control} name="name" label={t('create.fields.name')} />
       <RhfMaskedTextField
         control={control}
@@ -25,7 +26,7 @@ export function CreateLeadContactStep({ control }: CreateLeadContactStepProps) {
         label={t('create.fields.email')}
         type="email"
         required
-        sx={{ gridColumn: { md: '1 / -1' } }}
+        sx={crmStyles.rhfTextFieldSx}
       />
     </Box>
   )

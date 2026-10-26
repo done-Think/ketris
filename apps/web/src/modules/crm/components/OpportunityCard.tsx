@@ -1,25 +1,22 @@
 'use client'
 
+import { useCrmFormatter } from '../hooks/use-crm-formatter'
+
+import * as crmStyles from '../styles/opportunity-card.styles'
+
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
 import { Avatar, Box, Card, Stack, Typography } from '@mui/material'
-import { useLocale, useTranslations } from 'next-intl'
-import type { AppLocale } from '@/i18n/types/locale.types'
+import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
-import { motion, radius, shadows } from '@shared/theme/tokens'
 
 import { opportunityStageByStatus } from '../config/opportunity-stages'
 import type { OpportunityCardProps } from '../types/opportunity-card'
-import type { PublicPropertySummary } from '../types/property'
-import {
-  formatCurrency,
-  formatMonthlyCurrency,
-  formatRelativeDate,
-  getInitials,
-} from '../utils/formatters'
+import type { CrmPropertySummary } from '../types/property'
+import { getInitials } from '../utils/formatters'
 
 function getPropertyLocation(
-  property: PublicPropertySummary | undefined,
+  property: CrmPropertySummary | undefined,
   unavailableLabel: string,
 ): string {
   if (!property) return unavailableLabel
@@ -33,7 +30,7 @@ export function OpportunityCard({
   density = 'regular',
   presentation,
 }: OpportunityCardProps) {
-  const locale = useLocale() as AppLocale
+  const format = useCrmFormatter()
   const t = useTranslations('crm.pipeline')
   const stage = opportunityStageByStatus[opportunity.status]
   const isCompact = density === 'compact'
@@ -43,139 +40,44 @@ export function OpportunityCard({
   const propertyLocation = getPropertyLocation(property, t('propertyUnavailable'))
   const value =
     property?.purpose === 'ALUGUEL'
-      ? formatMonthlyCurrency(opportunity.proposedValue, locale)
-      : formatCurrency(opportunity.proposedValue, locale)
+      ? format.money(opportunity.proposedValue, true)
+      : format.money(opportunity.proposedValue)
 
   return (
     <Card
       component={Link}
       href={{ pathname: '/crm/opportunities/[id]', params: { id: opportunity.id } }}
       aria-label={t('openOpportunityAriaLabel', { name: opportunity.leadName })}
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: isCompact ? 148 : undefined,
-        minHeight: isCompact ? 148 : 164,
-        p: isCompact ? 2 : 2.25,
-        border: '1px solid',
-        borderColor: isCompact ? 'transparent' : 'divider',
-        borderRadius: isCompact ? `${radius.md}px` : 1.5,
-        boxShadow: isCompact ? shadows.crmCardCompact : shadows.crmCard,
-        color: 'text.primary',
-        textDecoration: 'none',
-        transition: motion.transition.card,
-        '&:hover': {
-          borderColor: indicatorColor,
-          boxShadow: shadows.crmCardHover,
-          transform: 'translateY(-1px)',
-        },
-        '&:focus-visible': {
-          outline: `2px solid ${indicatorColor}`,
-          outlineOffset: 2,
-        },
-      }}
+      sx={crmStyles.getCardSx(isCompact, indicatorColor)}
     >
-      <Typography
-        noWrap
-        sx={{
-          fontSize: isCompact ? 16.5 : 18,
-          fontWeight: 700,
-          lineHeight: isCompact ? 1.3 : 1.4,
-        }}
-      >
+      <Typography noWrap sx={crmStyles.getTypographySx(isCompact)}>
         {opportunity.leadName}
       </Typography>
-      <Typography
-        noWrap
-        title={propertyTitle}
-        sx={{
-          mt: 0.25,
-          color: 'text.secondary',
-          fontSize: isCompact ? 14.5 : 15.5,
-          lineHeight: isCompact ? 1.35 : 1.45,
-        }}
-      >
+      <Typography noWrap title={propertyTitle} sx={crmStyles.getTypographySx2(isCompact)}>
         {propertyTitle}
       </Typography>
-      <Typography
-        noWrap
-        title={propertyLocation}
-        sx={{
-          display: isCompact ? 'none' : 'block',
-          color: 'text.secondary',
-          fontSize: 15,
-          lineHeight: 1.4,
-        }}
-      >
+      <Typography noWrap title={propertyLocation} sx={crmStyles.getTypographySx3(isCompact)}>
         {propertyLocation}
       </Typography>
 
-      <Typography
-        noWrap
-        sx={{
-          mt: isCompact ? 0.75 : 1,
-          color: 'primary.main',
-          fontSize: isCompact ? 17 : 18,
-          fontWeight: 800,
-          lineHeight: isCompact ? 1.35 : 1.4,
-        }}
-      >
+      <Typography noWrap sx={crmStyles.getTypographySx4(isCompact)}>
         {value}
       </Typography>
 
-      <Stack
-        direction="row"
-        alignItems="center"
-        spacing={0.8}
-        sx={{
-          mt: 'auto',
-          pt: isCompact ? 0.75 : 1.1,
-          borderTop: '1px solid',
-          borderColor: 'divider',
-        }}
-      >
-        <Avatar
-          aria-hidden="true"
-          sx={{
-            width: isCompact ? 20 : 24,
-            height: isCompact ? 20 : 24,
-            bgcolor: stage.softColor,
-            color: stage.color,
-            fontSize: isCompact ? 12 : 13,
-          }}
-        >
+      <Stack direction="row" alignItems="center" spacing={0.8} sx={crmStyles.getStackSx(isCompact)}>
+        <Avatar aria-hidden="true" sx={crmStyles.getAvatarSx(isCompact, stage)}>
           {getInitials(opportunity.leadName)}
         </Avatar>
-        <Stack direction="row" alignItems="center" spacing={0.4} sx={{ minWidth: 0 }}>
-          <AccessTimeRoundedIcon
-            sx={{ display: isCompact ? 'none' : 'block', color: 'text.disabled', fontSize: 16 }}
-          />
-          <Typography
-            noWrap
-            sx={{
-              px: isCompact ? 0.625 : 0,
-              py: isCompact ? 0.25 : 0,
-              borderRadius: isCompact ? '4px' : 0,
-              bgcolor: isCompact ? 'grey.100' : 'transparent',
-              color: 'text.secondary',
-              fontSize: isCompact ? 14 : 14.5,
-              lineHeight: isCompact ? 1.2 : 'normal',
-            }}
-          >
-            {presentation?.relativeDateLabel ??
-              formatRelativeDate(opportunity.updatedAt, new Date(), locale)}
+        <Stack direction="row" alignItems="center" spacing={0.4} sx={crmStyles.stackSx}>
+          <AccessTimeRoundedIcon sx={crmStyles.getAccessTimeRoundedIconSx(isCompact)} />
+          <Typography noWrap sx={crmStyles.getTypographySx5(isCompact)}>
+            {presentation?.relativeDateLabel ?? format.relative(opportunity.updatedAt)}
           </Typography>
         </Stack>
         <Box
           aria-label={indicatorLabel}
           title={indicatorLabel}
-          sx={{
-            width: isCompact ? 6 : 8,
-            height: isCompact ? 6 : 8,
-            ml: 'auto !important',
-            borderRadius: `${radius.full}px`,
-            bgcolor: indicatorColor,
-          }}
+          sx={crmStyles.getBoxSx(isCompact, indicatorColor)}
         />
       </Stack>
     </Card>

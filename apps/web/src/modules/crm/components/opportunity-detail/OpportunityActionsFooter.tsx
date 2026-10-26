@@ -3,9 +3,10 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded'
 import SellOutlinedIcon from '@mui/icons-material/SellOutlined'
 import { Button, Paper, Stack } from '@mui/material'
+import { canTransition } from '@server/crm/domain/opportunity-status'
 import { useTranslations } from 'next-intl'
-
-import { radius, shadows } from '@shared/theme/tokens'
+import { opportunityStages } from '../../config/opportunity-stages'
+import * as crmStyles from '../../styles/opportunity-actions-footer.styles'
 
 import type { OpportunityActionsFooterProps } from '../../types/opportunity-detail'
 
@@ -19,17 +20,7 @@ export function OpportunityActionsFooter({
 }: OpportunityActionsFooterProps) {
   const t = useTranslations('crm.opportunityDetail')
   return (
-    <Paper
-      component="footer"
-      elevation={0}
-      sx={{
-        p: { xs: 1.4, sm: 1.7 },
-        border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: `${radius.md}px`,
-        boxShadow: shadows.popover,
-      }}
-    >
+    <Paper component="footer" elevation={0} sx={crmStyles.paperSx}>
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         alignItems={{ sm: 'center' }}
@@ -41,13 +32,24 @@ export function OpportunityActionsFooter({
             variant="contained"
             startIcon={<SellOutlinedIcon />}
             endIcon={<ExpandMoreRoundedIcon />}
-            disabled={isMutating}
+            disabled={
+              isMutating ||
+              !opportunityStages.some(
+                ({ status }) =>
+                  status !== opportunity.status && canTransition(opportunity.status, status),
+              )
+            }
             onClick={onStageMenuOpen}
           >
             {t('moveStage')}
           </Button>
           {opportunity.status !== 'RECUSADA' && (
-            <Button color="error" variant="outlined" disabled={isMutating} onClick={onDiscardLead}>
+            <Button
+              color="error"
+              variant="outlined"
+              disabled={isMutating || !canTransition(opportunity.status, 'RECUSADA')}
+              onClick={onDiscardLead}
+            >
               {t('discardLead')}
             </Button>
           )}

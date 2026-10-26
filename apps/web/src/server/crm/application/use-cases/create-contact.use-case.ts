@@ -1,16 +1,15 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type {
+  CreateContactInput,
+  CreateContactOutput,
+} from '../../types/create-contact.use-case.types'
+export type {
+  CreateContactInput,
+  CreateContactOutput,
+} from '../../types/create-contact.use-case.types'
 
-import type { Contact, NewContact } from '../../domain/contact.entity'
 import { ContactEmailAlreadyExistsError } from '../../domain/errors'
-import type { ContactRepository } from '../ports/contact-repository.port'
 import { assertCrmAccess } from '../authorization'
-
-export interface CreateContactInput extends Omit<NewContact, 'tenantId'> {
-  actorTenantId: string
-  actorPapel: Papel
-}
-
-export type CreateContactOutput = Contact
+import type { ContactRepository } from '../ports/contact-repository.port'
 
 export class CreateContactUseCase {
   constructor(private readonly contactRepository: ContactRepository) {}
@@ -24,6 +23,14 @@ export class CreateContactUseCase {
 
     if (existing) throw new ContactEmailAlreadyExistsError()
 
-    return this.contactRepository.create({ ...data, email, tenantId: actorTenantId })
+    return this.contactRepository.create({
+      name: data.name,
+      phone: data.phone,
+      type: data.type,
+      avatarUrl: data.avatarUrl,
+      notes: data.notes,
+      email,
+      tenantId: actorTenantId,
+    })
   }
 }

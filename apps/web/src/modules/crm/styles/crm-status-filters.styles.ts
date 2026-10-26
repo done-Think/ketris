@@ -1,0 +1,69 @@
+import type { SxProps, Theme } from '@mui/material'
+
+export const stackSx: SxProps<Theme> = { display: { xs: 'none', sm: 'flex' }, mb: -0.25 }
+
+export const boxSx: SxProps<Theme> = { display: 'flex', alignItems: 'center', gap: 0.8 }
+
+import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
+
+export function getBoxSx(active: boolean): SxProps<Theme> {
+  return {
+    display: 'grid',
+    minWidth: 26,
+    height: 26,
+    placeItems: 'center',
+    px: 0.6,
+    borderRadius: `${radius.full}px`,
+    bgcolor: active ? brand.magenta[500] : alpha.graphite[6],
+    color: active ? surface.lightText : brand.neutral[500],
+    fontSize: 15,
+    fontWeight: 900,
+  }
+}
+
+export const selectSx = {
+  width: { xs: '100%', sm: 160 },
+  display: { xs: 'block', sm: 'none' },
+  '& .MuiOutlinedInput-root': {
+    minHeight: 46,
+    borderRadius: `${radius.sm}px`,
+    bgcolor: surface.paper,
+    color: brand.graphite[500],
+    fontSize: 18,
+    fontWeight: 800,
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: 'transparent',
+      borderWidth: 0,
+    },
+  },
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'transparent',
+    borderWidth: 0,
+  },
+  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'transparent',
+  },
+  '& .MuiSelect-select': {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 0.8,
+  },
+}
+export const menuProps = {
+  PaperProps: {
+    sx: {
+      mt: 0.6,
+      borderRadius: `${radius.sm}px`,
+      boxShadow: shadows.popover,
+    },
+  },
+}
+export function menuItemSx(active: boolean) {
+  return {
+    minHeight: 46,
+    bgcolor: active ? alpha.magenta[8] : 'transparent',
+    '&:hover': {
+      bgcolor: alpha.magenta[8],
+    },
+  }
+}

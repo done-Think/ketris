@@ -45,6 +45,6 @@ describe('priority i18n catalogs', () => {
     expect(t('marketplace.searchResults.toolbar.resultCount', { count: 2 })).toBe(
       '2 properties found',
     )
-    expect(t('crm.opportunityDetail.statuses.EM_NEGOCIACAO')).toBe('In negotiation')
+    expect(t('crm.opportunityDetail.statuses.inNegotiation')).toBe('In negotiation')
   })
 })

@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { ContactEmailAlreadyExistsError, ContactNotFoundError } from '../../../domain/errors'
-import type { Contact } from '../../../domain/contact.entity'
 import type { ContactRepository } from '../../../application/ports/contact-repository.port'
 import type { OpportunityRepository } from '../../../application/ports/opportunity-repository.port'
 import { UpdateContactUseCase } from '../../../application/use-cases/update-contact.use-case'
+import type { Contact } from '../../../domain/contact.entity'
+import { ContactEmailAlreadyExistsError, ContactNotFoundError } from '../../../domain/errors'
 
 const contact: Contact = {
   id: 'contato-1',
@@ -23,6 +23,7 @@ const contact: Contact = {
 
 function createOpportunityRepository(existsForAgent?: OpportunityRepository['existsForAgent']) {
   return {
+    syncContactDetails: vi.fn().mockResolvedValue(undefined),
     existsForAgent: existsForAgent ?? vi.fn().mockResolvedValue(true),
   } as unknown as OpportunityRepository
 }

@@ -1,36 +1,20 @@
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({ data: { tenantId: 'tenant-1' }, status: 'authenticated' }),
+}))
+vi.mock('../../hooks/use-contacts', () => ({
+  useCrmContactOptions: () => ({ data: [], isFetching: false }),
+}))
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { CreateOpportunityDialog } from '../../components/opportunity-detail/CreateOpportunityDialog'
 import { useCrmProperties } from '../../hooks/use-opportunities'
-import type { PublicPropertySummary } from '../../types/property'
+import { property } from '../fixtures/property'
 
 vi.mock('../../hooks/use-opportunities', () => ({
   useCrmProperties: vi.fn(),
 }))
-
-const property: PublicPropertySummary = {
-  id: 'property-1',
-  title: 'Apartamento Jardins',
-  purpose: 'ALUGUEL',
-  propertyType: 'Apartamento',
-  price: 3500,
-  condoFee: null,
-  propertyTax: null,
-  bedrooms: 2,
-  bathrooms: 1,
-  parkingSpots: 1,
-  area: 70,
-  city: 'Sao Paulo',
-  neighborhood: 'Jardins',
-  latitude: null,
-  longitude: null,
-  brokerName: null,
-  brokerAvatarUrl: null,
-  coverUrl: null,
-  publishedAt: '2026-08-01T10:00:00.000Z',
-}
 
 describe('CreateOpportunityDialog', () => {
   beforeEach(() => {
@@ -98,7 +82,7 @@ describe('CreateOpportunityDialog', () => {
 
     expect(onSave.mock.calls[0]?.[0]).toEqual(
       expect.objectContaining({
-        propertyId: 'property-1',
+        property,
         leadName: 'Maria Silva',
         leadEmail: 'maria@example.com',
         proposedValue: '2500',

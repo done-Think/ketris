@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
 
-import { DELETE, GET, PATCH, PUT } from '../../../opportunities/[id]/route'
+import { DELETE, GET, PATCH } from '../../../opportunities/[id]/route'
 
 describe('/api/crm/opportunities/[id] (integração)', () => {
   const tokenService = new JoseTokenService()
@@ -235,36 +235,6 @@ describe('/api/crm/opportunities/[id] (integração)', () => {
       )
 
       expect(response.status).toBe(400)
-    })
-  })
-
-  describe('PUT', () => {
-    it('substitui a oportunidade, redefinindo campos opcionais omitidos', async () => {
-      const opportunity = await createOpportunity()
-      await prisma.oportunidade.update({
-        where: { id: opportunity.id },
-        data: { observacoes: 'Nota antiga', condicoesEspeciais: ['aceita animais'] },
-      })
-
-      const response = await PUT(
-        buildRequest(opportunity.id, {
-          method: 'PUT',
-          token: actorToken,
-          body: JSON.stringify({
-            leadName: 'Maria Atualizada',
-            leadEmail: opportunity.interessadoEmail,
-            proposedValue: 3000,
-            status: 'ENVIADA',
-          }),
-        }),
-        context(opportunity.id),
-      )
-      const json = await response.json()
-
-      expect(response.status).toBe(200)
-      expect(json.opportunity.leadName).toBe('Maria Atualizada')
-      expect(json.opportunity.notes).toBeNull()
-      expect(json.opportunity.specialConditions).toEqual([])
     })
   })
 

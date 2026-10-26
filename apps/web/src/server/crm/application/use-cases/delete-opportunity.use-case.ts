@@ -1,16 +1,10 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { DeleteOpportunityInput } from '../../types/delete-opportunity.use-case.types'
+export type { DeleteOpportunityInput } from '../../types/delete-opportunity.use-case.types'
 
 import { OpportunityNotFoundError } from '../../domain/errors'
 import { assertAgentOwnsProperty, assertCrmAccess } from '../authorization'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
 import type { PropertyLookupPort } from '../ports/property-lookup.port'
-
-export interface DeleteOpportunityInput {
-  actorTenantId: string
-  actorId: string
-  actorPapel: Papel
-  opportunityId: string
-}
 
 export class DeleteOpportunityUseCase {
   constructor(

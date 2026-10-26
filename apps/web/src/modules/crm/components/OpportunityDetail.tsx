@@ -1,18 +1,27 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import {
+  crmActivityKey,
+  crmStatusKey,
+  crmSystemActionKey,
+} from '@server/crm/constants/translation-keys'
+
+import * as crmStyles from '../styles/opportunity-detail.styles'
+
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
 import { Alert, Box, Button, Stack } from '@mui/material'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
+import { useMemo, useState } from 'react'
 
 import { Link, useRouter } from '@/i18n/navigation'
 import { opportunityStageByStatus } from '../config/opportunity-stages'
 import {
   useArchiveOpportunity,
-  useCrmProperty,
+  useCrmAuthorizedProperty,
   useOpportunity,
+  useOpportunityActivities,
   useUpdateOpportunity,
 } from '../hooks/use-opportunities'
 import type {
@@ -44,6 +53,14 @@ function toDateInput(value: string | null): string {
 
 function buildEditValues(opportunity: Opportunity): OpportunityEditFormValues {
   return {
+    contact: opportunity.contactId
+      ? {
+          id: opportunity.contactId,
+          name: opportunity.leadName,
+          email: opportunity.leadEmail,
+          phone: opportunity.leadPhone,
+        }
+      : null,
     leadName: opportunity.leadName,
     leadEmail: opportunity.leadEmail,
     leadPhone: opportunity.leadPhone ?? '',
@@ -53,13 +70,9 @@ function buildEditValues(opportunity: Opportunity): OpportunityEditFormValues {
       : '',
     desiredStartDate: toDateInput(opportunity.desiredStartDate),
     guaranteeType: opportunity.guaranteeType,
-    specialConditions: opportunity.specialConditions.join(', '),
+    specialConditions: opportunity.specialConditions.map((text) => ({ text })),
     notes: opportunity.notes ?? '',
   }
-}
-
-function addDays(days: number): string {
-  return new Date(Date.now() + days * 86_400_000).toISOString()
 }
 
 export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
@@ -69,8 +82,9 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
   const router = useRouter()
   const tenantId = session?.tenantId
   const opportunityQuery = useOpportunity(tenantId, opportunityId)
+  const activitiesQuery = useOpportunityActivities(tenantId, opportunityId)
   const opportunity = opportunityQuery.data
-  const propertyQuery = useCrmProperty(tenantId, opportunity?.propertyId)
+  const propertyQuery = useCrmAuthorizedProperty(tenantId, opportunity?.propertyId)
   const updateOpportunity = useUpdateOpportunity(tenantId ?? '')
   const archiveOpportunity = useArchiveOpportunity(tenantId ?? '')
   const { enqueueSnackbar } = useSnackbar()
@@ -79,55 +93,34 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
   const [editOpen, setEditOpen] = useState(false)
   const [archiveOpen, setArchiveOpen] = useState(false)
 
-  const activities = useMemo<OpportunityActivitiesPanelProps['activities']>(() => {
-    if (!opportunity) return []
-
-    const items = [
-      {
-        key: 'proposal-sent',
-        title: t('proposalSentActivityTitle'),
-        detail: t('proposalSentActivityDetail'),
-        occurredAt: addDays(-1),
-      },
-      {
-        key: 'follow-up',
-        title: t('followUpActivityTitle'),
-        detail: t('followUpActivityDetail'),
-        occurredAt: addDays(-2),
-      },
-      {
-        key: 'property-linked',
-        title: t('propertyLinkedActivityTitle'),
-        detail: t('propertyLinkedActivityDetail'),
-        occurredAt: addDays(-3),
-      },
-      {
-        key: 'documents-requested',
-        title: t('documentsRequestedActivityTitle'),
-        detail: t('documentsRequestedActivityDetail'),
-        occurredAt: addDays(-4),
-      },
-      {
-        key: 'created',
-        title: t('createdActivityTitle'),
-        detail: t('createdActivityDetail'),
-        occurredAt: opportunity.createdAt,
-      },
-    ]
-
-    if (new Date(opportunity.updatedAt).getTime() > new Date(opportunity.createdAt).getTime()) {
-      items.unshift({
-        key: 'updated',
-        title: t('updatedActivityTitle'),
-        detail: t('updatedActivityDetail', {
-          stage: pipelineT(`stages.${opportunityStageByStatus[opportunity.status].labelKey}`),
-        }),
-        occurredAt: opportunity.updatedAt,
-      })
-    }
-
-    return items
-  }, [opportunity, pipelineT, t])
+  const activities = useMemo<OpportunityActivitiesPanelProps['activities']>(
+    () =>
+      (activitiesQuery.data ?? []).map((activity) => {
+        const legacyStatus =
+          activity.type === 'MUDANCA_STATUS' &&
+          activity.previousStatus &&
+          activity.newStatus &&
+          activity.description ===
+            `Status alterado de ${activity.previousStatus} para ${activity.newStatus}.`
+        const actionKey =
+          crmSystemActionKey(activity.systemAction) ?? (legacyStatus ? 'statusChanged' : null)
+        const description = legacyStatus ? '' : activity.description
+        return {
+          key: activity.id,
+          title: t(`activityTypes.${crmActivityKey(activity.type)}`),
+          detail: actionKey
+            ? t(`activityActions.${actionKey}`, {
+                previous: activity.previousStatus
+                  ? t(`statuses.${crmStatusKey(activity.previousStatus)}`)
+                  : '',
+                next: activity.newStatus ? t(`statuses.${crmStatusKey(activity.newStatus)}`) : '',
+              }) + (description ? ` ${description}` : '')
+            : description,
+          occurredAt: activity.createdAt,
+        }
+      }),
+    [activitiesQuery.data, t],
+  )
 
   const nextActions = useMemo<OpportunityNextAction[]>(() => {
     if (!opportunity) return []
@@ -138,14 +131,12 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
           key: 'complete-draft',
           title: t('nextActions.completeDraft.title'),
           detail: t('nextActions.completeDraft.detail'),
-          dueAt: addDays(1),
           tone: 'warning',
         },
         {
           key: 'send-proposal',
           title: t('nextActions.sendProposal.title'),
           detail: t('nextActions.sendProposal.detail'),
-          dueAt: addDays(2),
           tone: 'info',
         },
       ]
@@ -157,28 +148,24 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
           key: 'proposal-follow-up',
           title: t('nextActions.proposalFollowUp.title'),
           detail: t('nextActions.proposalFollowUp.detail'),
-          dueAt: addDays(1),
           tone: 'warning',
         },
         {
           key: 'validate-documents',
           title: t('nextActions.validateDocuments.title'),
           detail: t('nextActions.validateDocuments.detail'),
-          dueAt: addDays(2),
           tone: 'info',
         },
         {
           key: 'schedule-visit',
           title: t('nextActions.scheduleVisit.title'),
           detail: t('nextActions.scheduleVisit.detail'),
-          dueAt: addDays(3),
           tone: 'info',
         },
         {
           key: 'align-owner-feedback',
           title: t('nextActions.alignOwnerFeedback.title'),
           detail: t('nextActions.alignOwnerFeedback.detail'),
-          dueAt: addDays(4),
           tone: 'info',
         },
       ]
@@ -190,14 +177,12 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
           key: 'review-counteroffer',
           title: t('nextActions.reviewCounteroffer.title'),
           detail: t('nextActions.reviewCounteroffer.detail'),
-          dueAt: addDays(1),
           tone: 'warning',
         },
         {
           key: 'align-terms',
           title: t('nextActions.alignTerms.title'),
           detail: t('nextActions.alignTerms.detail'),
-          dueAt: addDays(2),
           tone: 'info',
         },
       ]
@@ -209,14 +194,12 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
           key: 'prepare-contract',
           title: t('nextActions.prepareContract.title'),
           detail: t('nextActions.prepareContract.detail'),
-          dueAt: addDays(1),
           tone: 'success',
         },
         {
           key: 'confirm-signature',
           title: t('nextActions.confirmSignature.title'),
           detail: t('nextActions.confirmSignature.detail'),
-          dueAt: addDays(3),
           tone: 'info',
         },
       ]
@@ -227,7 +210,6 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
         key: 'register-loss-reason',
         title: t('nextActions.registerLossReason.title'),
         detail: t('nextActions.registerLossReason.detail'),
-        dueAt: addDays(1),
         tone: 'warning',
       },
     ]
@@ -235,15 +217,10 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
 
   if (opportunityQuery.isLoading) return <DetailLoading />
 
-  if (opportunityQuery.isError || !opportunity) {
+  if (!opportunity) {
     return (
-      <Stack
-        alignItems="center"
-        justifyContent="center"
-        spacing={2}
-        sx={{ minHeight: '65vh', p: 3 }}
-      >
-        <Alert severity="error" sx={{ maxWidth: 520 }}>
+      <Stack alignItems="center" justifyContent="center" spacing={2} sx={crmStyles.stackSx}>
+        <Alert severity="error" sx={crmStyles.alertSx}>
           {t('loadError')}
         </Alert>
         <Button variant="outlined" onClick={() => opportunityQuery.refetch()}>
@@ -303,6 +280,7 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
       await updateOpportunity.mutateAsync({
         id: currentOpportunity.id,
         changes: {
+          contactId: values.contact?.id ?? null,
           leadName: values.leadName.trim(),
           leadEmail: values.leadEmail.trim(),
           leadPhone: values.leadPhone.trim() || null,
@@ -310,10 +288,7 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
           contractTermMonths: contractMonths,
           desiredStartDate: values.desiredStartDate || null,
           guaranteeType: values.guaranteeType,
-          specialConditions: values.specialConditions
-            .split(',')
-            .map((condition) => condition.trim())
-            .filter(Boolean),
+          specialConditions: values.specialConditions.map(({ text }) => text.trim()),
           notes: values.notes.trim() || null,
         },
       })
@@ -340,29 +315,21 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
   }
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        minHeight: '100vh',
-        flexDirection: 'column',
-        p: 3.5,
-        '& h1, & h2': { letterSpacing: '0 !important' },
-      }}
-    >
+    <Box sx={crmStyles.boxSx}>
+      {opportunityQuery.isError && (
+        <Alert
+          severity="error"
+          action={
+            <Button onClick={() => void opportunityQuery.refetch()}>{pipelineT('retry')}</Button>
+          }
+        >
+          {t('loadError')}
+        </Alert>
+      )}
       <OpportunityDetailHeader opportunity={opportunity} stage={stage} />
 
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: 'minmax(0, 1fr)',
-            lg: 'repeat(3, minmax(0, 1fr))',
-          },
-          gap: 2,
-          alignItems: 'stretch',
-        }}
-      >
-        <Stack spacing={2} minWidth={0} sx={{ height: '100%' }}>
+      <Box sx={crmStyles.boxSx2}>
+        <Stack spacing={2} minWidth={0} sx={crmStyles.stackSx2}>
           <OpportunityContactPanel opportunity={opportunity} />
           <OpportunityPropertyPanel
             opportunity={opportunity}
@@ -374,16 +341,30 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
           />
         </Stack>
 
-        <Stack spacing={2} minWidth={0} sx={{ height: '100%' }}>
+        <Stack spacing={2} minWidth={0} sx={crmStyles.stackSx2}>
           <OpportunityNextActionsPanel actions={nextActions} />
         </Stack>
 
-        <Stack spacing={2} minWidth={0} sx={{ height: { lg: '100%' } }}>
-          <OpportunityActivitiesPanel activities={activities} />
+        <Stack spacing={2} minWidth={0} sx={crmStyles.stackSx3}>
+          {activitiesQuery.isError ? (
+            <Alert
+              severity="error"
+              action={
+                <Button onClick={() => void activitiesQuery.refetch()}>{pipelineT('retry')}</Button>
+              }
+            >
+              {t('activitiesLoadError')}
+            </Alert>
+          ) : (
+            <OpportunityActivitiesPanel
+              activities={activities}
+              isLoading={activitiesQuery.isLoading}
+            />
+          )}
         </Stack>
       </Box>
 
-      <Box sx={{ pt: 2 }}>
+      <Box sx={crmStyles.boxSx3}>
         <OpportunityActionsFooter
           opportunity={opportunity}
           isMutating={isMutating}
@@ -411,6 +392,7 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
       />
 
       <EditOpportunityDialog
+        key={currentOpportunity.id}
         open={editOpen}
         initialValues={editOpen ? buildEditValues(currentOpportunity) : null}
         isPending={updateOpportunity.isPending}

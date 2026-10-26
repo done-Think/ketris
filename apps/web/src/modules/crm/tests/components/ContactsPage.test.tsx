@@ -6,8 +6,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { theme } from '@shared/theme/theme'
 
 import { ContactsPage } from '../../components/ContactsPage'
-import { contactListFixtures } from '../../fixtures/contact-list-fixtures'
 import type { ApiContactListItem } from '../../types/contact'
+import { contactListFixtures } from '../fixtures/contact-list-fixtures'
 
 const mocks = vi.hoisted(() => ({
   useContacts: vi.fn(),
@@ -73,7 +73,15 @@ function renderContactsPage() {
 describe('ContactsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.useContacts.mockReturnValue({ data: [contact], isLoading: false, isError: false })
+    mocks.useContacts.mockReturnValue({
+      data: {
+        contacts: [contact],
+        pagination: { page: 1, pageSize: 5, pageCount: 1, totalCount: 1 },
+        groups: [],
+      },
+      isLoading: false,
+      isError: false,
+    })
     mocks.useCreateContact.mockReturnValue({
       mutateAsync: mocks.createContactMutateAsync,
       isPending: false,
@@ -99,16 +107,19 @@ describe('ContactsPage', () => {
     expect(within(row!).getByText('(11) 98722-1200')).toBeInTheDocument()
   })
 
-  it('uses local fixtures when the authenticated tenant has no contacts in non-production', () => {
-    mocks.useContacts.mockReturnValue({ data: [], isLoading: false, isError: false })
-
+  it('shows the empty state when the tenant has no contacts', () => {
+    mocks.useContacts.mockReturnValue({
+      data: {
+        contacts: [],
+        pagination: { page: 1, pageSize: 5, pageCount: 1, totalCount: 0 },
+        groups: [],
+      },
+      isLoading: false,
+      isError: false,
+    })
     renderContactsPage()
-
-    expect(screen.getAllByText(contactListFixtures[0].name).length).toBeGreaterThan(0)
-    expect(screen.getByText('1-5 de 6')).toBeVisible()
-    screen
-      .getAllByRole('button', { name: `Editar ${contactListFixtures[0].name}` })
-      .forEach((button) => expect(button).toBeDisabled())
+    expect(screen.queryAllByText(contactListFixtures[0].name)).toHaveLength(0)
+    expect(screen.getByText('0-0 de 0')).toBeVisible()
   })
 
   it('opens the create dialog and saves a new contact', async () => {

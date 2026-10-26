@@ -1,23 +1,17 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type {
+  AddOpportunityNoteInput,
+  AddOpportunityNoteOutput,
+} from '../../types/add-opportunity-note.use-case.types'
+export type {
+  AddOpportunityNoteInput,
+  AddOpportunityNoteOutput,
+} from '../../types/add-opportunity-note.use-case.types'
 
-import type { ActivityType, OpportunityActivity } from '../../domain/activity.entity'
 import { OpportunityNotFoundError } from '../../domain/errors'
 import { assertAgentOwnsProperty, assertCrmAccess } from '../authorization'
 import type { ActivityRepository } from '../ports/activity-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
 import type { PropertyLookupPort } from '../ports/property-lookup.port'
-
-export interface AddOpportunityNoteInput {
-  actorTenantId: string
-  actorId?: string | null
-  actorPapel: Papel
-  actorName?: string | null
-  opportunityId: string
-  description: string
-  type?: Extract<ActivityType, 'NOTA' | 'CONTATO_REALIZADO'>
-}
-
-export type AddOpportunityNoteOutput = OpportunityActivity
 
 export class AddOpportunityNoteUseCase {
   constructor(

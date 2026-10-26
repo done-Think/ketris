@@ -1,4 +1,6 @@
+import type { OpportunityResponseAction } from '../types/opportunity-status.types'
 import type { OpportunityStatus } from './opportunity.entity'
+export type { OpportunityResponseAction } from '../types/opportunity-status.types'
 
 const allowedTransitions: Record<OpportunityStatus, readonly OpportunityStatus[]> = {
   RASCUNHO: ['ENVIADA', 'RECUSADA'],
@@ -17,8 +19,6 @@ export function canTransition(from: OpportunityStatus, to: OpportunityStatus): b
 export function allowedNextStatuses(from: OpportunityStatus): readonly OpportunityStatus[] {
   return allowedTransitions[from]
 }
-
-export type OpportunityResponseAction = 'ACEITAR' | 'RECUSAR' | 'SOLICITAR_INFORMACOES'
 
 const responseTargetStatus: Record<OpportunityResponseAction, OpportunityStatus> = {
   ACEITAR: 'ACEITA',

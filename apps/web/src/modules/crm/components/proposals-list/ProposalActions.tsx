@@ -2,9 +2,10 @@ import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import { IconButton, Stack, Tooltip } from '@mui/material'
 import { useTranslations } from 'next-intl'
+import * as crmStyles from '../../styles/proposal-actions.styles'
 
 import { Link } from '@/i18n/navigation'
-import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import { alpha, brand, radius, surface } from '@shared/theme/tokens'
 
 import type { ProposalActionsProps } from '../../types/proposal-management'
 
@@ -46,7 +47,7 @@ export function ProposalActions({
           onClick={() => onViewProposal?.(proposal)}
           sx={buttonSx}
         >
-          <VisibilityOutlinedIcon sx={{ fontSize: iconSize.sm }} />
+          <VisibilityOutlinedIcon sx={crmStyles.visibilityOutlinedIconSx} />
         </IconButton>
       </Tooltip>
 
@@ -60,7 +61,7 @@ export function ProposalActions({
             onClick={() => onOpenMoreOptions?.(proposal)}
             sx={buttonSx}
           >
-            <MoreHorizRoundedIcon sx={{ fontSize: iconSize.sm }} />
+            <MoreHorizRoundedIcon sx={crmStyles.visibilityOutlinedIconSx} />
           </IconButton>
         </span>
       </Tooltip>

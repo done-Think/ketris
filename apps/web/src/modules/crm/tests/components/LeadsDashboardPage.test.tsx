@@ -1,5 +1,5 @@
 import { ThemeProvider } from '@mui/material'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -10,6 +10,7 @@ import { LeadsDashboardPage } from '../../components/LeadsDashboardPage'
 import {
   useConvertLeadToOpportunity,
   useCreateLead,
+  useLead,
   useLeads,
   useUpdateLeadStage,
 } from '../../hooks/use-leads'
@@ -28,6 +29,7 @@ vi.mock('../../hooks/use-leads', async (importOriginal) => {
 
   return {
     ...original,
+    useLead: vi.fn(),
     useLeads: vi.fn(),
     useCreateLead: vi.fn(),
     useUpdateLeadStage: vi.fn(),
@@ -83,13 +85,43 @@ const leadFixtures: Lead[] = [
 ]
 
 function mockLeadsQuery(overrides: Record<string, unknown> = {}) {
-  vi.mocked(useLeads).mockReturnValue({
-    data: leadFixtures,
-    isLoading: false,
-    isError: false,
-    refetch: vi.fn(),
-    ...overrides,
-  } as unknown as ReturnType<typeof useLeads>)
+  vi.mocked(useLead).mockImplementation(
+    (_tenant, id) =>
+      ({ data: leadFixtures.find((lead) => lead.id === id) }) as ReturnType<typeof useLead>,
+  )
+  vi.mocked(useLeads).mockImplementation((_tenant, filters = {}) => {
+    let leads = [...leadFixtures]
+    if (filters.q)
+      leads = leads.filter((lead) => lead.name.toLowerCase().includes(filters.q!.toLowerCase()))
+    if (filters.stage) leads = leads.filter((lead) => lead.stage === filters.stage)
+    if (filters.sortBy === 'budget')
+      leads = [leadFixtures[1], ...leads.filter((lead) => lead.id !== leadFixtures[1].id)]
+    const page = filters.page ?? 1,
+      pageSize = filters.pageSize ?? 5
+    return {
+      data: {
+        leads: leads.slice((page - 1) * pageSize, page * pageSize),
+        pagination: {
+          page,
+          pageSize,
+          pageCount: Math.ceil(leads.length / pageSize),
+          totalCount: leads.length,
+        },
+        groups: ['NOVO', 'EM_CONTATO', 'VISITA_MARCADA', 'PROPOSTA'].map((key) => ({
+          key,
+          count: leadFixtures.filter((lead) => lead.stage === key).length,
+          amount: 0,
+          rental: 0,
+          sale: 0,
+          unclassified: 0,
+        })),
+      },
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+      ...overrides,
+    } as unknown as ReturnType<typeof useLeads>
+  })
 }
 
 function renderPage() {
@@ -178,6 +210,8 @@ describe('LeadsDashboardPage', () => {
 
     await user.type(screen.getByLabelText('Buscar leads'), 'Rafael')
 
+    await screen.findAllByText('Rafael Lima')
+    await waitFor(() => expect(screen.queryAllByText('João Silva')).toHaveLength(0))
     expect(screen.getAllByText('Rafael Lima').length).toBeGreaterThan(0)
     expect(screen.queryAllByText('João Silva')).toHaveLength(0)
   })

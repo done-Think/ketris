@@ -1,11 +1,10 @@
-import { useState } from 'react'
 import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineRounded'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded'
 import { Box, IconButton, Menu, MenuItem, Stack, Tooltip } from '@mui/material'
 import { useTranslations } from 'next-intl'
-
-import { alpha, brand, iconSize } from '@shared/theme/tokens'
+import { useState } from 'react'
+import * as crmStyles from '../../styles/contact-actions.styles'
 
 import type { ContactActionsProps } from '../../types/contact'
 
@@ -36,28 +35,22 @@ export function ContactActions({
     <Stack direction="row" alignItems="center" justifyContent="center" spacing={0.125}>
       {iconActions.map(({ label, icon: Icon, onClick }) => (
         <Tooltip key={label} title={label}>
-          <Box component="span" sx={{ display: 'inline-flex' }}>
+          <Box component="span" sx={crmStyles.boxSx}>
             <IconButton
               type="button"
               aria-label={label}
               size="small"
               disabled={!onClick}
               onClick={onClick}
-              sx={{
-                width: 24,
-                height: 24,
-                color: brand.neutral[400],
-                '&:hover': { bgcolor: alpha.graphite[6], color: brand.neutral[600] },
-                '&.Mui-disabled': { color: brand.neutral[400] },
-              }}
+              sx={crmStyles.iconButtonSx}
             >
-              <Icon sx={{ fontSize: iconSize.sm }} />
+              <Icon sx={crmStyles.iconSx} />
             </IconButton>
           </Box>
         </Tooltip>
       ))}
       <Tooltip title={moreOptionsLabel}>
-        <Box component="span" sx={{ display: 'inline-flex' }}>
+        <Box component="span" sx={crmStyles.boxSx}>
           <IconButton
             type="button"
             aria-label={moreOptionsLabel}
@@ -66,15 +59,9 @@ export function ContactActions({
             size="small"
             disabled={!onOpenMoreOptions}
             onClick={(event) => setMenuAnchor(event.currentTarget)}
-            sx={{
-              width: 24,
-              height: 24,
-              color: brand.neutral[400],
-              '&:hover': { bgcolor: alpha.graphite[6], color: brand.neutral[600] },
-              '&.Mui-disabled': { color: brand.neutral[400] },
-            }}
+            sx={crmStyles.iconButtonSx2}
           >
-            <MoreHorizRoundedIcon sx={{ fontSize: iconSize.sm }} />
+            <MoreHorizRoundedIcon sx={crmStyles.iconSx} />
           </IconButton>
         </Box>
       </Tooltip>

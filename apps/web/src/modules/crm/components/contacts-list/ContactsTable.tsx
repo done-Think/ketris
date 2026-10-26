@@ -9,8 +9,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
-
-import { alpha, brand, surface } from '@shared/theme/tokens'
+import * as crmStyles from '../../styles/contacts-table.styles'
 
 import type { ContactsTableProps } from '../../types/contact'
 import { ContactActions } from './ContactActions'
@@ -26,50 +25,19 @@ export function ContactsTable({
   const t = useTranslations('crm.contacts')
 
   return (
-    <TableContainer sx={{ overflowX: 'auto' }}>
-      <Table
-        size="small"
-        aria-label={t('tableAriaLabel')}
-        sx={{
-          minWidth: 1200,
-          tableLayout: 'fixed',
-          '& .MuiTableCell-root': { borderBottom: 0, overflow: 'hidden' },
-          '& .MuiTableHead-root .MuiTableCell-root': {
-            px: 1.5,
-            py: 0,
-            color: brand.neutral[500],
-            fontSize: 14,
-            fontWeight: 700,
-            lineHeight: 1.2,
-            letterSpacing: '0.01em',
-            textAlign: 'center',
-            textTransform: 'uppercase',
-            whiteSpace: 'nowrap',
-          },
-          '& .MuiTableHead-root .MuiTableCell-root:nth-of-type(1)': {
-            textAlign: 'left',
-          },
-          '& .MuiTableBody-root .MuiTableCell-root': {
-            px: 1.5,
-            py: 0,
-            color: brand.graphite[500],
-            fontSize: 15.5,
-            lineHeight: 1.3,
-            whiteSpace: 'nowrap',
-          },
-        }}
-      >
+    <TableContainer sx={crmStyles.tableContainerSx}>
+      <Table size="small" aria-label={t('tableAriaLabel')} sx={crmStyles.tableSx}>
         <colgroup>
-          <col style={{ width: '23%' }} />
-          <col style={{ width: '12%' }} />
-          <col style={{ width: '13%' }} />
-          <col style={{ width: '23%' }} />
-          <col style={{ width: '7%' }} />
-          <col style={{ width: '15%' }} />
-          <col style={{ width: '7%' }} />
+          <col />
+          <col />
+          <col />
+          <col />
+          <col />
+          <col />
+          <col />
         </colgroup>
         <TableHead>
-          <TableRow sx={{ height: 44, bgcolor: surface.app }}>
+          <TableRow sx={crmStyles.tableRowSx}>
             {[
               { key: 'name', label: t('tableColumns.name') },
               { key: 'type', label: t('tableColumns.type') },
@@ -87,22 +55,11 @@ export function ContactsTable({
         </TableHead>
         <TableBody>
           {contacts.map((contact, index) => (
-            <TableRow
-              key={contact.id}
-              sx={{
-                height: 58,
-                bgcolor: index % 2 === 1 ? surface.app : surface.paper,
-                '&:hover': { bgcolor: alpha.graphite[6] },
-              }}
-            >
+            <TableRow key={contact.id} sx={crmStyles.getTableRowSx(index)}>
               <TableCell>
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
+                <Stack direction="row" spacing={1} alignItems="center" sx={crmStyles.stackSx}>
                   <ContactAvatar contact={contact} />
-                  <Typography
-                    noWrap
-                    title={contact.name}
-                    sx={{ minWidth: 0, fontSize: 16, fontWeight: 650 }}
-                  >
+                  <Typography noWrap title={contact.name} sx={crmStyles.typographySx}>
                     {contact.name}
                   </Typography>
                 </Stack>
@@ -112,13 +69,13 @@ export function ContactsTable({
               </TableCell>
               <TableCell align="center">{contact.phone}</TableCell>
               <TableCell align="center">
-                <Typography noWrap title={contact.email} sx={{ fontSize: 15.5 }}>
+                <Typography noWrap title={contact.email} sx={crmStyles.typographySx2}>
                   {contact.email}
                 </Typography>
               </TableCell>
               <TableCell align="center">{contact.propertyCount}</TableCell>
-              <TableCell align="center" sx={{ color: 'text.secondary' }}>
-                <Typography noWrap title={contact.lastInteraction} sx={{ fontSize: 15.5 }}>
+              <TableCell align="center" sx={crmStyles.tableCellSx}>
+                <Typography noWrap title={contact.lastInteraction} sx={crmStyles.typographySx2}>
                   {contact.lastInteraction}
                 </Typography>
               </TableCell>
