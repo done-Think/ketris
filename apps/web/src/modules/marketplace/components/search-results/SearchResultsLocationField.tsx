@@ -5,9 +5,8 @@ import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { IconButton, InputAdornment, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { iconSize, radius, surface } from '@shared/theme/tokens'
-
 import type { SearchResultsLocationFieldProps } from '../../types/search'
+import { styles } from '../../styles/search-results-location-field.styles'
 
 export function SearchResultsLocationField({
   locationQuery,
@@ -26,7 +25,7 @@ export function SearchResultsLocationField({
         input: {
           startAdornment: (
             <InputAdornment position="start">
-              <SearchRoundedIcon sx={{ color: 'text.primary', fontSize: iconSize.lg }} />
+              <SearchRoundedIcon sx={styles.searchRoundedIcon} />
             </InputAdornment>
           ),
           endAdornment: (
@@ -36,21 +35,13 @@ export function SearchResultsLocationField({
                 size="small"
                 onClick={() => setLocationQuery('')}
               >
-                <CloseRoundedIcon sx={{ fontSize: iconSize.sm }} />
+                <CloseRoundedIcon sx={styles.closeRoundedIcon} />
               </IconButton>
             </InputAdornment>
           ),
         },
       }}
-      sx={{
-        mb: 2,
-        '& .MuiOutlinedInput-root': {
-          minHeight: 48,
-          borderRadius: `${radius.sm}px`,
-          bgcolor: surface.paper,
-          fontWeight: 700,
-        },
-      }}
+      sx={styles.textField}
     />
   )
 }

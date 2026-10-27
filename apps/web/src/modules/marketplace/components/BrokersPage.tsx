@@ -5,12 +5,11 @@ import { useLocale, useTranslations } from 'next-intl'
 import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { SiteFooter } from '@shared/components/layout'
-import { surface } from '@shared/theme/tokens'
 
-import { useBrokerProfiles } from '../hooks/use-broker-profile'
+import { marketplaceQueryKeys } from '../config/marketplace-query-keys'
 import { useDirectoryList } from '../hooks/use-directory-list'
 import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
-import type { BrokerProfile } from '../types/broker'
+import { brokerProfileService } from '../services/broker-profile-service'
 import { toBrokerProfile } from '../utils/broker-profile-adapter'
 import { useViewModePreference } from '../hooks/use-view-mode-preference'
 import { BrokerCard } from './BrokerCard'
@@ -19,15 +18,9 @@ import { DirectoryPageHeader } from './directory/DirectoryPageHeader'
 import { DirectoryViewModeToggle } from './directory/DirectoryViewModeToggle'
 import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 import { MarketplaceHeader } from './MarketplaceHeader'
+import { styles, getBoxStyles } from '../styles/brokers-page.styles'
 
-const initialBrokerCount = 4
-const brokerPageSize = 3
-
-function getBrokerSearchableText(broker: BrokerProfile) {
-  return `${broker.name} ${broker.creci} ${broker.region} ${broker.neighborhoods.join(
-    ' ',
-  )} ${broker.specialties.join(' ')}`
-}
+const directoryPageSize = 12
 
 export function BrokersPage() {
   const locale = useLocale() as AppLocale
@@ -36,39 +29,18 @@ export function BrokersPage() {
   const directoryT = useTranslations('marketplace.directory.brokers')
   const { footerColumns, legalLinks } = useMarketplaceNavigation()
   const { setViewMode, viewMode } = useViewModePreference('brokers')
-  const { data: brokerProfiles } = useBrokerProfiles()
-  const brokers = (brokerProfiles ?? []).map((profile) =>
-    toBrokerProfile(profile, locale, tFeatures),
-  )
-  const {
-    filteredItems: filteredBrokers,
-    hasMoreItems: hasMoreBrokers,
-    isLoadingMore,
-    loadMoreRef,
-    register,
-    visibleItems: visibleBrokers,
-  } = useDirectoryList({
-    getSearchableText: getBrokerSearchableText,
-    initialCount: initialBrokerCount,
-    items: brokers,
-    pageSize: brokerPageSize,
+  const directory = useDirectoryList({
+    queryKey: marketplaceQueryKeys.brokers,
+    fetchPage: (query) => brokerProfileService.list(query),
+    toItem: (profile) => toBrokerProfile(profile, locale, tFeatures),
+    pageSize: directoryPageSize,
   })
 
   return (
-    <Box
-      sx={{
-        width: '100%',
-        maxWidth: '100vw',
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        overflowX: 'clip',
-        bgcolor: surface.app,
-      }}
-    >
+    <Box sx={styles.box}>
       <MarketplaceHeader activeItemId="brokers" />
 
-      <Box component="main" sx={{ py: { xs: 2.4, md: 4 } }}>
+      <Box component="main" sx={styles.box2}>
         <Container maxWidth="xl">
           <MarketplaceBreadcrumbs
             items={[{ label: t('navigation.home'), href: '/' }, { label: t('navigation.brokers') }]}
@@ -77,37 +49,28 @@ export function BrokersPage() {
             actions={<DirectoryViewModeToggle value={viewMode} onChange={setViewMode} />}
             placeholder={directoryT('placeholder')}
             resultCountLabel={directoryT('resultCount', {
-              visible: visibleBrokers.length,
-              total: filteredBrokers.length,
+              visible: directory.items.length,
+              total: directory.totalCount,
             })}
-            searchInputProps={register('searchQuery')}
+            search={directory.search}
+            onSearchChange={directory.setSearch}
             title={directoryT('title')}
           />
 
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: '1fr',
-                md: viewMode === 'list' ? '1fr' : 'repeat(2, minmax(0, 1fr))',
-                xl: viewMode === 'list' ? '1fr' : 'repeat(3, minmax(0, 1fr))',
-              },
-              gap: { xs: 2, xl: 2.5 },
-            }}
-          >
-            {visibleBrokers.map((broker) => (
+          <Box sx={getBoxStyles({ viewMode })}>
+            {directory.items.map((broker) => (
               <BrokerCard key={broker.id} {...broker} viewMode={viewMode} />
             ))}
           </Box>
 
           <DirectoryLoadMoreStatus
             emptyLabel={directoryT('empty')}
-            hasItems={Boolean(filteredBrokers.length)}
-            hasMoreItems={hasMoreBrokers}
-            isLoadingMore={isLoadingMore}
+            hasItems={directory.items.length > 0}
+            hasMoreItems={directory.hasMoreItems}
+            isLoadingMore={directory.isLoadingMore}
             loadedLabel={directoryT('loaded')}
             loadingLabel={directoryT('loading')}
-            loadMoreRef={loadMoreRef}
+            loadMoreRef={directory.loadMoreRef}
           />
         </Container>
       </Box>

@@ -8,12 +8,19 @@ import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
-import { alpha, componentText, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
 
 import type { AgencyCardProps } from '../types/agency'
 import { buildPublicProfileHref } from '../utils/property-links'
 import { AgencyAdaptiveBrandHeader } from './AgencyAdaptiveBrandHeader'
 import { DirectoryCardMetrics } from './directory/DirectoryCardMetrics'
+import {
+  styles,
+  getCardContentStyles,
+  getBoxStyles,
+  getBoxStyles2,
+  getBoxStyles3,
+  getDividerStyles,
+} from '../styles/agency-card.styles'
 
 export function AgencyCard(agency: AgencyCardProps) {
   const t = useTranslations('marketplace.directory.cards')
@@ -27,65 +34,18 @@ export function AgencyCard(agency: AgencyCardProps) {
   }
 
   return (
-    <Card
-      onClick={handleCardClick}
-      sx={{
-        border: '1px solid',
-        borderColor: 'transparent',
-        borderRadius: `${radius.sm}px`,
-        color: 'inherit',
-        boxShadow: shadows.propertyCard,
-        cursor: 'pointer',
-        overflow: 'hidden',
-        position: 'relative',
-        transition: motion.transition.card,
-        '&:hover': {
-          borderColor: alpha.magenta[14],
-          boxShadow: shadows.propertyCardHover,
-          transform: 'translateY(-3px)',
-        },
-      }}
-    >
+    <Card onClick={handleCardClick} sx={styles.card}>
       <Box
         component={Link}
         href={buildPublicProfileHref(agency.href, 'agency')}
         aria-label={t('viewPublicPageAriaLabel', { name: agency.name })}
         ref={profileLinkRef}
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 3,
-          borderRadius: `${radius.sm}px`,
-          pointerEvents: 'none',
-          textDecoration: 'none',
-          '&:focus-visible': {
-            outline: '2px solid',
-            outlineColor: 'primary.main',
-            outlineOffset: 3,
-          },
-        }}
+        sx={styles.box}
       />
 
-      <CardContent
-        sx={{
-          p: { xs: 2, md: isListView ? 2 : 2.2 },
-          position: 'relative',
-          zIndex: 2,
-          '& a': {
-            position: 'relative',
-            zIndex: 4,
-          },
-        }}
-      >
-        <Box
-          sx={{
-            minWidth: 0,
-            display: isListView ? 'flex' : 'block',
-            flexDirection: 'column',
-            height: isListView ? '100%' : 'auto',
-          }}
-        >
-          <Box sx={{ mb: isListView ? 1.4 : 1.2 }}>
+      <CardContent sx={getCardContentStyles({ isListView })}>
+        <Box sx={getBoxStyles({ isListView })}>
+          <Box sx={getBoxStyles2({ isListView })}>
             <AgencyAdaptiveBrandHeader
               agency={agency}
               variant={isListView ? 'list' : 'compact'}
@@ -95,48 +55,20 @@ export function AgencyCard(agency: AgencyCardProps) {
           </Box>
 
           {!isListView && agency.headquarters ? (
-            <Typography sx={{ color: 'text.secondary', ...componentText.cardBroker }}>
-              {agency.headquarters}
-            </Typography>
+            <Typography sx={styles.typography}>{agency.headquarters}</Typography>
           ) : null}
 
           {isListView && agency.summary ? (
-            <Typography
-              sx={{
-                color: 'text.secondary',
-                fontSize: 12,
-                fontWeight: 600,
-                lineHeight: 1.5,
-                mt: 0.8,
-                display: '-webkit-box',
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }}
-            >
-              {agency.summary}
-            </Typography>
+            <Typography sx={styles.typography2}>{agency.summary}</Typography>
           ) : null}
 
-          <Stack direction="row" spacing={0.8} useFlexGap flexWrap="wrap" sx={{ mt: 1.8 }}>
+          <Stack direction="row" spacing={0.8} useFlexGap flexWrap="wrap" sx={styles.stack}>
             {agency.segments.slice(0, 3).map((segment) => (
-              <Chip
-                key={segment}
-                label={segment}
-                size="small"
-                sx={{
-                  height: 26,
-                  borderRadius: `${radius.sm}px`,
-                  bgcolor: alpha.magenta[6],
-                  color: 'primary.main',
-                  fontSize: 11,
-                  fontWeight: 700,
-                }}
-              />
+              <Chip key={segment} label={segment} size="small" sx={styles.chip} />
             ))}
           </Stack>
 
-          <Box sx={{ mt: isListView ? 'auto' : 0, pt: isListView ? 2 : 0 }}>
+          <Box sx={getBoxStyles3({ isListView })}>
             <DirectoryCardMetrics
               gridTemplateColumns={
                 isListView
@@ -158,7 +90,7 @@ export function AgencyCard(agency: AgencyCardProps) {
         </Box>
 
         <Box>
-          <Divider sx={{ my: isListView ? 1.6 : 1.8 }} />
+          <Divider sx={getDividerStyles({ isListView })} />
 
           <Stack
             component="span"
@@ -166,12 +98,10 @@ export function AgencyCard(agency: AgencyCardProps) {
             alignItems="center"
             justifyContent="flex-end"
             spacing={0.35}
-            sx={{ textDecoration: 'none' }}
+            sx={styles.stack2}
           >
-            <Typography sx={{ color: 'primary.main', ...componentText.cardAction }}>
-              {t('viewPublicPage')}
-            </Typography>
-            <ChevronRightIcon sx={{ color: 'primary.main', fontSize: iconSize.sm }} />
+            <Typography sx={styles.typography3}>{t('viewPublicPage')}</Typography>
+            <ChevronRightIcon sx={styles.chevronRightIcon} />
           </Stack>
         </Box>
       </CardContent>

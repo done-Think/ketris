@@ -1,18 +1,8 @@
 import { PropertyNotFoundError } from '../../domain/errors'
-import { toCreatedInquiry, type CreatedInquiry } from '../../domain/inquiry.entity'
+import { toCreatedInquiry } from '../../domain/inquiry.entity'
 import type { InquiryRepository } from '../ports/inquiry-repository.port'
 import type { PublicPropertyRepository } from '../ports/public-property-repository.port'
-
-export interface SubmitInquiryInput {
-  propertyId: string
-  leadName: string
-  leadEmail: string
-  leadPhone?: string
-  proposedValue?: number
-  notes?: string
-}
-
-export type SubmitInquiryOutput = CreatedInquiry
+import type { SubmitInquiryInput, SubmitInquiryOutput } from '../../types/use-case-inputs'
 
 export class SubmitInquiryUseCase {
   constructor(

@@ -1,35 +1,50 @@
 import type { ReactNode, RefObject } from 'react'
-import type { UseFormRegister } from 'react-hook-form'
 
 import type { ViewMode } from './search'
 
-export type DirectorySearchFormValues = {
-  isLoadingMore: boolean
-  searchQuery: string
-  visibleCount: number
+export type DirectoryQuery = {
+  q?: string
+  page: number
+  pageSize: number
 }
 
-export type UseDirectoryListParams<TItem> = {
+export type DirectoryPage<TItem> = {
   items: TItem[]
-  initialCount: number
+  totalCount: number
+  page: number
   pageSize: number
-  getSearchableText: (item: TItem) => string
+}
+
+export type DirectoryListFilters = {
+  q: string
+  pageSize: number
+}
+
+export type UseDirectoryListParams<TApi, TItem> = {
+  queryKey: (filters: DirectoryListFilters) => readonly unknown[]
+  fetchPage: (query: DirectoryQuery) => Promise<DirectoryPage<TApi>>
+  toItem: (item: TApi) => TItem
+  pageSize: number
 }
 
 export type UseDirectoryListResult<TItem> = {
-  filteredItems: TItem[]
+  items: TItem[]
+  totalCount: number
   hasMoreItems: boolean
+  isLoading: boolean
   isLoadingMore: boolean
+  isError: boolean
   loadMoreRef: RefObject<HTMLDivElement>
-  register: UseFormRegister<DirectorySearchFormValues>
-  visibleItems: TItem[]
+  search: string
+  setSearch: (value: string) => void
 }
 
 export type DirectoryPageHeaderProps = {
   actions?: ReactNode
   placeholder: string
   resultCountLabel: string
-  searchInputProps: ReturnType<UseFormRegister<DirectorySearchFormValues>>
+  search: string
+  onSearchChange: (value: string) => void
   title: string
 }
 

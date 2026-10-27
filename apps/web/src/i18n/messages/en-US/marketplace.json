@@ -75,9 +75,9 @@
       "titleLine2": "for real estate",
       "subtitle": "Rent and buy properties with advanced technology, faster processes, and complete confidence.",
       "stats": {
-        "activeProperties": "active properties",
-        "partnerBrokers": "partner brokers",
-        "servedCities": "served cities"
+        "activeProperties": "{count, plural, one {published property} other {published properties}}",
+        "partnerBrokers": "{count, plural, one {partner broker} other {partner brokers}}",
+        "servedCities": "{count, plural, one {city served} other {cities served}}"
       },
       "brandAnimation": "Ketris brand animation"
     },
@@ -100,27 +100,20 @@
         "propertyType": "Property type",
         "priceRange": "Price range"
       },
-      "propertyTypes": {
-        "apartment": "Apartment",
-        "residentialHouses": "Residential houses",
-        "commercialRooms": "Commercial units",
-        "landLots": "Land and lots",
-        "penthouses": "Penthouses",
-        "farms": "Country homes and farms",
-        "studios": "Studios"
-      },
       "errors": {
         "textTooLong": "Text is too long",
         "optionRequired": "Select an option",
         "priceInvalid": "Invalid price value"
-      }
+      },
+      "anyLocation": "Any area",
+      "anyPropertyType": "All types"
     },
     "featured": {
       "title": "Featured properties",
       "viewAll": "View all properties"
     },
     "miniProperties": {
-      "eyebrow": "+2,500 qualified and digitally verified properties"
+      "eyebrow": "Recently published"
     }
   },
   "footer": {
@@ -188,28 +181,25 @@
     }
   },
   "propertyDetail": {
-    "favorite": "Save",
+    "favorite": "Favorite",
     "share": "Share",
     "aboutProperty": "About this property",
     "location": "Location",
-    "notInformed": "Not provided",
+    "notInformed": "Not informed",
     "categories": {
       "apartment": "Apartment",
       "house": "House",
       "studio": "Studio",
       "penthouse": "Penthouse",
       "commercial": "Commercial",
-      "loft": "Loft"
+      "loft": "Loft",
+      "other": "Other"
     },
     "condominium": "Condo fee {value}",
     "condominiumNotInformed": "Condo fee not informed",
-    "notInformed": "Not informed",
     "scheduleVisit": "Schedule visit",
     "sendProposal": "Send proposal",
-    "favorite": "Favorite",
-    "share": "Share",
     "about": "About the property",
-    "location": "Location",
     "brokerRole": "Ketris broker",
     "features": {
       "bedrooms": "{count, plural, one {# bedroom} other {# bedrooms}}",
@@ -318,7 +308,9 @@
       "backgroundColorRequired": "Enter the background color",
       "avatarUrlRequired": "Upload a profile photo",
       "bannerUrlRequired": "Upload a cover image"
-    }
+    },
+    "loadError": "Could not load the profile.",
+    "retry": "Try again"
   },
   "agencyProfileEditor": {
     "previewName": "Your agency",
@@ -378,7 +370,10 @@
       "logoUrlRequired": "Upload the logo",
       "bannerUrlRequired": "Upload a cover image",
       "teamRequired": "Select at least one featured broker"
-    }
+    },
+    "validatedDraft": "Draft validated",
+    "loadError": "Could not load the profile.",
+    "retry": "Try again"
   },
   "searchResults": {
     "toolbar": {
@@ -422,11 +417,6 @@
       "minArea": "Minimum area",
       "onlyWithParking": "Only properties with parking",
       "options": {
-        "Todos os tipos": "All types",
-        "Apartamento": "Apartment",
-        "Cobertura": "Penthouse",
-        "Loft": "Loft",
-        "Casa": "House",
         "price": "Price",
         "upTo6000": "Up to R$ 6,000",
         "upTo10000": "Up to R$ 10,000",
@@ -437,7 +427,8 @@
         "area90Plus": "90m²+",
         "area100Plus": "100m²+",
         "all": "All",
-        "withParking": "With parking"
+        "withParking": "With parking",
+        "allTypes": "All types"
       },
       "errors": {
         "textTooLong": "Text is too long",

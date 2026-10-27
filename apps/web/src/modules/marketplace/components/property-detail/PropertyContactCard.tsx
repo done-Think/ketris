@@ -6,36 +6,26 @@ import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined'
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined'
 import { useTranslations } from 'next-intl'
 
-import { alpha, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
-
 import type { PropertyContactCardProps, PropertyInquiryMode } from '../../types/property-detail'
 import { PropertyInquiryDialog } from './PropertyInquiryDialog'
+import { styles } from '../../styles/property-contact-card.styles'
 
 export function PropertyContactCard({ property }: PropertyContactCardProps) {
   const t = useTranslations('marketplace.propertyDetail')
   const [inquiryMode, setInquiryMode] = useState<PropertyInquiryMode | null>(null)
 
   return (
-    <Box
-      sx={{
-        position: { lg: 'sticky' },
-        top: { lg: 84 },
-        bgcolor: surface.paper,
-        borderRadius: `${radius.sm}px`,
-        boxShadow: shadows.propertyCard,
-        p: 2,
-      }}
-    >
-      <Typography color="primary" sx={{ fontSize: 28, fontWeight: 900, lineHeight: 1.15 }}>
+    <Box sx={styles.box}>
+      <Typography color="primary" sx={styles.typography}>
         {property.price}
       </Typography>
-      <Typography sx={{ color: 'text.secondary', fontSize: 12, fontWeight: 700, mb: 2 }}>
+      <Typography sx={styles.typography2}>
         {property.condominium
           ? t('condominium', { value: property.condominium })
           : t('condominiumNotInformed')}
       </Typography>
 
-      <Stack spacing={1} sx={{ mb: 2 }}>
+      <Stack spacing={1} sx={styles.stack}>
         <Button variant="contained" size="large" fullWidth onClick={() => setInquiryMode('visit')}>
           {t('scheduleVisit')}
         </Button>
@@ -50,15 +40,13 @@ export function PropertyContactCard({ property }: PropertyContactCardProps) {
         </Button>
       </Stack>
 
-      <Divider sx={{ mb: 2 }} />
+      <Divider sx={styles.stack} />
 
-      <Stack direction="row" spacing={1.3} alignItems="center" sx={{ mb: 1.5 }}>
-        <Avatar src={property.avatar} alt={property.broker} sx={{ width: 48, height: 48 }} />
+      <Stack direction="row" spacing={1.3} alignItems="center" sx={styles.stack2}>
+        <Avatar src={property.avatar} alt={property.broker} sx={styles.avatar} />
         <Box>
-          <Typography sx={{ fontWeight: 900 }}>{property.broker}</Typography>
-          <Typography sx={{ color: 'text.secondary', fontSize: 12, fontWeight: 700 }}>
-            {t('brokerRole')}
-          </Typography>
+          <Typography sx={styles.typography3}>{property.broker}</Typography>
+          <Typography sx={styles.typography4}>{t('brokerRole')}</Typography>
         </Box>
       </Stack>
 
@@ -73,14 +61,8 @@ export function PropertyContactCard({ property }: PropertyContactCardProps) {
             variant="outlined"
             color="secondary"
             size="small"
-            startIcon={<Icon sx={{ fontSize: iconSize.xs }} />}
-            sx={{
-              flex: 1,
-              minWidth: 0,
-              borderColor: 'divider',
-              bgcolor: alpha.graphite[6],
-              fontSize: 11,
-            }}
+            startIcon={<Icon sx={styles.icon} />}
+            sx={styles.button}
           >
             {label}
           </Button>

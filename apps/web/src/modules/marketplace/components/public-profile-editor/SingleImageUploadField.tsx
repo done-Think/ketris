@@ -9,13 +9,18 @@ import { Controller, type FieldPath, type FieldValues } from 'react-hook-form'
 import { useSnackbar } from 'notistack'
 import { useTranslations } from 'next-intl'
 
-import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import { iconSize } from '@shared/theme/tokens'
 
 import { useUploadProfileMedia } from '../../hooks/use-profile-media'
 import type {
   ImageDropzoneProps,
   SingleImageUploadFieldProps,
 } from '../../types/single-image-upload-field'
+import {
+  styles,
+  getBoxStyles,
+  getTypographyStyles,
+} from '../../styles/single-image-upload-field.styles'
 
 const ACCEPTED_TYPES = { 'image/jpeg': [], 'image/png': [], 'image/webp': [] }
 
@@ -93,55 +98,25 @@ function ImageDropzone({
 
   return (
     <Stack spacing={1}>
-      <Typography sx={{ fontSize: 12, fontWeight: 700, color: 'text.secondary' }}>
-        {label}
-      </Typography>
+      <Typography sx={styles.typography}>{label}</Typography>
       <Stack direction="row" spacing={1.6} alignItems="center">
         {value ? (
           variant === 'avatar' ? (
-            <Avatar src={value} alt="" sx={{ width: 58, height: 58, flex: '0 0 auto' }} />
+            <Avatar src={value} alt="" sx={styles.avatar} />
           ) : (
-            <Box
-              component="img"
-              src={value}
-              alt=""
-              sx={{
-                width: 104,
-                height: 58,
-                objectFit: 'cover',
-                borderRadius: `${radius.sm}px`,
-                flex: '0 0 auto',
-              }}
-            />
+            <Box component="img" src={value} alt="" sx={styles.box} />
           )
         ) : null}
 
-        <Box
-          {...getRootProps()}
-          sx={{
-            flex: 1,
-            minHeight: 58,
-            border: '1px dashed',
-            borderColor: error ? 'error.main' : isDragActive ? 'primary.main' : 'divider',
-            borderRadius: `${radius.sm}px`,
-            bgcolor: isDragActive ? alpha.magenta[6] : surface.app,
-            display: 'grid',
-            placeItems: 'center',
-            px: 1.4,
-            py: 1,
-            textAlign: 'center',
-            cursor: disabled ? 'not-allowed' : 'pointer',
-            opacity: disabled ? 0.6 : 1,
-          }}
-        >
+        <Box {...getRootProps()} sx={getBoxStyles({ error, isDragActive, disabled })}>
           <input {...getInputProps()} aria-label={label} />
           <Stack direction="row" spacing={0.8} alignItems="center">
             {isUploading ? (
               <CircularProgress size={iconSize.md} />
             ) : (
-              <CloudUploadOutlinedIcon sx={{ color: brand.neutral[500], fontSize: iconSize.md }} />
+              <CloudUploadOutlinedIcon sx={styles.cloudUploadOutlinedIcon} />
             )}
-            <Typography sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 800 }}>
+            <Typography sx={styles.typography2}>
               {isUploading ? t('uploading') : isDragActive ? t('dragActive') : t('dropzone')}
             </Typography>
           </Stack>
@@ -149,13 +124,11 @@ function ImageDropzone({
 
         {value ? (
           <IconButton aria-label={t('remove')} onClick={onRemove} size="small" disabled={disabled}>
-            <CloseRoundedIcon sx={{ fontSize: iconSize.sm }} />
+            <CloseRoundedIcon sx={styles.closeRoundedIcon} />
           </IconButton>
         ) : null}
       </Stack>
-      <Typography sx={{ fontSize: 11, color: error ? 'error.main' : 'text.secondary' }}>
-        {error ?? t('hint')}
-      </Typography>
+      <Typography sx={getTypographyStyles({ error })}>{error ?? t('hint')}</Typography>
     </Stack>
   )
 }

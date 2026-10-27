@@ -1,122 +1,84 @@
 'use client'
 
-import { useCallback, useMemo, type SetStateAction } from 'react'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { useCallback, useMemo, useState, type SetStateAction } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
+
 import type { AppLocale } from '@/i18n/types/locale.types'
 
+import { isMarketplacePropertyType, propertyTypeLabelKeys } from '../config/property-types'
 import { priceLimit, searchOptions } from '../config/search-filters'
-import { createMarketplaceSearchFormSchema } from '../schemas/marketplace-search-schema'
 import type {
-  MarketplaceSearchFormValues,
   PriceRange,
   SearchDraft,
   SearchFilterKey,
+  SelectedSearch,
   TextSearchFilterKey,
 } from '../types/search'
 import { buildSearchHref, formatSearchCurrency, normalizeSearchText } from '../utils/search'
 
+const emptySelection: SelectedSearch = { location: '', propertyType: '' }
+const emptyDraft: SearchDraft = { location: '', propertyType: '' }
+
 export function useMarketplaceSearch() {
   const locale = useLocale() as AppLocale
-  const tPropertyTypes = useTranslations('marketplace.home.search.propertyTypes')
-  const tErrors = useTranslations('marketplace.home.search.errors')
-  const marketplaceSearchFormSchema = useMemo(
-    () => createMarketplaceSearchFormSchema((key) => tErrors(key)),
-    [tErrors],
-  )
-  const { getValues, setValue, watch } = useForm<MarketplaceSearchFormValues>({
-    defaultValues: {
-      activeSearchMenu: null,
-      selectedSearch: {
-        location: searchOptions.location.values[0],
-        propertyType: searchOptions.propertyType.values[0],
-        priceRange: searchOptions.priceRange.values[2],
-      },
-      priceRange: [0, 10000],
-      searchDraft: {
-        location: '',
-        propertyType: '',
-      },
-    },
-    resolver: zodResolver(marketplaceSearchFormSchema),
-  })
-  const { activeSearchMenu, priceRange, searchDraft, selectedSearch } = watch()
+  const t = useTranslations('marketplace.home.search')
+  const typeT = useTranslations('marketplace.propertyDetail.categories')
+  const [activeSearchMenu, setActiveSearchMenu] = useState<SearchFilterKey | null>(null)
+  const [selectedSearch, setSelectedSearch] = useState<SelectedSearch>(emptySelection)
+  const [searchDraft, setSearchDraftState] = useState<SearchDraft>(emptyDraft)
+  const [priceRange, setPriceRange] = useState<PriceRange>([priceLimit.min, priceLimit.max])
 
   const openSearchMenu = useCallback(
-    (key: SearchFilterKey) => {
-      setValue('activeSearchMenu', getValues('activeSearchMenu') === key ? null : key)
-    },
-    [getValues, setValue],
+    (key: SearchFilterKey) => setActiveSearchMenu((current) => (current === key ? null : key)),
+    [],
   )
-
-  const closeSearchMenu = useCallback(() => {
-    setValue('activeSearchMenu', null)
-  }, [setValue])
+  const closeSearchMenu = useCallback(() => setActiveSearchMenu(null), [])
 
   const selectSearchValue = useCallback(
-    (key: SearchFilterKey, value: string) => {
-      setValue('selectedSearch', { ...getValues('selectedSearch'), [key]: value })
-      if (key !== 'priceRange') {
-        setValue('searchDraft', { ...getValues('searchDraft'), [key]: '' })
-      }
+    (key: TextSearchFilterKey, value: string) => {
+      setSelectedSearch((current) => ({ ...current, [key]: value }))
+      setSearchDraftState((current) => ({ ...current, [key]: '' }))
       closeSearchMenu()
     },
-    [closeSearchMenu, getValues, setValue],
+    [closeSearchMenu],
   )
 
   const setSearchDraft = useCallback(
-    (nextSearchDraft: SetStateAction<SearchDraft>) => {
-      const currentSearchDraft = getValues('searchDraft')
-      const value =
-        typeof nextSearchDraft === 'function'
-          ? nextSearchDraft(currentSearchDraft)
-          : nextSearchDraft
-
-      setValue('searchDraft', value)
-    },
-    [getValues, setValue],
+    (next: SetStateAction<SearchDraft>) => setSearchDraftState(next),
+    [],
   )
 
   const getSearchOptionLabel = useCallback(
     (key: TextSearchFilterKey, value: string) => {
-      if (key === 'propertyType') return tPropertyTypes(value)
+      if (key === 'propertyType')
+        return isMarketplacePropertyType(value)
+          ? typeT(propertyTypeLabelKeys[value])
+          : t('anyPropertyType')
 
-      return value
+      return value || t('anyLocation')
     },
-    [tPropertyTypes],
+    [t, typeT],
   )
 
   const filterSearchOptions = useCallback(
-    (key: TextSearchFilterKey) => {
+    (key: TextSearchFilterKey): readonly string[] => {
       const query = normalizeSearchText(searchDraft[key])
-      if (!query) return searchOptions[key].values
+      const values: readonly string[] = searchOptions[key].values
+      if (!query) return values
 
-      return searchOptions[key].values.filter((value) =>
+      return values.filter((value) =>
         normalizeSearchText(getSearchOptionLabel(key, value)).includes(query),
       )
     },
     [getSearchOptionLabel, searchDraft],
   )
 
-  const updatePriceRange = useCallback(
-    (nextRange: PriceRange) => {
-      const [minValue, maxValue] = nextRange
-      const normalizedMin = Math.max(priceLimit.min, Math.min(minValue, priceLimit.max))
-      const normalizedMax = Math.max(priceLimit.min, Math.min(maxValue, priceLimit.max))
-      const orderedRange: PriceRange =
-        normalizedMin <= normalizedMax
-          ? [normalizedMin, normalizedMax]
-          : [normalizedMax, normalizedMin]
-
-      setValue('priceRange', orderedRange)
-      setValue('selectedSearch', {
-        ...getValues('selectedSearch'),
-        priceRange: `${orderedRange[0]}-${orderedRange[1]}`,
-      })
-    },
-    [getValues, setValue],
-  )
+  const updatePriceRange = useCallback((nextRange: PriceRange) => {
+    const [minValue, maxValue] = nextRange.map((value) =>
+      Math.max(priceLimit.min, Math.min(value, priceLimit.max)),
+    )
+    setPriceRange(minValue <= maxValue ? [minValue, maxValue] : [maxValue, minValue])
+  }, [])
 
   const priceRangeLabel = `${formatSearchCurrency(priceRange[0], locale)} - ${formatSearchCurrency(
     priceRange[1],

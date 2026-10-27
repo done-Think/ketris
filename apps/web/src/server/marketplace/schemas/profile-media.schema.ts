@@ -12,6 +12,7 @@ export const profileMediaUploadRequestSchema = z
       .openapi({ format: 'binary', description: 'Imagem JPEG, PNG ou WebP até 8 MiB.' }),
     target: profileMediaTargetSchema,
   })
+  .strict()
   .openapi('ProfileMediaUploadRequest')
 
 export const profileMediaUploadResponseSchema = z

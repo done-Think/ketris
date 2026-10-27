@@ -1,9 +1,5 @@
-export type MiniMarketplaceProperty = {
-  title: string
-  location: string
-  image: string
-}
+import type { SearchResultProperty } from './search'
 
 export type MiniPropertyCardProps = {
-  property: MiniMarketplaceProperty
+  property: SearchResultProperty
 }

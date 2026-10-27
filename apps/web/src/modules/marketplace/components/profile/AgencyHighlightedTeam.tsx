@@ -4,77 +4,34 @@ import { Avatar, Box, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
-import { componentText, motion, radius, shadows, surface } from '@shared/theme/tokens'
 
 import type { AgencyHighlightedTeamProps } from '../../types/agency-highlighted-team'
 import { buildPublicProfileHref } from '../../utils/property-links'
+import {
+  styles,
+  getBoxStyles,
+  getTypographyStyles,
+} from '../../styles/agency-highlighted-team.styles'
 
 export function AgencyHighlightedTeam({ brand, team }: AgencyHighlightedTeamProps) {
   const t = useTranslations('marketplace.publicProfile')
   return (
-    <Box
-      sx={{
-        border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: `${radius.sm}px`,
-        bgcolor: surface.paper,
-        p: { xs: 2, md: 2.4 },
-        mb: 2.5,
-      }}
-    >
-      <Typography variant="h5" sx={{ mb: 1.4 }}>
+    <Box sx={styles.box}>
+      <Typography variant="h5" sx={styles.typography}>
         {t('featuredTeam')}
       </Typography>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' },
-          gap: 1.2,
-        }}
-      >
+      <Box sx={styles.box2}>
         {team.map((member) => (
           <Box
             key={member.usuarioId}
             component={Link}
             href={buildPublicProfileHref(`/brokers/${member.usuarioId}`, 'broker')}
             aria-label={t('viewBrokerProfile', { name: member.name })}
-            sx={{
-              alignItems: 'center',
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: `${radius.sm}px`,
-              bgcolor: brand.backgroundColor,
-              color: 'inherit',
-              display: 'flex',
-              gap: 1.2,
-              minHeight: 68,
-              px: 1.2,
-              py: 1,
-              textDecoration: 'none',
-              transition: motion.transition.card,
-              '&:hover': {
-                borderColor: brand.primaryColor,
-                boxShadow: shadows.propertyCard,
-              },
-              '&:focus-visible': {
-                outline: `2px solid ${brand.primaryColor}`,
-                outlineOffset: 3,
-              },
-            }}
+            sx={getBoxStyles({ brand })}
           >
-            <Avatar
-              src={member.avatarUrl ?? undefined}
-              alt={member.name}
-              sx={{ width: 42, height: 42, flexShrink: 0 }}
-            />
-            <Box sx={{ minWidth: 0 }}>
-              <Typography
-                noWrap
-                sx={{
-                  color: brand.secondaryColor,
-                  ...componentText.profileTeamName,
-                }}
-              >
+            <Avatar src={member.avatarUrl ?? undefined} alt={member.name} sx={styles.avatar} />
+            <Box sx={styles.box3}>
+              <Typography noWrap sx={getTypographyStyles({ brand })}>
                 {member.name}
               </Typography>
             </Box>

@@ -1,34 +1,9 @@
+import type { PublishedPropertyDetail } from '../../types/property'
 import type {
-  PropertyPurpose,
-  PublishedPropertyDetail,
-  PublishedPropertySummary,
-} from '../../types/property'
-
-export type PropertySort = 'recent' | 'priceAsc' | 'priceDesc'
-
-export interface PropertySearchFilters {
-  purpose?: PropertyPurpose
-  propertyType?: string
-  city?: string
-  location?: string
-  minPrice?: number
-  maxPrice?: number
-  minBedrooms?: number
-  minArea?: number
-  hasParking?: boolean
-  sortBy?: PropertySort
-  q?: string
-}
-
-export interface PropertySearchPage {
-  page: number
-  pageSize: number
-}
-
-export interface PropertySearchResult {
-  items: PublishedPropertySummary[]
-  totalCount: number
-}
+  PropertySearchFilters,
+  PropertySearchPage,
+  PropertySearchResult,
+} from '../../types/property-search'
 
 export interface PublicPropertyRepository {
   search(filters: PropertySearchFilters, page: PropertySearchPage): Promise<PropertySearchResult>

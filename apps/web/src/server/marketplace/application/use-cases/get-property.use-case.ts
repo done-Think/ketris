@@ -1,13 +1,7 @@
 import { PropertyNotFoundError } from '../../domain/errors'
 import { toPublicPropertyDetail } from '../../domain/property.entity'
-import type { PublicPropertyDetail } from '../../types/property'
 import type { PublicPropertyRepository } from '../ports/public-property-repository.port'
-
-export interface GetPropertyInput {
-  propertyId: string
-}
-
-export type GetPropertyOutput = PublicPropertyDetail
+import type { GetPropertyInput, GetPropertyOutput } from '../../types/use-case-inputs'
 
 export class GetPropertyUseCase {
   constructor(private readonly propertyRepository: PublicPropertyRepository) {}

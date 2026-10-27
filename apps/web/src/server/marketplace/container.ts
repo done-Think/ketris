@@ -2,6 +2,8 @@ import { GetAgencyProfileUseCase } from './application/use-cases/get-agency-prof
 import { GetBrokerProfileUseCase } from './application/use-cases/get-broker-profile.use-case'
 import { GetOwnAgencyProfileUseCase } from './application/use-cases/get-own-agency-profile.use-case'
 import { GetOwnBrokerProfileUseCase } from './application/use-cases/get-own-broker-profile.use-case'
+import { GetMarketplaceStatsUseCase } from './application/use-cases/get-marketplace-stats.use-case'
+import { GetProfileMediaUseCase } from './application/use-cases/get-profile-media.use-case'
 import { GetPropertyUseCase } from './application/use-cases/get-property.use-case'
 import { ListAgencyProfilesUseCase } from './application/use-cases/list-agency-profiles.use-case'
 import { ListBrokerProfilesUseCase } from './application/use-cases/list-broker-profiles.use-case'
@@ -17,6 +19,7 @@ import { UploadProfileMediaUseCase } from './application/use-cases/upload-profil
 import { PrismaAgencyProfileRepository } from './infrastructure/prisma-agency-profile.repository'
 import { PrismaBrokerProfileRepository } from './infrastructure/prisma-broker-profile.repository'
 import { PrismaInquiryRepository } from './infrastructure/prisma-inquiry.repository'
+import { PrismaMarketplaceStatsReader } from './infrastructure/prisma-marketplace-stats.reader'
 import { PrismaPublicPropertyRepository } from './infrastructure/prisma-public-property.repository'
 import { LocalProfileMediaStorage } from './infrastructure/local-profile-media-storage'
 import { S3ProfileMediaStorage } from './infrastructure/s3-profile-media-storage'
@@ -33,6 +36,7 @@ const profileMediaStorage = shouldUseLocalUploadsStorage()
 export const marketplaceContainer = {
   searchPropertiesUseCase: new SearchPropertiesUseCase(propertyRepository),
   getPropertyUseCase: new GetPropertyUseCase(propertyRepository),
+  getMarketplaceStatsUseCase: new GetMarketplaceStatsUseCase(new PrismaMarketplaceStatsReader()),
   submitInquiryUseCase: new SubmitInquiryUseCase(propertyRepository, inquiryRepository),
 
   getBrokerProfileUseCase: new GetBrokerProfileUseCase(brokerProfileRepository),
@@ -50,4 +54,5 @@ export const marketplaceContainer = {
   unpublishAgencyProfileUseCase: new UnpublishAgencyProfileUseCase(agencyProfileRepository),
 
   uploadProfileMediaUseCase: new UploadProfileMediaUseCase(profileMediaStorage),
+  getProfileMediaUseCase: new GetProfileMediaUseCase(profileMediaStorage),
 }

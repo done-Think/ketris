@@ -1,12 +1,16 @@
+import { Prisma } from '@prisma/client'
+
 import { prisma } from '@server/db/prisma'
 
 import type { BrokerProfileRepository } from '../application/ports/broker-profile-repository.port'
+import type { DirectoryPage, DirectoryQuery } from '../types/directory'
+import { normalizedDirectoryTerm, normalizedSearchText } from './directory-search-sql'
 import type {
   BrokerListingSummary,
   BrokerProfile,
   BrokerProfileDraft,
 } from '../types/broker-profile'
-import type { DecimalLike, UsuarioWithPerfilRow } from '../types/prisma-broker-profile-repository'
+import type { UsuarioWithPerfilRow } from '../types/prisma-broker-profile-repository'
 
 const usuarioWithPerfilInclude = {
   tenant: { select: { nome: true } },
@@ -41,7 +45,7 @@ async function buildRecentListings(usuarioId: string): Promise<BrokerListingSumm
     id: imovel.id,
     title: imovel.titulo,
     purpose: imovel.finalidade,
-    price: (imovel.valor as unknown as DecimalLike).toNumber(),
+    price: imovel.valor.toNumber(),
     neighborhood: imovel.endereco?.bairro ?? null,
     city: imovel.endereco?.cidade ?? null,
     coverUrl: imovel.midias[0]?.url ?? null,
@@ -104,14 +108,44 @@ export class PrismaBrokerProfileRepository implements BrokerProfileRepository {
     return toBrokerProfile(usuario)
   }
 
-  async listPublished(): Promise<BrokerProfile[]> {
+  async listPublished({
+    q,
+    page,
+    pageSize,
+  }: DirectoryQuery): Promise<DirectoryPage<BrokerProfile>> {
+    const term = normalizedDirectoryTerm(q)
+    const text = normalizedSearchText([
+      Prisma.sql`p."displayName"`,
+      Prisma.sql`p.creci`,
+      Prisma.sql`p.regiao`,
+      Prisma.sql`array_to_string(p.bairros, ' ')`,
+      Prisma.sql`array_to_string(p.especialidades, ' ')`,
+    ])
+    const where = term
+      ? Prisma.sql`p.status = 'PUBLICADO' AND ${text} LIKE ${term}`
+      : Prisma.sql`p.status = 'PUBLICADO'`
+    const [rows, counts] = await Promise.all([
+      prisma.$queryRaw<{ id: string }[]>`
+        SELECT p."usuarioId" AS id FROM perfis_publicos_corretor p
+        WHERE ${where}
+        ORDER BY p."publicadoEm" DESC NULLS LAST, p.id
+        LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}`,
+      prisma.$queryRaw<{ total: bigint }[]>`
+        SELECT count(*) AS total FROM perfis_publicos_corretor p WHERE ${where}`,
+    ])
     const usuarios = await prisma.usuario.findMany({
-      where: { perfilPublico: { status: 'PUBLISHED' } },
+      where: { id: { in: rows.map((row) => row.id) } },
       include: usuarioWithPerfilInclude,
-      orderBy: { perfilPublico: { publicadoEm: 'desc' } },
     })
+    const byId = new Map(usuarios.map((usuario) => [usuario.id, usuario]))
+    const items = await Promise.all(
+      rows.flatMap((row) => {
+        const usuario = byId.get(row.id)
+        return usuario ? [toBrokerProfile(usuario)] : []
+      }),
+    )
 
-    return Promise.all(usuarios.map((usuario) => toBrokerProfile(usuario)))
+    return { items, totalCount: Number(counts[0]?.total ?? 0), page, pageSize }
   }
 
   async save(usuarioId: string, draft: BrokerProfileDraft): Promise<BrokerProfile> {

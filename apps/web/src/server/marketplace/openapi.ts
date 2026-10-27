@@ -15,7 +15,9 @@ import {
   ownBrokerProfileResponseSchema,
   saveBrokerProfileRequestSchema,
 } from './schemas/broker-profile.schema'
+import { directoryQuerySchema } from './schemas/directory.schema'
 import { getPropertyResponseSchema } from './schemas/get-property.schema'
+import { marketplaceStatsResponseSchema } from './schemas/marketplace-stats.schema'
 import {
   profileMediaBinarySchema,
   profileMediaKeyParamsSchema,
@@ -48,6 +50,22 @@ const brokerIdParamsSchema = z.object({
 })
 
 export function registerMarketplaceOpenApi(registry: OpenAPIRegistry): void {
+  registry.registerPath({
+    method: 'get',
+    path: '/marketplace/stats',
+    tags: ['Marketplace'],
+    summary: 'Números públicos do marketplace',
+    description:
+      'Rota pública, sem autenticação. Conta imóveis publicados, perfis de corretor publicados e ' +
+      'cidades distintas com imóvel publicado. Resposta com cache público de 5 minutos.',
+    responses: {
+      200: {
+        description: 'Números do marketplace.',
+        content: { 'application/json': { schema: marketplaceStatsResponseSchema } },
+      },
+    },
+  })
+
   registry.registerPath({
     method: 'get',
     path: '/marketplace/properties',
@@ -134,8 +152,9 @@ export function registerMarketplaceOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Marketplace'],
     summary: 'Lista imobiliárias com perfil público publicado',
     description:
-      'Rota pública, sem autenticação. Retorna todas as imobiliárias de todos os ' +
-      'tenants com perfil público no status PUBLISHED.',
+      'Rota pública, sem autenticação. Retorna, paginados, os perfis públicos PUBLISHED de ' +
+      'todos os tenants. q busca no nome, CRECI, região e listas do perfil (sem acento).',
+    request: { query: directoryQuerySchema },
     responses: {
       200: {
         description: 'Lista de perfis públicos de imobiliárias.',
@@ -171,8 +190,9 @@ export function registerMarketplaceOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Marketplace'],
     summary: 'Lista corretores com perfil público publicado',
     description:
-      'Rota pública, sem autenticação. Retorna todos os corretores de todos os ' +
-      'tenants com perfil público no status PUBLISHED.',
+      'Rota pública, sem autenticação. Retorna, paginados, os perfis públicos PUBLISHED de ' +
+      'todos os tenants. q busca no nome, CRECI, região e listas do perfil (sem acento).',
+    request: { query: directoryQuerySchema },
     responses: {
       200: {
         description: 'Lista de perfis públicos de corretores.',

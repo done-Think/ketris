@@ -12,8 +12,7 @@ function renderMobileSearchBox(overrides: Partial<MobileSearchBoxProps> = {}) {
   const props: MobileSearchBoxProps = {
     selectedSearch: {
       location: 'Jardins, São Paulo',
-      propertyType: 'apartment',
-      priceRange: '0-10000',
+      propertyType: 'APARTAMENTO',
     },
     priceRange: [0, 10000],
     priceRangeLabel: 'R$ 0 - R$ 10.000',
@@ -26,7 +25,7 @@ function renderMobileSearchBox(overrides: Partial<MobileSearchBoxProps> = {}) {
     selectSearchValue: vi.fn(),
     updatePriceRange: vi.fn(),
     filterSearchOptions: () => [],
-    getSearchOptionLabel: (_key, value) => (value === 'apartment' ? 'Apartamento' : value),
+    getSearchOptionLabel: (_key, value) => (value === 'APARTAMENTO' ? 'Apartamento' : value),
     setSearchDraft: vi.fn(),
     ...overrides,
   }

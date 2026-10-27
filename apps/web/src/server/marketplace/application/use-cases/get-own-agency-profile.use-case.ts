@@ -1,13 +1,7 @@
-import type { Papel } from '@server/auth/domain/user.entity'
-
 import { assertAgencyProfileAccess } from '../authorization'
 import type { AgencyProfile } from '../../types/agency-profile'
 import type { AgencyProfileRepository } from '../ports/agency-profile-repository.port'
-
-export interface GetOwnAgencyProfileInput {
-  actorTenantId: string
-  actorPapel: Papel
-}
+import type { GetOwnAgencyProfileInput } from '../../types/use-case-inputs'
 
 export class GetOwnAgencyProfileUseCase {
   constructor(private readonly agencyProfileRepository: AgencyProfileRepository) {}

@@ -2,7 +2,6 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
-import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { marketplaceContainer } from '@server/marketplace/container'
 import { saveAgencyProfileRequestSchema } from '@server/marketplace/schemas/agency-profile.schema'
@@ -13,7 +12,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   const profile = await marketplaceContainer.getOwnAgencyProfileUseCase.execute({
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel as Papel,
+    actorPapel: actor.papel,
   })
 
   return NextResponse.json({ profile }, { status: 200 })
@@ -25,7 +24,7 @@ export const PUT = withErrorHandling(async (request: NextRequest) => {
 
   const profile = await marketplaceContainer.saveAgencyProfileUseCase.execute({
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel as Papel,
+    actorPapel: actor.papel,
     displayName: body.displayName,
     headline: body.headline ?? null,
     summary: body.summary ?? null,

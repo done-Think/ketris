@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { searchResultsViewModes } from '../config/search-results-view-mode'
+import { marketplacePropertyTypes } from '../config/property-types'
 import type { SchemaMessageTranslator } from '@shared/types'
 
 const searchFilterKeySchema = z.enum(['location', 'propertyType', 'priceRange'])
@@ -30,31 +30,13 @@ export function createMarketplaceSearchFormSchema(t: SchemaMessageTranslator) {
   })
 }
 
-export function createSearchResultsFormSchema(t: SchemaMessageTranslator) {
+export function createSearchResultsFiltersFormSchema(t: SchemaMessageTranslator) {
   return z.object({
-    selectedPropertyId: z.string(),
-    locationQuery: z.string().trim().max(80, t('textTooLong')),
-    propertyTypeFilter: z.string().trim().max(80, t('textTooLong')),
-    priceFilterIndex: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
+    propertyType: z.enum(marketplacePropertyTypes).nullable(),
+    priceOption: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
     customMaxPrice: createNumericTextSchema(t, 12),
-    bedroomFilterIndex: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
-    areaFilterIndex: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
-    customMinArea: createNumericTextSchema(t, 8),
-    onlyWithParking: z.boolean(),
-    sortOption: z.enum(['relevancia', 'menor-preco', 'maior-preco']),
-    viewMode: z.enum(searchResultsViewModes),
-    currentPage: z.number().int().min(1, t('optionInvalid')),
-  })
-}
-
-export function createSearchResultsFiltersDialogFormSchema(t: SchemaMessageTranslator) {
-  return z.object({
-    isFiltersOpen: z.boolean(),
-    propertyTypeFilter: z.string().trim().max(80, t('textTooLong')),
-    priceFilterIndex: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
-    customMaxPrice: createNumericTextSchema(t, 12),
-    bedroomFilterIndex: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
-    areaFilterIndex: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
+    bedroomOption: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
+    areaOption: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
     customMinArea: createNumericTextSchema(t, 8),
     onlyWithParking: z.boolean(),
   })

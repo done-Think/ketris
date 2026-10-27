@@ -4,7 +4,7 @@ import type { AgencyProfile } from '../types/agency'
 import type { AgencyPublicProfileEditorFormValues } from '../types/profile-editor'
 import type { PublicAgencyProfile } from '../types/public-agency-profile'
 import type { AppLocale } from '@/i18n/types/locale.types'
-import type { PropertyText } from './property-presentation'
+import type { PropertyText } from '../types/property-presentation'
 import { formatCompactCurrency } from './search-results'
 
 export const emptyValues: AgencyPublicProfileEditorFormValues = {

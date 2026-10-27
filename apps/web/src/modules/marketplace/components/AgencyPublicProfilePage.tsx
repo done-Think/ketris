@@ -7,7 +7,6 @@ import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import { useTranslations } from 'next-intl'
 
 import { SiteFooter } from '@shared/components/layout'
-import { surface } from '@shared/theme/tokens'
 
 import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import type { AgencyPublicProfilePageProps } from '../types/agency'
@@ -19,6 +18,7 @@ import { AgencyProfileHero } from './profile/AgencyProfileHero'
 import { PublicProfileListings } from './profile/PublicProfileListings'
 import { PublicProfileMetrics } from './profile/PublicProfileMetrics'
 import { PublicProfileSidebar } from './profile/PublicProfileSidebar'
+import { styles } from '../styles/agency-public-profile-page.styles'
 
 export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps) {
   const t = useTranslations('marketplace')
@@ -26,18 +26,10 @@ export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps
   const representedListings = buildProfileListings(agency.featuredListings)
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        bgcolor: surface.app,
-        minHeight: '100vh',
-        overflowX: 'clip',
-      }}
-    >
+    <Box sx={styles.box}>
       <MarketplaceHeader activeItemId="agencies" />
 
-      <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
+      <Container component="main" maxWidth="xl" sx={styles.container}>
         <MarketplaceBreadcrumbs
           items={[
             { label: t('navigation.home'), href: '/' },
@@ -45,15 +37,8 @@ export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps
             { label: agency.name },
           ]}
         />
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 360px' },
-            gap: { xs: 2.5, lg: 3 },
-            alignItems: 'start',
-          }}
-        >
-          <Box sx={{ minWidth: 0 }}>
+        <Box sx={styles.box2}>
+          <Box sx={styles.box3}>
             <AgencyProfileHero agency={agency} />
             <PublicProfileMetrics
               accentColor={agency.brand.primaryColor ?? ''}
@@ -99,7 +84,7 @@ export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps
             ]}
           />
 
-          <Box sx={{ gridColumn: { lg: '1 / -1' } }}>
+          <Box sx={styles.box4}>
             <PublicProfileListings
               accentColor={agency.brand.primaryColor ?? ''}
               listings={representedListings}

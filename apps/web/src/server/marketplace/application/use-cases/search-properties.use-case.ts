@@ -1,13 +1,5 @@
-import type {
-  PropertySearchFilters,
-  PropertySearchPage,
-  PropertySearchResult,
-  PublicPropertyRepository,
-} from '../ports/public-property-repository.port'
-
-export type SearchPropertiesInput = PropertySearchFilters & PropertySearchPage
-
-export type SearchPropertiesOutput = PropertySearchResult & PropertySearchPage
+import type { PublicPropertyRepository } from '../ports/public-property-repository.port'
+import type { SearchPropertiesInput, SearchPropertiesOutput } from '../../types/use-case-inputs'
 
 export class SearchPropertiesUseCase {
   constructor(private readonly propertyRepository: PublicPropertyRepository) {}

@@ -6,6 +6,7 @@ import { UploadProfileMediaUseCase } from '../../../application/use-cases/upload
 
 function createStorage(overrides?: Partial<ProfileMediaStoragePort>): ProfileMediaStoragePort {
   return {
+    read: vi.fn(),
     upload: vi.fn().mockResolvedValue({
       url: '/api/marketplace/media/profiles/brokers/user-1/uuid-photo.jpg',
       contentType: 'image/jpeg',

@@ -1,13 +1,12 @@
 import { Box, Container, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { alpha, componentText, gradients, surface, zIndex } from '@shared/theme/tokens'
-
 import type { HeroSectionProps } from '../types/search'
 import { DesktopSearchBar } from './DesktopSearchBar'
 import { HeroBrandVideo } from './HeroBrandVideo'
 import { HeroStats } from './HeroStats'
 import { MobileSearchBox } from './MobileSearchBox'
+import { styles } from '../styles/hero-section.styles'
 
 export function HeroSection({
   selectedSearch,
@@ -29,68 +28,20 @@ export function HeroSection({
   const t = useTranslations('marketplace.home.hero')
 
   return (
-    <Box
-      component="section"
-      sx={{
-        position: 'relative',
-        zIndex: zIndex.hero,
-        color: surface.lightText,
-        minHeight: { xs: 332, md: 315, xl: 455 },
-        display: 'flex',
-        alignItems: 'center',
-        overflow: 'visible',
-        width: '100%',
-        backgroundColor: surface.darkDeep,
-        backgroundImage: gradients.heroBackground(
-          'https://images.unsplash.com/photo-1639322537228-f710d846310a?auto=format&fit=crop&w=1800&q=80',
-        ),
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
-    >
+    <Box component="section" sx={styles.box}>
       <Container maxWidth="xl">
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 3fr) minmax(0, 2fr)' },
-            alignItems: 'center',
-            gap: { xs: 2.4, lg: 4, xl: 7 },
-            py: { xs: 2.5, md: 4.2, xl: 8 },
-            isolation: 'isolate',
-            textAlign: { xs: 'center', md: 'left' },
-          }}
-        >
-          <Box sx={{ position: 'relative', zIndex: zIndex.content }}>
-            <Typography
-              variant="h1"
-              sx={{
-                maxWidth: { xs: 420, md: 700, xl: 760 },
-                color: surface.lightText,
-                ...componentText.heroTitle,
-                mb: { xs: 0.9, md: 1.7, xl: 2.5 },
-                mx: { xs: 'auto', md: 0 },
-              }}
-            >
-              <Box component="span" sx={{ display: 'block' }}>
+        <Box sx={styles.box2}>
+          <Box sx={styles.box3}>
+            <Typography variant="h1" sx={styles.typography}>
+              <Box component="span" sx={styles.box4}>
                 {t('titleLine1')}
               </Box>
-              <Box component="span" sx={{ display: 'block' }}>
+              <Box component="span" sx={styles.box4}>
                 {t('titleLine2')}
               </Box>
             </Typography>
 
-            <Typography
-              sx={{
-                color: alpha.white[72],
-                mb: { xs: 1.5, md: 3, xl: 4.8 },
-                maxWidth: { xs: 360, md: 690, xl: 760 },
-                ...componentText.heroSubtitle,
-                mx: { xs: 'auto', md: 0 },
-                whiteSpace: { md: 'nowrap' },
-              }}
-            >
-              {t('subtitle')}
-            </Typography>
+            <Typography sx={styles.typography2}>{t('subtitle')}</Typography>
 
             <DesktopSearchBar
               selectedSearch={selectedSearch}

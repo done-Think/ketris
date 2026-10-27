@@ -1,14 +1,8 @@
-import type { Papel } from '@server/auth/domain/user.entity'
-
 import { assertBrokerProfileAccess } from '../authorization'
 import { BrokerProfileNotFoundError } from '../../domain/errors'
 import type { BrokerProfile } from '../../types/broker-profile'
 import type { BrokerProfileRepository } from '../ports/broker-profile-repository.port'
-
-export interface UnpublishBrokerProfileInput {
-  actorId: string
-  actorPapel: Papel
-}
+import type { UnpublishBrokerProfileInput } from '../../types/use-case-inputs'
 
 export class UnpublishBrokerProfileUseCase {
   constructor(private readonly brokerProfileRepository: BrokerProfileRepository) {}

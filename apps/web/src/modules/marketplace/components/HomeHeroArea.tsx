@@ -1,22 +1,15 @@
 'use client'
 
 import { useMemo, useRef } from 'react'
-import { Box } from '@mui/material'
 
-import { SiteFooter } from '@shared/components/layout'
 import { useClickAway } from '@shared/hooks'
-import { surface } from '@shared/theme/tokens'
 
-import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import { useMarketplaceSearch } from '../hooks/use-marketplace-search'
-import { FeaturedPropertiesSection } from './FeaturedPropertiesSection'
 import { HeroSection } from './HeroSection'
 import { MarketplaceHeader } from './MarketplaceHeader'
-import { MiniPropertiesSection } from './MiniPropertiesSection'
 
-export function HomePageClient() {
+export function HomeHeroArea() {
   const search = useMarketplaceSearch()
-  const { footerColumns, legalLinks } = useMarketplaceNavigation()
   const { activeSearchMenu, closeSearchMenu } = search
   const desktopSearchRef = useRef<HTMLDivElement | null>(null)
   const mobileSearchRef = useRef<HTMLDivElement | null>(null)
@@ -25,19 +18,8 @@ export function HomePageClient() {
   useClickAway(searchRefs, closeSearchMenu, { enabled: Boolean(activeSearchMenu) })
 
   return (
-    <Box
-      sx={{
-        width: '100%',
-        maxWidth: '100vw',
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        overflowX: 'clip',
-        bgcolor: surface.app,
-      }}
-    >
+    <>
       <MarketplaceHeader activeItemId="home" />
-
       <HeroSection
         selectedSearch={search.selectedSearch}
         priceRange={search.priceRange}
@@ -55,12 +37,6 @@ export function HomePageClient() {
         getSearchOptionLabel={search.getSearchOptionLabel}
         setSearchDraft={search.setSearchDraft}
       />
-
-      <FeaturedPropertiesSection />
-
-      <MiniPropertiesSection />
-
-      <SiteFooter columns={footerColumns} legalLinks={legalLinks} />
-    </Box>
+    </>
   )
 }

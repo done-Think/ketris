@@ -28,6 +28,20 @@ vi.mock('next/navigation', () => ({
   useRouter: () => routerMock,
 }))
 
+vi.mock('@/i18n/navigation', async () => {
+  const React = await import('react')
+
+  return {
+    usePathname: () => '/',
+    useRouter: () => routerMock,
+    Link: React.forwardRef<HTMLAnchorElement, React.AnchorHTMLAttributes<HTMLAnchorElement>>(
+      function MockLocalizedLink({ href = '', ...props }, ref) {
+        return React.createElement('a', { ...props, href, ref })
+      },
+    ),
+  }
+})
+
 function renderMarketplaceHeader() {
   render(
     <ThemeProvider theme={theme}>
@@ -173,7 +187,7 @@ describe('MarketplaceHeader', () => {
     await user.click(screen.getByRole('button', { name: /sair/i }))
 
     expect(clearClientSession).toHaveBeenCalledOnce()
-    expect(routerMock.replace).toHaveBeenCalledWith('/pt')
+    expect(routerMock.replace).toHaveBeenCalledWith('/')
     expect(routerMock.refresh).toHaveBeenCalledOnce()
   })
 })

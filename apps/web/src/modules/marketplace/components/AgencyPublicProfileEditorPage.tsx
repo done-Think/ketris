@@ -1,25 +1,12 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { zodResolver } from '@hookform/resolvers/zod'
-import {
-  Autocomplete,
-  Box,
-  Button,
-  Dialog,
-  DialogContent,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material'
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
+import { Autocomplete, Box, Stack, TextField } from '@mui/material'
 import { useLocale, useTranslations } from 'next-intl'
-import type { AppLocale } from '@/i18n/types/locale.types'
-import { useSnackbar } from 'notistack'
-import { Controller, useForm } from 'react-hook-form'
+import { useMemo } from 'react'
+import { Controller } from 'react-hook-form'
 
+import type { AppLocale } from '@/i18n/types/locale.types'
 import { RhfTextField } from '@shared/components/form'
-import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/components/layout'
 
 import {
   useOwnAgencyProfile,
@@ -27,379 +14,257 @@ import {
   useSaveAgencyProfile,
   useUnpublishAgencyProfile,
 } from '../hooks/use-agency-profile'
+import { usePublicProfileEditor } from '../hooks/use-public-profile-editor'
 import { useTenantAgents } from '../hooks/use-tenant-agents'
 import { createAgencyPublicProfileEditorSchema } from '../schemas/agency-public-profile-editor-schema'
-import type { AgencyPublicProfileEditorFormValues } from '../types/profile-editor'
+import { styles, teamPickerSlotProps } from '../styles/public-profile-editor.styles'
+import type { AgencyProfileEditorProps } from '../types/profile-editor'
 import {
-  emptyValues,
   toDraft,
   toFormValues,
   toPreviewProfile,
 } from '../utils/agency-public-profile-editor-adapter'
-import { editorPanelSx } from './public-profile-editor/public-profile-editor-shared'
-import { SingleImageUploadField } from './public-profile-editor/SingleImageUploadField'
 import { AgencyPublicProfilePage } from './AgencyPublicProfilePage'
+import { PublicProfileEditorLoader } from './public-profile-editor/PublicProfileEditorLoader'
+import { PublicProfileEditorPanel } from './public-profile-editor/PublicProfileEditorPanel'
+import { PublicProfileEditorShell } from './public-profile-editor/PublicProfileEditorShell'
+import { SingleImageUploadField } from './public-profile-editor/SingleImageUploadField'
+
+const formId = 'agency-public-profile-editor-form'
 
 export function AgencyPublicProfileEditorPage() {
+  const t = useTranslations('marketplace.agencyProfileEditor')
+  const profileQuery = useOwnAgencyProfile()
+
+  return (
+    <PublicProfileEditorLoader
+      isPending={profileQuery.isPending}
+      isError={profileQuery.isError}
+      errorLabel={t('loadError')}
+      retryLabel={t('retry')}
+      onRetry={() => void profileQuery.refetch()}
+    >
+      <AgencyProfileEditor
+        key={profileQuery.data?.id ?? 'new'}
+        profile={profileQuery.data ?? null}
+      />
+    </PublicProfileEditorLoader>
+  )
+}
+
+function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
   const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace.agencyProfileEditor')
   const tFeatures = useTranslations('marketplace.propertyFeatures')
-  const { enqueueSnackbar } = useSnackbar()
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
-  const { data: profile } = useOwnAgencyProfile()
   const { data: tenantAgents } = useTenantAgents()
-  const saveProfile = useSaveAgencyProfile()
-  const publishProfile = usePublishAgencyProfile()
-  const unpublishProfile = useUnpublishAgencyProfile()
-
-  const [isEditing, setIsEditing] = useState(false)
-  const agencyPublicProfileEditorSchema = useMemo(
-    () => createAgencyPublicProfileEditorSchema((key) => t(`errors.${key}`)),
-    [t],
-  )
-  const publishRequiredFieldsSchema = useMemo(
-    () =>
-      createAgencyPublicProfileEditorSchema((key) => t(`errors.${key}`), {
+  const schemas = useMemo(
+    () => ({
+      draft: createAgencyPublicProfileEditorSchema((key) => t(`errors.${key}`)),
+      publish: createAgencyPublicProfileEditorSchema((key) => t(`errors.${key}`), {
         requirePublishFields: true,
       }),
+    }),
     [t],
   )
-  const { control, handleSubmit, reset, setError, watch } =
-    useForm<AgencyPublicProfileEditorFormValues>({
-      defaultValues: emptyValues,
-      resolver: zodResolver(agencyPublicProfileEditorSchema),
-    })
-
-  useEffect(() => {
-    reset(toFormValues(profile ?? null))
-  }, [profile, reset])
-
-  const draft = watch()
-
-  function onSubmit(values: AgencyPublicProfileEditorFormValues) {
-    saveProfile.mutate(toDraft(values), {
-      onSuccess: () => {
-        enqueueSnackbar(t('saveSuccess'), { variant: 'success' })
-        setIsEditing(false)
-      },
-      onError: () => enqueueSnackbar(t('saveError'), { variant: 'error' }),
-    })
-  }
-
-  function handleUnpublish() {
-    unpublishProfile.mutate(undefined, {
-      onSuccess: () => enqueueSnackbar(t('unpublishSuccess'), { variant: 'success' }),
-      onError: () => enqueueSnackbar(t('publishError'), { variant: 'error' }),
-    })
-  }
-
-  const handlePublish = handleSubmit((values) => {
-    const publishCheck = publishRequiredFieldsSchema.safeParse(values)
-
-    if (!publishCheck.success) {
-      setIsEditing(true)
-
-      for (const issue of publishCheck.error.issues) {
-        const field = issue.path[0]
-
-        if (typeof field === 'string') {
-          setError(field as keyof AgencyPublicProfileEditorFormValues, { message: issue.message })
-        }
-      }
-
-      return
-    }
-
-    saveProfile.mutate(toDraft(values), {
-      onSuccess: () => {
-        publishProfile.mutate(undefined, {
-          onSuccess: () => {
-            enqueueSnackbar(t('publishSuccess'), { variant: 'success' })
-            setIsEditing(false)
-          },
-          onError: () => enqueueSnackbar(t('publishError'), { variant: 'error' }),
-        })
-      },
-      onError: () => enqueueSnackbar(t('saveError'), { variant: 'error' }),
-    })
+  const editor = usePublicProfileEditor({
+    status: profile?.status ?? null,
+    defaultValues: toFormValues(profile),
+    schema: schemas.draft,
+    publishSchema: schemas.publish,
+    toDraft,
+    save: useSaveAgencyProfile(),
+    publish: usePublishAgencyProfile(),
+    unpublish: useUnpublishAgencyProfile(),
+    messages: {
+      saveSuccess: t('saveSuccess'),
+      saveError: t('saveError'),
+      publishSuccess: t('publishSuccess'),
+      publishError: t('publishError'),
+      unpublishSuccess: t('unpublishSuccess'),
+    },
   })
-
-  function handlePublishToggle() {
-    if (profile?.status === 'PUBLISHED') {
-      handleUnpublish()
-      return
-    }
-
-    void handlePublish()
-  }
+  const { control, formState } = editor.form
+  const disabled = !editor.isEditing
 
   return (
-    <Box sx={{ width: '100%', p: 3.5 }}>
-      <DashboardPageHeader
-        title={t('title')}
-        subtitle={t('subtitle')}
-        actions={
-          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-            <DashboardNotificationsButton />
-          </Box>
-        }
-        sx={{ mb: 2.6 }}
-      />
-
-      <Box component="form" noValidate onSubmit={handleSubmit(onSubmit)} sx={{ width: '100%' }}>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', xl: 'minmax(0, 3fr) minmax(420px, 2fr)' },
-            alignItems: { xs: 'start', xl: 'stretch' },
-            columnGap: { xs: 2.2, xl: 4 },
-            rowGap: 2.2,
-          }}
-        >
-          <Box sx={{ ...editorPanelSx, display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="h5" sx={{ mb: 2 }}>
-              {t('fields.mainInfo')}
-            </Typography>
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
-                gap: 1.6,
-                flex: 1,
-              }}
-            >
-              <RhfTextField
-                control={control}
-                name="headline"
-                label={t('fields.headline')}
-                disabled={!isEditing}
-                sx={{ gridColumn: { md: '1 / -1' } }}
-              />
-              <RhfTextField
-                control={control}
-                name="displayName"
-                label={t('fields.displayName')}
-                disabled={!isEditing}
-              />
-              <RhfTextField
-                control={control}
-                name="legalCreci"
-                label={t('fields.legalCreci')}
-                disabled={!isEditing}
-              />
-              <RhfTextField
-                control={control}
-                name="headquarters"
-                label={t('fields.headquarters')}
-                disabled={!isEditing}
-              />
-              <RhfTextField
-                control={control}
-                name="address"
-                label={t('fields.address')}
-                disabled={!isEditing}
-              />
-              <RhfTextField
-                control={control}
-                name="phone"
-                label={t('fields.phone')}
-                disabled={!isEditing}
-              />
-              <RhfTextField
-                control={control}
-                name="email"
-                label={t('fields.email')}
-                disabled={!isEditing}
-              />
-              <RhfTextField
-                control={control}
-                name="coverage"
-                label={t('fields.coverage')}
-                helperText={t('fields.commaSeparatedHint')}
-                disabled={!isEditing}
-              />
-              <RhfTextField
-                control={control}
-                name="segments"
-                label={t('fields.segments')}
-                helperText={t('fields.commaSeparatedHint')}
-                disabled={!isEditing}
-              />
-              <RhfTextField
-                control={control}
-                name="yearsInMarket"
-                label={t('fields.yearsInMarket')}
-                disabled={!isEditing}
-              />
-              <RhfTextField
-                control={control}
-                name="summary"
-                label={t('fields.summary')}
-                multiline
-                minRows={6}
-                fullWidth
-                disabled={!isEditing}
-                sx={{
-                  gridColumn: { md: '1 / -1' },
-                  '& .MuiInputBase-root': { alignItems: 'flex-start', height: { xl: '100%' } },
-                  '& textarea': { height: { xl: '100% !important' } },
-                }}
-              />
-            </Box>
-          </Box>
-
-          <Stack spacing={2}>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-              <Button
-                type="button"
-                variant="outlined"
-                startIcon={<VisibilityOutlinedIcon />}
-                onClick={() => setIsPreviewOpen(true)}
-                sx={{ flex: 1 }}
-              >
-                {t('actions.preview')}
-              </Button>
-              {isEditing ? (
-                <Button
-                  key="save-button"
-                  type="submit"
-                  variant="contained"
-                  disabled={saveProfile.isPending}
-                  sx={{ flex: 1 }}
-                >
-                  {t('actions.save')}
-                </Button>
-              ) : (
-                <Button
-                  key="edit-button"
-                  type="button"
-                  variant="contained"
-                  onClick={() => setIsEditing(true)}
-                  sx={{ flex: 1 }}
-                >
-                  {t('actions.edit')}
-                </Button>
-              )}
-              {profile ? (
-                <Button
-                  type="button"
-                  variant="outlined"
-                  color={profile.status === 'PUBLISHED' ? 'error' : 'success'}
-                  onClick={handlePublishToggle}
-                  disabled={publishProfile.isPending || unpublishProfile.isPending}
-                  sx={{ flex: 1 }}
-                >
-                  {profile.status === 'PUBLISHED' ? t('actions.unpublish') : t('actions.publish')}
-                </Button>
-              ) : null}
-            </Stack>
-
-            <Box sx={editorPanelSx}>
-              <Typography variant="h5" sx={{ mb: 2 }}>
-                {t('fields.appearance')}
-              </Typography>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
-                  gap: 1.6,
-                }}
-              >
-                <RhfTextField
-                  control={control}
-                  name="backgroundColor"
-                  label={t('fields.backgroundColor')}
-                  type="color"
-                  disabled={!isEditing}
-                />
-              </Box>
-            </Box>
-
-            <Box sx={editorPanelSx}>
-              <Typography variant="h5" sx={{ mb: 2 }}>
-                {t('fields.images')}
-              </Typography>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
-                  alignItems: 'stretch',
-                  gap: 1.6,
-                }}
-              >
-                <SingleImageUploadField
-                  control={control}
-                  name="logoUrl"
-                  label={t('fields.logoUrl')}
-                  target="agency-logo"
-                  variant="avatar"
-                  disabled={!isEditing}
-                />
-                <SingleImageUploadField
-                  control={control}
-                  name="bannerUrl"
-                  label={t('fields.bannerUrl')}
-                  target="agency-banner"
-                  variant="banner"
-                  disabled={!isEditing}
-                />
-              </Box>
-            </Box>
-          </Stack>
-
-          <Box sx={{ ...editorPanelSx, gridColumn: { xl: '1 / -1' } }}>
-            <Typography variant="h5" sx={{ mb: 2 }}>
-              {t('fields.team')}
-            </Typography>
-            <Controller
+    <PublicProfileEditorShell
+      formId={formId}
+      title={t('title')}
+      subtitle={t('subtitle')}
+      labels={{
+        preview: t('actions.preview'),
+        edit: t('actions.edit'),
+        save: t('actions.save'),
+        publish: t('actions.publish'),
+        unpublish: t('actions.unpublish'),
+        validatedDraft: t('validatedDraft'),
+      }}
+      status={profile?.status ?? null}
+      isEditing={editor.isEditing}
+      isSaving={editor.isSaving}
+      isTogglingPublish={editor.isTogglingPublish}
+      showValidated={formState.isSubmitSuccessful}
+      onEdit={editor.startEditing}
+      onTogglePublish={editor.togglePublish}
+      onSubmit={editor.onSubmit}
+      previewOpen={editor.isPreviewOpen}
+      onOpenPreview={editor.openPreview}
+      onClosePreview={editor.closePreview}
+      preview={
+        <AgencyPublicProfilePage
+          agency={toPreviewProfile(
+            editor.form.getValues(),
+            profile,
+            locale,
+            tFeatures,
+            t('previewName'),
+          )}
+        />
+      }
+    >
+      <PublicProfileEditorPanel title={t('fields.mainInfo')}>
+        <Box sx={styles.mainFields}>
+          <RhfTextField
+            control={control}
+            name="headline"
+            label={t('fields.headline')}
+            disabled={disabled}
+            sx={styles.fullRow}
+          />
+          <RhfTextField
+            control={control}
+            name="displayName"
+            label={t('fields.displayName')}
+            disabled={disabled}
+          />
+          <RhfTextField
+            control={control}
+            name="legalCreci"
+            label={t('fields.legalCreci')}
+            disabled={disabled}
+          />
+          <RhfTextField
+            control={control}
+            name="headquarters"
+            label={t('fields.headquarters')}
+            disabled={disabled}
+          />
+          <RhfTextField
+            control={control}
+            name="address"
+            label={t('fields.address')}
+            disabled={disabled}
+          />
+          <RhfTextField
+            control={control}
+            name="phone"
+            label={t('fields.phone')}
+            disabled={disabled}
+          />
+          <RhfTextField
+            control={control}
+            name="email"
+            label={t('fields.email')}
+            disabled={disabled}
+          />
+          <RhfTextField
+            control={control}
+            name="coverage"
+            label={t('fields.coverage')}
+            helperText={t('fields.commaSeparatedHint')}
+            disabled={disabled}
+          />
+          <RhfTextField
+            control={control}
+            name="segments"
+            label={t('fields.segments')}
+            helperText={t('fields.commaSeparatedHint')}
+            disabled={disabled}
+          />
+          <RhfTextField
+            control={control}
+            name="yearsInMarket"
+            label={t('fields.yearsInMarket')}
+            disabled={disabled}
+          />
+          <RhfTextField
+            control={control}
+            name="summary"
+            label={t('fields.summary')}
+            multiline
+            minRows={6}
+            fullWidth
+            disabled={disabled}
+            sx={styles.longText}
+          />
+        </Box>
+      </PublicProfileEditorPanel>
+      <Stack spacing={2}>
+        <PublicProfileEditorPanel title={t('fields.appearance')}>
+          <Box sx={styles.colorFields}>
+            <RhfTextField
               control={control}
-              name="team"
-              render={({ field, fieldState }) => (
-                <Autocomplete
-                  multiple
-                  disabled={!isEditing}
-                  options={tenantAgents ?? []}
-                  value={(tenantAgents ?? []).filter((agent) =>
-                    field.value.some((member) => member.usuarioId === agent.id),
-                  )}
-                  getOptionLabel={(agent) => agent.name}
-                  isOptionEqualToValue={(option, value) => option.id === value.id}
-                  slotProps={{
-                    popper: {
-                      placement: 'top-start',
-                      modifiers: [{ name: 'flip', enabled: false }],
-                    },
-                  }}
-                  onChange={(_event, selected) =>
-                    field.onChange(
-                      selected
-                        .slice(0, 6)
-                        .map((agent) => ({ usuarioId: agent.id, name: agent.name })),
-                    )
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label={t('fields.teamPicker')}
-                      placeholder={t('fields.teamPickerPlaceholder')}
-                      error={Boolean(fieldState.error)}
-                      helperText={fieldState.error?.message}
-                    />
-                  )}
+              name="backgroundColor"
+              label={t('fields.backgroundColor')}
+              type="color"
+              disabled={disabled}
+            />
+          </Box>
+        </PublicProfileEditorPanel>
+        <PublicProfileEditorPanel title={t('fields.images')}>
+          <Box sx={styles.imageFields}>
+            <SingleImageUploadField
+              control={control}
+              name="logoUrl"
+              label={t('fields.logoUrl')}
+              target="agency-logo"
+              variant="avatar"
+              disabled={disabled}
+            />
+            <SingleImageUploadField
+              control={control}
+              name="bannerUrl"
+              label={t('fields.bannerUrl')}
+              target="agency-banner"
+              variant="banner"
+              disabled={disabled}
+            />
+          </Box>
+        </PublicProfileEditorPanel>
+      </Stack>
+      <PublicProfileEditorPanel title={t('fields.team')} fullRow>
+        <Controller
+          control={control}
+          name="team"
+          render={({ field, fieldState }) => (
+            <Autocomplete
+              multiple
+              disabled={disabled}
+              options={tenantAgents ?? []}
+              value={(tenantAgents ?? []).filter((agent) =>
+                field.value.some((member) => member.usuarioId === agent.id),
+              )}
+              getOptionLabel={(agent) => agent.name}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              slotProps={teamPickerSlotProps}
+              onChange={(_event, selected) =>
+                field.onChange(
+                  selected.slice(0, 6).map((agent) => ({ usuarioId: agent.id, name: agent.name })),
+                )
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label={t('fields.teamPicker')}
+                  placeholder={t('fields.teamPickerPlaceholder')}
+                  error={Boolean(fieldState.error)}
+                  helperText={fieldState.error?.message}
                 />
               )}
             />
-          </Box>
-        </Box>
-      </Box>
-
-      <Dialog open={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} maxWidth="lg" fullWidth>
-        <DialogContent sx={{ p: 0 }}>
-          <AgencyPublicProfilePage
-            agency={toPreviewProfile(draft, profile ?? null, locale, tFeatures, t('previewName'))}
-          />
-        </DialogContent>
-      </Dialog>
-    </Box>
+          )}
+        />
+      </PublicProfileEditorPanel>
+    </PublicProfileEditorShell>
   )
 }

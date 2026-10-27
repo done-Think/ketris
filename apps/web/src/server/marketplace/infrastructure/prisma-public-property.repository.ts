@@ -1,14 +1,13 @@
-import { TipoImovel } from '@prisma/client'
 import type { Prisma } from '@prisma/client'
 
 import { prisma } from '@server/db/prisma'
 
+import type { PublicPropertyRepository } from '../application/ports/public-property-repository.port'
 import type {
   PropertySearchFilters,
   PropertySearchPage,
   PropertySearchResult,
-  PublicPropertyRepository,
-} from '../application/ports/public-property-repository.port'
+} from '../types/property-search'
 import type {
   PropertyMedia,
   PublishedPropertyDetail,
@@ -94,12 +93,7 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
     if (filters.purpose) {
       where.finalidade = filters.purpose === 'AMBOS' ? 'AMBOS' : { in: [filters.purpose, 'AMBOS'] }
     }
-    if (filters.propertyType) {
-      const propertyType = filters.propertyType.trim().toUpperCase()
-      if (!Object.values(TipoImovel).includes(propertyType as TipoImovel))
-        return { items: [], totalCount: 0 }
-      where.tipo = propertyType as TipoImovel
-    }
+    if (filters.propertyType) where.tipo = filters.propertyType
     if (filters.minBedrooms !== undefined) where.quartos = { gte: filters.minBedrooms }
     if (filters.minArea !== undefined) where.areaM2 = { gte: filters.minArea }
     if (filters.hasParking) where.vagas = { gt: 0 }
@@ -162,7 +156,7 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
     ])
 
     return {
-      items: imoveis.map((imovel) => toSummary(imovel as unknown as ImovelSummaryRow)),
+      items: imoveis.map((imovel) => toSummary(imovel)),
       totalCount,
     }
   }
@@ -177,6 +171,6 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
       },
     })
 
-    return imovel ? toDetail(imovel as unknown as ImovelDetailRow) : null
+    return imovel ? toDetail(imovel) : null
   }
 }

@@ -1,4 +1,5 @@
-import type { Dispatch, FormEventHandler, ReactNode, Ref, SetStateAction } from 'react'
+import type { Dispatch, ReactNode, Ref, SetStateAction } from 'react'
+import type { Control } from 'react-hook-form'
 import type { z } from 'zod'
 
 import type { LocalizedHref } from '@shared/types/localized-href'
@@ -6,8 +7,7 @@ import type { PropertyCardData } from '@shared/types'
 import type { searchOptions } from '../config/search-filters'
 import type {
   createMarketplaceSearchFormSchema,
-  createSearchResultsFiltersDialogFormSchema,
-  createSearchResultsFormSchema,
+  createSearchResultsFiltersFormSchema,
 } from '../schemas/marketplace-search-schema'
 
 export type SearchFilterKey = keyof typeof searchOptions
@@ -31,11 +31,20 @@ export type MarketplaceSearchFormValues = z.infer<
   ReturnType<typeof createMarketplaceSearchFormSchema>
 >
 
-export type SearchResultsFormValues = z.infer<ReturnType<typeof createSearchResultsFormSchema>>
-
-export type SearchResultsFiltersDialogFormValues = z.infer<
-  ReturnType<typeof createSearchResultsFiltersDialogFormSchema>
+export type SearchResultsFiltersFormValues = z.infer<
+  ReturnType<typeof createSearchResultsFiltersFormSchema>
 >
+
+export type SearchResultsFilters = SearchResultsFiltersFormValues & {
+  location: string
+  minPrice: number | null
+}
+
+export type SearchResultsState = SearchResultsFilters & {
+  sortOption: SortOption
+  page: number
+  selectedPropertyId: string
+}
 
 export type SortOption = 'relevancia' | 'menor-preco' | 'maior-preco'
 
@@ -43,17 +52,19 @@ export type ViewMode = 'grid' | 'list'
 
 export type SearchResultsViewModeScope = 'rent' | 'buy' | 'brokers' | 'agencies'
 
-export type QuickFilterKey = 'type' | 'price' | 'bedrooms' | 'area' | 'more'
-
 export type SearchResultsPageProps = {
   purpose: SearchResultPurpose
   initialLocation?: string
+  initialPropertyType?: SearchResultsFiltersFormValues['propertyType']
+  initialPriceRange?: { min: number | null; max: number | null }
 }
 
 export type SearchResultsRoutePageProps = {
   searchParams?: {
     location?: string
     purpose?: string
+    propertyType?: string
+    priceRange?: string
   }
 }
 
@@ -65,54 +76,20 @@ export type SearchResultsFiltersProps = {
 export type SearchResultsLocationFieldProps = SearchResultsFiltersProps
 
 export type SearchResultsFilterButtonProps = {
-  areaFilterIndex: number
-  bedroomFilterIndex: number
-  customMaxPrice: string
-  customMinArea: string
-  maxPrice: number | null
-  minArea: number | null
-  onlyWithParking: boolean
-  priceFilterIndex: number
-  propertyTypeFilter: string
-  setAreaFilterIndex: (index: number) => void
-  setBedroomFilterIndex: (index: number) => void
-  setCustomMaxPrice: (value: string) => void
-  setCustomMinArea: (value: string) => void
-  setOnlyWithParking: (value: boolean) => void
-  setPriceFilterIndex: (index: number) => void
-  setPropertyTypeFilter: (value: string) => void
+  filters: SearchResultsFiltersFormValues
+  activeFiltersCount: number
+  onApply: (filters: SearchResultsFiltersFormValues) => void
 }
 
-export type SearchResultsFilterMenuProps = {
-  areaFilterIndex: number
-  bedroomFilterIndex: number
-  customMaxPrice: string
-  customMinArea: string
-  filterKey: QuickFilterKey
-  onlyWithParking: boolean
-  priceFilterIndex: number
-  propertyTypeFilter: string
-  setActiveQuickFilter: (filterKey: QuickFilterKey | null) => void
-  setAreaFilterIndex: (index: number) => void
-  setBedroomFilterIndex: (index: number) => void
-  setCustomMaxPrice: (value: string) => void
-  setCustomMinArea: (value: string) => void
-  setOnlyWithParking: (value: boolean) => void
-  setPriceFilterIndex: (index: number) => void
-  setPropertyTypeFilter: (value: string) => void
+export type SearchResultsFilterDialogProps = {
+  open: boolean
+  filters: SearchResultsFiltersFormValues
+  onClose: () => void
+  onApply: (filters: SearchResultsFiltersFormValues) => void
 }
 
-export type SearchResultsFilterDialogProps = SearchResultsFiltersDialogFormValues & {
-  clearDraftFilters: () => void
-  closeFiltersDialog: () => void
-  onSubmitFilters: FormEventHandler<HTMLFormElement>
-  setAreaFilterIndex: (index: number) => void
-  setBedroomFilterIndex: (index: number) => void
-  setCustomMaxPrice: (value: string) => void
-  setCustomMinArea: (value: string) => void
-  setOnlyWithParking: (value: boolean) => void
-  setPriceFilterIndex: (index: number) => void
-  setPropertyTypeFilter: (value: string) => void
+export type SearchResultsFilterFieldsProps = {
+  control: Control<SearchResultsFiltersFormValues>
 }
 
 export type SearchResultsMapProps = {
@@ -163,7 +140,7 @@ export type PriceRange = [number, number]
 
 export type SearchDraft = Record<TextSearchFilterKey, string>
 
-export type SelectedSearch = Record<SearchFilterKey, string>
+export type SelectedSearch = Record<TextSearchFilterKey, string>
 
 export type SearchState = {
   selectedSearch: SelectedSearch
@@ -176,7 +153,7 @@ export type SearchMenuProps = {
   searchDraft: SearchDraft
   filterSearchOptions: (key: TextSearchFilterKey) => readonly string[]
   getSearchOptionLabel: (key: TextSearchFilterKey, value: string) => string
-  selectSearchValue: (key: SearchFilterKey, value: string) => void
+  selectSearchValue: (key: TextSearchFilterKey, value: string) => void
   setSearchDraft: Dispatch<SetStateAction<SearchDraft>>
 }
 

@@ -1,5 +1,8 @@
 export type PropertyPurpose = 'ALUGUEL' | 'VENDA' | 'AMBOS'
 
+export type PublicPropertyType =
+  'APARTAMENTO' | 'CASA' | 'STUDIO' | 'COBERTURA' | 'COMERCIAL' | 'LOFT' | 'OUTRO'
+
 export interface PropertyAddress {
   street: string
   number: string
@@ -23,7 +26,7 @@ export interface PublishedPropertySummary {
   id: string
   title: string
   purpose: PropertyPurpose
-  propertyType: string
+  propertyType: PublicPropertyType
   price: number
   condoFee: number | null
   propertyTax: number | null

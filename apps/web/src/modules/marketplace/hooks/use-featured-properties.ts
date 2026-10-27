@@ -1,22 +1,22 @@
 import { useQuery } from '@tanstack/react-query'
 import { useLocale, useTranslations } from 'next-intl'
+
 import type { AppLocale } from '@/i18n/types/locale.types'
 
+import { featuredPropertiesCount } from '../config/home'
+import { marketplaceQueryKeys } from '../config/marketplace-query-keys'
 import { marketplaceService } from '../services/marketplace-service'
 import { mapSummaryToSearchResult } from '../utils/property-summary-adapter'
 
-const featuredPropertiesCount = 6
-
-export function useFeaturedProperties() {
+export function useRecentProperties(page: number, pageSize = featuredPropertiesCount) {
   const locale = useLocale() as AppLocale
   const tFeatures = useTranslations('marketplace.propertyFeatures')
   const query = useQuery({
-    queryKey: ['marketplace', 'properties', 'featured'],
-    queryFn: () =>
-      marketplaceService.searchProperties({ sortBy: 'recent', pageSize: featuredPropertiesCount }),
+    queryKey: marketplaceQueryKeys.recent(page, pageSize),
+    queryFn: () => marketplaceService.searchProperties({ sortBy: 'recent', page, pageSize }),
   })
 
-  const featuredProperties = (query.data?.properties ?? []).map((summary) =>
+  const properties = (query.data?.properties ?? []).map((summary) =>
     mapSummaryToSearchResult(
       summary,
       summary.purpose === 'ALUGUEL' ? 'alugar' : 'comprar',
@@ -25,5 +25,11 @@ export function useFeaturedProperties() {
     ),
   )
 
-  return { featuredProperties, isLoading: query.isLoading, isError: query.isError }
+  return { properties, isLoading: query.isLoading, isError: query.isError }
+}
+
+export function useFeaturedProperties() {
+  const { properties, isLoading, isError } = useRecentProperties(1)
+
+  return { featuredProperties: properties, isLoading, isError }
 }

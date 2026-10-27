@@ -5,7 +5,7 @@ import type {
   PublicBrokerProfile,
 } from '../types/public-broker-profile'
 import { formatCompactCurrency } from './search-results'
-import type { PropertyText } from './property-presentation'
+import type { PropertyText } from '../types/property-presentation'
 
 function buildListingLocation(listing: PublicBrokerListingSummary): string {
   return [listing.neighborhood, listing.city].filter(Boolean).join(', ')

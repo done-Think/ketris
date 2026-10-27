@@ -1,7 +1,7 @@
 import type { PublicPropertySummary } from '../types/public-property'
 import type { SearchResultProperty, SearchResultPurpose } from '../types/search'
 import type { AppLocale } from '@/i18n/types/locale.types'
-import type { PropertyText } from './property-presentation'
+import type { PropertyText } from '../types/property-presentation'
 import { formatCompactCurrency } from './search-results'
 
 function buildDetails(summary: PublicPropertySummary): SearchResultProperty['details'] {

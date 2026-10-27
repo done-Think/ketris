@@ -41,3 +41,9 @@ export class ProfileMediaValidationError extends AppError {
     super(message, { status: 400, code: 'PROFILE_MEDIA_VALIDATION_ERROR' })
   }
 }
+
+export class ProfileMediaNotFoundError extends AppError {
+  constructor() {
+    super('Mídia não encontrada.', { status: 404, code: 'PROFILE_MEDIA_NOT_FOUND' })
+  }
+}

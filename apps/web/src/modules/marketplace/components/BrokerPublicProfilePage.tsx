@@ -15,6 +15,7 @@ import { BrokerProfileHero } from './profile/BrokerProfileHero'
 import { PublicProfileListings } from './profile/PublicProfileListings'
 import { PublicProfileMetrics } from './profile/PublicProfileMetrics'
 import { PublicProfileSidebar } from './profile/PublicProfileSidebar'
+import { styles } from '../styles/broker-public-profile-page.styles'
 
 export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps) {
   const t = useTranslations('marketplace')
@@ -23,18 +24,10 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
   const representedListings = buildProfileListings(broker.highlightedListings)
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        bgcolor: surface.app,
-        minHeight: '100vh',
-        overflowX: 'clip',
-      }}
-    >
+    <Box sx={styles.box}>
       <MarketplaceHeader activeItemId="brokers" />
 
-      <Container component="main" maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
+      <Container component="main" maxWidth="xl" sx={styles.container}>
         <MarketplaceBreadcrumbs
           items={[
             { label: t('navigation.home'), href: '/' },
@@ -42,15 +35,8 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
             { label: broker.name },
           ]}
         />
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 360px' },
-            gap: { xs: 2.5, lg: 3 },
-            alignItems: 'start',
-          }}
-        >
-          <Box sx={{ minWidth: 0 }}>
+        <Box sx={styles.box2}>
+          <Box sx={styles.box3}>
             <BrokerProfileHero broker={broker} />
             <PublicProfileMetrics
               accentColor={accentColor}
@@ -82,7 +68,7 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
             ]}
           />
 
-          <Box sx={{ gridColumn: { lg: '1 / -1' } }}>
+          <Box sx={styles.box4}>
             <PublicProfileListings
               accentColor={accentColor}
               listings={representedListings}

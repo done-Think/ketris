@@ -1,4 +1,4 @@
-import type { PropertyPurpose } from './property'
+import type { PropertyPurpose, PublicPropertyType } from './property'
 
 export type DecimalLike = { toNumber(): number }
 
@@ -20,7 +20,7 @@ export type ImovelSummaryRow = {
   id: string
   titulo: string
   finalidade: PropertyPurpose
-  tipo: string
+  tipo: PublicPropertyType
   valor: DecimalLike
   condominio: DecimalLike | null
   iptu: DecimalLike | null
