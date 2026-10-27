@@ -17,8 +17,9 @@ export const normalizeSearchText = (value: string) =>
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
 
-export function buildSearchHref({ selectedSearch, searchDraft, priceRange }: SearchState) {
+export function buildSearchHref({ selectedSearch, searchDraft, priceRange, purpose }: SearchState) {
   const query: Record<string, string> = {}
+  if (purpose) query.purpose = purpose
   const location = searchDraft.location.trim() || selectedSearch.location
   if (location) query[searchOptions.location.query] = location
   if (isMarketplacePropertyType(selectedSearch.propertyType))

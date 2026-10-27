@@ -19,6 +19,8 @@ function renderMobileSearchBox(overrides: Partial<MobileSearchBoxProps> = {}) {
     activeSearchMenu: null,
     searchDraft: { location: '', propertyType: '' },
     searchHref: '/properties',
+    purpose: 'rent',
+    setPurpose: vi.fn(),
     mobileSearchRef: { current: null },
     openSearchMenu: vi.fn(),
     closeSearchMenu: vi.fn(),

@@ -10,6 +10,7 @@ import { priceLimit, searchOptions } from '../config/search-filters'
 import type {
   PriceRange,
   SearchDraft,
+  SearchResultPurposeParam,
   SearchFilterKey,
   SelectedSearch,
   TextSearchFilterKey,
@@ -26,6 +27,7 @@ export function useMarketplaceSearch() {
   const [activeSearchMenu, setActiveSearchMenu] = useState<SearchFilterKey | null>(null)
   const [selectedSearch, setSelectedSearch] = useState<SelectedSearch>(emptySelection)
   const [searchDraft, setSearchDraftState] = useState<SearchDraft>(emptyDraft)
+  const [purpose, setPurpose] = useState<SearchResultPurposeParam>('rent')
   const [priceRange, setPriceRange] = useState<PriceRange>([priceLimit.min, priceLimit.max])
 
   const openSearchMenu = useCallback(
@@ -86,8 +88,8 @@ export function useMarketplaceSearch() {
   )}`
 
   const searchHref = useMemo(
-    () => buildSearchHref({ selectedSearch, searchDraft, priceRange }),
-    [priceRange, searchDraft, selectedSearch],
+    () => buildSearchHref({ selectedSearch, searchDraft, priceRange, purpose }),
+    [priceRange, purpose, searchDraft, selectedSearch],
   )
 
   return {
@@ -98,10 +100,12 @@ export function useMarketplaceSearch() {
     openSearchMenu,
     priceRange,
     priceRangeLabel,
+    purpose,
     searchDraft,
     searchHref,
     selectedSearch,
     selectSearchValue,
+    setPurpose,
     setSearchDraft,
     updatePriceRange,
   }

@@ -53,6 +53,17 @@ describe('marketplace search utils', () => {
     expect(href).toEqual({ pathname: '/properties', query: { location: 'Pinheiros' } })
   })
 
+  it('adds the selected purpose to the search URL', () => {
+    const href = buildSearchHref({
+      selectedSearch: { location: '', propertyType: '' },
+      searchDraft: { location: '', propertyType: '' },
+      priceRange: [priceLimit.min, priceLimit.max],
+      purpose: 'buy',
+    })
+
+    expect(href).toEqual({ pathname: '/properties', query: { purpose: 'buy' } })
+  })
+
   it('parses only well formed price ranges inside the limits', () => {
     expect(parsePriceRange('2000-8000')).toEqual({ min: 2000, max: 8000 })
     expect(parsePriceRange(`${priceLimit.min}-${priceLimit.max}`)).toEqual({ min: null, max: null })

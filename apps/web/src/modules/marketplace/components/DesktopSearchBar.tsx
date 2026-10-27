@@ -9,6 +9,7 @@ import { searchFilterOrder, textSearchFilterOrder } from '../config/search-filte
 import type { DesktopSearchBarProps, TextSearchFilterKey } from '../types/search'
 import { PriceRangeMenu } from './PriceRangeMenu'
 import { SearchDropdownFrame } from './SearchDropdownFrame'
+import { SearchPurposeToggle } from './SearchPurposeToggle'
 import { SearchFilterTrigger } from './SearchFilterTrigger'
 import { TextSearchMenu } from './TextSearchMenu'
 import { styles, getBoxStyles } from '../styles/desktop-search-bar.styles'
@@ -20,6 +21,8 @@ export function DesktopSearchBar({
   activeSearchMenu,
   searchDraft,
   searchHref,
+  purpose,
+  setPurpose,
   desktopSearchRef,
   openSearchMenu,
   closeSearchMenu,
@@ -38,6 +41,8 @@ export function DesktopSearchBar({
       alignItems={{ xs: 'stretch', md: 'center' }}
       sx={styles.stack}
     >
+      <SearchPurposeToggle purpose={purpose} onChange={setPurpose} />
+
       {searchFilterOrder.map((key, index) => (
         <Box key={key} sx={getBoxStyles({ key, index })}>
           <SearchFilterTrigger

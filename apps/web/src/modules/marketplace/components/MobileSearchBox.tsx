@@ -11,6 +11,7 @@ import { Link } from '@/i18n/navigation'
 import { searchFilterOrder, textSearchFilterOrder } from '../config/search-filters'
 import type { MobileSearchBoxProps, TextSearchFilterKey } from '../types/search'
 import { PriceRangeMenu } from './PriceRangeMenu'
+import { SearchPurposeToggle } from './SearchPurposeToggle'
 import { SearchFilterTrigger } from './SearchFilterTrigger'
 import { TextSearchMenu } from './TextSearchMenu'
 import { styles } from '../styles/mobile-search-box.styles'
@@ -22,6 +23,8 @@ export function MobileSearchBox({
   activeSearchMenu,
   searchDraft,
   searchHref,
+  purpose,
+  setPurpose,
   mobileSearchRef,
   openSearchMenu,
   closeSearchMenu,
@@ -87,6 +90,7 @@ export function MobileSearchBox({
           </Stack>
 
           <Stack spacing={1.25} sx={styles.stack3}>
+            <SearchPurposeToggle purpose={purpose} onChange={setPurpose} fullWidth />
             {searchFilterOrder.map((key) => (
               <Box key={key} sx={styles.box4}>
                 <SearchFilterTrigger

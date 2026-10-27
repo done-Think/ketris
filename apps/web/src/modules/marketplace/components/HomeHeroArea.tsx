@@ -27,6 +27,8 @@ export function HomeHeroArea() {
         activeSearchMenu={search.activeSearchMenu}
         searchDraft={search.searchDraft}
         searchHref={search.searchHref}
+        purpose={search.purpose}
+        setPurpose={search.setPurpose}
         desktopSearchRef={desktopSearchRef}
         mobileSearchRef={mobileSearchRef}
         openSearchMenu={search.openSearchMenu}

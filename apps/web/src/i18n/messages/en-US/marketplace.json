@@ -82,6 +82,11 @@
       "brandAnimation": "Ketris brand animation"
     },
     "search": {
+      "purpose": {
+        "label": "Purpose",
+        "rent": "Rent",
+        "buy": "Buy"
+      },
       "submit": "Search",
       "mobilePlaceholder": "Search by neighborhood or city...",
       "mobileSearchTitle": "Search properties",

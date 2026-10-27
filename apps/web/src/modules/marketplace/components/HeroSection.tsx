@@ -15,6 +15,8 @@ export function HeroSection({
   activeSearchMenu,
   searchDraft,
   searchHref,
+  purpose,
+  setPurpose,
   desktopSearchRef,
   mobileSearchRef,
   openSearchMenu,
@@ -50,6 +52,8 @@ export function HeroSection({
               activeSearchMenu={activeSearchMenu}
               searchDraft={searchDraft}
               searchHref={searchHref}
+              purpose={purpose}
+              setPurpose={setPurpose}
               desktopSearchRef={desktopSearchRef}
               openSearchMenu={openSearchMenu}
               closeSearchMenu={closeSearchMenu}
@@ -65,6 +69,8 @@ export function HeroSection({
               mobileSearchRef={mobileSearchRef}
               searchDraft={searchDraft}
               searchHref={searchHref}
+              purpose={purpose}
+              setPurpose={setPurpose}
               selectedSearch={selectedSearch}
               priceRange={priceRange}
               priceRangeLabel={priceRangeLabel}

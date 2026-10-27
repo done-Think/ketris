@@ -146,6 +146,13 @@ export type SearchState = {
   selectedSearch: SelectedSearch
   searchDraft: SearchDraft
   priceRange: PriceRange
+  purpose?: SearchResultPurposeParam
+}
+
+export type SearchPurposeToggleProps = {
+  purpose: SearchResultPurposeParam
+  onChange: (purpose: SearchResultPurposeParam) => void
+  fullWidth?: boolean
 }
 
 export type SearchMenuProps = {
@@ -182,6 +189,8 @@ export type SearchDropdownFrameProps = {
 export type DesktopSearchBarProps = SearchMenuProps &
   PriceRangeMenuProps & {
     priceRangeLabel: string
+    purpose: SearchResultPurposeParam
+    setPurpose: (purpose: SearchResultPurposeParam) => void
     activeSearchMenu: SearchFilterKey | null
     searchHref: LocalizedHref
     desktopSearchRef: Ref<HTMLDivElement>

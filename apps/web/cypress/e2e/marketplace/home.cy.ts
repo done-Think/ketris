@@ -51,6 +51,14 @@ describe('Home pública do marketplace', () => {
     cy.contains('button', 'Enviar proposta').should('be.visible')
   })
 
+  it('envia a finalidade escolhida no seletor Alugar/Comprar para a busca', () => {
+    cy.viewport(1280, 900)
+    cy.visit('/pt')
+    cy.get('button[value="buy"]').first().click()
+    cy.contains('a', 'Buscar').first().click()
+    cy.location('search', { timeout: 60000 }).should('contain', 'purpose=buy')
+  })
+
   it('filtra a busca pública pelo código do tipo e pela cidade', () => {
     cy.viewport(1280, 900)
     cy.then(() => {

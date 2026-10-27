@@ -82,6 +82,11 @@
       "brandAnimation": "Animação da marca Ketris"
     },
     "search": {
+      "purpose": {
+        "label": "Finalidade",
+        "rent": "Alugar",
+        "buy": "Comprar"
+      },
       "submit": "Buscar",
       "mobilePlaceholder": "Buscar por bairro, cidade...",
       "mobileSearchTitle": "Buscar imóveis",

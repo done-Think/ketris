@@ -9,7 +9,7 @@ it('começa sem nenhum filtro pré-selecionado', () => {
 
   expect(result.current.selectedSearch).toEqual({ location: '', propertyType: '' })
   expect(result.current.priceRange).toEqual([priceLimit.min, priceLimit.max])
-  expect(result.current.searchHref).toEqual({ pathname: '/properties', query: {} })
+  expect(result.current.searchHref).toEqual({ pathname: '/properties', query: { purpose: 'rent' } })
 })
 
 it('seleciona valores, fecha o menu e monta o link da busca com o código do tipo', () => {
@@ -22,6 +22,7 @@ it('seleciona valores, fecha o menu e monta o link da busca com o código do tip
 
   expect(result.current.activeSearchMenu).toBeNull()
   expect(result.current.searchHref.query).toEqual({
+    purpose: 'rent',
     location: 'Moema, São Paulo',
     propertyType: 'CASA',
   })
@@ -44,7 +45,10 @@ it('limita e ordena a faixa de preço', () => {
 
   act(() => result.current.updatePriceRange([2000, priceLimit.max * 3]))
   expect(result.current.priceRange).toEqual([2000, priceLimit.max])
-  expect(result.current.searchHref.query).toEqual({ priceRange: `2000-${priceLimit.max}` })
+  expect(result.current.searchHref.query).toEqual({
+    purpose: 'rent',
+    priceRange: `2000-${priceLimit.max}`,
+  })
 })
 
 it('filtra as opções pelo rótulo traduzido, ignorando acentos', () => {
@@ -56,4 +60,13 @@ it('filtra as opções pelo rótulo traduzido, ignorando acentos', () => {
   expect(result.current.filterSearchOptions('location')).not.toContain('Savassi, Belo Horizonte')
   expect(result.current.filterSearchOptions('propertyType')).toEqual(['APARTAMENTO'])
   expect(result.current.getSearchOptionLabel('propertyType', '')).toBe('Todos os tipos')
+})
+
+it('inclui a finalidade escolhida no link da busca', () => {
+  const { result } = renderHook(() => useMarketplaceSearch())
+
+  act(() => result.current.setPurpose('buy'))
+
+  expect(result.current.purpose).toBe('buy')
+  expect(result.current.searchHref.query).toEqual({ purpose: 'buy' })
 })
