@@ -7,9 +7,7 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import { Box, Dialog, DialogContent, Stack, Typography } from '@mui/material'
 import { useLocale, useTranslations } from 'next-intl'
 import type { AppLocale } from '@/i18n/types/locale.types'
-import { useSnackbar } from 'notistack'
-import { useEffect, useMemo, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useMemo } from 'react'
 
 import { RhfTextField } from '@shared/components/form'
 import {
@@ -25,14 +23,9 @@ import {
   useSaveBrokerProfile,
   useUnpublishBrokerProfile,
 } from '../hooks/use-broker-profile'
+import { usePublicProfileEditor } from '../hooks/use-public-profile-editor'
 import { createPublicProfileEditorSchema } from '../schemas/public-profile-editor-schema'
-import type { PublicProfileEditorFormValues } from '../types/profile-editor'
-import {
-  emptyValues,
-  toDraft,
-  toFormValues,
-  toPreviewProfile,
-} from '../utils/public-profile-editor-adapter'
+import { toDraft, toFormValues, toPreviewProfile } from '../utils/public-profile-editor-adapter'
 import { BrokerPublicProfilePage } from './BrokerPublicProfilePage'
 import { editorPanelSx } from './public-profile-editor/public-profile-editor-shared'
 import { SingleImageUploadField } from './public-profile-editor/SingleImageUploadField'
@@ -41,97 +34,29 @@ export function PublicProfileEditorPage() {
   const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace.profileEditor')
   const tFeatures = useTranslations('marketplace.propertyFeatures')
-  const { enqueueSnackbar } = useSnackbar()
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const { data: profile } = useOwnBrokerProfile()
-  const saveProfile = useSaveBrokerProfile()
-  const publishProfile = usePublishBrokerProfile()
-  const unpublishProfile = useUnpublishBrokerProfile()
-  const [isEditing, setIsEditing] = useState(false)
-  const publicProfileEditorSchema = useMemo(
-    () => createPublicProfileEditorSchema((key) => t(`errors.${key}`)),
-    [t],
-  )
-  const publishRequiredFieldsSchema = useMemo(
+  const schema = useMemo(() => createPublicProfileEditorSchema((key) => t(`errors.${key}`)), [t])
+  const publishSchema = useMemo(
     () =>
       createPublicProfileEditorSchema((key) => t(`errors.${key}`), { requirePublishFields: true }),
     [t],
   )
-
+  const editor = usePublicProfileEditor({
+    profile,
+    toFormValues,
+    toDraft,
+    resolver: zodResolver(schema),
+    publishSchema,
+    save: useSaveBrokerProfile(),
+    publish: usePublishBrokerProfile(),
+    unpublish: useUnpublishBrokerProfile(),
+    messages: (key) => t(key),
+  })
   const {
     control,
     formState: { isSubmitSuccessful },
-    handleSubmit,
-    reset,
-    setError,
-    watch,
-  } = useForm<PublicProfileEditorFormValues>({
-    defaultValues: emptyValues,
-    resolver: zodResolver(publicProfileEditorSchema),
-  })
-
-  useEffect(() => {
-    reset(toFormValues(profile ?? null))
-  }, [profile, reset])
-
-  const draft = watch()
-
-  function onSubmit(values: PublicProfileEditorFormValues) {
-    saveProfile.mutate(toDraft(values), {
-      onSuccess: () => {
-        enqueueSnackbar(t('saveSuccess'), { variant: 'success' })
-        setIsEditing(false)
-      },
-      onError: () => enqueueSnackbar(t('saveError'), { variant: 'error' }),
-    })
-  }
-
-  function handleUnpublish() {
-    unpublishProfile.mutate(undefined, {
-      onSuccess: () => enqueueSnackbar(t('unpublishSuccess'), { variant: 'success' }),
-      onError: () => enqueueSnackbar(t('publishError'), { variant: 'error' }),
-    })
-  }
-
-  const handlePublish = handleSubmit((values) => {
-    const publishCheck = publishRequiredFieldsSchema.safeParse(values)
-
-    if (!publishCheck.success) {
-      setIsEditing(true)
-
-      for (const issue of publishCheck.error.issues) {
-        const field = issue.path[0]
-
-        if (typeof field === 'string') {
-          setError(field as keyof PublicProfileEditorFormValues, { message: issue.message })
-        }
-      }
-
-      return
-    }
-
-    saveProfile.mutate(toDraft(values), {
-      onSuccess: () => {
-        publishProfile.mutate(undefined, {
-          onSuccess: () => {
-            enqueueSnackbar(t('publishSuccess'), { variant: 'success' })
-            setIsEditing(false)
-          },
-          onError: () => enqueueSnackbar(t('publishError'), { variant: 'error' }),
-        })
-      },
-      onError: () => enqueueSnackbar(t('saveError'), { variant: 'error' }),
-    })
-  })
-
-  function handlePublishToggle() {
-    if (profile?.status === 'PUBLISHED') {
-      handleUnpublish()
-      return
-    }
-
-    void handlePublish()
-  }
+  } = editor.form
+  const isEditing = editor.isEditing
 
   return (
     <Box sx={{ width: '100%', p: 3.5 }}>
@@ -164,7 +89,7 @@ export function PublicProfileEditorPage() {
               variant="outlined"
               color="secondary"
               startIcon={<VisibilityOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-              onClick={() => setIsPreviewOpen(true)}
+              onClick={editor.openPreview}
               sx={{
                 borderColor: alpha.graphite[8],
                 '&:hover': {
@@ -182,7 +107,7 @@ export function PublicProfileEditorPage() {
                 type="submit"
                 form="broker-public-profile-editor-form"
                 startIcon={<SaveOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-                disabled={saveProfile.isPending}
+                disabled={editor.isSaving}
               >
                 {t('actions.save')}
               </DashboardHeaderActionButton>
@@ -190,7 +115,7 @@ export function PublicProfileEditorPage() {
               <DashboardHeaderActionButton
                 key="edit-button"
                 type="button"
-                onClick={() => setIsEditing(true)}
+                onClick={editor.startEditing}
                 startIcon={<SaveOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
               >
                 {t('actions.edit')}
@@ -199,11 +124,11 @@ export function PublicProfileEditorPage() {
             {profile ? (
               <DashboardHeaderActionButton
                 variant="outlined"
-                color={profile.status === 'PUBLISHED' ? 'error' : 'success'}
-                onClick={handlePublishToggle}
-                disabled={publishProfile.isPending || unpublishProfile.isPending}
+                color={editor.isPublished ? 'error' : 'success'}
+                onClick={editor.togglePublished}
+                disabled={editor.isTogglingPublished}
               >
-                {profile.status === 'PUBLISHED' ? t('actions.unpublish') : t('actions.publish')}
+                {editor.isPublished ? t('actions.unpublish') : t('actions.publish')}
               </DashboardHeaderActionButton>
             ) : null}
             <Box sx={{ display: { xs: 'none', md: 'block' } }}>
@@ -218,7 +143,7 @@ export function PublicProfileEditorPage() {
         id="broker-public-profile-editor-form"
         component="form"
         noValidate
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={editor.submit}
         sx={{ width: '100%' }}
       >
         <Box
@@ -381,10 +306,16 @@ export function PublicProfileEditorPage() {
         </Box>
       </Box>
 
-      <Dialog open={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} maxWidth="lg" fullWidth>
+      <Dialog open={editor.isPreviewOpen} onClose={editor.closePreview} maxWidth="lg" fullWidth>
         <DialogContent sx={{ p: 0 }}>
           <BrokerPublicProfilePage
-            broker={toPreviewProfile(draft, profile ?? null, locale, tFeatures, t('previewName'))}
+            broker={toPreviewProfile(
+              editor.draft,
+              profile ?? null,
+              locale,
+              tFeatures,
+              t('previewName'),
+            )}
           />
         </DialogContent>
       </Dialog>

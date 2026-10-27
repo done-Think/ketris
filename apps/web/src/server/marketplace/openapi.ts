@@ -16,6 +16,7 @@ import {
   saveBrokerProfileRequestSchema,
 } from './schemas/broker-profile.schema'
 import { getPropertyResponseSchema } from './schemas/get-property.schema'
+import { listPublicProfilesQuerySchema } from './schemas/profile-directory.schema'
 import {
   profileMediaBinarySchema,
   profileMediaKeyParamsSchema,
@@ -135,10 +136,13 @@ export function registerMarketplaceOpenApi(registry: OpenAPIRegistry): void {
     summary: 'Lista imobiliárias com perfil público publicado',
     description:
       'Rota pública, sem autenticação. Retorna todas as imobiliárias de todos os ' +
-      'tenants com perfil público no status PUBLISHED.',
+      'tenants com perfil público no status PUBLISHED, paginados (page, padrão 1; pageSize, ' +
+      'padrão 12 e máximo 50). q busca, sem diferenciar acentos e maiúsculas, no nome, CRECI e ' +
+      'demais textos do perfil; totalCount traz o total encontrado.',
+    request: { query: listPublicProfilesQuerySchema },
     responses: {
       200: {
-        description: 'Lista de perfis públicos de imobiliárias.',
+        description: 'Página de perfis públicos de imobiliárias.',
         content: { 'application/json': { schema: listAgenciesResponseSchema } },
       },
     },
@@ -172,10 +176,13 @@ export function registerMarketplaceOpenApi(registry: OpenAPIRegistry): void {
     summary: 'Lista corretores com perfil público publicado',
     description:
       'Rota pública, sem autenticação. Retorna todos os corretores de todos os ' +
-      'tenants com perfil público no status PUBLISHED.',
+      'tenants com perfil público no status PUBLISHED, paginados (page, padrão 1; pageSize, ' +
+      'padrão 12 e máximo 50). q busca, sem diferenciar acentos e maiúsculas, no nome, CRECI e ' +
+      'demais textos do perfil; totalCount traz o total encontrado.',
+    request: { query: listPublicProfilesQuerySchema },
     responses: {
       200: {
-        description: 'Lista de perfis públicos de corretores.',
+        description: 'Página de perfis públicos de corretores.',
         content: { 'application/json': { schema: listBrokersResponseSchema } },
       },
     },

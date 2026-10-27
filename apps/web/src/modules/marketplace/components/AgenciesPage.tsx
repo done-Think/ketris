@@ -8,9 +8,8 @@ import { SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
 import { useAgencyProfiles } from '../hooks/use-agency-profile'
-import { useDirectoryList } from '../hooks/use-directory-list'
+import { useDirectorySearch, useLoadMoreOnScroll } from '../hooks/use-directory-list'
 import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
-import type { AgencyProfile } from '../types/agency'
 import { toAgencyProfile } from '../utils/agency-profile-adapter'
 import { useViewModePreference } from '../hooks/use-view-mode-preference'
 import { AgencyCard } from './AgencyCard'
@@ -20,15 +19,6 @@ import { DirectoryViewModeToggle } from './directory/DirectoryViewModeToggle'
 import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 import { MarketplaceHeader } from './MarketplaceHeader'
 
-const initialAgencyCount = 4
-const agencyPageSize = 3
-
-function getAgencySearchableText(agency: AgencyProfile) {
-  return `${agency.name} ${agency.legalCreci ?? ''} ${agency.headquarters ?? ''} ${agency.coverage.join(
-    ' ',
-  )} ${agency.segments.join(' ')}`
-}
-
 export function AgenciesPage() {
   const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace')
@@ -36,22 +26,15 @@ export function AgenciesPage() {
   const directoryT = useTranslations('marketplace.directory.agencies')
   const { footerColumns, legalLinks } = useMarketplaceNavigation()
   const { setViewMode, viewMode } = useViewModePreference('agencies')
-  const { data: agencyProfiles } = useAgencyProfiles()
-  const agencies = (agencyProfiles ?? []).map((profile) =>
-    toAgencyProfile(profile, locale, tFeatures),
+  const { register, search } = useDirectorySearch()
+  const agenciesQuery = useAgencyProfiles(search)
+  const agencies = (agenciesQuery.data?.pages ?? []).flatMap((page) =>
+    page.agencies.map((profile) => toAgencyProfile(profile, locale, tFeatures)),
   )
-  const {
-    filteredItems: filteredAgencies,
-    hasMoreItems: hasMoreAgencies,
-    isLoadingMore,
-    loadMoreRef,
-    register,
-    visibleItems: visibleAgencies,
-  } = useDirectoryList({
-    getSearchableText: getAgencySearchableText,
-    initialCount: initialAgencyCount,
-    items: agencies,
-    pageSize: agencyPageSize,
+  const totalCount = agenciesQuery.data?.pages[0]?.totalCount ?? 0
+  const loadMoreRef = useLoadMoreOnScroll({
+    enabled: agenciesQuery.hasNextPage && !agenciesQuery.isFetchingNextPage,
+    onLoadMore: () => void agenciesQuery.fetchNextPage(),
   })
 
   return (
@@ -80,8 +63,8 @@ export function AgenciesPage() {
             actions={<DirectoryViewModeToggle value={viewMode} onChange={setViewMode} />}
             placeholder={directoryT('placeholder')}
             resultCountLabel={directoryT('resultCount', {
-              visible: visibleAgencies.length,
-              total: filteredAgencies.length,
+              visible: agencies.length,
+              total: totalCount,
             })}
             searchInputProps={register('searchQuery')}
             title={directoryT('title')}
@@ -98,16 +81,16 @@ export function AgenciesPage() {
               gap: { xs: 2, xl: 2.5 },
             }}
           >
-            {visibleAgencies.map((agency) => (
+            {agencies.map((agency) => (
               <AgencyCard key={agency.id} {...agency} viewMode={viewMode} />
             ))}
           </Box>
 
           <DirectoryLoadMoreStatus
             emptyLabel={directoryT('empty')}
-            hasItems={Boolean(filteredAgencies.length)}
-            hasMoreItems={hasMoreAgencies}
-            isLoadingMore={isLoadingMore}
+            hasItems={agencies.length > 0}
+            hasMoreItems={Boolean(agenciesQuery.hasNextPage)}
+            isLoadingMore={agenciesQuery.isFetchingNextPage}
             loadedLabel={directoryT('loaded')}
             loadingLabel={directoryT('loading')}
             loadMoreRef={loadMoreRef}

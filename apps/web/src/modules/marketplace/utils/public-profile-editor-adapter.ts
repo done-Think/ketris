@@ -2,7 +2,7 @@ import type { BrokerProfile } from '../types/broker'
 import type { PublicProfileEditorFormValues } from '../types/profile-editor'
 import type { PublicBrokerProfile } from '../types/public-broker-profile'
 import type { AppLocale } from '@/i18n/types/locale.types'
-import type { PropertyText } from './property-presentation'
+import type { PropertyText } from '../types/search'
 import { formatCompactCurrency } from './search-results'
 
 export const emptyValues: PublicProfileEditorFormValues = {

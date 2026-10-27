@@ -1,13 +1,18 @@
+'use client'
+
 import { Box, Container, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { componentText, surface } from '@shared/theme/tokens'
 
-import { miniProperties } from '../data/mini-properties'
+import { useMiniProperties } from '../hooks/use-mini-properties'
 import { MiniPropertyCard } from './MiniPropertyCard'
 
 export function MiniPropertiesSection() {
   const t = useTranslations('marketplace.home.miniProperties')
+  const { miniProperties, isLoading, isError } = useMiniProperties()
+
+  if (isLoading || isError || miniProperties.length === 0) return null
 
   return (
     <Box
@@ -44,7 +49,7 @@ export function MiniPropertiesSection() {
           }}
         >
           {miniProperties.map((property) => (
-            <MiniPropertyCard key={property.title} property={property} />
+            <MiniPropertyCard key={property.id} property={property} />
           ))}
         </Box>
       </Container>

@@ -8,9 +8,8 @@ import { SiteFooter } from '@shared/components/layout'
 import { surface } from '@shared/theme/tokens'
 
 import { useBrokerProfiles } from '../hooks/use-broker-profile'
-import { useDirectoryList } from '../hooks/use-directory-list'
+import { useDirectorySearch, useLoadMoreOnScroll } from '../hooks/use-directory-list'
 import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
-import type { BrokerProfile } from '../types/broker'
 import { toBrokerProfile } from '../utils/broker-profile-adapter'
 import { useViewModePreference } from '../hooks/use-view-mode-preference'
 import { BrokerCard } from './BrokerCard'
@@ -20,15 +19,6 @@ import { DirectoryViewModeToggle } from './directory/DirectoryViewModeToggle'
 import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 import { MarketplaceHeader } from './MarketplaceHeader'
 
-const initialBrokerCount = 4
-const brokerPageSize = 3
-
-function getBrokerSearchableText(broker: BrokerProfile) {
-  return `${broker.name} ${broker.creci} ${broker.region} ${broker.neighborhoods.join(
-    ' ',
-  )} ${broker.specialties.join(' ')}`
-}
-
 export function BrokersPage() {
   const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace')
@@ -36,22 +26,15 @@ export function BrokersPage() {
   const directoryT = useTranslations('marketplace.directory.brokers')
   const { footerColumns, legalLinks } = useMarketplaceNavigation()
   const { setViewMode, viewMode } = useViewModePreference('brokers')
-  const { data: brokerProfiles } = useBrokerProfiles()
-  const brokers = (brokerProfiles ?? []).map((profile) =>
-    toBrokerProfile(profile, locale, tFeatures),
+  const { register, search } = useDirectorySearch()
+  const brokersQuery = useBrokerProfiles(search)
+  const brokers = (brokersQuery.data?.pages ?? []).flatMap((page) =>
+    page.brokers.map((profile) => toBrokerProfile(profile, locale, tFeatures)),
   )
-  const {
-    filteredItems: filteredBrokers,
-    hasMoreItems: hasMoreBrokers,
-    isLoadingMore,
-    loadMoreRef,
-    register,
-    visibleItems: visibleBrokers,
-  } = useDirectoryList({
-    getSearchableText: getBrokerSearchableText,
-    initialCount: initialBrokerCount,
-    items: brokers,
-    pageSize: brokerPageSize,
+  const totalCount = brokersQuery.data?.pages[0]?.totalCount ?? 0
+  const loadMoreRef = useLoadMoreOnScroll({
+    enabled: brokersQuery.hasNextPage && !brokersQuery.isFetchingNextPage,
+    onLoadMore: () => void brokersQuery.fetchNextPage(),
   })
 
   return (
@@ -77,8 +60,8 @@ export function BrokersPage() {
             actions={<DirectoryViewModeToggle value={viewMode} onChange={setViewMode} />}
             placeholder={directoryT('placeholder')}
             resultCountLabel={directoryT('resultCount', {
-              visible: visibleBrokers.length,
-              total: filteredBrokers.length,
+              visible: brokers.length,
+              total: totalCount,
             })}
             searchInputProps={register('searchQuery')}
             title={directoryT('title')}
@@ -95,16 +78,16 @@ export function BrokersPage() {
               gap: { xs: 2, xl: 2.5 },
             }}
           >
-            {visibleBrokers.map((broker) => (
+            {brokers.map((broker) => (
               <BrokerCard key={broker.id} {...broker} viewMode={viewMode} />
             ))}
           </Box>
 
           <DirectoryLoadMoreStatus
             emptyLabel={directoryT('empty')}
-            hasItems={Boolean(filteredBrokers.length)}
-            hasMoreItems={hasMoreBrokers}
-            isLoadingMore={isLoadingMore}
+            hasItems={brokers.length > 0}
+            hasMoreItems={Boolean(brokersQuery.hasNextPage)}
+            isLoadingMore={brokersQuery.isFetchingNextPage}
             loadedLabel={directoryT('loaded')}
             loadingLabel={directoryT('loading')}
             loadMoreRef={loadMoreRef}

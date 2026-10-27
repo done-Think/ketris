@@ -42,21 +42,27 @@ function createRepository(listPublished: BrokerProfileRepository['listPublished'
 }
 
 describe('ListBrokerProfilesUseCase', () => {
-  it('lista os corretores publicados sem expor o tenantId', async () => {
+  it('lista os corretores publicados da página sem expor o tenantId', async () => {
     const other = { ...profile, id: 'usuario-2', tenantId: 'tenant-2', displayName: 'João' }
-    const useCase = new ListBrokerProfilesUseCase(
-      createRepository(vi.fn().mockResolvedValue([profile, other])),
-    )
+    const listPublished = vi.fn().mockResolvedValue({ items: [profile, other], totalCount: 9 })
+    const useCase = new ListBrokerProfilesUseCase(createRepository(listPublished))
 
-    const result = await useCase.execute()
+    const result = await useCase.execute({ q: 'jardins', page: 1, pageSize: 2 })
 
-    expect(result.map((broker) => broker.id)).toEqual(['usuario-1', 'usuario-2'])
-    for (const broker of result) expect(broker).not.toHaveProperty('tenantId')
+    expect(listPublished).toHaveBeenCalledWith({ q: 'jardins' }, { page: 1, pageSize: 2 })
+    expect(result).toMatchObject({ totalCount: 9, page: 1, pageSize: 2 })
+    expect(result.items.map((broker) => broker.id)).toEqual(['usuario-1', 'usuario-2'])
+    for (const broker of result.items) expect(broker).not.toHaveProperty('tenantId')
   })
 
-  it('retorna lista vazia quando não há corretores publicados', async () => {
-    const useCase = new ListBrokerProfilesUseCase(createRepository(vi.fn().mockResolvedValue([])))
+  it('retorna página vazia quando não há corretores publicados', async () => {
+    const useCase = new ListBrokerProfilesUseCase(
+      createRepository(vi.fn().mockResolvedValue({ items: [], totalCount: 0 })),
+    )
 
-    await expect(useCase.execute()).resolves.toEqual([])
+    await expect(useCase.execute({ page: 1, pageSize: 12 })).resolves.toMatchObject({
+      items: [],
+      totalCount: 0,
+    })
   })
 })

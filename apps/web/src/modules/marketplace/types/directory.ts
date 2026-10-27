@@ -4,25 +4,29 @@ import type { UseFormRegister } from 'react-hook-form'
 import type { ViewMode } from './search'
 
 export type DirectorySearchFormValues = {
-  isLoadingMore: boolean
   searchQuery: string
-  visibleCount: number
 }
 
-export type UseDirectoryListParams<TItem> = {
-  items: TItem[]
-  initialCount: number
+export type DirectoryListParams = {
+  q?: string
+  page: number
   pageSize: number
-  getSearchableText: (item: TItem) => string
 }
 
-export type UseDirectoryListResult<TItem> = {
-  filteredItems: TItem[]
-  hasMoreItems: boolean
-  isLoadingMore: boolean
-  loadMoreRef: RefObject<HTMLDivElement>
+export type DirectoryPage = {
+  totalCount: number
+  page: number
+  pageSize: number
+}
+
+export type UseDirectorySearchResult = {
   register: UseFormRegister<DirectorySearchFormValues>
-  visibleItems: TItem[]
+  search: string
+}
+
+export type UseLoadMoreOnScrollParams = {
+  enabled: boolean
+  onLoadMore: () => void
 }
 
 export type DirectoryPageHeaderProps = {
@@ -40,7 +44,7 @@ export type DirectoryLoadMoreStatusProps = {
   isLoadingMore: boolean
   loadedLabel: string
   loadingLabel: string
-  loadMoreRef: RefObject<HTMLDivElement>
+  loadMoreRef: RefObject<HTMLDivElement | null>
 }
 
 export type DirectoryViewModeToggleProps = {

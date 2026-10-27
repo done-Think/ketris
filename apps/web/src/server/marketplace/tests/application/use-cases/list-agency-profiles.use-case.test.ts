@@ -43,17 +43,27 @@ function createRepository(listPublished: AgencyProfileRepository['listPublished'
 }
 
 describe('ListAgencyProfilesUseCase', () => {
-  it('lista somente o que o repositório devolve como publicado', async () => {
-    const listPublished = vi.fn().mockResolvedValue([profile])
+  it('pede ao repositório a busca e a página e devolve o total encontrado', async () => {
+    const listPublished = vi.fn().mockResolvedValue({ items: [profile], totalCount: 7 })
     const useCase = new ListAgencyProfilesUseCase(createRepository(listPublished))
 
-    await expect(useCase.execute()).resolves.toEqual([profile])
-    expect(listPublished).toHaveBeenCalledTimes(1)
+    await expect(useCase.execute({ q: 'centro', page: 2, pageSize: 3 })).resolves.toEqual({
+      items: [profile],
+      totalCount: 7,
+      page: 2,
+      pageSize: 3,
+    })
+    expect(listPublished).toHaveBeenCalledWith({ q: 'centro' }, { page: 2, pageSize: 3 })
   })
 
-  it('retorna lista vazia quando não há imobiliárias publicadas', async () => {
-    const useCase = new ListAgencyProfilesUseCase(createRepository(vi.fn().mockResolvedValue([])))
+  it('retorna página vazia quando não há imobiliárias publicadas', async () => {
+    const useCase = new ListAgencyProfilesUseCase(
+      createRepository(vi.fn().mockResolvedValue({ items: [], totalCount: 0 })),
+    )
 
-    await expect(useCase.execute()).resolves.toEqual([])
+    await expect(useCase.execute({ page: 1, pageSize: 12 })).resolves.toMatchObject({
+      items: [],
+      totalCount: 0,
+    })
   })
 })

@@ -1,6 +1,8 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
+import { profileDirectoryPageSchema } from './profile-directory.schema'
+
 const optionalTextSchema = z.string().trim().min(1).nullable().optional()
 const colorSchema = z
   .string()
@@ -67,7 +69,7 @@ export const publicBrokerProfileSchema = z
   .openapi('PublicBrokerProfile')
 
 export const listBrokersResponseSchema = z
-  .object({ brokers: z.array(publicBrokerProfileSchema) })
+  .object({ brokers: z.array(publicBrokerProfileSchema), ...profileDirectoryPageSchema })
   .openapi('ListBrokersResponse')
 
 export const getBrokerProfileResponseSchema = z
