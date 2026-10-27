@@ -1,4 +1,3 @@
-// Same rule as the server: base price plus each unit above the included ones, in cents.
 export function calculateMonthlyTotal(
   monthlyPrice: number,
   includedUnits: number,

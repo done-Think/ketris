@@ -2,10 +2,7 @@ import { BrokerProfileNotFoundError } from '../../domain/errors'
 import { toPublicBrokerProfile } from '../../domain/broker-profile.entity'
 import type { PublicBrokerProfile } from '../../types/broker-profile'
 import type { BrokerProfileRepository } from '../ports/broker-profile-repository.port'
-
-export interface GetBrokerProfileInput {
-  id: string
-}
+import type { GetBrokerProfileInput } from '../../types/use-case-inputs'
 
 export class GetBrokerProfileUseCase {
   constructor(private readonly brokerProfileRepository: BrokerProfileRepository) {}

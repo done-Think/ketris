@@ -3,7 +3,7 @@ import es from '@/i18n/messages/es-ES/dashboard.json'
 import pt from '@/i18n/messages/pt-BR/dashboard.json'
 import { Prisma } from '@prisma/client'
 import { isAgencyManager } from '@server/auth/domain/roles'
-import { maintenanceCategoryKeys } from '../constants/maintenance-categories'
+import { maintenanceCategoryKeys } from '@shared/lib/utils/maintenance-categories'
 import type { MaintenanceTicketListFilters } from '../types/maintenance-ticket'
 
 const dictionaries = {
@@ -54,7 +54,7 @@ export function maintenanceListQuery(filters: MaintenanceTicketListFilters) {
   const filtered = [...conditions]
   if (filters.status) filtered.push(Prisma.sql`c.status::text = ${filters.status}`)
   if (filters.priority) filtered.push(Prisma.sql`c.prioridade::text = ${filters.priority}`)
-  if (filters.category) filtered.push(Prisma.sql`c.categoria = ${filters.category}`)
+  if (filters.category) filtered.push(Prisma.sql`c.categoria::text = ${filters.category}`)
   if (filters.propertyId) filtered.push(Prisma.sql`c."imovelId" = ${filters.propertyId}`)
   if (filters.search?.trim()) {
     const term = '%' + normalized(filters.search.trim()).replace(/[\\%_]/g, '\\$&') + '%'
@@ -64,11 +64,10 @@ export function maintenanceListQuery(filters: MaintenanceTicketListFilters) {
       .map(([code]) => code)
     const matches = [
       Prisma.sql`${normalizedSql(Prisma.sql`c.titulo`)} LIKE ${term}`,
-      Prisma.sql`${normalizedSql(Prisma.sql`c.categoria`)} LIKE ${term}`,
       Prisma.sql`${normalizedSql(Prisma.sql`i.titulo`)} LIKE ${term}`,
     ]
     if (matchingCategories.length)
-      matches.push(Prisma.sql`c.categoria IN (${Prisma.join(matchingCategories)})`)
+      matches.push(Prisma.sql`c.categoria::text IN (${Prisma.join(matchingCategories)})`)
     filtered.push(Prisma.sql`(${Prisma.join(matches, ' OR ')})`)
   }
   return {

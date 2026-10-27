@@ -8,7 +8,7 @@ import { PlatformSystemPage } from '../../components/PlatformSystemPage'
 import type { ApiSystemHealth } from '../../types/platform-system'
 
 const { useSystemHealth } = vi.hoisted(() => ({ useSystemHealth: vi.fn() }))
-vi.mock('../../hooks/use-system-health', () => ({ useSystemHealth }))
+vi.mock('../../hooks/use-platform-overview', () => ({ useSystemHealth }))
 
 const healthy: ApiSystemHealth = {
   checkedAt: '2026-10-15T12:00:05.000Z',

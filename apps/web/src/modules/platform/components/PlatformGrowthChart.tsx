@@ -5,9 +5,10 @@ import type { Theme } from '@mui/material/styles'
 import { LineChart } from '@mui/x-charts/LineChart'
 import { useTranslations } from 'next-intl'
 
-import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
+import { brand } from '@shared/theme/tokens'
 
 import type { GrowthTrendPoint } from '../types/platform-overview'
+import { styles, getLineChartStyles } from '../styles/platform-growth-chart.styles'
 
 export function PlatformGrowthChart({ trend }: { trend: readonly GrowthTrendPoint[] }) {
   const t = useTranslations('platform.overview')
@@ -15,11 +16,11 @@ export function PlatformGrowthChart({ trend }: { trend: readonly GrowthTrendPoin
   const chartHeight = isMobile ? 270 : 300
 
   return (
-    <Box component="section" aria-labelledby="growth-trends-title" sx={panelSx}>
-      <Typography id="growth-trends-title" sx={titleSx}>
+    <Box component="section" aria-labelledby="growth-trends-title" sx={styles.panel}>
+      <Typography id="growth-trends-title" sx={styles.title}>
         {t('growth.title')}
       </Typography>
-      <Box sx={{ height: { xs: 270, sm: 300, lg: 340 }, width: '100%' }}>
+      <Box sx={styles.box}>
         <LineChart
           dataset={[...trend]}
           xAxis={[
@@ -55,34 +56,9 @@ export function PlatformGrowthChart({ trend }: { trend: readonly GrowthTrendPoin
               labelStyle: { fontSize: 12, fill: brand.neutral[500] },
             },
           }}
-          sx={{
-            '& .MuiChartsAxis-left': { display: 'none' },
-            '& .MuiChartsAxis-bottom .MuiChartsAxis-tickLabel': {
-              fill: brand.neutral[500],
-              fontSize: isMobile ? 10 : 12,
-            },
-            '& .MuiChartsGrid-line': { stroke: alpha.graphite[8] },
-          }}
+          sx={getLineChartStyles({ isMobile })}
         />
       </Box>
     </Box>
   )
-}
-
-const panelSx = {
-  bgcolor: surface.paper,
-  border: '1px solid',
-  borderColor: alpha.graphite[6],
-  borderRadius: `${radius.sm}px`,
-  boxShadow: shadows.propertyCard,
-  minWidth: 0,
-  minHeight: { lg: 400 },
-  p: { xs: 2, md: 2.4 },
-}
-const titleSx = {
-  color: brand.neutral[500],
-  fontSize: 11,
-  fontWeight: 900,
-  mb: 1,
-  textTransform: 'uppercase',
 }

@@ -2,10 +2,9 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
-import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { marketplaceContainer } from '@server/marketplace/container'
-import type { ProfileMediaTarget } from '@server/marketplace/application/use-cases/upload-profile-media.use-case'
+import type { ProfileMediaTarget } from '@server/marketplace/types/use-case-inputs'
 import { RequestValidationError, withErrorHandling } from '@server/shared/http'
 
 const validTargets = new Set<ProfileMediaTarget>([
@@ -40,7 +39,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const media = await marketplaceContainer.uploadProfileMediaUseCase.execute({
     actorId: actor.sub,
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel as Papel,
+    actorPapel: actor.papel,
     target,
     filename: file.name,
     contentType: file.type,

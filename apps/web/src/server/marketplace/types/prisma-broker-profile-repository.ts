@@ -1,5 +1,3 @@
-export type DecimalLike = { toNumber(): number }
-
 export type UsuarioWithPerfilRow = {
   id: string
   tenantId: string

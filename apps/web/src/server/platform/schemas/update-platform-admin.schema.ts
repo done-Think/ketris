@@ -5,11 +5,12 @@ import { authenticatedPlatformAdminSchema } from './platform-admin.schema'
 
 export const updatePlatformAdminRequestSchema = z
   .object({
-    name: z.string().min(1, 'Nome é obrigatório.').optional(),
-    email: z.string().email('E-mail inválido.').optional(),
+    name: z.string().trim().min(1, 'Nome é obrigatório.').max(120, 'Nome muito longo.').optional(),
+    email: z.string().trim().max(254, 'E-mail inválido.').email('E-mail inválido.').optional(),
     role: z.enum(['ADMIN', 'ADMIN_AGENT', 'AGENT']).optional(),
     active: z.literal(true).optional(),
   })
+  .strict()
   .refine(
     (data) =>
       data.name !== undefined ||
@@ -21,8 +22,6 @@ export const updatePlatformAdminRequestSchema = z
     },
   )
   .openapi('UpdatePlatformAdminRequest')
-
-export type UpdatePlatformAdminRequestDTO = z.infer<typeof updatePlatformAdminRequestSchema>
 
 export const updatePlatformAdminResponseSchema = z
   .object({

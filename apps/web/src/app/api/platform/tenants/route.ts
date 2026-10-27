@@ -4,20 +4,34 @@ import { NextResponse } from 'next/server'
 import { platformContainer } from '@server/platform/container'
 import { toPlatformTenantResponse } from '@server/platform/domain/platform-tenant.entity'
 import { toTenantSummaryResponse } from '@server/platform/domain/tenant-summary.entity'
+import {
+  PLATFORM_MANAGER_ROLES,
+  requirePlatformAdminRole,
+} from '@server/platform/require-platform-admin-role'
 import { requirePlatformBearerAuth } from '@server/platform/require-platform-bearer-auth'
 import { createTenantRequestSchema } from '@server/platform/schemas/create-tenant.schema'
-import { parseJsonBody, withErrorHandling } from '@server/shared/http'
+import { listTenantsQuerySchema } from '@server/platform/schemas/list-tenants.schema'
+import { parseJsonBody, parseQuery, withErrorHandling } from '@server/shared/http'
 
 export const GET = withErrorHandling(async (request: NextRequest) => {
   await requirePlatformBearerAuth(request, platformContainer.tokenService)
 
-  const tenants = await platformContainer.listTenantsUseCase.execute()
+  const query = parseQuery(request, listTenantsQuerySchema)
+  const { items, ...page } = await platformContainer.listTenantsUseCase.execute(query)
 
-  return NextResponse.json({ tenants: tenants.map(toPlatformTenantResponse) }, { status: 200 })
+  return NextResponse.json(
+    { tenants: items.map(toPlatformTenantResponse), ...page },
+    { status: 200 },
+  )
 })
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
-  await requirePlatformBearerAuth(request, platformContainer.tokenService)
+  await requirePlatformAdminRole(
+    request,
+    platformContainer.tokenService,
+    platformContainer.platformAdminRepository,
+    PLATFORM_MANAGER_ROLES,
+  )
   const body = await parseJsonBody(request, createTenantRequestSchema)
 
   const tenant = await platformContainer.createTenantUseCase.execute({

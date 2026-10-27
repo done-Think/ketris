@@ -9,6 +9,9 @@ export function useListState<TFilters>(initialFilters: TFilters): ListState<TFil
   const setFilter = useCallback(<TKey extends keyof TFilters>(key: TKey, value: TFilters[TKey]) => {
     setFilters((current) => ({ ...current, [key]: value }))
   }, [])
+  const updateFilters = useCallback((changes: Partial<TFilters>) => {
+    setFilters((current) => ({ ...current, ...changes }))
+  }, [])
 
-  return { filters, setFilter }
+  return { filters, setFilter, updateFilters }
 }

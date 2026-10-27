@@ -19,11 +19,9 @@ import { Controller, useForm } from 'react-hook-form'
 import { useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 import { useSnackbar } from 'notistack'
-
-import { iconSize } from '@shared/theme/tokens'
 import { extractErrorMessage } from '@shared/utils/error-message'
 
-import { useUpdateTenantAccount } from '../hooks/use-update-tenant-account'
+import { useUpdateTenantAccount } from '../hooks/use-tenants'
 import { createTenantAccountSchema } from '../schemas/tenant-account-schema'
 import {
   TENANT_ACCOUNT_TYPES,
@@ -31,6 +29,7 @@ import {
   type EditTenantAccountDialogProps,
   type TenantAccountFormValues,
 } from '../types/tenant'
+import { styles } from '../styles/edit-tenant-account-dialog.styles'
 
 export function EditTenantAccountDialog({ tenant, onClose }: EditTenantAccountDialogProps) {
   const t = useTranslations('platform.account')
@@ -45,11 +44,14 @@ export function EditTenantAccountDialog({ tenant, onClose }: EditTenantAccountDi
 
   async function onSubmit(values: TenantAccountFormValues) {
     try {
-      await updateAccount.mutateAsync({ tenantId: tenant.id, ...values })
+      await updateAccount.mutateAsync({
+        tenantId: tenant.id,
+        accountType: values.accountType,
+        status: values.status,
+      })
       enqueueSnackbar(t('updateSuccess'), { variant: 'success' })
       onClose()
     } catch (error) {
-      // Server messages are in Portuguese: show the translated text for the known codes.
       enqueueSnackbar(
         extractErrorMessage(error, t('updateError'), {
           FORBIDDEN: t('errors.forbidden'),
@@ -64,27 +66,23 @@ export function EditTenantAccountDialog({ tenant, onClose }: EditTenantAccountDi
   return (
     <Dialog open onClose={() => !updateAccount.isPending && onClose()} fullWidth maxWidth="sm">
       <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-        <DialogTitle sx={{ px: { xs: 2, md: 2.8 }, pb: 1.4, pt: 2.4 }}>
+        <DialogTitle sx={styles.dialogTitle}>
           <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
             <Box>
-              <Typography sx={{ color: 'text.primary', fontSize: 24, fontWeight: 900 }}>
-                {t('editTitle')}
-              </Typography>
-              <Typography sx={{ color: 'text.secondary', fontSize: 14, mt: 0.5 }}>
-                {tenant.name}
-              </Typography>
+              <Typography sx={styles.typography}>{t('editTitle')}</Typography>
+              <Typography sx={styles.typography2}>{tenant.name}</Typography>
             </Box>
             <IconButton
               aria-label={t('closeEditDialog')}
               onClick={onClose}
               disabled={updateAccount.isPending}
             >
-              <CloseRoundedIcon sx={{ fontSize: iconSize.lg }} />
+              <CloseRoundedIcon sx={styles.closeRoundedIcon} />
             </IconButton>
           </Stack>
         </DialogTitle>
-        <DialogContent sx={{ px: { xs: 2, md: 2.8 }, pb: 2 }}>
-          <Stack spacing={2} sx={{ pt: 1 }}>
+        <DialogContent sx={styles.dialogContent}>
+          <Stack spacing={2} sx={styles.stack}>
             <Controller
               control={control}
               name="accountType"
@@ -129,7 +127,7 @@ export function EditTenantAccountDialog({ tenant, onClose }: EditTenantAccountDi
             />
           </Stack>
         </DialogContent>
-        <DialogActions sx={{ px: { xs: 2, md: 2.8 }, pb: 2.5, pt: 0 }}>
+        <DialogActions sx={styles.dialogActions}>
           <Button
             type="button"
             variant="outlined"

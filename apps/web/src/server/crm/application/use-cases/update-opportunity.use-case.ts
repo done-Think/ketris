@@ -16,17 +16,15 @@ import {
 } from '../../domain/errors'
 import { canTransition } from '../../domain/opportunity-status'
 import type { Opportunity } from '../../domain/opportunity.entity'
-import { assertAgentOwnsProperty, assertCrmAccess } from '../authorization'
+import { assertOpportunityAccess, assertCrmAccess } from '../authorization'
 import type { ActivityRepository } from '../ports/activity-repository.port'
 import type { ContactRepository } from '../ports/contact-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
-import type { PropertyLookupPort } from '../ports/property-lookup.port'
 
 export class UpdateOpportunityUseCase {
   constructor(
     private readonly opportunityRepository: OpportunityRepository,
     private readonly activityRepository: ActivityRepository,
-    private readonly propertyLookup: PropertyLookupPort,
     private readonly contactRepository: ContactRepository,
   ) {}
 
@@ -38,13 +36,7 @@ export class UpdateOpportunityUseCase {
       throw new OpportunityNotFoundError()
     }
 
-    await assertAgentOwnsProperty(
-      this.propertyLookup,
-      input.actorTenantId,
-      current.propertyId,
-      input.actorId ?? '',
-      input.actorPapel,
-    )
+    assertOpportunityAccess(current, input.actorId ?? '', input.actorPapel)
 
     const nextStatus = input.changes.status
 

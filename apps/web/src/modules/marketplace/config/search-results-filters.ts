@@ -1,11 +1,3 @@
-export const propertyTypeFilterOptions = [
-  'Todos os tipos',
-  'Apartamento',
-  'Cobertura',
-  'Loft',
-  'Casa',
-] as const
-
 export const priceFilterOptions = [
   { label: 'price', max: null },
   { label: 'upTo6000', max: 6000 },
@@ -24,7 +16,4 @@ export const areaFilterOptions = [
   { label: 'area100Plus', min: 100 },
 ] as const
 
-export const moreFilterOptions = [
-  { label: 'all', onlyWithParking: false },
-  { label: 'withParking', onlyWithParking: true },
-] as const
+export const searchResultsPageSize = 10

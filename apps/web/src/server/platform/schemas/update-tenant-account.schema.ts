@@ -8,9 +8,8 @@ export const updateTenantAccountRequestSchema = z
     accountType: tenantAccountTypeSchema,
     status: tenantStatusSchema,
   })
+  .strict()
   .openapi('UpdateTenantAccountRequest')
-
-export type UpdateTenantAccountRequestDTO = z.infer<typeof updateTenantAccountRequestSchema>
 
 export const updateTenantAccountResponseSchema = z
   .object({

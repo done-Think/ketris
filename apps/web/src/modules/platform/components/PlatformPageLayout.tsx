@@ -5,9 +5,9 @@ import { Box, Container, Stack } from '@mui/material'
 
 import { Link } from '@/i18n/navigation'
 import { DashboardPageHeader } from '@shared/components/layout'
-import { brand, iconSize } from '@shared/theme/tokens'
 
 import type { PlatformPageLayoutProps } from '../types/platform-shell'
+import { styles } from '../styles/platform-page-layout.styles'
 
 export function PlatformPageLayout({
   title,
@@ -17,25 +17,11 @@ export function PlatformPageLayout({
   children,
 }: PlatformPageLayoutProps) {
   return (
-    <Container maxWidth={false} sx={{ p: 3.5 }}>
+    <Container maxWidth={false} sx={styles.container}>
       <Stack spacing={2}>
         {back ? (
-          <Box
-            component={Link}
-            href={back.href}
-            sx={{
-              alignSelf: 'flex-start',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 0.6,
-              color: brand.neutral[500],
-              fontSize: 13,
-              fontWeight: 700,
-              textDecoration: 'none',
-              '&:hover': { color: brand.magenta[500] },
-            }}
-          >
-            <ArrowBackRoundedIcon sx={{ fontSize: iconSize.md }} />
+          <Box component={Link} href={back.href} sx={styles.box}>
+            <ArrowBackRoundedIcon sx={styles.arrowBackRoundedIcon} />
             {back.label}
           </Box>
         ) : null}

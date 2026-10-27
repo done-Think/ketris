@@ -33,7 +33,7 @@ describe('Maintenance access', () => {
       contractId: contract.id,
       title: 'Leak',
       description: 'Details',
-      category: 'Plumbing',
+      category: 'PLUMBING',
       priority: 'NORMAL',
     })
     expect(repo.create).toHaveBeenCalledWith(
@@ -136,7 +136,7 @@ describe('Maintenance access', () => {
         ...user,
         contractId: contract.id,
         title: 'Leak',
-        category: 'Plumbing',
+        category: 'PLUMBING',
         description: 'Leak',
         priority: 'NORMAL',
       })
@@ -159,7 +159,7 @@ describe('Maintenance access', () => {
           ...input,
           contractId: contract.id,
           title: 'Leak',
-          category: 'Plumbing',
+          category: 'PLUMBING',
           description: 'Leak',
           priority: 'NORMAL',
         }),

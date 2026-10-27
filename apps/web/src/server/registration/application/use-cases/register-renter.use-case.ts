@@ -2,13 +2,13 @@ import {
   RegistrationEmailAlreadyInUseError,
   RenterTenantNotConfiguredError,
 } from '../../domain/errors'
-import { assertTermsAccepted, RENTER_TENANT_SLUG } from '../../domain/registration-policy'
+import { RENTER_TENANT_SLUG } from '@server/shared/domain/system-tenants'
+
+import { assertTermsAccepted } from '../../domain/registration-policy'
 import type { RegisterRenterInput } from '../../types/use-case-inputs'
 import type { RegisterRenterOutput } from '../../types/use-case-outputs'
 import type { RegistrationPasswordHasher } from '../ports/registration-password-hasher.port'
 import type { RegistrationRepository } from '../ports/registration-repository.port'
-
-export { RENTER_TENANT_SLUG } from '../../domain/registration-policy'
 
 export class RegisterRenterUseCase {
   constructor(

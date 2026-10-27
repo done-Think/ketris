@@ -43,7 +43,7 @@ describe('mapeadores do dashboard', () => {
         phone: '1',
         interest: 'Apto',
         budget: 'R$ 1',
-        source: 'Site',
+        source: 'SITE',
         stage: 'VISITA_MARCADA',
         notes: null,
         createdAt: '2026-10-20T12:00:00.000Z',

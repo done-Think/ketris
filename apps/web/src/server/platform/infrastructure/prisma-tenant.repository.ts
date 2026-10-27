@@ -1,7 +1,8 @@
 import { prisma } from '@server/db/prisma'
 
-import type { NewTenant, TenantRepository } from '../application/ports/tenant-repository.port'
-import type { TenantSummary } from '../domain/tenant-summary.entity'
+import type { TenantRepository } from '../application/ports/tenant-repository.port'
+import type { NewTenant } from '../types/tenant-repository'
+import type { TenantSummary } from '../types/tenant-summary'
 
 function toDomainTenantSummary(tenant: {
   id: string

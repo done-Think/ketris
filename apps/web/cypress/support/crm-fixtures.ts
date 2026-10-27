@@ -2,6 +2,7 @@ import type { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { getDatabaseUrl } from '../../src/server/db/database-url'
 import type { CrmEvidence, CrmFixtureInput, CrmFixtureResult } from '../types/crm-fixtures'
+import { propertyResponsibleId } from '../../src/server/shared/tests/fixtures/property-responsible'
 
 function assertLocalDatabase() {
   const url = new URL(getDatabaseUrl())
@@ -98,6 +99,7 @@ export async function seedCrmFixtures(
     data: {
       tenantId: foreignTenant.id,
       imovelId: foreignProperty.id,
+      responsavelId: await propertyResponsibleId(prisma, foreignProperty.id),
       interessadoNome: 'Pessoa de outra imobiliária',
       interessadoEmail: 'foreign-' + suffix + '@crm.test',
       valorProposto: 1800,
@@ -123,6 +125,7 @@ export async function seedCrmFixtures(
         data: {
           tenantId: tenant.id,
           imovelId: property.id,
+          responsavelId: await propertyResponsibleId(prisma, property.id),
           contatoId: contact.id,
           interessadoNome: contact.nome,
           interessadoEmail: contact.email,
@@ -140,6 +143,7 @@ export async function seedCrmFixtures(
             data: {
               tenantId: tenant.id,
               imovelId: linkedProperty.id,
+              responsavelId: await propertyResponsibleId(prisma, linkedProperty.id),
               contatoId: contact.id,
               interessadoNome: contact.nome,
               interessadoEmail: contact.email,
@@ -161,7 +165,7 @@ export async function seedCrmFixtures(
           email: 'lead-' + index + '-' + suffix + '@crm.test',
           interesse: 'Apartamento',
           orcamento: 'A combinar',
-          origem: 'Site',
+          origem: 'SITE',
           createdAt: new Date(Date.now() - index * 1000),
         },
       })

@@ -1,6 +1,8 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
+import { maintenanceCategories } from '@shared/lib/utils/maintenance-categories'
+
 export const maintenanceTicketStatusSchema = z.enum([
   'ABERTO',
   'EM_ANDAMENTO',
@@ -12,6 +14,8 @@ export const maintenanceTicketStatusSchema = z.enum([
 ])
 
 export const maintenanceTicketPrioritySchema = z.enum(['NORMAL', 'ALTA', 'URGENTE'])
+
+export const maintenanceCategorySchema = z.enum(maintenanceCategories)
 
 export const maintenanceActivityTypeSchema = z.enum([
   'NOTA',
@@ -57,7 +61,7 @@ const providerSchema = z.object({
 const replacementSchema = z.object({
   id: z.string(),
   reason: z.string(),
-  requestedById: z.string(),
+  requestedById: z.string().nullable(),
   requestedByName: z.string(),
   status: z.enum(['PENDENTE', 'APROVADA', 'REJEITADA']),
   decisionReason: z.string().nullable(),
@@ -104,12 +108,12 @@ export const maintenanceTicketSchema = z
     deletedAt: z.string().nullable(),
     replacementRequests: z.array(replacementSchema),
     permissions: maintenancePermissionsSchema,
-    category: z.string(),
+    category: maintenanceCategorySchema,
     priority: maintenanceTicketPrioritySchema,
     status: maintenanceTicketStatusSchema,
     title: z.string(),
     description: z.string(),
-    openedById: z.string(),
+    openedById: z.string().nullable(),
     openedByName: z.string(),
     resolvedAt: z.string().nullable(),
     createdAt: z.string(),
@@ -130,7 +134,7 @@ export const maintenanceTicketListItemSchema = z
     responsibleName: z.string().nullable(),
     deletedAt: z.string().nullable(),
     permissions: maintenancePermissionsSchema,
-    category: z.string(),
+    category: maintenanceCategorySchema,
     priority: maintenanceTicketPrioritySchema,
     status: maintenanceTicketStatusSchema,
     title: z.string(),

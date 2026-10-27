@@ -11,7 +11,7 @@ export class PrismaContractOpportunityCatalog implements ContractOpportunityCata
       status: 'ACEITA',
       arquivadaEm: null,
       contrato: { is: null },
-      ...(query.responsibleId ? { imovel: { responsavelId: query.responsibleId } } : {}),
+      ...(query.responsibleId ? { responsavelId: query.responsibleId } : {}),
       ...(search
         ? {
             OR: [

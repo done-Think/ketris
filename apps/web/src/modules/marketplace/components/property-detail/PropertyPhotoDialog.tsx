@@ -6,9 +6,8 @@ import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import { useTranslations } from 'next-intl'
 
-import { alpha, radius, surface } from '@shared/theme/tokens'
-
 import type { PropertyPhotoDialogProps } from '../../types/property-detail'
+import { styles, getBoxStyles } from '../../styles/property-photo-dialog.styles'
 
 export function PropertyPhotoDialog({
   activePhotoIndex,
@@ -32,103 +31,42 @@ export function PropertyPhotoDialog({
       }}
       slotProps={{
         paper: {
-          sx: {
-            bgcolor: surface.darkDeep,
-            color: surface.lightText,
-          },
+          sx: styles.paper,
         },
       }}
     >
-      <Box
-        sx={{
-          position: 'relative',
-          display: 'grid',
-          gridTemplateRows: 'auto minmax(0, 1fr) auto',
-          height: '100vh',
-          px: { xs: 1.5, md: 3 },
-          py: { xs: 1.5, md: 2.5 },
-        }}
-      >
+      <Box sx={styles.box}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
-          <Typography sx={{ fontSize: 13, fontWeight: 700 }}>
+          <Typography sx={styles.typography}>
             {t('photoCounter', { current: activePhotoIndex + 1, total: property.gallery.length })}
           </Typography>
-          <IconButton
-            aria-label={t('closeGallery')}
-            onClick={onClose}
-            sx={{ color: surface.lightText }}
-          >
+          <IconButton aria-label={t('closeGallery')} onClick={onClose} sx={styles.iconButton}>
             <CloseRoundedIcon />
           </IconButton>
         </Stack>
 
-        <Box
-          sx={{
-            position: 'relative',
-            display: 'grid',
-            placeItems: 'center',
-            minHeight: 0,
-          }}
-        >
+        <Box sx={styles.box2}>
           <Box
             component="img"
             src={property.gallery[activePhotoIndex]}
             alt={t('photoAlt', { title: property.title, index: activePhotoIndex + 1 })}
-            sx={{
-              display: 'block',
-              maxWidth: '100%',
-              maxHeight: '100%',
-              objectFit: 'contain',
-              borderRadius: `${radius.sm}px`,
-            }}
+            sx={styles.box3}
           />
 
           <IconButton
             aria-label={t('previousPhoto')}
             onClick={onPreviousPhoto}
-            sx={{
-              position: 'absolute',
-              left: { xs: 0, md: 12 },
-              width: { xs: 42, md: 52 },
-              height: { xs: 42, md: 52 },
-              bgcolor: alpha.white[8],
-              color: surface.lightText,
-              '&:hover': {
-                bgcolor: alpha.white[50],
-              },
-            }}
+            sx={styles.iconButton2}
           >
-            <ChevronLeftRoundedIcon sx={{ fontSize: { xs: 30, md: 38 } }} />
+            <ChevronLeftRoundedIcon sx={styles.chevronLeftRoundedIcon} />
           </IconButton>
 
-          <IconButton
-            aria-label={t('nextPhoto')}
-            onClick={onNextPhoto}
-            sx={{
-              position: 'absolute',
-              right: { xs: 0, md: 12 },
-              width: { xs: 42, md: 52 },
-              height: { xs: 42, md: 52 },
-              bgcolor: alpha.white[8],
-              color: surface.lightText,
-              '&:hover': {
-                bgcolor: alpha.white[50],
-              },
-            }}
-          >
-            <ChevronRightRoundedIcon sx={{ fontSize: { xs: 30, md: 38 } }} />
+          <IconButton aria-label={t('nextPhoto')} onClick={onNextPhoto} sx={styles.iconButton3}>
+            <ChevronRightRoundedIcon sx={styles.chevronLeftRoundedIcon} />
           </IconButton>
         </Box>
 
-        <Stack
-          direction="row"
-          spacing={1}
-          sx={{
-            overflowX: 'auto',
-            py: 1,
-            px: { xs: 0, md: 6 },
-          }}
-        >
+        <Stack direction="row" spacing={1} sx={styles.stack}>
           {property.gallery.map((image, index) => (
             <Box
               component="button"
@@ -136,20 +74,7 @@ export function PropertyPhotoDialog({
               key={image}
               aria-label={t('selectPhoto', { index: index + 1 })}
               onClick={() => onSelectPhoto(index)}
-              sx={{
-                flex: '0 0 auto',
-                width: { xs: 72, md: 96 },
-                height: { xs: 52, md: 68 },
-                borderRadius: `${radius.sm}px`,
-                border: '2px solid',
-                borderColor: index === activePhotoIndex ? 'primary.main' : 'transparent',
-                backgroundImage: `url("${image}")`,
-                backgroundPosition: 'center',
-                backgroundSize: 'cover',
-                cursor: 'pointer',
-                opacity: index === activePhotoIndex ? 1 : 0.62,
-                p: 0,
-              }}
+              sx={getBoxStyles({ index, activePhotoIndex, image })}
             />
           ))}
         </Stack>

@@ -56,7 +56,7 @@ describe('PrismaContractRepository read authorization', () => {
     )
   })
 
-  it('keeps agency staff reads inside their tenant and the AGENT inside its properties', async () => {
+  it('keeps agency staff reads inside their tenant and the AGENT inside its properties and opportunities', async () => {
     const repository = new PrismaContractRepository()
     await repository.findMany({}, { kind: 'tenant', tenantId: 'agency-1' })
     await repository.findById('contract-1', {
@@ -76,7 +76,10 @@ describe('PrismaContractRepository read authorization', () => {
         where: {
           id: 'contract-1',
           tenantId: 'agency-1',
-          imovel: { responsavelId: 'agent-1' },
+          OR: [
+            { imovel: { responsavelId: 'agent-1' } },
+            { oportunidadeOrigem: { responsavelId: 'agent-1' } },
+          ],
         },
       }),
     )

@@ -1,3 +1,4 @@
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 import { randomUUID } from 'node:crypto'
 import { afterAll, beforeAll, expect, it } from 'vitest'
 import { prisma } from '@server/db/prisma'
@@ -19,11 +20,13 @@ const prefix = 'list-' + randomUUID()
 const dates = contractPeriodDates()
 beforeAll(async () => {
   fixture = await createContractWorkflowFixture()
+  const responsavelId = await propertyResponsibleId(prisma, fixture.propertyId)
   await prisma.oportunidade.createMany({
     data: Array.from({ length: 103 }, (_, index) => ({
       id: prefix + '-opp-' + index,
       tenantId: fixture.tenantId,
       imovelId: fixture.propertyId,
+      responsavelId,
       interessadoNome: 'Pessoa ' + index,
       interessadoEmail: 'person' + index + '@example.test',
       valorProposto: 2000,

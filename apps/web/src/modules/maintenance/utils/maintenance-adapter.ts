@@ -4,6 +4,7 @@ import type { MaintenanceDateFormatter } from '../types/formatters'
 
 import type {
   MaintenanceCreateTicketFormValues,
+  MaintenanceTicketFormValues,
   MaintenancePriority,
   MaintenanceScheduleFormValues,
   MaintenanceStatus,
@@ -109,7 +110,7 @@ export function mapMaintenanceTicketFromApi(
 
 export function mapMaintenanceTicketToFormValues(
   ticket: ApiMaintenanceTicket,
-): MaintenanceCreateTicketFormValues {
+): MaintenanceTicketFormValues {
   return {
     contractId: ticket.contractId ?? '',
     propertyId: ticket.propertyId,

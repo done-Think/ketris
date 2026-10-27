@@ -2,6 +2,7 @@ import { BaseService } from '@shared/lib/api/base-service'
 
 import type {
   ListPropertiesResponse,
+  MarketplaceStats,
   PropertyDetailResponse,
   PublicPropertyDetail,
   SearchPropertiesFilters,
@@ -18,6 +19,7 @@ export class MarketplaceService extends BaseService {
       ...(filters.purpose ? { purpose: filters.purpose } : {}),
       ...(filters.propertyType ? { propertyType: filters.propertyType } : {}),
       ...(filters.location ? { location: filters.location } : {}),
+      ...(filters.minPrice ? { minPrice: filters.minPrice } : {}),
       ...(filters.maxPrice ? { maxPrice: filters.maxPrice } : {}),
       ...(filters.minBedrooms ? { minBedrooms: filters.minBedrooms } : {}),
       ...(filters.minArea ? { minArea: filters.minArea } : {}),
@@ -28,6 +30,10 @@ export class MarketplaceService extends BaseService {
     }
 
     return this.http.get<ListPropertiesResponse>(this.propertiesPath, { params })
+  }
+
+  getStats(): Promise<MarketplaceStats> {
+    return this.http.get<MarketplaceStats>('/marketplace/stats')
   }
 
   getById(id: string): Promise<PublicPropertyDetail> {

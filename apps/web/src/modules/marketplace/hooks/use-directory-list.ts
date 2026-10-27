@@ -1,56 +1,56 @@
 'use client'
 
-import { useEffect, useMemo, useRef } from 'react'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-import { useTranslations } from 'next-intl'
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { useEffect, useRef, useState } from 'react'
 
-import { useDebouncedValue } from '@shared/hooks'
+import { useDebouncedValue } from '@shared/hooks/use-debounced-value'
 
-import { createDirectorySearchFormSchema } from '../schemas/directory-search-schema'
-import type {
-  DirectorySearchFormValues,
-  UseDirectorySearchResult,
-  UseLoadMoreOnScrollParams,
-} from '../types/directory'
+import type { UseDirectoryListParams, UseDirectoryListResult } from '../types/directory'
 
-// The directory search box; the server filters, so the typed text is debounced before querying.
-export function useDirectorySearch(): UseDirectorySearchResult {
-  const t = useTranslations('marketplace.directory.errors')
-  const schema = useMemo(() => createDirectorySearchFormSchema((key) => t(key)), [t])
-  const { register, watch } = useForm<DirectorySearchFormValues>({
-    defaultValues: { searchQuery: '' },
-    resolver: zodResolver(schema),
+export function useDirectoryList<TApi, TItem>({
+  queryKey,
+  fetchPage,
+  toItem,
+  pageSize,
+}: UseDirectoryListParams<TApi, TItem>): UseDirectoryListResult<TItem> {
+  const [search, setSearch] = useState('')
+  const q = useDebouncedValue(search.trim(), 300)
+  const loadMoreRef = useRef<HTMLDivElement>(null)
+  const query = useInfiniteQuery({
+    queryKey: queryKey({ q, pageSize }),
+    queryFn: ({ pageParam }) => fetchPage({ q: q || undefined, page: pageParam, pageSize }),
+    initialPageParam: 1,
+    getNextPageParam: (last) =>
+      last.page * last.pageSize < last.totalCount ? last.page + 1 : undefined,
   })
-  const search = useDebouncedValue(watch('searchQuery').trim(), 300)
-
-  return { register, search }
-}
-
-// Calls `onLoadMore` when the returned element scrolls close to the viewport.
-export function useLoadMoreOnScroll({ enabled, onLoadMore }: UseLoadMoreOnScrollParams) {
-  const loadMoreRef = useRef<HTMLDivElement | null>(null)
-  const onLoadMoreRef = useRef(onLoadMore)
-
-  // Keeps the latest callback without recreating the observer on every render.
-  useEffect(() => {
-    onLoadMoreRef.current = onLoadMore
-  })
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = query
 
   useEffect(() => {
     const element = loadMoreRef.current
-    if (!element || !enabled || !window.IntersectionObserver) return
+    if (!element || !hasNextPage || isFetchingNextPage) return
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry?.isIntersecting) onLoadMoreRef.current()
+        if (entry?.isIntersecting) void fetchNextPage()
       },
       { rootMargin: '360px 0px' },
     )
     observer.observe(element)
 
     return () => observer.disconnect()
-  }, [enabled])
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
-  return loadMoreRef
+  const pages = query.data?.pages ?? []
+
+  return {
+    items: pages.flatMap((page) => page.items.map(toItem)),
+    totalCount: pages[0]?.totalCount ?? 0,
+    hasMoreItems: Boolean(hasNextPage),
+    isLoading: query.isLoading,
+    isLoadingMore: isFetchingNextPage,
+    isError: query.isError,
+    loadMoreRef,
+    search,
+    setSearch,
+  }
 }

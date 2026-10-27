@@ -1,9 +1,11 @@
 import { createServer } from 'node:http'
 import { randomUUID } from 'node:crypto'
 import type { AuthTestEmail } from '../types/auth-mailbox'
+import type { TeamInvitationEmail } from '../types/team-fixtures'
 
 export function createAuthMailbox(port: number) {
   const messages = new Map<string, AuthTestEmail>()
+  const invitations = new Map<string, TeamInvitationEmail>()
   const server = createServer(async (request, response) => {
     if (request.method !== 'POST') {
       response.writeHead(405)
@@ -17,6 +19,14 @@ export function createAuthMailbox(port: number) {
     const text = data.get('Message.Body.Text.Data') ?? ''
     const html = data.get('Message.Body.Html.Data') ?? ''
     const code = text.match(/\b\d{6}\b/)?.[0]
+    const invitationUrl =
+      html.match(/href="([^"]*\/invite\?token=[^"]+)"/)?.[1]?.replace(/&amp;/g, '&') ?? null
+    if (data.get('Action') === 'SendEmail' && email && invitationUrl) {
+      invitations.set(email, { invitationUrl })
+      response.setHeader('Content-Type', 'text/xml')
+      response.end(sesResponse())
+      return
+    }
     if (data.get('Action') !== 'SendEmail' || !email || !code) {
       response.writeHead(400)
       response.end()
@@ -28,9 +38,7 @@ export function createAuthMailbox(port: number) {
         ?.replace(/&amp;/g, '&') ?? null
     messages.set(email, { code, confirmationUrl })
     response.setHeader('Content-Type', 'text/xml')
-    response.end(
-      `<SendEmailResponse xmlns="http://ses.amazonaws.com/doc/2010-12-01/"><SendEmailResult><MessageId>${randomUUID()}</MessageId></SendEmailResult><ResponseMetadata><RequestId>${randomUUID()}</RequestId></ResponseMetadata></SendEmailResponse>`,
-    )
+    response.end(sesResponse())
   })
   return {
     start: () =>
@@ -41,6 +49,7 @@ export function createAuthMailbox(port: number) {
     stop: () =>
       new Promise<void>((resolve, reject) => {
         messages.clear()
+        invitations.clear()
         server.close((error) => (error ? reject(error) : resolve()))
       }),
     read(email: string) {
@@ -50,5 +59,15 @@ export function createAuthMailbox(port: number) {
       messages.delete(email)
       return result
     },
+    readInvitation(email: string) {
+      const result = invitations.get(email)
+      if (!result) throw new Error('Nenhum convite recebido pelo simulador local para esta conta.')
+      invitations.delete(email)
+      return result
+    },
   }
+}
+
+function sesResponse() {
+  return `<SendEmailResponse xmlns="http://ses.amazonaws.com/doc/2010-12-01/"><SendEmailResult><MessageId>${randomUUID()}</MessageId></SendEmailResult><ResponseMetadata><RequestId>${randomUUID()}</RequestId></ResponseMetadata></SendEmailResponse>`
 }

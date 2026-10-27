@@ -1,30 +1,11 @@
+import type { Oportunidade } from '@prisma/client'
+
 import { prisma } from '@server/db/prisma'
 
-import type { Inquiry, NewInquiry } from '../domain/inquiry.entity'
+import type { Inquiry, NewInquiry } from '../types/inquiry'
 import type { InquiryRepository } from '../application/ports/inquiry-repository.port'
 
-type DecimalLike = { toNumber(): number }
-
-type OportunidadeRow = {
-  id: string
-  tenantId: string
-  imovelId: string
-  interessadoNome: string
-  interessadoEmail: string
-  interessadoTelefone: string | null
-  valorProposto: DecimalLike
-  prazoContratoMeses: number | null
-  inicioPretendido: Date | null
-  garantiaContratual: Inquiry['guaranteeType']
-  condicoesEspeciais: string[]
-  observacoes: string | null
-  status: Inquiry['status']
-  arquivadaEm: Date | null
-  createdAt: Date
-  updatedAt: Date
-}
-
-function toDomainInquiry(row: OportunidadeRow): Inquiry {
+function toDomainInquiry(row: Oportunidade): Inquiry {
   return {
     id: row.id,
     tenantId: row.tenantId,
@@ -47,10 +28,15 @@ function toDomainInquiry(row: OportunidadeRow): Inquiry {
 
 export class PrismaInquiryRepository implements InquiryRepository {
   async create(inquiry: NewInquiry): Promise<Inquiry> {
+    const imovel = await prisma.imovel.findFirstOrThrow({
+      where: { id: inquiry.propertyId, tenantId: inquiry.tenantId },
+      select: { responsavelId: true },
+    })
     const oportunidade = await prisma.oportunidade.create({
       data: {
         tenantId: inquiry.tenantId,
         imovelId: inquiry.propertyId,
+        responsavelId: imovel.responsavelId,
         interessadoNome: inquiry.leadName,
         interessadoEmail: inquiry.leadEmail,
         interessadoTelefone: inquiry.leadPhone,
@@ -60,6 +46,6 @@ export class PrismaInquiryRepository implements InquiryRepository {
       },
     })
 
-    return toDomainInquiry(oportunidade as unknown as OportunidadeRow)
+    return toDomainInquiry(oportunidade)
   }
 }

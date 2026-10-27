@@ -5,9 +5,12 @@ import AppsRoundedIcon from '@mui/icons-material/AppsRounded'
 import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBulletedRounded'
 import { useTranslations } from 'next-intl'
 
-import { alpha, iconSize, radius, surface } from '@shared/theme/tokens'
-
 import type { SearchResultsToolbarProps, SortOption } from '../../types/search'
+import {
+  styles,
+  getIconButtonStyles,
+  getIconButtonStyles2,
+} from '../../styles/search-results-toolbar.styles'
 
 export function SearchResultsToolbar({
   filtersControl,
@@ -25,11 +28,9 @@ export function SearchResultsToolbar({
       alignItems={{ xs: 'stretch', sm: 'center' }}
       justifyContent="space-between"
       spacing={1.5}
-      sx={{ mb: 2 }}
+      sx={styles.stack}
     >
-      <Typography sx={{ color: 'text.secondary', fontWeight: 700, fontSize: 14 }}>
-        {t('resultCount', { count: resultCount })}
-      </Typography>
+      <Typography sx={styles.typography}>{t('resultCount', { count: resultCount })}</Typography>
 
       <Stack
         direction="row"
@@ -46,15 +47,7 @@ export function SearchResultsToolbar({
           size="small"
           value={sortOption}
           onChange={(event) => setSortOption(event.target.value as SortOption)}
-          sx={{
-            minWidth: 190,
-            '& .MuiOutlinedInput-root': {
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.paper,
-              fontSize: 12,
-              fontWeight: 700,
-            },
-          }}
+          sx={styles.textField}
         >
           <MenuItem value="relevancia">{t('sortRelevance')}</MenuItem>
           <MenuItem value="menor-preco">{t('sortLowerPrice')}</MenuItem>
@@ -64,30 +57,16 @@ export function SearchResultsToolbar({
         <IconButton
           aria-label={t('gridView')}
           onClick={() => setViewMode('grid')}
-          sx={{
-            display: { xs: 'none', md: 'inline-flex' },
-            width: 36,
-            height: 36,
-            borderRadius: `${radius.sm}px`,
-            bgcolor: viewMode === 'grid' ? alpha.magenta[8] : 'transparent',
-            color: viewMode === 'grid' ? 'primary.main' : 'text.secondary',
-          }}
+          sx={getIconButtonStyles({ viewMode })}
         >
-          <AppsRoundedIcon sx={{ fontSize: iconSize.md }} />
+          <AppsRoundedIcon sx={styles.appsRoundedIcon} />
         </IconButton>
         <IconButton
           aria-label={t('listView')}
           onClick={() => setViewMode('list')}
-          sx={{
-            display: { xs: 'none', md: 'inline-flex' },
-            width: 36,
-            height: 36,
-            borderRadius: `${radius.sm}px`,
-            bgcolor: viewMode === 'list' ? alpha.magenta[8] : 'transparent',
-            color: viewMode === 'list' ? 'primary.main' : 'text.secondary',
-          }}
+          sx={getIconButtonStyles2({ viewMode })}
         >
-          <FormatListBulletedRoundedIcon sx={{ fontSize: iconSize.md }} />
+          <FormatListBulletedRoundedIcon sx={styles.appsRoundedIcon} />
         </IconButton>
       </Stack>
     </Stack>

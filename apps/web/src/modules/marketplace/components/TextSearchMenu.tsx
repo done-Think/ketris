@@ -2,9 +2,8 @@ import { Box, IconButton, InputAdornment, MenuItem, TextField, Typography } from
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import { useTranslations } from 'next-intl'
 
-import { alpha, componentText, surface } from '@shared/theme/tokens'
-
 import type { TextSearchMenuProps } from '../types/search'
+import { styles, getMenuItemStyles, getTypographyStyles } from '../styles/text-search-menu.styles'
 
 export function TextSearchMenu({
   filterKey,
@@ -29,7 +28,7 @@ export function TextSearchMenu({
 
   return (
     <Box>
-      <Box sx={{ p: 1 }}>
+      <Box sx={styles.box}>
         <TextField
           autoFocus
           fullWidth
@@ -69,45 +68,20 @@ export function TextSearchMenu({
         />
       </Box>
 
-      <Box sx={{ maxHeight: { md: 82, xl: 132 }, overflowY: 'auto', pb: 0.5 }}>
+      <Box sx={styles.box2}>
         {options.length ? (
           options.map((value) => (
             <MenuItem
               key={value}
               selected={selectedSearch[filterKey] === value}
               onClick={() => selectSearchValue(filterKey, value)}
-              sx={{
-                color: 'text.primary',
-                justifyContent: centered ? 'center' : 'flex-start',
-                ...(centered ? componentText.menuItemCentered : componentText.menuItem),
-                ...(selectedSearch[filterKey] === value ? componentText.menuItemSelected : {}),
-                '&.Mui-selected': {
-                  bgcolor: alpha.magenta[10],
-                  color: surface.darkText,
-                },
-                '&.Mui-selected:hover': {
-                  bgcolor: alpha.magenta[14],
-                },
-                '&:hover': {
-                  bgcolor: alpha.graphite[6],
-                },
-              }}
+              sx={getMenuItemStyles({ centered, selectedSearch, filterKey, value })}
             >
               {getSearchOptionLabel(filterKey, value)}
             </MenuItem>
           ))
         ) : (
-          <Typography
-            sx={{
-              color: 'text.secondary',
-              px: 2,
-              py: 1.5,
-              ...(centered ? componentText.menuItemCentered : componentText.menuEmpty),
-              textAlign: centered ? 'center' : 'left',
-            }}
-          >
-            {t('noResults')}
-          </Typography>
+          <Typography sx={getTypographyStyles({ centered })}>{t('noResults')}</Typography>
         )}
       </Box>
     </Box>

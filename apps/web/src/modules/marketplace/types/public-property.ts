@@ -1,10 +1,15 @@
 export type PublicPropertyPurpose = 'ALUGUEL' | 'VENDA' | 'AMBOS'
 
+export type MarketplacePropertyType =
+  'APARTAMENTO' | 'CASA' | 'STUDIO' | 'COBERTURA' | 'COMERCIAL' | 'LOFT' | 'OUTRO'
+
+export type SearchablePropertyType = Exclude<MarketplacePropertyType, 'OUTRO'>
+
 export interface PublicPropertySummary {
   id: string
   title: string
   purpose: PublicPropertyPurpose
-  propertyType: string
+  propertyType: MarketplacePropertyType
   price: number
   condoFee: number | null
   propertyTax: number | null
@@ -62,8 +67,9 @@ export type PropertySortOption = 'recent' | 'priceAsc' | 'priceDesc'
 
 export interface SearchPropertiesFilters {
   purpose?: PublicPropertyPurpose
-  propertyType?: string
+  propertyType?: MarketplacePropertyType
   location?: string
+  minPrice?: number
   maxPrice?: number
   minBedrooms?: number
   minArea?: number
@@ -90,4 +96,10 @@ export interface SubmitInquiryResult {
 
 export interface SubmitInquiryResponse {
   inquiry: SubmitInquiryResult
+}
+
+export interface MarketplaceStats {
+  publishedProperties: number
+  publishedBrokers: number
+  servedCities: number
 }

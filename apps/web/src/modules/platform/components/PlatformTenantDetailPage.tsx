@@ -17,55 +17,41 @@ import { useState } from 'react'
 import { useFormatter, useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
-import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
-import { useTenants } from '../hooks/use-tenants'
+import { usePlatformActor } from '../hooks/use-platform-actor'
+import { useTenant } from '../hooks/use-tenants'
 import type { PlatformTenant } from '../types/tenant'
 import { accountInitials } from '../utils/account-type-icons'
+import { isNotFoundError } from '../utils/is-not-found-error'
 import { tenantStatusChipColor } from '../utils/tenant-status'
 import { CreateTenantAdminForm } from './CreateTenantAdminForm'
 import { EditTenantAccountDialog } from './EditTenantAccountDialog'
 import { TenantUsersList } from './TenantUsersList'
+import { styles } from '../styles/platform-tenant-detail-page.styles'
 
 export function PlatformTenantDetailPage({ tenantId }: { tenantId: string }) {
   const t = useTranslations('platform.tenant')
   const accountT = useTranslations('platform.account')
-  const tenantsQuery = useTenants()
-  const tenant = tenantsQuery.data?.find((candidate) => candidate.id === tenantId)
+  const { canManage } = usePlatformActor()
+  const tenantQuery = useTenant(tenantId)
+  const tenant = tenantQuery.data
   const [editing, setEditing] = useState(false)
 
   return (
-    <Box sx={{ width: '100%', p: 3.5 }}>
-      <Box
-        component={Link}
-        href="/platform/tenants"
-        sx={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 0.6,
-          mb: 2,
-          color: brand.neutral[500],
-          fontSize: 13,
-          fontWeight: 700,
-          textDecoration: 'none',
-          '&:hover': { color: brand.magenta[500] },
-        }}
-      >
-        <ArrowBackRoundedIcon sx={{ fontSize: iconSize.md }} />
+    <Box sx={styles.box}>
+      <Box component={Link} href="/platform/tenants" sx={styles.box2}>
+        <ArrowBackRoundedIcon sx={styles.arrowBackRoundedIcon} />
         {t('back')}
       </Box>
 
-      {tenantsQuery.isPending ? (
-        <Stack alignItems="center" sx={{ py: 6 }}>
+      {tenantQuery.isPending ? (
+        <Stack alignItems="center" sx={styles.stack}>
           <CircularProgress size={28} />
         </Stack>
       ) : !tenant ? (
-        <Box sx={{ ...cardSx, p: 3 }}>
-          <Typography
-            component="h1"
-            sx={{ color: brand.graphite[500], fontSize: 18, fontWeight: 900 }}
-          >
-            {tenantsQuery.isError ? t('loadError') : t('notFound')}
+        <Box sx={styles.box3}>
+          <Typography component="h1" sx={styles.typography}>
+            {isNotFoundError(tenantQuery.error) ? t('notFound') : t('loadError')}
           </Typography>
         </Box>
       ) : (
@@ -75,23 +61,12 @@ export function PlatformTenantDetailPage({ tenantId }: { tenantId: string }) {
             justifyContent="space-between"
             alignItems={{ md: 'center' }}
             spacing={2}
-            sx={{ pb: 2, mb: 2.4, borderBottom: '1px solid', borderColor: 'divider' }}
+            sx={styles.stack2}
           >
-            <Stack direction="row" spacing={1.6} alignItems="center" sx={{ minWidth: 0 }}>
-              <Avatar
-                sx={{
-                  width: 56,
-                  height: 56,
-                  bgcolor: alpha.magenta[10],
-                  color: brand.magenta[500],
-                  fontSize: 20,
-                  fontWeight: 800,
-                }}
-              >
-                {accountInitials(tenant.name)}
-              </Avatar>
-              <Box sx={{ minWidth: 0 }}>
-                <Typography component="h1" sx={headingSx}>
+            <Stack direction="row" spacing={1.6} alignItems="center" sx={styles.stack3}>
+              <Avatar sx={styles.avatar}>{accountInitials(tenant.name)}</Avatar>
+              <Box sx={styles.stack3}>
+                <Typography component="h1" sx={styles.heading}>
                   {tenant.name}
                 </Typography>
                 <Stack
@@ -100,13 +75,9 @@ export function PlatformTenantDetailPage({ tenantId }: { tenantId: string }) {
                   alignItems="center"
                   flexWrap="wrap"
                   useFlexGap
-                  sx={{ mt: 0.6 }}
+                  sx={styles.stack4}
                 >
-                  <Typography
-                    sx={{ color: brand.neutral[500], fontSize: 13, fontFamily: 'monospace' }}
-                  >
-                    {tenant.slug}
-                  </Typography>
+                  <Typography sx={styles.typography2}>{tenant.slug}</Typography>
                   <Chip
                     size="small"
                     variant="outlined"
@@ -121,55 +92,46 @@ export function PlatformTenantDetailPage({ tenantId }: { tenantId: string }) {
                 </Stack>
               </Box>
             </Stack>
-            <Button
-              variant="outlined"
-              color="secondary"
-              startIcon={<EditOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-              onClick={() => setEditing(true)}
-              sx={{ alignSelf: { xs: 'flex-start', md: 'center' }, flexShrink: 0 }}
-            >
-              {t('editAccount')}
-            </Button>
+            {canManage ? (
+              <Button
+                variant="outlined"
+                color="secondary"
+                startIcon={<EditOutlinedIcon sx={styles.editOutlinedIcon} />}
+                onClick={() => setEditing(true)}
+                sx={styles.button}
+              >
+                {t('editAccount')}
+              </Button>
+            ) : null}
           </Stack>
 
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 380px' },
-              gap: 2.4,
-              alignItems: 'start',
-            }}
-          >
+          <Box sx={styles.box4}>
             <TenantUsersList tenantId={tenant.id} />
 
             <Stack spacing={2.4}>
               <TenantAccountCard tenant={tenant} />
-              <Card
-                component="section"
-                aria-labelledby="tenant-new-admin-title"
-                variant="outlined"
-                sx={cardSx}
-              >
-                <Box sx={{ px: 2.2, pt: 2.2, pb: 1.6 }}>
-                  <Typography
-                    id="tenant-new-admin-title"
-                    component="h2"
-                    sx={{ color: brand.graphite[500], fontSize: 16, fontWeight: 900 }}
-                  >
-                    {t('newAdmin.title')}
-                  </Typography>
-                  <Typography sx={{ color: brand.neutral[500], fontSize: 13, mt: 0.3 }}>
-                    {t('newAdmin.description')}
-                  </Typography>
-                </Box>
-                <Box sx={{ px: 2.2, pb: 2.2 }}>
-                  <CreateTenantAdminForm tenantId={tenant.id} />
-                </Box>
-              </Card>
+              {canManage ? (
+                <Card
+                  component="section"
+                  aria-labelledby="tenant-new-admin-title"
+                  variant="outlined"
+                  sx={styles.card}
+                >
+                  <Box sx={styles.box5}>
+                    <Typography id="tenant-new-admin-title" component="h2" sx={styles.typography3}>
+                      {t('newAdmin.title')}
+                    </Typography>
+                    <Typography sx={styles.typography4}>{t('newAdmin.description')}</Typography>
+                  </Box>
+                  <Box sx={styles.box6}>
+                    <CreateTenantAdminForm tenantId={tenant.id} />
+                  </Box>
+                </Card>
+              ) : null}
             </Stack>
           </Box>
 
-          {editing ? (
+          {editing && canManage ? (
             <EditTenantAccountDialog tenant={tenant} onClose={() => setEditing(false)} />
           ) : null}
         </>
@@ -188,23 +150,17 @@ function TenantAccountCard({ tenant }: { tenant: PlatformTenant }) {
     format.number(value, { style: 'currency', currency: 'BRL' })
 
   return (
-    <Card component="section" aria-labelledby="tenant-account-title" variant="outlined" sx={cardSx}>
-      <Typography
-        id="tenant-account-title"
-        component="h2"
-        sx={{
-          color: brand.graphite[500],
-          fontSize: 16,
-          fontWeight: 900,
-          px: 2.2,
-          pt: 2.2,
-          pb: 1.4,
-        }}
-      >
+    <Card
+      component="section"
+      aria-labelledby="tenant-account-title"
+      variant="outlined"
+      sx={styles.card}
+    >
+      <Typography id="tenant-account-title" component="h2" sx={styles.typography5}>
         {t('title')}
       </Typography>
-      <Divider sx={{ borderColor: alpha.graphite[6] }} />
-      <Stack spacing={1.3} sx={{ p: 2.2 }}>
+      <Divider sx={styles.divider} />
+      <Stack spacing={1.3} sx={styles.stack5}>
         <AccountRow label={t('accountType')}>
           {accountT(`accountTypes.${tenant.accountType}`)}
         </AccountRow>
@@ -218,7 +174,7 @@ function TenantAccountCard({ tenant }: { tenant: PlatformTenant }) {
         </AccountRow>
         <AccountRow label={t('monthlyFee')}>{charge ? formatPrice(charge.total) : '—'}</AccountRow>
         {charge && charge.extraUnits > 0 ? (
-          <Typography sx={{ color: brand.neutral[500], fontSize: 12, textAlign: 'right' }}>
+          <Typography sx={styles.typography6}>
             {plansT(
               charge.usageUnit === 'BROKERS'
                 ? 'chargeWithExtraBrokers'
@@ -255,26 +211,8 @@ function TenantAccountCard({ tenant }: { tenant: PlatformTenant }) {
 function AccountRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
-      <Typography sx={{ color: brand.neutral[500], fontSize: 13 }}>{label}</Typography>
-      <Box sx={{ color: brand.graphite[500], fontSize: 13.5, fontWeight: 800, textAlign: 'right' }}>
-        {children}
-      </Box>
+      <Typography sx={styles.typography7}>{label}</Typography>
+      <Box sx={styles.box7}>{children}</Box>
     </Stack>
   )
-}
-
-const headingSx = {
-  color: brand.graphite[500],
-  fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
-  fontSize: { xs: 24, sm: 28 },
-  fontWeight: 700,
-  lineHeight: 1.15,
-  overflowWrap: 'anywhere',
-}
-
-const cardSx = {
-  bgcolor: surface.paper,
-  borderColor: alpha.graphite[6],
-  borderRadius: `${radius.sm}px`,
-  boxShadow: shadows.propertyCard,
 }

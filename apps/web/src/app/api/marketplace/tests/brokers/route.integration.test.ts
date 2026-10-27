@@ -7,8 +7,13 @@ import { prisma } from '@server/db/prisma'
 
 import { GET } from '../../brokers/route'
 
+const marker = randomUUID().slice(0, 8)
+
+function request(search = '') {
+  return new NextRequest(`http://localhost/api/marketplace/brokers${search}`)
+}
+
 describe('GET /api/marketplace/brokers (integração)', () => {
-  const token = `bairro${randomUUID().slice(0, 8)}`
   let tenantId: string
   let publishedAgentId: string
   let draftAgentId: string
@@ -32,8 +37,7 @@ describe('GET /api/marketplace/brokers (integração)', () => {
     await prisma.perfilPublicoCorretor.create({
       data: {
         usuarioId: publishedAgentId,
-        displayName: 'Corretora Publicada',
-        bairros: [`Jardim Paulistânia ${token}`],
+        displayName: `Corretora Publicada ${marker}`,
         status: 'PUBLISHED',
         publicadoEm: new Date(),
       },
@@ -50,12 +54,7 @@ describe('GET /api/marketplace/brokers (integração)', () => {
     })
     draftAgentId = draftAgent.id
     await prisma.perfilPublicoCorretor.create({
-      data: {
-        usuarioId: draftAgentId,
-        displayName: 'Corretor Rascunho',
-        bairros: [`Jardim Paulistânia ${token}`],
-        status: 'DRAFT',
-      },
+      data: { usuarioId: draftAgentId, displayName: 'Corretor Rascunho', status: 'DRAFT' },
     })
   })
 
@@ -64,15 +63,26 @@ describe('GET /api/marketplace/brokers (integração)', () => {
     await prisma.$disconnect()
   })
 
-  it('lista só corretores publicados, buscando sem diferenciar acentos', async () => {
-    const response = await GET(
-      new NextRequest(`http://localhost/api/marketplace/brokers?q=paulistania ${token}`),
-    )
+  it('lista só perfis publicados e devolve a paginação', async () => {
+    const response = await GET(request(`?q=${marker}`))
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(json.brokers.map((broker: { id: string }) => broker.id)).toEqual([publishedAgentId])
+    const ids = json.brokers.map((item: { id: string }) => item.id)
+    expect(ids).toEqual([publishedAgentId])
+    expect(ids).not.toContain(draftAgentId)
     expect(json).toMatchObject({ totalCount: 1, page: 1, pageSize: 12 })
-    expect(json.brokers[0]).not.toHaveProperty('tenantId')
+  })
+
+  it('busca sem diferenciar acentos e maiúsculas', async () => {
+    const response = await GET(request(`?q=${encodeURIComponent('CORRETORA PUBLICADA ' + marker)}`))
+    const json = await response.json()
+
+    expect(json.brokers.map((item: { id: string }) => item.id)).toEqual([publishedAgentId])
+  })
+
+  it('rejeita parâmetros desconhecidos ou fora do limite', async () => {
+    expect((await GET(request('?pageSize=500'))).status).toBe(400)
+    expect((await GET(request('?foo=1'))).status).toBe(400)
   })
 })

@@ -2,22 +2,12 @@ import {
   PlatformAdminEmailAlreadyInUseError,
   PlatformAdminNotFoundError,
 } from '../../domain/errors'
-import {
-  toAuthenticatedPlatformAdmin,
-  type AuthenticatedPlatformAdmin,
-  type PlatformAdminRole,
-} from '../../domain/platform-admin.entity'
+import { toAuthenticatedPlatformAdmin } from '../../domain/platform-admin.entity'
 import type { PlatformAdminRepository } from '../ports/platform-admin-repository.port'
-
-export interface UpdatePlatformAdminInput {
-  platformAdminId: string
-  nome?: string
-  email?: string
-  role?: PlatformAdminRole
-  ativo?: true
-}
-
-export type UpdatePlatformAdminOutput = AuthenticatedPlatformAdmin
+import type {
+  UpdatePlatformAdminInput,
+  UpdatePlatformAdminOutput,
+} from '../../types/use-case-inputs'
 
 export class UpdatePlatformAdminUseCase {
   constructor(private readonly platformAdminRepository: PlatformAdminRepository) {}
@@ -43,6 +33,8 @@ export class UpdatePlatformAdminUseCase {
       role: input.role,
       ativo: input.ativo,
     })
+
+    if (!updated) throw new PlatformAdminNotFoundError()
 
     return toAuthenticatedPlatformAdmin(updated)
   }

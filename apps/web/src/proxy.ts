@@ -24,7 +24,6 @@ const authPolicy = createRateLimitPolicy(
   toPositiveInteger(process.env.AUTH_RATE_LIMIT_WINDOW_MS, 15 * 60_000),
 )
 
-// Public proposals become CRM leads, so each client address gets a small, shared budget.
 const inquiryPolicy = createRateLimitPolicy(
   'marketplace-inquiry',
   toPositiveInteger(process.env.MARKETPLACE_INQUIRY_RATE_LIMIT_MAX, 5),
@@ -48,6 +47,7 @@ const authPaths = new Set([
   '/api/auth/me/email-change/verify',
   '/api/auth/email-change/verify',
   '/api/auth/me/password',
+  '/api/team/invitations/accept',
 ])
 
 export async function proxy(request: NextRequest) {

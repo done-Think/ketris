@@ -11,6 +11,7 @@ describe('POST /api/marketplace/properties/[id]/inquiries (integração)', () =>
   let tenantId: string
   let publishedId: string
   let draftId: string
+  let responsavelId: string
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
@@ -27,6 +28,7 @@ describe('POST /api/marketplace/properties/[id]/inquiries (integração)', () =>
         papel: 'AGENT',
       },
     })
+    responsavelId = responsavel.id
 
     const published = await prisma.imovel.create({
       data: {
@@ -89,6 +91,7 @@ describe('POST /api/marketplace/properties/[id]/inquiries (integração)', () =>
       where: { id: json.inquiry.id },
     })
     expect(oportunidade).not.toBeNull()
+    expect(oportunidade?.responsavelId).toBe(responsavelId)
     expect(oportunidade?.tenantId).toBe(tenantId)
     expect(oportunidade?.status).toBe('ENVIADA')
     expect(oportunidade?.interessadoEmail).toBe('maria@exemplo.com')

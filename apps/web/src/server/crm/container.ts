@@ -1,4 +1,6 @@
 import { AddOpportunityNoteUseCase } from './application/use-cases/add-opportunity-note.use-case'
+import { ListOpportunityResponsiblesUseCase } from './application/use-cases/list-opportunity-responsibles.use-case'
+import { AssignOpportunityResponsibleUseCase } from './application/use-cases/assign-opportunity-responsible.use-case'
 import { ArchiveContactUseCase } from './application/use-cases/archive-contact.use-case'
 import { ArchiveOpportunityUseCase } from './application/use-cases/archive-opportunity.use-case'
 import { ConvertLeadToOpportunityUseCase } from './application/use-cases/convert-lead-to-opportunity.use-case'
@@ -25,6 +27,7 @@ import { PrismaCrmPropertyCatalog } from './infrastructure/prisma-crm-property-c
 import { PrismaLeadRepository } from './infrastructure/prisma-lead.repository'
 import { PrismaOpportunityRepository } from './infrastructure/prisma-opportunity.repository'
 import { PrismaPropertyLookupRepository } from './infrastructure/prisma-property-lookup.repository'
+import { PrismaResponsibleLookup } from './infrastructure/prisma-responsible-lookup'
 
 import { prisma } from '@server/db/prisma'
 import { runCrmMutation } from './infrastructure/run-crm-mutation'
@@ -36,41 +39,45 @@ function buildUseCases(db: CrmDatabase, scope: CrmScope) {
   const activityRepository = new PrismaActivityRepository(db, scope)
   const propertyLookup = new PrismaPropertyLookupRepository(db)
   const leadRepository = new PrismaLeadRepository(db, scope)
+  const responsibleLookup = new PrismaResponsibleLookup(db)
 
   return {
     listCrmPropertiesUseCase: new ListCrmPropertiesUseCase(new PrismaCrmPropertyCatalog(db, scope)),
     getCrmPropertyUseCase: new GetCrmPropertyUseCase(new PrismaCrmPropertyCatalog(db, scope)),
     listOpportunitiesUseCase: new ListOpportunitiesUseCase(opportunityRepository),
-    getOpportunityUseCase: new GetOpportunityUseCase(opportunityRepository, propertyLookup),
+    getOpportunityUseCase: new GetOpportunityUseCase(opportunityRepository),
     createOpportunityUseCase: new CreateOpportunityUseCase(
       opportunityRepository,
       contactRepository,
       propertyLookup,
       activityRepository,
+      responsibleLookup,
+    ),
+    listOpportunityResponsiblesUseCase: new ListOpportunityResponsiblesUseCase(responsibleLookup),
+    assignOpportunityResponsibleUseCase: new AssignOpportunityResponsibleUseCase(
+      opportunityRepository,
+      responsibleLookup,
+      activityRepository,
     ),
     updateOpportunityUseCase: new UpdateOpportunityUseCase(
       opportunityRepository,
       activityRepository,
-      propertyLookup,
       contactRepository,
     ),
     respondToOpportunityUseCase: new RespondToOpportunityUseCase(
       opportunityRepository,
       activityRepository,
-      propertyLookup,
     ),
-    archiveOpportunityUseCase: new ArchiveOpportunityUseCase(opportunityRepository, propertyLookup),
-    deleteOpportunityUseCase: new DeleteOpportunityUseCase(opportunityRepository, propertyLookup),
+    archiveOpportunityUseCase: new ArchiveOpportunityUseCase(opportunityRepository),
+    deleteOpportunityUseCase: new DeleteOpportunityUseCase(opportunityRepository),
 
     listOpportunityActivitiesUseCase: new ListOpportunityActivitiesUseCase(
       opportunityRepository,
       activityRepository,
-      propertyLookup,
     ),
     addOpportunityNoteUseCase: new AddOpportunityNoteUseCase(
       opportunityRepository,
       activityRepository,
-      propertyLookup,
     ),
 
     listContactsUseCase: new ListContactsUseCase(contactRepository, opportunityRepository),
@@ -112,6 +119,13 @@ export const crmContainer = {
   getOpportunityUseCase: scopedUseCase((cases) => cases.getOpportunityUseCase),
   createOpportunityUseCase: scopedUseCase((cases) => cases.createOpportunityUseCase, true),
   updateOpportunityUseCase: scopedUseCase((cases) => cases.updateOpportunityUseCase, true),
+  listOpportunityResponsiblesUseCase: scopedUseCase(
+    (cases) => cases.listOpportunityResponsiblesUseCase,
+  ),
+  assignOpportunityResponsibleUseCase: scopedUseCase(
+    (cases) => cases.assignOpportunityResponsibleUseCase,
+    true,
+  ),
   respondToOpportunityUseCase: scopedUseCase((cases) => cases.respondToOpportunityUseCase, true),
   archiveOpportunityUseCase: scopedUseCase((cases) => cases.archiveOpportunityUseCase, true),
   deleteOpportunityUseCase: scopedUseCase((cases) => cases.deleteOpportunityUseCase, true),

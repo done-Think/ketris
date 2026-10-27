@@ -1,11 +1,18 @@
 import { createHmac } from 'node:crypto'
 import { isIP } from 'node:net'
 
-export function getTrustedClientAddress(headers: Headers): string {
-  if (process.env.VERCEL !== '1') return 'local'
+function firstAddress(value: string | null): string {
+  const candidate = value?.split(',')[0]?.trim() ?? ''
+  if (isIP(candidate)) return candidate
+  const withoutPort = /^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/.exec(candidate)?.[1]
+  return withoutPort && isIP(withoutPort) ? withoutPort : 'unknown'
+}
 
-  const address = headers.get('x-vercel-forwarded-for')?.split(',')[0]?.trim()
-  return address && isIP(address) ? address : 'unknown'
+export function getTrustedClientAddress(headers: Headers): string {
+  if (process.env.VERCEL === '1') return firstAddress(headers.get('x-vercel-forwarded-for'))
+
+  const trustedHeader = process.env.TRUSTED_CLIENT_IP_HEADER?.trim().toLowerCase()
+  return trustedHeader ? firstAddress(headers.get(trustedHeader)) : 'local'
 }
 
 export function getAuthRateLimitKey(headers: Headers): string {

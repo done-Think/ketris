@@ -75,7 +75,7 @@ describe('/api/crm/leads (integração)', () => {
         telefone: '(11) 90000-0001',
         interesse: 'Apartamento 2 quartos',
         orcamento: 'Até R$ 3.000',
-        origem: 'WhatsApp',
+        origem: 'WHATSAPP',
       },
     })
     leadOfAgentAId = leadOfAgentA.id
@@ -88,7 +88,7 @@ describe('/api/crm/leads (integração)', () => {
         telefone: '(11) 90000-0002',
         interesse: 'Casa',
         orcamento: 'Até R$ 5.000',
-        origem: 'Instagram',
+        origem: 'INSTAGRAM',
       },
     })
     leadOfAgentBId = leadOfAgentB.id
@@ -102,7 +102,7 @@ describe('/api/crm/leads (integração)', () => {
         telefone: '(11) 90000-0003',
         interesse: 'Studio',
         orcamento: 'Até R$ 2.000',
-        origem: 'Site',
+        origem: 'SITE',
       },
     })
     otherTenantLeadId = otherTenantLead.id
@@ -177,7 +177,7 @@ describe('/api/crm/leads (integração)', () => {
             phone: '(11) 98888-0000',
             interest: 'Cobertura',
             budget: 'Até R$ 8.000',
-            source: 'Marketplace',
+            source: 'MARKETPLACE',
           },
           agentAToken,
         ),
@@ -199,7 +199,7 @@ describe('/api/crm/leads (integração)', () => {
             phone: '(11) 97777-0000',
             interest: 'Apartamento',
             budget: 'Até R$ 2.000',
-            source: 'Site',
+            source: 'SITE',
           },
           renterToken,
         ),

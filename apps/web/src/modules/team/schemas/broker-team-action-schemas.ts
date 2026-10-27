@@ -1,24 +1,22 @@
 import { z } from 'zod'
 
+import { createNewPasswordSchema } from '@shared/schemas/new-password-schema'
 import type { SchemaMessageTranslator } from '@shared/types'
 
 export function createBrokerGoalSchema(t: SchemaMessageTranslator) {
   return z.object({
-    monthlyGoal: z.coerce.number().int().min(1, t('goalError')).max(10000, t('goalError')),
+    monthlySales: z.coerce
+      .number()
+      .int(t('goalError'))
+      .min(1, t('goalError'))
+      .max(10000, t('goalError')),
   })
 }
 
 export function createBrokerInviteSchema(t: SchemaMessageTranslator) {
   return z.object({
-    name: z.string().trim().min(1, t('inviteNameError')),
-    email: z.string().trim().email(t('inviteEmailError')),
-    password: z
-      .string()
-      .min(8, t('invitePasswordError'))
-      .regex(/[A-Z]/, t('invitePasswordError'))
-      .regex(/[a-z]/, t('invitePasswordError'))
-      .regex(/\d/, t('invitePasswordError'))
-      .regex(/[^A-Za-z0-9]/, t('invitePasswordError')),
+    name: z.string().trim().min(1, t('inviteNameError')).max(120, t('inviteNameError')),
+    email: z.string().trim().max(254, t('inviteEmailError')).email(t('inviteEmailError')),
   })
 }
 
@@ -26,11 +24,32 @@ export function createBrokerTransferSchema(t: SchemaMessageTranslator) {
   return z
     .object({
       destinationId: z.string().min(1, t('destinationError')),
-      leads: z.boolean(),
       properties: z.boolean(),
+      leads: z.boolean(),
+      opportunities: z.boolean(),
+      futureEvents: z.boolean(),
     })
-    .refine((values) => values.leads || values.properties, {
-      path: ['leads'],
-      message: t('itemsError'),
+    .refine(
+      (values) => values.properties || values.leads || values.opportunities || values.futureEvents,
+      {
+        path: ['properties'],
+        message: t('itemsError'),
+      },
+    )
+}
+
+export function createBrokerDeactivateSchema(t: SchemaMessageTranslator) {
+  return z.object({ destinationId: z.string().min(1, t('destinationError')) })
+}
+
+export function createAcceptInvitationSchema(t: SchemaMessageTranslator) {
+  return z
+    .object({
+      password: createNewPasswordSchema(t),
+      passwordConfirmation: z.string().min(1, t('passwordConfirmationRequired')),
+    })
+    .refine((values) => values.password === values.passwordConfirmation, {
+      path: ['passwordConfirmation'],
+      message: t('passwordMismatch'),
     })
 }

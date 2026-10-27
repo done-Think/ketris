@@ -1,3 +1,4 @@
+import type { LeadSource } from '@server/crm/constants/lead-sources'
 import type { ReactNode } from 'react'
 
 import type { ApiDashboardMetrics } from './service'
@@ -55,7 +56,7 @@ export type DashboardRecentLead = {
   phone: string
   interest: string
   budget: string
-  source: string
+  source: LeadSource
   status: DashboardRecentLeadStatus
   notes: string
 }

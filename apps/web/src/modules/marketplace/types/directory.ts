@@ -1,39 +1,50 @@
 import type { ReactNode, RefObject } from 'react'
-import type { UseFormRegister } from 'react-hook-form'
 
 import type { ViewMode } from './search'
 
-export type DirectorySearchFormValues = {
-  searchQuery: string
-}
-
-export type DirectoryListParams = {
+export type DirectoryQuery = {
   q?: string
   page: number
   pageSize: number
 }
 
-export type DirectoryPage = {
+export type DirectoryPage<TItem> = {
+  items: TItem[]
   totalCount: number
   page: number
   pageSize: number
 }
 
-export type UseDirectorySearchResult = {
-  register: UseFormRegister<DirectorySearchFormValues>
-  search: string
+export type DirectoryListFilters = {
+  q: string
+  pageSize: number
 }
 
-export type UseLoadMoreOnScrollParams = {
-  enabled: boolean
-  onLoadMore: () => void
+export type UseDirectoryListParams<TApi, TItem> = {
+  queryKey: (filters: DirectoryListFilters) => readonly unknown[]
+  fetchPage: (query: DirectoryQuery) => Promise<DirectoryPage<TApi>>
+  toItem: (item: TApi) => TItem
+  pageSize: number
+}
+
+export type UseDirectoryListResult<TItem> = {
+  items: TItem[]
+  totalCount: number
+  hasMoreItems: boolean
+  isLoading: boolean
+  isLoadingMore: boolean
+  isError: boolean
+  loadMoreRef: RefObject<HTMLDivElement>
+  search: string
+  setSearch: (value: string) => void
 }
 
 export type DirectoryPageHeaderProps = {
   actions?: ReactNode
   placeholder: string
   resultCountLabel: string
-  searchInputProps: ReturnType<UseFormRegister<DirectorySearchFormValues>>
+  search: string
+  onSearchChange: (value: string) => void
   title: string
 }
 
@@ -44,7 +55,7 @@ export type DirectoryLoadMoreStatusProps = {
   isLoadingMore: boolean
   loadedLabel: string
   loadingLabel: string
-  loadMoreRef: RefObject<HTMLDivElement | null>
+  loadMoreRef: RefObject<HTMLDivElement>
 }
 
 export type DirectoryViewModeToggleProps = {

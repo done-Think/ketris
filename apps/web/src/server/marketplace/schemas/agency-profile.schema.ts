@@ -1,20 +1,21 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
-import { profileDirectoryPageSchema } from './profile-directory.schema'
+import { directoryPageFields } from './directory.schema'
 
-const optionalTextSchema = z.string().trim().min(1).nullable().optional()
+const optionalTextSchema = z.string().trim().min(1).max(2000).nullable().optional()
 
 export const saveAgencyProfileTeamMemberSchema = z
   .object({
     usuarioId: z.string().min(1),
     order: z.number().int().nonnegative(),
   })
+  .strict()
   .openapi('SaveAgencyProfileTeamMember')
 
 export const saveAgencyProfileRequestSchema = z
   .object({
-    displayName: z.string().trim().min(1),
+    displayName: z.string().trim().min(1).max(120),
     headline: optionalTextSchema,
     summary: optionalTextSchema,
     legalCreci: optionalTextSchema,
@@ -22,8 +23,8 @@ export const saveAgencyProfileRequestSchema = z
     address: optionalTextSchema,
     phone: optionalTextSchema,
     email: z.string().trim().email().nullable().optional(),
-    coverage: z.array(z.string().trim().min(1)).default([]),
-    segments: z.array(z.string().trim().min(1)).default([]),
+    coverage: z.array(z.string().trim().min(1).max(80)).max(30).default([]),
+    segments: z.array(z.string().trim().min(1).max(80)).max(30).default([]),
     yearsInMarket: z.number().int().nonnegative().nullable().optional(),
     backgroundColor: z
       .string()
@@ -35,6 +36,7 @@ export const saveAgencyProfileRequestSchema = z
     bannerUrl: z.string().trim().min(1).nullable().optional(),
     team: z.array(saveAgencyProfileTeamMemberSchema).max(6).default([]),
   })
+  .strict()
   .openapi('SaveAgencyProfileRequest')
 
 export const agencyListingSummarySchema = z
@@ -90,7 +92,7 @@ export const publicAgencyProfileSchema = z
   .openapi('PublicAgencyProfile')
 
 export const listAgenciesResponseSchema = z
-  .object({ agencies: z.array(publicAgencyProfileSchema), ...profileDirectoryPageSchema })
+  .object({ agencies: z.array(publicAgencyProfileSchema), ...directoryPageFields })
   .openapi('ListAgenciesResponse')
 
 export const getAgencyProfileResponseSchema = z

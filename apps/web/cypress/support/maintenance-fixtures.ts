@@ -6,6 +6,7 @@ import type {
   MaintenanceFixtureResult,
   MaintenanceEvidence,
 } from '../types/maintenance-fixtures'
+import { propertyResponsibleId } from '../../src/server/shared/tests/fixtures/property-responsible'
 function isolated() {
   if (
     process.env.KETRIS_E2E_ISOLATED_DB !== '1' ||
@@ -60,6 +61,7 @@ export async function seedMaintenanceFixtures(
     data: {
       tenantId: tenant.id,
       imovelId: property.id,
+      responsavelId: await propertyResponsibleId(prisma, property.id),
       interessadoNome: renter.nome,
       interessadoEmail: renter.email,
       valorProposto: 2000,

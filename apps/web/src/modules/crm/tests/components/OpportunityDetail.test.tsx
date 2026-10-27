@@ -24,11 +24,18 @@ const mocks = vi.hoisted(() => ({
   refetchProperty: vi.fn(),
   enqueueSnackbar: vi.fn(),
   replace: vi.fn(),
+  assign: vi.fn(),
+  role: { current: 'AGENT' as 'AGENT' | 'OWNER' },
 }))
 
 vi.mock('next-auth/react', () => ({
   useSession: () => ({
-    data: { tenantId: 'tenant-1', scope: 'tenant', user: { id: 'user-1' } },
+    data: {
+      tenantId: 'tenant-1',
+      scope: 'tenant',
+      role: mocks.role.current,
+      user: { id: 'user-1' },
+    },
     status: 'authenticated',
   }),
 }))
@@ -56,6 +63,15 @@ vi.mock('../../hooks/use-opportunities', () => ({
   useCrmAuthorizedProperty: mocks.useCrmAuthorizedProperty,
   useUpdateOpportunity: mocks.useUpdateOpportunity,
   useArchiveOpportunity: mocks.useArchiveOpportunity,
+  useCrmResponsibles: (enabled: boolean) => ({
+    data: enabled
+      ? [
+          { id: 'agent-1', name: 'Ana Corretora', role: 'AGENT' },
+          { id: 'agent-2', name: 'Bruno Corretor', role: 'AGENT' },
+        ]
+      : undefined,
+  }),
+  useAssignOpportunityResponsible: () => ({ mutateAsync: mocks.assign, isPending: false }),
 }))
 
 const opportunity: Opportunity = {
@@ -63,6 +79,8 @@ const opportunity: Opportunity = {
   tenantId: 'tenant-1',
   contactId: null,
   propertyId: 'property-1',
+  responsibleId: 'agent-1',
+  responsibleName: 'Ana Corretora',
   leadName: 'Ricardo Mendes',
   leadEmail: 'ricardo@example.com',
   leadPhone: '(11) 98722-1200',
@@ -114,6 +132,7 @@ function renderDetail(opportunityId = opportunity.id) {
 describe('OpportunityDetail', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mocks.role.current = 'AGENT'
     mocks.useOpportunityActivities.mockReturnValue({ data: [], isLoading: false, isError: false })
     mocks.useOpportunity.mockReturnValue({
       data: opportunity,
@@ -331,5 +350,36 @@ describe('OpportunityDetail', () => {
     renderDetail()
     expect(screen.getByRole('button', { name: 'Mover de etapa' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Descartar lead' })).toBeDisabled()
+  })
+
+  it('shows the responsible to agents without letting them change it', () => {
+    renderDetail()
+
+    const panel = screen.getByRole('heading', { name: 'Responsável' }).closest('section')
+    expect(panel).toHaveTextContent('Ana Corretora')
+    expect(
+      screen.queryByRole('combobox', { name: 'Responsável pela oportunidade' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('lets the OWNER change the responsible', async () => {
+    mocks.role.current = 'OWNER'
+    mocks.assign.mockResolvedValue({
+      ...opportunity,
+      responsibleId: 'agent-2',
+      responsibleName: 'Bruno Corretor',
+    })
+    const user = userEvent.setup()
+    renderDetail()
+
+    await user.click(screen.getByRole('combobox', { name: 'Responsável pela oportunidade' }))
+    await user.click(screen.getByRole('option', { name: 'Bruno Corretor' }))
+
+    await waitFor(() =>
+      expect(mocks.assign).toHaveBeenCalledWith({ id: opportunity.id, responsibleId: 'agent-2' }),
+    )
+    expect(mocks.enqueueSnackbar).toHaveBeenCalledWith('Agora Bruno Corretor é o responsável.', {
+      variant: 'success',
+    })
   })
 })

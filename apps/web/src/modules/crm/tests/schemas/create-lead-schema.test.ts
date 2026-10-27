@@ -11,7 +11,7 @@ const validLeadValues = {
   email: 'ana@ketris.com',
   interest: 'Apartamento 3 quartos nos Jardins',
   budget: 'R$ 4.5M',
-  source: 'Marketplace',
+  source: 'MARKETPLACE',
 }
 
 describe('createLeadSchema', () => {

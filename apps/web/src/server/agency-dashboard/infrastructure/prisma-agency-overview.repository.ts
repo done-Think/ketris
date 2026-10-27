@@ -86,13 +86,13 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
     const ranking = await prisma.$queryRaw<
       { brokerId: string; salesCount: number; revenueTotal: Prisma.Decimal | number | string }[]
     >(Prisma.sql`
-      SELECT i."responsavelId" AS "brokerId",
+      SELECT o."responsavelId" AS "brokerId",
              COUNT(*)::int AS "salesCount",
              SUM(c."valor") AS "revenueTotal"
       FROM "contratos" c
-      JOIN "imoveis" i ON i."id" = c."imovelId"
+      JOIN "oportunidades" o ON o."id" = c."oportunidadeOrigemId"
       WHERE c."tenantId" = ${tenantId} AND c."status" = 'ATIVO'
-      GROUP BY i."responsavelId"
+      GROUP BY o."responsavelId"
       ORDER BY "revenueTotal" DESC, MAX(COALESCE(c."ativadoEm", c."createdAt")) DESC
       LIMIT ${TOP_BROKERS_LIMIT}
     `)
@@ -113,7 +113,7 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
       Promise.all(
         brokerIds.map((brokerId) =>
           prisma.contrato.findMany({
-            where: { tenantId, status: 'ATIVO', imovel: { responsavelId: brokerId } },
+            where: { tenantId, status: 'ATIVO', oportunidadeOrigem: { responsavelId: brokerId } },
             orderBy: { ativadoEm: 'desc' },
             take: RECENT_SALES_PER_BROKER_LIMIT,
             include: {
@@ -162,7 +162,10 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
         where: { tenantId, ativadoEm: { not: null } },
         orderBy: { ativadoEm: 'desc' },
         take: PER_SOURCE_ACTIVITY_LIMIT,
-        include: { imovel: { select: { titulo: true, responsavel: { select: { nome: true } } } } },
+        include: {
+          imovel: { select: { titulo: true } },
+          oportunidadeOrigem: { select: { responsavel: { select: { nome: true } } } },
+        },
       }),
       prisma.imovel.findMany({
         where: { tenantId },
@@ -188,7 +191,7 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
       ...activatedContracts.map((contrato) => ({
         id: contrato.id,
         type: 'CONTRACT' as const,
-        brokerName: contrato.imovel.responsavel?.nome ?? '',
+        brokerName: contrato.oportunidadeOrigem.responsavel.nome,
         detail: contrato.imovel.titulo,
         occurredAt: contrato.ativadoEm as Date,
       })),

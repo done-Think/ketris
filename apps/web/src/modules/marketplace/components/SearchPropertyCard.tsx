@@ -11,11 +11,17 @@ import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
 import { PillBadge } from '@shared/components/ui'
-import { alpha, componentText, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
+import { componentText } from '@shared/theme/tokens'
 import type { PropertyFeatureKey } from '@shared/types'
 import type { SearchPropertyCardProps } from '../types/search'
 import { getPropertyFeatureLabel } from '../utils/property-feature-label'
 import { buildPropertyDetailHref } from '../utils/property-links'
+import {
+  styles,
+  getCardStyles,
+  getBoxStyles,
+  getCardContentStyles,
+} from '../styles/search-property-card.styles'
 
 const detailIcons: Record<PropertyFeatureKey, typeof ApartmentOutlinedIcon> = {
   bedrooms: BedOutlinedIcon,
@@ -41,60 +47,22 @@ export function SearchPropertyCard({
       href={detailsHref}
       onFocus={onActivate}
       onMouseEnter={onActivate}
-      sx={{
-        display: { xs: 'block', md: isListView ? 'flex' : 'block' },
-        overflow: 'hidden',
-        border: '1px solid',
-        borderColor: selected ? 'primary.main' : 'transparent',
-        borderRadius: `${radius.sm}px`,
-        color: 'inherit',
-        textDecoration: 'none',
-        boxShadow: selected ? shadows.propertyCardHover : shadows.propertyCard,
-        transition: motion.transition.card,
-        transform: selected ? 'translateY(-2px)' : 'none',
-        '&:hover': {
-          boxShadow: shadows.propertyCardHover,
-          transform: 'translateY(-3px)',
-          borderColor: alpha.magenta[14],
-        },
-      }}
+      sx={getCardStyles({ isListView, selected })}
     >
-      <Box
-        sx={{
-          position: 'relative',
-          flex: { md: isListView ? '0 0 50%' : undefined },
-          width: { md: isListView ? '50%' : '100%' },
-          minHeight: { md: isListView ? 260 : undefined },
-          height: isListView ? { xs: 180, md: 'auto' } : { xs: 180, md: 150, xl: 175 },
-          backgroundImage: `url("${property.image}")`,
-          backgroundPosition: 'center',
-          backgroundSize: 'cover',
-        }}
-      >
-        <Box sx={{ position: 'absolute', top: 12, left: 12 }}>
+      <Box sx={getBoxStyles({ isListView, property })}>
+        <Box sx={styles.box}>
           <PillBadge>{t('listings.featured')}</PillBadge>
         </Box>
       </Box>
 
-      <CardContent
-        sx={{
-          display: 'flex',
-          flex: { md: isListView ? '0 0 50%' : undefined },
-          width: { md: isListView ? '50%' : 'auto' },
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          p: { xs: 2, xl: 2.25 },
-        }}
-      >
-        <Typography sx={{ color: 'text.secondary', ...componentText.cardEyebrow, mb: 0.55 }}>
-          {property.location}
-        </Typography>
-        <Typography sx={{ ...componentText.cardTitle, mb: 0.7 }}>{property.title}</Typography>
-        <Typography color="primary" sx={{ ...componentText.cardPrice, mb: 1.25 }}>
+      <CardContent sx={getCardContentStyles({ isListView })}>
+        <Typography sx={styles.typography}>{property.location}</Typography>
+        <Typography sx={styles.typography2}>{property.title}</Typography>
+        <Typography color="primary" sx={styles.typography3}>
           {property.price}
         </Typography>
 
-        <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap sx={{ mb: 1.6 }}>
+        <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap sx={styles.stack}>
           {property.details.map((detail) => {
             const Icon = detailIcons[detail.key] ?? ApartmentOutlinedIcon
             return (
@@ -104,7 +72,7 @@ export function SearchPropertyCard({
                 alignItems="center"
                 spacing={0.4}
               >
-                <Icon sx={{ color: 'text.secondary', fontSize: iconSize.xs }} />
+                <Icon sx={styles.icon} />
                 <Typography color="text.secondary" sx={componentText.cardMeta}>
                   {getPropertyFeatureLabel(detail, tDetail)}
                 </Typography>
@@ -113,20 +81,18 @@ export function SearchPropertyCard({
           })}
         </Stack>
 
-        <Divider sx={{ mb: 1.4 }} />
+        <Divider sx={styles.divider} />
 
         <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0 }}>
-            <Avatar src={property.avatar} alt={property.broker} sx={{ width: 28, height: 28 }} />
+          <Stack direction="row" alignItems="center" spacing={1} sx={styles.stack2}>
+            <Avatar src={property.avatar} alt={property.broker} sx={styles.avatar} />
             <Typography noWrap sx={componentText.cardBroker}>
               {property.broker}
             </Typography>
           </Stack>
           <Stack direction="row" alignItems="center" spacing={0.2}>
-            <Typography sx={{ color: 'primary.main', ...componentText.cardAction }}>
-              {t('propertyCard.viewDetails')}
-            </Typography>
-            <ChevronRightIcon sx={{ color: 'primary.main', fontSize: iconSize.sm }} />
+            <Typography sx={styles.typography4}>{t('propertyCard.viewDetails')}</Typography>
+            <ChevronRightIcon sx={styles.chevronRightIcon} />
           </Stack>
         </Stack>
       </CardContent>

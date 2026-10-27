@@ -3,12 +3,20 @@ import type { DeactivateUserInput } from '../../types/use-case-inputs'
 import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
-import { CannotDeactivateSelfError, UserNotFoundError } from '../../domain/errors'
+import {
+  CannotDeactivateSelfError,
+  PortfolioTransferRequiredError,
+  UserNotFoundError,
+} from '../../domain/errors'
 import { toAuthenticatedUser } from '../../domain/user.entity'
+import type { UserPortfolioReader } from '../ports/user-portfolio-reader.port'
 import type { UserRepository } from '../ports/user-repository.port'
 
 export class DeactivateUserUseCase {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly portfolioReader: UserPortfolioReader,
+  ) {}
 
   async execute(input: DeactivateUserInput): Promise<DeactivateUserOutput> {
     if (!isAgencyManager(input.actorPapel)) {
@@ -23,6 +31,10 @@ export class DeactivateUserUseCase {
 
     if (!target || target.tenantId !== input.actorTenantId) {
       throw new UserNotFoundError()
+    }
+
+    if (await this.portfolioReader.hasPortfolio(input.actorTenantId, input.userId)) {
+      throw new PortfolioTransferRequiredError()
     }
 
     const deactivated = await this.userRepository.deactivate(input.userId, input.actorTenantId, {

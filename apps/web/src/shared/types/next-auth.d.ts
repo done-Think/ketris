@@ -3,6 +3,7 @@ import 'next-auth'
 import type { DefaultSession } from 'next-auth'
 
 import type { Papel } from '@server/auth/domain/user.entity'
+import type { PlatformAdminRole } from '@server/platform/types/platform-admin'
 
 type SessionScope = 'tenant' | 'platform'
 
@@ -13,6 +14,7 @@ declare module 'next-auth' {
     scope: SessionScope
     tenantId?: string
     role?: Papel
+    platformRole?: PlatformAdminRole
     sessionVersion?: number
   }
 
@@ -23,6 +25,7 @@ declare module 'next-auth' {
     scope?: SessionScope
     tenantId?: string
     role?: Papel
+    platformRole?: PlatformAdminRole
     user: { id: string } & DefaultSession['user']
   }
 }
@@ -37,6 +40,7 @@ declare module 'next-auth/jwt' {
     scope?: SessionScope
     tenantId?: string
     role?: Papel
+    platformRole?: PlatformAdminRole
     sessionVersion?: number
   }
 }

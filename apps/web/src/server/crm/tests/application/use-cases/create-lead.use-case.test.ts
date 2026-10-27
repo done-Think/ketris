@@ -13,7 +13,7 @@ const created: Lead = {
   email: 'maria@exemplo.com',
   interest: 'Apartamento 2 quartos na Vila Mariana',
   budget: 'Até R$ 3.000',
-  source: 'WhatsApp',
+  source: 'WHATSAPP',
   stage: 'NOVO',
   notes: null,
   opportunityId: null,
@@ -35,7 +35,7 @@ describe('CreateLeadUseCase', () => {
       phone: '(11) 99999-0000',
       interest: 'Apartamento 2 quartos na Vila Mariana',
       budget: 'Até R$ 3.000',
-      source: 'WhatsApp',
+      source: 'WHATSAPP',
     })
 
     expect(create).toHaveBeenCalledWith(
@@ -58,7 +58,7 @@ describe('CreateLeadUseCase', () => {
         phone: '(11) 99999-0000',
         interest: 'Apartamento',
         budget: 'Até R$ 3.000',
-        source: 'WhatsApp',
+        source: 'WHATSAPP',
       }),
     ).rejects.toThrow('Só a equipe da imobiliária acessa o CRM.')
     expect(create).not.toHaveBeenCalled()

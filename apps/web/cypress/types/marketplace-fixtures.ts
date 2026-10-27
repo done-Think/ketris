@@ -2,17 +2,21 @@ export interface MarketplaceFixtureInput {
   suffix: string
   password: string
 }
+
 export interface MarketplaceFixtureResult {
-  tenantId: string
-  ownerEmail: string
+  tenantIds: string[]
   propertyId: string
   propertyTitle: string
+  city: string
+  brokerName: string
+  ownerEmail: string
 }
+
 export interface MarketplaceInquiryEvidence {
-  id: string
-  tenantId: string
-  leadName: string
-  leadEmail: string
-  proposedValue: number
-  status: string
+  count: number
+  status: string | null
+  leadName: string | null
+  leadEmail: string | null
+  proposedValue: number | null
+  notes: string | null
 }

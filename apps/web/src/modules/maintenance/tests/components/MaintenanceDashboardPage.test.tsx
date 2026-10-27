@@ -15,7 +15,6 @@ import {
   useUpdateMaintenanceTicket,
 } from '../../hooks/use-maintenance'
 import type { ApiMaintenanceTicket, ApiMaintenanceTicketListItem } from '../../types/service'
-import { normalizeMaintenanceCategory } from '@server/maintenance/constants/maintenance-categories'
 
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
@@ -47,7 +46,7 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     id: 'MNT-0089',
     propertyId: 'p1',
     propertyTitle: 'Apt Jardins 3q',
-    category: 'Hidráulica',
+    category: 'PLUMBING',
     priority: 'URGENTE',
     status: 'EM_ANDAMENTO',
     title: 'Vazamento na cozinha',
@@ -60,7 +59,7 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     id: 'MNT-0088',
     propertyId: 'p2',
     propertyTitle: 'Studio Pinheiros',
-    category: 'Elétrica',
+    category: 'ELECTRICAL',
     priority: 'ALTA',
     status: 'ABERTO',
     title: 'Tomada com defeito',
@@ -73,7 +72,7 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     id: 'MNT-0087',
     propertyId: 'p3',
     propertyTitle: 'Casa Vila Madalena',
-    category: 'Estrutural',
+    category: 'STRUCTURAL',
     priority: 'ALTA',
     status: 'EM_ANDAMENTO',
     title: 'Rachadura na parede',
@@ -86,7 +85,7 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     id: 'MNT-0086',
     propertyId: 'p4',
     propertyTitle: 'Cobertura Moema',
-    category: 'Pintura',
+    category: 'PAINTING',
     priority: 'NORMAL',
     status: 'RESOLVIDO',
     title: 'Pintura descascando',
@@ -109,7 +108,7 @@ const fullTicket: ApiMaintenanceTicket = {
   id: 'MNT-0089',
   propertyId: 'p1',
   propertyTitle: 'Apt Jardins 3q',
-  category: 'Hidráulica',
+  category: 'PLUMBING',
   priority: 'URGENTE',
   status: 'EM_ANDAMENTO',
   title: 'Vazamento na cozinha',
@@ -135,7 +134,7 @@ function mockDefaults() {
       (item) =>
         (!filters.status || item.status === filters.status) &&
         (!filters.priority || item.priority === filters.priority) &&
-        (!filters.category || normalizeMaintenanceCategory(item.category) === filters.category) &&
+        (!filters.category || item.category === filters.category) &&
         (!filters.propertyId || item.propertyId === filters.propertyId) &&
         (!filters.search ||
           item.title.toLocaleLowerCase().includes(filters.search.toLocaleLowerCase())),

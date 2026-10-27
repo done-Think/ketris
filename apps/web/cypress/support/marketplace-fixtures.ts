@@ -1,5 +1,6 @@
 import type { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+
 import { getDatabaseUrl } from '../../src/server/db/database-url'
 import type {
   MarketplaceFixtureInput,
@@ -7,90 +8,132 @@ import type {
   MarketplaceInquiryEvidence,
 } from '../types/marketplace-fixtures'
 
-function assertLocalDatabase() {
-  const url = new URL(getDatabaseUrl())
+const slugPrefix = 'marketplace-e2e-'
+
+function isolated() {
   if (
-    !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname) ||
-    process.env.KETRIS_E2E_ISOLATED_DB !== '1'
+    process.env.KETRIS_E2E_ISOLATED_DB !== '1' ||
+    !['localhost', '127.0.0.1', '[::1]'].includes(new URL(getDatabaseUrl()).hostname)
   )
-    throw new Error('Fixtures de marketplace exigem banco local isolado.')
+    throw new Error('Marketplace E2E exige banco local isolado.')
 }
-async function assertFixtureTenant(prisma: PrismaClient, id: string) {
-  assertLocalDatabase()
-  const tenant = await prisma.tenant.findUnique({ where: { id }, select: { slug: true } })
-  if (!tenant?.slug.startsWith('marketplace-e2e-'))
-    throw new Error('Tenant não pertence às fixtures de marketplace.')
-}
+
 export async function seedMarketplaceFixtures(
   prisma: PrismaClient,
   { suffix, password }: MarketplaceFixtureInput,
 ): Promise<MarketplaceFixtureResult> {
-  assertLocalDatabase()
-  if (!/^[a-z0-9-]+$/.test(suffix)) throw new Error('Identificador de fixture inválido.')
+  isolated()
+  if (!/^[a-z0-9-]+$/.test(suffix)) throw new Error('Identificador inválido.')
+  await prisma.authRateLimitBucket.deleteMany({
+    where: { key: { startsWith: 'marketplace-inquiry:' } },
+  })
   const tenant = await prisma.tenant.create({
-    data: { nome: 'Marketplace E2E', slug: 'marketplace-e2e-' + suffix },
+    data: { nome: 'Marketplace E2E', slug: slugPrefix + suffix, accountType: 'AGENCY' },
   })
   const senhaHash = await bcrypt.hash(password, 10)
-  const owner = await prisma.usuario.create({
+  const ownerEmail = 'owner-' + suffix + '@marketplace.example.test'
+  await prisma.usuario.create({
     data: {
       tenantId: tenant.id,
       nome: 'Gestora Marketplace E2E',
-      email: 'owner-' + suffix + '@marketplace.example.test',
+      email: ownerEmail,
       senhaHash,
       papel: 'OWNER',
       emailVerificadoEm: new Date(),
     },
   })
-  const propertyTitle = 'Apartamento E2E ' + suffix
+  const brokerName = 'Corretora Marketplace ' + suffix
+  const broker = await prisma.usuario.create({
+    data: {
+      tenantId: tenant.id,
+      nome: brokerName,
+      email: 'broker-' + suffix + '@marketplace.example.test',
+      senhaHash,
+      papel: 'AGENT',
+      emailVerificadoEm: new Date(),
+    },
+  })
+  await prisma.perfilPublicoCorretor.create({
+    data: {
+      usuarioId: broker.id,
+      displayName: brokerName,
+      status: 'PUBLISHED',
+      publicadoEm: new Date(),
+    },
+  })
+  const city = 'Cidade E2E ' + suffix
+  const propertyTitle = 'Casa Marketplace E2E ' + suffix
   const property = await prisma.imovel.create({
     data: {
       tenantId: tenant.id,
-      responsavelId: owner.id,
+      responsavelId: broker.id,
       titulo: propertyTitle,
-      finalidade: 'ALUGUEL',
-      tipo: 'APARTAMENTO',
-      valor: 2800,
-      quartos: 2,
+      descricao: 'Casa com quintal para o fluxo de proposta E2E.',
+      finalidade: 'VENDA',
+      tipo: 'CASA',
+      quartos: 3,
+      banheiros: 2,
+      vagas: 2,
+      areaM2: 140,
+      valor: 650000,
       status: 'PUBLISHED',
-      publicadoEm: new Date(),
+      publicadoEm: new Date(Date.now() + 60_000),
       endereco: {
         create: {
-          logradouro: 'Rua E2E',
-          numero: '10',
+          logradouro: 'Rua do Teste',
+          numero: '42',
           bairro: 'Centro',
-          cidade: 'Curitiba',
+          cidade: city,
           estado: 'PR',
-          cep: '80000-000',
+          cep: '80010-000',
         },
       },
     },
   })
-  return { tenantId: tenant.id, ownerEmail: owner.email, propertyId: property.id, propertyTitle }
-}
-export async function readMarketplaceInquiries(
-  prisma: PrismaClient,
-  { tenantId, propertyId }: { tenantId: string; propertyId: string },
-): Promise<MarketplaceInquiryEvidence[]> {
-  await assertFixtureTenant(prisma, tenantId)
-  const opportunities = await prisma.oportunidade.findMany({ where: { imovelId: propertyId } })
-  return opportunities.map((item) => ({
-    id: item.id,
-    tenantId: item.tenantId,
-    leadName: item.interessadoNome,
-    leadEmail: item.interessadoEmail,
-    proposedValue: Number(item.valorProposto),
-    status: item.status,
-  }))
-}
-export async function cleanupMarketplaceFixtures(
-  prisma: PrismaClient,
-  tenantIds: string[],
-): Promise<null> {
-  for (const tenantId of tenantIds) {
-    await assertFixtureTenant(prisma, tenantId)
-    await prisma.oportunidade.deleteMany({ where: { tenantId } })
-    await prisma.imovel.deleteMany({ where: { tenantId } })
-    await prisma.tenant.delete({ where: { id: tenantId } })
+
+  return {
+    tenantIds: [tenant.id],
+    propertyId: property.id,
+    propertyTitle,
+    city,
+    brokerName,
+    ownerEmail,
   }
+}
+
+export async function cleanupMarketplaceFixtures(prisma: PrismaClient, tenantIds: string[]) {
+  isolated()
+  await prisma.$transaction([
+    prisma.oportunidade.deleteMany({
+      where: { tenantId: { in: tenantIds }, tenant: { slug: { startsWith: slugPrefix } } },
+    }),
+    prisma.tenant.deleteMany({
+      where: { id: { in: tenantIds }, slug: { startsWith: slugPrefix } },
+    }),
+  ])
+  await prisma.authRateLimitBucket.deleteMany({
+    where: { key: { startsWith: 'marketplace-inquiry:' } },
+  })
   return null
+}
+
+export async function readMarketplaceInquiryEvidence(
+  prisma: PrismaClient,
+  propertyId: string,
+): Promise<MarketplaceInquiryEvidence> {
+  isolated()
+  const inquiries = await prisma.oportunidade.findMany({
+    where: { imovelId: propertyId },
+    orderBy: { createdAt: 'desc' },
+  })
+  const latest = inquiries[0]
+
+  return {
+    count: inquiries.length,
+    status: latest?.status ?? null,
+    leadName: latest?.interessadoNome ?? null,
+    leadEmail: latest?.interessadoEmail ?? null,
+    proposedValue: latest ? latest.valorProposto.toNumber() : null,
+    notes: latest?.observacoes ?? null,
+  }
 }

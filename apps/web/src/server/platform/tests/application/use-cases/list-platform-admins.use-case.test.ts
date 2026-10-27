@@ -1,11 +1,20 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type { PlatformAdmin } from '../../../domain/platform-admin.entity'
+import type { PlatformAdmin } from '../../../types/platform-admin'
 import type { PlatformAdminRepository } from '../../../application/ports/platform-admin-repository.port'
 import { ListPlatformAdminsUseCase } from '../../../application/use-cases/list-platform-admins.use-case'
 
 const admins: PlatformAdmin[] = [
-  { id: 'p1', nome: 'Dono', email: 'dono@ketris.dev', senhaHash: 'h1', role: 'ADMIN', ativo: true },
+  {
+    id: 'p1',
+    nome: 'Dono',
+    email: 'dono@ketris.dev',
+    senhaHash: 'h1',
+    role: 'ADMIN',
+    ativo: true,
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    ultimoAcessoEm: new Date('2026-10-27T12:00:00.000Z'),
+  },
   {
     id: 'p2',
     nome: 'Sócio',
@@ -13,6 +22,8 @@ const admins: PlatformAdmin[] = [
     senhaHash: 'h2',
     role: 'AGENT',
     ativo: true,
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    ultimoAcessoEm: null,
   },
 ]
 
@@ -25,6 +36,7 @@ describe('ListPlatformAdminsUseCase', () => {
       create: vi.fn(),
       update: vi.fn(),
       deactivate: vi.fn(),
+      recordAccess: vi.fn(),
     }
     const useCase = new ListPlatformAdminsUseCase(platformAdminRepository)
 

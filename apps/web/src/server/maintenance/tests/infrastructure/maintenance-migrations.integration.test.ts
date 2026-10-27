@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 import { getDatabaseUrl } from '@server/db/database-url'
 
 describe('Maintenance legacy migrations', () => {
-  it('imports exact provider snapshots per tenant without rewriting legacy history or custom categories', async () => {
+  it('imports exact provider snapshots per tenant and moves every category to the closed list', async () => {
     const client = new Client({ connectionString: getDatabaseUrl() })
     const schema = 'maintenance_upgrade_' + randomUUID().replaceAll('-', '')
     await client.connect()
@@ -22,6 +22,7 @@ describe('Maintenance legacy migrations', () => {
       ]) {
         await client.query(`CREATE TABLE "${table}" (LIKE public."${table}" INCLUDING ALL)`)
       }
+      await client.query('ALTER TABLE chamados_manutencao ALTER COLUMN categoria TYPE text')
       await client.query(
         'ALTER TABLE chamados_manutencao DROP COLUMN "prestadorId"; ALTER TABLE atividades_chamado_manutencao DROP COLUMN "systemAction"; ALTER TABLE anexos_chamado_manutencao DROP COLUMN "uploadId"',
       )
@@ -57,6 +58,7 @@ describe('Maintenance legacy migrations', () => {
       for (const migration of [
         '20261026160000_maintenance_provider_catalog_and_categories',
         '20261026170000_maintenance_direct_attachment_uploads',
+        '20261027090000_maintenance_category_enum',
       ]) {
         await client.query(
           await readFile(path.resolve('prisma/migrations', migration, 'migration.sql'), 'utf8'),
@@ -82,7 +84,7 @@ describe('Maintenance legacy migrations', () => {
       expect(rows.map((row) => row.categoria)).toEqual([
         'PLUMBING',
         'ELECTRICAL',
-        'Categoria antiga',
+        'OTHER',
         'PAINTING',
       ])
       expect(

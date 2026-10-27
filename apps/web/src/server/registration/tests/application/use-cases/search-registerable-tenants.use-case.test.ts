@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { RENTER_TENANT_SLUG } from '../../../domain/registration-policy'
+import { RENTER_TENANT_SLUG } from '@server/shared/domain/system-tenants'
 import { SearchRegisterableTenantsUseCase } from '../../../application/use-cases/search-registerable-tenants.use-case'
 import { createDeps, tenant } from './fixtures'
 

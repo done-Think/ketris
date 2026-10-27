@@ -3,76 +3,22 @@
 import { Box, Typography } from '@mui/material'
 import { useFormatter, useTranslations } from 'next-intl'
 
-import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
-
 import type { PlatformMetric } from '../types/platform-overview'
+import { styles } from '../styles/platform-metric-cards.styles'
 
 export function PlatformMetricCards({ metrics }: { metrics: readonly PlatformMetric[] }) {
   const t = useTranslations('platform.overview.metrics')
   const format = useFormatter()
 
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: {
-          xs: 'repeat(2, minmax(0, 1fr))',
-          md: 'repeat(3, minmax(0, 1fr))',
-          lg: 'repeat(6, minmax(0, 1fr))',
-        },
-        gap: { xs: 1.2, md: 1.6 },
-      }}
-    >
+    <Box sx={styles.box}>
       {metrics.map((metric) => (
-        <Box
-          key={metric.id}
-          sx={{
-            minWidth: 0,
-            bgcolor: surface.paper,
-            border: '1px solid',
-            borderColor: alpha.graphite[6],
-            borderRadius: `${radius.sm}px`,
-            boxShadow: shadows.propertyCard,
-            p: { xs: 1.45, md: 2.2 },
-          }}
-        >
-          <Typography
-            sx={{
-              color: brand.neutral[500],
-              fontSize: { xs: 10.5, md: 11 },
-              fontWeight: 900,
-              letterSpacing: 0.25,
-              textTransform: 'uppercase',
-            }}
-          >
-            {t(`${metric.id}.label`)}
-          </Typography>
-          <Box
-            sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 0.9, mt: 0.7 }}
-          >
-            <Typography
-              sx={{
-                color: brand.graphite[500],
-                fontSize: { xs: 22, sm: 28 },
-                fontWeight: 900,
-                lineHeight: 1.12,
-                whiteSpace: 'nowrap',
-              }}
-            >
+        <Box key={metric.id} sx={styles.box2}>
+          <Typography sx={styles.typography}>{t(`${metric.id}.label`)}</Typography>
+          <Box sx={styles.box3}>
+            <Typography sx={styles.typography2}>
               {formatMetricValue(metric, format.number)}
             </Typography>
-            {metric.indicator && (
-              <Typography
-                sx={{
-                  color: metric.tone === 'success' ? brand.semantic.success : brand.neutral[500],
-                  fontSize: 11,
-                  fontWeight: 800,
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {t(`indicators.${metric.indicator}`)}
-              </Typography>
-            )}
           </Box>
         </Box>
       ))}

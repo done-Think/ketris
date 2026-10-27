@@ -67,7 +67,7 @@ export class PrismaDashboardOverviewRepository implements DashboardOverviewRepos
         tenantId: scope.tenantId,
         arquivadaEm: null,
         status: { in: onlyAwaitingResponse ? ['ENVIADA'] : ['ENVIADA', 'EM_NEGOCIACAO'] },
-        ...(scope.agentId ? { imovel: { responsavelId: scope.agentId } } : {}),
+        ...(scope.agentId ? { responsavelId: scope.agentId } : {}),
       },
     })
   }

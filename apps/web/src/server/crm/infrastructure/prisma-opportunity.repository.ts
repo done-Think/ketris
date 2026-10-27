@@ -14,11 +14,15 @@ import type {
 } from '../application/ports/opportunity-repository.port'
 import type { NewOpportunity, Opportunity, OpportunityUpdate } from '../domain/opportunity.entity'
 
+const responsibleInclude = { responsavel: { select: { nome: true } } } as const
+
 function toDomain(row: OportunidadeRow): Opportunity {
   return {
     id: row.id,
     tenantId: row.tenantId,
     propertyId: row.imovelId,
+    responsibleId: row.responsavelId,
+    responsibleName: row.responsavel.nome,
     contactId: row.contatoId,
     leadName: row.interessadoNome,
     leadEmail: row.interessadoEmail,
@@ -47,6 +51,7 @@ export class PrismaOpportunityRepository implements OpportunityRepository {
       data: {
         tenantId: this.scope.actorTenantId,
         imovelId: opportunity.propertyId,
+        responsavelId: opportunity.responsibleId,
         contatoId: opportunity.contactId ?? undefined,
         interessadoNome: opportunity.leadName,
         interessadoEmail: opportunity.leadEmail,
@@ -59,6 +64,7 @@ export class PrismaOpportunityRepository implements OpportunityRepository {
         garantiaContratual: opportunity.guaranteeType,
         condicoesEspeciais: opportunity.specialConditions,
       },
+      include: responsibleInclude,
     })
 
     await recordCrmAudit(this.db, this.scope, 'OPPORTUNITY', row.id, 'CREATED', [])
@@ -72,7 +78,7 @@ export class PrismaOpportunityRepository implements OpportunityRepository {
     const page = await readCrmPage(this.db, this.scope, 'opportunity', filters)
     const rows = await this.db.oportunidade.findMany({
       where: { id: { in: page.ids }, tenantId: this.scope.actorTenantId },
-      include: { imovel: { include: crmPropertyInclude } },
+      include: { imovel: { include: crmPropertyInclude }, ...responsibleInclude },
     })
     const byId = new Map(
       rows.map((row) => [row.id, { ...toDomain(row), property: toCrmProperty(row.imovel) }]),
@@ -92,10 +98,9 @@ export class PrismaOpportunityRepository implements OpportunityRepository {
       where: {
         id,
         tenantId: this.scope.actorTenantId,
-        ...(this.scope.actorPapel === 'AGENT'
-          ? { imovel: { responsavelId: this.scope.actorId ?? '' } }
-          : {}),
+        ...(this.scope.actorPapel === 'AGENT' ? { responsavelId: this.scope.actorId ?? '' } : {}),
       },
+      include: responsibleInclude,
     })
 
     return row ? toDomain(row) : null
@@ -108,9 +113,7 @@ export class PrismaOpportunityRepository implements OpportunityRepository {
       where: {
         id,
         tenantId: this.scope.actorTenantId,
-        ...(this.scope.actorPapel === 'AGENT'
-          ? { imovel: { responsavelId: this.scope.actorId ?? '' } }
-          : {}),
+        ...(this.scope.actorPapel === 'AGENT' ? { responsavelId: this.scope.actorId ?? '' } : {}),
       },
       data: {
         contatoId: changes.contactId,
@@ -125,6 +128,7 @@ export class PrismaOpportunityRepository implements OpportunityRepository {
         observacoes: changes.notes,
         status: changes.status,
       },
+      include: responsibleInclude,
     })
 
     await recordCrmAudit(this.db, this.scope, 'OPPORTUNITY', row.id, 'UPDATED', changedFields)
@@ -176,14 +180,24 @@ export class PrismaOpportunityRepository implements OpportunityRepository {
       where: {
         id,
         tenantId: this.scope.actorTenantId,
-        ...(this.scope.actorPapel === 'AGENT'
-          ? { imovel: { responsavelId: this.scope.actorId ?? '' } }
-          : {}),
+        ...(this.scope.actorPapel === 'AGENT' ? { responsavelId: this.scope.actorId ?? '' } : {}),
       },
       data: { arquivadaEm: new Date() },
+      include: responsibleInclude,
     })
 
     await recordCrmAudit(this.db, this.scope, 'OPPORTUNITY', row.id, 'ARCHIVED', ['archivedAt'])
+    return toDomain(row)
+  }
+
+  async assignResponsible(id: string, responsibleId: string): Promise<Opportunity> {
+    const row = await this.db.oportunidade.update({
+      where: { id, tenantId: this.scope.actorTenantId },
+      data: { responsavelId: responsibleId },
+      include: responsibleInclude,
+    })
+
+    await recordCrmAudit(this.db, this.scope, 'OPPORTUNITY', row.id, 'UPDATED', ['responsibleId'])
     return toDomain(row)
   }
 
@@ -199,9 +213,7 @@ export class PrismaOpportunityRepository implements OpportunityRepository {
         where: {
           id,
           tenantId: this.scope.actorTenantId,
-          ...(this.scope.actorPapel === 'AGENT'
-            ? { imovel: { responsavelId: this.scope.actorId ?? '' } }
-            : {}),
+          ...(this.scope.actorPapel === 'AGENT' ? { responsavelId: this.scope.actorId ?? '' } : {}),
         },
       })
     } catch (error) {
@@ -219,17 +231,17 @@ export class PrismaOpportunityRepository implements OpportunityRepository {
 
     const rows = await this.db.$queryRaw<{ contactId: string; count: bigint }[]>(Prisma.sql`
       SELECT o."contatoId" AS "contactId", count(DISTINCT o."imovelId") AS count
-      FROM oportunidades o JOIN imoveis i ON i.id = o."imovelId"
+      FROM oportunidades o
       WHERE o."tenantId" = ${this.scope.actorTenantId} AND o."contatoId" IN (${Prisma.join([...contactIds])})
         AND o."arquivadaEm" IS NULL
-        ${this.scope.actorPapel === 'AGENT' ? Prisma.sql`AND i."responsavelId" = ${this.scope.actorId ?? ''}` : Prisma.empty}
+        ${this.scope.actorPapel === 'AGENT' ? Prisma.sql`AND o."responsavelId" = ${this.scope.actorId ?? ''}` : Prisma.empty}
       GROUP BY o."contatoId"`)
     return new Map(rows.map((row) => [row.contactId, Number(row.count)]))
   }
 
   async existsForAgent(tenantId: string, contactId: string, agentId: string): Promise<boolean> {
     const count = await this.db.oportunidade.count({
-      where: { tenantId, contatoId: contactId, imovel: { responsavelId: agentId } },
+      where: { tenantId, contatoId: contactId, responsavelId: agentId },
     })
 
     return count > 0

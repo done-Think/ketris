@@ -15,8 +15,9 @@ import {
   ownBrokerProfileResponseSchema,
   saveBrokerProfileRequestSchema,
 } from './schemas/broker-profile.schema'
+import { directoryQuerySchema } from './schemas/directory.schema'
 import { getPropertyResponseSchema } from './schemas/get-property.schema'
-import { listPublicProfilesQuerySchema } from './schemas/profile-directory.schema'
+import { marketplaceStatsResponseSchema } from './schemas/marketplace-stats.schema'
 import {
   profileMediaBinarySchema,
   profileMediaKeyParamsSchema,
@@ -49,6 +50,22 @@ const brokerIdParamsSchema = z.object({
 })
 
 export function registerMarketplaceOpenApi(registry: OpenAPIRegistry): void {
+  registry.registerPath({
+    method: 'get',
+    path: '/marketplace/stats',
+    tags: ['Marketplace'],
+    summary: 'Números públicos do marketplace',
+    description:
+      'Rota pública, sem autenticação. Conta imóveis publicados, perfis de corretor publicados e ' +
+      'cidades distintas com imóvel publicado. Resposta com cache público de 5 minutos.',
+    responses: {
+      200: {
+        description: 'Números do marketplace.',
+        content: { 'application/json': { schema: marketplaceStatsResponseSchema } },
+      },
+    },
+  })
+
   registry.registerPath({
     method: 'get',
     path: '/marketplace/properties',
@@ -135,14 +152,12 @@ export function registerMarketplaceOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Marketplace'],
     summary: 'Lista imobiliárias com perfil público publicado',
     description:
-      'Rota pública, sem autenticação. Retorna todas as imobiliárias de todos os ' +
-      'tenants com perfil público no status PUBLISHED, paginados (page, padrão 1; pageSize, ' +
-      'padrão 12 e máximo 50). q busca, sem diferenciar acentos e maiúsculas, no nome, CRECI e ' +
-      'demais textos do perfil; totalCount traz o total encontrado.',
-    request: { query: listPublicProfilesQuerySchema },
+      'Rota pública, sem autenticação. Retorna, paginados, os perfis públicos PUBLISHED de ' +
+      'todos os tenants. q busca no nome, CRECI, região e listas do perfil (sem acento).',
+    request: { query: directoryQuerySchema },
     responses: {
       200: {
-        description: 'Página de perfis públicos de imobiliárias.',
+        description: 'Lista de perfis públicos de imobiliárias.',
         content: { 'application/json': { schema: listAgenciesResponseSchema } },
       },
     },
@@ -175,14 +190,12 @@ export function registerMarketplaceOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Marketplace'],
     summary: 'Lista corretores com perfil público publicado',
     description:
-      'Rota pública, sem autenticação. Retorna todos os corretores de todos os ' +
-      'tenants com perfil público no status PUBLISHED, paginados (page, padrão 1; pageSize, ' +
-      'padrão 12 e máximo 50). q busca, sem diferenciar acentos e maiúsculas, no nome, CRECI e ' +
-      'demais textos do perfil; totalCount traz o total encontrado.',
-    request: { query: listPublicProfilesQuerySchema },
+      'Rota pública, sem autenticação. Retorna, paginados, os perfis públicos PUBLISHED de ' +
+      'todos os tenants. q busca no nome, CRECI, região e listas do perfil (sem acento).',
+    request: { query: directoryQuerySchema },
     responses: {
       200: {
-        description: 'Página de perfis públicos de corretores.',
+        description: 'Lista de perfis públicos de corretores.',
         content: { 'application/json': { schema: listBrokersResponseSchema } },
       },
     },

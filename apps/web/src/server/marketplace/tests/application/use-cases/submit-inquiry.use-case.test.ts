@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { PropertyNotFoundError } from '../../../domain/errors'
-import type { CreatedInquiry } from '../../../domain/inquiry.entity'
+import type { CreatedInquiry } from '../../../types/inquiry'
 import type { PublishedPropertyDetail } from '../../../types/property'
 import type { InquiryRepository } from '../../../application/ports/inquiry-repository.port'
 import type { PublicPropertyRepository } from '../../../application/ports/public-property-repository.port'
@@ -12,7 +12,7 @@ const detail: PublishedPropertyDetail = {
   tenantId: 'tenant-1',
   title: 'Apartamento no centro',
   purpose: 'ALUGUEL',
-  propertyType: 'apartamento',
+  propertyType: 'APARTAMENTO',
   price: 2500,
   condoFee: null,
   propertyTax: null,

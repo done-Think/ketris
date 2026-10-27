@@ -1,13 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { InvalidPlatformRefreshTokenError } from '../../../domain/errors'
-import type { PlatformAdmin } from '../../../domain/platform-admin.entity'
+import type { PlatformAdmin } from '../../../types/platform-admin'
 import { hashPlatformRefreshToken } from '../../../domain/refresh-token'
 import type { PlatformAdminRepository } from '../../../application/ports/platform-admin-repository.port'
-import type {
-  PlatformRefreshTokenRepository,
-  StoredPlatformRefreshToken,
-} from '../../../application/ports/platform-refresh-token-repository.port'
+import type { PlatformRefreshTokenRepository } from '../../../application/ports/platform-refresh-token-repository.port'
+import type { StoredPlatformRefreshToken } from '../../../types/platform-refresh-token-repository'
 import type { PlatformTokenService } from '../../../application/ports/platform-token-service.port'
 import { RefreshPlatformAdminTokenUseCase } from '../../../application/use-cases/refresh-platform-admin-token.use-case'
 
@@ -18,6 +16,8 @@ const admin: PlatformAdmin = {
   senhaHash: 'hash-fake',
   role: 'ADMIN',
   ativo: true,
+  createdAt: new Date('2026-01-01T00:00:00.000Z'),
+  ultimoAcessoEm: null,
 }
 
 const stored: StoredPlatformRefreshToken = { id: 'rt-1', platformAdminId: admin.id }
@@ -33,6 +33,7 @@ function createDeps(overrides?: {
     create: vi.fn(),
     update: vi.fn(),
     deactivate: vi.fn(),
+    recordAccess: vi.fn(),
   }
   const tokenService: PlatformTokenService = {
     sign: vi.fn().mockResolvedValue('jwt-novo'),

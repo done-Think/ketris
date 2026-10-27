@@ -5,6 +5,18 @@ import {
 } from './cypress/support/maintenance-fixtures'
 import type { MaintenanceFixtureInput } from './cypress/types/maintenance-fixtures'
 import {
+  seedFinancialFixtures,
+  cleanupFinancialFixtures,
+  readFinancialEvidence,
+} from './cypress/support/financial-fixtures'
+import type { FinancialFixtureInput } from './cypress/types/financial-fixtures'
+import {
+  seedMarketplaceFixtures,
+  cleanupMarketplaceFixtures,
+  readMarketplaceInquiryEvidence,
+} from './cypress/support/marketplace-fixtures'
+import type { MarketplaceFixtureInput } from './cypress/types/marketplace-fixtures'
+import {
   seedCrmFixtures,
   cleanupCrmFixtures,
   readCrmEvidence,
@@ -24,11 +36,11 @@ import {
 } from './cypress/support/agenda-fixtures'
 import type { AgendaFixtureSeedInput } from './cypress/types/agenda-fixtures'
 import {
-  seedMarketplaceFixtures,
-  cleanupMarketplaceFixtures,
-  readMarketplaceInquiries,
-} from './cypress/support/marketplace-fixtures'
-import type { MarketplaceFixtureInput } from './cypress/types/marketplace-fixtures'
+  seedTeamFixtures,
+  cleanupTeamFixtures,
+  readTeamEvidence,
+} from './cypress/support/team-fixtures'
+import type { TeamFixtureInput } from './cypress/types/team-fixtures'
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import bcrypt from 'bcryptjs'
@@ -92,6 +104,17 @@ export default defineConfig({
         cleanupMaintenanceFixtures: (tenantIds: string[]) =>
           cleanupMaintenanceFixtures(prisma, tenantIds),
         readMaintenanceEvidence: (id: string) => readMaintenanceEvidence(prisma, id),
+        seedFinancialFixtures: (input: FinancialFixtureInput) =>
+          seedFinancialFixtures(prisma, input),
+        cleanupFinancialFixtures: (tenantIds: string[]) =>
+          cleanupFinancialFixtures(prisma, tenantIds),
+        readFinancialEvidence: (chargeId: string) => readFinancialEvidence(prisma, chargeId),
+        seedMarketplaceFixtures: (input: MarketplaceFixtureInput) =>
+          seedMarketplaceFixtures(prisma, input),
+        cleanupMarketplaceFixtures: (tenantIds: string[]) =>
+          cleanupMarketplaceFixtures(prisma, tenantIds),
+        readMarketplaceInquiryEvidence: (propertyId: string) =>
+          readMarketplaceInquiryEvidence(prisma, propertyId),
         seedCrmFixtures: (input: CrmFixtureInput) => seedCrmFixtures(prisma, input),
         cleanupCrmFixtures: (tenantIds: string[]) => cleanupCrmFixtures(prisma, tenantIds),
         readCrmEvidence: (input: { tenantId: string; contactId: string }) =>
@@ -104,12 +127,15 @@ export default defineConfig({
         seedAgendaFixtures: (input: AgendaFixtureSeedInput) => seedAgendaFixtures(prisma, input),
         cleanupAgendaFixtures: (tenantIds: string[]) => cleanupAgendaFixtures(prisma, tenantIds),
         readAgendaAudit: (eventId: string) => readAgendaAudit(prisma, eventId),
-        seedMarketplaceFixtures: (input: MarketplaceFixtureInput) =>
-          seedMarketplaceFixtures(prisma, input),
-        cleanupMarketplaceFixtures: (tenantIds: string[]) =>
-          cleanupMarketplaceFixtures(prisma, tenantIds),
-        readMarketplaceInquiries: (input: { tenantId: string; propertyId: string }) =>
-          readMarketplaceInquiries(prisma, input),
+        seedTeamFixtures: (input: TeamFixtureInput) => seedTeamFixtures(prisma, input),
+        cleanupTeamFixtures: (tenantIds: string[]) => cleanupTeamFixtures(prisma, tenantIds),
+        readTeamEvidence: (input: Parameters<typeof readTeamEvidence>[1]) =>
+          readTeamEvidence(prisma, input),
+        readTeamInvitationEmail(email: string) {
+          if (!mailbox)
+            throw new Error('O simulador de e-mail Auth não foi habilitado para esta execução.')
+          return mailbox.readInvitation(email)
+        },
         readAuthEmail(email: string) {
           if (!mailbox)
             throw new Error('O simulador de e-mail Auth não foi habilitado para esta execução.')
@@ -158,11 +184,19 @@ export default defineConfig({
 
           return null
         },
-        async seedPlatformAdmin({ email, password }: { email: string; password: string }) {
+        async seedPlatformAdmin({
+          email,
+          password,
+          role = 'ADMIN',
+        }: {
+          email: string
+          password: string
+          role?: 'ADMIN' | 'ADMIN_AGENT' | 'AGENT'
+        }) {
           const senhaHash = await bcrypt.hash(password, 10)
 
           const admin = await prisma.platformAdmin.create({
-            data: { nome: 'Admin Plataforma E2E', email, senhaHash },
+            data: { nome: 'Admin Plataforma E2E', email, senhaHash, role },
           })
 
           return admin.id
@@ -172,6 +206,17 @@ export default defineConfig({
             where: { platformAdminId: adminId },
           })
           await prisma.platformAdmin.delete({ where: { id: adminId } }).catch(() => null)
+          return null
+        },
+        async cleanupPlatformAdminsByEmail(emails: string[]) {
+          await prisma.platformAdminRefreshToken.deleteMany({
+            where: { platformAdmin: { email: { in: emails } } },
+          })
+          await prisma.platformAdmin.deleteMany({ where: { email: { in: emails } } })
+          return null
+        },
+        async cleanupTenantsBySlug(slugs: string[]) {
+          await prisma.tenant.deleteMany({ where: { slug: { in: slugs } } })
           return null
         },
       })

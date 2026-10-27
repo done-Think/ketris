@@ -143,8 +143,6 @@ export class InvalidPasswordResetTokenError extends AppError {
   }
 }
 
-// 400 (e não 401) de propósito: o http-client trata qualquer 401 como sessão expirada e tenta
-// renovar o token, o que esconderia o erro de senha incorreta do usuário.
 export class InvalidCurrentPasswordError extends AppError {
   constructor() {
     super('A senha atual está incorreta.', { status: 400, code: 'INVALID_CURRENT_PASSWORD' })
@@ -157,5 +155,14 @@ export class AvatarValidationError extends AppError {
       'Avatar inválido. Use uma imagem JPEG, PNG ou WebP de até 8 MiB enviada pelo próprio usuário.',
       { status: 400, code: 'AVATAR_VALIDATION_ERROR' },
     )
+  }
+}
+
+export class PortfolioTransferRequiredError extends AppError {
+  constructor() {
+    super('Transfira os imóveis, leads e eventos futuros antes de desativar este usuário.', {
+      status: 409,
+      code: 'PORTFOLIO_TRANSFER_REQUIRED',
+    })
   }
 }

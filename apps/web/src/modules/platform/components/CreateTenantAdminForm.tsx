@@ -10,12 +10,12 @@ import { useSnackbar } from 'notistack'
 import { useTranslations } from 'next-intl'
 
 import { RhfTextField } from '@shared/components/form'
-import { iconSize } from '@shared/theme/tokens'
 import { extractErrorMessage } from '@shared/utils/error-message'
 
 import { createTenantAdminSchema } from '../schemas/create-tenant-admin-schema'
-import { useCreateTenantAdmin } from '../hooks/use-create-tenant-admin'
+import { useCreateTenantAdmin } from '../hooks/use-tenants'
 import type { CreateTenantAdminFormProps, CreateTenantAdminFormValues } from '../types/tenant'
+import { styles } from '../styles/create-tenant-admin-form.styles'
 
 export function CreateTenantAdminForm({ tenantId }: CreateTenantAdminFormProps) {
   const t = useTranslations('platform.forms')
@@ -37,7 +37,12 @@ export function CreateTenantAdminForm({ tenantId }: CreateTenantAdminFormProps) 
 
   async function onSubmit(values: CreateTenantAdminFormValues) {
     try {
-      const user = await createTenantAdmin.mutateAsync({ tenantId, ...values })
+      const user = await createTenantAdmin.mutateAsync({
+        tenantId,
+        name: values.name,
+        email: values.email,
+        password: values.password,
+      })
       enqueueSnackbar(t('createTenantAdminSuccess', { email: user.email }), { variant: 'success' })
       reset()
       setShowPassword(false)
@@ -54,9 +59,9 @@ export function CreateTenantAdminForm({ tenantId }: CreateTenantAdminFormProps) 
         onClick={() => setShowPassword((visible) => !visible)}
       >
         {showPassword ? (
-          <VisibilityOffOutlinedIcon sx={{ fontSize: iconSize.lg }} />
+          <VisibilityOffOutlinedIcon sx={styles.visibilityOffOutlinedIcon} />
         ) : (
-          <VisibilityOutlinedIcon sx={{ fontSize: iconSize.lg }} />
+          <VisibilityOutlinedIcon sx={styles.visibilityOffOutlinedIcon} />
         )}
       </IconButton>
     </InputAdornment>

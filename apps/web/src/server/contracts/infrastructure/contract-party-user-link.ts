@@ -1,7 +1,6 @@
 import type { Prisma } from '@prisma/client'
 import type { LinkContractPartyUserData } from '../types/contract-party-user-link'
 
-// Both administrative APIs use the same conditional write, including inside maintenance's transaction.
 export async function linkContractPartyUser(
   db: Pick<Prisma.TransactionClient, 'parteContrato'>,
   input: LinkContractPartyUserData,

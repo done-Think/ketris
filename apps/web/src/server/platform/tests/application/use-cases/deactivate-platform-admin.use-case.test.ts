@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { CannotDeactivateSelfError, PlatformAdminNotFoundError } from '../../../domain/errors'
-import type { PlatformAdmin } from '../../../domain/platform-admin.entity'
+import type { PlatformAdmin } from '../../../types/platform-admin'
 import type { PlatformAdminRepository } from '../../../application/ports/platform-admin-repository.port'
 import type { PlatformRefreshTokenRepository } from '../../../application/ports/platform-refresh-token-repository.port'
 import { DeactivatePlatformAdminUseCase } from '../../../application/use-cases/deactivate-platform-admin.use-case'
@@ -13,6 +13,8 @@ const target: PlatformAdmin = {
   senhaHash: 'hash-fake',
   role: 'ADMIN',
   ativo: true,
+  createdAt: new Date('2026-01-01T00:00:00.000Z'),
+  ultimoAcessoEm: null,
 }
 
 function createDeps(overrides?: { findById?: PlatformAdminRepository['findById'] }) {
@@ -23,6 +25,7 @@ function createDeps(overrides?: { findById?: PlatformAdminRepository['findById']
     create: vi.fn(),
     update: vi.fn(),
     deactivate: vi.fn().mockResolvedValue({ ...target, ativo: false }),
+    recordAccess: vi.fn(),
   }
   const refreshTokenRepository: PlatformRefreshTokenRepository = {
     rotate: vi.fn().mockResolvedValue(true),

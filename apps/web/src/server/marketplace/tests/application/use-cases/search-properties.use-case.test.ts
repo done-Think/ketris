@@ -8,7 +8,7 @@ const summary: PublishedPropertySummary = {
   id: 'imovel-1',
   title: 'Apartamento no centro',
   purpose: 'ALUGUEL',
-  propertyType: 'apartamento',
+  propertyType: 'APARTAMENTO',
   price: 2500,
   condoFee: 400,
   propertyTax: 100,

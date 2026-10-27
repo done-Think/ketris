@@ -19,20 +19,24 @@ import { useTheme } from '@mui/material/styles'
 import { useFormatter, useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
-import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
 
-import { usePlatformFinance } from '../hooks/use-platform-finance'
+import { usePlatformFinance } from '../hooks/use-platform-billing'
 import type { MonthlyCharge } from '../types/platform-plan'
 import type { PlatformTenant } from '../types/tenant'
 import { accountInitials } from '../utils/account-type-icons'
 import { tenantStatusChipColor } from '../utils/tenant-status'
+import {
+  styles,
+  getBoxStyles,
+  getBoxStyles2,
+  getTypographyStyles,
+} from '../styles/platform-finance-page.styles'
 
 export function PlatformFinancePage() {
   const t = useTranslations('platform.finance')
   const accountT = useTranslations('platform.account')
   const format = useFormatter()
   const theme = useTheme()
-  // On phones the five columns do not fit: each account becomes a stacked row instead.
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const financeQuery = usePlatformFinance()
   const finance = financeQuery.data
@@ -42,13 +46,13 @@ export function PlatformFinancePage() {
     format.number(value, { style: 'percent', maximumFractionDigits: 0 })
 
   return (
-    <Box sx={{ width: '100%', p: 3.5 }}>
-      <Box sx={{ pb: 1.75, mb: 2.4, borderBottom: '1px solid', borderColor: 'divider' }}>
-        <Typography component="h1" sx={headingSx}>
+    <Box sx={styles.box}>
+      <Box sx={styles.box2}>
+        <Typography component="h1" sx={styles.heading}>
           {t('title')}
         </Typography>
         {finance ? (
-          <Typography sx={{ color: brand.neutral[500], fontSize: 14, mt: 0.5 }}>
+          <Typography sx={styles.typography}>
             {t('subtitle', {
               month: format.dateTime(new Date(finance.referenceDate), {
                 month: 'long',
@@ -60,23 +64,14 @@ export function PlatformFinancePage() {
       </Box>
 
       {financeQuery.isPending ? (
-        <Stack alignItems="center" sx={{ py: 6 }}>
+        <Stack alignItems="center" sx={styles.stack}>
           <CircularProgress size={28} />
         </Stack>
       ) : financeQuery.isError || !finance ? (
-        <Typography sx={{ color: brand.neutral[500], fontSize: 13.5 }}>{t('loadError')}</Typography>
+        <Typography sx={styles.typography2}>{t('loadError')}</Typography>
       ) : (
         <Stack spacing={2.4}>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: 'repeat(2, minmax(0, 1fr))',
-                lg: 'repeat(4, minmax(0, 1fr))',
-              },
-              gap: { xs: 1.2, md: 1.6 },
-            }}
-          >
+          <Box sx={styles.box3}>
             <KpiCard label={t('kpis.mrr')} value={formatPrice(finance.mrr)} />
             <KpiCard
               label={t('kpis.payingAccounts')}
@@ -102,118 +97,47 @@ export function PlatformFinancePage() {
             />
           </Box>
 
-          <Box component="section" aria-labelledby="finance-by-type-title" sx={panelSx}>
-            <Typography id="finance-by-type-title" component="h2" sx={sectionTitleSx}>
+          <Box component="section" aria-labelledby="finance-by-type-title" sx={styles.panel}>
+            <Typography id="finance-by-type-title" component="h2" sx={styles.sectionTitle}>
               {t('byAccountType.title')}
             </Typography>
-            <Stack spacing={1.6} sx={{ mt: 2 }}>
+            <Stack spacing={1.6} sx={styles.stack2}>
               {finance.byAccountType.map((row) => {
                 const share = finance.mrr > 0 ? row.mrr / finance.mrr : 0
 
                 return (
-                  <Box
-                    key={row.accountType}
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: {
-                        xs: 'minmax(0, 1fr) auto auto',
-                        md: '220px minmax(0, 1fr) 56px 120px',
-                      },
-                      columnGap: 2,
-                      rowGap: 0.8,
-                      alignItems: 'center',
-                    }}
-                  >
+                  <Box key={row.accountType} sx={styles.box4}>
                     <Box>
-                      <Typography
-                        sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 800 }}
-                      >
+                      <Typography sx={styles.typography3}>
                         {accountT(`accountTypes.${row.accountType}`)}
                       </Typography>
-                      <Typography sx={{ color: brand.neutral[500], fontSize: 12.5 }}>
+                      <Typography sx={styles.typography4}>
                         {t('byAccountType.activeAccounts', { count: row.activeAccounts })}
                       </Typography>
                     </Box>
-                    <Box
-                      aria-hidden
-                      sx={{
-                        gridColumn: { xs: '1 / -1', md: 'auto' },
-                        gridRow: { xs: 2, md: 'auto' },
-                        height: 8,
-                        borderRadius: radius.full,
-                        bgcolor: brand.neutral[100],
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          width: `${Math.round(share * 100)}%`,
-                          height: '100%',
-                          borderRadius: radius.full,
-                          bgcolor: brand.magenta[500],
-                        }}
-                      />
+                    <Box aria-hidden sx={styles.box5}>
+                      <Box sx={getBoxStyles({ share })} />
                     </Box>
-                    <Typography
-                      sx={{
-                        color: brand.neutral[500],
-                        fontSize: 13,
-                        fontWeight: 700,
-                        textAlign: 'right',
-                      }}
-                    >
-                      {formatShare(share)}
-                    </Typography>
-                    <Typography
-                      sx={{
-                        color: brand.graphite[500],
-                        fontSize: 14,
-                        fontWeight: 800,
-                        textAlign: 'right',
-                      }}
-                    >
-                      {formatPrice(row.mrr)}
-                    </Typography>
+                    <Typography sx={styles.typography5}>{formatShare(share)}</Typography>
+                    <Typography sx={styles.typography6}>{formatPrice(row.mrr)}</Typography>
                   </Box>
                 )
               })}
             </Stack>
           </Box>
 
-          <Box
-            component="section"
-            aria-labelledby="finance-accounts-title"
-            sx={{ ...panelSx, p: 0, overflow: 'hidden' }}
-          >
-            <Box
-              sx={{
-                px: { xs: 1.6, md: 2.2 },
-                py: 1.6,
-                borderBottom: '1px solid',
-                borderColor: alpha.graphite[6],
-              }}
-            >
-              <Typography id="finance-accounts-title" component="h2" sx={sectionTitleSx}>
+          <Box component="section" aria-labelledby="finance-accounts-title" sx={styles.box6}>
+            <Box sx={styles.box7}>
+              <Typography id="finance-accounts-title" component="h2" sx={styles.sectionTitle}>
                 {t('accounts.title')}
               </Typography>
             </Box>
             {finance.accounts.length === 0 ? (
-              <Typography sx={{ color: brand.neutral[500], fontSize: 13, px: 2.2, py: 2.2 }}>
-                {t('accounts.empty')}
-              </Typography>
+              <Typography sx={styles.typography7}>{t('accounts.empty')}</Typography>
             ) : isMobile ? (
-              <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+              <Box component="ul" sx={styles.box8}>
                 {finance.accounts.map((account) => (
-                  <Box
-                    component="li"
-                    key={account.id}
-                    sx={{
-                      px: 1.6,
-                      py: 1.6,
-                      borderBottom: '1px solid',
-                      borderColor: alpha.graphite[6],
-                      '&:last-of-type': { borderBottom: 0 },
-                    }}
-                  >
+                  <Box component="li" key={account.id} sx={styles.box9}>
                     <Stack direction="row" spacing={1.2} alignItems="flex-start">
                       <AccountName account={account} />
                       {account.monthlyCharge ? (
@@ -223,7 +147,7 @@ export function PlatformFinancePage() {
                         />
                       ) : null}
                     </Stack>
-                    <Stack direction="row" spacing={0.8} sx={{ mt: 1, ml: 5.4 }}>
+                    <Stack direction="row" spacing={0.8} sx={styles.stack3}>
                       <Chip
                         size="small"
                         variant="outlined"
@@ -232,7 +156,7 @@ export function PlatformFinancePage() {
                       <StatusChip account={account} />
                     </Stack>
                     {account.monthlyCharge ? (
-                      <Box sx={{ mt: 1.2, ml: 5.4 }}>
+                      <Box sx={styles.box10}>
                         <UsageBar charge={account.monthlyCharge} />
                       </Box>
                     ) : null}
@@ -247,7 +171,7 @@ export function PlatformFinancePage() {
                       <TableCell>{t('accounts.columns.account')}</TableCell>
                       <TableCell>{accountT('fields.accountType')}</TableCell>
                       <TableCell>{accountT('fields.status')}</TableCell>
-                      <TableCell sx={{ minWidth: 220 }}>{t('accounts.columns.usage')}</TableCell>
+                      <TableCell sx={styles.tableCell}>{t('accounts.columns.usage')}</TableCell>
                       <TableCell align="right">{accountT('fields.monthlyCharge')}</TableCell>
                     </TableRow>
                   </TableHead>
@@ -286,7 +210,7 @@ export function PlatformFinancePage() {
             )}
           </Box>
 
-          <Typography sx={{ color: brand.neutral[500], fontSize: 12.5 }}>{t('note')}</Typography>
+          <Typography sx={styles.typography4}>{t('note')}</Typography>
         </Stack>
       )}
     </Box>
@@ -295,30 +219,14 @@ export function PlatformFinancePage() {
 
 function AccountName({ account }: { account: PlatformTenant }) {
   return (
-    <Stack direction="row" spacing={1.2} alignItems="center" sx={{ minWidth: 0, flex: 1 }}>
-      <Avatar
-        aria-hidden
-        sx={{
-          width: 32,
-          height: 32,
-          bgcolor: alpha.magenta[8],
-          color: brand.magenta[500],
-          fontSize: 12,
-          fontWeight: 800,
-        }}
-      >
+    <Stack direction="row" spacing={1.2} alignItems="center" sx={styles.stack4}>
+      <Avatar aria-hidden sx={styles.avatar}>
         {accountInitials(account.name)}
       </Avatar>
       <Box
         component={Link}
         href={{ pathname: '/platform/tenants/[id]', params: { id: account.id } }}
-        sx={{
-          color: brand.graphite[500],
-          fontWeight: 700,
-          textDecoration: 'none',
-          minWidth: 0,
-          '&:hover': { color: brand.magenta[500], textDecoration: 'underline' },
-        }}
+        sx={styles.box11}
       >
         {account.name}
       </Box>
@@ -339,39 +247,23 @@ function StatusChip({ account }: { account: PlatformTenant }) {
   )
 }
 
-// How much of the plan the account uses; turns orange when it pays for extra units.
 function UsageBar({ charge }: { charge: MonthlyCharge }) {
   const t = useTranslations('platform.finance.accounts')
   const over = charge.extraUnits > 0
   const ratio = charge.includedUnits > 0 ? Math.min(1, charge.usage / charge.includedUnits) : 1
 
   return (
-    <Box sx={{ minWidth: 180 }}>
-      <Box
-        aria-hidden
-        sx={{
-          height: 6,
-          borderRadius: radius.full,
-          bgcolor: brand.neutral[100],
-          overflow: 'hidden',
-        }}
-      >
-        <Box
-          sx={{
-            width: `${Math.round(ratio * 100)}%`,
-            height: '100%',
-            borderRadius: radius.full,
-            bgcolor: over ? brand.semantic.warning : brand.magenta[500],
-          }}
-        />
+    <Box sx={styles.box12}>
+      <Box aria-hidden sx={styles.box13}>
+        <Box sx={getBoxStyles2({ ratio, over })} />
       </Box>
-      <Typography sx={{ color: brand.neutral[500], fontSize: 12, mt: 0.6 }}>
+      <Typography sx={styles.typography8}>
         {t(charge.usageUnit === 'BROKERS' ? 'usageBrokers' : 'usageProperties', {
           usage: charge.usage,
           included: charge.includedUnits,
         })}
         {over ? (
-          <Box component="span" sx={{ color: brand.semantic.warning, fontWeight: 800 }}>
+          <Box component="span" sx={styles.box14}>
             {' · '}
             {t('extraUnits', { count: charge.extraUnits })}
           </Box>
@@ -388,69 +280,26 @@ function FeeCell({ charge, billed }: { charge: MonthlyCharge; billed: boolean })
     format.number(value, { style: 'currency', currency: 'BRL' })
 
   return (
-    <Box sx={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-      <Typography
-        component="span"
-        sx={{
-          fontSize: 14,
-          fontWeight: 800,
-          color: billed ? brand.graphite[500] : brand.neutral[500],
-        }}
-      >
+    <Box sx={styles.box15}>
+      <Typography component="span" sx={getTypographyStyles({ billed })}>
         {formatPrice(charge.total)}
       </Typography>
       {charge.extraAmount > 0 ? (
-        <Typography sx={{ color: brand.neutral[500], fontSize: 11.5 }}>
+        <Typography sx={styles.typography9}>
           {t('includesExtras', { amount: formatPrice(charge.extraAmount) })}
         </Typography>
       ) : null}
-      {!billed ? (
-        <Typography sx={{ color: brand.neutral[500], fontSize: 11.5 }}>{t('notBilled')}</Typography>
-      ) : null}
+      {!billed ? <Typography sx={styles.typography9}>{t('notBilled')}</Typography> : null}
     </Box>
   )
 }
 
 function KpiCard({ label, value, helper }: { label: string; value: string; helper?: string }) {
   return (
-    <Box sx={{ ...panelSx, p: { xs: 1.45, md: 2.2 } }}>
-      <Typography
-        sx={{
-          color: brand.neutral[500],
-          fontSize: { xs: 10.5, md: 11 },
-          fontWeight: 900,
-          letterSpacing: 0.25,
-          textTransform: 'uppercase',
-        }}
-      >
-        {label}
-      </Typography>
-      <Typography
-        sx={{ color: brand.graphite[500], fontSize: { xs: 22, sm: 28 }, fontWeight: 900, mt: 0.7 }}
-      >
-        {value}
-      </Typography>
-      {helper ? (
-        <Typography sx={{ color: brand.neutral[500], fontSize: 12, mt: 0.3 }}>{helper}</Typography>
-      ) : null}
+    <Box sx={styles.box16}>
+      <Typography sx={styles.typography10}>{label}</Typography>
+      <Typography sx={styles.typography11}>{value}</Typography>
+      {helper ? <Typography sx={styles.typography12}>{helper}</Typography> : null}
     </Box>
   )
 }
-
-const headingSx = {
-  color: brand.graphite[500],
-  fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
-  fontSize: { xs: 26, sm: 30 },
-  fontWeight: 700,
-  lineHeight: 1.15,
-}
-const panelSx = {
-  bgcolor: surface.paper,
-  border: '1px solid',
-  borderColor: alpha.graphite[6],
-  borderRadius: `${radius.sm}px`,
-  boxShadow: shadows.propertyCard,
-  p: { xs: 1.6, md: 2.2 },
-  minWidth: 0,
-}
-const sectionTitleSx = { color: brand.graphite[500], fontSize: 16, fontWeight: 900 }

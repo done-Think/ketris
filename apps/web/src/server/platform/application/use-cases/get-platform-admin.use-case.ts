@@ -1,15 +1,7 @@
 import { PlatformAdminNotFoundError } from '../../domain/errors'
-import {
-  toAuthenticatedPlatformAdmin,
-  type AuthenticatedPlatformAdmin,
-} from '../../domain/platform-admin.entity'
+import { toAuthenticatedPlatformAdmin } from '../../domain/platform-admin.entity'
 import type { PlatformAdminRepository } from '../ports/platform-admin-repository.port'
-
-export interface GetPlatformAdminInput {
-  platformAdminId: string
-}
-
-export type GetPlatformAdminOutput = AuthenticatedPlatformAdmin
+import type { GetPlatformAdminInput, GetPlatformAdminOutput } from '../../types/use-case-inputs'
 
 export class GetPlatformAdminUseCase {
   constructor(private readonly platformAdminRepository: PlatformAdminRepository) {}

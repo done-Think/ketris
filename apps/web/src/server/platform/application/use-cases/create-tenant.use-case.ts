@@ -1,10 +1,6 @@
 import { TenantSlugAlreadyInUseError } from '../../domain/errors'
-import type { TenantSummary } from '../../domain/tenant-summary.entity'
-import type { NewTenant, TenantRepository } from '../ports/tenant-repository.port'
-
-export type CreateTenantInput = NewTenant
-
-export type CreateTenantOutput = TenantSummary
+import type { TenantRepository } from '../ports/tenant-repository.port'
+import type { CreateTenantInput, CreateTenantOutput } from '../../types/use-case-inputs'
 
 export class CreateTenantUseCase {
   constructor(private readonly tenantRepository: TenantRepository) {}

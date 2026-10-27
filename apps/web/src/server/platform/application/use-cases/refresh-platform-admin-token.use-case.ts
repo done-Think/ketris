@@ -8,15 +8,10 @@ import {
 import type { PlatformAdminRepository } from '../ports/platform-admin-repository.port'
 import type { PlatformRefreshTokenRepository } from '../ports/platform-refresh-token-repository.port'
 import type { PlatformTokenService } from '../ports/platform-token-service.port'
-
-export interface RefreshPlatformAdminTokenInput {
-  refreshToken: string
-}
-
-export interface RefreshPlatformAdminTokenOutput {
-  accessToken: string
-  refreshToken: string
-}
+import type {
+  RefreshPlatformAdminTokenInput,
+  RefreshPlatformAdminTokenOutput,
+} from '../../types/use-case-inputs'
 
 export class RefreshPlatformAdminTokenUseCase {
   constructor(

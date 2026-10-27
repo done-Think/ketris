@@ -1,17 +1,11 @@
 import { CannotDeactivateSelfError, PlatformAdminNotFoundError } from '../../domain/errors'
-import {
-  toAuthenticatedPlatformAdmin,
-  type AuthenticatedPlatformAdmin,
-} from '../../domain/platform-admin.entity'
+import { toAuthenticatedPlatformAdmin } from '../../domain/platform-admin.entity'
 import type { PlatformAdminRepository } from '../ports/platform-admin-repository.port'
 import type { PlatformRefreshTokenRepository } from '../ports/platform-refresh-token-repository.port'
-
-export interface DeactivatePlatformAdminInput {
-  actorId: string
-  platformAdminId: string
-}
-
-export type DeactivatePlatformAdminOutput = AuthenticatedPlatformAdmin
+import type {
+  DeactivatePlatformAdminInput,
+  DeactivatePlatformAdminOutput,
+} from '../../types/use-case-inputs'
 
 export class DeactivatePlatformAdminUseCase {
   constructor(
@@ -32,6 +26,8 @@ export class DeactivatePlatformAdminUseCase {
 
     const deactivated = await this.platformAdminRepository.deactivate(input.platformAdminId)
     await this.refreshTokenRepository.revokeAllForPlatformAdmin(input.platformAdminId)
+
+    if (!deactivated) throw new PlatformAdminNotFoundError()
 
     return toAuthenticatedPlatformAdmin(deactivated)
   }

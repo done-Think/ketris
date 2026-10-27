@@ -10,6 +10,7 @@ import { POST as linkUser } from '../../../contracts/[id]/parties/[partyId]/link
 import { GET as getCharge } from '../../charges/[id]/route'
 import { GET as listCharges } from '../../charges/route'
 import { GET as getSummary } from '../../summary/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 describe('Renter financial authorization (integration)', () => {
   const tenantIds: string[] = []
@@ -70,6 +71,7 @@ describe('Renter financial authorization (integration)', () => {
       data: {
         tenantId,
         imovelId: property.id,
+        responsavelId: await propertyResponsibleId(prisma, property.id),
         interessadoNome: 'Renter',
         interessadoEmail: email,
         valorProposto: 1000,

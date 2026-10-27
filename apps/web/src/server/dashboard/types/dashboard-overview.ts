@@ -1,3 +1,4 @@
+import type { LeadSource } from '@server/crm/constants/lead-sources'
 import type { Papel } from '@server/auth/domain/user.entity'
 import type { TimeRange } from '@server/shared/types/time-zone-calendar'
 
@@ -29,7 +30,7 @@ export interface DashboardRecentLead {
   phone: string
   interest: string
   budget: string
-  source: string
+  source: LeadSource
   stage: DashboardLeadStage
   notes: string | null
   createdAt: Date

@@ -25,9 +25,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import {
+  maintenanceCategories,
   maintenanceCategoryKeys,
-  normalizeMaintenanceCategory,
-} from '@server/maintenance/constants/maintenance-categories'
+} from '@shared/lib/utils/maintenance-categories'
 
 import { RhfTextField } from '@shared/components/form'
 
@@ -43,17 +43,16 @@ import { createMaintenanceTicketSchema } from '../schemas/maintenance-ticket-sch
 import type {
   MaintenanceCreateTicketDialogProps,
   MaintenanceCreateTicketFormValues,
+  MaintenanceTicketFormValues,
 } from '../types/maintenance'
 
-const defaultValues: MaintenanceCreateTicketFormValues = {
+const defaultValues: MaintenanceTicketFormValues = {
   contractId: '',
   category: '',
   priority: 'normal',
   title: '',
   description: '',
 }
-
-const categoryOptions = Object.entries(maintenanceCategoryKeys)
 
 export function MaintenanceCreateTicketDialog(props: MaintenanceCreateTicketDialogProps) {
   const t = useTranslations('dashboard.maintenance.createDialog')
@@ -101,7 +100,7 @@ function MaintenanceCreateTicketForm({
     reset,
     watch,
     formState: { isSubmitting: submitting },
-  } = useForm<MaintenanceCreateTicketFormValues>({
+  } = useForm<MaintenanceTicketFormValues>({
     defaultValues:
       parseMaintenanceDraft(
         initialValues ?? (mode === 'create' ? readMaintenanceDraft(draftKey) : null),
@@ -121,9 +120,13 @@ function MaintenanceCreateTicketForm({
     onClose()
   }
 
-  async function handleCreate(values: MaintenanceCreateTicketFormValues) {
+  async function handleCreate(values: MaintenanceTicketFormValues) {
     if (submitting) return
-    const result = await onCreate(values)
+    const ticket: MaintenanceCreateTicketFormValues = {
+      ...values,
+      ...maintenanceTicketSchema.parse(values),
+    }
+    const result = await onCreate(ticket)
     if (result !== false) {
       reset(defaultValues)
       if (mode === 'create') writeMaintenanceDraft(draftKey, null)
@@ -188,13 +191,9 @@ function MaintenanceCreateTicketForm({
                 select
                 fullWidth
               >
-                {initialValues?.category &&
-                  !Object.keys(maintenanceCategoryKeys).includes(
-                    normalizeMaintenanceCategory(initialValues.category),
-                  ) && <MenuItem value={initialValues.category}>{initialValues.category}</MenuItem>}
-                {categoryOptions.map(([category, key]) => (
+                {maintenanceCategories.map((category) => (
                   <MenuItem key={category} value={category}>
-                    {maintenanceT(`categories.${key}`)}
+                    {maintenanceT(`categories.${maintenanceCategoryKeys[category]}`)}
                   </MenuItem>
                 ))}
               </RhfTextField>

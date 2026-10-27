@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { PasswordHasher } from '@server/auth/application/ports/password-hasher.port'
 
 import { PlatformAdminEmailAlreadyInUseError } from '../../../domain/errors'
-import type { PlatformAdmin } from '../../../domain/platform-admin.entity'
+import type { PlatformAdmin } from '../../../types/platform-admin'
 import type { PlatformAdminRepository } from '../../../application/ports/platform-admin-repository.port'
 import { CreatePlatformAdminUseCase } from '../../../application/use-cases/create-platform-admin.use-case'
 
@@ -14,6 +14,8 @@ const existingAdmin: PlatformAdmin = {
   senhaHash: 'hash-fake',
   role: 'ADMIN',
   ativo: true,
+  createdAt: new Date('2026-01-01T00:00:00.000Z'),
+  ultimoAcessoEm: null,
 }
 
 const createdAdmin: PlatformAdmin = {
@@ -23,6 +25,8 @@ const createdAdmin: PlatformAdmin = {
   senhaHash: 'hash-novo',
   role: 'ADMIN',
   ativo: true,
+  createdAt: new Date('2026-01-01T00:00:00.000Z'),
+  ultimoAcessoEm: null,
 }
 
 function createDeps(overrides?: { findByEmail?: PlatformAdminRepository['findByEmail'] }) {
@@ -33,6 +37,7 @@ function createDeps(overrides?: { findByEmail?: PlatformAdminRepository['findByE
     create: vi.fn().mockResolvedValue(createdAdmin),
     update: vi.fn(),
     deactivate: vi.fn(),
+    recordAccess: vi.fn(),
   }
   const passwordHasher: PasswordHasher = {
     compare: vi.fn(),

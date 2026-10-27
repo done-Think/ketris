@@ -17,6 +17,7 @@ import { DELETE as deleteCharge, GET as getCharge, PATCH } from '../../charges/[
 import { GET as exportCharges } from '../../charges/export/route'
 import { GET as listCharges, POST as createCharge } from '../../charges/route'
 import { GET as getSummary } from '../../summary/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 type Papel = 'OWNER' | 'RENTER' | 'PROPERTY_OWNER'
 
@@ -141,6 +142,7 @@ beforeAll(async () => {
     data: {
       tenantId,
       imovelId: property.id,
+      responsavelId: await propertyResponsibleId(prisma, property.id),
       interessadoNome: 'Locatário',
       interessadoEmail: 'locatario@example.com',
       valorProposto: 1500,

@@ -16,7 +16,7 @@ const lead: Lead = {
   email: null,
   interest: 'Apartamento',
   budget: 'Até R$ 3.000',
-  source: 'WhatsApp',
+  source: 'WHATSAPP',
   stage: 'NOVO',
   notes: null,
   opportunityId: null,

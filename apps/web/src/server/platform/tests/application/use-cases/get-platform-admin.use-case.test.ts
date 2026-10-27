@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { PlatformAdminNotFoundError } from '../../../domain/errors'
-import type { PlatformAdmin } from '../../../domain/platform-admin.entity'
+import type { PlatformAdmin } from '../../../types/platform-admin'
 import type { PlatformAdminRepository } from '../../../application/ports/platform-admin-repository.port'
 import { GetPlatformAdminUseCase } from '../../../application/use-cases/get-platform-admin.use-case'
 
@@ -12,6 +12,8 @@ const admin: PlatformAdmin = {
   senhaHash: 'hash-fake',
   role: 'ADMIN',
   ativo: true,
+  createdAt: new Date('2026-01-01T00:00:00.000Z'),
+  ultimoAcessoEm: null,
 }
 
 function createRepository(findById?: PlatformAdminRepository['findById']): PlatformAdminRepository {
@@ -22,6 +24,7 @@ function createRepository(findById?: PlatformAdminRepository['findById']): Platf
     create: vi.fn(),
     update: vi.fn(),
     deactivate: vi.fn(),
+    recordAccess: vi.fn(),
   }
 }
 

@@ -29,9 +29,9 @@ describe('MaintenanceService direct upload', () => {
   it('passes category filtering and pagination to the server without losing custom categories', async () => {
     const http = new HttpClient()
     const get = vi.spyOn(http, 'get').mockResolvedValue({ items: [], totalCount: 0 })
-    await new MaintenanceService(http).list({ category: 'Serralheria', page: 2, pageSize: 5 })
+    await new MaintenanceService(http).list({ category: 'OTHER', page: 2, pageSize: 5 })
     expect(get).toHaveBeenCalledWith('/maintenance/tickets', {
-      params: { category: 'Serralheria', page: '2', pageSize: '5' },
+      params: { category: 'OTHER', page: '2', pageSize: '5' },
     })
   })
   it('sends the file straight to storage without application credentials and confirms afterward', async () => {

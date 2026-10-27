@@ -6,7 +6,7 @@ import type { PasswordHasher } from '@server/auth/application/ports/password-has
 import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
 
 import { TenantNotFoundError } from '../../../domain/errors'
-import type { TenantSummary } from '../../../domain/tenant-summary.entity'
+import type { TenantSummary } from '../../../types/tenant-summary'
 import type { TenantRepository } from '../../../application/ports/tenant-repository.port'
 import { CreateTenantAdminUseCase } from '../../../application/use-cases/create-tenant-admin.use-case'
 

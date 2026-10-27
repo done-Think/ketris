@@ -1,7 +1,11 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
-import { propertyPurposeSchema, publicPropertySummarySchema } from './property.schema'
+import {
+  propertyPurposeSchema,
+  publicPropertySummarySchema,
+  publicPropertyTypeSchema,
+} from './property.schema'
 
 export const DEFAULT_SEARCH_PAGE_SIZE = 12
 export const MAX_SEARCH_PAGE_SIZE = 50
@@ -11,7 +15,7 @@ export const propertySortSchema = z.enum(['recent', 'priceAsc', 'priceDesc'])
 export const searchPropertiesQuerySchema = z
   .object({
     purpose: propertyPurposeSchema.optional(),
-    propertyType: z.string().min(1).optional(),
+    propertyType: publicPropertyTypeSchema.optional(),
     city: z.string().min(1).optional(),
     location: z.string().min(1).optional(),
     minPrice: z.coerce.number().nonnegative().optional(),
@@ -32,6 +36,7 @@ export const searchPropertiesQuerySchema = z
       .max(MAX_SEARCH_PAGE_SIZE)
       .default(DEFAULT_SEARCH_PAGE_SIZE),
   })
+  .strict()
   .openapi('SearchPropertiesQuery')
 
 export const searchPropertiesResponseSchema = z

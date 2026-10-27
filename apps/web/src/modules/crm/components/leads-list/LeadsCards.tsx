@@ -5,6 +5,7 @@ import * as crmStyles from '../../styles/leads-cards.styles'
 import type { LeadsCardsProps } from '../../types/lead'
 import { LeadAvatar } from './LeadAvatar'
 import { LeadStatusChip } from './LeadStatusChip'
+import { leadSourceKey } from '@server/crm/constants/lead-sources'
 
 export function LeadsCards({ leads, onContactLead }: LeadsCardsProps) {
   const t = useTranslations('crm.leads')
@@ -22,7 +23,7 @@ export function LeadsCards({ leads, onContactLead }: LeadsCardsProps) {
                     {lead.name}
                   </Typography>
                   <Typography noWrap sx={crmStyles.typographySx2}>
-                    {lead.source}
+                    {t(`create.sources.${leadSourceKey(lead.source)}`)}
                   </Typography>
                 </Box>
               </Stack>

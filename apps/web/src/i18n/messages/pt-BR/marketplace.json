@@ -75,13 +75,18 @@
       "titleLine2": "do mercado imobiliário",
       "subtitle": "Aluguel e venda de imóveis com tecnologia de ponta, processos ágeis e total confiança.",
       "stats": {
-        "activeProperties": "imóveis ativos",
-        "partnerBrokers": "corretores parceiros",
-        "servedCities": "cidades atendidas"
+        "activeProperties": "{count, plural, one {imóvel publicado} other {imóveis publicados}}",
+        "partnerBrokers": "{count, plural, one {corretor parceiro} other {corretores parceiros}}",
+        "servedCities": "{count, plural, one {cidade atendida} other {cidades atendidas}}"
       },
       "brandAnimation": "Animação da marca Ketris"
     },
     "search": {
+      "purpose": {
+        "label": "Finalidade",
+        "rent": "Alugar",
+        "buy": "Comprar"
+      },
       "submit": "Buscar",
       "mobilePlaceholder": "Buscar por bairro, cidade...",
       "mobileSearchTitle": "Buscar imóveis",
@@ -100,27 +105,20 @@
         "propertyType": "Tipo de imóvel",
         "priceRange": "Faixa de preço"
       },
-      "propertyTypes": {
-        "apartment": "Apartamento",
-        "residentialHouses": "Casas residenciais",
-        "commercialRooms": "Salas comerciais",
-        "landLots": "Terrenos e lotes",
-        "penthouses": "Coberturas",
-        "farms": "Chácaras e sítios",
-        "studios": "Studios"
-      },
       "errors": {
         "textTooLong": "Texto muito longo",
         "optionRequired": "Selecione uma opção",
         "priceInvalid": "Valor de preço inválido"
-      }
+      },
+      "anyLocation": "Qualquer região",
+      "anyPropertyType": "Todos os tipos"
     },
     "featured": {
       "title": "Imóveis em destaque",
       "viewAll": "Ver todos os imóveis"
     },
     "miniProperties": {
-      "eyebrow": "+2.500 imóveis qualificados e verificados digitalmente"
+      "eyebrow": "Publicados recentemente"
     }
   },
   "footer": {
@@ -199,17 +197,14 @@
       "studio": "Studio",
       "penthouse": "Cobertura",
       "commercial": "Comercial",
-      "loft": "Loft"
+      "loft": "Loft",
+      "other": "Outro"
     },
     "condominium": "Condomínio {value}",
     "condominiumNotInformed": "Condomínio não informado",
-    "notInformed": "Não informado",
     "scheduleVisit": "Agendar visita",
     "sendProposal": "Enviar proposta",
-    "favorite": "Favoritar",
-    "share": "Compartilhar",
     "about": "Sobre o imóvel",
-    "location": "Localização",
     "brokerRole": "Corretor Ketris",
     "features": {
       "bedrooms": "{count, plural, one {# quarto} other {# quartos}}",
@@ -318,7 +313,9 @@
       "backgroundColorRequired": "Informe a cor de fundo",
       "avatarUrlRequired": "Envie uma foto de perfil",
       "bannerUrlRequired": "Envie uma imagem de capa"
-    }
+    },
+    "loadError": "Não foi possível carregar o perfil.",
+    "retry": "Tentar de novo"
   },
   "agencyProfileEditor": {
     "previewName": "Sua imobiliária",
@@ -378,7 +375,10 @@
       "logoUrlRequired": "Envie o logotipo",
       "bannerUrlRequired": "Envie uma imagem de capa",
       "teamRequired": "Selecione ao menos um corretor em destaque"
-    }
+    },
+    "validatedDraft": "Rascunho validado",
+    "loadError": "Não foi possível carregar o perfil.",
+    "retry": "Tentar de novo"
   },
   "searchResults": {
     "toolbar": {
@@ -422,11 +422,6 @@
       "minArea": "Área mínima",
       "onlyWithParking": "Somente imóveis com vaga",
       "options": {
-        "Todos os tipos": "Todos os tipos",
-        "Apartamento": "Apartamento",
-        "Cobertura": "Cobertura",
-        "Loft": "Loft",
-        "Casa": "Casa",
         "price": "Preço",
         "upTo6000": "Até R$ 6.000",
         "upTo10000": "Até R$ 10.000",
@@ -437,7 +432,8 @@
         "area90Plus": "90m²+",
         "area100Plus": "100m²+",
         "all": "Todos",
-        "withParking": "Com vaga"
+        "withParking": "Com vaga",
+        "allTypes": "Todos os tipos"
       },
       "errors": {
         "textTooLong": "Texto muito longo",

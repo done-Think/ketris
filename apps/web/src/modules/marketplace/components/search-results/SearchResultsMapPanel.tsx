@@ -4,6 +4,7 @@ import { Box } from '@mui/material'
 
 import type { SearchResultsMapPanelProps } from '../../types/search'
 import { SearchResultsMap } from '../SearchResultsMap'
+import { styles } from '../../styles/search-results-map-panel.styles'
 
 export function SearchResultsMapPanel({
   properties,
@@ -12,19 +13,7 @@ export function SearchResultsMapPanel({
   searchQuery,
 }: SearchResultsMapPanelProps) {
   return (
-    <Box
-      sx={{
-        display: { xs: 'none', lg: 'block' },
-        alignSelf: 'start',
-        position: { lg: 'sticky' },
-        top: { lg: 68 },
-        height: { lg: 'calc(100vh - 76px)' },
-        minHeight: { lg: 620 },
-        minWidth: 0,
-        p: 1,
-        pl: 0,
-      }}
-    >
+    <Box sx={styles.box}>
       <SearchResultsMap
         properties={properties}
         selectedPropertyId={selectedPropertyId}

@@ -18,7 +18,7 @@ const lead: DashboardLead = {
   lastContact: 'Há 30 min',
   lastContactAt: '2026-09-01T09:30:00.000Z',
   interest: 'Apartamento 3 quartos nos Jardins',
-  source: 'Marketplace',
+  source: 'MARKETPLACE',
   broker: 'Roberto Souza',
   stage: 'NOVO',
   opportunityId: null,

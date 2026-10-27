@@ -292,7 +292,7 @@ export function registerContractsOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Contracts'],
     summary: 'Cria contrato a partir de uma oportunidade aceita',
     description:
-      'Um ator AGENT só cria contrato a partir de oportunidade de imóvel do qual é responsável ' +
+      'Um ator AGENT só cria contrato a partir de oportunidade da qual é responsável ' +
       '(404 opaco caso contrário). RENTER não gerencia contratos.',
     security: [{ bearerAuth: [] }],
     request: {

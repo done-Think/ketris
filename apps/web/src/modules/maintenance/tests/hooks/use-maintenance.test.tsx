@@ -1,3 +1,4 @@
+import type { MaintenanceCategory } from '@shared/lib/utils/maintenance-categories'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import type { PropsWithChildren } from 'react'
@@ -100,7 +101,7 @@ describe('Maintenance query isolation and paging', () => {
     const { wrapper, client } = setup()
     const { result, rerender, unmount } = renderHook(
       ({ category }) => useMaintenanceTickets('tenant-1', { category }),
-      { wrapper, initialProps: { category: 'PLUMBING' } },
+      { wrapper, initialProps: { category: 'PLUMBING' as MaintenanceCategory } },
     )
     await waitFor(() => expect(result.current.data).toEqual(plumbing))
     rerender({ category: 'ELECTRICAL' })

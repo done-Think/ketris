@@ -3,52 +3,25 @@
 import { Box, Container, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { componentText, surface } from '@shared/theme/tokens'
-
-import { useMiniProperties } from '../hooks/use-mini-properties'
+import { featuredPropertiesCount } from '../config/home'
+import { useRecentProperties } from '../hooks/use-featured-properties'
+import { styles } from '../styles/mini-properties-section.styles'
 import { MiniPropertyCard } from './MiniPropertyCard'
 
 export function MiniPropertiesSection() {
   const t = useTranslations('marketplace.home.miniProperties')
-  const { miniProperties, isLoading, isError } = useMiniProperties()
+  const { properties } = useRecentProperties(2, featuredPropertiesCount)
 
-  if (isLoading || isError || miniProperties.length === 0) return null
+  if (!properties.length) return null
 
   return (
-    <Box
-      component="section"
-      sx={{
-        bgcolor: surface.paper,
-        borderTop: '1px solid',
-        borderColor: 'divider',
-        py: { xs: 4, md: 5 },
-      }}
-    >
+    <Box component="section" sx={styles.section} aria-label={t('eyebrow')}>
       <Container maxWidth="xl">
-        <Typography
-          align="center"
-          sx={{
-            color: 'text.secondary',
-            ...componentText.miniSectionEyebrow,
-            mb: 3,
-          }}
-        >
+        <Typography align="center" sx={styles.eyebrow}>
           {t('eyebrow')}
         </Typography>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: 'repeat(2, minmax(0, 1fr))',
-              sm: 'repeat(3, minmax(0, 1fr))',
-              md: 'repeat(6, minmax(0, 1fr))',
-            },
-            gap: { xs: 1.2, md: 2 },
-            maxWidth: 1020,
-            mx: 'auto',
-          }}
-        >
-          {miniProperties.map((property) => (
+        <Box sx={styles.grid}>
+          {properties.map((property) => (
             <MiniPropertyCard key={property.id} property={property} />
           ))}
         </Box>

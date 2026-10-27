@@ -19,24 +19,20 @@ import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { DashboardNotificationsButton, SidebarCollapseButton } from '@shared/components/layout'
 import { AppLogo } from '@shared/components/ui'
 import { useSidebarPreferencesStore } from '@shared/stores/sidebar-preferences-store'
-import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import { alpha, brand, radius, surface } from '@shared/theme/tokens'
 
 import type { NavigationItem, PlatformShellProps } from '../types/platform-shell'
-
-const sidebarExpandedWidth = 240
-const sidebarCollapsedWidth = 72
-
-const marketplaceActionSx = {
-  minHeight: 32,
-  px: 1,
-  color: alpha.white[62],
-  fontSize: 11,
-  fontWeight: 600,
-  lineHeight: '16px',
-  textTransform: 'none',
-  '& .MuiButton-startIcon': { mr: 0.75 },
-  '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
-} as const
+import {
+  styles,
+  getStackStyles,
+  getStackStyles2,
+  getTypographyStyles,
+  getButtonStyles,
+  getStackStyles3,
+  getTypographyStyles2,
+  getBoxStyles,
+  getBoxStyles2,
+} from '../styles/platform-shell.styles'
 
 const navigationItems: readonly NavigationItem[] = [
   { label: 'overview', icon: HomeOutlinedIcon, href: '/platform' },
@@ -57,34 +53,19 @@ export function PlatformShell({ children }: PlatformShellProps) {
   const toggleSidebarCollapsed = useSidebarPreferencesStore((state) => state.toggleCollapsed)
 
   const sidebar = (collapsed = false, isMobile = false, showCollapseControl = true) => (
-    <Box sx={{ position: 'relative', height: '100%' }}>
-      <Stack
-        component="aside"
-        sx={{
-          width: collapsed ? sidebarCollapsedWidth : sidebarExpandedWidth,
-          height: '100%',
-          bgcolor: brand.graphite[600],
-          color: surface.lightText,
-          px: collapsed ? 1 : 2,
-          py: 2.5,
-          transition: 'width 180ms ease, padding 180ms ease',
-        }}
-      >
-        <Stack
-          alignItems="center"
-          justifyContent="center"
-          sx={{ width: '100%', height: 48, flexShrink: 0, mb: 1.5, position: 'relative' }}
-        >
+    <Box sx={styles.box}>
+      <Stack component="aside" sx={getStackStyles({ collapsed })}>
+        <Stack alignItems="center" justifyContent="center" sx={styles.stack}>
           <AppLogo
             src={collapsed ? '/ketris-tab-icon.png' : ketrisLogoFooter}
             width={collapsed ? 40 : 120}
-            sx={{ left: '50%', position: 'absolute', top: 0, transform: 'translateX(-50%)' }}
+            sx={styles.appLogo}
           />
           {isMobile && (
             <IconButton
               aria-label={t('closeNavigation')}
               onClick={() => setMobileOpen(false)}
-              sx={{ color: 'inherit', position: 'absolute', right: 0, top: 0 }}
+              sx={styles.iconButton}
             >
               <CloseRoundedIcon />
             </IconButton>
@@ -95,7 +76,7 @@ export function PlatformShell({ children }: PlatformShellProps) {
           component="nav"
           spacing={0.5}
           aria-label={t('ariaLabel')}
-          sx={{ mx: collapsed ? 0 : -0.5 }}
+          sx={getStackStyles2({ collapsed })}
         >
           {navigationItems.map(({ label, icon: Icon, href }) => {
             const active =
@@ -104,18 +85,8 @@ export function PlatformShell({ children }: PlatformShellProps) {
               (href === '/platform/admins' && pathname.startsWith('/platform/admins'))
             const content = (
               <>
-                <Icon sx={{ fontSize: iconSize.md }} />
-                <Typography
-                  sx={{
-                    display: collapsed ? 'none' : 'block',
-                    flex: 1,
-                    fontSize: 14,
-                    fontWeight: active ? 600 : 500,
-                    lineHeight: '20px',
-                  }}
-                >
-                  {t(label)}
-                </Typography>
+                <Icon sx={styles.icon} />
+                <Typography sx={getTypographyStyles({ collapsed, active })}>{t(label)}</Typography>
               </>
             )
 
@@ -148,24 +119,15 @@ export function PlatformShell({ children }: PlatformShellProps) {
           })}
         </Stack>
 
-        <Box sx={{ flexGrow: 1, minHeight: 2 }} />
+        <Box sx={styles.box2} />
 
         <Tooltip title={commonT('backToMarketplace')} placement="right">
           <Button
             component={Link}
             href="/"
             aria-label={commonT('backToMarketplace')}
-            startIcon={<LogoutOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-            sx={{
-              alignSelf: collapsed ? 'center' : 'stretch',
-              justifyContent: collapsed ? 'center' : 'flex-start',
-              minWidth: collapsed ? 44 : 0,
-              ...marketplaceActionSx,
-              minHeight: 40,
-              mb: 1.5,
-              px: collapsed ? 0 : 1.5,
-              '& .MuiButton-startIcon': { ml: 0, mr: collapsed ? 0 : 0.75 },
-            }}
+            startIcon={<LogoutOutlinedIcon sx={styles.logoutOutlinedIcon} />}
+            sx={getButtonStyles({ collapsed })}
           >
             {collapsed ? null : commonT('backToMarketplace')}
           </Button>
@@ -176,27 +138,10 @@ export function PlatformShell({ children }: PlatformShellProps) {
           alignItems="center"
           spacing={0.8}
           justifyContent={collapsed ? 'center' : 'flex-start'}
-          sx={{
-            pt: 2,
-            px: collapsed ? 0 : 0.9,
-            borderTop: '1px solid',
-            borderColor: alpha.white[8],
-          }}
+          sx={getStackStyles3({ collapsed })}
         >
-          <Box
-            aria-hidden
-            sx={{ width: 8, height: 8, borderRadius: radius.full, bgcolor: brand.semantic.success }}
-          />
-          <Typography
-            sx={{
-              display: collapsed ? 'none' : 'block',
-              color: alpha.white[72],
-              fontSize: 12,
-              fontWeight: 700,
-            }}
-          >
-            {t('online')}
-          </Typography>
+          <Box aria-hidden sx={styles.box3} />
+          <Typography sx={getTypographyStyles2({ collapsed })}>{t('online')}</Typography>
         </Stack>
       </Stack>
       {showCollapseControl ? (
@@ -212,68 +157,25 @@ export function PlatformShell({ children }: PlatformShellProps) {
   )
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: surface.app }}>
-      <Box
-        sx={{
-          display: { xs: 'none', md: 'block' },
-          position: 'fixed',
-          inset: '0 auto 0 0',
-          width: sidebarCollapsed ? sidebarCollapsedWidth : sidebarExpandedWidth,
-          zIndex: 10,
-          transition: 'width 180ms ease',
-        }}
-      >
-        {sidebar(sidebarCollapsed)}
-      </Box>
+    <Box sx={styles.box4}>
+      <Box sx={getBoxStyles({ sidebarCollapsed })}>{sidebar(sidebarCollapsed)}</Box>
       <Stack
         component="header"
         direction="row"
         alignItems="center"
         justifyContent="space-between"
-        sx={{
-          display: { xs: 'flex', md: 'none' },
-          position: 'fixed',
-          inset: '0 0 auto 0',
-          zIndex: 20,
-          height: 64,
-          minHeight: 64,
-          maxHeight: 64,
-          overflow: 'hidden',
-          px: 2,
-          bgcolor: surface.paper,
-          color: brand.graphite[500],
-          boxShadow: shadows.crmMobileHeader,
-        }}
+        sx={styles.stack2}
       >
-        <AppLogo
-          src={ketrisLogoFooter}
-          variant="transparent"
-          width={42}
-          sx={{
-            height: 42,
-            overflow: 'hidden',
-            '& img': {
-              width: 112,
-              maxWidth: 'none',
-            },
-          }}
-        />
+        <AppLogo src={ketrisLogoFooter} variant="transparent" width={42} sx={styles.appLogo2} />
         <Stack direction="row" alignItems="center" spacing={1}>
           <DashboardNotificationsButton placement="navigationHeader" notifications={[]} />
           <Tooltip title={t('openNavigation')}>
             <IconButton
               aria-label={t('openNavigation')}
               onClick={() => setMobileOpen(true)}
-              sx={{
-                width: 42,
-                height: 42,
-                border: '1px solid',
-                borderColor: alpha.graphite[8],
-                borderRadius: `${radius.sm}px`,
-                color: brand.graphite[500],
-              }}
+              sx={styles.iconButton2}
             >
-              <MenuRoundedIcon sx={{ fontSize: iconSize.xl }} />
+              <MenuRoundedIcon sx={styles.menuRoundedIcon} />
             </IconButton>
           </Tooltip>
         </Stack>
@@ -284,32 +186,14 @@ export function PlatformShell({ children }: PlatformShellProps) {
         ModalProps={{ keepMounted: true }}
         slotProps={{
           paper: {
-            sx: { width: 'min(280px, calc(100vw - 48px))', border: 0 },
+            sx: styles.paper,
             'aria-label': t('ariaLabel'),
           },
         }}
       >
         {sidebar(false, true, false)}
       </Drawer>
-      <Box
-        component="main"
-        sx={{
-          width: {
-            xs: '100%',
-            md: `calc(100% - ${sidebarCollapsed ? sidebarCollapsedWidth : sidebarExpandedWidth}px)`,
-          },
-          ml: { md: `${sidebarCollapsed ? sidebarCollapsedWidth : sidebarExpandedWidth}px` },
-          pt: { xs: '64px', md: 0 },
-          minWidth: 0,
-          transition: 'margin-left 180ms ease, width 180ms ease',
-          // Text fields and selects already show their own focused border; outlining them too
-          // drew a second ring around the field and over its label.
-          '& :focus-visible:not(input, textarea, [role="combobox"]), & .Mui-focusVisible': {
-            outline: `2px solid ${brand.magenta[500]}`,
-            outlineOffset: 2,
-          },
-        }}
-      >
+      <Box component="main" sx={getBoxStyles2({ sidebarCollapsed })}>
         {children}
       </Box>
     </Box>

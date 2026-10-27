@@ -21,14 +21,14 @@ describe('Maintenance adapters and locale presentation', () => {
         propertyId: 'redundant',
         title: 'Title',
         description: 'Description',
-        category: 'Categoria antiga',
+        category: 'OTHER',
         priority: 'urgent',
       }),
     ).toEqual({
       contractId: 'contract',
       title: 'Title',
       description: 'Description',
-      category: 'Categoria antiga',
+      category: 'OTHER',
       priority: 'URGENTE',
     })
   })
@@ -58,12 +58,12 @@ describe('Maintenance adapters and locale presentation', () => {
     ).toEqual({ action: 'schedule', scheduledAt })
   })
   it.each([
-    ['pt-BR', pt, 'Hidráulica'],
-    ['en-US', en, 'Plumbing'],
-    ['es-ES', es, 'Fontanería'],
+    ['pt-BR', pt, 'Hidráulica', 'Outra'],
+    ['en-US', en, 'Plumbing', 'Other'],
+    ['es-ES', es, 'Fontanería', 'Otra'],
   ] as const)(
     'translates coded categories and system events in %s while retaining human text',
-    (locale, messages, label) => {
+    (locale, messages, label, other) => {
       const translate = createTranslator({
         locale,
         messages: { dashboard: messages },
@@ -72,9 +72,7 @@ describe('Maintenance adapters and locale presentation', () => {
       const t = (key: string, values?: Record<string, string>) =>
         translate(key as Parameters<typeof translate>[0], values)
       expect(formatMaintenanceCategory('PLUMBING', (key) => t(`categories.${key}`))).toBe(label)
-      expect(formatMaintenanceCategory('Categoria antiga', (key) => t(`categories.${key}`))).toBe(
-        'Categoria antiga',
-      )
+      expect(formatMaintenanceCategory('OTHER', (key) => t(`categories.${key}`))).toBe(other)
       const event: ApiMaintenanceActivity = {
         id: 'event',
         ticketId: 'ticket',

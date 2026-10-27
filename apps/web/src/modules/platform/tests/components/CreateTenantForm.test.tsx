@@ -13,10 +13,12 @@ const { mutateAsync, enqueueSnackbar, usePlatformPlans } = vi.hoisted(() => ({
   enqueueSnackbar: vi.fn(),
   usePlatformPlans: vi.fn(),
 }))
-vi.mock('../../hooks/use-create-tenant', () => ({
+vi.mock('../../hooks/use-tenants', () => ({
   useCreateTenant: () => ({ mutateAsync, isError: false, error: null }),
 }))
-vi.mock('../../hooks/use-platform-plans', () => ({ usePlatformPlans }))
+vi.mock('../../hooks/use-platform-billing', () => ({ usePlatformPlans }))
+const actor = vi.hoisted(() => ({ key: 'admin-1:ADMIN', enabled: true, canManage: true }))
+vi.mock('../../hooks/use-platform-actor', () => ({ usePlatformActor: () => actor }))
 vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar }) }))
 
 const updatedAt = '2026-10-15T12:00:00.000Z'
@@ -28,7 +30,9 @@ const plans: ApiPlatformPlan[] = [
     includedUnits: 10,
     extraUnitPrice: 9.99,
     activeAccounts: 2,
+    createdAt: updatedAt,
     updatedAt,
+    updatedBy: null,
   },
   {
     accountType: 'BROKER',
@@ -37,7 +41,9 @@ const plans: ApiPlatformPlan[] = [
     includedUnits: 10,
     extraUnitPrice: 9.99,
     activeAccounts: 4,
+    createdAt: updatedAt,
     updatedAt,
+    updatedBy: null,
   },
   {
     accountType: 'AGENCY',
@@ -46,7 +52,9 @@ const plans: ApiPlatformPlan[] = [
     includedUnits: 10,
     extraUnitPrice: 19.99,
     activeAccounts: 5,
+    createdAt: updatedAt,
     updatedAt,
+    updatedBy: null,
   },
 ]
 
@@ -61,6 +69,7 @@ function renderForm() {
 describe('CreateTenantForm', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    actor.canManage = true
     vi.mocked(usePlatformPlans).mockReturnValue({ data: plans, isPending: false, isError: false })
   })
 
@@ -176,5 +185,15 @@ describe('CreateTenantForm', () => {
 
     expect(screen.getByRole('radio', { name: /Corretor/ })).toBeInTheDocument()
     expect(screen.queryByText(/\/mês/)).not.toBeInTheDocument()
+  })
+
+  it('não mostra o formulário para quem não tem o papel ADMIN', () => {
+    actor.canManage = false
+    renderForm()
+
+    expect(
+      screen.getByText('Só administradores com o papel Admin podem criar contas.'),
+    ).toBeVisible()
+    expect(screen.queryByRole('button', { name: /Criar conta/ })).not.toBeInTheDocument()
   })
 })

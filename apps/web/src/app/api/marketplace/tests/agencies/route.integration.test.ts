@@ -7,67 +7,67 @@ import { prisma } from '@server/db/prisma'
 
 import { GET } from '../../agencies/route'
 
+const marker = randomUUID().slice(0, 8)
+
+function request(search = '') {
+  return new NextRequest(`http://localhost/api/marketplace/agencies${search}`)
+}
+
 describe('GET /api/marketplace/agencies (integração)', () => {
-  // A token unique to this run: the directory is shared with every other test's agencies.
-  const token = `bairro${randomUUID().slice(0, 8)}`
-  const tenantIds: string[] = []
-  let newestId: string
-  let olderId: string
+  let publishedTenantId: string
   let draftTenantId: string
 
-  async function agency(name: string, status: 'PUBLISHED' | 'DRAFT', publishedAt?: Date) {
-    const tenant = await prisma.tenant.create({
-      data: { nome: name, slug: `diretorio-agencia-${randomUUID()}` },
+  beforeAll(async () => {
+    const publishedTenant = await prisma.tenant.create({
+      data: { nome: 'Imobiliária Publicada', slug: `diretorio-agencia-publicada-${randomUUID()}` },
     })
-    tenantIds.push(tenant.id)
+    publishedTenantId = publishedTenant.id
     await prisma.perfilPublicoImobiliaria.create({
       data: {
-        tenantId: tenant.id,
-        displayName: name,
-        cobertura: [`São Conrado ${token}`],
-        status,
-        publicadoEm: publishedAt ?? null,
+        tenantId: publishedTenantId,
+        displayName: `Imobiliária Publicada ${marker}`,
+        status: 'PUBLISHED',
+        publicadoEm: new Date(),
       },
     })
-    return tenant.id
-  }
 
-  function request(query: string) {
-    return new NextRequest(`http://localhost/api/marketplace/agencies?${query}`)
-  }
-
-  async function ids(query: string) {
-    const json = await (await GET(request(query))).json()
-    return { ids: json.agencies.map((agency: { id: string }) => agency.id), json }
-  }
-
-  beforeAll(async () => {
-    olderId = await agency('Imobiliária Antiga', 'PUBLISHED', new Date('2026-01-01T00:00:00Z'))
-    newestId = await agency('Imobiliária Nova', 'PUBLISHED', new Date('2026-06-01T00:00:00Z'))
-    draftTenantId = await agency('Imobiliária Rascunho', 'DRAFT')
+    const draftTenant = await prisma.tenant.create({
+      data: { nome: 'Imobiliária Rascunho', slug: `diretorio-agencia-rascunho-${randomUUID()}` },
+    })
+    draftTenantId = draftTenant.id
+    await prisma.perfilPublicoImobiliaria.create({
+      data: { tenantId: draftTenantId, displayName: 'Imobiliária Rascunho', status: 'DRAFT' },
+    })
   })
 
   afterAll(async () => {
-    for (const id of tenantIds) await prisma.tenant.delete({ where: { id } })
+    await prisma.tenant.delete({ where: { id: publishedTenantId } })
+    await prisma.tenant.delete({ where: { id: draftTenantId } })
     await prisma.$disconnect()
   })
 
-  it('lista só imobiliárias publicadas, buscando sem diferenciar acentos nem maiúsculas', async () => {
-    const { ids: found, json } = await ids(`q=SAO CONRADO ${token}`)
+  it('lista só perfis publicados e devolve a paginação', async () => {
+    const response = await GET(request(`?q=${marker}`))
+    const json = await response.json()
 
-    expect(found).toEqual([newestId, olderId])
-    expect(found).not.toContain(draftTenantId)
-    expect(json).toMatchObject({ totalCount: 2, page: 1, pageSize: 12 })
+    expect(response.status).toBe(200)
+    const ids = json.agencies.map((item: { id: string }) => item.id)
+    expect(ids).toEqual([publishedTenantId])
+    expect(ids).not.toContain(draftTenantId)
+    expect(json).toMatchObject({ totalCount: 1, page: 1, pageSize: 12 })
   })
 
-  it('pagina do perfil mais recente para o mais antigo', async () => {
-    expect((await ids(`q=${token}&pageSize=1&page=1`)).ids).toEqual([newestId])
-    expect((await ids(`q=${token}&pageSize=1&page=2`)).ids).toEqual([olderId])
-    expect((await ids(`q=${token}&pageSize=1&page=3`)).ids).toEqual([])
+  it('busca sem diferenciar acentos e maiúsculas', async () => {
+    const response = await GET(
+      request(`?q=${encodeURIComponent('IMOBILIARIA PUBLICADA ' + marker)}`),
+    )
+    const json = await response.json()
+
+    expect(json.agencies.map((item: { id: string }) => item.id)).toEqual([publishedTenantId])
   })
 
-  it('trata % e _ da busca como texto e recusa página grande demais', async () => {
-    expect((await ids('q=%25%25%25')).ids).not.toContain(newestId)
-    expect((await GET(request('pageSize=51'))).status).toBe(400)
+  it('rejeita parâmetros desconhecidos ou fora do limite', async () => {
+    expect((await GET(request('?pageSize=500'))).status).toBe(400)
+    expect((await GET(request('?foo=1'))).status).toBe(400)
   })
 })

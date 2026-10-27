@@ -1,13 +1,12 @@
-import type { PlatformPlan } from '../../domain/platform-plan'
-import type { TenantAccountType } from '../../domain/tenant-account'
-
-export interface PlatformPlanPrices {
-  monthlyPrice: number
-  includedUnits: number
-  extraUnitPrice: number
-}
+import type { PlatformPlan } from '../../types/platform-plan'
+import type { TenantAccountType } from '../../types/tenant-account'
+import type { PlatformPlanActor, PlatformPlanPrices } from '../../types/platform-plan-repository'
 
 export interface PlatformPlanRepository {
   findAll(): Promise<PlatformPlan[]>
-  update(accountType: TenantAccountType, prices: PlatformPlanPrices): Promise<PlatformPlan>
+  update(
+    accountType: TenantAccountType,
+    prices: PlatformPlanPrices,
+    actor: PlatformPlanActor,
+  ): Promise<PlatformPlan | null>
 }

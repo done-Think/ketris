@@ -1,4 +1,4 @@
-import type { NewInquiry, Inquiry } from '../../domain/inquiry.entity'
+import type { NewInquiry, Inquiry } from '../../types/inquiry'
 
 export interface InquiryRepository {
   create(inquiry: NewInquiry): Promise<Inquiry>

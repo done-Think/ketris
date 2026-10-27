@@ -8,7 +8,7 @@ import { PlatformFinancePage } from '../../components/PlatformFinancePage'
 import type { ApiPlatformFinance } from '../../types/platform-finance'
 
 const { usePlatformFinance } = vi.hoisted(() => ({ usePlatformFinance: vi.fn() }))
-vi.mock('../../hooks/use-platform-finance', () => ({ usePlatformFinance }))
+vi.mock('../../hooks/use-platform-billing', () => ({ usePlatformFinance }))
 
 const createdAt = '2026-01-10T12:00:00.000Z'
 const finance: ApiPlatformFinance = {

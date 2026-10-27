@@ -7,6 +7,7 @@ import { prisma } from '@server/db/prisma'
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { createAgendaFixture } from '@server/agenda/tests/fixtures/agenda-database'
 import { GET } from '../../properties/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 const tenants: string[] = []
 const tokens = new JoseTokenService()
@@ -90,6 +91,7 @@ beforeAll(async () => {
     data: {
       tenantId,
       imovelId: own.id,
+      responsavelId: await propertyResponsibleId(prisma, own.id),
       interessadoNome: renter.nome,
       interessadoEmail: renter.email,
       valorProposto: 1000,

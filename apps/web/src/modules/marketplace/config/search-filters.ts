@@ -1,3 +1,5 @@
+import { marketplacePropertyTypes } from './property-types'
+
 export const searchOptions = {
   location: {
     labelKey: 'location',
@@ -15,27 +17,12 @@ export const searchOptions = {
   propertyType: {
     labelKey: 'propertyType',
     query: 'propertyType',
-    values: [
-      'apartment',
-      'residentialHouses',
-      'commercialRooms',
-      'landLots',
-      'penthouses',
-      'farms',
-      'studios',
-    ],
+    values: marketplacePropertyTypes,
   },
   priceRange: {
     labelKey: 'priceRange',
     query: 'priceRange',
-    values: [
-      'Até R$ 2.500',
-      'R$ 2.500 - R$ 6.000',
-      'R$ 6.000 - R$ 10.000',
-      'R$ 10.000 - R$ 18.000',
-      'R$ 18.000 - R$ 35.000',
-      'Acima de R$ 35.000',
-    ],
+    values: [],
   },
 } as const
 

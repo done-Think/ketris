@@ -1,4 +1,5 @@
 import type {
+  ListOpportunityResponsiblesResponseDTO,
   CreateOpportunityRequestDTO,
   OpportunityActivityDTO,
   OpportunityDTO,
@@ -35,3 +36,6 @@ export type OpportunityResponseAction = 'ACEITAR' | 'RECUSAR' | 'SOLICITAR_INFOR
 export type RespondOpportunityPayload = RespondOpportunityRequestDTO
 
 export type OpportunityActivityRecord = OpportunityActivityDTO
+
+export type OpportunityResponsibleOption =
+  ListOpportunityResponsiblesResponseDTO['responsibles'][number]

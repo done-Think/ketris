@@ -64,6 +64,7 @@ export class ConvertLeadToOpportunityUseCase {
     const opportunity = await this.opportunityRepository.create({
       tenantId: input.actorTenantId,
       propertyId: input.propertyId,
+      responsibleId: lead.responsavelId,
       leadName: lead.name,
       leadEmail: email,
       leadPhone: lead.phone,

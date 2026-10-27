@@ -1,3 +1,4 @@
+import { LEAD_SOURCES } from '@server/crm/constants/lead-sources'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
@@ -31,7 +32,7 @@ export const dashboardRecentLeadSchema = z
     phone: z.string(),
     interest: z.string(),
     budget: z.string(),
-    source: z.string(),
+    source: z.enum(LEAD_SOURCES),
     stage: z.enum(['NOVO', 'EM_CONTATO', 'VISITA_MARCADA', 'PROPOSTA']),
     notes: z.string().nullable(),
     createdAt: z.string(),

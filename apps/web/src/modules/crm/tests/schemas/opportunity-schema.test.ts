@@ -51,6 +51,7 @@ describe('opportunity schemas', () => {
         proposedValue: '2500',
         notes: '',
         status: 'RASCUNHO',
+        responsibleId: '',
       }).success,
     ).toBe(true)
   })
@@ -70,6 +71,7 @@ describe('opportunity schemas', () => {
         proposedValue: '2500',
         notes: '',
         status: 'RASCUNHO',
+        responsibleId: '',
       }).success,
     ).toBe(false)
   })
@@ -89,6 +91,7 @@ describe('opportunity schemas', () => {
         proposedValue: '0',
         notes: '',
         status: 'RASCUNHO',
+        responsibleId: '',
       }).success,
     ).toBe(false)
   })

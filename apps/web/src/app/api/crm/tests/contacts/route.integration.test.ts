@@ -7,6 +7,7 @@ import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service
 import { prisma } from '@server/db/prisma'
 
 import { GET, POST } from '../../contacts/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 describe('/api/crm/contacts (integração)', () => {
   const tokenService = new JoseTokenService()
@@ -78,6 +79,7 @@ describe('/api/crm/contacts (integração)', () => {
       data: {
         tenantId,
         imovelId: imovel.id,
+        responsavelId: await propertyResponsibleId(prisma, imovel.id),
         contatoId: contactWithOpportunityId,
         interessadoNome: 'Carlos',
         interessadoEmail: withOpportunity.email,
@@ -265,6 +267,7 @@ describe('/api/crm/contacts (integração)', () => {
         data: {
           tenantId,
           imovelId: imovelAgentA.id,
+          responsavelId: await propertyResponsibleId(prisma, imovelAgentA.id),
           contatoId: contactOfAgentAId,
           interessadoNome: contactOfAgentA.nome,
           interessadoEmail: contactOfAgentA.email,

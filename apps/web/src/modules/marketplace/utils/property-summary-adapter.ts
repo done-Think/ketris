@@ -1,8 +1,7 @@
 import type { PublicPropertySummary } from '../types/public-property'
-import type { MiniMarketplaceProperty } from '../types/mini-property'
 import type { SearchResultProperty, SearchResultPurpose } from '../types/search'
 import type { AppLocale } from '@/i18n/types/locale.types'
-import type { PropertyText } from '../types/search'
+import type { PropertyText } from '../types/property-presentation'
 import { formatCompactCurrency } from './search-results'
 
 function buildDetails(summary: PublicPropertySummary): SearchResultProperty['details'] {
@@ -58,15 +57,5 @@ export function mapSummaryToSearchResult(
       summary.latitude !== null && summary.longitude !== null
         ? { latitude: summary.latitude, longitude: summary.longitude }
         : undefined,
-  }
-}
-
-export function mapSummaryToMiniProperty(summary: PublicPropertySummary): MiniMarketplaceProperty {
-  return {
-    id: summary.id,
-    href: { pathname: '/properties/[id]', params: { id: summary.id } },
-    title: summary.title,
-    location: buildLocation(summary),
-    image: summary.coverUrl,
   }
 }

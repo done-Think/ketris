@@ -1,5 +1,7 @@
 'use client'
 
+import { zodResolver } from '@hookform/resolvers/zod'
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import {
   Box,
   Button,
@@ -15,51 +17,113 @@ import {
   Switch,
   TextField,
 } from '@mui/material'
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import { useTranslations } from 'next-intl'
-import { Controller } from 'react-hook-form'
+import { useMemo } from 'react'
+import { Controller, useForm } from 'react-hook-form'
 
-import { componentText, radius, surface } from '@shared/theme/tokens'
+import { RhfTextField } from '@shared/components/form'
 
+import { marketplacePropertyTypes, propertyTypeLabelKeys } from '../../config/property-types'
 import {
   areaFilterOptions,
   bedroomFilterOptions,
   priceFilterOptions,
-  propertyTypeFilterOptions,
 } from '../../config/search-results-filters'
+import { emptySearchResultsFilters } from '../../hooks/use-search-results'
+import { createSearchResultsFiltersFormSchema } from '../../schemas/marketplace-search-schema'
+import { styles } from '../../styles/search-results-filter-dialog.styles'
 import type {
   SearchResultsFilterDialogProps,
-  SearchResultsFilterFieldProps,
+  SearchResultsFilterFieldsProps,
+  SearchResultsFiltersFormValues,
 } from '../../types/search'
 
-const fieldSx = {
-  '& .MuiInputBase-root': {
-    borderRadius: `${radius.sm}px`,
-    bgcolor: surface.paper,
-  },
+const allTypes = 'all'
+
+export function SearchResultsFilterDialog(props: SearchResultsFilterDialogProps) {
+  return (
+    <Dialog
+      open={props.open}
+      onClose={props.onClose}
+      fullWidth
+      maxWidth="sm"
+      slotProps={{ paper: { sx: styles.paper } }}
+    >
+      {props.open ? <SearchResultsFilterForm {...props} /> : null}
+    </Dialog>
+  )
 }
 
-function SearchResultsTypeFilter({ control }: SearchResultsFilterFieldProps) {
+function SearchResultsFilterForm({ filters, onClose, onApply }: SearchResultsFilterDialogProps) {
   const t = useTranslations('marketplace.searchResults.filters')
+  const schema = useMemo(
+    () => createSearchResultsFiltersFormSchema((key) => t(`errors.${key}`)),
+    [t],
+  )
+  const { control, handleSubmit, reset } = useForm<SearchResultsFiltersFormValues>({
+    defaultValues: filters,
+    resolver: zodResolver(schema),
+  })
+
+  return (
+    <>
+      <DialogTitle sx={styles.title}>
+        {t('title')}
+        <IconButton aria-label={t('close')} onClick={onClose} sx={styles.close}>
+          <CloseRoundedIcon fontSize="small" />
+        </IconButton>
+      </DialogTitle>
+      <Divider />
+      <Box component="form" noValidate onSubmit={handleSubmit(onApply)}>
+        <DialogContent>
+          <Stack spacing={2.2} sx={styles.content}>
+            <PropertyTypeField control={control} />
+            <PriceFields control={control} />
+            <BedroomField control={control} />
+            <AreaFields control={control} />
+            <ParkingField control={control} />
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={styles.actions}>
+          <Button type="button" onClick={() => reset(emptySearchResultsFilters)} sx={styles.clear}>
+            {t('clear')}
+          </Button>
+          <Button type="submit" variant="contained" sx={styles.submit}>
+            {t('done')}
+          </Button>
+        </DialogActions>
+      </Box>
+    </>
+  )
+}
+
+function PropertyTypeField({ control }: SearchResultsFilterFieldsProps) {
+  const t = useTranslations('marketplace.searchResults.filters')
+  const typeT = useTranslations('marketplace.propertyDetail.categories')
 
   return (
     <Controller
       control={control}
-      name="propertyTypeFilter"
+      name="propertyType"
       render={({ field }) => (
         <TextField
           select
           fullWidth
           label={t('type')}
-          value={field.value || 'Todos os tipos'}
+          value={field.value ?? allTypes}
           onChange={(event) =>
-            field.onChange(event.target.value === 'Todos os tipos' ? '' : event.target.value)
+            field.onChange(
+              marketplacePropertyTypes.find((type) => type === event.target.value) ?? null,
+            )
           }
-          sx={fieldSx}
+          sx={styles.field}
         >
-          {propertyTypeFilterOptions.map((option) => (
-            <MenuItem key={option} value={option} sx={componentText.menuItem}>
-              {t(`options.${option}`)}
+          <MenuItem value={allTypes} sx={styles.option}>
+            {t('options.allTypes')}
+          </MenuItem>
+          {marketplacePropertyTypes.map((type) => (
+            <MenuItem key={type} value={type} sx={styles.option}>
+              {typeT(propertyTypeLabelKeys[type])}
             </MenuItem>
           ))}
         </TextField>
@@ -68,152 +132,94 @@ function SearchResultsTypeFilter({ control }: SearchResultsFilterFieldProps) {
   )
 }
 
-// A preset range and a custom value are alternatives: choosing one clears the other.
-function SearchResultsPriceFilters({ control, setValue }: SearchResultsFilterFieldProps) {
+function PriceFields({ control }: SearchResultsFilterFieldsProps) {
   const t = useTranslations('marketplace.searchResults.filters')
 
   return (
     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-      <Controller
+      <RhfTextField
         control={control}
-        name="priceFilterIndex"
-        render={({ field }) => (
-          <TextField
-            {...field}
-            select
-            fullWidth
-            label={t('price')}
-            onChange={(event) => {
-              field.onChange(Number(event.target.value))
-              setValue('customMaxPrice', '', { shouldValidate: true })
-            }}
-            sx={fieldSx}
-          >
-            {priceFilterOptions.map((option, optionIndex) => (
-              <MenuItem key={option.label} value={optionIndex} sx={componentText.menuItem}>
-                {t(`options.${option.label}`)}
-              </MenuItem>
-            ))}
-          </TextField>
-        )}
-      />
-      <Controller
+        name="priceOption"
+        select
+        fullWidth
+        label={t('price')}
+        sx={styles.field}
+      >
+        {priceFilterOptions.map((option, index) => (
+          <MenuItem key={option.label} value={index} sx={styles.option}>
+            {t(`options.${option.label}`)}
+          </MenuItem>
+        ))}
+      </RhfTextField>
+      <RhfTextField
         control={control}
         name="customMaxPrice"
-        render={({ field, fieldState }) => (
-          <TextField
-            {...field}
-            fullWidth
-            label={t('maxPrice')}
-            type="number"
-            error={Boolean(fieldState.error)}
-            helperText={fieldState.error?.message}
-            onChange={(event) => {
-              field.onChange(event.target.value)
-              setValue('priceFilterIndex', 0)
-            }}
-            slotProps={{ htmlInput: { min: 0, step: 500 } }}
-            sx={fieldSx}
-          />
-        )}
+        fullWidth
+        label={t('maxPrice')}
+        slotProps={{ htmlInput: { inputMode: 'numeric' } }}
+        sx={styles.field}
       />
     </Stack>
   )
 }
 
-function SearchResultsBedroomFilter({ control }: SearchResultsFilterFieldProps) {
+function BedroomField({ control }: SearchResultsFilterFieldsProps) {
   const t = useTranslations('marketplace.searchResults.filters')
 
   return (
-    <Controller
+    <RhfTextField
       control={control}
-      name="bedroomFilterIndex"
-      render={({ field }) => (
-        <TextField
-          {...field}
-          select
-          fullWidth
-          label={t('bedrooms')}
-          onChange={(event) => field.onChange(Number(event.target.value))}
-          sx={fieldSx}
-        >
-          {bedroomFilterOptions.map((option, optionIndex) => (
-            <MenuItem key={option.label} value={optionIndex} sx={componentText.menuItem}>
-              {t(`options.${option.label}`)}
-            </MenuItem>
-          ))}
-        </TextField>
-      )}
-    />
+      name="bedroomOption"
+      select
+      fullWidth
+      label={t('bedrooms')}
+      sx={styles.field}
+    >
+      {bedroomFilterOptions.map((option, index) => (
+        <MenuItem key={option.label} value={index} sx={styles.option}>
+          {t(`options.${option.label}`)}
+        </MenuItem>
+      ))}
+    </RhfTextField>
   )
 }
 
-function SearchResultsAreaFilters({ control, setValue }: SearchResultsFilterFieldProps) {
+function AreaFields({ control }: SearchResultsFilterFieldsProps) {
   const t = useTranslations('marketplace.searchResults.filters')
 
   return (
     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-      <Controller
+      <RhfTextField
         control={control}
-        name="areaFilterIndex"
-        render={({ field }) => (
-          <TextField
-            {...field}
-            select
-            fullWidth
-            label={t('area')}
-            onChange={(event) => {
-              field.onChange(Number(event.target.value))
-              setValue('customMinArea', '', { shouldValidate: true })
-            }}
-            sx={fieldSx}
-          >
-            {areaFilterOptions.map((option, optionIndex) => (
-              <MenuItem key={option.label} value={optionIndex} sx={componentText.menuItem}>
-                {t(`options.${option.label}`)}
-              </MenuItem>
-            ))}
-          </TextField>
-        )}
-      />
-      <Controller
+        name="areaOption"
+        select
+        fullWidth
+        label={t('area')}
+        sx={styles.field}
+      >
+        {areaFilterOptions.map((option, index) => (
+          <MenuItem key={option.label} value={index} sx={styles.option}>
+            {t(`options.${option.label}`)}
+          </MenuItem>
+        ))}
+      </RhfTextField>
+      <RhfTextField
         control={control}
         name="customMinArea"
-        render={({ field, fieldState }) => (
-          <TextField
-            {...field}
-            fullWidth
-            label={t('minArea')}
-            type="number"
-            error={Boolean(fieldState.error)}
-            helperText={fieldState.error?.message}
-            onChange={(event) => {
-              field.onChange(event.target.value)
-              setValue('areaFilterIndex', 0)
-            }}
-            slotProps={{ htmlInput: { min: 0, step: 10 } }}
-            sx={fieldSx}
-          />
-        )}
+        fullWidth
+        label={t('minArea')}
+        slotProps={{ htmlInput: { inputMode: 'numeric' } }}
+        sx={styles.field}
       />
     </Stack>
   )
 }
 
-function SearchResultsParkingFilter({ control }: SearchResultsFilterFieldProps) {
+function ParkingField({ control }: SearchResultsFilterFieldsProps) {
   const t = useTranslations('marketplace.searchResults.filters')
 
   return (
-    <Box
-      sx={{
-        px: 1.4,
-        py: 1,
-        border: 1,
-        borderColor: 'divider',
-        borderRadius: `${radius.sm}px`,
-        bgcolor: surface.paper,
-      }}
-    >
+    <Box sx={styles.parking}>
       <Controller
         control={control}
         name="onlyWithParking"
@@ -230,80 +236,5 @@ function SearchResultsParkingFilter({ control }: SearchResultsFilterFieldProps) 
         )}
       />
     </Box>
-  )
-}
-
-export function SearchResultsFilterDialog({
-  control,
-  setValue,
-  open,
-  clearDraftFilters,
-  closeFiltersDialog,
-  onSubmitFilters,
-}: SearchResultsFilterDialogProps) {
-  const t = useTranslations('marketplace.searchResults.filters')
-
-  return (
-    <Dialog
-      open={open}
-      onClose={closeFiltersDialog}
-      fullWidth
-      maxWidth="sm"
-      slotProps={{
-        paper: {
-          sx: {
-            borderRadius: `${radius.md}px`,
-          },
-        },
-      }}
-    >
-      <DialogTitle
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 2,
-          pb: 1.5,
-          fontWeight: 800,
-        }}
-      >
-        {t('title')}
-        <IconButton
-          aria-label={t('close')}
-          onClick={closeFiltersDialog}
-          sx={{ width: 36, height: 36, borderRadius: `${radius.sm}px` }}
-        >
-          <CloseRoundedIcon fontSize="small" />
-        </IconButton>
-      </DialogTitle>
-      <Divider />
-      <Box component="form" noValidate onSubmit={onSubmitFilters}>
-        <DialogContent>
-          <Stack spacing={2.2} sx={{ pt: 1 }}>
-            <SearchResultsTypeFilter control={control} setValue={setValue} />
-            <SearchResultsPriceFilters control={control} setValue={setValue} />
-            <SearchResultsBedroomFilter control={control} setValue={setValue} />
-            <SearchResultsAreaFilters control={control} setValue={setValue} />
-            <SearchResultsParkingFilter control={control} setValue={setValue} />
-          </Stack>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2.5, pt: 0 }}>
-          <Button
-            type="button"
-            onClick={clearDraftFilters}
-            sx={{ textTransform: 'none', fontWeight: 700 }}
-          >
-            {t('clear')}
-          </Button>
-          <Button
-            type="submit"
-            variant="contained"
-            sx={{ borderRadius: `${radius.sm}px`, textTransform: 'none', fontWeight: 800 }}
-          >
-            {t('done')}
-          </Button>
-        </DialogActions>
-      </Box>
-    </Dialog>
   )
 }

@@ -3,63 +3,21 @@
 import { Box, Typography } from '@mui/material'
 
 import { Link } from '@/i18n/navigation'
-import { componentText, gradients, motion, radius, surface } from '@shared/theme/tokens'
 
+import { getMiniPropertyImageStyles, styles } from '../styles/mini-property-card.styles'
 import type { MiniPropertyCardProps } from '../types/mini-property'
 
 export function MiniPropertyCard({ property }: MiniPropertyCardProps) {
   return (
     <Box
       component={Link}
-      href={property.href}
-      sx={{
-        overflow: 'hidden',
-        borderRadius: `${radius.sm}px`,
-        border: '1px solid',
-        borderColor: 'divider',
-        bgcolor: surface.app,
-        color: 'inherit',
-        textDecoration: 'none',
-        transition: motion.transition.tile,
-        '&:hover': {
-          borderColor: 'primary.main',
-          transform: 'translateY(-2px)',
-        },
-      }}
+      href={{ pathname: '/properties/[id]', params: { id: property.id } }}
+      sx={styles.card}
     >
-      <Box
-        sx={{
-          height: { xs: 64, sm: 74 },
-          bgcolor: surface.paper,
-          backgroundImage: property.image ? gradients.miniPropertyImage(property.image) : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      />
-      <Box sx={{ px: 1.2, py: 1 }}>
-        <Typography
-          sx={{
-            color: 'text.primary',
-            ...componentText.miniCardTitle,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {property.title}
-        </Typography>
-        <Typography
-          sx={{
-            color: 'text.secondary',
-            ...componentText.miniCardMeta,
-            mt: 0.25,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {property.location}
-        </Typography>
+      <Box sx={getMiniPropertyImageStyles(property.image)} />
+      <Box sx={styles.body}>
+        <Typography sx={styles.title}>{property.title}</Typography>
+        <Typography sx={styles.location}>{property.location}</Typography>
       </Box>
     </Box>
   )

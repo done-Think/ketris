@@ -8,11 +8,14 @@ import {
   crmProposedValueSchema,
   crmShortTextSchema,
 } from './crm-input.schema'
+import { LEAD_SOURCES } from '../constants/lead-sources'
 import { crmGroupsSchema, crmListQuerySchema, crmPaginationSchema } from './pagination.schema'
 
 export const leadStageSchema = z
   .enum(['NOVO', 'EM_CONTATO', 'VISITA_MARCADA', 'PROPOSTA'])
   .openapi('LeadStage')
+
+export const leadSourceSchema = z.enum(LEAD_SOURCES).openapi('LeadSource')
 
 export const leadSchema = z
   .object({
@@ -25,7 +28,7 @@ export const leadSchema = z
     email: z.string().nullable(),
     interest: z.string(),
     budget: z.string(),
-    source: z.string(),
+    source: leadSourceSchema,
     stage: leadStageSchema,
     notes: z.string().nullable(),
     opportunityId: z.string().nullable(),
@@ -56,7 +59,7 @@ export const createLeadRequestSchema = z
     email: crmEmailSchema.nullable().optional(),
     interest: crmShortTextSchema,
     budget: crmShortTextSchema,
-    source: crmShortTextSchema,
+    source: leadSourceSchema,
     notes: crmNotesSchema.nullable().optional(),
   })
   .strict()

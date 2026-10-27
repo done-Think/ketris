@@ -1,3 +1,4 @@
+import type { LeadSource, LeadSourceKey } from '@server/crm/constants/lead-sources'
 import type {
   ConvertLeadRequestDTO,
   CreateLeadRequestDTO,
@@ -52,7 +53,7 @@ export type DashboardLead = {
   lastContact: string
   lastContactAt: string
   interest: string
-  source: string
+  source: LeadSource
   broker: string
   stage: LeadStage
   opportunityId: string | null
@@ -130,10 +131,10 @@ export type CreateLeadStep = {
   fields: CreateLeadFieldName[]
 }
 
-export type LeadSourceLabelKey = 'marketplace' | 'whatsApp' | 'instagram' | 'site' | 'referral'
+export type LeadSourceLabelKey = LeadSourceKey
 
 export type LeadSourceOption = {
-  value: string
+  value: LeadSource
   labelKey: LeadSourceLabelKey
 }
 

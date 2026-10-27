@@ -4,23 +4,15 @@ import { prisma } from '@server/db/prisma'
 import { buildCreciNumberSlug, buildPublicProfileSlug } from '@shared/utils/public-profile-slug'
 
 import type { AgencyProfileRepository } from '../application/ports/agency-profile-repository.port'
+import type { DirectoryPage, DirectoryQuery } from '../types/directory'
+import { normalizedDirectoryTerm, normalizedSearchText } from './directory-search-sql'
 import type {
   AgencyListingSummary,
   AgencyProfile,
   AgencyProfileDraft,
   AgencyTeamHighlight,
 } from '../types/agency-profile'
-import type { DecimalLike, TenantWithPerfilRow } from '../types/prisma-agency-profile-repository'
-import type {
-  ProfileDirectoryFilters,
-  ProfileDirectoryPage,
-  ProfileDirectoryResult,
-} from '../types/profile-directory'
-import {
-  orderByIds,
-  profileSearchCondition,
-  PUBLISHED_PROFILE_STATUS,
-} from './profile-directory-search'
+import type { TenantWithPerfilRow } from '../types/prisma-agency-profile-repository'
 
 const tenantWithPerfilInclude = {
   perfilPublico: {
@@ -64,7 +56,7 @@ async function buildFeaturedListings(tenantId: string): Promise<AgencyListingSum
     id: imovel.id,
     title: imovel.titulo,
     purpose: imovel.finalidade,
-    price: (imovel.valor as unknown as DecimalLike).toNumber(),
+    price: imovel.valor.toNumber(),
     neighborhood: imovel.endereco?.bairro ?? null,
     city: imovel.endereco?.cidade ?? null,
     coverUrl: imovel.midias[0]?.url ?? null,
@@ -158,30 +150,44 @@ export class PrismaAgencyProfileRepository implements AgencyProfileRepository {
     return toAgencyProfile(tenant)
   }
 
-  async listPublished(
-    { q }: ProfileDirectoryFilters,
-    { page, pageSize }: ProfileDirectoryPage,
-  ): Promise<ProfileDirectoryResult<AgencyProfile>> {
-    const where = Prisma.sql`p.status::text = ${PUBLISHED_PROFILE_STATUS} AND ${profileSearchCondition(
-      Prisma.sql`concat_ws(' ', p."displayName", p."legalCreci", p.sede, array_to_string(p.cobertura, ' '), array_to_string(p.segmentos, ' '))`,
-      q,
-    )}`
-    const [rows, [{ total }]] = await Promise.all([
-      prisma.$queryRaw<{ id: string }[]>`
-        SELECT p."tenantId" AS id FROM perfis_publicos_imobiliaria p WHERE ${where}
-        ORDER BY p."publicadoEm" DESC NULLS LAST, p."tenantId"
-        LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}`,
-      prisma.$queryRaw<{ total: number }[]>`
-        SELECT count(*)::int AS total FROM perfis_publicos_imobiliaria p WHERE ${where}`,
+  async listPublished({
+    q,
+    page,
+    pageSize,
+  }: DirectoryQuery): Promise<DirectoryPage<AgencyProfile>> {
+    const term = normalizedDirectoryTerm(q)
+    const text = normalizedSearchText([
+      Prisma.sql`p."displayName"`,
+      Prisma.sql`p."legalCreci"`,
+      Prisma.sql`p.sede`,
+      Prisma.sql`array_to_string(p.cobertura, ' ')`,
+      Prisma.sql`array_to_string(p.segmentos, ' ')`,
     ])
-    const ids = rows.map((row) => row.id)
+    const where = term
+      ? Prisma.sql`p.status = 'PUBLICADO' AND ${text} LIKE ${term}`
+      : Prisma.sql`p.status = 'PUBLICADO'`
+    const [rows, counts] = await Promise.all([
+      prisma.$queryRaw<{ id: string }[]>`
+        SELECT p."tenantId" AS id FROM perfis_publicos_imobiliaria p
+        WHERE ${where}
+        ORDER BY p."publicadoEm" DESC NULLS LAST, p.id
+        LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}`,
+      prisma.$queryRaw<{ total: bigint }[]>`
+        SELECT count(*) AS total FROM perfis_publicos_imobiliaria p WHERE ${where}`,
+    ])
     const tenants = await prisma.tenant.findMany({
-      where: { id: { in: ids } },
+      where: { id: { in: rows.map((row) => row.id) } },
       include: tenantWithPerfilInclude,
     })
-    const profiles = await Promise.all(tenants.map((tenant) => toAgencyProfile(tenant)))
+    const byId = new Map(tenants.map((tenant) => [tenant.id, tenant]))
+    const items = await Promise.all(
+      rows.flatMap((row) => {
+        const tenant = byId.get(row.id)
+        return tenant ? [toAgencyProfile(tenant)] : []
+      }),
+    )
 
-    return { items: orderByIds(ids, profiles, (profile) => profile.id), totalCount: total }
+    return { items, totalCount: Number(counts[0]?.total ?? 0), page, pageSize }
   }
 
   async save(tenantId: string, draft: AgencyProfileDraft): Promise<AgencyProfile> {

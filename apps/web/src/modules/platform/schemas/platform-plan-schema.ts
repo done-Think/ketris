@@ -7,7 +7,6 @@ import { parseMoneyInput } from '../utils/money-input'
 const MAX_MONEY = 999_999.99
 const MAX_UNITS = 100_000
 
-// Prices are typed as text in the locale's format and validated as amounts with cents.
 export function createPlatformPlanSchema(t: SchemaMessageTranslator, locale: string) {
   const money = z.string().refine((value) => {
     const amount = parseMoneyInput(value, locale)

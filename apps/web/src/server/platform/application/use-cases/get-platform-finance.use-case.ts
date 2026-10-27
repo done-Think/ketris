@@ -1,14 +1,7 @@
-import type { BillingSummary } from '../../domain/platform-billing'
-import type { ChargedPlatformTenant } from '../../domain/platform-tenant.entity'
 import { loadPlatformBilling } from '../load-platform-billing'
 import type { PlatformPlanRepository } from '../ports/platform-plan-repository.port'
 import type { PlatformTenantRepository } from '../ports/platform-tenant-repository.port'
-
-export interface PlatformFinance extends BillingSummary {
-  referenceDate: Date
-  // Billable accounts, highest monthly fee first.
-  accounts: ChargedPlatformTenant[]
-}
+import type { PlatformFinance } from '../../types/use-case-inputs'
 
 export class GetPlatformFinanceUseCase {
   constructor(

@@ -7,13 +7,14 @@ import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
-import { componentText, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 
 import { searchFilterOrder, textSearchFilterOrder } from '../config/search-filters'
 import type { MobileSearchBoxProps, TextSearchFilterKey } from '../types/search'
 import { PriceRangeMenu } from './PriceRangeMenu'
+import { SearchPurposeToggle } from './SearchPurposeToggle'
 import { SearchFilterTrigger } from './SearchFilterTrigger'
 import { TextSearchMenu } from './TextSearchMenu'
+import { styles } from '../styles/mobile-search-box.styles'
 
 export function MobileSearchBox({
   selectedSearch,
@@ -22,6 +23,8 @@ export function MobileSearchBox({
   activeSearchMenu,
   searchDraft,
   searchHref,
+  purpose,
+  setPurpose,
   mobileSearchRef,
   openSearchMenu,
   closeSearchMenu,
@@ -40,71 +43,19 @@ export function MobileSearchBox({
   }
 
   return (
-    <Box
-      sx={{
-        display: { xs: 'block', md: 'none' },
-        bgcolor: surface.paper,
-        borderRadius: `${radius.sm}px`,
-        p: 1,
-        maxWidth: 360,
-        mx: 'auto',
-        boxShadow: shadows.mobileSearch,
-      }}
-    >
+    <Box sx={styles.box}>
       <Button
         fullWidth
         aria-haspopup="dialog"
         onClick={() => setIsDrawerOpen(true)}
-        startIcon={<SearchOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
-        sx={{
-          justifyContent: 'flex-start',
-          minHeight: 36,
-          px: 1.4,
-          border: '1px solid',
-          borderColor: 'divider',
-          borderRadius: `${radius.sm}px`,
-          color: 'text.secondary',
-          bgcolor: surface.paper,
-          textAlign: 'left',
-          ...componentText.resetButtonText,
-          '&:hover': { bgcolor: surface.app },
-          '& .MuiButton-startIcon': {
-            color: 'primary.main',
-          },
-        }}
+        startIcon={<SearchOutlinedIcon sx={styles.searchOutlinedIcon} />}
+        sx={styles.button}
       >
-        <Typography
-          sx={{
-            color: 'text.secondary',
-            ...componentText.mobileSearchText,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {t('mobilePlaceholder')}
-        </Typography>
+        <Typography sx={styles.typography}>{t('mobilePlaceholder')}</Typography>
       </Button>
 
-      <Box
-        component={Link}
-        href={searchHref}
-        sx={{
-          display: 'block',
-          mt: 0.9,
-          textDecoration: 'none',
-        }}
-      >
-        <Button
-          component="span"
-          variant="contained"
-          fullWidth
-          sx={{
-            minHeight: 36,
-            borderRadius: `${radius.sm}px`,
-            ...componentText.mobileSearchSubmit,
-          }}
-        >
+      <Box component={Link} href={searchHref} sx={styles.box2}>
+        <Button component="span" variant="contained" fullWidth sx={styles.button2}>
           {t('submit')}
         </Button>
       </Box>
@@ -118,47 +69,19 @@ export function MobileSearchBox({
             role: 'dialog',
             'aria-modal': true,
             'aria-labelledby': 'mobile-search-drawer-title',
-            sx: {
-              maxHeight: '85vh',
-              bgcolor: surface.paper,
-              borderTopLeftRadius: `${radius.lg}px`,
-              borderTopRightRadius: `${radius.lg}px`,
-              overflow: 'hidden',
-            },
+            sx: styles.paper,
           },
         }}
       >
-        {/* O conteúdo da gaveta usa o mobileSearchRef para que o click-away da home não feche
-            os menus ao clicar aqui dentro (o Drawer é renderizado em portal). */}
-        <Stack ref={mobileSearchRef} sx={{ maxHeight: '85vh', minHeight: 0 }}>
-          <Box
-            aria-hidden
-            sx={{
-              alignSelf: 'center',
-              width: 40,
-              height: 4,
-              mt: 1,
-              borderRadius: `${radius.full}px`,
-              bgcolor: 'divider',
-            }}
-          />
+        <Stack ref={mobileSearchRef} sx={styles.stack}>
+          <Box aria-hidden sx={styles.box3} />
           <Stack
             direction="row"
             alignItems="center"
             justifyContent="space-between"
-            sx={{
-              px: 2,
-              pt: 0.5,
-              pb: 1,
-              borderBottom: '1px solid',
-              borderColor: 'divider',
-            }}
+            sx={styles.stack2}
           >
-            <Typography
-              id="mobile-search-drawer-title"
-              component="h2"
-              sx={{ color: 'text.primary', ...componentText.menuTitle }}
-            >
+            <Typography id="mobile-search-drawer-title" component="h2" sx={styles.typography2}>
               {t('mobileSearchTitle')}
             </Typography>
             <IconButton aria-label={t('closeSearch')} onClick={closeDrawer}>
@@ -166,32 +89,22 @@ export function MobileSearchBox({
             </IconButton>
           </Stack>
 
-          <Stack spacing={1.25} sx={{ flex: 1, minHeight: 0, overflowY: 'auto', p: 2 }}>
+          <Stack spacing={1.25} sx={styles.stack3}>
+            <SearchPurposeToggle purpose={purpose} onChange={setPurpose} fullWidth />
             {searchFilterOrder.map((key) => (
-              <Box
-                key={key}
-                sx={{
-                  bgcolor: surface.paper,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: `${radius.sm}px`,
-                  overflow: 'hidden',
-                }}
-              >
+              <Box key={key} sx={styles.box4}>
                 <SearchFilterTrigger
                   filterKey={key}
                   value={
                     key === 'priceRange'
                       ? priceRangeLabel
-                      : key === 'propertyType'
-                        ? getSearchOptionLabel(key, selectedSearch[key])
-                        : selectedSearch[key]
+                      : getSearchOptionLabel(key, selectedSearch[key])
                   }
                   onOpen={openSearchMenu}
                 />
 
                 {activeSearchMenu === key && (
-                  <Box sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
+                  <Box sx={styles.box5}>
                     {key === 'priceRange' ? (
                       <PriceRangeMenu
                         priceRange={priceRange}
@@ -215,31 +128,9 @@ export function MobileSearchBox({
             ))}
           </Stack>
 
-          <Box
-            sx={{
-              p: 2,
-              pb: 'calc(16px + env(safe-area-inset-bottom))',
-              bgcolor: surface.paper,
-              borderTop: '1px solid',
-              borderColor: 'divider',
-            }}
-          >
-            <Box
-              component={Link}
-              href={searchHref}
-              onClick={closeDrawer}
-              sx={{ display: 'block', textDecoration: 'none' }}
-            >
-              <Button
-                component="span"
-                variant="contained"
-                fullWidth
-                sx={{
-                  minHeight: 44,
-                  borderRadius: `${radius.sm}px`,
-                  ...componentText.mobileSearchSubmit,
-                }}
-              >
+          <Box sx={styles.box6}>
+            <Box component={Link} href={searchHref} onClick={closeDrawer} sx={styles.box7}>
+              <Button component="span" variant="contained" fullWidth sx={styles.button3}>
                 {t('submit')}
               </Button>
             </Box>

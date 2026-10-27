@@ -21,7 +21,7 @@ import {
 const ticket = {
   contractId: 'contract',
   propertyId: 'property',
-  category: 'Hidráulica',
+  category: 'PLUMBING',
   priority: 'NORMAL',
   title: 'Leak',
   description: 'Kitchen leak',
@@ -49,14 +49,21 @@ describe('Maintenance input contracts', () => {
     expect(schema.safeParse(payload).success).toBe(true)
     expect(schema.safeParse({ ...payload, actorId: 'forged-user' }).success).toBe(false)
   })
-  it('preserves the property consistency check and maps only known category labels', () => {
+  it('preserves the property consistency check and accepts only the closed category list', () => {
     expect(createMaintenanceTicketRequestSchema.parse(ticket)).toMatchObject({
       propertyId: 'property',
       category: 'PLUMBING',
     })
-    expect(
-      createMaintenanceTicketRequestSchema.parse({ ...ticket, category: 'Serralheria' }).category,
-    ).toBe('Serralheria')
+    for (const category of ['OTHER', 'PAINTING']) {
+      expect(createMaintenanceTicketRequestSchema.parse({ ...ticket, category }).category).toBe(
+        category,
+      )
+    }
+    for (const category of ['Hidráulica', 'Serralheria', 'plumbing', '']) {
+      expect(createMaintenanceTicketRequestSchema.safeParse({ ...ticket, category }).success).toBe(
+        false,
+      )
+    }
   })
   it('does not let a selected provider override activity metadata or catalog state', () => {
     expect(
@@ -72,24 +79,19 @@ describe('Maintenance input contracts', () => {
       }).success,
     ).toBe(false)
   })
-  it('filters by normalized or legacy category without accepting unknown query fields', () => {
-    expect(listMaintenanceTicketsQuerySchema.parse({ category: 'Hidráulica' })).toEqual({
+  it('filters by category code without accepting legacy labels or unknown query fields', () => {
+    expect(listMaintenanceTicketsQuerySchema.parse({ category: 'PLUMBING' })).toEqual({
       category: 'PLUMBING',
     })
-    expect(listMaintenanceTicketsQuerySchema.parse({ category: 'Serralheria' })).toEqual({
-      category: 'Serralheria',
+    expect(listMaintenanceTicketsQuerySchema.parse({ category: 'OTHER' })).toEqual({
+      category: 'OTHER',
     })
-    for (const payload of [
-      { category: '' },
-      { category: 'x'.repeat(101) },
-      { actorId: 'forged' },
-    ]) {
+    for (const payload of [{ category: '' }, { category: 'Hidráulica' }, { actorId: 'forged' }]) {
       expect(listMaintenanceTicketsQuerySchema.safeParse(payload).success).toBe(false)
     }
   })
   it.each([
     ['title', 201],
-    ['category', 101],
     ['description', 10001],
   ] as const)('enforces the approved %s limit', (field, length) => {
     expect(

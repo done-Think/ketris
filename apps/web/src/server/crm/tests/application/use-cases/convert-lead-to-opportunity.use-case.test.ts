@@ -21,7 +21,7 @@ const lead: Lead = {
   email: 'maria@exemplo.com',
   interest: 'Apartamento',
   budget: 'Até R$ 3.000',
-  source: 'WhatsApp',
+  source: 'WHATSAPP',
   stage: 'VISITA_MARCADA',
   notes: 'Gostou muito da varanda.',
   opportunityId: null,
@@ -80,6 +80,7 @@ describe('ConvertLeadToOpportunityUseCase', () => {
       expect.objectContaining({
         tenantId: 'tenant-1',
         propertyId: 'property-1',
+        responsibleId: lead.responsavelId,
         leadName: lead.name,
         leadEmail: lead.email,
         leadPhone: lead.phone,

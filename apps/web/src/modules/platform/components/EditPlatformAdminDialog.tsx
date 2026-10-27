@@ -17,18 +17,18 @@ import {
 } from '@mui/material'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslations } from 'next-intl'
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useSnackbar } from 'notistack'
 import axios from 'axios'
 
-import { iconSize } from '@shared/theme/tokens'
-
-import { useUpdatePlatformAdmin } from '../hooks/use-update-platform-admin'
+import { platformAdminRoles } from '../config/platform-admins'
+import { useUpdatePlatformAdmin } from '../hooks/use-platform-admins'
 import { createUpdatePlatformAdminSchema } from '../schemas/update-platform-admin-schema'
 import type {
   EditPlatformAdminDialogProps,
   UpdatePlatformAdminFormValues,
 } from '../types/platform-admin'
+import { styles } from '../styles/edit-platform-admin-dialog.styles'
 
 export function EditPlatformAdminDialog({ admin, onClose }: EditPlatformAdminDialogProps) {
   const t = useTranslations('platform.admins')
@@ -43,19 +43,13 @@ export function EditPlatformAdminDialog({ admin, onClose }: EditPlatformAdminDia
     control,
     handleSubmit,
     register,
-    reset,
     formState: { errors },
   } = useForm<UpdatePlatformAdminFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', email: '', role: 'ADMIN' },
+    defaultValues: { name: admin.name, email: admin.email, role: admin.role },
   })
 
-  useEffect(() => {
-    if (admin) reset({ name: admin.name, email: admin.email, role: admin.role })
-  }, [admin, reset])
-
   async function onSubmit(values: UpdatePlatformAdminFormValues) {
-    if (!admin) return
     try {
       await updateAdmin.mutateAsync({
         id: admin.id,
@@ -75,31 +69,24 @@ export function EditPlatformAdminDialog({ admin, onClose }: EditPlatformAdminDia
   }
 
   return (
-    <Dialog
-      open={Boolean(admin)}
-      onClose={() => !updateAdmin.isPending && onClose()}
-      fullWidth
-      maxWidth="sm"
-    >
+    <Dialog open onClose={() => !updateAdmin.isPending && onClose()} fullWidth maxWidth="sm">
       <Box component="form" onSubmit={handleSubmit(onSubmit)}>
-        <DialogTitle sx={{ px: { xs: 2, md: 2.8 }, pb: 1.4, pt: 2.4 }}>
+        <DialogTitle sx={styles.dialogTitle}>
           <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
             <Box>
-              <Typography sx={{ color: 'text.primary', fontSize: 24, fontWeight: 900 }}>
-                {t('editTitle')}
-              </Typography>
+              <Typography sx={styles.typography}>{t('editTitle')}</Typography>
             </Box>
             <IconButton
               aria-label={t('closeEditDialog')}
               onClick={onClose}
               disabled={updateAdmin.isPending}
             >
-              <CloseRoundedIcon sx={{ fontSize: iconSize.lg }} />
+              <CloseRoundedIcon sx={styles.closeRoundedIcon} />
             </IconButton>
           </Stack>
         </DialogTitle>
-        <DialogContent sx={{ px: { xs: 2, md: 2.8 }, pb: 2 }}>
-          <Stack spacing={2} sx={{ pt: 1 }}>
+        <DialogContent sx={styles.dialogContent}>
+          <Stack spacing={2} sx={styles.stack}>
             <TextField
               label={t('name')}
               error={Boolean(errors.name)}
@@ -125,15 +112,17 @@ export function EditPlatformAdminDialog({ admin, onClose }: EditPlatformAdminDia
                   onChange={field.onChange}
                   inputRef={field.ref}
                 >
-                  <MenuItem value="ADMIN">Admin</MenuItem>
-                  <MenuItem value="ADMIN_AGENT">Admin + Agent</MenuItem>
-                  <MenuItem value="AGENT">Agent</MenuItem>
+                  {platformAdminRoles.map((role) => (
+                    <MenuItem key={role} value={role}>
+                      {t(`roles.${role}`)}
+                    </MenuItem>
+                  ))}
                 </TextField>
               )}
             />
           </Stack>
         </DialogContent>
-        <DialogActions sx={{ px: { xs: 2, md: 2.8 }, pb: 2.5, pt: 0 }}>
+        <DialogActions sx={styles.dialogActions}>
           <Button
             type="button"
             variant="outlined"

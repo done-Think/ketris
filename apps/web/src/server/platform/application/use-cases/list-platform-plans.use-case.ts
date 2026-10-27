@@ -1,10 +1,7 @@
-import { isBillableTenant, type PlatformPlan } from '../../domain/platform-plan'
+import { isBillableTenant } from '../../domain/platform-plan'
 import type { PlatformPlanRepository } from '../ports/platform-plan-repository.port'
 import type { PlatformTenantRepository } from '../ports/platform-tenant-repository.port'
-
-export interface PlatformPlanWithAccounts extends PlatformPlan {
-  activeAccounts: number
-}
+import type { PlatformPlanWithAccounts } from '../../types/use-case-inputs'
 
 export class ListPlatformPlansUseCase {
   constructor(

@@ -13,10 +13,12 @@ const { usePlatformPlans, mutateAsync, enqueueSnackbar } = vi.hoisted(() => ({
   mutateAsync: vi.fn(),
   enqueueSnackbar: vi.fn(),
 }))
-vi.mock('../../hooks/use-platform-plans', () => ({
+vi.mock('../../hooks/use-platform-billing', () => ({
   usePlatformPlans,
   useUpdatePlatformPlan: () => ({ mutateAsync, isPending: false }),
 }))
+const actor = vi.hoisted(() => ({ key: 'admin-1:ADMIN', enabled: true, canManage: true }))
+vi.mock('../../hooks/use-platform-actor', () => ({ usePlatformActor: () => actor }))
 vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar }) }))
 
 const updatedAt = '2026-10-15T12:00:00.000Z'
@@ -28,7 +30,9 @@ const plans: ApiPlatformPlan[] = [
     includedUnits: 10,
     extraUnitPrice: 9.99,
     activeAccounts: 0,
+    createdAt: updatedAt,
     updatedAt,
+    updatedBy: null,
   },
   {
     accountType: 'BROKER',
@@ -37,7 +41,9 @@ const plans: ApiPlatformPlan[] = [
     includedUnits: 10,
     extraUnitPrice: 9.99,
     activeAccounts: 1,
+    createdAt: updatedAt,
     updatedAt,
+    updatedBy: null,
   },
   {
     accountType: 'AGENCY',
@@ -46,7 +52,9 @@ const plans: ApiPlatformPlan[] = [
     includedUnits: 10,
     extraUnitPrice: 19.99,
     activeAccounts: 4,
+    createdAt: updatedAt,
     updatedAt,
+    updatedBy: null,
   },
 ]
 
@@ -61,6 +69,7 @@ function renderPage() {
 describe('PlatformPlansPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    actor.canManage = true
     vi.mocked(usePlatformPlans).mockReturnValue({ data: plans, isPending: false, isError: false })
   })
 
@@ -152,5 +161,22 @@ describe('PlatformPlansPage', () => {
     })
     renderPage()
     expect(screen.getByText('Não foi possível carregar os planos.')).toBeVisible()
+  })
+
+  it('mostra quem alterou o plano por último e esconde a edição para quem não é ADMIN', () => {
+    actor.canManage = false
+    vi.mocked(usePlatformPlans).mockReturnValue({
+      data: plans.map((plan) =>
+        plan.accountType === 'AGENCY'
+          ? { ...plan, updatedBy: { id: 'admin-1', name: 'Sócia Ketris' } }
+          : plan,
+      ),
+      isPending: false,
+      isError: false,
+    })
+    renderPage()
+
+    expect(screen.getByText(/Alterado por Sócia Ketris em 15\/10\/2026/)).toBeVisible()
+    expect(screen.queryByRole('button', { name: /Editar/ })).not.toBeInTheDocument()
   })
 })

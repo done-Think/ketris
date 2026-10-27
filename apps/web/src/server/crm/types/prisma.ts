@@ -4,7 +4,7 @@ import type { Papel } from '@server/auth/domain/user.entity'
 export type CrmDatabase = Prisma.TransactionClient
 export type ContatoRow = Contato
 export type LeadRow = Lead
-export type OportunidadeRow = Oportunidade
+export type OportunidadeRow = Oportunidade & { responsavel: { nome: string } }
 export type AtividadeRow = AtividadeOportunidade
 
 export interface CrmScope {

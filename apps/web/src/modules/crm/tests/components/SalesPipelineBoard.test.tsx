@@ -48,6 +48,7 @@ vi.mock('../../hooks/use-opportunities', async (importOriginal) => {
     useCrmProperties: vi.fn(),
     useOpportunities: vi.fn(),
     useCreateOpportunity: vi.fn(),
+    useCrmResponsibles: () => ({ data: undefined }),
   }
 })
 
@@ -61,6 +62,8 @@ function makeOpportunity(
     tenantId: 'tenant-1',
     contactId: null,
     propertyId: `property-${index}`,
+    responsibleId: 'agent-1',
+    responsibleName: 'Ana Corretora',
     leadName: `Contato ${index}`,
     leadEmail: `contato${index}@example.com`,
     leadPhone: `(11) 90000-000${index}`,

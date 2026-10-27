@@ -6,15 +6,22 @@ import type { ActivityRepository } from '../../../application/ports/activity-rep
 import type { ContactRepository } from '../../../application/ports/contact-repository.port'
 import type { OpportunityRepository } from '../../../application/ports/opportunity-repository.port'
 import type { PropertyLookupPort } from '../../../application/ports/property-lookup.port'
+import type { ResponsibleLookupPort } from '../../../application/ports/responsible-lookup.port'
 import { CreateOpportunityUseCase } from '../../../application/use-cases/create-opportunity.use-case'
 import type { Contact } from '../../../domain/contact.entity'
-import { ContactNotFoundError, OpportunityPropertyNotFoundError } from '../../../domain/errors'
+import {
+  ContactNotFoundError,
+  InvalidOpportunityResponsibleError,
+  OpportunityPropertyNotFoundError,
+} from '../../../domain/errors'
 import type { Opportunity } from '../../../domain/opportunity.entity'
 
 const created: Opportunity = {
   id: 'op-1',
   tenantId: 'tenant-1',
   propertyId: 'imovel-1',
+  responsibleId: 'user-1',
+  responsibleName: 'Gestora',
   contactId: null,
   leadName: 'Maria',
   leadEmail: 'maria@exemplo.com',
@@ -51,6 +58,7 @@ function createDeps(overrides?: {
   findResponsavelId?: PropertyLookupPort['findResponsavelId']
   findById?: ContactRepository['findById']
   create?: OpportunityRepository['create']
+  findActiveStaffName?: ResponsibleLookupPort['findActiveStaffName']
 }) {
   const opportunityRepository = {
     create: overrides?.create ?? vi.fn().mockResolvedValue(created),
@@ -69,7 +77,18 @@ function createDeps(overrides?: {
     create: vi.fn().mockResolvedValue({}),
   } as unknown as ActivityRepository
 
-  return { opportunityRepository, contactRepository, propertyLookup, activityRepository }
+  const responsibleLookup: ResponsibleLookupPort = {
+    findActiveStaffName: overrides?.findActiveStaffName ?? vi.fn().mockResolvedValue('Pessoa'),
+    listActiveStaff: vi.fn(),
+  }
+
+  return {
+    opportunityRepository,
+    contactRepository,
+    propertyLookup,
+    activityRepository,
+    responsibleLookup,
+  }
 }
 
 describe('CreateOpportunityUseCase', () => {
@@ -81,6 +100,7 @@ describe('CreateOpportunityUseCase', () => {
       deps.contactRepository,
       deps.propertyLookup,
       deps.activityRepository,
+      deps.responsibleLookup,
     )
 
     await useCase.execute({
@@ -111,10 +131,12 @@ describe('CreateOpportunityUseCase', () => {
       deps.contactRepository,
       deps.propertyLookup,
       deps.activityRepository,
+      deps.responsibleLookup,
     )
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorId: 'user-1',
       actorPapel: 'OWNER',
       propertyId: 'imovel-1',
       leadName: 'Maria',
@@ -139,10 +161,12 @@ describe('CreateOpportunityUseCase', () => {
       deps.contactRepository,
       deps.propertyLookup,
       deps.activityRepository,
+      deps.responsibleLookup,
     )
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorId: 'user-1',
       actorPapel: 'OWNER',
       propertyId: 'imovel-1',
       leadName: 'Maria',
@@ -162,11 +186,13 @@ describe('CreateOpportunityUseCase', () => {
       deps.contactRepository,
       deps.propertyLookup,
       deps.activityRepository,
+      deps.responsibleLookup,
     )
 
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
+        actorId: 'user-1',
         actorPapel: 'OWNER',
         propertyId: 'imovel-de-outro-tenant',
         leadName: 'Maria',
@@ -189,11 +215,13 @@ describe('CreateOpportunityUseCase', () => {
       deps.contactRepository,
       deps.propertyLookup,
       deps.activityRepository,
+      deps.responsibleLookup,
     )
 
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
+        actorId: 'user-1',
         actorPapel: 'OWNER',
         propertyId: 'imovel-1',
         contactId: 'contato-de-outro-tenant',
@@ -213,10 +241,12 @@ describe('CreateOpportunityUseCase', () => {
       deps.contactRepository,
       deps.propertyLookup,
       deps.activityRepository,
+      deps.responsibleLookup,
     )
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorId: 'user-1',
       actorPapel: 'OWNER',
       propertyId: 'imovel-1',
       leadName: 'Maria',
@@ -235,6 +265,7 @@ describe('CreateOpportunityUseCase', () => {
       deps.contactRepository,
       deps.propertyLookup,
       deps.activityRepository,
+      deps.responsibleLookup,
     )
 
     await useCase.execute({
@@ -261,6 +292,7 @@ describe('CreateOpportunityUseCase', () => {
       deps.contactRepository,
       deps.propertyLookup,
       deps.activityRepository,
+      deps.responsibleLookup,
     )
 
     await expect(
@@ -275,5 +307,71 @@ describe('CreateOpportunityUseCase', () => {
       }),
     ).rejects.toThrow(ForbiddenError)
     expect(create).not.toHaveBeenCalled()
+  })
+  function build(deps: ReturnType<typeof createDeps>) {
+    return new CreateOpportunityUseCase(
+      deps.opportunityRepository,
+      deps.contactRepository,
+      deps.propertyLookup,
+      deps.activityRepository,
+      deps.responsibleLookup,
+    )
+  }
+
+  const base = {
+    actorTenantId: 'tenant-1',
+    propertyId: 'imovel-1',
+    leadName: 'Maria',
+    leadEmail: 'maria@exemplo.com',
+    proposedValue: 2500,
+  }
+
+  it('usa quem criou como responsável quando nenhum é informado', async () => {
+    const create = vi.fn().mockResolvedValue(created)
+    await build(createDeps({ create })).execute({
+      ...base,
+      actorId: 'user-1',
+      actorPapel: 'OWNER',
+    })
+
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ responsibleId: 'user-1' }))
+  })
+
+  it('deixa o OWNER escolher outro responsável ativo da equipe', async () => {
+    const create = vi.fn().mockResolvedValue(created)
+    const findActiveStaffName = vi.fn().mockResolvedValue('Bruno')
+    await build(createDeps({ create, findActiveStaffName })).execute({
+      ...base,
+      actorId: 'user-1',
+      actorPapel: 'OWNER',
+      responsibleId: 'agent-2',
+    })
+
+    expect(findActiveStaffName).toHaveBeenCalledWith('tenant-1', 'agent-2')
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ responsibleId: 'agent-2' }))
+  })
+
+  it('recusa um responsável que não é da equipe ativa', async () => {
+    const create = vi.fn()
+    await expect(
+      build(createDeps({ create, findActiveStaffName: vi.fn().mockResolvedValue(null) })).execute({
+        ...base,
+        actorId: 'user-1',
+        actorPapel: 'OWNER',
+        responsibleId: 'inativo',
+      }),
+    ).rejects.toThrow(InvalidOpportunityResponsibleError)
+    expect(create).not.toHaveBeenCalled()
+  })
+
+  it('não deixa o AGENT escolher outro responsável', async () => {
+    await expect(
+      build(createDeps()).execute({
+        ...base,
+        actorId: 'agent-1',
+        actorPapel: 'AGENT',
+        responsibleId: 'agent-2',
+      }),
+    ).rejects.toThrow(ForbiddenError)
   })
 })

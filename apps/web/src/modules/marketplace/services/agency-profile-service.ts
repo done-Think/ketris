@@ -1,6 +1,6 @@
 import { BaseService } from '@shared/lib/api/base-service'
 
-import type { DirectoryListParams } from '../types/directory'
+import type { DirectoryPage, DirectoryQuery } from '../types/directory'
 
 import type {
   AgencyProfileResponse,
@@ -14,8 +14,12 @@ export class AgencyProfileService extends BaseService {
   private readonly publicPath = '/marketplace/agencies'
   private readonly ownPath = '/marketplace/profiles/agency'
 
-  list(params: DirectoryListParams): Promise<ListAgencyProfilesResponse> {
-    return this.http.get<ListAgencyProfilesResponse>(this.publicPath, { params })
+  list(query: DirectoryQuery): Promise<DirectoryPage<PublicAgencyProfile>> {
+    return this.http
+      .get<ListAgencyProfilesResponse>(this.publicPath, {
+        params: { ...(query.q ? { q: query.q } : {}), page: query.page, pageSize: query.pageSize },
+      })
+      .then(({ agencies, ...page }) => ({ items: agencies, ...page }))
   }
 
   getById(id: string): Promise<PublicAgencyProfile> {

@@ -59,7 +59,7 @@ describe('/api/crm/leads/[id] (integração)', () => {
         telefone: '(11) 90000-0001',
         interesse: 'Apartamento 2 quartos',
         orcamento: 'Até R$ 3.000',
-        origem: 'WhatsApp',
+        origem: 'WHATSAPP',
       },
     })
     leadId = lead.id

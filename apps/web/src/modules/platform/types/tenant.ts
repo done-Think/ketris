@@ -3,7 +3,7 @@ import type { z } from 'zod'
 import type { createTenantAdminSchema } from '../schemas/create-tenant-admin-schema'
 import type { createTenantSchema } from '../schemas/create-tenant-schema'
 import type { createTenantAccountSchema } from '../schemas/tenant-account-schema'
-import type { MonthlyCharge } from './platform-plan'
+import type { ApiPlatformPlan, MonthlyCharge } from './platform-plan'
 
 export type CreateTenantFormValues = z.infer<ReturnType<typeof createTenantSchema>>
 
@@ -22,12 +22,10 @@ export type TenantAccountType = (typeof TENANT_ACCOUNT_TYPES)[number]
 export const TENANT_STATUSES = ['TRIAL', 'ACTIVE', 'SUSPENDED', 'CANCELED'] as const
 export type TenantStatus = (typeof TENANT_STATUSES)[number]
 
-// A tenant with how the platform bills it (kept manually by a platform admin).
 export interface PlatformTenant extends TenantSummary {
   accountType: TenantAccountType
   status: TenantStatus
   canceledAt: string | null
-  // What its plan costs for its current usage; null for the renters' system tenant.
   monthlyCharge?: MonthlyCharge | null
 }
 
@@ -73,15 +71,45 @@ export interface CreateTenantAdminPayload {
   password: string
 }
 
-export interface ListTenantsResponse {
+export type TenantStatusCounts = Record<TenantStatus, number>
+
+export interface TenantListQuery {
+  q?: string
+  status?: TenantStatus
+  accountType?: TenantAccountType
+  page: number
+  pageSize: number
+}
+
+export interface PageMeta {
+  totalCount: number
+  page: number
+  pageSize: number
+}
+
+export interface ListTenantsResponse extends PageMeta {
   tenants: PlatformTenant[]
+  statusCounts: TenantStatusCounts
+}
+
+export interface TenantPage extends PageMeta {
+  tenants: PlatformTenant[]
+  statusCounts: TenantStatusCounts
+}
+
+export interface GetTenantResponse {
+  tenant: PlatformTenant
+}
+
+export interface TenantUsersPage extends PageMeta {
+  users: TenantUser[]
 }
 
 export interface CreateTenantResponse {
   tenant: TenantSummary
 }
 
-export interface ListTenantUsersResponse {
+export interface ListTenantUsersResponse extends PageMeta {
   users: TenantUser[]
 }
 
@@ -104,4 +132,45 @@ export interface CreateTenantAdminInput {
   name: string
   email: string
   password: string
+}
+
+export type StatusFilter = 'ALL' | TenantStatus
+
+export type TenantTypeFilter = 'ALL' | TenantAccountType
+
+export interface TenantsListFilters {
+  query: string
+  accountType: TenantTypeFilter
+  onClear: () => void
+}
+
+export interface TenantsListProps {
+  filters?: TenantsListFilters
+}
+
+export interface TenantsListState {
+  status: StatusFilter
+  page: number
+  pageSize: number
+  scope: string
+}
+
+export interface TenantUsersListState {
+  page: number
+  pageSize: number
+}
+
+export interface TenantsFiltersProps {
+  query: string
+  accountType: TenantTypeFilter
+  onQueryChange: (query: string) => void
+  onAccountTypeChange: (accountType: TenantTypeFilter) => void
+}
+
+export interface CreateTenantSummaryProps {
+  name: string
+  slug: string
+  accountType: TenantAccountType
+  status: 'TRIAL' | 'ACTIVE'
+  plan: ApiPlatformPlan | undefined
 }

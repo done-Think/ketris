@@ -1,8 +1,4 @@
-import type { PlatformOverview } from '../../domain/platform-overview.entity'
-
-export type PlatformOverviewCounts = Omit<PlatformOverview, 'metrics'> & {
-  metrics: Omit<PlatformOverview['metrics'], 'mrr' | 'churnRate'>
-}
+import type { PlatformOverviewCounts } from '../../types/platform-overview-repository'
 
 export interface PlatformOverviewRepository {
   getOverview(referenceDate: Date): Promise<PlatformOverviewCounts>

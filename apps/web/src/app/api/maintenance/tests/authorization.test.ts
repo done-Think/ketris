@@ -76,7 +76,7 @@ const ticket: MaintenanceTicket = {
   replacementRequests: [],
   title: 'Leak',
   description: 'Leak',
-  category: 'Plumbing',
+  category: 'PLUMBING',
   priority: 'NORMAL',
   status: 'ABERTO',
   openedById: 'renter',

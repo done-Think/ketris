@@ -41,6 +41,8 @@ describe('GetPlatformFinanceUseCase', () => {
       ]),
       findById: vi.fn(),
       updateAccount: vi.fn(),
+      findPage: vi.fn(),
+      countByStatus: vi.fn(),
       findStatusChanges: vi.fn().mockResolvedValue([]),
       countUsage: vi.fn().mockResolvedValue(new Map([['b', { properties: 11, brokers: 1 }]])),
     }
@@ -103,6 +105,8 @@ describe('GetPlatformFinanceUseCase', () => {
       ]),
       findById: vi.fn(),
       updateAccount: vi.fn(),
+      findPage: vi.fn(),
+      countByStatus: vi.fn(),
       findStatusChanges: vi.fn().mockResolvedValue([
         {
           tenantId: 'a',

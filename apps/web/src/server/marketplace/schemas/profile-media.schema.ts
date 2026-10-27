@@ -12,6 +12,7 @@ export const profileMediaUploadRequestSchema = z
       .openapi({ format: 'binary', description: 'Imagem JPEG, PNG ou WebP até 8 MiB.' }),
     target: profileMediaTargetSchema,
   })
+  .strict()
   .openapi('ProfileMediaUploadRequest')
 
 export const profileMediaUploadResponseSchema = z
@@ -20,7 +21,6 @@ export const profileMediaUploadResponseSchema = z
   })
   .openapi('ProfileMediaUploadResponse')
 
-// The route receives the key as a catch-all segment; the contract documents it as one path value.
 export const profileMediaKeyParamsSchema = z.object({
   key: z.string().openapi({
     description:

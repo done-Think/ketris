@@ -1,3 +1,4 @@
+import type { MaintenanceCategory } from '@shared/lib/utils/maintenance-categories'
 import type { Papel } from '@server/auth/domain/user.entity'
 
 export type MaintenanceTicketStatus =
@@ -27,7 +28,7 @@ export interface MaintenanceProvider {
 export interface MaintenanceReplacementRequest {
   id: string
   reason: string
-  requestedById: string
+  requestedById: string | null
   requestedByName: string
   status: 'PENDENTE' | 'APROVADA' | 'REJEITADA'
   decisionReason: string | null
@@ -122,12 +123,12 @@ export interface MaintenanceTicket {
   replacementRequests: MaintenanceReplacementRequest[]
   permissions?: MaintenancePermissions
   access: { agentId: string; ownerId: string | null; renterIds: string[]; validContract: boolean }
-  category: string
+  category: MaintenanceCategory
   priority: MaintenanceTicketPriority
   status: MaintenanceTicketStatus
   title: string
   description: string
-  openedById: string
+  openedById: string | null
   openedByName: string
   resolvedAt: Date | null
   scheduledAt?: Date | null
@@ -147,7 +148,7 @@ export interface MaintenanceTicketListItem {
   responsibleName: string | null
   deletedAt: Date | null
   permissions: MaintenancePermissions
-  category: string
+  category: MaintenanceCategory
   priority: MaintenanceTicketPriority
   status: MaintenanceTicketStatus
   title: string
@@ -171,7 +172,7 @@ export interface MaintenanceTicketListFilters {
   archived?: boolean
   status?: MaintenanceTicketStatus
   priority?: MaintenanceTicketPriority
-  category?: string
+  category?: MaintenanceCategory
   propertyId?: string
   search?: string
   page?: number
@@ -183,7 +184,7 @@ export interface NewMaintenanceTicket {
   tenantId: string
   propertyId: string
   contractId: string
-  category: string
+  category: MaintenanceCategory
   priority: MaintenanceTicketPriority
   title: string
   description: string
@@ -195,7 +196,7 @@ export interface MaintenanceTicketUpdate {
   scheduledAt?: Date | null
   propertyId?: string
   contractId?: string
-  category?: string
+  category?: MaintenanceCategory
   priority?: MaintenanceTicketPriority
   title?: string
   description?: string

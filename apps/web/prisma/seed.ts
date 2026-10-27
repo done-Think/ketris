@@ -187,6 +187,10 @@ async function main() {
   console.log(`Seed concluído — ${seedContacts.length} contatos do crm`)
 
   for (const opportunity of seedOpportunities) {
+    const property = await prisma.imovel.findUniqueOrThrow({
+      where: { id: `seed-imovel-${opportunity.propertyId}` },
+      select: { responsavelId: true },
+    })
     const record = await prisma.oportunidade.upsert({
       where: { id: opportunity.id },
       update: {},
@@ -194,6 +198,7 @@ async function main() {
         id: opportunity.id,
         tenantId: mainTenantId,
         imovelId: `seed-imovel-${opportunity.propertyId}`,
+        responsavelId: property.responsavelId,
         contatoId: opportunity.contactId ? contactByLegacyId.get(opportunity.contactId) : null,
         interessadoNome: opportunity.leadName,
         interessadoEmail: opportunity.leadEmail,

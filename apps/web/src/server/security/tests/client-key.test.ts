@@ -5,8 +5,9 @@ import { getAuthRateLimitKey, getTrustedClientAddress } from '../client-key'
 afterEach(() => vi.unstubAllEnvs())
 
 describe('trusted auth rate-limit identity', () => {
-  it('ignores all caller-supplied forwarding headers outside Vercel', () => {
+  it('ignores all caller-supplied forwarding headers outside Vercel without a trusted proxy', () => {
     vi.stubEnv('VERCEL', '')
+    vi.stubEnv('TRUSTED_CLIENT_IP_HEADER', '')
     expect(
       getTrustedClientAddress(
         new Headers({
@@ -33,6 +34,29 @@ describe('trusted auth rate-limit identity', () => {
       'unknown',
     )
     expect(getTrustedClientAddress(new Headers({ 'x-vercel-forwarded-for': 'forged' }))).toBe(
+      'unknown',
+    )
+  })
+
+  it('uses only the header named by the trusted proxy outside Vercel', () => {
+    vi.stubEnv('VERCEL', '')
+    vi.stubEnv('TRUSTED_CLIENT_IP_HEADER', 'CloudFront-Viewer-Address')
+    const headers = {
+      'x-forwarded-for': '203.0.113.1',
+      'x-vercel-forwarded-for': '203.0.113.3',
+    }
+    expect(
+      getTrustedClientAddress(
+        new Headers({ ...headers, 'cloudfront-viewer-address': '198.51.100.7:46532' }),
+      ),
+    ).toBe('198.51.100.7')
+    expect(
+      getTrustedClientAddress(
+        new Headers({ 'cloudfront-viewer-address': '2001:db8::1, 198.51.100.8' }),
+      ),
+    ).toBe('2001:db8::1')
+    expect(getTrustedClientAddress(new Headers(headers))).toBe('unknown')
+    expect(getTrustedClientAddress(new Headers({ 'cloudfront-viewer-address': 'forged' }))).toBe(
       'unknown',
     )
   })

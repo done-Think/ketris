@@ -10,6 +10,7 @@ import { GET as getProperty, PATCH, DELETE } from '../[id]/route'
 import { POST as publish } from '../[id]/publish/route'
 import { POST as unpublish } from '../[id]/unpublish/route'
 import { POST as uploadMedia } from '../media/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 describe('Renter property access (database integration)', () => {
   const tenantIds: string[] = []
@@ -88,6 +89,7 @@ describe('Renter property access (database integration)', () => {
         data: {
           tenantId,
           imovelId: property.id,
+          responsavelId: await propertyResponsibleId(prisma, property.id),
           interessadoNome: renter.nome,
           interessadoEmail: renter.email,
           valorProposto: 1000,

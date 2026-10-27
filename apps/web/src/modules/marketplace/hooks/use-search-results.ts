@@ -1,30 +1,32 @@
 'use client'
 
-import { useMemo } from 'react'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { useForm } from 'react-hook-form'
 import { useLocale, useTranslations } from 'next-intl'
+
 import type { AppLocale } from '@/i18n/types/locale.types'
+import { useListState } from '@shared/hooks/use-list-state'
 
 import {
   areaFilterOptions,
   bedroomFilterOptions,
   priceFilterOptions,
+  searchResultsPageSize,
 } from '../config/search-results-filters'
-import { publicPropertyQueryKeys } from '../config/property-query-keys'
+import { marketplaceQueryKeys } from '../config/marketplace-query-keys'
 import { marketplaceService } from '../services/marketplace-service'
-import { createSearchResultsFormSchema } from '../schemas/marketplace-search-schema'
-import type { PropertySortOption, PublicPropertyPurpose } from '../types/public-property'
 import type {
-  SearchResultsFormValues,
+  PropertySortOption,
+  PublicPropertyPurpose,
+  SearchPropertiesFilters,
+} from '../types/public-property'
+import type {
+  SearchResultsFiltersFormValues,
   SearchResultsPageProps,
+  SearchResultsState,
   SearchResultsViewModeScope,
   SortOption,
-  ViewMode,
 } from '../types/search'
 import { mapSummaryToSearchResult } from '../utils/property-summary-adapter'
-import { formatCompactCurrency } from '../utils/search-results'
 import { useViewModePreference } from './use-view-mode-preference'
 
 const viewModeScopeByPurpose: Record<
@@ -40,179 +42,121 @@ const apiPurposeByPurpose: Record<SearchResultsPageProps['purpose'], PublicPrope
   comprar: 'VENDA',
 }
 
-const searchResultsPageSize = 10
-
 const sortByOption: Record<SortOption, PropertySortOption | undefined> = {
   relevancia: undefined,
   'menor-preco': 'priceAsc',
   'maior-preco': 'priceDesc',
 }
 
-export function useSearchResults({ purpose, initialLocation = '' }: SearchResultsPageProps) {
+export const emptySearchResultsFilters: SearchResultsFiltersFormValues = {
+  propertyType: null,
+  priceOption: 0,
+  customMaxPrice: '',
+  bedroomOption: 0,
+  areaOption: 0,
+  customMinArea: '',
+  onlyWithParking: false,
+}
+
+function positiveNumber(value: string): number | null {
+  const parsed = Number(value)
+  return value && parsed > 0 ? parsed : null
+}
+
+export function useSearchResults({
+  purpose,
+  initialLocation = '',
+  initialPropertyType = null,
+  initialPriceRange,
+}: SearchResultsPageProps) {
   const locale = useLocale() as AppLocale
-  const t = useTranslations('marketplace.searchResults.errors')
   const tFeatures = useTranslations('marketplace.propertyFeatures')
-  const tPrice = useTranslations('marketplace.searchResults.filters')
-  const searchResultsFormSchema = useMemo(() => createSearchResultsFormSchema((key) => t(key)), [t])
-  const { setValue, watch } = useForm<SearchResultsFormValues>({
-    defaultValues: {
-      selectedPropertyId: '',
-      locationQuery: initialLocation,
-      propertyTypeFilter: '',
-      priceFilterIndex: 0,
-      customMaxPrice: '',
-      bedroomFilterIndex: 0,
-      areaFilterIndex: 0,
-      customMinArea: '',
-      onlyWithParking: false,
-      sortOption: 'relevancia',
-      currentPage: 1,
-    },
-    resolver: zodResolver(searchResultsFormSchema),
-  })
-  const persistedViewMode = useViewModePreference(viewModeScopeByPurpose[purpose])
+  const { viewMode, setViewMode } = useViewModePreference(viewModeScopeByPurpose[purpose])
   const {
-    areaFilterIndex,
-    bedroomFilterIndex,
-    customMaxPrice,
-    customMinArea,
-    locationQuery,
-    onlyWithParking,
-    priceFilterIndex,
-    propertyTypeFilter,
-    selectedPropertyId: selectedId,
-    sortOption,
-    currentPage,
-  } = watch()
+    filters,
+    setFilter,
+    updateFilters: patchFilters,
+  } = useListState<SearchResultsState>({
+    ...emptySearchResultsFilters,
+    propertyType: initialPropertyType,
+    customMaxPrice: initialPriceRange?.max ? String(initialPriceRange.max) : '',
+    location: initialLocation,
+    minPrice: initialPriceRange?.min ?? null,
+    sortOption: 'relevancia',
+    page: 1,
+    selectedPropertyId: '',
+  })
 
-  const priceFilter = priceFilterOptions[priceFilterIndex]
-  const bedroomFilter = bedroomFilterOptions[bedroomFilterIndex]
-  const areaFilter = areaFilterOptions[areaFilterIndex]
-  const customMaxPriceValue = Number(customMaxPrice)
-  const customMinAreaValue = Number(customMinArea)
-  const maxPrice = customMaxPriceValue > 0 ? customMaxPriceValue : priceFilter.max
-  const minArea = customMinAreaValue > 0 ? customMinAreaValue : areaFilter.min
-  const priceFilterLabel =
-    customMaxPriceValue > 0
-      ? tPrice('upToPrice', { price: formatCompactCurrency(customMaxPriceValue, locale) })
-      : priceFilter.label
-  const areaFilterLabel =
-    customMinAreaValue > 0
-      ? `${new Intl.NumberFormat(locale).format(customMinAreaValue)} m²+`
-      : areaFilter.label
+  const customMaxPrice = positiveNumber(filters.customMaxPrice)
+  const customMinArea = positiveNumber(filters.customMinArea)
+  const maxPrice = customMaxPrice ?? priceFilterOptions[filters.priceOption].max
+  const minArea = customMinArea ?? areaFilterOptions[filters.areaOption].min
+  const minBedrooms = bedroomFilterOptions[filters.bedroomOption].min
 
-  const searchFilters = {
+  const query: SearchPropertiesFilters = {
     purpose: apiPurposeByPurpose[purpose],
-    location: locationQuery || undefined,
-    propertyType: propertyTypeFilter || undefined,
+    location: filters.location.trim() || undefined,
+    propertyType: filters.propertyType ?? undefined,
+    minPrice: filters.minPrice ?? undefined,
     maxPrice: maxPrice ?? undefined,
-    minBedrooms: bedroomFilter.min ?? undefined,
+    minBedrooms: minBedrooms ?? undefined,
     minArea: minArea ?? undefined,
-    hasParking: onlyWithParking || undefined,
-    sortBy: sortByOption[sortOption],
-    page: currentPage,
+    hasParking: filters.onlyWithParking || undefined,
+    sortBy: sortByOption[filters.sortOption],
+    page: filters.page,
     pageSize: searchResultsPageSize,
   }
 
   const propertiesQuery = useQuery({
-    queryKey: publicPropertyQueryKeys.search(searchFilters),
-    queryFn: () => marketplaceService.searchProperties(searchFilters),
+    queryKey: marketplaceQueryKeys.search(query),
+    queryFn: () => marketplaceService.searchProperties(query),
     placeholderData: keepPreviousData,
   })
+
   const resultCount = propertiesQuery.data?.totalCount ?? 0
   const totalPages = Math.max(1, Math.ceil(resultCount / searchResultsPageSize))
-  const safeCurrentPage = Math.min(currentPage, totalPages)
-  const paginatedResults = useMemo(
-    () =>
-      (propertiesQuery.data?.properties ?? []).map((summary) =>
-        mapSummaryToSearchResult(summary, purpose, locale, tFeatures),
-      ),
-    [locale, propertiesQuery.data, purpose, tFeatures],
+  const currentPage = Math.min(filters.page, totalPages)
+  const results = (propertiesQuery.data?.properties ?? []).map((summary) =>
+    mapSummaryToSearchResult(summary, purpose, locale, tFeatures),
   )
-  // A selection outside the current page falls back to the first property shown.
-  const selectedPropertyId = paginatedResults.some((property) => property.id === selectedId)
-    ? selectedId
-    : (paginatedResults[0]?.id ?? '')
+  const selectedPropertyId = results.some(({ id }) => id === filters.selectedPropertyId)
+    ? filters.selectedPropertyId
+    : (results[0]?.id ?? '')
 
-  const clearPriceFilter = () => {
-    setValue('customMaxPrice', '')
-    setValue('priceFilterIndex', 0)
-    setValue('currentPage', 1)
+  const applyFilters = (next: SearchResultsFiltersFormValues) => {
+    const priceChanged =
+      next.priceOption !== filters.priceOption || next.customMaxPrice !== filters.customMaxPrice
+    patchFilters({ ...next, minPrice: priceChanged ? null : filters.minPrice, page: 1 })
   }
 
-  const clearAreaFilter = () => {
-    setValue('customMinArea', '')
-    setValue('areaFilterIndex', 0)
-    setValue('currentPage', 1)
-  }
-
-  const resetCurrentPage = () => setValue('currentPage', 1)
+  const activeFiltersCount = [
+    filters.propertyType,
+    maxPrice ?? filters.minPrice,
+    minBedrooms,
+    minArea,
+    filters.onlyWithParking,
+  ].filter(Boolean).length
 
   return {
-    areaFilter,
-    areaFilterIndex,
-    areaFilterLabel,
-    bedroomFilter,
-    bedroomFilterIndex,
-    clearAreaFilter,
-    clearPriceFilter,
-    customMaxPrice,
-    customMinArea,
-    resultCount,
-    currentPage: safeCurrentPage,
+    activeFiltersCount,
+    currentPage,
+    filters,
     isError: propertiesQuery.isError,
     isLoading: propertiesQuery.isLoading,
-    locationQuery,
     maxPrice,
     minArea,
-    onlyWithParking,
-    priceFilterIndex,
-    priceFilterLabel,
-    propertyTypeFilter,
-    paginatedResults,
+    paginatedResults: results,
     refetch: propertiesQuery.refetch,
+    resultCount,
     selectedPropertyId,
-    setAreaFilterIndex: (index: number) => {
-      setValue('areaFilterIndex', index)
-      resetCurrentPage()
-    },
-    setBedroomFilterIndex: (index: number) => {
-      setValue('bedroomFilterIndex', index)
-      resetCurrentPage()
-    },
-    setCustomMaxPrice: (value: string) => {
-      setValue('customMaxPrice', value)
-      resetCurrentPage()
-    },
-    setCustomMinArea: (value: string) => {
-      setValue('customMinArea', value)
-      resetCurrentPage()
-    },
-    setLocationQuery: (value: string) => {
-      setValue('locationQuery', value)
-      resetCurrentPage()
-    },
-    setOnlyWithParking: (value: boolean) => {
-      setValue('onlyWithParking', value)
-      resetCurrentPage()
-    },
-    setPriceFilterIndex: (index: number) => {
-      setValue('priceFilterIndex', index)
-      resetCurrentPage()
-    },
-    setPropertyTypeFilter: (value: string) => {
-      setValue('propertyTypeFilter', value)
-      resetCurrentPage()
-    },
-    setCurrentPage: (page: number) => setValue('currentPage', page),
-    setSelectedPropertyId: (propertyId: string) => setValue('selectedPropertyId', propertyId),
-    setSortOption: (option: SortOption) => {
-      setValue('sortOption', option)
-      resetCurrentPage()
-    },
-    setViewMode: (mode: ViewMode) => persistedViewMode.setViewMode(mode),
-    sortOption,
+    setCurrentPage: (page: number) => setFilter('page', page),
+    setLocationQuery: (location: string) => patchFilters({ location, page: 1 }),
+    setSelectedPropertyId: (propertyId: string) => setFilter('selectedPropertyId', propertyId),
+    setSortOption: (sortOption: SortOption) => patchFilters({ sortOption, page: 1 }),
+    setViewMode,
+    sortOption: filters.sortOption,
     totalPages,
-    viewMode: persistedViewMode.viewMode,
+    applyFilters,
+    viewMode,
   }
 }

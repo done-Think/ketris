@@ -39,6 +39,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     actorId: actor.sub,
     actorPapel: actor.papel,
     propertyId: body.propertyId,
+    responsibleId: body.responsibleId,
     contactId: body.contactId,
     leadName: body.leadName,
     leadEmail: body.leadEmail,

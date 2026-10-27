@@ -30,6 +30,8 @@ import {
   patchLeadRequestSchema,
 } from './schemas/lead.schema'
 import {
+  assignOpportunityResponsibleRequestSchema,
+  listOpportunityResponsiblesResponseSchema,
   createOpportunityRequestSchema,
   deleteOpportunityQuerySchema,
   listOpportunitiesQuerySchema,
@@ -58,6 +60,75 @@ const leadIdParamsSchema = z.object({
 })
 
 export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
+  registry.registerPath({
+    method: 'get',
+    path: '/crm/responsibles',
+    tags: ['CRM'],
+    summary: 'Lista quem pode ser responsável por uma oportunidade',
+    description:
+      'Requer autenticação (Bearer). Só o OWNER consulta. Traz a equipe ativa do tenant ' +
+      '(OWNER e AGENT com vínculo aprovado e sem convite pendente).',
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: 'Equipe ativa, em ordem alfabética.',
+        content: { 'application/json': { schema: listOpportunityResponsiblesResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Ator não é OWNER.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'put',
+    path: '/crm/opportunities/{id}/responsible',
+    tags: ['CRM'],
+    summary: 'Troca o responsável pela oportunidade',
+    description:
+      'Requer autenticação (Bearer). Só o OWNER troca. O novo responsável precisa estar ativo na ' +
+      'equipe; a troca fica na timeline (RESPONSIBLE_CHANGED) e na auditoria. O AGENT passa a ver ' +
+      'só as oportunidades em que é o responsável.',
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: opportunityIdParamsSchema,
+      body: {
+        content: { 'application/json': { schema: assignOpportunityResponsibleRequestSchema } },
+      },
+    },
+    responses: {
+      200: {
+        description: 'Oportunidade com o novo responsável.',
+        content: { 'application/json': { schema: opportunityResponseSchema } },
+      },
+      400: {
+        description: 'Corpo da requisição inválido.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Ator não é OWNER.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      404: {
+        description: 'Oportunidade não encontrada neste tenant.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      422: {
+        description: 'O responsável escolhido não está ativo na equipe.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
   registry.registerPath({
     method: 'get',
     path: '/crm/opportunities',

@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
 import { NextRequest } from 'next/server'
+import type { PlatformPlan } from '@prisma/client'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import { prisma } from '@server/db/prisma'
@@ -13,11 +14,10 @@ describe('/api/platform/plans (integração)', () => {
   const tokenService = new JosePlatformTokenService()
   let actorId: string
   let actorToken: string
-  let originalIndividualPlan: {
-    monthlyPrice: unknown
-    includedUnits: number
-    extraUnitPrice: unknown
-  }
+  let originalIndividualPlan: Pick<
+    PlatformPlan,
+    'monthlyPrice' | 'includedUnits' | 'extraUnitPrice' | 'updatedById' | 'updatedByName'
+  >
 
   beforeAll(async () => {
     const actor = await prisma.platformAdmin.create({
@@ -37,15 +37,21 @@ describe('/api/platform/plans (integração)', () => {
     })
     originalIndividualPlan = await prisma.platformPlan.findUniqueOrThrow({
       where: { accountType: 'INDIVIDUAL' },
-      select: { monthlyPrice: true, includedUnits: true, extraUnitPrice: true },
+      select: {
+        monthlyPrice: true,
+        includedUnits: true,
+        extraUnitPrice: true,
+        updatedById: true,
+        updatedByName: true,
+      },
     })
   })
 
   afterAll(async () => {
-    // Plans are platform-wide: put the price back as it was.
+    await prisma.platformPlanChange.deleteMany({ where: { changedById: actorId } })
     await prisma.platformPlan.update({
       where: { accountType: 'INDIVIDUAL' },
-      data: originalIndividualPlan as never,
+      data: originalIndividualPlan,
     })
     await prisma.platformAdmin.delete({ where: { id: actorId } })
     await prisma.$disconnect()
@@ -171,6 +177,30 @@ describe('/api/platform/plans (integração)', () => {
       monthlyPrice: 59.9,
       includedUnits: 15,
       extraUnitPrice: 4.5,
+      updatedBy: { id: actorId, name: 'Ator Planos' },
     })
+    const [change] = await prisma.platformPlanChange.findMany({
+      where: { changedById: actorId },
+      orderBy: { changedAt: 'desc' },
+      take: 1,
+    })
+    expect(change).toMatchObject({
+      accountType: 'INDIVIDUAL',
+      previousIncludedUnits: originalIndividualPlan.includedUnits,
+      includedUnits: 15,
+      changedByName: 'Ator Planos',
+    })
+    expect(change.previousMonthlyPrice.toNumber()).toBe(
+      originalIndividualPlan.monthlyPrice.toNumber(),
+    )
+    expect(change.monthlyPrice.toNumber()).toBe(59.9)
+  })
+
+  it('não grava histórico quando a alteração é recusada', async () => {
+    const before = await prisma.platformPlanChange.count({ where: { accountType: 'BROKER' } })
+
+    await patch('BROKER', { monthlyPrice: -1, includedUnits: 1, extraUnitPrice: 1 })
+
+    expect(await prisma.platformPlanChange.count({ where: { accountType: 'BROKER' } })).toBe(before)
   })
 })

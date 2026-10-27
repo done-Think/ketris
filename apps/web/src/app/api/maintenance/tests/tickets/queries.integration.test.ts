@@ -8,10 +8,10 @@ describe('/api/maintenance full summaries and consistent access', () => {
   const env = setupMaintenanceIntegration()
   const { request, context, payload } = env
 
-  it('filters exact categories while preserving legacy values, global metrics and access', async () => {
+  it('filters exact categories while preserving global metrics and access', async () => {
     const ids = new Map<string, string>()
     try {
-      for (const category of ['PLUMBING', 'ELECTRICAL', 'Serralheria, portões e grades']) {
+      for (const category of ['PLUMBING', 'ELECTRICAL', 'OTHER']) {
         const response = await createTicket(
           request('tickets', 'POST', env.fixture.admin.token, {
             ...payload,
@@ -26,9 +26,9 @@ describe('/api/maintenance full summaries and consistent access', () => {
         await listTickets(request('tickets', 'GET', env.fixture.admin.token))
       ).json()
       for (const [query, category] of [
-        ['Hidráulica', 'PLUMBING'],
+        ['PLUMBING', 'PLUMBING'],
         ['ELECTRICAL', 'ELECTRICAL'],
-        ['Serralheria, portões e grades', 'Serralheria, portões e grades'],
+        ['OTHER', 'OTHER'],
       ]) {
         const response = await listTickets(
           request(
@@ -217,7 +217,7 @@ describe('/api/maintenance full summaries and consistent access', () => {
     const response = await createTicket(
       request('tickets', 'POST', env.fixture.admin.token, {
         ...payload,
-        category: 'Hidráulica',
+        category: 'PLUMBING',
         contractId: env.fixture.contract.id,
         propertyId: env.fixture.property.id,
       }),
@@ -251,7 +251,11 @@ describe('/api/maintenance full summaries and consistent access', () => {
         contractId: env.fixture.contract.id,
       }),
     )
-    expect((await custom.json()).ticket.category).toBe('Serralheria, portões e grades')
+    expect(custom.status).toBe(400)
+    const legacyFilter = await listTickets(
+      request('tickets?category=Hidr%C3%A1ulica', 'GET', env.fixture.admin.token),
+    )
+    expect(legacyFilter.status).toBe(400)
     const rejected = await createTicket(
       request('tickets', 'POST', env.fixture.admin.token, {
         ...payload,

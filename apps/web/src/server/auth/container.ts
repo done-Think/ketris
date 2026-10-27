@@ -21,6 +21,8 @@ import { PrismaPasswordResetAccountRepository } from './infrastructure/prisma-pa
 import { PrismaRefreshTokenRepository } from './infrastructure/prisma-refresh-token.repository'
 import { PrismaUserRepository } from './infrastructure/prisma-user.repository'
 import { SesMailer } from '@server/shared/email/ses-mailer'
+
+import { PrismaUserPortfolioReader } from './infrastructure/prisma-user-portfolio.reader'
 import { ValidateAccessTokenUseCase } from './application/use-cases/validate-access-token.use-case'
 import { ValidateSessionTokensUseCase } from './application/use-cases/validate-session-tokens.use-case'
 import { ValidatedTokenService } from './infrastructure/validated-token.service'
@@ -86,7 +88,7 @@ export const authContainer = {
   listUsersUseCase: new ListUsersUseCase(userRepository),
   getUserUseCase: new GetUserUseCase(userRepository),
   updateUserUseCase: new UpdateUserUseCase(userRepository),
-  deactivateUserUseCase: new DeactivateUserUseCase(userRepository),
+  deactivateUserUseCase: new DeactivateUserUseCase(userRepository, new PrismaUserPortfolioReader()),
   approveUserMembershipUseCase: new ApproveUserMembershipUseCase(userRepository),
   refreshAccessTokenUseCase: new RefreshAccessTokenUseCase(
     userRepository,

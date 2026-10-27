@@ -1,8 +1,8 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
-import { normalizeMaintenanceCategory } from '../constants/maintenance-categories'
 
 import {
+  maintenanceCategorySchema,
   maintenanceTicketPrioritySchema,
   maintenanceTicketStatusSchema,
 } from './maintenance-ticket.schema'
@@ -17,7 +17,7 @@ export const createMaintenanceTicketRequestSchema = z
   .object({
     contractId: z.string().trim().min(1),
     propertyId: z.string().trim().min(1).optional(),
-    category: z.string().trim().min(1).max(100).transform(normalizeMaintenanceCategory),
+    category: maintenanceCategorySchema,
     priority: maintenanceTicketPrioritySchema,
     title: z.string().trim().min(1).max(200),
     description: z.string().trim().min(1).max(10000),
@@ -30,7 +30,7 @@ export const updateMaintenanceTicketRequestSchema = z
   .object({
     propertyId: z.string().trim().min(1).optional(),
     contractId: z.string().trim().min(1).optional(),
-    category: z.string().trim().min(1).max(100).transform(normalizeMaintenanceCategory).optional(),
+    category: maintenanceCategorySchema.optional(),
     priority: maintenanceTicketPrioritySchema.optional(),
     title: z.string().trim().min(1).max(200).optional(),
     description: z.string().trim().min(1).max(10000).optional(),
@@ -53,7 +53,7 @@ export const listMaintenanceTicketsQuerySchema = z
   .object({
     status: maintenanceTicketStatusSchema.optional(),
     priority: maintenanceTicketPrioritySchema.optional(),
-    category: z.string().trim().min(1).max(100).transform(normalizeMaintenanceCategory).optional(),
+    category: maintenanceCategorySchema.optional(),
     propertyId: z.string().trim().min(1).optional(),
     search: z.string().trim().min(1).max(500).optional(),
     page: z.coerce.number().int().positive().optional(),

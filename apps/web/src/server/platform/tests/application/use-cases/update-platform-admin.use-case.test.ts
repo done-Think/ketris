@@ -4,7 +4,7 @@ import {
   PlatformAdminEmailAlreadyInUseError,
   PlatformAdminNotFoundError,
 } from '../../../domain/errors'
-import type { PlatformAdmin } from '../../../domain/platform-admin.entity'
+import type { PlatformAdmin } from '../../../types/platform-admin'
 import type { PlatformAdminRepository } from '../../../application/ports/platform-admin-repository.port'
 import { UpdatePlatformAdminUseCase } from '../../../application/use-cases/update-platform-admin.use-case'
 
@@ -15,6 +15,8 @@ const admin: PlatformAdmin = {
   senhaHash: 'hash-fake',
   role: 'ADMIN',
   ativo: true,
+  createdAt: new Date('2026-01-01T00:00:00.000Z'),
+  ultimoAcessoEm: null,
 }
 
 function createDeps(overrides?: {
@@ -28,6 +30,7 @@ function createDeps(overrides?: {
     create: vi.fn(),
     update: vi.fn().mockResolvedValue({ ...admin, nome: 'Novo Nome' }),
     deactivate: vi.fn(),
+    recordAccess: vi.fn(),
   }
 
   return { platformAdminRepository }

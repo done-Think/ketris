@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest'
 
 import type { ActivityRepository } from '../../../application/ports/activity-repository.port'
 import type { OpportunityRepository } from '../../../application/ports/opportunity-repository.port'
-import type { PropertyLookupPort } from '../../../application/ports/property-lookup.port'
 import { AddOpportunityNoteUseCase } from '../../../application/use-cases/add-opportunity-note.use-case'
 import { OpportunityNotFoundError } from '../../../domain/errors'
 import type { Opportunity } from '../../../domain/opportunity.entity'
@@ -11,6 +10,8 @@ const opportunity: Opportunity = {
   id: 'op-1',
   tenantId: 'tenant-1',
   propertyId: 'imovel-1',
+  responsibleId: 'agent-1',
+  responsibleName: 'Agente Um',
   contactId: null,
   leadName: 'Maria',
   leadEmail: 'maria@exemplo.com',
@@ -27,23 +28,13 @@ const opportunity: Opportunity = {
   updatedAt: new Date('2026-08-10T00:00:00.000Z'),
 }
 
-function createPropertyLookup(findResponsavelId?: PropertyLookupPort['findResponsavelId']) {
-  return {
-    findResponsavelId: findResponsavelId ?? vi.fn().mockResolvedValue('agent-1'),
-  } as unknown as PropertyLookupPort
-}
-
 describe('AddOpportunityNoteUseCase', () => {
   it('cria uma nota do tipo NOTA por padrão, com o texto sem espaços nas bordas', async () => {
     const findById = vi.fn().mockResolvedValue(opportunity)
     const create = vi.fn().mockResolvedValue({})
     const opportunityRepository = { findById } as unknown as OpportunityRepository
     const activityRepository = { create } as unknown as ActivityRepository
-    const useCase = new AddOpportunityNoteUseCase(
-      opportunityRepository,
-      activityRepository,
-      createPropertyLookup(),
-    )
+    const useCase = new AddOpportunityNoteUseCase(opportunityRepository, activityRepository)
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
@@ -70,11 +61,7 @@ describe('AddOpportunityNoteUseCase', () => {
     const create = vi.fn().mockResolvedValue({})
     const opportunityRepository = { findById } as unknown as OpportunityRepository
     const activityRepository = { create } as unknown as ActivityRepository
-    const useCase = new AddOpportunityNoteUseCase(
-      opportunityRepository,
-      activityRepository,
-      createPropertyLookup(),
-    )
+    const useCase = new AddOpportunityNoteUseCase(opportunityRepository, activityRepository)
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
@@ -92,11 +79,7 @@ describe('AddOpportunityNoteUseCase', () => {
     const create = vi.fn()
     const opportunityRepository = { findById } as unknown as OpportunityRepository
     const activityRepository = { create } as unknown as ActivityRepository
-    const useCase = new AddOpportunityNoteUseCase(
-      opportunityRepository,
-      activityRepository,
-      createPropertyLookup(),
-    )
+    const useCase = new AddOpportunityNoteUseCase(opportunityRepository, activityRepository)
 
     await expect(
       useCase.execute({
@@ -109,21 +92,17 @@ describe('AddOpportunityNoteUseCase', () => {
     expect(create).not.toHaveBeenCalled()
   })
 
-  it('AGENT que não é responsável pelo imóvel recebe 404 opaco e não cria nota', async () => {
+  it('AGENT que não é responsável pela oportunidade recebe 404 opaco e não cria nota', async () => {
     const findById = vi.fn().mockResolvedValue(opportunity)
     const create = vi.fn()
     const opportunityRepository = { findById } as unknown as OpportunityRepository
     const activityRepository = { create } as unknown as ActivityRepository
-    const useCase = new AddOpportunityNoteUseCase(
-      opportunityRepository,
-      activityRepository,
-      createPropertyLookup(vi.fn().mockResolvedValue('outro-agente')),
-    )
+    const useCase = new AddOpportunityNoteUseCase(opportunityRepository, activityRepository)
 
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorId: 'agent-1',
+        actorId: 'agent-2',
         actorPapel: 'AGENT',
         opportunityId: 'op-1',
         description: 'x',

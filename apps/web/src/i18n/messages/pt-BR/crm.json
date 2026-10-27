@@ -181,7 +181,8 @@
         "whatsApp": "WhatsApp",
         "instagram": "Instagram",
         "site": "Site",
-        "referral": "Indicação"
+        "referral": "Indicação",
+        "other": "Outra"
       },
       "actions": {
         "back": "Voltar",
@@ -437,10 +438,20 @@
       "statusChanged": "Status alterado de {previous} para {next}.",
       "accepted": "Proposta aceita.",
       "rejected": "Proposta recusada.",
-      "informationRequested": "Solicitadas mais informações ao interessado."
+      "informationRequested": "Solicitadas mais informações ao interessado.",
+      "responsibleChanged": "Responsável alterado:"
     },
     "loadMoreProperties": "Carregar mais imóveis",
-    "propertyLoadError": "Não foi possível carregar os imóveis."
+    "propertyLoadError": "Não foi possível carregar os imóveis.",
+    "responsible": {
+      "title": "Responsável",
+      "label": "Responsável pela oportunidade",
+      "me": "Eu",
+      "createHelper": "Quem vai cuidar desta oportunidade.",
+      "changed": "Agora {name} é o responsável.",
+      "changeError": "Não foi possível trocar o responsável.",
+      "invalid": "Escolha alguém ativo da equipe."
+    }
   },
   "proposalManagement": {
     "allStatuses": "Todas",

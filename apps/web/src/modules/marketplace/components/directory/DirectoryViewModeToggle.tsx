@@ -5,9 +5,12 @@ import AppsRoundedIcon from '@mui/icons-material/AppsRounded'
 import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBulletedRounded'
 import { useTranslations } from 'next-intl'
 
-import { alpha, iconSize, radius, surface } from '@shared/theme/tokens'
-
 import type { DirectoryViewModeToggleProps } from '../../types/directory'
+import {
+  styles,
+  getIconButtonStyles,
+  getIconButtonStyles2,
+} from '../../styles/directory-view-mode-toggle.styles'
 
 export function DirectoryViewModeToggle({ value, onChange }: DirectoryViewModeToggleProps) {
   const t = useTranslations('marketplace.directory.viewMode')
@@ -18,34 +21,18 @@ export function DirectoryViewModeToggle({ value, onChange }: DirectoryViewModeTo
         <IconButton
           aria-label={t('grid')}
           onClick={() => onChange('grid')}
-          sx={{
-            width: 40,
-            height: 40,
-            borderRadius: `${radius.sm}px`,
-            bgcolor: value === 'grid' ? alpha.magenta[8] : surface.paper,
-            color: value === 'grid' ? 'primary.main' : 'text.secondary',
-            border: '1px solid',
-            borderColor: value === 'grid' ? 'primary.main' : 'divider',
-          }}
+          sx={getIconButtonStyles({ value })}
         >
-          <AppsRoundedIcon sx={{ fontSize: iconSize.md }} />
+          <AppsRoundedIcon sx={styles.appsRoundedIcon} />
         </IconButton>
       </Tooltip>
       <Tooltip title={t('list')}>
         <IconButton
           aria-label={t('list')}
           onClick={() => onChange('list')}
-          sx={{
-            width: 40,
-            height: 40,
-            borderRadius: `${radius.sm}px`,
-            bgcolor: value === 'list' ? alpha.magenta[8] : surface.paper,
-            color: value === 'list' ? 'primary.main' : 'text.secondary',
-            border: '1px solid',
-            borderColor: value === 'list' ? 'primary.main' : 'divider',
-          }}
+          sx={getIconButtonStyles2({ value })}
         >
-          <FormatListBulletedRoundedIcon sx={{ fontSize: iconSize.md }} />
+          <FormatListBulletedRoundedIcon sx={styles.appsRoundedIcon} />
         </IconButton>
       </Tooltip>
     </Stack>

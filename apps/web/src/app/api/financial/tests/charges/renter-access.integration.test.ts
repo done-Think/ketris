@@ -8,6 +8,7 @@ import { GET, POST } from '../../charges/route'
 import { GET as getCharge, PATCH, DELETE } from '../../charges/[id]/route'
 import { POST as registerPayment } from '../../charges/[id]/payment/route'
 import { GET as getSummary } from '../../summary/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 describe('Renter charge isolation (database integration)', () => {
   const tenantIds: string[] = []
@@ -67,6 +68,7 @@ describe('Renter charge isolation (database integration)', () => {
         data: {
           tenantId,
           imovelId: property.id,
+          responsavelId: await propertyResponsibleId(prisma, property.id),
           interessadoNome: 'Renter',
           interessadoEmail: renter.email,
           valorProposto: 1000,

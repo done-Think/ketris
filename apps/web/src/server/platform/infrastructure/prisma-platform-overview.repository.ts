@@ -1,10 +1,8 @@
 import { prisma } from '@server/db/prisma'
 
-import type { PlatformGrowthMonth, PlatformRecentTenant } from '../domain/platform-overview.entity'
-import type {
-  PlatformOverviewCounts,
-  PlatformOverviewRepository,
-} from '../application/ports/platform-overview-repository.port'
+import type { PlatformGrowthMonth, PlatformRecentTenant } from '../types/platform-overview'
+import type { PlatformOverviewRepository } from '../application/ports/platform-overview-repository.port'
+import type { PlatformOverviewCounts } from '../types/platform-overview-repository'
 
 const RECENT_TENANTS_LIMIT = 5
 const GROWTH_MONTHS_BACK = 5

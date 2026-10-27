@@ -71,13 +71,14 @@ describe.each([
     key: 'broker',
   },
 ])('$name profile service', ({ Service, publicPath, ownPath, key }) => {
+  const listKey = `${key === 'agency' ? 'agencies' : 'brokers'}`
   it('lists a page of public profiles with the search sent to the server', async () => {
     const page = { totalCount: 0, page: 1, pageSize: 12 }
-    http.get.mockResolvedValue(page)
+    http.get.mockResolvedValue({ [listKey]: [], ...page })
 
-    await expect(new Service(client()).list({ q: 'centro', page: 1, pageSize: 12 })).resolves.toBe(
-      page,
-    )
+    await expect(
+      new Service(client()).list({ q: 'centro', page: 1, pageSize: 12 }),
+    ).resolves.toEqual({ items: [], ...page })
     expect(http.get).toHaveBeenCalledWith(publicPath, {
       params: { q: 'centro', page: 1, pageSize: 12 },
     })

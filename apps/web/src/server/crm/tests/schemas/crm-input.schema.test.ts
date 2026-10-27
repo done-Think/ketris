@@ -23,7 +23,7 @@ const lead = {
   phone: '11999999999',
   interest: 'Apartamento',
   budget: 'Sob consulta, até 2 mil',
-  source: 'Site',
+  source: 'SITE',
 }
 
 describe('CRM request validation', () => {
