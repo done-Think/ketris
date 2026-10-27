@@ -70,8 +70,6 @@ export function MobileSearchBox({
           },
         }}
       >
-        {/* O conteúdo da gaveta usa o mobileSearchRef para que o click-away da home não feche
-            os menus ao clicar aqui dentro (o Drawer é renderizado em portal). */}
         <Stack ref={mobileSearchRef} sx={styles.stack}>
           <Box aria-hidden sx={styles.box3} />
           <Stack

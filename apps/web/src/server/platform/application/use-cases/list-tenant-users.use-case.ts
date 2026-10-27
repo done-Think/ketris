@@ -1,19 +1,14 @@
-import { toAuthenticatedUser, type AuthenticatedUser } from '@server/auth/domain/user.entity'
-import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
+import { toAuthenticatedUser } from '@server/auth/domain/user.entity'
+import type { UserListRepository } from '@server/auth/application/ports/user-list-repository.port'
 
 import { TenantNotFoundError } from '../../domain/errors'
 import type { TenantRepository } from '../ports/tenant-repository.port'
-
-export interface ListTenantUsersInput {
-  tenantId: string
-}
-
-export type ListTenantUsersOutput = AuthenticatedUser[]
+import type { ListTenantUsersInput, ListTenantUsersOutput } from '../../types/use-case-inputs'
 
 export class ListTenantUsersUseCase {
   constructor(
     private readonly tenantRepository: TenantRepository,
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: UserListRepository,
   ) {}
 
   async execute(input: ListTenantUsersInput): Promise<ListTenantUsersOutput> {
@@ -23,8 +18,16 @@ export class ListTenantUsersUseCase {
       throw new TenantNotFoundError()
     }
 
-    const users = await this.userRepository.findManyByTenant(tenant.id)
+    const { users, total } = await this.userRepository.findPageByTenant(tenant.id, {
+      page: input.page,
+      pageSize: input.pageSize,
+    })
 
-    return users.map(toAuthenticatedUser)
+    return {
+      items: users.map(toAuthenticatedUser),
+      totalCount: total,
+      page: input.page,
+      pageSize: input.pageSize,
+    }
   }
 }

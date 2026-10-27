@@ -1,9 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import {
-  RegisterRenterUseCase,
-  RENTER_TENANT_SLUG,
-} from '../../../application/use-cases/register-renter.use-case'
+import { RENTER_TENANT_SLUG } from '@server/shared/domain/system-tenants'
+
+import { RegisterRenterUseCase } from '../../../application/use-cases/register-renter.use-case'
 import {
   RegistrationEmailAlreadyInUseError,
   RenterTenantNotConfiguredError,

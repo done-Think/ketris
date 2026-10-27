@@ -1,11 +1,7 @@
-import type { AuthenticatedPlatformAdmin } from '../../domain/platform-admin.entity'
-
-export interface PlatformAccessTokenPayload {
-  sub: string
-  scope: 'platform'
-}
+import type { PlatformAdminIdentity } from '../../types/platform-admin'
+import type { PlatformAccessTokenPayload } from '../../types/platform-token-service'
 
 export interface PlatformTokenService {
-  sign(admin: AuthenticatedPlatformAdmin): Promise<string>
+  sign(admin: PlatformAdminIdentity): Promise<string>
   verify(token: string): Promise<PlatformAccessTokenPayload>
 }

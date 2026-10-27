@@ -1,12 +1,12 @@
 import { prisma } from '@server/db/prisma'
-import type { PlatformAdmin } from '../domain/platform-admin.entity'
+import type { PlatformAdmin } from '../types/platform-admin'
 
+import type { PlatformRefreshTokenRepository } from '../application/ports/platform-refresh-token-repository.port'
 import type {
   NewPlatformRefreshToken,
-  PlatformRefreshTokenRepository,
   PlatformRefreshTokenRotation,
   StoredPlatformRefreshToken,
-} from '../application/ports/platform-refresh-token-repository.port'
+} from '../types/platform-refresh-token-repository'
 
 export class PrismaPlatformRefreshTokenRepository implements PlatformRefreshTokenRepository {
   async rotate(input: PlatformRefreshTokenRotation): Promise<boolean> {
@@ -62,8 +62,8 @@ export class PrismaPlatformRefreshTokenRepository implements PlatformRefreshToke
   }
 
   async revokeById(id: string): Promise<void> {
-    await prisma.platformAdminRefreshToken.update({
-      where: { id },
+    await prisma.platformAdminRefreshToken.updateMany({
+      where: { id, revokedAt: null },
       data: { revokedAt: new Date() },
     })
   }

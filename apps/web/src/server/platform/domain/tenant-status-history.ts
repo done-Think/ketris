@@ -1,17 +1,6 @@
-import type { TenantStatus } from './tenant-account'
+import type { TenantStatus } from '../types/tenant-account'
+import type { TenantStatusChange } from '../types/tenant-status-history'
 
-// One recorded status transition of a tenant (see TenantStatusChange in the schema).
-export interface TenantStatusChange {
-  tenantId: string
-  fromStatus: TenantStatus
-  toStatus: TenantStatus
-  changedAt: Date
-}
-
-// Rebuilds a tenant's status at an instant from its append-only history. Only changes strictly
-// before the instant are applied: a change recorded exactly at 00:00 of the 1st belongs to the new
-// month, not to the status the month started with. Without history the status never changed, so
-// the current one has held since creation. Returns null when the tenant did not exist yet.
 export function statusAt(
   tenant: { status: TenantStatus; createdAt: Date },
   changes: readonly TenantStatusChange[],

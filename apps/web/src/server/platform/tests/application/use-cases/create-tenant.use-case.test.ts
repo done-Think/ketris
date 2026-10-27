@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { TenantSlugAlreadyInUseError } from '../../../domain/errors'
-import type { TenantSummary } from '../../../domain/tenant-summary.entity'
+import type { TenantSummary } from '../../../types/tenant-summary'
 import type { TenantRepository } from '../../../application/ports/tenant-repository.port'
 import { CreateTenantUseCase } from '../../../application/use-cases/create-tenant.use-case'
 

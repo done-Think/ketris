@@ -3,8 +3,6 @@ import type { z } from 'zod'
 import type { createPlatformPlanSchema } from '../schemas/platform-plan-schema'
 import type { TenantAccountType } from './tenant'
 
-// What the included units of a plan count: properties for individuals and brokers, active brokers
-// for agencies.
 export type PlanUsageUnit = 'PROPERTIES' | 'BROKERS'
 
 export interface ApiPlatformPlan {
@@ -14,7 +12,9 @@ export interface ApiPlatformPlan {
   includedUnits: number
   extraUnitPrice: number
   activeAccounts: number
+  createdAt: string
   updatedAt: string
+  updatedBy: { id: string | null; name: string } | null
 }
 
 export interface ListPlatformPlansResponse {

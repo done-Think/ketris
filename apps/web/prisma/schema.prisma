@@ -91,9 +91,37 @@ model PlatformPlan {
   monthlyPrice   Decimal           @db.Decimal(12, 2)
   includedUnits  Int
   extraUnitPrice Decimal           @db.Decimal(12, 2)
+  createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
+  updatedById    String?
+  updatedByName  String?
 
+  updatedBy PlatformAdmin?       @relation("PlatformPlanUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  changes   PlatformPlanChange[]
+
+  @@index([updatedById])
   @@map("platform_plans")
+}
+
+model PlatformPlanChange {
+  id                     String            @id @default(cuid())
+  accountType            TenantAccountType
+  previousMonthlyPrice   Decimal           @db.Decimal(12, 2)
+  previousIncludedUnits  Int
+  previousExtraUnitPrice Decimal           @db.Decimal(12, 2)
+  monthlyPrice           Decimal           @db.Decimal(12, 2)
+  includedUnits          Int
+  extraUnitPrice         Decimal           @db.Decimal(12, 2)
+  changedAt              DateTime          @default(now())
+  changedById            String?
+  changedByName          String
+
+  plan      PlatformPlan   @relation(fields: [accountType], references: [accountType], onDelete: Cascade)
+  changedBy PlatformAdmin? @relation(fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@index([accountType, changedAt])
+  @@index([changedById])
+  @@map("platform_plan_changes")
 }
 
 enum PapelUsuario {
@@ -301,18 +329,21 @@ enum PlatformAdminRole {
 }
 
 model PlatformAdmin {
-  id        String            @id @default(cuid())
-  nome      String
-  email     String            @unique
-  senhaHash String
-  role      PlatformAdminRole @default(ADMIN)
-  ativo     Boolean           @default(true)
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
+  id             String            @id @default(cuid())
+  nome           String
+  email          String            @unique
+  senhaHash      String
+  role           PlatformAdminRole @default(ADMIN)
+  ativo          Boolean           @default(true)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  ultimoAcessoEm DateTime?
 
   refreshTokens       PlatformAdminRefreshToken[]
   tenantStatusChanges TenantStatusChange[]
   userAuditEvents     UserAuditEvent[]
+  updatedPlans        PlatformPlan[]              @relation("PlatformPlanUpdatedBy")
+  planChanges         PlatformPlanChange[]
 
   @@map("platform_admins")
 }

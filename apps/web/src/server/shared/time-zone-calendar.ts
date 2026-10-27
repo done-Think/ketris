@@ -1,8 +1,5 @@
 import type { CalendarMonth, TimeRange } from './types/time-zone-calendar'
 
-// Business periods (day, month) are computed in the business time zone, never in the server's:
-// on a UTC host an event at 22:00 on the last day of the month (São Paulo) would otherwise fall
-// into the next month.
 export const BUSINESS_TIME_ZONE = 'America/Sao_Paulo'
 
 function zonedParts(instant: number, timeZone: string) {
@@ -32,7 +29,6 @@ function zonedParts(instant: number, timeZone: string) {
   }
 }
 
-// How far the time zone's wall clock is ahead of UTC at a given instant, in milliseconds.
 function offsetAt(instant: number, timeZone: string): number {
   const p = zonedParts(instant, timeZone)
   const wallClock = Date.UTC(p.year, p.month, p.day, p.hour, p.minute, p.second)
@@ -40,7 +36,6 @@ function offsetAt(instant: number, timeZone: string): number {
   return wallClock - Math.floor(instant / 1000) * 1000
 }
 
-// UTC instant of 00:00 of a calendar day in the time zone (month and day may overflow).
 function startOfZonedDay(year: number, month: number, day: number, timeZone: string): Date {
   const wallClock = Date.UTC(year, month, day)
   const firstGuess = wallClock - offsetAt(wallClock, timeZone)
@@ -82,9 +77,6 @@ export function calendarMonthInTimeZone(
   return { year, month }
 }
 
-// Date-only columns (e.g. due dates sent as YYYY-MM-DD) are stored at 00:00 UTC, so a calendar
-// month of them is a UTC-midnight range: converting them to a time zone would move the 1st of the
-// month into the previous one.
 export function calendarMonthDateRange({ year, month }: CalendarMonth, monthOffset = 0): TimeRange {
   return {
     start: new Date(Date.UTC(year, month + monthOffset, 1)),

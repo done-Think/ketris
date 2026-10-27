@@ -1,28 +1,9 @@
 import { monthBoundsInTimeZone, PLATFORM_TIME_ZONE } from './platform-calendar'
-import type { ChargedPlatformTenant } from './platform-tenant.entity'
-import { TENANT_ACCOUNT_TYPES, type TenantAccountType } from './tenant-account'
-import { statusAt, type TenantStatusChange } from './tenant-status-history'
-
-export interface AccountTypeRevenue {
-  accountType: TenantAccountType
-  activeAccounts: number
-  mrr: number
-}
-
-export interface BillingSummary {
-  // Sum of the monthly fees of the ACTIVE accounts, in BRL.
-  mrr: number
-  payingAccounts: number
-  trialAccounts: number
-  suspendedAccounts: number
-  // Accounts of the churn base (see summarizeBilling) that canceled during the month.
-  canceledThisMonth: number
-  // Accounts paying (ACTIVE) at 00:00 of the 1st of the month, in the platform time zone.
-  churnBaseAccounts: number
-  // canceledThisMonth / churnBaseAccounts (0–1); null when there was no base to measure against.
-  churnRate: number | null
-  byAccountType: AccountTypeRevenue[]
-}
+import type { ChargedPlatformTenant } from '../types/platform-tenant'
+import { TENANT_ACCOUNT_TYPES } from './tenant-account'
+import { statusAt } from './tenant-status-history'
+import type { TenantStatusChange } from '../types/tenant-status-history'
+import type { BillingSummary } from '../types/platform-billing'
 
 const sumCents = (values: number[]) =>
   values.reduce((cents, value) => cents + Math.round(value * 100), 0) / 100
@@ -36,14 +17,6 @@ export function calculateChurnRate(
   return canceledThisMonth / baseAtMonthStart
 }
 
-// Billable accounts only (the renters' system tenant has no monthly charge).
-//
-// Churn is rebuilt from the append-only status history, so it never changes after the fact:
-// - base: accounts that were ACTIVE (paying) at 00:00 of the 1st of the month in the platform time
-//   zone. TRIAL accounts are not paying yet and SUSPENDED ones are not paying anymore, so their
-//   cancellation is not lost revenue and they stay out of the base.
-// - churned: accounts of the base with at least one change to CANCELED during the month, counted
-//   once, even if they were reactivated later (reactivation adds history, it doesn't erase it).
 export function summarizeBilling(
   tenants: ChargedPlatformTenant[],
   statusChangesByTenant: ReadonlyMap<string, readonly TenantStatusChange[]>,

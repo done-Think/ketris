@@ -1,13 +1,5 @@
-import type { TenantAccountType } from '../../domain/tenant-account'
-import type { TenantSummary } from '../../domain/tenant-summary.entity'
-
-export interface NewTenant {
-  nome: string
-  slug: string
-  // Defaults to an active agency when omitted.
-  accountType?: TenantAccountType
-  status?: 'TRIAL' | 'ACTIVE'
-}
+import type { TenantSummary } from '../../types/tenant-summary'
+import type { NewTenant } from '../../types/tenant-repository'
 
 export interface TenantRepository {
   findBySlug(slug: string): Promise<TenantSummary | null>

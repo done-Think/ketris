@@ -1,10 +1,6 @@
-import {
-  toAuthenticatedPlatformAdmin,
-  type AuthenticatedPlatformAdmin,
-} from '../../domain/platform-admin.entity'
+import { toAuthenticatedPlatformAdmin } from '../../domain/platform-admin.entity'
 import type { PlatformAdminRepository } from '../ports/platform-admin-repository.port'
-
-export type ListPlatformAdminsOutput = AuthenticatedPlatformAdmin[]
+import type { ListPlatformAdminsOutput } from '../../types/use-case-inputs'
 
 export class ListPlatformAdminsUseCase {
   constructor(private readonly platformAdminRepository: PlatformAdminRepository) {}

@@ -12,6 +12,10 @@ describe('/api/platform/tenants (integração)', () => {
   const tokenService = new JosePlatformTokenService()
   let actorId: string
   let actorToken: string
+  let agentId: string
+  let agentToken: string
+  const marker = randomUUID().slice(0, 8)
+  const pagedSlugs = ['a', 'b', 'c'].map((letter) => `paginado-${marker}-${letter}`)
   let createdTenantId: string
   const existingTenantSlug = `existing-${randomUUID()}`
   const createdSlugs: string[] = []
@@ -33,22 +37,49 @@ describe('/api/platform/tenants (integração)', () => {
       ativo: true,
     })
 
+    const agent = await prisma.platformAdmin.create({
+      data: {
+        nome: 'Agente Teste',
+        email: `agente-${randomUUID()}@ketris.dev`,
+        senhaHash: 'hash-fake',
+        role: 'AGENT',
+      },
+    })
+    agentId = agent.id
+    agentToken = await tokenService.sign({
+      id: agent.id,
+      nome: agent.nome,
+      email: agent.email,
+      role: 'AGENT',
+      ativo: true,
+    })
+
     await prisma.tenant.create({ data: { nome: 'Tenant Existente', slug: existingTenantSlug } })
+    for (const [index, slug] of pagedSlugs.entries())
+      await prisma.tenant.create({
+        data: {
+          nome: `Paginado ${marker} ${index}`,
+          slug,
+          accountType: index === 2 ? 'BROKER' : 'AGENCY',
+          status: index === 0 ? 'SUSPENDED' : 'ACTIVE',
+          createdAt: new Date(Date.UTC(2026, 0, index + 1)),
+        },
+      })
   })
 
   afterAll(async () => {
     await prisma.tenant.deleteMany({
-      where: { slug: { in: [existingTenantSlug, ...createdSlugs] } },
+      where: { slug: { in: [existingTenantSlug, ...pagedSlugs, ...createdSlugs] } },
     })
     if (createdTenantId)
       await prisma.tenant.delete({ where: { id: createdTenantId } }).catch(() => undefined)
     await prisma.platformAdminRefreshToken.deleteMany({ where: { platformAdminId: actorId } })
-    await prisma.platformAdmin.delete({ where: { id: actorId } })
+    await prisma.platformAdmin.deleteMany({ where: { id: { in: [actorId, agentId] } } })
     await prisma.$disconnect()
   })
 
-  function buildRequest(method: string, body?: unknown, token?: string): NextRequest {
-    return new NextRequest('http://localhost/api/platform/tenants', {
+  function buildRequest(method: string, body?: unknown, token?: string, search = ''): NextRequest {
+    return new NextRequest(`http://localhost/api/platform/tenants${search}`, {
       method,
       body: body ? JSON.stringify(body) : undefined,
       headers: {
@@ -58,14 +89,63 @@ describe('/api/platform/tenants (integração)', () => {
     })
   }
 
-  it('GET retorna 200 e a lista de tenants quando autenticado', async () => {
-    const response = await GET(buildRequest('GET', undefined, actorToken))
+  it('GET retorna 200 e encontra o tenant pela busca quando autenticado', async () => {
+    const response = await GET(
+      buildRequest('GET', undefined, actorToken, `?q=${existingTenantSlug}`),
+    )
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(
-      json.tenants.some((tenant: { slug: string }) => tenant.slug === existingTenantSlug),
-    ).toBe(true)
+    expect(json.tenants.map((tenant: { slug: string }) => tenant.slug)).toEqual([
+      existingTenantSlug,
+    ])
+  })
+
+  it('GET pagina do mais novo para o mais antigo e devolve os totais por situação', async () => {
+    const first = await (
+      await GET(buildRequest('GET', undefined, agentToken, `?q=${marker}&pageSize=2`))
+    ).json()
+    const second = await (
+      await GET(buildRequest('GET', undefined, agentToken, `?q=${marker}&pageSize=2&page=2`))
+    ).json()
+
+    expect(first.tenants.map((tenant: { slug: string }) => tenant.slug)).toEqual([
+      pagedSlugs[2],
+      pagedSlugs[1],
+    ])
+    expect(second.tenants.map((tenant: { slug: string }) => tenant.slug)).toEqual([pagedSlugs[0]])
+    expect(first).toMatchObject({
+      totalCount: 3,
+      page: 1,
+      pageSize: 2,
+      statusCounts: { ACTIVE: 2, SUSPENDED: 1, TRIAL: 0, CANCELED: 0 },
+    })
+  })
+
+  it('GET filtra por situação e tipo sem mudar os totais por situação do tipo', async () => {
+    const json = await (
+      await GET(
+        buildRequest('GET', undefined, actorToken, `?q=${marker}&status=ACTIVE&accountType=AGENCY`),
+      )
+    ).json()
+
+    expect(json.tenants.map((tenant: { slug: string }) => tenant.slug)).toEqual([pagedSlugs[1]])
+    expect(json.statusCounts).toMatchObject({ ACTIVE: 1, SUSPENDED: 1 })
+  })
+
+  it('GET rejeita parâmetros desconhecidos ou página grande demais', async () => {
+    expect((await GET(buildRequest('GET', undefined, actorToken, '?pageSize=500'))).status).toBe(
+      400,
+    )
+    expect((await GET(buildRequest('GET', undefined, actorToken, '?foo=1'))).status).toBe(400)
+  })
+
+  it('POST retorna 403 para quem não tem o papel ADMIN', async () => {
+    const slug = `proibido-${randomUUID()}`
+    const response = await POST(buildRequest('POST', { name: 'Proibido', slug }, agentToken))
+
+    expect(response.status).toBe(403)
+    expect(await prisma.tenant.count({ where: { slug } })).toBe(0)
   })
 
   it('GET retorna 401 sem Authorization header', async () => {

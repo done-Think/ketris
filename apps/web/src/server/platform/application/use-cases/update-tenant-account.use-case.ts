@@ -1,19 +1,8 @@
 import { TenantAccountChangedConcurrentlyError, TenantNotFoundError } from '../../domain/errors'
-import type { PlatformTenant } from '../../domain/platform-tenant.entity'
-import {
-  resolveCanceledAt,
-  type TenantAccountType,
-  type TenantStatus,
-} from '../../domain/tenant-account'
+import type { PlatformTenant } from '../../types/platform-tenant'
+import { resolveCanceledAt } from '../../domain/tenant-account'
 import type { PlatformTenantRepository } from '../ports/platform-tenant-repository.port'
-
-export interface UpdateTenantAccountInput {
-  tenantId: string
-  accountType: TenantAccountType
-  status: TenantStatus
-  // Platform admin making the change, kept in the status history.
-  actorId: string | null
-}
+import type { UpdateTenantAccountInput } from '../../types/use-case-inputs'
 
 export class UpdateTenantAccountUseCase {
   constructor(
@@ -49,7 +38,6 @@ export class UpdateTenantAccountUseCase {
     )
 
     if (!updated) {
-      // Nothing was written: the tenant was deleted meanwhile, or another admin changed it.
       if (!(await this.platformTenantRepository.findById(tenant.id))) {
         throw new TenantNotFoundError()
       }

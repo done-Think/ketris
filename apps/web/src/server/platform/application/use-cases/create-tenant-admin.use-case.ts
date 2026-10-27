@@ -1,20 +1,11 @@
 import { EmailAlreadyInUseError } from '@server/auth/domain/errors'
-import { toAuthenticatedUser, type AuthenticatedUser } from '@server/auth/domain/user.entity'
+import { toAuthenticatedUser } from '@server/auth/domain/user.entity'
 import type { PasswordHasher } from '@server/auth/application/ports/password-hasher.port'
 import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
 
 import { TenantNotFoundError } from '../../domain/errors'
 import type { TenantRepository } from '../ports/tenant-repository.port'
-
-export interface CreateTenantAdminInput {
-  actorId?: string
-  tenantId: string
-  nome: string
-  email: string
-  password: string
-}
-
-export type CreateTenantAdminOutput = AuthenticatedUser
+import type { CreateTenantAdminInput, CreateTenantAdminOutput } from '../../types/use-case-inputs'
 
 export class CreateTenantAdminUseCase {
   constructor(

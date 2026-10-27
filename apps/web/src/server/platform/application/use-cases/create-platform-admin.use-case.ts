@@ -1,21 +1,12 @@
 import type { PasswordHasher } from '@server/auth/application/ports/password-hasher.port'
 
 import { PlatformAdminEmailAlreadyInUseError } from '../../domain/errors'
-import {
-  toAuthenticatedPlatformAdmin,
-  type AuthenticatedPlatformAdmin,
-  type PlatformAdminRole,
-} from '../../domain/platform-admin.entity'
+import { toAuthenticatedPlatformAdmin } from '../../domain/platform-admin.entity'
 import type { PlatformAdminRepository } from '../ports/platform-admin-repository.port'
-
-export interface CreatePlatformAdminInput {
-  nome: string
-  email: string
-  password: string
-  role: PlatformAdminRole
-}
-
-export type CreatePlatformAdminOutput = AuthenticatedPlatformAdmin
+import type {
+  CreatePlatformAdminInput,
+  CreatePlatformAdminOutput,
+} from '../../types/use-case-inputs'
 
 export class CreatePlatformAdminUseCase {
   constructor(

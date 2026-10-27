@@ -1,4 +1,4 @@
-import { RENTER_TENANT_SLUG } from '../../domain/registration-policy'
+import { RENTER_TENANT_SLUG } from '@server/shared/domain/system-tenants'
 import type { SearchRegisterableTenantsInput } from '../../types/use-case-inputs'
 import type { SearchRegisterableTenantsOutput } from '../../types/use-case-outputs'
 import type { RegistrationRepository } from '../ports/registration-repository.port'

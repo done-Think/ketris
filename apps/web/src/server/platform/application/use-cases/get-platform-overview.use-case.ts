@@ -1,4 +1,4 @@
-import type { PlatformOverview } from '../../domain/platform-overview.entity'
+import type { PlatformOverview } from '../../types/platform-overview'
 import { loadPlatformBilling } from '../load-platform-billing'
 import type { PlatformOverviewRepository } from '../ports/platform-overview-repository.port'
 import type { PlatformPlanRepository } from '../ports/platform-plan-repository.port'

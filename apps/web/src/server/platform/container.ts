@@ -13,6 +13,7 @@ import { ListPlatformAdminsUseCase } from './application/use-cases/list-platform
 import { ListTenantUsersUseCase } from './application/use-cases/list-tenant-users.use-case'
 import { ListPlatformPlansUseCase } from './application/use-cases/list-platform-plans.use-case'
 import { ListTenantsUseCase } from './application/use-cases/list-tenants.use-case'
+import { GetPlatformTenantUseCase } from './application/use-cases/get-platform-tenant.use-case'
 import { LoginPlatformAdminUseCase } from './application/use-cases/login-platform-admin.use-case'
 import { LogoutPlatformAdminUseCase } from './application/use-cases/logout-platform-admin.use-case'
 import { ValidatePlatformSessionTokensUseCase } from './application/use-cases/validate-platform-session-tokens.use-case'
@@ -72,6 +73,10 @@ export const platformContainer = {
     refreshTokenRepository,
   ),
   listTenantsUseCase: new ListTenantsUseCase(platformTenantRepository, platformPlanRepository),
+  getPlatformTenantUseCase: new GetPlatformTenantUseCase(
+    platformTenantRepository,
+    platformPlanRepository,
+  ),
   listPlatformPlansUseCase: new ListPlatformPlansUseCase(
     platformPlanRepository,
     platformTenantRepository,

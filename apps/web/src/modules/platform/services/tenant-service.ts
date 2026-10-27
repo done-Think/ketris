@@ -5,8 +5,12 @@ import type {
   CreateTenantAdminResponse,
   CreateTenantPayload,
   CreateTenantResponse,
+  GetTenantResponse,
   ListTenantsResponse,
   ListTenantUsersResponse,
+  TenantListQuery,
+  TenantPage,
+  TenantUsersPage,
   PlatformTenant,
   TenantSummary,
   TenantUser,
@@ -17,8 +21,12 @@ import type {
 class TenantService extends BaseService {
   private readonly path = '/platform/tenants'
 
-  list(): Promise<PlatformTenant[]> {
-    return this.http.get<ListTenantsResponse>(this.path).then((data) => data.tenants)
+  list(query: TenantListQuery): Promise<TenantPage> {
+    return this.http.get<ListTenantsResponse>(this.path, { params: query })
+  }
+
+  get(tenantId: string): Promise<PlatformTenant> {
+    return this.http.get<GetTenantResponse>(`${this.path}/${tenantId}`).then((data) => data.tenant)
   }
 
   updateAccount(tenantId: string, payload: UpdateTenantAccountPayload): Promise<PlatformTenant> {
@@ -31,10 +39,10 @@ class TenantService extends BaseService {
     return this.http.post<CreateTenantResponse>(this.path, payload).then((data) => data.tenant)
   }
 
-  listUsers(tenantId: string): Promise<TenantUser[]> {
-    return this.http
-      .get<ListTenantUsersResponse>(`${this.path}/${tenantId}/users`)
-      .then((data) => data.users)
+  listUsers(tenantId: string, page: number, pageSize: number): Promise<TenantUsersPage> {
+    return this.http.get<ListTenantUsersResponse>(`${this.path}/${tenantId}/users`, {
+      params: { page, pageSize },
+    })
   }
 
   createAdmin(tenantId: string, payload: CreateTenantAdminPayload): Promise<TenantUser> {

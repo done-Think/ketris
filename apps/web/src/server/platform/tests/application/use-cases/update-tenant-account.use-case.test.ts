@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type { PlatformTenant } from '../../../domain/platform-tenant.entity'
+import type { PlatformTenant } from '../../../types/platform-tenant'
 import type { PlatformTenantRepository } from '../../../application/ports/platform-tenant-repository.port'
 import { UpdateTenantAccountUseCase } from '../../../application/use-cases/update-tenant-account.use-case'
 
@@ -19,6 +19,8 @@ const activeTenant: PlatformTenant = {
 function createRepository(tenant: PlatformTenant | null): PlatformTenantRepository {
   return {
     findMany: vi.fn(),
+    findPage: vi.fn(),
+    countByStatus: vi.fn(),
     findById: vi.fn().mockResolvedValue(tenant),
     updateAccount: vi
       .fn()

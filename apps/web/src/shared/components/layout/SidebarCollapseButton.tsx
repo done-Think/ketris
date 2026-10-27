@@ -6,8 +6,6 @@ import { IconButton, Tooltip } from '@mui/material'
 import { alpha, brand, iconSize, surface } from '@shared/theme/tokens'
 import type { SidebarCollapseButtonProps } from '@shared/types/sidebar-collapse-button'
 
-// Botão redondo posicionado na divisória entre a sidebar e a página. O container pai precisa ter
-// `position: relative` e não pode cortar o overflow horizontal (o botão fica metade para fora).
 export function SidebarCollapseButton({
   collapsed,
   onToggle,

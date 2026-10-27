@@ -9,8 +9,8 @@ import { usePathname } from '@/i18n/navigation'
 import { PlatformOverview } from '../../components/PlatformOverview'
 import { PlatformShell } from '../../components/PlatformShell'
 
-const { useTenants, usePlatformOverview } = vi.hoisted(() => ({
-  useTenants: vi.fn(),
+const { useTenantsPage, usePlatformOverview } = vi.hoisted(() => ({
+  useTenantsPage: vi.fn(),
   usePlatformOverview: vi.fn(),
 }))
 
@@ -22,7 +22,10 @@ vi.mock('@mui/x-charts/LineChart', () => ({
   LineChart: () => <div aria-label="Growth trends chart" />,
 }))
 
-vi.mock('../../hooks/use-tenants', () => ({ useTenants }))
+vi.mock('../../hooks/use-tenants', () => ({ useTenantsPage }))
+vi.mock('../../hooks/use-platform-actor', () => ({
+  usePlatformActor: () => ({ key: 'admin-1:ADMIN', enabled: true, canManage: true }),
+}))
 
 vi.mock('../../hooks/use-platform-overview', () => ({ usePlatformOverview }))
 
@@ -106,9 +109,15 @@ describe('PlatformOverview', () => {
   }
 
   beforeEach(() => {
-    vi.mocked(useTenants).mockReturnValue({
-      data: [existingTenant],
-      isLoading: false,
+    vi.mocked(useTenantsPage).mockReturnValue({
+      data: {
+        tenants: [existingTenant],
+        totalCount: 1,
+        page: 1,
+        pageSize: 20,
+        statusCounts: { TRIAL: 0, ACTIVE: 1, SUSPENDED: 0, CANCELED: 0 },
+      },
+      isPending: false,
       isError: false,
     })
     vi.mocked(usePlatformOverview).mockReturnValue({

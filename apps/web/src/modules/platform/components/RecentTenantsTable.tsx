@@ -5,11 +5,10 @@ import { DataGrid } from '@mui/x-data-grid'
 import type { GridColDef } from '@mui/x-data-grid'
 import { useFormatter, useTranslations } from 'next-intl'
 
-import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
-
 import type { RecentTenant } from '../types/platform-overview'
-import { platformTenantGridSx } from './platform-tenant-table.styles'
+import { platformTenantGridSx } from '../styles/platform-tenant-table.styles'
 import { usePlatformGridLocale } from '../hooks/use-platform-grid-locale'
+import { styles, getBoxStyles } from '../styles/recent-tenants-table.styles'
 
 export function RecentTenantsTable({ tenants }: { tenants: readonly RecentTenant[] }) {
   const t = useTranslations('platform.overview.recentTenants')
@@ -24,20 +23,7 @@ export function RecentTenantsTable({ tenants }: { tenants: readonly RecentTenant
       flex: 1.5,
       minWidth: 210,
       renderCell: ({ row }) => (
-        <Typography
-          noWrap
-          sx={{
-            alignItems: 'center',
-            color: brand.graphite[500],
-            display: 'flex',
-            fontSize: 13.5,
-            fontWeight: 900,
-            height: '100%',
-            py: 0,
-            textAlign: 'left',
-            width: '100%',
-          }}
-        >
+        <Typography noWrap sx={styles.typography}>
           {row.name}
         </Typography>
       ),
@@ -76,32 +62,11 @@ export function RecentTenantsTable({ tenants }: { tenants: readonly RecentTenant
   ]
 
   return (
-    <Box
-      component="section"
-      aria-labelledby="recent-tenants-title"
-      sx={{
-        bgcolor: surface.paper,
-        border: '1px solid',
-        borderColor: alpha.graphite[6],
-        borderRadius: `${radius.sm}px`,
-        boxShadow: shadows.propertyCard,
-        overflow: 'hidden',
-        p: { xs: 1.45, md: 2.2 },
-      }}
-    >
-      <Typography
-        id="recent-tenants-title"
-        sx={{
-          color: brand.neutral[500],
-          fontSize: 11,
-          fontWeight: 900,
-          mb: 2,
-          textTransform: 'uppercase',
-        }}
-      >
+    <Box component="section" aria-labelledby="recent-tenants-title" sx={styles.box}>
+      <Typography id="recent-tenants-title" sx={styles.typography2}>
         {t('title')}
       </Typography>
-      <Box sx={{ height: 56 + tenants.length * 52 }}>
+      <Box sx={getBoxStyles({ tenants })}>
         <DataGrid
           aria-label={t('tableLabel')}
           localeText={gridLocale}

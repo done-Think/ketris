@@ -79,6 +79,27 @@ describe('GET /api/platform/tenants/[id]/users (integração)', () => {
     expect(response.status).toBe(200)
     expect(json.users).toHaveLength(2)
     expect(json.users.some((user: { role: string }) => user.role === 'OWNER')).toBe(true)
+    expect(json).toMatchObject({ totalCount: 2, page: 1, pageSize: 20 })
+  })
+
+  it('pagina os usuários pela ordem de criação', async () => {
+    const pages = await Promise.all(
+      [1, 2].map(async (page) =>
+        (
+          await GET(
+            buildRequest(
+              `http://localhost/api/platform/tenants/${tenantId}/users?page=${page}&pageSize=1`,
+              actorToken,
+            ),
+            { params: Promise.resolve({ id: tenantId }) },
+          )
+        ).json(),
+      ),
+    )
+
+    expect(pages.map((page) => page.users.length)).toEqual([1, 1])
+    expect(pages[0].users[0].id).not.toBe(pages[1].users[0].id)
+    expect(pages[1]).toMatchObject({ totalCount: 2, page: 2, pageSize: 1 })
   })
 
   it('retorna 401 sem Authorization header', async () => {

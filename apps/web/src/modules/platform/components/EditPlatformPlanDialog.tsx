@@ -20,14 +20,14 @@ import { useMemo } from 'react'
 import { useSnackbar } from 'notistack'
 
 import { RhfTextField } from '@shared/components/form'
-import { brand, iconSize, radius } from '@shared/theme/tokens'
 import { extractErrorMessage } from '@shared/utils/error-message'
 
-import { useUpdatePlatformPlan } from '../hooks/use-platform-plans'
+import { useUpdatePlatformPlan } from '../hooks/use-platform-billing'
 import { createPlatformPlanSchema } from '../schemas/platform-plan-schema'
 import type { EditPlatformPlanDialogProps, PlatformPlanFormValues } from '../types/platform-plan'
 import { formatMoneyInput, parseMoneyInput } from '../utils/money-input'
 import { calculateMonthlyTotal } from '../utils/plan-pricing'
+import { styles } from '../styles/edit-platform-plan-dialog.styles'
 
 const EXAMPLE_EXTRA_UNITS = 2
 
@@ -43,7 +43,6 @@ export function EditPlatformPlanDialog({ plan, onClose }: EditPlatformPlanDialog
     [t, locale],
   )
   const unit = plan.usageUnit === 'BROKERS' ? 'Brokers' : 'Properties'
-  // Prices are kept in BRL whatever the interface language.
   const currencySymbol =
     new Intl.NumberFormat(locale, {
       style: 'currency',
@@ -95,7 +94,6 @@ export function EditPlatformPlanDialog({ plan, onClose }: EditPlatformPlanDialog
       enqueueSnackbar(t('updateSuccess'), { variant: 'success' })
       onClose()
     } catch (error) {
-      // Server messages are in Portuguese: show the translated text for the known codes.
       enqueueSnackbar(
         extractErrorMessage(error, t('updateError'), {
           FORBIDDEN: t('errors.forbidden'),
@@ -109,13 +107,11 @@ export function EditPlatformPlanDialog({ plan, onClose }: EditPlatformPlanDialog
   return (
     <Dialog open onClose={() => !updatePlan.isPending && onClose()} fullWidth maxWidth="sm">
       <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-        <DialogTitle sx={{ px: { xs: 2, md: 2.8 }, pb: 1.4, pt: 2.4 }}>
+        <DialogTitle sx={styles.dialogTitle}>
           <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
             <Box>
-              <Typography sx={{ color: 'text.primary', fontSize: 24, fontWeight: 900 }}>
-                {t('editTitle')}
-              </Typography>
-              <Typography sx={{ color: 'text.secondary', fontSize: 14, mt: 0.5 }}>
+              <Typography sx={styles.typography}>{t('editTitle')}</Typography>
+              <Typography sx={styles.typography2}>
                 {accountT(`accountTypes.${plan.accountType}`)}
               </Typography>
             </Box>
@@ -124,12 +120,12 @@ export function EditPlatformPlanDialog({ plan, onClose }: EditPlatformPlanDialog
               onClick={onClose}
               disabled={updatePlan.isPending}
             >
-              <CloseRoundedIcon sx={{ fontSize: iconSize.lg }} />
+              <CloseRoundedIcon sx={styles.closeRoundedIcon} />
             </IconButton>
           </Stack>
         </DialogTitle>
-        <DialogContent sx={{ px: { xs: 2, md: 2.8 }, pb: 2 }}>
-          <Stack spacing={2} sx={{ pt: 1 }}>
+        <DialogContent sx={styles.dialogContent}>
+          <Stack spacing={2} sx={styles.stack}>
             <RhfTextField
               control={control}
               name="monthlyPrice"
@@ -157,22 +153,10 @@ export function EditPlatformPlanDialog({ plan, onClose }: EditPlatformPlanDialog
                 input: { startAdornment: moneyAdornment },
               }}
             />
-            {example ? (
-              <Typography
-                sx={{
-                  p: 1.5,
-                  borderRadius: `${radius.sm}px`,
-                  bgcolor: brand.neutral[100],
-                  color: brand.neutral[500],
-                  fontSize: 13,
-                }}
-              >
-                {example}
-              </Typography>
-            ) : null}
+            {example ? <Typography sx={styles.typography3}>{example}</Typography> : null}
           </Stack>
         </DialogContent>
-        <DialogActions sx={{ px: { xs: 2, md: 2.8 }, pb: 2.5, pt: 0 }}>
+        <DialogActions sx={styles.dialogActions}>
           <Button
             type="button"
             variant="outlined"

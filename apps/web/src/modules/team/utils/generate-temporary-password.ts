@@ -1,4 +1,3 @@
-// Sem caracteres ambíguos (0/O, 1/l/I) para facilitar o repasse manual da senha ao corretor.
 const passwordCharacterGroups = {
   uppercase: 'ABCDEFGHJKLMNPQRSTUVWXYZ',
   lowercase: 'abcdefghijkmnopqrstuvwxyz',
@@ -18,8 +17,6 @@ function pickCharacter(characters: string) {
   return characters[randomIndex(characters.length)]
 }
 
-// Garante ao menos um caractere de cada grupo e embaralha (Fisher-Yates) para que a posição dos
-// caracteres obrigatórios não seja previsível.
 export function generateTemporaryPassword(length = temporaryPasswordLength) {
   const required = Object.values(passwordCharacterGroups).map(pickCharacter)
   const remaining = Array.from({ length: Math.max(0, length - required.length) }, () =>

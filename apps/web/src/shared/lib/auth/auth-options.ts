@@ -117,6 +117,7 @@ export const authOptions: NextAuthOptions = {
             accessToken,
             refreshToken,
             scope: 'platform',
+            platformRole: admin.role,
           }
         } catch (error) {
           if (error instanceof InvalidPlatformCredentialsError) return null
@@ -133,6 +134,7 @@ export const authOptions: NextAuthOptions = {
         token.scope = user.scope
         token.tenantId = user.tenantId
         token.role = user.role
+        token.platformRole = user.platformRole
         token.sessionVersion = user.sessionVersion ?? 0
         delete token.authUnavailable
         delete token.pendingAccessToken
@@ -140,7 +142,6 @@ export const authOptions: NextAuthOptions = {
         return token
       }
 
-      // Sessions issued before the claim was renamed still carry `papel` instead of `role`.
       if ('papel' in token) {
         const legacyRole = papelSchema.safeParse(token.papel)
         if (token.role === undefined && legacyRole.success) token.role = legacyRole.data
@@ -179,6 +180,7 @@ export const authOptions: NextAuthOptions = {
           if (!admin?.ativo) return clearSessionToken(token)
           token.name = admin.nome
           token.email = admin.email
+          token.platformRole = admin.role
           await adoptValidatedSessionTokens(token)
         } else if (token.scope === 'tenant' || token.scope === 'platform') {
           return clearSessionToken(token)
@@ -198,6 +200,7 @@ export const authOptions: NextAuthOptions = {
       session.scope = token.authUnavailable ? undefined : token.scope
       session.tenantId = token.authUnavailable ? undefined : token.tenantId
       session.role = token.authUnavailable ? undefined : token.role
+      session.platformRole = token.authUnavailable ? undefined : token.platformRole
       if (session.user && token.sub) {
         session.user.id = token.sub
         session.user.name = token.name
@@ -256,6 +259,7 @@ function clearSessionToken(token: JWT): JWT {
   delete token.scope
   delete token.tenantId
   delete token.role
+  delete token.platformRole
   delete token.sessionVersion
   return token
 }

@@ -8,27 +8,28 @@ import {
   requirePlatformAdminRole,
 } from '@server/platform/require-platform-admin-role'
 import { updateTenantAccountRequestSchema } from '@server/platform/schemas/update-tenant-account.schema'
-import { parseJsonBody, withErrorHandling } from '@server/shared/http'
+import type { PlatformIdRouteContext } from '@server/platform/types/http'
+import { platformIdParamsSchema } from '@server/platform/schemas/route-params.schema'
+import { parseJsonBody, parseRouteParams, withErrorHandling } from '@server/shared/http'
 
-interface RouteContext {
-  params: Promise<{ id: string }>
-}
+export const PATCH = withErrorHandling(
+  async (request: NextRequest, context: PlatformIdRouteContext) => {
+    const actor = await requirePlatformAdminRole(
+      request,
+      platformContainer.tokenService,
+      platformContainer.platformAdminRepository,
+      BILLING_EDITOR_ROLES,
+    )
+    const { id } = await parseRouteParams(context.params, platformIdParamsSchema)
+    const body = await parseJsonBody(request, updateTenantAccountRequestSchema)
 
-export const PATCH = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
-  const actor = await requirePlatformAdminRole(
-    request,
-    platformContainer.tokenService,
-    platformContainer.platformAdminRepository,
-    BILLING_EDITOR_ROLES,
-  )
-  const body = await parseJsonBody(request, updateTenantAccountRequestSchema)
+    const tenant = await platformContainer.updateTenantAccountUseCase.execute({
+      tenantId: id,
+      accountType: body.accountType,
+      status: body.status,
+      actorId: actor.id,
+    })
 
-  const tenant = await platformContainer.updateTenantAccountUseCase.execute({
-    tenantId: (await context.params).id,
-    accountType: body.accountType,
-    status: body.status,
-    actorId: actor.id,
-  })
-
-  return NextResponse.json({ tenant: toPlatformTenantResponse(tenant) }, { status: 200 })
-})
+    return NextResponse.json({ tenant: toPlatformTenantResponse(tenant) }, { status: 200 })
+  },
+)

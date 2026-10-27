@@ -3,10 +3,8 @@ import { UnauthorizedError } from '@server/shared/errors'
 import { hashPlatformRefreshToken } from '../../domain/refresh-token'
 import type { PlatformAdminRepository } from '../ports/platform-admin-repository.port'
 import type { PlatformRefreshTokenRepository } from '../ports/platform-refresh-token-repository.port'
-import type {
-  PlatformAccessTokenPayload,
-  PlatformTokenService,
-} from '../ports/platform-token-service.port'
+import type { PlatformTokenService } from '../ports/platform-token-service.port'
+import type { PlatformAccessTokenPayload } from '../../types/platform-token-service'
 
 export class ValidatePlatformSessionTokensUseCase {
   constructor(

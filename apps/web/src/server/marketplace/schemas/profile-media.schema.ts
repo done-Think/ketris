@@ -21,7 +21,6 @@ export const profileMediaUploadResponseSchema = z
   })
   .openapi('ProfileMediaUploadResponse')
 
-// The route receives the key as a catch-all segment; the contract documents it as one path value.
 export const profileMediaKeyParamsSchema = z.object({
   key: z.string().openapi({
     description:

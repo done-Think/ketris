@@ -169,11 +169,19 @@ export default defineConfig({
 
           return null
         },
-        async seedPlatformAdmin({ email, password }: { email: string; password: string }) {
+        async seedPlatformAdmin({
+          email,
+          password,
+          role = 'ADMIN',
+        }: {
+          email: string
+          password: string
+          role?: 'ADMIN' | 'ADMIN_AGENT' | 'AGENT'
+        }) {
           const senhaHash = await bcrypt.hash(password, 10)
 
           const admin = await prisma.platformAdmin.create({
-            data: { nome: 'Admin Plataforma E2E', email, senhaHash },
+            data: { nome: 'Admin Plataforma E2E', email, senhaHash, role },
           })
 
           return admin.id
@@ -183,6 +191,17 @@ export default defineConfig({
             where: { platformAdminId: adminId },
           })
           await prisma.platformAdmin.delete({ where: { id: adminId } }).catch(() => null)
+          return null
+        },
+        async cleanupPlatformAdminsByEmail(emails: string[]) {
+          await prisma.platformAdminRefreshToken.deleteMany({
+            where: { platformAdmin: { email: { in: emails } } },
+          })
+          await prisma.platformAdmin.deleteMany({ where: { email: { in: emails } } })
+          return null
+        },
+        async cleanupTenantsBySlug(slugs: string[]) {
+          await prisma.tenant.deleteMany({ where: { slug: { in: slugs } } })
           return null
         },
       })

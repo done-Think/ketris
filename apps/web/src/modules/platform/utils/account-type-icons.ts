@@ -11,7 +11,6 @@ export const accountTypeIcons: Record<TenantAccountType, SvgIconComponent> = {
   AGENCY: ApartmentOutlinedIcon,
 }
 
-// "Imobiliária São João" → "IS"; used by the account previews.
 export function accountInitials(name: string): string {
   return name
     .trim()

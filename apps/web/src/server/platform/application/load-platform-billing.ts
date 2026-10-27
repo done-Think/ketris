@@ -1,6 +1,8 @@
-import { summarizeBilling, type BillingSummary } from '../domain/platform-billing'
+import { summarizeBilling } from '../domain/platform-billing'
+import type { BillingSummary } from '../types/platform-billing'
 import { monthBoundsInTimeZone } from '../domain/platform-calendar'
-import { chargePlatformTenants, type ChargedPlatformTenant } from '../domain/platform-tenant.entity'
+import { chargePlatformTenants } from '../domain/platform-tenant.entity'
+import type { ChargedPlatformTenant } from '../types/platform-tenant'
 import { groupStatusChangesByTenant } from '../domain/tenant-status-history'
 import type { PlatformPlanRepository } from './ports/platform-plan-repository.port'
 import type { PlatformTenantRepository } from './ports/platform-tenant-repository.port'
@@ -10,8 +12,6 @@ export interface PlatformBilling {
   summary: BillingSummary
 }
 
-// The single place MRR and churn are computed, shared by the overview and the finance page so
-// both always show the same numbers.
 export async function loadPlatformBilling(
   platformTenantRepository: PlatformTenantRepository,
   platformPlanRepository: PlatformPlanRepository,

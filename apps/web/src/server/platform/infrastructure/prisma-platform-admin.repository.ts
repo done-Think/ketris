@@ -1,20 +1,12 @@
+import type { PlatformAdmin as PrismaPlatformAdmin } from '@prisma/client'
+
 import { prisma } from '@server/db/prisma'
 
-import type {
-  NewPlatformAdmin,
-  PlatformAdminRepository,
-  PlatformAdminUpdate,
-} from '../application/ports/platform-admin-repository.port'
-import type { PlatformAdmin, PlatformAdminRole } from '../domain/platform-admin.entity'
+import type { PlatformAdminRepository } from '../application/ports/platform-admin-repository.port'
+import type { NewPlatformAdmin, PlatformAdminUpdate } from '../types/platform-admin-repository'
+import type { PlatformAdmin } from '../types/platform-admin'
 
-function toDomainPlatformAdmin(admin: {
-  id: string
-  nome: string
-  email: string
-  senhaHash: string
-  role: PlatformAdminRole
-  ativo: boolean
-}): PlatformAdmin {
+function toDomainPlatformAdmin(admin: PrismaPlatformAdmin): PlatformAdmin {
   return {
     id: admin.id,
     nome: admin.nome,
@@ -22,6 +14,8 @@ function toDomainPlatformAdmin(admin: {
     senhaHash: admin.senhaHash,
     role: admin.role,
     ativo: admin.ativo,
+    createdAt: admin.createdAt,
+    ultimoAcessoEm: admin.ultimoAcessoEm,
   }
 }
 
@@ -57,8 +51,8 @@ export class PrismaPlatformAdminRepository implements PlatformAdminRepository {
     return toDomainPlatformAdmin(admin)
   }
 
-  async update(id: string, changes: PlatformAdminUpdate): Promise<PlatformAdmin> {
-    const admin = await prisma.platformAdmin.update({
+  async update(id: string, changes: PlatformAdminUpdate): Promise<PlatformAdmin | null> {
+    const { count } = await prisma.platformAdmin.updateMany({
       where: { id },
       data: {
         nome: changes.nome,
@@ -68,15 +62,19 @@ export class PrismaPlatformAdminRepository implements PlatformAdminRepository {
       },
     })
 
-    return toDomainPlatformAdmin(admin)
+    return count ? this.findById(id) : null
   }
 
-  async deactivate(id: string): Promise<PlatformAdmin> {
-    const admin = await prisma.platformAdmin.update({
+  async deactivate(id: string): Promise<PlatformAdmin | null> {
+    const { count } = await prisma.platformAdmin.updateMany({
       where: { id },
       data: { ativo: false },
     })
 
-    return toDomainPlatformAdmin(admin)
+    return count ? this.findById(id) : null
+  }
+
+  async recordAccess(id: string, at: Date): Promise<void> {
+    await prisma.platformAdmin.updateMany({ where: { id }, data: { ultimoAcessoEm: at } })
   }
 }

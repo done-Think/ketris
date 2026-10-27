@@ -26,7 +26,6 @@ export class ContractDocumentsService extends BaseService {
         sha256,
       },
     )
-    // O cliente de storage não recebe token, tenant ou renovação de sessão da aplicação.
     await this.storage.put(authorization.uploadUrl, file, {
       headers: authorization.headers,
       timeout: 120000,

@@ -4,14 +4,11 @@ import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded'
 import { Box, Chip, CircularProgress, Link, Stack, Typography } from '@mui/material'
 import { useFormatter, useTranslations } from 'next-intl'
 
-import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
-
-import { useSystemHealth } from '../hooks/use-system-health'
+import { useSystemHealth } from '../hooks/use-platform-overview'
 import type { ApiErrorTrackingHealth } from '../types/platform-system'
 import { splitUptime } from '../utils/system-health'
+import { styles } from '../styles/platform-system-page.styles'
 
-// Real health only: the database is measured on each request, the uptime is this server
-// instance's, and errors come from Sentry. Availability % and traffic need an external monitor.
 export function PlatformSystemPage() {
   const t = useTranslations('platform.system')
   const format = useFormatter()
@@ -19,19 +16,19 @@ export function PlatformSystemPage() {
   const health = healthQuery.data
 
   return (
-    <Box sx={{ width: '100%', p: 3.5 }}>
+    <Box sx={styles.box}>
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         justifyContent="space-between"
         alignItems={{ xs: 'flex-start', sm: 'center' }}
         spacing={1}
-        sx={{ pb: 1.75, mb: 2.4, borderBottom: '1px solid', borderColor: 'divider' }}
+        sx={styles.stack}
       >
-        <Typography component="h1" sx={headingSx}>
+        <Typography component="h1" sx={styles.heading}>
           {t('title')}
         </Typography>
         {health ? (
-          <Typography sx={{ color: brand.neutral[500], fontSize: 12.5 }}>
+          <Typography sx={styles.typography}>
             {t('checkedAt', {
               time: format.dateTime(new Date(health.checkedAt), { timeStyle: 'medium' }),
             })}
@@ -40,27 +37,19 @@ export function PlatformSystemPage() {
       </Stack>
 
       {healthQuery.isPending ? (
-        <Stack alignItems="center" sx={{ py: 6 }}>
+        <Stack alignItems="center" sx={styles.stack2}>
           <CircularProgress size={28} />
         </Stack>
       ) : healthQuery.isError || !health ? (
-        <Box sx={panelSx}>
-          <Typography sx={{ color: brand.neutral[500], fontSize: 13.5 }}>
-            {t('loadError')}
-          </Typography>
+        <Box sx={styles.panel}>
+          <Typography sx={styles.typography2}>{t('loadError')}</Typography>
         </Box>
       ) : (
         <Stack spacing={2}>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
-              gap: 2,
-            }}
-          >
-            <Box component="section" aria-labelledby="system-database-title" sx={panelSx}>
+          <Box sx={styles.box2}>
+            <Box component="section" aria-labelledby="system-database-title" sx={styles.panel}>
               <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Typography id="system-database-title" sx={eyebrowSx}>
+                <Typography id="system-database-title" sx={styles.eyebrow}>
                   {t('database.label')}
                 </Typography>
                 <StatusChip
@@ -68,7 +57,7 @@ export function PlatformSystemPage() {
                   label={t(`database.${health.database.status}`)}
                 />
               </Stack>
-              <Typography sx={valueSx}>
+              <Typography sx={styles.value}>
                 {health.database.latencyMs === null
                   ? '—'
                   : format.number(health.database.latencyMs, {
@@ -77,14 +66,14 @@ export function PlatformSystemPage() {
                       unitDisplay: 'narrow',
                     })}
               </Typography>
-              <Typography sx={helperSx}>{t('database.helper')}</Typography>
+              <Typography sx={styles.helper}>{t('database.helper')}</Typography>
             </Box>
 
-            <Box component="section" aria-labelledby="system-server-title" sx={panelSx}>
-              <Typography id="system-server-title" sx={eyebrowSx}>
+            <Box component="section" aria-labelledby="system-server-title" sx={styles.panel}>
+              <Typography id="system-server-title" sx={styles.eyebrow}>
                 {t('server.label')}
               </Typography>
-              <Typography sx={valueSx}>
+              <Typography sx={styles.value}>
                 {(() => {
                   const uptime = splitUptime(health.serverUptimeSeconds)
                   return uptime.days > 0
@@ -92,15 +81,13 @@ export function PlatformSystemPage() {
                     : t('server.uptimeHours', { hours: uptime.hours, minutes: uptime.minutes })
                 })()}
               </Typography>
-              <Typography sx={helperSx}>{t('server.helper')}</Typography>
+              <Typography sx={styles.helper}>{t('server.helper')}</Typography>
             </Box>
           </Box>
 
           <ErrorTrackingPanel errorTracking={health.errorTracking} />
 
-          <Typography sx={{ color: brand.neutral[500], fontSize: 12 }}>
-            {t('externalMonitoringNote')}
-          </Typography>
+          <Typography sx={styles.typography3}>{t('externalMonitoringNote')}</Typography>
         </Stack>
       )}
     </Box>
@@ -112,35 +99,23 @@ function ErrorTrackingPanel({ errorTracking }: { errorTracking: ApiErrorTracking
   const format = useFormatter()
 
   return (
-    <Box
-      component="section"
-      aria-labelledby="system-errors-title"
-      sx={{ ...panelSx, p: 0, overflow: 'hidden' }}
-    >
-      <Box sx={{ px: 2.25, py: 1.6, borderBottom: '1px solid', borderColor: alpha.graphite[8] }}>
-        <Typography id="system-errors-title" sx={cardTitleSx}>
+    <Box component="section" aria-labelledby="system-errors-title" sx={styles.box3}>
+      <Box sx={styles.box4}>
+        <Typography id="system-errors-title" sx={styles.cardTitle}>
           {t('title')}
         </Typography>
       </Box>
       {!errorTracking.configured ? (
-        <Box sx={{ px: 2.25, py: 2.5 }}>
-          <Typography sx={{ color: brand.graphite[500], fontSize: 14, fontWeight: 800 }}>
-            {t('notConfiguredTitle')}
-          </Typography>
-          <Typography sx={{ color: brand.neutral[500], fontSize: 13, mt: 0.5 }}>
-            {t('notConfiguredDescription')}
-          </Typography>
+        <Box sx={styles.box5}>
+          <Typography sx={styles.typography4}>{t('notConfiguredTitle')}</Typography>
+          <Typography sx={styles.typography5}>{t('notConfiguredDescription')}</Typography>
         </Box>
       ) : !errorTracking.available ? (
-        <Typography sx={{ color: brand.neutral[500], fontSize: 13, px: 2.25, py: 2.5 }}>
-          {t('unavailable')}
-        </Typography>
+        <Typography sx={styles.typography6}>{t('unavailable')}</Typography>
       ) : errorTracking.issues.length === 0 ? (
-        <Typography sx={{ color: brand.neutral[500], fontSize: 13, px: 2.25, py: 2.5 }}>
-          {t('empty')}
-        </Typography>
+        <Typography sx={styles.typography6}>{t('empty')}</Typography>
       ) : (
-        <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+        <Box component="ul" sx={styles.box6}>
           {errorTracking.issues.map((issue) => (
             <Stack
               component="li"
@@ -148,32 +123,17 @@ function ErrorTrackingPanel({ errorTracking }: { errorTracking: ApiErrorTracking
               direction={{ xs: 'column', sm: 'row' }}
               alignItems={{ xs: 'flex-start', sm: 'center' }}
               spacing={{ xs: 0.75, sm: 2 }}
-              sx={{
-                px: 2.25,
-                py: 1.4,
-                borderBottom: '1px solid',
-                borderColor: alpha.graphite[6],
-                '&:last-of-type': { borderBottom: 0 },
-              }}
+              sx={styles.stack3}
             >
               <Chip
                 size="small"
                 color={issue.level === 'warning' ? 'warning' : 'error'}
                 label={issue.level.toUpperCase()}
-                sx={{ fontWeight: 800, fontSize: 11, minWidth: 64 }}
+                sx={styles.chip}
               />
-              <Box sx={{ minWidth: 0, flex: 1 }}>
-                <Typography
-                  sx={{
-                    color: brand.graphite[500],
-                    fontSize: 13,
-                    fontWeight: 700,
-                    wordBreak: 'break-word',
-                  }}
-                >
-                  {issue.title}
-                </Typography>
-                <Typography sx={{ color: brand.neutral[500], fontSize: 12 }}>
+              <Box sx={styles.box7}>
+                <Typography sx={styles.typography7}>{issue.title}</Typography>
+                <Typography sx={styles.typography3}>
                   {t('issueMeta', {
                     count: issue.eventsCount,
                     lastSeen: format.dateTime(new Date(issue.lastSeen), {
@@ -188,16 +148,10 @@ function ErrorTrackingPanel({ errorTracking }: { errorTracking: ApiErrorTracking
                 target="_blank"
                 rel="noopener noreferrer"
                 underline="hover"
-                sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  fontSize: 12.5,
-                  flexShrink: 0,
-                }}
+                sx={styles.link}
               >
                 {t('openInSentry')}
-                <OpenInNewRoundedIcon aria-hidden sx={{ fontSize: iconSize.xs }} />
+                <OpenInNewRoundedIcon aria-hidden sx={styles.openInNewRoundedIcon} />
               </Link>
             </Stack>
           ))}
@@ -208,39 +162,5 @@ function ErrorTrackingPanel({ errorTracking }: { errorTracking: ApiErrorTracking
 }
 
 function StatusChip({ ok, label }: { ok: boolean; label: string }) {
-  return (
-    <Chip
-      size="small"
-      label={label}
-      color={ok ? 'success' : 'error'}
-      sx={{ fontWeight: 800, fontSize: 11, height: 22 }}
-    />
-  )
+  return <Chip size="small" label={label} color={ok ? 'success' : 'error'} sx={styles.chip2} />
 }
-
-const panelSx = {
-  bgcolor: surface.paper,
-  border: '1px solid',
-  borderColor: alpha.graphite[6],
-  borderRadius: `${radius.sm}px`,
-  boxShadow: shadows.propertyCard,
-  p: { xs: 1.6, md: 2.2 },
-  minWidth: 0,
-}
-const headingSx = {
-  color: brand.graphite[500],
-  fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
-  fontSize: { xs: 26, sm: 30 },
-  fontWeight: 700,
-  lineHeight: 1.15,
-}
-const eyebrowSx = { color: brand.neutral[500], fontSize: 12, fontWeight: 800 }
-const cardTitleSx = { color: brand.graphite[500], fontSize: 16, fontWeight: 900, lineHeight: 1.25 }
-const valueSx = {
-  color: brand.graphite[500],
-  fontSize: 29,
-  fontWeight: 900,
-  lineHeight: 1.1,
-  mt: 1.1,
-}
-const helperSx = { color: brand.neutral[500], fontSize: 12, mt: 1 }

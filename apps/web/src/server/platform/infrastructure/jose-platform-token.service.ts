@@ -1,11 +1,9 @@
 import { jwtVerify, SignJWT } from 'jose'
 import { UnauthorizedError } from '@server/shared/errors'
 
-import type { AuthenticatedPlatformAdmin } from '../domain/platform-admin.entity'
-import type {
-  PlatformAccessTokenPayload,
-  PlatformTokenService,
-} from '../application/ports/platform-token-service.port'
+import type { PlatformAdminIdentity } from '../types/platform-admin'
+import type { PlatformTokenService } from '../application/ports/platform-token-service.port'
+import type { PlatformAccessTokenPayload } from '../types/platform-token-service'
 
 const ACCESS_TOKEN_TTL = '1h'
 
@@ -22,7 +20,7 @@ function getSecretKey(): Uint8Array {
 }
 
 export class JosePlatformTokenService implements PlatformTokenService {
-  async sign(admin: AuthenticatedPlatformAdmin): Promise<string> {
+  async sign(admin: PlatformAdminIdentity): Promise<string> {
     return new SignJWT({ scope: 'platform' })
       .setProtectedHeader({ alg: 'HS256' })
       .setSubject(admin.id)

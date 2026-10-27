@@ -1,23 +1,25 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useSession } from 'next-auth/react'
 
+import { platformQueryKeys } from '../config/platform-query-keys'
+import { platformFinanceService } from '../services/platform-finance-service'
 import { platformPlanService } from '../services/platform-plan-service'
 import type { UpdatePlatformPlanPayload } from '../types/platform-plan'
 import type { TenantAccountType } from '../types/tenant'
+import { usePlatformActor } from './use-platform-actor'
 
 export function usePlatformPlans() {
-  const { data: session } = useSession()
+  const actor = usePlatformActor()
 
   return useQuery({
-    queryKey: ['platform', 'plans'],
+    queryKey: platformQueryKeys.plans(actor.key),
     queryFn: () => platformPlanService.list(),
-    // Same as the other platform queries: only request once the session token is available.
-    enabled: Boolean(session?.accessToken),
+    enabled: actor.enabled,
   })
 }
 
 export function useUpdatePlatformPlan() {
   const queryClient = useQueryClient()
+  const actor = usePlatformActor()
 
   return useMutation({
     mutationFn: ({
@@ -25,7 +27,16 @@ export function useUpdatePlatformPlan() {
       ...payload
     }: UpdatePlatformPlanPayload & { accountType: TenantAccountType }) =>
       platformPlanService.update(accountType, payload),
-    // Prices change every tenant's monthly charge and the platform revenue.
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['platform'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: platformQueryKeys.all(actor.key) }),
+  })
+}
+
+export function usePlatformFinance() {
+  const actor = usePlatformActor()
+
+  return useQuery({
+    queryKey: platformQueryKeys.finance(actor.key),
+    queryFn: () => platformFinanceService.get(),
+    enabled: actor.enabled,
   })
 }

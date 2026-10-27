@@ -1,4 +1,4 @@
-import type { SystemHealth } from '../../domain/system-health.entity'
+import type { SystemHealth } from '../../types/system-health'
 import type { DatabaseHealthProbe, ErrorTrackingProvider } from '../ports/system-health.port'
 
 export class GetSystemHealthUseCase {

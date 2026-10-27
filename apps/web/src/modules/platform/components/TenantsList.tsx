@@ -28,39 +28,29 @@ import {
   useMediaQuery,
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useFormatter, useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
-import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
+import { DashboardTablePagination } from '@shared/components/layout'
+import { useDebouncedValue } from '@shared/hooks/use-debounced-value'
+import { useListState } from '@shared/hooks/use-list-state'
 
-import { useTenants } from '../hooks/use-tenants'
+import { tenantSearchDebounceMs, tenantsPageSizeOptions } from '../config/platform-lists'
+import { usePlatformActor } from '../hooks/use-platform-actor'
+import { useTenantsPage } from '../hooks/use-tenants'
 import type { MonthlyCharge } from '../types/platform-plan'
-import {
-  TENANT_ACCOUNT_TYPES,
-  TENANT_STATUSES,
-  type PlatformTenant,
-  type TenantAccountType,
-  type TenantStatus,
-} from '../types/tenant'
+import { TENANT_ACCOUNT_TYPES, TENANT_STATUSES, type PlatformTenant } from '../types/tenant'
 import { accountInitials } from '../utils/account-type-icons'
-import { tenantStatusChipColor } from '../utils/tenant-status'
+import { tenantStatusChipColor, toTenantTypeFilter } from '../utils/tenant-status'
 import { EditTenantAccountDialog } from './EditTenantAccountDialog'
-
-type StatusFilter = 'ALL' | TenantStatus
-export type TenantTypeFilter = 'ALL' | TenantAccountType
-
-export interface TenantsListFilters {
-  query: string
-  accountType: TenantTypeFilter
-  onClear: () => void
-}
-
-interface TenantsListProps {
-  // Search and account type come from the page header (TenantsFilters); the list adds the status
-  // tabs. Without filters (the overview) it shows the plain list.
-  filters?: TenantsListFilters
-}
+import { styles } from '../styles/tenants-list.styles'
+import type {
+  StatusFilter,
+  TenantsFiltersProps,
+  TenantsListProps,
+  TenantsListState,
+} from '../types/tenant'
 
 export function TenantsList({ filters }: TenantsListProps) {
   const t = useTranslations('platform.dashboard')
@@ -70,11 +60,28 @@ export function TenantsList({ filters }: TenantsListProps) {
   const plansT = useTranslations('platform.plans')
   const format = useFormatter()
   const [editingTenant, setEditingTenant] = useState<PlatformTenant | null>(null)
-  const [status, setStatus] = useState<StatusFilter>('ALL')
-  const query = filters?.query ?? ''
+  const { canManage } = usePlatformActor()
+  const q = useDebouncedValue((filters?.query ?? '').trim(), tenantSearchDebounceMs)
   const accountType = filters?.accountType ?? 'ALL'
-  const { data: tenants, isPending, isError } = useTenants()
-  // On phones the six columns do not fit: each account becomes a stacked row instead.
+  const scope = `${q}|${accountType}`
+  const { filters: list, updateFilters } = useListState<TenantsListState>({
+    status: 'ALL',
+    page: 1,
+    pageSize: tenantsPageSizeOptions[0],
+    scope,
+  })
+  const status = list.scope === scope ? list.status : 'ALL'
+  const page = list.scope === scope ? list.page : 1
+  const { data, isPending, isError } = useTenantsPage({
+    q: q || undefined,
+    status: status === 'ALL' ? undefined : status,
+    accountType: accountType === 'ALL' ? undefined : accountType,
+    page,
+    pageSize: list.pageSize,
+  })
+  const tenants = data?.tenants
+  const visibleTenants = tenants ?? []
+  const filtered = Boolean(q) || accountType !== 'ALL' || status !== 'ALL'
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
@@ -92,68 +99,36 @@ export function TenantsList({ filters }: TenantsListProps) {
         )
       : plansT('chargeBaseOnly')
 
-  const statusCounts = useMemo(() => {
-    const counts: Record<StatusFilter, number> = {
-      ALL: tenants?.length ?? 0,
-      TRIAL: 0,
-      ACTIVE: 0,
-      SUSPENDED: 0,
-      CANCELED: 0,
-    }
-    for (const tenant of tenants ?? []) counts[tenant.status] += 1
-    return counts
-  }, [tenants])
-
-  const visibleTenants = useMemo(() => {
-    const search = query.trim().toLocaleLowerCase()
-    return (tenants ?? []).filter(
-      (tenant) =>
-        (status === 'ALL' || tenant.status === status) &&
-        (accountType === 'ALL' || tenant.accountType === accountType) &&
-        (!search ||
-          tenant.name.toLocaleLowerCase().includes(search) ||
-          tenant.slug.includes(search)),
-    )
-  }, [tenants, query, status, accountType])
+  const statusCounts: Record<StatusFilter, number> = {
+    ALL: TENANT_STATUSES.reduce((total, item) => total + (data?.statusCounts[item] ?? 0), 0),
+    TRIAL: data?.statusCounts.TRIAL ?? 0,
+    ACTIVE: data?.statusCounts.ACTIVE ?? 0,
+    SUSPENDED: data?.statusCounts.SUSPENDED ?? 0,
+    CANCELED: data?.statusCounts.CANCELED ?? 0,
+  }
 
   const clearFilters = () => {
-    setStatus('ALL')
+    updateFilters({ status: 'ALL', page: 1, scope })
     filters?.onClear()
   }
 
   return (
-    <Card
-      variant="outlined"
-      sx={{
-        bgcolor: surface.paper,
-        borderColor: alpha.graphite[6],
-        borderRadius: `${radius.sm}px`,
-        boxShadow: shadows.propertyCard,
-      }}
-    >
-      {filters && tenants && tenants.length > 0 ? (
-        <Stack
-          direction="row"
-          alignItems="center"
-          sx={{
-            borderBottom: '1px solid',
-            borderColor: alpha.graphite[6],
-            pr: { xs: 1.6, md: 2.2 },
-          }}
-        >
+    <Card variant="outlined" sx={styles.card}>
+      {filters && data && (statusCounts.ALL > 0 || filtered) ? (
+        <Stack direction="row" alignItems="center" sx={styles.stack}>
           <Tabs
             value={status}
-            onChange={(_, value: StatusFilter) => setStatus(value)}
+            onChange={(_, value: StatusFilter) => updateFilters({ status: value, page: 1, scope })}
             variant="scrollable"
             allowScrollButtonsMobile
             aria-label={tenantsT('filters.statusLabel')}
-            sx={{ px: { xs: 1, md: 1.6 }, minHeight: 48, flex: 1, minWidth: 0 }}
+            sx={styles.tabs}
           >
             {(['ALL', ...TENANT_STATUSES] as const).map((item) => (
               <Tab
                 key={item}
                 value={item}
-                sx={{ textTransform: 'none', fontWeight: 700, minHeight: 48 }}
+                sx={styles.tab}
                 label={
                   <Stack direction="row" spacing={0.8} alignItems="center">
                     <span>
@@ -161,75 +136,50 @@ export function TenantsList({ filters }: TenantsListProps) {
                         ? tenantsT('filters.allStatuses')
                         : accountT(`statuses.${item}`)}
                     </span>
-                    <Chip
-                      size="small"
-                      label={statusCounts[item]}
-                      sx={{ height: 20, fontWeight: 800 }}
-                    />
+                    <Chip size="small" label={statusCounts[item]} sx={styles.chip} />
                   </Stack>
                 }
               />
             ))}
           </Tabs>
-          <Typography
-            sx={{
-              display: { xs: 'none', sm: 'block' },
-              color: brand.neutral[500],
-              fontSize: 13,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {tenantsT('count', { count: visibleTenants.length })}
+          <Typography sx={styles.typography}>
+            {tenantsT('count', { count: data.totalCount })}
           </Typography>
         </Stack>
       ) : null}
 
       {isPending ? (
-        <Stack alignItems="center" sx={{ py: 6 }}>
+        <Stack alignItems="center" sx={styles.stack2}>
           <CircularProgress size={28} />
         </Stack>
       ) : isError ? (
-        <Stack sx={{ py: 6 }} alignItems="center">
+        <Stack sx={styles.stack2} alignItems="center">
           <Typography color="text.secondary">{t('loadError')}</Typography>
         </Stack>
-      ) : tenants && tenants.length > 0 && visibleTenants.length === 0 ? (
-        <Stack alignItems="center" spacing={1} sx={{ py: 6, px: 3, textAlign: 'center' }}>
-          <Typography sx={{ color: brand.graphite[500], fontSize: 15, fontWeight: 800 }}>
-            {tenantsT('noResults')}
-          </Typography>
+      ) : visibleTenants.length === 0 && filtered ? (
+        <Stack alignItems="center" spacing={1} sx={styles.stack3}>
+          <Typography sx={styles.typography2}>{tenantsT('noResults')}</Typography>
           <Button size="small" variant="outlined" color="secondary" onClick={clearFilters}>
             {tenantsT('clearFilters')}
           </Button>
         </Stack>
-      ) : tenants && tenants.length > 0 && isMobile ? (
-        <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+      ) : visibleTenants.length > 0 && isMobile ? (
+        <Box component="ul" sx={styles.box}>
           {visibleTenants.map((tenant) => (
-            <Stack
-              component="li"
-              key={tenant.id}
-              direction="row"
-              spacing={1.3}
-              sx={{
-                px: 2,
-                py: 1.6,
-                borderBottom: '1px solid',
-                borderColor: alpha.graphite[6],
-                '&:last-of-type': { borderBottom: 0 },
-              }}
-            >
-              <Avatar aria-hidden sx={avatarSx}>
+            <Stack component="li" key={tenant.id} direction="row" spacing={1.3} sx={styles.stack4}>
+              <Avatar aria-hidden sx={styles.avatar}>
                 {accountInitials(tenant.name)}
               </Avatar>
-              <Box sx={{ minWidth: 0, flex: 1 }}>
+              <Box sx={styles.box2}>
                 <Box
                   component={Link}
                   href={{ pathname: '/platform/tenants/[id]', params: { id: tenant.id } }}
-                  sx={nameLinkSx}
+                  sx={styles.nameLink}
                 >
                   {tenant.name}
                 </Box>
-                <Typography sx={{ ...slugSx, overflowWrap: 'anywhere' }}>{tenant.slug}</Typography>
-                <Stack direction="row" spacing={0.8} alignItems="center" sx={{ mt: 1 }}>
+                <Typography sx={styles.typography3}>{tenant.slug}</Typography>
+                <Stack direction="row" spacing={0.8} alignItems="center" sx={styles.stack5}>
                   <Chip
                     size="small"
                     variant="outlined"
@@ -243,29 +193,29 @@ export function TenantsList({ filters }: TenantsListProps) {
                   />
                 </Stack>
                 {tenant.monthlyCharge ? (
-                  <Typography
-                    sx={{ color: brand.graphite[500], fontSize: 13.5, fontWeight: 800, mt: 0.8 }}
-                  >
+                  <Typography sx={styles.typography4}>
                     {formatPrice(tenant.monthlyCharge.total)}
-                    <Box component="span" sx={{ color: brand.neutral[500], fontWeight: 500 }}>
+                    <Box component="span" sx={styles.box3}>
                       {' · '}
                       {describeCharge(tenant.monthlyCharge)}
                     </Box>
                   </Typography>
                 ) : null}
               </Box>
-              <IconButton
-                size="small"
-                aria-label={accountT('editAction', { name: tenant.name })}
-                onClick={() => setEditingTenant(tenant)}
-                sx={{ color: brand.neutral[500], alignSelf: 'flex-start' }}
-              >
-                <EditOutlinedIcon sx={{ fontSize: iconSize.sm }} />
-              </IconButton>
+              {canManage ? (
+                <IconButton
+                  size="small"
+                  aria-label={accountT('editAction', { name: tenant.name })}
+                  onClick={() => setEditingTenant(tenant)}
+                  sx={styles.iconButton}
+                >
+                  <EditOutlinedIcon sx={styles.editOutlinedIcon} />
+                </IconButton>
+              ) : null}
             </Stack>
           ))}
         </Box>
-      ) : tenants && tenants.length > 0 ? (
+      ) : visibleTenants.length > 0 ? (
         <TableContainer>
           <Table>
             <TableHead>
@@ -276,7 +226,7 @@ export function TenantsList({ filters }: TenantsListProps) {
                 <TableCell align="right">{accountT('fields.monthlyCharge')}</TableCell>
                 <TableCell>{t('createdAt')}</TableCell>
                 <TableCell align="right">
-                  <Box component="span" sx={visuallyHiddenSx}>
+                  <Box component="span" sx={styles.visuallyHidden}>
                     {accountT('actions')}
                   </Box>
                 </TableCell>
@@ -286,19 +236,19 @@ export function TenantsList({ filters }: TenantsListProps) {
               {visibleTenants.map((tenant) => (
                 <TableRow key={tenant.id} hover>
                   <TableCell>
-                    <Stack direction="row" spacing={1.3} alignItems="center" sx={{ minWidth: 220 }}>
-                      <Avatar aria-hidden sx={avatarSx}>
+                    <Stack direction="row" spacing={1.3} alignItems="center" sx={styles.stack6}>
+                      <Avatar aria-hidden sx={styles.avatar}>
                         {accountInitials(tenant.name)}
                       </Avatar>
-                      <Box sx={{ minWidth: 0 }}>
+                      <Box sx={styles.box4}>
                         <Box
                           component={Link}
                           href={{ pathname: '/platform/tenants/[id]', params: { id: tenant.id } }}
-                          sx={nameLinkSx}
+                          sx={styles.nameLink}
                         >
                           {tenant.name}
                         </Box>
-                        <Typography sx={slugSx}>{tenant.slug}</Typography>
+                        <Typography sx={styles.slug}>{tenant.slug}</Typography>
                       </Box>
                     </Stack>
                   </TableCell>
@@ -311,10 +261,10 @@ export function TenantsList({ filters }: TenantsListProps) {
                       label={accountT(`statuses.${tenant.status}`)}
                     />
                   </TableCell>
-                  <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                  <TableCell align="right" sx={styles.tableCell}>
                     {tenant.monthlyCharge ? (
                       <Tooltip title={describeCharge(tenant.monthlyCharge)}>
-                        <Box component="span" sx={{ fontWeight: 700 }}>
+                        <Box component="span" sx={styles.box5}>
                           {formatPrice(tenant.monthlyCharge.total)}
                         </Box>
                       </Tooltip>
@@ -322,20 +272,22 @@ export function TenantsList({ filters }: TenantsListProps) {
                       '—'
                     )}
                   </TableCell>
-                  <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                  <TableCell sx={styles.tableCell}>
                     {format.dateTime(new Date(tenant.createdAt))}
                   </TableCell>
                   <TableCell align="right">
-                    <Tooltip title={accountT('editAction', { name: tenant.name })}>
-                      <IconButton
-                        size="small"
-                        aria-label={accountT('editAction', { name: tenant.name })}
-                        onClick={() => setEditingTenant(tenant)}
-                        sx={{ color: brand.neutral[500] }}
-                      >
-                        <EditOutlinedIcon sx={{ fontSize: iconSize.sm }} />
-                      </IconButton>
-                    </Tooltip>
+                    {canManage ? (
+                      <Tooltip title={accountT('editAction', { name: tenant.name })}>
+                        <IconButton
+                          size="small"
+                          aria-label={accountT('editAction', { name: tenant.name })}
+                          onClick={() => setEditingTenant(tenant)}
+                          sx={styles.iconButton2}
+                        >
+                          <EditOutlinedIcon sx={styles.editOutlinedIcon} />
+                        </IconButton>
+                      </Tooltip>
+                    ) : null}
                   </TableCell>
                 </TableRow>
               ))}
@@ -343,10 +295,20 @@ export function TenantsList({ filters }: TenantsListProps) {
           </Table>
         </TableContainer>
       ) : (
-        <Stack sx={{ py: 6 }} alignItems="center">
+        <Stack sx={styles.stack2} alignItems="center">
           <Typography color="text.secondary">{t('empty')}</Typography>
         </Stack>
       )}
+      {data && data.totalCount > data.pageSize ? (
+        <DashboardTablePagination
+          count={data.totalCount}
+          page={page}
+          rowsPerPage={list.pageSize}
+          rowsPerPageOptions={[...tenantsPageSizeOptions]}
+          onPageChange={(nextPage) => updateFilters({ status, page: nextPage, scope })}
+          onRowsPerPageChange={(pageSize) => updateFilters({ status, page: 1, pageSize, scope })}
+        />
+      ) : null}
       {editingTenant ? (
         <EditTenantAccountDialog tenant={editingTenant} onClose={() => setEditingTenant(null)} />
       ) : null}
@@ -354,48 +316,12 @@ export function TenantsList({ filters }: TenantsListProps) {
   )
 }
 
-const avatarSx = {
-  width: 34,
-  height: 34,
-  bgcolor: alpha.magenta[8],
-  color: brand.magenta[500],
-  fontSize: 12.5,
-  fontWeight: 800,
-}
-const nameLinkSx = {
-  color: brand.graphite[500],
-  fontWeight: 700,
-  textDecoration: 'none',
-  '&:hover': { color: brand.magenta[500], textDecoration: 'underline' },
-}
-const slugSx = { color: brand.neutral[500], fontSize: 12, fontFamily: 'monospace' }
-
-// Accessible name for the actions column without showing a header.
-const visuallyHiddenSx = {
-  border: 0,
-  clip: 'rect(0 0 0 0)',
-  height: '1px',
-  margin: '-1px',
-  overflow: 'hidden',
-  padding: 0,
-  position: 'absolute',
-  whiteSpace: 'nowrap',
-  width: '1px',
-} as const
-
-// Search and account type filter, shown in the tenants page header next to "New account". Same
-// sizes as the platform users page filters.
 export function TenantsFilters({
   query,
   accountType,
   onQueryChange,
   onAccountTypeChange,
-}: {
-  query: string
-  accountType: TenantTypeFilter
-  onQueryChange: (query: string) => void
-  onAccountTypeChange: (accountType: TenantTypeFilter) => void
-}) {
+}: TenantsFiltersProps) {
   const tenantsT = useTranslations('platform.tenants')
   const accountT = useTranslations('platform.account')
 
@@ -406,13 +332,13 @@ export function TenantsFilters({
         onChange={(event) => onQueryChange(event.target.value)}
         placeholder={tenantsT('search.placeholder')}
         size="small"
-        sx={filterSearchSx}
+        sx={styles.filterSearch}
         slotProps={{
           htmlInput: { 'aria-label': tenantsT('search.label') },
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <SearchRoundedIcon sx={{ color: brand.neutral[400], fontSize: 18 }} />
+                <SearchRoundedIcon sx={styles.searchRoundedIcon} />
               </InputAdornment>
             ),
           },
@@ -420,9 +346,9 @@ export function TenantsFilters({
       />
       <Select
         value={accountType}
-        onChange={(event) => onAccountTypeChange(event.target.value as TenantTypeFilter)}
+        onChange={(event) => onAccountTypeChange(toTenantTypeFilter(event.target.value))}
         inputProps={{ 'aria-label': tenantsT('filters.typeLabel') }}
-        sx={filterSelectSx}
+        sx={styles.filterSelect}
       >
         <MenuItem value="ALL">{tenantsT('filters.allTypes')}</MenuItem>
         {TENANT_ACCOUNT_TYPES.map((type) => (
@@ -433,24 +359,4 @@ export function TenantsFilters({
       </Select>
     </>
   )
-}
-
-const filterSearchSx = {
-  flex: { sm: 1 },
-  width: { xs: '100%', sm: 'auto' },
-  maxWidth: { sm: 360 },
-  minWidth: { lg: 280 },
-  '& .MuiInputBase-root': {
-    height: { xs: 40, sm: 32 },
-    borderRadius: `${radius.sm}px`,
-    bgcolor: surface.paper,
-    fontSize: 12,
-  },
-}
-const filterSelectSx = {
-  minWidth: { xs: '100%', sm: 170 },
-  height: { xs: 40, sm: 32 },
-  borderRadius: `${radius.sm}px`,
-  bgcolor: surface.paper,
-  fontSize: 12,
 }

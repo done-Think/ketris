@@ -63,7 +63,6 @@
       "collapseNavigation": "Recolher navegação",
       "expandNavigation": "Expandir navegação",
       "collapseMenu": "Recolher menu",
-      "admin": "SUPER ADMIN",
       "overview": "Visão geral",
       "tenants": "Tenants",
       "users": "Usuários",
@@ -88,14 +87,6 @@
       },
       "churn": {
         "label": "Churn (mês)"
-      },
-      "uptime": {
-        "label": "Uptime da plataforma"
-      },
-      "indicators": {
-        "growth": "+15%",
-        "stable": "Estável",
-        "normal": "Normal"
       }
     },
     "growth": {
@@ -237,15 +228,12 @@
     "name": "Nome",
     "email": "E-mail",
     "role": "Função",
-    "unavailable": "Não disponível",
     "loadError": "Não foi possível carregar os administradores.",
     "emptyTitle": "Nenhum administrador",
     "emptyDescription": "Ainda não existem administradores cadastrados na plataforma.",
     "noResultsTitle": "Nenhum usuário encontrado",
     "noResultsDescription": "Não encontramos administradores que correspondam aos filtros selecionados.",
     "clearFilters": "Limpar filtros",
-    "editUnavailable": "Editar (em breve)",
-    "passwordUnavailable": "Alterar senha (em breve)",
     "deactivate": "Desativar",
     "activate": "Ativar",
     "editRegistration": "Alterar cadastro",
@@ -266,7 +254,8 @@
       "lastAccess": "Último acesso",
       "createdAt": "Criado em",
       "actions": "Ações"
-    }
+    },
+    "neverAccessed": "Nunca acessou"
   },
   "forms": {
     "name": "Nome",
@@ -376,7 +365,8 @@
     "save": "Salvar",
     "cancel": "Cancelar",
     "updateSuccess": "Plano atualizado.",
-    "updateError": "Não foi possível atualizar o plano."
+    "updateError": "Não foi possível atualizar o plano.",
+    "updatedBy": "Alterado por {name} em {date}"
   },
   "finance": {
     "title": "Financeiro",
@@ -451,6 +441,7 @@
     "submit": "Criar conta",
     "cancel": "Cancelar",
     "createSuccess": "Conta {name} criada com sucesso.",
-    "createError": "Não foi possível criar a conta. Tente novamente."
+    "createError": "Não foi possível criar a conta. Tente novamente.",
+    "forbidden": "Só administradores com o papel Admin podem criar contas."
   }
 }

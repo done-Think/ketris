@@ -22,6 +22,7 @@ import {
   createPlatformSignInSchema,
   type PlatformSignInFormValues,
 } from '../schemas/platform-sign-in-schema'
+import { styles } from '../styles/platform-sign-in-form.styles'
 
 export function PlatformSignInForm() {
   const t = useTranslations('platform.login')
@@ -74,8 +75,8 @@ export function PlatformSignInForm() {
 
   return (
     <Box>
-      <Box sx={{ mb: { xs: 2, md: 3.25 }, textAlign: { xs: 'center', md: 'left' } }}>
-        <Typography variant="h3" component="h1" sx={{ mb: 0.5, ...componentText.authTitle }}>
+      <Box sx={styles.box}>
+        <Typography variant="h3" component="h1" sx={styles.typography}>
           {t('title')}
         </Typography>
         <Typography color="text.secondary" variant="body2" sx={componentText.authBody}>
@@ -119,7 +120,7 @@ export function PlatformSignInForm() {
           </AuthFormField>
 
           {formError ? (
-            <Alert severity="error" role="alert" sx={{ mt: 0.75 }}>
+            <Alert severity="error" role="alert" sx={styles.alert}>
               {formError}
             </Alert>
           ) : null}
@@ -140,12 +141,7 @@ export function PlatformSignInForm() {
         </Button>
       </Box>
 
-      <Typography
-        variant="body2"
-        color="text.secondary"
-        textAlign="center"
-        sx={{ mt: { xs: 2.5, md: 3 }, ...componentText.authBody }}
-      >
+      <Typography variant="body2" color="text.secondary" textAlign="center" sx={styles.typography2}>
         {t('restrictedAccess')}
       </Typography>
     </Box>

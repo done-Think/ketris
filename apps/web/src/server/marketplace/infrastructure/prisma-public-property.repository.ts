@@ -127,7 +127,6 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
       ]
     }
 
-    // The id tiebreaker keeps pages stable when several properties share the sort value.
     const [imoveis, totalCount] = await prisma.$transaction([
       prisma.imovel.findMany({
         where,
