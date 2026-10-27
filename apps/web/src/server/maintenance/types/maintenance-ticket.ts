@@ -9,9 +9,6 @@ export type MaintenanceTicketStatus =
   | 'CANCELADO'
   | 'FECHADO'
 
-export type MaintenanceTicketCategory =
-  'PLUMBING' | 'ELECTRICAL' | 'STRUCTURAL' | 'PAINTING' | 'OTHER'
-
 export interface MaintenanceActor {
   actorTenantId: string
   actorId: string
@@ -20,6 +17,7 @@ export interface MaintenanceActor {
 }
 
 export interface MaintenanceProvider {
+  id?: string
   name: string
   phone?: string | null
   email?: string | null
@@ -91,6 +89,7 @@ export type MaintenanceActivityType =
   | 'RESTAURACAO'
 
 export interface MaintenanceActivity {
+  systemAction?: string | null
   id: string
   ticketId: string
   type: MaintenanceActivityType
@@ -123,7 +122,7 @@ export interface MaintenanceTicket {
   replacementRequests: MaintenanceReplacementRequest[]
   permissions?: MaintenancePermissions
   access: { agentId: string; ownerId: string | null; renterIds: string[]; validContract: boolean }
-  category: MaintenanceTicketCategory
+  category: string
   priority: MaintenanceTicketPriority
   status: MaintenanceTicketStatus
   title: string
@@ -148,7 +147,7 @@ export interface MaintenanceTicketListItem {
   responsibleName: string | null
   deletedAt: Date | null
   permissions: MaintenancePermissions
-  category: MaintenanceTicketCategory
+  category: string
   priority: MaintenanceTicketPriority
   status: MaintenanceTicketStatus
   title: string
@@ -159,17 +158,20 @@ export interface MaintenanceTicketListItem {
 }
 
 export interface MaintenanceTicketListResult {
+  summary: import('./maintenance-summary').MaintenanceSummary
+  pagination: import('./maintenance-summary').MaintenancePagination
   items: MaintenanceTicketListItem[]
   totalCount: number
 }
 
 export interface MaintenanceTicketListFilters {
+  locale?: 'pt-BR' | 'en-US' | 'es-ES'
   tenantId: string
   actor: MaintenanceActor
   archived?: boolean
   status?: MaintenanceTicketStatus
   priority?: MaintenanceTicketPriority
-  category?: MaintenanceTicketCategory
+  category?: string
   propertyId?: string
   search?: string
   page?: number
@@ -181,7 +183,7 @@ export interface NewMaintenanceTicket {
   tenantId: string
   propertyId: string
   contractId: string
-  category: MaintenanceTicketCategory
+  category: string
   priority: MaintenanceTicketPriority
   title: string
   description: string
@@ -193,13 +195,15 @@ export interface MaintenanceTicketUpdate {
   scheduledAt?: Date | null
   propertyId?: string
   contractId?: string
-  category?: MaintenanceTicketCategory
+  category?: string
   priority?: MaintenanceTicketPriority
   title?: string
   description?: string
 }
 
 export interface NewMaintenanceActivity {
+  systemAction?: string
+  authorRole?: Papel
   type: MaintenanceActivityType
   message: string
   authorId: string | null
@@ -245,6 +249,7 @@ export type MaintenanceAction =
   | { action: 'rejectReplacement'; requestId: string; reason: string }
 
 export interface NewMaintenanceAttachment {
+  uploadId?: string
   name: string
   url: string
   authorId: string | null
@@ -266,14 +271,4 @@ export interface MaintenanceUserLinkInput {
 export interface MaintenanceResponsibleUser {
   id: string
   role: string
-}
-
-// What the API returns: the internal access data is dropped and the actor's permissions added.
-export type PublicMaintenanceTicket = Omit<MaintenanceTicket, 'access'> & {
-  permissions: MaintenancePermissions
-}
-
-export interface MaintenanceAttachmentObject {
-  body: Uint8Array
-  contentType: string
 }

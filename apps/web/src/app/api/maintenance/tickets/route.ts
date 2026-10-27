@@ -1,6 +1,3 @@
-import type { NextRequest } from 'next/server'
-import { NextResponse } from 'next/server'
-
 import { maintenanceContainer } from '@server/maintenance/container'
 import { requireMaintenanceActor } from '@server/maintenance/require-maintenance-actor'
 import {
@@ -8,6 +5,8 @@ import {
   listMaintenanceTicketsQuerySchema,
 } from '@server/maintenance/schemas/maintenance-ticket-input.schema'
 import { parseJsonBody, parseQuery, withErrorHandling } from '@server/shared/http'
+import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 
 export const GET = withErrorHandling(async (request: NextRequest) => {
   const actor = await requireMaintenanceActor(request)
@@ -17,10 +16,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     tenantId: actor.actorTenantId,
     actor,
   })
-
   return NextResponse.json(result)
 })
-
 export const POST = withErrorHandling(async (request: NextRequest) => {
   const actor = await requireMaintenanceActor(request)
   const body = await parseJsonBody(request, createMaintenanceTicketRequestSchema)
@@ -28,6 +25,5 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     ...actor,
     ...body,
   })
-
-  return NextResponse.json({ ticket }, { status: 201 })
+  return NextResponse.json({ ticket: ticket }, { status: 201 })
 })

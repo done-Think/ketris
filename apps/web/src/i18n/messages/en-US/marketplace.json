@@ -250,6 +250,7 @@
       "submit": "Send",
       "success": "Message sent! The agent will reach out soon.",
       "error": "Could not send your message. Please try again.",
+      "rateLimited": "You have sent too many messages in a short time. Please wait a few minutes and try again.",
       "errors": {
         "nameRequired": "Enter your name",
         "emailInvalid": "Enter a valid email",

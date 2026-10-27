@@ -1,18 +1,16 @@
 import type {
-  MaintenanceResponsibleUser,
-  MaintenanceUserLinkInput,
-} from '../../types/maintenance-ticket'
-import type {
-  MaintenanceActor,
   MaintenanceActivity,
+  MaintenanceActor,
   MaintenanceAttachment,
   MaintenanceContract,
   MaintenanceMutation,
   MaintenanceOptions,
   MaintenanceRequestMutation,
+  MaintenanceResponsibleUser,
   MaintenanceTicket,
   MaintenanceTicketListFilters,
   MaintenanceTicketListResult,
+  MaintenanceUserLinkInput,
   NewMaintenanceActivity,
   NewMaintenanceAttachment,
   NewMaintenanceTicket,

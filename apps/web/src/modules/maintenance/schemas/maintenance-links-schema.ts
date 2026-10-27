@@ -1,21 +1,26 @@
-import { z } from 'zod'
-
 import type { SchemaMessageTranslator } from '@shared/types'
+import { z } from 'zod'
 
 export function createMaintenanceLinksSchema(t: SchemaMessageTranslator) {
   return z
     .object({
-      contractId: z.string().min(1, t('contractRequired')),
+      contractId: z.string().min(1, t('required')),
       ownerId: z.string(),
       partyId: z.string(),
       renterId: z.string(),
     })
-    .refine((values) => !values.partyId || values.renterId, {
-      path: ['renterId'],
-      message: t('renterRequired'),
-    })
-    .refine((values) => values.ownerId || values.partyId, {
-      path: ['ownerId'],
-      message: t('nothingToLink'),
+    .superRefine((values, context) => {
+      if (values.partyId && !values.renterId)
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['renterId'],
+          message: t('required'),
+        })
+      if (!values.ownerId && !(values.partyId && values.renterId))
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['ownerId'],
+          message: t('linkRequired'),
+        })
     })
 }

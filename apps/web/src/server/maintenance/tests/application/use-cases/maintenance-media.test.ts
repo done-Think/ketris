@@ -1,26 +1,25 @@
 import { describe, expect, it, vi } from 'vitest'
-import { MaintenanceTicketNotFoundError } from '../../../domain/errors'
 import { GetMaintenanceAttachmentUseCase } from '../../../application/use-cases/get-maintenance-attachment.use-case'
+import { MaintenanceTicketNotFoundError } from '../../../domain/errors'
 import { admin, renter, repository } from '../../fixtures/maintenance-ticket'
 
 function storage(found = true) {
   return {
-    upload: vi.fn(),
     download: vi
       .fn()
-      .mockResolvedValue(found ? { body: new Uint8Array([1]), contentType: 'image/png' } : null),
+      .mockResolvedValue(found ? { url: 'https://private.example.test/file' } : null),
   }
 }
 
 describe('Maintenance private media', () => {
-  it('downloads the object of an attachment the actor can see', async () => {
+  it('authorizes the attachment before returning its temporary private URL', async () => {
     const repo = repository()
     const files = storage()
     const result = await new GetMaintenanceAttachmentUseCase(repo, files).execute({
       ...renter,
-      keyParts: ['maintenance', 'tenant-1', 'a.png'],
+      key: ['maintenance', 'tenant-1', 'a.png'],
     })
-    expect(result).toEqual({ body: new Uint8Array([1]), contentType: 'image/png' })
+    expect(result).toEqual({ url: 'https://private.example.test/file' })
     expect(repo.findAttachmentTicket).toHaveBeenCalledWith(
       renter,
       '/api/maintenance/media/maintenance/tenant-1/a.png',
@@ -32,26 +31,21 @@ describe('Maintenance private media', () => {
     await expect(
       new GetMaintenanceAttachmentUseCase(repository(), storage(false)).execute({
         ...admin,
-        keyParts: ['maintenance', 'tenant-1', 'a.png'],
+        key: ['maintenance', 'tenant-1', 'a.png'],
       }),
     ).resolves.toBeNull()
   })
 
-  it('refuses keys whose tenant differs from the ticket and never reaches storage', async () => {
+  it('refuses another ticket tenant and unauthorized actors before reaching storage', async () => {
     const files = storage()
-    await expect(
-      new GetMaintenanceAttachmentUseCase(repository(), files).execute({
-        ...renter,
-        keyParts: ['maintenance', 'other-tenant', 'a.png'],
-      }),
-    ).rejects.toBeInstanceOf(MaintenanceTicketNotFoundError)
-    await expect(
-      new GetMaintenanceAttachmentUseCase(repository(), files).execute({
-        ...renter,
-        actorId: 'stranger',
-        keyParts: ['maintenance', 'tenant-1', 'a.png'],
-      }),
-    ).rejects.toBeInstanceOf(MaintenanceTicketNotFoundError)
+    for (const input of [
+      { ...renter, key: ['maintenance', 'other-tenant', 'a.png'] },
+      { ...renter, actorId: 'stranger', key: ['maintenance', 'tenant-1', 'a.png'] },
+    ]) {
+      await expect(
+        new GetMaintenanceAttachmentUseCase(repository(), files).execute(input),
+      ).rejects.toBeInstanceOf(MaintenanceTicketNotFoundError)
+    }
     expect(files.download).not.toHaveBeenCalled()
   })
 })

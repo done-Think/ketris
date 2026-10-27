@@ -1,15 +1,12 @@
 import { ConflictError } from '@server/shared/errors'
-
-import type { MaintenanceTicketRepository } from '../ports/maintenance-ticket-repository.port'
-import type { PublicMaintenanceTicket } from '../../types/maintenance-ticket'
 import type { CreateMaintenanceTicketInput } from '../../types/use-case-inputs'
-import { toPublicMaintenanceTicket } from '../maintenance-ticket-response'
+import type { MaintenanceTicketRepository } from '../ports/maintenance-ticket-repository.port'
+import { publicTicket } from '../present-maintenance-ticket'
 import { validateContract } from '../workflow'
 
 export class CreateMaintenanceTicketUseCase {
   constructor(private readonly repository: MaintenanceTicketRepository) {}
-
-  async execute(input: CreateMaintenanceTicketInput): Promise<PublicMaintenanceTicket> {
+  async execute(input: CreateMaintenanceTicketInput) {
     const contract = await validateContract(
       this.repository,
       input,
@@ -18,7 +15,6 @@ export class CreateMaintenanceTicketUseCase {
     )
     if (input.scheduledAt)
       throw new ConflictError('Defina um prestador antes de agendar o atendimento.')
-
     const ticket = await this.repository.create({
       tenantId: contract.tenantId,
       contractId: contract.id,
@@ -31,7 +27,6 @@ export class CreateMaintenanceTicketUseCase {
       openedById: input.actorId,
       openedByName: input.actorName,
     })
-
-    return toPublicMaintenanceTicket(ticket, input)
+    return publicTicket(ticket, input)
   }
 }

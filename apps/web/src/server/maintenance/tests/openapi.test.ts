@@ -1,6 +1,6 @@
+import { OpenAPIRegistry, OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
-import { OpenAPIRegistry, OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi'
 import { expect, it } from 'vitest'
 import { registerMaintenanceOpenApi } from '../openapi'
 
@@ -21,7 +21,7 @@ function generateDocument() {
   })
 }
 
-it('documenta cada método HTTP real de Manutenção, incluindo anexos e mídia privada', () => {
+it('documents every Maintenance HTTP route, including providers and direct uploads', () => {
   const document = generateDocument()
   const directory = join(process.cwd(), 'src/app/api/maintenance')
   for (const file of routeFiles(directory)) {
@@ -32,18 +32,18 @@ it('documenta cada método HTTP real de Manutenção, incluindo anexos e mídia 
       .replace(/\[(?:\.\.\.)?(\w+)\]/g, '{$1}')}`
     for (const [, method] of readFileSync(file, 'utf8').matchAll(
       /export const (GET|POST|PATCH|DELETE|PUT)\b/g,
-    ))
+    )) {
       expect(document.paths[path], `${method} ${path}`).toHaveProperty(method.toLowerCase())
+    }
   }
 })
 
-it('documenta o upload multipart, o filtro de categoria e o resolve sem corpo', () => {
+it('documents category filtering, private redirects and an optional resolution body', () => {
   const document = generateDocument()
-  expect(document.paths['/maintenance/tickets/{id}/attachments']?.post?.requestBody).toMatchObject({
-    required: true,
-    content: { 'multipart/form-data': expect.anything() },
+  expect(document.paths['/maintenance/media/{key}']?.get?.responses).toHaveProperty('302')
+  expect(document.paths['/maintenance/tickets/{id}/resolve']?.post?.requestBody).toMatchObject({
+    required: false,
   })
-  expect(document.paths['/maintenance/tickets/{id}/resolve']?.post?.requestBody).toBeUndefined()
   expect(document.paths['/maintenance/tickets']?.get?.parameters).toEqual(
     expect.arrayContaining([expect.objectContaining({ name: 'category', in: 'query' })]),
   )

@@ -1,13 +1,22 @@
-import { setupMaintenanceIntegration } from '../fixtures/maintenance-api'
-import type { MaintenanceTicketListItem } from '@server/maintenance/types/maintenance-ticket'
-import { describe, expect, it } from 'vitest'
+vi.mock('@server/maintenance/infrastructure/s3-maintenance-attachment-storage', async () => {
+  const { uploadToStorage, downloadFromStorage } = await import('../fixtures/maintenance-storage')
+  return {
+    S3MaintenanceAttachmentStorage: class {
+      upload = uploadToStorage
+      download = downloadFromStorage
+    },
+  }
+})
 import { prisma } from '@server/db/prisma'
-import { GET, POST } from '../../tickets/route'
-import { DELETE, GET as getTicket, PATCH } from '../../tickets/[id]/route'
-import { POST as addNote } from '../../tickets/[id]/notes/route'
-import { GET as listActivities } from '../../tickets/[id]/activities/route'
+import type { MaintenanceTicketListItem } from '@server/maintenance/types/maintenance-ticket'
+import { describe, expect, it, vi } from 'vitest'
 import { GET as options } from '../../options/route'
+import { GET as listActivities } from '../../tickets/[id]/activities/route'
 import { POST as attachFile } from '../../tickets/[id]/attachments/route'
+import { POST as addNote } from '../../tickets/[id]/notes/route'
+import { DELETE, GET as getTicket, PATCH } from '../../tickets/[id]/route'
+import { GET, POST } from '../../tickets/route'
+import { setupMaintenanceIntegration } from '../fixtures/maintenance-api'
 
 describe('/api/maintenance access (database integration)', () => {
   const env = setupMaintenanceIntegration()
@@ -125,43 +134,6 @@ describe('/api/maintenance access (database integration)', () => {
   it('requires authentication', async () =>
     expect((await GET(request('tickets', 'GET'))).status).toBe(401))
 
-  it('filters the list by category code and rejects unknown categories', async () => {
-    const plumbing = await create()
-    const electrical = await POST(
-      request('tickets', 'POST', env.fixture.renter.token, {
-        ...payload,
-        category: 'ELECTRICAL',
-        contractId: env.fixture.contract.id,
-      }),
-    )
-    expect(electrical.status).toBe(201)
-    const electricalId = (await electrical.json()).ticket.id as string
-    const ids = async (query: string) =>
-      (
-        await (await GET(request(`tickets?${query}`, 'GET', env.fixture.admin.token))).json()
-      ).items.map((item: Pick<MaintenanceTicketListItem, 'id'>) => item.id)
-    const onlyElectrical = await ids('category=ELECTRICAL')
-    expect(onlyElectrical).toContain(electricalId)
-    expect(onlyElectrical).not.toContain(plumbing)
-    const onlyPlumbing = await ids('category=PLUMBING')
-    expect(onlyPlumbing).toContain(plumbing)
-    expect(onlyPlumbing).not.toContain(electricalId)
-    expect(
-      (await GET(request('tickets?category=Hidraulica', 'GET', env.fixture.admin.token))).status,
-    ).toBe(400)
-    expect(
-      (
-        await POST(
-          request('tickets', 'POST', env.fixture.renter.token, {
-            ...payload,
-            category: 'Hidraulica',
-            contractId: env.fixture.contract.id,
-          }),
-        )
-      ).status,
-    ).toBe(400)
-  })
-
   it('creates for all linked roles and refuses another tenants contract', async () => {
     for (const user of [
       env.fixture.admin,
@@ -199,7 +171,11 @@ describe('/api/maintenance access (database integration)', () => {
       (await allowed.json()).items.map((item: Pick<MaintenanceTicketListItem, 'id'>) => item.id),
     ).toContain(id)
     const denied = await GET(request('tickets', 'GET', env.fixture.unrelated.token))
-    expect(await denied.json()).toEqual({ items: [], totalCount: 0 })
+    expect(await denied.json()).toMatchObject({
+      items: [],
+      totalCount: 0,
+      summary: { totalCount: 0, urgentCount: 0 },
+    })
     expect(
       (await (await options(request('options', 'GET', env.fixture.unrelated.token))).json())
         .contracts,

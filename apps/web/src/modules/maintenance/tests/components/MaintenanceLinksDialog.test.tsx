@@ -3,14 +3,14 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { MaintenanceLinksDialog } from '../../components/MaintenanceLinksDialog'
-import { useLinkMaintenanceUsers, useMaintenanceOptions } from '../../hooks/use-maintenance'
+import { useRegularizeMaintenanceLinks, useMaintenanceOptions } from '../../hooks/use-maintenance'
 
 const mutateAsync = vi.fn()
 const enqueueSnackbar = vi.fn()
 
 vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar }) }))
 vi.mock('../../hooks/use-maintenance', () => ({
-  useLinkMaintenanceUsers: vi.fn(),
+  useRegularizeMaintenanceLinks: vi.fn(),
   useMaintenanceOptions: vi.fn(),
 }))
 
@@ -49,10 +49,10 @@ describe('MaintenanceLinksDialog', () => {
     vi.mocked(useMaintenanceOptions).mockReturnValue({
       data: options,
     } as unknown as ReturnType<typeof useMaintenanceOptions>)
-    vi.mocked(useLinkMaintenanceUsers).mockReturnValue({
+    vi.mocked(useRegularizeMaintenanceLinks).mockReturnValue({
       mutateAsync,
       isPending: false,
-    } as unknown as ReturnType<typeof useLinkMaintenanceUsers>)
+    } as unknown as ReturnType<typeof useRegularizeMaintenanceLinks>)
   })
 
   it('keeps saving disabled until there is a contract and something to link', async () => {

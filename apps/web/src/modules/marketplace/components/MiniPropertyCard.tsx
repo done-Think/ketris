@@ -11,7 +11,7 @@ export function MiniPropertyCard({ property }: MiniPropertyCardProps) {
   return (
     <Box
       component={Link}
-      href="/properties"
+      href={property.href}
       sx={{
         overflow: 'hidden',
         borderRadius: `${radius.sm}px`,
@@ -30,7 +30,8 @@ export function MiniPropertyCard({ property }: MiniPropertyCardProps) {
       <Box
         sx={{
           height: { xs: 64, sm: 74 },
-          backgroundImage: gradients.miniPropertyImage(property.image),
+          bgcolor: surface.paper,
+          backgroundImage: property.image ? gradients.miniPropertyImage(property.image) : 'none',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}

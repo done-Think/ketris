@@ -1,11 +1,7 @@
 import type {
-  MaintenanceAction,
   MaintenanceActor,
-  MaintenanceTicketCategory,
-  MaintenanceTicketListFilters,
   MaintenanceTicketPriority,
   MaintenanceTicketUpdate,
-  MaintenanceUserLinkInput,
 } from './maintenance-ticket'
 
 export interface MaintenanceTicketInput extends MaintenanceActor {
@@ -18,7 +14,7 @@ export interface CreateMaintenanceTicketInput extends MaintenanceActor {
   scheduledAt?: Date | null
   contractId: string
   propertyId?: string
-  category: MaintenanceTicketCategory
+  category: string
   priority: MaintenanceTicketPriority
   title: string
   description: string
@@ -40,13 +36,14 @@ export interface UploadMaintenanceTicketAttachmentInput extends MaintenanceActor
   body: Buffer
 }
 
-export type ListMaintenanceTicketsInput = MaintenanceTicketListFilters
-
-export type ActOnMaintenanceTicketInput = MaintenanceActor & {
-  ticketId: string
-  action: MaintenanceAction
+export interface MaintenanceActionInput extends MaintenanceTicketInput {
+  action: import('./maintenance-ticket').MaintenanceAction
 }
 
-export type LinkMaintenanceUsersInput = MaintenanceActor & MaintenanceUserLinkInput
+export interface RegularizeMaintenanceLinksInput extends MaintenanceActor {
+  links: import('./maintenance-ticket').MaintenanceUserLinkInput
+}
 
-export type GetMaintenanceAttachmentInput = MaintenanceActor & { keyParts: string[] }
+export interface GetMaintenanceAttachmentInput extends MaintenanceActor {
+  key: string[]
+}

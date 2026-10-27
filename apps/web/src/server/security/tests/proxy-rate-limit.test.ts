@@ -82,6 +82,22 @@ describe('proxy rate limit', () => {
     },
   )
 
+  it('limits public marketplace proposals per client on the shared counter', async () => {
+    const { proxy } = await import('../../../proxy')
+    const ip = '203.0.113.20'
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const pathname = `/api/marketplace/properties/property-${attempt % 2}/inquiries`
+      expect((await proxy(postFrom(ip, pathname))).status).not.toBe(429)
+    }
+
+    const blocked = await proxy(postFrom(ip, '/api/marketplace/properties/property-9/inquiries/'))
+    expect(blocked.status).toBe(429)
+    expect(blocked.headers.get('RateLimit-Limit')).toBe('5')
+    expect(blocked.headers.get('Retry-After')).toBe('600')
+    expect(unavailable).toHaveBeenCalledTimes(6)
+    expect((await proxy(postFrom(ip, '/api/marketplace/properties'))).status).not.toBe(429)
+  })
+
   it('shares the auth budget between the REST login and NextAuth callbacks', async () => {
     const { proxy } = await import('../../../proxy')
     const ip = '203.0.113.12'

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Autocomplete,
@@ -15,8 +15,7 @@ import {
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import { useLocale, useTranslations } from 'next-intl'
 import type { AppLocale } from '@/i18n/types/locale.types'
-import { useSnackbar } from 'notistack'
-import { Controller, useForm } from 'react-hook-form'
+import { Controller } from 'react-hook-form'
 
 import { RhfTextField } from '@shared/components/form'
 import { DashboardNotificationsButton, DashboardPageHeader } from '@shared/components/layout'
@@ -27,11 +26,10 @@ import {
   useSaveAgencyProfile,
   useUnpublishAgencyProfile,
 } from '../hooks/use-agency-profile'
+import { usePublicProfileEditor } from '../hooks/use-public-profile-editor'
 import { useTenantAgents } from '../hooks/use-tenant-agents'
 import { createAgencyPublicProfileEditorSchema } from '../schemas/agency-public-profile-editor-schema'
-import type { AgencyPublicProfileEditorFormValues } from '../types/profile-editor'
 import {
-  emptyValues,
   toDraft,
   toFormValues,
   toPreviewProfile,
@@ -44,94 +42,32 @@ export function AgencyPublicProfileEditorPage() {
   const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace.agencyProfileEditor')
   const tFeatures = useTranslations('marketplace.propertyFeatures')
-  const { enqueueSnackbar } = useSnackbar()
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const { data: profile } = useOwnAgencyProfile()
   const { data: tenantAgents } = useTenantAgents()
-  const saveProfile = useSaveAgencyProfile()
-  const publishProfile = usePublishAgencyProfile()
-  const unpublishProfile = useUnpublishAgencyProfile()
-
-  const [isEditing, setIsEditing] = useState(false)
-  const agencyPublicProfileEditorSchema = useMemo(
+  const schema = useMemo(
     () => createAgencyPublicProfileEditorSchema((key) => t(`errors.${key}`)),
     [t],
   )
-  const publishRequiredFieldsSchema = useMemo(
+  const publishSchema = useMemo(
     () =>
       createAgencyPublicProfileEditorSchema((key) => t(`errors.${key}`), {
         requirePublishFields: true,
       }),
     [t],
   )
-  const { control, handleSubmit, reset, setError, watch } =
-    useForm<AgencyPublicProfileEditorFormValues>({
-      defaultValues: emptyValues,
-      resolver: zodResolver(agencyPublicProfileEditorSchema),
-    })
-
-  useEffect(() => {
-    reset(toFormValues(profile ?? null))
-  }, [profile, reset])
-
-  const draft = watch()
-
-  function onSubmit(values: AgencyPublicProfileEditorFormValues) {
-    saveProfile.mutate(toDraft(values), {
-      onSuccess: () => {
-        enqueueSnackbar(t('saveSuccess'), { variant: 'success' })
-        setIsEditing(false)
-      },
-      onError: () => enqueueSnackbar(t('saveError'), { variant: 'error' }),
-    })
-  }
-
-  function handleUnpublish() {
-    unpublishProfile.mutate(undefined, {
-      onSuccess: () => enqueueSnackbar(t('unpublishSuccess'), { variant: 'success' }),
-      onError: () => enqueueSnackbar(t('publishError'), { variant: 'error' }),
-    })
-  }
-
-  const handlePublish = handleSubmit((values) => {
-    const publishCheck = publishRequiredFieldsSchema.safeParse(values)
-
-    if (!publishCheck.success) {
-      setIsEditing(true)
-
-      for (const issue of publishCheck.error.issues) {
-        const field = issue.path[0]
-
-        if (typeof field === 'string') {
-          setError(field as keyof AgencyPublicProfileEditorFormValues, { message: issue.message })
-        }
-      }
-
-      return
-    }
-
-    saveProfile.mutate(toDraft(values), {
-      onSuccess: () => {
-        publishProfile.mutate(undefined, {
-          onSuccess: () => {
-            enqueueSnackbar(t('publishSuccess'), { variant: 'success' })
-            setIsEditing(false)
-          },
-          onError: () => enqueueSnackbar(t('publishError'), { variant: 'error' }),
-        })
-      },
-      onError: () => enqueueSnackbar(t('saveError'), { variant: 'error' }),
-    })
+  const editor = usePublicProfileEditor({
+    profile,
+    toFormValues,
+    toDraft,
+    resolver: zodResolver(schema),
+    publishSchema,
+    save: useSaveAgencyProfile(),
+    publish: usePublishAgencyProfile(),
+    unpublish: useUnpublishAgencyProfile(),
+    messages: (key) => t(key),
   })
-
-  function handlePublishToggle() {
-    if (profile?.status === 'PUBLISHED') {
-      handleUnpublish()
-      return
-    }
-
-    void handlePublish()
-  }
+  const { control } = editor.form
+  const isEditing = editor.isEditing
 
   return (
     <Box sx={{ width: '100%', p: 3.5 }}>
@@ -146,7 +82,7 @@ export function AgencyPublicProfileEditorPage() {
         sx={{ mb: 2.6 }}
       />
 
-      <Box component="form" noValidate onSubmit={handleSubmit(onSubmit)} sx={{ width: '100%' }}>
+      <Box component="form" noValidate onSubmit={editor.submit} sx={{ width: '100%' }}>
         <Box
           sx={{
             display: 'grid',
@@ -254,7 +190,7 @@ export function AgencyPublicProfileEditorPage() {
                 type="button"
                 variant="outlined"
                 startIcon={<VisibilityOutlinedIcon />}
-                onClick={() => setIsPreviewOpen(true)}
+                onClick={editor.openPreview}
                 sx={{ flex: 1 }}
               >
                 {t('actions.preview')}
@@ -264,7 +200,7 @@ export function AgencyPublicProfileEditorPage() {
                   key="save-button"
                   type="submit"
                   variant="contained"
-                  disabled={saveProfile.isPending}
+                  disabled={editor.isSaving}
                   sx={{ flex: 1 }}
                 >
                   {t('actions.save')}
@@ -274,7 +210,7 @@ export function AgencyPublicProfileEditorPage() {
                   key="edit-button"
                   type="button"
                   variant="contained"
-                  onClick={() => setIsEditing(true)}
+                  onClick={editor.startEditing}
                   sx={{ flex: 1 }}
                 >
                   {t('actions.edit')}
@@ -284,12 +220,12 @@ export function AgencyPublicProfileEditorPage() {
                 <Button
                   type="button"
                   variant="outlined"
-                  color={profile.status === 'PUBLISHED' ? 'error' : 'success'}
-                  onClick={handlePublishToggle}
-                  disabled={publishProfile.isPending || unpublishProfile.isPending}
+                  color={editor.isPublished ? 'error' : 'success'}
+                  onClick={editor.togglePublished}
+                  disabled={editor.isTogglingPublished}
                   sx={{ flex: 1 }}
                 >
-                  {profile.status === 'PUBLISHED' ? t('actions.unpublish') : t('actions.publish')}
+                  {editor.isPublished ? t('actions.unpublish') : t('actions.publish')}
                 </Button>
               ) : null}
             </Stack>
@@ -393,10 +329,16 @@ export function AgencyPublicProfileEditorPage() {
         </Box>
       </Box>
 
-      <Dialog open={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} maxWidth="lg" fullWidth>
+      <Dialog open={editor.isPreviewOpen} onClose={editor.closePreview} maxWidth="lg" fullWidth>
         <DialogContent sx={{ p: 0 }}>
           <AgencyPublicProfilePage
-            agency={toPreviewProfile(draft, profile ?? null, locale, tFeatures, t('previewName'))}
+            agency={toPreviewProfile(
+              editor.draft,
+              profile ?? null,
+              locale,
+              tFeatures,
+              t('previewName'),
+            )}
           />
         </DialogContent>
       </Dialog>

@@ -1,6 +1,5 @@
 import { z } from 'zod'
 
-import { searchResultsViewModes } from '../config/search-results-view-mode'
 import type { SchemaMessageTranslator } from '@shared/types'
 
 const searchFilterKeySchema = z.enum(['location', 'propertyType', 'priceRange'])
@@ -42,14 +41,12 @@ export function createSearchResultsFormSchema(t: SchemaMessageTranslator) {
     customMinArea: createNumericTextSchema(t, 8),
     onlyWithParking: z.boolean(),
     sortOption: z.enum(['relevancia', 'menor-preco', 'maior-preco']),
-    viewMode: z.enum(searchResultsViewModes),
     currentPage: z.number().int().min(1, t('optionInvalid')),
   })
 }
 
 export function createSearchResultsFiltersDialogFormSchema(t: SchemaMessageTranslator) {
   return z.object({
-    isFiltersOpen: z.boolean(),
     propertyTypeFilter: z.string().trim().max(80, t('textTooLong')),
     priceFilterIndex: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
     customMaxPrice: createNumericTextSchema(t, 12),

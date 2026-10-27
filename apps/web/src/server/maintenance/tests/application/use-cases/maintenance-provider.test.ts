@@ -1,17 +1,17 @@
-import { describe, expect, it } from 'vitest'
 import { ConflictError, ForbiddenError } from '@server/shared/errors'
+import { describe, expect, it } from 'vitest'
+import { permissionsFor } from '../../../application/authorization'
+import { actOnTicket } from '../../../application/workflow'
 import { MaintenanceTicketNotFoundError } from '../../../domain/errors'
 import type { MaintenanceAction } from '../../../types/maintenance-ticket'
-import { actOnTicket } from '../../../application/workflow'
-import { permissionsFor } from '../../../domain/maintenance-access-rules'
 import {
   actor,
   admin,
   agent,
   owner,
   renter,
-  ticket,
   repository,
+  ticket,
 } from '../../fixtures/maintenance-ticket'
 
 describe('Maintenance provider', () => {
@@ -32,7 +32,7 @@ describe('Maintenance provider', () => {
         name: 'Chosen provider',
         phone: '51999990000',
         email: 'provider@example.test',
-        notes: 'PLUMBING',
+        notes: 'Plumbing',
       }
       const repo = repository({ status, openedById: 'admin', provider: previous })
       expect(permissionsFor(renter, { ...ticket, status }).provider).toBe(true)

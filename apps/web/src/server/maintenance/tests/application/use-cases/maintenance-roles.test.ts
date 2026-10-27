@@ -4,7 +4,7 @@ import {
   canAccessContract,
   canAccessTicket,
   permissionsFor,
-} from '../../../domain/maintenance-access-rules'
+} from '../../../application/authorization'
 import { actor, contract, ticket } from '../../fixtures/maintenance-ticket'
 
 describe('Maintenance roles', () => {

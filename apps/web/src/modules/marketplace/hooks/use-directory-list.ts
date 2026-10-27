@@ -5,85 +5,52 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { useTranslations } from 'next-intl'
 
+import { useDebouncedValue } from '@shared/hooks'
+
 import { createDirectorySearchFormSchema } from '../schemas/directory-search-schema'
 import type {
   DirectorySearchFormValues,
-  UseDirectoryListParams,
-  UseDirectoryListResult,
+  UseDirectorySearchResult,
+  UseLoadMoreOnScrollParams,
 } from '../types/directory'
-import { normalizeSearchText } from '../utils/search'
 
-export function useDirectoryList<TItem>({
-  getSearchableText,
-  initialCount,
-  items,
-  pageSize,
-}: UseDirectoryListParams<TItem>): UseDirectoryListResult<TItem> {
+// The directory search box; the server filters, so the typed text is debounced before querying.
+export function useDirectorySearch(): UseDirectorySearchResult {
   const t = useTranslations('marketplace.directory.errors')
-  const directorySearchFormSchema = useMemo(
-    () => createDirectorySearchFormSchema((key) => t(key)),
-    [t],
-  )
-  const { getValues, register, setValue, watch } = useForm<DirectorySearchFormValues>({
-    defaultValues: {
-      isLoadingMore: false,
-      searchQuery: '',
-      visibleCount: initialCount,
-    },
-    resolver: zodResolver(directorySearchFormSchema),
+  const schema = useMemo(() => createDirectorySearchFormSchema((key) => t(key)), [t])
+  const { register, watch } = useForm<DirectorySearchFormValues>({
+    defaultValues: { searchQuery: '' },
+    resolver: zodResolver(schema),
   })
-  const { isLoadingMore, searchQuery, visibleCount } = watch()
+  const search = useDebouncedValue(watch('searchQuery').trim(), 300)
+
+  return { register, search }
+}
+
+// Calls `onLoadMore` when the returned element scrolls close to the viewport.
+export function useLoadMoreOnScroll({ enabled, onLoadMore }: UseLoadMoreOnScrollParams) {
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
-  const filteredItems = useMemo(() => {
-    const normalizedQuery = normalizeSearchText(searchQuery.trim())
+  const onLoadMoreRef = useRef(onLoadMore)
 
-    return items.filter((item) => {
-      const searchableText = normalizeSearchText(getSearchableText(item))
-
-      return !normalizedQuery || searchableText.includes(normalizedQuery)
-    })
-  }, [getSearchableText, items, searchQuery])
-  const visibleItems = useMemo(
-    () => filteredItems.slice(0, visibleCount),
-    [filteredItems, visibleCount],
-  )
-  const hasMoreItems = visibleCount < filteredItems.length
+  // Keeps the latest callback without recreating the observer on every render.
+  useEffect(() => {
+    onLoadMoreRef.current = onLoadMore
+  })
 
   useEffect(() => {
-    setValue('visibleCount', initialCount)
-  }, [initialCount, searchQuery, setValue])
-
-  useEffect(() => {
-    const loadMoreElement = loadMoreRef.current
-    if (!loadMoreElement || !hasMoreItems || isLoadingMore) return
+    const element = loadMoreRef.current
+    if (!element || !enabled || !window.IntersectionObserver) return
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry?.isIntersecting) return
-
-        setValue('isLoadingMore', true)
-        window.setTimeout(() => {
-          setValue(
-            'visibleCount',
-            Math.min(getValues('visibleCount') + pageSize, filteredItems.length),
-          )
-          setValue('isLoadingMore', false)
-        }, 420)
+        if (entry?.isIntersecting) onLoadMoreRef.current()
       },
       { rootMargin: '360px 0px' },
     )
-
-    observer.observe(loadMoreElement)
+    observer.observe(element)
 
     return () => observer.disconnect()
-  }, [filteredItems.length, getValues, hasMoreItems, isLoadingMore, pageSize, setValue])
+  }, [enabled])
 
-  return {
-    filteredItems,
-    hasMoreItems,
-    isLoadingMore,
-    loadMoreRef,
-    register,
-    visibleItems,
-  }
+  return loadMoreRef
 }

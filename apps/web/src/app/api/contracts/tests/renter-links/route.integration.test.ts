@@ -19,25 +19,12 @@ import { GET as readCharge } from '../../../financial/charges/[id]/route'
 import { GET as listContracts } from '../../route'
 import { GET as readContract } from '../../[id]/route'
 
-const { upload, s3Send } = vi.hoisted(() => ({ upload: vi.fn(), s3Send: vi.fn() }))
-// Only uploads are stubbed; downloads keep the real adapter over the mocked S3 client.
-vi.mock(
-  '@server/maintenance/infrastructure/s3-maintenance-attachment-storage',
-  async (importOriginal) => {
-    const actual =
-      await importOriginal<
-        typeof import('@server/maintenance/infrastructure/s3-maintenance-attachment-storage')
-      >()
-    return {
-      S3MaintenanceAttachmentStorage: class extends actual.S3MaintenanceAttachmentStorage {
-        override upload = upload
-      },
-    }
+const { upload, download } = vi.hoisted(() => ({ upload: vi.fn(), download: vi.fn() }))
+vi.mock('@server/maintenance/infrastructure/s3-maintenance-attachment-storage', () => ({
+  S3MaintenanceAttachmentStorage: class {
+    upload = upload
+    download = download
   },
-)
-vi.mock('@server/shared/storage/s3-client', () => ({
-  getS3Client: () => ({ send: s3Send }),
-  getUploadsBucketName: () => 'test-bucket',
 }))
 
 type ConfirmationPath = 'contracts' | 'maintenance'
@@ -142,7 +129,7 @@ async function agency(renterEmail: string) {
       abertoPorNome: admin.nome,
       titulo: 'Leak',
       descricao: 'Leak',
-      categoria: 'PLUMBING',
+      categoria: 'Plumbing',
     },
   })
   return {
@@ -176,16 +163,12 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
       url: `/api/maintenance/media/maintenance/${tenantId}/${randomUUID()}.png`,
       contentType: 'image/png',
     }))
-    s3Send.mockResolvedValue({
-      Body: { transformToByteArray: async () => new Uint8Array([1, 2, 3]) },
-      ContentType: 'image/png',
-    })
+    download.mockResolvedValue({ url: 'https://private.example.test/temporary-image' })
   })
   afterAll(async () => {
     // Fixtures only: agency tenants precede the shared user tenants during cleanup.
-    // Ticket authors are Restrict FKs and may live in another tenant, so tickets go first.
-    await prisma.chamadoManutencao.deleteMany({ where: { tenantId: { in: tenantIds } } })
     for (const tenantId of [...tenantIds].reverse()) {
+      await prisma.solicitacaoTrocaPrestador.deleteMany({ where: { chamado: { tenantId } } })
       await prisma.tenant.delete({ where: { id: tenantId } })
     }
     await prisma.$disconnect()
@@ -385,7 +368,7 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
         propertyId: a.property.id,
         title: 'New leak',
         description: 'Details',
-        category: 'PLUMBING',
+        category: 'Plumbing',
         priority: 'NORMAL',
       }),
     )
@@ -453,14 +436,14 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
     }
     expect(
       (await readMedia(request(url.slice('/api/'.length), renter.token), mediaContext)).status,
-    ).toBe(200)
-    expect(s3Send).toHaveBeenCalledTimes(1)
+    ).toBe(302)
+    expect(download).toHaveBeenCalledTimes(1)
     for (const denied of [unrelated, b.admin]) {
       expect(
         (await readMedia(request(url.slice('/api/'.length), denied.token), mediaContext)).status,
       ).toBe(404)
     }
-    expect(s3Send).toHaveBeenCalledTimes(1)
+    expect(download).toHaveBeenCalledTimes(1)
     expect(
       (
         await createTicket(
@@ -468,7 +451,7 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
             contractId: a.contract.id,
             title: 'Denied',
             description: 'Denied',
-            category: 'PLUMBING',
+            category: 'Plumbing',
             priority: 'NORMAL',
           }),
         )

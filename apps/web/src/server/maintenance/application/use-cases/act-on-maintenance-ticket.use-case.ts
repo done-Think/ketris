@@ -1,20 +1,13 @@
+import type { MaintenanceActionInput } from '../../types/use-case-inputs'
 import type { MaintenanceTicketRepository } from '../ports/maintenance-ticket-repository.port'
-import type { PublicMaintenanceTicket } from '../../types/maintenance-ticket'
-import type { ActOnMaintenanceTicketInput } from '../../types/use-case-inputs'
-import { toPublicMaintenanceTicket } from '../maintenance-ticket-response'
+import { publicTicket } from '../present-maintenance-ticket'
 import { actOnTicket } from '../workflow'
 
 export class ActOnMaintenanceTicketUseCase {
   constructor(private readonly repository: MaintenanceTicketRepository) {}
 
-  async execute({
-    ticketId,
-    action,
-    ...actor
-  }: ActOnMaintenanceTicketInput): Promise<PublicMaintenanceTicket> {
-    return toPublicMaintenanceTicket(
-      await actOnTicket(this.repository, actor, ticketId, action),
-      actor,
-    )
+  async execute(input: MaintenanceActionInput) {
+    const ticket = await actOnTicket(this.repository, input, input.ticketId, input.action)
+    return publicTicket(ticket, input)
   }
 }

@@ -1,157 +1,145 @@
-import type { ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, renderHook, waitFor } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
+import type { PropsWithChildren } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-
 import {
-  maintenanceQueryKeys,
-  useAddMaintenanceTicketNote,
-  useCreateMaintenanceTicket,
-  useDeleteMaintenanceTicket,
-  useLinkMaintenanceUsers,
   useMaintenanceAction,
   useMaintenanceTicket,
   useMaintenanceTickets,
-  useResolveMaintenanceTicket,
-  useUpdateMaintenanceTicket,
-  useUploadMaintenanceTicketAttachment,
 } from '../../hooks/use-maintenance'
+import { useMaintenanceProviderOptions } from '../../hooks/use-maintenance-providers'
 import { maintenanceService } from '../../services/maintenance-service'
-
+const auth = vi.hoisted(() => ({ id: 'user-1', role: 'OWNER' }))
 vi.mock('next-auth/react', () => ({
-  useSession: () => ({ data: { tenantId: 't1', user: { id: 'u1' }, role: 'OWNER' } }),
+  useSession: () => ({
+    data: { tenantId: 'tenant-1', user: { id: auth.id }, role: auth.role },
+    status: 'authenticated',
+  }),
 }))
 vi.mock('../../services/maintenance-service', () => ({
-  maintenanceService: {
-    list: vi.fn(),
-    get: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    remove: vi.fn(),
-    resolve: vi.fn(),
-    addNote: vi.fn(),
-    uploadAttachment: vi.fn(),
-    act: vi.fn(),
-    linkUsers: vi.fn(),
-  },
+  maintenanceService: { get: vi.fn(), list: vi.fn(), listProviders: vi.fn(), act: vi.fn() },
 }))
 
-let client: QueryClient
-
-function wrapper({ children }: { children: ReactNode }) {
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>
-}
-
-beforeEach(() => {
-  vi.clearAllMocks()
-  client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-})
-
-describe('maintenanceQueryKeys', () => {
-  it('gives each category filter its own cached list', () => {
-    expect(maintenanceQueryKeys.list('t1', { category: 'PLUMBING' })).not.toEqual(
-      maintenanceQueryKeys.list('t1', { category: 'ELECTRICAL' }),
+describe('Maintenance query isolation and paging', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    auth.id = 'user-1'
+    auth.role = 'OWNER'
+  })
+  function setup() {
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false, staleTime: Infinity } },
+    })
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
     )
-    expect(maintenanceQueryKeys.list('t1', {})).toEqual(maintenanceQueryKeys.list('t1', {}))
+    return { client, wrapper }
+  }
+  it('does not reuse ticket data across users or roles in the same tenant', async () => {
+    vi.mocked(maintenanceService.get).mockResolvedValue({ id: 'ticket' } as Awaited<
+      ReturnType<typeof maintenanceService.get>
+    >)
+    const { wrapper, client } = setup()
+    const { result, rerender, unmount } = renderHook(
+      () => useMaintenanceTicket('tenant-1', 'ticket'),
+      { wrapper },
+    )
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    auth.id = 'user-2'
+    rerender()
+    await waitFor(() => expect(maintenanceService.get).toHaveBeenCalledTimes(2))
+    auth.role = 'AGENT'
+    rerender()
+    await waitFor(() => expect(maintenanceService.get).toHaveBeenCalledTimes(3))
+    unmount()
+    client.clear()
   })
-})
-
-describe('maintenance queries', () => {
-  it('loads the list and the detail only when tenant and ticket are known', async () => {
-    vi.mocked(maintenanceService.list).mockResolvedValue({ items: [], totalCount: 0 })
-    vi.mocked(maintenanceService.get).mockResolvedValue({ id: 'ticket-1' } as never)
-
-    const list = renderHook(() => useMaintenanceTickets('t1', { category: 'OTHER' }), { wrapper })
-    const detail = renderHook(() => useMaintenanceTicket('t1', 'ticket-1'), { wrapper })
-    renderHook(() => useMaintenanceTicket('t1', null), { wrapper })
-
-    await waitFor(() => expect(list.result.current.isSuccess).toBe(true))
-    await waitFor(() => expect(detail.result.current.data).toEqual({ id: 'ticket-1' }))
-    expect(maintenanceService.list).toHaveBeenCalledWith({ category: 'OTHER' })
-    expect(maintenanceService.get).toHaveBeenCalledTimes(1)
+  it('refreshes the provider catalog after registering a provider through a ticket action', async () => {
+    const { wrapper, client } = setup()
+    client.setQueryData(['maintenance-providers', 'tenant-1'], { items: [] })
+    vi.mocked(maintenanceService.act).mockResolvedValue({ id: 'ticket' } as Awaited<
+      ReturnType<typeof maintenanceService.act>
+    >)
+    const { result, unmount } = renderHook(() => useMaintenanceAction('tenant-1', 'ticket'), {
+      wrapper,
+    })
+    await result.current.mutateAsync({ action: 'provider', provider: { name: 'New provider' } })
+    expect(client.getQueryState(['maintenance-providers', 'tenant-1'])?.isInvalidated).toBe(true)
+    unmount()
+    client.clear()
   })
-})
-
-describe('maintenance mutations refresh what they change', () => {
-  it.each([
-    {
-      name: 'create',
-      run: () => renderHook(() => useCreateMaintenanceTicket('t1'), { wrapper }),
-      input: {
-        contractId: 'c1',
-        category: 'OTHER',
-        priority: 'normal' as const,
-        title: 'T',
-        description: 'D',
+  it('keeps a separate list cache for each category and restores the previous selection', async () => {
+    const plumbing: Awaited<ReturnType<typeof maintenanceService.list>> = {
+      items: [
+        {
+          id: 'plumbing',
+          propertyId: 'property',
+          propertyTitle: 'Property',
+          category: 'PLUMBING',
+          priority: 'NORMAL',
+          status: 'ABERTO',
+          title: 'Leak',
+          openedByName: 'Renter',
+          resolvedAt: null,
+          createdAt: '2026-01-01T12:00:00Z',
+          updatedAt: '2026-01-01T12:00:00Z',
+        },
+      ],
+      totalCount: 1,
+      pagination: { page: 1, pageSize: 5, pageCount: 1, totalCount: 1 },
+      summary: {
+        totalCount: 1,
+        urgentCount: 0,
+        byStatus: { ABERTO: 1 },
+        averageResolutionDays: null,
       },
-      setup: () => vi.mocked(maintenanceService.create).mockResolvedValue({ id: 'n1' } as never),
-      keys: [maintenanceQueryKeys.lists('t1')],
-    },
-    {
-      name: 'update',
-      run: () => renderHook(() => useUpdateMaintenanceTicket('t1'), { wrapper }),
-      input: { id: 'ticket-1', payload: { title: 'Novo' } },
-      setup: () =>
-        vi.mocked(maintenanceService.update).mockResolvedValue({ id: 'ticket-1' } as never),
-      keys: [maintenanceQueryKeys.detail('t1', 'ticket-1'), maintenanceQueryKeys.lists('t1')],
-    },
-    {
-      name: 'resolve',
-      run: () => renderHook(() => useResolveMaintenanceTicket('t1', 'ticket-1'), { wrapper }),
-      input: undefined,
-      setup: () =>
-        vi.mocked(maintenanceService.resolve).mockResolvedValue({ id: 'ticket-1' } as never),
-      keys: [maintenanceQueryKeys.detail('t1', 'ticket-1'), maintenanceQueryKeys.lists('t1')],
-    },
-    {
-      name: 'note',
-      run: () => renderHook(() => useAddMaintenanceTicketNote('t1', 'ticket-1'), { wrapper }),
-      input: 'Olá',
-      setup: () => vi.mocked(maintenanceService.addNote).mockResolvedValue({ id: 'a1' } as never),
-      keys: [maintenanceQueryKeys.detail('t1', 'ticket-1')],
-    },
-    {
-      name: 'attachment',
-      run: () =>
-        renderHook(() => useUploadMaintenanceTicketAttachment('t1', 'ticket-1'), { wrapper }),
-      input: new File(['x'], 'foto.png'),
-      setup: () =>
-        vi.mocked(maintenanceService.uploadAttachment).mockResolvedValue({ id: 'f1' } as never),
-      keys: [maintenanceQueryKeys.detail('t1', 'ticket-1')],
-    },
-    {
-      name: 'action',
-      run: () => renderHook(() => useMaintenanceAction('t1', 'ticket-1'), { wrapper }),
-      input: { action: 'start' as const },
-      setup: () => vi.mocked(maintenanceService.act).mockResolvedValue({ id: 'ticket-1' } as never),
-      keys: [maintenanceQueryKeys.tenant('t1')],
-    },
-    {
-      name: 'links',
-      run: () => renderHook(() => useLinkMaintenanceUsers(), { wrapper }),
-      input: { contractId: 'c1', ownerId: 'o1' },
-      setup: () => vi.mocked(maintenanceService.linkUsers).mockResolvedValue(undefined),
-      keys: [['maintenance-options'], maintenanceQueryKeys.all],
-    },
-  ])('$name', async ({ run, input, setup, keys }) => {
-    setup()
-    const invalidate = vi.spyOn(client, 'invalidateQueries')
-    const { result } = run()
-
-    await act(() => (result.current.mutateAsync as (value: unknown) => Promise<unknown>)(input))
-
-    for (const queryKey of keys) expect(invalidate).toHaveBeenCalledWith({ queryKey })
+    }
+    vi.mocked(maintenanceService.list)
+      .mockResolvedValueOnce(plumbing)
+      .mockResolvedValueOnce({ ...plumbing, items: [], totalCount: 0 })
+    const { wrapper, client } = setup()
+    const { result, rerender, unmount } = renderHook(
+      ({ category }) => useMaintenanceTickets('tenant-1', { category }),
+      { wrapper, initialProps: { category: 'PLUMBING' } },
+    )
+    await waitFor(() => expect(result.current.data).toEqual(plumbing))
+    rerender({ category: 'ELECTRICAL' })
+    await waitFor(() => expect(result.current.data?.items).toEqual([]))
+    expect(maintenanceService.list).toHaveBeenLastCalledWith({ category: 'ELECTRICAL' })
+    rerender({ category: 'PLUMBING' })
+    await waitFor(() => expect(result.current.data).toEqual(plumbing))
+    expect(maintenanceService.list).toHaveBeenCalledTimes(2)
+    unmount()
+    client.clear()
   })
-
-  it('delete drops the cached detail and refreshes the lists', async () => {
-    vi.mocked(maintenanceService.remove).mockResolvedValue(undefined)
-    const invalidate = vi.spyOn(client, 'invalidateQueries')
-    const remove = vi.spyOn(client, 'removeQueries')
-    const { result } = renderHook(() => useDeleteMaintenanceTicket('t1'), { wrapper })
-
-    await act(() => result.current.mutateAsync('ticket-1'))
-
-    expect(invalidate).toHaveBeenCalledWith({ queryKey: maintenanceQueryKeys.lists('t1') })
-    expect(remove).toHaveBeenCalledWith({ queryKey: maintenanceQueryKeys.detail('t1', 'ticket-1') })
+  it('loads the next catalog page and separates searches in the cache', async () => {
+    vi.mocked(maintenanceService.listProviders)
+      .mockResolvedValueOnce({ items: [], page: 1, pageSize: 5, totalCount: 6 })
+      .mockResolvedValueOnce({ items: [], page: 2, pageSize: 5, totalCount: 6 })
+      .mockResolvedValueOnce({ items: [], page: 1, pageSize: 5, totalCount: 0 })
+    const { wrapper, client } = setup()
+    const { result, rerender, unmount } = renderHook(
+      ({ search }) => useMaintenanceProviderOptions('ticket', search),
+      { wrapper, initialProps: { search: '' } },
+    )
+    await waitFor(() => expect(result.current.hasNextPage).toBe(true))
+    await result.current.fetchNextPage()
+    await waitFor(() => expect(result.current.hasNextPage).toBe(false))
+    expect(maintenanceService.listProviders).toHaveBeenNthCalledWith(2, {
+      ticketId: 'ticket',
+      page: 2,
+      pageSize: 5,
+      search: undefined,
+    })
+    rerender({ search: 'eletricista' })
+    await waitFor(() => expect(maintenanceService.listProviders).toHaveBeenCalledTimes(3))
+    expect(maintenanceService.listProviders).toHaveBeenLastCalledWith({
+      ticketId: 'ticket',
+      page: 1,
+      pageSize: 5,
+      search: 'eletricista',
+    })
+    unmount()
+    client.clear()
   })
 })

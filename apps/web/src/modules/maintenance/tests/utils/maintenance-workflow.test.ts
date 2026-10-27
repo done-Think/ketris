@@ -1,146 +1,147 @@
-import { AxiosError, AxiosHeaders } from 'axios'
 import { describe, expect, it } from 'vitest'
 
 import { createMaintenanceLinksSchema } from '../../schemas/maintenance-links-schema'
 import { createMaintenanceWorkflowSchema } from '../../schemas/maintenance-workflow-schema'
-import type { ApiMaintenanceTicket } from '../../types/service'
-import { errorMessage } from '../../utils/error-message'
-import {
-  buildCreateMaintenanceTicketPayload,
-  buildUpdateMaintenanceTicketPayload,
-  mapMaintenanceTicketToFormValues,
-} from '../../utils/maintenance-adapter'
-import {
-  buildMaintenanceWorkflowAction,
-  maintenanceWorkflowDefaultValues,
-  maintenanceWorkflowRequirements,
-} from '../../utils/maintenance-workflow'
+import type { MaintenanceWorkflowFormValues } from '../../types/maintenance-workflow'
+import { buildMaintenanceWorkflowAction } from '../../utils/maintenance-workflow'
 
 const translate = (key: string) => key
-const provider = { name: 'Hidráulica Silva', phone: '1199', email: null, notes: null }
-const ticket = { responsibleId: 'agent', provider } as unknown as ApiMaintenanceTicket
-const values = maintenanceWorkflowDefaultValues(ticket, 'provider')
 
-describe('maintenance workflow helpers', () => {
-  it('asks for a reason only where the API requires one', () => {
-    expect(maintenanceWorkflowRequirements('contest', false).reason).toBe(true)
-    expect(maintenanceWorkflowRequirements('reopen', true).reason).toBe(true)
-    expect(maintenanceWorkflowRequirements('reopen', false).reason).toBe(false)
-    expect(maintenanceWorkflowRequirements('approveReplacement', false)).toEqual({
-      reason: false,
-      responsible: false,
-      contract: false,
-      provider: true,
-    })
+const emptyValues: MaintenanceWorkflowFormValues = {
+  reason: '',
+  catalogProvider: null,
+  responsibleId: '',
+  contractId: '',
+  status: 'ABERTO',
+  name: '',
+  phone: '',
+  email: '',
+  notes: '',
+}
+
+function issuesFor(
+  action: Parameters<typeof createMaintenanceWorkflowSchema>[0],
+  values: Partial<MaintenanceWorkflowFormValues>,
+  role?: string,
+) {
+  const result = createMaintenanceWorkflowSchema(action, role, translate).safeParse({
+    ...emptyValues,
+    ...values,
   })
 
-  it('starts from the current provider except when approving a replacement', () => {
-    expect(values).toMatchObject({ responsibleId: 'agent', providerName: 'Hidráulica Silva' })
-    expect(maintenanceWorkflowDefaultValues(ticket, 'approveReplacement').providerName).toBe('')
+  return result.success
+    ? []
+    : result.error.issues.map((issue) => `${issue.path[0]}:${issue.message}`)
+}
+
+describe('buildMaintenanceWorkflowAction', () => {
+  it('uses the catalog provider id when one is chosen', () => {
+    const values = { ...emptyValues, catalogProvider: { id: 'p1', name: 'Hidráulica' } }
+
+    expect(
+      buildMaintenanceWorkflowAction(values as MaintenanceWorkflowFormValues, {
+        action: 'provider',
+      }),
+    ).toEqual({ action: 'provider', provider: { id: 'p1' } })
   })
 
-  it('builds each action payload from the form values', () => {
-    expect(buildMaintenanceWorkflowAction({ action: 'provider' }, values, false)).toEqual({
-      action: 'provider',
-      provider: { name: 'Hidráulica Silva', phone: '1199', email: null, notes: null },
-    })
+  it('builds a free provider with nulls for empty contacts', () => {
     expect(
       buildMaintenanceWorkflowAction(
-        { action: 'rejectReplacement', requestId: 'r1' },
-        { ...values, reason: 'Sem motivo' },
-        false,
+        { ...emptyValues, name: 'Silva', phone: '1199' },
+        { action: 'provider' },
       ),
-    ).toEqual({ action: 'rejectReplacement', requestId: 'r1', reason: 'Sem motivo' })
-    expect(
-      buildMaintenanceWorkflowAction({ action: 'reopen' }, { ...values, reason: 'Voltou' }, true),
-    ).toEqual({ action: 'reopen', status: 'ABERTO', reason: 'Voltou' })
+    ).toEqual({
+      action: 'provider',
+      provider: { name: 'Silva', phone: '1199', email: null, notes: null },
+    })
+  })
+
+  it('carries the request id on replacement decisions', () => {
     expect(
       buildMaintenanceWorkflowAction(
+        { ...emptyValues, reason: 'Sem retorno' },
+        { action: 'rejectReplacement', requestId: 'r1' },
+      ),
+    ).toEqual({ action: 'rejectReplacement', requestId: 'r1', reason: 'Sem retorno' })
+  })
+
+  it('makes the renter reopen as ABERTO with a reason, and staff pick the status', () => {
+    expect(
+      buildMaintenanceWorkflowAction(
+        { ...emptyValues, reason: 'Voltou a vazar' },
         { action: 'reopen' },
-        { ...values, status: 'EM_ANDAMENTO' },
-        false,
+        'RENTER',
+      ),
+    ).toEqual({ action: 'reopen', status: 'ABERTO', reason: 'Voltou a vazar' })
+    expect(
+      buildMaintenanceWorkflowAction(
+        { ...emptyValues, status: 'EM_ANDAMENTO' },
+        { action: 'reopen' },
+        'OWNER',
       ),
     ).toEqual({ action: 'reopen', status: 'EM_ANDAMENTO' })
-    expect(buildMaintenanceWorkflowAction({ action: 'start' }, values, false)).toEqual({
-      action: 'start',
-    })
+  })
+
+  it('maps assignment and contract linking', () => {
+    expect(
+      buildMaintenanceWorkflowAction({ ...emptyValues, responsibleId: 'a1' }, { action: 'assign' }),
+    ).toEqual({ action: 'assign', responsibleId: 'a1' })
+    expect(
+      buildMaintenanceWorkflowAction(
+        { ...emptyValues, contractId: 'c1' },
+        { action: 'linkContract' },
+      ),
+    ).toEqual({ action: 'linkContract', contractId: 'c1' })
   })
 })
 
-describe('maintenance form schemas', () => {
-  it('requires only the fields of the chosen action and validates the provider email', () => {
-    const reasonSchema = createMaintenanceWorkflowSchema(translate, {
-      ...maintenanceWorkflowRequirements('contest', false),
-    })
-    expect(reasonSchema.safeParse({ ...values, reason: '  ' }).success).toBe(false)
-    expect(reasonSchema.safeParse({ ...values, reason: 'Ainda vaza' }).success).toBe(true)
-
-    const providerSchema = createMaintenanceWorkflowSchema(
-      translate,
-      maintenanceWorkflowRequirements('provider', false),
-    )
-    expect(providerSchema.safeParse({ ...values, providerEmail: 'x' }).success).toBe(false)
-    expect(providerSchema.safeParse({ ...values, providerName: '' }).success).toBe(false)
+describe('createMaintenanceWorkflowSchema', () => {
+  it('requires a reason only for the actions that need one', () => {
+    expect(issuesFor('contest', {})).toEqual(['reason:required'])
+    expect(issuesFor('requestReplacement', {})).toEqual(['reason:required'])
+    expect(issuesFor('reopen', {}, 'RENTER')).toEqual(['reason:required'])
+    expect(issuesFor('reopen', {}, 'OWNER')).toEqual([])
+    expect(issuesFor('approveReplacement', { catalogProvider: { id: 'p', name: 'x' } })).toEqual([])
   })
 
-  it('needs a contract and something to link, and a renter when a party is chosen', () => {
-    const schema = createMaintenanceLinksSchema(translate)
-    const empty = { contractId: '', ownerId: '', partyId: '', renterId: '' }
-    expect(schema.safeParse({ ...empty, ownerId: 'o1' }).success).toBe(false)
-    expect(schema.safeParse({ ...empty, contractId: 'c1' }).success).toBe(false)
-    expect(schema.safeParse({ ...empty, contractId: 'c1', partyId: 'p1' }).success).toBe(false)
-    expect(
-      schema.safeParse({ ...empty, contractId: 'c1', partyId: 'p1', renterId: 'r1' }).success,
-    ).toBe(true)
+  it('requires the provider name and a valid email for a free provider', () => {
+    expect(issuesFor('provider', {})).toEqual(['name:required'])
+    expect(issuesFor('provider', { name: 'Silva', email: 'invalido' })).toEqual([
+      'email:emailInvalid',
+    ])
+    expect(issuesFor('provider', { name: 'Silva', email: 'a@b.com' })).toEqual([])
+  })
+
+  it('limits the size of the provider fields and the reason', () => {
+    expect(issuesFor('provider', { name: 'x'.repeat(201) })).toEqual(['name:nameTooLong'])
+    expect(issuesFor('contest', { reason: 'x'.repeat(5001) })).toEqual(['reason:reasonTooLong'])
+  })
+
+  it('requires the responsible and the contract on their actions', () => {
+    expect(issuesFor('assign', {})).toEqual(['responsibleId:required'])
+    expect(issuesFor('linkContract', {})).toEqual(['contractId:required'])
   })
 })
 
-describe('maintenance ticket form adapter', () => {
-  const form = {
-    contractId: 'c1',
-    category: 'PAINTING',
-    priority: 'urgent' as const,
-    title: 'Parede',
-    description: 'Mofo',
-  }
-
-  it('never sends the property: the API takes it from the contract', () => {
-    expect(buildCreateMaintenanceTicketPayload(form)).toEqual({
-      contractId: 'c1',
-      category: 'PAINTING',
-      priority: 'URGENTE',
-      title: 'Parede',
-      description: 'Mofo',
-    })
-    expect(buildUpdateMaintenanceTicketPayload({ ...form, contractId: '' })).not.toHaveProperty(
-      'propertyId',
-    )
-    expect(
-      mapMaintenanceTicketToFormValues({
-        contractId: null,
-        category: 'OTHER',
-        priority: 'NORMAL',
-        title: 'T',
-        description: 'D',
-      } as ApiMaintenanceTicket),
-    ).toEqual({
+describe('createMaintenanceLinksSchema', () => {
+  const parse = (values: Record<string, string>) =>
+    createMaintenanceLinksSchema(translate).safeParse({
       contractId: '',
-      category: 'OTHER',
-      priority: 'normal',
-      title: 'T',
-      description: 'D',
+      ownerId: '',
+      partyId: '',
+      renterId: '',
+      ...values,
     })
+
+  it('needs a contract and at least one link', () => {
+    expect(parse({}).success).toBe(false)
+    expect(parse({ contractId: 'c1' }).success).toBe(false)
+    expect(parse({ contractId: 'c1', ownerId: 'o1' }).success).toBe(true)
   })
 
-  it('shows the API message when there is one', () => {
-    const apiError = new AxiosError('Conflict', '409', undefined, undefined, {
-      status: 409,
-      statusText: 'Conflict',
-      headers: {},
-      config: { headers: new AxiosHeaders() },
-      data: { error: { message: 'Estado inválido' } },
-    })
-    expect(errorMessage(apiError, 'fallback')).toBe('Estado inválido')
-    expect(errorMessage(new Error('x'), 'fallback')).toBe('fallback')
+  it('needs the renter user whenever a renter party is chosen', () => {
+    expect(parse({ contractId: 'c1', partyId: 'p1' }).success).toBe(false)
+    expect(parse({ contractId: 'c1', partyId: 'p1', renterId: 'u1' }).success).toBe(true)
   })
 })

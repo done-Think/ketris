@@ -24,6 +24,15 @@ const authPolicy = createRateLimitPolicy(
   toPositiveInteger(process.env.AUTH_RATE_LIMIT_WINDOW_MS, 15 * 60_000),
 )
 
+// Public proposals become CRM leads, so each client address gets a small, shared budget.
+const inquiryPolicy = createRateLimitPolicy(
+  'marketplace-inquiry',
+  toPositiveInteger(process.env.MARKETPLACE_INQUIRY_RATE_LIMIT_MAX, 5),
+  toPositiveInteger(process.env.MARKETPLACE_INQUIRY_RATE_LIMIT_WINDOW_MS, 10 * 60_000),
+)
+
+const inquiryPathPattern = /^\/api\/marketplace\/properties\/[^/]+\/inquiries$/
+
 const authPaths = new Set([
   '/api/auth/login',
   '/api/auth/refresh',
@@ -52,7 +61,9 @@ export async function proxy(request: NextRequest) {
     result =
       policy === authPolicy
         ? await authStore.consume({ key: getAuthRateLimitKey(request.headers), policy })
-        : store.consume({ key: getTrustedClientAddress(request.headers), policy })
+        : policy === inquiryPolicy
+          ? await authStore.consume({ key: getTrustedClientAddress(request.headers), policy })
+          : store.consume({ key: getTrustedClientAddress(request.headers), policy })
   } catch {
     return NextResponse.json(
       {
@@ -93,6 +104,8 @@ function selectPolicy(pathname: string): RateLimitPolicy {
     normalizedPathname = decodeURIComponent(pathname)
   } catch {}
   normalizedPathname = normalizedPathname.replace(/\/+$/, '')
+
+  if (inquiryPathPattern.test(normalizedPathname)) return inquiryPolicy
 
   return authPaths.has(normalizedPathname) ||
     normalizedPathname.startsWith('/api/auth/callback/') ||

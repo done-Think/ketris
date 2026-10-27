@@ -1,6 +1,6 @@
-import { setupMaintenanceIntegration } from '../fixtures/maintenance-api'
-import { describe, expect, it } from 'vitest'
 import { prisma } from '@server/db/prisma'
+import { describe, expect, it } from 'vitest'
+import { setupMaintenanceIntegration } from '../fixtures/maintenance-api'
 
 describe('/api/maintenance provider (database integration)', () => {
   const env = setupMaintenanceIntegration()
@@ -29,13 +29,18 @@ describe('/api/maintenance provider (database integration)', () => {
         name: 'Chosen provider',
         phone: '51999990000',
         email: 'provider@example.test',
-        notes: 'PLUMBING',
+        notes: 'Plumbing',
       }
-      const response = await action(id, env.fixture.renter.token, {
-        action: 'provider',
-        provider,
-        title: 'Overwrite',
-      })
+      expect(
+        (
+          await action(id, env.fixture.renter.token, {
+            action: 'provider',
+            provider,
+            title: 'Overwrite',
+          })
+        ).status,
+      ).toBe(400)
+      const response = await action(id, env.fixture.renter.token, { action: 'provider', provider })
       expect(response.status).toBe(200)
       const body = await response.json()
       expect(body.ticket).toMatchObject({
@@ -59,12 +64,15 @@ describe('/api/maintenance provider (database integration)', () => {
           expect.objectContaining({
             type: 'PRESTADOR_ALTERADO',
             authorId: env.fixture.renter.id,
-            details: { before: null, after: provider },
+            details: { before: null, after: { ...provider, id: body.ticket.provider.id } },
           }),
           expect.objectContaining({
             type: 'PRESTADOR_ALTERADO',
             authorId: env.fixture.renter.id,
-            details: { before: provider, after: { ...provider, name: 'New provider' } },
+            details: {
+              before: { ...provider, id: body.ticket.provider.id },
+              after: { ...provider, name: 'New provider', id: ticket.provider.id },
+            },
           }),
         ]),
       )

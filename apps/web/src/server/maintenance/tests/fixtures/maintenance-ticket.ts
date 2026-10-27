@@ -1,10 +1,10 @@
 import { vi } from 'vitest'
 import type {
   MaintenanceActor,
-  MaintenanceTicket,
   MaintenanceContract,
+  MaintenanceTicket,
 } from '../../types/maintenance-ticket'
-import type { MaintenanceTicketRepository } from '../../application/ports/maintenance-ticket-repository.port'
+import type { MaintenanceTicketRepository } from '../../types/maintenance-ticket-repository'
 
 export function actor(
   role: MaintenanceActor['actorPapel'],
@@ -46,7 +46,7 @@ export const ticket: MaintenanceTicket = {
   completedByRole: null,
   deletedAt: null,
   replacementRequests: [],
-  category: 'PLUMBING',
+  category: 'Plumbing',
   priority: 'URGENTE',
   status: 'ABERTO',
   title: 'Leak',

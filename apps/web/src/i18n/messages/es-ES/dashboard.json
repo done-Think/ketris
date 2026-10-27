@@ -164,14 +164,13 @@
     "subtitle": "Acompañe las solicitudes de reparación y mantenimiento",
     "search": "Buscar solicitud...",
     "allProperties": "Todos los inmuebles",
-    "allCategories": "Todas las categorías",
     "newTicket": "Nueva solicitud",
     "filterDialog": {
       "open": "Filtros",
       "title": "Filtros",
       "close": "Cerrar filtros",
       "property": "Inmueble",
-      "category": "Categoría"
+      "category": "Filtrar por categoría"
     },
     "filters": {
       "all": "Todos",
@@ -238,12 +237,18 @@
         "priorityRequired": "Selecciona la prioridad",
         "titleRequired": "Indica el título de la solicitud",
         "descriptionRequired": "Describe el problema",
-        "contractRequired": "Seleccione el contrato"
+        "contractRequired": "Seleccione el contrato",
+        "categoryTooLong": "Use hasta 100 caracteres.",
+        "titleTooLong": "Use hasta 200 caracteres.",
+        "descriptionTooLong": "Use hasta 10.000 caracteres."
       },
       "discardDraft": "Descartar borrador",
       "saveDraftAndClose": "Guardar y cerrar",
       "discardTitle": "¿Descartar este borrador?",
-      "currentContract": "Contrato actual"
+      "currentContract": "Contrato actual",
+      "loadError": "No se pudo cargar el llamado.",
+      "retry": "Intentar de nuevo",
+      "loading": "Cargando llamado…"
     },
     "actions": {
       "menu": "Acciones de la solicitud {ticket}",
@@ -296,13 +301,19 @@
         "title": "Línea de tiempo y actualizaciones",
         "empty": "Aún no hay actualizaciones registradas.",
         "placeholder": "Escriba un mensaje o actualización sobre la solicitud...",
-        "systemAuthor": "Sistema"
+        "systemAuthor": "Sistema",
+        "validation": {
+          "required": "Escriba un mensaje.",
+          "tooLong": "Use hasta 10.000 caracteres."
+        }
       },
       "info": {
         "title": "Información general",
         "lastUpdated": "Última actualización",
         "dateTime": "{date} a las {time}"
-      }
+      },
+      "loadError": "No se pudo cargar el llamado.",
+      "retry": "Intentar de nuevo"
     },
     "activeTickets": "Activos",
     "archivedTickets": "Archivados",
@@ -346,9 +357,14 @@
       },
       "finish": "Finalizar solicitud",
       "finishConfirmation": "¿Confirma que el problema está resuelto? La solicitud se marcará como resuelta y se conservará su historial.",
-      "errors": {
-        "required": "Campo obligatorio",
-        "emailInvalid": "Introduce un correo válido"
+      "validation": {
+        "required": "Campo obligatorio.",
+        "reasonTooLong": "Use hasta 5.000 caracteres.",
+        "nameTooLong": "Use hasta 200 caracteres.",
+        "phoneTooLong": "Use hasta 50 caracteres.",
+        "emailTooLong": "Use hasta 254 caracteres.",
+        "notesTooLong": "Use hasta 5.000 caracteres.",
+        "emailInvalid": "Ingrese un correo válido."
       }
     },
     "links": {
@@ -362,10 +378,9 @@
       "save": "Guardar vínculos",
       "success": "Vínculos actualizados.",
       "error": "No se pudieron actualizar los vínculos.",
-      "errors": {
-        "contractRequired": "Selecciona el contrato",
-        "renterRequired": "Selecciona la cuenta del inquilino",
-        "nothingToLink": "Elige el propietario o la parte inquilina"
+      "validation": {
+        "required": "Campo obligatorio.",
+        "linkRequired": "Seleccione un propietario o un vínculo de inquilino."
       }
     },
     "scheduleNotSet": "Aún sin programar",
@@ -390,13 +405,86 @@
       "success": "Fecha del servicio guardada.",
       "error": "No se pudo guardar la fecha del servicio."
     },
+    "providers": {
+      "title": "Prestadores de la inmobiliaria",
+      "createTitle": "Registrar prestador",
+      "editTitle": "Editar prestador",
+      "name": "Nombre del prestador",
+      "phone": "Teléfono",
+      "email": "Correo electrónico",
+      "notes": "Observaciones",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "close": "Cerrar",
+      "search": "Buscar prestadores",
+      "includeInactive": "Incluir inactivos",
+      "loading": "Cargando prestadores…",
+      "retry": "Intentar de nuevo",
+      "loadError": "No se pudieron cargar los prestadores.",
+      "empty": "No se encontraron prestadores.",
+      "success": "Prestador guardado correctamente.",
+      "error": "No se pudo guardar el prestador.",
+      "inactive": "(inactivo)",
+      "edit": "Editar",
+      "inactivate": "Desactivar",
+      "reactivate": "Reactivar",
+      "pagination": "{from}–{to} de {count}",
+      "select": "Seleccionar prestador registrado",
+      "selectHelp": "Seleccione un prestador o complete los datos abajo para registrar uno nuevo.",
+      "open": "Abrir opciones",
+      "closeOptions": "Cerrar opciones",
+      "clear": "Borrar selección",
+      "loadMore": "Cargar más",
+      "previousPage": "Página anterior",
+      "nextPage": "Página siguiente",
+      "firstPage": "Primera página",
+      "lastPage": "Última página"
+    },
     "categories": {
-      "PLUMBING": "Fontanería",
-      "ELECTRICAL": "Eléctrica",
-      "STRUCTURAL": "Estructural",
-      "PAINTING": "Pintura",
-      "OTHER": "Otros"
-    }
+      "plumbing": "Fontanería",
+      "electrical": "Electricidad",
+      "structural": "Estructural",
+      "painting": "Pintura"
+    },
+    "errors": {
+      "forbidden": "No tiene permiso para esta acción.",
+      "unauthorized": "Inicie sesión de nuevo para continuar.",
+      "conflict": "El llamado o prestador cambió, o esta acción no está disponible en su estado actual. Actualice e intente de nuevo.",
+      "validation": "Revise los datos ingresados.",
+      "ticketNotFound": "Llamado no encontrado o sin acceso.",
+      "propertyNotFound": "Contrato o inmueble no encontrado para este usuario.",
+      "alreadyResolved": "Este llamado ya está cerrado.",
+      "attachmentInvalid": "Use una imagen JPEG, PNG o WebP de hasta 8 MB.",
+      "providerNotFound": "Prestador no encontrado en esta inmobiliaria.",
+      "providerInactive": "Este prestador está inactivo. Solicite su reactivación a la gestión.",
+      "providerExists": "Ya existe un prestador con estos datos en esta inmobiliaria.",
+      "storageUnavailable": "El servicio de archivos no está disponible. Intente más tarde.",
+      "uploadExpired": "La autorización de envío expiró. Envíe el archivo de nuevo.",
+      "uploadInvalid": "No se pudo confirmar este envío. Envíe el archivo de nuevo."
+    },
+    "listLoading": "Cargando llamados…",
+    "listError": "No se pudieron cargar los llamados.",
+    "retry": "Intentar de nuevo",
+    "activityMessages": {
+      "created": "Llamado abierto.",
+      "updated": "Datos del llamado actualizados.",
+      "archived": "Llamado archivado.",
+      "contractLinked": "Contrato asociado al llamado.",
+      "scheduled": "Servicio programado con el prestador.",
+      "renterFinished": "Llamado finalizado por el inquilino.",
+      "statusChanged": "Estado cambiado de {before} a {after}.",
+      "contested": "Resolución impugnada.",
+      "reopened": "Llamado reabierto.",
+      "responsibleUpdated": "Responsable interno actualizado.",
+      "restored": "Llamado restaurado.",
+      "providerUpdated": "Prestador actualizado.",
+      "replacementRequested": "Cambio de prestador solicitado.",
+      "replacementApproved": "Cambio de prestador aprobado.",
+      "replacementRejected": "Cambio de prestador rechazado.",
+      "linksRegularized": "Vínculos de acceso regularizados por la gestión.",
+      "attachmentAdded": "Archivo adjunto agregado."
+    },
+    "allCategories": "Todas las categorías"
   },
   "finance": {
     "title": "Finanzas",

@@ -1,39 +1,35 @@
-import type { MaintenanceUserLinkInput } from '../types/maintenance-ticket'
 import { Prisma } from '@prisma/client'
 import { prisma } from '@server/db/prisma'
 import { ConflictError, ForbiddenError } from '@server/shared/errors'
-import type { MaintenanceActor } from '../types/maintenance-ticket'
-import type { MaintenanceContractPartyLinkerFactory } from '../types/prisma-maintenance-ticket-repository'
-import { contractInclude, activityData } from './maintenance-ticket-mapper'
+import { assertAdmin } from '../application/authorization'
+import type { MaintenanceActor, MaintenanceUserLinkInput } from '../types/maintenance-ticket'
+import type { MaintenanceContractPartyLink } from '../types/prisma-maintenance-ticket-repository'
+import { activityData, contractInclude } from './maintenance-ticket-mapper'
 
-// Admin-only (checked by the use case). Runs serializable so concurrent regularizations of the same
-// contract cannot interleave; the contract-party link itself is delegated to contracts.
 export async function regularizeMaintenanceLinks(
   actor: MaintenanceActor,
   input: MaintenanceUserLinkInput,
-  contractPartyLinker: MaintenanceContractPartyLinkerFactory,
+  linkParty: MaintenanceContractPartyLink,
 ) {
-  // Serializable transactions can abort with a false conflict (P2034) under unrelated concurrent
-  // load; only a failure that survives every attempt is reported as a real conflict.
+  assertAdmin(actor)
   for (let attempt = 1; ; attempt++) {
     try {
-      return await regularizeOnce(actor, input, contractPartyLinker)
+      return await regularizeOnce(actor, input, linkParty)
     } catch (error) {
-      const serializationFailure =
-        error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2034'
-      if (!serializationFailure) throw error
-      if (attempt >= SERIALIZATION_ATTEMPTS)
+      if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2034') {
+        throw error
+      }
+      if (attempt >= 3) {
         throw new ConflictError('O vínculo foi alterado. Revise os dados e tente novamente.')
+      }
     }
   }
 }
 
-const SERIALIZATION_ATTEMPTS = 3
-
 async function regularizeOnce(
   actor: MaintenanceActor,
   input: MaintenanceUserLinkInput,
-  contractPartyLinker: MaintenanceContractPartyLinkerFactory,
+  linkParty: MaintenanceContractPartyLink,
 ) {
   await prisma.$transaction(
     async (tx) => {
@@ -63,13 +59,10 @@ async function regularizeOnce(
         })
       }
       if (input.renterId && input.partyId) {
-        await contractPartyLinker(tx).execute({
-          actorTenantId: actor.actorTenantId,
-          actorId: actor.actorId,
-          actorPapel: actor.actorPapel,
+        await linkParty(tx, actor, {
           contractId: contract.id,
           partyId: input.partyId,
-          userId: input.renterId,
+          renterId: input.renterId,
         })
       }
       const tickets = await tx.chamadoManutencao.findMany({
@@ -84,6 +77,7 @@ async function regularizeOnce(
         await tx.atividadeChamadoManutencao.create({
           data: activityData(ticket.id, {
             type: 'EDICAO',
+            systemAction: 'LINKS_REGULARIZED',
             message: 'Vinculos de acesso regularizados pelo administrador.',
             authorId: actor.actorId,
             authorName: actor.actorName,

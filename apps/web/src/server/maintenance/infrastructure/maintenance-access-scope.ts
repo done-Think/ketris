@@ -1,7 +1,7 @@
-import { isAgencyManager } from '@server/auth/domain/roles'
-import type { MaintenanceContractRow } from '../types/prisma-maintenance-ticket-repository'
 import type { Prisma } from '@prisma/client'
+import { isAgencyManager } from '@server/auth/domain/roles'
 import type { MaintenanceActor } from '../types/maintenance-ticket'
+import type { MaintenanceContractRow } from '../types/prisma-maintenance-ticket-repository'
 
 export function maintenanceTicketScope(
   actor: MaintenanceActor,

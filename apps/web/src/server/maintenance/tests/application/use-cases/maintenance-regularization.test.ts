@@ -1,16 +1,16 @@
-import { describe, expect, it, vi } from 'vitest'
 import { ForbiddenError } from '@server/shared/errors'
-import { MaintenancePropertyNotFoundError } from '../../../domain/errors'
+import { describe, expect, it, vi } from 'vitest'
+import { canAccessTicket, permissionsFor } from '../../../application/authorization'
 import { actOnTicket, deleteTicket } from '../../../application/workflow'
-import { canAccessTicket, permissionsFor } from '../../../domain/maintenance-access-rules'
+import { MaintenancePropertyNotFoundError } from '../../../domain/errors'
 import {
   admin,
   agent,
+  contract,
   owner,
   renter,
-  contract,
-  ticket,
   repository,
+  ticket,
 } from '../../fixtures/maintenance-ticket'
 
 describe('Maintenance regularization', () => {

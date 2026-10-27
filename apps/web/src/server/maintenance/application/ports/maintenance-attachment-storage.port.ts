@@ -1,18 +1,13 @@
-import type { MaintenanceAttachmentObject } from '../../types/maintenance-ticket'
+import type {
+  DownloadedMaintenanceAttachment,
+  UploadedMaintenanceAttachment,
+  UploadMaintenanceAttachmentInput,
+} from '../../types/maintenance-attachment-storage'
 
-export interface UploadMaintenanceAttachmentInput {
-  tenantId: string
-  filename: string
-  contentType: string
-  body: Buffer
-}
-
-export interface UploadedMaintenanceAttachment {
-  url: string
-  contentType: string
+export interface MaintenanceAttachmentReaderPort {
+  download(key: string): Promise<DownloadedMaintenanceAttachment | null>
 }
 
 export interface MaintenanceAttachmentStoragePort {
   upload(input: UploadMaintenanceAttachmentInput): Promise<UploadedMaintenanceAttachment>
-  download(objectKey: string): Promise<MaintenanceAttachmentObject | null>
 }

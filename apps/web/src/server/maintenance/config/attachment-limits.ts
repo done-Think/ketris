@@ -1,0 +1,4 @@
+export const MAINTENANCE_ATTACHMENT_MAX_BYTES = 8 * 1024 * 1024
+export const MAINTENANCE_ATTACHMENT_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const
+export const MAINTENANCE_ATTACHMENT_UPLOAD_TTL_SECONDS = 600
+export const MAINTENANCE_ATTACHMENT_DOWNLOAD_TTL_SECONDS = 60

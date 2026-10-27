@@ -1,4 +1,11 @@
 import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi'
+import { registerMaintenanceAttachmentsOpenApi } from './openapi-attachments'
+import { registerMaintenanceProvidersOpenApi } from './openapi-providers'
+import {
+  maintenanceAttachmentResponseSchema,
+  maintenanceAttachmentUploadSchema,
+  resolveMaintenanceTicketRequestSchema,
+} from './schemas/maintenance-attachment.schema'
 
 import { errorResponseSchema } from '@server/shared/schemas/error-response.schema'
 
@@ -6,24 +13,44 @@ import {
   addMaintenanceTicketNoteRequestSchema,
   createMaintenanceTicketRequestSchema,
   listMaintenanceTicketsQuerySchema,
-  updateMaintenanceTicketRequestSchema,
   maintenanceActionSchema,
   maintenanceLinksSchema,
+  updateMaintenanceTicketRequestSchema,
 } from './schemas/maintenance-ticket-input.schema'
 import {
   maintenanceActivitiesResponseSchema,
   maintenanceActivityResponseSchema,
-  maintenanceAttachmentResponseSchema,
-  maintenanceAttachmentUploadRequestSchema,
-  maintenanceMediaBinarySchema,
-  maintenanceMediaKeyParamsSchema,
+  maintenanceOptionsSchema,
   maintenanceTicketIdParamsSchema,
   maintenanceTicketResponseSchema,
   maintenanceTicketsResponseSchema,
-  maintenanceOptionsSchema,
 } from './schemas/maintenance-ticket.schema'
 
 export function registerMaintenanceOpenApi(registry: OpenAPIRegistry): void {
+  registerMaintenanceProvidersOpenApi(registry)
+  registerMaintenanceAttachmentsOpenApi(registry)
+  registry.registerPath({
+    method: 'post',
+    path: '/maintenance/tickets/{id}/attachments',
+    tags: ['Maintenance'],
+    summary: 'Envia imagem privada para um chamado autorizado',
+    description:
+      'Compatibilidade multipart: um arquivo JPEG, PNG ou WebP no campo file. Na Vercel, prefira /attachments/upload e /attachments/complete para suportar o limite completo de 8 MB sem atravessar o limite de corpo da função. Exige collaborate; a leitura é autenticada por chamado e sem cache público.',
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: maintenanceTicketIdParamsSchema,
+      body: { content: { 'multipart/form-data': { schema: maintenanceAttachmentUploadSchema } } },
+    },
+    responses: {
+      201: {
+        description: 'Anexo e atividade registrados.',
+        content: { 'application/json': { schema: maintenanceAttachmentResponseSchema } },
+      },
+      400: { description: 'Arquivo inválido, vazio ou acima do limite.' },
+      404: { description: 'Chamado fora do escopo.' },
+      409: { description: 'Chamado encerrado, arquivado ou alterado.' },
+    },
+  })
   registry.registerPath({
     method: 'get',
     path: '/maintenance/options',
@@ -83,8 +110,6 @@ export function registerMaintenanceOpenApi(registry: OpenAPIRegistry): void {
     path: '/maintenance/tickets',
     tags: ['Maintenance'],
     summary: 'Lista chamados de manutenção do tenant autenticado',
-    description:
-      'category filtra pelo código da categoria (PLUMBING, ELECTRICAL, STRUCTURAL, PAINTING, OTHER). A busca textual não considera a categoria.',
     security: [{ bearerAuth: [] }],
     request: { query: listMaintenanceTicketsQuerySchema },
     responses: {
@@ -194,9 +219,16 @@ export function registerMaintenanceOpenApi(registry: OpenAPIRegistry): void {
     path: '/maintenance/tickets/{id}/resolve',
     tags: ['Maintenance'],
     summary: 'Conclui atendimento e solicita confirmacao da resolucao',
-    description: 'Não recebe corpo. Equivale à ação complete em /maintenance/tickets/{id}/actions.',
+    description:
+      'Atalho para a ação complete. Não exige corpo; quando enviado, o JSON deve ser um objeto vazio. As permissões e a confirmação seguem o mesmo fluxo de /actions.',
     security: [{ bearerAuth: [] }],
-    request: { params: maintenanceTicketIdParamsSchema },
+    request: {
+      params: maintenanceTicketIdParamsSchema,
+      body: {
+        required: false,
+        content: { 'application/json': { schema: resolveMaintenanceTicketRequestSchema } },
+      },
+    },
     responses: {
       200: {
         description: 'Chamado aguardando confirmacao.',
@@ -257,61 +289,6 @@ export function registerMaintenanceOpenApi(registry: OpenAPIRegistry): void {
         description: 'Chamado não encontrado neste tenant.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
-    },
-  })
-
-  registry.registerPath({
-    method: 'post',
-    path: '/maintenance/tickets/{id}/attachments',
-    tags: ['Maintenance'],
-    summary: 'Anexa uma imagem ao chamado',
-    description:
-      'Requer a permissao collaborate. O arquivo fica privado e é servido por /maintenance/media/{key}.',
-    security: [{ bearerAuth: [] }],
-    request: {
-      params: maintenanceTicketIdParamsSchema,
-      body: {
-        required: true,
-        content: { 'multipart/form-data': { schema: maintenanceAttachmentUploadRequestSchema } },
-      },
-    },
-    responses: {
-      201: {
-        description: 'Anexo registrado no chamado.',
-        content: { 'application/json': { schema: maintenanceAttachmentResponseSchema } },
-      },
-      400: {
-        description: 'Arquivo ausente, vazio, maior que 8 MiB ou de tipo não suportado.',
-        content: { 'application/json': { schema: errorResponseSchema } },
-      },
-      403: { description: 'Anexos nao permitidos para este usuario ou estado.' },
-      404: {
-        description: 'Chamado não encontrado neste tenant.',
-        content: { 'application/json': { schema: errorResponseSchema } },
-      },
-    },
-  })
-
-  registry.registerPath({
-    method: 'get',
-    path: '/maintenance/media/{key}',
-    tags: ['Maintenance'],
-    summary: 'Consulta uma imagem privada anexada a um chamado',
-    description:
-      'Aceita o token ou o cookie de sessão, para uso em <img>. Serve somente chaves sob maintenance/ de anexos de chamados que o usuário pode ver; outras chaves retornam 404 antes da consulta ao armazenamento.',
-    security: [{ bearerAuth: [] }],
-    request: { params: maintenanceMediaKeyParamsSchema },
-    responses: {
-      200: {
-        description: 'Conteúdo binário sem cache compartilhado (private, no-store).',
-        content: {
-          'image/jpeg': { schema: maintenanceMediaBinarySchema },
-          'image/png': { schema: maintenanceMediaBinarySchema },
-          'image/webp': { schema: maintenanceMediaBinarySchema },
-          'application/octet-stream': { schema: maintenanceMediaBinarySchema },
-        },
-      },
-      404: { description: 'Anexo inexistente ou fora do escopo do usuário.' },
     },
   })
 }

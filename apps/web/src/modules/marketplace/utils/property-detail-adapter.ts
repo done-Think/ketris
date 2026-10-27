@@ -2,7 +2,7 @@ import type { PublicPropertyDetail } from '../types/public-property'
 import type { MarketplacePropertyDetail } from '../types/property-detail'
 import type { SearchResultProperty } from '../types/search'
 import type { AppLocale } from '@/i18n/types/locale.types'
-import type { PropertyText } from './property-presentation'
+import type { PropertyText } from '../types/search'
 import { formatCompactCurrency } from './search-results'
 
 const fallbackImage =

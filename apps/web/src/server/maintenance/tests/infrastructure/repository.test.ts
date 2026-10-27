@@ -1,12 +1,12 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { prisma } from '@server/db/prisma'
+import { ConflictError } from '@server/shared/errors'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   PrismaMaintenanceTicketRepository,
   maintenanceTicketScope,
 } from '../../infrastructure/prisma-maintenance-ticket.repository'
 import type { MaintenanceActor, MaintenanceTicket } from '../../types/maintenance-ticket'
-import { ConflictError } from '@server/shared/errors'
 
 vi.mock('@server/db/prisma', () => ({ prisma: { $transaction: vi.fn() } }))
 const actor: MaintenanceActor = {
@@ -15,7 +15,6 @@ const actor: MaintenanceActor = {
   actorPapel: 'RENTER',
   actorName: 'Renter',
 }
-const unusedContractPartyLinker = () => ({ execute: vi.fn() })
 describe('Maintenance repository boundary and atomic writes', () => {
   beforeEach(() => vi.clearAllMocks())
   it('scopes renter lists and counts through explicit contract party ID', () => {
@@ -64,7 +63,7 @@ describe('Maintenance repository boundary and atomic writes', () => {
       deletedAt: null,
       updatedAt: new Date('2026-10-14T00:00:00Z'),
     } as MaintenanceTicket
-    const repository = new PrismaMaintenanceTicketRepository(unusedContractPartyLinker)
+    const repository = new PrismaMaintenanceTicketRepository()
     await expect(
       repository.mutate(
         ticket,
@@ -102,7 +101,7 @@ describe('Maintenance repository boundary and atomic writes', () => {
       updatedAt: new Date(),
     } as MaintenanceTicket
     await expect(
-      new PrismaMaintenanceTicketRepository(unusedContractPartyLinker).mutate(
+      new PrismaMaintenanceTicketRepository().mutate(
         ticket,
         { provider: { name: 'New' } },
         { type: 'TROCA_DECIDIDA', message: 'Approved', authorId: 'admin', authorName: 'Admin' },

@@ -1,10 +1,13 @@
-import type { MaintenanceTicketRepository } from '../ports/maintenance-ticket-repository.port'
-import { assertPermission } from '../../domain/maintenance-access-rules'
-import { assertValidMaintenanceAttachment } from '../../domain/maintenance-attachment-rules'
+import { MaintenanceAttachmentValidationError } from '../../domain/errors'
+import type { MaintenanceAttachmentStoragePort } from '../../types/maintenance-attachment-storage'
 import type { MaintenanceAttachment } from '../../types/maintenance-ticket'
 import type { UploadMaintenanceTicketAttachmentInput } from '../../types/use-case-inputs'
-import type { MaintenanceAttachmentStoragePort } from '../ports/maintenance-attachment-storage.port'
+import { assertPermission } from '../authorization'
+import type { MaintenanceTicketRepository } from '../ports/maintenance-ticket-repository.port'
 import { loadTicket } from '../workflow'
+
+const allowedContentTypes = new Set(['image/jpeg', 'image/png', 'image/webp'])
+const maxFileSizeBytes = 8 * 1024 * 1024
 
 export class UploadMaintenanceTicketAttachmentUseCase {
   constructor(
@@ -15,7 +18,20 @@ export class UploadMaintenanceTicketAttachmentUseCase {
   async execute(input: UploadMaintenanceTicketAttachmentInput): Promise<MaintenanceAttachment> {
     const existing = await loadTicket(this.maintenanceTicketRepository, input, input.ticketId)
     assertPermission(input, existing, 'collaborate')
-    assertValidMaintenanceAttachment(input.body.byteLength, input.contentType)
+
+    if (input.body.byteLength === 0) {
+      throw new MaintenanceAttachmentValidationError('Arquivo vazio.')
+    }
+
+    if (input.body.byteLength > maxFileSizeBytes) {
+      throw new MaintenanceAttachmentValidationError('Imagem muito grande. O limite é 8MB.')
+    }
+
+    if (!allowedContentTypes.has(input.contentType)) {
+      throw new MaintenanceAttachmentValidationError(
+        'Formato de imagem não suportado. Use JPEG, PNG ou WebP.',
+      )
+    }
 
     const uploaded = await this.attachmentStorage.upload({
       tenantId: existing.tenantId,

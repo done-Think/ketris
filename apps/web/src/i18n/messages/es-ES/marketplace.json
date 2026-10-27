@@ -250,6 +250,7 @@
       "submit": "Enviar",
       "success": "¡Mensaje enviado! El corredor se pondrá en contacto pronto.",
       "error": "No fue posible enviar tu mensaje. Inténtalo de nuevo.",
+      "rateLimited": "Enviaste demasiados mensajes en poco tiempo. Espera unos minutos e inténtalo de nuevo.",
       "errors": {
         "nameRequired": "Indica tu nombre",
         "emailInvalid": "Indica un correo electrónico válido",

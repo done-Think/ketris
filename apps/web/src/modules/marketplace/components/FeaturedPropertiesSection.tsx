@@ -1,3 +1,5 @@
+'use client'
+
 import { Box, Container, Skeleton } from '@mui/material'
 import NorthEastOutlinedIcon from '@mui/icons-material/NorthEastOutlined'
 import { useTranslations } from 'next-intl'

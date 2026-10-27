@@ -9,12 +9,13 @@ import { MaintenanceDashboardPage } from '../../components/MaintenanceDashboardP
 import {
   useCreateMaintenanceTicket,
   useDeleteMaintenanceTicket,
+  useMaintenanceOptions,
   useMaintenanceTicket,
   useMaintenanceTickets,
   useUpdateMaintenanceTicket,
-  useMaintenanceOptions,
 } from '../../hooks/use-maintenance'
 import type { ApiMaintenanceTicket, ApiMaintenanceTicketListItem } from '../../types/service'
+import { normalizeMaintenanceCategory } from '@server/maintenance/constants/maintenance-categories'
 
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
@@ -46,7 +47,7 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     id: 'MNT-0089',
     propertyId: 'p1',
     propertyTitle: 'Apt Jardins 3q',
-    category: 'PLUMBING',
+    category: 'Hidráulica',
     priority: 'URGENTE',
     status: 'EM_ANDAMENTO',
     title: 'Vazamento na cozinha',
@@ -59,7 +60,7 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     id: 'MNT-0088',
     propertyId: 'p2',
     propertyTitle: 'Studio Pinheiros',
-    category: 'ELECTRICAL',
+    category: 'Elétrica',
     priority: 'ALTA',
     status: 'ABERTO',
     title: 'Tomada com defeito',
@@ -72,7 +73,7 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     id: 'MNT-0087',
     propertyId: 'p3',
     propertyTitle: 'Casa Vila Madalena',
-    category: 'STRUCTURAL',
+    category: 'Estrutural',
     priority: 'ALTA',
     status: 'EM_ANDAMENTO',
     title: 'Rachadura na parede',
@@ -85,7 +86,7 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     id: 'MNT-0086',
     propertyId: 'p4',
     propertyTitle: 'Cobertura Moema',
-    category: 'PAINTING',
+    category: 'Pintura',
     priority: 'NORMAL',
     status: 'RESOLVIDO',
     title: 'Pintura descascando',
@@ -108,7 +109,7 @@ const fullTicket: ApiMaintenanceTicket = {
   id: 'MNT-0089',
   propertyId: 'p1',
   propertyTitle: 'Apt Jardins 3q',
-  category: 'PLUMBING',
+  category: 'Hidráulica',
   priority: 'URGENTE',
   status: 'EM_ANDAMENTO',
   title: 'Vazamento na cozinha',
@@ -134,8 +135,8 @@ function mockDefaults() {
       (item) =>
         (!filters.status || item.status === filters.status) &&
         (!filters.priority || item.priority === filters.priority) &&
+        (!filters.category || normalizeMaintenanceCategory(item.category) === filters.category) &&
         (!filters.propertyId || item.propertyId === filters.propertyId) &&
-        (!filters.category || item.category === filters.category) &&
         (!filters.search ||
           item.title.toLocaleLowerCase().includes(filters.search.toLocaleLowerCase())),
     )
@@ -144,6 +145,18 @@ function mockDefaults() {
       data: {
         items: filtered.map((item) => ({ ...item, permissions: { edit: true, delete: true } })),
         totalCount: filtered.length,
+        pagination: {
+          page: filters.page ?? 1,
+          pageSize: filters.pageSize ?? 5,
+          totalCount: filtered.length,
+          pageCount: 1,
+        },
+        summary: {
+          totalCount: 4,
+          urgentCount: 1,
+          byStatus: { ABERTO: 1, EM_ANDAMENTO: 2, RESOLVIDO: 1 },
+          averageResolutionDays: 1,
+        },
       },
       isLoading: false,
     } as unknown as ReturnType<typeof useMaintenanceTickets>
@@ -299,7 +312,7 @@ describe('MaintenanceDashboardPage', () => {
     expect(screen.queryByRole('button', { name: 'Arquivados' })).not.toBeInTheDocument()
   })
 
-  it('computes the open and urgent metric cards from the loaded tickets', () => {
+  it('computes the open and urgent metric cards from server-wide summaries', () => {
     render(<MaintenanceDashboardPage />)
 
     const openCard = screen.getByText('Abertos').closest('div')!.parentElement!
@@ -308,7 +321,7 @@ describe('MaintenanceDashboardPage', () => {
     const urgentCard = screen.getByText('Urgentes').closest('div')!.parentElement!
     expect(urgentCard).toHaveTextContent('1')
 
-    expect(screen.getByText('1.0 dias')).toBeVisible()
+    expect(screen.getByText('1,0 dias')).toBeVisible()
   })
 
   it('filters tickets by property', async () => {
@@ -323,19 +336,6 @@ describe('MaintenanceDashboardPage', () => {
     expect(screen.queryByText('MNT-0089')).not.toBeInTheDocument()
   })
 
-  it('filters tickets by category code and shows translated category labels', async () => {
-    const user = userEvent.setup()
-    render(<MaintenanceDashboardPage />)
-
-    const [, categorySelect] = screen.getAllByRole('combobox')
-    await user.click(categorySelect)
-    expect(await screen.findByRole('option', { name: 'Todas as categorias' })).toBeVisible()
-    await user.click(await screen.findByRole('option', { name: 'Pintura' }))
-
-    expect(screen.getByText('MNT-0086')).toBeVisible()
-    expect(screen.queryByText('MNT-0087')).not.toBeInTheDocument()
-  })
-
   it('filters tickets by status', async () => {
     const user = userEvent.setup()
     render(<MaintenanceDashboardPage />)
@@ -344,6 +344,23 @@ describe('MaintenanceDashboardPage', () => {
 
     expect(screen.getByText('MNT-0088')).toBeVisible()
     expect(screen.queryByText('MNT-0089')).not.toBeInTheDocument()
+  })
+
+  it('filters by category through the shared controls and preserves global metrics', async () => {
+    const user = userEvent.setup()
+    render(<MaintenanceDashboardPage />)
+    await user.click(screen.getByRole('button', { name: 'Filtros' }))
+    const dialog = screen.getByRole('dialog', { name: 'Filtros' })
+    await user.click(within(dialog).getByLabelText('Filtrar por categoria'))
+    await user.click(await screen.findByRole('option', { name: 'Elétrica' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Fechar filtros' }))
+    expect(screen.getByText('MNT-0088')).toBeVisible()
+    expect(screen.queryByText('MNT-0089')).not.toBeInTheDocument()
+    expect(useMaintenanceTickets).toHaveBeenLastCalledWith(
+      'tenant-1',
+      expect.objectContaining({ category: 'ELECTRICAL', page: 1 }),
+    )
+    expect(screen.getByText('1,0 dias')).toBeVisible()
   })
 
   it('creates a ticket through the mutation and closes the dialog on success', async () => {
@@ -355,7 +372,7 @@ describe('MaintenanceDashboardPage', () => {
     await user.click(screen.getByRole('button', { name: 'Novo Chamado' }))
     await user.click(screen.getByLabelText('Contrato / imóvel'))
     await user.click(await screen.findByRole('option', { name: 'C-p1 - Apt Jardins 3q' }))
-    await user.click(within(screen.getByRole('dialog')).getByLabelText('Categoria'))
+    await user.click(screen.getByLabelText('Categoria'))
     await user.click(await screen.findByRole('option', { name: 'Hidráulica' }))
     await user.type(screen.getByLabelText('Título do Chamado'), 'Vazamento na cozinha')
     await user.type(screen.getByLabelText('Relato do Problema'), 'A pia está vazando.')

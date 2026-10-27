@@ -1,27 +1,26 @@
-import { describe, expect, it, vi } from 'vitest'
 import { ConflictError, ForbiddenError } from '@server/shared/errors'
+import { describe, expect, it, vi } from 'vitest'
+import { canAccessTicket, publicTicket } from '../../../application/authorization'
+import { AddMaintenanceTicketNoteUseCase } from '../../../application/use-cases/add-maintenance-ticket-note.use-case'
+import { CreateMaintenanceTicketUseCase } from '../../../application/use-cases/create-maintenance-ticket.use-case'
+import { GetMaintenanceTicketUseCase } from '../../../application/use-cases/get-maintenance-ticket.use-case'
+import { ListMaintenanceTicketActivitiesUseCase } from '../../../application/use-cases/list-maintenance-ticket-activities.use-case'
+import { ListMaintenanceTicketsUseCase } from '../../../application/use-cases/list-maintenance-tickets.use-case'
+import { UploadMaintenanceTicketAttachmentUseCase } from '../../../application/use-cases/upload-maintenance-ticket-attachment.use-case'
+import { deleteTicket, updateTicket } from '../../../application/workflow'
 import {
   MaintenancePropertyNotFoundError,
   MaintenanceTicketNotFoundError,
 } from '../../../domain/errors'
-import { CreateMaintenanceTicketUseCase } from '../../../application/use-cases/create-maintenance-ticket.use-case'
-import { GetMaintenanceTicketUseCase } from '../../../application/use-cases/get-maintenance-ticket.use-case'
-import { ListMaintenanceTicketsUseCase } from '../../../application/use-cases/list-maintenance-tickets.use-case'
-import { AddMaintenanceTicketNoteUseCase } from '../../../application/use-cases/add-maintenance-ticket-note.use-case'
-import { UploadMaintenanceTicketAttachmentUseCase } from '../../../application/use-cases/upload-maintenance-ticket-attachment.use-case'
-import { ListMaintenanceTicketActivitiesUseCase } from '../../../application/use-cases/list-maintenance-ticket-activities.use-case'
-import { deleteTicket, updateTicket } from '../../../application/workflow'
-import { toPublicMaintenanceTicket } from '../../../application/maintenance-ticket-response'
-import { canAccessTicket } from '../../../domain/maintenance-access-rules'
 import {
   actor,
   admin,
   agent,
+  contract,
   owner,
   renter,
-  contract,
-  ticket,
   repository,
+  ticket,
 } from '../../fixtures/maintenance-ticket'
 
 describe('Maintenance access', () => {
@@ -34,7 +33,7 @@ describe('Maintenance access', () => {
       contractId: contract.id,
       title: 'Leak',
       description: 'Details',
-      category: 'PLUMBING',
+      category: 'Plumbing',
       priority: 'NORMAL',
     })
     expect(repo.create).toHaveBeenCalledWith(
@@ -47,7 +46,6 @@ describe('Maintenance access', () => {
     expect(repo.findActivities).toHaveBeenCalledWith(ticket.tenantId, ticket.id)
     const storage = {
       upload: vi.fn().mockResolvedValue({ url: 'private.png', contentType: 'image/png' }),
-      download: vi.fn(),
     }
     await new UploadMaintenanceTicketAttachmentUseCase(repo, storage).execute({
       ...sharedRenter,
@@ -138,7 +136,7 @@ describe('Maintenance access', () => {
         ...user,
         contractId: contract.id,
         title: 'Leak',
-        category: 'PLUMBING',
+        category: 'Plumbing',
         description: 'Leak',
         priority: 'NORMAL',
       })
@@ -161,7 +159,7 @@ describe('Maintenance access', () => {
           ...input,
           contractId: contract.id,
           title: 'Leak',
-          category: 'PLUMBING',
+          category: 'Plumbing',
           description: 'Leak',
           priority: 'NORMAL',
         }),
@@ -222,7 +220,7 @@ describe('Maintenance access', () => {
   )
 
   it('strips internal membership data from responses', () => {
-    expect(toPublicMaintenanceTicket(ticket, renter)).not.toHaveProperty('access')
-    expect(toPublicMaintenanceTicket(ticket, renter).permissions.edit).toBe(false)
+    expect(publicTicket(ticket, renter)).not.toHaveProperty('access')
+    expect(publicTicket(ticket, renter).permissions.edit).toBe(false)
   })
 })

@@ -1,6 +1,8 @@
 'use client'
 
-import { useMemo } from 'react'
+import * as maintenanceStyles from '../styles/maintenance-links-dialog.styles'
+
+import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Button,
   Dialog,
@@ -11,48 +13,45 @@ import {
   Stack,
   TextField,
 } from '@mui/material'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { RhfTextField } from '@shared/components/form'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
-import { Controller, useForm } from 'react-hook-form'
-
-import { RhfTextField } from '@shared/components/form'
-
-import { useLinkMaintenanceUsers, useMaintenanceOptions } from '../hooks/use-maintenance'
+import { useMemo } from 'react'
+import { Controller, useForm, useWatch } from 'react-hook-form'
+import { useMaintenanceOptions, useRegularizeMaintenanceLinks } from '../hooks/use-maintenance'
+import { useMaintenanceErrorMessage } from '../hooks/use-maintenance-error-message'
 import { createMaintenanceLinksSchema } from '../schemas/maintenance-links-schema'
-import type { MaintenanceLinksDialogProps, MaintenanceLinksFormValues } from '../types/maintenance'
-import { errorMessage } from '../utils/error-message'
+import type { MaintenanceLinksDialogProps } from '../types/maintenance'
+import type { MaintenanceLinksFormValues } from '../types/maintenance-links'
 
-const emptyValues: MaintenanceLinksFormValues = {
-  contractId: '',
-  ownerId: '',
-  partyId: '',
-  renterId: '',
+export function MaintenanceLinksDialog(props: MaintenanceLinksDialogProps) {
+  return props.open ? <MaintenanceLinksForm {...props} /> : null
 }
 
-export function MaintenanceLinksDialog({ open, onClose }: MaintenanceLinksDialogProps) {
+function MaintenanceLinksForm({ onClose }: MaintenanceLinksDialogProps) {
+  const errorMessage = useMaintenanceErrorMessage()
   const t = useTranslations('dashboard.maintenance.links')
   const { data: options } = useMaintenanceOptions()
-  const linkUsers = useLinkMaintenanceUsers()
+  const mutation = useRegularizeMaintenanceLinks()
   const { enqueueSnackbar } = useSnackbar()
-  const schema = useMemo(() => createMaintenanceLinksSchema((key) => t(`errors.${key}`)), [t])
+  const schema = useMemo(() => createMaintenanceLinksSchema((key) => t(`validation.${key}`)), [t])
   const {
     control,
     handleSubmit,
     setValue,
-    watch,
     formState: { isValid },
   } = useForm<MaintenanceLinksFormValues>({
+    defaultValues: { contractId: '', ownerId: '', partyId: '', renterId: '' },
     resolver: zodResolver(schema),
     mode: 'onChange',
-    defaultValues: emptyValues,
   })
-  const [contractId, partyId] = watch(['contractId', 'partyId'])
+  const contractId = useWatch({ control, name: 'contractId' })
+  const partyId = useWatch({ control, name: 'partyId' })
   const contract = options?.contracts.find((item) => item.id === contractId)
 
   async function submit(values: MaintenanceLinksFormValues) {
     try {
-      await linkUsers.mutateAsync({
+      await mutation.mutateAsync({
         contractId: values.contractId,
         ownerId: values.ownerId || undefined,
         partyId: values.partyId || undefined,
@@ -66,12 +65,11 @@ export function MaintenanceLinksDialog({ open, onClose }: MaintenanceLinksDialog
   }
 
   return (
-    <Dialog open={open} onClose={() => !linkUsers.isPending && onClose()} fullWidth maxWidth="sm">
+    <Dialog open onClose={() => !mutation.isPending && onClose()} fullWidth maxWidth="sm">
       <form noValidate onSubmit={handleSubmit(submit)}>
         <DialogTitle>{t('title')}</DialogTitle>
         <DialogContent>
-          <Stack spacing={2} sx={{ pt: 1 }}>
-            {/* Choosing another contract invalidates every choice made for the previous one. */}
+          <Stack spacing={2} sx={maintenanceStyles.stackSx}>
             <Controller
               control={control}
               name="contractId"
@@ -79,14 +77,14 @@ export function MaintenanceLinksDialog({ open, onClose }: MaintenanceLinksDialog
                 <TextField
                   {...field}
                   label={t('contract')}
-                  select
                   required
+                  select
                   error={Boolean(fieldState.error)}
                   helperText={fieldState.error?.message}
                   onChange={(event) => {
                     field.onChange(event)
-                    setValue('ownerId', '')
-                    setValue('partyId', '')
+                    setValue('ownerId', '', { shouldValidate: true })
+                    setValue('partyId', '', { shouldValidate: true })
                     setValue('renterId', '', { shouldValidate: true })
                   }}
                 >
@@ -111,11 +109,13 @@ export function MaintenanceLinksDialog({ open, onClose }: MaintenanceLinksDialog
             <Controller
               control={control}
               name="partyId"
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <TextField
                   {...field}
                   label={t('party')}
                   select
+                  error={Boolean(fieldState.error)}
+                  helperText={fieldState.error?.message}
                   onChange={(event) => {
                     field.onChange(event)
                     setValue('renterId', '', { shouldValidate: true })
@@ -133,7 +133,7 @@ export function MaintenanceLinksDialog({ open, onClose }: MaintenanceLinksDialog
               )}
             />
             {partyId && (
-              <RhfTextField control={control} name="renterId" label={t('renter')} select required>
+              <RhfTextField control={control} name="renterId" label={t('renter')} required select>
                 {(options?.users ?? [])
                   .filter((user) => user.role === 'RENTER')
                   .map((user) => (
@@ -146,10 +146,10 @@ export function MaintenanceLinksDialog({ open, onClose }: MaintenanceLinksDialog
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button disabled={linkUsers.isPending} onClick={onClose}>
+          <Button disabled={mutation.isPending} onClick={onClose}>
             {t('back')}
           </Button>
-          <Button type="submit" variant="contained" disabled={!isValid || linkUsers.isPending}>
+          <Button type="submit" variant="contained" disabled={mutation.isPending || !isValid}>
             {t('save')}
           </Button>
         </DialogActions>

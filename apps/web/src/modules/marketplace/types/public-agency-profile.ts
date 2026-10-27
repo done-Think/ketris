@@ -42,6 +42,9 @@ export interface PublicAgencyProfile {
 
 export interface ListAgencyProfilesResponse {
   agencies: PublicAgencyProfile[]
+  totalCount: number
+  page: number
+  pageSize: number
 }
 
 export interface AgencyProfileResponse {

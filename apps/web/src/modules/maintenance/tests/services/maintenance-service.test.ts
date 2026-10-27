@@ -1,68 +1,79 @@
-// @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-
-import type { HttpClient } from '@shared/lib/api/http-client'
-
+import { HttpClient } from '@shared/lib/api/http-client'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { MaintenanceService } from '../../services/maintenance-service'
-import type { ApiMaintenanceTicket } from '../../types/service'
+import { MaintenanceUploadValidationError } from '../../utils/maintenance-file'
 
-function mockClient() {
-  return { get: vi.fn(), post: vi.fn(), patch: vi.fn(), put: vi.fn(), delete: vi.fn() }
-}
+vi.mock('../../utils/maintenance-file', async (original) => ({
+  ...(await original<typeof import('../../utils/maintenance-file')>()),
+  maintenanceFileSha256: vi.fn().mockResolvedValue('ab'.repeat(32)),
+}))
 
-const ticket = { id: 'ticket-1' } as ApiMaintenanceTicket
-let http: ReturnType<typeof mockClient>
-let service: MaintenanceService
-
-beforeEach(() => {
-  http = mockClient()
-  service = new MaintenanceService(http as unknown as HttpClient)
-})
-
-describe('MaintenanceService', () => {
-  it('lists tickets sending only the filled filters, category included', async () => {
-    http.get.mockResolvedValue({ items: [], totalCount: 0 })
-    await service.list({ category: 'ELECTRICAL', search: '', page: 2, archived: false })
-    expect(http.get).toHaveBeenCalledWith('/maintenance/tickets', {
-      params: { category: 'ELECTRICAL', page: '2' },
+describe('MaintenanceService direct upload', () => {
+  afterEach(() => vi.unstubAllGlobals())
+  function setup(ok = true) {
+    const http = new HttpClient()
+    const post = vi
+      .spyOn(http, 'post')
+      .mockResolvedValueOnce({
+        upload: {
+          url: 'https://private.example.test/object',
+          headers: { 'Content-Type': 'image/png', 'x-amz-checksum-sha256': 'checksum' },
+        },
+        token: 'signed-grant',
+      })
+      .mockResolvedValueOnce({ attachment: { id: 'attachment-1' } })
+    const put = vi.fn().mockResolvedValue({ ok })
+    vi.stubGlobal('fetch', put)
+    return { service: new MaintenanceService(http), post, put }
+  }
+  it('passes category filtering and pagination to the server without losing custom categories', async () => {
+    const http = new HttpClient()
+    const get = vi.spyOn(http, 'get').mockResolvedValue({ items: [], totalCount: 0 })
+    await new MaintenanceService(http).list({ category: 'Serralheria', page: 2, pageSize: 5 })
+    expect(get).toHaveBeenCalledWith('/maintenance/tickets', {
+      params: { category: 'Serralheria', page: '2', pageSize: '5' },
     })
   })
-
-  it('unwraps the ticket from detail, mutation and action responses', async () => {
-    http.get.mockResolvedValue({ ticket })
-    http.post.mockResolvedValue({ ticket })
-    http.patch.mockResolvedValue({ ticket })
-
-    await expect(service.get('ticket-1')).resolves.toBe(ticket)
-    await expect(service.update('ticket-1', { title: 'Novo' })).resolves.toBe(ticket)
-    await expect(service.resolve('ticket-1')).resolves.toBe(ticket)
-    await expect(service.act('ticket-1', { action: 'start' })).resolves.toBe(ticket)
-    expect(http.post).toHaveBeenCalledWith('/maintenance/tickets/ticket-1/actions', {
-      action: 'start',
+  it('sends the file straight to storage without application credentials and confirms afterward', async () => {
+    const { service, post, put } = setup()
+    const file = new File(['image'], 'repair.png', { type: 'image/png' })
+    expect(await service.uploadAttachment('ticket-1', file)).toEqual({ id: 'attachment-1' })
+    expect(post.mock.calls[0]).toEqual([
+      '/maintenance/tickets/ticket-1/attachments/upload',
+      { filename: file.name, size: file.size, contentType: file.type, sha256: 'ab'.repeat(32) },
+    ])
+    expect(put).toHaveBeenCalledWith('https://private.example.test/object', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'image/png', 'x-amz-checksum-sha256': 'checksum' },
+      credentials: 'omit',
+      body: file,
     })
+    expect(post.mock.calls[1]).toEqual([
+      '/maintenance/tickets/ticket-1/attachments/complete',
+      { token: 'signed-grant' },
+    ])
+    expect(post.mock.invocationCallOrder[1]).toBeGreaterThan(put.mock.invocationCallOrder[0])
   })
-
-  it('sends notes, attachments and user links to their routes', async () => {
-    http.post
-      .mockResolvedValueOnce({ activity: { id: 'a1' } })
-      .mockResolvedValueOnce({ attachment: { id: 'f1' } })
-      .mockResolvedValueOnce(undefined)
-    http.get.mockResolvedValue({ activities: [{ id: 'a1' }] })
-
-    await expect(service.addNote('ticket-1', 'Olá')).resolves.toEqual({ id: 'a1' })
+  it('never confirms a failed storage upload', async () => {
+    const { service, post } = setup(false)
     await expect(
-      service.uploadAttachment('ticket-1', new File(['x'], 'foto.png', { type: 'image/png' })),
-    ).resolves.toEqual({ id: 'f1' })
-    await service.linkUsers({ contractId: 'c1', ownerId: 'o1' })
-    await expect(service.listActivities('ticket-1')).resolves.toEqual([{ id: 'a1' }])
-
-    expect(http.post).toHaveBeenNthCalledWith(1, '/maintenance/tickets/ticket-1/notes', {
-      message: 'Olá',
-    })
-    expect(http.post.mock.calls[1][1]).toBeInstanceOf(FormData)
-    expect(http.post).toHaveBeenNthCalledWith(3, '/maintenance/links', {
-      contractId: 'c1',
-      ownerId: 'o1',
-    })
+      service.uploadAttachment(
+        'ticket-1',
+        new File(['image'], 'repair.png', { type: 'image/png' }),
+      ),
+    ).rejects.toThrow()
+    expect(post).toHaveBeenCalledTimes(1)
+  })
+  it.each([
+    new File([], 'empty.png', { type: 'image/png' }),
+    new File(['text'], 'text.txt', { type: 'text/plain' }),
+    new File([new Uint8Array(8 * 1024 * 1024 + 1)], 'large.png', { type: 'image/png' }),
+  ])('rejects an invalid file before authorization', async (file) => {
+    const { service, post, put } = setup()
+    await expect(service.uploadAttachment('ticket-1', file)).rejects.toBeInstanceOf(
+      MaintenanceUploadValidationError,
+    )
+    expect(post).not.toHaveBeenCalled()
+    expect(put).not.toHaveBeenCalled()
   })
 })

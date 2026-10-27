@@ -4,7 +4,6 @@ import type {
   ListPropertiesResponse,
   PropertyDetailResponse,
   PublicPropertyDetail,
-  PublicPropertySummary,
   SearchPropertiesFilters,
   SubmitInquiryPayload,
   SubmitInquiryResponse,
@@ -14,7 +13,7 @@ import type {
 export class MarketplaceService extends BaseService {
   private readonly propertiesPath = '/marketplace/properties'
 
-  searchProperties(filters: SearchPropertiesFilters = {}): Promise<PublicPropertySummary[]> {
+  searchProperties(filters: SearchPropertiesFilters = {}): Promise<ListPropertiesResponse> {
     const params = {
       ...(filters.purpose ? { purpose: filters.purpose } : {}),
       ...(filters.propertyType ? { propertyType: filters.propertyType } : {}),
@@ -24,11 +23,11 @@ export class MarketplaceService extends BaseService {
       ...(filters.minArea ? { minArea: filters.minArea } : {}),
       ...(filters.hasParking ? { hasParking: 'true' } : {}),
       ...(filters.sortBy ? { sortBy: filters.sortBy } : {}),
+      ...(filters.page ? { page: filters.page } : {}),
+      ...(filters.pageSize ? { pageSize: filters.pageSize } : {}),
     }
 
-    return this.http
-      .get<ListPropertiesResponse>(this.propertiesPath, { params })
-      .then((data) => data.properties)
+    return this.http.get<ListPropertiesResponse>(this.propertiesPath, { params })
   }
 
   getById(id: string): Promise<PublicPropertyDetail> {

@@ -1,15 +1,15 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Prisma } from '@prisma/client'
 import { prisma } from '@server/db/prisma'
-import { ConflictError } from '@server/shared/errors'
+import { ConflictError, ForbiddenError } from '@server/shared/errors'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { regularizeMaintenanceLinks } from '../../infrastructure/prisma-maintenance-links'
-import { admin } from '../fixtures/maintenance-ticket'
+import { admin, renter } from '../fixtures/maintenance-ticket'
 
 vi.mock('@server/db/prisma', () => ({ prisma: { $transaction: vi.fn() } }))
 
 const input = { contractId: 'contract-1', ownerId: 'owner' }
-const linker = () => ({ execute: vi.fn() })
+const linkParty = vi.fn().mockResolvedValue(undefined)
 
 function serializationFailure() {
   return new Prisma.PrismaClientKnownRequestError('serialization failure', {
@@ -19,19 +19,22 @@ function serializationFailure() {
 }
 
 describe('Maintenance link regularization transaction', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => vi.resetAllMocks())
 
-  it('retries a false serialization conflict and succeeds', async () => {
+  it('retries a serialization conflict and succeeds', async () => {
     vi.mocked(prisma.$transaction)
       .mockRejectedValueOnce(serializationFailure())
       .mockResolvedValueOnce(undefined)
-    await expect(regularizeMaintenanceLinks(admin, input, linker)).resolves.toBeUndefined()
+    await expect(regularizeMaintenanceLinks(admin, input, linkParty)).resolves.toBeUndefined()
     expect(prisma.$transaction).toHaveBeenCalledTimes(2)
+    expect(prisma.$transaction).toHaveBeenLastCalledWith(expect.any(Function), {
+      isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+    })
   })
 
-  it('reports a conflict only after every attempt fails', async () => {
+  it('reports a conflict after three failed attempts', async () => {
     vi.mocked(prisma.$transaction).mockRejectedValue(serializationFailure())
-    await expect(regularizeMaintenanceLinks(admin, input, linker)).rejects.toBeInstanceOf(
+    await expect(regularizeMaintenanceLinks(admin, input, linkParty)).rejects.toBeInstanceOf(
       ConflictError,
     )
     expect(prisma.$transaction).toHaveBeenCalledTimes(3)
@@ -40,7 +43,14 @@ describe('Maintenance link regularization transaction', () => {
   it('does not retry other failures', async () => {
     const failure = new Error('boom')
     vi.mocked(prisma.$transaction).mockRejectedValue(failure)
-    await expect(regularizeMaintenanceLinks(admin, input, linker)).rejects.toBe(failure)
+    await expect(regularizeMaintenanceLinks(admin, input, linkParty)).rejects.toBe(failure)
     expect(prisma.$transaction).toHaveBeenCalledTimes(1)
+  })
+
+  it('rejects unauthorized actors before opening a transaction', async () => {
+    await expect(regularizeMaintenanceLinks(renter, input, linkParty)).rejects.toBeInstanceOf(
+      ForbiddenError,
+    )
+    expect(prisma.$transaction).not.toHaveBeenCalled()
   })
 })

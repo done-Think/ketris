@@ -1,9 +1,9 @@
-import { setupMaintenanceIntegration } from '../fixtures/maintenance-api'
-import { describe, expect, it } from 'vitest'
 import { prisma } from '@server/db/prisma'
-import { GET as getTicket, PATCH } from '../../tickets/[id]/route'
-import { POST as addNote } from '../../tickets/[id]/notes/route'
+import { describe, expect, it } from 'vitest'
 import { GET as listActivities } from '../../tickets/[id]/activities/route'
+import { POST as addNote } from '../../tickets/[id]/notes/route'
+import { GET as getTicket, PATCH } from '../../tickets/[id]/route'
+import { setupMaintenanceIntegration } from '../fixtures/maintenance-api'
 
 describe('/api/maintenance resolution (database integration)', () => {
   const env = setupMaintenanceIntegration()
@@ -100,11 +100,16 @@ describe('/api/maintenance resolution (database integration)', () => {
       for (const user of [env.fixture.admin, env.fixture.agent, env.fixture.owner]) {
         expect((await action(id, user.token, { action: 'finish' })).status).toBe(403)
       }
-      const response = await action(id, env.fixture.renter.token, {
-        action: 'finish',
-        title: 'Overwrite',
-        description: 'Overwrite',
-      })
+      expect(
+        (
+          await action(id, env.fixture.renter.token, {
+            action: 'finish',
+            title: 'Overwrite',
+            description: 'Overwrite',
+          })
+        ).status,
+      ).toBe(400)
+      const response = await action(id, env.fixture.renter.token, { action: 'finish' })
       expect(response.status).toBe(200)
       const body = await response.json()
       expect(body.ticket).toMatchObject({

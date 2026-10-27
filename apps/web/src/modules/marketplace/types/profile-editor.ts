@@ -1,4 +1,5 @@
 import type { PointerEventHandler } from 'react'
+import type { FieldValues, Resolver } from 'react-hook-form'
 import type { z } from 'zod'
 
 import type { createAgencyPublicProfileEditorSchema } from '../schemas/agency-public-profile-editor-schema'
@@ -40,4 +41,31 @@ export type UseProfileEditorImageUploadParams<TFieldName extends string> = {
 
 export type UseProfileEditorImageUploadResult<TFieldName extends string> = {
   updateImageFromFile: (fieldName: TFieldName, acceptedFiles: File[]) => void
+}
+
+type ProfileEditorMutation<TVariables> = {
+  mutate: (
+    variables: TVariables,
+    options?: { onSuccess?: () => void; onError?: () => void },
+  ) => void
+  isPending: boolean
+}
+
+export type PublicProfileEditorMessage =
+  'saveSuccess' | 'saveError' | 'publishSuccess' | 'publishError' | 'unpublishSuccess'
+
+export type UsePublicProfileEditorParams<
+  TValues extends FieldValues,
+  TDraft,
+  TProfile extends { status: string },
+> = {
+  profile: TProfile | null | undefined
+  toFormValues: (profile: TProfile | null) => TValues
+  toDraft: (values: TValues) => TDraft
+  resolver: Resolver<TValues>
+  publishSchema: z.ZodTypeAny
+  save: ProfileEditorMutation<TDraft>
+  publish: ProfileEditorMutation<void>
+  unpublish: ProfileEditorMutation<void>
+  messages: (key: PublicProfileEditorMessage) => string
 }

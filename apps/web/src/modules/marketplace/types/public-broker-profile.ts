@@ -34,6 +34,9 @@ export interface PublicBrokerProfile {
 
 export interface ListBrokerProfilesResponse {
   brokers: PublicBrokerProfile[]
+  totalCount: number
+  page: number
+  pageSize: number
 }
 
 export interface BrokerProfileResponse {

@@ -1,25 +1,25 @@
 import { formatDate } from '@shared/lib/utils/format'
 import dayjs from 'dayjs'
+import type { MaintenanceDateFormatter } from '../types/formatters'
 
 import type {
+  MaintenanceCreateTicketFormValues,
+  MaintenancePriority,
+  MaintenanceScheduleFormValues,
+  MaintenanceStatus,
+  MaintenanceTicket,
+} from '../types/maintenance'
+import type {
   ApiMaintenanceTicket,
-  ApiMaintenanceTicketCategory,
   ApiMaintenanceTicketListItem,
   ApiMaintenanceTicketPriority,
   ApiMaintenanceTicketStatus,
   CreateMaintenanceTicketPayload,
-  UpdateMaintenanceTicketPayload,
   MaintenanceAction,
+  UpdateMaintenanceTicketPayload,
 } from '../types/service'
-import type {
-  MaintenanceCreateTicketFormValues,
-  MaintenancePriority,
-  MaintenanceStatus,
-  MaintenanceTicket,
-  MaintenanceScheduleFormValues,
-} from '../types/maintenance'
 
-const statusFromApiMap: Record<ApiMaintenanceTicketStatus, MaintenanceStatus> = {
+export const maintenanceStatusFromApiMap: Record<ApiMaintenanceTicketStatus, MaintenanceStatus> = {
   ABERTO: 'open',
   EM_ANDAMENTO: 'inProgress',
   RESOLVIDO: 'resolved',
@@ -52,7 +52,7 @@ const priorityToApiMap: Record<MaintenancePriority, ApiMaintenanceTicketPriority
 }
 
 export function mapMaintenanceStatusFromApi(status: ApiMaintenanceTicketStatus): MaintenanceStatus {
-  return statusFromApiMap[status]
+  return maintenanceStatusFromApiMap[status]
 }
 
 export function mapMaintenanceStatusToApi(status: MaintenanceStatus): ApiMaintenanceTicketStatus {
@@ -73,6 +73,7 @@ export function mapMaintenancePriorityToApi(
 
 export function mapMaintenanceTicketListItemFromApi(
   item: ApiMaintenanceTicketListItem,
+  format: MaintenanceDateFormatter = formatDate,
 ): MaintenanceTicket {
   return {
     id: item.id,
@@ -82,13 +83,16 @@ export function mapMaintenanceTicketListItemFromApi(
     category: item.category,
     priority: mapMaintenancePriorityFromApi(item.priority),
     tenant: item.openedByName,
-    openedAt: formatDate(item.createdAt),
+    openedAt: format(item.createdAt),
     status: mapMaintenanceStatusFromApi(item.status),
     title: item.title,
   }
 }
 
-export function mapMaintenanceTicketFromApi(ticket: ApiMaintenanceTicket): MaintenanceTicket {
+export function mapMaintenanceTicketFromApi(
+  ticket: ApiMaintenanceTicket,
+  format: MaintenanceDateFormatter = formatDate,
+): MaintenanceTicket {
   return {
     id: ticket.id,
     propertyId: ticket.propertyId,
@@ -96,7 +100,7 @@ export function mapMaintenanceTicketFromApi(ticket: ApiMaintenanceTicket): Maint
     category: ticket.category,
     priority: mapMaintenancePriorityFromApi(ticket.priority),
     tenant: ticket.openedByName,
-    openedAt: formatDate(ticket.createdAt),
+    openedAt: format(ticket.createdAt),
     status: mapMaintenanceStatusFromApi(ticket.status),
     title: ticket.title,
     description: ticket.description,
@@ -108,6 +112,7 @@ export function mapMaintenanceTicketToFormValues(
 ): MaintenanceCreateTicketFormValues {
   return {
     contractId: ticket.contractId ?? '',
+    propertyId: ticket.propertyId,
     category: ticket.category,
     priority: mapMaintenancePriorityFromApi(ticket.priority),
     title: ticket.title,
@@ -120,8 +125,7 @@ export function buildCreateMaintenanceTicketPayload(
 ): CreateMaintenanceTicketPayload {
   return {
     contractId: values.contractId ?? '',
-    // The form schema only accepts category codes.
-    category: values.category as ApiMaintenanceTicketCategory,
+    category: values.category,
     priority: mapMaintenancePriorityToApi(values.priority),
     title: values.title,
     description: values.description,
@@ -133,8 +137,7 @@ export function buildUpdateMaintenanceTicketPayload(
 ): UpdateMaintenanceTicketPayload {
   return {
     contractId: values.contractId || undefined,
-    // The form schema only accepts category codes.
-    category: values.category as ApiMaintenanceTicketCategory,
+    category: values.category,
     priority: mapMaintenancePriorityToApi(values.priority),
     title: values.title,
     description: values.description,

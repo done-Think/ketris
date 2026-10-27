@@ -1,18 +1,36 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
+
+import { DIRECTORY_PAGE_SIZE } from '../config/directory'
 
 import { agencyProfileService } from '../services/agency-profile-service'
 import type { SaveAgencyProfileRequest } from '../types/public-agency-profile'
+import { nextDirectoryPage } from '../utils/directory'
 
 export const agencyProfileQueryKeys = {
   all: ['agency-profiles'] as const,
+  list: (search: string) => [...agencyProfileQueryKeys.all, 'list', search] as const,
   detail: (id: string) => [...agencyProfileQueryKeys.all, id] as const,
   own: () => [...agencyProfileQueryKeys.all, 'own'] as const,
 }
 
-export function useAgencyProfiles() {
-  return useQuery({
-    queryKey: agencyProfileQueryKeys.all,
-    queryFn: () => agencyProfileService.list(),
+export function useAgencyProfiles(search: string) {
+  return useInfiniteQuery({
+    queryKey: agencyProfileQueryKeys.list(search),
+    queryFn: ({ pageParam }) =>
+      agencyProfileService.list({
+        q: search || undefined,
+        page: pageParam,
+        pageSize: DIRECTORY_PAGE_SIZE,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: nextDirectoryPage,
+    placeholderData: keepPreviousData,
   })
 }
 

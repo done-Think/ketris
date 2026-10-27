@@ -4,13 +4,13 @@ import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { MaintenanceCreateTicketDialog } from '../../components/MaintenanceCreateTicketDialog'
 import { useMaintenanceOptions } from '../../hooks/use-maintenance'
+import { createMaintenanceTicketSchema } from '../../schemas/maintenance-ticket-schema'
+import type { MaintenanceCreateTicketFormValues } from '../../types/maintenance'
 import {
   maintenanceDraftKey,
   readMaintenanceDraft,
   writeMaintenanceDraft,
 } from '../../utils/maintenance-draft'
-import type { MaintenanceCreateTicketFormValues } from '../../types/maintenance'
-import { createMaintenanceTicketSchema } from '../../schemas/maintenance-ticket-schema'
 
 vi.mock('next-auth/react', () => ({ useSession: vi.fn() }))
 vi.mock('../../hooks/use-maintenance', () => ({ useMaintenanceOptions: vi.fn() }))
@@ -33,7 +33,8 @@ const options = {
 const key = maintenanceDraftKey(session.tenantId, session.user.id)!
 const draft: MaintenanceCreateTicketFormValues = {
   contractId: 'c1',
-  category: 'PLUMBING',
+  propertyId: 'p1',
+  category: 'Hidráulica',
   priority: 'normal',
   title: 'Leak',
   description: 'Kitchen leak',
@@ -79,7 +80,7 @@ describe('Maintenance local draft and submission', () => {
     )
     expect(screen.getByLabelText('Título do Chamado')).toHaveValue('Leak')
   })
-  it('shows only available contract options and keeps the chosen contract in the draft', async () => {
+  it('shows only available contract options and derives the property', async () => {
     const user = userEvent.setup()
     render(<MaintenanceCreateTicketDialog open onClose={vi.fn()} onCreate={vi.fn()} />)
     await user.click(screen.getByLabelText('Contrato / imóvel', { exact: false }))
