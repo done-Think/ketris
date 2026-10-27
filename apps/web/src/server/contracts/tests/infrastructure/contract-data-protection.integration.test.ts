@@ -3,6 +3,7 @@ import { afterAll, beforeAll, expect, it, vi } from 'vitest'
 import { prisma } from '@server/db/prisma'
 import { protectLegacyContractCpfs } from '../../infrastructure/protect-legacy-contract-cpfs'
 import { PrismaContractRepository } from '../../infrastructure/prisma-contract.repository'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 let tenantId: string, contractId: string
 const cpf = '529.982.247-25'
@@ -35,6 +36,7 @@ beforeAll(async () => {
     data: {
       tenantId,
       imovelId: property.id,
+      responsavelId: await propertyResponsibleId(prisma, property.id),
       interessadoNome: 'Pessoa',
       interessadoEmail: 'person@example.test',
       status: 'ACEITA',

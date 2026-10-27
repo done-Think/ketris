@@ -181,7 +181,8 @@
         "whatsApp": "WhatsApp",
         "instagram": "Instagram",
         "site": "Site",
-        "referral": "Referral"
+        "referral": "Referral",
+        "other": "Other"
       },
       "actions": {
         "back": "Back",
@@ -437,10 +438,20 @@
       "statusChanged": "Status changed from {previous} to {next}.",
       "accepted": "Proposal accepted.",
       "rejected": "Proposal rejected.",
-      "informationRequested": "More information requested from the interested party."
+      "informationRequested": "More information requested from the interested party.",
+      "responsibleChanged": "Owner changed:"
     },
     "loadMoreProperties": "Load more properties",
-    "propertyLoadError": "Unable to load properties."
+    "propertyLoadError": "Unable to load properties.",
+    "responsible": {
+      "title": "Owner",
+      "label": "Opportunity owner",
+      "me": "Me",
+      "createHelper": "Who will handle this opportunity.",
+      "changed": "{name} is now the owner.",
+      "changeError": "Could not change the owner.",
+      "invalid": "Choose an active team member."
+    }
   },
   "proposalManagement": {
     "allStatuses": "All",

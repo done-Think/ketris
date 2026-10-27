@@ -34,6 +34,8 @@ const opportunity: Opportunity = {
   tenantId: 'tenant-1',
   contactId: null,
   propertyId: 'property-1',
+  responsibleId: 'agent-1',
+  responsibleName: 'Ana Corretora',
   leadName: 'Maria Silva',
   leadEmail: 'maria@example.com',
   leadPhone: null,

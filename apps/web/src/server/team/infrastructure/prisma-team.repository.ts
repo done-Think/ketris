@@ -14,20 +14,36 @@ import type {
 
 const staffRoles = ['AGENT', 'OWNER'] as const
 
+const openOpportunityWhere = {
+  arquivadaEm: null,
+  status: { not: 'RECUSADA' },
+  contrato: { is: null },
+} satisfies Prisma.OportunidadeWhereInput
+
 function countMap(rows: { key: string | null; count: number }[]): Map<string, number> {
   return new Map(rows.flatMap((row) => (row.key ? [[row.key, row.count] as const] : [])))
 }
 
 async function moveItems(
   tx: Prisma.TransactionClient,
-  { tenantId, sourceId, destinationId, items, now }: TeamTransferCommand,
+  { tenantId, sourceId, destinationId, items, opportunityScope, now }: TeamTransferCommand,
 ): Promise<TeamTransferResult> {
-  const [properties, leads, events] = await Promise.all([
+  const [properties, leads, opportunities, events] = await Promise.all([
     items.properties
       ? tx.imovel.findMany({ where: { tenantId, responsavelId: sourceId }, select: { id: true } })
       : [],
     items.leads
       ? tx.lead.findMany({ where: { tenantId, responsavelId: sourceId }, select: { id: true } })
+      : [],
+    items.opportunities
+      ? tx.oportunidade.findMany({
+          where: {
+            tenantId,
+            responsavelId: sourceId,
+            ...(opportunityScope === 'open' ? openOpportunityWhere : {}),
+          },
+          select: { id: true },
+        })
       : [],
     items.futureEvents
       ? tx.eventoAgenda.findMany({
@@ -44,6 +60,7 @@ async function moveItems(
   const result = {
     propertyIds: properties.map(({ id }) => id),
     leadIds: leads.map(({ id }) => id),
+    opportunityIds: opportunities.map(({ id }) => id),
     eventIds: events.map(({ id }) => id),
   }
   await Promise.all([
@@ -56,6 +73,12 @@ async function moveItems(
     result.leadIds.length
       ? tx.lead.updateMany({
           where: { tenantId, id: { in: result.leadIds } },
+          data: { responsavelId: destinationId },
+        })
+      : null,
+    result.opportunityIds.length
+      ? tx.oportunidade.updateMany({
+          where: { tenantId, id: { in: result.opportunityIds } },
           data: { responsavelId: destinationId },
         })
       : null,
@@ -99,6 +122,7 @@ async function recordTransfer(
       imovelIds: result.propertyIds,
       leadIds: result.leadIds,
       eventoIds: result.eventIds,
+      oportunidadeIds: result.opportunityIds,
     },
   })
 }
@@ -161,63 +185,80 @@ export class PrismaTeamRepository implements TeamRepository {
       return {
         properties: new Map(),
         openLeads: new Map(),
+        openOpportunities: new Map(),
         monthlySales: new Map(),
         returns: new Map(),
         responseMinutes: new Map(),
         goals: new Map(),
       }
     const ids = Prisma.join(memberIds)
-    const [properties, openLeads, sales, returns, leadResponses, opportunityResponses, goals] =
-      await Promise.all([
-        prisma.imovel.groupBy({
-          by: ['responsavelId'],
-          where: { tenantId, responsavelId: { in: memberIds }, status: { not: 'INACTIVE' } },
-          _count: { _all: true },
-        }),
-        prisma.lead.groupBy({
-          by: ['responsavelId'],
-          where: { tenantId, responsavelId: { in: memberIds }, oportunidadeId: null },
-          _count: { _all: true },
-        }),
-        prisma.$queryRaw<{ key: string; count: number }[]>`
-          SELECT i."responsavelId" AS key, COUNT(*)::int AS count
-          FROM contratos c JOIN imoveis i ON i.id = c."imovelId"
-          WHERE c."tenantId" = ${tenantId} AND i."responsavelId" IN (${ids})
+    const [
+      properties,
+      openLeads,
+      openOpportunities,
+      sales,
+      returns,
+      leadResponses,
+      opportunityResponses,
+      goals,
+    ] = await Promise.all([
+      prisma.imovel.groupBy({
+        by: ['responsavelId'],
+        where: { tenantId, responsavelId: { in: memberIds }, status: { not: 'INACTIVE' } },
+        _count: { _all: true },
+      }),
+      prisma.lead.groupBy({
+        by: ['responsavelId'],
+        where: { tenantId, responsavelId: { in: memberIds }, oportunidadeId: null },
+        _count: { _all: true },
+      }),
+      prisma.oportunidade.groupBy({
+        by: ['responsavelId'],
+        where: {
+          tenantId,
+          responsavelId: { in: memberIds },
+          ...openOpportunityWhere,
+        },
+        _count: { _all: true },
+      }),
+      prisma.$queryRaw<{ key: string; count: number }[]>`
+          SELECT o."responsavelId" AS key, COUNT(*)::int AS count
+          FROM contratos c JOIN oportunidades o ON o.id = c."oportunidadeOrigemId"
+          WHERE c."tenantId" = ${tenantId} AND o."responsavelId" IN (${ids})
             AND c."ativadoEm" >= ${period.monthStart} AND c."ativadoEm" < ${period.monthEnd}
             AND c.status::text <> 'CANCELADO'
-          GROUP BY i."responsavelId"`,
-        prisma.atividadeOportunidade.groupBy({
-          by: ['autorId'],
-          where: {
-            tipo: 'CONTATO_REALIZADO',
-            autorId: { in: memberIds },
-            createdAt: { gte: period.monthStart, lt: period.monthEnd },
-            oportunidade: { tenantId },
-          },
-          _count: { _all: true },
-        }),
-        prisma.$queryRaw<{ key: string; minutes: number }[]>`
+          GROUP BY o."responsavelId"`,
+      prisma.atividadeOportunidade.groupBy({
+        by: ['autorId'],
+        where: {
+          tipo: 'CONTATO_REALIZADO',
+          autorId: { in: memberIds },
+          createdAt: { gte: period.monthStart, lt: period.monthEnd },
+          oportunidade: { tenantId },
+        },
+        _count: { _all: true },
+      }),
+      prisma.$queryRaw<{ key: string; minutes: number }[]>`
           SELECT "responsavelId" AS key,
                  EXTRACT(EPOCH FROM ("primeiroContatoEm" - "createdAt")) / 60 AS minutes
           FROM leads
           WHERE "tenantId" = ${tenantId} AND "responsavelId" IN (${ids})
             AND "createdAt" >= ${period.responseWindowStart} AND "primeiroContatoEm" IS NOT NULL`,
-        prisma.$queryRaw<{ key: string; minutes: number }[]>`
-          SELECT i."responsavelId" AS key,
+      prisma.$queryRaw<{ key: string; minutes: number }[]>`
+          SELECT o."responsavelId" AS key,
                  EXTRACT(EPOCH FROM (MIN(a."createdAt") - o."createdAt")) / 60 AS minutes
           FROM oportunidades o
-          JOIN imoveis i ON i.id = o."imovelId"
           JOIN atividades_oportunidade a
-            ON a."oportunidadeId" = o.id AND a."autorId" = i."responsavelId"
-          WHERE o."tenantId" = ${tenantId} AND i."responsavelId" IN (${ids})
+            ON a."oportunidadeId" = o.id AND a."autorId" = o."responsavelId"
+          WHERE o."tenantId" = ${tenantId} AND o."responsavelId" IN (${ids})
             AND o."createdAt" >= ${period.responseWindowStart}
-          GROUP BY o.id, i."responsavelId", o."createdAt"`,
-        prisma.metaCorretor.findMany({
-          where: { tenantId, usuarioId: { in: memberIds } },
-          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-          distinct: ['usuarioId'],
-        }),
-      ])
+          GROUP BY o.id, o."responsavelId", o."createdAt"`,
+      prisma.metaCorretor.findMany({
+        where: { tenantId, usuarioId: { in: memberIds } },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        distinct: ['usuarioId'],
+      }),
+    ])
     const responseMinutes = new Map<string, number[]>()
     for (const row of [...leadResponses, ...opportunityResponses]) {
       const minutes = Math.max(0, Number(row.minutes))
@@ -230,6 +271,9 @@ export class PrismaTeamRepository implements TeamRepository {
       ),
       openLeads: countMap(
         openLeads.map((row) => ({ key: row.responsavelId, count: row._count._all })),
+      ),
+      openOpportunities: countMap(
+        openOpportunities.map((row) => ({ key: row.responsavelId, count: row._count._all })),
       ),
       monthlySales: countMap(sales),
       returns: countMap(returns.map((row) => ({ key: row.autorId, count: row._count._all }))),

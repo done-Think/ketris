@@ -14,6 +14,8 @@ import type { ActivityRepository } from '../ports/activity-repository.port'
 import type { ContactRepository } from '../ports/contact-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
 import type { PropertyLookupPort } from '../ports/property-lookup.port'
+import type { ResponsibleLookupPort } from '../ports/responsible-lookup.port'
+import { resolveOpportunityResponsible } from '../resolve-opportunity-responsible'
 
 export class CreateOpportunityUseCase {
   constructor(
@@ -21,6 +23,7 @@ export class CreateOpportunityUseCase {
     private readonly contactRepository: ContactRepository,
     private readonly propertyLookup: PropertyLookupPort,
     private readonly activityRepository: ActivityRepository,
+    private readonly responsibleLookup: ResponsibleLookupPort,
   ) {}
 
   async execute(input: CreateOpportunityInput): Promise<CreateOpportunityOutput> {
@@ -43,6 +46,13 @@ export class CreateOpportunityUseCase {
       }
     }
 
+    const responsibleId = await resolveOpportunityResponsible(this.responsibleLookup, {
+      tenantId: input.actorTenantId,
+      actorId: input.actorId,
+      actorPapel: input.actorPapel,
+      requestedId: input.responsibleId,
+    })
+
     let contactDetails = {}
     if (input.contactId) {
       const contact = await this.contactRepository.findById(input.contactId)
@@ -60,6 +70,7 @@ export class CreateOpportunityUseCase {
     const opportunity = await this.opportunityRepository.create({
       tenantId: input.actorTenantId,
       propertyId: input.propertyId,
+      responsibleId,
       contactId: input.contactId ?? null,
       leadName: input.leadName,
       leadEmail: input.leadEmail,
@@ -79,7 +90,7 @@ export class CreateOpportunityUseCase {
       type: 'NOTA',
       description: '',
       systemAction: 'OPPORTUNITY_CREATED',
-      authorId: input.actorId ?? null,
+      authorId: input.actorId,
       authorName: input.actorName ?? null,
       previousStatus: null,
       newStatus: null,

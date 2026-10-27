@@ -136,7 +136,7 @@ describe('/api/crm/leads/[id]/convert (integração)', () => {
         email: 'maria@exemplo.com',
         interesse: 'Apartamento 2 quartos',
         orcamento: 'Até R$ 3.000',
-        origem: 'WhatsApp',
+        origem: 'WHATSAPP',
         observacoes: 'Gostou muito da varanda.',
       },
     })

@@ -1,58 +1,32 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { assertAgentOwnsContact, assertAgentOwnsProperty } from '../../application/authorization'
+import { assertAgentOwnsContact, assertOpportunityAccess } from '../../application/authorization'
 import type { OpportunityRepository } from '../../application/ports/opportunity-repository.port'
-import type { PropertyLookupPort } from '../../application/ports/property-lookup.port'
 import { ContactNotFoundError, OpportunityNotFoundError } from '../../domain/errors'
 
-describe('assertAgentOwnsProperty', () => {
-  it('não restringe o OWNER', async () => {
-    const propertyLookup: PropertyLookupPort = {
-      existsForTenant: vi.fn(),
-      findResponsavelId: vi.fn(),
-    }
-
-    await expect(
-      assertAgentOwnsProperty(propertyLookup, 't1', 'p1', 'actor-1', 'OWNER'),
-    ).resolves.toBeUndefined()
-    await expect(
-      assertAgentOwnsProperty(propertyLookup, 't1', 'p1', 'actor-1', 'OWNER'),
-    ).resolves.toBeUndefined()
-    expect(propertyLookup.findResponsavelId).not.toHaveBeenCalled()
+describe('assertOpportunityAccess', () => {
+  it('não restringe o OWNER', () => {
+    expect(() =>
+      assertOpportunityAccess({ responsibleId: 'outro' }, 'actor-1', 'OWNER'),
+    ).not.toThrow()
   })
 
-  it('libera o AGENT quando ele é o responsável pelo imóvel', async () => {
-    const propertyLookup: PropertyLookupPort = {
-      existsForTenant: vi.fn(),
-      findResponsavelId: vi.fn().mockResolvedValue('actor-1'),
-    }
-
-    await expect(
-      assertAgentOwnsProperty(propertyLookup, 't1', 'p1', 'actor-1', 'AGENT'),
-    ).resolves.toBeUndefined()
+  it('libera o AGENT responsável pela oportunidade', () => {
+    expect(() =>
+      assertOpportunityAccess({ responsibleId: 'actor-1' }, 'actor-1', 'AGENT'),
+    ).not.toThrow()
   })
 
-  it('bloqueia o AGENT quando ele não é o responsável pelo imóvel', async () => {
-    const propertyLookup: PropertyLookupPort = {
-      existsForTenant: vi.fn(),
-      findResponsavelId: vi.fn().mockResolvedValue('outro-agente'),
-    }
-
-    await expect(
-      assertAgentOwnsProperty(propertyLookup, 't1', 'p1', 'actor-1', 'AGENT'),
-    ).rejects.toThrow(OpportunityNotFoundError)
+  it('bloqueia o AGENT que não é o responsável, mesmo dono do imóvel', () => {
+    expect(() =>
+      assertOpportunityAccess({ responsibleId: 'outro-agente' }, 'actor-1', 'AGENT'),
+    ).toThrow(OpportunityNotFoundError)
   })
 
-  it('bloqueia um RENTER sempre, sem nem consultar quem é o responsável', async () => {
-    const propertyLookup: PropertyLookupPort = {
-      existsForTenant: vi.fn(),
-      findResponsavelId: vi.fn(),
-    }
-
-    await expect(
-      assertAgentOwnsProperty(propertyLookup, 't1', 'p1', 'actor-1', 'RENTER'),
-    ).rejects.toThrow(OpportunityNotFoundError)
-    expect(propertyLookup.findResponsavelId).not.toHaveBeenCalled()
+  it('bloqueia um RENTER sempre', () => {
+    expect(() =>
+      assertOpportunityAccess({ responsibleId: 'actor-1' }, 'actor-1', 'RENTER'),
+    ).toThrow(OpportunityNotFoundError)
   })
 })
 

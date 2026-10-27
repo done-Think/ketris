@@ -5,6 +5,7 @@ import * as crmStyles from '../../styles/create-lead-review-step.styles'
 import { RhfTextField } from '@shared/components/form'
 
 import type { CreateLeadFieldName, CreateLeadReviewStepProps } from '../../types/lead'
+import { leadSourceKey } from '@server/crm/constants/lead-sources'
 
 const reviewFieldKeys: readonly CreateLeadFieldName[] = [
   'name',
@@ -23,7 +24,11 @@ export function CreateLeadReviewStep({ control, formValues }: CreateLeadReviewSt
         {reviewFieldKeys.map((fieldKey) => (
           <Box key={fieldKey} sx={crmStyles.boxSx2}>
             <Typography sx={crmStyles.typographySx}>{t(`create.fields.${fieldKey}`)}</Typography>
-            <Typography sx={crmStyles.typographySx2}>{formValues[fieldKey]}</Typography>
+            <Typography sx={crmStyles.typographySx2}>
+              {fieldKey === 'source' && formValues.source
+                ? t(`create.sources.${leadSourceKey(formValues.source)}`)
+                : formValues[fieldKey]}
+            </Typography>
           </Box>
         ))}
       </Box>

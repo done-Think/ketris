@@ -16,6 +16,8 @@ export interface TeamEvidence {
   sourceLeads: number
   destinationProperties: number
   destinationLeads: number
+  sourceOpportunities: number
+  destinationOpportunities: number
   goal: number | null
   transfers: number
   invitedActive: boolean | null

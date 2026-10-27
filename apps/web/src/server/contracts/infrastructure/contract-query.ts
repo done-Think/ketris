@@ -18,8 +18,19 @@ export const contractInclude = {
 import type { Prisma } from '@prisma/client'
 import type { ContractManageScope, ContractReadScope } from '../types/contract-entity'
 
-export function scopeWhere(scope: ContractManageScope) {
-  return scope.responsibleId ? { imovel: { responsavelId: scope.responsibleId } } : {}
+export function opportunityScopeWhere(scope: ContractManageScope) {
+  return scope.responsibleId ? { responsavelId: scope.responsibleId } : {}
+}
+
+function contractScopeWhere(scope: ContractManageScope): Prisma.ContratoWhereInput {
+  return scope.responsibleId
+    ? {
+        OR: [
+          { imovel: { responsavelId: scope.responsibleId } },
+          { oportunidadeOrigem: { responsavelId: scope.responsibleId } },
+        ],
+      }
+    : {}
 }
 
 export function contractReadWhere(scope: ContractReadScope): Prisma.ContratoWhereInput {
@@ -39,5 +50,5 @@ export function contractReadWhere(scope: ContractReadScope): Prisma.ContratoWher
     return { tenantId: scope.tenantId, imovel: { proprietarioId: scope.ownerId } }
   }
 
-  return { tenantId: scope.tenantId, ...scopeWhere(scope) }
+  return { tenantId: scope.tenantId, ...contractScopeWhere(scope) }
 }

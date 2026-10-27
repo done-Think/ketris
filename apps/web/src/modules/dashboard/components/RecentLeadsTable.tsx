@@ -1,3 +1,4 @@
+import { leadSourceKey } from '@server/crm/constants/lead-sources'
 import {
   Box,
   Chip,
@@ -20,6 +21,7 @@ import { getStatusChipStyles, styles } from '../styles/recent-leads-table.styles
 
 export function RecentLeadsTable({ leads, onLeadSelect }: RecentLeadsTableProps) {
   const t = useTranslations('dashboard.overview.recentLeads')
+  const sourceT = useTranslations('dashboard.leadSources')
 
   return (
     <DashboardPanel>
@@ -67,7 +69,9 @@ export function RecentLeadsTable({ leads, onLeadSelect }: RecentLeadsTableProps)
                       />
                     </TableCell>
                     <TableCell sx={styles.tableCell2}>
-                      <Typography sx={styles.typography4}>{lead.source}</Typography>
+                      <Typography sx={styles.typography4}>
+                        {sourceT(leadSourceKey(lead.source))}
+                      </Typography>
                     </TableCell>
                     <TableCell sx={styles.tableCell2}>
                       <Stack direction="row" spacing={1.5}>

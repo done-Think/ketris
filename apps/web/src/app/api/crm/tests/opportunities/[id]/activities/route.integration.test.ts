@@ -7,6 +7,7 @@ import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service
 import { prisma } from '@server/db/prisma'
 
 import { GET, POST } from '../../../../opportunities/[id]/activities/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 describe('/api/crm/opportunities/[id]/activities (integração)', () => {
   const tokenService = new JoseTokenService()
@@ -65,6 +66,7 @@ describe('/api/crm/opportunities/[id]/activities (integração)', () => {
       data: {
         tenantId,
         imovelId: imovel.id,
+        responsavelId: await propertyResponsibleId(prisma, imovel.id),
         interessadoNome: 'Maria',
         interessadoEmail: `maria-${randomUUID()}@exemplo.com`,
         valorProposto: 2500,

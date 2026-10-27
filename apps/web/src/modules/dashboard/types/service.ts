@@ -1,3 +1,4 @@
+import type { LeadSource } from '@server/crm/constants/lead-sources'
 export interface ApiDashboardMetrics {
   activeLeads: number
   activeLeadsCreatedToday: number
@@ -15,7 +16,7 @@ export interface ApiDashboardRecentLead {
   phone: string
   interest: string
   budget: string
-  source: string
+  source: LeadSource
   stage: ApiDashboardLeadStage
   notes: string | null
   createdAt: string

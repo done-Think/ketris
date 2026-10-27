@@ -1,4 +1,6 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
+
 import { useCrmCacheScope } from './use-crm-cache-scope'
 
 import { crmService } from '../services/crm-service'
@@ -119,6 +121,39 @@ export function useArchiveOpportunity(tenantId: string) {
       queryClient.invalidateQueries({ queryKey: crmQueryKeys.tenant(tenantId) })
       queryClient.invalidateQueries({ queryKey: ['crm', 'contacts', tenantId] })
       queryClient.invalidateQueries({ queryKey: ['contracts'] })
+    },
+  })
+}
+
+export function useCrmResponsibles(enabled: boolean) {
+  const { data: session } = useSession()
+
+  return useQuery({
+    queryKey: [
+      ...crmQueryKeys.all,
+      'responsibles',
+      session?.tenantId ?? '',
+      session?.user?.id ?? '',
+    ],
+    queryFn: () => crmService.listResponsibles(),
+    enabled: enabled && Boolean(session?.tenantId),
+    staleTime: 60_000,
+  })
+}
+
+export function useAssignOpportunityResponsible(tenantId: string) {
+  const scope = useCrmCacheScope(tenantId)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, responsibleId }: { id: string; responsibleId: string }) =>
+      crmService.assignResponsible(id, responsibleId),
+    onSuccess: (opportunity) => {
+      queryClient.setQueryData(
+        crmQueryKeys.detail(tenantId, opportunity.id, scope.actorKey),
+        opportunity,
+      )
+      queryClient.invalidateQueries({ queryKey: crmQueryKeys.tenant(tenantId) })
     },
   })
 }

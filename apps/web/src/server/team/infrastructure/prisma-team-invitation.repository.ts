@@ -98,13 +98,14 @@ export class PrismaTeamInvitationRepository implements TeamInvitationRepository 
   }
 
   async hasPortfolio(tenantId: string, userId: string): Promise<boolean> {
-    const [properties, leads, events] = await Promise.all([
+    const [properties, leads, opportunities, events] = await Promise.all([
       prisma.imovel.count({ where: { tenantId, responsavelId: userId } }),
       prisma.lead.count({ where: { tenantId, responsavelId: userId } }),
+      prisma.oportunidade.count({ where: { tenantId, responsavelId: userId } }),
       prisma.eventoAgenda.count({ where: { tenantId, responsavelId: userId } }),
     ])
 
-    return properties + leads + events > 0
+    return properties + leads + opportunities + events > 0
   }
 
   async deleteInvitedUser(tenantId: string, userId: string): Promise<boolean> {

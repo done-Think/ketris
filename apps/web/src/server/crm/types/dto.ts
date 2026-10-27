@@ -29,6 +29,7 @@ import type {
   guaranteeTypeSchema,
   listOpportunitiesQuerySchema,
   listOpportunitiesResponseSchema,
+  listOpportunityResponsiblesResponseSchema,
   opportunityResponseSchema,
   opportunitySchema,
   opportunityStatusSchema,
@@ -55,6 +56,9 @@ export type ListOpportunitiesQueryDTO = Partial<
   CrmJson<z.infer<typeof listOpportunitiesQuerySchema>>
 >
 export type ListOpportunitiesResponseDTO = CrmJson<z.infer<typeof listOpportunitiesResponseSchema>>
+export type ListOpportunityResponsiblesResponseDTO = CrmJson<
+  z.infer<typeof listOpportunityResponsiblesResponseSchema>
+>
 export type OpportunityResponseDTO = CrmJson<z.infer<typeof opportunityResponseSchema>>
 export type ContactDTO = CrmJson<z.infer<typeof contactSchema>>
 export type ContactListItemDTO = CrmJson<z.infer<typeof contactListItemSchema>>

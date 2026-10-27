@@ -110,6 +110,7 @@ export type ArchiveOpportunityDialogProps = {
 export type CreateOpportunityDialogProps = {
   open: boolean
   tenantId: string
+  canChooseResponsible: boolean
   isPending: boolean
   onClose: () => void
   onSave: (values: CreateOpportunityFormValues) => void
@@ -121,4 +122,10 @@ export type PropertyAutocompleteProps = {
   onChange: (property: CrmPropertySummary | null) => void
   error?: boolean
   helperText?: string
+}
+
+export type OpportunityResponsiblePanelProps = {
+  opportunity: Opportunity
+  tenantId: string
+  canManage: boolean
 }

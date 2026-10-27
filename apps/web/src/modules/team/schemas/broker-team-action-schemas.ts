@@ -26,12 +26,16 @@ export function createBrokerTransferSchema(t: SchemaMessageTranslator) {
       destinationId: z.string().min(1, t('destinationError')),
       properties: z.boolean(),
       leads: z.boolean(),
+      opportunities: z.boolean(),
       futureEvents: z.boolean(),
     })
-    .refine((values) => values.properties || values.leads || values.futureEvents, {
-      path: ['properties'],
-      message: t('itemsError'),
-    })
+    .refine(
+      (values) => values.properties || values.leads || values.opportunities || values.futureEvents,
+      {
+        path: ['properties'],
+        message: t('itemsError'),
+      },
+    )
 }
 
 export function createBrokerDeactivateSchema(t: SchemaMessageTranslator) {

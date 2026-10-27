@@ -14,6 +14,7 @@ import {
 } from '../../charges/[id]/route'
 import { GET, POST } from '../../charges/route'
 import { GET as getSummary } from '../../summary/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 describe('/api/financial/charges (integração)', () => {
   const tokenService = new JoseTokenService()
@@ -104,6 +105,7 @@ describe('/api/financial/charges (integração)', () => {
       data: {
         tenantId,
         imovelId: property.id,
+        responsavelId: await propertyResponsibleId(prisma, property.id),
         interessadoNome: 'Mariana Souza',
         interessadoEmail: 'mariana@example.com',
         valorProposto: 2500,

@@ -581,8 +581,9 @@
       "source": "From",
       "destination": "Transfer to",
       "items": "What to transfer",
-      "itemProperties": "Properties, with their opportunities ({count})",
+      "itemProperties": "Properties ({count})",
       "itemLeads": "Leads ({count})",
+      "itemOpportunities": "Open opportunities ({count})",
       "itemFutureEvents": "Future calendar events",
       "close": "Close",
       "cancel": "Cancel",
@@ -594,9 +595,9 @@
       "itemsError": "Select at least one item",
       "transferError": "We couldn't transfer the portfolio",
       "goalSaved": "Monthly goal updated",
-      "transferred": "Transferred: {properties} properties, {leads} leads and {events} events",
+      "transferred": "Transferred: {properties} properties, {leads} leads, {opportunities} opportunities and {events} events",
       "deactivateTitle": "Deactivate {name}",
-      "deactivateDescription": "The whole portfolio (properties with their opportunities, leads and future events) moves to the selected broker, and {name} loses access. Everything is recorded.",
+      "deactivateDescription": "The whole portfolio (properties, leads, opportunities and future events) goes to the chosen broker, and {name} loses access. Everything is recorded.",
       "deactivateSubmit": "Transfer and deactivate",
       "deactivated": "{name} was deactivated and the portfolio was transferred",
       "deactivateError": "We couldn't deactivate the broker",
@@ -677,5 +678,13 @@
   "proposals": {
     "title": "Proposals",
     "subtitle": "Ongoing negotiations and reference values."
+  },
+  "leadSources": {
+    "marketplace": "Marketplace",
+    "whatsApp": "WhatsApp",
+    "instagram": "Instagram",
+    "site": "Site",
+    "referral": "Referral",
+    "other": "Other"
   }
 }

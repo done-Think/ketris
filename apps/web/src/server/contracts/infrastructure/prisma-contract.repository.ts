@@ -1,6 +1,6 @@
 import type { ContractManualSignatureEvidence } from '../types/workflow'
 import { registerManualContractSignature } from './register-manual-contract-signature'
-import { scopeWhere, contractReadWhere } from './contract-query'
+import { opportunityScopeWhere, contractReadWhere } from './contract-query'
 import { contractInclude } from './contract-query'
 import { toDomainContract } from './prisma-contract.mapper'
 
@@ -33,7 +33,7 @@ export class PrismaContractRepository implements ContractRepository {
     scope: ContractManageScope,
   ): Promise<EligibleOpportunity | null> {
     const opportunity = await prisma.oportunidade.findFirst({
-      where: { tenantId, id: opportunityId, ...scopeWhere(scope) },
+      where: { tenantId, id: opportunityId, ...opportunityScopeWhere(scope) },
       select: { id: true, imovelId: true, status: true, contrato: { select: { id: true } } },
     })
 

@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@server/db/prisma'
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { POST as createContract } from '@/app/api/contracts/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 export function contractRequest(token: string, path: string, method = 'GET', body?: unknown) {
   return new NextRequest('http://localhost/api/contracts' + path, {
@@ -64,6 +65,7 @@ export async function createContractWorkflowFixture() {
     data: {
       tenantId: tenant.id,
       imovelId: property.id,
+      responsavelId: await propertyResponsibleId(prisma, property.id),
       interessadoNome: renter.nome,
       interessadoEmail: renter.email,
       status: 'ACEITA',

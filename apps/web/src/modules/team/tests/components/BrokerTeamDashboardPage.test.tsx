@@ -108,7 +108,14 @@ const bruno = teamMember({
   hasPublicProfile: false,
   goal: null,
   pace: { status: 'NO_GOAL', expectedSales: null, goalProgress: null },
-  metrics: { properties: 4, openLeads: 1, monthlySales: 1, returns: 0, responseTimeMinutes: null },
+  metrics: {
+    properties: 4,
+    openLeads: 1,
+    openOpportunities: 0,
+    monthlySales: 1,
+    returns: 0,
+    responseTimeMinutes: null,
+  },
 })
 const carla = teamMember({ id: 'agent-3', name: 'Carla Inativa', active: false })
 const diego = teamMember({ id: 'agent-4', name: 'Diego Convidado', invitation })
@@ -268,7 +275,12 @@ describe('BrokerTeamDashboardPage', () => {
   })
 
   it('transfers the chosen items to another broker or to the owner', async () => {
-    service.transfer.mockResolvedValue({ properties: 7, leads: 0, futureEvents: 2 })
+    service.transfer.mockResolvedValue({
+      properties: 7,
+      leads: 0,
+      opportunities: 5,
+      futureEvents: 2,
+    })
     renderPage()
     await openAction('Marina Costa', 'Transferir carteira')
     const dialog = screen.getByRole('dialog')
@@ -280,7 +292,8 @@ describe('BrokerTeamDashboardPage', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Transferir' }))
     expect(await within(dialog).findByText('Selecione ao menos um item')).toBeVisible()
 
-    fireEvent.click(within(dialog).getByLabelText('Imóveis, com as oportunidades deles (7)'))
+    fireEvent.click(within(dialog).getByLabelText('Imóveis (7)'))
+    fireEvent.click(within(dialog).getByLabelText('Oportunidades em aberto (5)'))
     fireEvent.click(within(dialog).getByLabelText('Eventos futuros da agenda'))
     fireEvent.click(within(dialog).getByRole('button', { name: 'Transferir' }))
 
@@ -289,16 +302,25 @@ describe('BrokerTeamDashboardPage', () => {
         destinationId: 'agent-2',
         properties: true,
         leads: false,
+        opportunities: true,
         futureEvents: true,
       }),
     )
-    expect(enqueueSnackbar).toHaveBeenCalledWith('Transferidos: 7 imóveis, 0 leads e 2 eventos', {
-      variant: 'success',
-    })
+    expect(enqueueSnackbar).toHaveBeenCalledWith(
+      'Transferidos: 7 imóveis, 0 leads, 5 oportunidades e 2 eventos',
+      {
+        variant: 'success',
+      },
+    )
   })
 
   it('requires a destination before deactivating a broker', async () => {
-    service.deactivate.mockResolvedValue({ properties: 7, leads: 4, futureEvents: 0 })
+    service.deactivate.mockResolvedValue({
+      properties: 7,
+      leads: 4,
+      opportunities: 5,
+      futureEvents: 0,
+    })
     renderPage()
     await openAction('Marina Costa', 'Desativar corretor')
     const dialog = screen.getByRole('dialog')

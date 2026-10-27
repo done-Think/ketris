@@ -24,7 +24,13 @@ describe('broker team action schemas', () => {
   })
 
   it('requires a destination and at least one item to transfer', () => {
-    const valid = { destinationId: 'b', properties: false, leads: true, futureEvents: false }
+    const valid = {
+      destinationId: 'b',
+      properties: false,
+      leads: true,
+      opportunities: false,
+      futureEvents: false,
+    }
 
     expect(transferSchema.safeParse(valid).success).toBe(true)
     expect(transferSchema.safeParse({ ...valid, destinationId: '' }).success).toBe(false)
@@ -33,6 +39,9 @@ describe('broker team action schemas', () => {
       message: 'itemsError',
     })
     expect(transferSchema.safeParse({ ...valid, leads: false, futureEvents: true }).success).toBe(
+      true,
+    )
+    expect(transferSchema.safeParse({ ...valid, leads: false, opportunities: true }).success).toBe(
       true,
     )
   })

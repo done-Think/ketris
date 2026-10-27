@@ -44,11 +44,18 @@ export function BrokerTransferDialog({
     formState: { errors },
   } = useForm<BrokerTransferFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { destinationId: '', properties: false, leads: false, futureEvents: false },
+    defaultValues: {
+      destinationId: '',
+      properties: false,
+      leads: false,
+      opportunities: false,
+      futureEvents: false,
+    },
   })
   const items = [
     ['properties', t('dialogs.itemProperties', { count: member.metrics.properties })],
     ['leads', t('dialogs.itemLeads', { count: member.metrics.openLeads })],
+    ['opportunities', t('dialogs.itemOpportunities', { count: member.metrics.openOpportunities })],
     ['futureEvents', t('dialogs.itemFutureEvents')],
   ] as const
 
@@ -59,6 +66,7 @@ export function BrokerTransferDialog({
         t('dialogs.transferred', {
           properties: result.properties,
           leads: result.leads,
+          opportunities: result.opportunities,
           events: result.futureEvents,
         }),
         { variant: 'success' },

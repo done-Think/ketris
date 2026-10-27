@@ -60,7 +60,7 @@ function makeLead(index: number, overrides: Partial<Lead> = {}): Lead {
     email: `lead${index}@email.com`,
     interest: `Interesse ${index}`,
     budget: index === 2 ? 'R$ 850K' : `R$ ${index}M`,
-    source: 'Marketplace',
+    source: 'MARKETPLACE',
     stage: 'NOVO',
     notes: null,
     opportunityId: null,

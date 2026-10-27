@@ -145,7 +145,12 @@ describe('CRM consistency, pagination and authorization', () => {
     })
     const first = await (
       await createOpportunity(
-        request(ownerToken, 'POST', 'opportunities', payload({ contactId: contact.id })),
+        request(
+          ownerToken,
+          'POST',
+          'opportunities',
+          payload({ contactId: contact.id, responsibleId: agentId }),
+        ),
       )
     ).json()
     const second = await (
@@ -239,7 +244,7 @@ describe('CRM consistency, pagination and authorization', () => {
         telefone: '11999999999',
         interesse: 'Apartamento',
         orcamento: 'A combinar',
-        origem: 'Site',
+        origem: 'SITE',
       },
     })
     const body = { propertyId, proposedValue: 1800.45 }
@@ -300,7 +305,12 @@ describe('CRM consistency, pagination and authorization', () => {
     })
     for (let index = 0; index < 7; index++)
       await createOpportunity(
-        request(ownerToken, 'POST', 'opportunities', payload({ contactId: contact.id })),
+        request(
+          ownerToken,
+          'POST',
+          'opportunities',
+          payload({ contactId: contact.id, responsibleId: agentId }),
+        ),
       )
     await createOpportunity(
       request(
@@ -351,7 +361,7 @@ describe('CRM consistency, pagination and authorization', () => {
           telefone: '11999999999',
           interesse: 'Apartamento',
           orcamento: index === 5 ? 'Sob consulta' : 'R$ 1.2M',
-          origem: 'Site',
+          origem: 'SITE',
         },
       })
     const response = await (

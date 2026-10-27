@@ -18,6 +18,7 @@ export const transferBrokerPortfolioRequestSchema = z
     destinationId: z.string().trim().min(1).max(64),
     properties: z.boolean(),
     leads: z.boolean(),
+    opportunities: z.boolean(),
     futureEvents: z.boolean(),
   })
   .strict()
@@ -80,6 +81,7 @@ const teamMemberSchema = z
     metrics: z.object({
       properties: z.number().int(),
       openLeads: z.number().int(),
+      openOpportunities: z.number().int(),
       monthlySales: z.number().int(),
       returns: z.number().int(),
       responseTimeMinutes: z
@@ -125,6 +127,7 @@ export const teamTransferResponseSchema = z
   .object({
     properties: z.number().int(),
     leads: z.number().int(),
+    opportunities: z.number().int(),
     futureEvents: z.number().int(),
   })
   .openapi('TeamTransferResponse')

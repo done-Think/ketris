@@ -45,6 +45,7 @@ export function SalesPipelineBoard() {
     try {
       await createOpportunity.mutateAsync({
         propertyId: values.property?.id ?? '',
+        responsibleId: values.responsibleId || undefined,
         contactId: values.contact?.id,
         leadName: values.leadName.trim(),
         leadEmail: values.leadEmail.trim(),
@@ -91,6 +92,7 @@ export function SalesPipelineBoard() {
         key={`${tenantId}:${session?.user?.id ?? ''}:${session?.role ?? ''}`}
         open={isCreateOpen}
         tenantId={tenantId}
+        canChooseResponsible={session?.role === 'OWNER'}
         isPending={createOpportunity.isPending}
         onClose={() => setIsCreateOpen(false)}
         onSave={handleCreateOpportunity}

@@ -90,11 +90,14 @@ describe('Equipe de corretores', () => {
       cy.contains('[role="option"]', fixture!.destinationName).click()
       dialog().contains('Leads (2)').click()
       dialog().contains('button', 'Transferir').click()
-      cy.contains('Transferidos: 0 imóveis, 2 leads e 0 eventos').should('be.visible')
+      cy.contains('Transferidos: 0 imóveis, 2 leads, 0 oportunidades e 0 eventos').should(
+        'be.visible',
+      )
       evidence().should((result) => {
         expect(result.sourceLeads).to.eq(0)
         expect(result.destinationLeads).to.eq(2)
         expect(result.sourceProperties).to.eq(3)
+        expect(result.sourceOpportunities).to.eq(1)
       })
 
       openAction(fixture!.sourceName, 'Desativar corretor')
@@ -109,6 +112,8 @@ describe('Equipe de corretores', () => {
         expect(result.sourceActive).to.eq(false)
         expect(result.sourceProperties).to.eq(0)
         expect(result.destinationProperties).to.eq(3)
+        expect(result.sourceOpportunities).to.eq(0)
+        expect(result.destinationOpportunities).to.eq(1)
         expect(result.transfers).to.eq(2)
       })
     })

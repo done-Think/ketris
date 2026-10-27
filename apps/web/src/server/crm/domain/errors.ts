@@ -109,3 +109,12 @@ export class CrmRecordNotFoundError extends AppError {
     })
   }
 }
+
+export class InvalidOpportunityResponsibleError extends AppError {
+  constructor() {
+    super('O responsável precisa ser alguém ativo da equipe.', {
+      status: 422,
+      code: 'INVALID_OPPORTUNITY_RESPONSIBLE',
+    })
+  }
+}

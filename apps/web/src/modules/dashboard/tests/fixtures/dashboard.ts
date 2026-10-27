@@ -19,7 +19,7 @@ export const apiDashboardOverview: ApiDashboardOverview = {
       phone: '(11) 90000-0000',
       interest: 'Apartamento 2 quartos',
       budget: 'Até R$ 3.000',
-      source: 'Site',
+      source: 'SITE',
       stage: 'NOVO',
       notes: null,
       createdAt: '2026-10-20T12:00:00.000Z',
@@ -96,7 +96,7 @@ export const recentLead: DashboardRecentLead = {
   phone: '(11) 90000-0000',
   interest: 'Apartamento 2 quartos',
   budget: 'Até R$ 3.000',
-  source: 'Site',
+  source: 'SITE',
   status: 'new',
   notes: '',
 }

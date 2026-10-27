@@ -22,6 +22,7 @@ import { OpportunityTermsFields } from './OpportunityTermsFields'
 import { createOpportunityFormSchema } from '../../schemas/opportunity-schema'
 import type { CreateOpportunityFormValues } from '../../types/opportunity'
 import type { CreateOpportunityDialogProps } from '../../types/opportunity-detail'
+import { useCrmResponsibles } from '../../hooks/use-opportunities'
 import { PropertyAutocomplete } from './PropertyAutocomplete'
 
 const emptyCreateOpportunityValues: CreateOpportunityFormValues = {
@@ -37,6 +38,7 @@ const emptyCreateOpportunityValues: CreateOpportunityFormValues = {
   proposedValue: '',
   notes: '',
   status: 'RASCUNHO',
+  responsibleId: '',
 }
 
 export function CreateOpportunityDialog(props: CreateOpportunityDialogProps) {
@@ -46,11 +48,13 @@ export function CreateOpportunityDialog(props: CreateOpportunityDialogProps) {
 function CreateOpportunityDialogForm({
   open,
   tenantId,
+  canChooseResponsible,
   isPending,
   onClose,
   onSave,
 }: CreateOpportunityDialogProps) {
   const t = useTranslations('crm.opportunityDetail')
+  const responsibles = useCrmResponsibles(canChooseResponsible)
   const opportunityFormSchema = useMemo(
     () => createOpportunityFormSchema((key) => t(`errors.${key}`)),
     [t],
@@ -146,6 +150,31 @@ function CreateOpportunityDialogForm({
                   </FormControl>
                 )}
               />
+              {canChooseResponsible && responsibles.data?.length ? (
+                <Controller
+                  control={control}
+                  name="responsibleId"
+                  render={({ field }) => (
+                    <TextField
+                      select
+                      label={t('responsible.label')}
+                      helperText={t('responsible.createHelper')}
+                      slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      inputRef={field.ref}
+                    >
+                      <MenuItem value="">{t('responsible.me')}</MenuItem>
+                      {responsibles.data.map((option) => (
+                        <MenuItem key={option.id} value={option.id}>
+                          {option.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  )}
+                />
+              ) : null}
               <OpportunityTermsFields />
               <TextField
                 label={t('fields.notes')}

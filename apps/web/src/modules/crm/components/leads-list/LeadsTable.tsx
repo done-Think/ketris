@@ -16,6 +16,7 @@ import * as crmStyles from '../../styles/leads-table.styles'
 import type { LeadTableColumn, LeadsTableProps } from '../../types/lead'
 import { LeadAvatar } from './LeadAvatar'
 import { LeadStatusChip } from './LeadStatusChip'
+import { leadSourceKey } from '@server/crm/constants/lead-sources'
 
 const leadTableColumns: LeadTableColumn[] = [
   { key: 'name', sortField: 'name' },
@@ -90,8 +91,8 @@ export function LeadsTable({ leads, sort, onContactLead, onSortChange }: LeadsTa
                 <LeadStatusChip stage={lead.stage} />
               </TableCell>
               <TableCell>
-                <Typography noWrap title={lead.source} sx={crmStyles.typographySx2}>
-                  {lead.source}
+                <Typography noWrap sx={crmStyles.typographySx2}>
+                  {t(`create.sources.${leadSourceKey(lead.source)}`)}
                 </Typography>
               </TableCell>
               <TableCell align="center">

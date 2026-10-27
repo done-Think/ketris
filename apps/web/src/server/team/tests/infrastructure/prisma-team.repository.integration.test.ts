@@ -7,6 +7,7 @@ import { prisma } from '@server/db/prisma'
 import { hashTeamInvitationToken } from '../../domain/team-invitation-token'
 import { PrismaTeamInvitationRepository } from '../../infrastructure/prisma-team-invitation.repository'
 import { PrismaTeamRepository } from '../../infrastructure/prisma-team.repository'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 const repository = new PrismaTeamRepository()
 const invitations = new PrismaTeamInvitationRepository()
@@ -89,7 +90,7 @@ describe('PrismaTeamRepository (integração)', () => {
         telefone: '1',
         interesse: 'Compra',
         orcamento: '1',
-        origem: 'Site',
+        origem: 'SITE',
         createdAt: minutesAgo(120),
         primeiroContatoEm: minutesAgo(100),
       },
@@ -98,6 +99,7 @@ describe('PrismaTeamRepository (integração)', () => {
       data: {
         tenantId,
         imovelId: property.id,
+        responsavelId: await propertyResponsibleId(prisma, property.id),
         interessadoNome: 'Comprador',
         interessadoEmail: 'comprador@example.test',
         valorProposto: 480000,
@@ -113,7 +115,7 @@ describe('PrismaTeamRepository (integração)', () => {
         telefone: '1',
         interesse: 'Compra',
         orcamento: '1',
-        origem: 'Site',
+        origem: 'SITE',
         oportunidadeId: opportunity.id,
       },
     })
@@ -219,6 +221,51 @@ describe('PrismaTeamRepository (integração)', () => {
     expect(metrics.properties.get(destinationId)).toBeUndefined()
   })
 
+  it('a transferência manual leva só as oportunidades em aberto', async () => {
+    const opportunity = (status: 'ENVIADA' | 'RECUSADA', arquivadaEm: Date | null = null) =>
+      prisma.oportunidade.create({
+        data: {
+          tenantId,
+          imovelId: propertyId,
+          responsavelId: sourceId,
+          interessadoNome: 'Interessada',
+          interessadoEmail: `${randomUUID()}@team.example.test`,
+          valorProposto: 1000,
+          status,
+          arquivadaEm,
+        },
+      })
+    const open = await opportunity('ENVIADA')
+    const refused = await opportunity('RECUSADA')
+    const archived = await opportunity('ENVIADA', now)
+
+    const result = await repository.transfer({
+      tenantId,
+      sourceId,
+      destinationId,
+      items: { properties: false, leads: false, opportunities: true, futureEvents: false },
+      opportunityScope: 'open',
+      reason: 'MANUAL',
+      actor: { id: ownerId, name: 'Dona' },
+      now,
+    })
+
+    expect(result.opportunityIds).toEqual([open.id])
+    const owners = await prisma.oportunidade.findMany({
+      where: { id: { in: [open.id, refused.id, archived.id] } },
+      select: { id: true, responsavelId: true },
+    })
+    expect(Object.fromEntries(owners.map((row) => [row.id, row.responsavelId]))).toEqual({
+      [open.id]: destinationId,
+      [refused.id]: sourceId,
+      [archived.id]: sourceId,
+    })
+    expect(
+      (await prisma.imovel.findUniqueOrThrow({ where: { id: propertyId } })).responsavelId,
+    ).toBe(sourceId)
+    await prisma.transferenciaCarteira.deleteMany({ where: { tenantId } })
+  })
+
   it('desativa transferindo imóveis, leads e só os eventos futuros, com auditoria', async () => {
     const token = await prisma.refreshToken.create({
       data: {
@@ -233,7 +280,8 @@ describe('PrismaTeamRepository (integração)', () => {
       tenantId,
       sourceId,
       destinationId,
-      items: { properties: true, leads: true, futureEvents: true },
+      items: { properties: true, leads: true, opportunities: true, futureEvents: true },
+      opportunityScope: 'all',
       reason: 'DESATIVACAO',
       actor: { id: ownerId, name: 'Dona' },
       now,
@@ -242,6 +290,10 @@ describe('PrismaTeamRepository (integração)', () => {
     expect(result.propertyIds).toHaveLength(2)
     expect(result.leadIds).toHaveLength(2)
     expect(result.eventIds).toEqual([futureEventId])
+    expect(result.opportunityIds.length).toBeGreaterThanOrEqual(2)
+    expect(await prisma.oportunidade.count({ where: { tenantId, responsavelId: sourceId } })).toBe(
+      0,
+    )
     expect(
       (await prisma.imovel.findUniqueOrThrow({ where: { id: propertyId } })).responsavelId,
     ).toBe(destinationId)

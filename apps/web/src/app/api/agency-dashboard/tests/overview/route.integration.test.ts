@@ -8,6 +8,7 @@ import { prisma } from '@server/db/prisma'
 import { calendarMonthInTimeZone } from '@server/shared/time-zone-calendar'
 
 import { GET } from '../../overview/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 // Instante em horário de São Paulo (UTC-3, sem horário de verão desde 2019): os meses do
 // dashboard seguem esse fuso, qualquer que seja o fuso da máquina que roda o teste.
@@ -145,7 +146,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
         telefone: '41999990000',
         interesse: 'Apartamento 2 quartos',
         orcamento: '2000-3000',
-        origem: 'Portal Ketris',
+        origem: 'OUTRA',
       },
     })
 
@@ -157,7 +158,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
         telefone: '41999990001',
         interesse: 'Casa',
         orcamento: '1000-2000',
-        origem: 'Indicação',
+        origem: 'INDICACAO',
         createdAt: saoPaulo(currentYear, currentMonth - 2, 10, 12),
       },
     })
@@ -167,6 +168,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
         data: {
           tenantId,
           imovelId,
+          responsavelId: await propertyResponsibleId(prisma, imovelId),
           interessadoNome: 'Interessado Teste',
           interessadoEmail: `interessado-${randomUUID()}@example.com`,
           valorProposto: valor,
@@ -366,7 +368,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
           telefone: '41988880000',
           interesse: 'Casa',
           orcamento: '900000',
-          origem: 'Portal Ketris',
+          origem: 'OUTRA',
         },
       })
 
@@ -426,7 +428,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
         telefone: '41999990002',
         interesse: 'Apartamento',
         orcamento: '1000-2000',
-        origem: 'Portal Ketris',
+        origem: 'OUTRA',
         createdAt: previousMonthStart,
       },
     })
@@ -501,7 +503,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
             telefone: '41999990000',
             interesse: 'Apartamento',
             orcamento: '1000-2000',
-            origem: 'Portal Ketris',
+            origem: 'OUTRA',
             createdAt,
           },
         })

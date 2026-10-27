@@ -2,6 +2,7 @@ import en from '@/i18n/messages/en-US/crm.json'
 import es from '@/i18n/messages/es-ES/crm.json'
 import pt from '@/i18n/messages/pt-BR/crm.json'
 import { Prisma } from '@prisma/client'
+import { LEAD_SOURCE_KEYS, LEAD_SOURCES } from '../constants/lead-sources'
 import { CRM_STATUS_KEYS } from '../constants/translation-keys'
 import type { CrmListKind, CrmListQueryFilters, CrmListSql } from '../types/list-query'
 import type { CrmScope } from '../types/prisma'
@@ -47,7 +48,7 @@ export function crmListSql(
     if (!filters.includeArchived) base.push(Prisma.sql`r."arquivadoEm" IS NULL`)
     if (scope.actorPapel === 'AGENT')
       base.push(
-        Prisma.sql`(r."createdById" = ${scope.actorId ?? ''} OR EXISTS (SELECT 1 FROM oportunidades o JOIN imoveis i ON i.id = o."imovelId" WHERE o."contatoId" = r.id AND o."tenantId" = ${scope.actorTenantId} AND i."responsavelId" = ${scope.actorId ?? ''}))`,
+        Prisma.sql`(r."createdById" = ${scope.actorId ?? ''} OR EXISTS (SELECT 1 FROM oportunidades o WHERE o."contatoId" = r.id AND o."tenantId" = ${scope.actorTenantId} AND o."responsavelId" = ${scope.actorId ?? ''}))`,
       )
     if (filters.type) extra.push(Prisma.sql`r.tipo::text = ${filters.type}`)
     searchable = [Prisma.sql`r.nome`, Prisma.sql`r.email`, Prisma.sql`r.telefone`]
@@ -71,12 +72,14 @@ export function crmListSql(
     if (scope.actorPapel === 'AGENT')
       base.push(Prisma.sql`r."responsavelId" = ${scope.actorId ?? ''}`)
     if (filters.stage) extra.push(Prisma.sql`r.estagio::text = ${filters.stage}`)
-    searchable = [
-      Prisma.sql`r.nome`,
-      Prisma.sql`r.interesse`,
-      Prisma.sql`r.origem`,
-      Prisma.sql`u.nome`,
-    ]
+    const sourceLabels = Object.fromEntries(
+      LEAD_SOURCES.map((code) => [code, messages.leads.create.sources[LEAD_SOURCE_KEYS[code]]]),
+    )
+    const sourceLabel = Prisma.sql`CASE r.origem::text ${Prisma.join(
+      LEAD_SOURCES.map((code) => Prisma.sql`WHEN ${code} THEN ${sourceLabels[code]}`),
+      ' ',
+    )} END`
+    searchable = [Prisma.sql`r.nome`, Prisma.sql`r.interesse`, sourceLabel, Prisma.sql`u.nome`]
     const token = Prisma.sql`substring(r.orcamento from '[0-9]+[0-9.,]*')`
     const suffixed = Prisma.sql`r.orcamento ~* '[0-9][[:space:]]*[mk]'`
     const numericText = Prisma.sql`CASE WHEN ${suffixed} THEN replace(${token}, ',', '.') ELSE replace(replace(${token}, '.', ''), ',', '.') END`
@@ -86,7 +89,7 @@ export function crmListSql(
       interest: Prisma.sql`r.interesse`,
       budget,
       stage: Prisma.sql`r.estagio`,
-      source: Prisma.sql`r.origem`,
+      source: enumOrder(Prisma.sql`r.origem`, sourceLabels, filters.locale ?? 'pt-BR'),
       lastContact: Prisma.sql`r."updatedAt"`,
       createdAt: Prisma.sql`r."createdAt"`,
     }
@@ -97,7 +100,7 @@ export function crmListSql(
     purpose = Prisma.sql`i.finalidade::text`
     if (!filters.includeArchived) base.push(Prisma.sql`r."arquivadaEm" IS NULL`)
     if (scope.actorPapel === 'AGENT')
-      base.push(Prisma.sql`i."responsavelId" = ${scope.actorId ?? ''}`)
+      base.push(Prisma.sql`r."responsavelId" = ${scope.actorId ?? ''}`)
     if (filters.status) extra.push(Prisma.sql`r.status::text = ${filters.status}`)
     if (filters.statuses?.length)
       extra.push(Prisma.sql`r.status::text IN (${Prisma.join(filters.statuses)})`)
@@ -149,7 +152,7 @@ export function crmListSql(
   const defaultSort = kind === 'contact' ? 'name' : 'createdAt'
   const sortKey = filters.sortBy ?? defaultSort
   const sortColumn = columns[sortKey] ?? columns[defaultSort]
-  const sort = ['name', 'property', 'interest', 'source'].includes(sortKey)
+  const sort = ['name', 'property', 'interest'].includes(sortKey)
     ? normalizedSql(sortColumn)
     : sortColumn
   const direction =

@@ -18,6 +18,7 @@ import { GET as listCharges } from '../../../financial/charges/route'
 import { GET as readCharge } from '../../../financial/charges/[id]/route'
 import { GET as listContracts } from '../../route'
 import { GET as readContract } from '../../[id]/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 const { upload, download } = vi.hoisted(() => ({ upload: vi.fn(), download: vi.fn() }))
 vi.mock('@server/maintenance/infrastructure/s3-maintenance-attachment-storage', () => ({
@@ -79,6 +80,7 @@ async function agency(renterEmail: string) {
     data: {
       tenantId: agencyTenant.id,
       imovelId: property.id,
+      responsavelId: await propertyResponsibleId(prisma, property.id),
       interessadoNome: 'Renter',
       interessadoEmail: renterEmail,
       valorProposto: 1000,

@@ -85,7 +85,7 @@ export class PrismaContactRepository implements ContactRepository {
                   oportunidades: {
                     some: {
                       tenantId: this.scope.actorTenantId,
-                      imovel: { responsavelId: this.scope.actorId ?? '' },
+                      responsavelId: this.scope.actorId ?? '',
                     },
                   },
                 },
@@ -121,7 +121,7 @@ export class PrismaContactRepository implements ContactRepository {
                   oportunidades: {
                     some: {
                       tenantId: this.scope.actorTenantId,
-                      imovel: { responsavelId: this.scope.actorId ?? '' },
+                      responsavelId: this.scope.actorId ?? '',
                     },
                   },
                 },
@@ -157,7 +157,7 @@ export class PrismaContactRepository implements ContactRepository {
                   oportunidades: {
                     some: {
                       tenantId: this.scope.actorTenantId,
-                      imovel: { responsavelId: this.scope.actorId ?? '' },
+                      responsavelId: this.scope.actorId ?? '',
                     },
                   },
                 },

@@ -581,8 +581,9 @@
       "source": "Origen",
       "destination": "Transferir a",
       "items": "Qué transferir",
-      "itemProperties": "Inmuebles, con sus oportunidades ({count})",
+      "itemProperties": "Inmuebles ({count})",
       "itemLeads": "Leads ({count})",
+      "itemOpportunities": "Oportunidades abiertas ({count})",
       "itemFutureEvents": "Eventos futuros de la agenda",
       "close": "Cerrar",
       "cancel": "Cancelar",
@@ -594,9 +595,9 @@
       "itemsError": "Selecciona al menos un elemento",
       "transferError": "No pudimos transferir la cartera",
       "goalSaved": "Meta mensual actualizada",
-      "transferred": "Transferidos: {properties} inmuebles, {leads} leads y {events} eventos",
+      "transferred": "Transferidos: {properties} inmuebles, {leads} leads, {opportunities} oportunidades y {events} eventos",
       "deactivateTitle": "Desactivar a {name}",
-      "deactivateDescription": "Toda la cartera (inmuebles con sus oportunidades, leads y eventos futuros) pasa al agente elegido y {name} pierde el acceso. Todo queda registrado.",
+      "deactivateDescription": "Toda la cartera (inmuebles, leads, oportunidades y eventos futuros) pasa al corredor elegido, y {name} pierde el acceso. Todo queda registrado.",
       "deactivateSubmit": "Transferir y desactivar",
       "deactivated": "{name} fue desactivado y la cartera fue transferida",
       "deactivateError": "No pudimos desactivar al agente",
@@ -677,5 +678,13 @@
   "proposals": {
     "title": "Propuestas",
     "subtitle": "Negociaciones en curso y valores de referencia."
+  },
+  "leadSources": {
+    "marketplace": "Marketplace",
+    "whatsApp": "WhatsApp",
+    "instagram": "Instagram",
+    "site": "Site",
+    "referral": "Recomendación",
+    "other": "Otra"
   }
 }

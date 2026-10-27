@@ -6,6 +6,7 @@ import type {
   ContractFixtureSeedInput,
   ContractFixtureSeedResult,
 } from '../types/contracts-fixtures'
+import { propertyResponsibleId } from '../../src/server/shared/tests/fixtures/property-responsible'
 
 function assertIsolatedContractDatabase() {
   const url = new URL(getDatabaseUrl())
@@ -77,6 +78,7 @@ export async function seedContractFixtures(
     data: {
       tenantId: tenant.id,
       imovelId: property.id,
+      responsavelId: await propertyResponsibleId(prisma, property.id),
       interessadoNome: renter.nome,
       interessadoEmail: renter.email,
       interessadoTelefone: renter.telefone,
@@ -89,6 +91,7 @@ export async function seedContractFixtures(
       data: {
         tenantId: tenant.id,
         imovelId: property.id,
+        responsavelId: await propertyResponsibleId(prisma, property.id),
         interessadoNome: 'Histórico ' + index,
         interessadoEmail: 'history-' + index + '@example.test',
         valorProposto: 1000 + index,

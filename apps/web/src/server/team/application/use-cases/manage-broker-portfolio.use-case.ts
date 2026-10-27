@@ -43,8 +43,7 @@ export class TransferBrokerPortfolioUseCase {
 
   async execute(input: TransferBrokerPortfolioInput): Promise<TeamTransferResult> {
     assertTeamManager(input)
-    if (!input.items.properties && !input.items.leads && !input.items.futureEvents)
-      throw new EmptyTransferError()
+    if (!Object.values(input.items).some(Boolean)) throw new EmptyTransferError()
     await assertTransferPeople(this.repository, input, input.brokerId, input.destinationId)
     const actor = await teamActorIdentity(this.repository, input)
 
@@ -53,6 +52,7 @@ export class TransferBrokerPortfolioUseCase {
       sourceId: input.brokerId,
       destinationId: input.destinationId,
       items: input.items,
+      opportunityScope: 'open',
       reason: 'MANUAL',
       actor,
       now: this.now(),
@@ -82,7 +82,8 @@ export class DeactivateBrokerUseCase {
       tenantId: input.actorTenantId,
       sourceId: input.brokerId,
       destinationId: input.destinationId,
-      items: { properties: true, leads: true, futureEvents: true },
+      items: { properties: true, leads: true, opportunities: true, futureEvents: true },
+      opportunityScope: 'all',
       reason: 'DESATIVACAO',
       actor,
       now: this.now(),

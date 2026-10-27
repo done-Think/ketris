@@ -1,3 +1,4 @@
+import { LEAD_SOURCES } from '@server/crm/constants/lead-sources'
 import { z } from 'zod'
 
 import { CRM_LIMITS } from '@server/crm/constants/validation'
@@ -22,11 +23,7 @@ export function createLeadSchema(t: SchemaMessageTranslator) {
       .trim()
       .min(2, t('budgetRequired'))
       .max(CRM_LIMITS.shortText, t('textTooLong')),
-    source: z
-      .string()
-      .trim()
-      .min(2, t('sourceRequired'))
-      .max(CRM_LIMITS.shortText, t('textTooLong')),
+    source: z.enum(LEAD_SOURCES, { message: t('sourceRequired') }),
     notes: z.string().trim().max(CRM_LIMITS.notes, t('textTooLong')),
   })
 }
@@ -37,6 +34,6 @@ export const createLeadDefaultValues = {
   email: '',
   interest: '',
   budget: '',
-  source: 'Marketplace',
+  source: 'MARKETPLACE',
   notes: '',
 } satisfies z.infer<ReturnType<typeof createLeadSchema>>

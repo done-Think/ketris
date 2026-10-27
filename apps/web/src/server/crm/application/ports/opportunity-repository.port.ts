@@ -28,6 +28,7 @@ export interface OpportunityRepository {
     details: { name: string; email: string; phone: string | null },
   ): Promise<void>
   archive(id: string): Promise<Opportunity>
+  assignResponsible(id: string, responsibleId: string): Promise<Opportunity>
   delete(id: string): Promise<void>
   countByContact(tenantId: string, contactIds: readonly string[]): Promise<Map<string, number>>
   existsForAgent(tenantId: string, contactId: string, agentId: string): Promise<boolean>

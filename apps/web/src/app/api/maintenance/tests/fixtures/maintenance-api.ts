@@ -9,6 +9,7 @@ import { afterAll, beforeAll, expect } from 'vitest'
 import { POST as act } from '../../tickets/[id]/actions/route'
 import { POST } from '../../tickets/route'
 import { uploadToStorage } from './maintenance-storage'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 export function setupMaintenanceIntegration() {
   const tokenService = new JoseTokenService()
@@ -58,6 +59,7 @@ export function setupMaintenanceIntegration() {
       data: {
         tenantId: tenant.id,
         imovelId: property.id,
+        responsavelId: await propertyResponsibleId(prisma, property.id),
         interessadoNome: renter.nome,
         interessadoEmail: renter.email,
         valorProposto: 2500,
@@ -198,6 +200,7 @@ export function setupMaintenanceIntegration() {
       data: {
         tenantId: fixture.tenant.id,
         imovelId: propertyId,
+        responsavelId: await propertyResponsibleId(prisma, propertyId),
         interessadoNome: renter.nome,
         interessadoEmail: renter.email,
         valorProposto: 2500,

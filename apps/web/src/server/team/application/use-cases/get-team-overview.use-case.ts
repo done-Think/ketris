@@ -39,6 +39,7 @@ export class GetTeamOverviewUseCase {
         metrics: {
           properties: metrics.properties.get(row.id) ?? 0,
           openLeads: metrics.openLeads.get(row.id) ?? 0,
+          openOpportunities: metrics.openOpportunities.get(row.id) ?? 0,
           monthlySales,
           returns: metrics.returns.get(row.id) ?? 0,
           responseTimeMinutes: median(metrics.responseMinutes.get(row.id) ?? []),

@@ -7,6 +7,7 @@ import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service
 import { prisma } from '@server/db/prisma'
 
 import { GET, POST } from '../../opportunities/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 describe('/api/crm/opportunities (integração)', () => {
   const tokenService = new JoseTokenService()
@@ -83,6 +84,7 @@ describe('/api/crm/opportunities (integração)', () => {
       data: {
         tenantId,
         imovelId,
+        responsavelId: await propertyResponsibleId(prisma, imovelId),
         interessadoNome: 'Ativo',
         interessadoEmail: `ativo-${randomUUID()}@exemplo.com`,
         valorProposto: 2000,
@@ -95,6 +97,7 @@ describe('/api/crm/opportunities (integração)', () => {
       data: {
         tenantId,
         imovelId,
+        responsavelId: await propertyResponsibleId(prisma, imovelId),
         interessadoNome: 'Arquivado',
         interessadoEmail: `arquivado-${randomUUID()}@exemplo.com`,
         valorProposto: 2000,
@@ -136,6 +139,7 @@ describe('/api/crm/opportunities (integração)', () => {
       data: {
         tenantId: otherTenantId,
         imovelId: otherTenantImovelId,
+        responsavelId: await propertyResponsibleId(prisma, otherTenantImovelId),
         interessadoNome: 'De Outro Tenant',
         interessadoEmail: `outro-op-${randomUUID()}@exemplo.com`,
         valorProposto: 1500,
@@ -374,6 +378,7 @@ describe('/api/crm/opportunities (integração)', () => {
         data: {
           tenantId,
           imovelId: imovelAgentAId,
+          responsavelId: await propertyResponsibleId(prisma, imovelAgentAId),
           interessadoNome: 'Lead do Corretor A',
           interessadoEmail: `lead-a-${randomUUID()}@exemplo.com`,
           valorProposto: 2200,

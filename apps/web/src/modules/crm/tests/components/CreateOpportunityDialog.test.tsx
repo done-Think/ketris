@@ -14,6 +14,14 @@ import { property } from '../fixtures/property'
 
 vi.mock('../../hooks/use-opportunities', () => ({
   useCrmProperties: vi.fn(),
+  useCrmResponsibles: (enabled: boolean) => ({
+    data: enabled
+      ? [
+          { id: 'owner-1', name: 'Gestora', role: 'OWNER' },
+          { id: 'agent-2', name: 'Bruno Corretor', role: 'AGENT' },
+        ]
+      : undefined,
+  }),
 }))
 
 describe('CreateOpportunityDialog', () => {
@@ -30,6 +38,7 @@ describe('CreateOpportunityDialog', () => {
       <CreateOpportunityDialog
         open
         tenantId="tenant-1"
+        canChooseResponsible={false}
         isPending={false}
         onClose={vi.fn()}
         onSave={vi.fn()}
@@ -48,6 +57,7 @@ describe('CreateOpportunityDialog', () => {
       <CreateOpportunityDialog
         open
         tenantId="tenant-1"
+        canChooseResponsible={false}
         isPending={false}
         onClose={vi.fn()}
         onSave={onSave}
@@ -67,6 +77,7 @@ describe('CreateOpportunityDialog', () => {
       <CreateOpportunityDialog
         open
         tenantId="tenant-1"
+        canChooseResponsible={false}
         isPending={false}
         onClose={vi.fn()}
         onSave={onSave}
@@ -98,6 +109,7 @@ describe('CreateOpportunityDialog', () => {
       <CreateOpportunityDialog
         open
         tenantId="tenant-1"
+        canChooseResponsible={false}
         isPending={false}
         onClose={onClose}
         onSave={vi.fn()}
@@ -106,5 +118,51 @@ describe('CreateOpportunityDialog', () => {
 
     await user.click(screen.getByRole('button', { name: 'Cancelar' }))
     expect(onClose).toHaveBeenCalledOnce()
+  })
+
+  it('lets the OWNER pick another responsible, defaulting to themselves', async () => {
+    const user = userEvent.setup()
+    const onSave = vi.fn()
+    render(
+      <CreateOpportunityDialog
+        open
+        tenantId="tenant-1"
+        canChooseResponsible
+        isPending={false}
+        onClose={vi.fn()}
+        onSave={onSave}
+      />,
+    )
+
+    expect(
+      screen.getByRole('combobox', { name: 'Responsável pela oportunidade' }),
+    ).toHaveTextContent('Eu')
+    await user.click(screen.getByLabelText(/^Imóvel/))
+    await user.click(await screen.findByText(/Apartamento Jardins/))
+    await user.type(screen.getByLabelText(/^Nome/), 'Maria Silva')
+    await user.type(screen.getByLabelText(/^E-mail/), 'maria@example.com')
+    await user.type(screen.getByLabelText(/^Valor proposto/), '2500')
+    await user.click(screen.getByRole('combobox', { name: 'Responsável pela oportunidade' }))
+    await user.click(screen.getByRole('option', { name: 'Bruno Corretor' }))
+    await user.click(screen.getByRole('button', { name: 'Criar oportunidade' }))
+
+    expect(onSave.mock.calls[0]?.[0]).toEqual(expect.objectContaining({ responsibleId: 'agent-2' }))
+  })
+
+  it('hides the responsible field from agents', () => {
+    render(
+      <CreateOpportunityDialog
+        open
+        tenantId="tenant-1"
+        canChooseResponsible={false}
+        isPending={false}
+        onClose={vi.fn()}
+        onSave={vi.fn()}
+      />,
+    )
+
+    expect(
+      screen.queryByRole('combobox', { name: 'Responsável pela oportunidade' }),
+    ).not.toBeInTheDocument()
   })
 })

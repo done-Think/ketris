@@ -11,6 +11,7 @@ import { POST as linkPartyUser } from '../[id]/parties/[partyId]/link-user/route
 import { POST as signParty } from '../[id]/parties/[partyId]/sign/route'
 import { GET as getContract } from '../[id]/route'
 import { GET, POST } from '../route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 describe('/api/contracts (integração)', () => {
   const tokenService = new JoseTokenService()
@@ -109,6 +110,7 @@ describe('/api/contracts (integração)', () => {
       data: {
         tenantId,
         imovelId: propertyId,
+        responsavelId: await propertyResponsibleId(prisma, propertyId),
         interessadoNome: 'Mariana Souza',
         interessadoEmail: 'mariana@example.com',
         valorProposto: 2500,
@@ -121,6 +123,7 @@ describe('/api/contracts (integração)', () => {
       data: {
         tenantId,
         imovelId: propertyId,
+        responsavelId: await propertyResponsibleId(prisma, propertyId),
         interessadoNome: 'Rafael Lima',
         interessadoEmail: 'rafael@example.com',
         valorProposto: 2500,
@@ -199,6 +202,7 @@ describe('/api/contracts (integração)', () => {
       data: {
         tenantId,
         imovelId: propertyId,
+        responsavelId: await propertyResponsibleId(prisma, propertyId),
         interessadoNome: 'Teste de sequência',
         interessadoEmail: `${randomUUID()}@example.com`,
         valorProposto: 2500,
@@ -592,6 +596,7 @@ describe('/api/contracts (integração)', () => {
       data: {
         tenantId,
         imovelId: propertyId,
+        responsavelId: await propertyResponsibleId(prisma, propertyId),
         interessadoNome: 'Paula Reis',
         interessadoEmail: 'paula@example.com',
         valorProposto: 3100,
@@ -646,6 +651,7 @@ describe('/api/contracts (integração)', () => {
       data: {
         tenantId,
         imovelId: propertyId,
+        responsavelId: await propertyResponsibleId(prisma, propertyId),
         interessadoNome: 'Lucas Prado',
         interessadoEmail: 'lucas@example.com',
         valorProposto: 2800,
@@ -688,6 +694,7 @@ describe('/api/contracts (integração)', () => {
       data: {
         tenantId,
         imovelId: propertyId,
+        responsavelId: await propertyResponsibleId(prisma, propertyId),
         interessadoNome: 'Concorrência',
         interessadoEmail: 'concurrent@example.test',
         valorProposto: 2500,

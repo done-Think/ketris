@@ -73,6 +73,20 @@ export async function seedTeamFixtures(
       },
     })
   }
+  const property = await prisma.imovel.findFirstOrThrow({
+    where: { tenantId: tenant.id, responsavelId: source.id },
+  })
+  await prisma.oportunidade.create({
+    data: {
+      tenantId: tenant.id,
+      imovelId: property.id,
+      responsavelId: source.id,
+      interessadoNome: 'Interessada Equipe',
+      interessadoEmail: 'interessada-' + suffix + '@team.example.test',
+      valorProposto: 390000,
+      status: 'ENVIADA',
+    },
+  })
   const contactedAt = new Date()
   for (const index of [1, 2]) {
     await prisma.lead.create({
@@ -83,7 +97,7 @@ export async function seedTeamFixtures(
         telefone: '41999990000',
         interesse: 'Apartamento',
         orcamento: 'A combinar',
-        origem: 'Site',
+        origem: 'SITE',
         estagio: index === 1 ? 'NOVO' : 'EM_CONTATO',
         primeiroContatoEm: index === 1 ? null : contactedAt,
         createdAt: new Date(contactedAt.getTime() - 30 * 60_000),
@@ -98,6 +112,7 @@ export async function cleanupTeamFixtures(prisma: PrismaClient, tenantIds: strin
   isolated()
   const where = { tenantId: { in: tenantIds }, tenant: { slug: { startsWith: slugPrefix } } }
   await prisma.$transaction([
+    prisma.oportunidade.deleteMany({ where }),
     prisma.lead.deleteMany({ where }),
     prisma.imovel.deleteMany({ where }),
     prisma.tenant.deleteMany({
@@ -124,22 +139,34 @@ export async function readTeamEvidence(
       include: { conviteEquipe: true },
     }),
   ])
-  const count = (model: 'imovel' | 'lead', responsavelId: string) =>
+  const count = (model: 'imovel' | 'lead' | 'oportunidade', responsavelId: string) =>
     model === 'imovel'
       ? prisma.imovel.count({ where: { tenantId: input.tenantId, responsavelId } })
-      : prisma.lead.count({ where: { tenantId: input.tenantId, responsavelId } })
-  const [sourceProperties, sourceLeads, destinationProperties, destinationLeads, goal, transfers] =
-    await Promise.all([
-      count('imovel', source.id),
-      count('lead', source.id),
-      count('imovel', destination.id),
-      count('lead', destination.id),
-      prisma.metaCorretor.findFirst({
-        where: { tenantId: input.tenantId, usuarioId: source.id },
-        orderBy: { createdAt: 'desc' },
-      }),
-      prisma.transferenciaCarteira.count({ where: { tenantId: input.tenantId } }),
-    ])
+      : model === 'lead'
+        ? prisma.lead.count({ where: { tenantId: input.tenantId, responsavelId } })
+        : prisma.oportunidade.count({ where: { tenantId: input.tenantId, responsavelId } })
+  const [
+    sourceProperties,
+    sourceLeads,
+    destinationProperties,
+    destinationLeads,
+    sourceOpportunities,
+    destinationOpportunities,
+    goal,
+    transfers,
+  ] = await Promise.all([
+    count('imovel', source.id),
+    count('lead', source.id),
+    count('imovel', destination.id),
+    count('lead', destination.id),
+    count('oportunidade', source.id),
+    count('oportunidade', destination.id),
+    prisma.metaCorretor.findFirst({
+      where: { tenantId: input.tenantId, usuarioId: source.id },
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.transferenciaCarteira.count({ where: { tenantId: input.tenantId } }),
+  ])
 
   return {
     sourceActive: source.ativo,
@@ -147,6 +174,8 @@ export async function readTeamEvidence(
     sourceLeads,
     destinationProperties,
     destinationLeads,
+    sourceOpportunities,
+    destinationOpportunities,
     goal: goal?.vendasMensais ?? null,
     transfers,
     invitedActive: invited ? invited.ativo : null,

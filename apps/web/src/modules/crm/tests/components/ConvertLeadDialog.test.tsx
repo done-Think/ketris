@@ -44,7 +44,7 @@ const lead: DashboardLead = {
   lastContact: 'agora',
   lastContactAt: '2026-10-07T12:00:00.000Z',
   interest: 'Casa residencial',
-  source: 'Marketplace',
+  source: 'MARKETPLACE',
   broker: 'Thiago Santos',
   stage: 'PROPOSTA',
   opportunityId: null,

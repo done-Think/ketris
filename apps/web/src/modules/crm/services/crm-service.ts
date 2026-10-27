@@ -1,3 +1,4 @@
+import type { ListOpportunityResponsiblesResponseDTO } from '@server/crm/types/dto'
 import { BaseService } from '@shared/lib/api/base-service'
 
 import type {
@@ -17,6 +18,7 @@ import type {
   CreateOpportunityPayload,
   Opportunity,
   OpportunityFilters,
+  OpportunityResponsibleOption,
   RespondOpportunityPayload,
   UpdateOpportunityPayload,
 } from '../types/opportunity'
@@ -68,6 +70,18 @@ export class CrmService extends BaseService {
   archive(id: string): Promise<Opportunity> {
     return this.http
       .delete<OpportunityResponse>(`${this.path}/${id}`)
+      .then((data) => data.opportunity)
+  }
+
+  listResponsibles(): Promise<OpportunityResponsibleOption[]> {
+    return this.http
+      .get<ListOpportunityResponsiblesResponseDTO>('/crm/responsibles')
+      .then((data) => data.responsibles)
+  }
+
+  assignResponsible(id: string, responsibleId: string): Promise<Opportunity> {
+    return this.http
+      .put<OpportunityResponse>(`${this.path}/${id}/responsible`, { responsibleId })
       .then((data) => data.opportunity)
   }
 

@@ -11,6 +11,7 @@ import { POST as CANCEL } from '../../events/[id]/cancel/route'
 import { POST as RESCHEDULE } from '../../events/[id]/reschedule/route'
 import { GET as GET_ONE, PATCH } from '../../events/[id]/route'
 import { GET as LIST, POST as CREATE } from '../../events/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 const RENTER_VIEW_KEYS = [
   'end',
@@ -406,6 +407,7 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
         data: {
           tenantId: agencyTenantId,
           imovelId: property.id,
+          responsavelId: await propertyResponsibleId(prisma, property.id),
           interessadoNome: renterOwner.nome,
           interessadoEmail: renterOwner.email,
           valorProposto: 1000,

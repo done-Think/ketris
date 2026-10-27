@@ -20,7 +20,7 @@ const people = [
   staff({ id: 'agent-3', name: 'Inativo', active: false }),
   staff({ id: 'agent-4', name: 'Convidado', pendingInvitation: true }),
 ]
-const allItems = { properties: true, leads: true, futureEvents: true }
+const allItems = { properties: true, leads: true, opportunities: true, futureEvents: true }
 
 describe('TransferBrokerPortfolioUseCase', () => {
   it('transfere os itens escolhidos e registra quem fez', async () => {
@@ -30,14 +30,15 @@ describe('TransferBrokerPortfolioUseCase', () => {
       ...owner,
       brokerId: 'agent-1',
       destinationId: 'agent-2',
-      items: { properties: true, leads: false, futureEvents: false },
+      items: { properties: true, leads: false, opportunities: false, futureEvents: false },
     })
 
     expect(repository.transfer).toHaveBeenCalledWith({
       tenantId: 'tenant-1',
       sourceId: 'agent-1',
       destinationId: 'agent-2',
-      items: { properties: true, leads: false, futureEvents: false },
+      items: { properties: true, leads: false, opportunities: false, futureEvents: false },
+      opportunityScope: 'open',
       reason: 'MANUAL',
       actor: { id: 'owner-1', name: 'Dona' },
       now,
@@ -72,7 +73,7 @@ describe('TransferBrokerPortfolioUseCase', () => {
         ...owner,
         brokerId: 'agent-1',
         destinationId: 'agent-2',
-        items: { properties: false, leads: false, futureEvents: false },
+        items: { properties: false, leads: false, opportunities: false, futureEvents: false },
       }),
     ).rejects.toBeInstanceOf(EmptyTransferError)
     await expect(
@@ -109,6 +110,7 @@ describe('DeactivateBrokerUseCase', () => {
         sourceId: 'agent-1',
         destinationId: 'owner-1',
         items: allItems,
+        opportunityScope: 'all',
         reason: 'DESATIVACAO',
       }),
     )

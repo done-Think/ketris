@@ -8,6 +8,7 @@ import { prisma } from '@server/db/prisma'
 import { dayBoundsInTimeZone } from '@server/shared/time-zone-calendar'
 
 import { GET } from '../../overview/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 type Papel = 'OWNER' | 'AGENT' | 'RENTER' | 'PROPERTY_OWNER'
 
@@ -70,7 +71,7 @@ describe('/api/dashboard/overview (integração)', () => {
     const propertyA = await createProperty(agentA.user.id)
     const propertyB = await createProperty(agentB.user.id)
 
-    const createOpportunity = (
+    const createOpportunity = async (
       imovelId: string,
       status: 'ENVIADA' | 'EM_NEGOCIACAO' | 'ACEITA',
       arquivadaEm: Date | null = null,
@@ -79,6 +80,7 @@ describe('/api/dashboard/overview (integração)', () => {
         data: {
           tenantId,
           imovelId,
+          responsavelId: await propertyResponsibleId(prisma, imovelId),
           interessadoNome: 'Interessado',
           interessadoEmail: `interessado-${randomUUID()}@example.com`,
           valorProposto: 2500,
@@ -100,7 +102,7 @@ describe('/api/dashboard/overview (integração)', () => {
           telefone: '(11) 90000-0000',
           interesse: 'Apartamento',
           orcamento: 'Até R$ 3.000',
-          origem: 'Site',
+          origem: 'SITE',
           oportunidadeId,
         },
       })

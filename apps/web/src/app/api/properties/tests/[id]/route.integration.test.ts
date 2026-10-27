@@ -9,6 +9,7 @@ import { prisma } from '@server/db/prisma'
 import { DELETE, GET, PATCH } from '../../[id]/route'
 import { POST as publish } from '../../[id]/publish/route'
 import { POST as unpublish } from '../../[id]/unpublish/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 describe('/api/properties/{id} (integração)', () => {
   const tokenService = new JoseTokenService()
@@ -360,6 +361,7 @@ describe('/api/properties/{id} (integração)', () => {
       data: {
         tenantId,
         imovelId: propertyWithOpportunity.id,
+        responsavelId: await propertyResponsibleId(prisma, propertyWithOpportunity.id),
         interessadoNome: 'Interessado Teste',
         interessadoEmail: 'interessado-teste@example.com',
         valorProposto: 2500,

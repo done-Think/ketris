@@ -9,16 +9,14 @@ export type {
 
 import { OpportunityNotAnswerableError, OpportunityNotFoundError } from '../../domain/errors'
 import { canRespond, statusForResponse } from '../../domain/opportunity-status'
-import { assertAgentOwnsProperty, assertCrmAccess } from '../authorization'
+import { assertOpportunityAccess, assertCrmAccess } from '../authorization'
 import type { ActivityRepository } from '../ports/activity-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
-import type { PropertyLookupPort } from '../ports/property-lookup.port'
 
 export class RespondToOpportunityUseCase {
   constructor(
     private readonly opportunityRepository: OpportunityRepository,
     private readonly activityRepository: ActivityRepository,
-    private readonly propertyLookup: PropertyLookupPort,
   ) {}
 
   async execute(input: RespondToOpportunityInput): Promise<RespondToOpportunityOutput> {
@@ -29,13 +27,7 @@ export class RespondToOpportunityUseCase {
       throw new OpportunityNotFoundError()
     }
 
-    await assertAgentOwnsProperty(
-      this.propertyLookup,
-      input.actorTenantId,
-      current.propertyId,
-      input.actorId ?? '',
-      input.actorPapel,
-    )
+    assertOpportunityAccess(current, input.actorId ?? '', input.actorPapel)
 
     if (!canRespond(current.status)) {
       throw new OpportunityNotAnswerableError(current.status)

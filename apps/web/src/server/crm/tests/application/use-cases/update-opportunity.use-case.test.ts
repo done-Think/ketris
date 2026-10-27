@@ -3,7 +3,6 @@ import type { ContactRepository } from '../../../application/ports/contact-repos
 
 import type { ActivityRepository } from '../../../application/ports/activity-repository.port'
 import type { OpportunityRepository } from '../../../application/ports/opportunity-repository.port'
-import type { PropertyLookupPort } from '../../../application/ports/property-lookup.port'
 import { UpdateOpportunityUseCase } from '../../../application/use-cases/update-opportunity.use-case'
 import { InvalidStatusTransitionError, OpportunityNotFoundError } from '../../../domain/errors'
 import type { Opportunity } from '../../../domain/opportunity.entity'
@@ -12,6 +11,8 @@ const opportunity: Opportunity = {
   id: 'op-1',
   tenantId: 'tenant-1',
   propertyId: 'imovel-1',
+  responsibleId: 'agent-1',
+  responsibleName: 'Agente Um',
   contactId: null,
   leadName: 'Maria',
   leadEmail: 'maria@exemplo.com',
@@ -31,7 +32,6 @@ const opportunity: Opportunity = {
 function createDeps(overrides?: {
   findById?: OpportunityRepository['findById']
   update?: OpportunityRepository['update']
-  findResponsavelId?: PropertyLookupPort['findResponsavelId']
 }) {
   const opportunityRepository = {
     findById: overrides?.findById ?? vi.fn().mockResolvedValue(opportunity),
@@ -43,11 +43,7 @@ function createDeps(overrides?: {
     create: vi.fn().mockResolvedValue({}),
   } as unknown as ActivityRepository
 
-  const propertyLookup = {
-    findResponsavelId: overrides?.findResponsavelId ?? vi.fn().mockResolvedValue('agent-1'),
-  } as unknown as PropertyLookupPort
-
-  return { opportunityRepository, activityRepository, propertyLookup }
+  return { opportunityRepository, activityRepository }
 }
 
 describe('UpdateOpportunityUseCase', () => {
@@ -57,7 +53,6 @@ describe('UpdateOpportunityUseCase', () => {
     const useCase = new UpdateOpportunityUseCase(
       deps.opportunityRepository,
       deps.activityRepository,
-      deps.propertyLookup,
       {} as ContactRepository,
     )
 
@@ -81,7 +76,6 @@ describe('UpdateOpportunityUseCase', () => {
     const useCase = new UpdateOpportunityUseCase(
       deps.opportunityRepository,
       deps.activityRepository,
-      deps.propertyLookup,
       {} as ContactRepository,
     )
 
@@ -102,7 +96,6 @@ describe('UpdateOpportunityUseCase', () => {
     const useCase = new UpdateOpportunityUseCase(
       deps.opportunityRepository,
       deps.activityRepository,
-      deps.propertyLookup,
       {} as ContactRepository,
     )
 
@@ -133,7 +126,6 @@ describe('UpdateOpportunityUseCase', () => {
     const useCase = new UpdateOpportunityUseCase(
       deps.opportunityRepository,
       deps.activityRepository,
-      deps.propertyLookup,
       {} as ContactRepository,
     )
 
@@ -154,7 +146,6 @@ describe('UpdateOpportunityUseCase', () => {
     const useCase = new UpdateOpportunityUseCase(
       deps.opportunityRepository,
       deps.activityRepository,
-      deps.propertyLookup,
       {} as ContactRepository,
     )
 
@@ -168,13 +159,12 @@ describe('UpdateOpportunityUseCase', () => {
     expect(deps.activityRepository.create).not.toHaveBeenCalled()
   })
 
-  it('AGENT responsável pelo imóvel pode atualizar a oportunidade', async () => {
+  it('AGENT responsável pela oportunidade pode atualizar a oportunidade', async () => {
     const update = vi.fn().mockResolvedValue({ ...opportunity, leadName: 'Maria Silva' })
-    const deps = createDeps({ update, findResponsavelId: vi.fn().mockResolvedValue('agent-1') })
+    const deps = createDeps({ update })
     const useCase = new UpdateOpportunityUseCase(
       deps.opportunityRepository,
       deps.activityRepository,
-      deps.propertyLookup,
       {} as ContactRepository,
     )
 
@@ -189,23 +179,21 @@ describe('UpdateOpportunityUseCase', () => {
     expect(update).toHaveBeenCalled()
   })
 
-  it('AGENT que não é responsável pelo imóvel recebe 404 opaco e não atualiza', async () => {
+  it('AGENT que não é responsável pela oportunidade recebe 404 opaco e não atualiza', async () => {
     const update = vi.fn()
     const deps = createDeps({
       update,
-      findResponsavelId: vi.fn().mockResolvedValue('outro-agente'),
     })
     const useCase = new UpdateOpportunityUseCase(
       deps.opportunityRepository,
       deps.activityRepository,
-      deps.propertyLookup,
       {} as ContactRepository,
     )
 
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorId: 'agent-1',
+        actorId: 'agent-2',
         actorPapel: 'AGENT',
         opportunityId: 'op-1',
         changes: { leadName: 'Maria Silva' },

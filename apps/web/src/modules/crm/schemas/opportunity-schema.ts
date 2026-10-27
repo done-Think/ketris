@@ -107,6 +107,7 @@ export function createOpportunityFormSchema(t: SchemaMessageTranslator) {
       }, t('proposedValuePositive')),
     notes: z.string().trim().max(CRM_LIMITS.notes, t('textTooLong')),
     status: z.enum(['RASCUNHO', 'ENVIADA']),
+    responsibleId: z.string(),
     ...createOpportunityTermsSchema(t).shape,
   })
 }

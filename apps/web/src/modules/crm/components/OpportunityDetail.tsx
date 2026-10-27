@@ -44,6 +44,7 @@ import { OpportunityContactPanel } from './opportunity-detail/OpportunityContact
 import { OpportunityDetailHeader } from './opportunity-detail/OpportunityDetailHeader'
 import { OpportunityNextActionsPanel } from './opportunity-detail/OpportunityNextActionsPanel'
 import { OpportunityPropertyPanel } from './opportunity-detail/OpportunityPropertyPanel'
+import { OpportunityResponsiblePanel } from './opportunity-detail/OpportunityResponsiblePanel'
 import { OpportunityStageMenu } from './opportunity-detail/OpportunityStageMenu'
 import { StatusChangeDialog } from './opportunity-detail/StatusChangeDialog'
 
@@ -342,6 +343,11 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
         </Stack>
 
         <Stack spacing={2} minWidth={0} sx={crmStyles.stackSx2}>
+          <OpportunityResponsiblePanel
+            opportunity={opportunity}
+            tenantId={tenantId ?? ''}
+            canManage={session?.role === 'OWNER'}
+          />
           <OpportunityNextActionsPanel actions={nextActions} />
         </Stack>
 

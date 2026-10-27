@@ -7,6 +7,7 @@ import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service
 import { prisma } from '@server/db/prisma'
 
 import { GET } from '../../overview/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 describe('/api/agency-dashboard/overview — ranking de corretores (integração)', () => {
   const tokenService = new JoseTokenService()
@@ -73,6 +74,7 @@ describe('/api/agency-dashboard/overview — ranking de corretores (integração
         data: {
           tenantId,
           imovelId: imovel.id,
+          responsavelId: await propertyResponsibleId(prisma, imovel.id),
           interessadoNome: 'Interessado',
           interessadoEmail: `top-brokers-${randomUUID()}@example.com`,
           valorProposto: valor,

@@ -12,6 +12,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close'
 import { useTranslations } from 'next-intl'
 
+import { leadSourceKey } from '@server/crm/constants/lead-sources'
 import type { LeadDetailsModalProps } from '../types/dashboard-overview'
 import { ContactInfoCard } from './ContactInfoCard'
 import { LeadBriefingItem } from './LeadBriefingItem'
@@ -19,6 +20,7 @@ import { styles } from '../styles/lead-details-modal.styles'
 
 export function LeadDetailsModal({ lead, onClose }: LeadDetailsModalProps) {
   const t = useTranslations('dashboard.overview.leadDetails')
+  const sourceT = useTranslations('dashboard.leadSources')
 
   return (
     <Dialog
@@ -61,7 +63,7 @@ export function LeadDetailsModal({ lead, onClose }: LeadDetailsModalProps) {
             </Box>
 
             <Box sx={styles.box4}>
-              <LeadBriefingItem label={t('origin')} value={lead.source} />
+              <LeadBriefingItem label={t('origin')} value={sourceT(leadSourceKey(lead.source))} />
             </Box>
 
             <Box sx={styles.box5}>

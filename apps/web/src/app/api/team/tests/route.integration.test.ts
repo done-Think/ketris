@@ -131,6 +131,7 @@ describe('/api/team (integração)', () => {
     expect((await response.json()).transferred).toEqual({
       properties: 0,
       leads: 0,
+      opportunities: 0,
       futureEvents: 0,
     })
   })

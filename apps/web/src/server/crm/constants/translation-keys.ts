@@ -23,6 +23,7 @@ export const CRM_ACTIVITY_KEYS = {
 const systemActionKeys: Record<string, string> = {
   OPPORTUNITY_CREATED: 'opportunityCreated',
   STATUS_CHANGED: 'statusChanged',
+  RESPONSIBLE_CHANGED: 'responsibleChanged',
   ACEITAR: 'accepted',
   RECUSAR: 'rejected',
   SOLICITAR_INFORMACOES: 'informationRequested',

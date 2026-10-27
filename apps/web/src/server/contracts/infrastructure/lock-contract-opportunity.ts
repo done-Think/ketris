@@ -5,7 +5,7 @@ import {
   OpportunityNotAcceptedError,
   OpportunityNotFoundError,
 } from '../domain/errors'
-import { scopeWhere } from './contract-query'
+import { opportunityScopeWhere } from './contract-query'
 
 export async function lockContractOpportunity(
   tx: Prisma.TransactionClient,
@@ -14,13 +14,13 @@ export async function lockContractOpportunity(
 ) {
   await tx.$queryRaw`SELECT id FROM oportunidades WHERE id = ${input.opportunityId} AND "tenantId" = ${input.tenantId} FOR NO KEY UPDATE`
   const candidate = await tx.oportunidade.findFirst({
-    where: { id: input.opportunityId, tenantId: input.tenantId, ...scopeWhere(scope) },
+    where: { id: input.opportunityId, tenantId: input.tenantId, ...opportunityScopeWhere(scope) },
     select: { imovelId: true },
   })
   if (!candidate) throw new OpportunityNotFoundError()
   await tx.$queryRaw`SELECT id FROM imoveis WHERE id = ${candidate.imovelId} AND "tenantId" = ${input.tenantId} FOR NO KEY UPDATE`
   const opportunity = await tx.oportunidade.findFirst({
-    where: { id: input.opportunityId, tenantId: input.tenantId, ...scopeWhere(scope) },
+    where: { id: input.opportunityId, tenantId: input.tenantId, ...opportunityScopeWhere(scope) },
     select: {
       imovelId: true,
       valorProposto: true,

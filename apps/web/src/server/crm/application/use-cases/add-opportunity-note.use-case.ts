@@ -8,16 +8,14 @@ export type {
 } from '../../types/add-opportunity-note.use-case.types'
 
 import { OpportunityNotFoundError } from '../../domain/errors'
-import { assertAgentOwnsProperty, assertCrmAccess } from '../authorization'
+import { assertOpportunityAccess, assertCrmAccess } from '../authorization'
 import type { ActivityRepository } from '../ports/activity-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
-import type { PropertyLookupPort } from '../ports/property-lookup.port'
 
 export class AddOpportunityNoteUseCase {
   constructor(
     private readonly opportunityRepository: OpportunityRepository,
     private readonly activityRepository: ActivityRepository,
-    private readonly propertyLookup: PropertyLookupPort,
   ) {}
 
   async execute(input: AddOpportunityNoteInput): Promise<AddOpportunityNoteOutput> {
@@ -28,13 +26,7 @@ export class AddOpportunityNoteUseCase {
       throw new OpportunityNotFoundError()
     }
 
-    await assertAgentOwnsProperty(
-      this.propertyLookup,
-      input.actorTenantId,
-      opportunity.propertyId,
-      input.actorId ?? '',
-      input.actorPapel,
-    )
+    assertOpportunityAccess(opportunity, input.actorId ?? '', input.actorPapel)
 
     return this.activityRepository.create({
       opportunityId: opportunity.id,

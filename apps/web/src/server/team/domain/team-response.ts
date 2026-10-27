@@ -25,6 +25,7 @@ export function toTeamTransferResponse(result: TeamTransferResult) {
   return {
     properties: result.propertyIds.length,
     leads: result.leadIds.length,
+    opportunities: result.opportunityIds.length,
     futureEvents: result.eventIds.length,
   }
 }

@@ -28,10 +28,15 @@ function toDomainInquiry(row: Oportunidade): Inquiry {
 
 export class PrismaInquiryRepository implements InquiryRepository {
   async create(inquiry: NewInquiry): Promise<Inquiry> {
+    const imovel = await prisma.imovel.findFirstOrThrow({
+      where: { id: inquiry.propertyId, tenantId: inquiry.tenantId },
+      select: { responsavelId: true },
+    })
     const oportunidade = await prisma.oportunidade.create({
       data: {
         tenantId: inquiry.tenantId,
         imovelId: inquiry.propertyId,
+        responsavelId: imovel.responsavelId,
         interessadoNome: inquiry.leadName,
         interessadoEmail: inquiry.leadEmail,
         interessadoTelefone: inquiry.leadPhone,

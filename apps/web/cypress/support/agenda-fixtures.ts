@@ -2,6 +2,7 @@ import type { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { getDatabaseUrl } from '../../src/server/db/database-url'
 import type { AgendaFixtureSeedInput, AgendaFixtureSeedResult } from '../types/agenda-fixtures'
+import { propertyResponsibleId } from '../../src/server/shared/tests/fixtures/property-responsible'
 
 function assertIsolatedAgendaDatabase() {
   const url = new URL(getDatabaseUrl())
@@ -105,6 +106,7 @@ export async function seedAgendaFixtures(
     data: {
       tenantId: tenant.id,
       imovelId: propertyId,
+      responsavelId: await propertyResponsibleId(prisma, propertyId),
       interessadoNome: renter.nome,
       interessadoEmail: renter.email,
       valorProposto: 1000,

@@ -9,6 +9,8 @@ export interface Opportunity {
   id: string
   tenantId: string
   propertyId: string
+  responsibleId: string
+  responsibleName: string
   contactId: string | null
   leadName: string
   leadEmail: string
@@ -28,6 +30,7 @@ export interface Opportunity {
 export interface NewOpportunity {
   tenantId: string
   propertyId: string
+  responsibleId: string
   contactId?: string | null
   leadName: string
   leadEmail: string

@@ -23,7 +23,12 @@ export const POST = withErrorHandling(
       actorPapel: actor.papel,
       brokerId: id,
       destinationId: body.destinationId,
-      items: { properties: body.properties, leads: body.leads, futureEvents: body.futureEvents },
+      items: {
+        properties: body.properties,
+        leads: body.leads,
+        opportunities: body.opportunities,
+        futureEvents: body.futureEvents,
+      },
     })
 
     return NextResponse.json({ transferred: toTeamTransferResponse(result) }, { status: 200 })

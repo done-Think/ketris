@@ -7,6 +7,7 @@ import type {
   FinancialFixtureInput,
   FinancialFixtureResult,
 } from '../types/financial-fixtures'
+import { propertyResponsibleId } from '../../src/server/shared/tests/fixtures/property-responsible'
 
 const slugPrefix = 'financial-e2e-'
 
@@ -72,6 +73,7 @@ export async function seedFinancialFixtures(
     data: {
       tenantId: tenant.id,
       imovelId: property.id,
+      responsavelId: await propertyResponsibleId(prisma, property.id),
       interessadoNome: renter.nome,
       interessadoEmail: renter.email,
       valorProposto: 3200,

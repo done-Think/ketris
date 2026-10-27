@@ -13,6 +13,7 @@ export interface TeamActor {
 export interface TeamMemberMetrics {
   properties: number
   openLeads: number
+  openOpportunities: number
   monthlySales: number
   returns: number
   responseTimeMinutes: number | null
@@ -75,12 +76,14 @@ export interface TeamPeriod {
 export interface TeamTransferItems {
   properties: boolean
   leads: boolean
+  opportunities: boolean
   futureEvents: boolean
 }
 
 export interface TeamTransferResult {
   propertyIds: string[]
   leadIds: string[]
+  opportunityIds: string[]
   eventIds: string[]
 }
 

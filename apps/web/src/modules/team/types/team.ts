@@ -16,6 +16,7 @@ export interface TeamMember {
   metrics: {
     properties: number
     openLeads: number
+    openOpportunities: number
     monthlySales: number
     returns: number
     responseTimeMinutes: number | null
@@ -45,6 +46,7 @@ export interface TeamGoalChange {
 export interface TeamTransferCounts {
   properties: number
   leads: number
+  opportunities: number
   futureEvents: number
 }
 
@@ -52,6 +54,7 @@ export interface TransferPortfolioPayload {
   destinationId: string
   properties: boolean
   leads: boolean
+  opportunities: boolean
   futureEvents: boolean
 }
 

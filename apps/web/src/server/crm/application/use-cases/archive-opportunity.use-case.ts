@@ -8,15 +8,11 @@ export type {
 } from '../../types/archive-opportunity.use-case.types'
 
 import { OpportunityNotFoundError } from '../../domain/errors'
-import { assertAgentOwnsProperty, assertCrmAccess } from '../authorization'
+import { assertOpportunityAccess, assertCrmAccess } from '../authorization'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
-import type { PropertyLookupPort } from '../ports/property-lookup.port'
 
 export class ArchiveOpportunityUseCase {
-  constructor(
-    private readonly opportunityRepository: OpportunityRepository,
-    private readonly propertyLookup: PropertyLookupPort,
-  ) {}
+  constructor(private readonly opportunityRepository: OpportunityRepository) {}
 
   async execute(input: ArchiveOpportunityInput): Promise<ArchiveOpportunityOutput> {
     assertCrmAccess(input.actorPapel)
@@ -26,13 +22,7 @@ export class ArchiveOpportunityUseCase {
       throw new OpportunityNotFoundError()
     }
 
-    await assertAgentOwnsProperty(
-      this.propertyLookup,
-      input.actorTenantId,
-      opportunity.propertyId,
-      input.actorId,
-      input.actorPapel,
-    )
+    assertOpportunityAccess(opportunity, input.actorId, input.actorPapel)
 
     return this.opportunityRepository.archive(opportunity.id)
   }

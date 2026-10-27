@@ -203,6 +203,7 @@ model Usuario {
   assinaturasRegistradas       Assinatura[]                       @relation("AssinaturaRegistradaPor")
   contratosAtivados            Contrato[]                         @relation("ContratoAtivadoPor")
   leadsResponsavel             Lead[]                             @relation("LeadResponsavel")
+  oportunidadesResponsavel     Oportunidade[]                     @relation("OportunidadeResponsavel")
   perfilPublico                PerfilPublicoCorretor?
   destaquesRecebidos           PerfilPublicoImobiliariaDestaque[]
   agendaAuditEvents            AgendaEventAudit[]
@@ -594,6 +595,7 @@ model Oportunidade {
   id                  String             @id @default(cuid())
   tenantId            String
   imovelId            String
+  responsavelId       String
   interessadoNome     String
   interessadoEmail    String
   interessadoTelefone String?
@@ -611,21 +613,32 @@ model Oportunidade {
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
 
-  tenant     Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant      Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   // Restrict (não Cascade): excluir um imóvel nunca pode apagar oportunidades de tabela junto —
   // isso é decidido explicitamente pela camada de aplicação (ver PropertyRepository.hasLinkedRecords).
-  imovel     Imovel                  @relation(fields: [imovelId], references: [id], onDelete: Restrict)
-  contrato   Contrato?
-  contato    Contato?                @relation(fields: [contatoId], references: [id], onDelete: SetNull)
-  atividades AtividadeOportunidade[]
-  lead       Lead?
+  imovel      Imovel                  @relation(fields: [imovelId], references: [id], onDelete: Restrict)
+  responsavel Usuario                 @relation("OportunidadeResponsavel", fields: [responsavelId, tenantId], references: [id, tenantId])
+  contrato    Contrato?
+  contato     Contato?                @relation(fields: [contatoId], references: [id], onDelete: SetNull)
+  atividades  AtividadeOportunidade[]
+  lead        Lead?
 
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([tenantId, arquivadaEm])
   @@index([imovelId])
   @@index([contatoId])
+  @@index([tenantId, responsavelId])
   @@map("oportunidades")
+}
+
+enum OrigemLead {
+  MARKETPLACE
+  WHATSAPP
+  INSTAGRAM
+  SITE
+  INDICACAO
+  OUTRA
 }
 
 enum EstagioLead {
@@ -646,7 +659,7 @@ model Lead {
   email             String?
   interesse         String
   orcamento         String
-  origem            String
+  origem            OrigemLead
   estagio           EstagioLead @default(NOVO)
   primeiroContatoEm DateTime?
   observacoes       String?
@@ -1434,19 +1447,20 @@ model MetaCorretor {
 }
 
 model TransferenciaCarteira {
-  id          String                      @id @default(cuid())
-  tenantId    String
-  motivo      MotivoTransferenciaCarteira
-  origemId    String?
-  origemNome  String
-  destinoId   String?
-  destinoNome String
-  autorId     String?
-  autorNome   String
-  imovelIds   String[]                    @default([])
-  leadIds     String[]                    @default([])
-  eventoIds   String[]                    @default([])
-  createdAt   DateTime                    @default(now())
+  id              String                      @id @default(cuid())
+  tenantId        String
+  motivo          MotivoTransferenciaCarteira
+  origemId        String?
+  origemNome      String
+  destinoId       String?
+  destinoNome     String
+  autorId         String?
+  autorNome       String
+  imovelIds       String[]                    @default([])
+  leadIds         String[]                    @default([])
+  eventoIds       String[]                    @default([])
+  oportunidadeIds String[]                    @default([])
+  createdAt       DateTime                    @default(now())
 
   tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   origem  Usuario? @relation("TransferenciaCarteiraOrigem", fields: [origemId], references: [id], onDelete: SetNull)

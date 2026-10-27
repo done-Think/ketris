@@ -38,6 +38,7 @@ describe('GetTeamOverviewUseCase', () => {
         ['agent-2', 3],
       ]),
       openLeads: new Map([['agent-1', 4]]),
+      openOpportunities: new Map([['agent-1', 2]]),
       monthlySales: new Map([['agent-1', 6]]),
       returns: new Map([['agent-1', 9]]),
       responseMinutes: new Map([['agent-1', [30, 10, 20]]]),

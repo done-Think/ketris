@@ -1,3 +1,4 @@
+import type { LeadSource } from '../constants/lead-sources'
 export type LeadStage = 'NOVO' | 'EM_CONTATO' | 'VISITA_MARCADA' | 'PROPOSTA'
 
 export interface Lead {
@@ -10,7 +11,7 @@ export interface Lead {
   email: string | null
   interest: string
   budget: string
-  source: string
+  source: LeadSource
   stage: LeadStage
   notes: string | null
   opportunityId: string | null
@@ -26,7 +27,7 @@ export interface NewLead {
   email: string | null
   interest: string
   budget: string
-  source: string
+  source: LeadSource
   notes: string | null
 }
 

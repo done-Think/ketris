@@ -25,6 +25,8 @@ export const opportunitySchema = z
     id: z.string(),
     tenantId: z.string(),
     propertyId: z.string(),
+    responsibleId: z.string(),
+    responsibleName: z.string(),
     property: crmPropertySummarySchema.optional(),
     contactId: z.string().nullable(),
     leadName: z.string(),
@@ -90,6 +92,7 @@ const contactId = z.string().min(1).nullable()
 export const createOpportunityRequestSchema = z
   .object({
     propertyId: z.string().min(1, 'Imóvel é obrigatório.'),
+    responsibleId: z.string().min(1).max(64).optional(),
     contactId: z.string().min(1).optional(),
     leadName,
     leadEmail,
@@ -125,6 +128,11 @@ export const patchOpportunityRequestSchema = z
   })
   .openapi('PatchOpportunityRequest')
 
+export const assignOpportunityResponsibleRequestSchema = z
+  .object({ responsibleId: z.string().min(1).max(64) })
+  .strict()
+  .openapi('AssignOpportunityResponsibleRequest')
+
 export const deleteOpportunityQuerySchema = z
   .object({
     permanent: z
@@ -134,3 +142,11 @@ export const deleteOpportunityQuerySchema = z
   })
   .strict()
   .openapi('DeleteOpportunityQuery')
+
+export const opportunityResponsibleSchema = z
+  .object({ id: z.string(), name: z.string(), role: z.enum(['OWNER', 'AGENT']) })
+  .openapi('OpportunityResponsible')
+
+export const listOpportunityResponsiblesResponseSchema = z
+  .object({ responsibles: z.array(opportunityResponsibleSchema) })
+  .openapi('ListOpportunityResponsiblesResponse')

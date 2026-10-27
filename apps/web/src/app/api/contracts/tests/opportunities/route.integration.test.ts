@@ -4,6 +4,7 @@ import { afterAll, beforeAll, expect, it } from 'vitest'
 import { prisma } from '@server/db/prisma'
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { GET } from '../../opportunities/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 const tenants: string[] = []
 let ownerToken: string, agentToken: string, renterToken: string
@@ -59,11 +60,16 @@ beforeAll(async () => {
       valor: 2000,
     },
   })
-  const createOpportunity = (imovelId: string, status: 'ACEITA' | 'ENVIADA', archived = false) =>
+  const createOpportunity = async (
+    imovelId: string,
+    status: 'ACEITA' | 'ENVIADA',
+    archived = false,
+  ) =>
     prisma.oportunidade.create({
       data: {
         tenantId: tenant.id,
         imovelId,
+        responsavelId: await propertyResponsibleId(prisma, imovelId),
         status,
         interessadoNome: 'Interessado do catálogo',
         interessadoEmail: `${randomUUID()}@example.test`,
@@ -113,6 +119,7 @@ beforeAll(async () => {
     data: {
       tenantId: foreign.id,
       imovelId: foreignProperty.id,
+      responsavelId: await propertyResponsibleId(prisma, foreignProperty.id),
       interessadoNome: 'Pessoa privada',
       interessadoEmail: 'private@example.test',
       valorProposto: 1000,

@@ -16,6 +16,7 @@ export interface TeamMemberRow {
 export interface TeamMetricRows {
   properties: Map<string, number>
   openLeads: Map<string, number>
+  openOpportunities: Map<string, number>
   monthlySales: Map<string, number>
   returns: Map<string, number>
   responseMinutes: Map<string, number[]>
@@ -27,6 +28,7 @@ export interface TeamTransferCommand {
   sourceId: string
   destinationId: string
   items: TeamTransferItems
+  opportunityScope: 'open' | 'all'
   reason: 'MANUAL' | 'DESATIVACAO'
   actor: { id: string; name: string }
   now: Date
