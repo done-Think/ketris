@@ -2,10 +2,19 @@ import { describe, expect, it } from 'vitest'
 
 import { createMaintenanceLinksSchema } from '../../schemas/maintenance-links-schema'
 import { createMaintenanceWorkflowSchema } from '../../schemas/maintenance-workflow-schema'
+import type { MaintenanceProviderOption } from '../../types/maintenance-provider'
 import type { MaintenanceWorkflowFormValues } from '../../types/maintenance-workflow'
 import { buildMaintenanceWorkflowAction } from '../../utils/maintenance-workflow'
 
 const translate = (key: string) => key
+
+const catalogProvider: MaintenanceProviderOption = {
+  id: 'p1',
+  name: 'Hidráulica',
+  active: true,
+  createdAt: '2026-10-01T00:00:00.000Z',
+  updatedAt: '2026-10-01T00:00:00.000Z',
+}
 
 const emptyValues: MaintenanceWorkflowFormValues = {
   reason: '',
@@ -36,10 +45,10 @@ function issuesFor(
 
 describe('buildMaintenanceWorkflowAction', () => {
   it('uses the catalog provider id when one is chosen', () => {
-    const values = { ...emptyValues, catalogProvider: { id: 'p1', name: 'Hidráulica' } }
+    const values = { ...emptyValues, catalogProvider }
 
     expect(
-      buildMaintenanceWorkflowAction(values as MaintenanceWorkflowFormValues, {
+      buildMaintenanceWorkflowAction(values, {
         action: 'provider',
       }),
     ).toEqual({ action: 'provider', provider: { id: 'p1' } })
@@ -102,7 +111,7 @@ describe('createMaintenanceWorkflowSchema', () => {
     expect(issuesFor('requestReplacement', {})).toEqual(['reason:required'])
     expect(issuesFor('reopen', {}, 'RENTER')).toEqual(['reason:required'])
     expect(issuesFor('reopen', {}, 'OWNER')).toEqual([])
-    expect(issuesFor('approveReplacement', { catalogProvider: { id: 'p', name: 'x' } })).toEqual([])
+    expect(issuesFor('approveReplacement', { catalogProvider })).toEqual([])
   })
 
   it('requires the provider name and a valid email for a free provider', () => {
