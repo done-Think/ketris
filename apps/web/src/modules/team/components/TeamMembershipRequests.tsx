@@ -8,9 +8,9 @@ import { useApproveUserMembership } from '@modules/auth/hooks/use-approve-user-m
 import { useUsers } from '@modules/auth/hooks/use-users'
 import { DashboardHeaderActionButton } from '@shared/components/layout'
 import { DashboardPanel } from '@shared/components/ui/DashboardPanel'
-import { alpha } from '@shared/theme/tokens'
 import { extractErrorMessage } from '@shared/utils/error-message'
 
+import { styles } from '../styles/team-membership-requests.styles'
 import type { TeamMembershipRequestsProps } from '../types/broker-team'
 
 export function TeamMembershipRequests({ enabled }: TeamMembershipRequestsProps) {
@@ -41,38 +41,31 @@ export function TeamMembershipRequests({ enabled }: TeamMembershipRequestsProps)
   return (
     <Box component="section" aria-label={t('title')}>
       <DashboardPanel>
-        <Box sx={{ p: { xs: 2, md: 2.4 } }}>
+        <Box sx={styles.panel}>
           <Typography variant="h6" component="h2">
             {t('title')}
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.2 }}>
+          <Typography variant="body2" color="text.secondary" sx={styles.description}>
             {t('description', { count: pendingUsers.length })}
           </Typography>
 
-          <Stack component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+          <Stack component="ul" sx={styles.list}>
             {pendingUsers.map((user) => (
               <Stack
                 component="li"
                 key={user.id}
                 direction={{ xs: 'column', sm: 'row' }}
                 spacing={1.2}
-                sx={{
-                  alignItems: { xs: 'stretch', sm: 'center' },
-                  justifyContent: 'space-between',
-                  py: 1.2,
-                  borderBottom: '1px solid',
-                  borderColor: alpha.graphite[6],
-                  '&:last-of-type': { borderBottom: 0 },
-                }}
+                sx={styles.item}
               >
-                <Box sx={{ minWidth: 0 }}>
+                <Box sx={styles.identity}>
                   <Typography variant="body1" noWrap>
                     {user.name}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" noWrap>
                     {user.email}
                   </Typography>
-                  <Stack direction="row" spacing={0.8} sx={{ mt: 0.6 }}>
+                  <Stack direction="row" spacing={0.8} sx={styles.chips}>
                     <Chip label={roleT(user.role)} variant="outlined" size="small" />
                     <Chip label={t('pending')} color="warning" size="small" />
                   </Stack>

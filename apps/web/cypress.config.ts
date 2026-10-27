@@ -35,6 +35,12 @@ import {
   readAgendaAudit,
 } from './cypress/support/agenda-fixtures'
 import type { AgendaFixtureSeedInput } from './cypress/types/agenda-fixtures'
+import {
+  seedTeamFixtures,
+  cleanupTeamFixtures,
+  readTeamEvidence,
+} from './cypress/support/team-fixtures'
+import type { TeamFixtureInput } from './cypress/types/team-fixtures'
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import bcrypt from 'bcryptjs'
@@ -121,6 +127,15 @@ export default defineConfig({
         seedAgendaFixtures: (input: AgendaFixtureSeedInput) => seedAgendaFixtures(prisma, input),
         cleanupAgendaFixtures: (tenantIds: string[]) => cleanupAgendaFixtures(prisma, tenantIds),
         readAgendaAudit: (eventId: string) => readAgendaAudit(prisma, eventId),
+        seedTeamFixtures: (input: TeamFixtureInput) => seedTeamFixtures(prisma, input),
+        cleanupTeamFixtures: (tenantIds: string[]) => cleanupTeamFixtures(prisma, tenantIds),
+        readTeamEvidence: (input: Parameters<typeof readTeamEvidence>[1]) =>
+          readTeamEvidence(prisma, input),
+        readTeamInvitationEmail(email: string) {
+          if (!mailbox)
+            throw new Error('O simulador de e-mail Auth não foi habilitado para esta execução.')
+          return mailbox.readInvitation(email)
+        },
         readAuthEmail(email: string) {
           if (!mailbox)
             throw new Error('O simulador de e-mail Auth não foi habilitado para esta execução.')

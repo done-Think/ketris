@@ -46,7 +46,10 @@ model Tenant {
   perfilPublico                 PerfilPublicoImobiliaria?
   statusChanges                 TenantStatusChange[]
 
-  crmAuditEvents CrmAuditEvent[]
+  crmAuditEvents         CrmAuditEvent[]
+  convitesEquipe         ConviteEquipe[]
+  metasCorretor          MetaCorretor[]
+  transferenciasCarteira TransferenciaCarteira[]
 
   @@map("tenants")
 }
@@ -224,6 +227,13 @@ model Usuario {
   prestadoresAtualizados       PrestadorManutencao[]              @relation("PrestadorAtualizadoPor")
   atividadesPrestador          AtividadePrestadorManutencao[]     @relation("AtividadePrestadorAutor")
   atividadesOportunidade       AtividadeOportunidade[]            @relation("AtividadeOportunidadeAutor")
+  conviteEquipe                ConviteEquipe?                     @relation("ConviteEquipeUsuario")
+  convitesEquipeCriados        ConviteEquipe[]                    @relation("ConviteEquipeCriadoPor")
+  metas                        MetaCorretor[]                     @relation("MetaCorretorUsuario")
+  metasDefinidas               MetaCorretor[]                     @relation("MetaCorretorDefinidaPor")
+  transferenciasOrigem         TransferenciaCarteira[]            @relation("TransferenciaCarteiraOrigem")
+  transferenciasDestino        TransferenciaCarteira[]            @relation("TransferenciaCarteiraDestino")
+  transferenciasAutor          TransferenciaCarteira[]            @relation("TransferenciaCarteiraAutor")
 
   @@unique([tenantId, email])
   @@unique([id, tenantId])
@@ -628,20 +638,21 @@ enum EstagioLead {
 // Contato bruto, ainda não qualificado com um imóvel específico nem valor proposto — por isso não
 // é uma Oportunidade ainda. Vira uma quando o corretor converte (ver ConvertLeadToOpportunityUseCase).
 model Lead {
-  id             String      @id @default(cuid())
-  tenantId       String
-  responsavelId  String
-  nome           String
-  telefone       String
-  email          String?
-  interesse      String
-  orcamento      String
-  origem         String
-  estagio        EstagioLead @default(NOVO)
-  observacoes    String?
-  oportunidadeId String?     @unique
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  id                String      @id @default(cuid())
+  tenantId          String
+  responsavelId     String
+  nome              String
+  telefone          String
+  email             String?
+  interesse         String
+  orcamento         String
+  origem            String
+  estagio           EstagioLead @default(NOVO)
+  primeiroContatoEm DateTime?
+  observacoes       String?
+  oportunidadeId    String?     @unique
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 
   tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   responsavel  Usuario       @relation("LeadResponsavel", fields: [responsavelId], references: [id])
@@ -1374,4 +1385,77 @@ model AtividadePrestadorManutencao {
   @@index([actorUserId])
   @@index([tenantId, prestadorId, createdAt])
   @@map("atividades_prestador_manutencao")
+}
+
+enum MotivoTransferenciaCarteira {
+  MANUAL
+  DESATIVACAO
+}
+
+model ConviteEquipe {
+  id            String    @id @default(cuid())
+  tenantId      String
+  usuarioId     String
+  tokenHash     String    @unique
+  expiraEm      DateTime
+  enviadoEm     DateTime  @default(now())
+  aceitoEm      DateTime?
+  criadoPorId   String?
+  criadoPorNome String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  usuario   Usuario  @relation("ConviteEquipeUsuario", fields: [usuarioId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  criadoPor Usuario? @relation("ConviteEquipeCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+
+  @@unique([usuarioId, tenantId])
+  @@index([tenantId])
+  @@index([criadoPorId])
+  @@map("convites_equipe")
+}
+
+model MetaCorretor {
+  id              String   @id @default(cuid())
+  tenantId        String
+  usuarioId       String
+  vendasMensais   Int
+  definidoPorId   String?
+  definidoPorNome String
+  createdAt       DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  usuario     Usuario  @relation("MetaCorretorUsuario", fields: [usuarioId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  definidoPor Usuario? @relation("MetaCorretorDefinidaPor", fields: [definidoPorId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, usuarioId, createdAt])
+  @@index([definidoPorId])
+  @@map("metas_corretor")
+}
+
+model TransferenciaCarteira {
+  id          String                      @id @default(cuid())
+  tenantId    String
+  motivo      MotivoTransferenciaCarteira
+  origemId    String?
+  origemNome  String
+  destinoId   String?
+  destinoNome String
+  autorId     String?
+  autorNome   String
+  imovelIds   String[]                    @default([])
+  leadIds     String[]                    @default([])
+  eventoIds   String[]                    @default([])
+  createdAt   DateTime                    @default(now())
+
+  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  origem  Usuario? @relation("TransferenciaCarteiraOrigem", fields: [origemId], references: [id], onDelete: SetNull)
+  destino Usuario? @relation("TransferenciaCarteiraDestino", fields: [destinoId], references: [id], onDelete: SetNull)
+  autor   Usuario? @relation("TransferenciaCarteiraAutor", fields: [autorId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@index([origemId])
+  @@index([destinoId])
+  @@index([autorId])
+  @@map("transferencias_carteira")
 }

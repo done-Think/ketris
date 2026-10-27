@@ -12,6 +12,7 @@ import { registerMarketplaceOpenApi } from '@server/marketplace/openapi'
 import { registerPlatformOpenApi } from '@server/platform/openapi'
 import { registerPropertiesOpenApi } from '@server/properties/openapi'
 import { registerRegistrationOpenApi } from '@server/registration/openapi'
+import { registerTeamOpenApi } from '@server/team/openapi'
 import './zod-extend'
 
 export const registry = new OpenAPIRegistry()
@@ -34,6 +35,7 @@ registerFinancialOpenApi(registry)
 registerMaintenanceOpenApi(registry)
 registerAgencyDashboardOpenApi(registry)
 registerDashboardOpenApi(registry)
+registerTeamOpenApi(registry)
 
 export function generateOpenApiDocument() {
   const generator = new OpenApiGeneratorV3(registry.definitions)

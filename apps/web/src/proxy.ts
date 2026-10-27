@@ -47,6 +47,7 @@ const authPaths = new Set([
   '/api/auth/me/email-change/verify',
   '/api/auth/email-change/verify',
   '/api/auth/me/password',
+  '/api/team/invitations/accept',
 ])
 
 export async function proxy(request: NextRequest) {

@@ -157,3 +157,12 @@ export class AvatarValidationError extends AppError {
     )
   }
 }
+
+export class PortfolioTransferRequiredError extends AppError {
+  constructor() {
+    super('Transfira os imóveis, leads e eventos futuros antes de desativar este usuário.', {
+      status: 409,
+      code: 'PORTFOLIO_TRANSFER_REQUIRED',
+    })
+  }
+}

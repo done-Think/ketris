@@ -98,8 +98,16 @@ export class PrismaLeadRepository implements LeadRepository {
       },
     })
 
+    if (changes.stage && changes.stage !== 'NOVO') await this.markFirstContact(row.id)
     await recordCrmAudit(this.db, this.scope, 'LEAD', row.id, 'UPDATED', changedFields)
     return toDomain(row)
+  }
+
+  private async markFirstContact(id: string): Promise<void> {
+    await this.db.lead.updateMany({
+      where: { id, tenantId: this.scope.actorTenantId, primeiroContatoEm: null },
+      data: { primeiroContatoEm: new Date() },
+    })
   }
 
   async markConverted(id: string, opportunityId: string, email?: string): Promise<Lead> {
@@ -112,6 +120,7 @@ export class PrismaLeadRepository implements LeadRepository {
       data: { estagio: 'PROPOSTA', oportunidadeId: opportunityId, email },
     })
 
+    await this.markFirstContact(row.id)
     await recordCrmAudit(this.db, this.scope, 'LEAD', row.id, 'CONVERTED', [
       'stage',
       'opportunityId',
