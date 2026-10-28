@@ -1,12 +1,12 @@
 import type { SxProps, Theme } from '@mui/material'
 
 const desktopFieldColumns: Record<string, number> = {
-  zipCode: 3,
-  street: 9,
-  number: 2,
-  complement: 4,
-  neighborhood: 6,
-  city: 10,
+  zipCode: 4,
+  street: 8,
+  number: 3,
+  complement: 9,
+  neighborhood: 5,
+  city: 5,
   state: 2,
 }
 
@@ -20,15 +20,19 @@ export const styles = {
   coordinates: {
     gridColumn: '1 / -1',
     display: 'grid',
-    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    gridTemplateColumns: {
+      xs: 'repeat(2, minmax(0, 1fr))',
+      md: 'repeat(3, minmax(0, 1fr))',
+    },
     alignItems: 'start',
     columnGap: { xs: 1.2, md: 2 },
     minWidth: 0,
   },
   coordinatesHint: {
-    gridColumn: '1 / -1',
-    mt: 0.5,
-    mx: 1.75,
+    gridColumn: { xs: '1 / -1', md: 'auto' },
+    alignSelf: { md: 'center' },
+    mt: { xs: 0.5, md: 0 },
+    mx: { xs: 1.75, md: 0 },
   },
 } satisfies Record<string, SxProps<Theme>>
 
