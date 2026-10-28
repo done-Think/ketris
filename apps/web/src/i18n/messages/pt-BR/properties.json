@@ -169,7 +169,7 @@
     "negotiationTerms": "Condições de negociação"
   },
   "create": {
-    "coordinatesHint": "Opcional: tentaremos localizar o imóvel pelo endereço ao salvar. Se necessário, informe as duas coordenadas.",
+    "coordinatesHint": "Tentaremos localizar o imóvel pelo endereço ao salvar. Se necessário, informe as duas coordenadas.",
     "postalCode": {
       "idle": "Informe o CEP e saia do campo para preencher o endereço. Confira os dados antes de salvar.",
       "loading": "Consultando CEP…",

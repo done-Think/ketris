@@ -169,7 +169,7 @@
     "negotiationTerms": "Condiciones de negociación"
   },
   "create": {
-    "coordinatesHint": "Opcional: intentaremos localizar el inmueble por su dirección al guardar. Si es necesario, introduce ambas coordenadas.",
+    "coordinatesHint": "Intentaremos localizar el inmueble por su dirección al guardar. Si es necesario, introduce ambas coordenadas.",
     "postalCode": {
       "idle": "Introduce el código postal y sal del campo para completar la dirección. Revisa los datos antes de guardar.",
       "loading": "Consultando código postal…",

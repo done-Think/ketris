@@ -3,11 +3,11 @@ import type { SxProps, Theme } from '@mui/material'
 const desktopFieldColumns: Record<string, number> = {
   zipCode: 4,
   street: 8,
-  number: 3,
-  complement: 9,
-  neighborhood: 5,
-  city: 5,
-  state: 2,
+  number: 4,
+  complement: 8,
+  neighborhood: 4,
+  city: 4,
+  state: 4,
 }
 
 export const styles = {

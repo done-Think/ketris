@@ -169,7 +169,7 @@
     "negotiationTerms": "Negotiation terms"
   },
   "create": {
-    "coordinatesHint": "Optional: we will try to locate the property by its address when saving. If needed, enter both coordinates.",
+    "coordinatesHint": "We will try to locate the property by its address when saving. If needed, enter both coordinates.",
     "postalCode": {
       "idle": "Enter the postal code and leave the field to fill in the address. Check the details before saving.",
       "loading": "Looking up postal code…",
